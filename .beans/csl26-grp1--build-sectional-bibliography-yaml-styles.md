@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: normal
 created_at: 2026-02-22T00:00:00Z
-updated_at: 2026-02-22T12:00:00Z
+updated_at: 2026-02-22T13:00:00Z
 ---
 
 Build concrete YAML style files demonstrating bibliography grouping for Chicago primary/secondary,
@@ -24,5 +24,8 @@ Juris-M legal hierarchy, and GOST category sections. Schema and processor infras
 
 **Note:** Direct csln process command does not populate cited_ids; integration tests MUST use
 process_document() to ensure grouping logic runs correctly.
+
+**Progress update (2026-02-22):**
+- Added tests/fixtures/grouping/legal-hierarchy.json (legal-case/statute/treaty baseline fixture)
 
 **Refs:** docs/architecture/MULTILINGUAL_GROUPING_STYLE_TARGETS.md, csl26-group, docs/architecture/design/BIBLIOGRAPHY_GROUPING.md
