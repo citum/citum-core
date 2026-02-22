@@ -21,6 +21,10 @@ options:
       use-last: 1
   dates: long
   titles: apa
+  multilingual:
+    title-mode: combined
+    name-mode: primary
+    preferred-script: Latn
   page-range-format: expanded
   bibliography:
     hanging-indent: true
