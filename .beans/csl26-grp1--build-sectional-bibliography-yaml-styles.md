@@ -29,5 +29,6 @@ process_document() to ensure grouping logic runs correctly.
 - Added tests/fixtures/grouping/legal-hierarchy.json (legal-case/statute/treaty baseline fixture)
 - Updated sectional group headings in Chicago and JM legal styles to use localized maps
 - Added process_document() integration coverage for JM legal group heading order
+- Added process_document() integration coverage for localized heading language-tag fallback (en-GB -> en)
 
 **Refs:** docs/architecture/MULTILINGUAL_GROUPING_STYLE_TARGETS.md, csl26-group, docs/architecture/design/BIBLIOGRAPHY_GROUPING.md
