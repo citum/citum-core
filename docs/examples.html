@@ -123,10 +123,73 @@
         </div>
     </header>
 
-    <!-- Examples Grid -->
-    <section class="max-w-6xl mx-auto px-6 pb-24 grid gap-12">
-        <!-- Document Processing -->
-        <article id="document-processing" class="example-card rounded-xl overflow-hidden shadow-sm scroll-mt-24">
+    <!-- Main Content Layout -->
+    <div class="max-w-7xl mx-auto px-6 pb-24 flex flex-col lg:flex-row gap-12 relative">
+        <!-- Sticky Sidebar Navigation -->
+        <aside class="hidden lg:block w-64 flex-shrink-0 sticky top-24 h-fit self-start">
+            <nav class="space-y-1">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 px-3">Sections</h3>
+                <div class="space-y-0.5">
+                    <a href="#document-processing" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+                        <span class="material-icons text-lg opacity-60">description</span>
+                        Document Processing
+                    </a>
+                    <a href="#advanced-citations" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+                        <span class="material-icons text-lg opacity-60">auto_awesome</span>
+                        Advanced Citations
+                    </a>
+                    <a href="#bibliography-grouping" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+                        <span class="material-icons text-lg opacity-60">library_books</span>
+                        Bibliography Grouping
+                    </a>
+                    <a href="#multilingual-support" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+                        <span class="material-icons text-lg opacity-60">translate</span>
+                        Multilingual Support
+                    </a>
+                    <a href="#advanced-dates" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+                        <span class="material-icons text-lg opacity-60">event</span>
+                        Advanced Dates
+                    </a>
+                    <a href="#options-presets" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+                        <span class="material-icons text-lg opacity-60">tune</span>
+                        Options Presets
+                    </a>
+                    <a href="#titles-links" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+                        <span class="material-icons text-lg opacity-60">title</span>
+                        Titles & Links
+                    </a>
+                    <a href="#overrides" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+                        <span class="material-icons text-lg opacity-60">settings_input_component</span>
+                        Overrides
+                    </a>
+                    <a href="#output-formats" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+                        <span class="material-icons text-lg opacity-60">html</span>
+                        Output Formats
+                    </a>
+                    <a href="#lualatex-integration" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+                        <span class="material-icons text-lg opacity-60">integration_instructions</span>
+                        LuaLaTeX
+                    </a>
+                    <a href="#binary-performance" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+                        <span class="material-icons text-lg opacity-60">speed</span>
+                        Binary Perf
+                    </a>
+                    <a href="#schema-generation" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+                        <span class="material-symbols-outlined text-lg opacity-60">schema</span>
+                        Schema Gen
+                    </a>
+                    <a href="#web-interactivity" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+                        <span class="material-icons text-lg opacity-60">mouse</span>
+                        Web Interactivity
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Examples Grid -->
+        <main class="flex-1 min-w-0 grid gap-12">
+            <!-- Document Processing -->
+            <article id="document-processing" class="example-card rounded-xl overflow-hidden shadow-sm scroll-mt-24">
             <div class="p-8 bg-slate-50 border-b border-slate-200">
                 <div class="flex items-center gap-3 mb-4">
                     <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
@@ -968,9 +1031,29 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                         </p>
                     </div>
                 </div>
-                <div class="mt-8 p-4 bg-slate-50 border border-slate-200 rounded-lg">
+            </div>
+        </article>
+
+        <!-- Schema Generation -->
+        <article id="schema-generation" class="example-card rounded-xl overflow-hidden shadow-sm scroll-mt-24">
+            <div class="p-8 bg-slate-50 border-b border-slate-200">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined">schema</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900">
+                        Schema Generation
+                    </h2>
+                </div>
+                <p class="text-slate-600 leading-relaxed mb-6">
+                    CSLN can generate JSON Schemas for its configuration formats, enabling
+                    rich IDE support, validation, and auto-completion in editors like VS Code.
+                </p>
+            </div>
+            <div class="p-8 bg-white">
+                <div class="p-4 bg-slate-50 border border-slate-200 rounded-lg">
                     <h4 class="font-bold text-slate-900 mb-2 text-sm uppercase tracking-wider">
-                        Schema Generation (Optional Feature)
+                        Generation Command (Optional Feature)
                     </h4>
                     <div class="bg-slate-900 rounded-lg p-4 font-mono text-xs text-slate-300 overflow-x-auto">
                         <span class="text-primary">$</span> cargo run --bin csln --features schema -- schema &gt;
@@ -1079,7 +1162,8 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
             </div>
         </article>
 
-    </section>
+    </main>
+</div>
 
     <!-- Footer -->
     <footer class="py-12 px-6 border-t border-slate-200 bg-white">
