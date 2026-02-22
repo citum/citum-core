@@ -45,7 +45,7 @@
 % ---------------------------------------------------------------------------
 % PDF tooltip support
 % ---------------------------------------------------------------------------
-\if@csln@tooltips
+\ifcsln@tooltips
   \RequirePackage{pdfcomment}
   \newcommand{\cslntooltip}[2]{\pdftooltip{#1}{#2}}
 \else
