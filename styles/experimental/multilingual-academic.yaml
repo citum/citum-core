@@ -12,13 +12,12 @@ options:
   processing: author-date
 
 citation:
-  layout:
-    template:
-      - contributor: author
-        form: short
-      - date: issued
-        form: year
-        prefix: " "
+  template:
+    - contributor: author
+      form: short
+    - date: issued
+      form: year
+      prefix: " "
 
 bibliography:
   groups:
@@ -37,6 +36,7 @@ bibliography:
             sort-order: given-family  # Vietnamese convention
           - key: issued
             ascending: false
+      disambiguate: locally
 
     - id: western
       heading:
@@ -52,6 +52,7 @@ bibliography:
             sort-order: family-given  # Western convention
           - key: issued
             ascending: false
+      disambiguate: locally
 
   template:
     - contributor: author
