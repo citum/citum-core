@@ -1,0 +1,27 @@
+[
+  {
+    "id": "brown1954",
+    "type": "legal-case",
+    "title": "Brown v. Board of Education",
+    "authority": "U.S. Supreme Court",
+    "volume": "347",
+    "container-title": "U.S.",
+    "page": "483",
+    "issued": { "date-parts": [[1954]] }
+  },
+  {
+    "id": "civilrights1964",
+    "type": "statute",
+    "title": "Civil Rights Act of 1964",
+    "authority": "U.S. Congress",
+    "number": "Pub. L. 88-352",
+    "issued": { "date-parts": [[1964, 7, 2]] }
+  },
+  {
+    "id": "versailles1919",
+    "type": "treaty",
+    "title": "Treaty of Versailles",
+    "author": [{ "literal": "Allied Powers" }],
+    "issued": { "date-parts": [[1919, 6, 28]] }
+  }
+]
