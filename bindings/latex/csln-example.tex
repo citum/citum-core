@@ -18,11 +18,20 @@
 
 \documentclass[12pt, a4paper]{article}
 
+% hyperref must be loaded before csln when tooltips=true: pdfcomment (loaded
+% by csln.sty) will reuse this already-loaded instance rather than loading
+% hyperref again with conflicting default options.
+\usepackage[hidelinks]{hyperref}   % clickable DOIs / URLs without coloured boxes
+
 % ---------------------------------------------------------------------------
 % CSLN citation package
-%   style   = path to a CSLN YAML style file (extension optional)
-%   bibfile = path to a CSLN YAML bibliography (extension optional)
-%             Use bibfile=refs.bib for a biblatex .bib file instead.
+%   style    = path to a CSLN YAML style file (extension optional)
+%   bibfile  = path to a CSLN YAML bibliography (extension optional)
+%              Use bibfile=refs.bib for a biblatex .bib file instead.
+%   tooltips = enable PDF tooltip annotations on bibliography entries.
+%              Hovering over an entry in a compatible PDF viewer reveals
+%              author, year, and title as a plain-text annotation.
+%              Loads pdfcomment automatically.
 % ---------------------------------------------------------------------------
 \usepackage[
   style   = ../../styles/apa-7th,
@@ -30,14 +39,8 @@
   tooltips
 ]{csln}
 
-% tooltips=true enables PDF tooltip annotations on bibliography entries.
-% Hovering over a bibliography entry in a compatible PDF viewer reveals
-% the author, year, and title as a plain-text annotation.
-% Requires the pdfcomment package (loaded automatically by csln.sty).
-
 % Standard LaTeX preamble
 \usepackage{fontspec}              % LuaLaTeX font support
-\usepackage[hidelinks]{hyperref}   % clickable DOIs / URLs without coloured boxes
 \usepackage{microtype}             % better typography
 \usepackage{geometry}
 \geometry{margin=2.5cm}
