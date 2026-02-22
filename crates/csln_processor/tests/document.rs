@@ -9,7 +9,7 @@ use common::*;
 use std::{fs, path::PathBuf};
 
 use csln_core::{
-    BibliographySpec, Style, StyleInfo,
+    BibliographySpec, Locale, Style, StyleInfo,
     options::{BibliographyConfig, Config, Disambiguation, Processing, ProcessingCustom},
 };
 use csln_processor::{
@@ -274,5 +274,35 @@ fn test_process_document_renders_jm_legal_group_hierarchy() {
     assert!(
         treaties < secondary,
         "expected Treaties before Secondary: {output}"
+    );
+}
+
+#[test]
+fn test_process_document_group_heading_localization_falls_back_to_language_tag() {
+    let style = load_style("styles/chicago-author-date.yaml");
+    let bibliography =
+        load_bibliography(&project_root().join("tests/fixtures/grouping/primary-secondary.json"))
+            .expect("grouping fixture should parse");
+
+    let mut locale = Locale::en_us();
+    locale.locale = "en-GB".to_string();
+
+    let processor = Processor::with_locale(style, bibliography, locale);
+    let parser = DjotParser;
+    let output = processor.process_document::<_, csln_processor::render::plain::PlainText>(
+        "Locale fallback check [@interview-1978; @journal-2021].",
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    // chicago-author-date headings are localized with en-US + en.
+    // en-GB should fall back to the language tag (en).
+    assert!(
+        output.contains("# Primary Sources"),
+        "missing primary heading: {output}"
+    );
+    assert!(
+        output.contains("# Secondary Sources"),
+        "missing secondary heading: {output}"
     );
 }
