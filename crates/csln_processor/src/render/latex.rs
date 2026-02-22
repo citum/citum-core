@@ -110,13 +110,15 @@ impl OutputFormat for Latex {
         _url: Option<&str>,
         metadata: &super::format::ProcEntryMetadata,
     ) -> Self::Output {
-        // \pdftooltip boxes its content, so paragraph-level commands like
-        // \noindent\hangindent must sit outside the tooltip wrapper.
-        let inner = match build_pdf_tooltip(metadata) {
+        // When metadata is available, delegate the full entry layout to
+        // \cslntooltip (defined in csln.sty).  With tooltips=true it wraps
+        // content in a \parbox so \pdftooltip gets a properly-sized box;
+        // with tooltips=false it is a passthrough that adds \hangindent itself.
+        // When metadata is absent, fall back to the plain hanging-indent format.
+        match build_pdf_tooltip(metadata) {
             Some(tooltip_text) => format!("\\cslntooltip{{{}}}{{{}}}", content, tooltip_text),
-            None => content,
-        };
-        format!("\\noindent\\hangindent=2em\\hangafter=1 {}", inner)
+            None => format!("\\noindent\\hangindent=2em\\hangafter=1 {}", content),
+        }
     }
 }
 

@@ -47,9 +47,26 @@
 % ---------------------------------------------------------------------------
 \ifcsln@tooltips
   \RequirePackage{pdfcomment}
-  \newcommand{\cslntooltip}[2]{\pdftooltip{#1}{#2}}
+  % \pdftooltip boxes its first argument as-is, so passing raw inline content
+  % prevents line-breaking and produces a malformed annotation.  Instead, wrap
+  % in a \parbox (a proper vbox at \linewidth) so the entry reflows correctly,
+  % then let \pdftooltip annotate that fixed-size box.  \hangindent is applied
+  % inside the parbox so it still takes visual effect.
+  \newcommand{\cslntooltip}[2]{%
+    \noindent
+    \pdftooltip{%
+      \parbox[t]{\linewidth}{%
+        \hangindent=2em\hangafter=1%
+        #1%
+      }%
+    }{#2}%
+  }
 \else
-  \newcommand{\cslntooltip}[2]{#1}
+  % Passthrough: replicate the hanging-indent layout used by latex.rs when
+  % no tooltip is emitted, so the output is identical whether tooltips=true/false.
+  \newcommand{\cslntooltip}[2]{%
+    \noindent\hangindent=2em\hangafter=1 #1%
+  }
 \fi
 
 % ---------------------------------------------------------------------------
