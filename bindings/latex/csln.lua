@@ -519,35 +519,16 @@ function csln_emit_tooltip(wid, boxnum, tooltip)
     local h     = box.height * sp2bp
     local d     = box.depth  * sp2bp
 
-    -- Escape for embedding in a PDF literal string (...):
-    -- \ → \\, ( → \(, ) → \)
-    local safe = tooltip:gsub("\\", "\\\\")
-                        :gsub("%(", "\\(")
-                        :gsub("%)", "\\)")
+    -- Build a PDF-safe string: strip parens (TeX reads \( as math-open command),
+    -- escape backslashes, then collapse any double spaces.
+    local safe = tooltip:gsub("%(", ""):gsub("%)", ""):gsub("\\", "\\\\")
 
-    local bbox  = string.format("0 %.4f %.4f %.4f", -d, w, h)
-    local hrect = string.format("0 %.4f %.4f %.4f re", -d, w, h + d)
-
-    -- 1. Normal appearance: empty Form XObject (text on page shows through)
+    -- Single Widget push-button annotation with /TU tooltip text.
+    -- No /AP needed for tooltip display; Acrobat shows /TU on hover.
     tex.sprint(string.format(
-        [[\pdfextension obj stream attr{/Type /XObject /Subtype /Form /BBox [%s]}{}]],
-        bbox))
-    tex.sprint([[\edef\@csln@norm{\number\pdffeedback lastobj}]])
-
-    -- 2. Rollover appearance: steel-blue border outline shown on hover
-    --    Stroke-only rect — does not obscure the citation text beneath it.
-    tex.sprint(string.format(
-        [[\pdfextension obj stream attr{/Type /XObject /Subtype /Form /BBox [%s]}{q 0.20 0.47 0.78 RG 1 w %s S Q}]],
-        bbox, hrect))
-    tex.sprint([[\edef\@csln@roll{\number\pdffeedback lastobj}]])
-
-    -- 3. Transparent push-button Widget: carries /TU tooltip + /AP appearances
-    tex.sprint(string.format(
-        [[\pdfextension annot width %.4fbp height %.4fbp depth %.4fbp]],
-        w, h, d))
-    tex.sprint(string.format(
-        [[{/Subtype /Widget /FT /Btn /T (csln-%d) /TU (%s) /Ff 65536 /H /N /BS <</W 0>> /MK <<>> /AP <</N \@csln@norm\space 0 R /R \@csln@roll\space 0 R>>}]],
-        wid, safe))
+        [[\pdfextension annot width %.4fbp height %.4fbp depth %.4fbp ]]
+        .. [[{/Subtype /Widget /FT /Btn /T (csln-%d) /TU (%s) /Ff 65536 /H /N /BS <</W 0>> /MK <<>>}]],
+        w, h, d, wid, safe))
 end
 
 --- Print the bibliography via tex.sprint.
