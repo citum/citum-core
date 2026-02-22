@@ -1,0 +1,34 @@
+[
+  {
+    "id": "vi-kuhn-a",
+    "type": "book",
+    "title": "Lịch sử khoa học A",
+    "author": [{ "family": "Kuhn", "given": "Thomas" }],
+    "language": "vi",
+    "issued": { "date-parts": [[2020]] }
+  },
+  {
+    "id": "vi-kuhn-b",
+    "type": "book",
+    "title": "Lịch sử khoa học B",
+    "author": [{ "family": "Kuhn", "given": "Thomas" }],
+    "language": "vi",
+    "issued": { "date-parts": [[2020]] }
+  },
+  {
+    "id": "en-kuhn-a",
+    "type": "book",
+    "title": "History of Science A",
+    "author": [{ "family": "Kuhn", "given": "Thomas" }],
+    "language": "en",
+    "issued": { "date-parts": [[2020]] }
+  },
+  {
+    "id": "en-kuhn-b",
+    "type": "book",
+    "title": "History of Science B",
+    "author": [{ "family": "Kuhn", "given": "Thomas" }],
+    "language": "en",
+    "issued": { "date-parts": [[2020]] }
+  }
+]

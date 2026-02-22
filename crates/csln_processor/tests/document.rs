@@ -6,12 +6,15 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 mod common;
 use common::*;
 
+use std::{fs, path::PathBuf};
+
 use csln_core::{
     BibliographySpec, Style, StyleInfo,
-    options::{BibliographyConfig, Config, Processing},
+    options::{BibliographyConfig, Config, Disambiguation, Processing, ProcessingCustom},
 };
 use csln_processor::{
     Processor,
+    io::load_bibliography,
     processor::document::{DocumentFormat, djot::DjotParser},
 };
 
@@ -145,4 +148,92 @@ fn test_document_djot_output_unmodified() {
         !djot_output.contains("<h1>"),
         "Djot output should not contain HTML tags"
     );
+}
+
+fn project_root() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
+}
+
+fn load_style(path: &str) -> Style {
+    let style_path = project_root().join(path);
+    let bytes = fs::read(&style_path).expect("style fixture should be readable");
+    serde_yaml::from_slice(&bytes).expect("style fixture should parse")
+}
+
+#[test]
+fn test_process_document_renders_chicago_primary_secondary_groups() {
+    let style = load_style("styles/chicago-author-date.yaml");
+    let bibliography =
+        load_bibliography(&project_root().join("tests/fixtures/grouping/primary-secondary.json"))
+            .expect("grouping fixture should parse");
+
+    let processor = Processor::new(style, bibliography);
+    let parser = DjotParser;
+    let output = processor.process_document::<_, csln_processor::render::plain::PlainText>(
+        "Grouping check [@interview-1978; @ms-archive-1901; @journal-2021].",
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    assert!(
+        output.contains("# Primary Sources"),
+        "missing primary heading: {output}"
+    );
+    assert!(
+        output.contains("# Secondary Sources"),
+        "missing secondary heading: {output}"
+    );
+    assert!(
+        output.contains("Field Notes from the Delta Survey"),
+        "missing primary-source entry: {output}"
+    );
+    assert!(
+        output.contains("Trade Networks in the Early Modern Atlantic"),
+        "missing secondary-source entry: {output}"
+    );
+}
+
+#[test]
+fn test_process_document_restarts_year_suffixes_per_group() {
+    let mut style = load_style("styles/experimental/multilingual-academic.yaml");
+    style
+        .options
+        .get_or_insert_with(Default::default)
+        .processing = Some(Processing::Custom(ProcessingCustom {
+        disambiguate: Some(Disambiguation {
+            year_suffix: true,
+            ..Default::default()
+        }),
+        ..Default::default()
+    }));
+
+    let bibliography =
+        load_bibliography(&project_root().join("tests/fixtures/grouping/multilingual-groups.json"))
+            .expect("multilingual grouping fixture should parse");
+    let processor = Processor::new(style, bibliography);
+    let parser = DjotParser;
+    let output = processor.process_document::<_, csln_processor::render::plain::PlainText>(
+        "Disambiguation check [@vi-kuhn-a; @vi-kuhn-b; @en-kuhn-a; @en-kuhn-b].",
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    assert!(
+        output.contains("# Vietnamese Sources"),
+        "missing vietnamese heading: {output}"
+    );
+    assert!(
+        output.contains("# Western Sources"),
+        "missing western heading: {output}"
+    );
+
+    // With per-group local disambiguation, each group should restart at 2020a.
+    // Count only bibliography output because in-text citations can include extra suffixes.
+    let bibliography_only = output
+        .split("# Bibliography")
+        .nth(1)
+        .unwrap_or_default()
+        .to_string();
+    let count_2020a = bibliography_only.matches("2020a").count();
+    assert_eq!(count_2020a, 2, "expected 2020a in both groups: {output}");
 }

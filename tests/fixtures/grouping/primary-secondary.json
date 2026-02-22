@@ -1,0 +1,26 @@
+[
+  {
+    "id": "ms-archive-1901",
+    "type": "manuscript",
+    "title": "Field Notes from the Delta Survey",
+    "author": [{ "family": "Archive", "given": "Alice" }],
+    "note": "archival",
+    "issued": { "date-parts": [[1901]] }
+  },
+  {
+    "id": "interview-1978",
+    "type": "interview",
+    "title": "Interview with Dr. Elena Rivera",
+    "author": [{ "family": "Rivera", "given": "Elena" }],
+    "note": "primary",
+    "issued": { "date-parts": [[1978]] }
+  },
+  {
+    "id": "journal-2021",
+    "type": "article-journal",
+    "title": "Trade Networks in the Early Modern Atlantic",
+    "author": [{ "family": "Bennett", "given": "James" }],
+    "container-title": "Historical Review",
+    "issued": { "date-parts": [[2021]] }
+  }
+]

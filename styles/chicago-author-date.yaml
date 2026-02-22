@@ -61,6 +61,28 @@ bibliography:
         use-first: 3
         and-others: et-al
         delimiter-precedes-last: contextual
+  groups:
+    - id: primary-sources
+      heading:
+        literal: Primary Sources
+      selector:
+        field:
+          note: primary
+    - id: archival
+      heading:
+        literal: Archival Sources
+      selector:
+        field:
+          note: archival
+    - id: secondary
+      heading:
+        literal: Secondary Sources
+      selector:
+        not:
+          field:
+            note:
+              - primary
+              - archival
   template:
     - contributor: author
       form: long
