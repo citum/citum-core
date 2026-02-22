@@ -836,6 +836,93 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
             </div>
         </article>
 
+        <!-- LuaLaTeX Integration -->
+        <article id="lualatex-integration" class="example-card rounded-xl overflow-hidden shadow-sm scroll-mt-24">
+            <div class="p-8 bg-slate-50 border-b border-slate-200">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                        <span class="material-icons">integration_instructions</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900">
+                        LuaLaTeX Integration
+                        <span class="text-xs font-normal ml-2 bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full align-middle">Proof-of-concept</span>
+                    </h2>
+                </div>
+                <p class="text-slate-600 leading-relaxed mb-6">
+                    A single-pass LuaLaTeX citation workflow backed by the CSLN Rust processor via C-FFI.
+                    No Biber, no <code class="text-xs bg-slate-200 px-1 rounded">.bbl</code> file, no
+                    external bibliography step. The processor runs inline during compilation via LuaJIT FFI,
+                    and all CSLN output rules (disambiguation, name formatting, et-al) apply identically.
+                </p>
+                <div class="bg-slate-900 rounded-lg p-4 font-mono text-xs text-slate-300 leading-relaxed">
+                    <pre>.tex \cite{key}
+  └─► \directlua ──► csln.lua (LuaJIT FFI) ──► libcsln_processor (Rust)
+                                                       │
+                       tex.sprint(rendered) ◄──────────┘</pre>
+                </div>
+            </div>
+
+            <!-- Usage -->
+            <div class="border-b border-slate-200">
+                <div class="px-8 py-4 bg-slate-100">
+                    <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                        Package Usage (csln.sty)
+                    </h3>
+                </div>
+                <div class="bg-slate-900 p-6 overflow-x-auto">
+                    <pre class="font-mono text-sm text-slate-300 leading-relaxed">
+<span class="text-slate-500">% Load with your YAML style and bibliography</span>
+\usepackage[style=<span class="text-emerald-400">styles/apa-7th.yaml</span>,bibfile=<span class="text-emerald-400">refs.yaml</span>]{csln}
+
+<span class="text-slate-500">% Non-integral (parenthetical)</span>
+\cite[p.~10]{<span class="text-emerald-400">kuhn1962</span>}               <span class="text-slate-500">% → (Kuhn, 1962, p. 10)</span>
+
+<span class="text-slate-500">% Integral (narrative)</span>
+\textcite{<span class="text-emerald-400">weinberg1971</span>}              <span class="text-slate-500">% → Weinberg and Freedman (1971)</span>
+
+<span class="text-slate-500">% Multi-key parenthetical</span>
+\cites{<span class="text-emerald-400">kuhn1962, watson1953</span>}          <span class="text-slate-500">% → (Kuhn, 1962; Watson &amp; Crick, 1953)</span>
+
+<span class="text-slate-500">% Print bibliography</span>
+\printbibliography</pre>
+                </div>
+            </div>
+
+            <!-- Build -->
+            <div class="border-b border-slate-200">
+                <div class="px-8 py-4 bg-slate-100">
+                    <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                        Build Instructions
+                    </h3>
+                </div>
+                <div class="bg-slate-900 p-6 overflow-x-auto">
+                    <pre class="font-mono text-sm text-slate-300 leading-relaxed">
+<span class="text-slate-500"># 1. Build the shared library</span>
+<span class="text-primary">$</span> cargo build -p csln_processor --release --features ffi
+
+<span class="text-slate-500"># 2. Compile your document</span>
+<span class="text-primary">$</span> CSLN_LIB=$(pwd)/target/release lualatex --shell-escape paper.tex</pre>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 p-6 border-t border-slate-200">
+                <div class="flex items-start gap-3">
+                    <div
+                        class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600 flex-shrink-0 mt-1">
+                        <span class="material-icons text-sm">science</span>
+                    </div>
+                    <div class="text-sm text-slate-600 leading-relaxed">
+                        <strong class="text-slate-900">Proof-of-concept status:</strong>
+                        Currently targets macOS and Linux. A full working example document is available in
+                        <a href="https://github.com/bdarcus/csl26/tree/main/bindings/latex"
+                            class="text-primary hover:underline">bindings/latex/</a>.
+                        The <code class="text-xs bg-slate-200 px-1 rounded">&amp;</code> conjunction in
+                        two-author citations is correctly escaped for LuaLaTeX output.
+                    </div>
+                </div>
+            </div>
+        </article>
+
         <!-- Binary Performance -->
         <article id="binary-performance" class="example-card rounded-xl overflow-hidden shadow-sm scroll-mt-24">
             <div class="p-8 bg-slate-50 border-b border-slate-200">
