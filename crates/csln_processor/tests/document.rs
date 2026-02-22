@@ -237,3 +237,42 @@ fn test_process_document_restarts_year_suffixes_per_group() {
     let count_2020a = bibliography_only.matches("2020a").count();
     assert_eq!(count_2020a, 2, "expected 2020a in both groups: {output}");
 }
+
+#[test]
+fn test_process_document_renders_jm_legal_group_hierarchy() {
+    let style = load_style("styles/experimental/jm-chicago-legal.yaml");
+    let bibliography =
+        load_bibliography(&project_root().join("tests/fixtures/grouping/legal-hierarchy.json"))
+            .expect("legal hierarchy fixture should parse");
+
+    let processor = Processor::new(style, bibliography);
+    let parser = DjotParser;
+    let output = processor.process_document::<_, csln_processor::render::plain::PlainText>(
+        "Legal grouping [@brown1954; @civilrights1964; @versailles1919; @hart1994].",
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    let cases = output
+        .find("# Cases")
+        .expect("missing cases heading in grouped bibliography");
+    let statutes = output
+        .find("# Statutes")
+        .expect("missing statutes heading in grouped bibliography");
+    let treaties = output
+        .find("# Treaties and International Agreements")
+        .expect("missing treaties heading in grouped bibliography");
+    let secondary = output
+        .find("# Secondary Sources")
+        .expect("missing secondary heading in grouped bibliography");
+
+    assert!(cases < statutes, "expected Cases before Statutes: {output}");
+    assert!(
+        statutes < treaties,
+        "expected Statutes before Treaties: {output}"
+    );
+    assert!(
+        treaties < secondary,
+        "expected Treaties before Secondary: {output}"
+    );
+}
