@@ -1,0 +1,143 @@
+% csln.sty — CSLN LaTeX Package for LuaLaTeX
+%
+% Integrates the CSLN Rust citation processor into LuaLaTeX via LuaJIT FFI.
+% No Biber, no .bbl file, no shell-escape required.
+%
+% Usage:
+%   \usepackage[style=apa-7th, bibfile=refs]{csln}            % CSLN YAML bib
+%   \usepackage[style=apa-7th, bibfile=refs.bib]{csln}        % biblatex .bib
+%
+% SPDX-License-Identifier: MPL-2.0
+% SPDX-FileCopyrightText: © 2023–2026 Bruce D'Arcus
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{csln}[2026/02/21 v0.1.0-poc CSLN citation processor]
+
+% Require LuaLaTeX
+\RequirePackage{ifluatex}
+\ifluatex\else
+  \PackageError{csln}{csln requires LuaLaTeX}\relax
+\fi
+
+\RequirePackage{kvoptions}
+
+% ---------------------------------------------------------------------------
+% Package options
+% ---------------------------------------------------------------------------
+\SetupKeyvalOptions{family=csln,prefix=csln@}
+
+% Path to a CSLN YAML style file (without extension, resolved via kpse, or
+% an absolute path).  E.g. style=apa-7th  or  style=/full/path/to/my.yaml
+\DeclareStringOption[apa-7th]{style}
+
+% Path to the bibliography file.  Extension determines format:
+%   .bib  → biblatex format   (uses csln_processor_new_from_bib)
+%   other → CSLN YAML format  (uses csln_processor_new_from_yaml)
+% Omit extension to default to CSLN YAML (.yaml).
+\DeclareStringOption[refs]{bibfile}
+
+\ProcessKeyvalOptions*
+
+% ---------------------------------------------------------------------------
+% Lua-side initialisation (runs once at \begin{document})
+% ---------------------------------------------------------------------------
+\directlua{
+  local function find_csln_lua()
+    local env = os.getenv("CSLN_LUA_PATH")
+    if env and env ~= "" then return env end
+    local sty_path = kpse.find_file("csln.sty", "tex") or ""
+    local last_slash = sty_path:match("^(.*/)") or "./"
+    local candidate = last_slash .. "csln.lua"
+    local f = io.open(candidate, "r")
+    if f then f:close(); return candidate end
+    return nil
+  end
+  local csln_lua = find_csln_lua()
+  if not csln_lua then
+    error("csln.sty: cannot find csln.lua. "
+      .. "Set CSLN_LUA_PATH or place csln.lua next to csln.sty.")
+  end
+  local ok, result = pcall(dofile, csln_lua)
+  if not ok then
+    error("csln.sty: failed to load csln.lua: " .. tostring(result)
+      .. " (compile with: lualatex --shell-escape)")
+  end
+  csln_module = result
+  if not csln_module then
+    error("csln.sty: csln.lua returned nil. Check libcsln_processor is built.")
+  end
+}
+
+\AtBeginDocument{%
+  \directlua{
+    csln_proc = csln_module.init_processor(
+      "\csln@style", "\csln@bibfile"
+    )
+  }%
+}
+
+% parse_locator, do_cite, cite_single, etc. are all in csln.lua.
+% The directlua blocks below contain ONLY simple function calls —
+% no Lua pattern characters (which TeX would mangle).
+
+% ---------------------------------------------------------------------------
+% Citation commands
+% ---------------------------------------------------------------------------
+
+% \cite[locator]{key}  — style-driven (non-integral) citation
+% NB: \cite is defined in the LaTeX kernel, so we must \renewcommand.
+\renewcommand{\cite}[2][]{%
+  \directlua{csln_module.cite_single(csln_proc,
+    "\luaescapestring{#1}", "\luaescapestring{#2}")}%
+}
+
+% \textcite[locator]{key}  — integral (author in running text) citation
+\newcommand{\textcite}[2][]{%
+  \directlua{csln_module.textcite_single(csln_proc,
+    "\luaescapestring{#1}", "\luaescapestring{#2}")}%
+}
+
+% \cites{k1, k2, k3}  — multi-key non-integral citation (comma-separated)
+\newcommand{\cites}[1]{%
+  \directlua{csln_module.cite_keys(csln_proc, "\luaescapestring{#1}")}%
+}
+
+% \textcites{k1, k2}  — multi-key integral citation (comma-separated)
+\newcommand{\textcites}[1]{%
+  \directlua{csln_module.textcite_keys(csln_proc, "\luaescapestring{#1}")}%
+}
+
+% Explicit multi-item accumulator for per-item locators:
+%   \citestart
+%     \citeitem[p.~5]{key1}
+%     \citeitem[ch.~3]{key2}
+%   \citeend
+\newcommand{\citestart}{%
+  \directlua{csln_module.cites_start()}%
+}
+\newcommand{\citeitem}[2][]{%
+  \directlua{csln_module.cites_add(
+    "\luaescapestring{#1}", "\luaescapestring{#2}")}%
+}
+\newcommand{\citeend}{%
+  \directlua{csln_module.cites_flush(csln_proc)}%
+}
+
+% \addbibresource{file} — biblatex compat shim
+\newcommand{\addbibresource}[1]{%
+  \directlua{csln_proc = csln_module.init_processor(
+    "\csln@style", "\luaescapestring{#1}")}%
+}
+
+% ---------------------------------------------------------------------------
+% Bibliography
+% ---------------------------------------------------------------------------
+
+\newcommand{\printcslnbibliography}{%
+  \directlua{csln_module.print_bibliography(csln_proc)}%
+}
+
+% Also provide \printbibliography as an alias for easier migration from biblatex.
+\providecommand{\printbibliography}{\printcslnbibliography}
+
+\endinput
