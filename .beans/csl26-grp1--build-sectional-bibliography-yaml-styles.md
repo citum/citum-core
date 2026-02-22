@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: normal
 created_at: 2026-02-22T00:00:00Z
-updated_at: 2026-02-22T13:00:00Z
+updated_at: 2026-02-22T14:00:00Z
 ---
 
 Build concrete YAML style files demonstrating bibliography grouping for Chicago primary/secondary,
@@ -27,5 +27,6 @@ process_document() to ensure grouping logic runs correctly.
 
 **Progress update (2026-02-22):**
 - Added tests/fixtures/grouping/legal-hierarchy.json (legal-case/statute/treaty baseline fixture)
+- Updated sectional group headings in Chicago and JM legal styles to use localized maps
 
 **Refs:** docs/architecture/MULTILINGUAL_GROUPING_STYLE_TARGETS.md, csl26-group, docs/architecture/design/BIBLIOGRAPHY_GROUPING.md
