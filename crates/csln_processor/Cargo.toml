@@ -21,7 +21,6 @@ thiserror = "2.0"
 csln_edtf = { path = "../csln_edtf", features = ["serde"] }
 biblatex = "0.11"
 indexmap = { version = "2.2.6", features = ["serde"] }
-clap = { version = "4.4", features = ["derive"] }
 regex = "1.10"
 winnow = "0.7"
 jotdown = "0.5"
