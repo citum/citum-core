@@ -23,5 +23,12 @@
     "title": "Treaty of Versailles",
     "author": [{ "literal": "Allied Powers" }],
     "issued": { "date-parts": [[1919, 6, 28]] }
+  },
+  {
+    "id": "hart1994",
+    "type": "book",
+    "title": "The Concept of Law",
+    "author": [{ "family": "Hart", "given": "H. L. A." }],
+    "issued": { "date-parts": [[1994]] }
   }
 ]
