@@ -177,11 +177,237 @@ pub unsafe extern "C" fn csln_processor_new_from_yaml(
     Box::into_raw(processor)
 }
 
+/// Convert a biblatex entry into an InputReference.
+fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
+    let id = Some(entry.key.clone());
+    let field_str = |key: &str| {
+        entry.fields.get(key).map(|f| {
+            f.iter()
+                .map(|c| match &c.v {
+                    biblatex::Chunk::Normal(s) | biblatex::Chunk::Verbatim(s) => s.as_str(),
+                    _ => "",
+                })
+                .collect::<String>()
+        })
+    };
+
+    use csln_core::reference::{
+        InputReference,
+        contributor::{Contributor, SimpleName},
+        date::EdtfString,
+        types::*,
+    };
+    use url::Url;
+
+    let title = field_str("title")
+        .map(Title::Single)
+        .unwrap_or(Title::Single(String::new()));
+    let issued = field_str("date")
+        .map(EdtfString)
+        .unwrap_or(EdtfString(String::new()));
+    let publisher = field_str("publisher").map(|p| {
+        Contributor::SimpleName(SimpleName {
+            name: p.into(),
+            location: field_str("location"),
+        })
+    });
+
+    let author = entry
+        .author()
+        .ok()
+        .map(|p| contributors_from_biblatex_persons(&p));
+    let editor = entry.editors().ok().map(|e| {
+        let all_persons: Vec<biblatex::Person> =
+            e.into_iter().flat_map(|(persons, _)| persons).collect();
+        contributors_from_biblatex_persons(&all_persons)
+    });
+
+    let language = field_str("langid").or_else(|| field_str("language"));
+
+    match entry.entry_type.to_string().to_lowercase().as_str() {
+        "book" | "mvbook" | "collection" | "mvcollection" => {
+            InputReference::Monograph(Box::new(Monograph {
+                id,
+                r#type: MonographType::Book,
+                title,
+                author,
+                editor,
+                translator: None,
+                issued,
+                publisher,
+                url: field_str("url").and_then(|u| Url::parse(&u).ok()),
+                accessed: None,
+                language,
+                note: field_str("note"),
+                isbn: field_str("isbn"),
+                doi: field_str("doi"),
+                edition: field_str("edition"),
+                report_number: if matches!(
+                    entry.entry_type.to_string().to_lowercase().as_str(),
+                    "report"
+                ) {
+                    field_str("number")
+                } else {
+                    None
+                },
+                collection_number: if !matches!(
+                    entry.entry_type.to_string().to_lowercase().as_str(),
+                    "report"
+                ) {
+                    field_str("number")
+                } else {
+                    None
+                },
+                genre: field_str("type"),
+                medium: None,
+                keywords: None,
+                original_date: None,
+                original_title: None,
+            }))
+        }
+        "inbook" | "incollection" | "inproceedings" => {
+            let parent_title = field_str("booktitle")
+                .map(Title::Single)
+                .unwrap_or(Title::Single(String::new()));
+            InputReference::CollectionComponent(Box::new(CollectionComponent {
+                id,
+                r#type: MonographComponentType::Chapter,
+                title: Some(title),
+                author,
+                translator: None,
+                issued,
+                parent: Parent::Embedded(Collection {
+                    id: None,
+                    r#type: CollectionType::EditedBook,
+                    title: Some(parent_title),
+                    editor,
+                    translator: None,
+                    issued: EdtfString(String::new()),
+                    publisher,
+                    collection_number: field_str("number"),
+                    url: None,
+                    accessed: None,
+                    language: None,
+                    note: None,
+                    isbn: None,
+                    keywords: None,
+                }),
+                pages: field_str("pages").map(NumOrStr::Str),
+                url: field_str("url").and_then(|u| Url::parse(&u).ok()),
+                accessed: field_str("urldate").map(EdtfString),
+                language,
+                note: field_str("note"),
+                doi: field_str("doi"),
+                genre: field_str("type"),
+                medium: None,
+                keywords: None,
+            }))
+        }
+        "article" => {
+            let parent_title = field_str("journaltitle")
+                .or_else(|| field_str("journal"))
+                .map(Title::Single)
+                .unwrap_or(Title::Single(String::new()));
+            InputReference::SerialComponent(Box::new(SerialComponent {
+                id,
+                r#type: SerialComponentType::Article,
+                title: Some(title),
+                author,
+                translator: None,
+                issued,
+                parent: Parent::Embedded(Serial {
+                    r#type: SerialType::AcademicJournal,
+                    title: parent_title,
+                    editor: None,
+                    publisher: None,
+                    issn: field_str("issn"),
+                }),
+                url: field_str("url").and_then(|u| Url::parse(&u).ok()),
+                accessed: field_str("urldate").map(EdtfString),
+                language,
+                note: field_str("note"),
+                doi: field_str("doi"),
+                pages: field_str("pages"),
+                volume: field_str("volume").map(NumOrStr::Str),
+                issue: field_str("number").map(NumOrStr::Str),
+                genre: field_str("type"),
+                medium: None,
+                keywords: None,
+            }))
+        }
+        _ => InputReference::Monograph(Box::new(Monograph {
+            id,
+            r#type: MonographType::Document,
+            title,
+            author,
+            editor,
+            translator: None,
+            issued,
+            publisher,
+            url: field_str("url").and_then(|u| Url::parse(&u).ok()),
+            accessed: field_str("urldate").map(EdtfString),
+            language,
+            note: field_str("note"),
+            isbn: field_str("isbn"),
+            doi: field_str("doi"),
+            edition: field_str("edition"),
+            report_number: if matches!(
+                entry.entry_type.to_string().to_lowercase().as_str(),
+                "report"
+            ) {
+                field_str("number")
+            } else {
+                None
+            },
+            collection_number: if !matches!(
+                entry.entry_type.to_string().to_lowercase().as_str(),
+                "report"
+            ) {
+                field_str("number")
+            } else {
+                None
+            },
+            genre: field_str("type"),
+            medium: None,
+            keywords: None,
+            original_date: None,
+            original_title: None,
+        })),
+    }
+}
+
+fn contributors_from_biblatex_persons(
+    persons: &[biblatex::Person],
+) -> csln_core::reference::contributor::Contributor {
+    use csln_core::reference::contributor::{Contributor, ContributorList, StructuredName};
+    let contributors: Vec<Contributor> = persons
+        .iter()
+        .map(|p| {
+            Contributor::StructuredName(StructuredName {
+                given: p.given_name.clone().into(),
+                family: p.name.clone().into(),
+                suffix: if p.suffix.is_empty() {
+                    None
+                } else {
+                    Some(p.suffix.clone())
+                },
+                dropping_particle: None,
+                non_dropping_particle: if p.prefix.is_empty() {
+                    None
+                } else {
+                    Some(p.prefix.clone())
+                },
+            })
+        })
+        .collect();
+    Contributor::ContributorList(ContributorList(contributors))
+}
+
 /// Create a new processor from a CSLN YAML style and a biblatex `.bib` file.
 ///
 /// Reads the style from `style_yaml_path` (CSLN YAML) and the bibliography
 /// from `bib_path` (biblatex `.bib`). Entries are converted via
-/// `InputReference::from_biblatex`.
+/// `input_reference_from_biblatex`.
 ///
 /// # Safety
 /// Both path pointers must be valid null-terminated UTF-8 C strings.
@@ -225,7 +451,7 @@ pub unsafe extern "C" fn csln_processor_new_from_bib(
     let mut bib: Bibliography = indexmap::IndexMap::new();
     for entry in bibliography_parsed.iter() {
         let key = entry.key.clone();
-        let reference = InputReference::from_biblatex(entry);
+        let reference = input_reference_from_biblatex(entry);
         bib.insert(key, reference);
     }
 

@@ -298,7 +298,6 @@ dependencies = [
 name = "csln_core"
 version = "0.6.0"
 dependencies = [
- "biblatex",
  "criterion",
  "csl_legacy",
  "csln_edtf",
@@ -350,6 +349,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "thiserror",
+ "url",
  "winnow",
 ]
 
