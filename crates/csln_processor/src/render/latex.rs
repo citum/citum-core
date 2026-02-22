@@ -108,8 +108,60 @@ impl OutputFormat for Latex {
         _id: &str,
         content: Self::Output,
         _url: Option<&str>,
-        _metadata: &super::format::ProcEntryMetadata,
+        metadata: &super::format::ProcEntryMetadata,
     ) -> Self::Output {
-        format!("\\noindent\\hangindent=2em\\hangafter=1 {}", content)
+        let hanging = format!("\\noindent\\hangindent=2em\\hangafter=1 {}", content);
+        match build_pdf_tooltip(metadata) {
+            Some(tooltip_text) => format!("\\cslntooltip{{{}}}{{{}}}", hanging, tooltip_text),
+            None => hanging,
+        }
     }
+}
+
+/// Build a PDF tooltip string from entry metadata.
+/// Format: "Author (Year). Title" with parts omitted if None.
+fn build_pdf_tooltip(metadata: &super::format::ProcEntryMetadata) -> Option<String> {
+    let has_content =
+        metadata.author.is_some() || metadata.year.is_some() || metadata.title.is_some();
+    if !has_content {
+        return None;
+    }
+
+    let mut parts = Vec::new();
+
+    if let Some(author) = &metadata.author {
+        parts.push(escape_tooltip_text(author));
+    }
+
+    if let Some(year) = &metadata.year {
+        let year_str = format!("({})", escape_tooltip_text(year));
+        parts.push(year_str);
+    }
+
+    if let Some(title) = &metadata.title {
+        parts.push(escape_tooltip_text(title));
+    }
+
+    let tooltip = parts.join(". ");
+    if tooltip.is_empty() {
+        None
+    } else {
+        Some(tooltip)
+    }
+}
+
+/// Escape plain-text metadata for use in LaTeX PDF annotations.
+/// Replaces special characters with spaces to avoid PDF/LaTeX parsing issues.
+fn escape_tooltip_text(s: &str) -> String {
+    let mut result = String::with_capacity(s.len());
+    for c in s.chars() {
+        match c {
+            '{' | '}' | '\\' | '%' | '#' | '$' | '&' | '_' | '^' | '~' => {
+                result.push(' ');
+            }
+            _ => result.push(c),
+        }
+    }
+    // Collapse multiple spaces into one
+    result.split_whitespace().collect::<Vec<_>>().join(" ")
 }

@@ -6,6 +6,7 @@
 % Usage:
 %   \usepackage[style=apa-7th, bibfile=refs]{csln}            % CSLN YAML bib
 %   \usepackage[style=apa-7th, bibfile=refs.bib]{csln}        % biblatex .bib
+%   \usepackage[style=apa-7th, bibfile=refs, tooltips]{csln}  % with PDF tooltips
 %
 % SPDX-License-Identifier: MPL-2.0
 % SPDX-FileCopyrightText: © 2023–2026 Bruce D'Arcus
@@ -36,7 +37,20 @@
 % Omit extension to default to CSLN YAML (.yaml).
 \DeclareStringOption[refs]{bibfile}
 
+% Enable PDF tooltip annotations on bibliography entries (requires pdfcomment).
+\DeclareBoolOption[false]{tooltips}
+
 \ProcessKeyvalOptions*
+
+% ---------------------------------------------------------------------------
+% PDF tooltip support
+% ---------------------------------------------------------------------------
+\if@csln@tooltips
+  \RequirePackage{pdfcomment}
+  \newcommand{\cslntooltip}[2]{\pdftooltip{#1}{#2}}
+\else
+  \newcommand{\cslntooltip}[2]{#1}
+\fi
 
 % ---------------------------------------------------------------------------
 % Lua-side initialisation (runs once at \begin{document})

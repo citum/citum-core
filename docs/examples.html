@@ -905,6 +905,37 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                 </div>
             </div>
 
+            <!-- PDF Interactivity -->
+            <div class="border-b border-slate-200" id="lualatex-pdf-tooltips">
+                <div class="px-8 py-4 bg-slate-100">
+                    <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                        PDF Tooltip Interactivity
+                    </h3>
+                </div>
+                <div class="p-8 bg-white">
+                    <p class="text-slate-600 leading-relaxed text-sm mb-4">
+                        Similar to the HTML output's progressive enhancement (hover tooltips via
+                        <code class="text-xs bg-slate-200 px-1 rounded">data-*</code> attributes),
+                        the LuaLaTeX integration supports PDF annotation tooltips on bibliography entries.
+                        Enable with the <code class="text-xs bg-slate-200 px-1 rounded">tooltips</code>
+                        option — hovering over any bibliography entry in a compatible PDF viewer reveals
+                        the author, year, and title as a plain-text annotation.
+                    </p>
+                    <div class="bg-slate-900 rounded-lg p-4 font-mono text-xs text-slate-300 leading-relaxed mb-4">
+                        <pre><span class="text-slate-500">% Enable PDF tooltip annotations</span>
+\usepackage[style=<span class="text-emerald-400">apa-7th</span>, bibfile=<span class="text-emerald-400">refs</span>, <span class="text-amber-400">tooltips</span>]{csln}
+
+<span class="text-slate-500">% Each bibliography entry is wrapped in \pdftooltip{entry}{Author (Year). Title}</span>
+<span class="text-slate-500">% The pdfcomment package is loaded automatically when tooltips=true</span></pre>
+                    </div>
+                    <p class="text-slate-500 text-xs">
+                        Compatible PDF viewers: Adobe Acrobat, Okular, and most desktop PDF readers
+                        that support PDF annotation tooltips (popup notes).
+                        The tooltip text is plain text: no LaTeX markup.
+                    </p>
+                </div>
+            </div>
+
             <div class="bg-slate-50 p-6 border-t border-slate-200">
                 <div class="flex items-start gap-3">
                     <div
@@ -913,11 +944,11 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                     </div>
                     <div class="text-sm text-slate-600 leading-relaxed">
                         <strong class="text-slate-900">Proof-of-concept status:</strong>
-                        Currently targets macOS and Linux. A full working example document is available in
-                        <a href="https://github.com/bdarcus/csl26/tree/main/bindings/latex"
-                            class="text-primary hover:underline">bindings/latex/</a>.
-                        The <code class="text-xs bg-slate-200 px-1 rounded">&amp;</code> conjunction in
-                        two-author citations is correctly escaped for LuaLaTeX output.
+                        Currently targets macOS and Linux. Full documentation is in
+                        <a href="#lualatex-integration"
+                            class="text-primary hover:underline">this section</a> above, with the
+                        working example file available in the repository's
+                        <code class="text-xs bg-slate-200 px-1 rounded">bindings/latex/</code> directory.
                     </div>
                 </div>
             </div>

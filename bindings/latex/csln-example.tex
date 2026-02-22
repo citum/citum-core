@@ -26,8 +26,14 @@
 % ---------------------------------------------------------------------------
 \usepackage[
   style   = ../../styles/apa-7th,
-  bibfile = example-refs
+  bibfile = example-refs,
+  tooltips
 ]{csln}
+
+% tooltips=true enables PDF tooltip annotations on bibliography entries.
+% Hovering over a bibliography entry in a compatible PDF viewer reveals
+% the author, year, and title as a plain-text annotation.
+% Requires the pdfcomment package (loaded automatically by csln.sty).
 
 % Standard LaTeX preamble
 \usepackage{fontspec}              % LuaLaTeX font support
