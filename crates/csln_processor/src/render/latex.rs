@@ -108,64 +108,8 @@ impl OutputFormat for Latex {
         _id: &str,
         content: Self::Output,
         _url: Option<&str>,
-        metadata: &super::format::ProcEntryMetadata,
+        _metadata: &super::format::ProcEntryMetadata,
     ) -> Self::Output {
-        // When metadata is available, delegate the full entry layout to
-        // \cslntooltip (defined in csln.sty).  With tooltips=true it wraps
-        // content in a \parbox so \pdftooltip gets a properly-sized box;
-        // with tooltips=false it is a passthrough that adds \hangindent itself.
-        // When metadata is absent, fall back to the plain hanging-indent format.
-        match build_pdf_tooltip(metadata) {
-            Some(tooltip_text) => format!("\\cslntooltip{{{}}}{{{}}}", content, tooltip_text),
-            None => format!("\\noindent\\hangindent=2em\\hangafter=1 {}", content),
-        }
+        format!("\\noindent\\hangindent=2em\\hangafter=1 {}", content)
     }
-}
-
-/// Build a PDF tooltip string from entry metadata.
-/// Format: "Author (Year). Title" with parts omitted if None.
-fn build_pdf_tooltip(metadata: &super::format::ProcEntryMetadata) -> Option<String> {
-    let has_content =
-        metadata.author.is_some() || metadata.year.is_some() || metadata.title.is_some();
-    if !has_content {
-        return None;
-    }
-
-    let mut parts = Vec::new();
-
-    if let Some(author) = &metadata.author {
-        parts.push(escape_tooltip_text(author));
-    }
-
-    if let Some(year) = &metadata.year {
-        let year_str = format!("({})", escape_tooltip_text(year));
-        parts.push(year_str);
-    }
-
-    if let Some(title) = &metadata.title {
-        parts.push(escape_tooltip_text(title));
-    }
-
-    let tooltip = parts.join(". ");
-    if tooltip.is_empty() {
-        None
-    } else {
-        Some(tooltip)
-    }
-}
-
-/// Escape plain-text metadata for use in LaTeX PDF annotations.
-/// Replaces special characters with spaces to avoid PDF/LaTeX parsing issues.
-fn escape_tooltip_text(s: &str) -> String {
-    let mut result = String::with_capacity(s.len());
-    for c in s.chars() {
-        match c {
-            '{' | '}' | '\\' | '%' | '#' | '$' | '&' | '_' | '^' | '~' => {
-                result.push(' ');
-            }
-            _ => result.push(c),
-        }
-    }
-    // Collapse multiple spaces into one
-    result.split_whitespace().collect::<Vec<_>>().join(" ")
 }

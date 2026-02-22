@@ -388,6 +388,37 @@ pub unsafe extern "C" fn csln_render_bibliography_plain(processor: *mut Processo
     safe_c_string(rendered)
 }
 
+/// Return a plain-text tooltip string for a bibliography entry by key.
+///
+/// Produces a "Author (Year). Title" string suitable for PDF annotations.
+/// LaTeX special characters are replaced with spaces.
+/// Returns null if the key is not found or no metadata is available.
+///
+/// # Safety
+/// The caller must ensure that `processor` is a valid pointer and
+/// `key` is a valid null-terminated C string. The returned string
+/// must be freed with `csln_string_free`.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn csln_reference_tooltip(
+    processor: *mut Processor,
+    key: *const c_char,
+) -> *mut c_char {
+    if processor.is_null() || key.is_null() {
+        return ptr::null_mut();
+    }
+
+    let processor = unsafe { &*processor };
+    let key_str = match unsafe { CStr::from_ptr(key) }.to_str() {
+        Ok(s) => s,
+        Err(_) => return ptr::null_mut(),
+    };
+
+    match processor.reference_tooltip(key_str) {
+        Some(tooltip) => safe_c_string(tooltip),
+        None => ptr::null_mut(),
+    }
+}
+
 /// Free a string allocated by the processor.
 ///
 /// # Safety

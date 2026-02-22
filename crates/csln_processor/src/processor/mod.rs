@@ -322,6 +322,13 @@ impl Processor {
         }
     }
 
+    /// Return a plain-text tooltip string for a reference by key, for PDF annotations.
+    /// Returns None if the key is not found or no metadata fields are available.
+    pub fn reference_tooltip(&self, key: &str) -> Option<String> {
+        let reference = self.bibliography.get(key)?;
+        self.extract_metadata(reference).tooltip_text()
+    }
+
     /// Process a single citation.
     pub fn process_citation(&self, citation: &Citation) -> Result<String, ProcessorError> {
         self.process_citation_with_format::<crate::render::plain::PlainText>(citation)

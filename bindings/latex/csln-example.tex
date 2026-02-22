@@ -18,9 +18,8 @@
 
 \documentclass[12pt, a4paper]{article}
 
-% hyperref must be loaded before csln when tooltips=true: pdfcomment (loaded
-% by csln.sty) will reuse this already-loaded instance rather than loading
-% hyperref again with conflicting default options.
+% hyperref should be loaded before csln so DOI \href links resolve correctly
+% and options are consistent across the document.
 \usepackage[hidelinks]{hyperref}   % clickable DOIs / URLs without coloured boxes
 
 % ---------------------------------------------------------------------------

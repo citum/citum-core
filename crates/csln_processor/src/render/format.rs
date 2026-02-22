@@ -108,3 +108,48 @@ pub struct ProcEntryMetadata {
     /// Rendered title string.
     pub title: Option<String>,
 }
+
+impl ProcEntryMetadata {
+    /// Build a plain-text tooltip string for PDF annotations.
+    /// Format: "Author (Year). Title" with parts omitted if None.
+    /// LaTeX special characters are replaced with spaces to keep the
+    /// annotation text clean and avoid PDF parsing issues.
+    pub fn tooltip_text(&self) -> Option<String> {
+        let has_content = self.author.is_some() || self.year.is_some() || self.title.is_some();
+        if !has_content {
+            return None;
+        }
+
+        let mut parts = Vec::new();
+        if let Some(author) = &self.author {
+            parts.push(escape_for_tooltip(author));
+        }
+        if let Some(year) = &self.year {
+            parts.push(format!("({})", escape_for_tooltip(year)));
+        }
+        if let Some(title) = &self.title {
+            parts.push(escape_for_tooltip(title));
+        }
+
+        let tooltip = parts.join(". ");
+        if tooltip.is_empty() {
+            None
+        } else {
+            Some(tooltip)
+        }
+    }
+}
+
+/// Replace LaTeX special characters with spaces for use in plain-text PDF annotations.
+fn escape_for_tooltip(s: &str) -> String {
+    let mut result = String::with_capacity(s.len());
+    for c in s.chars() {
+        match c {
+            '{' | '}' | '\\' | '%' | '#' | '$' | '&' | '_' | '^' | '~' => {
+                result.push(' ');
+            }
+            _ => result.push(c),
+        }
+    }
+    result.split_whitespace().collect::<Vec<_>>().join(" ")
+}

@@ -43,30 +43,46 @@
 \ProcessKeyvalOptions*
 
 % ---------------------------------------------------------------------------
-% PDF tooltip support
+% PDF tooltip support (native LuaLaTeX annotations, no external package)
 % ---------------------------------------------------------------------------
+% \cslntooltip{content}{tooltip-text} wraps inline citation text in a PDF
+% Widget push-button annotation.  In a compatible PDF viewer (Acrobat Reader)
+% hovering shows the tooltip text AND a subtle steel-blue border highlight.
+% Uses LuaTeX native primitives — same-pass positioning, no soulpos, no
+% pdfcomment required.  The csln_emit_tooltip() Lua function (in csln.lua)
+% creates two Form XObjects (normal: empty; rollover: coloured border) and
+% wires them into /AP so viewers change appearance on mouse-enter.
 \ifcsln@tooltips
-  \RequirePackage{pdfcomment}
-  % \pdftooltip boxes its first argument as-is, so passing raw inline content
-  % prevents line-breaking and produces a malformed annotation.  Instead, wrap
-  % in a \parbox (a proper vbox at \linewidth) so the entry reflows correctly,
-  % then let \pdftooltip annotate that fixed-size box.  \hangindent is applied
-  % inside the parbox so it still takes visual effect.
+  \newcounter{@csln@wid}
+  \newbox\@csln@tbox
+  \gdef\@csln@fields{}
+
   \newcommand{\cslntooltip}[2]{%
-    \noindent
-    \pdftooltip{%
-      \parbox[t]{\linewidth}{%
-        \hangindent=2em\hangafter=1%
-        #1%
+    \leavevmode
+    \stepcounter{@csln@wid}%
+    \setbox\@csln@tbox=\hbox{#1}%
+    % Lua reads box dimensions, emits XObjects + Widget annotation tokens.
+    % \luaescapestring ensures the tooltip string is safe inside the Lua call.
+    \directlua{csln_emit_tooltip(%
+      \the\value{@csln@wid}, \number\@csln@tbox,
+      "\luaescapestring{#2}")}%
+    \box\@csln@tbox
+    % Accumulate Widget annotation refs for AcroForm registration below.
+    \xdef\@csln@fields{%
+      \@csln@fields\number\pdffeedback lastannot\space 0 R\space}%
+  }%
+
+  % Register all widget annotations in /AcroForm so PDF viewers display
+  % the /TU tooltip text on hover over citation items.
+  \AtEndDocument{%
+    \ifx\@csln@fields\empty\else
+      \pdfextension catalog {%
+        /AcroForm << /Fields [\@csln@fields] >>%
       }%
-    }{#2}%
-  }
+    \fi
+  }%
 \else
-  % Passthrough: replicate the hanging-indent layout used by latex.rs when
-  % no tooltip is emitted, so the output is identical whether tooltips=true/false.
-  \newcommand{\cslntooltip}[2]{%
-    \noindent\hangindent=2em\hangafter=1 #1%
-  }
+  \newcommand{\cslntooltip}[2]{#1}
 \fi
 
 % ---------------------------------------------------------------------------
@@ -104,6 +120,7 @@
     csln_proc = csln_module.init_processor(
       "\csln@style", "\csln@bibfile"
     )
+    csln_tooltips = \ifcsln@tooltips true\else false\fi
   }%
 }
 
