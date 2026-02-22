@@ -64,19 +64,25 @@ bibliography:
   groups:
     - id: primary-sources
       heading:
-        literal: Primary Sources
+        localized:
+          en-US: Primary Sources
+          en: Primary Sources
       selector:
         field:
           note: primary
     - id: archival
       heading:
-        literal: Archival Sources
+        localized:
+          en-US: Archival Sources
+          en: Archival Sources
       selector:
         field:
           note: archival
     - id: secondary
       heading:
-        literal: Secondary Sources
+        localized:
+          en-US: Secondary Sources
+          en: Secondary Sources
       selector:
         not:
           field:

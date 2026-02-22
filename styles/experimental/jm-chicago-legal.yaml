@@ -11,16 +11,17 @@ options:
   processing: note
 
 citation:
-  layout:
-    template:
-      - title: primary
-        form: short
+  template:
+    - title: primary
+      form: short
 
 bibliography:
   groups:
     - id: cases
       heading:
-        literal: Cases
+        localized:
+          en-US: Cases
+          en: Cases
       selector:
         type: legal-case
       sort:
@@ -30,7 +31,9 @@ bibliography:
 
     - id: statutes
       heading:
-        literal: Statutes
+        localized:
+          en-US: Statutes
+          en: Statutes
       selector:
         type: statute
       sort:
@@ -40,7 +43,9 @@ bibliography:
 
     - id: treaties
       heading:
-        literal: Treaties and International Agreements
+        localized:
+          en-US: Treaties and International Agreements
+          en: Treaties and International Agreements
       selector:
         type: treaty
       sort:
@@ -50,7 +55,9 @@ bibliography:
 
     - id: secondary
       heading:
-        literal: Secondary Sources
+        localized:
+          en-US: Secondary Sources
+          en: Secondary Sources
       selector:
         not:
           type:
