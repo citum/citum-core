@@ -40,7 +40,20 @@ impl OutputFormat for Latex {
     }
 
     fn finish(&self, output: Self::Output) -> String {
-        output
+        // Escape any bare & not already preceded by backslash.
+        // Locale terms (e.g. the & from AndOptions::Symbol) bypass text() and
+        // arrive here unescaped; this final pass makes the output valid LaTeX.
+        let mut result = String::with_capacity(output.len() + 4);
+        let mut prev = '\0';
+        for c in output.chars() {
+            if c == '&' && prev != '\\' {
+                result.push_str(r"\&");
+            } else {
+                result.push(c);
+            }
+            prev = c;
+        }
+        result
     }
 
     fn emph(&self, content: Self::Output) -> Self::Output {
