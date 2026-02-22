@@ -336,7 +336,6 @@ name = "csln_processor"
 version = "0.6.0"
 dependencies = [
  "biblatex",
- "clap",
  "criterion",
  "csl_legacy",
  "csln_core",
