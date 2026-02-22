@@ -16,21 +16,27 @@ impl OutputFormat for Latex {
     type Output = String;
 
     fn text(&self, s: &str) -> Self::Output {
-        // Basic LaTeX escaping
-        s.replace('\\', r"\textbackslash{}")
-            .replace('{', r"\{")
-            .replace('}', r"\}")
-            .replace('$', r"\$")
-            .replace('&', r"\&")
-            .replace('#', r"\#")
-            .replace('_', r"\_")
-            .replace('%', r"\%")
-            .replace('~', r"\textasciitilde{}")
-            .replace('^', r"\textasciicircum{}")
+        let mut res = String::with_capacity(s.len() + 10);
+        for c in s.chars() {
+            match c {
+                '\\' => res.push_str(r"\textbackslash{}"),
+                '{' => res.push_str(r"\{"),
+                '}' => res.push_str(r"\}"),
+                '$' => res.push_str(r"\$"),
+                '&' => res.push_str(r"\&"),
+                '#' => res.push_str(r"\#"),
+                '_' => res.push_str(r"\_"),
+                '%' => res.push_str(r"\%"),
+                '~' => res.push_str(r"\textasciitilde{}"),
+                '^' => res.push_str(r"\textasciicircum{}"),
+                _ => res.push(c),
+            }
+        }
+        res
     }
 
     fn join(&self, items: Vec<Self::Output>, delimiter: &str) -> Self::Output {
-        items.join(delimiter)
+        items.join(&self.text(delimiter))
     }
 
     fn finish(&self, output: Self::Output) -> String {
@@ -81,10 +87,7 @@ impl OutputFormat for Latex {
     }
 
     fn bibliography(&self, entries: Vec<Self::Output>) -> Self::Output {
-        format!(
-            "\\begin{{thebibliography}}{{}}\n{}\n\\end{{thebibliography}}",
-            self.join(entries, "\n")
-        )
+        entries.join("\\par\\vspace{0.5em}")
     }
 
     fn entry(
@@ -94,9 +97,6 @@ impl OutputFormat for Latex {
         _url: Option<&str>,
         _metadata: &super::format::ProcEntryMetadata,
     ) -> Self::Output {
-        // In LaTeX, entries in thebibliography use \bibitem
-        // For now, we use a simple \bibitem without the ID as the label
-        // We might want to use the actual ID in the future for cross-referencing
-        format!("\\bibitem{{{}}} {}", _id, content)
+        format!("\\noindent\\hangindent=2em\\hangafter=1 {}", content)
     }
 }
