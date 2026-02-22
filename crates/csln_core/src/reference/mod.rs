@@ -7,11 +7,12 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! It is the basic unit of bibliographic data.
 
 pub mod contributor;
+#[cfg(feature = "legacy-convert")]
 pub mod conversion;
 pub mod date;
 pub mod types;
 
-#[cfg(test)]
+#[cfg(all(test, feature = "legacy-convert"))]
 mod tests;
 
 #[cfg(test)]
