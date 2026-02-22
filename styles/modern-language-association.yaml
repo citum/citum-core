@@ -18,6 +18,10 @@ options:
   contributors: chicago
   dates: long
   titles: chicago
+  multilingual:
+    title-mode: combined
+    name-mode: primary
+    preferred-script: Latn
   page-range-format: minimal-two
   bibliography:
     subsequent-author-substitute: ———
