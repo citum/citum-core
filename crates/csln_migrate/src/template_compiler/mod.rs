@@ -1671,10 +1671,8 @@ impl TemplateCompiler {
             Variable::Page => Some(NumberVariable::Pages),
             Variable::Edition => Some(NumberVariable::Edition),
             Variable::ChapterNumber => Some(NumberVariable::ChapterNumber),
-            Variable::CollectionNumber => Some(NumberVariable::CollectionNumber),
-            Variable::NumberOfPages => Some(NumberVariable::NumberOfPages),
+            Variable::NumberOfVolumes => Some(NumberVariable::NumberOfVolumes),
             Variable::CitationNumber => Some(NumberVariable::CitationNumber),
-            Variable::Number => Some(NumberVariable::Number),
             _ => None,
         }
     }
@@ -1689,19 +1687,6 @@ impl TemplateCompiler {
             Variable::Publisher => Some(SimpleVariable::Publisher),
             Variable::PublisherPlace => Some(SimpleVariable::PublisherPlace),
             Variable::Genre => Some(SimpleVariable::Genre),
-            Variable::Authority => Some(SimpleVariable::Authority),
-            Variable::Archive => Some(SimpleVariable::Archive),
-            Variable::ArchiveLocation => Some(SimpleVariable::ArchiveLocation),
-            Variable::Version => Some(SimpleVariable::Version),
-            Variable::Medium => Some(SimpleVariable::Medium),
-            Variable::Source => Some(SimpleVariable::Source),
-            Variable::Status => Some(SimpleVariable::Status),
-            Variable::Locator => Some(SimpleVariable::Locator),
-            Variable::PMID => Some(SimpleVariable::Pmid),
-            Variable::PMCID => Some(SimpleVariable::Pmcid),
-            Variable::Note => Some(SimpleVariable::Note),
-            Variable::Annote => Some(SimpleVariable::Annote),
-            Variable::Abstract => Some(SimpleVariable::Abstract),
             _ => None,
         }
     }
