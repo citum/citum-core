@@ -1,7 +1,7 @@
 ---
 # csl26-grp1
 title: Build sectional bibliography YAML styles for Chicago, Juris-M legal, and GOST
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-22T00:00:00Z
