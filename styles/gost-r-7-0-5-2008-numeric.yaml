@@ -8,11 +8,11 @@ info:
   default-locale: ru-RU
 
 options:
-  processing: in-text
+  processing: numeric
 
 citation:
   template:
-    - variable: citation-number
+    - number: citation-number
 
 bibliography:
   groups:
@@ -84,7 +84,7 @@ bibliography:
             - legislation
 
   template:
-    - variable: citation-number
+    - number: citation-number
       prefix: "["
       suffix: "] "
     - contributor: author

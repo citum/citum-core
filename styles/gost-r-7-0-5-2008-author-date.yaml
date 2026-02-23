@@ -8,7 +8,7 @@ info:
   default-locale: ru-RU
 
 options:
-  processing: in-text
+  processing: author-date
 
 citation:
   template:
