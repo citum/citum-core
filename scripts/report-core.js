@@ -29,6 +29,7 @@ const CUSTOM_TAG_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
 const LEGACY_SOURCE_OVERRIDES = {
   'apa-7th': 'apa',
   'din-alphanumeric': 'din-1505-2-alphanumeric',
+  'gost-r-7-0-5-2008-author-date': 'gost-r-7-0-5-2008',
 };
 
 const KNOWN_DEPENDENTS = {
