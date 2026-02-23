@@ -61,6 +61,8 @@ not depend on CLI frameworks. This is safe to remove immediately.
 citum-schema    (no legacy deps: serde, schemars, csln_edtf only)
      |
 citum-engine  ---> citum-schema
+     |                   |
+citum-server ------------|   [new; engine + schema only, async/http opt-in]
      |
 citum-migrate ---> citum-schema, csl-legacy   [legacy stays internal]
      |
@@ -68,6 +70,8 @@ citum-cli     ---> citum-engine, citum-migrate
      |
 citum-bindings --> citum-engine [cdylib/wasm targets, thin wrapper only]
 ```
+
+See [CITUM_SERVER_MODE.md](./CITUM_SERVER_MODE.md) for the full server mode plan.
 
 ### Crate Mapping
 
@@ -80,6 +84,7 @@ citum-bindings --> citum-engine [cdylib/wasm targets, thin wrapper only]
 | `csln_edtf`      | `csln-edtf`      | Yes        | Potentially standalone         |
 | `csln_analyze`   | `citum-analyze`  | No         | Internal tooling               |
 | `csln` (bin)     | `citum-cli`      | Yes (bin)  | CLI binary                     |
+| *(new)*          | `citum-server`   | Yes (bin)  | JSON-RPC + optional HTTP server; see [CITUM_SERVER_MODE.md](./CITUM_SERVER_MODE.md) |
 
 ### Target Workspace Layout
 
@@ -271,3 +276,6 @@ point a `citum/docs` repo fed by CI from `citum-core` becomes viable.
 | `csl26-p1rn` | Phase 1: GitHub org + crate rename           | 1 (wave break) |
 | `csl26-p2bn` | Phase 2: Define citum-bindings API surface   | 2      |
 | `csl26-p2lb` | Phase 2: Create citum/labs repository        | 2      |
+| `csl26-srvr` | Phase 2: citum-server mode (epic)            | 2      |
+| `csl26-srpc` | Phase 2: Implement JSON-RPC stdin/stdout     | 2      |
+| `csl26-shtp` | Phase 2: HTTP feature (axum, feature-gated)  | 2      |
