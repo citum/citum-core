@@ -12,7 +12,13 @@ options:
 
 citation:
   template:
-    - number: citation-number
+    - items:
+        - number: citation-number
+        - variable: locator
+          prefix: ", "
+      delimiter: none
+      wrap: brackets
+  multi-cite-delimiter: ", "
 
 bibliography:
   groups:
@@ -89,7 +95,32 @@ bibliography:
       suffix: "] "
     - contributor: author
       form: long
+      name-order: family-first
+      initialize-with: ". "
     - title: primary
+      overrides:
+        article-journal:
+          suffix: " //"
+        article-magazine:
+          suffix: " //"
+        article-newspaper:
+          suffix: " //"
+        chapter:
+          suffix: " //"
+        reference-entry:
+          suffix: " //"
+        legal-case:
+          suffix: " //"
+    - title: parent-serial
+    - title: parent-monograph
+    - variable: publisher-place
+      suffix: ":"
     - variable: publisher
     - date: issued
       form: year
+    - number: volume
+      prefix: "Vol. "
+    - number: issue
+      prefix: "№ "
+    - number: pages
+      prefix: "P. "

@@ -1059,10 +1059,29 @@ where
             .and_then(|b| b.groups.as_ref())
             .is_some()
         {
-            // Use grouped renderer for styles with explicit groups
             let _ = writeln!(output, "BIBLIOGRAPHY:");
-            let grouped = processor.render_grouped_bibliography_with_format::<F>();
-            output.push_str(&grouped);
+            if show_keys {
+                // When show_keys is requested, render each entry with its ID prefix so the
+                // oracle parser can match entries by key. Group headings are omitted in this
+                // mode because the oracle only looks for `[id] text` patterns.
+                let filter: HashSet<&str> = item_ids.iter().map(|id| id.as_str()).collect();
+                let processed = processor.process_references();
+                for entry in processed.bibliography {
+                    if filter.contains(entry.id.as_str()) {
+                        let text = csln_processor::render::refs_to_string_with_format::<F>(vec![
+                            entry.clone(),
+                        ]);
+                        let trimmed = text.trim();
+                        if !trimmed.is_empty() {
+                            let _ = writeln!(output, "  [{}] {}", entry.id, trimmed);
+                        }
+                    }
+                }
+            } else {
+                // Use grouped renderer for human-readable output (preserves group headings)
+                let grouped = processor.render_grouped_bibliography_with_format::<F>();
+                output.push_str(&grouped);
+            }
         } else {
             // Fall back to entry-by-entry rendering for ungrouped styles
             let _ = writeln!(output, "BIBLIOGRAPHY:");

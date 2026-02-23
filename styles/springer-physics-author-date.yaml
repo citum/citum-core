@@ -87,23 +87,75 @@ bibliography:
     contributors:
       initialize-with: ". "
       delimiter: ", "
+      and: text
+      shorten:
+        min: 99
+        use-first: 99
   template:
     - contributor: author
       form: long
-      overrides:
-        personal_communication:
-          prefix: "pp. "
       name-order: given-first
-    - title: parent-monograph
-    - title: parent-serial
+      initialize-with: ". "
     - title: primary
       emph: true
+      overrides:
+        article-journal:
+          suppress: true
+        article-magazine:
+          suppress: true
+        article-newspaper:
+          suppress: true
+        paper-conference:
+          suppress: true
+        personal_communication:
+          suppress: true
+        interview:
+          suppress: true
+        dataset:
+          suppress: true
+        webpage:
+          suppress: true
+        broadcast:
+          suppress: true
+        entry-encyclopedia:
+          suppress: true
+        entry-dictionary:
+          suppress: true
+    - title: parent-monograph
+    - title: parent-serial
     - variable: publisher-place
-    - number: volume
+      overrides:
+        article-journal:
+          suppress: true
+        article-magazine:
+          suppress: true
+        article-newspaper:
+          suppress: true
+        paper-conference:
+          suppress: true
+        entry-encyclopedia:
+          suppress: true
+        entry-dictionary:
+          suppress: true
     - variable: publisher
+      overrides:
+        article-journal:
+          suppress: true
+        article-magazine:
+          suppress: true
+        article-newspaper:
+          suppress: true
+        paper-conference:
+          suppress: true
+        entry-encyclopedia:
+          suppress: true
+        entry-dictionary:
+          suppress: true
     - date: issued
       form: year
       wrap: parentheses
+    - number: volume
+    - number: pages
   sort:
     template:
       - key: author
