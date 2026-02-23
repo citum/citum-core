@@ -31,13 +31,7 @@ options:
     uncertainty-marker: "?"
     approximation-marker: "ca. "
     range-delimiter: –
-  titles:
-    monograph:
-      emph: true
-    periodical:
-      emph: true
-    serial:
-      emph: true
+  titles: humanities
   bibliography:
     entry-suffix: .
     separator: ". "
