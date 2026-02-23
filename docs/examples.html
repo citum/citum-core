@@ -451,6 +451,30 @@ Structured: [@kuhn1962, section: 5].</pre>
                     </div>
                 </div>
             </div>
+
+            <!-- Try It Yourself -->
+            <div class="bg-white p-6 border-t border-slate-200">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="material-icons text-sm text-emerald-600">terminal</span>
+                    <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                        Try It Yourself
+                    </h3>
+                </div>
+                <div class="border-l-4 border-emerald-500 pl-4 mb-3">
+                    <p class="text-xs text-slate-600 mb-2">
+                        Render a grouped bibliography with per-group name ordering and localized headings:
+                    </p>
+                    <div class="bg-slate-900 rounded p-3 overflow-x-auto">
+                        <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">csln</span> render refs \
+  -b examples/bib-grouping-refs.yaml \
+  -s styles/experimental/multilingual-academic.yaml</pre>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">
+                        Vietnamese group sorts by given name; Western group sorts by family name. Bibliography headings are
+                        localized by group.
+                    </p>
+                </div>
+            </div>
         </article>
 
         <!-- Multilingual Support -->
@@ -595,6 +619,31 @@ Structured: [@kuhn1962, section: 5].</pre>
                         <code class="text-xs bg-slate-200 px-1 rounded">original</code>
                         field
                     </div>
+                </div>
+            </div>
+
+            <!-- Try It Yourself -->
+            <div class="bg-white p-6 border-t border-slate-200">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="material-icons text-sm text-emerald-600">terminal</span>
+                    <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                        Try It Yourself
+                    </h3>
+                </div>
+                <div class="border-l-4 border-emerald-500 pl-4 mb-3">
+                    <p class="text-xs text-slate-600 mb-2">
+                        Render multilingual references with configurable title and name modes:
+                    </p>
+                    <div class="bg-slate-900 rounded p-3 overflow-x-auto">
+                        <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">csln</span> render refs \
+  -b examples/multilingual-refs.yaml \
+  -s styles/experimental/multilingual-academic.yaml</pre>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">
+                        Try adjusting the style's <code class="text-xs bg-slate-200 px-1 rounded">title-mode</code> option
+                        (primary, transliterated, translated, combined) to see how rendered output changes without modifying
+                        reference data.
+                    </p>
                 </div>
             </div>
         </article>

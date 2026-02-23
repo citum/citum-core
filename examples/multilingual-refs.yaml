@@ -1,0 +1,142 @@
+# yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/bib.json
+# Multilingual Bibliography Examples
+# Demonstrates MultilingualString titles and MultilingualName contributors
+# Use with: csln render refs -b examples/multilingual-refs.yaml -s styles/experimental/multilingual-academic.yaml
+
+info:
+  description: Multilingual reference examples with complex titles and contributors
+
+references:
+  # 1. Japanese book with MultilingualComplex title
+  # Original: Japanese Kanji
+  # Transliteration: Latin romanization (Hepburn)
+  # Translation: English
+  - id: genji_tale
+    type: book
+    title:
+      original: "源氏物語"
+      lang: "ja"
+      transliterations:
+        ja-Latn-hepburn: "Genji Monogatari"
+      translations:
+        en: "The Tale of Genji"
+    author:
+      - original:
+          family: "紫式部"
+          given: ""
+        lang: "ja"
+        transliterations:
+          ja-Latn-hepburn:
+            family: "Murasaki"
+            given: "Shikibu"
+        translations:
+          en:
+            family: "Murasaki"
+            given: "Shikibu"
+    issued: "1010"
+    publisher:
+      name: "古典文学之友"
+    language: "ja"
+
+  # 2. Arabic journal article with original title and translation
+  - id: alghazali_logic
+    type: article
+    title:
+      original: "منطق الفلاسفة والمنطق الأرسطي"
+      lang: "ar"
+      translations:
+        en: "The Logic of Philosophers and Aristotelian Logic"
+    author:
+      - original:
+          family: "الغزالي"
+          given: "أبو حامد محمد بن محمد"
+        lang: "ar"
+        translations:
+          en:
+            family: "Al-Ghazali"
+            given: "Abu Hamid Muhammad"
+    issued: "1095"
+    parent:
+      type: academic-journal
+      title: "دراسات إسلامية"
+    language: "ar"
+
+  # 3. Plain English monograph (no multilingual metadata)
+  - id: english_book_1
+    type: book
+    title: "Contemporary Approaches to Citation"
+    author:
+      - family: "Anderson"
+        given: "Elizabeth"
+    issued: "2020"
+    publisher:
+      name: "Oxford University Press"
+    language: "en"
+
+  # 4. Second English book
+  - id: english_book_2
+    type: book
+    title: "Bibliographic Data in the Digital Age"
+    author:
+      - family: "Thompson"
+        given: "James R."
+    issued: "2021"
+    publisher:
+      name: "Cambridge University Press"
+    language: "en"
+
+  # 5. Chinese book with Pinyin transliteration
+  - id: confucius_analects
+    type: book
+    title:
+      original: "论语"
+      lang: "zh"
+      transliterations:
+        zh-Latn-pinyin: "Lùnyǔ"
+      translations:
+        en: "Analects of Confucius"
+    author:
+      - original:
+          family: "孔"
+          given: "子"
+        lang: "zh"
+        transliterations:
+          zh-Latn-pinyin:
+            family: "Kǒng"
+            given: "Zǐ"
+        translations:
+          en:
+            family: "Confucius"
+            given: ""
+    issued: "500 BCE"
+    publisher:
+      name: "人民文学出版社"
+    language: "zh"
+
+  # 6. Korean monograph with Hangul and romanization
+  - id: korean_literature
+    type: book
+    title:
+      original: "한국 문학의 역사"
+      lang: "ko"
+      transliterations:
+        ko-Latn-rr: "Hanguk Munhak-ui Yeoksa"
+      translations:
+        en: "A History of Korean Literature"
+    author:
+      - original:
+          family: "김"
+          given: "준"
+        lang: "ko"
+        transliterations:
+          ko-Latn-rr:
+            family: "Kim"
+            given: "Jun"
+        translations:
+          en:
+            family: "Kim"
+            given: "Jun"
+    issued: "2018"
+    publisher:
+      name: "서울대학교 출판부"
+    language: "ko"
