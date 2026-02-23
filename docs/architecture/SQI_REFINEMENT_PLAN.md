@@ -1,7 +1,33 @@
 # SQI Refinement Plan for Core Style Portfolio
 
-Date: 2026-02-19
+Date: 2026-02-23
 Scope: all core styles in `/styles` and SQI tooling in `scripts/report-core.js`.
+
+## Working Update (2026-02-23)
+
+This section records the current known state from active project tracking and
+keeps the 2026-02-19 SQI snapshot below as the last full portfolio baseline.
+
+Current known fidelity status:
+
+1. Fidelity remains the hard gate for all core-style work.
+2. APA 7th remains the reference success case at 8/8 citations and 27/27 bibliography.
+3. Under strict 8-scenario citation scoring, top-10 batch styles are not yet at
+   portfolio-wide 100% (top hit rates currently at 7/8 for non-APA styles).
+
+Current priority gaps affecting both fidelity consistency and SQI progress:
+
+1. Volume-pages delimiter variance by style (comma vs colon).
+2. DOI suppression behavior for styles that should omit DOI output.
+3. Editor name-order differences by style (given-first vs family-first).
+
+Immediate next SQI portfolio step:
+
+1. Re-run and publish fresh core metrics with:
+   - `node scripts/report-core.js > /tmp/core-report.json`
+   - `node scripts/check-core-quality.js --report /tmp/core-report.json --baseline scripts/report-data/core-quality-baseline.json`
+2. Re-baseline this plan's "Current Snapshot" table once those measurements are
+   regenerated from the current code and style set.
 
 ## Historical Baseline (Pre-Phase B)
 
