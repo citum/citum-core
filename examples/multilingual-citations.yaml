@@ -1,0 +1,56 @@
+# yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/citations.json
+# Multilingual Citation Examples
+# Paired with examples/multilingual-refs.yaml
+# Use with: csln process examples/multilingual-refs.yaml -s styles/experimental/multilingual-academic.yaml -c examples/multilingual-citations.yaml
+
+# 1. Single citation to Japanese work
+- items:
+    - id: genji_tale
+  mode: non-integral
+
+# 2. Narrative (integral) citation with page reference
+- items:
+    - id: genji_tale
+      label: page
+      locator: "42"
+  mode: integral
+
+# 3. Citation to Arabic scholarly work
+- items:
+    - id: alghazali_logic
+  mode: non-integral
+
+# 4. Multi-cite mixing languages (Japanese + English)
+- items:
+    - id: genji_tale
+    - id: english_book_1
+  mode: non-integral
+
+# 5. Citation with prefix and suffix
+- items:
+    - id: confucius_analects
+  prefix: "see "
+  suffix: " for classical perspectives"
+  mode: non-integral
+
+# 6. Citation to Chinese work with volume locator
+- items:
+    - id: confucius_analects
+      label: volume
+      locator: "3"
+  mode: integral
+
+# 7. Citation to Korean literature
+- items:
+    - id: korean_literature
+  mode: non-integral
+
+# 8. Complex multi-cite with mixed locators
+- items:
+    - id: genji_tale
+      label: page
+      locator: "15-18"
+    - id: alghazali_logic
+      label: chapter
+      locator: "2"
+  mode: non-integral
