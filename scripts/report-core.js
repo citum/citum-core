@@ -942,24 +942,26 @@ function generateHtmlHeader(report) {
     <nav class="fixed top-0 w-full z-50 glass-nav">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
-                    <span class="text-white font-mono font-bold">C</span>
-                </div>
-                <span class="font-mono text-xl font-bold tracking-tight text-slate-900">CSLN</span>
+                <a href="index.html" class="flex items-center gap-2 group">
+                    <div class="w-8 h-8 bg-primary rounded flex items-center justify-center group-hover:brightness-110 transition-all">
+                        <span class="text-white font-mono font-bold">C</span>
+                    </div>
+                    <span class="font-mono text-xl font-bold tracking-tight text-slate-900">CSLN</span>
+                </a>
             </div>
             <div class="hidden md:flex items-center gap-8">
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
                     href="index.html#features">Features</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="index.html#roadmap">Roadmap</a>
+                    href="index.html#roadmap">Status</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
                     href="interactive-demo.html">Demo</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
                     href="examples.html">Examples</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="compat.html" style="color: #2a94d6; font-weight: 600;">Compat</a>
-                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="index.html#schemas">Schemas</a>
+                    href="guides/style-author-guide.html">Style Guide</a>
+                <a class="text-sm font-medium text-primary font-semibold"
+                    href="compat.html">Compat</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
                     href="https://github.com/bdarcus/csl26">GitHub</a>
             </div>
@@ -1451,15 +1453,18 @@ function generateHtmlFooter() {
         <div class="max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row justify-between items-center gap-8">
                 <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 bg-primary rounded flex items-center justify-center">
-                        <span class="text-white font-mono text-xs font-bold">C</span>
-                    </div>
-                    <span class="font-mono text-lg font-bold text-slate-900">CSLN</span>
+                    <a href="index.html" class="flex items-center gap-2 group">
+                        <div class="w-6 h-6 bg-primary rounded flex items-center justify-center group-hover:brightness-110 transition-all">
+                            <span class="text-white font-mono text-xs font-bold">C</span>
+                        </div>
+                        <span class="font-mono text-lg font-bold text-slate-900">CSLN</span>
+                    </a>
                 </div>
                 <div class="flex gap-8 text-sm font-medium text-slate-500">
                     <a class="hover:text-primary transition-colors" href="https://github.com/bdarcus/csl26">GitHub</a>
-                    <a class="hover:text-primary transition-colors" href="index.html#roadmap">Roadmap</a>
+                    <a class="hover:text-primary transition-colors" href="index.html#roadmap">Status</a>
                     <a class="hover:text-primary transition-colors" href="examples.html">Examples</a>
+                    <a class="hover:text-primary transition-colors" href="compat.html">Compat</a>
                 </div>
                 <div class="text-sm text-slate-400">
                     © 2026 CSLN Project. MIT Licensed.
@@ -1516,9 +1521,12 @@ function generateHtmlFooter() {
             };
             const asText = (value) => String(value || '').toLowerCase();
 
+            // Convert kebab-case key to camelCase for dataset access
+            const datasetKey = key.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+
             rowPairs.sort((a, b) => {
-                const left = a.summary.dataset[key] || '';
-                const right = b.summary.dataset[key] || '';
+                const left = a.summary.dataset[datasetKey] || '';
+                const right = b.summary.dataset[datasetKey] || '';
                 const numericKeys = new Set([
                     'dependents',
                     'citation-rate',
