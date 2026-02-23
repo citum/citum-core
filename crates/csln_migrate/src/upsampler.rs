@@ -317,8 +317,13 @@ impl Upsampler {
             // Fall through if all branches have position conditions
         }
 
+        // Determine if the if-branch uses match="none" (negated type test).
+        // A negated if-branch fires for everything NOT in its type list, so it
+        // behaves like a default/else branch rather than a type-specific branch.
+        let if_match_none = c.if_branch.match_mode.as_deref() == Some("none");
+
         let mut if_item_type = Vec::new();
-        if let Some(types) = &c.if_branch.type_ {
+        if !if_match_none && let Some(types) = &c.if_branch.type_ {
             for t in types.split_whitespace() {
                 if let Some(it) = self.map_item_type(t) {
                     if_item_type.push(it);
@@ -335,41 +340,75 @@ impl Upsampler {
             }
         }
 
-        // Map all else-if branches to preserve type-specific formatting
-        let else_if_branches: Vec<csln::ElseIfBranch> = c
-            .else_if_branches
-            .iter()
-            .map(|branch| {
-                let mut branch_item_types = Vec::new();
-                if let Some(types) = &branch.type_ {
-                    for t in types.split_whitespace() {
-                        if let Some(it) = self.map_item_type(t) {
-                            branch_item_types.push(it);
-                        }
+        // Map all else-if branches. For branches with match="none" (negated type
+        // condition), clear the type list — they act as broad defaults, not as
+        // type-specific branches. This ensures compile_for_type selects them as
+        // the else/fallback path for types not covered by positive branches.
+        let mut else_if_branches: Vec<csln::ElseIfBranch> = Vec::new();
+        let mut negated_else_nodes: Option<Vec<csln::CslnNode>> = None;
+
+        for branch in &c.else_if_branches {
+            let is_match_none = branch.match_mode.as_deref() == Some("none");
+
+            if is_match_none && branch.type_.is_some() {
+                // Treat this as a fallback else branch, since it fires for all
+                // types NOT in its type list (i.e., the "default" case).
+                // Only adopt the first such branch to avoid duplicates.
+                if negated_else_nodes.is_none() {
+                    negated_else_nodes = Some(self.upsample_nodes(&branch.children));
+                }
+                continue;
+            }
+
+            let mut branch_item_types = Vec::new();
+            if let Some(types) = &branch.type_ {
+                for t in types.split_whitespace() {
+                    if let Some(it) = self.map_item_type(t) {
+                        branch_item_types.push(it);
                     }
                 }
-                let mut branch_variables = Vec::new();
-                if let Some(vars) = &branch.variable {
-                    for v in vars.split_whitespace() {
-                        if let Some(var) = self.map_variable(v) {
-                            branch_variables.push(var);
-                        }
+            }
+            let mut branch_variables = Vec::new();
+            if let Some(vars) = &branch.variable {
+                for v in vars.split_whitespace() {
+                    if let Some(var) = self.map_variable(v) {
+                        branch_variables.push(var);
                     }
                 }
-                csln::ElseIfBranch {
-                    if_item_type: branch_item_types,
-                    if_variables: branch_variables,
-                    children: self.upsample_nodes(&branch.children),
-                }
-            })
-            .collect();
+            }
+            else_if_branches.push(csln::ElseIfBranch {
+                if_item_type: branch_item_types,
+                if_variables: branch_variables,
+                children: self.upsample_nodes(&branch.children),
+            });
+        }
+
+        // Determine the effective else_branch: prefer the existing else branch,
+        // then fall back to the negated else-if content if present.
+        let else_branch = c
+            .else_branch
+            .as_ref()
+            .map(|e| self.upsample_nodes(e))
+            .or(negated_else_nodes);
+
+        // Handle the if-branch match="none" case: push the if-branch content as
+        // the else fallback, since it fires for all non-listed types.
+        let (then_branch, else_branch) = if if_match_none {
+            let if_nodes = self.upsample_nodes(&c.if_branch.children);
+            // The existing else_branch takes priority; if_nodes become the else
+            // only when there isn't already one.
+            let effective_else = else_branch.or(Some(if_nodes));
+            (Vec::new(), effective_else)
+        } else {
+            (self.upsample_nodes(&c.if_branch.children), else_branch)
+        };
 
         Some(csln::CslnNode::Condition(csln::ConditionBlock {
             if_item_type,
             if_variables,
-            then_branch: self.upsample_nodes(&c.if_branch.children),
+            then_branch,
             else_if_branches,
-            else_branch: c.else_branch.as_ref().map(|e| self.upsample_nodes(e)),
+            else_branch,
         }))
     }
 

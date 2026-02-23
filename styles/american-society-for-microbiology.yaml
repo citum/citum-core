@@ -56,8 +56,13 @@ bibliography:
     - title: parent-monograph
     - title: parent-serial
     - number: volume
+      overrides:
+        legal-case:
+          suppress: true
     - number: pages
       overrides:
+        legal-case:
+          suppress: true
         chapter:
           prefix: "pp. "
         paper-conference:
@@ -73,3 +78,67 @@ bibliography:
     - variable: publisher
     - variable: publisher-place
       prefix: ", "
+  type-templates:
+    webpage:
+      - number: citation-number
+        suffix: ". "
+      - contributor: author
+        form: long
+        sort-separator: " "
+      - date: issued
+        form: year
+      - title: primary
+      - variable: version
+        wrap: parentheses
+      - number: number
+        prefix: ". "
+      - title: parent-serial
+        prefix: ". "
+        overrides:
+          report: {}
+          paper-conference: {}
+          book: {}
+          song: {}
+          graphic: {}
+          legislation: {}
+          chapter: {}
+          bill: {}
+          motion_picture: {}
+          legal_case: {}
+      - number: edition
+      - term: edition
+        form: short
+      - variable: url
+      - term: retrieved
+        form: long
+      - date: accessed
+        form: year
+    patent:
+      - number: citation-number
+        suffix: ". "
+      - contributor: author
+        form: long
+        sort-separator: " "
+      - date: issued
+        form: year
+      - title: primary
+      - variable: version
+        wrap: parentheses
+      - number: number
+        prefix: ". "
+      - title: parent-serial
+        prefix: ". "
+        overrides:
+          legal_case: {}
+          song: {}
+          chapter: {}
+          graphic: {}
+          report: {}
+          bill: {}
+          motion_picture: {}
+          paper-conference: {}
+          legislation: {}
+          book: {}
+      - number: edition
+      - term: edition
+        form: short

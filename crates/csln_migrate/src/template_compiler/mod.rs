@@ -842,7 +842,11 @@ impl TemplateCompiler {
         candidates.retain(|t| {
             matches!(
                 t,
-                ItemType::Patent | ItemType::Webpage | ItemType::EntryEncyclopedia
+                ItemType::Patent
+                    | ItemType::Webpage
+                    | ItemType::EntryEncyclopedia
+                    | ItemType::LegalCase
+                    | ItemType::PersonalCommunication
             )
         });
         candidates.sort_by_key(|t| self.item_type_to_string(t));
@@ -859,6 +863,13 @@ impl TemplateCompiler {
             crate::passes::deduplicate::deduplicate_dates_in_lists(&mut type_template);
             self.fix_duplicate_variables(&mut type_template);
 
+            // Post-process legal_case templates: ensure authority variable is
+            // present (it appears in complex nested conditions that compile_for_type
+            // may not fully resolve) and suppress volume/pages which are inapplicable.
+            if matches!(item_type, ItemType::LegalCase) {
+                self.postprocess_legal_case_template(&mut type_template);
+            }
+
             if type_template == default_template {
                 continue;
             }
@@ -870,6 +881,65 @@ impl TemplateCompiler {
         }
 
         type_templates
+    }
+
+    /// Post-process a legal_case type template to ensure correct field set.
+    ///
+    /// Legal case citations follow the pattern: Title, Authority Year.
+    /// - Ensures `variable: authority` is inserted after `title: primary`
+    /// - Suppresses `number: volume`, `number: pages`, and `number: issue`
+    ///   which are inapplicable to legal case citations.
+    fn postprocess_legal_case_template(&self, template: &mut Vec<TemplateComponent>) {
+        use csln_core::template::{SimpleVariable, TemplateVariable};
+
+        // Suppress volume, pages and issue — inapplicable for legal cases
+        for comp in template.iter_mut() {
+            match comp {
+                TemplateComponent::Number(n)
+                    if matches!(
+                        n.number,
+                        csln_core::template::NumberVariable::Volume
+                            | csln_core::template::NumberVariable::Pages
+                            | csln_core::template::NumberVariable::Issue
+                    ) =>
+                {
+                    n.rendering.suppress = Some(true);
+                }
+                _ => {}
+            }
+        }
+
+        // Inject authority variable after title:primary if not already present
+        let has_authority = template.iter().any(|c| {
+            matches!(
+                c,
+                TemplateComponent::Variable(v) if v.variable == SimpleVariable::Authority
+            )
+        });
+
+        if !has_authority {
+            // Find position of title:primary to insert after it
+            let insert_pos = template
+                .iter()
+                .position(|c| {
+                    matches!(
+                        c,
+                        TemplateComponent::Title(t)
+                            if t.title == csln_core::template::TitleType::Primary
+                    )
+                })
+                .map(|p| p + 1)
+                .unwrap_or(template.len());
+
+            template.insert(
+                insert_pos,
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::Authority,
+                    rendering: csln_core::template::Rendering::default(),
+                    ..Default::default()
+                }),
+            );
+        }
     }
 
     /// Fix duplicate variables that appear both in Lists and as standalone components.
@@ -1671,8 +1741,10 @@ impl TemplateCompiler {
             Variable::Page => Some(NumberVariable::Pages),
             Variable::Edition => Some(NumberVariable::Edition),
             Variable::ChapterNumber => Some(NumberVariable::ChapterNumber),
-            Variable::NumberOfVolumes => Some(NumberVariable::NumberOfVolumes),
+            Variable::CollectionNumber => Some(NumberVariable::CollectionNumber),
+            Variable::NumberOfPages => Some(NumberVariable::NumberOfPages),
             Variable::CitationNumber => Some(NumberVariable::CitationNumber),
+            Variable::Number => Some(NumberVariable::Number),
             _ => None,
         }
     }
@@ -1687,6 +1759,19 @@ impl TemplateCompiler {
             Variable::Publisher => Some(SimpleVariable::Publisher),
             Variable::PublisherPlace => Some(SimpleVariable::PublisherPlace),
             Variable::Genre => Some(SimpleVariable::Genre),
+            Variable::Authority => Some(SimpleVariable::Authority),
+            Variable::Archive => Some(SimpleVariable::Archive),
+            Variable::ArchiveLocation => Some(SimpleVariable::ArchiveLocation),
+            Variable::Version => Some(SimpleVariable::Version),
+            Variable::Medium => Some(SimpleVariable::Medium),
+            Variable::Source => Some(SimpleVariable::Source),
+            Variable::Status => Some(SimpleVariable::Status),
+            Variable::Locator => Some(SimpleVariable::Locator),
+            Variable::PMID => Some(SimpleVariable::Pmid),
+            Variable::PMCID => Some(SimpleVariable::Pmcid),
+            Variable::Note => Some(SimpleVariable::Note),
+            Variable::Annote => Some(SimpleVariable::Annote),
+            Variable::Abstract => Some(SimpleVariable::Abstract),
             _ => None,
         }
     }
