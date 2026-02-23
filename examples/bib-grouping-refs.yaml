@@ -1,81 +1,81 @@
 # yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/bib.json
-# Bibliography Grouping Examples
-# Demonstrates per-group sorting rules for multilingual bibliographies
-# Use with: csln render refs -b examples/bib-grouping-refs.yaml -s styles/experimental/multilingual-academic.yaml
+# Bibliography grouping example for Chicago author-date style.
+# Demonstrates primary/archival/secondary sections with localized headings.
+# Use with: csln render refs -b examples/bib-grouping-refs.yaml -s styles/chicago-author-date.yaml
 
 info:
-  description: Multilingual references grouped by language with locale-specific sorting
+  description: Chicago-style grouped bibliography with primary, archival, and secondary sources
 
 references:
-  # Vietnamese references (language: vi)
-  # In Vietnamese academic tradition, family names come first in citations
-  # and this sorting should reflect given-name-first ordering
-
-  - id: nguyen2020
+  # PRIMARY SOURCES (note: primary)
+  - id: darwin1859
     type: book
-    title: "Lịch sử Việt Nam"
+    title: On the Origin of Species
     author:
-      - family: "Nguyễn"
-        given: "Văn A"
-    issued: "2020"
+      - family: Darwin
+        given: Charles
+    issued: "1859"
     publisher:
-      name: "Nhà xuất bản Giáo dục"
-    language: "vi"
+      name: John Murray
+      location: London
+    note: primary
 
-  - id: tran2019
+  - id: freud1900
     type: book
-    title: "Văn hóa truyền thống"
+    title: Die Traumdeutung
     author:
-      - family: "Trần"
-        given: "Thị B"
-    issued: "2019"
+      - family: Freud
+        given: Sigmund
+    issued: "1900"
     publisher:
-      name: "Nhà xuất bản Văn hóa"
-    language: "vi"
+      name: Franz Deuticke
+      location: Leipzig
+    language: de
+    note: primary
 
-  - id: le2021
+  # ARCHIVAL SOURCES (note: archival)
+  - id: letter1876
+    type: document
+    title: Letter to T.H. Huxley, 14 September 1876
+    author:
+      - family: Darwin
+        given: Charles
+    issued: "1876"
+    note: archival
+
+  # SECONDARY SOURCES (no note — fallback group)
+  - id: browne2002
     type: book
-    title: "Kinh tế Việt Nam"
+    title: "Charles Darwin: The Power of Place"
     author:
-      - family: "Lê"
-        given: "Hoàng C"
-    issued: "2021"
+      - family: Browne
+        given: Janet
+    issued: "2002"
     publisher:
-      name: "Nhà xuất bản Thống kê"
-    language: "vi"
+      name: Alfred A. Knopf
+      location: New York
 
-  # Western references (language: en)
-  # Standard family-name-first sorting for English-language sources
-
-  - id: smith2020
+  - id: gay1988
     type: book
-    title: "Vietnamese History"
+    title: "Freud: A Life for Our Time"
     author:
-      - family: "Smith"
-        given: "John"
-    issued: "2020"
+      - family: Gay
+        given: Peter
+    issued: "1988"
     publisher:
-      name: "Oxford University Press"
-    language: "en"
+      name: W.W. Norton
+      location: New York
 
-  - id: jones2019
-    type: book
-    title: "Southeast Asian Culture"
+  - id: mayr1991
+    type: article
+    title: "Darwin's Impact on Modern Thought"
     author:
-      - family: "Jones"
-        given: "Mary"
-    issued: "2019"
-    publisher:
-      name: "Cambridge University Press"
-    language: "en"
-
-  - id: brown2021
-    type: book
-    title: "Economic Development"
-    author:
-      - family: "Brown"
-        given: "David"
-    issued: "2021"
-    publisher:
-      name: "MIT Press"
-    language: "en"
+      - family: Mayr
+        given: Ernst
+    issued: "1991"
+    parent:
+      type: academic-journal
+      title: Proceedings of the American Philosophical Society
+    volume: "135"
+    issue: "4"
+    pages: 317-330
