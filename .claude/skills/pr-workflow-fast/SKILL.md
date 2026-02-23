@@ -13,6 +13,7 @@
 - Branch prefix: `codex/`.
 - Name pattern: `codex/<scope>-<short-goal>`.
 - Keep PR scope narrow and mergeable.
+- **jj Alternative**: Use `jj bookmark set codex/<scope>-<short-goal>` instead of creating git branches.
 
 ## Change-Type Gates
 1. Docs/styles only (`.md`, `styles/*.yaml`):
@@ -23,6 +24,30 @@
    - `cargo nextest run` (fallback: `cargo test`)
 3. Hot path/perf claims:
    - benchmark baseline/after via `./scripts/bench-check.sh`
+
+## Git vs jj Workflow
+
+**Traditional Git (default):**
+```bash
+git checkout -b codex/scope-goal
+# edit files
+git add .
+git commit -m "type(scope): message"
+git push -u origin codex/scope-goal
+gh pr create
+```
+
+**jj (Recommended modern alternative):**
+```bash
+jj describe -m "type(scope): message
+
+Body with details"
+jj bookmark set codex/scope-goal
+jj git push -b codex/scope-goal
+gh pr create
+```
+
+**Key difference**: jj requires no staging (`git add`) and automatically tracks changes in the working directory.
 
 ## PR Body Template
 - Summary: what changed and why.
@@ -36,8 +61,10 @@
 - Stop at target metric; avoid unbounded polish loops.
 - Escalate to planner when style-only fixes stall.
 - Prefer smallest diff that achieves gate pass.
+- jj workflows are faster due to automatic change tracking (no manual `git add`).
 
 ## Merge Readiness Checklist
 - Checks passed for touched change type.
 - PR body includes objective evidence.
 - No unresolved high-severity findings.
+- For jj: bookmark successfully pushed to remote via `jj git push`.

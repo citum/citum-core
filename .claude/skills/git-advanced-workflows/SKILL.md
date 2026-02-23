@@ -1,11 +1,28 @@
 ---
 name: git-advanced-workflows
-description: Master advanced Git workflows including rebasing, cherry-picking, bisect, worktrees, and reflog to maintain clean history and recover from any situation. Use when managing complex Git histories, collaborating on feature branches, or troubleshooting repository issues.
+description: Master advanced Git workflows including rebasing, cherry-picking, bisect, worktrees, and reflog to maintain clean history and recover from any situation. Use when managing complex Git histories, collaborating on feature branches, or troubleshooting repository issues. Includes jj (Jujutsu) equivalents for modern workflows.
 ---
 
 # Git Advanced Workflows
 
 Master advanced Git techniques to maintain clean history, collaborate effectively, and recover from any situation with confidence.
+
+## Quick Reference: Git to jj Equivalents
+
+For teams considering migration to jj, here are the equivalent operations:
+
+| Operation | Git | jj |
+|-----------|-----|-----|
+| Interactive rebase | `git rebase -i` | `jj rebase -r <changes>` |
+| Cherry-pick | `git cherry-pick abc123` | `jj duplicate -r abc123 && jj rebase -d target` |
+| Worktrees | `git worktree add` | `jj workspace add` |
+| Bisect | `git bisect start/good/bad` | `jj diff -r commit1..commit2` (jj lacks bisect, use git) |
+| Reflog | `git reflog` | `jj undo` (more powerful recovery) |
+| Force push | `git push --force-with-lease` | `jj git push` (safe by default) |
+| Amend commit | `git commit --amend` | `jj describe` (on current change) |
+| Reset | `git reset --hard` | `jj abandon` (revert current change) |
+
+**Note**: For complex history operations, Git skills remain applicable. jj often simplifies workflow where Git requires multiple steps.
 
 ## When to Use This Skill
 

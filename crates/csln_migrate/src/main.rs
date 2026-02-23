@@ -1264,7 +1264,7 @@ fn should_merge_inferred_type_template(
         // Patent branches can require structural divergence in numeric styles,
         // but keep only compact candidates to avoid overfitting from verbose
         // fallback templates that are better handled by the inferred default.
-        "patent" => candidate_template.len() <= 6,
+        "patent" => candidate_template.len() <= 12,
         // Only merge encyclopedia fallback templates when inferred output does
         // not already carry entry-encyclopedia overrides and the candidate is
         // compact (no parent title chain).
@@ -1273,21 +1273,17 @@ fn should_merge_inferred_type_template(
                 && !template_has_parent_title(candidate_template)
         }
         // Webpage templates are kept only when inferred output does not already
-        // target webpages, the candidate includes accessed-date structure, and
-        // the candidate is not carrying parent-title chains better left in the
-        // shared inferred template.
+        // target webpages, and the candidate includes accessed-date structure.
         "webpage" => {
             (!template_targets_type(inferred_template, type_name)
                 || !template_has_accessed_date(inferred_template))
                 && template_has_accessed_date(candidate_template)
-                && !template_has_parent_title(candidate_template)
         }
         // Case-law citations are structurally distinct in many numeric styles
         // and often need dedicated suppression/order not recoverable from the
         // shared inferred template alone.
         "legal-case" | "legal_case" => {
             !template_targets_type(inferred_template, type_name)
-                && !template_has_parent_title(candidate_template)
         }
         _ => false,
     }

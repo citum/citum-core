@@ -58,6 +58,7 @@ These operations ALWAYS require explicit confirmation:
 
 **Submodule Operations:**
 - Any command affecting `styles-legacy/` submodule - contains 2,844 upstream styles
+- Submodule commands use Git syntax (not jj): `git submodule update --remote styles-legacy`
 
 **Main Branch Push:**
 - `git push origin main` - even with pre-commit checks passed
@@ -556,6 +557,8 @@ We use a specific issue template for Domain Experts to provide semantic context.
 
 **During rapid development, direct commits to `main` are allowed** to optimize for velocity and message economy (Pro Plan constraints). This mode is active until the project approaches production or onboards external contributors.
 
+**Modern Alternative**: The project evaluates Jujutsu (jj) as a Git replacement. See [jj-workflows skill](./.claude/skills/jj-workflows/SKILL.md) for full coverage. Both Git and jj workflows are supported and compatible.
+
 ### Mandatory Pre-Commit Checks
 
 **CRITICAL: Before committing Rust code changes (`.rs` files, `Cargo.toml`, `Cargo.lock`) to main, you MUST run:**
@@ -575,7 +578,7 @@ These checks are non-negotiable for Rust changes:
 
 ### Commit Message Guidelines
 
-Follow these conventions for all commits:
+Follow these conventions for all commits (Git or jj):
 - **Conventional Commits**: Use `type(scope): subject` format.
 - **Lowercase Subject**: Subject lines must be lowercase.
 - **50/72 Rule**: Limit the subject line to 50 characters and wrap the body at 72 characters.
@@ -586,7 +589,7 @@ Follow these conventions for all commits:
 - **No Escaped Backticks**: Never escape backticks (e.g., write `code` not \`code\`).
 - **No Co-Authored-By**: Do NOT include `Co-Authored-By` footers in AI-authored commit messages.
 
-Example (Rust code change):
+**Example (Rust code change - Git):**
 ```bash
 cargo fmt && cargo clippy && cargo nextest run && \
 git add -A && git commit -m "fix(migrate): prevent duplicate list variables
@@ -598,12 +601,34 @@ to prevent duplication in rendered output.
 Refs: csl26-6whe, #127"
 ```
 
-Example (documentation-only change):
+**Example (Rust code change - jj):**
+```bash
+cargo fmt && cargo clippy && cargo nextest run && \
+jj describe -m "fix(migrate): prevent duplicate list variables
+
+Add post-processing step to detect variables appearing in both
+List components and standalone components, adding suppress overrides
+to prevent duplication in rendered output.
+
+Refs: csl26-6whe, #127"
+jj git push
+```
+
+**Example (documentation-only change - Git):**
 ```bash
 git add -A && git commit -m "docs: clarify migration strategy
 
-Update [MIGRATION_STRATEGY_ANALYSIS.md](./docs/architecture/MIGRATION_STRATEGY_ANALYSIS.md) to reflect hybrid approach
+Update MIGRATION_STRATEGY_ANALYSIS.md to reflect hybrid approach
 findings from APA 7th validation testing."
+```
+
+**Example (documentation-only change - jj):**
+```bash
+jj describe -m "docs: clarify migration strategy
+
+Update MIGRATION_STRATEGY_ANALYSIS.md to reflect hybrid approach
+findings from APA 7th validation testing."
+jj git push
 ```
 
 ### When to Use Feature Branches (Optional)
@@ -617,18 +642,29 @@ For normal bug fixes, small features, and refactoring, commit directly to main.
 
 ### Workflow Example
 
-**Standard (direct to main):**
+**Standard (direct to main - Git):**
 ```bash
 # 1. Make changes
 # 2. If Rust code changed: run pre-commit checks and commit
 cargo fmt && cargo clippy && cargo nextest run && git add -A && git commit -m "fix: your message"
-# 2. If docs/styles only: commit directly
+# 3. If docs/styles only: commit directly
 git add -A && git commit -m "docs: your message"
-# 3. Push to main
+# 4. Push to main
 git push origin main
 ```
 
-**Optional (feature branch for major changes):**
+**Standard (direct to main - jj):**
+```bash
+# 1. Make changes (automatically tracked, no staging needed)
+# 2. If Rust code changed: run pre-commit checks
+cargo fmt && cargo clippy && cargo nextest run
+# 3. Describe changes
+jj describe -m "fix: your message"
+# 4. Push to main
+jj git push
+```
+
+**Optional (feature branch for major changes - Git):**
 ```bash
 # 1. Create checkpoint branch
 git checkout -b feat/major-change
@@ -638,6 +674,20 @@ cargo fmt && cargo clippy && cargo nextest run && git add -A && git commit -m "f
 # 4. Push branch
 git push -u origin feat/major-change
 # 5. Optionally create PR for review, or merge locally and push to main
+```
+
+**Optional (feature branch for major changes - jj):**
+```bash
+# 1. Create bookmark at current change
+jj bookmark set feat/major-change
+# 2. Make changes (automatically tracked)
+# 3. If Rust code changed: run pre-commit checks
+cargo fmt && cargo clippy && cargo nextest run
+# 4. Describe changes
+jj describe -m "feat: your message"
+# 5. Push bookmark
+jj git push -b feat/major-change
+# 6. Optionally create PR for review, or merge locally
 ```
 
 ### Switching to PR Workflow

@@ -104,11 +104,23 @@ read -p "Commit these changes? (y/N) " -n 1 -r
 echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    git add "$CORE_LIB" "$SCHEMA_DOC"
-    git commit -m "chore(schema): bump schema version to $NEW_VERSION
+    # Commit using git or jj based on preference
+    if command -v jj &> /dev/null; then
+        info "Using jj for commit (jj detected)"
+        jj new main
+        git add "$CORE_LIB" "$SCHEMA_DOC"
+        jj describe -m "chore(schema): bump schema version to $NEW_VERSION
 
 Schema version updated from $CURRENT_VERSION to $NEW_VERSION.
 All styles validated successfully."
+    else
+        info "Using git for commit"
+        git add "$CORE_LIB" "$SCHEMA_DOC"
+        git commit -m "chore(schema): bump schema version to $NEW_VERSION
+
+Schema version updated from $CURRENT_VERSION to $NEW_VERSION.
+All styles validated successfully."
+    fi
 
     success "Changes committed"
 
@@ -122,9 +134,15 @@ All styles validated successfully."
     echo ""
     info "Schema version bump complete!"
     info "Next steps:"
-    echo "  1. Review the commit and tag"
-    echo "  2. Push to remote: git push && git push --tags"
-    echo "  3. Create GitHub Release for $TAG_NAME"
+    if command -v jj &> /dev/null; then
+        echo "  1. Review the commit and tag"
+        echo "  2. Push to remote: jj git push && git push --tags"
+        echo "  3. Create GitHub Release for $TAG_NAME"
+    else
+        echo "  1. Review the commit and tag"
+        echo "  2. Push to remote: git push && git push --tags"
+        echo "  3. Create GitHub Release for $TAG_NAME"
+    fi
 else
     warn "Changes not committed. Run 'git checkout $CORE_LIB $SCHEMA_DOC' to revert."
 fi
