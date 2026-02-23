@@ -118,6 +118,56 @@ bibliography:
         - number: issue
           wrap: parentheses
           overrides: {}
+  type-templates:
+    legal_case:
+      - contributor: author
+        form: long
+        sort-separator: ", "
+        and: text
+      - date: issued
+        form: year
+      - term: no-date
+        form: short
+        inner-prefix: " "
+        inner-suffix: .
+        wrap: parentheses
+      - title: primary
+      - variable: authority
+      - number: pages
+        label-form: long
+        suppress: true
+      - number: pages
+        suppress: true
+      - contributor: editor
+        form: long
+        delimiter: ", "
+        and: text
+      - title: parent-serial
+      - number: edition
+        prefix: ", "
+      - term: edition
+        form: long
+        prefix: " "
+        suffix: .
+      - variable: genre
+      - variable: publisher
+      - variable: publisher-place
+    entry-encyclopedia:
+      - contributor: author
+        form: long
+        sort-separator: ", "
+        and: text
+      - date: issued
+        form: year
+      - term: no-date
+        form: short
+        inner-prefix: " "
+        inner-suffix: .
+        wrap: parentheses
+      - title: primary
+      - variable: genre
+      - variable: publisher
+      - variable: publisher-place
   sort:
     template:
       - key: author

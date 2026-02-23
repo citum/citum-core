@@ -134,6 +134,62 @@ bibliography:
         article-journal:
           prefix: https://doi.org/
     - number: pages
+  type-templates:
+    legal_case:
+      - contributor: author
+        form: long
+        sort-separator: ", "
+        shorten:
+          min: 8
+          use-first: 2
+          and-others: et-al
+          delimiter-precedes-last: never
+        and: text
+      - date: issued
+        form: year
+      - term: no-date
+        form: short
+      - title: primary
+        overrides:
+          graphic:
+            emph: true
+          thesis:
+            emph: true
+          legal_case:
+            emph: true
+          book:
+            emph: true
+          motion_picture:
+            emph: true
+          report:
+            emph: true
+          bill:
+            emph: true
+          song:
+            emph: true
+          map:
+            emph: true
+          legislation:
+            emph: true
+      - variable: authority
+      - number: edition
+      - term: edition
+        form: short
+        suffix: .
+      - contributor: editor
+        form: long
+        delimiter: ", "
+        sort-separator: ", "
+        shorten:
+          min: 8
+          use-first: 2
+          and-others: et-al
+          delimiter-precedes-last: never
+        and: text
+      - variable: genre
+      - number: number
+        strong: true
+      - title: parent-monograph
   sort:
     template:
       - key: author

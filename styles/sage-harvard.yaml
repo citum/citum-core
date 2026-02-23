@@ -151,6 +151,47 @@ bibliography:
       prefix: ", "
     - variable: publisher-place
     - variable: url
+  type-templates:
+    legal_case:
+      - contributor: author
+        form: long
+        sort-separator: " "
+        shorten:
+          min: 4
+          use-first: 3
+          and-others: et-al
+          delimiter-precedes-last: never
+        and: text
+      - date: issued
+        form: year
+      - term: no-date
+        form: short
+      - title: primary
+        emph: true
+      - variable: authority
+      - number: edition
+      - term: edition
+        form: short
+      - title: parent-serial
+        emph: true
+      - contributor: editor
+        form: long
+        delimiter: ", "
+        sort-separator: " "
+        shorten:
+          min: 4
+          use-first: 3
+          and-others: et-al
+          delimiter-precedes-last: contextual
+        and: text
+      - number: edition
+      - term: edition
+        form: short
+      - title: parent-monograph
+      - number: number
+      - variable: genre
+      - variable: publisher-place
+      - variable: publisher
   sort:
     template:
       - key: author

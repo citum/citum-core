@@ -116,6 +116,90 @@ bibliography:
     - variable: publisher-place
     - date: issued
       form: year
+  type-templates:
+    legal_case:
+      - contributor: author
+        form: long
+        sort-separator: ", "
+        shorten:
+          min: 11
+          use-first: 7
+          and-others: et-al
+          delimiter-precedes-last: always
+        and: text
+      - contributor: recipient
+        form: long
+        delimiter: ", "
+        shorten:
+          min: 11
+          use-first: 7
+          and-others: et-al
+          delimiter-precedes-last: contextual
+        and: text
+      - title: primary
+      - variable: authority
+      - title: parent-serial
+        emph: true
+      - date: issued
+        form: year
+      - term: no-date
+        form: short
+    patent:
+      - contributor: author
+        form: long
+        sort-separator: ", "
+        shorten:
+          min: 11
+          use-first: 7
+          and-others: et-al
+          delimiter-precedes-last: always
+        and: text
+      - contributor: recipient
+        form: long
+        delimiter: ", "
+        shorten:
+          min: 11
+          use-first: 7
+          and-others: et-al
+          delimiter-precedes-last: contextual
+        and: text
+      - title: primary
+      - title: parent-serial
+        emph: true
+      - number: number
+      - term: and
+        form: long
+      - date: issued
+        form: full
+      - term: no-date
+        form: short
+    personal_communication:
+      - contributor: author
+        form: long
+        sort-separator: ", "
+        shorten:
+          min: 11
+          use-first: 7
+          and-others: et-al
+          delimiter-precedes-last: always
+        and: text
+      - variable: genre
+      - contributor: recipient
+        form: long
+        delimiter: ", "
+        shorten:
+          min: 11
+          use-first: 7
+          and-others: et-al
+          delimiter-precedes-last: contextual
+        and: text
+      - title: primary
+      - title: parent-serial
+        emph: true
+      - date: issued
+        form: full
+      - term: no-date
+        form: short
   sort:
     template:
       - key: title

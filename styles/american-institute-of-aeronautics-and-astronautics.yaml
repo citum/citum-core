@@ -87,15 +87,43 @@ bibliography:
       prefix: ". "
     - variable: publisher-place
   type-templates:
-    patent:
-      - number: citation-number
-        inner-suffix: " "
-        wrap: brackets
+    paper-conference:
+      - contributor: author
+        form: long
+        and: text
+      - title: primary
+        quote: true
+      - title: parent-monograph
+        prefix: "presented at the "
+      - date: issued
+        form: year
+    webpage:
       - contributor: author
         form: long
         and: text
       - title: primary
         quote: true
         wrap: quotes
+      - title: parent-serial
+      - variable: publisher
+      - variable: publisher-place
+      - number: volume
+      - number: issue
       - date: issued
         form: year
+      - number: pages
+        label-form: short
+      - term: retrieved
+        form: long
+      - date: accessed
+        form: year
+      - variable: url
+    patent:
+      - contributor: author
+        form: long
+        and: text
+      - title: primary
+        quote: true
+      - number: number
+      - date: issued
+        form: full
