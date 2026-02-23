@@ -147,14 +147,21 @@ pub enum TypeSelector {
 
 impl TypeSelector {
     /// Check if this selector matches a reference type.
+    ///
+    /// Type names are compared after normalizing underscores to hyphens, so
+    /// "legal_case" and "legal-case" are treated as equivalent (matching both
+    /// CSL 1.0 underscore convention and CSLN hyphen convention).
     pub fn matches(&self, ref_type: &str) -> bool {
+        let normalized_ref = ref_type.replace('_', "-");
+        let eq = |s: &str| -> bool {
+            s == ref_type
+                || s.replace('_', "-") == normalized_ref
+                || s == "all"
+                || (s == "default" && ref_type == "default")
+        };
         match self {
-            TypeSelector::Single(s) => {
-                s == ref_type || s == "all" || (s == "default" && ref_type == "default")
-            }
-            TypeSelector::Multiple(types) => types
-                .iter()
-                .any(|t| t == ref_type || t == "all" || (t == "default" && ref_type == "default")),
+            TypeSelector::Single(s) => eq(s),
+            TypeSelector::Multiple(types) => types.iter().any(|t| eq(t)),
         }
     }
 }
