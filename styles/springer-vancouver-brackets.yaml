@@ -24,10 +24,8 @@ options:
   punctuation-in-quote: true
 
 citation:
-  non-integral:
-    template:
-      - number: citation-number
-    wrap: brackets
+  use-preset: numeric-citation
+  wrap: brackets
   integral:
     template:
       - contributor: author
