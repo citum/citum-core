@@ -180,13 +180,65 @@ No new mechanism is needed. Stabilizing and publishing the schema crate
 
 ## Git History on Transfer
 
-Use `gh repo transfer` to move `bdarcus/csl26` → `citum/citum-core` at
-Phase 1. GitHub preserves the full commit history and sets up automatic URL
-redirects from the old location, so existing links do not break immediately.
+The migration involves three distinct git operations, not a single repo transfer.
+Execute them in order: extract first, transfer last.
 
-After transfer, do a find-and-replace pass on hardcoded `bdarcus/csl26`
-references in `scripts/`, `CLAUDE.md`, and `docs/`. Do not use
-`git filter-repo` or start a fresh clone — history is an asset.
+### Step 1: Extract citum/labs (from bindings/)
+
+`bindings/lua/` and `bindings/latex/` move to a new `citum/labs` repository.
+Subdirectory extraction requires `git filter-repo` to preserve commit history for
+those paths:
+
+```bash
+# Clone a fresh copy (never filter the working repo)
+git clone https://github.com/bdarcus/csl26.git citum-labs-extract
+cd citum-labs-extract
+git filter-repo --path bindings/
+# Then create citum/labs on GitHub and push
+gh repo create citum/labs --private
+git remote set-url origin https://github.com/citum/labs.git
+git push -u origin main
+```
+
+After the new repo is live, remove `bindings/` from citum-core before the transfer.
+
+### Step 2: Extract citum/citum-hub (from styles/)
+
+The `styles/` directory (145 CSLN YAML styles) moves to `citum/citum-hub`. Same
+`git filter-repo` approach:
+
+```bash
+git clone https://github.com/bdarcus/csl26.git citum-hub-extract
+cd citum-hub-extract
+git filter-repo --path styles/
+gh repo create citum/citum-hub --public
+git remote set-url origin https://github.com/citum/citum-hub.git
+git push -u origin main
+```
+
+After the new repo is live, remove `styles/` from citum-core.
+
+### Step 3: Transfer citum-core
+
+Only after steps 1 and 2 are complete (so the extracted directories are already removed
+from the working tree before transfer), use `gh repo transfer`:
+
+```bash
+gh repo transfer bdarcus/csl26 citum --repo-name citum-core
+```
+
+GitHub preserves the full commit history of citum-core and sets up automatic URL redirects
+from `bdarcus/csl26`, so existing links do not break immediately.
+
+### After All Three Steps
+
+- Do a find-and-replace pass on hardcoded `bdarcus/csl26` references in `scripts/`,
+  `CLAUDE.md`, and `docs/`.
+- Update any `path =` references in `Cargo.toml` that pointed at the extracted
+  directories.
+- Update submodule config if citum-hub will reference `styles-legacy/` as a submodule.
+- Do NOT use `git filter-repo` on the main working repo itself — only on throw-away
+  clones. History rewriting on `citum-core` is not needed and should be avoided.
 
 ---
 
