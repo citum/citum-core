@@ -1051,32 +1051,48 @@ where
     }
 
     if show_bib {
-        let _ = writeln!(output, "BIBLIOGRAPHY:");
-        let filter: HashSet<&str> = item_ids.iter().map(|id| id.as_str()).collect();
-        let processed = processor.process_references();
-        let mut rendered_entries = Vec::new();
+        // Check if the style has bibliography groups defined
+        if processor
+            .style
+            .bibliography
+            .as_ref()
+            .and_then(|b| b.groups.as_ref())
+            .is_some()
+        {
+            // Use grouped renderer for styles with explicit groups
+            let _ = writeln!(output, "BIBLIOGRAPHY:");
+            let grouped = processor.render_grouped_bibliography_with_format::<F>();
+            output.push_str(&grouped);
+        } else {
+            // Fall back to entry-by-entry rendering for ungrouped styles
+            let _ = writeln!(output, "BIBLIOGRAPHY:");
+            let filter: HashSet<&str> = item_ids.iter().map(|id| id.as_str()).collect();
+            let processed = processor.process_references();
+            let mut rendered_entries = Vec::new();
 
-        for entry in processed.bibliography {
-            if filter.contains(entry.id.as_str()) {
-                let text =
-                    csln_processor::render::refs_to_string_with_format::<F>(vec![entry.clone()]);
-                let trimmed = text.trim();
-                if !trimmed.is_empty() {
-                    if show_keys {
-                        rendered_entries.push(format!("  [{}] {}", entry.id, trimmed));
-                    } else {
-                        rendered_entries.push(trimmed.to_string());
+            for entry in processed.bibliography {
+                if filter.contains(entry.id.as_str()) {
+                    let text = csln_processor::render::refs_to_string_with_format::<F>(vec![
+                        entry.clone(),
+                    ]);
+                    let trimmed = text.trim();
+                    if !trimmed.is_empty() {
+                        if show_keys {
+                            rendered_entries.push(format!("  [{}] {}", entry.id, trimmed));
+                        } else {
+                            rendered_entries.push(trimmed.to_string());
+                        }
                     }
                 }
             }
-        }
 
-        if show_keys {
-            for entry in rendered_entries {
-                let _ = writeln!(output, "{}", entry);
+            if show_keys {
+                for entry in rendered_entries {
+                    let _ = writeln!(output, "{}", entry);
+                }
+            } else if !rendered_entries.is_empty() {
+                let _ = writeln!(output, "{}", rendered_entries.join("\n\n"));
             }
-        } else if !rendered_entries.is_empty() {
-            let _ = writeln!(output, "{}", rendered_entries.join("\n\n"));
         }
     }
 

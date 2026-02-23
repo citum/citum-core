@@ -460,18 +460,54 @@ Structured: [@kuhn1962, section: 5].</pre>
                         Try It Yourself
                     </h3>
                 </div>
-                <div class="border-l-4 border-emerald-500 pl-4 mb-3">
+
+                <!-- English Grouping Example -->
+                <div class="border-l-4 border-emerald-500 pl-4 mb-6">
                     <p class="text-xs text-slate-600 mb-2">
-                        Render a grouped bibliography with per-group name ordering and localized headings:
+                        Render a grouped bibliography with primary, archival, and secondary sources in English:
                     </p>
                     <div class="bg-slate-900 rounded p-3 overflow-x-auto">
                         <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">csln</span> render refs \
   -b examples/bib-grouping-refs.yaml \
-  -s styles/experimental/multilingual-academic.yaml</pre>
+  -s styles/chicago-author-date.yaml</pre>
                     </div>
                     <p class="text-xs text-slate-500 mt-2">
-                        Vietnamese group sorts by given name; Western group sorts by family name. Bibliography headings are
-                        localized by group.
+                        Expected output with English headings:
+                    </p>
+                    <div class="bg-slate-50 border border-slate-200 rounded p-3 mt-2 text-xs font-mono text-slate-700 overflow-x-auto">
+                        <pre># Primary Sources
+
+Darwin, Charles. 1859. On the Origin of Species. London: John Murray.
+
+Freud, Sigmund. 1900. Die Traumdeutung. Leipzig: Franz Deuticke.
+
+# Archival Sources
+
+Darwin, Charles. 1876. Letter to T.H. Huxley, 14 September 1876.
+
+# Secondary Sources
+
+Browne, Janet. 2002. Charles Darwin: The Power of Place. New York: Alfred A. Knopf.
+
+Gay, Peter. 1988. Freud: A Life for Our Time. New York: W.W. Norton.
+
+Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the American Philosophical Society 135 (4): 317–330.</pre>
+                    </div>
+                </div>
+
+                <!-- German Grouping Example -->
+                <div class="border-l-4 border-emerald-500 pl-4">
+                    <p class="text-xs text-slate-600 mb-2">
+                        Switch to German headings by setting <code class="text-slate-600 bg-slate-100 px-1 rounded">default-locale: de-DE</code> in the style:
+                    </p>
+                    <div class="bg-slate-900 rounded p-3 overflow-x-auto">
+                        <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">csln</span> render refs \
+  -b examples/bib-grouping-refs.yaml \
+  -s styles/chicago-author-date.yaml \
+  --default-locale de-DE</pre>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">
+                        Expected output with German headings (Primärquellen, Sekundärquellen, Archivalische Quellen).
                     </p>
                 </div>
             </div>

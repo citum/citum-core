@@ -1,55 +1,13 @@
 # yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/citations.json
-# Bibliography Grouping Citation Examples
-# Paired with examples/bib-grouping-refs.yaml
-# Demonstrates how citations pull from grouped bibliography sections
-# Use with: csln process examples/bib-grouping-refs.yaml -s styles/experimental/multilingual-academic.yaml -c examples/bib-grouping-citations.yaml
-
-# 1. Single Vietnamese reference
-- items:
-    - id: nguyen2020
-  mode: non-integral
-
-# 2. Single Western reference
-- items:
-    - id: smith2020
-  mode: non-integral
-
-# 3. Multi-cite mixing both language groups
-- items:
-    - id: tran2019
-    - id: jones2019
-  mode: non-integral
-
-# 4. Narrative citation to Vietnamese source
-- items:
-    - id: le2021
-  mode: integral
-
-# 5. Narrative citation to Western source with page locator
-- items:
-    - id: brown2021
-      label: page
-      locator: "112"
-  mode: integral
-
-# 6. Complex multi-cite: all Vietnamese authors
-- items:
-    - id: nguyen2020
-    - id: tran2019
-    - id: le2021
-  mode: non-integral
-
-# 7. Complex multi-cite: all Western authors
-- items:
-    - id: smith2020
-    - id: jones2019
-    - id: brown2021
-  mode: non-integral
-
-# 8. Mixed language group with prefix and suffix
-- items:
-    - id: nguyen2020
-    - id: smith2020
-  prefix: "compare "
-  suffix: " on related topics"
-  mode: non-integral
+---
+citations:
+  - id: cite-darwin
+    items:
+      - id: darwin1859
+  - id: cite-freud
+    items:
+      - id: freud1900
+  - id: cite-secondary
+    items:
+      - id: browne2002
+      - id: gay1988

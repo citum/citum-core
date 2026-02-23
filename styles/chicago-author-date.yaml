@@ -67,6 +67,8 @@ bibliography:
         localized:
           en-US: Primary Sources
           en: Primary Sources
+          de: Primärquellen
+          de-DE: Primärquellen
       selector:
         field:
           note: primary
@@ -75,6 +77,8 @@ bibliography:
         localized:
           en-US: Archival Sources
           en: Archival Sources
+          de: Archivalische Quellen
+          de-DE: Archivalische Quellen
       selector:
         field:
           note: archival
@@ -83,6 +87,8 @@ bibliography:
         localized:
           en-US: Secondary Sources
           en: Secondary Sources
+          de: Sekundärquellen
+          de-DE: Sekundärquellen
       selector:
         not:
           field:
