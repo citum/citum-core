@@ -1,0 +1,95 @@
+# yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/style.json
+info:
+  id: gost-r-7-0-5-2008-numeric
+  title: GOST R 7.0.5-2008 (Numeric)
+  description: >
+    Russian bibliography standard GOST R 7.0.5-2008 demonstrating
+    bibliography grouping by reference type with localized Russian headings.
+  default-locale: ru-RU
+
+options:
+  processing: in-text
+
+citation:
+  template:
+    - variable: citation-number
+
+bibliography:
+  groups:
+    - id: books
+      heading:
+        localized:
+          ru-RU: Книги и монографии
+          ru: Книги и монографии
+      selector:
+        type:
+          - book
+          - edited-book
+          - chapter
+          - reference-entry
+      sort:
+        template:
+          - key: title
+            ascending: true
+
+    - id: articles
+      heading:
+        localized:
+          ru-RU: Статьи и периодика
+          ru: Статьи и периодика
+      selector:
+        type:
+          - article-journal
+          - article-magazine
+          - article-newspaper
+      sort:
+        template:
+          - key: title
+            ascending: true
+
+    - id: legal
+      heading:
+        localized:
+          ru-RU: Нормативные документы
+          ru: Нормативные документы
+      selector:
+        type:
+          - statute
+          - legal-case
+          - treaty
+          - legislation
+      sort:
+        template:
+          - key: title
+            ascending: true
+
+    - id: other
+      heading:
+        localized:
+          ru-RU: Прочие источники
+          ru: Прочие источники
+      selector:
+        not:
+          type:
+            - book
+            - edited-book
+            - chapter
+            - reference-entry
+            - article-journal
+            - article-magazine
+            - article-newspaper
+            - statute
+            - legal-case
+            - treaty
+            - legislation
+
+  template:
+    - variable: citation-number
+      prefix: "["
+      suffix: "] "
+    - contributor: author
+      form: long
+    - title: primary
+    - variable: publisher
+    - date: issued
+      form: year
