@@ -1282,9 +1282,7 @@ fn should_merge_inferred_type_template(
         // Case-law citations are structurally distinct in many numeric styles
         // and often need dedicated suppression/order not recoverable from the
         // shared inferred template alone.
-        "legal-case" | "legal_case" => {
-            !template_targets_type(inferred_template, type_name)
-        }
+        "legal-case" | "legal_case" => !template_targets_type(inferred_template, type_name),
         _ => false,
     }
 }
