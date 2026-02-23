@@ -15,13 +15,13 @@ bindings strategy.
 
 See docs/architecture/CITUM_MODULARIZATION.md for the full plan.
 
-## Phase 0 (now)
-- csl26-p0cl: Remove unused clap dep from csln_processor
-- csl26-p0dc: Move csl_legacy / biblatex conversion impls to csln_migrate
+## Phase 0 (completed)
+- csl26-p0cl: Remove unused clap dep from csln_processor ✅
+- csl26-p0dc: Decouple csln_core from csl_legacy and biblatex ✅
 
 ## Phase 1 (at next wave break)
 - csl26-p1rn: GitHub org transfer + crate rename
 
-## Phase 2 (before Phase 4)
+## Phase 2 (pre-production)
 - csl26-p2bn: Define citum-bindings public API
 - csl26-p2lb: Create citum/labs repository with LuaLaTeX binding

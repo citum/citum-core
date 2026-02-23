@@ -37,11 +37,13 @@ These `From` impls belong in `csln_migrate`, not `csln_core`. The schema
 crate should define types; the migration crate should define conversions
 from legacy formats into those types.
 
-### 2. `csln_core` → `biblatex` (belongs in migration layer)
+### 2. `csln_core` → `biblatex` (belongs in processor layer)
 
 `conversion.rs` also implements `InputReference::from_biblatex()`, which
-imports `biblatex::{Chunk, Entry, Person}`. Biblatex parsing is migration
-tooling, not schema definition. This method should move to `csln_migrate`.
+imports `biblatex::{Chunk, Entry, Person}`. Biblatex parsing is not schema
+definition. This method belongs in the processor layer (I/O or reference
+conversion), where `biblatex` is already a direct dependency and where
+biblatex input is actually consumed.
 
 ### 3. `csln_processor` → `clap` (unused library dependency)
 
@@ -95,7 +97,7 @@ citum-core/                      # renamed from csl26
   bindings/
     lua/                         # existing LuaLaTeX integration
     latex/                       # existing LaTeX binding
-    wasm/                        # future: citum-wasm (Phase 4+)
+    wasm/                        # future: citum-wasm (pre-production milestone)
 ```
 
 ---
@@ -112,13 +114,17 @@ dependency graph and correctness without breaking public APIs.
 - Library crates must not depend on CLI frameworks
 - Risk: none; clap is not imported in any source file
 
-**P0-2: Move `csl_legacy` conversion impls to `csln_migrate`**
-- Move `From<csl_legacy::...>` impls from `csln_core/src/reference/conversion.rs`
-  to `csln_migrate`
-- Move `InputReference::from_biblatex()` to `csln_migrate` as a free function
-- Remove `csl_legacy` and `biblatex` deps from `csln_core/Cargo.toml`
-- This is the primary architectural fix; `csln_core` becomes a clean schema crate
-- Risk: medium; requires updating all call sites for `from_biblatex` and the `From` impls
+**P0-2: Decouple `csln_core` from `csl_legacy` and `biblatex`** ✅ Done
+- The `From<csl_legacy::...>` impls must stay in `csln_core` due to the Rust
+  orphan rule (`InputReference` is defined there), but `csl_legacy` is now
+  optional, gated behind a `legacy-convert` feature flag
+- `biblatex` is removed from `csln_core` entirely; `from_biblatex` moved to
+  `csln_processor/src/ffi.rs` as a free function (interim placement — the
+  right long-term home is a dedicated IO or reference-conversion module within
+  the processor, not the FFI layer)
+- `csln_processor` activates the `legacy-convert` feature on `csln_core`,
+  so all existing call sites continue to work
+- `csln_core` without the feature has zero legacy deps
 
 ### Phase 1: Rename and GitHub Org (At Wave Break)
 
@@ -141,7 +147,7 @@ oracle scripts.
 - Defer until schema reaches version 1.0 stability
 - Use GitHub as distribution mechanism in the interim
 
-### Phase 2: Bindings Strategy (Before Phase 4)
+### Phase 2: Bindings Strategy (Before Production)
 
 **P2-1: Define `citum-bindings` public API**
 - Thin wrapper over `citum-engine`
@@ -155,7 +161,8 @@ oracle scripts.
 - Establish pattern for future experimental integrations
 
 **Do not** implement FFI tool generation (boltffi or similar) until the
-engine API surface is stable. Pin to Phase 4 at earliest.
+engine API surface is stable. Pin to the production readiness milestone
+(ROADMAP.md Phase 4) at earliest.
 
 ---
 
@@ -168,6 +175,29 @@ command exposes this.
 
 No new mechanism is needed. Stabilizing and publishing the schema crate
 (Phase 1) is sufficient to make this path reliable.
+
+---
+
+## Git History on Transfer
+
+Use `gh repo transfer` to move `bdarcus/csl26` → `citum/citum-core` at
+Phase 1. GitHub preserves the full commit history and sets up automatic URL
+redirects from the old location, so existing links do not break immediately.
+
+After transfer, do a find-and-replace pass on hardcoded `bdarcus/csl26`
+references in `scripts/`, `CLAUDE.md`, and `docs/`. Do not use
+`git filter-repo` or start a fresh clone — history is an asset.
+
+---
+
+## Documentation Repository
+
+Keep docs in the main `citum-core` repo for now. Docs must stay in sync with
+schema changes, and a separate repo adds overhead with no benefit at this stage.
+
+Revisit when: (a) the API reaches 1.0 stability, and (b) a dedicated
+publishing pipeline (mdBook or similar) is needed for `citum-hub`. At that
+point a `citum/docs` repo fed by CI from `citum-core` becomes viable.
 
 ---
 

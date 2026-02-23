@@ -1,7 +1,7 @@
 ---
 # csl26-p0dc
-title: 'Phase 0: Move csl_legacy coupling from csln_core to csln_migrate'
-status: todo
+title: 'Phase 0: Decouple csln_core from csl_legacy and biblatex'
+status: completed
 type: refactor
 priority: normal
 created_at: 2026-02-22T00:00:00Z
@@ -10,32 +10,25 @@ blocking:
     - csl26-modz
 ---
 
-`csln_core` (the intended schema source-of-truth) currently imports
-`csl_legacy` and `biblatex` via `crates/csln_core/src/reference/conversion.rs`.
-This is a boundary violation: the schema crate should define types; the
-migration crate should define conversions from external formats.
+`csln_core` now has zero legacy deps in its default configuration.
 
-## Coupling to remove
+## What was done
 
-File: `crates/csln_core/src/reference/conversion.rs`
+* `csl_legacy` made optional, gated behind new `legacy-convert` feature in
+  `csln_core/Cargo.toml`. The `From<csl_legacy::...>` trait impls remain in
+  `csln_core` (Rust orphan rule requires this — `InputReference` is defined
+  there), but only compile in when the feature is active.
+* `biblatex` removed from `csln_core` entirely. `InputReference::from_biblatex`
+  and the `from_biblatex_persons` helper moved to `csln_processor/src/ffi.rs`
+  as free functions — the only call site at the time of the change.
+* `csln_processor` activates `legacy-convert` on `csln_core`; all existing
+  call sites in `io.rs`, `ffi.rs`, and test files continue to work.
 
-* `From<csl_legacy::csl_json::Reference> for InputReference`
-* `From<csl_legacy::csl_json::DateVariable> for EdtfString`
-* `From<Vec<csl_legacy::csl_json::Name>> for Contributor`
-* `InputReference::from_biblatex()` (imports biblatex::{Chunk, Entry, Person})
+## Follow-on work
 
-## Target
-
-Move these impls/functions to `crates/csln_migrate/` as free functions or
-trait impls in a new `conversion` module. Update all call sites.
-
-Remove from `csln_core/Cargo.toml`:
-* `csl_legacy = { path = "../csl_legacy" }`
-* `biblatex = "0.11"`
-
-## Risk
-
-Medium. Requires auditing all call sites across the workspace that use the
-`From` impls or `from_biblatex`. Run full test suite after the change.
+`from_biblatex` in `ffi.rs` is an interim placement. The right long-term home
+is a dedicated IO or reference-conversion module within `csln_processor` (not
+the FFI layer). This can move when the processor gains a cleaner `io/` or
+`reference/conversion.rs` structure.
 
 Refs: csl26-modz, docs/architecture/CITUM_MODULARIZATION.md
