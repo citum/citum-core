@@ -845,10 +845,11 @@ function generateReport(options) {
 function generateHtml(report) {
   const headerHtml = generateHtmlHeader(report);
   const statsHtml = generateHtmlStats(report);
+  const sqiExplainerHtml = generateHtmlSqiExplainer();
   const tableHtml = generateHtmlTable(report);
   const footerHtml = generateHtmlFooter();
 
-  return `${headerHtml}${statsHtml}${tableHtml}${footerHtml}`;
+  return `${headerHtml}${statsHtml}${sqiExplainerHtml}${tableHtml}${footerHtml}`;
 }
 
 function generateHtmlHeader(report) {
@@ -1034,6 +1035,30 @@ function generateHtmlStats(report) {
                     <div class="text-3xl font-bold text-slate-900">${qualityPct}%</div>
                     <div class="text-xs text-slate-400 mt-2">Type coverage, fallback, concision, presets</div>
                 </div>
+            </div>
+        </div>
+    </section>
+`;
+}
+
+function generateHtmlSqiExplainer() {
+  return `
+    <!-- SQI Explainer -->
+    <section class="py-8 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="bg-white rounded-xl border border-slate-200 p-6">
+                <h2 class="text-lg font-semibold text-slate-900 mb-2">How To Read Fidelity And SQI</h2>
+                <p class="text-sm text-slate-600 mb-3">
+                    <strong>Fidelity</strong> is the hard gate: rendered output should match citeproc-js.
+                    <strong>SQI</strong> (Style Quality Index) is secondary: it scores maintainability and fallback quality.
+                </p>
+                <p class="text-sm text-slate-600 mb-4">
+                    Current working target for style waves is <code>&gt;=95% fidelity</code> and <code>&gt;=90 SQI</code>.
+                    SQI should never be improved at the cost of fidelity.
+                </p>
+                <a class="text-sm font-medium text-primary hover:underline" href="reference/SQI.md">
+                    Read the full SQI definition and scoring details
+                </a>
             </div>
         </div>
     </section>
