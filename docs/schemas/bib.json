@@ -35,229 +35,6 @@
     }
   },
   "definitions": {
-    "Brief": {
-      "description": "A legal brief or filing.",
-      "type": "object",
-      "required": [
-        "issued",
-        "title"
-      ],
-      "properties": {
-        "accessed": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "author": {
-          "description": "Author/filer of the brief",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "authority": {
-          "description": "Court (e.g., \"U.S. Supreme Court\")",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "docket-number": {
-          "description": "Docket number",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "issued": {
-          "description": "Filing date",
-          "allOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            }
-          ]
-        },
-        "keywords": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "language": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "note": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "title": {
-          "description": "Brief title or case name",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Title"
-            }
-          ]
-        },
-        "url": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "uri"
-        }
-      },
-      "additionalProperties": false
-    },
-    "Classic": {
-      "description": "A classic work (Aristotle, Bible, etc.) with standard citation forms.",
-      "type": "object",
-      "required": [
-        "issued",
-        "title"
-      ],
-      "properties": {
-        "accessed": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "author": {
-          "description": "Author (e.g., \"Aristotle\")",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "editor": {
-          "description": "Editor or translator",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "issued": {
-          "description": "Publication date of this edition (not original)",
-          "allOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            }
-          ]
-        },
-        "keywords": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "language": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "note": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "publisher": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "section": {
-          "description": "Section, book, or chapter in standard reference system",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "title": {
-          "description": "Work title (e.g., \"Nicomachean Ethics\")",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Title"
-            }
-          ]
-        },
-        "translator": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "url": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "uri"
-        },
-        "volume": {
-          "description": "Volume in standard reference system",
-          "type": [
-            "string",
-            "null"
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
     "Collection": {
       "description": "A collection of works, such as an anthology or proceedings.",
       "type": "object",
@@ -368,131 +145,7 @@
           ],
           "format": "uri"
         }
-      },
-      "additionalProperties": false
-    },
-    "CollectionComponent": {
-      "description": "A component of a larger monograph, such as a chapter in a book.",
-      "type": "object",
-      "required": [
-        "issued",
-        "parent",
-        "type"
-      ],
-      "properties": {
-        "accessed": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "author": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "doi": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "genre": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "issued": {
-          "$ref": "#/definitions/EdtfString"
-        },
-        "keywords": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "language": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "medium": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "note": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "pages": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/NumOrStr"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "parent": {
-          "$ref": "#/definitions/Parent_for_Collection"
-        },
-        "title": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Title"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "translator": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "type": {
-          "$ref": "#/definitions/MonographComponentType"
-        },
-        "url": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "uri"
-        }
-      },
-      "additionalProperties": false
+      }
     },
     "CollectionType": {
       "description": "Types of collections.",
@@ -528,221 +181,9 @@
         "$ref": "#/definitions/Contributor"
       }
     },
-    "Dataset": {
-      "description": "A research dataset.",
-      "type": "object",
-      "required": [
-        "issued",
-        "title"
-      ],
-      "properties": {
-        "accessed": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "author": {
-          "description": "Dataset author(s)/creator(s)",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "doi": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "format": {
-          "description": "File format (e.g., \"CSV\", \"NetCDF\", \"HDF5\")",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "issued": {
-          "description": "Publication/release date",
-          "allOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            }
-          ]
-        },
-        "keywords": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "language": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "note": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "publisher": {
-          "description": "Publisher or repository (e.g., \"Zenodo\", \"Dryad\")",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "repository": {
-          "description": "Repository or archive name",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "size": {
-          "description": "Dataset size (e.g., \"2.4 GB\", \"150,000 records\")",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "title": {
-          "description": "Dataset title",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Title"
-            }
-          ]
-        },
-        "url": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "uri"
-        },
-        "version": {
-          "description": "Version number",
-          "type": [
-            "string",
-            "null"
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
     "EdtfString": {
       "description": "An EDTF string.",
       "type": "string"
-    },
-    "Hearing": {
-      "description": "A legislative or administrative hearing.",
-      "type": "object",
-      "required": [
-        "issued",
-        "title"
-      ],
-      "properties": {
-        "accessed": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "authority": {
-          "description": "Legislative body conducting the hearing (e.g., \"U.S. Senate Committee on Finance\")",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "issued": {
-          "description": "Hearing date",
-          "allOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            }
-          ]
-        },
-        "keywords": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "language": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "note": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "session-number": {
-          "description": "Session or congress number",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "title": {
-          "description": "Hearing title",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Title"
-            }
-          ]
-        },
-        "url": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "uri"
-        }
-      },
-      "additionalProperties": false
     },
     "InputBibliographyInfo": {
       "description": "Metadata for an input bibliography.",
@@ -764,398 +205,1842 @@
     },
     "InputReference": {
       "description": "The Reference model.",
-      "anyOf": [
+      "oneOf": [
         {
           "description": "A monograph, such as a book or a report, is a monolithic work published or produced as a complete entity.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Monograph"
+          "type": "object",
+          "required": [
+            "class",
+            "issued",
+            "title",
+            "type"
+          ],
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "author": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "class": {
+              "type": "string",
+              "enum": [
+                "monograph"
+              ]
+            },
+            "collection-number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "doi": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "edition": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "editor": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "genre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "isbn": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "$ref": "#/definitions/EdtfString"
+            },
+            "keywords": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
+            "language": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "medium": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "original-date": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "original-title": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "publisher": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "report-number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "$ref": "#/definitions/Title"
+            },
+            "translator": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": {
+              "$ref": "#/definitions/MonographType"
+            },
+            "url": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uri"
             }
-          ]
+          }
         },
         {
           "description": "A component of a larger Monograph, such as a chapter in a book. The parent monograph is referenced by its ID.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/CollectionComponent"
+          "type": "object",
+          "required": [
+            "class",
+            "issued",
+            "parent",
+            "type"
+          ],
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "author": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "class": {
+              "type": "string",
+              "enum": [
+                "collection-component"
+              ]
+            },
+            "doi": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "genre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "$ref": "#/definitions/EdtfString"
+            },
+            "keywords": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
+            "language": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "medium": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "pages": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/NumOrStr"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "parent": {
+              "$ref": "#/definitions/Parent_for_Collection"
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "translator": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": {
+              "$ref": "#/definitions/MonographComponentType"
+            },
+            "url": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uri"
             }
-          ]
+          }
         },
         {
           "description": "A component of a larger serial publication; for example a journal or newspaper article. The parent serial is referenced by its ID.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/SerialComponent"
+          "type": "object",
+          "required": [
+            "class",
+            "issued",
+            "parent",
+            "type"
+          ],
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "author": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "class": {
+              "type": "string",
+              "enum": [
+                "serial-component"
+              ]
+            },
+            "doi": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "genre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issue": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/NumOrStr"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "issued": {
+              "$ref": "#/definitions/EdtfString"
+            },
+            "keywords": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
+            "language": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "medium": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "pages": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "parent": {
+              "description": "The parent work, such as a magazine or journal.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Parent_for_Serial"
+                }
+              ]
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "translator": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": {
+              "$ref": "#/definitions/SerialComponentType"
+            },
+            "url": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uri"
+            },
+            "volume": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/NumOrStr"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             }
-          ]
+          }
         },
         {
           "description": "A collection of works, such as an anthology or proceedings.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Collection"
+          "type": "object",
+          "required": [
+            "class",
+            "issued",
+            "type"
+          ],
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "class": {
+              "type": "string",
+              "enum": [
+                "collection"
+              ]
+            },
+            "collection-number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "editor": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "isbn": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "$ref": "#/definitions/EdtfString"
+            },
+            "keywords": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
+            "language": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "publisher": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "translator": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": {
+              "$ref": "#/definitions/CollectionType"
+            },
+            "url": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uri"
             }
-          ]
+          }
         },
         {
           "description": "A legal case (court decision).",
-          "allOf": [
-            {
-              "$ref": "#/definitions/LegalCase"
+          "type": "object",
+          "required": [
+            "authority",
+            "class",
+            "issued",
+            "title"
+          ],
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "authority": {
+              "description": "Court or authority (e.g., \"U.S. Supreme Court\")",
+              "type": "string"
+            },
+            "class": {
+              "type": "string",
+              "enum": [
+                "legal-case"
+              ]
+            },
+            "doi": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "description": "Decision date",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                }
+              ]
+            },
+            "keywords": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
+            "language": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "page": {
+              "description": "First page of case in reporter",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "reporter": {
+              "description": "Reporter abbreviation (e.g., \"U.S.\", \"F.2d\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "description": "Case name (e.g., \"Brown v. Board of Education\")",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Title"
+                }
+              ]
+            },
+            "url": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uri"
+            },
+            "volume": {
+              "description": "Reporter volume",
+              "type": [
+                "string",
+                "null"
+              ]
             }
-          ]
+          }
         },
         {
           "description": "A statute or legislative act.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Statute"
+          "type": "object",
+          "required": [
+            "class",
+            "issued",
+            "title"
+          ],
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "authority": {
+              "description": "Legislative body (e.g., \"U.S. Congress\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "class": {
+              "type": "string",
+              "enum": [
+                "statute"
+              ]
+            },
+            "code": {
+              "description": "Code abbreviation (e.g., \"U.S.C.\", \"Pub. L.\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "description": "Enactment or publication date",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                }
+              ]
+            },
+            "keywords": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
+            "language": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "section": {
+              "description": "Section or page number",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "description": "Statute name (e.g., \"Civil Rights Act of 1964\")",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Title"
+                }
+              ]
+            },
+            "url": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uri"
+            },
+            "volume": {
+              "description": "Code volume",
+              "type": [
+                "string",
+                "null"
+              ]
             }
-          ]
+          }
         },
         {
           "description": "An international treaty or agreement.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Treaty"
+          "type": "object",
+          "required": [
+            "class",
+            "issued",
+            "title"
+          ],
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "author": {
+              "description": "Parties to the treaty",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "class": {
+              "type": "string",
+              "enum": [
+                "treaty"
+              ]
+            },
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "description": "Signing or ratification date",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                }
+              ]
+            },
+            "keywords": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
+            "language": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "page": {
+              "description": "Page or treaty number",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "reporter": {
+              "description": "Treaty series abbreviation (e.g., \"U.N.T.S.\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "description": "Treaty name (e.g., \"Treaty of Versailles\")",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Title"
+                }
+              ]
+            },
+            "url": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uri"
+            },
+            "volume": {
+              "description": "Treaty series volume",
+              "type": [
+                "string",
+                "null"
+              ]
             }
-          ]
+          }
         },
         {
           "description": "A legislative or administrative hearing.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Hearing"
+          "type": "object",
+          "required": [
+            "class",
+            "issued",
+            "title"
+          ],
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "authority": {
+              "description": "Legislative body conducting the hearing (e.g., \"U.S. Senate Committee on Finance\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "class": {
+              "type": "string",
+              "enum": [
+                "hearing"
+              ]
+            },
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "description": "Hearing date",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                }
+              ]
+            },
+            "keywords": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
+            "language": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "session-number": {
+              "description": "Session or congress number",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "description": "Hearing title",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Title"
+                }
+              ]
+            },
+            "url": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uri"
             }
-          ]
+          }
         },
         {
           "description": "An administrative regulation.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Regulation"
+          "type": "object",
+          "required": [
+            "class",
+            "issued",
+            "title"
+          ],
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "authority": {
+              "description": "Regulatory authority (e.g., \"EPA\", \"Federal Register\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "class": {
+              "type": "string",
+              "enum": [
+                "regulation"
+              ]
+            },
+            "code": {
+              "description": "Code abbreviation (e.g., \"C.F.R.\", \"Fed. Reg.\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "description": "Publication or effective date",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                }
+              ]
+            },
+            "keywords": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
+            "language": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "section": {
+              "description": "Section or page number",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "description": "Regulation title",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Title"
+                }
+              ]
+            },
+            "url": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uri"
+            },
+            "volume": {
+              "description": "Code volume",
+              "type": [
+                "string",
+                "null"
+              ]
             }
-          ]
+          }
         },
         {
           "description": "A legal brief or filing.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Brief"
+          "type": "object",
+          "required": [
+            "class",
+            "issued",
+            "title"
+          ],
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "author": {
+              "description": "Author/filer of the brief",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "authority": {
+              "description": "Court (e.g., \"U.S. Supreme Court\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "class": {
+              "type": "string",
+              "enum": [
+                "brief"
+              ]
+            },
+            "docket-number": {
+              "description": "Docket number",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "description": "Filing date",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                }
+              ]
+            },
+            "keywords": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
+            "language": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "description": "Brief title or case name",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Title"
+                }
+              ]
+            },
+            "url": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uri"
             }
-          ]
+          }
         },
         {
           "description": "A classic work with standard citation forms.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Classic"
+          "type": "object",
+          "required": [
+            "class",
+            "issued",
+            "title"
+          ],
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "author": {
+              "description": "Author (e.g., \"Aristotle\")",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "class": {
+              "type": "string",
+              "enum": [
+                "classic"
+              ]
+            },
+            "editor": {
+              "description": "Editor or translator",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "description": "Publication date of this edition (not original)",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                }
+              ]
+            },
+            "keywords": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
+            "language": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "publisher": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "section": {
+              "description": "Section, book, or chapter in standard reference system",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "description": "Work title (e.g., \"Nicomachean Ethics\")",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Title"
+                }
+              ]
+            },
+            "translator": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "url": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uri"
+            },
+            "volume": {
+              "description": "Volume in standard reference system",
+              "type": [
+                "string",
+                "null"
+              ]
             }
-          ]
+          }
         },
         {
           "description": "A patent.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Patent"
+          "type": "object",
+          "required": [
+            "class",
+            "issued",
+            "patent-number",
+            "title"
+          ],
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "application-number": {
+              "description": "Application number",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "assignee": {
+              "description": "Assignee (patent holder)",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "author": {
+              "description": "Inventor(s)",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "authority": {
+              "description": "Patent office (e.g., \"U.S. Patent and Trademark Office\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "class": {
+              "type": "string",
+              "enum": [
+                "patent"
+              ]
+            },
+            "filing-date": {
+              "description": "Filing date",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "description": "Issue/grant date",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                }
+              ]
+            },
+            "jurisdiction": {
+              "description": "Jurisdiction (e.g., \"US\", \"EP\", \"JP\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "keywords": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
+            "language": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "patent-number": {
+              "description": "Patent number (e.g., \"U.S. Patent No. 7,347,809\")",
+              "type": "string"
+            },
+            "title": {
+              "description": "Patent title",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Title"
+                }
+              ]
+            },
+            "url": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uri"
             }
-          ]
+          }
         },
         {
           "description": "A research dataset.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Dataset"
+          "type": "object",
+          "required": [
+            "class",
+            "issued",
+            "title"
+          ],
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "author": {
+              "description": "Dataset author(s)/creator(s)",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "class": {
+              "type": "string",
+              "enum": [
+                "dataset"
+              ]
+            },
+            "doi": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "format": {
+              "description": "File format (e.g., \"CSV\", \"NetCDF\", \"HDF5\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "description": "Publication/release date",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                }
+              ]
+            },
+            "keywords": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
+            "language": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "publisher": {
+              "description": "Publisher or repository (e.g., \"Zenodo\", \"Dryad\")",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "repository": {
+              "description": "Repository or archive name",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "size": {
+              "description": "Dataset size (e.g., \"2.4 GB\", \"150,000 records\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "description": "Dataset title",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Title"
+                }
+              ]
+            },
+            "url": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uri"
+            },
+            "version": {
+              "description": "Version number",
+              "type": [
+                "string",
+                "null"
+              ]
             }
-          ]
+          }
         },
         {
           "description": "A technical standard or specification.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Standard"
+          "type": "object",
+          "required": [
+            "class",
+            "issued",
+            "standard-number",
+            "title"
+          ],
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "authority": {
+              "description": "Standards organization (e.g., \"ISO\", \"ANSI\", \"IEEE\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "class": {
+              "type": "string",
+              "enum": [
+                "standard"
+              ]
+            },
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "description": "Publication date",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                }
+              ]
+            },
+            "keywords": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
+            "language": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "publisher": {
+              "description": "Publisher (usually same as authority)",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "standard-number": {
+              "description": "Standard number (e.g., \"ISO 8601\", \"IEEE 754-2008\")",
+              "type": "string"
+            },
+            "status": {
+              "description": "Status (e.g., \"published\", \"draft\", \"withdrawn\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "description": "Standard title",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Title"
+                }
+              ]
+            },
+            "url": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uri"
             }
-          ]
+          }
         },
         {
           "description": "Software or source code.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Software"
+          "type": "object",
+          "required": [
+            "class",
+            "issued",
+            "title"
+          ],
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "author": {
+              "description": "Author(s)/developer(s)",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "class": {
+              "type": "string",
+              "enum": [
+                "software"
+              ]
+            },
+            "doi": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "description": "Release date",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/EdtfString"
+                }
+              ]
+            },
+            "keywords": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
+            "language": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "license": {
+              "description": "License (e.g., \"MIT\", \"GPL-3.0\", \"Apache-2.0\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "platform": {
+              "description": "Platform (e.g., \"Windows\", \"macOS\", \"Linux\", \"cross-platform\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "publisher": {
+              "description": "Publisher or repository (e.g., \"GitHub\", \"Zenodo\")",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "repository": {
+              "description": "Repository URL",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "description": "Software title",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Title"
+                }
+              ]
+            },
+            "url": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uri"
+            },
+            "version": {
+              "description": "Version number (e.g., \"4.1.0\", \"v2.3.1\")",
+              "type": [
+                "string",
+                "null"
+              ]
             }
-          ]
+          }
         }
       ]
-    },
-    "LegalCase": {
-      "description": "A legal case (court decision).",
-      "type": "object",
-      "required": [
-        "authority",
-        "issued",
-        "title"
-      ],
-      "properties": {
-        "accessed": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "authority": {
-          "description": "Court or authority (e.g., \"U.S. Supreme Court\")",
-          "type": "string"
-        },
-        "doi": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "issued": {
-          "description": "Decision date",
-          "allOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            }
-          ]
-        },
-        "keywords": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "language": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "note": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "page": {
-          "description": "First page of case in reporter",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "reporter": {
-          "description": "Reporter abbreviation (e.g., \"U.S.\", \"F.2d\")",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "title": {
-          "description": "Case name (e.g., \"Brown v. Board of Education\")",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Title"
-            }
-          ]
-        },
-        "url": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "uri"
-        },
-        "volume": {
-          "description": "Reporter volume",
-          "type": [
-            "string",
-            "null"
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
-    "Monograph": {
-      "description": "A monograph, such as a book or a report, is a monolithic work published or produced as a complete entity.",
-      "type": "object",
-      "required": [
-        "issued",
-        "title",
-        "type"
-      ],
-      "properties": {
-        "accessed": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "author": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "collection-number": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "doi": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "edition": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "editor": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "genre": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "isbn": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "issued": {
-          "$ref": "#/definitions/EdtfString"
-        },
-        "keywords": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "language": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "medium": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "note": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "original-date": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "original-title": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Title"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "publisher": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "report-number": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "title": {
-          "$ref": "#/definitions/Title"
-        },
-        "translator": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "type": {
-          "$ref": "#/definitions/MonographType"
-        },
-        "url": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "uri"
-        }
-      },
-      "additionalProperties": false
     },
     "MonographComponentType": {
       "description": "Types of monograph components.",
@@ -1296,235 +2181,6 @@
         }
       ]
     },
-    "Patent": {
-      "description": "A patent.",
-      "type": "object",
-      "required": [
-        "issued",
-        "patent-number",
-        "title"
-      ],
-      "properties": {
-        "accessed": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "application-number": {
-          "description": "Application number",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "assignee": {
-          "description": "Assignee (patent holder)",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "author": {
-          "description": "Inventor(s)",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "authority": {
-          "description": "Patent office (e.g., \"U.S. Patent and Trademark Office\")",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "filing-date": {
-          "description": "Filing date",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "issued": {
-          "description": "Issue/grant date",
-          "allOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            }
-          ]
-        },
-        "jurisdiction": {
-          "description": "Jurisdiction (e.g., \"US\", \"EP\", \"JP\")",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "keywords": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "language": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "note": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "patent-number": {
-          "description": "Patent number (e.g., \"U.S. Patent No. 7,347,809\")",
-          "type": "string"
-        },
-        "title": {
-          "description": "Patent title",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Title"
-            }
-          ]
-        },
-        "url": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "uri"
-        }
-      },
-      "additionalProperties": false
-    },
-    "Regulation": {
-      "description": "An administrative regulation.",
-      "type": "object",
-      "required": [
-        "issued",
-        "title"
-      ],
-      "properties": {
-        "accessed": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "authority": {
-          "description": "Regulatory authority (e.g., \"EPA\", \"Federal Register\")",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "code": {
-          "description": "Code abbreviation (e.g., \"C.F.R.\", \"Fed. Reg.\")",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "issued": {
-          "description": "Publication or effective date",
-          "allOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            }
-          ]
-        },
-        "keywords": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "language": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "note": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "section": {
-          "description": "Section or page number",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "title": {
-          "description": "Regulation title",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Title"
-            }
-          ]
-        },
-        "url": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "uri"
-        },
-        "volume": {
-          "description": "Code volume",
-          "type": [
-            "string",
-            "null"
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
     "Serial": {
       "description": "A serial publication (journal, magazine, etc.).",
       "type": "object",
@@ -1567,150 +2223,6 @@
         }
       }
     },
-    "SerialComponent": {
-      "description": "A component of a larger serial publication; for example a journal or newspaper article. The parent serial is referenced by its ID.",
-      "type": "object",
-      "required": [
-        "issued",
-        "parent",
-        "type"
-      ],
-      "properties": {
-        "accessed": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "author": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "doi": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "genre": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "issue": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/NumOrStr"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "issued": {
-          "$ref": "#/definitions/EdtfString"
-        },
-        "keywords": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "language": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "medium": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "note": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "pages": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "parent": {
-          "description": "The parent work, such as a magazine or journal.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Parent_for_Serial"
-            }
-          ]
-        },
-        "title": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Title"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "translator": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "type": {
-          "$ref": "#/definitions/SerialComponentType"
-        },
-        "url": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "uri"
-        },
-        "volume": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/NumOrStr"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
     "SerialComponentType": {
       "description": "Types of serial components.",
       "type": "string",
@@ -1751,333 +2263,6 @@
           "$ref": "#/definitions/MultilingualString"
         }
       }
-    },
-    "Software": {
-      "description": "Software or source code.",
-      "type": "object",
-      "required": [
-        "issued",
-        "title"
-      ],
-      "properties": {
-        "accessed": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "author": {
-          "description": "Author(s)/developer(s)",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "doi": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "issued": {
-          "description": "Release date",
-          "allOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            }
-          ]
-        },
-        "keywords": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "language": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "license": {
-          "description": "License (e.g., \"MIT\", \"GPL-3.0\", \"Apache-2.0\")",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "note": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "platform": {
-          "description": "Platform (e.g., \"Windows\", \"macOS\", \"Linux\", \"cross-platform\")",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "publisher": {
-          "description": "Publisher or repository (e.g., \"GitHub\", \"Zenodo\")",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "repository": {
-          "description": "Repository URL",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "title": {
-          "description": "Software title",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Title"
-            }
-          ]
-        },
-        "url": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "uri"
-        },
-        "version": {
-          "description": "Version number (e.g., \"4.1.0\", \"v2.3.1\")",
-          "type": [
-            "string",
-            "null"
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
-    "Standard": {
-      "description": "A technical standard or specification.",
-      "type": "object",
-      "required": [
-        "issued",
-        "standard-number",
-        "title"
-      ],
-      "properties": {
-        "accessed": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "authority": {
-          "description": "Standards organization (e.g., \"ISO\", \"ANSI\", \"IEEE\")",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "issued": {
-          "description": "Publication date",
-          "allOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            }
-          ]
-        },
-        "keywords": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "language": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "note": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "publisher": {
-          "description": "Publisher (usually same as authority)",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "standard-number": {
-          "description": "Standard number (e.g., \"ISO 8601\", \"IEEE 754-2008\")",
-          "type": "string"
-        },
-        "status": {
-          "description": "Status (e.g., \"published\", \"draft\", \"withdrawn\")",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "title": {
-          "description": "Standard title",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Title"
-            }
-          ]
-        },
-        "url": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "uri"
-        }
-      },
-      "additionalProperties": false
-    },
-    "Statute": {
-      "description": "A statute or legislative act.",
-      "type": "object",
-      "required": [
-        "issued",
-        "title"
-      ],
-      "properties": {
-        "accessed": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "authority": {
-          "description": "Legislative body (e.g., \"U.S. Congress\")",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "code": {
-          "description": "Code abbreviation (e.g., \"U.S.C.\", \"Pub. L.\")",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "issued": {
-          "description": "Enactment or publication date",
-          "allOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            }
-          ]
-        },
-        "keywords": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "language": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "note": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "section": {
-          "description": "Section or page number",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "title": {
-          "description": "Statute name (e.g., \"Civil Rights Act of 1964\")",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Title"
-            }
-          ]
-        },
-        "url": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "uri"
-        },
-        "volume": {
-          "description": "Code volume",
-          "type": [
-            "string",
-            "null"
-          ]
-        }
-      },
-      "additionalProperties": false
     },
     "StructuredName": {
       "description": "A structured name is a name broken down into its constituent parts.",
@@ -2221,109 +2406,6 @@
           "minItems": 2
         }
       ]
-    },
-    "Treaty": {
-      "description": "An international treaty or agreement.",
-      "type": "object",
-      "required": [
-        "issued",
-        "title"
-      ],
-      "properties": {
-        "accessed": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "author": {
-          "description": "Parties to the treaty",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "issued": {
-          "description": "Signing or ratification date",
-          "allOf": [
-            {
-              "$ref": "#/definitions/EdtfString"
-            }
-          ]
-        },
-        "keywords": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "language": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "note": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "page": {
-          "description": "Page or treaty number",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "reporter": {
-          "description": "Treaty series abbreviation (e.g., \"U.N.T.S.\")",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "title": {
-          "description": "Treaty name (e.g., \"Treaty of Versailles\")",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Title"
-            }
-          ]
-        },
-        "url": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "uri"
-        },
-        "volume": {
-          "description": "Treaty series volume",
-          "type": [
-            "string",
-            "null"
-          ]
-        }
-      },
-      "additionalProperties": false
     }
   }
 }
