@@ -5,7 +5,7 @@ status: todo
 type: feature
 priority: normal
 created_at: 2026-02-07T06:53:39Z
-updated_at: 2026-02-08T21:04:19Z
+updated_at: 2026-02-24T16:14:33Z
 parent: csl26-u1in
 blocking:
     - csl26-5t6s
@@ -22,6 +22,7 @@ Requirements:
 Reference implementations:
 - Zotero/citeproc-js
 - org-cite oc-csl.el
+- biblatex's `\autocite` command
 
 Impact: Note styles (19% of corpus)
 Effort: 2-3 weeks
