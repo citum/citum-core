@@ -22,7 +22,7 @@ pub mod embedded;
 // Declarative macros for AST and configurations
 pub mod macros;
 
-pub use citation::{Citation, CitationItem, CitationMode, Citations, LocatorType};
+pub use citation::{Citation, CitationItem, CitationMode, Citations, LocatorType, Position};
 pub use grouping::{
     BibliographyGroup, CitedStatus, FieldMatcher, GroupHeading, GroupSelector, GroupSort,
     GroupSortKey, NameSortOrder, SortKey, TypeSelector,
@@ -193,6 +193,18 @@ pub struct CitationSpec {
     /// Overrides fields from the main citation spec when mode is NonIntegral.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub non_integral: Option<Box<CitationSpec>>,
+    /// Configuration for subsequent citations.
+    /// Overrides fields from the main citation spec when position is Subsequent.
+    /// Useful for short-form citations in note-based styles or author-date styles
+    /// that show abbreviated citations after the first mention.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subsequent: Option<Box<CitationSpec>>,
+    /// Configuration for ibid citations (ibid or ibid with locator).
+    /// Overrides fields from the main citation spec when position is Ibid or IbidWithLocator.
+    /// If present, takes precedence over `subsequent` for these positions.
+    /// Allows compact rendering like "ibid." or "ibid., p. 45".
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ibid: Option<Box<CitationSpec>>,
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
@@ -230,6 +242,67 @@ impl CitationSpec {
                 // We don't want to recurse infinitely or keep the mode specs in the merged result
                 merged.integral = None;
                 merged.non_integral = None;
+
+                if spec.options.is_some() {
+                    merged.options = spec.options.clone();
+                }
+                if spec.use_preset.is_some() {
+                    merged.use_preset = spec.use_preset.clone();
+                }
+                if spec.template.is_some() {
+                    merged.template = spec.template.clone();
+                }
+                if spec.wrap.is_some() {
+                    merged.wrap = spec.wrap.clone();
+                }
+                if spec.prefix.is_some() {
+                    merged.prefix = spec.prefix.clone();
+                }
+                if spec.suffix.is_some() {
+                    merged.suffix = spec.suffix.clone();
+                }
+                if spec.delimiter.is_some() {
+                    merged.delimiter = spec.delimiter.clone();
+                }
+                if spec.multi_cite_delimiter.is_some() {
+                    merged.multi_cite_delimiter = spec.multi_cite_delimiter.clone();
+                }
+                if spec.sort.is_some() {
+                    merged.sort = spec.sort.clone();
+                }
+
+                std::borrow::Cow::Owned(merged)
+            }
+            None => std::borrow::Cow::Borrowed(self),
+        }
+    }
+
+    /// Resolve the effective spec for a given citation position.
+    ///
+    /// If a position-specific spec exists (e.g., `ibid` for Ibid position),
+    /// it merges with and overrides the base spec. Position resolution should
+    /// be applied before mode resolution to allow position-specific modes.
+    ///
+    /// Priority: ibid > subsequent > base
+    pub fn resolve_for_position(
+        &self,
+        position: Option<&crate::citation::Position>,
+    ) -> std::borrow::Cow<'_, CitationSpec> {
+        use crate::citation::Position;
+
+        let position_spec = match position {
+            Some(Position::Ibid) | Some(Position::IbidWithLocator) => self.ibid.as_ref(),
+            Some(Position::Subsequent) => self.subsequent.as_ref(),
+            Some(Position::First) | None => None,
+        };
+
+        match position_spec {
+            Some(spec) => {
+                // Merge logic: position specific > base
+                let mut merged = self.clone();
+                // Don't recurse infinitely or keep position specs in merged result
+                merged.subsequent = None;
+                merged.ibid = None;
 
                 if spec.options.is_some() {
                     merged.options = spec.options.clone();

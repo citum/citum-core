@@ -1799,3 +1799,189 @@ fn test_group_heading_term_resolves_from_locale() {
 
     assert!(output.contains("# and"));
 }
+
+#[test]
+fn test_position_detection_first() {
+    use crate::reference::CitationItem;
+    use csln_core::Citation;
+
+    let processor = Processor::new(make_style(), make_bibliography());
+    let mut citations = vec![Citation {
+        items: vec![CitationItem {
+            id: "smith2020".to_string(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    }];
+
+    processor.annotate_positions(&mut citations);
+
+    assert_eq!(citations[0].position, Some(csln_core::Position::First));
+}
+
+#[test]
+fn test_position_detection_subsequent() {
+    use crate::reference::CitationItem;
+    use csln_core::Citation;
+
+    let processor = Processor::new(make_style(), make_bibliography());
+    let mut citations = vec![
+        Citation {
+            items: vec![CitationItem {
+                id: "smith2020".to_string(),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+        Citation {
+            items: vec![CitationItem {
+                id: "jones2021".to_string(),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+        Citation {
+            items: vec![CitationItem {
+                id: "smith2020".to_string(),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+    ];
+
+    processor.annotate_positions(&mut citations);
+
+    assert_eq!(citations[0].position, Some(csln_core::Position::First));
+    assert_eq!(citations[1].position, Some(csln_core::Position::First));
+    assert_eq!(citations[2].position, Some(csln_core::Position::Subsequent));
+}
+
+#[test]
+fn test_position_detection_ibid() {
+    use crate::reference::CitationItem;
+    use csln_core::Citation;
+
+    let processor = Processor::new(make_style(), make_bibliography());
+    let mut citations = vec![
+        Citation {
+            items: vec![CitationItem {
+                id: "smith2020".to_string(),
+                locator: None,
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+        Citation {
+            items: vec![CitationItem {
+                id: "smith2020".to_string(),
+                locator: None,
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+    ];
+
+    processor.annotate_positions(&mut citations);
+
+    assert_eq!(citations[0].position, Some(csln_core::Position::First));
+    assert_eq!(citations[1].position, Some(csln_core::Position::Ibid));
+}
+
+#[test]
+fn test_position_detection_ibid_with_locator() {
+    use crate::reference::CitationItem;
+    use csln_core::Citation;
+
+    let processor = Processor::new(make_style(), make_bibliography());
+    let mut citations = vec![
+        Citation {
+            items: vec![CitationItem {
+                id: "smith2020".to_string(),
+                locator: Some("42".to_string()),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+        Citation {
+            items: vec![CitationItem {
+                id: "smith2020".to_string(),
+                locator: Some("45".to_string()),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+    ];
+
+    processor.annotate_positions(&mut citations);
+
+    assert_eq!(citations[0].position, Some(csln_core::Position::First));
+    assert_eq!(
+        citations[1].position,
+        Some(csln_core::Position::IbidWithLocator)
+    );
+}
+
+#[test]
+fn test_position_detection_multi_item_no_ibid() {
+    use crate::reference::CitationItem;
+    use csln_core::Citation;
+
+    let processor = Processor::new(make_style(), make_bibliography());
+    let mut citations = vec![
+        Citation {
+            items: vec![CitationItem {
+                id: "smith2020".to_string(),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+        Citation {
+            items: vec![CitationItem {
+                id: "jones2021".to_string(),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+        Citation {
+            items: vec![
+                CitationItem {
+                    id: "smith2020".to_string(),
+                    ..Default::default()
+                },
+                CitationItem {
+                    id: "jones2021".to_string(),
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        },
+    ];
+
+    processor.annotate_positions(&mut citations);
+
+    assert_eq!(citations[0].position, Some(csln_core::Position::First));
+    assert_eq!(citations[1].position, Some(csln_core::Position::First));
+    // Multi-item citations should never be ibid, even if all items appeared before
+    assert_eq!(citations[2].position, Some(csln_core::Position::Subsequent));
+}
+
+#[test]
+fn test_position_detection_explicit_position_respected() {
+    use crate::reference::CitationItem;
+    use csln_core::Citation;
+
+    let processor = Processor::new(make_style(), make_bibliography());
+    let mut citations = vec![Citation {
+        items: vec![CitationItem {
+            id: "smith2020".to_string(),
+            ..Default::default()
+        }],
+        position: Some(csln_core::Position::Ibid),
+        ..Default::default()
+    }];
+
+    processor.annotate_positions(&mut citations);
+
+    // Explicit position should be preserved
+    assert_eq!(citations[0].position, Some(csln_core::Position::Ibid));
+}

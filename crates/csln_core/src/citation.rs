@@ -32,6 +32,26 @@ pub enum CitationMode {
     NonIntegral,
 }
 
+/// Position of a citation in the document flow.
+///
+/// Indicates where this citation appears relative to previous citations
+/// of the same item(s). Used for note-based styles to detect ibid and
+/// subsequent citations, and for author-date styles to apply position-specific
+/// formatting rules (e.g., short forms after first citation).
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum Position {
+    /// First citation of an item.
+    First,
+    /// Subsequent citation of an item (non-consecutive).
+    Subsequent,
+    /// Same item cited immediately before, no locator on either.
+    Ibid,
+    /// Same item cited immediately before, with different locator.
+    IbidWithLocator,
+}
+
 /// A citation containing one or more references.
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
@@ -48,6 +68,10 @@ pub struct Citation {
     /// Only relevant for author-date styles.
     #[serde(default, skip_serializing_if = "is_default_mode")]
     pub mode: CitationMode,
+    /// Position of this citation in the document flow.
+    /// Detected automatically by the processor or set explicitly by the caller.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub position: Option<Position>,
     /// Suppress the author name across all items in this citation.
     /// Used when the author is already named in the prose: "Smith argues (2020)".
     /// Applies uniformly to all items — per-item suppression is not supported
