@@ -25,7 +25,7 @@ Three tiers in ascending complexity:
 
 **Tier 2 – Ibid detection:** Detect `ibid` (immediately follows same source) and `ibid-with-locator` (same source, different locator). Aligns with the `Position` enum in `LEGAL_CITATIONS.md`.
 
-**Tier 3 – Page-aware ibid (enhancement only):** When the integration is page-aware (Office JS, LibreOffice UNO), detect "same source, first cite on page." Not a baseline requirement; see Hybrid Model below.
+**Tier 3 – Page-aware ibid (enhancement only):** When the integration is page-aware (Office JS, LibreOffice UNO), detect "same source, first cite on page." Not a baseline requirement; see Proposed Architectural Options below.
 
 ## Context and Constraints
 The primary challenge for ibid logic is that citation position can change dynamically as a document is edited. A citation that is ibid on page 5 might move to page 6 and require a full render if it is no longer immediately preceded by the same source.
@@ -57,13 +57,7 @@ The processor always returns a fully rendered "default" citation but includes a 
   "rendered": "Smith, 2020, p. 45",
   "contextual_overrides": {
     "ibid": "Ibid.",
-    "ibid_with_locator": "Ibid., p. 45",
-    "op_cit": "Smith, op. cit."
-  },
-  "conditions": {
-    "ibid": "immediately_follows_same_id",
-    "ibid_with_locator": "immediately_follows_same_id_and_locator",
-    "ibid_page": "immediately_follows_same_id_on_same_page"
+    "ibid_with_locator": "Ibid., p. 45"
   }
 }
 ```
