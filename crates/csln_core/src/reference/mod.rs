@@ -30,7 +30,7 @@ pub use self::types::*;
 /// The Reference model.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(untagged)]
+#[serde(tag = "class", rename_all = "kebab-case")]
 pub enum InputReference {
     /// A monograph, such as a book or a report, is a monolithic work published or produced as a complete entity.
     Monograph(Box<Monograph>),

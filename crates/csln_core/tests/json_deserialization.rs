@@ -15,6 +15,7 @@ fn test_monograph_doi_alias() {
 #[test]
 fn test_input_reference_doi_alias() {
     let json = r#"{
+        "class": "monograph",
         "type": "book",
         "title": "Test Book",
         "issued": "2023",
@@ -31,6 +32,7 @@ fn test_input_reference_doi_alias() {
 #[test]
 fn test_input_reference_url_alias() {
     let json = r#"{
+        "class": "monograph",
         "type": "book",
         "title": "Test Book",
         "issued": "2023",

@@ -2,6 +2,7 @@
   "comment": "Expanded test data covering common reference types and citation mechanics",
   "ITEM-1": {
     "id": "ITEM-1",
+    "class": "serial-component",
     "type": "article-journal",
     "title": "The Structure of Scientific Revolutions",
     "author": [{ "family": "Kuhn", "given": "Thomas S." }],
@@ -15,6 +16,7 @@
   },
   "ITEM-2": {
     "id": "ITEM-2",
+    "class": "monograph",
     "type": "book",
     "title": "A Brief History of Time",
     "author": [{ "family": "Hawking", "given": "Stephen" }],
@@ -24,6 +26,7 @@
   },
   "ITEM-3": {
     "id": "ITEM-3",
+    "class": "serial-component",
     "type": "article-journal",
     "title": "Deep Learning",
     "author": [
@@ -39,6 +42,7 @@
   },
   "ITEM-4": {
     "id": "ITEM-4",
+    "class": "collection-component",
     "type": "chapter",
     "title": "The Role of Deliberate Practice",
     "author": [{ "family": "Ericsson", "given": "K. Anders" }],
@@ -55,6 +59,7 @@
   },
   "ITEM-5": {
     "id": "ITEM-5",
+    "class": "monograph",
     "type": "report",
     "title": "World Development Report 2023",
     "author": [{ "literal": "World Bank" }],
@@ -64,6 +69,7 @@
   },
   "ITEM-6": {
     "id": "ITEM-6",
+    "class": "monograph",
     "type": "book",
     "title": "The Psychology of Computer Programming",
     "author": [
@@ -77,6 +83,7 @@
   },
   "ITEM-7": {
     "id": "ITEM-7",
+    "class": "serial-component",
     "type": "article-journal",
     "title": "Attention Is All You Need",
     "author": [
@@ -96,6 +103,7 @@
   },
   "ITEM-8": {
     "id": "ITEM-8",
+    "class": "serial-component",
     "type": "article-journal",
     "title": "Scientific Paradigms and Normal Science",
     "author": [{ "family": "Kuhn", "given": "Thomas S." }],
@@ -108,6 +116,7 @@
   },
   "ITEM-9": {
     "id": "ITEM-9",
+    "class": "serial-component",
     "type": "article-journal",
     "title": "Climate Change and Extreme Weather Events",
     "author": [
@@ -122,6 +131,7 @@
   },
   "ITEM-10": {
     "id": "ITEM-10",
+    "class": "serial-component",
     "type": "article-journal",
     "title": "Machine Learning for Climate Prediction",
     "author": [
@@ -137,6 +147,7 @@
   },
   "ITEM-11": {
     "id": "ITEM-11",
+    "class": "monograph",
     "type": "thesis",
     "title": "Neural Networks for Natural Language Understanding",
     "author": [{ "family": "Chen", "given": "Wei" }],
@@ -146,6 +157,7 @@
   },
   "ITEM-12": {
     "id": "ITEM-12",
+    "class": "collection-component",
     "type": "paper-conference",
     "title": "Distributed Representations of Words and Phrases",
     "author": [
@@ -162,6 +174,7 @@
   },
   "ITEM-13": {
     "id": "ITEM-13",
+    "class": "monograph",
     "type": "webpage",
     "title": "The State of JavaScript 2023",
     "author": [{ "literal": "State of JS Team" }],
@@ -171,6 +184,7 @@
   },
   "ITEM-14": {
     "id": "ITEM-14",
+    "class": "collection",
     "type": "book",
     "title": "Handbook of Research Methods in Social Psychology",
     "editor": [
@@ -183,6 +197,7 @@
   },
   "ITEM-15": {
     "id": "ITEM-15",
+    "class": "serial-component",
     "type": "article-journal",
     "title": "The Role of Theory in Research",
     "issued": { "date-parts": [[2018]] },
@@ -194,6 +209,7 @@
   },
   "ITEM-16": {
     "id": "ITEM-16",
+    "class": "serial-component",
     "type": "article-newspaper",
     "title": "Major Breakthrough in Quantum Computing Announced",
     "author": [{ "family": "Rodriguez", "given": "Maria" }],
@@ -203,6 +219,7 @@
   },
   "ITEM-17": {
     "id": "ITEM-17",
+    "class": "serial-component",
     "type": "article-magazine",
     "title": "The Art of Minimalism in Modern Design",
     "author": [{ "family": "Thompson", "given": "Alexander" }],
@@ -214,6 +231,7 @@
   },
   "ITEM-18": {
     "id": "ITEM-18",
+    "class": "serial-component",
     "type": "entry-encyclopedia",
     "title": "Renaissance Art and Culture",
     "author": [{ "family": "Vasari", "given": "Giorgio" }],
@@ -225,6 +243,7 @@
   },
   "ITEM-19": {
     "id": "ITEM-19",
+    "class": "dataset",
     "type": "dataset",
     "title": "Global Temperature Anomalies 1880-2023",
     "author": [{ "literal": "NASA Goddard Institute for Space Studies" }],
@@ -235,6 +254,7 @@
   },
   "ITEM-20": {
     "id": "ITEM-20",
+    "class": "legal-case",
     "type": "legal_case",
     "title": "Brown v. Board of Education",
     "issued": { "date-parts": [[1954, 5, 17]] },
@@ -245,6 +265,7 @@
   },
   "ITEM-21": {
     "id": "ITEM-21",
+    "class": "patent",
     "type": "patent",
     "title": "Method for Efficient Data Compression",
     "author": [
@@ -257,6 +278,7 @@
   },
   "ITEM-22": {
     "id": "ITEM-22",
+    "class": "monograph",
     "type": "motion_picture",
     "title": "The Arrival of a Train at La Ciotat Station",
     "author": [{ "family": "Lumière", "given": "Louis" }],
@@ -267,6 +289,7 @@
   },
   "ITEM-23": {
     "id": "ITEM-23",
+    "class": "serial-component",
     "type": "broadcast",
     "title": "The Universe in a Nutshell",
     "author": [{ "family": "Sagan", "given": "Carl" }],
@@ -277,6 +300,7 @@
   },
   "ITEM-24": {
     "id": "ITEM-24",
+    "class": "monograph",
     "type": "interview",
     "title": "The Future of Artificial Intelligence",
     "author": [{ "family": "Bengio", "given": "Yoshua" }],
@@ -287,6 +311,7 @@
   },
   "ITEM-25": {
     "id": "ITEM-25",
+    "class": "monograph",
     "type": "book",
     "title": "Metamorphosis",
     "author": [{ "family": "Kafka", "given": "Franz" }],
@@ -298,6 +323,7 @@
   },
   "ITEM-26": {
     "id": "ITEM-26",
+    "class": "monograph",
     "type": "book",
     "title": "Éthique",
     "author": [{ "family": "Spinoza", "given": "Baruch" }],
@@ -308,6 +334,7 @@
   },
   "ITEM-27": {
     "id": "ITEM-27",
+    "class": "monograph",
     "type": "report",
     "title": "State of the World's Biodiversity",
     "author": [{ "literal": "United Nations Environment Programme" }],
@@ -319,6 +346,7 @@
   },
   "ITEM-28": {
     "id": "ITEM-28",
+    "class": "monograph",
     "type": "personal_communication",
     "title": "Discussion on CSLN Schema Design",
     "author": [{ "family": "Smith", "given": "Patricia" }],
@@ -328,6 +356,7 @@
   },
   "ITEM-29": {
     "id": "ITEM-29",
+    "class": "serial-component",
     "type": "article-journal",
     "title": "Adaptive Climate Risk Modeling in Coastal Cities",
     "author": [
@@ -345,6 +374,7 @@
   },
   "ITEM-30": {
     "id": "ITEM-30",
+    "class": "serial-component",
     "type": "article-journal",
     "title": "Adaptive Climate Risk Modeling for Inland Regions",
     "author": [
@@ -362,6 +392,7 @@
   },
   "ITEM-31": {
     "id": "ITEM-31",
+    "class": "serial-component",
     "type": "article-journal",
     "title": "Methods for Robust Climate Attribution",
     "author": [{ "family": "Garcia", "given": "Maria" }],
@@ -373,6 +404,7 @@
   },
   "ITEM-32": {
     "id": "ITEM-32",
+    "class": "serial-component",
     "type": "article-journal",
     "title": "Methods for Probabilistic Climate Attribution",
     "author": [{ "family": "Garcia", "given": "Maria" }],

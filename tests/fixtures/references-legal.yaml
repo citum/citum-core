@@ -1,6 +1,7 @@
 references:
   # Legal case - has authority (required), reporter, page
   - id: brown1954
+    class: legal-case
     title: Brown v. Board of Education
     authority: U.S. Supreme Court
     volume: "347"
@@ -10,6 +11,7 @@ references:
 
   # Statute - has code and section (distinguishing from legal-case)
   - id: civilrights1964
+    class: statute
     title: Civil Rights Act of 1964
     authority: U.S. Congress
     volume: "78"
@@ -19,6 +21,7 @@ references:
 
   # Treaty - has author field (distinguishing from legal-case)
   - id: versailles1919
+    class: treaty
     title: Treaty of Versailles
     author:
       - literal: Allied Powers

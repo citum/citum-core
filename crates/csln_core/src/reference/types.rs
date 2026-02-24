@@ -90,7 +90,7 @@ impl Default for MultilingualString {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
-#[serde(deny_unknown_fields)]
+// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Monograph {
     pub id: Option<RefID>,
     pub r#type: MonographType,
@@ -137,7 +137,7 @@ pub enum MonographType {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
-#[serde(deny_unknown_fields)]
+// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Collection {
     pub id: Option<RefID>,
     pub r#type: CollectionType,
@@ -173,7 +173,7 @@ pub enum CollectionType {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
-#[serde(deny_unknown_fields)]
+// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct CollectionComponent {
     pub id: Option<RefID>,
     pub r#type: MonographComponentType,
@@ -210,7 +210,7 @@ pub enum MonographComponentType {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
-#[serde(deny_unknown_fields)]
+// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct SerialComponent {
     pub id: Option<RefID>,
     pub r#type: SerialComponentType,
@@ -360,7 +360,7 @@ pub enum RefDate {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
-#[serde(deny_unknown_fields)]
+// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct LegalCase {
     pub id: Option<RefID>,
     /// Case name (e.g., "Brown v. Board of Education")
@@ -389,7 +389,7 @@ pub struct LegalCase {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
-#[serde(deny_unknown_fields)]
+// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Statute {
     pub id: Option<RefID>,
     /// Statute name (e.g., "Civil Rights Act of 1964")
@@ -416,7 +416,7 @@ pub struct Statute {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
-#[serde(deny_unknown_fields)]
+// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Treaty {
     pub id: Option<RefID>,
     /// Treaty name (e.g., "Treaty of Versailles")
@@ -443,7 +443,7 @@ pub struct Treaty {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
-#[serde(deny_unknown_fields)]
+// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Hearing {
     pub id: Option<RefID>,
     /// Hearing title
@@ -466,7 +466,7 @@ pub struct Hearing {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
-#[serde(deny_unknown_fields)]
+// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Regulation {
     pub id: Option<RefID>,
     /// Regulation title
@@ -493,7 +493,7 @@ pub struct Regulation {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
-#[serde(deny_unknown_fields)]
+// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Brief {
     pub id: Option<RefID>,
     /// Brief title or case name
@@ -518,7 +518,7 @@ pub struct Brief {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
-#[serde(deny_unknown_fields)]
+// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Classic {
     pub id: Option<RefID>,
     /// Work title (e.g., "Nicomachean Ethics")
@@ -547,7 +547,7 @@ pub struct Classic {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
-#[serde(deny_unknown_fields)]
+// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Patent {
     pub id: Option<RefID>,
     /// Patent title
@@ -580,7 +580,7 @@ pub struct Patent {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
-#[serde(deny_unknown_fields)]
+// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Dataset {
     pub id: Option<RefID>,
     /// Dataset title
@@ -613,7 +613,7 @@ pub struct Dataset {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
-#[serde(deny_unknown_fields)]
+// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Standard {
     pub id: Option<RefID>,
     /// Standard title
@@ -640,7 +640,7 @@ pub struct Standard {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
-#[serde(deny_unknown_fields)]
+// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Software {
     pub id: Option<RefID>,
     /// Software title

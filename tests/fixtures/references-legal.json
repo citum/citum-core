@@ -1,6 +1,7 @@
 [
   {
     "id": "brown1954",
+    "class": "legal-case",
     "type": "legal_case",
     "title": "Brown v. Board of Education",
     "authority": "U.S. Supreme Court",
@@ -11,6 +12,7 @@
   },
   {
     "id": "civilrights1964",
+    "class": "statute",
     "type": "legislation",
     "title": "Civil Rights Act of 1964",
     "authority": "U.S. Congress",
@@ -21,6 +23,7 @@
   },
   {
     "id": "versailles1919",
+    "class": "treaty",
     "type": "treaty",
     "title": "Treaty of Versailles",
     "author": [{ "literal": "Allied Powers" }],

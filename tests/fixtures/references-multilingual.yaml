@@ -4,6 +4,7 @@ references:
   # Sorting should be by given name in Vietnamese convention
 
   - id: nguyen2020
+    class: monograph
     type: book  # MonographType::Book
     title: Lịch sử Việt Nam
     author:
@@ -15,6 +16,7 @@ references:
     language: vi
 
   - id: tran2019
+    class: monograph
     type: book  # MonographType::Book
     title: Văn hóa truyền thống
     author:
@@ -26,6 +28,7 @@ references:
     language: vi
 
   - id: le2021
+    class: monograph
     type: book  # MonographType::Book
     title: Kinh tế Việt Nam
     author:
@@ -40,6 +43,7 @@ references:
   # Sorting should be by family name (Smith, Jones)
 
   - id: smith2020
+    class: monograph
     type: book  # MonographType::Book
     title: Vietnamese History
     author:
@@ -51,6 +55,7 @@ references:
     language: en
 
   - id: jones2019
+    class: monograph
     type: book  # MonographType::Book
     title: Southeast Asian Culture
     author:
@@ -62,6 +67,7 @@ references:
     language: en
 
   - id: brown2021
+    class: monograph
     type: book  # MonographType::Book
     title: Economic Development
     author:

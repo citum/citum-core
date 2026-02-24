@@ -1,6 +1,7 @@
 [
   {
     "id": "pavlovic2008",
+    "class": "patent",
     "type": "patent",
     "title": "Bicycle with adjustable suspension",
     "author": [{ "family": "Pavlovic", "given": "Nebojša" }],
@@ -12,6 +13,7 @@
   },
   {
     "id": "irino2009",
+    "class": "dataset",
     "type": "dataset",
     "title": "Chemical and mineral compositions of sediments from ODP Site 127-797",
     "author": [{ "family": "Irino", "given": "Tomohisa" }, { "family": "Tada", "given": "Ryuji" }],
@@ -23,6 +25,7 @@
   },
   {
     "id": "ieee754-2008",
+    "class": "standard",
     "type": "standard",
     "title": "IEEE Standard for Floating-Point Arithmetic",
     "authority": "IEEE",
@@ -33,6 +36,7 @@
   },
   {
     "id": "rcore2021",
+    "class": "software",
     "type": "software",
     "title": "R: A language and environment for statistical computing",
     "author": [{ "literal": "R Core Team" }],
