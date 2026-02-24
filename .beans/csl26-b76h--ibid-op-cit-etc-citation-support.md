@@ -3,7 +3,7 @@
 title: Position-based citation variants (ibid, short-form)
 status: todo
 type: task
-priority: normal
+priority: high
 parent: csl26-5t6s
 blocking:
   - csl26-sqsd

@@ -698,8 +698,11 @@ The CSL repository has ~7,987 dependent styles that alias ~300 parent styles. Pr
 ### Development Order
 
 1. **Author-date styles first** (40% of corpus) - APA, Elsevier Harvard, Springer, Chicago
-2. **Numeric styles second** (57% of corpus) - Elsevier Vancouver, IEEE, AMA
-3. **Note styles last** (2% of corpus) - Chicago Notes, OSCOLA
+2. **Numeric + Note styles in parallel** - Elsevier Vancouver, IEEE, AMA alongside Chicago Notes, OSCOLA
+   - Note styles are 2% of the corpus but represent high-visibility use cases (humanities, legal)
+   - Chicago Notes is a named target for this wave
+   - Legal styles (OSCOLA, Bluebook) overlap with the legal citation roadmap (csl26-rmoi)
+   - Ibid/position support is a CSLN differentiator; deferring it understates its adoption value
 
 ### Measuring Impact
 
