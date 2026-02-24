@@ -368,6 +368,17 @@
             "null"
           ]
         },
+        "ibid": {
+          "description": "Configuration for ibid citations (ibid or ibid with locator). Overrides fields from the main citation spec when position is Ibid or IbidWithLocator. If present, takes precedence over `subsequent` for these positions. Allows compact rendering like \"ibid.\" or \"ibid., p. 45\".",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CitationSpec"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "integral": {
           "description": "Configuration for integral (narrative) citations (e.g., \"Smith (2020)\"). Overrides fields from the main citation spec when mode is Integral.",
           "anyOf": [
@@ -419,6 +430,17 @@
           "anyOf": [
             {
               "$ref": "#/definitions/GroupSort"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "subsequent": {
+          "description": "Configuration for subsequent citations. Overrides fields from the main citation spec when position is Subsequent. Useful for short-form citations in note-based styles or author-date styles that show abbreviated citations after the first mention.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CitationSpec"
             },
             {
               "type": "null"

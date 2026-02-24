@@ -44,6 +44,17 @@
           "format": "uint32",
           "minimum": 0.0
         },
+        "position": {
+          "description": "Position of this citation in the document flow. Detected automatically by the processor or set explicitly by the caller.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Position"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "prefix": {
           "description": "Prefix text before all citation items.",
           "type": [
@@ -149,6 +160,39 @@
         "verse",
         "volume",
         "issue"
+      ]
+    },
+    "Position": {
+      "description": "Position of a citation in the document flow.\n\nIndicates where this citation appears relative to previous citations of the same item(s). Used for note-based styles to detect ibid and subsequent citations, and for author-date styles to apply position-specific formatting rules (e.g., short forms after first citation).",
+      "oneOf": [
+        {
+          "description": "First citation of an item.",
+          "type": "string",
+          "enum": [
+            "first"
+          ]
+        },
+        {
+          "description": "Subsequent citation of an item (non-consecutive).",
+          "type": "string",
+          "enum": [
+            "subsequent"
+          ]
+        },
+        {
+          "description": "Same item cited immediately before, no locator on either.",
+          "type": "string",
+          "enum": [
+            "ibid"
+          ]
+        },
+        {
+          "description": "Same item cited immediately before, with different locator.",
+          "type": "string",
+          "enum": [
+            "ibid-with-locator"
+          ]
+        }
       ]
     }
   }
