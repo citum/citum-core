@@ -77,12 +77,9 @@ This project leverages global Claude Code agents from `~/.claude/` while adding 
 **Specialized Style Agents (via `/style-evolve`):**
 - **@dstyleplan**: Deep research and architectural design for new styles.
 - **@styleplan**: Maintenance, bug fixes, and technical build planning.
-- **@styleauthor**: High-speed implementation (Sonnet) for style templates.
-
 Human-facing style command:
 - Use **`/style-evolve`** for all style tasks.
 - Modes: `upgrade`, `migrate`, `create`.
-- `/styleauthor` is a legacy alias only.
 
 Internal style workflow skills:
 - **Router**: `style-evolve` (entrypoint and delegation)
@@ -474,7 +471,6 @@ Specialized expertise is available via the following skills in `.claude/skills/`
 - **[rust-pro](./.claude/skills/rust-pro/SKILL.md)**: Modern Rust engineering (1.75+), async patterns, and performance optimization. Use proactively for core processor development.
 - **[git-advanced-workflows](./.claude/skills/git-advanced-workflows/SKILL.md)**: Advanced Git operations (rebasing, cherry-picking, bisecting).
 - **[style-evolve](./.claude/skills/style-evolve/SKILL.md)**: Human-facing style command (`upgrade`, `migrate`, `create`) with required style+processor co-evolution checks.
-- **[styleauthor](./.claude/skills/styleauthor/SKILL.md)**: Legacy alias for `/style-evolve`.
 - **Internal pipeline skills**: `style-maintain`, `style-migrate-enhance`, `style-qa`, `pr-workflow-fast`.
 - **Human onboarding guide**: [STYLE_EVOLVE_WORKFLOW.md](./docs/guides/STYLE_EVOLVE_WORKFLOW.md).
 

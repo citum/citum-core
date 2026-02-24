@@ -1,8 +1,11 @@
-# Style Maintain
+---
+name: style-maintain
+type: agent-invocable
+description: Fast targeted maintenance for an existing CSLN style. Use for punctuation/layout bugs, missing type overrides, or syntax modernization. Not for migrations or batch waves.
+model: haiku
+---
 
-**Type:** User-Invocable, Agent-Invocable
-**LLM Access:** Yes
-**Purpose:** Fast, targeted maintenance for an existing CSLN style file.
+# Style Maintain
 
 ## Use This Skill When
 - Updating one style for punctuation/layout bugs.

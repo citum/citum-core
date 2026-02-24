@@ -1,8 +1,11 @@
-# Style Migrate+Enhance
+---
+name: style-migrate-enhance
+type: agent-invocable
+description: High-throughput migration waves converting priority parent CSL 1.0 styles to CSLN with repeatable before/after metrics and migration-engine gap recommendations. Fidelity is the hard gate.
+model: sonnet
+---
 
-**Type:** User-Invocable, Agent-Invocable
-**LLM Access:** Yes
-**Purpose:** High-throughput migration waves for priority parent styles with fidelity as the hard gate and SQI as secondary optimization.
+# Style Migrate+Enhance
 
 ## Use This Skill When
 - The task is portfolio migration (for example: next 5 or 10 styles).

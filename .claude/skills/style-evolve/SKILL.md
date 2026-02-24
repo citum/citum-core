@@ -1,8 +1,12 @@
-# Style Evolve
+---
+name: style-evolve
+type: user-invocable, agent-invocable
+description: Single human-facing command for CSLN style co-evolution (style + processor). Use for all style work: upgrade (improve existing), migrate (CSL 1.0 to CSLN), create (from source evidence). Fidelity is the hard gate; SQI is secondary.
+model: sonnet
+routes-to: style-maintain, style-migrate-enhance, style-qa
+---
 
-**Type:** User-Invocable, Agent-Invocable
-**LLM Access:** Yes
-**Purpose:** Single human-facing command for CSLN style co-evolution (style + processor) with fidelity as the hard gate and SQI as secondary optimization.
+# Style Evolve
 
 ## Human UX (Public Entry Point)
 Use this command for all style work:
