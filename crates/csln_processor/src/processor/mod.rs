@@ -35,6 +35,7 @@ use crate::reference::{Bibliography, Citation, CitationItem, Reference};
 use crate::render::{ProcEntry, ProcTemplate};
 use crate::values::ProcHints;
 use csln_core::Style;
+use csln_core::citation::Position;
 use csln_core::locale::Locale;
 use csln_core::options::Config;
 use csln_core::template::WrapPunctuation;
@@ -96,6 +97,103 @@ impl Processor {
             .processing
             .as_ref()
             .is_some_and(|p| matches!(p, csln_core::options::Processing::Note))
+    }
+
+    /// Detect and annotate citation positions.
+    ///
+    /// Analyzes citations in order and assigns positions based on whether an item
+    /// has been cited before:
+    /// - First: Item not cited before
+    /// - Subsequent: Item cited before but not immediately preceding
+    /// - Ibid: Same single item as immediately preceding citation, no locators
+    /// - IbidWithLocator: Same single item as preceding, different locators
+    ///
+    /// Multi-item citations are never marked as Ibid (only First or Subsequent).
+    /// Only sets position if currently None (respects explicit caller values).
+    fn annotate_positions(&self, citations: &mut [Citation]) {
+        let mut seen_items: HashMap<String, Option<String>> = HashMap::new(); // item_id -> last_locator
+        let mut previous_items: Option<Vec<(String, Option<String>)>> = None;
+
+        for citation in citations.iter_mut() {
+            // Skip if position already explicitly set
+            if citation.position.is_some() {
+                // Update history even if position was explicit
+                let current_items: Vec<(String, Option<String>)> = citation
+                    .items
+                    .iter()
+                    .map(|item| {
+                        let locator = item.locator.clone();
+                        (item.id.clone(), locator)
+                    })
+                    .collect();
+                previous_items = Some(current_items);
+                for item in &citation.items {
+                    seen_items.insert(item.id.clone(), item.locator.clone());
+                }
+                continue;
+            }
+
+            // Single-item citation: check for ibid cases
+            if citation.items.len() == 1 {
+                let current_id = &citation.items[0].id;
+                let current_locator = &citation.items[0].locator;
+
+                // Check if this is immediately after the previous citation with same item
+                if let Some(ref prev_items) = previous_items
+                    && prev_items.len() == 1
+                    && prev_items[0].0 == *current_id
+                {
+                    // Same item as immediately preceding
+                    let prev_locator = &prev_items[0].1;
+                    if prev_locator.is_none() && current_locator.is_none() {
+                        // No locators on either: plain ibid
+                        citation.position = Some(Position::Ibid);
+                    } else if prev_locator != current_locator {
+                        // Different locators: ibid with locator
+                        citation.position = Some(Position::IbidWithLocator);
+                    }
+                    // else: same locator, treat as subsequent
+                }
+
+                // If not ibid, check if item was ever cited before
+                if citation.position.is_none() {
+                    if seen_items.contains_key(current_id) {
+                        citation.position = Some(Position::Subsequent);
+                    } else {
+                        citation.position = Some(Position::First);
+                    }
+                }
+
+                seen_items.insert(current_id.clone(), current_locator.clone());
+            } else {
+                // Multi-item citation: never ibid, just First or Subsequent
+                let all_seen = citation
+                    .items
+                    .iter()
+                    .all(|item| seen_items.contains_key(&item.id));
+
+                citation.position = if all_seen {
+                    Some(Position::Subsequent)
+                } else {
+                    Some(Position::First)
+                };
+
+                for item in &citation.items {
+                    seen_items.insert(item.id.clone(), item.locator.clone());
+                }
+            }
+
+            // Update history for next iteration
+            let current_items: Vec<(String, Option<String>)> = citation
+                .items
+                .iter()
+                .map(|item| {
+                    let locator = item.locator.clone();
+                    (item.id.clone(), locator)
+                })
+                .collect();
+            previous_items = Some(current_items);
+        }
     }
 
     /// Normalize citation note context for note styles.
@@ -522,14 +620,17 @@ impl Processor {
             self.cited_ids.borrow_mut().insert(item.id.clone());
         }
 
-        // Resolve the effective citation spec
+        // Resolve the effective citation spec (position first, then mode)
         let default_spec = csln_core::CitationSpec::default();
-        let effective_spec = self
-            .style
-            .citation
-            .as_ref()
-            .map(|cs| cs.resolve_for_mode(&citation.mode))
-            .unwrap_or(std::borrow::Cow::Borrowed(&default_spec));
+        let effective_spec = self.style.citation.as_ref().map_or_else(
+            || std::borrow::Cow::Borrowed(&default_spec),
+            |cs| {
+                // Resolve position first (owned), then mode on the owned spec
+                let position_resolved = cs.resolve_for_position(citation.position.as_ref());
+                let spec_for_mode = position_resolved.into_owned();
+                std::borrow::Cow::Owned(spec_for_mode.resolve_for_mode(&citation.mode).into_owned())
+            },
+        );
 
         let template_vec = effective_spec.resolve_template().unwrap_or_default();
         let template = template_vec.as_slice();
@@ -653,7 +754,8 @@ impl Processor {
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
-        let normalized = self.normalize_note_context(citations);
+        let mut normalized = self.normalize_note_context(citations);
+        self.annotate_positions(&mut normalized);
         normalized
             .iter()
             .map(|c| self.process_citation_with_format::<F>(c))

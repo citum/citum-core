@@ -18,6 +18,7 @@ fn main() {
     let cite = Citation {
         id: Some("cite1".to_string()),
         mode: CitationMode::NonIntegral,
+        position: None,
         suppress_author: false,
         prefix: None,
         suffix: None,
