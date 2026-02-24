@@ -32,7 +32,7 @@ Do not require users to choose internal pipeline skills.
   - `--source-text`
   - `--source-issue`
   - `--source-file`
-- Default planner path: `@dstyleplan` -> `@styleplan` -> `@styleauthor`.
+- Default planner path: `@dstyleplan` -> `@styleplan` -> `@builder`.
 
 ## Co-Evolution Rule (Mandatory)
 Every iteration must assess two tracks:
@@ -62,6 +62,3 @@ A task is not complete until Track B is explicitly marked as:
 - `style-migrate-enhance`
 - `style-qa`
 - `pr-workflow-fast`
-
-## Backward Compatibility
-`/styleauthor` remains available as a legacy alias and forwards to this skill.

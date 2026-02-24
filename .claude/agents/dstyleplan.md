@@ -5,8 +5,6 @@ model: sonnet
 permissionMode: plan
 tools: sequential-thinking, Read, Glob, Grep
 disallowedTools: Write, Edit, Bash
-contexts:
-  - .claude/contexts/styleauthor-context.md
 ---
 
 # Deep Style Planner

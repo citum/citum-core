@@ -43,4 +43,3 @@ model: haiku
 ## Related
 - Public router: `../style-evolve/SKILL.md`
 - QA gate: `../style-qa/SKILL.md`
-- Update checklist: `../styleauthor/templates/update-checklist.md`

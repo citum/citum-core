@@ -53,4 +53,3 @@ model: sonnet
 ## Related
 - Public router: `../style-evolve/SKILL.md`
 - QA gate: `../style-qa/SKILL.md`
-- Planning templates: `../styleauthor/templates/migrate-enhance-checklist.md`
