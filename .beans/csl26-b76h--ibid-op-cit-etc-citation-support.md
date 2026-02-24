@@ -1,7 +1,7 @@
 ---
 # csl26-b76h
 title: Position-based citation variants (ibid, short-form)
-status: todo
+status: done
 type: task
 priority: high
 parent: csl26-5t6s
