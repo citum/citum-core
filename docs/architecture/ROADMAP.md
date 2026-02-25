@@ -181,6 +181,11 @@
 
 ## Decision Log
 
+### 2026-02-25: Architectural Soundness Validated
+**Decision:** Core architectural ideas (flat declarative templates, type overrides, serde-as-truth, explicit options) are empirically validated at production scale.
+**Rationale:** 10/10 top parent styles at 100% strict fidelity; XML compiler alternative achieved 0% bibliography fidelity. Remaining gaps are scope (note styles, sorting, locale templates), not design flaws. One known wart: `InputReference` + `deny_unknown_fields` incompatibility should be mitigated before spec stabilization.
+**Refs:** [ARCHITECTURAL_SOUNDNESS_2026-02-25.md](./ARCHITECTURAL_SOUNDNESS_2026-02-25.md)
+
 ### 2026-02-15: Hybrid Migration Strategy Validated
 **Decision:** Use XML options + output-driven templates + LLM authoring
 **Rationale:** XML excels at options (87-100% cit), fails at templates (0% bib). LLM authoring achieves 14/15 bibliography for APA.
