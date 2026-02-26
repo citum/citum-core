@@ -14,7 +14,7 @@ Style: styles-legacy/chicago-notes.csl
 Workflow: Hybrid migration (Tier 1 options + Tier 3 templates)
 
 Progress:
-- [ ] Phase 1: Generate baseline (csln-migrate)
+- [ ] Phase 1: Generate baseline (citum-migrate)
 - [ ] Phase 2: Infer templates (output-driven)
 - [ ] Phase 3: Merge and validate
 - [ ] Phase 4: Agent refinement

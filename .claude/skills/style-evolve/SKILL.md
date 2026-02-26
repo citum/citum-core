@@ -47,6 +47,7 @@ A task is not complete until Track B is explicitly marked as:
 - Fidelity regression is never allowed.
 - SQI is optimization only after fidelity.
 - All modes must pass `../style-qa/SKILL.md` before completion.
+- If docs/beans are changed, `./scripts/check-docs-beans-hygiene.sh` must pass.
 
 ## Output Contract
 - Fidelity metrics (citations and bibliography pass counts).

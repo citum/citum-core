@@ -1,7 +1,7 @@
 ---
 # csl26-rh2u
 title: Preserve macro call order from CSL 1.0 during parsing
-status: scrapped
+status: canceled
 type: bug
 priority: high
 created_at: 2026-02-07T19:52:56Z

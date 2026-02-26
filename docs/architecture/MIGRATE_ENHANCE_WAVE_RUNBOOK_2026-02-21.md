@@ -1,8 +1,10 @@
 # Migrate+Enhance Wave Runbook (2026-02-21)
 
+> **Historical snapshot**: point-in-time execution record. For current status, use `docs/TIER_STATUS.md` and `docs/architecture/ROADMAP.md`.
+
 ## Purpose
 Single handoff and execution document for the current wave process.
-Use this as the canonical source for status, metrics, and next actions.
+Use this as the source of record for this specific wave snapshot.
 
 ## Scope
 - Branch: `codex/migrate-enhance-wave-strategy`

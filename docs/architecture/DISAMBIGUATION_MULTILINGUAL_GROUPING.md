@@ -2,7 +2,7 @@
 
 **Status:** Planning phase
 **Created:** 2026-02-16
-**Related:** ../DISAMBIGUATION.md, ./MULTILINGUAL.md, ./design/BIBLIOGRAPHY_GROUPING.md
+**Related:** ../reference/DISAMBIGUATION.md, ./MULTILINGUAL.md, ./design/BIBLIOGRAPHY_GROUPING.md
 
 ## Executive Summary
 
@@ -277,7 +277,7 @@ for group in &grouped_refs {
 ### Phase 5: Documentation
 
 **Files:**
-- `../DISAMBIGUATION.md`
+- `../reference/DISAMBIGUATION.md`
 - `./MULTILINGUAL.md`
 - `./design/BIBLIOGRAPHY_GROUPING.md`
 
@@ -325,7 +325,7 @@ for group in &grouped_refs {
 
 ## References
 
-- [DISAMBIGUATION.md](../DISAMBIGUATION.md) - Current disambiguation implementation
+- [DISAMBIGUATION.md](../reference/DISAMBIGUATION.md) - Current disambiguation implementation
 - [MULTILINGUAL.md](MULTILINGUAL.md) - Multilingual data model
 - [BIBLIOGRAPHY_GROUPING.md](design/BIBLIOGRAPHY_GROUPING.md) - Grouping architecture
 - CSL 1.0 Specification - Disambiguation section

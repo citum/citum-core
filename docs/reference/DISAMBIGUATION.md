@@ -259,4 +259,4 @@ Reference → [Render] → String
 ## Related Reading
 
 - [CSL 1.0 Specification](https://citeproc-js.readthedocs.io/en/latest/csl-json/markup.html#disambiguation)
-- [Citum Architecture](./architecture/MIGRATION_STRATEGY_ANALYSIS.md)
+- [Citum Architecture](../architecture/MIGRATION_STRATEGY_ANALYSIS.md)

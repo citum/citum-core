@@ -35,7 +35,7 @@ The template resolver and per-component delimiter detection are working.
   component-level prefixes, allowing accurate detection of underlying section 
   delimiters (e.g. distinguishing ". " from ". In ").
 - **Entry suffix infrastructure**: Implemented `entry_suffix` support in 
-  `csln-processor` and `csln-migrate` pipeline. `infer-template.js` now 
+  `citum-engine` and `citum-migrate` pipeline. `infer-template.js` now 
   passes detected suffix to the renderer, resolving trailing period 
   mismatches for styles like Springer.
 - **Migration Prep Tooling**: Created `scripts/prep-migration.sh` to 
@@ -60,4 +60,4 @@ The template resolver and per-component delimiter detection are working.
 ## Next steps (priority order)
 1. Address issue number leaking for styles that suppress issue
 2. Clean up period delimiters in APA (e.g. fix "). " artifacts from inference)
-3. Expand @styleauthor migration to top-5 parent styles
+3. Expand `/style-evolve migrate` coverage to top-5 parent styles

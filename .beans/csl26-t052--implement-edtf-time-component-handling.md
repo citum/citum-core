@@ -17,7 +17,7 @@ EDTF supports full datetimes (e.g., 1985-04-12T23:20:30Z) but CSLN currently ign
 - Legal documents (filed timestamps)
 - 'accessed' dates for URLs (some styles show full timestamp)
 
-## Schema Extensions (csln_core)
+## Schema Extensions (citum_schema)
 
 Add to DateConfig:
 - time_format: Option<TimeFormat> (12h, 24h, none)

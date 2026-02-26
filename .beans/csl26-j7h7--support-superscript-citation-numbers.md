@@ -20,7 +20,7 @@ Fix:
 - Detect citation-number variable in CSL citation layout
 - Detect vertical-align='sup' on number text
 - Set citation.template to number-only for numeric styles
-- Handle superscript as rendering option in csln_core
+- Handle superscript as rendering option in citum_schema
 - Test against Nature, Cell styles
 
 Refs: GitHub #128, TIER3_PLAN.md Issue 1.1

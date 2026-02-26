@@ -9,7 +9,7 @@ updated_at: 2026-02-07T12:11:40Z
 parent: csl26-u1in
 ---
 
-Add --debug-variable flag to csln_migrate to trace variable provenance.
+Add --debug-variable flag to citum_migrate to trace variable provenance.
 
 50% reduction in migration debugging time expected.
 
@@ -20,7 +20,7 @@ Features:
 - Output ordering transformations
 
 Example:
-csln_migrate styles/apa.csl --debug-variable volume
+citum_migrate styles/apa.csl --debug-variable volume
 
 Output shows: Source CSL nodes, compiled template position, rendering options, overrides
 

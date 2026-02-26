@@ -14,7 +14,7 @@ Style: styles/apa-7th.yaml
 Next: Agent refinement (Phase 4)
 
 Auto-generated baseline:
-- Options: csln-migrate (Rust)
+- Options: citum-migrate (Rust)
 - Templates: infer-template.js (output-driven)
 
 Validation: Run `node scripts/oracle-migration.js styles-legacy/apa.csl`

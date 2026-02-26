@@ -17,7 +17,7 @@ citeproc-rs).
 ## Acceptance Criteria
 
 - New `crates/citum-server/` crate added to workspace Cargo.toml
-- Cargo.toml deps: csln_processor (citum-engine), csln_core (citum-schema),
+- Cargo.toml deps: citum_engine (citum-engine), citum_schema (citum-schema),
   serde_json; optional `async` feature adds tokio
 - `src/main.rs`: entry point, minimal arg parsing (no clap in lib code)
 - `src/rpc.rs`: sync stdin/stdout loop; reads newline-delimited JSON requests,

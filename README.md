@@ -177,4 +177,4 @@ cargo fmt && cargo clippy --all-targets --all-features -- -D warnings && cargo t
 
 ## License
 
-MPL-2.0. See [`LICENSE`](./LICENSE).
+MPL-2.0.

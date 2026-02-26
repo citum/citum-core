@@ -1,5 +1,7 @@
 # Wave 100 Priority Batch (2026-02-20)
 
+> **Historical snapshot**: point-in-time execution record. For current status, use `docs/TIER_STATUS.md` and `docs/architecture/ROADMAP.md`.
+
 This report captures the `styleauthor migrate+enhance` batch that adds the next
 58 priority parent styles, expanding the core style catalog from 42 to 100 YAML
 styles.

@@ -16,8 +16,8 @@ Establish one minimal, stable Rust binding contract and use it across multiple t
 
 ## Current State
 
-- Current C ABI lives in `crates/csln_processor/src/ffi.rs` and is used by Lua bindings.
-- `csln_processor` already builds as `cdylib` and `rlib`.
+- Current C ABI lives in `crates/citum_engine/src/ffi.rs` and is used by Lua bindings.
+- `citum_engine` already builds as `cdylib` and `rlib`.
 - WASM support remains a roadmap target.
 
 ## Strategy: Two Lanes

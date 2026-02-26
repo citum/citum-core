@@ -18,7 +18,7 @@ Goals:
 - Document unsupported elements with workarounds
 
 Verification:
-- Run csln_analyze across all 2,844 styles
+- Run citum_analyze across all 2,844 styles
 - Log unmapped CSL elements
 - Add coverage metrics to migration output
 

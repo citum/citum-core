@@ -16,7 +16,7 @@ Add Typst as a fourth OutputFormat implementation (alongside Plain, HTML, Djot) 
 
 **Key Innovation:** Accept ANY input format (Djot, Markdown, reStructuredText, etc.) → Convert to Typst markup → Compile to interactive PDF with professional typography.
 
-**Status:** OutputFormat trait already exists in `crates/csln_processor/src/render/format.rs` with working Plain, HTML, and Djot renderers. This bean adds Typst as the fourth implementation.
+**Status:** OutputFormat trait already exists in `crates/citum_engine/src/render/format.rs` with working Plain, HTML, and Djot renderers. This bean adds Typst as the fourth implementation.
 
 ## Interactive PDF Features
 
@@ -47,7 +47,7 @@ Interactive PDF
 
 ## Implementation Steps
 
-1. Create `Typst` struct implementing `OutputFormat` trait in `crates/csln_processor/src/render/typst.rs`
+1. Create `Typst` struct implementing `OutputFormat` trait in `crates/citum_engine/src/render/typst.rs`
 2. Implement trait methods (text, emph, strong, small_caps, quote, link, etc.)
 3. Add Typst variant to `DocumentFormat` enum
 4. Add CLI integration (spawn `typst compile` process via std::process::Command)
@@ -80,7 +80,7 @@ The renderer accepts CSLN-processed citations/bibliographies and embeds them int
 
 ## Dependencies
 
-* **OutputFormat trait** (already exists in `crates/csln_processor/src/render/format.rs`)
+* **OutputFormat trait** (already exists in `crates/citum_engine/src/render/format.rs`)
 * Typst compiler (external binary, must be installed by user)
 * Professional fonts (optional, user-provided)
 
