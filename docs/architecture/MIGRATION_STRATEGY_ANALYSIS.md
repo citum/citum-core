@@ -2,7 +2,7 @@
 
 ## Context
 
-Bean `csl26-rh2u` and the broader epic `csl26-ifiw` track a fundamental problem: the template compiler produces bibliography templates with wrong component ordering, duplicate/missing components, and incorrect suppress logic. Current results: **87-100% citation match, 0% bibliography match** across all top parent styles. The template compiler (`../../crates/csln_migrate/src/template_compiler/mod.rs`, 2,077 lines) is the bottleneck.
+Bean `csl26-rh2u` and the broader epic `csl26-ifiw` track a fundamental problem: the template compiler produces bibliography templates with wrong component ordering, duplicate/missing components, and incorrect suppress logic. Current results: **87-100% citation match, 0% bibliography match** across all top parent styles. The template compiler (`../../crates/citum-migrate/src/template_compiler/mod.rs`, 2,077 lines) is the bottleneck.
 
 **Design origin:** CSL 1.0 was designed with XSLT - a side-effect-free language where nodes are processed in document order and macro calls are simple substitutions. This means the XML node order in the layout IS the rendering order. The challenge is not node ordering itself, but that macros like `source` contain `choose/if/else` branches creating different component sequences for different reference types (e.g., journals get container-title + volume(issue) + pages, while chapters get editor + container-title + pages). Flattening these type-specific branches into one declarative template with overrides is the core difficulty.
 
@@ -202,11 +202,11 @@ The same output-driven approach could power a visual style editor where users pr
 
 ## Files Referenced
 
-- `../../crates/csln_migrate/src/template_compiler/mod.rs` - Current template compiler (2,077 lines), the bottleneck
-- `../../crates/csln_migrate/src/lib.rs` - MacroInliner with macro expansion logic
-- `../../crates/csln_migrate/src/upsampler.rs` - CslNode to CslnNode conversion (works well)
-- `../../crates/csln_migrate/src/options_extractor/` - Options pipeline (works well, keep)
-- `../../crates/csln_core/src/template.rs` - CSLN template model (target schema)
+- `../../crates/citum-migrate/src/template_compiler/mod.rs` - Current template compiler (2,077 lines), the bottleneck
+- `../../crates/citum-migrate/src/lib.rs` - MacroInliner with macro expansion logic
+- `../../crates/citum-migrate/src/upsampler.rs` - CslNode to CslnNode conversion (works well)
+- `../../crates/citum-migrate/src/options_extractor/` - Options pipeline (works well, keep)
+- `../../crates/citum-schema/src/template.rs` - CSLN template model (target schema)
 - `../../scripts/oracle.js` - Oracle comparison test
 - `../../scripts/lib/component-parser.js` - Hardened component parser with field-aware matching
 - `../../scripts/lib/template-inferrer.js` - Output-driven template inference engine

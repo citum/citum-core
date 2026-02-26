@@ -5,7 +5,7 @@
  * Cross-tier validation for CSLN migration output (OPT-2.1).
  *
  * Checks for consistency between:
- *   - Tier 1: Global options (from csln-migrate)
+ *   - Tier 1: Global options (from citum-migrate)
  *   - Tier 3: Inferred templates (from infer-template.js)
  *
  * Common fidelity gaps caught:
@@ -57,7 +57,7 @@ try {
     // ──────────────────────────────────────────────
     // If global options say "initialize-with: '.'" then contributor
     // components in templates should NOT have full given names hardcoded.
-    // This catches the case where csln-migrate extracted the option but
+    // This catches the case where citum-migrate extracted the option but
     // infer-template inferred full names from rendered output.
 
     const initializeWith = contributors['initialize-with'];

@@ -3217,7 +3217,7 @@
       "additionalProperties": false
     },
     "TemplatePreset": {
-      "description": "Available embedded template presets.\n\nThese reference battle-tested templates for common citation styles. See `csln_core::embedded` for the actual template implementations.",
+      "description": "Available embedded template presets.\n\nThese reference battle-tested templates for common citation styles. See `citum_schema::embedded` for the actual template implementations.",
       "oneOf": [
         {
           "description": "APA 7th edition (author-date)",

@@ -18,17 +18,17 @@ Do not treat hard-coded README percentages as canonical.
 
 ## What CSLN Includes
 
-- `csl_legacy`: CSL 1.0 XML parser
-- `csln_core`: schema/types and shared models
-- `csln_processor`: citation and bibliography rendering engine
-- `csln_migrate`: CSL 1.0 -> CSLN migration pipeline (hybrid)
+- `csl-legacy`: CSL 1.0 XML parser
+- `citum_schema`: schema/types and shared models
+- `citum_engine`: citation and bibliography rendering engine
+- `citum_migrate`: CSL 1.0 -> CSLN migration pipeline (hybrid)
 - `csln`: main CLI (`render`, `check`, `convert`)
-- `csln_analyze`: corpus analysis tooling
+- `citum_analyze`: corpus analysis tooling
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/bdarcus/csl26
+git clone https://github.com/citum/citum-core
 cd csl26
 cargo build --workspace
 cargo test --workspace
@@ -37,7 +37,7 @@ cargo test --workspace
 Render references:
 
 ```bash
-cargo run --bin csln -- render refs \
+cargo run --bin citum-cli -- render refs \
   -b tests/fixtures/references-expanded.json \
   -s styles/apa-7th.yaml
 ```
@@ -45,7 +45,7 @@ cargo run --bin csln -- render refs \
 Render a document:
 
 ```bash
-cargo run --bin csln -- render doc \
+cargo run --bin citum-cli -- render doc \
   -i examples/document.djot \
   -b examples/document-refs.json \
   -s styles/apa-7th.yaml \
@@ -55,7 +55,7 @@ cargo run --bin csln -- render doc \
 Validate inputs:
 
 ```bash
-cargo run --bin csln -- check \
+cargo run --bin citum-cli -- check \
   -s styles/apa-7th.yaml \
   -b tests/fixtures/references-expanded.json \
   -c tests/fixtures/citations-expanded.json
@@ -64,7 +64,7 @@ cargo run --bin csln -- check \
 Convert formats:
 
 ```bash
-cargo run --bin csln -- convert styles/apa-7th.yaml --output /tmp/apa-7th.cbor
+cargo run --bin citum-cli -- convert styles/apa-7th.yaml --output /tmp/apa-7th.cbor
 ```
 
 ## CLI Surface
@@ -78,8 +78,8 @@ cargo run --bin csln -- convert styles/apa-7th.yaml --output /tmp/apa-7th.cbor
 Schema generation is available with the feature-enabled build:
 
 ```bash
-cargo run --bin csln --features schema -- schema style
-cargo run --bin csln --features schema -- schema --out-dir ./schemas
+cargo run --bin citum-cli --features schema -- schema style
+cargo run --bin citum-cli --features schema -- schema --out-dir ./schemas
 ```
 
 ## Migration Workflow (Hybrid)
@@ -93,7 +93,7 @@ CSLN migration combines three approaches:
 Run migration:
 
 ```bash
-cargo run --bin csln-migrate -- styles-legacy/apa.csl
+cargo run --bin citum-migrate -- styles-legacy/apa.csl
 ```
 
 Prepare high-fidelity authoring context:
@@ -104,7 +104,7 @@ Prepare high-fidelity authoring context:
 
 Detailed migration docs:
 
-- [`crates/csln_migrate/README.md`](./crates/csln_migrate/README.md)
+- [`crates/citum-migrate/README.md`](./crates/citum-migrate/README.md)
 - [`docs/architecture/MIGRATION_STRATEGY_ANALYSIS.md`](./docs/architecture/MIGRATION_STRATEGY_ANALYSIS.md)
 
 ## Verification Workflow
@@ -135,13 +135,13 @@ node scripts/check-core-quality.js \
 
 ```text
 crates/
-  csl_legacy/
+  csl-legacy/
   csln/
-  csln_analyze/
-  csln_core/
-  csln_edtf/
-  csln_migrate/
-  csln_processor/
+  citum_analyze/
+  citum_schema/
+  csln-edtf/
+  citum_migrate/
+  citum_engine/
 
 docs/
 styles/

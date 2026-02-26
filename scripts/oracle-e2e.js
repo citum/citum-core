@@ -6,7 +6,7 @@
  * 1. Takes a CSL 1.0 file
  * 2. Renders citations/bibliography with citeproc-js (the oracle)
  * 3. Migrates the CSL file to CSLN format
- * 4. Renders with csln_processor
+ * 4. Renders with citum_engine
  * 5. Compares the outputs
  * 
  * Usage: node oracle-e2e.js ../styles/apa.csl
@@ -69,7 +69,7 @@ function renderWithCslnProcessor(stylePath) {
   let migratedYaml;
   try {
     migratedYaml = execSync(
-      `cargo run -q --bin csln-migrate -- "${absStylePath}"`,
+      `cargo run -q --bin citum-migrate -- "${absStylePath}"`,
       { cwd: projectRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'inherit'] }
     );
   } catch (e) {
@@ -88,7 +88,7 @@ function renderWithCslnProcessor(stylePath) {
   let output;
   try {
     output = execSync(
-      `cargo run -q --bin csln -- render refs -b tests/fixtures/references-expanded.json -s .migrated-temp.yaml -c .migrated-citations.json --mode both --show-keys`,
+      `cargo run -q --bin citum-cli -- render refs -b tests/fixtures/references-expanded.json -s .migrated-temp.yaml -c .migrated-citations.json --mode both --show-keys`,
       { cwd: projectRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
     );
   } catch (e) {

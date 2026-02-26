@@ -16,7 +16,7 @@ a single `lualatex` pass.
 
 1. **Core logic (Rust)** — all citation rules, disambiguation, locale terms,
    and formatting live in the Rust processor.
-2. **C FFI layer** — thin `#[no_mangle]` exports in `crates/csln_processor/src/ffi.rs`.
+2. **C FFI layer** — thin `#[no_mangle]` exports in `crates/citum-engine/src/ffi.rs`.
 3. **Lua binding** — `bindings/lua/csln.lua` wraps the FFI and provides a
    clean Lua API including a `build_citation_json` helper for the full CSLN
    citation model.
@@ -30,13 +30,13 @@ a single `lualatex` pass.
 ### 1 — Build the shared library
 
 ```bash
-cargo build --package csln_processor --release --features ffi
+cargo build --package citum_engine --release --features ffi
 ```
 
 This produces:
 - `target/release/libcsln_processor.dylib` (macOS)
 - `target/release/libcsln_processor.so` (Linux)
-- `target/release/csln_processor.dll` (Windows)
+- `target/release/citum_engine.dll` (Windows)
 
 ### 2 — Make the library findable
 

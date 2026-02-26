@@ -964,7 +964,7 @@ function generateHtmlHeader(report) {
                 <a class="text-sm font-medium text-primary font-semibold"
                     href="compat.html">Compat</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="https://github.com/bdarcus/csl26">GitHub</a>
+                    href="https://github.com/citum/citum-core">GitHub</a>
             </div>
         </div>
     </nav>
@@ -1486,7 +1486,7 @@ function generateHtmlFooter() {
                     </a>
                 </div>
                 <div class="flex gap-8 text-sm font-medium text-slate-500">
-                    <a class="hover:text-primary transition-colors" href="https://github.com/bdarcus/csl26">GitHub</a>
+                    <a class="hover:text-primary transition-colors" href="https://github.com/citum/citum-core">GitHub</a>
                     <a class="hover:text-primary transition-colors" href="index.html#roadmap">Status</a>
                     <a class="hover:text-primary transition-colors" href="examples.html">Examples</a>
                     <a class="hover:text-primary transition-colors" href="compat.html">Compat</a>

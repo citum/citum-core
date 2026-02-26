@@ -199,7 +199,7 @@ function renderWithCsln(stylePath) {
 
     try {
         const output = execSync(
-            `cargo run -q --bin csln -- render refs -b ${tmpFixture} -s ${cslnStylePath} -c ${tmpCitations} --mode both --show-keys`,
+            `cargo run -q --bin citum-cli -- render refs -b ${tmpFixture} -s ${cslnStylePath} -c ${tmpCitations} --mode both --show-keys`,
             { encoding: 'utf8', cwd: path.join(__dirname, '..') }
         );
 

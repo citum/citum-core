@@ -1,0 +1,17 @@
+[package]
+name = "citum-migrate"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "citum-migrate"
+path = "src/main.rs"
+
+[dependencies]
+csl_legacy = { package = "csl-legacy", path = "../csl-legacy" }
+citum_schema = { package = "citum-schema", path = "../citum-schema" }
+indexmap = "2.13.0"
+roxmltree = "0.20"
+serde_json = "1.0"
+serde_yaml = "0.9"
+serde = { version = "1.0", features = ["derive"] }

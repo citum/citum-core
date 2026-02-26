@@ -58,10 +58,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Architecture
 - Workspace-based crate organization (7 crates)
-- Core library (csln_core) with type-safe schema
-- Citation processor (csln_processor) with rendering engine
-- CLI tools (csln, csln-migrate, csln-analyze)
-- Legacy CSL 1.0 parser (csl_legacy)
+- Core library (citum_schema) with type-safe schema
+- Citation processor (citum_engine) with rendering engine
+- CLI tools (csln, citum-migrate, citum-analyze)
+- Legacy CSL 1.0 parser (csl-legacy)
 - CI/CD with fmt/clippy/test validation
 - Comprehensive test fixtures and reference data
 
@@ -72,8 +72,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLAUDE.md project instructions for AI-assisted development
 - Persona-driven feature design framework
 
-[Unreleased]: https://github.com/bdarcus/csl26/compare/v0.6.0...HEAD
-[0.6.0]: https://github.com/bdarcus/csl26/compare/v0.5.0...v0.6.0
-[0.5.0]: https://github.com/bdarcus/csl26/compare/v0.4.0...v0.5.0
-[0.4.0]: https://github.com/bdarcus/csl26/compare/v0.3.0...v0.4.0
-[0.3.0]: https://github.com/bdarcus/csl26/releases/tag/v0.3.0
+[Unreleased]: https://github.com/citum/citum-core/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/citum/citum-core/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/citum/citum-core/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/citum/citum-core/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/citum/citum-core/releases/tag/v0.3.0

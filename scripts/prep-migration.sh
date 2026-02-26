@@ -14,7 +14,7 @@ if [ "$STYLE_PATH" == "--help" ] || [ -z "$STYLE_PATH" ]; then
     echo ""
     echo "Prepares for @styleauthor migration by generating:"
     echo "1. Target rendering (citeproc-js)"
-    echo "2. Baseline CSLN config (csln-migrate)"
+    echo "2. Baseline CSLN config (citum-migrate)"
     echo "3. Agent-ready prompt (or JSON with --agent)"
     exit 0
 fi
@@ -39,7 +39,7 @@ Style: $STYLE_PATH
 Workflow: Hybrid migration (Tier 1 options + Tier 3 templates)
 
 Progress:
-- [ ] Phase 1: Generate baseline (csln-migrate)
+- [ ] Phase 1: Generate baseline (citum-migrate)
 - [ ] Phase 2: Infer templates (output-driven)
 - [ ] Phase 3: Merge and validate
 - [ ] Phase 4: Agent refinement
@@ -79,8 +79,8 @@ BIB_JSON="$TEMP_DIR/bibliography.json"
 CITE_LOG="$TEMP_DIR/infer-citation.log"
 BIB_LOG="$TEMP_DIR/infer-bibliography.log"
 
-if [ "$AGENT_MODE" = false ]; then echo "-> Extracting base options (csln-migrate)..."; fi
-cargo run -q --bin csln-migrate -- "$STYLE_PATH" > "$BASE_YAML"
+if [ "$AGENT_MODE" = false ]; then echo "-> Extracting base options (citum-migrate)..."; fi
+cargo run -q --bin citum-migrate -- "$STYLE_PATH" > "$BASE_YAML"
 
 if [ "$AGENT_MODE" = false ]; then echo "-> Inferring citation template..."; fi
 if ! node scripts/infer-template.js "$STYLE_PATH" --section=citation --fragment > "$CITE_JSON" 2> "$CITE_LOG"; then
@@ -130,7 +130,7 @@ Style: styles/$STYLE_NAME.yaml
 Next: Agent refinement (Phase 4)
 
 Auto-generated baseline:
-- Options: csln-migrate (Rust)
+- Options: citum-migrate (Rust)
 - Templates: infer-template.js (output-driven)
 
 Validation: Run \`node scripts/oracle.js $STYLE_PATH --json\`

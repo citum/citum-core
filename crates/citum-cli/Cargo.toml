@@ -1,0 +1,26 @@
+[package]
+name = "citum-cli"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "citum-cli"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.4", features = ["derive"] }
+clap_complete = "4.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+serde_cbor = "0.11"
+strsim = "0.10"
+walkdir = "2.4"
+schemars = { version = "0.8", optional = true }
+indexmap = "2.2.3"
+citum_schema = { package = "citum-schema", path = "../citum-schema" }
+citum_engine = { package = "citum-engine", path = "../citum-engine" }
+
+[features]
+default = []
+schema = ["dep:schemars", "citum_schema/schema"]

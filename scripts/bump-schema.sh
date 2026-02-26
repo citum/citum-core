@@ -36,13 +36,13 @@ if ! [[ "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 fi
 
 # Paths
-CORE_LIB="crates/csln_core/src/lib.rs"
+CORE_LIB="crates/citum-schema/src/lib.rs"
 SCHEMA_DOC="docs/SCHEMA_VERSIONING.md"
 STYLES_DIR="styles"
 
 info "Bumping schema version to $NEW_VERSION"
 
-# Step 1: Update default_version() in csln_core/src/lib.rs
+# Step 1: Update default_version() in citum_schema/src/lib.rs
 info "Updating default_version() in $CORE_LIB"
 
 if ! grep -q 'fn default_version()' "$CORE_LIB"; then

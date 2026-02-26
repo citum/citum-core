@@ -34,7 +34,7 @@ node scripts/oracle-batch-aggregate.js styles-legacy/ --top 10
 cargo test
 
 # Run tests for a specific crate
-cargo test -p csln_processor
+cargo test -p citum_engine
 ```
 
 ## Pre-Commit Checks (Mandatory)

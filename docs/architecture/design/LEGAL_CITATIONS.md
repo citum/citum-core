@@ -178,7 +178,7 @@ Obergefell v. Hodges, 135 S. Ct. 2584, 2604, 192 L. Ed. 2d 609 (2015).
 **Priority:** Medium (Feature Roadmap)
 **Effort:** 2-3 weeks
 
-1. **Add legal reference types to `csln_core/src/reference/types.rs`:**
+1. **Add legal reference types to `citum_schema/src/reference/types.rs`:**
    ```rust
    pub enum ReferenceType {
        Article(Article),
@@ -213,7 +213,7 @@ Obergefell v. Hodges, 135 S. Ct. 2584, 2604, 192 L. Ed. 2d 609 (2015).
    }
    ```
 
-2. **Extend legacy CSL-JSON converter** (`csl_legacy/src/types.rs`):
+2. **Extend legacy CSL-JSON converter** (`csl-legacy/src/types.rs`):
    - Map `legal_case` → `LegalCase`
    - Map `bill`, `legislation` → `Statute`
    - Map `treaty` → `Treaty`
@@ -239,7 +239,7 @@ Obergefell v. Hodges, 135 S. Ct. 2584, 2604, 192 L. Ed. 2d 609 (2015).
 **Priority:** Low (after Phase 1 validated)
 **Effort:** 3-4 weeks
 
-1. **Create jurisdiction hierarchy system** (`csln_core/src/legal/jurisdiction.rs`):
+1. **Create jurisdiction hierarchy system** (`citum_schema/src/legal/jurisdiction.rs`):
    ```rust
    pub struct Jurisdiction {
        raw: String,  // "us:federal:scotus"
@@ -260,7 +260,7 @@ Obergefell v. Hodges, 135 S. Ct. 2584, 2604, 192 L. Ed. 2d 609 (2015).
    }
    ```
 
-2. **Add court classification enum** (`csln_core/src/legal/mod.rs`):
+2. **Add court classification enum** (`citum_schema/src/legal/mod.rs`):
    ```rust
    #[derive(Debug, Deserialize, Serialize, Clone, JsonSchema, PartialEq)]
    #[serde(rename_all = "kebab-case")]
@@ -272,7 +272,7 @@ Obergefell v. Hodges, 135 S. Ct. 2584, 2604, 192 L. Ed. 2d 609 (2015).
    }
    ```
 
-3. **Extend position tracking** (`csln_core/src/citation.rs`):
+3. **Extend position tracking** (`citum_schema/src/citation.rs`):
    ```rust
    #[derive(Debug, Clone, PartialEq)]
    pub enum Position {
@@ -285,7 +285,7 @@ Obergefell v. Hodges, 135 S. Ct. 2584, 2604, 192 L. Ed. 2d 609 (2015).
    }
    ```
 
-4. **Add `LegalCite` template component** (`csln_core/src/template.rs`):
+4. **Add `LegalCite` template component** (`citum_schema/src/template.rs`):
    ```rust
    pub struct LegalCite {
        pub style: LegalCiteStyle,
@@ -378,7 +378,7 @@ Obergefell v. Hodges, 135 S. Ct. 2584, 2604, 192 L. Ed. 2d 609 (2015).
 ## References
 
 - **CSL-M Legal Extensions** - PRIOR_ART.md Section 4
-- **CSL 1.0 Legal Types** - legal_case, bill, legislation, treaty, hearing, regulation (csl_legacy parsing)
+- **CSL 1.0 Legal Types** - legal_case, bill, legislation, treaty, hearing, regulation (csl-legacy parsing)
 - **Feature Roadmap** - CLAUDE.md (Medium priority)
 - **Domain Expert Personas** - PERSONAS.md (Legal citation checklist)
 - **Chicago Manual 16th** - Legal citation macros in styles-legacy/

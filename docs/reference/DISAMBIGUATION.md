@@ -162,7 +162,7 @@ citation:
 
 ## Test Coverage
 
-Disambiguation behavior is verified through functional integration tests in the `csln_processor` crate:
+Disambiguation behavior is verified through functional integration tests in the `citum_engine` crate:
 
 ### Functional Tests (`citations` target)
 
@@ -185,7 +185,7 @@ The disambiguation system is fully integrated:
 - Cascading fallback strategies
 - Full test coverage for common CSL 1.0 scenarios
 
-Test file: `../crates/csln_processor/tests/citations.rs`
+Test file: `../crates/citum-engine/tests/citations.rs`
 
 ## Performance Characteristics
 

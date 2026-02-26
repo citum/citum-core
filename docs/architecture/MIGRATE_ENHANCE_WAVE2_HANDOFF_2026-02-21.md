@@ -10,7 +10,7 @@
 Wave 2 from
 `docs/architecture/MIGRATE_ENHANCE_WAVE_STRATEGY_2026-02-21.md`.
 
-Goal: improve `csln-migrate` behavior on numeric variant families
+Goal: improve `citum-migrate` behavior on numeric variant families
 (`no-et-al`, `no-url`, `alphabetical`, `year-only`, bracket/superscript variants).
 
 ## Batch Styles (12)
@@ -81,9 +81,9 @@ Per-style citation results after enhancement:
 | nlm-citation-sequence-brackets-no-et-al | 12/12 | 32/32 |
 | nlm-citation-sequence-brackets-year-only-no-issue | 12/12 | 32/32 |
 
-## Post-Rust Checkpoint (`csln-migrate` enhancement)
+## Post-Rust Checkpoint (`citum-migrate` enhancement)
 
-After adding Rust-side bibliography sort extraction in `csln-migrate`,
+After adding Rust-side bibliography sort extraction in `citum-migrate`,
 refining group-sort author behavior in `csln-processor`, and rerunning Wave 2:
 
 - Citations: `144/144` (100.0%)

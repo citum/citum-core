@@ -234,7 +234,7 @@ function renderWithCslnProcessor(stylePath, testItems, testCitations) {
     let migratedYaml;
     try {
       migratedYaml = execSync(
-        `cargo run -q --bin csln-migrate -- "${absStylePath}"`,
+        `cargo run -q --bin citum-migrate -- "${absStylePath}"`,
         { cwd: projectRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
       );
     } catch (e) {
@@ -251,7 +251,7 @@ function renderWithCslnProcessor(stylePath, testItems, testCitations) {
   let output;
   try {
     output = execSync(
-      `cargo run -q --bin csln -- render refs -b .migrated-refs.json -s "${cslnStylePath}" -c .migrated-citations.json --mode both --show-keys`,
+      `cargo run -q --bin citum-cli -- render refs -b .migrated-refs.json -s "${cslnStylePath}" -c .migrated-citations.json --mode both --show-keys`,
       { cwd: projectRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
     );
   } catch (e) {
@@ -520,9 +520,9 @@ if (!csln || csln.error) {
     console.error('  - Unsupported schema features in migration output');
     console.error('  - Missing required fields (info.id, version)\n');
     console.error('Next Steps:');
-    console.error('  1. Check migration output: cargo run --bin csln-migrate -- <csl-path>');
+    console.error('  1. Check migration output: cargo run --bin citum-migrate -- <csl-path>');
     console.error('  2. Validate YAML syntax: yamllint .migrated-temp.yaml');
-    console.error('  3. Check processor error: cargo run --bin csln -- render refs -b <refs> -s <style> -c <citations> --mode both');
+    console.error('  3. Check processor error: cargo run --bin citum-cli -- render refs -b <refs> -s <style> -c <citations> --mode both');
   }
   process.exit(2);
 }

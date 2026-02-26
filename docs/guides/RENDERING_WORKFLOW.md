@@ -156,19 +156,19 @@ This project uses a tri-agent specialist model to achieve high-fidelity renderin
 **Workflow**: Run `../scripts/prep-migration.sh <style>` and use the specialized agents to hand-author the CSLN template.
 
 #### Systemic Issues (affects Tier 3/4 styles)
-→ Fix in `../crates/csln_processor/`
+→ Fix in `../crates/citum-engine/`
 - Example: Year parentheses missing across all author-date styles.
 - Look in: `rendering.rs`, `bibliography.rs`, date formatting logic.
 
 #### Style-Specific Issues (Tier 3/4)
 → Fix in migration logic or style YAML
 - Example: APA uses "Vol." prefix, IEEE doesn't.
-- Check: `../crates/csln_migrate/`, generated YAML overrides.
+- Check: `../crates/citum-migrate/`, generated YAML overrides.
 
 #### Migration Issues (CSL → YAML conversion wrong)
-→ Fix in `../crates/csln_migrate/`
+→ Fix in `../crates/citum-migrate/`
 - Example: Variable ends up in wrong template section.
-- **Migration Debugger** (planned): `csln_migrate --debug-variable VAR` will show provenance tracking.
+- **Migration Debugger** (planned): `citum_migrate --debug-variable VAR` will show provenance tracking.
 
 ### Step 4: Make the Fix
 
@@ -411,7 +411,7 @@ Then, copy the output and provide it to the `@styleauthor` agent to begin the it
 
 **Cause:** Missing `wrap: parentheses` in date rendering options
 
-**Fix location:** `csln_migrate` date compilation or style YAML
+**Fix location:** `citum_migrate` date compilation or style YAML
 
 **Example fix:**
 ```yaml
@@ -426,7 +426,7 @@ Then, copy the output and provide it to the `@styleauthor` agent to begin the it
 
 **Cause:** Missing delimiter override or incorrect template composition
 
-**Fix location:** `csln_processor` bibliography rendering or migration logic
+**Fix location:** `citum_engine` bibliography rendering or migration logic
 
 **Check:** Does CSL source use `<group delimiter="">` around volume/issue?
 
@@ -553,7 +553,7 @@ When a variable ends up in the wrong place or has wrong formatting, trace throug
 
 2. **Check generated YAML:**
    ```bash
-   csln_migrate styles-legacy/apa.csl > /tmp/apa.yaml
+   citum_migrate styles-legacy/apa.csl > /tmp/apa.yaml
    grep -A5 "volume" /tmp/apa.yaml
    ```
 
@@ -564,7 +564,7 @@ When a variable ends up in the wrong place or has wrong formatting, trace throug
 
 **Future (Task #24):** Use migration debugger:
 ```bash
-csln_migrate styles-legacy/apa.csl --debug-variable volume
+citum_migrate styles-legacy/apa.csl --debug-variable volume
 ```
 
 ### Testing Edge Cases
@@ -653,7 +653,7 @@ This means the component extraction is incomplete. The structured oracle only ch
 
 ### Phase 2: Migration Debugger (Task #24)
 ```bash
-csln_migrate styles-legacy/apa.csl --debug-variable volume
+citum_migrate styles-legacy/apa.csl --debug-variable volume
 # Shows: CSL source → IR → YAML, with deduplication decisions
 ```
 

@@ -12,7 +12,7 @@ Wave 3 from
 
 Goal: establish the baseline for the 12 planned author-date/label-diversity
 parents and identify repeated migration mismatch patterns for promotion into
-`csln-migrate`/processor logic.
+`citum-migrate`/processor logic.
 
 ## What Was Completed
 1. Generated all 12 Wave 3 styles via:
@@ -74,10 +74,10 @@ All 12 baseline outputs currently omit `options.processing`, which forces
 processor defaults instead of style-specific disambiguation settings. This is
 the first repeated migrate gap to promote in Rust for Wave 3 rerun.
 
-## Post-Promotion Checkpoint (`csln-migrate`)
+## Post-Promotion Checkpoint (`citum-migrate`)
 
 Promotion applied:
-- `crates/csln_migrate/src/options_extractor/processing.rs`
+- `crates/citum-migrate/src/options_extractor/processing.rs`
   - recurse into citation macro trees when detecting author-date processing
   - default extracted disambiguation to:
     - `names: false`
@@ -114,7 +114,7 @@ Interpretation:
 ## Locator Preservation Checkpoint
 
 Second promotion applied:
-- `crates/csln_migrate/src/main.rs`
+- `crates/citum-migrate/src/main.rs`
   - inject `locator` into author-date citation templates when legacy citation
     layout uses locator but inferred templates omit it
 - `scripts/merge-migration.js`

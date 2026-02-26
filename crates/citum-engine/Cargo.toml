@@ -1,0 +1,42 @@
+[package]
+name = "citum-engine"
+version.workspace = true
+edition.workspace = true
+authors = ["Bruce D'Arcus <bdarcus@gmail.com>"]
+license = "MPL-2.0"
+description = "Citum citation and bibliography processor"
+
+[lib]
+name = "citum_engine"
+crate-type = ["rlib", "cdylib"]
+
+[dependencies]
+citum_schema = { package = "citum-schema", path = "../citum-schema", features = ["legacy-convert"] }
+csl_legacy = { package = "csl-legacy", path = "../csl-legacy" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+serde_cbor = "0.11"
+thiserror = "2.0"
+csln_edtf = { package = "csln-edtf", path = "../csln-edtf", features = ["serde"] }
+biblatex = "0.11"
+url = { version = "2.5", features = ["serde"] }
+indexmap = { version = "2.2.6", features = ["serde"] }
+regex = "1.10"
+winnow = "0.7"
+jotdown = "0.5"
+
+[features]
+ffi = []
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+citum_migrate = { package = "citum-migrate", path = "../citum-migrate" }
+roxmltree = "0.20"
+
+[[bench]]
+name = "rendering"
+harness = false
+
+[lints]
+workspace = true

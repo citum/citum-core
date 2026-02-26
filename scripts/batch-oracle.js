@@ -137,7 +137,7 @@ function renderWithCslnProcessor(stylePath) {
   let migratedYaml;
   try {
     migratedYaml = execSync(
-      `cargo run -q --bin csln-migrate -- "${absStylePath}"`,
+      `cargo run -q --bin citum-migrate -- "${absStylePath}"`,
       { cwd: projectRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
     );
   } catch (e) {
@@ -153,7 +153,7 @@ function renderWithCslnProcessor(stylePath) {
   let output;
   try {
     output = execSync(
-      `cargo run -q --bin csln -- render refs -b tests/fixtures/references-expanded.json -s .migrated-temp.yaml -c .migrated-citations.json --mode both --show-keys`,
+      `cargo run -q --bin citum-cli -- render refs -b tests/fixtures/references-expanded.json -s .migrated-temp.yaml -c .migrated-citations.json --mode both --show-keys`,
       { cwd: projectRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
     );
   } catch (e) {
@@ -301,7 +301,7 @@ console.log(`Testing ${styleFiles.length} styles...`);
 // Pre-build Rust binaries
 console.log('Building Rust binaries...');
 try {
-  execSync('cargo build --release --bin csln-migrate --bin csln', {
+  execSync('cargo build --release --bin citum-migrate --bin citum-cli', {
     cwd: projectRoot,
     stdio: 'inherit'
   });

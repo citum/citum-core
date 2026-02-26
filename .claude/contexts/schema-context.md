@@ -8,7 +8,7 @@ Working on the **CSLN data model** — types, schemas, and the specification its
 - **Extension via Defaults**: New features use `Option<T>` with `#[serde(default)]`.
 - **Explicit Extensions**: User-defined metadata uses explicit `custom` fields.
 
-## Key Crate: `csln_core`
+## Key Crate: `citum_schema`
 | Module | Responsibility |
 |--------|----------------|
 | `style.rs` | Top-level `Style` struct (with `version` field) |
@@ -35,7 +35,7 @@ Context-specific options override global for their context.
 
 ## Schema Generation
 ```bash
-cargo run --bin csln -- schema > csln.schema.json
+cargo run --bin citum-cli -- schema > csln.schema.json
 ```
 
 ## Reference Docs

@@ -106,7 +106,7 @@ Wave aggregate:
 #### Tier-2/3 Wave: Next 58 Priority Styles (2026-02-20)
 
 Batch scope:
-- Selected the next 58 parent styles from `csln-analyze --rank-parents` not
+- Selected the next 58 parent styles from `citum-analyze --rank-parents` not
   already represented in `styles/`.
 - Core style catalog expanded from `42` to `100` YAML styles.
 
