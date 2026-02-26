@@ -151,6 +151,7 @@ Escalation rule:
 - Wave 2 post-script checkpoint: `514/528` (97.3% combined).
 - Wave 2 post-Rust `csln-migrate` checkpoint: `518/528` (98.1% combined).
 - Wave 2 citations are now fully clean (`144/144`).
+- Wave 4 follow-through (2026-02-26): `oscola` and `oscola-no-ibid` now migrated in `styles/` at `13/13` citations and `32/32` bibliography each.
 
 ## Branch and PR Plan
 - Branch: `codex/migrate-enhance-wave-strategy`

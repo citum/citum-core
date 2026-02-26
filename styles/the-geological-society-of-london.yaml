@@ -14,11 +14,7 @@ info:
   id: http://www.zotero.org/styles/the-geological-society-of-london
   default-locale: en-GB
 options:
-  substitute:
-    contributor-role-form: short
-    template:
-      - editor
-      - translator
+  substitute: editor-translator-short
   processing:
     sort:
       shorten-names: false
@@ -48,18 +44,8 @@ options:
     delimiter-precedes-last: never
     demote-non-dropping-particle: never
     sort-separator: ", "
-  dates:
-    month: long
-    uncertainty-marker: "?"
-    approximation-marker: "ca. "
-    range-delimiter: –
-  titles:
-    monograph:
-      emph: true
-    periodical:
-      emph: true
-    serial:
-      emph: true
+  dates: long
+  titles: humanities
   page-range-format: expanded
   bibliography:
     hanging-indent: true

@@ -14,11 +14,7 @@ info:
   id: http://www.zotero.org/styles/american-institute-of-aeronautics-and-astronautics
   default-locale: en-US
 options:
-  substitute:
-    contributor-role-form: short
-    template:
-      - editor
-      - translator
+  substitute: editor-translator-short
   processing: numeric
   contributors:
     display-as-sort: all
@@ -26,16 +22,8 @@ options:
     delimiter: ", "
     delimiter-precedes-last: always
     demote-non-dropping-particle: sort-only
-  dates:
-    month: long
-    uncertainty-marker: "?"
-    approximation-marker: "ca. "
-    range-delimiter: –
-  titles:
-    periodical:
-      emph: true
-    serial:
-      emph: true
+  dates: long
+  titles: journal-emphasis
   bibliography:
     separator: ", "
   punctuation-in-quote: true

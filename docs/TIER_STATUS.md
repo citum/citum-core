@@ -132,7 +132,8 @@ full ibid/subsequent support requires `position` condition (not yet implemented)
 |-------|--------|-------|
 | chicago-shortened-notes-bibliography | ✅ Production | 13/13 citations, 31/31 bibliography |
 | chicago-notes | ⏳ Queued | Requires `position` condition support |
-| oscola | ⏳ Queued | Legal citation support needed |
+| oscola | ✅ Production | 13/13 citations, 32/32 bibliography |
+| oscola-no-ibid | ✅ Production | 13/13 citations, 32/32 bibliography |
 
 ### Author-Format (MLA)
 

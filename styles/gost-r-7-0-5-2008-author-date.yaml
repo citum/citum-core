@@ -8,93 +8,55 @@ info:
   default-locale: ru-RU
 
 options:
-  processing: author-date
+  processing:
+    disambiguate:
+      names: false
+      add-givenname: false
+      year-suffix: true
 
 citation:
+  options:
+    contributors:
+      shorten:
+        min: 3
+        use-first: 1
+        and-others: et-al
+        delimiter-precedes-last: contextual
   template:
     - contributor: author
       form: short
+      shorten:
+        min: 3
+        use-first: 1
     - date: issued
       form: year
-      prefix: " "
+      prefix: ", "
     - variable: locator
-  wrap: parentheses
+      prefix: ", с. "
+  wrap: brackets
+  multi-cite-delimiter: "; "
 
 bibliography:
-  groups:
-    - id: books
-      heading:
-        localized:
-          ru-RU: Книги и монографии
-          ru: Книги и монографии
-      selector:
-        type:
-          - book
-          - edited-book
-          - chapter
-          - reference-entry
-      sort:
-        template:
-          - key: title
-            ascending: true
-
-    - id: articles
-      heading:
-        localized:
-          ru-RU: Статьи и периодика
-          ru: Статьи и периодика
-      selector:
-        type:
-          - article-journal
-          - article-magazine
-          - article-newspaper
-      sort:
-        template:
-          - key: title
-            ascending: true
-
-    - id: legal
-      heading:
-        localized:
-          ru-RU: Нормативные документы
-          ru: Нормативные документы
-      selector:
-        type:
-          - statute
-          - legal-case
-          - treaty
-          - legislation
-      sort:
-        template:
-          - key: title
-            ascending: true
-
-    - id: other
-      heading:
-        localized:
-          ru-RU: Прочие источники
-          ru: Прочие источники
-      selector:
-        not:
-          type:
-            - book
-            - edited-book
-            - chapter
-            - reference-entry
-            - article-journal
-            - article-magazine
-            - article-newspaper
-            - statute
-            - legal-case
-            - treaty
-            - legislation
-
   template:
     - contributor: author
       form: long
+      name-order: family-first
     - date: issued
       form: year
-      prefix: " "
+      prefix: ", "
     - title: primary
+      prefix: " "
+    - title: parent-monograph
+    - title: parent-serial
+    - contributor: editor
+      form: verb
+      name-order: family-first
+    - variable: publisher-place
+      prefix: " S. "
     - variable: publisher
+    - number: volume
+      prefix: ". Vol. "
+    - number: issue
+      prefix: ", № "
     - number: pages
+      prefix: ". P. "

@@ -14,6 +14,12 @@ info:
   id: http://www.zotero.org/styles/din-1505-2-alphanumeric
   default-locale: de-DE
 options:
+  processing:
+    label:
+      preset: ams
+      single-author-chars: 4
+      et-al-min: 5
+      et-al-marker: ""
   contributors:
     display-as-sort: all
     shorten:
@@ -40,20 +46,13 @@ options:
   bibliography:
     separator: " : "
 citation:
-  options:
-    contributors:
-      shorten:
-        min: 3
-        use-first: 1
-        and-others: et-al
-        delimiter-precedes-last: contextual
   template:
-    - contributor: author
-      form: long
+    - number: citation-label
     - variable: locator
       show-label: true
-      prefix: " "
+      prefix: ", "
   wrap: brackets
+  delimiter: ""
   multi-cite-delimiter: "; "
 bibliography:
   options:
