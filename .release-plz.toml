@@ -16,7 +16,7 @@ git_release_enable = false
 
 # Only create release for the main binary
 [[package]]
-name = "csln"
+name = "citum"
 changelog_update = true
 changelog_path = "../../CHANGELOG.md"
 git_release_enable = true
