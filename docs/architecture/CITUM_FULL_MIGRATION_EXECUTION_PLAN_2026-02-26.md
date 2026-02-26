@@ -33,8 +33,7 @@ This avoids mixing network operations and local refactors in one step.
 1. Extract `bindings/` into `citum/labs` from a throwaway clone using `git filter-repo`.
 2. Transfer `styles-hub` to `citum/citum-hub`.
 3. Transfer `csl26` to `citum/citum-core`.
-4. Create and initialize `citum/citum-server` as a standalone repository.
-5. Confirm redirects exist for old GitHub URLs.
+4. Confirm redirects exist for old GitHub URLs.
 
 ### Phase B: Data-plane (repo rename commit series)
 
@@ -128,6 +127,7 @@ Keep reviewable commits:
 1. **Bean ID policy:** keep `csl26-*` IDs permanently vs introduce `citum-*` IDs for new tasks.
 2. **CLI compatibility policy:** temporary shim (`csln` alias) vs immediate hard rename to `citum-cli`.
 3. **Frontend branding policy:** keep `.csln-*` CSS/API classes for compatibility vs rename in same window.
+4. **Server placement policy:** keep `citum-server` in `citum-core` until stabilization (default), then evaluate extraction later.
 
 ## 10. Done Criteria
 
