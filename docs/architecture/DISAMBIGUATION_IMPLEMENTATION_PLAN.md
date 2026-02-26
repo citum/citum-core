@@ -245,7 +245,7 @@ For each failing test:
 **File:** `../../crates/citum-engine/src/disambiguation_csl.rs`
 **Status:** COMPLETE
 
-The file `disambiguation_csl.rs` (historical) contained obsolete CSL XML test infrastructure and has been removed. All testing is now done via native CSLN tests in the `citations` functional target.
+The file `disambiguation_csl.rs` (historical) contained obsolete CSL XML test infrastructure and has been removed. All testing is now done via native Citum tests in the `citations` functional target.
 
 **Action:**
 - Deleted `../../crates/citum-engine/src/disambiguation_csl.rs`
@@ -261,7 +261,7 @@ Currently, tests use JSON string inputs for bibliography data. These should be g
 
 **Approach:**
 - Keep JSON input for backward compatibility with CSL JSON format
-- Add helper functions to build CSLN-native Reference structs
+- Add helper functions to build Citum-native Reference structs
 - Document both patterns for future maintainers
 
 **Low Priority:** This is a refactoring task that doesn't block test fixes.
@@ -276,7 +276,7 @@ Currently, tests use JSON string inputs for bibliography data. These should be g
 
 **Updates Needed:**
 - Remove "pending implementation" notes
-- Add native CSLN examples (YAML style snippets)
+- Add native Citum examples (YAML style snippets)
 - Document performance characteristics
 - Link to test suite for examples
 - Add implementation status for each disambiguation strategy

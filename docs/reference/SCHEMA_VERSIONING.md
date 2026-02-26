@@ -1,10 +1,10 @@
 # Schema Versioning Policy
 
-This document defines the versioning strategy for CSL Next (CSLN) style format and processor code.
+This document defines the versioning strategy for Citum style format and processor code.
 
 ## Two-Track Versioning
 
-CSLN uses **independent versioning** for code and schema to maintain clarity and stability:
+Citum uses **independent versioning** for code and schema to maintain clarity and stability:
 
 | Track | What | Version Source | Automation |
 |-------|------|----------------|------------|
@@ -138,7 +138,7 @@ Use the `../scripts/bump-schema.sh` script to update the schema version:
 Track schema changes separately from code changes:
 
 #### schema-v1.0.0 (Unreleased)
-- Initial CSLN schema stabilization
+- Initial Citum schema stabilization
 - Core fields: info, options, citation, bibliography
 - Supported options: contributors, dates, titles, page-range-format
 - Validated against APA 7th, Chicago Author-Date
@@ -173,7 +173,7 @@ $ cargo run --bin citum --features schema -- schema style
 # styles/apa-7th.yaml
 version: "1.0.0"  # Schema version (optional, inherits default)
 info:
-  title: APA 7th Edition (CSLN)
+  title: APA 7th Edition (Citum)
   id: https://www.zotero.org/styles/apa-7th-citum
 ```
 

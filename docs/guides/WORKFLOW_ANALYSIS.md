@@ -82,7 +82,7 @@ The rendering fidelity workflow infrastructure is now in place. Phase 1 (Quick W
 
 ## Known Acceptable Differences
 
-Some differences between citeproc-js and CSLN are intentional or acceptable:
+Some differences between citeproc-js and Citum are intentional or acceptable:
 
 - **HTML entity encoding**: `&#38;` vs `&`
 - **Whitespace normalization**: Extra spaces collapsed
@@ -154,7 +154,7 @@ Ordering: Placed after container-title by reorder_serial_components()
 **Benefits**:
 - Faster debugging of complex migration issues
 - Visibility into compilation pipeline
-- Useful for understanding how CSL → CSLN works
+- Useful for understanding how CSL → Citum works
 
 **Effort**: High (1-2 days to implement provenance tracking)
 **Impact**: MEDIUM - valuable for stubborn issues, but not all issues require this

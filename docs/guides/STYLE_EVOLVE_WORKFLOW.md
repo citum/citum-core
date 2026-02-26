@@ -10,11 +10,11 @@ Do not choose internal skills directly unless you are maintaining the workflow.
 
 ## Modes
 1. `upgrade`
-- Improve existing CSLN style(s).
+- Improve existing Citum style(s).
 - Typical goal: increase SQI while preserving or improving fidelity.
 
 2. `migrate`
-- Convert one or more CSL 1.0 styles into high-quality CSLN styles.
+- Convert one or more CSL 1.0 styles into high-quality Citum styles.
 - Typical goal: high oracle parity plus maintainable templates.
 
 3. `create`

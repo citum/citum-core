@@ -1,6 +1,6 @@
 # Rendering Fidelity Workflow Guide
 
-This guide describes the standard workflow for debugging and fixing rendering issues in CSLN. It assumes you have basic familiarity with the project structure and oracle comparison tools.
+This guide describes the standard workflow for debugging and fixing rendering issues in Citum. It assumes you have basic familiarity with the project structure and oracle comparison tools.
 
 ## Quick Reference
 
@@ -35,7 +35,7 @@ validation.
 
 ## Hybrid Migration Strategy
 
-CSLN uses a three-tier architecture to balance high fidelity for popular styles with broad coverage for the long tail of CSL 1.0 styles (see `csl26-m3lb`).
+Citum uses a three-tier architecture to balance high fidelity for popular styles with broad coverage for the long tail of CSL 1.0 styles (see `csl26-m3lb`).
 
 | Tier | Target | Method | Goal |
 |------|--------|--------|------|
@@ -98,7 +98,7 @@ Start with the structured oracle to see component-level differences:
 node ../scripts/oracle.js styles-legacy/apa.csl
 ```
 
-This shows you **which specific components** differ between citeproc-js (oracle) and CSLN, not just that the strings are different.
+This shows you **which specific components** differ between citeproc-js (oracle) and Citum, not just that the strings are different.
 
 **Example output:**
 ```
@@ -153,7 +153,7 @@ This project uses a tri-agent specialist model to achieve high-fidelity renderin
 2.  **@styleplan**: Converts the architectural design into a technical build plan with actionable tasks and exact code snippets for the builder.
 3.  **@styleauthor**: Executes the implementation (Haiku) using the hand-authoring loop.
 
-**Workflow**: Run `../scripts/prep-migration.sh <style>` and use the specialized agents to hand-author the CSLN template.
+**Workflow**: Run `../scripts/prep-migration.sh <style>` and use the specialized agents to hand-author the Citum template.
 
 #### Systemic Issues (affects Tier 3/4 styles)
 → Fix in `../crates/citum-engine/`
@@ -394,7 +394,7 @@ Bibliography: 24/28 passing (86%)
 
 **What it does**: 
 1. Generates "Target Rendering" using `citeproc-js`.
-2. Generates "Baseline CSLN" (Tier 1 options + Tier 4 templates).
+2. Generates "Baseline Citum" (Tier 1 options + Tier 4 templates).
 3. Packages both into a high-fidelity context packet for the agent.
 
 **Example usage**:
@@ -472,7 +472,7 @@ Then, copy the output and provide it to the `@styleauthor` agent to begin the it
 
 ## Known Acceptable Differences
 
-Some differences between citeproc-js and CSLN are intentional or acceptable. **Do not spend time investigating these**:
+Some differences between citeproc-js and Citum are intentional or acceptable. **Do not spend time investigating these**:
 
 ### HTML Entity Encoding
 **Example**: `&#38;` vs `&`, `&lt;` vs `<`
@@ -487,7 +487,7 @@ Some differences between citeproc-js and CSLN are intentional or acceptable. **D
 ### Unicode vs ASCII
 **Example**: Em-dash `—` vs double-hyphen `--` in page ranges
 **Why**: Both are acceptable representations
-**Action**: Prefer Unicode in CSLN, but ASCII is not wrong
+**Action**: Prefer Unicode in Citum, but ASCII is not wrong
 
 ### Quote Normalization
 **Example**: Smart quotes `"` vs straight quotes `"`
@@ -518,8 +518,8 @@ The structured oracle breaks bibliography entries into semantic components. Here
 
 - `✓` - Component matches oracle exactly
 - `✗` - Component differs (shows expected vs actual)
-- `(missing)` - Component in oracle but not in CSLN output
-- `(extra)` - Component in CSLN but not in oracle
+- `(missing)` - Component in oracle but not in Citum output
+- `(extra)` - Component in Citum but not in oracle
 
 ### Reading a Diff
 
@@ -646,7 +646,7 @@ This means the component extraction is incomplete. The structured oracle only ch
 
 - **[WORKFLOW_ANALYSIS.md](./WORKFLOW_ANALYSIS.md)**: Detailed analysis of bottlenecks and improvement plan
 - **[../reference/STYLE_PRIORITY.md](./../reference/STYLE_PRIORITY.md)**: Which styles to prioritize based on dependent counts
-- **[TEST_STRATEGY.md](../architecture/design/TEST_STRATEGY.md)**: Oracle vs CSLN-native testing approach
+- **[TEST_STRATEGY.md](../architecture/design/TEST_STRATEGY.md)**: Oracle vs Citum-native testing approach
 - **[CLAUDE.md](../../CLAUDE.md)**: Test commands and autonomous workflow whitelist
 
 ## Future Improvements

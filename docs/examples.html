@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Examples | CSLN</title>
+    <title>Examples | Citum</title>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
     <link
@@ -76,7 +76,7 @@
                         class="w-8 h-8 bg-primary rounded flex items-center justify-center group-hover:brightness-110 transition-all">
                         <span class="text-white font-mono font-bold">C</span>
                     </div>
-                    <span class="font-mono text-xl font-bold tracking-tight text-slate-900">CSLN</span>
+                    <span class="font-mono text-xl font-bold tracking-tight text-slate-900">Citum</span>
                 </a>
             </div>
             <div class="hidden md:flex items-center gap-8">
@@ -113,7 +113,7 @@
                 Feature Examples
             </h1>
             <p class="text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed">
-                See how CSLN's YAML syntax handles complex citation
+                See how Citum's YAML syntax handles complex citation
                 requirements with elegant, readable configuration.
             </p>
             <p class="text-sm text-slate-500 mt-5">
@@ -202,7 +202,7 @@
                     </h2>
                 </div>
                 <p class="text-slate-600 leading-relaxed mb-6">
-                    CSLN can process full documents by extracting citations using a high-performance
+                    Citum can process full documents by extracting citations using a high-performance
                     <code class="text-xs bg-slate-200 px-1 rounded">winnow</code> parser. It supports
                     the <strong class="text-slate-900">draft Djot citation syntax</strong>, including multi-cites and
                     narrative (integral) modes.
@@ -250,7 +250,7 @@ Structured: [@kuhn1962, section: 5].</pre>
                     </h2>
                 </div>
                 <p class="text-slate-600 leading-relaxed mb-6">
-                    CSLN supports sophisticated citation patterns, including
+                    Citum supports sophisticated citation patterns, including
                     narrative (integral) vs. parenthetical (non-integral)
                     modes, mid-citation "infix" text, and context-aware
                     conjunctions (e.g., APA's "and" vs. "&").
@@ -527,7 +527,7 @@ Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the Ameri
                     </h2>
                 </div>
                 <p class="text-slate-600 leading-relaxed mb-6">
-                    CSLN handles multilingual metadata with BCP 47 language
+                    Citum handles multilingual metadata with BCP 47 language
                     tags, supporting original scripts, transliterations
                     (Pinyin, Hepburn, ALA-LC), and translations. Styles
                     declaratively specify rendering preferences with
@@ -698,7 +698,7 @@ Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the Ameri
                     </h2>
                 </div>
                 <p class="text-slate-600 leading-relaxed mb-6">
-                    CSLN supports native <strong class="text-slate-900">EDTF (Extended Date/Time Format)</strong>
+                    Citum supports native <strong class="text-slate-900">EDTF (Extended Date/Time Format)</strong>
                     for handling complex historical ranges, uncertain or approximate dates,
                     and seasons.
                 </p>
@@ -763,7 +763,7 @@ Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the Ameri
                     </div>
                     <div class="text-sm text-slate-600 leading-relaxed">
                         <strong class="text-slate-900">Fidelity First:</strong>
-                        Unlike CSL 1.0's structured date objects, CSLN uses EDTF strings as the primary exchange format,
+                        Unlike CSL 1.0's structured date objects, Citum uses EDTF strings as the primary exchange format,
                         ensuring that semantic nuances like "approximate" or "unspecified" are preserved and can be
                         localized by the processor according to the style's locale.
                     </div>
@@ -823,7 +823,7 @@ Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the Ameri
                     </h2>
                 </div>
                 <p class="text-slate-600 leading-relaxed mb-6">
-                    CSLN separates title content from its role (primary,
+                    Citum separates title content from its role (primary,
                     parent-monograph, parent-serial) and uses declarative
                     global formatting rules for consistency across item
                     types.
@@ -880,7 +880,7 @@ Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the Ameri
                     </h2>
                 </div>
                 <p class="text-slate-600 leading-relaxed mb-6">
-                    Avoid complex conditional logic. Components in CSLN can
+                    Avoid complex conditional logic. Components in Citum can
                     declaratively override their behavior or suppress
                     themselves based on the item type. Use concise list syntax
                     to apply the same rule to multiple types.
@@ -913,7 +913,7 @@ Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the Ameri
                     </h2>
                 </div>
                 <p class="text-slate-600 leading-relaxed mb-6">
-                    CSLN supports multiple output formats with a pluggable
+                    Citum supports multiple output formats with a pluggable
                     architecture. Generate semantic HTML, native LaTeX, flexible Djot for
                     static site generators, or clean Plain Text.
                 </p>
@@ -999,10 +999,10 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                     </h2>
                 </div>
                 <p class="text-slate-600 leading-relaxed mb-6">
-                    A single-pass LuaLaTeX citation workflow backed by the CSLN Rust processor via C-FFI.
+                    A single-pass LuaLaTeX citation workflow backed by the Citum Rust processor via C-FFI.
                     No Biber, no <code class="text-xs bg-slate-200 px-1 rounded">.bbl</code> file, no
                     external bibliography step. The processor runs inline during compilation via LuaJIT FFI,
-                    and all CSLN output rules (disambiguation, name formatting, et-al) apply identically.
+                    and all Citum output rules (disambiguation, name formatting, et-al) apply identically.
                 </p>
                 <div class="bg-slate-900 rounded-lg p-4 font-mono text-xs text-slate-300 leading-relaxed">
                     <pre>.tex \cite{key}
@@ -1051,7 +1051,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
 <span class="text-primary">$</span> cargo build -p citum_engine --release --features ffi
 
 <span class="text-slate-500"># 2. Compile your document</span>
-<span class="text-primary">$</span> CSLN_LIB=$(pwd)/target/release lualatex --shell-escape paper.tex</pre>
+<span class="text-primary">$</span> CITUM_LIB=$(pwd)/target/release lualatex --shell-escape paper.tex</pre>
                 </div>
             </div>
 
@@ -1085,7 +1085,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                     </h2>
                 </div>
                 <p class="text-slate-600 leading-relaxed mb-6">
-                    For production environments, CSLN styles and
+                    For production environments, Citum styles and
                     bibliographies can be compiled into binary CBOR (Concise
                     Binary Object Representation) for near-instant loading.
                 </p>
@@ -1133,7 +1133,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                     </h2>
                 </div>
                 <p class="text-slate-600 leading-relaxed mb-6">
-                    CSLN can generate JSON Schemas for its configuration formats, enabling
+                    Citum can generate JSON Schemas for its configuration formats, enabling
                     rich IDE support, validation, and auto-completion in editors like VS Code.
                 </p>
             </div>
@@ -1166,7 +1166,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                     </h2>
                 </div>
                 <p class="text-slate-600 leading-relaxed mb-6">
-                    CSLN provides optional JS/CSS assets that enrich semantic HTML output with interactive behaviors.
+                    Citum provides optional JS/CSS assets that enrich semantic HTML output with interactive behaviors.
                     They target data attributes injected by the processor, providing a <strong
                         class="text-slate-900">progressive enhancement</strong> layer for web-based citation views.
                 </p>
@@ -1232,7 +1232,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                             <span class="material-icons text-primary text-base">auto_fix_high</span>
                             Requirements
                         </h4>
-                        <p class="text-xs text-slate-500">Requires HTML output generated by the CSLN processor
+                        <p class="text-xs text-slate-500">Requires HTML output generated by the Citum processor
                             (including v0.6.0+), which includes the semantic classes and data attributes used by the
                             interactive layer.</p>
                     </div>
@@ -1261,7 +1261,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                         <div class="w-6 h-6 bg-primary rounded flex items-center justify-center group-hover:brightness-110 transition-all">
                             <span class="text-white font-mono text-xs font-bold">C</span>
                         </div>
-                        <span class="font-mono text-lg font-bold text-slate-900">CSLN</span>
+                        <span class="font-mono text-lg font-bold text-slate-900">Citum</span>
                     </a>
                 </div>
                 <div class="flex gap-8 text-sm font-medium text-slate-500">
@@ -1271,7 +1271,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                     <a class="hover:text-primary transition-colors" href="compat.html">Compat</a>
                 </div>
                 <div class="text-sm text-slate-400">
-                    © 2026 CSLN Project. MPL-2.0.
+                    © 2026 Citum Project. MPL-2.0.
                 </div>
             </div>
         </div>

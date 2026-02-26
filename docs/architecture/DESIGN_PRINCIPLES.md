@@ -1,4 +1,4 @@
-# CSLN Design Principles
+# Citum Design Principles
 
 See CLAUDE.md for active behavioral policy. This document captures the full design rationale.
 
@@ -92,7 +92,7 @@ Names must be structured (`family`/`given` or `literal`), never parsed from stri
 
 All changes must pass the verification loop:
 1. Render with citeproc-js → String A
-2. Render with CSLN → String B
+2. Render with Citum → String B
 3. **Pass**: A == B (for supported features)
 
 ## 9a. Dual Metrics: Fidelity + SQI

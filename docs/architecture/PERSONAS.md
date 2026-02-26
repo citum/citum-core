@@ -1,4 +1,4 @@
-# CSLN Design Personas
+# Citum Design Personas
 
 When evaluating features, consider these four stakeholder perspectives.
 
@@ -26,7 +26,7 @@ When evaluating features, consider these four stakeholder perspectives.
 
 ### LLM-Assisted Style Authoring
 
-LLMs can act as style authors by following the `/styleauthor` workflow (`.claude/skills/styleauthor/SKILL.md`). This was validated by creating the APA 7th Edition CSLN style, where the LLM:
+LLMs can act as style authors by following the `/styleauthor` workflow (`.claude/skills/styleauthor/SKILL.md`). This was validated by creating the APA 7th Edition Citum style, where the LLM:
 
 1. Read style guide references (APA website, university LibGuides)
 2. Authored the style YAML using structured blocks, items, delimiters, and overrides
@@ -90,7 +90,7 @@ This is a **full-stack workflow**: the LLM can evolve the processor and core typ
 **Who**: Domain expert, researcher, bibliographer
 
 **Goals**:
-- Research existing solutions (CSL 1.0, CSL-M, biblatex, CSLN issues) and apply their lessons
+- Research existing solutions (CSL 1.0, CSL-M, biblatex, Citum issues) and apply their lessons
 - Ensure semantic correctness and continuity with established standards
 - Verify coverage of complex edge cases
 

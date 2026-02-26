@@ -1,4 +1,4 @@
-# CSL Next Multilingual Support Design
+# Citum Multilingual Support Design
 
 **Status**: Draft
 **Authors**: @dstyleplan
@@ -6,7 +6,7 @@
 
 ## Overview
 
-This document outlines the architectural design for adding "elegant" multilingual support to CSL Next (CSLN). The goal is to move away from procedural macros and toward a declarative, type-safe system that handles parallel metadata for high-fidelity citations.
+This document outlines the architectural design for adding "elegant" multilingual support to Citum. The goal is to move away from procedural macros and toward a declarative, type-safe system that handles parallel metadata for high-fidelity citations.
 
 ## core Principles
 
@@ -126,7 +126,7 @@ Future: `preferred-transliteration` style option will allow explicit method sele
 
 ## 2. Style Configuration
 
-A new global configuration section `multilingual` will be added to the CSLN style schema.
+A new global configuration section `multilingual` will be added to the Citum style schema.
 
 ```yaml
 options:
@@ -220,7 +220,7 @@ PIDs remain valuable for metadata quality and cross-referencing, but disambiguat
 
 ## 6. Grouped Disambiguation
 
-In complex multilingual bibliographies, a single global disambiguation scope can lead to confusing year suffixes. CSLN enables localized disambiguation within bibliography groups.
+In complex multilingual bibliographies, a single global disambiguation scope can lead to confusing year suffixes. Citum enables localized disambiguation within bibliography groups.
 
 ### 6.1 Logic
 

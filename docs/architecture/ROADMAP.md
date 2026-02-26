@@ -1,4 +1,4 @@
-# CSLN Project Roadmap
+# Citum Project Roadmap
 
 **Last updated:** 2026-02-19
 **Purpose:** Strategic plan tracking project maturity, phases, and risks
@@ -10,7 +10,7 @@
 | Component | Status | Coverage | Notes |
 |-----------|--------|----------|-------|
 | CSL 1.0 Parser | ✅ Complete | 2,844 styles | Full XML parsing capability |
-| CSLN Schema | ✅ Complete | - | Style, Template, Options, Locale types |
+| Citum Schema | ✅ Complete | - | Style, Template, Options, Locale types |
 | Type System | ✅ Designed | - | Hybrid model with 4-factor test policy |
 | EDTF Dates | ✅ Complete | - | Range/uncertainty handling |
 

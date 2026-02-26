@@ -38,7 +38,7 @@ Legal citations are not binary (lawyer/non-lawyer). They exist on a spectrum of 
 
 **Purpose:** Support academics citing legal materials in standard academic styles.
 
-**Approach:** Legal reference types become first-class CSLN types alongside article, book, chapter, etc.
+**Approach:** Legal reference types become first-class Citum types alongside article, book, chapter, etc.
 
 **Core Legal Types:**
 - `legal-case` - Court decisions (Brown v. Board of Education)
@@ -408,6 +408,6 @@ Obergefell v. Hodges, 135 S. Ct. 2584, 2604, 192 L. Ed. 2d 609 (2015).
 
 ## Conclusion
 
-By treating legal citations as a **spectrum** rather than a binary (lawyer/non-lawyer), we can support both academic and legal specialist use cases without burdening either population. Legal types become first-class CSLN reference types (Tier 1), with optional specialist features (Tier 2) for legal professionals.
+By treating legal citations as a **spectrum** rather than a binary (lawyer/non-lawyer), we can support both academic and legal specialist use cases without burdening either population. Legal types become first-class Citum reference types (Tier 1), with optional specialist features (Tier 2) for legal professionals.
 
-This architecture aligns with CSLN design principles (explicit over magic, declarative templates, code-as-schema) and satisfies all personas (academic style authors, legal style authors, web developers, systems architects, domain experts).
+This architecture aligns with Citum design principles (explicit over magic, declarative templates, code-as-schema) and satisfies all personas (academic style authors, legal style authors, web developers, systems architects, domain experts).

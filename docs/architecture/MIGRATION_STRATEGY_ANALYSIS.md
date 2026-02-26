@@ -10,32 +10,32 @@ Bean `csl26-rh2u` and the broader epic `csl26-ifiw` track a fundamental problem:
 
 ## Approach A: XML Semantic Compiler (Status Quo)
 
-**How it works:** Parse CSL 1.0 XML, inline macros, upsample nodes to an intermediate representation, then compile into CSLN's flat TemplateComponent model. Runs post-processing passes (reorder, deduplicate, group) to fix structural issues.
+**How it works:** Parse CSL 1.0 XML, inline macros, upsample nodes to an intermediate representation, then compile into Citum's flat TemplateComponent model. Runs post-processing passes (reorder, deduplicate, group) to fix structural issues.
 
 ### Pros
 
 1. **Semantic fidelity** - Works from the actual style definition, which encodes the author's intent across all reference types, not just observed output for tested types.
 2. **Complete conditional coverage** - Has access to ALL choose/if/else branches. APA has 126 choose blocks covering 50+ reference types; output-driven only sees what test data exercises.
 3. **Options extraction works well** - Global settings (name formatting, et-al rules, initialize-with, date forms, page-range-format) are reliably extracted from XML attributes. This is why citations already work at 87-100%.
-4. **Deterministic and scalable** - Same XML input always produces same CSLN output. One compiler handles all 2,844 styles without per-style inference runs.
+4. **Deterministic and scalable** - Same XML input always produces same Citum output. One compiler handles all 2,844 styles without per-style inference runs.
 5. **Provenance tracking** - When something fails, you can trace the exact CslNode to CslnNode to TemplateComponent chain. Debugging infrastructure already exists.
 6. **Handles latent features** - Substitute rules, disambiguation, subsequent-author-substitute, locale terms - all encoded in XML regardless of whether test data triggers them.
 7. **Significant investment** - 7,300 lines of working code. The options pipeline, upsampler, and preset detector are solid.
 
 ### Cons
 
-1. **Fundamental model mismatch** - CSL 1.0 is procedural (macros, choose/if/else, groups with implicit suppression). CSLN is declarative (flat templates with typed overrides). Bridging this is the hardest translation problem in the project.
+1. **Fundamental model mismatch** - CSL 1.0 is procedural (macros, choose/if/else, groups with implicit suppression). Citum is declarative (flat templates with typed overrides). Bridging this is the hardest translation problem in the project.
 2. **Type-specific branch flattening is the unsolved problem** - While XML node order correctly reflects rendering order (per the XSLT design), macros like APA's `source` contain 50+ choose/if/else paths that produce different component sequences per reference type. The source_order tracking attempt (reverted in commit `1c9ad45`) correctly preserved node order but could not capture which components appear for which types. The hard problem is not ordering - it is inferring type-specific suppress overrides from deeply nested conditional logic.
 3. **Combinatorial explosion** - APA has 99 macros and 126 choose blocks. Flattening these into a flat template with correct suppress overrides for every type is an extremely high-dimensional mapping problem.
 4. **Heuristic passes are fragile** - The reorder, deduplicate, and grouping passes use pattern-matching heuristics. Fixing one style's layout frequently breaks another. *Update (2026-02-08):* Significant progress has been made by replacing hardcoded `style_id` checks with holistic `StylePreset` detection and explicit `type_mapping` configuration, making these passes more deterministic and less 'magical'.
-5. **Group semantics mismatch** - CSL 1.0 groups suppress their delimiter when a child is empty; CSLN has no equivalent implicit behavior. This creates phantom components and incorrect spacing.
+5. **Group semantics mismatch** - CSL 1.0 groups suppress their delimiter when a child is empty; Citum has no equivalent implicit behavior. This creates phantom components and incorrect spacing.
 6. **Diminishing returns** - The easy 87% came cheaply; the remaining gap involves the hardest cases where the two models diverge most.
 
 ---
 
 ## Approach B: Output-Driven / Reverse Engineering
 
-**How it works:** Run citeproc-js with diverse test references, parse rendered output strings into structured components, cross-reference with input data to infer variable-to-output mappings, generate CSLN YAML directly from observed patterns.
+**How it works:** Run citeproc-js with diverse test references, parse rendered output strings into structured components, cross-reference with input data to infer variable-to-output mappings, generate Citum YAML directly from observed patterns.
 
 ### Pros
 
@@ -44,7 +44,7 @@ Bean `csl26-rh2u` and the broader epic `csl26-ifiw` track a fundamental problem:
 3. **Naturally resolves group semantics** - Group delimiter behavior, implicit suppression, and macro interaction effects are all resolved by citeproc-js before inference begins. No need to replicate that logic.
 4. **Type-specific overrides emerge naturally** - Comparing outputs across reference types directly reveals differences: "publisher appears for chapters but not journals" becomes `suppress: true` for `article-journal`.
 5. **Human-intuitive** - Produces templates resembling what a style author would write by reading a style guide: "Author (Year). Title. *Journal*, volume(issue), pages."
-6. **Well-suited to CSLN's design** - The flat template model was designed to be what a human would write. This approach produces exactly that.
+6. **Well-suited to Citum's design** - The flat template model was designed to be what a human would write. This approach produces exactly that.
 7. **Simpler conceptually** - No need to understand CSL 1.0's macro expansion, choose/if/else flattening, or group suppression.
 
 ### Cons
@@ -58,26 +58,26 @@ Bean `csl26-rh2u` and the broader epic `csl26-ifiw` track a fundamental problem:
 7. **Does not scale** - Each of 2,844 styles needs its own citeproc-js inference run with sufficient test data. This creates a permanent dependency on citeproc-js as infrastructure.
 8. **Non-deterministic** - Different test data sets may produce different inferred templates. The approach is probabilistic, not deterministic.
 9. **Cannot discover latent features** - Substitute rules, disambiguation, subsequent-author-substitute only trigger under specific conditions. Test data may never exercise them.
-10. **Locale conflation** - Output "pp. 1-10" does not reveal whether "pp." is a locale term or a hardcoded prefix. This matters for CSLN's multilingual locale system.
-11. **Compensating errors** - If the CSLN processor has bugs, the output-driven approach produces templates that compensate for those bugs rather than being correct.
+10. **Locale conflation** - Output "pp. 1-10" does not reveal whether "pp." is a locale term or a hardcoded prefix. This matters for Citum's multilingual locale system.
+11. **Compensating errors** - If the Citum processor has bugs, the output-driven approach produces templates that compensate for those bugs rather than being correct.
 
 ---
 
 ## Approach C: Hand-Authoring High-Impact Styles
 
-**How it works:** A human (or LLM-assisted human) reads the style guide and hand-authors CSLN YAML templates, using the existing `../../examples/apa-style.yaml` as a model. This approach targets the top 10 parent styles covering 60% of dependent styles.
+**How it works:** A human (or LLM-assisted human) reads the style guide and hand-authors Citum YAML templates, using the existing `../../examples/apa-style.yaml` as a model. This approach targets the top 10 parent styles covering 60% of dependent styles.
 
 ### Pros
 
 1. **Proven to work** - `../../examples/apa-style.yaml` already exists: 11 components, correct ordering, proper type-specific overrides, correct delimiters. This is the gold standard.
 2. **Highest fidelity** - A knowledgeable author understands the intent behind a style guide, not just observed output. They can handle edge cases, locale terms, and rare types correctly.
 3. **No infrastructure dependency** - No need for oracle.js hardening, expanded test fixtures, or citeproc-js inference runs.
-4. **Directly produces the target format** - The CSLN template model was designed to be human-readable and human-writable.
+4. **Directly produces the target format** - The Citum template model was designed to be human-readable and human-writable.
 
 ### Cons
 
 1. **Does not scale** - Hand-authoring 300 parent styles is not feasible.
-2. **Requires domain expertise** - The author needs to understand both the style guide and the CSLN template model.
+2. **Requires domain expertise** - The author needs to understand both the style guide and the Citum template model.
 3. **Error-prone** - Manual work introduces human error, especially for complex styles with many type-specific overrides.
 4. **Still needs verification** - Oracle comparison is still needed to validate correctness.
 
@@ -196,7 +196,7 @@ The inferrer validates that **the hard problem (template structure) is better so
 
 ### Future application: visual style creation
 
-The same output-driven approach could power a visual style editor where users provide example formatted entries (by pasting, uploading, or modifying pre-selected reference data) and the system infers a CSLN template. The component parser and template inferrer already perform the core task: given structured reference data and a formatted string, derive component ordering, delimiters, formatting, and type-specific behavior. This aligns with the progressive-refinement UI described in `./design/STYLE_EDITOR_VISION.md` and would allow style creation without requiring knowledge of any style language.
+The same output-driven approach could power a visual style editor where users provide example formatted entries (by pasting, uploading, or modifying pre-selected reference data) and the system infers a Citum template. The component parser and template inferrer already perform the core task: given structured reference data and a formatted string, derive component ordering, delimiters, formatting, and type-specific behavior. This aligns with the progressive-refinement UI described in `./design/STYLE_EDITOR_VISION.md` and would allow style creation without requiring knowledge of any style language.
 
 ---
 
@@ -206,7 +206,7 @@ The same output-driven approach could power a visual style editor where users pr
 - `../../crates/citum-migrate/src/lib.rs` - MacroInliner with macro expansion logic
 - `../../crates/citum-migrate/src/upsampler.rs` - CslNode to CslnNode conversion (works well)
 - `../../crates/citum-migrate/src/options_extractor/` - Options pipeline (works well, keep)
-- `../../crates/citum-schema/src/template.rs` - CSLN template model (target schema)
+- `../../crates/citum-schema/src/template.rs` - Citum template model (target schema)
 - `../../scripts/oracle.js` - Oracle comparison test
 - `../../scripts/lib/component-parser.js` - Hardened component parser with field-aware matching
 - `../../scripts/lib/template-inferrer.js` - Output-driven template inference engine

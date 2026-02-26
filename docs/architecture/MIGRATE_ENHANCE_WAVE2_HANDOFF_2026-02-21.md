@@ -98,7 +98,7 @@ Remaining citation misses:
 - none in Wave 2 (`12/12` citations for all 12 styles)
 
 Rust changes implemented:
-- Extract legacy bibliography sort into CSLN `bibliography.sort` (`GroupSort`).
+- Extract legacy bibliography sort into Citum `bibliography.sort` (`GroupSort`).
 - Preserve legacy numeric bibliography sort extraction broadly.
 - In group sorting, apply author->title fallback only when the sort template
   includes a title key; otherwise, missing-name entries sort last.

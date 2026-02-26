@@ -17,7 +17,7 @@ The CSL 1.0 ecosystem contains **7,987 dependent styles** that alias approximate
 | american-medical-association | 293 | numeric | 3.7% |
 | taylor-and-francis-chicago-author-date | 234 | author-date | 2.9% |
 
-**Current CSLN migration produces fully independent styles with no aliasing mechanism.** This document evaluates whether and how CSLN should address style reuse.
+**Current Citum migration produces fully independent styles with no aliasing mechanism.** This document evaluates whether and how Citum should address style reuse.
 
 ---
 
@@ -57,7 +57,7 @@ The dependent style contains only metadata and a parent reference. All formattin
 - Version management: what if parent changes?
 - Runtime dependency: style files aren't self-contained
 
-**Verdict:** Does not align with CSLN's design philosophy.
+**Verdict:** Does not align with Citum's design philosophy.
 
 ---
 
@@ -129,7 +129,7 @@ impl ContributorPreset {
 }
 ```
 
-**Verdict:** Strongly aligned with CSLN's "explicit over magic" principle.
+**Verdict:** Strongly aligned with Citum's "explicit over magic" principle.
 
 ---
 
@@ -346,7 +346,7 @@ Example migration output for a simple dependent style:
 </style>
 ```
 
-**After (CSLN with presets):**
+**After (Citum with presets):**
 ```yaml
 info:
   title: Journal of Example Studies
@@ -422,9 +422,9 @@ CSL 1.0 macros are procedural code blocks that can be called from templates:
 
 This is the key distinction:
 - CSL 1.0: Reuse through procedural macro calls
-- CSLN: Reuse through declarative preset configuration
+- Citum: Reuse through declarative preset configuration
 
-The CSLN approach separates "what to render" (templates) from "how to render" (options/presets), making styles more understandable and customizable.
+The Citum approach separates "what to render" (templates) from "how to render" (options/presets), making styles more understandable and customizable.
 
 ---
 

@@ -7,14 +7,14 @@
 
 ## Problem Statement
 
-CSLN processor is a pure Rust citation engine with no I/O dependencies, making it an ideal candidate for WebAssembly compilation. However, WASM support requires:
+Citum processor is a pure Rust citation engine with no I/O dependencies, making it an ideal candidate for WebAssembly compilation. However, WASM support requires:
 
 1. **Browser integration** - JavaScript bindings for web-based citation processing
 2. **Cross-platform deployment** - Desktop/mobile plugins without native compilation
 3. **Serverless edge** - Cloudflare Workers, Deno Deploy, AWS Lambda with WASM runtime
 4. **Bundle size optimization** - Target <250 KB gzipped for fast browser loading
 
-The challenge: How do we expose CSLN's synchronous, type-safe API to JavaScript ecosystems while maintaining zero-cost abstractions and deterministic performance?
+The challenge: How do we expose Citum's synchronous, type-safe API to JavaScript ecosystems while maintaining zero-cost abstractions and deterministic performance?
 
 ## Key Insight: WASM Beyond Browsers
 
@@ -136,7 +136,7 @@ export enum WasmErrorKind {
 **Rationale for Synchronous API:**
 - Citation processing is fast (<10ms per reference)
 - No I/O, network, or blocking operations
-- Matches native CSLN API design
+- Matches native Citum API design
 - Avoids async overhead in JavaScript
 
 **Success Criteria:**
@@ -334,6 +334,6 @@ WASM support should be implemented when **any** of these conditions are met:
 
 ## Conclusion
 
-WASM support extends CSLN processor to browser, desktop, mobile, and serverless contexts without code duplication or native compilation complexity. By deferring implementation until API stability (10+ parent styles working), we avoid premature optimization while preserving WASM-compatible design patterns.
+WASM support extends Citum processor to browser, desktop, mobile, and serverless contexts without code duplication or native compilation complexity. By deferring implementation until API stability (10+ parent styles working), we avoid premature optimization while preserving WASM-compatible design patterns.
 
 The three-tier strategy (compatibility → bindings → optimization) provides clear milestones and allows incremental deployment. When trigger conditions are met, implementation follows a well-defined 6-week roadmap with measurable success criteria.

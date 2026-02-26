@@ -1,7 +1,7 @@
 ---
 name: style-migrate-enhance
 type: agent-invocable
-description: High-throughput migration waves converting priority parent CSL 1.0 styles to CSLN with repeatable before/after metrics and migration-engine gap recommendations. Fidelity is the hard gate.
+description: High-throughput migration waves converting priority parent CSL 1.0 styles to Citum with repeatable before/after metrics and migration-engine gap recommendations. Fidelity is the hard gate.
 model: sonnet
 ---
 
@@ -14,7 +14,7 @@ model: sonnet
 
 ## Input Contract
 - Legacy style path(s) under `styles-legacy/`.
-- Target CSLN style path(s) under `styles/`.
+- Target Citum style path(s) under `styles/`.
 - Batch size and priority source (`docs/reference/STYLE_PRIORITY.md`, `docs/TIER_STATUS.md`).
 - Optional target metric (for example: bibliography >= 24/28).
 

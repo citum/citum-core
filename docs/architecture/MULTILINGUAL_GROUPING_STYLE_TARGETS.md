@@ -8,7 +8,7 @@
 ## Overview
 
 This document records the priority style families identified as primary testbeds
-for multilingual rendering and sectional bibliography grouping in CSLN. It maps
+for multilingual rendering and sectional bibliography grouping in Citum. It maps
 those families to existing architecture and pending implementation tasks.
 
 ## Architecture Status

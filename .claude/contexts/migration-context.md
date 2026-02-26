@@ -1,6 +1,6 @@
 # Migration Context
 
-Working on the **CSL 1.0 → CSLN conversion** pipeline.
+Working on the **CSL 1.0 → Citum conversion** pipeline.
 
 ## Hybrid Strategy
 1. **XML pipeline for options** — Extract global options (name formatting, et-al rules, dates, locales) from CSL 1.0 XML. Achieves 87-100% citation match.

@@ -1,10 +1,10 @@
-# BibLaTeX to CSLN Reference Mapping
+# BibLaTeX to Citum Reference Mapping
 
-This document describes the mapping between BibLaTeX fields and the CSLN `InputReference` model.
+This document describes the mapping between BibLaTeX fields and the Citum `InputReference` model.
 
 ## Entry Type Mapping
 
-| BibLaTeX Type | CSLN Type | Notes |
+| BibLaTeX Type | Citum Type | Notes |
 |---------------|-----------|-------|
 | `@article` | `SerialComponent` | Journal/magazine articles |
 | `@book` | `Monograph` | Single-volume books |
@@ -33,7 +33,7 @@ This document describes the mapping between BibLaTeX fields and the CSLN `InputR
 
 ### Core Fields
 
-| BibLaTeX Field | CSLN Field | Type | Notes |
+| BibLaTeX Field | Citum Field | Type | Notes |
 |----------------|------------|------|-------|
 | `author` | `author` | `Contributor` | Parsed as `ContributorList` |
 | `editor` | `editor` (via parent) | `Contributor` | In `Collection.editor` |
@@ -57,7 +57,7 @@ This document describes the mapping between BibLaTeX fields and the CSLN `InputR
 
 ### Name Handling
 
-| BibLaTeX | CSLN `StructuredName` | Notes |
+| BibLaTeX | Citum `StructuredName` | Notes |
 |----------|----------------------|-------|
 | `family` | `family` | Family/surname |
 | `given` | `given` | Given names |
@@ -74,11 +74,11 @@ author:
 
 ## Field Mapping: Suggested Additions
 
-The following fields are commonly used in BibLaTeX but not yet in the CSLN model.
+The following fields are commonly used in BibLaTeX but not yet in the Citum model.
 
 ### High Priority (Common Fields)
 
-| BibLaTeX Field | Suggested CSLN Field | Type | Use Case |
+| BibLaTeX Field | Suggested Citum Field | Type | Use Case |
 |----------------|---------------------|------|----------|
 | `keywords` | `keywords` | `Vec<String>` | Search/filtering |
 | `language` / `langid` | `language` | `String` | Item language (BCP-47) |
@@ -89,7 +89,7 @@ The following fields are commonly used in BibLaTeX but not yet in the CSLN model
 
 ### Medium Priority (Specialized Fields)
 
-| BibLaTeX Field | Suggested CSLN Field | Type | Use Case |
+| BibLaTeX Field | Suggested Citum Field | Type | Use Case |
 |----------------|---------------------|------|----------|
 | `institution` / `school` | `institution` | `Contributor` | Thesis/report affiliation |
 | `pubstate` | `pub_state` | `PubState` enum | "inpress", "forthcoming" |
@@ -105,7 +105,7 @@ The following fields are commonly used in BibLaTeX but not yet in the CSLN model
 
 ### Low Priority (Specialized/Rare)
 
-| BibLaTeX Field | Suggested CSLN Field | Type | Use Case |
+| BibLaTeX Field | Suggested Citum Field | Type | Use Case |
 |----------------|---------------------|------|----------|
 | `addendum` | `addendum` | `String` | Appended notes |
 | `library` | `library` | `String` | Library holdings |

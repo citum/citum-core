@@ -1,6 +1,6 @@
 # Schema Context
 
-Working on the **CSLN data model** — types, schemas, and the specification itself.
+Working on the **Citum data model** — types, schemas, and the specification itself.
 
 ## Philosophy
 - **Code-First**: Rust structs and enums are the source of truth for the schema.

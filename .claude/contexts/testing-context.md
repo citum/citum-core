@@ -5,7 +5,7 @@ Working on **oracle verification** and ensuring rendering fidelity.
 ## Core Principle
 All changes must pass the oracle loop:
 1. Render with citeproc-js → String A
-2. Render with CSLN → String B
+2. Render with Citum → String B
 3. **Pass**: A == B (for supported features)
 
 ## Oracle Scripts

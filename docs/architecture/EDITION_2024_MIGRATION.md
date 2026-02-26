@@ -92,7 +92,7 @@ Once stabilized, the primary candidates for `gen` refactoring are:
 
 ## Roadmap: JSON Server Mode
 
-The async story for CSLN is deferred to a future `csln_server` crate, separate from the
+The async story for Citum is deferred to a future `csln_server` crate, separate from the
 synchronous processor. Design goals:
 
 - Long-running background process (like Haskell citeproc server) to eliminate startup latency

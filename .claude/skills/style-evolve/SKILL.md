@@ -1,7 +1,7 @@
 ---
 name: style-evolve
 type: user-invocable, agent-invocable
-description: Single human-facing command for CSLN style co-evolution (style + processor). Use for all style work: upgrade (improve existing), migrate (CSL 1.0 to CSLN), create (from source evidence). Fidelity is the hard gate; SQI is secondary.
+description: Single human-facing command for Citum style co-evolution (style + processor). Use for all style work: upgrade (improve existing), migrate (CSL 1.0 to Citum), create (from source evidence). Fidelity is the hard gate; SQI is secondary.
 model: sonnet
 routes-to: style-maintain, style-migrate-enhance, style-qa
 ---
@@ -18,11 +18,11 @@ Do not require users to choose internal pipeline skills.
 
 ## Modes
 1. `upgrade`
-- Improve existing CSLN styles.
+- Improve existing Citum styles.
 - Route to `../style-maintain/SKILL.md`.
 
 2. `migrate`
-- Convert one or more CSL 1.0 styles to high-fidelity CSLN.
+- Convert one or more CSL 1.0 styles to high-fidelity Citum.
 - Route to `../style-migrate-enhance/SKILL.md`.
 
 3. `create`
