@@ -118,11 +118,14 @@ case "$CMD" in
             exit 0
         fi
 
-        echo "=== Recommended Next Beans ==="
         printf "%s\n" "$CANDIDATES_JSON" | jq -r '
             to_entries[] |
-            "\(.key + 1). \(.value.id) [\(.value.priority)/\(.value.type)] \(.value.title)\n   Why: \(.value.reason)\n   Inspect: beans show \(.value.id)"
+            "#\(.key + 1)  \(.value.id)  \(.value.type) · \(.value.priority)\n    \(.value.title)" +
+            (if .value.parent_title then "\n    Parent: \(.value.parent_title)" else "" end)
         '
+        FIRST_ID=$(printf "%s\n" "$CANDIDATES_JSON" | jq -r '.[0].id')
+        echo ""
+        echo "Recommendation: start with $FIRST_ID"
         ;;
 
     list|show|create|update|delete|archive|query|prime)
