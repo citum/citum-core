@@ -162,7 +162,7 @@ oracle scripts.
 - No internal types should leak through the public surface
 - Add `wasm` feature flag with `wasm-bindgen` gated behind it
 
-**P2-2: Create `citum/labs` repository**
+**P2-2: Create `citum/citum-labs` repository**
 - Move existing LuaLaTeX binding from `bindings/lua/` as first experiment
 - Clearly document as non-stable / proof-of-concept
 - Establish pattern for future experimental integrations
@@ -195,9 +195,9 @@ No new mechanism is needed. Stabilizing and publishing the schema crate
 The migration involves three git operations across two repos. The hub transfer is
 independent; the labs extraction must precede the core transfer.
 
-### Step 1: Extract citum/labs (from bindings/)
+### Step 1: Extract citum/citum-labs (from bindings/)
 
-`bindings/lua/` and `bindings/latex/` move to a new `citum/labs` repository.
+`bindings/lua/` and `bindings/latex/` move to a new `citum/citum-labs` repository.
 Subdirectory extraction requires `git filter-repo` to preserve commit history for
 those paths:
 
@@ -206,9 +206,9 @@ those paths:
 git clone https://github.com/citum/citum-core.git citum-labs-extract
 cd citum-labs-extract
 git filter-repo --path bindings/
-# Then create citum/labs on GitHub and push
-gh repo create citum/labs --private
-git remote set-url origin https://github.com/citum/labs.git
+# Then create citum/citum-labs on GitHub and push
+gh repo create citum/citum-labs --private
+git remote set-url origin https://github.com/citum/citum-labs.git
 git push -u origin main
 ```
 
@@ -282,7 +282,7 @@ point a `citum/docs` repo fed by CI from `citum-core` becomes viable.
 | `csl26-p0dc` | Phase 0: Move csl-legacy coupling to migrate | 0      |
 | `csl26-p1rn` | Phase 1: GitHub org + crate rename           | 1 (wave break) |
 | `csl26-p2bn` | Phase 2: Define citum-bindings API surface   | 2      |
-| `csl26-p2lb` | Phase 2: Create citum/labs repository        | 2      |
+| `csl26-p2lb` | Phase 2: Create citum/citum-labs repository        | 2      |
 | `csl26-srvr` | Phase 2: citum-server mode (epic)            | 2      |
 | `csl26-srpc` | Phase 2: Implement JSON-RPC stdin/stdout     | 2      |
 | `csl26-shtp` | Phase 2: HTTP feature (axum, feature-gated)  | 2      |

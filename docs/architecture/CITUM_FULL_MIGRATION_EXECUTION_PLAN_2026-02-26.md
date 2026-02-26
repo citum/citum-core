@@ -30,7 +30,7 @@ This avoids mixing network operations and local refactors in one step.
 
 ### Phase A: Control-plane (external)
 
-1. Extract `bindings/` into `citum/labs` from a throwaway clone using `git filter-repo`.
+1. Extract `bindings/` into `citum/citum-labs` from a throwaway clone using `git filter-repo`.
 2. Transfer `styles-hub` to `citum/citum-hub`.
 3. Transfer `csl26` to `citum/citum-core`.
 4. Confirm redirects exist for old GitHub URLs.
