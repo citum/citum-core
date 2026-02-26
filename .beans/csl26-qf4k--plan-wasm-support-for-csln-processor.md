@@ -1,6 +1,6 @@
 ---
 # csl26-qf4k
-title: Plan WASM support for csln_processor
+title: Plan WASM support for citum_engine
 status: todo
 type: feature
 priority: normal
@@ -8,10 +8,10 @@ created_at: 2026-02-14T22:12:30Z
 updated_at: 2026-02-14T22:12:30Z
 ---
 
-Research and design WASM integration strategy for csln_processor to enable browser-based citation processing.
+Research and design WASM integration strategy for citum_engine to enable browser-based citation processing.
 
 Goals:
-- Compile csln_processor to WebAssembly target (wasm32-unknown-unknown)
+- Compile citum_engine to WebAssembly target (wasm32-unknown-unknown)
 - Design JavaScript/TypeScript bindings for browser usage
 - Evaluate wasm-bindgen vs other approaches
 - Consider bundle size optimization strategies

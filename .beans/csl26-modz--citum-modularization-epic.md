@@ -16,8 +16,8 @@ bindings strategy.
 See docs/architecture/CITUM_MODULARIZATION.md for the full plan.
 
 ## Phase 0 (completed)
-- csl26-p0cl: Remove unused clap dep from csln_processor ✅
-- csl26-p0dc: Decouple csln_core from csl_legacy and biblatex ✅
+- csl26-p0cl: Remove unused clap dep from citum_engine ✅
+- csl26-p0dc: Decouple citum_schema from csl_legacy and biblatex ✅
 
 ## Phase 1 (at next wave break)
 - csl26-p1rn: GitHub org transfer + crate rename

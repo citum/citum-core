@@ -14,7 +14,7 @@ Style: styles/begell-house-chicago-author-date.yaml
 Next: Agent refinement (Phase 4)
 
 Auto-generated baseline:
-- Options: csln-migrate (Rust)
+- Options: citum-migrate (Rust)
 - Templates: infer-template.js (output-driven)
 
 Validation: Run `node scripts/oracle.js styles-legacy/begell-house-chicago-author-date.csl --json`

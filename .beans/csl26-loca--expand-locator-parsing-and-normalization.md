@@ -5,6 +5,7 @@ status: todo
 type: feature
 priority: normal
 created_at: 2026-02-14T00:00:00Z
+updated_at: 2026-02-26T13:45:00Z
 parent: csl26-q8zt
 ---
 

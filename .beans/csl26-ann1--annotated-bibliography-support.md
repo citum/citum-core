@@ -14,7 +14,7 @@ Current state: The `note` field exists on all reference types as `Option<String>
 
 ## Required changes
 
-* Add `annotation` or `abstract` component to the bibliography template schema in `csln_core`
+* Add `annotation` or `abstract` component to the bibliography template schema in `citum_schema`
 * Implement processor rendering for the annotation block (paragraph break + indented text)
 * Decide: use existing `note` field or add a dedicated `abstract` field (note is for internal notes, abstract is for reader-facing summaries)
 * Update style YAML schema to allow `- annotation: note` or similar template component

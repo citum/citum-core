@@ -1,7 +1,12 @@
 # Citum Project Roadmap
 
-**Last updated:** 2026-02-19
+**Last updated:** 2026-02-26
 **Purpose:** Strategic plan tracking project maturity, phases, and risks
+
+**Canonical metrics source of truth:**
+- `docs/TIER_STATUS.md` for style-level strict oracle status
+- `scripts/report-data/core-quality-baseline.json` for portfolio baseline gates
+- `docs/compat.html` for published compatibility snapshot
 
 ## Current State Matrix
 
@@ -20,16 +25,16 @@
 |-----------|--------|----------|-------|
 | XML Options Extraction | ✅ Operational | 87-100% citations | ~2,500 lines, DO NOT TOUCH |
 | Output-Driven Templates | ✅ Validated | 95-97% confidence | Tested on 6 styles |
-| LLM Hand-Authoring | 🔄 In Progress | APA 27/27 bibliography | 10/10 production styles converted |
+| LLM Hand-Authoring | ✅ Operational | See `docs/TIER_STATUS.md` | Production styles converted and maintained via style-evolve |
 | Oracle Verification | ✅ Complete | - | Structured diff, batch aggregator |
 
 ### Processor (Format-Specific Readiness)
 
 | Format | Citations | Bibliography | Blockers |
 |--------|-----------|--------------|----------|
-| Author-Date | 3-7/8 (varies) | 3-27/29 (varies) | Quality refinement needed |
-| Numeric | 3-7/8 (varies) | 0/34 | Year positioning, numbering, superscript |
-| Note | Not tested | Not tested | Position tracking (ibid, subsequent) |
+| Author-Date | See `docs/TIER_STATUS.md` | See `docs/TIER_STATUS.md` | Long-tail variation cleanup |
+| Numeric | See `docs/TIER_STATUS.md` | See `docs/TIER_STATUS.md` | Residual long-tail outliers |
+| Note | See `docs/TIER_STATUS.md` | See `docs/TIER_STATUS.md` | Position-sensitive edge cases |
 
 **Output Formats:** Plain text ✅, HTML ✅, Djot ✅
 
@@ -39,25 +44,25 @@
 |------|--------|--------|-------|
 | Oracle Verification | ✅ Complete | 88% token reduction | Caching, structured diff |
 | Workflow Scripts | ✅ Complete | 4 phases validated | prep-migration.sh, workflow-test.sh |
-| /styleauthor Skill | ✅ Complete | 18min budget/style | 5-phase iterative workflow |
+| /style-evolve Workflow | ✅ Complete | Repeatable migrate/upgrade loops | `styleauthor` retained as legacy alias |
 | Benchmarking | ✅ Available | Opt-in for hot paths | rendering, formats benchmarks |
 
 ## Phase Plan
 
 ### Phase 1: Author-Date Quality Refinement (Current)
-**Target:** 4 styles at 12/15+ bibliography match (~40% dependent corpus)
+**Target:** Maintain strict parity for high-impact author-date parents while reducing long-tail drift
 **Duration:** 2-3 weeks
-**Approach:** /styleauthor iteration loops
+**Approach:** /style-evolve iteration loops
 
 **Styles:**
-1. APA (783 dep) - 14/15 → 15/15
-2. Elsevier Harvard (665 dep) - 8/15 → 12/15+
-3. Chicago Author-Date (234 dep) - 6/15 → 10/15+
-4. Springer Basic Author-Date (460 dep) - Baseline + iterate to 10/15+
+1. APA
+2. Elsevier Harvard
+3. Chicago Author-Date variants
+4. Springer Basic Author-Date variants
 
 **Success Criteria:**
-- 4/4 styles at 12/15+ bibliography match
-- No citation regression (maintain 15/15)
+- No regressions in strict oracle results for already-passing styles
+- Reduced repeated long-tail mismatch clusters
 - Common failure patterns documented
 - Workflow optimization insights captured
 
@@ -66,12 +71,12 @@
 - Variation in style complexity (APA success may not predict others)
 
 ### Phase 2: Numeric Style Features (Next)
-**Target:** Enable 6 numeric styles (~20% dependent corpus)
+**Target:** Close remaining numeric outliers after top-tier parity
 **Duration:** 3-4 weeks
-**Approach:** Feature implementation + /styleauthor iteration
+**Approach:** Feature implementation + /style-evolve iteration
 
 **Prerequisites:**
-- Year positioning fix (affects all numeric styles at 0/15)
+- Year-positioning and ordering parity fixes
 - Citation numbering system
 - Superscript support
 - Sorting templates
@@ -85,7 +90,8 @@
 6. Springer Basic Brackets (352 dep)
 
 **Success Criteria:**
-- 6/6 styles at 8/15+ bibliography match
+- No regressions in top-tier numeric styles
+- Reduced numeric outlier mismatch clusters
 - Citation numbering works reliably
 - Sorting matches citeproc-js output
 
@@ -132,12 +138,10 @@
 
 | Metric | Current | Phase 1 Target | Phase 2 Target | Notes |
 |--------|---------|----------------|----------------|-------|
-| Top-10 coverage | 10/10 (100%) | 10/10 | 10/10 | Production set in `styles/*.yaml` |
-| Top-10 citation quality | 0/10 at 8/8 (strict) | 4/10 at 8/8 | 8/10 at 8/8 | Expanded citation fixture and strict oracle error handling |
-| Author-date bib quality | 3-27/29 (varies) | 20+/29 (4 styles) | - | Quality refinement |
-| Numeric bib quality | 0/34 (blocked) | - | 12+/34 (6 styles) | After feature work |
-| Dependent corpus coverage | 4,792/7,987 (60%) | ~3,200/7,987 (40%) | ~4,800/7,987 (60%) | Top-10 parents by impact |
-| Bean health | Stale statuses | All accurate | All accurate | Audit 2026-02-15 |
+| Top-10 strict parity | See `docs/TIER_STATUS.md` | Maintain parity | Maintain parity | Single source: `docs/TIER_STATUS.md` |
+| Portfolio fidelity/SQI | See `scripts/report-data/core-quality-baseline.json` | Increase threshold attainment count | Increase threshold attainment count | Evaluated via `report-core` + `check-core-quality` |
+| Long-tail outliers | See latest core report | Reduce repeated citation clusters | Reduce repeated bibliography clusters | Use `scripts/analyze-migration-gaps.js` |
+| Bean hygiene | See `.beans/` audit | Normalize status taxonomy | Keep duplicates at zero for active migrate tasks | Enforced by hygiene script |
 
 ## Risk Register
 
@@ -160,14 +164,14 @@
 
 ## Workflow Optimization Notes
 
-### What Works (APA 14/15 Success)
-- 5-phase /styleauthor workflow (research → author → test → evolve → verify)
+### What Works (Validated)
+- 5-phase style-evolve workflow (research → author → test → evolve → verify)
 - Structured oracle comparison (component-level diff)
 - Iterative refinement with processor evolution
 - Reusable pattern capture in common-patterns.yaml
 
 ### What Needs Improvement
-- Numeric style support (0/15 bibliography across all numeric styles)
+- Numeric long-tail style support
 - Workflow budget optimization (actual time vs 18min target)
 - Failure pattern documentation (systematic categorization)
 - Cross-style consistency (delimiter variations, volume/issue formatting)

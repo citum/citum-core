@@ -1,5 +1,7 @@
 # Wave 2 Handoff: Numeric Variant Stress (2026-02-21)
 
+> **Historical snapshot**: point-in-time execution record. For current status, use `docs/TIER_STATUS.md` and `docs/architecture/ROADMAP.md`.
+
 > Canonical status/next-actions now live in:
 > `docs/architecture/MIGRATE_ENHANCE_WAVE_RUNBOOK_2026-02-21.md`
 

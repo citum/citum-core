@@ -26,7 +26,7 @@ No internal types should leak through the public boundary.
 ## Feature Flags
 
 * `wasm` feature flag with `wasm-bindgen` gated behind it
-* Existing `cdylib` setup in `csln_processor` serves as the interim until
+* Existing `cdylib` setup in `citum_engine` serves as the interim until
   this crate stabilises
 
 ## Defer

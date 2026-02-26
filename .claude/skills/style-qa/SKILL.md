@@ -11,6 +11,7 @@ model: haiku
 - Style path(s) changed.
 - Oracle JSON result(s).
 - Optional baseline metrics for comparison.
+- Optional docs/beans diff when task updates `.md` or `.beans/*`.
 
 ## Required Checks
 1. Fidelity summary:
@@ -24,6 +25,9 @@ model: haiku
 4. Regression surface:
    - impacted style family/priority rank
    - likely cross-style risk
+5. Docs/beans hygiene (when docs or beans are touched):
+   - run `./scripts/check-docs-beans-hygiene.sh`
+   - require pass before approve
 
 ## Decision Rules
 - Reject when fidelity regresses.
@@ -40,3 +44,4 @@ model: haiku
 - `node scripts/oracle.js <legacy-style> --json`
 - `node scripts/report-core.js`
 - `./scripts/lint-rendering.sh <style-path>`
+- `./scripts/check-docs-beans-hygiene.sh`

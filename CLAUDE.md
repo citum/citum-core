@@ -94,11 +94,14 @@ Use `/humanizer` on docs before finalizing. Exceptions: rule 18 (curly quotes) e
 
 ## Current Status
 
-Oracle: strict 8-scenario set (`tests/fixtures/citations-expanded.json`). See `docs/TIER_STATUS.md`.
+Canonical status and metrics live in:
 
-- **APA 7th**: 8/8 citations ✅, 27/27 bibliography ✅
-- **Batch (top 10)**: 0/10 at strict 100%; top hit rates at 7/8
-- **Bibliography**: APA 27/27, Springer Basic 26/28, Elsevier With Titles 25/28
+- `docs/TIER_STATUS.md` (style-level status, strict oracle snapshots)
+- `scripts/report-data/core-quality-baseline.json` (portfolio baseline gate)
+- `docs/compat.html` (published compatibility snapshot)
+
+Oracle scoring uses the strict 12-scenario citation fixture
+(`tests/fixtures/citations-expanded.json`).
 
 ### Known Gaps
 - Volume-pages delimiter varies by style (comma vs colon)

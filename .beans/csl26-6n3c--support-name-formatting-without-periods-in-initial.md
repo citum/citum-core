@@ -19,7 +19,7 @@ Fix:
 - Handle initialize-with='' (no period after initials)
 - Handle initialize-with=' ' (space only)
 - Distinguish from initialize-with='.'
-- Update name rendering in csln_processor
+- Update name rendering in citum_engine
 - Test against styles using no-period format
 
 Refs: GitHub #132, TIER3_PLAN.md Issue 2.2

@@ -1,20 +1,11 @@
 ---
 # csl26-u7at
 title: 'Migrate: american-society-for-microbiology'
-status: in-progress
+status: canceled
 type: feature
 priority: normal
 created_at: 2026-02-23T21:02:29Z
-updated_at: 2026-02-23T21:02:30Z
+updated_at: 2026-02-26T13:45:00Z
 ---
 
-Migration prep completed ✅
-
-Style: styles/american-society-for-microbiology.yaml
-Next: Agent refinement (Phase 4)
-
-Auto-generated baseline:
-- Options: csln-migrate (Rust)
-- Templates: infer-template.js (output-driven)
-
-Validation: Run `node scripts/oracle.js styles-legacy/american-society-for-microbiology.csl --json`
+Duplicate migrate stub. Superseded by `csl26-58jg`.

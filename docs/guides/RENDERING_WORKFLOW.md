@@ -40,7 +40,7 @@ Citum uses a three-tier architecture to balance high fidelity for popular styles
 | Tier | Target | Method | Goal |
 |------|--------|--------|------|
 | **Tier 1: Core Options** | All Styles | XML Semantic Compiler | 100% fidelity for global options (names, dates, et-al) |
-| **Tier 2: Top Styles** | Top 10 Parents | Agent-Assisted LLM Authoring | 100% citation + bibliography fidelity via `@styleauthor` |
+| **Tier 2: Top Styles** | Top 10 Parents | Agent-Assisted LLM Authoring | 100% citation + bibliography fidelity via `/style-evolve` |
 | **Tier 3: The Long Tail** | 300+ Parents | Output-Driven Inference | 80%+ fidelity via automated template generation |
 | **Tier 4: Fallback** | Remaining | XML Template Compiler | Baseline rendering for obscure styles |
 
@@ -151,7 +151,7 @@ This project uses a tri-agent specialist model to achieve high-fidelity renderin
 
 1.  **@dstyleplan**: Conducts deep research on the style guide and designs the component tree architecture (nesting and delimiters). Identifies missing processor features.
 2.  **@styleplan**: Converts the architectural design into a technical build plan with actionable tasks and exact code snippets for the builder.
-3.  **@styleauthor**: Executes the implementation (Haiku) using the hand-authoring loop.
+3.  **/style-evolve**: Executes the implementation loop (migrate/upgrade + QA).
 
 **Workflow**: Run `../scripts/prep-migration.sh <style>` and use the specialized agents to hand-author the Citum template.
 
@@ -390,7 +390,7 @@ Bibliography: 24/28 passing (86%)
 
 ### `prep-migration.sh` (Agent Context Prep)
 
-**When to use**: Mandatory first step when hand-authoring a high-priority (Tier 2) style using the `@styleauthor` agent.
+**When to use**: Mandatory first step when hand-authoring a high-priority (Tier 2) style with `/style-evolve`.
 
 **What it does**: 
 1. Generates "Target Rendering" using `citeproc-js`.
@@ -401,7 +401,7 @@ Bibliography: 24/28 passing (86%)
 ```bash
 ../scripts/prep-migration.sh styles-legacy/apa.csl
 ```
-Then, copy the output and provide it to the `@styleauthor` agent to begin the iterative authoring process.
+Then, use the output as context for `/style-evolve` to begin the iterative authoring process.
 
 ## Common Failure Patterns
 

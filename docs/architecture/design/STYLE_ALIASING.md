@@ -484,7 +484,7 @@ The Citum approach separates "what to render" (templates) from "how to render" (
 ## References
 
 - [PRIOR_ART.md](../PRIOR_ART.md) - Presets concept (Issue #89)
-- [STYLE_PRIORITY.md](../../STYLE_PRIORITY.md) - Parent style analysis
+- [STYLE_PRIORITY.md](../../reference/STYLE_PRIORITY.md) - Parent style analysis
 - [CLAUDE.md](../../../CLAUDE.md) - "Explicit over magic" principle
 - Issue #89: Presets proposal
 - biblatex manual: Option layering architecture

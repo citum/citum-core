@@ -139,7 +139,7 @@ full ibid/subsequent support requires `position` condition (not yet implemented)
 
 | Style | Status | Notes |
 |-------|--------|-------|
-| modern-language-association | 🔄 In Progress | Being authored via @styleauthor |
+| modern-language-association | 🔄 In Progress | Being authored via `/style-evolve` (legacy `/styleauthor` alias supported) |
 
 ## Embedded Styles (Built into Binary)
 
