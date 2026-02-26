@@ -121,6 +121,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 0. Extract global options (new CSLN Config)
     let mut options = OptionsExtractor::extract(&legacy_style);
+    apply_preset_extractions(&mut options);
 
     // Resolve template: try hand-authored, cached inferred, or live inference
     // before falling back to the XML compiler pipeline.
@@ -984,7 +985,7 @@ fn infer_locator_prefix_from_nodes(
                 let is_locator = t.variable.as_deref() == Some("locator")
                     || t.macro_name
                         .as_deref()
-                        .is_some_and(|name| name.contains("citation-locator"));
+                        .is_some_and(macro_name_indicates_locator);
                 if !is_locator {
                     continue;
                 }
@@ -1100,7 +1101,7 @@ fn node_uses_citation_locator(node: &CslNode) -> bool {
             t.variable.as_deref() == Some("locator")
                 || t.macro_name
                     .as_deref()
-                    .is_some_and(|name| name.contains("citation-locator"))
+                    .is_some_and(macro_name_indicates_locator)
         }
         CslNode::Group(g) => nodes_use_citation_locator(&g.children),
         CslNode::Choose(c) => {
@@ -1114,6 +1115,11 @@ fn node_uses_citation_locator(node: &CslNode) -> bool {
         }
         _ => false,
     }
+}
+
+fn macro_name_indicates_locator(name: &str) -> bool {
+    let lowered = name.to_ascii_lowercase();
+    lowered.contains("citation-locator") || lowered.contains("locator")
 }
 
 fn layout_has_group_wrap_for_citation_number(layout: &Layout, wrap: &WrapPunctuation) -> bool {
@@ -1281,6 +1287,13 @@ fn should_merge_inferred_type_template(
         "personal_communication" | "personal-communication" => {
             !template_targets_type(inferred_template, type_name)
         }
+        // For common bibliography types, prefer XML type branches when they
+        // carry clear structural differences from the inferred global template.
+        // This recovers repeated title/container/publisher/volume gaps.
+        "article-journal" | "article-magazine" | "article-newspaper" | "book" | "report"
+        | "broadcast" | "interview" | "motion_picture" | "motion-picture" => {
+            inferred_candidate_structurally_diverges(inferred_template, candidate_template)
+        }
         _ => false,
     }
 }
@@ -1415,6 +1428,26 @@ fn is_four_digit_year(value: &str) -> bool {
             .is_ok_and(|year| (1800..=2100).contains(&year))
 }
 
+fn apply_preset_extractions(options: &mut csln_core::options::Config) {
+    if let Some(contributors) = options.contributors.clone()
+        && let Some(preset) = preset_detector::detect_contributor_preset(&contributors)
+    {
+        options.contributors = Some(preset.config());
+    }
+
+    if let Some(titles) = options.titles.clone()
+        && let Some(preset) = preset_detector::detect_title_preset(&titles)
+    {
+        options.titles = Some(preset.config());
+    }
+
+    if let Some(dates) = options.dates.clone()
+        && let Some(preset) = preset_detector::detect_date_preset(&dates)
+    {
+        options.dates = Some(preset.config());
+    }
+}
+
 fn template_targets_type(template: &[TemplateComponent], target_type: &str) -> bool {
     template
         .iter()
@@ -1473,6 +1506,73 @@ fn component_has_accessed_date(component: &TemplateComponent) -> bool {
     match component {
         TemplateComponent::Date(d) => d.date == DateVariable::Accessed,
         TemplateComponent::List(list) => list.items.iter().any(component_has_accessed_date),
+        _ => false,
+    }
+}
+
+fn inferred_candidate_structurally_diverges(
+    inferred_template: &[TemplateComponent],
+    candidate_template: &[TemplateComponent],
+) -> bool {
+    let inferred_has_primary_title = template_has_primary_title(inferred_template);
+    let candidate_has_primary_title = template_has_primary_title(candidate_template);
+    let inferred_has_parent_serial = template_has_parent_serial(inferred_template);
+    let candidate_has_parent_serial = template_has_parent_serial(candidate_template);
+    let inferred_has_publisher = template_has_publisher(inferred_template);
+    let candidate_has_publisher = template_has_publisher(candidate_template);
+    let inferred_has_volume = template_has_volume(inferred_template);
+    let candidate_has_volume = template_has_volume(candidate_template);
+
+    (inferred_has_primary_title && !candidate_has_primary_title)
+        || (!inferred_has_parent_serial && candidate_has_parent_serial)
+        || (inferred_has_publisher && !candidate_has_publisher)
+        || (!inferred_has_volume && candidate_has_volume)
+}
+
+fn template_has_primary_title(template: &[TemplateComponent]) -> bool {
+    template.iter().any(component_has_primary_title)
+}
+
+fn component_has_primary_title(component: &TemplateComponent) -> bool {
+    match component {
+        TemplateComponent::Title(t) => t.title == TitleType::Primary,
+        TemplateComponent::List(list) => list.items.iter().any(component_has_primary_title),
+        _ => false,
+    }
+}
+
+fn template_has_parent_serial(template: &[TemplateComponent]) -> bool {
+    template.iter().any(component_has_parent_serial)
+}
+
+fn component_has_parent_serial(component: &TemplateComponent) -> bool {
+    match component {
+        TemplateComponent::Title(t) => t.title == TitleType::ParentSerial,
+        TemplateComponent::List(list) => list.items.iter().any(component_has_parent_serial),
+        _ => false,
+    }
+}
+
+fn template_has_publisher(template: &[TemplateComponent]) -> bool {
+    template.iter().any(component_has_publisher)
+}
+
+fn component_has_publisher(component: &TemplateComponent) -> bool {
+    match component {
+        TemplateComponent::Variable(v) => v.variable == SimpleVariable::Publisher,
+        TemplateComponent::List(list) => list.items.iter().any(component_has_publisher),
+        _ => false,
+    }
+}
+
+fn template_has_volume(template: &[TemplateComponent]) -> bool {
+    template.iter().any(component_has_volume)
+}
+
+fn component_has_volume(component: &TemplateComponent) -> bool {
+    match component {
+        TemplateComponent::Number(n) => n.number == csln_core::template::NumberVariable::Volume,
+        TemplateComponent::List(list) => list.items.iter().any(component_has_volume),
         _ => false,
     }
 }

@@ -22,11 +22,7 @@ options:
     delimiter-precedes-last: always
     demote-non-dropping-particle: never
     sort-separator: " "
-  dates:
-    month: long
-    uncertainty-marker: "?"
-    approximation-marker: "ca. "
-    range-delimiter: –
+  dates: long
   bibliography:
     entry-suffix: .
     separator: ". "

@@ -89,3 +89,46 @@ Tracked in bean: `csl26-w2n8`.
 - `docs/architecture/MIGRATE_ENHANCE_WAVE1_HANDOFF_2026-02-21.md`
 - `docs/architecture/MIGRATE_ENHANCE_WAVE2_HANDOFF_2026-02-21.md`
 - `docs/architecture/MIGRATE_ENHANCE_WAVE3_HANDOFF_2026-02-21.md`
+
+## Phase 3/4 Execution Addendum (2026-02-26)
+
+Fresh baseline snapshot (same as plan baseline):
+- Styles measured: `139`
+- Citations: `2098/2164` (`97.0%`)
+- Bibliography: `4053/4255` (`95.3%`)
+- SQI overall: `91.5%`
+- Threshold attainment:
+  - Fidelity `>= 0.95`: `118/139`
+  - SQI `>= 0.90`: `107/139`
+  - Both: `104/139`
+
+Repeatable cluster extraction commands:
+```bash
+node scripts/report-core.js > /tmp/core-report-phase34.json
+node scripts/analyze-migration-gaps.js \
+  --report /tmp/core-report-phase34.json \
+  --min-occurrences 2 > /tmp/core-gaps-phase34.json
+```
+
+Primary repeated clusters from `/tmp/core-gaps-phase34.json`:
+- Citation IDs:
+  - `disambiguate-add-names-et-al` (`11`)
+  - `suppress-author-with-locator` (`10`)
+  - `et-al-with-locator` (`7`)
+  - `et-al-single-long-list` (`6`)
+  - `with-locator` (`4`)
+- Bibliography component diffs:
+  - `title:extra` (`31`)
+  - `year:missing` (`24`)
+  - `publisher:extra` (`22`)
+  - `containerTitle:extra` (`13`)
+  - `containerTitle:missing` (`12`)
+  - `volume:missing` (`9`)
+
+Implementation focus for this slice:
+1. Migration engine updates first (`csln-migrate`), specifically:
+   - broader locator macro detection for citation template recovery
+   - stronger inferred/XML type-template merge guardrails for repeated
+     structural bibliography divergences
+2. Use rerun metrics after migrate-side updates before any residual
+   style-specific YAML patches.

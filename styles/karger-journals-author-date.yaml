@@ -49,28 +49,24 @@ options:
 citation:
   options:
     contributors:
-      display-as-sort: all
-      initialize-with: ""
       shorten:
         min: 3
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
-      delimiter-precedes-last: always
-      sort-separator: " "
   template:
     - contributor: author
-      form: long
-      name-order: family-first
+      form: short
       shorten:
         min: 3
         use-first: 1
+    - date: issued
+      form: year
+      prefix: ", "
     - variable: locator
-      show-label: true
-      prefix: " "
+      prefix: ", "
   wrap: brackets
-  delimiter: ". "
+  delimiter: ", "
   multi-cite-delimiter: "; "
 bibliography:
   options:
