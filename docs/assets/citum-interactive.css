@@ -1,0 +1,154 @@
+/*
+ * Citum Interactive Styles
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
+:root {
+  /* Colors */
+  --citum-citation-color: #0066cc;
+  --citum-citation-hover-bg: rgba(0, 102, 204, 0.1);
+  --citum-highlight-bg: #fff9c4;
+  --citum-highlight-border: #fbc02d;
+  --citum-tooltip-bg: #333;
+  --citum-tooltip-color: #fff;
+  
+  /* Sidebar */
+  --citum-sidebar-width: 300px;
+  --citum-sidebar-gap: 2rem;
+  
+  /* Spacing */
+  --citum-entry-spacing: 1rem;
+  --citum-transition-speed: 0.3s;
+}
+
+/* Citations */
+.citum-citation {
+  color: var(--citum-citation-color);
+  text-decoration: none;
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+  transition: all var(--citum-transition-speed) ease;
+  padding: 0 4px;
+  margin: 0 -2px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.citum-citation:hover {
+  background-color: var(--citum-citation-hover-bg);
+  border-bottom-color: var(--citum-citation-color);
+}
+
+.citum-citation.is-highlighted {
+  background-color: var(--citum-highlight-bg);
+  box-shadow: 0 0 0 2px var(--citum-highlight-bg);
+  color: #000;
+}
+
+/* Bibliography */
+.citum-bibliography {
+  margin-top: 3rem;
+  line-height: 1.6;
+  border-top: 1px solid #eee;
+  padding-top: 2rem;
+}
+
+.citum-entry {
+  margin-bottom: var(--citum-entry-spacing);
+  padding: 0.5rem 1rem;
+  border-left: 4px solid transparent;
+  border-radius: 0 6px 6px 0;
+  transition: all var(--citum-transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.citum-entry:hover {
+  background-color: #fcfcfc;
+}
+
+.citum-entry:target,
+.citum-entry.is-highlighted {
+  background-color: var(--citum-highlight-bg);
+  border-left-color: var(--citum-highlight-border);
+  transform: translateX(4px);
+}
+
+/* Sidebar Layout (Optional Enhancement) */
+@media (min-width: 1200px) {
+  .citum-with-sidebar {
+    display: grid;
+    grid-template-columns: 1fr var(--citum-sidebar-width);
+    gap: var(--citum-sidebar-gap);
+    align-items: start;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  
+  .citum-with-sidebar .citum-bibliography {
+    margin-top: 0;
+    position: sticky;
+    top: 2rem;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+    padding-right: 1.5rem;
+    border-left: 1px solid #f0f0f0;
+    border-top: none;
+    padding-top: 0;
+    padding-left: 2rem;
+    scrollbar-width: thin;
+    scrollbar-color: #ddd transparent;
+  }
+  
+  .citum-with-sidebar .citum-bibliography::-webkit-scrollbar {
+    width: 6px;
+  }
+  .citum-with-sidebar .citum-bibliography::-webkit-scrollbar-thumb {
+    background-color: #ddd;
+    border-radius: 10px;
+  }
+}
+
+/* Tooltips */
+.citum-tooltip {
+  position: absolute;
+  z-index: 1000;
+  background: var(--citum-tooltip-bg);
+  color: var(--citum-tooltip-color);
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  max-width: 250px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--citum-transition-speed);
+}
+
+.citum-tooltip.is-visible {
+  opacity: 1;
+}
+
+.citum-tooltip-author {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.citum-tooltip-title {
+  font-style: italic;
+  display: block;
+}
+
+/* High Contrast / Print */
+@media (prefers-contrast: more) {
+  :root {
+    --citum-citation-color: #0000ff;
+    --citum-highlight-bg: #ffff00;
+  }
+}
+
+@media print {
+  .citum-citation {
+    color: inherit;
+    border-bottom: none;
+  }
+}

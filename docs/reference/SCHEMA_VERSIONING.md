@@ -161,8 +161,8 @@ Users encounter versions in different contexts:
 
 ### CLI (Code Version)
 ```bash
-$ csln --version
-csln 0.2.3
+$ citum-cli --version
+citum-cli 0.2.3
 
 $ cargo run --bin citum-cli --features schema -- schema style
 # prints style JSON Schema to stdout
@@ -174,7 +174,7 @@ $ cargo run --bin citum-cli --features schema -- schema style
 version: "1.0.0"  # Schema version (optional, inherits default)
 info:
   title: APA 7th Edition (CSLN)
-  id: https://www.zotero.org/styles/apa-7th-csln
+  id: https://www.zotero.org/styles/apa-7th-citum-cli
 ```
 
 ### Documentation
