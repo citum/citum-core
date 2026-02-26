@@ -32,16 +32,12 @@ should not live in `citum-hub` (`style-hub`).
 
 ```
 citum-schema    (no legacy deps)
-     |
-citum-engine  ---> citum-schema
-     |                   |
-citum-server ------------|   [new in citum-core; engine + schema only, no migrate/legacy deps]
-     |
-citum-migrate ---> citum-schema, csl-legacy
-     |
-citum-cli     ---> citum-engine, citum-migrate
-     |
-citum-bindings --> citum-engine  [cdylib/wasm, Phase 2]
+
+citum-engine    -> citum-schema
+citum-server    -> citum-engine, citum-schema   [new in citum-core]
+citum-migrate   -> citum-schema, csl-legacy
+citum-cli       -> citum-engine, citum-migrate
+citum-bindings  -> citum-engine                 [cdylib/wasm, Phase 2]
 ```
 
 ### Crate Map Update
