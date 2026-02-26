@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+# Beans skill wrapper for Citum.
+# Uses canonical `beans` commands and adds one project helper: `next`.
+
+set -euo pipefail
+
+BEANS_BIN="beans"
+BEANS_PATH=".beans"
+
+# Ensure beans is installed
+if ! command -v "$BEANS_BIN" &> /dev/null; then
+    echo "Error: beans CLI not found. Install via: brew install beans" >&2
+    exit 1
+fi
+
+# Ensure beans is initialized
+if [[ ! -d "$BEANS_PATH" ]]; then
+    echo "Error: No .beans directory found. Run 'beans init' first." >&2
+    exit 1
+fi
+
+# Parse command
+CMD="${1:-help}"
+shift || true
+
+case "$CMD" in
+    next)
+        if ! command -v jq &> /dev/null; then
+            echo "Error: jq is required for '/beans next'." >&2
+            exit 1
+        fi
+
+        LIMIT=3
+        JSON_OUTPUT=0
+
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                --limit|-n)
+                    LIMIT="${2:-}"
+                    shift 2
+                    ;;
+                --json)
+                    JSON_OUTPUT=1
+                    shift
+                    ;;
+                *)
+                    echo "Unknown option for next: $1" >&2
+                    exit 1
+                    ;;
+            esac
+        done
+
+        if [[ ! "$LIMIT" =~ ^[1-9][0-9]*$ ]]; then
+            echo "Error: --limit must be a positive integer." >&2
+            exit 1
+        fi
+
+        READY_JSON=$(beans list --json --ready)
+        READY_COUNT=$(printf "%s\n" "$READY_JSON" | jq 'length')
+        if [[ "$READY_COUNT" -eq 0 ]]; then
+            if [[ "$JSON_OUTPUT" -eq 1 ]]; then
+                echo "[]"
+            else
+                echo "No ready beans found."
+            fi
+            exit 0
+        fi
+
+        RANKED_JSON=$(printf "%s\n" "$READY_JSON" | jq --argjson limit "$LIMIT" '
+            map(.priority = (.priority // "normal")) |
+            sort_by(
+                (if .priority == "critical" then 0
+                 elif .priority == "high" then 1
+                 elif .priority == "normal" then 2
+                 elif .priority == "low" then 3
+                 else 4 end),
+                (if .type == "bug" then 0
+                 elif .type == "feature" then 1
+                 elif .type == "task" then 2
+                 elif .type == "milestone" then 3
+                 elif .type == "epic" then 4
+                 else 5 end),
+                .created_at
+            )[:$limit]
+        ')
+
+        PARENT_IDS=$(printf "%s\n" "$RANKED_JSON" | jq -r '.[].parent // empty' | sort -u | tr '\n' ' ')
+        PARENT_MAP='{}'
+        if [[ -n "${PARENT_IDS// /}" ]]; then
+            PARENTS_JSON=$(beans show --json $PARENT_IDS)
+            PARENT_MAP=$(printf "%s\n" "$PARENTS_JSON" | jq '
+                (if type == "array" then . else [.] end) |
+                map({key: .id, value: .title}) |
+                from_entries
+            ')
+        fi
+
+        CANDIDATES_JSON=$(jq -n \
+            --argjson items "$RANKED_JSON" \
+            --argjson parents "$PARENT_MAP" '
+            $items | map(
+                . + {
+                    parent_title: (if (.parent != null and ($parents[.parent] != null)) then $parents[.parent] else null end),
+                    reason: (
+                        [
+                            "ready",
+                            ("priority=" + (.priority // "normal")),
+                            ("type=" + (.type // "task"))
+                        ] +
+                        (if (.parent != null and ($parents[.parent] != null)) then [("parent=" + $parents[.parent])] else [] end)
+                    ) | join(", ")
+                }
+            )
+        ')
+
+        if [[ "$JSON_OUTPUT" -eq 1 ]]; then
+            printf "%s\n" "$CANDIDATES_JSON"
+            exit 0
+        fi
+
+        echo "=== Recommended Next Beans ==="
+        printf "%s\n" "$CANDIDATES_JSON" | jq -r '
+            to_entries[] |
+            "\(.key + 1). \(.value.id) [\(.value.priority)/\(.value.type)] \(.value.title)\n   Why: \(.value.reason)\n   Inspect: beans show \(.value.id)"
+        '
+        ;;
+
+    list|show|create|update|delete|archive|query|prime)
+        beans "$CMD" "$@"
+        ;;
+
+    help|--help|-h)
+        cat << 'EOF'
+Beans Task Management - Citum
+
+USAGE:
+    /beans COMMAND [OPTIONS]
+
+COMMANDS:
+    next [--limit N] [--json]
+        Show top ready bean options ranked by priority, type, and age.
+
+    list ...
+    show ...
+    create ...
+    update ...
+    delete ...
+    archive
+    query ...
+    prime
+        Passed directly through to the `beans` CLI.
+
+EXAMPLES:
+    /beans prime
+    /beans next
+    /beans next --limit 5
+    /beans next --json
+    /beans list --json --ready
+    /beans show csl26-abc1
+
+For full CLI documentation, see: beans help
+EOF
+        ;;
+
+    *)
+        echo "Unknown command: $CMD" >&2
+        echo "Run '/beans help' for usage information" >&2
+        exit 1
+        ;;
+esac
