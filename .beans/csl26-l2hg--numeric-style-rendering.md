@@ -10,8 +10,15 @@ blocking:
     - csl26-yxvz
 ---
 
-Track numeric-style fidelity hardening for remaining long-tail outliers after
-top-tier parity.
+Harden numeric-style fidelity (Vancouver, Springer, etc.) across all
+citation and bibliography rendering scenarios.
 
-Canonical status source:
-- docs/TIER_STATUS.md
+Canonical status: `docs/TIER_STATUS.md`
+
+## Checklist
+
+- [x] csl26-6whe — Fix year positioning for numeric styles
+- [x] csl26-tbnq — Debug Springer citation regression
+- [ ] csl26-ul0p — Fix conference paper template formatting
+- [ ] csl26-aicv — Fix volume/issue ordering for numeric styles
+- [ ] csl26-j7h7 — Support superscript citation numbers
