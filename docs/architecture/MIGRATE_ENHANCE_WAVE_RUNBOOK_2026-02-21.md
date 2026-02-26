@@ -43,7 +43,7 @@ Wave 2 citation status is now fully closed (`144/144`).
 
 ### Migration (`citum-migrate`)
 - `crates/citum-migrate/src/options_extractor/bibliography.rs`
-  - extract legacy bibliography sort into CSLN `GroupSort`
+  - extract legacy bibliography sort into Citum `GroupSort`
 - `crates/citum-migrate/src/main.rs`
   - emit extracted sort into generated `bibliography.sort`
 - `crates/citum-migrate/src/options_extractor/tests.rs`

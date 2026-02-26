@@ -7,11 +7,11 @@
 
 ## Purpose
 
-This policy provides clear criteria for deciding when to add a new top-level reference type to CSLN versus using existing structural types (SerialComponent, CollectionComponent, Monograph, Collection).
+This policy provides clear criteria for deciding when to add a new top-level reference type to Citum versus using existing structural types (SerialComponent, CollectionComponent, Monograph, Collection).
 
 ## Architecture Model: Hybrid
 
-CSLN uses a **hybrid type system**:
+Citum uses a **hybrid type system**:
 
 - **Structural types** for academic references with meaningful parent-child relationships (journal articles, book chapters)
 - **Flat types** for references where the container is a locator rather than a semantic parent (legal cases, treaties, datasets)
@@ -34,7 +34,7 @@ This balances:
 - Container relationships via variables (`container-title`) not parent types
 - Types chosen for citation style discrimination
 
-**CSLN** (hybrid model):
+**Citum** (hybrid model):
 - Structural types where parent-child relationship provides efficiency (SerialComponent → Serial)
 - Flat types where semantic distinction and style clarity outweigh data model elegance
 
@@ -229,15 +229,15 @@ Add a new top-level type when **ALL** of the following are true:
 
 ## Migration Compatibility Factor (Optional 5th Factor)
 
-**Test:** If CSL 1.0 has a distinct type for this, does style discrimination justify a CSLN flat type or is a structural subtype sufficient?
+**Test:** If CSL 1.0 has a distinct type for this, does style discrimination justify a Citum flat type or is a structural subtype sufficient?
 
-**Purpose:** Guide CSL 1.0 → CSLN migration decisions.
+**Purpose:** Guide CSL 1.0 → Citum migration decisions.
 
 **Examples:**
 
-**CSL 1.0 Types → CSLN Decision:**
+**CSL 1.0 Types → Citum Decision:**
 
-| CSL 1.0 Type | CSLN Type | Rationale |
+| CSL 1.0 Type | Citum Type | Rationale |
 |--------------|-----------|-----------|
 | `article-journal` | SerialComponent(parent: AcademicJournal) | Parent reuse efficiency |
 | `article-magazine` | SerialComponent(parent: Magazine) | Same structure, parent differs |
@@ -291,7 +291,7 @@ Add a new top-level type when **ALL** of the following are true:
 
 **Structural types (parent-child relationship):**
 
-| CSLN Type | Rationale |
+| Citum Type | Rationale |
 |-----------|-----------|
 | SerialComponent(Article) | ✅ Journal is semantic parent, metadata reused |
 | SerialComponent(Post) | ✅ Blog/Magazine is parent |
@@ -301,7 +301,7 @@ Add a new top-level type when **ALL** of the following are true:
 
 **Flat types (no parent or locator parent):**
 
-| CSLN Type | Rationale |
+| Citum Type | Rationale |
 |-----------|-----------|
 | LegalCase | ✅ Passes 4-factor test |
 | Statute | ✅ Passes 4-factor test |
@@ -335,7 +335,7 @@ Monitor these emerging reference types for potential addition:
 - TYPE_SYSTEM_ARCHITECTURE.md - Full analysis of structural vs flat options
 - biblatex manual (CTAN) - 31 entry types, flat model
 - CSL 1.0 specification - 34 types, flat enumeration
-- CLAUDE.md - CSLN design principles
+- CLAUDE.md - Citum design principles
 
 ## Changelog
 

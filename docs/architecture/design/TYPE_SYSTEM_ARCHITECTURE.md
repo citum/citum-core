@@ -9,13 +9,13 @@
 
 The legal citations implementation (PR #164) uses **flat types** (LegalCase, Statute, Treaty as separate `InputReference` variants) rather than fitting them into the existing **structural type system** (SerialComponent, Monograph, Collection).
 
-This raises a fundamental architectural question: **Should CSLN use structural types, flat types, or a hybrid approach?**
+This raises a fundamental architectural question: **Should Citum use structural types, flat types, or a hybrid approach?**
 
 ## Current State
 
-### Structural Types (Current CSLN Model)
+### Structural Types (Current Citum Model)
 
-CSLN organizes references into structural categories based on publication model:
+Citum organizes references into structural categories based on publication model:
 
 **Monograph** (monolithic works):
 - Book, Report, Thesis, Webpage, Post, Document
@@ -258,7 +258,7 @@ CSL 1.0 has ~30 reference types (article-journal, book, legal_case, treaty, etc.
 | B: Structural | 4 | High (nested discriminators) |
 | C: Flat | 25-30 | Low (flat types) |
 
-## Alignment with CSLN Principles
+## Alignment with Citum Principles
 
 ### 1. Explicit Over Magic
 
@@ -327,7 +327,7 @@ From [PERSONAS.md](../PERSONAS.md):
 - Style authoring simplicity is highest priority
 - Semantic clarity matters more than code efficiency
 - Alignment with CSL 1.0 types is valuable
-- CSLN should match user mental models
+- Citum should match user mental models
 
 ## Recommendation Framework
 
@@ -347,7 +347,7 @@ From [PERSONAS.md](../PERSONAS.md):
    - Balanced: Option A
    - Style clarity: Option C
 
-4. **Should CSLN match CSL 1.0 type vocabulary or innovate?**
+4. **Should Citum match CSL 1.0 type vocabulary or innovate?**
    - Match CSL 1.0: Option C (nearly 1:1 type mapping)
    - Innovate: Option B (new structural model)
    - Hybrid: Option A
@@ -384,7 +384,7 @@ If we decide to change from current (Option A) to Option C:
    - If yes: supports flat types for legal
    - Does the same apply to preprints (arXiv + journal version)?
 
-3. **CSL 1.0 compatibility:** CSL 1.0 has 30+ types. Should CSLN match this vocabulary or simplify?
+3. **CSL 1.0 compatibility:** CSL 1.0 has 30+ types. Should Citum match this vocabulary or simplify?
    - Match: Option C
    - Simplify: Option B
 
@@ -408,7 +408,7 @@ Whichever option is chosen should be evaluated on:
 ## References
 
 - Legal Citations PR: #164 (csl26-rmoi)
-- CSLN Design Principles: CLAUDE.md
+- Citum Design Principles: CLAUDE.md
 - User Personas: PERSONAS.md
 - CSL 1.0 Specification: https://docs.citationstyles.org/en/stable/specification.html
 
@@ -418,7 +418,7 @@ Whichever option is chosen should be evaluated on:
 
 **Rationale:**
 
-After deep analysis (see [TYPE_ADDITION_POLICY.md](./TYPE_ADDITION_POLICY.md)), the hybrid model best balances CSLN's design principles:
+After deep analysis (see [TYPE_ADDITION_POLICY.md](./TYPE_ADDITION_POLICY.md)), the hybrid model best balances Citum's design principles:
 
 1. **Data efficiency** - Parent-child relationships for academic references reduce duplication
 2. **Style clarity** - Flat types for legal/domain-specific references enable explicit overrides
@@ -458,7 +458,7 @@ See full decision criteria, flowchart, and examples in [TYPE_ADDITION_POLICY.md]
 2. ✅ **Policy documented:** TYPE_ADDITION_POLICY.md created
 3. ⏳ **Enforcement:** Add policy to PR template (bean: TBD)
 4. ⏳ **Examples:** Create decision matrix for 10 test cases (bean: TBD)
-5. ⏳ **Mapping:** Document biblatex → CSLN type mapping (bean: TBD)
+5. ⏳ **Mapping:** Document biblatex → Citum type mapping (bean: TBD)
 
 ---
 

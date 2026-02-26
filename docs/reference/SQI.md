@@ -1,6 +1,6 @@
 # Style Quality Index (SQI)
 
-SQI is a secondary quality metric for CSLN styles.
+SQI is a secondary quality metric for Citum styles.
 
 Use SQI to improve style maintainability only after fidelity is correct.
 

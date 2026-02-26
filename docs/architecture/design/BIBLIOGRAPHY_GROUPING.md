@@ -6,7 +6,7 @@
 
 ## Overview
 
-This document defines the architecture for configurable bibliography grouping in CSL Next. The design enables styles to divide bibliographies into labeled sections with distinct sorting rules, addressing use cases from legal citations (type-based hierarchies) and multilingual bibliographies to primary/secondary source divisions in historical scholarship.
+This document defines the architecture for configurable bibliography grouping in Citum. The design enables styles to divide bibliographies into labeled sections with distinct sorting rules, addressing use cases from legal citations (type-based hierarchies) and multilingual bibliographies to primary/secondary source divisions in historical scholarship.
 
 ## Problem Statement
 
@@ -452,13 +452,13 @@ Uses predicate-based filtering with explicit section commands:
 
 No bibliography grouping constructs. All grouping is hardcoded in processors.
 
-**CSLN opportunity:** First-class grouping support in style schema.
+**Citum opportunity:** First-class grouping support in style schema.
 
 ### CSL-M
 
 Locale-specific `<layout>` elements for presentation, but no grouping.
 
-**CSLN improvement:** Unified grouping + sorting + presentation model.
+**Citum improvement:** Unified grouping + sorting + presentation model.
 
 ## Open Questions
 
@@ -471,7 +471,7 @@ Locale-specific `<layout>` elements for presentation, but no grouping.
 **Q: Performance with 10,000+ items?**
 **A:** Pre-index by type/field if benchmarks show O(n × groups) is problematic. Defer optimization until measured.
 
-## Compliance with CSLN Principles
+## Compliance with Citum Principles
 
 - **Explicit Over Magic:** All grouping declared in YAML
 - **Declarative Templates:** Flat selector syntax, no procedural conditionals

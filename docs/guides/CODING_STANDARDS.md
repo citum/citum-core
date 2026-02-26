@@ -1,4 +1,4 @@
-# CSLN Coding Standards
+# Citum Coding Standards
 
 ## Serde Attributes Checklist
 

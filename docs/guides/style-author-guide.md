@@ -1,6 +1,6 @@
 # Style Author Guide
 
-This guide is for people who write and maintain CSLN styles.
+This guide is for people who write and maintain Citum styles.
 
 ## What Success Looks Like
 
@@ -196,4 +196,4 @@ A style update is complete when:
 - [Rendering Workflow](./RENDERING_WORKFLOW.md)
 - [SQI Refinement Plan](../architecture/SQI_REFINEMENT_PLAN.md)
 - [Type Addition Policy](../architecture/TYPE_ADDITION_POLICY.md)
-- [CSLN Personas](../architecture/PERSONAS.md)
+- [Citum Personas](../architecture/PERSONAS.md)

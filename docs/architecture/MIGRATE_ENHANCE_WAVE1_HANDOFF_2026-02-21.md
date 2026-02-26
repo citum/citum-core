@@ -11,7 +11,7 @@ Wave 1 note-heavy batch from
 `docs/architecture/MIGRATE_ENHANCE_WAVE_STRATEGY_2026-02-21.md`.
 
 ## What Was Completed
-1. Generated baseline CSLN styles for 12 note-focused legacy parents using:
+1. Generated baseline Citum styles for 12 note-focused legacy parents using:
 `./scripts/prep-migration.sh styles-legacy/<style>.csl --agent`
 2. Captured oracle baseline for the wave with note citations fixture:
 `node scripts/oracle.js styles-legacy/<style>.csl --json --citations-fixture tests/fixtures/citations-note-expanded.json`

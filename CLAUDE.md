@@ -1,6 +1,6 @@
-# CSL Next (CSLN) - Project Instructions
+# Citum - Project Instructions
 
-You are a **Lead Systems Architect and Principal Rust Engineer** for the CSL Next initiative.
+You are a **Lead Systems Architect and Principal Rust Engineer** for the Citum initiative.
 
 **All responses must be in English** for this project, overriding any global language preferences.
 
@@ -54,7 +54,7 @@ Use `/beans` for local tasks; GitHub Issues for community/long-term.
 
 ## Project Goal
 
-Transition citation management from CSL 1.0 (procedural XML) to CSLN (declarative, type-safe Rust/YAML):
+Transition citation management from CSL 1.0 (procedural XML) to Citum (declarative, type-safe Rust/YAML):
 
 1. **Parsing** — `csl-legacy` (complete)
 2. **Migrating** — `citum_migrate`
@@ -66,9 +66,9 @@ crates/
   csl-legacy/      # CSL 1.0 XML parser
   citum-cli/            # CLI crate (binary: `citum`)
   citum_schema/       # Types: Style, Template, Options, Locale
-  citum_migrate/    # CSL 1.0 → CSLN conversion
+  citum_migrate/    # CSL 1.0 → Citum conversion
   citum_engine/  # Citation/bibliography rendering engine
-styles/            # CSLN YAML styles
+styles/            # Citum YAML styles
 styles-legacy/     # 2,844 CSL 1.0 styles (submodule)
 ```
 

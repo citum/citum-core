@@ -65,7 +65,7 @@ For each current type, evaluate:
 - `@inproceedings` → CollectionComponent(parent: Collection(Proceedings))
 - `@inbook` → CollectionComponent(parent: Monograph)
 
-**Note:** biblatex distinguishes `@inbook` (part of single-author book) from `@incollection` (part of edited volume). CSLN uses parent type to distinguish.
+**Note:** biblatex distinguishes `@inbook` (part of single-author book) from `@incollection` (part of edited volume). Citum uses parent type to distinguish.
 
 ---
 
@@ -283,7 +283,7 @@ All pass 4-factor test. See TYPE_ADDITION_POLICY.md for detailed evaluation.
 
 ### Current Types: Fully Compliant ✅
 
-All current CSLN types conform to the 4-factor policy:
+All current Citum types conform to the 4-factor policy:
 - **Structural types** (SerialComponent, CollectionComponent) justified by parent-child efficiency
 - **Flat types** (legal references) justified by passing all 4 factors
 - **Monograph subtypes** justified by shared schema with minor differences
@@ -308,7 +308,7 @@ All current CSLN types conform to the 4-factor policy:
 
 ### No Addition Required
 
-| biblatex Type | CSLN Mapping | Reason |
+| biblatex Type | Citum Mapping | Reason |
 |---------------|--------------|--------|
 | @online | Monograph(Webpage) | Same schema |
 | @manual | Monograph(Report) + genre | Same schema, use genre field |

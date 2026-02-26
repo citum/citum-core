@@ -1,4 +1,4 @@
-# Architectural Soundness Assessment — CSLN
+# Architectural Soundness Assessment — Citum
 
 **Date:** 2026-02-25
 **Context:** Retrospective before final push; review of original bdarcus/csln ideas as implemented and validated in csl26

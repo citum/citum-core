@@ -2,7 +2,7 @@
 
 ## Current State
 
-CSLN currently handles punctuation placement with:
+Citum currently handles punctuation placement with:
 - Boolean `punctuation-in-quote: true/false` (American style only)
 - Ad-hoc logic scattered throughout `render.rs` that moves periods inside/outside quotes during rendering
 - Only handles curly and straight double quotes

@@ -2,7 +2,7 @@
 
 ## Scope Decision
 
-This plan is explicitly aligned with CSLN project principles:
+This plan is explicitly aligned with Citum project principles:
 
 1. Improve `citum-migrate` so future migrations are fully automated.
 2. Raise existing `styles/` toward `>= 0.95` fidelity and `>= 0.90` SQI.
@@ -12,7 +12,7 @@ This plan is explicitly aligned with CSLN project principles:
 
 1. No runtime CSL 1.0 (`.csl`) processing mode in `citum_engine`.
 2. No processor-side legacy condition engine.
-3. No architectural compromises to CSLN declarative design.
+3. No architectural compromises to Citum declarative design.
 
 ## Current Baseline (Fresh Run)
 
@@ -80,11 +80,11 @@ Likely files/modules:
 2. Add migrate-side bibliography normalization for repeated container/title/volume issues.
 3. Improve migrate template inference merge behavior to reduce underfit/overfit edge cases.
 4. Tighten options/preset extraction where repeated SQI losses are due to missing presetization.
-5. Add targeted processor fixes only when required for CSLN fidelity parity, not for CSL 1.0 feature support.
+5. Add targeted processor fixes only when required for Citum fidelity parity, not for CSL 1.0 feature support.
 
 Processor rule in this PR:
 
-1. Allowed: parity-preserving bug fixes for existing CSLN model behavior.
+1. Allowed: parity-preserving bug fixes for existing Citum model behavior.
 2. Not allowed: new direct legacy-style support surfaces.
 
 Likely files/modules:

@@ -1,4 +1,4 @@
-# Disambiguation in CSLN
+# Disambiguation in Citum
 
 Disambiguation is the process of modifying citation output when
 multiple references produce identical rendered strings. CSL 1.0 provides
@@ -7,7 +7,7 @@ several strategies to resolve these ambiguities.
 ## Overview
 
 When citations are identical (e.g., multiple works by "Smith, 2000"),
-CSLN applies disambiguation strategies in priority order:
+Citum applies disambiguation strategies in priority order:
 
 1. **Year Suffix** (`disambiguate-add-year-suffix`)
 2. **Name Expansion** (`disambiguate-add-names`)
@@ -115,7 +115,7 @@ Smith, Jane (1985)
 
 ## Group-Aware Disambiguation
 
-CSLN supports advanced disambiguation controls within bibliography groups. This is essential for legal bibliographies or multilingual works where local sorting rules must drive year suffix assignment.
+Citum supports advanced disambiguation controls within bibliography groups. This is essential for legal bibliographies or multilingual works where local sorting rules must drive year suffix assignment.
 
 ### Group-Aware Sorting
 
@@ -140,7 +140,7 @@ groups:
 
 ### Locale-Aware Collation
 
-Disambiguation is culturally aware. By passing a `Locale` to the disambiguator, CSLN ensures that name matching and sorting follow locale-specific rules (e.g., handling of particles, diacritics, and transliterations in keys).
+Disambiguation is culturally aware. By passing a `Locale` to the disambiguator, Citum ensures that name matching and sorting follow locale-specific rules (e.g., handling of particles, diacritics, and transliterations in keys).
 
 ## Combined Strategies
 
@@ -259,4 +259,4 @@ Reference → [Render] → String
 ## Related Reading
 
 - [CSL 1.0 Specification](https://citeproc-js.readthedocs.io/en/latest/csl-json/markup.html#disambiguation)
-- [CSLN Architecture](./architecture/MIGRATION_STRATEGY_ANALYSIS.md)
+- [Citum Architecture](./architecture/MIGRATION_STRATEGY_ANALYSIS.md)

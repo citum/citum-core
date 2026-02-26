@@ -1,4 +1,4 @@
-# Test Strategy: Oracle vs CSLN-Native
+# Test Strategy: Oracle vs Citum-Native
 
 ## Current Approach: Oracle Tests
 
@@ -6,12 +6,12 @@
 
 **Method**:
 - Test fixtures use CSL JSON format (what citeproc-js expects)
-- Compare CSLN output against citeproc-js (the oracle)
+- Compare Citum output against citeproc-js (the oracle)
 - Located: `tests/fixtures/references-expanded.json`
 - Test harness: `../../../scripts/oracle-e2e.js`
 
 **Limitations**:
-- Cannot test CSLN-specific features beyond CSL 1.0
+- Cannot test Citum-specific features beyond CSL 1.0
 - Constrained by CSL JSON schema
 
 ## Integration Test Organization
@@ -29,7 +29,7 @@ To run a specific target:
 cargo nextest run --test citations
 ```
 
-## Future: CSLN-Native Tests
+## Future: Citum-Native Tests
 
 **Purpose**: Test features that go beyond CSL 1.0
 
@@ -44,7 +44,7 @@ cargo nextest run --test citations
 **Implementation plan** (deferred):
 1. Create `tests/fixtures/csln-native-references.yaml` (or .json - serde supports both)
 2. Build separate test harness (no oracle comparison - we ARE the reference)
-3. Test CSLN-specific rendering against expected outputs
+3. Test Citum-specific rendering against expected outputs
 4. Document intentional divergences from CSL 1.0
 
 ## Two-Phase Testing Strategy
@@ -55,15 +55,15 @@ cargo nextest run --test citations
 - Use CSL JSON format throughout
 - **Goal**: Prove migration works for existing styles
 
-### Phase 2: CSLN Extensions (Future)
-- Add CSLN-native test fixtures
+### Phase 2: Citum Extensions (Future)
+- Add Citum-native test fixtures
 - Test features beyond CSL 1.0
 - No oracle comparison (we define the behavior)
 - **Goal**: Validate new capabilities
 
 ## Decision: Phase 1 First
 
-We're deferring CSLN-native tests to focus on CSL 1.0 parity. This is the right prioritization because:
+We're deferring Citum-native tests to focus on CSL 1.0 parity. This is the right prioritization because:
 - Need to prove the migration approach works
 - Most styles will initially be migrated from CSL 1.0
 - New features can be tested incrementally as they're added

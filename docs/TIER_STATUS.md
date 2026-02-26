@@ -1,4 +1,4 @@
-# CSLN Style Tier Status
+# Citum Style Tier Status
 
 > **Living document** — updated after each significant batch oracle run.
 > Last updated: 2026-02-21

@@ -1,6 +1,6 @@
 # Prior Art Reference
 
-This document summarizes key patterns from existing bibliography systems that CSLN should follow or learn from. Refer to this when designing new features.
+This document summarizes key patterns from existing bibliography systems that Citum should follow or learn from. Refer to this when designing new features.
 
 ---
 
@@ -22,7 +22,7 @@ A Rust CSL implementation funded by Zotero, now unmaintained. Key architectural 
 3. **Modular crate structure**: `csl` (parsing), `db` (state), `proc` (processing), `io` (formats)
 4. **Disambiguation graph**: Visual graph-based approach to cite ambiguity resolution
 
-**Potential code to borrow** (MPL-2.0 licensed, same as CSLN):
+**Potential code to borrow** (MPL-2.0 licensed, same as Citum):
 - Name parsing/formatting logic
 - Disambiguation algorithms
 - Locale merging/fallback
@@ -35,9 +35,9 @@ A Rust CSL implementation funded by Zotero, now unmaintained. Key architectural 
 
 ---
 
-## CSLN-Specific Design Goals
+## Citum-Specific Design Goals
 
-From project issues, CSLN has additional design goals not fully addressed by prior art:
+From project issues, Citum has additional design goals not fully addressed by prior art:
 
 ### Presets (#89)
 Pervasive presets that bundle common configurations, avoiding macro complexity:
@@ -94,7 +94,7 @@ pub trait Renderer {
 
 ### 1. Flat Options Architecture (biblatex)
 
-biblatex uses completely flat parameters scoped to different levels. CSLN mirrors this.
+biblatex uses completely flat parameters scoped to different levels. Citum mirrors this.
 
 ```
 Global → Per-Type → Per-Entry → Per-Field
@@ -109,7 +109,7 @@ Global → Per-Type → Per-Entry → Per-Field
 ]{biblatex}
 ```
 
-**CSLN equivalent:**
+**Citum equivalent:**
 ```yaml
 options:
   contributors:
@@ -147,7 +147,7 @@ CSL-M allows multiple `<cs:layout>` elements with locale targeting:
 
 **Use case**: Japanese academic bibliography citing both English and Japanese sources with appropriate conventions for each.
 
-**CSLN approach** (proposed):
+**Citum approach** (proposed):
 ```yaml
 bibliography:
   locales:
@@ -180,7 +180,7 @@ Both systems support language tagging at the entry level:
 - Matched against `locale` attribute on layouts
 - Affects which locale terms are used
 
-**CSLN approach**: Add `language` to CSL-JSON input, use for:
+**Citum approach**: Add `language` to CSL-JSON input, use for:
 1. Selecting locale-specific templates
 2. Applying locale terms
 3. Sorting collation
@@ -237,7 +237,7 @@ Features:
 - Open ranges: `1990/..` (ongoing)
 - Precision levels: year, month, day
 
-**CSLN**: Already prioritized in CLAUDE.md. Continue this approach.
+**Citum**: Already prioritized in CLAUDE.md. Continue this approach.
 
 ---
 
@@ -257,7 +257,7 @@ Plus explicit override fields:
 - `sorttitle` - ditto
 - `sortyear` - ditto
 
-**CSLN approach** (from Issue #61):
+**Citum approach** (from Issue #61):
 ```yaml
 sort:
   shorten-names: true
@@ -312,7 +312,7 @@ Renders: "WHO (World Health Organization)"
 </choose>
 ```
 
-**Do this instead (CSLN):**
+**Do this instead (Citum):**
 ```yaml
 - title: parent-serial
   emph: true
@@ -349,7 +349,7 @@ CSL-M's deprecated `alt-*` extensions (`alt-title`, `alt-container-title`) were 
 
 ### Batch vs Interactive Processing
 
-CSLN needs to support both modes (per CLAUDE.md "Hybrid Processing Architecture"):
+Citum needs to support both modes (per CLAUDE.md "Hybrid Processing Architecture"):
 
 | Mode | Use Case | Characteristics |
 |------|----------|-----------------|
@@ -376,4 +376,4 @@ CSLN needs to support both modes (per CLAUDE.md "Hybrid Processing Architecture"
 - [CSL-M Extensions](https://citeproc-js.readthedocs.io/en/latest/csl-m/)
 - [biblatex Manual](https://ctan.org/pkg/biblatex)
 - [citeproc-rs](https://github.com/zotero/citeproc-rs) - Rust CSL impl (unmaintained, MPL-2.0)
-- CSLN Issues: #61 (sorting), #64 (biblatex), #66 (multilingual), #86 (djot), #89 (presets), #105 (renderers), #155 (links)
+- Citum Issues: #61 (sorting), #64 (biblatex), #66 (multilingual), #86 (djot), #89 (presets), #105 (renderers), #155 (links)

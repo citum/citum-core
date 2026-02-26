@@ -1,12 +1,12 @@
-# CSLN
+# Citum
 
-CSLN is a Rust-based, declarative citation styling system.
+Citum is a Rust-based, declarative citation styling system.
 
 It is the successor-focused evolution of CSL 1.0: styles are expressed as YAML templates and options, then rendered by a type-safe processor with oracle verification against `citeproc-js`.
 
 ## Status
 
-CSLN is in active development.
+Citum is in active development.
 
 For current, generated metrics, use these as source of truth:
 
@@ -16,12 +16,12 @@ For current, generated metrics, use these as source of truth:
 
 Do not treat hard-coded README percentages as canonical.
 
-## What CSLN Includes
+## What Citum Includes
 
 - `csl-legacy`: CSL 1.0 XML parser
 - `citum_schema`: schema/types and shared models
 - `citum_engine`: citation and bibliography rendering engine
-- `citum_migrate`: CSL 1.0 -> CSLN migration pipeline (hybrid)
+- `citum_migrate`: CSL 1.0 -> Citum migration pipeline (hybrid)
 - `citum`: main CLI (`render`, `check`, `convert`)
 - `citum_analyze`: corpus analysis tooling
 
@@ -29,7 +29,7 @@ Do not treat hard-coded README percentages as canonical.
 
 ```bash
 git clone https://github.com/citum/citum-core
-cd csl26
+cd citum-core
 cargo build --workspace
 cargo test --workspace
 ```
@@ -84,7 +84,7 @@ cargo run --bin citum --features schema -- schema --out-dir ./schemas
 
 ## Migration Workflow (Hybrid)
 
-CSLN migration combines three approaches:
+Citum migration combines three approaches:
 
 1. XML options extraction for global behavior.
 2. Output-driven template inference for structure.
