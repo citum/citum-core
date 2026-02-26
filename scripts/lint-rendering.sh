@@ -9,7 +9,7 @@ if [ -z "$STYLE_FILE" ]; then
 fi
 
 # Run the processor and capture output
-OUTPUT=$(cargo run --quiet --bin citum-cli -- render refs -b tests/fixtures/references-expanded.json -s "$STYLE_FILE" -c tests/fixtures/citations-expanded.json --mode both --show-keys 2>/dev/null)
+OUTPUT=$(cargo run --quiet --bin citum -- render refs -b tests/fixtures/references-expanded.json -s "$STYLE_FILE" -c tests/fixtures/citations-expanded.json --mode both --show-keys 2>/dev/null)
 
 echo "--- Rendering Lint Report for $(basename "$STYLE_FILE") ---"
 ERRORS=0

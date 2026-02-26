@@ -8,7 +8,7 @@
 
 The Citum engine needs a server mode to support real-time citation formatting
 in word processors (Word, LibreOffice) and live preview in the citum-hub web
-app. The batch CLI (`citum-cli`) is synchronous and stdin/stdout-driven; adding
+app. The batch CLI (`citum`) is synchronous and stdin/stdout-driven; adding
 an HTTP server there conflates two fundamentally different runtime models.
 
 ---
@@ -16,7 +16,7 @@ an HTTP server there conflates two fundamentally different runtime models.
 ## Decision: Dedicated `citum-server` Binary Crate (In `citum-core`)
 
 The server mode belongs in a dedicated `citum-server` binary crate in the
-`citum-core` workspace. It should not be a subcommand on `citum-cli`, and it
+`citum-core` workspace. It should not be a subcommand on `citum`, and it
 should not live in `citum-hub` (`style-hub`).
 
 **Rationale:**
@@ -36,7 +36,7 @@ citum-schema    (no legacy deps)
 citum-engine    -> citum-schema
 citum-server    -> citum-engine, citum-schema   [new in citum-core]
 citum-migrate   -> citum-schema, csl-legacy
-citum-cli       -> citum-engine, citum-migrate
+citum          -> citum-engine, citum-migrate   [binary from `citum-cli` crate]
 citum-bindings  -> citum-engine                 [cdylib/wasm, Phase 2]
 ```
 
@@ -51,7 +51,7 @@ citum-bindings  -> citum-engine                 [cdylib/wasm, Phase 2]
 | `csl-legacy`     | No         | Internal tooling                           |
 | `csln-edtf`      | Yes        | Potentially standalone                     |
 | `citum-analyze`  | No         | Internal tooling                           |
-| `citum-cli`      | Yes (bin)  | CLI binary                                 |
+| `citum`          | Yes (bin)  | CLI binary (from `citum-cli` crate)       |
 
 ---
 

@@ -68,7 +68,7 @@ citum-core repo:
        |
   citum-migrate ---> citum-schema, csl-legacy   [legacy stays internal]
        |
-  citum-cli     ---> citum-engine, citum-migrate
+  citum        ---> citum-engine, citum-migrate   [binary from `citum-cli` crate]
        |
   citum-bindings --> citum-engine [cdylib/wasm targets, thin wrapper only]
 ```
@@ -85,7 +85,7 @@ See [CITUM_SERVER_MODE.md](./CITUM_SERVER_MODE.md) for the full server mode plan
 | `csl-legacy`     | `csl-legacy`     | No         | Internal tooling               |
 | `csln-edtf`      | `csln-edtf`      | Yes        | Potentially standalone         |
 | `citum_analyze`   | `citum-analyze`  | No         | Internal tooling               |
-| `csln` (bin)     | `citum-cli`      | Yes (bin)  | CLI binary                     |
+| `csln` (bin)     | `citum`          | Yes (bin)  | CLI binary (from `citum-cli`) |
 | *(new)*          | `citum-server`   | Yes (bin)  | JSON-RPC + optional HTTP server; see [CITUM_SERVER_MODE.md](./CITUM_SERVER_MODE.md) |
 
 ### Target Workspace Layout
@@ -182,7 +182,7 @@ engine API surface is stable. Pin to the production readiness milestone
 
 `citum_schema` already has a `schema` feature flag using `schemars`. The JSON
 Schema generated from Rust types is the mechanism for keeping `citum-hub`
-and the public specification in sync. The existing `cargo run --bin citum-cli -- schema`
+and the public specification in sync. The existing `cargo run --bin citum -- schema`
 command exposes this.
 
 No new mechanism is needed. Stabilizing and publishing the schema crate

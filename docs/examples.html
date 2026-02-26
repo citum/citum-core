@@ -469,7 +469,7 @@ Structured: [@kuhn1962, section: 5].</pre>
                         Render a grouped bibliography with primary, archival, and secondary sources in English:
                     </p>
                     <div class="bg-slate-900 rounded p-3 overflow-x-auto">
-                        <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">citum-cli</span> render refs \
+                        <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">citum</span> render refs \
   -b examples/bib-grouping-refs.yaml \
   -s styles/chicago-author-date.yaml</pre>
                     </div>
@@ -503,7 +503,7 @@ Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the Ameri
                         Switch to German headings by setting <code class="text-slate-600 bg-slate-100 px-1 rounded">default-locale: de-DE</code> in the style:
                     </p>
                     <div class="bg-slate-900 rounded p-3 overflow-x-auto">
-                        <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">citum-cli</span> render refs \
+                        <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">citum</span> render refs \
   -b examples/bib-grouping-refs.yaml \
   -s styles/chicago-author-date.yaml \
   --default-locale de-DE</pre>
@@ -673,7 +673,7 @@ Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the Ameri
                         Render multilingual references with configurable title and name modes:
                     </p>
                     <div class="bg-slate-900 rounded p-3 overflow-x-auto">
-                        <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">citum-cli</span> render refs \
+                        <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">citum</span> render refs \
   -b examples/multilingual-refs.yaml \
   -s styles/experimental/multilingual-academic.yaml</pre>
                     </div>
@@ -1097,7 +1097,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                             Compilation
                         </h4>
                         <div class="bg-slate-900 rounded-lg p-4 font-mono text-xs text-slate-300">
-                            <span class="text-primary">$</span> citum-cli convert
+                            <span class="text-primary">$</span> citum convert
                             styles/apa-7th.yaml --output /tmp/apa-7th.cbor
                         </div>
                         <p class="text-xs text-slate-500 mt-2 italic">
@@ -1110,7 +1110,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                             Processing
                         </h4>
                         <div class="bg-slate-900 rounded-lg p-4 font-mono text-xs text-slate-300">
-                            <span class="text-primary">$</span> citum-cli render refs
+                            <span class="text-primary">$</span> citum render refs
                             -b data.cbor -s style.cbor
                         </div>
                         <p class="text-xs text-slate-500 mt-2 italic">
@@ -1143,8 +1143,8 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                         Generation Command (Optional Feature)
                     </h4>
                     <div class="bg-slate-900 rounded-lg p-4 font-mono text-xs text-slate-300 overflow-x-auto">
-                        <span class="text-primary">$</span> cargo run --bin citum-cli --features schema -- schema &gt;
-                        citum-cli.schema.json
+                        <span class="text-primary">$</span> cargo run --bin citum --features schema -- schema &gt;
+                        citum.schema.json
                     </div>
                     <p class="text-xs text-slate-500 mt-2 italic">
                         Use this only when generating schemas locally; published schemas are already available on the

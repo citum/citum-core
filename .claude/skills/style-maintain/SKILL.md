@@ -37,7 +37,7 @@ model: haiku
 
 ## Verification
 - `node scripts/oracle.js <legacy-style> --json`
-- `cargo run --bin citum-cli -- render refs -b tests/fixtures/references-expanded.json -s <style-path>`
+- `cargo run --bin citum -- render refs -b tests/fixtures/references-expanded.json -s <style-path>`
 - QA handoff to `../style-qa/SKILL.md`
 
 ## Related

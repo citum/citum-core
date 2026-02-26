@@ -88,7 +88,7 @@ function renderWithCslnProcessor(stylePath) {
   let output;
   try {
     output = execSync(
-      `cargo run -q --bin citum-cli -- render refs -b tests/fixtures/references-expanded.json -s .migrated-temp.yaml -c .migrated-citations.json --mode both --show-keys`,
+      `cargo run -q --bin citum -- render refs -b tests/fixtures/references-expanded.json -s .migrated-temp.yaml -c .migrated-citations.json --mode both --show-keys`,
       { cwd: projectRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
     );
   } catch (e) {

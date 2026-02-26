@@ -72,7 +72,7 @@ Core mappings:
 | `crates/csln_migrate` | `crates/citum-migrate` | path |
 | `crates/csln_analyze` | `crates/citum-analyze` | path |
 | `crates/csln` | `crates/citum-cli` | path |
-| `--bin csln` | `--bin citum-cli` | command token |
+| `--bin csln` | `--bin citum` | command token |
 | `bdarcus/csl26` | `citum/citum-core` | literal URL text |
 
 ### 5.2 Three-pass replacement model
@@ -125,7 +125,7 @@ Keep reviewable commits:
 ## 9. Open Decisions (Resolve Before Cutover)
 
 1. **Bean ID policy:** keep `csl26-*` IDs permanently vs introduce `citum-*` IDs for new tasks.
-2. **CLI compatibility policy:** temporary shim (`csln` alias) vs immediate hard rename to `citum-cli`.
+2. **CLI binary policy:** use `citum` as the single public command (no extra alias).
 3. **Frontend branding policy:** keep `.csln-*` CSS/API classes for compatibility vs rename in same window.
 4. **Server placement policy:** keep `citum-server` in `citum-core` until stabilization (default), then evaluate extraction later.
 

@@ -132,20 +132,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "citum-analyze"
-version = "0.6.0"
-dependencies = [
- "citum-schema",
- "csl-legacy",
- "roxmltree",
- "serde",
- "serde_json",
- "serde_yaml",
- "walkdir",
-]
-
-[[package]]
-name = "citum-cli"
+name = "citum"
 version = "0.6.0"
 dependencies = [
  "citum-engine",
@@ -159,6 +146,19 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "strsim 0.10.0",
+ "walkdir",
+]
+
+[[package]]
+name = "citum-analyze"
+version = "0.6.0"
+dependencies = [
+ "citum-schema",
+ "csl-legacy",
+ "roxmltree",
+ "serde",
+ "serde_json",
+ "serde_yaml",
  "walkdir",
 ]
 

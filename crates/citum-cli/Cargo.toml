@@ -1,10 +1,10 @@
 [package]
-name = "citum-cli"
+name = "citum"
 version.workspace = true
 edition.workspace = true
 
 [[bin]]
-name = "citum-cli"
+name = "citum"
 path = "src/main.rs"
 
 [dependencies]

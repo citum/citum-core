@@ -31,7 +31,7 @@ info "Found $STYLE_COUNT production style files"
 
 FAILED=0
 for style in "${STYLE_FILES[@]}"; do
-    if ! cargo run --quiet --bin citum-cli -- check -s "$style" >/dev/null 2>&1; then
+    if ! cargo run --quiet --bin citum -- check -s "$style" >/dev/null 2>&1; then
         error "Style failed schema validation: $style"
         FAILED=1
     fi

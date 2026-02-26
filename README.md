@@ -22,7 +22,7 @@ Do not treat hard-coded README percentages as canonical.
 - `citum_schema`: schema/types and shared models
 - `citum_engine`: citation and bibliography rendering engine
 - `citum_migrate`: CSL 1.0 -> CSLN migration pipeline (hybrid)
-- `citum-cli`: main CLI (`render`, `check`, `convert`)
+- `citum`: main CLI (`render`, `check`, `convert`)
 - `citum_analyze`: corpus analysis tooling
 
 ## Quick Start
@@ -37,7 +37,7 @@ cargo test --workspace
 Render references:
 
 ```bash
-cargo run --bin citum-cli -- render refs \
+cargo run --bin citum -- render refs \
   -b tests/fixtures/references-expanded.json \
   -s styles/apa-7th.yaml
 ```
@@ -45,7 +45,7 @@ cargo run --bin citum-cli -- render refs \
 Render a document:
 
 ```bash
-cargo run --bin citum-cli -- render doc \
+cargo run --bin citum -- render doc \
   -i examples/document.djot \
   -b examples/document-refs.json \
   -s styles/apa-7th.yaml \
@@ -55,7 +55,7 @@ cargo run --bin citum-cli -- render doc \
 Validate inputs:
 
 ```bash
-cargo run --bin citum-cli -- check \
+cargo run --bin citum -- check \
   -s styles/apa-7th.yaml \
   -b tests/fixtures/references-expanded.json \
   -c tests/fixtures/citations-expanded.json
@@ -64,12 +64,12 @@ cargo run --bin citum-cli -- check \
 Convert formats:
 
 ```bash
-cargo run --bin citum-cli -- convert styles/apa-7th.yaml --output /tmp/apa-7th.cbor
+cargo run --bin citum -- convert styles/apa-7th.yaml --output /tmp/apa-7th.cbor
 ```
 
 ## CLI Surface
 
-`citum-cli` currently exposes:
+`citum` currently exposes:
 
 - `render` (subcommands: `doc`, `refs`)
 - `check`
@@ -78,8 +78,8 @@ cargo run --bin citum-cli -- convert styles/apa-7th.yaml --output /tmp/apa-7th.c
 Schema generation is available with the feature-enabled build:
 
 ```bash
-cargo run --bin citum-cli --features schema -- schema style
-cargo run --bin citum-cli --features schema -- schema --out-dir ./schemas
+cargo run --bin citum --features schema -- schema style
+cargo run --bin citum --features schema -- schema --out-dir ./schemas
 ```
 
 ## Migration Workflow (Hybrid)
