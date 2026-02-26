@@ -469,7 +469,7 @@ Structured: [@kuhn1962, section: 5].</pre>
                         Render a grouped bibliography with primary, archival, and secondary sources in English:
                     </p>
                     <div class="bg-slate-900 rounded p-3 overflow-x-auto">
-                        <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">csln</span> render refs \
+                        <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">citum-cli</span> render refs \
   -b examples/bib-grouping-refs.yaml \
   -s styles/chicago-author-date.yaml</pre>
                     </div>
@@ -503,7 +503,7 @@ Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the Ameri
                         Switch to German headings by setting <code class="text-slate-600 bg-slate-100 px-1 rounded">default-locale: de-DE</code> in the style:
                     </p>
                     <div class="bg-slate-900 rounded p-3 overflow-x-auto">
-                        <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">csln</span> render refs \
+                        <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">citum-cli</span> render refs \
   -b examples/bib-grouping-refs.yaml \
   -s styles/chicago-author-date.yaml \
   --default-locale de-DE</pre>
@@ -673,7 +673,7 @@ Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the Ameri
                         Render multilingual references with configurable title and name modes:
                     </p>
                     <div class="bg-slate-900 rounded p-3 overflow-x-auto">
-                        <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">csln</span> render refs \
+                        <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">citum-cli</span> render refs \
   -b examples/multilingual-refs.yaml \
   -s styles/experimental/multilingual-academic.yaml</pre>
                     </div>
@@ -950,9 +950,9 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                         </div>
                         <div class="bg-slate-900 rounded p-3 overflow-x-auto mt-1">
                             <pre class="font-mono text-xs text-slate-300 leading-relaxed">
-&lt;<span class="text-indigo-400">span</span> <span class="text-primary">class</span>=<span class="text-emerald-400">"csln-entry"</span>&gt;
-  &lt;<span class="text-indigo-400">span</span> <span class="text-primary">class</span>=<span class="text-emerald-400">"csln-author"</span>&gt;Smith, J. A.&lt;/<span class="text-indigo-400">span</span>&gt; (2023).
-  &lt;<span class="text-indigo-400">i</span> <span class="text-primary">class</span>=<span class="text-emerald-400">"csln-title"</span>&gt;The Future of Citations&lt;/<span class="text-indigo-400">i</span>&gt;. Academic Press.
+&lt;<span class="text-indigo-400">span</span> <span class="text-primary">class</span>=<span class="text-emerald-400">"citum-entry"</span>&gt;
+  &lt;<span class="text-indigo-400">span</span> <span class="text-primary">class</span>=<span class="text-emerald-400">"citum-author"</span>&gt;Smith, J. A.&lt;/<span class="text-indigo-400">span</span>&gt; (2023).
+  &lt;<span class="text-indigo-400">i</span> <span class="text-primary">class</span>=<span class="text-emerald-400">"citum-title"</span>&gt;The Future of Citations&lt;/<span class="text-indigo-400">i</span>&gt;. Academic Press.
 &lt;/<span class="text-indigo-400">span</span>&gt;</pre>
                         </div>
                     </div>
@@ -964,7 +964,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                         </div>
                         <div class="bg-slate-900 rounded p-3 overflow-x-auto mt-1">
                             <pre class="font-mono text-xs text-slate-300 leading-relaxed">
-[Smith, J. A.]<span class="text-primary">{.csln-author}</span> (2023). _The Future of Citations_<span class="text-primary">{.csln-title}</span>. Academic Press.</pre>
+[Smith, J. A.]<span class="text-primary">{.citum-author}</span> (2023). _The Future of Citations_<span class="text-primary">{.citum-title}</span>. Academic Press.</pre>
                         </div>
                     </div>
                 </div>
@@ -1006,7 +1006,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                 </p>
                 <div class="bg-slate-900 rounded-lg p-4 font-mono text-xs text-slate-300 leading-relaxed">
                     <pre>.tex \cite{key}
-  └─► \directlua ──► csln.lua (LuaJIT FFI) ──► libcsln_processor (Rust)
+  └─► \directlua ──► citum-cli.lua (LuaJIT FFI) ──► libcsln_processor (Rust)
                                                        │
                        tex.sprint(rendered) ◄──────────┘</pre>
                 </div>
@@ -1016,13 +1016,13 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
             <div class="border-b border-slate-200">
                 <div class="px-8 py-4 bg-slate-100">
                     <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-                        Package Usage (csln.sty)
+                        Package Usage (citum-cli.sty)
                     </h3>
                 </div>
                 <div class="bg-slate-900 p-6 overflow-x-auto">
                     <pre class="font-mono text-sm text-slate-300 leading-relaxed">
 <span class="text-slate-500">% Load with your YAML style and bibliography</span>
-\usepackage[style=<span class="text-emerald-400">styles/apa-7th.yaml</span>,bibfile=<span class="text-emerald-400">refs.yaml</span>]{csln}
+\usepackage[style=<span class="text-emerald-400">styles/apa-7th.yaml</span>,bibfile=<span class="text-emerald-400">refs.yaml</span>]{citum-cli}
 
 <span class="text-slate-500">% Non-integral (parenthetical)</span>
 \cite[p.~10]{<span class="text-emerald-400">kuhn1962</span>}               <span class="text-slate-500">% → (Kuhn, 1962, p. 10)</span>
@@ -1097,7 +1097,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                             Compilation
                         </h4>
                         <div class="bg-slate-900 rounded-lg p-4 font-mono text-xs text-slate-300">
-                            <span class="text-primary">$</span> csln convert
+                            <span class="text-primary">$</span> citum-cli convert
                             styles/apa-7th.yaml --output /tmp/apa-7th.cbor
                         </div>
                         <p class="text-xs text-slate-500 mt-2 italic">
@@ -1110,7 +1110,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                             Processing
                         </h4>
                         <div class="bg-slate-900 rounded-lg p-4 font-mono text-xs text-slate-300">
-                            <span class="text-primary">$</span> csln render refs
+                            <span class="text-primary">$</span> citum-cli render refs
                             -b data.cbor -s style.cbor
                         </div>
                         <p class="text-xs text-slate-500 mt-2 italic">
@@ -1144,7 +1144,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                     </h4>
                     <div class="bg-slate-900 rounded-lg p-4 font-mono text-xs text-slate-300 overflow-x-auto">
                         <span class="text-primary">$</span> cargo run --bin citum-cli --features schema -- schema &gt;
-                        csln.schema.json
+                        citum-cli.schema.json
                     </div>
                     <p class="text-xs text-slate-500 mt-2 italic">
                         Use this only when generating schemas locally; published schemas are already available on the
@@ -1213,7 +1213,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                             in &lt;head&gt;)</div>
                         <div class="bg-slate-900 rounded p-3 overflow-x-auto">
                             <pre
-                                class="font-mono text-xs text-emerald-400">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/citum/citum-core@main/docs/assets/csln-interactive.css"&gt;</pre>
+                                class="font-mono text-xs text-emerald-400">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/citum/citum-core@main/docs/assets/citum-interactive.css"&gt;</pre>
                         </div>
                     </div>
                     <div>
@@ -1221,7 +1221,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                             before &lt;/body&gt;)</div>
                         <div class="bg-slate-900 rounded p-3 overflow-x-auto">
                             <pre
-                                class="font-mono text-xs text-emerald-400">&lt;script src="https://cdn.jsdelivr.net/gh/citum/citum-core@main/docs/assets/csln-interactive.js"&gt;&lt;/script&gt;</pre>
+                                class="font-mono text-xs text-emerald-400">&lt;script src="https://cdn.jsdelivr.net/gh/citum/citum-core@main/docs/assets/citum-interactive.js"&gt;&lt;/script&gt;</pre>
                         </div>
                     </div>
                 </div>
@@ -1243,7 +1243,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                         </h4>
                         <p class="text-xs text-slate-500">To enable the sidebar mode on large screens, wrap your content
                             and bibliography in a container with the class <code
-                                class="bg-slate-100 px-1 rounded">csln-with-sidebar</code>.</p>
+                                class="bg-slate-100 px-1 rounded">citum-with-sidebar</code>.</p>
                     </div>
                 </div>
             </div>

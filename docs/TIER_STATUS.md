@@ -143,15 +143,15 @@ full ibid/subsequent support requires `position` condition (not yet implemented)
 
 ## Embedded Styles (Built into Binary)
 
-Twelve priority styles are compiled into the `csln` binary via `include_bytes!`
+Twelve priority styles are compiled into the `citum-cli` binary via `include_bytes!`
 and can be used without any style file on disk.
 
 ```bash
 # List all embedded styles
-csln styles list
+citum-cli styles list
 
 # Render using a builtin style
-csln render refs --builtin apa-7th -b refs.json
+citum-cli render refs --builtin apa-7th -b refs.json
 ```
 
 | Style | Format | Dependents | Corpus Impact |

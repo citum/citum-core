@@ -10,8 +10,8 @@ CSLN is in active development.
 
 For current, generated metrics, use these as source of truth:
 
-- Compatibility dashboard: [`bdarcus.github.io/csl26/compat.html`](https://bdarcus.github.io/csl26/compat.html)
-- Tier status snapshot: [`bdarcus.github.io/csl26/TIER_STATUS.md`](https://bdarcus.github.io/csl26/TIER_STATUS.md)
+- Compatibility dashboard: [`citum.github.io/citum-core/compat.html`](https://citum.github.io/citum-core/compat.html)
+- Tier status snapshot: [`citum.github.io/citum-core/TIER_STATUS.md`](https://citum.github.io/citum-core/TIER_STATUS.md)
 - Core fidelity/SQI baseline: [`scripts/report-data/core-quality-baseline.json`](./scripts/report-data/core-quality-baseline.json)
 
 Do not treat hard-coded README percentages as canonical.
@@ -22,7 +22,7 @@ Do not treat hard-coded README percentages as canonical.
 - `citum_schema`: schema/types and shared models
 - `citum_engine`: citation and bibliography rendering engine
 - `citum_migrate`: CSL 1.0 -> CSLN migration pipeline (hybrid)
-- `csln`: main CLI (`render`, `check`, `convert`)
+- `citum-cli`: main CLI (`render`, `check`, `convert`)
 - `citum_analyze`: corpus analysis tooling
 
 ## Quick Start
@@ -69,7 +69,7 @@ cargo run --bin citum-cli -- convert styles/apa-7th.yaml --output /tmp/apa-7th.c
 
 ## CLI Surface
 
-`csln` currently exposes:
+`citum-cli` currently exposes:
 
 - `render` (subcommands: `doc`, `refs`)
 - `check`
@@ -136,12 +136,12 @@ node scripts/check-core-quality.js \
 ```text
 crates/
   csl-legacy/
-  csln/
-  citum_analyze/
-  citum_schema/
+  citum-cli/
+  citum-analyze/
+  citum-schema/
   csln-edtf/
-  citum_migrate/
-  citum_engine/
+  citum-migrate/
+  citum-engine/
 
 docs/
 styles/

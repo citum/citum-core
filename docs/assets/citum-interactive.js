@@ -1,12 +1,12 @@
 /*
- * CSLN Interactive Behaviors
+ * Citum Interactive Behaviors
  * SPDX-License-Identifier: MPL-2.0
  */
 
 (function() {
   'use strict';
 
-  const CSLN = {
+  const CITUM = {
     init: function() {
       this.setupCitations();
       this.setupBibliography();
@@ -14,7 +14,7 @@
     },
 
     setupCitations: function() {
-      const citations = document.querySelectorAll('.csln-citation');
+      const citations = document.querySelectorAll('.citum-citation');
       citations.forEach(citation => {
         citation.addEventListener('click', (e) => {
           const refs = citation.getAttribute('data-ref').split(' ');
@@ -37,7 +37,7 @@
     },
 
     setupBibliography: function() {
-      const entries = document.querySelectorAll('.csln-entry');
+      const entries = document.querySelectorAll('.citum-entry');
       entries.forEach(entry => {
         entry.addEventListener('mouseenter', () => {
           const id = entry.id.replace('ref-', '');
@@ -72,7 +72,7 @@
     },
 
     highlightCitations: function(refId, active = true) {
-      const citations = document.querySelectorAll(`.csln-citation[data-ref~="${refId}"]`);
+      const citations = document.querySelectorAll(`.citum-citation[data-ref~="${refId}"]`);
       citations.forEach(citation => {
         if (active) {
           citation.classList.add('is-highlighted');
@@ -84,10 +84,10 @@
 
     setupTooltips: function() {
       const tooltip = document.createElement('div');
-      tooltip.className = 'csln-tooltip';
+      tooltip.className = 'citum-tooltip';
       document.body.appendChild(tooltip);
 
-      const citations = document.querySelectorAll('.csln-citation');
+      const citations = document.querySelectorAll('.citum-citation');
       citations.forEach(citation => {
         citation.addEventListener('mousemove', (e) => {
           const refs = citation.getAttribute('data-ref').split(' ');
@@ -104,8 +104,8 @@
           if (!author && !title) return;
 
           tooltip.innerHTML = `
-            ${author ? `<span class="csln-tooltip-author">${author}${year ? ` (${year})` : ''}</span>` : ''}
-            ${title ? `<span class="csln-tooltip-title">${title}</span>` : ''}
+            ${author ? `<span class="citum-tooltip-author">${author}${year ? ` (${year})` : ''}</span>` : ''}
+            ${title ? `<span class="citum-tooltip-title">${title}</span>` : ''}
           `;
 
           tooltip.style.left = (e.pageX + 15) + 'px';
@@ -122,11 +122,11 @@
 
   // Initialize when DOM is ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => CSLN.init());
+    document.addEventListener('DOMContentLoaded', () => CITUM.init());
   } else {
-    CSLN.init();
+    CITUM.init();
   }
 
   // Export to window
-  window.CSLN = CSLN;
+  window.CITUM = CITUM;
 })();
