@@ -861,9 +861,9 @@ function generateHtmlHeader(report) {
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>CSLN | Style Compatibility Report</title>
+    <title>Citum | Style Compatibility Report</title>
     <meta name="description"
-        content="Compatibility metrics for CSLN against citeproc-js reference implementation.">
+        content="Compatibility metrics for Citum against citeproc-js reference implementation.">
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
     <link
@@ -942,15 +942,23 @@ function generateHtmlHeader(report) {
     <!-- Navigation -->
     <nav class="fixed top-0 w-full z-50 glass-nav">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 shrink-0">
                 <a href="index.html" class="flex items-center gap-2 group">
                     <div class="w-8 h-8 bg-primary rounded flex items-center justify-center group-hover:brightness-110 transition-all">
                         <span class="text-white font-mono font-bold">C</span>
                     </div>
-                    <span class="font-mono text-xl font-bold tracking-tight text-slate-900">CSLN</span>
+                    <span class="font-mono text-xl font-bold tracking-tight text-slate-900">Citum</span>
                 </a>
             </div>
-            <div class="hidden md:flex items-center gap-8">
+            <div class="hidden md:flex items-center gap-3 lg:gap-4 xl:gap-6 min-w-0 overflow-x-auto whitespace-nowrap pl-4">
+                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
+                    href="https://citum.org">Home</a>
+                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
+                    href="https://docs.citum.org">Docs</a>
+                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
+                    href="https://hub.citum.org">Hub</a>
+                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
+                    href="https://labs.citum.org">Labs</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
                     href="index.html#features">Features</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
@@ -1369,7 +1377,7 @@ function generateDetailContent(style) {
                                             <tr class="border-b border-slate-300 bg-slate-100">
                                                 <th class="text-left px-2 py-1 font-medium text-slate-700">#</th>
                                                 <th class="text-left px-2 py-1 font-medium text-slate-700">Oracle</th>
-                                                <th class="text-left px-2 py-1 font-medium text-slate-700">CSLN</th>
+                                                <th class="text-left px-2 py-1 font-medium text-slate-700">Citum</th>
                                                 <th class="text-center px-2 py-1 font-medium text-slate-700">Match</th>
                                             </tr>
                                         </thead>
@@ -1406,7 +1414,7 @@ function generateDetailContent(style) {
                                             <tr class="border-b border-slate-300 bg-slate-100">
                                                 <th class="text-left px-2 py-1 font-medium text-slate-700">#</th>
                                                 <th class="text-left px-2 py-1 font-medium text-slate-700">Oracle</th>
-                                                <th class="text-left px-2 py-1 font-medium text-slate-700">CSLN</th>
+                                                <th class="text-left px-2 py-1 font-medium text-slate-700">Citum</th>
                                                 <th class="text-center px-2 py-1 font-medium text-slate-700">Match</th>
                                                 <th class="text-left px-2 py-1 font-medium text-slate-700">Issues</th>
                                             </tr>
@@ -1453,7 +1461,7 @@ function generateDetailContent(style) {
   if (style.knownDivergences && style.knownDivergences.length > 0) {
     html += `
                             <div class="p-4 rounded-lg bg-primary/5 border border-primary/20 mt-4">
-                                <div class="text-sm font-semibold text-primary mb-2">CSLN Extensions</div>
+                                <div class="text-sm font-semibold text-primary mb-2">Citum Extensions</div>
 `;
     for (const divergence of style.knownDivergences) {
       html += `
@@ -1482,7 +1490,7 @@ function generateHtmlFooter() {
                         <div class="w-6 h-6 bg-primary rounded flex items-center justify-center group-hover:brightness-110 transition-all">
                             <span class="text-white font-mono text-xs font-bold">C</span>
                         </div>
-                        <span class="font-mono text-lg font-bold text-slate-900">CSLN</span>
+                        <span class="font-mono text-lg font-bold text-slate-900">Citum</span>
                     </a>
                 </div>
                 <div class="flex gap-8 text-sm font-medium text-slate-500">
@@ -1492,7 +1500,7 @@ function generateHtmlFooter() {
                     <a class="hover:text-primary transition-colors" href="compat.html">Compat</a>
                 </div>
                 <div class="text-sm text-slate-400">
-                    © 2026 CSLN Project. MIT Licensed.
+                    © 2026 Citum Project. MIT Licensed.
                 </div>
             </div>
         </div>
