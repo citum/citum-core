@@ -2,6 +2,7 @@
 
 **Status:** Approved for phased implementation
 **Last updated:** 2026-02-22
+**Execution runbook:** [CITUM_FULL_MIGRATION_EXECUTION_PLAN_2026-02-26.md](./CITUM_FULL_MIGRATION_EXECUTION_PLAN_2026-02-26.md)
 
 ## Overview
 
@@ -21,23 +22,23 @@ every schema or API decision.
 The existing workspace has three boundary violations that impede clean
 modularization.
 
-### 1. `csln_core` → `csl_legacy` (boundary violation)
+### 1. `citum_schema` → `csl-legacy` (boundary violation)
 
-`csln_core` is the intended schema source-of-truth crate. It should have no
-dependency on `csl_legacy` (a legacy XML parser). However,
-`csln_core/src/reference/conversion.rs` implements:
+`citum_schema` is the intended schema source-of-truth crate. It should have no
+dependency on `csl-legacy` (a legacy XML parser). However,
+`citum_schema/src/reference/conversion.rs` implements:
 
 ```rust
-impl From<csl_legacy::csl_json::Reference> for InputReference { ... }
-impl From<csl_legacy::csl_json::DateVariable> for EdtfString { ... }
-impl From<Vec<csl_legacy::csl_json::Name>> for Contributor { ... }
+impl From<csl-legacy::csl_json::Reference> for InputReference { ... }
+impl From<csl-legacy::csl_json::DateVariable> for EdtfString { ... }
+impl From<Vec<csl-legacy::csl_json::Name>> for Contributor { ... }
 ```
 
-These `From` impls belong in `csln_migrate`, not `csln_core`. The schema
+These `From` impls belong in `citum_migrate`, not `citum_schema`. The schema
 crate should define types; the migration crate should define conversions
 from legacy formats into those types.
 
-### 2. `csln_core` → `biblatex` (belongs in processor layer)
+### 2. `citum_schema` → `biblatex` (belongs in processor layer)
 
 `conversion.rs` also implements `InputReference::from_biblatex()`, which
 imports `biblatex::{Chunk, Entry, Person}`. Biblatex parsing is not schema
@@ -45,10 +46,10 @@ definition. This method belongs in the processor layer (I/O or reference
 conversion), where `biblatex` is already a direct dependency and where
 biblatex input is actually consumed.
 
-### 3. `csln_processor` → `clap` (unused library dependency)
+### 3. `citum_engine` → `clap` (unused library dependency)
 
-`csln_processor/Cargo.toml` declares `clap` as a dependency, but no
-source file in `crates/csln_processor/src/` imports it. Library crates must
+`citum_engine/Cargo.toml` declares `clap` as a dependency, but no
+source file in `crates/citum-engine/src/` imports it. Library crates must
 not depend on CLI frameworks. This is safe to remove immediately.
 
 ---
@@ -58,17 +59,19 @@ not depend on CLI frameworks. This is safe to remove immediately.
 ### Dependency Graph (Clean)
 
 ```
-citum-schema    (no legacy deps: serde, schemars, csln_edtf only)
-     |
-citum-engine  ---> citum-schema
-     |                   |
-citum-server ------------|   [new; engine + schema only, async/http opt-in]
-     |
-citum-migrate ---> citum-schema, csl-legacy   [legacy stays internal]
-     |
-citum-cli     ---> citum-engine, citum-migrate
-     |
-citum-bindings --> citum-engine [cdylib/wasm targets, thin wrapper only]
+citum-core repo:
+  citum-schema    (no legacy deps: serde, schemars, csln-edtf only)
+       |
+  citum-engine  ---> citum-schema
+       |
+  citum-migrate ---> citum-schema, csl-legacy   [legacy stays internal]
+       |
+  citum-cli     ---> citum-engine, citum-migrate
+       |
+  citum-bindings --> citum-engine [cdylib/wasm targets, thin wrapper only]
+
+citum-server repo:
+  citum-server ---> citum-engine, citum-schema
 ```
 
 See [CITUM_SERVER_MODE.md](./CITUM_SERVER_MODE.md) for the full server mode plan.
@@ -77,14 +80,14 @@ See [CITUM_SERVER_MODE.md](./CITUM_SERVER_MODE.md) for the full server mode plan
 
 | Current name     | Target name      | Published? | Notes                          |
 |-----------------|------------------|------------|--------------------------------|
-| `csln_core`      | `citum-schema`   | Yes        | Schema source of truth         |
-| `csln_processor` | `citum-engine`   | Yes        | Rendering engine               |
-| `csln_migrate`   | `citum-migrate`  | No         | Internal tooling               |
-| `csl_legacy`     | `csl-legacy`     | No         | Internal tooling               |
-| `csln_edtf`      | `csln-edtf`      | Yes        | Potentially standalone         |
-| `csln_analyze`   | `citum-analyze`  | No         | Internal tooling               |
+| `citum_schema`      | `citum-schema`   | Yes        | Schema source of truth         |
+| `citum_engine` | `citum-engine`   | Yes        | Rendering engine               |
+| `citum_migrate`   | `citum-migrate`  | No         | Internal tooling               |
+| `csl-legacy`     | `csl-legacy`     | No         | Internal tooling               |
+| `csln-edtf`      | `csln-edtf`      | Yes        | Potentially standalone         |
+| `citum_analyze`   | `citum-analyze`  | No         | Internal tooling               |
 | `csln` (bin)     | `citum-cli`      | Yes (bin)  | CLI binary                     |
-| *(new)*          | `citum-server`   | Yes (bin)  | JSON-RPC + optional HTTP server; see [CITUM_SERVER_MODE.md](./CITUM_SERVER_MODE.md) |
+| *(new, separate repo)* | `citum-server`   | Yes (bin)  | JSON-RPC + optional HTTP server; see [CITUM_SERVER_MODE.md](./CITUM_SERVER_MODE.md) |
 
 ### Target Workspace Layout
 
@@ -92,12 +95,12 @@ See [CITUM_SERVER_MODE.md](./CITUM_SERVER_MODE.md) for the full server mode plan
 citum-core/                      # renamed from csl26
   Cargo.toml                     # workspace root
   crates/
-    citum-schema/                # formerly csln_core (minus legacy conversion)
-    citum-engine/                # formerly csln_processor
-    citum-migrate/               # formerly csln_migrate (absorbs conversion.rs)
-    csl-legacy/                  # formerly csl_legacy (internal, not published)
+    citum-schema/                # formerly citum_schema (minus legacy conversion)
+    citum-engine/                # formerly citum_engine
+    citum-migrate/               # formerly citum_migrate (absorbs conversion.rs)
+    csl-legacy/                  # formerly csl-legacy (internal, not published)
     csln-edtf/                   # stays as-is
-    citum-analyze/               # formerly csln_analyze
+    citum-analyze/               # formerly citum_analyze
     citum-cli/                   # formerly csln (binary)
   bindings/
     lua/                         # existing LuaLaTeX integration
@@ -114,22 +117,22 @@ citum-core/                      # renamed from csl26
 These changes can land now, independent of any rename. They improve the
 dependency graph and correctness without breaking public APIs.
 
-**P0-1: Remove `clap` from `csln_processor`**
-- Remove `clap = { version = "4.4", ... }` from `csln_processor/Cargo.toml`
+**P0-1: Remove `clap` from `citum_engine`**
+- Remove `clap = { version = "4.4", ... }` from `citum_engine/Cargo.toml`
 - Library crates must not depend on CLI frameworks
 - Risk: none; clap is not imported in any source file
 
-**P0-2: Decouple `csln_core` from `csl_legacy` and `biblatex`** ✅ Done
-- The `From<csl_legacy::...>` impls must stay in `csln_core` due to the Rust
-  orphan rule (`InputReference` is defined there), but `csl_legacy` is now
+**P0-2: Decouple `citum_schema` from `csl-legacy` and `biblatex`** ✅ Done
+- The `From<csl-legacy::...>` impls must stay in `citum_schema` due to the Rust
+  orphan rule (`InputReference` is defined there), but `csl-legacy` is now
   optional, gated behind a `legacy-convert` feature flag
-- `biblatex` is removed from `csln_core` entirely; `from_biblatex` moved to
-  `csln_processor/src/ffi.rs` as a free function (interim placement — the
+- `biblatex` is removed from `citum_schema` entirely; `from_biblatex` moved to
+  `citum_engine/src/ffi.rs` as a free function (interim placement — the
   right long-term home is a dedicated IO or reference-conversion module within
   the processor, not the FFI layer)
-- `csln_processor` activates the `legacy-convert` feature on `csln_core`,
+- `citum_engine` activates the `legacy-convert` feature on `citum_schema`,
   so all existing call sites continue to work
-- `csln_core` without the feature has zero legacy deps
+- `citum_schema` without the feature has zero legacy deps
 
 ### Phase 1: Rename and GitHub Org (At Wave Break)
 
@@ -165,6 +168,11 @@ oracle scripts.
 - Clearly document as non-stable / proof-of-concept
 - Establish pattern for future experimental integrations
 
+**P2-3: Extract `citum-server` repository**
+- Create `citum/citum-server` as a standalone repo
+- Depend on published/workspace-consumable `citum-engine` + `citum-schema`
+- Keep server release cadence independent from `citum-core`
+
 **Do not** implement FFI tool generation (boltffi or similar) until the
 engine API surface is stable. Pin to the production readiness milestone
 (ROADMAP.md Phase 4) at earliest.
@@ -173,9 +181,9 @@ engine API surface is stable. Pin to the production readiness milestone
 
 ## JSON Schema Synchronization
 
-`csln_core` already has a `schema` feature flag using `schemars`. The JSON
+`citum_schema` already has a `schema` feature flag using `schemars`. The JSON
 Schema generated from Rust types is the mechanism for keeping `citum-hub`
-and the public specification in sync. The existing `cargo run --bin csln -- schema`
+and the public specification in sync. The existing `cargo run --bin citum-cli -- schema`
 command exposes this.
 
 No new mechanism is needed. Stabilizing and publishing the schema crate
@@ -196,7 +204,7 @@ those paths:
 
 ```bash
 # Clone a fresh copy (never filter the working repo)
-git clone https://github.com/bdarcus/csl26.git citum-labs-extract
+git clone https://github.com/citum/citum-core.git citum-labs-extract
 cd citum-labs-extract
 git filter-repo --path bindings/
 # Then create citum/labs on GitHub and push
@@ -227,15 +235,15 @@ Only after step 1 is complete (bindings/ removed from working tree), transfer th
 main workspace:
 
 ```bash
-gh repo transfer bdarcus/csl26 citum --repo-name citum-core
+gh repo transfer citum/citum-core citum --repo-name citum-core
 ```
 
 GitHub preserves the full commit history and sets up automatic URL redirects
-from `bdarcus/csl26`, so existing links do not break immediately.
+from `citum/citum-core`, so existing links do not break immediately.
 
 ### After All Steps
 
-- Do a find-and-replace pass on hardcoded `bdarcus/csl26` references in `scripts/`,
+- Do a find-and-replace pass on hardcoded `citum/citum-core` references in `scripts/`,
   `CLAUDE.md`, and `docs/`.
 - Update any `path =` references in `Cargo.toml` that pointed at the extracted
   directories.
@@ -271,8 +279,8 @@ point a `citum/docs` repo fed by CI from `citum-core` becomes viable.
 | Bean ID       | Title                                        | Phase  |
 |--------------|----------------------------------------------|--------|
 | `csl26-modz` | Citum modularization (epic)                  | Umbrella |
-| `csl26-p0cl` | Phase 0: Remove clap from csln_processor     | 0 (now) |
-| `csl26-p0dc` | Phase 0: Move csl_legacy coupling to migrate | 0      |
+| `csl26-p0cl` | Phase 0: Remove clap from citum_engine     | 0 (now) |
+| `csl26-p0dc` | Phase 0: Move csl-legacy coupling to migrate | 0      |
 | `csl26-p1rn` | Phase 1: GitHub org + crate rename           | 1 (wave break) |
 | `csl26-p2bn` | Phase 2: Define citum-bindings API surface   | 2      |
 | `csl26-p2lb` | Phase 2: Create citum/labs repository        | 2      |

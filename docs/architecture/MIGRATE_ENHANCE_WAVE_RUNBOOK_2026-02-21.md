@@ -6,8 +6,8 @@ Use this as the canonical source for status, metrics, and next actions.
 
 ## Scope
 - Branch: `codex/migrate-enhance-wave-strategy`
-- Draft PR: <https://github.com/bdarcus/csl26/pull/208>
-- Primary goal: improve `csln-migrate` fidelity/SQI through wave-based style
+- Draft PR: <https://github.com/citum/citum-core/pull/208>
+- Primary goal: improve `citum-migrate` fidelity/SQI through wave-based style
   conversion, then promote repeated fixes into shared migrate/processor logic.
 
 ## Current Results
@@ -41,18 +41,18 @@ Wave 2 citation status is now fully closed (`144/144`).
   - numeric citation fallback for explicit empty citation templates
   - numeric locator normalization for AMA-like patterns
 
-### Migration (`csln-migrate`)
-- `crates/csln_migrate/src/options_extractor/bibliography.rs`
+### Migration (`citum-migrate`)
+- `crates/citum-migrate/src/options_extractor/bibliography.rs`
   - extract legacy bibliography sort into CSLN `GroupSort`
-- `crates/csln_migrate/src/main.rs`
+- `crates/citum-migrate/src/main.rs`
   - emit extracted sort into generated `bibliography.sort`
-- `crates/csln_migrate/src/options_extractor/tests.rs`
+- `crates/citum-migrate/src/options_extractor/tests.rs`
   - coverage for new bibliography sort extraction
-- `crates/csln_migrate/src/options_extractor/processing.rs`
+- `crates/citum-migrate/src/options_extractor/processing.rs`
   - recursively detect author-date signals through macro trees
   - default extracted disambiguation to legacy-safe values
     (`names=false`, `add-givenname=false`, `year-suffix=true`)
-- `crates/csln_migrate/src/main.rs`
+- `crates/citum-migrate/src/main.rs`
   - add author-date citation locator component when legacy layout uses
     `citation-locator` and inferred templates omit it
 - `scripts/merge-migration.js`
@@ -60,7 +60,7 @@ Wave 2 citation status is now fully closed (`144/144`).
     locator, preventing merge-time regression
 
 ### Processor sorting (`csln-processor`)
-- `crates/csln_processor/src/grouping/sorting.rs`
+- `crates/citum-engine/src/grouping/sorting.rs`
   - context-aware author-key fallback behavior
   - author->title fallback only when sort template includes `title`
   - missing-name entries sort after named entries when no title key exists
@@ -126,7 +126,7 @@ Primary repeated clusters from `/tmp/core-gaps-phase34.json`:
   - `volume:missing` (`9`)
 
 Implementation focus for this slice:
-1. Migration engine updates first (`csln-migrate`), specifically:
+1. Migration engine updates first (`citum-migrate`), specifically:
    - broader locator macro detection for citation template recovery
    - stronger inferred/XML type-template merge guardrails for repeated
      structural bibliography divergences

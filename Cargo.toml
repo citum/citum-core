@@ -1,12 +1,12 @@
 [workspace]
 members = [
-    "crates/csl_legacy",
-    "crates/csln_core",
-    "crates/csln_migrate",
-    "crates/csln_processor",
-    "crates/csln_analyze",
-    "crates/csln",
-    "crates/csln_edtf"
+    "crates/csl-legacy",
+    "crates/citum-schema",
+    "crates/citum-migrate",
+    "crates/citum-engine",
+    "crates/citum-analyze",
+    "crates/citum-cli",
+    "crates/csln-edtf"
 ]
 resolver = "2"
 

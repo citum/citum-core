@@ -9,7 +9,7 @@ addFormats(ajv);
 ajv.addFormat('uint8', true);
 
 const rootDir = path.join(__dirname, '..');
-const schemaDir = path.join(rootDir, 'crates/csln/generated_schemas');
+const schemaDir = path.join(rootDir, 'crates/citum-cli/generated_schemas');
 
 const schemas = {
   style: JSON.parse(fs.readFileSync(path.join(schemaDir, 'style.json'), 'utf8')),

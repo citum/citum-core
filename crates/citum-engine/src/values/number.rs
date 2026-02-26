@@ -1,0 +1,273 @@
+use crate::reference::Reference;
+use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
+use citum_schema::locale::TermForm;
+use citum_schema::template::{NumberVariable, TemplateNumber};
+
+impl ComponentValues for TemplateNumber {
+    fn values<F: crate::render::format::OutputFormat<Output = String>>(
+        &self,
+        reference: &Reference,
+        hints: &ProcHints,
+        options: &RenderOptions<'_>,
+    ) -> Option<ProcValues<F::Output>> {
+        let fmt = F::default();
+        use citum_schema::template::LabelForm;
+
+        let value = match self.number {
+            NumberVariable::Volume => reference.volume().map(|v| v.to_string()),
+            NumberVariable::Issue => reference.issue().map(|v| v.to_string()),
+            NumberVariable::Pages => {
+                if options.context == crate::values::RenderContext::Citation
+                    && options.locator.is_some()
+                    && matches!(
+                        options.config.processing,
+                        Some(citum_schema::options::Processing::Note)
+                    )
+                {
+                    None
+                } else {
+                    reference.pages().map(|p| {
+                        format_page_range(&p.to_string(), options.config.page_range_format.as_ref())
+                    })
+                }
+            }
+            NumberVariable::Edition => reference.edition(),
+            NumberVariable::CollectionNumber => reference.collection_number(),
+            NumberVariable::Number => reference.number(),
+            NumberVariable::DocketNumber => match reference {
+                Reference::Brief(r) => r.docket_number.clone(),
+                _ => None,
+            },
+            NumberVariable::PatentNumber => match reference {
+                Reference::Patent(r) => Some(r.patent_number.clone()),
+                _ => None,
+            },
+            NumberVariable::StandardNumber => match reference {
+                Reference::Standard(r) => Some(r.standard_number.clone()),
+                _ => None,
+            },
+            NumberVariable::ReportNumber => match reference {
+                Reference::Monograph(r) => r.report_number.clone(),
+                _ => None,
+            },
+            NumberVariable::CitationNumber => hints.citation_number.map(|n| n.to_string()),
+            NumberVariable::CitationLabel => {
+                let config = match options.config.processing.as_ref() {
+                    Some(citum_schema::options::Processing::Label(cfg)) => cfg,
+                    _ => return None,
+                };
+                let params = config.effective_params();
+                let base = crate::processor::labels::generate_base_label(reference, &params);
+                if base.is_empty() {
+                    return None;
+                }
+                let suffix = if hints.disamb_condition && hints.group_index > 0 {
+                    crate::values::int_to_letter(hints.group_index as u32).unwrap_or_default()
+                } else {
+                    String::new()
+                };
+                Some(format!("{}{}", base, suffix))
+            }
+            _ => None,
+        };
+
+        value.filter(|s| !s.is_empty()).map(|value| {
+            // Resolve effective rendering options
+            let mut effective_rendering = self.rendering.clone();
+            if let Some(overrides) = &self.overrides {
+                use citum_schema::template::ComponentOverride;
+                let ref_type = reference.ref_type();
+                let mut match_found = false;
+                for (selector, ov) in overrides {
+                    if selector.matches(&ref_type)
+                        && let ComponentOverride::Rendering(r) = ov
+                    {
+                        effective_rendering.merge(r);
+                        match_found = true;
+                    }
+                }
+                if !match_found {
+                    for (selector, ov) in overrides {
+                        if selector.matches("default")
+                            && let ComponentOverride::Rendering(r) = ov
+                        {
+                            effective_rendering.merge(r);
+                        }
+                    }
+                }
+            }
+
+            // Handle label if label_form is specified
+            let prefix = if let Some(label_form) = &self.label_form {
+                if let Some(locator_type) = number_var_to_locator_type(&self.number) {
+                    // Check pluralization
+                    let plural = check_plural(&value, &locator_type);
+
+                    let term_form = match label_form {
+                        LabelForm::Long => TermForm::Long,
+                        LabelForm::Short => TermForm::Short,
+                        LabelForm::Symbol => TermForm::Symbol,
+                    };
+
+                    options
+                        .locale
+                        .locator_term(&locator_type, plural, term_form)
+                        .map(|t| {
+                            let term_str = if crate::values::should_strip_periods(
+                                &effective_rendering,
+                                options,
+                            ) {
+                                crate::values::strip_trailing_periods(t)
+                            } else {
+                                t.to_string()
+                            };
+                            fmt.text(&format!("{} ", term_str))
+                        })
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
+
+            ProcValues {
+                value,
+                prefix,
+                suffix: None,
+                url: crate::values::resolve_effective_url(
+                    self.links.as_ref(),
+                    options.config.links.as_ref(),
+                    reference,
+                    citum_schema::options::LinkAnchor::Component,
+                ),
+                substituted_key: None,
+                pre_formatted: false,
+            }
+        })
+    }
+}
+
+pub fn number_var_to_locator_type(
+    var: &NumberVariable,
+) -> Option<citum_schema::citation::LocatorType> {
+    use citum_schema::citation::LocatorType;
+    match var {
+        NumberVariable::Volume => Some(LocatorType::Volume),
+        NumberVariable::Pages => Some(LocatorType::Page),
+        NumberVariable::ChapterNumber => Some(LocatorType::Chapter),
+        NumberVariable::NumberOfPages => Some(LocatorType::Page),
+        NumberVariable::NumberOfVolumes => Some(LocatorType::Volume),
+        NumberVariable::Number
+        | NumberVariable::DocketNumber
+        | NumberVariable::PatentNumber
+        | NumberVariable::StandardNumber
+        | NumberVariable::ReportNumber => Some(LocatorType::Number),
+        NumberVariable::Issue => Some(LocatorType::Issue),
+        _ => None,
+    }
+}
+
+pub fn check_plural(value: &str, _locator_type: &citum_schema::citation::LocatorType) -> bool {
+    // Simple heuristic: if contains ranges or separators, it's plural.
+    // "1-10", "1, 3", "1 & 3"
+    value.contains('–') || value.contains('-') || value.contains(',') || value.contains('&')
+}
+
+/// Format a page range according to the specified format.
+///
+/// Formats: expanded (default), minimal, minimal-two, chicago, chicago-16
+pub fn format_page_range(
+    pages: &str,
+    format: Option<&citum_schema::options::PageRangeFormat>,
+) -> String {
+    use citum_schema::options::PageRangeFormat;
+
+    // First, replace hyphen with en-dash
+    let pages = pages.replace("-", "–");
+
+    // If no range or no format specified, return as-is
+    let format = match format {
+        Some(f) => f,
+        None => return pages, // Default: just convert to en-dash
+    };
+
+    // Check if this is a range (contains en-dash)
+    let parts: Vec<&str> = pages.split('–').collect();
+    if parts.len() != 2 {
+        return pages; // Not a simple range
+    }
+
+    let start = parts[0].trim();
+    let end = parts[1].trim();
+
+    // Parse as numbers
+    let start_num: Option<u32> = start.parse().ok();
+    let end_num: Option<u32> = end.parse().ok();
+
+    match (start_num, end_num) {
+        (Some(s), Some(e)) if e > s => {
+            let formatted_end = match format {
+                PageRangeFormat::Expanded => end.to_string(),
+                PageRangeFormat::Minimal => format_minimal(start, end, 1),
+                PageRangeFormat::MinimalTwo => format_minimal(start, end, 2),
+                PageRangeFormat::Chicago | PageRangeFormat::Chicago16 => format_chicago(s, e),
+                _ => end.to_string(), // Future variants: default to expanded
+            };
+            format!("{}–{}", start, formatted_end)
+        }
+        _ => pages, // Can't parse or invalid range
+    }
+}
+
+/// Minimal format: keep only differing digits, with minimum min_digits
+pub fn format_minimal(start: &str, end: &str, min_digits: usize) -> String {
+    let start_chars: Vec<char> = start.chars().collect();
+    let end_chars: Vec<char> = end.chars().collect();
+
+    if start_chars.len() != end_chars.len() {
+        return end.to_string();
+    }
+
+    // Find first differing position
+    let mut first_diff = 0;
+    for (i, (s, e)) in start_chars.iter().zip(end_chars.iter()).enumerate() {
+        if s != e {
+            first_diff = i;
+            break;
+        }
+    }
+
+    // Keep at least min_digits from the end
+    let keep_from = first_diff.min(end_chars.len().saturating_sub(min_digits));
+    end_chars[keep_from..].iter().collect()
+}
+
+/// Chicago Manual of Style page range format
+pub fn format_chicago(start: u32, end: u32) -> String {
+    // Chicago rules (simplified from CMOS 17th):
+    // - Under 100: use all digits (3–10, 71–72, 96–117)
+    // - 100+, same hundreds: use changed part only for 2+ digits (107–8, 321–28, 1536–38)
+    // - Different hundreds: use all digits (107–108, 321–328 if change of hundreds)
+
+    if start < 100 || end < 100 {
+        return end.to_string();
+    }
+
+    let start_str = start.to_string();
+    let end_str = end.to_string();
+
+    if start_str.len() != end_str.len() {
+        return end_str;
+    }
+
+    // Check if same hundreds
+    let start_prefix = start / 100;
+    let end_prefix = end / 100;
+
+    if start_prefix != end_prefix {
+        return end_str; // Different hundreds, use full number
+    }
+
+    // Same hundreds: use minimal-two style
+    format_minimal(&start_str, &end_str, 2)
+}

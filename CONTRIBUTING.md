@@ -13,7 +13,7 @@ CSLN follows an **AI-first development model** that values expertise over implem
 - Refine instructions: suggest improvements to agent personas and skills
 
 **Developers:**
-- Focus on core engine architecture (`csln_processor`), schema design (`csln_core`), and agent tooling
+- Focus on core engine architecture (`citum_engine`), schema design (`citum_schema`), and agent tooling
 - Ensure all Rust code changes pass mandatory pre-commit checks before committing
 
 ## Development Setup

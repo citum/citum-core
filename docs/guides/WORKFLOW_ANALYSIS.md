@@ -129,11 +129,11 @@ Net impact: -1 passing entries
 
 **Goal**: Fast root-cause identification for migration issues
 
-**Implementation**: Add `--debug-variable` flag to `csln_migrate`
+**Implementation**: Add `--debug-variable` flag to `citum_migrate`
 
 **Example Usage**:
 ```bash
-csln_migrate styles-legacy/apa.csl --debug-variable volume
+citum_migrate styles-legacy/apa.csl --debug-variable volume
 
 # Output:
 Variable: volume

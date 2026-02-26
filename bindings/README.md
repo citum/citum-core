@@ -16,13 +16,13 @@ CSLN is designed to be a high-performance, universal citation engine. To support
 The FFI exports are feature-gated to maintain a safe, dependency-free core for Rust users. To build the shared library with FFI support:
 
 ```bash
-cargo build --package csln_processor --release --features ffi
+cargo build --package citum_engine --release --features ffi
 ```
 
 This will produce:
 - `libcsln_processor.so` (Linux)
 - `libcsln_processor.dylib` (macOS)
-- `csln_processor.dll` (Windows)
+- `citum_engine.dll` (Windows)
 
 ## For Developers
 
@@ -52,4 +52,4 @@ The FFI exports the following C-compatible symbols:
 - `csln_render_bibliography_plain`: Render the full bibliography to Plain Text.
 - `csln_string_free`: Free strings allocated by the Rust core.
 
-See `crates/csln_processor/src/ffi.rs` for the full C signatures.
+See `crates/citum-engine/src/ffi.rs` for the full C signatures.

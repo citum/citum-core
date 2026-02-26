@@ -4,7 +4,7 @@
 > `docs/architecture/MIGRATE_ENHANCE_WAVE_RUNBOOK_2026-02-21.md`
 
 ## Goal
-Raise `csln-migrate` conversion quality toward consistently high fidelity and high SQI by selecting legacy styles that maximize migration learning signal, not just dependent-count coverage.
+Raise `citum-migrate` conversion quality toward consistently high fidelity and high SQI by selecting legacy styles that maximize migration learning signal, not just dependent-count coverage.
 
 ## Current Baseline Context
 - Core catalog now includes ~100 styles in `styles/`.
@@ -19,7 +19,7 @@ Raise `csln-migrate` conversion quality toward consistently high fidelity and hi
 Use a weighted selection score for each remaining parent style:
 
 1. Migration-learning value (highest weight)
-- New structural patterns or condition logic likely to expose `csln-migrate` gaps.
+- New structural patterns or condition logic likely to expose `citum-migrate` gaps.
 - Examples: note position logic, ibid/subsequent behavior, no-url variants, no-et-al variants, label-page variants, alphabetical numeric ordering.
 
 2. Family leverage
@@ -125,7 +125,7 @@ Use styleauthor "Priority Batch Migrate+Enhance" workflow with a migrate-first v
   - fidelity
   - SQI
 
-4. Pattern extraction to `csln-migrate`
+4. Pattern extraction to `citum-migrate`
 - Promote repeated fixes (2+ styles) into migration rules/presets.
 - Re-run wave to confirm no fidelity regression.
 
@@ -149,7 +149,7 @@ Escalation rule:
 - Wave 1: completed and merged into branch iteration stream (`642/664`, 96.7% combined).
 - Wave 2 baseline: `450/528` (85.2% combined).
 - Wave 2 post-script checkpoint: `514/528` (97.3% combined).
-- Wave 2 post-Rust `csln-migrate` checkpoint: `518/528` (98.1% combined).
+- Wave 2 post-Rust `citum-migrate` checkpoint: `518/528` (98.1% combined).
 - Wave 2 citations are now fully clean (`144/144`).
 - Wave 4 follow-through (2026-02-26): `oscola` and `oscola-no-ibid` now migrated in `styles/` at `13/13` citations and `32/32` bibliography each.
 
@@ -161,7 +161,7 @@ Escalation rule:
   - `codex/migrate-enhance-wave3-author-date`
 - PR approach:
   - one PR per wave for reviewable diffs
-  - final synthesis PR for `csln-migrate` rule/preset extraction
+  - final synthesis PR for `citum-migrate` rule/preset extraction
 
 ## Assumptions (unless changed)
 - Treat `apa` as already represented by `apa-7th`; do not spend a slot on `apa` alias conversion.

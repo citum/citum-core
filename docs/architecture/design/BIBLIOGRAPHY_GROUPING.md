@@ -401,12 +401,12 @@ groups:
 ## Implementation Roadmap
 
 1. **Schema Extension** (2 days)
-   - Add types to `csln_core/src/lib.rs`
+   - Add types to `citum_schema/src/lib.rs`
    - Generate JSON schema
    - Add tests for YAML parsing
 
 2. **Selector Logic** (3 days)
-   - Create `csln_processor/src/grouping/selector.rs`
+   - Create `citum_engine/src/grouping/selector.rs`
    - Implement predicate evaluation
    - Add unit tests for selector matching
 

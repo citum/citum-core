@@ -13,8 +13,8 @@ Working on the citation and bibliography **rendering engine**.
 ## Key Crates
 | Crate | Role |
 |-------|------|
-| `csln_processor` | Rendering engine (consumed via `csln` CLI) |
-| `csln_core` | Types consumed by the processor (Style, Template, Locale) |
+| `citum_engine` | Rendering engine (consumed via `csln` CLI) |
+| `citum_schema` | Types consumed by the processor (Style, Template, Locale) |
 
 ## Core Principles
 - **Declarative Over Procedural**: Flat YAML templates, no `<choose>/<if>` logic.
@@ -23,7 +23,7 @@ Working on the citation and bibliography **rendering engine**.
 - **Three-tier options**: Global → context-specific (citation/bibliography) → template-level overrides.
 
 ## Key Binaries & Scripts
-- `cargo run --bin csln -- render refs -b references.json -s styles/apa-7th.yaml` — main rendering entry point
+- `cargo run --bin citum-cli -- render refs -b references.json -s styles/apa-7th.yaml` — main rendering entry point
 - `node scripts/oracle.js styles-legacy/apa.csl` — verify against citeproc-js
 - `./scripts/workflow-test.sh styles-legacy/apa.csl` — end-to-end impact analysis
 

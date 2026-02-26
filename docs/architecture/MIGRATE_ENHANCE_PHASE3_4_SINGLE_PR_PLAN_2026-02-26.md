@@ -4,13 +4,13 @@
 
 This plan is explicitly aligned with CSLN project principles:
 
-1. Improve `csln-migrate` so future migrations are fully automated.
+1. Improve `citum-migrate` so future migrations are fully automated.
 2. Raise existing `styles/` toward `>= 0.95` fidelity and `>= 0.90` SQI.
 3. Do not add direct CSL 1.0 support to the processor as a project goal.
 
 ### Out of Scope
 
-1. No runtime CSL 1.0 (`.csl`) processing mode in `csln_processor`.
+1. No runtime CSL 1.0 (`.csl`) processing mode in `citum_engine`.
 2. No processor-side legacy condition engine.
 3. No architectural compromises to CSLN declarative design.
 
@@ -31,7 +31,7 @@ Source: `node scripts/report-core.js` run at commit `136ecbb` on 2026-02-26 (`/t
 
 1. Start each target batch from fresh rerun baseline and capture before metrics.
 2. Work by style family and close reusable pattern gaps first.
-3. Prefer `csln-migrate` rule/preset improvements over style-specific YAML edits.
+3. Prefer `citum-migrate` rule/preset improvements over style-specific YAML edits.
 4. Use per-style patches only when safe generalization is not possible.
 5. No fidelity regressions allowed.
 
@@ -63,7 +63,7 @@ Source: `node scripts/report-core.js` run at commit `136ecbb` on 2026-02-26 (`/t
 2. Capture baseline triplet per style:
    - seeded baseline
    - edited output
-   - fresh rerun output from `csln-migrate`
+   - fresh rerun output from `citum-migrate`
 3. Build cluster frequency tables (citation IDs + bibliography component diffs).
 4. Promote only repeated patterns (2+ styles) to engine-level fixes.
 
@@ -89,15 +89,15 @@ Processor rule in this PR:
 
 Likely files/modules:
 
-1. `crates/csln_migrate/src/main.rs`
-2. `crates/csln_migrate/src/upsampler.rs`
-3. `crates/csln_migrate/src/options_extractor/processing.rs`
-4. `crates/csln_migrate/src/options_extractor/bibliography.rs`
-5. `crates/csln_migrate/src/passes/*`
-6. `crates/csln_migrate/src/template_resolver.rs`
+1. `crates/citum-migrate/src/main.rs`
+2. `crates/citum-migrate/src/upsampler.rs`
+3. `crates/citum-migrate/src/options_extractor/processing.rs`
+4. `crates/citum-migrate/src/options_extractor/bibliography.rs`
+5. `crates/citum-migrate/src/passes/*`
+6. `crates/citum-migrate/src/template_resolver.rs`
 7. `scripts/merge-migration.js`
 8. `scripts/lib/template-inferrer.js`
-9. `crates/csln_processor/src/processor/mod.rs` (only if needed for parity)
+9. `crates/citum-engine/src/processor/mod.rs` (only if needed for parity)
 
 ## Phase 3: Portfolio Lift and Stabilization
 

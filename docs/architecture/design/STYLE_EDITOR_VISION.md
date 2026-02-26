@@ -53,7 +53,7 @@ Export to YAML or JSON; share links. *(User account persistence feasibility TBD)
 | WASM only | 🤔 Viable but limited |
 | **Separate repo + published crates** | ✅ Clean separation |
 
-**Core crates** (`csln_core`, `csln_processor`) stay here.
+**Core crates** (`citum_schema`, `citum_engine`) stay here.
 **Web server** lives in separate deployment-focused repo.
 
 ## API Surface Required
@@ -97,7 +97,7 @@ GET  /examples/:field       # Field-specific references
 - [Issue #28: MakeCSL Vision](https://github.com/bdarcus/csln/issues/28)
 - [Style Editor Repository](https://github.com/bdarcus/style-editor) - The web platform companion to this repository
 - [PERSONAS.md](../PERSONAS.md) - stakeholder alignment
-- [options.rs](../../../crates/csln_core/src/options.rs) - configuration model
+- [options.rs](../../../crates/citum-schema/src/options.rs) - configuration model
 
 ---
 

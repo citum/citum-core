@@ -28,7 +28,7 @@ and concrete style YAML files + test fixtures for each family.
 
 ### Pending (Dependencies)
 
-- csl26-mlt2: resolve_multilingual_string/name in csln_processor (HIGH - blocks all multilingual styles)
+- csl26-mlt2: resolve_multilingual_string/name in citum_engine (HIGH - blocks all multilingual styles)
 - csl26-mlt3: preferred-transliteration priority list field
 - csl26-mlt4: CSL-M/Juris-M test fixture extraction
 - csl26-extg: Document-level grouping override (Djot frontmatter/CLI)
@@ -363,9 +363,9 @@ csl26-group (COMPLETED)
 - `/Users/brucedarcus/Code/csl26/docs/architecture/MULTILINGUAL.md`
 - `/Users/brucedarcus/Code/csl26/docs/architecture/design/BIBLIOGRAPHY_GROUPING.md`
 - `/Users/brucedarcus/Code/csl26/docs/architecture/DISAMBIGUATION_MULTILINGUAL_GROUPING.md`
-- `/Users/brucedarcus/Code/csl26/crates/csln_core/src/options/multilingual.rs`
-- `/Users/brucedarcus/Code/csl26/crates/csln_core/src/grouping.rs`
-- `/Users/brucedarcus/Code/csl26/crates/csln_processor/src/grouping/selector.rs`
-- `/Users/brucedarcus/Code/csl26/crates/csln_processor/src/grouping/sorting.rs`
+- `/Users/brucedarcus/Code/csl26/crates/citum-schema/src/options/multilingual.rs`
+- `/Users/brucedarcus/Code/csl26/crates/citum-schema/src/grouping.rs`
+- `/Users/brucedarcus/Code/csl26/crates/citum-engine/src/grouping/selector.rs`
+- `/Users/brucedarcus/Code/csl26/crates/citum-engine/src/grouping/sorting.rs`
 - biblatex-iso690 documentation ([PDF](http://mirrors.ibiblio.org/CTAN/macros/latex/contrib/biblatex-contrib/biblatex-iso690/biblatex-iso690.pdf))
 - Juris-M tutorial ([docs](https://juris-m.readthedocs.io/en/latest/tutorial.html))

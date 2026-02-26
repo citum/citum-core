@@ -11,8 +11,8 @@ Working on the **CSL 1.0 → CSLN conversion** pipeline.
 ## Key Crates
 | Crate | Role |
 |-------|------|
-| `csln_migrate` | Hybrid migration: XML options extractor + template generator |
-| `csl_legacy` | CSL 1.0 XML parser |
+| `citum_migrate` | Hybrid migration: XML options extractor + template generator |
+| `csl-legacy` | CSL 1.0 XML parser |
 
 ## Key Scripts
 | Script | Purpose |

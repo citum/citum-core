@@ -92,9 +92,9 @@
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
                     href="compat.html">Compat</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="https://github.com/bdarcus/csl26">GitHub</a>
+                    href="https://github.com/citum/citum-core">GitHub</a>
                 <a class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded font-medium text-sm flex items-center gap-2 transition-all"
-                    href="https://github.com/bdarcus/csl26">
+                    href="https://github.com/citum/citum-core">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                         <path
                             d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z">
@@ -448,7 +448,7 @@ Structured: [@kuhn1962, section: 5].</pre>
                         <strong class="text-slate-900">Key Features:</strong>
                         First-match semantics prevent duplication. Selectors support type matching, field matching
                         (language, keywords), citation status (visible/silent), and negation for fallback groups. See <a
-                            href="https://github.com/bdarcus/csl26/blob/main/docs/architecture/design/BIBLIOGRAPHY_GROUPING.md"
+                            href="https://github.com/citum/citum-core/blob/main/docs/architecture/design/BIBLIOGRAPHY_GROUPING.md"
                             class="text-primary hover:underline">design document</a> for full details.
                     </div>
                 </div>
@@ -1048,7 +1048,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                 <div class="bg-slate-900 p-6 overflow-x-auto">
                     <pre class="font-mono text-sm text-slate-300 leading-relaxed">
 <span class="text-slate-500"># 1. Build the shared library</span>
-<span class="text-primary">$</span> cargo build -p csln_processor --release --features ffi
+<span class="text-primary">$</span> cargo build -p citum_engine --release --features ffi
 
 <span class="text-slate-500"># 2. Compile your document</span>
 <span class="text-primary">$</span> CSLN_LIB=$(pwd)/target/release lualatex --shell-escape paper.tex</pre>
@@ -1064,7 +1064,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                     <div class="text-sm text-slate-600 leading-relaxed">
                         <strong class="text-slate-900">Proof-of-concept status:</strong>
                         Currently targets macOS and Linux. A full working example document is available in
-                        <a href="https://github.com/bdarcus/csl26/tree/main/bindings/latex"
+                        <a href="https://github.com/citum/citum-core/tree/main/bindings/latex"
                             class="text-primary hover:underline">bindings/latex/</a>.
                         The <code class="text-xs bg-slate-200 px-1 rounded">&amp;</code> conjunction in
                         two-author citations is correctly escaped for LuaLaTeX output.
@@ -1143,7 +1143,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                         Generation Command (Optional Feature)
                     </h4>
                     <div class="bg-slate-900 rounded-lg p-4 font-mono text-xs text-slate-300 overflow-x-auto">
-                        <span class="text-primary">$</span> cargo run --bin csln --features schema -- schema &gt;
+                        <span class="text-primary">$</span> cargo run --bin citum-cli --features schema -- schema &gt;
                         csln.schema.json
                     </div>
                     <p class="text-xs text-slate-500 mt-2 italic">
@@ -1213,7 +1213,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                             in &lt;head&gt;)</div>
                         <div class="bg-slate-900 rounded p-3 overflow-x-auto">
                             <pre
-                                class="font-mono text-xs text-emerald-400">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bdarcus/csl26@main/docs/assets/csln-interactive.css"&gt;</pre>
+                                class="font-mono text-xs text-emerald-400">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/citum/citum-core@main/docs/assets/csln-interactive.css"&gt;</pre>
                         </div>
                     </div>
                     <div>
@@ -1221,7 +1221,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                             before &lt;/body&gt;)</div>
                         <div class="bg-slate-900 rounded p-3 overflow-x-auto">
                             <pre
-                                class="font-mono text-xs text-emerald-400">&lt;script src="https://cdn.jsdelivr.net/gh/bdarcus/csl26@main/docs/assets/csln-interactive.js"&gt;&lt;/script&gt;</pre>
+                                class="font-mono text-xs text-emerald-400">&lt;script src="https://cdn.jsdelivr.net/gh/citum/citum-core@main/docs/assets/csln-interactive.js"&gt;&lt;/script&gt;</pre>
                         </div>
                     </div>
                 </div>
@@ -1265,7 +1265,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                     </a>
                 </div>
                 <div class="flex gap-8 text-sm font-medium text-slate-500">
-                    <a class="hover:text-primary transition-colors" href="https://github.com/bdarcus/csl26">GitHub</a>
+                    <a class="hover:text-primary transition-colors" href="https://github.com/citum/citum-core">GitHub</a>
                     <a class="hover:text-primary transition-colors" href="index.html#roadmap">Status</a>
                     <a class="hover:text-primary transition-colors" href="examples.html">Examples</a>
                     <a class="hover:text-primary transition-colors" href="compat.html">Compat</a>

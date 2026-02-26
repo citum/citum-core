@@ -9,7 +9,7 @@ CSLN uses **independent versioning** for code and schema to maintain clarity and
 | Track | What | Version Source | Automation |
 |-------|------|----------------|------------|
 | **Code** | Rust crates (processor, core library, CLI) | `Cargo.toml` workspace version | Fully automated via release-plz |
-| **Schema** | Style YAML format specification | `Style.version` default in `csln_core/src/lib.rs` | Semi-automated (manual bump + validation) |
+| **Schema** | Style YAML format specification | `Style.version` default in `citum_schema/src/lib.rs` | Semi-automated (manual bump + validation) |
 
 ### Why Two Tracks?
 
@@ -81,7 +81,7 @@ Tracks reach 1.0 independently based on their own stability criteria:
 
 ### Current Schema Version
 
-Check the default schema version in `../crates/csln_core/src/lib.rs`:
+Check the default schema version in `../crates/citum-schema/src/lib.rs`:
 
 ```rust
 fn default_version() -> String {
@@ -120,14 +120,14 @@ Use the `../scripts/bump-schema.sh` script to update the schema version:
 ./../scripts/bump-schema.sh 1.1.0
 
 # What it does:
-# 1. Updates default_version() in csln_core/src/lib.rs
+# 1. Updates default_version() in citum_schema/src/lib.rs
 # 2. Validates all styles parse correctly with new version
 # 3. Updates ./SCHEMA_VERSIONING.md with timestamp
 # 4. Creates git tag: schema-v1.1.0
 ```
 
 **Manual process:**
-1. Update `default_version()` in `../crates/csln_core/src/lib.rs`
+1. Update `default_version()` in `../crates/citum-schema/src/lib.rs`
 2. Run `cargo test` to ensure all styles parse
 3. Update this file with schema changelog entry
 4. Commit with message: `chore(schema): bump schema version to X.Y.Z`
@@ -164,7 +164,7 @@ Users encounter versions in different contexts:
 $ csln --version
 csln 0.2.3
 
-$ cargo run --bin csln --features schema -- schema style
+$ cargo run --bin citum-cli --features schema -- schema style
 # prints style JSON Schema to stdout
 ```
 

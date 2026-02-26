@@ -10,7 +10,7 @@ model: sonnet
 ## Use This Skill When
 - The task is portfolio migration (for example: next 5 or 10 styles).
 - You need repeatable before/after/rerun metrics.
-- You want concrete recommendations for `csln_migrate` improvements from observed gaps.
+- You want concrete recommendations for `citum_migrate` improvements from observed gaps.
 
 ## Input Contract
 - Legacy style path(s) under `styles-legacy/`.
@@ -23,12 +23,12 @@ model: sonnet
 - Metrics table per style:
   - baseline (seeded)
   - enhanced (edited)
-  - rerun (fresh `csln-migrate` for comparison)
+  - rerun (fresh `citum-migrate` for comparison)
 - List of migration-pattern gaps and recommended converter/preset follow-up.
 
 ## Workflow
 1. Select next priority wave.
-2. Seed with migration baseline (`scripts/prep-migration.sh` or `csln-migrate`).
+2. Seed with migration baseline (`scripts/prep-migration.sh` or `citum-migrate`).
 3. Capture baseline metrics (`node scripts/report-core.js`, `node scripts/oracle.js ... --json`).
 4. Run iterative style fixes with fidelity-first ordering.
 5. Re-run migration for apples-to-apples comparison.

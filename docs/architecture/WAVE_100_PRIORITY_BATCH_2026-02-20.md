@@ -6,7 +6,7 @@ styles.
 
 ## Batch Metrics
 
-Edited styles (with preset extraction + citation sync from `csln-migrate`):
+Edited styles (with preset extraction + citation sync from `citum-migrate`):
 - Citations: `607/696` (87.2%)
 - Bibliography: `1722/1824` (94.4%)
 - Combined fidelity: `2329/2520` (92.4%)

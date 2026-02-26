@@ -41,10 +41,10 @@ WASM is not just a browser technology—it's a universal compilation target for 
 
 ### Tier 1: Core WASM Compatibility
 
-**Purpose:** Ensure csln_processor compiles to wasm32-unknown-unknown without code changes.
+**Purpose:** Ensure citum_engine compiles to wasm32-unknown-unknown without code changes.
 
 **Approach:**
-1. Add `crate-type = ["cdylib", "rlib"]` to csln_processor Cargo.toml
+1. Add `crate-type = ["cdylib", "rlib"]` to citum_engine Cargo.toml
 2. Feature-gate filesystem I/O (already minimal—only in CLI crates)
 3. Audit dependencies for no_std/WASM support
 4. Add wasm32-unknown-unknown to CI build matrix
@@ -191,7 +191,7 @@ export enum WasmErrorKind {
 ## Implementation Roadmap
 
 ### Phase 1: WASM Compatibility (1 week)
-1. Add `crate-type = ["cdylib", "rlib"]` to csln_processor
+1. Add `crate-type = ["cdylib", "rlib"]` to citum_engine
 2. Create csln_wasm crate with basic wasm-bindgen setup
 3. Add wasm32-unknown-unknown to CI (.github/workflows/ci.yml)
 4. Validate all dependencies compile to WASM
@@ -306,7 +306,7 @@ WASM support should be implemented when **any** of these conditions are met:
 ## Success Metrics
 
 **Tier 1 (WASM Compatibility):**
-- [ ] csln_processor compiles to wasm32-unknown-unknown
+- [ ] citum_engine compiles to wasm32-unknown-unknown
 - [ ] All tests pass in WASM environment
 - [ ] Zero code changes to core processor
 

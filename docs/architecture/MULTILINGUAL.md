@@ -17,7 +17,7 @@ This document outlines the architectural design for adding "elegant" multilingua
 
 ## 1. Data Model
 
-The core data model in `csln_core` will be updated to support **Parallel Metadata**.
+The core data model in `citum_schema` will be updated to support **Parallel Metadata**.
 
 ### 1.1 `Contributor` and `String` Fields
 

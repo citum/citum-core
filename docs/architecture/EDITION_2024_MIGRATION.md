@@ -33,18 +33,18 @@ motivations:
 `Cargo.toml`: `edition = "2021"` -> `edition = "2024"` (propagates to all 7 member crates via
 `[workspace.package]`).
 
-### `csln_processor/src/ffi.rs`
+### `citum_engine/src/ffi.rs`
 
 - All `#[no_mangle]` replaced with `#[unsafe(no_mangle)]` (edition 2024 requirement).
 - All unsafe operations inside `unsafe fn` bodies wrapped in explicit `unsafe {}` blocks:
   `CStr::from_ptr()`, `&*processor` raw pointer derefs, `Box::from_raw()`, `CString::from_raw()`.
 
-### `csln_core/src/template.rs`
+### `citum_schema/src/template.rs`
 
 - `schemars::gen::SchemaGenerator` -> `schemars::r#gen::SchemaGenerator` because `gen` is now a
   reserved keyword in edition 2024. The `r#` prefix escapes it as a raw identifier.
 
-### `csln_migrate` (multiple files)
+### `citum_migrate` (multiple files)
 
 - Removed `ref mut` from patterns in `if let` / `match` arms that operate on `&mut T` values
   (e.g., `get_mut()` returns). Edition 2024 disallows explicit borrows within implicitly-borrowing
@@ -54,7 +54,7 @@ motivations:
 
 ~80 `collapsible_if` lints were fixed across the codebase using `cargo clippy --fix`. These were
 pre-existing style issues now enforced as errors by the updated clippy version shipping with
-Rust 1.85. Fixed files span `csln_migrate`, `csln_processor`, and `csln_core`.
+Rust 1.85. Fixed files span `citum_migrate`, `citum_engine`, and `citum_schema`.
 
 ## Why Not Async?
 
@@ -99,7 +99,7 @@ synchronous processor. Design goals:
   for interactive editors.
 - JSON-over-stdin/stdout or HTTP (axum) API surface.
 - Shares the synchronous processor as a library dependency -- no async in the hot path.
-- Keeps `csln_processor` FFI-safe and dependency-minimal.
+- Keeps `citum_engine` FFI-safe and dependency-minimal.
 
 This is reflected in the "JSON Server Mode (Roadmap)" card on the project website.
 

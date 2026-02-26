@@ -235,7 +235,7 @@ bibliography:
 
 ### Phase 1: Define Preset Vocabulary
 
-Add preset enums to `csln_core::options`:
+Add preset enums to `citum_schema::options`:
 
 ```rust
 /// Processing mode presets
@@ -329,7 +329,7 @@ This is **core infrastructure** for:
 
 ### Phase 3: Migration Updates
 
-Update `csln_migrate` to:
+Update `citum_migrate` to:
 1. Detect when a style matches a known preset pattern
 2. Emit preset names instead of fully-expanded configuration
 3. For simple dependent styles, emit preset-only styles
@@ -457,15 +457,15 @@ The CSLN approach separates "what to render" (templates) from "how to render" (o
 ### Completed ✅
 
 1. **Phase 1: Preset vocabulary** (PR #37)
-   - Added `ContributorPreset`, `DatePreset`, `TitlePreset` enums in `csln_core::presets`
+   - Added `ContributorPreset`, `DatePreset`, `TitlePreset` enums in `citum_schema::presets`
    - Each preset has a `config()` method to expand to concrete values
 
 2. **Phase 2: Embedded templates** (PR #38)
-   - Added `csln_core::embedded` module (always included)
+   - Added `citum_schema::embedded` module (always included)
    - Pre-built citation and bibliography templates for APA, Chicago, Vancouver, IEEE, Harvard
 
 3. **Phase 3: Migration updates** (PR #40)
-   - Added `csln_migrate::preset_detector` module
+   - Added `citum_migrate::preset_detector` module
    - Detection functions: `detect_contributor_preset()`, `detect_title_preset()`, `detect_date_preset()`
 
 4. **Expose embedded templates + Processor Expansion** (PR #45)

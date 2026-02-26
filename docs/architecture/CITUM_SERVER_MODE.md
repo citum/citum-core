@@ -13,16 +13,16 @@ an HTTP server there conflates two fundamentally different runtime models.
 
 ---
 
-## Decision: Dedicated `citum-server` Binary Crate
+## Decision: Dedicated `citum-server` Repository
 
-The server mode belongs in a new `citum-server` binary crate within the
-existing workspace. Not as a subcommand on `citum-cli`, and not in a separate
-repository.
+The server mode belongs in a new `citum/citum-server` repository. It should be
+implemented as a dedicated binary crate there, not as a subcommand on
+`citum-cli` in `citum-core`.
 
 **Rationale:**
 - CLI is a batch tool with synchronous I/O; a server has a different lifecycle
   (long-running process, connection management, graceful shutdown)
-- A dedicated crate allows independent binary packaging and versioning
+- A dedicated repository allows independent release cadence and CI
 - Maps directly to the `citum-bindings` layer planned in Phase 2 of the
   modularization plan — server and bindings both depend only on `citum-engine`
 - Async (tokio) can be an opt-in feature flag; sync builds remain possible for
@@ -33,15 +33,15 @@ repository.
 ```
 citum-schema    (no legacy deps)
      |
-citum-engine  ---> citum-schema
-     |                   |
-citum-server ------------|   [new; engine + schema only, no migrate/legacy deps]
-     |
-citum-migrate ---> citum-schema, csl-legacy
-     |
-citum-cli     ---> citum-engine, citum-migrate
-     |
-citum-bindings --> citum-engine  [cdylib/wasm, Phase 2]
+citum-core repo:
+  citum-schema
+  citum-engine  ---> citum-schema
+  citum-migrate ---> citum-schema, csl-legacy
+  citum-cli     ---> citum-engine, citum-migrate
+  citum-bindings --> citum-engine  [Phase 2]
+
+citum-server repo:
+  citum-server  ---> citum-engine, citum-schema
 ```
 
 ### Crate Map Update
@@ -50,7 +50,7 @@ citum-bindings --> citum-engine  [cdylib/wasm, Phase 2]
 |-----------------|------------|--------------------------------------------|
 | `citum-schema`   | Yes        | Schema source of truth                     |
 | `citum-engine`   | Yes        | Rendering engine                           |
-| `citum-server`   | Yes (bin)  | JSON-RPC + optional HTTP server            |
+| `citum-server`   | Yes (bin)  | Lives in `citum/citum-server` repo         |
 | `citum-migrate`  | No         | Internal tooling                           |
 | `csl-legacy`     | No         | Internal tooling                           |
 | `csln-edtf`      | Yes        | Potentially standalone                     |
@@ -116,12 +116,12 @@ same dispatcher logic as the stdin/stdout handler — no duplication.
 
 | Operation | Path | Purpose |
 |-----------|------|---------|
-| CREATE | `crates/citum-server/Cargo.toml` | Crate manifest; deps on engine + schema only; optional async/http features |
-| CREATE | `crates/citum-server/src/main.rs` | Entry point; arg parsing (mode flag: `--http`, `--port`) |
-| CREATE | `crates/citum-server/src/rpc.rs` | JSON-RPC stdin/stdout handler |
-| CREATE | `crates/citum-server/src/http.rs` | HTTP handler (feature-gated behind `http`) |
-| MODIFY | `Cargo.toml` | Add `crates/citum-server` to workspace members |
-| MODIFY | `docs/architecture/CITUM_MODULARIZATION.md` | Add `citum-server` to crate map and dependency graph |
+| CREATE | `citum-server/Cargo.toml` | Crate manifest; deps on `citum-engine` + `citum-schema` only |
+| CREATE | `citum-server/src/main.rs` | Entry point; arg parsing (mode flag: `--http`, `--port`) |
+| CREATE | `citum-server/src/rpc.rs` | JSON-RPC stdin/stdout handler |
+| CREATE | `citum-server/src/http.rs` | HTTP handler (feature-gated behind `http`) |
+| CREATE | `.github/workflows/*` | CI for fmt, clippy, test in server repo |
+| MODIFY | `docs/architecture/CITUM_MODULARIZATION.md` | Reflect external server repo placement |
 
 ---
 
@@ -130,7 +130,7 @@ same dispatcher logic as the stdin/stdout handler — no duplication.
 - Use `serde_json` for request/response types (already a workspace dep)
 - Protocol: newline-delimited JSON on stdin/stdout (same as citeproc-rs)
 - No `clap` in library modules; minimal arg parsing in `main.rs` only
-- The `Processor` from `csln_processor` (future: `citum-engine`) is sync;
+- The `Processor` from `citum_engine` (future: `citum-engine`) is sync;
   the `async` feature wraps it in `tokio::task::spawn_blocking`
 - Error responses use `{ "id": N, "error": "message" }` envelope
 - HTTP feature uses `axum`; add to workspace deps only when feature is enabled
@@ -153,8 +153,8 @@ different deployment targets:
 | Transport | JSON-RPC / HTTP | Rust FFI / wasm-bindgen |
 | Async | Opt-in feature | Opt-in feature |
 
-Implement `citum-server` first (simpler, no FFI complexity). Use it to
-validate the API surface before stabilizing `citum-bindings`.
+Implement `citum-server` first (simpler, no FFI complexity), but in its own
+repo. Use it to validate the API surface before stabilizing `citum-bindings`.
 
 ---
 

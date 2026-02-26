@@ -16,7 +16,7 @@
 
 ## Integration Test Organization
 
-Integration tests for the `csln_processor` crate are organized into functional targets to allow for focused testing:
+Integration tests for the `citum_engine` crate are organized into functional targets to allow for focused testing:
 
 - **citations**: Citation rendering, disambiguation, and group logic.
 - **bibliography**: Bibliography rendering, sorting, and author substitution.
@@ -37,7 +37,7 @@ cargo nextest run --test citations
 1. **Title/subtitle separation** - CSL 1.0 treats as single string
 2. **EDTF dates** - CSL JSON uses simple date-parts arrays
 3. **Scoped multilingual fields** - CSL 1.0 doesn't support (csln#66)
-4. **Enhanced citation model** - mode, locator types (from csln_core)
+4. **Enhanced citation model** - mode, locator types (from citum_schema)
 5. **Math in variables** - Need proper encoding (csln#64)
 6. **Structured name particles** - More nuanced than CSL JSON
 
@@ -72,4 +72,4 @@ We're deferring CSLN-native tests to focus on CSL 1.0 parity. This is the right 
 ## Related
 - csln#64 - Math in variables
 - csln#66 - Multilingual support
-- Citation model in csln_core (mode, locator types)
+- Citation model in citum_schema (mode, locator types)

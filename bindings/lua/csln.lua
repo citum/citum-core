@@ -67,7 +67,7 @@ end
 
 local function shared_lib_name()
     local os_name = detect_os()
-    if os_name == "Windows" then return "csln_processor.dll" end
+    if os_name == "Windows" then return "citum_engine.dll" end
     if os_name == "OSX"     then return "libcsln_processor.dylib" end
     return "libcsln_processor.so"
 end
@@ -119,11 +119,11 @@ end
 local lib, loaded_path, load_errors = resolve_library()
 if lib == nil then
     error(
-        "Failed to load csln_processor shared library. Tried: "
+        "Failed to load citum_engine shared library. Tried: "
             .. table.concat(loaded_path, ", ")
             .. ". Details: "
             .. table.concat(load_errors, " | ")
-            .. ". Ensure it is built with: cargo build --package csln_processor --release --features ffi"
+            .. ". Ensure it is built with: cargo build --package citum_engine --release --features ffi"
     )
 end
 

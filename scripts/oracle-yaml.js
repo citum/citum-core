@@ -45,7 +45,7 @@ function renderWithCslnYaml(yamlPath) {
   let output;
   try {
     output = execSync(
-      `cargo run -q --bin csln -- render refs -b tests/fixtures/references-expanded.json -s "${absYamlPath}" -c .oracle-yaml-citations.json --mode both --show-keys`,
+      `cargo run -q --bin citum-cli -- render refs -b tests/fixtures/references-expanded.json -s "${absYamlPath}" -c .oracle-yaml-citations.json --mode both --show-keys`,
       { cwd: projectRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
     );
   } catch (e) {
