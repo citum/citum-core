@@ -140,9 +140,9 @@
                 <div
                     class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group cursor-text border border-slate-700 shadow-lg text-left">
                     <code
-                        class="font-mono text-emerald-400 text-sm">$ cargo install --git https://github.com/citum/citum-core citum-cli</code>
+                        class="font-mono text-emerald-400 text-sm">$ cargo install --git https://github.com/citum/citum-core --bin citum citum</code>
                     <button class="text-slate-500 hover:text-white transition-colors"
-                        onclick="navigator.clipboard.writeText('cargo install --git https://github.com/citum/citum-core citum-cli')"
+                        onclick="navigator.clipboard.writeText('cargo install --git https://github.com/citum/citum-core --bin citum citum')"
                         title="Copy to clipboard">
                         <span class="material-icons text-base">content_copy</span>
                     </button>
@@ -173,13 +173,13 @@
                     <div class="w-3 h-3 rounded-full bg-slate-300"></div>
                     <div class="w-3 h-3 rounded-full bg-slate-300"></div>
                 </div>
-                <div class="text-xs font-mono text-slate-400">citation_config.citum-cli.yaml</div>
+                <div class="text-xs font-mono text-slate-400">citation_config.citum.yaml</div>
                 <div class="w-12"></div>
             </div>
             <div class="p-8 overflow-x-auto bg-[#fafafa]">
                 <pre class="font-mono text-sm leading-relaxed"><span class="text-indigo-600">info</span>:
   <span class="text-primary">title</span>: <span class="text-emerald-600">"APA 7th Edition (CSLN)"</span>
-  <span class="text-primary">id</span>: <span class="text-emerald-600">"https://www.zotero.org/styles/apa-7th-citum-cli"</span>
+  <span class="text-primary">id</span>: <span class="text-emerald-600">"https://www.zotero.org/styles/apa-7th-citum"</span>
   <span class="text-primary">link</span>: <span class="text-emerald-600">"https://apastyle.apa.org/"</span>
 <span class="text-indigo-600">options</span>:
   <span class="text-primary">processing</span>: <span class="text-emerald-600">author-date</span>
@@ -407,10 +407,10 @@
                             <h4 class="font-bold text-slate-900 mb-2">Render references (HTML)</h4>
                             <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
                                 <code class="font-mono text-sm text-slate-300">
-                                    <span class="text-primary">$</span> citum-cli render refs -b tests/fixtures/references-expanded.json -s mla <span class="text-emerald-400">-f html</span>
+                                    <span class="text-primary">$</span> citum render refs -b tests/fixtures/references-expanded.json -s mla <span class="text-emerald-400">-f html</span>
                                 </code>
                                 <button class="text-slate-500 hover:text-white transition-colors"
-                                    onclick="navigator.clipboard.writeText('citum-cli render refs -b tests/fixtures/references-expanded.json -s mla -f html')"
+                                    onclick="navigator.clipboard.writeText('citum render refs -b tests/fixtures/references-expanded.json -s mla -f html')"
                                     title="Copy to clipboard">
                                     <span class="material-icons text-base">content_copy</span>
                                 </button>
@@ -422,10 +422,10 @@
                             <h4 class="font-bold text-slate-900 mb-2">Render for static sites (Djot)</h4>
                             <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
                                 <code class="font-mono text-sm text-slate-300">
-                                    <span class="text-primary">$</span> citum-cli render refs -b tests/fixtures/references-expanded.json -s mla <span class="text-emerald-400">-f djot</span>
+                                    <span class="text-primary">$</span> citum render refs -b tests/fixtures/references-expanded.json -s mla <span class="text-emerald-400">-f djot</span>
                                 </code>
                                 <button class="text-slate-500 hover:text-white transition-colors"
-                                    onclick="navigator.clipboard.writeText('citum-cli render refs -b tests/fixtures/references-expanded.json -s mla -f djot')"
+                                    onclick="navigator.clipboard.writeText('citum render refs -b tests/fixtures/references-expanded.json -s mla -f djot')"
                                     title="Copy to clipboard">
                                     <span class="material-icons text-base">content_copy</span>
                                 </button>
@@ -437,10 +437,10 @@
                             <h4 class="font-bold text-slate-900 mb-2">Render for LaTeX (Native Escaping)</h4>
                             <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
                                 <code class="font-mono text-sm text-slate-300">
-                                    <span class="text-primary">$</span> citum-cli render refs -b tests/fixtures/references-expanded.json -s mla <span class="text-emerald-400">-f latex</span>
+                                    <span class="text-primary">$</span> citum render refs -b tests/fixtures/references-expanded.json -s mla <span class="text-emerald-400">-f latex</span>
                                 </code>
                                 <button class="text-slate-500 hover:text-white transition-colors"
-                                    onclick="navigator.clipboard.writeText('citum-cli render refs -b tests/fixtures/references-expanded.json -s mla -f latex')"
+                                    onclick="navigator.clipboard.writeText('citum render refs -b tests/fixtures/references-expanded.json -s mla -f latex')"
                                     title="Copy to clipboard">
                                     <span class="material-icons text-base">content_copy</span>
                                 </button>
@@ -452,10 +452,10 @@
                             <h4 class="font-bold text-slate-900 mb-2">Render full document (Djot draft syntax)</h4>
                             <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
                                 <code class="font-mono text-sm text-slate-300">
-                                    <span class="text-primary">$</span> citum-cli render doc examples/document.djot -b examples/document-refs.json -s mla
+                                    <span class="text-primary">$</span> citum render doc examples/document.djot -b examples/document-refs.json -s mla
                                 </code>
                                 <button class="text-slate-500 hover:text-white transition-colors"
-                                    onclick="navigator.clipboard.writeText('citum-cli render doc examples/document.djot -b examples/document-refs.json -s mla')"
+                                    onclick="navigator.clipboard.writeText('citum render doc examples/document.djot -b examples/document-refs.json -s mla')"
                                     title="Copy to clipboard">
                                     <span class="material-icons text-base">content_copy</span>
                                 </button>
@@ -467,10 +467,10 @@
                             <h4 class="font-bold text-slate-900 mb-2">Use a builtin style (no file needed)</h4>
                             <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
                                 <code class="font-mono text-sm text-slate-300">
-                                    <span class="text-primary">$</span> citum-cli render refs -b refs.json <span class="text-emerald-400">-s apa</span>
+                                    <span class="text-primary">$</span> citum render refs -b refs.json <span class="text-emerald-400">-s apa</span>
                                 </code>
                                 <button class="text-slate-500 hover:text-white transition-colors"
-                                    onclick="navigator.clipboard.writeText('citum-cli render refs -b refs.json -s apa')"
+                                    onclick="navigator.clipboard.writeText('citum render refs -b refs.json -s apa')"
                                     title="Copy to clipboard">
                                     <span class="material-icons text-base">content_copy</span>
                                 </button>
@@ -482,10 +482,10 @@
                             <h4 class="font-bold text-slate-900 mb-2">List all embedded styles</h4>
                             <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
                                 <code class="font-mono text-sm text-slate-300">
-                                    <span class="text-primary">$</span> citum-cli styles list
+                                    <span class="text-primary">$</span> citum styles list
                                 </code>
                                 <button class="text-slate-500 hover:text-white transition-colors"
-                                    onclick="navigator.clipboard.writeText('citum-cli styles list')"
+                                    onclick="navigator.clipboard.writeText('citum styles list')"
                                     title="Copy to clipboard">
                                     <span class="material-icons text-base">content_copy</span>
                                 </button>
@@ -497,10 +497,10 @@
                             <h4 class="font-bold text-slate-900 mb-2">Convert to binary (Performance Mode)</h4>
                             <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
                                 <code class="font-mono text-sm text-slate-300">
-                                    <span class="text-primary">$</span> citum-cli convert styles/apa-7th.yaml --output /tmp/apa-7th.cbor
+                                    <span class="text-primary">$</span> citum convert styles/apa-7th.yaml --output /tmp/apa-7th.cbor
                                 </code>
                                 <button class="text-slate-500 hover:text-white transition-colors"
-                                    onclick="navigator.clipboard.writeText('citum-cli convert styles/apa-7th.yaml --output /tmp/apa-7th.cbor')"
+                                    onclick="navigator.clipboard.writeText('citum convert styles/apa-7th.yaml --output /tmp/apa-7th.cbor')"
                                     title="Copy to clipboard">
                                     <span class="material-icons text-base">content_copy</span>
                                 </button>

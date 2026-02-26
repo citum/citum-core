@@ -6,16 +6,16 @@ This guide describes the standard workflow for debugging and fixing rendering is
 
 ```bash
 # Render references with a style (default plain text)
-citum-cli render refs -b references.json -s styles/apa-7th.yaml
+citum render refs -b references.json -s styles/apa-7th.yaml
 
 # Process with reference keys shown for debugging ([ITEM-1] ...)
-citum-cli render refs -b references.json -s styles/apa-7th.yaml --show-keys
+citum render refs -b references.json -s styles/apa-7th.yaml --show-keys
 
 # Convert a YAML style to binary CBOR for performance
-citum-cli convert styles/apa-7th.yaml --output styles/apa-7th.cbor
+citum convert styles/apa-7th.yaml --output styles/apa-7th.cbor
 
 # Generate semantic HTML
-citum-cli render refs -b references.json -s styles/apa-7th.yaml -O html
+citum render refs -b references.json -s styles/apa-7th.yaml -O html
 
 # Test a single style (default: structured diff)
 node ../scripts/oracle.js styles-legacy/apa.csl

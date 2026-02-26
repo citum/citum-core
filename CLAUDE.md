@@ -64,7 +64,7 @@ Transition citation management from CSL 1.0 (procedural XML) to CSLN (declarativ
 ```
 crates/
   csl-legacy/      # CSL 1.0 XML parser
-  citum-cli/            # Main CLI binary
+  citum-cli/            # CLI crate (binary: `citum`)
   citum_schema/       # Types: Style, Template, Options, Locale
   citum_migrate/    # CSL 1.0 → CSLN conversion
   citum_engine/  # Citation/bibliography rendering engine
@@ -137,8 +137,8 @@ node scripts/report-core.js > /tmp/core-report.json && \
   node scripts/check-core-quality.js \
   --report /tmp/core-report.json \
   --baseline scripts/report-data/core-quality-baseline.json
-cargo run --bin citum-cli -- render refs -b tests/fixtures/references-expanded.json -s styles/apa-7th.yaml
-cargo run --bin citum-cli -- schema > citum-cli.schema.json
+cargo run --bin citum -- render refs -b tests/fixtures/references-expanded.json -s styles/apa-7th.yaml
+cargo run --bin citum -- schema > citum.schema.json
 cargo bench --bench rendering                            # Hot path benchmarks
 ```
 

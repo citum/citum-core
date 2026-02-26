@@ -317,7 +317,7 @@ fn run() -> Result<(), Box<dyn Error>> {
         }
         Commands::Doc(args) => {
             eprintln!(
-                "Warning: `csln doc` is deprecated. Use `csln render doc` with positional input."
+                "Warning: `citum doc` is deprecated. Use `citum render doc` with positional input."
             );
             let doc_args = RenderDocArgs {
                 input: args.document,
@@ -332,7 +332,7 @@ fn run() -> Result<(), Box<dyn Error>> {
             run_render_doc(doc_args)
         }
         Commands::Validate(args) => {
-            eprintln!("Warning: `csln validate` is deprecated. Use `csln check --style`.");
+            eprintln!("Warning: `citum validate` is deprecated. Use `citum check --style`.");
             run_check(CheckArgs {
                 style: Some(args.path.display().to_string()),
                 bibliography: Vec::new(),
@@ -404,8 +404,8 @@ fn run_styles_list() -> Result<(), Box<dyn Error>> {
 
     println!();
     println!("Usage:");
-    println!("  csln render refs -s <alias|name> -b refs.json");
-    println!("  csln render doc <doc.dj> -s <alias|name> -b refs.json");
+    println!("  citum render refs -s <alias|name> -b refs.json");
+    println!("  citum render doc <doc.dj> -s <alias|name> -b refs.json");
     Ok(())
 }
 
@@ -551,7 +551,7 @@ fn load_any_style(style_input: &str, no_semantics: bool) -> Result<Style, Box<dy
             msg.push_str(&format!("\n  - {}", s));
         }
     } else {
-        msg.push_str("\n\nUse `csln styles list` to see all available builtin styles.");
+        msg.push_str("\n\nUse `citum styles list` to see all available builtin styles.");
     }
 
     Err(msg.into())
