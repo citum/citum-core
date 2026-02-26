@@ -13,16 +13,16 @@ an HTTP server there conflates two fundamentally different runtime models.
 
 ---
 
-## Decision: Dedicated `citum-server` Repository
+## Decision: Dedicated `citum-server` Binary Crate (In `citum-core`)
 
-The server mode belongs in a new `citum/citum-server` repository. It should be
-implemented as a dedicated binary crate there, not as a subcommand on
-`citum-cli` in `citum-core`.
+The server mode belongs in a dedicated `citum-server` binary crate in the
+`citum-core` workspace. It should not be a subcommand on `citum-cli`, and it
+should not live in `citum-hub` (`style-hub`).
 
 **Rationale:**
 - CLI is a batch tool with synchronous I/O; a server has a different lifecycle
   (long-running process, connection management, graceful shutdown)
-- A dedicated repository allows independent release cadence and CI
+- A dedicated crate keeps boundaries clear while iteration is still fast in one repo
 - Maps directly to the `citum-bindings` layer planned in Phase 2 of the
   modularization plan — server and bindings both depend only on `citum-engine`
 - Async (tokio) can be an opt-in feature flag; sync builds remain possible for
@@ -33,15 +33,15 @@ implemented as a dedicated binary crate there, not as a subcommand on
 ```
 citum-schema    (no legacy deps)
      |
-citum-core repo:
-  citum-schema
-  citum-engine  ---> citum-schema
-  citum-migrate ---> citum-schema, csl-legacy
-  citum-cli     ---> citum-engine, citum-migrate
-  citum-bindings --> citum-engine  [Phase 2]
-
-citum-server repo:
-  citum-server  ---> citum-engine, citum-schema
+citum-engine  ---> citum-schema
+     |                   |
+citum-server ------------|   [new in citum-core; engine + schema only, no migrate/legacy deps]
+     |
+citum-migrate ---> citum-schema, csl-legacy
+     |
+citum-cli     ---> citum-engine, citum-migrate
+     |
+citum-bindings --> citum-engine  [cdylib/wasm, Phase 2]
 ```
 
 ### Crate Map Update
@@ -50,7 +50,7 @@ citum-server repo:
 |-----------------|------------|--------------------------------------------|
 | `citum-schema`   | Yes        | Schema source of truth                     |
 | `citum-engine`   | Yes        | Rendering engine                           |
-| `citum-server`   | Yes (bin)  | Lives in `citum/citum-server` repo         |
+| `citum-server`   | Yes (bin)  | In `citum-core` workspace (Phase 2)        |
 | `citum-migrate`  | No         | Internal tooling                           |
 | `csl-legacy`     | No         | Internal tooling                           |
 | `csln-edtf`      | Yes        | Potentially standalone                     |
@@ -116,12 +116,12 @@ same dispatcher logic as the stdin/stdout handler — no duplication.
 
 | Operation | Path | Purpose |
 |-----------|------|---------|
-| CREATE | `citum-server/Cargo.toml` | Crate manifest; deps on `citum-engine` + `citum-schema` only |
-| CREATE | `citum-server/src/main.rs` | Entry point; arg parsing (mode flag: `--http`, `--port`) |
-| CREATE | `citum-server/src/rpc.rs` | JSON-RPC stdin/stdout handler |
-| CREATE | `citum-server/src/http.rs` | HTTP handler (feature-gated behind `http`) |
-| CREATE | `.github/workflows/*` | CI for fmt, clippy, test in server repo |
-| MODIFY | `docs/architecture/CITUM_MODULARIZATION.md` | Reflect external server repo placement |
+| CREATE | `crates/citum-server/Cargo.toml` | Crate manifest; deps on engine + schema only; optional async/http features |
+| CREATE | `crates/citum-server/src/main.rs` | Entry point; arg parsing (mode flag: `--http`, `--port`) |
+| CREATE | `crates/citum-server/src/rpc.rs` | JSON-RPC stdin/stdout handler |
+| CREATE | `crates/citum-server/src/http.rs` | HTTP handler (feature-gated behind `http`) |
+| MODIFY | `Cargo.toml` | Add `crates/citum-server` to workspace members |
+| MODIFY | `docs/architecture/CITUM_MODULARIZATION.md` | Keep crate map and dependency graph aligned |
 
 ---
 
@@ -153,8 +153,9 @@ different deployment targets:
 | Transport | JSON-RPC / HTTP | Rust FFI / wasm-bindgen |
 | Async | Opt-in feature | Opt-in feature |
 
-Implement `citum-server` first (simpler, no FFI complexity), but in its own
-repo. Use it to validate the API surface before stabilizing `citum-bindings`.
+Implement `citum-server` first (simpler, no FFI complexity). Use it to
+validate the API surface before stabilizing `citum-bindings`. Revisit extraction
+to a separate repo only after API/protocol stabilize and release cadence diverges.
 
 ---
 

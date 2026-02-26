@@ -63,15 +63,14 @@ citum-core repo:
   citum-schema    (no legacy deps: serde, schemars, csln-edtf only)
        |
   citum-engine  ---> citum-schema
+       |                   |
+  citum-server ------------|   [new; engine + schema only, async/http opt-in]
        |
   citum-migrate ---> citum-schema, csl-legacy   [legacy stays internal]
        |
   citum-cli     ---> citum-engine, citum-migrate
        |
   citum-bindings --> citum-engine [cdylib/wasm targets, thin wrapper only]
-
-citum-server repo:
-  citum-server ---> citum-engine, citum-schema
 ```
 
 See [CITUM_SERVER_MODE.md](./CITUM_SERVER_MODE.md) for the full server mode plan.
@@ -87,7 +86,7 @@ See [CITUM_SERVER_MODE.md](./CITUM_SERVER_MODE.md) for the full server mode plan
 | `csln-edtf`      | `csln-edtf`      | Yes        | Potentially standalone         |
 | `citum_analyze`   | `citum-analyze`  | No         | Internal tooling               |
 | `csln` (bin)     | `citum-cli`      | Yes (bin)  | CLI binary                     |
-| *(new, separate repo)* | `citum-server`   | Yes (bin)  | JSON-RPC + optional HTTP server; see [CITUM_SERVER_MODE.md](./CITUM_SERVER_MODE.md) |
+| *(new)*          | `citum-server`   | Yes (bin)  | JSON-RPC + optional HTTP server; see [CITUM_SERVER_MODE.md](./CITUM_SERVER_MODE.md) |
 
 ### Target Workspace Layout
 
@@ -168,10 +167,10 @@ oracle scripts.
 - Clearly document as non-stable / proof-of-concept
 - Establish pattern for future experimental integrations
 
-**P2-3: Extract `citum-server` repository**
-- Create `citum/citum-server` as a standalone repo
-- Depend on published/workspace-consumable `citum-engine` + `citum-schema`
-- Keep server release cadence independent from `citum-core`
+**P2-3 (optional, later): Evaluate `citum-server` extraction**
+- Keep `citum-server` in `citum-core` during early development
+- Reassess extraction only after API/protocol stabilization
+- Extract only if release cadence/tooling needs diverge materially
 
 **Do not** implement FFI tool generation (boltffi or similar) until the
 engine API surface is stable. Pin to the production readiness milestone
