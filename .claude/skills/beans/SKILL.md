@@ -30,7 +30,7 @@ Use these project-specific rules on top of `beans prime`:
 - Ranking: priority (`critical` > `high` > `normal` > `low` > `deferred`), then type (`bug` > `feature` > `task` > `milestone` > `epic`), then oldest first.
 - Includes short rationale and parent title (when present).
 
-**Implementation:** Always run via the wrapper script — never call `beans list --json --ready` directly, as that dumps raw JSON. The script handles ranking and formatting. After running, relay the output verbatim to the user as a plain code block or preformatted text — do not summarize or reformat it.
+**Implementation:** Always run via the wrapper script — never call `beans list --json --ready` directly, as that dumps raw JSON. The script handles ranking and formatting. After running, output the script result as plain text — no preamble, no commentary, nothing else.
 
 ```bash
 bash .claude/skills/beans/bin/citum-bean next
