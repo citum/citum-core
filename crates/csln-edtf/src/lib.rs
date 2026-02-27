@@ -98,6 +98,16 @@ pub struct Date {
     pub time: Option<Time>,
 }
 
+/// Timezone specification for an EDTF datetime.
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum Timezone {
+    /// UTC (Z suffix)
+    Utc,
+    /// Offset in minutes from UTC (positive = east, negative = west)
+    Offset(i16),
+}
+
 /// Basic ISO 8601-style time
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -105,6 +115,7 @@ pub struct Time {
     pub hour: u32,
     pub minute: u32,
     pub second: u32,
+    pub timezone: Option<Timezone>,
 }
 
 use std::fmt;
@@ -211,7 +222,16 @@ impl fmt::Display for Day {
 
 impl fmt::Display for Time {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:02}:{:02}:{:02}", self.hour, self.minute, self.second)
+        write!(f, "{:02}:{:02}:{:02}", self.hour, self.minute, self.second)?;
+        match self.timezone {
+            Some(Timezone::Utc) => write!(f, "Z"),
+            Some(Timezone::Offset(mins)) => {
+                let sign = if mins >= 0 { '+' } else { '-' };
+                let abs = mins.unsigned_abs();
+                write!(f, "{}{:02}:{:02}", sign, abs / 60, abs % 60)
+            }
+            None => Ok(()),
+        }
     }
 }
 
@@ -324,6 +344,27 @@ fn parse_day(input: &mut &str) -> Result<Day, ErrMode<ContextError>> {
     Ok(Day::Day(val))
 }
 
+fn parse_timezone(input: &mut &str) -> Result<Option<Timezone>, ErrMode<ContextError>> {
+    if input.starts_with('Z') {
+        let _ = 'Z'.parse_next(input)?;
+        return Ok(Some(Timezone::Utc));
+    }
+    if input.starts_with('+') || input.starts_with('-') {
+        let sign = opt(alt(('+', '-'))).parse_next(input)?.unwrap_or('+');
+        let h = take(2_usize)
+            .try_map(|s: &str| s.parse::<i16>())
+            .parse_next(input)?;
+        let _ = ':'.parse_next(input)?;
+        let m = take(2_usize)
+            .try_map(|s: &str| s.parse::<i16>())
+            .parse_next(input)?;
+        let total = h * 60 + m;
+        let offset = if sign == '-' { -total } else { total };
+        return Ok(Some(Timezone::Offset(offset)));
+    }
+    Ok(None)
+}
+
 fn parse_time(input: &mut &str) -> Result<Time, ErrMode<ContextError>> {
     let hour = take(2_usize)
         .try_map(|s: &str| s.parse::<u32>())
@@ -336,11 +377,13 @@ fn parse_time(input: &mut &str) -> Result<Time, ErrMode<ContextError>> {
     let second = take(2_usize)
         .try_map(|s: &str| s.parse::<u32>())
         .parse_next(input)?;
+    let timezone = parse_timezone(input)?;
 
     Ok(Time {
         hour,
         minute,
         second,
+        timezone,
     })
 }
 
@@ -501,11 +544,40 @@ mod tests {
             "2023-05/..",
             "../2023-05",
             "Y17000000002",
+            "1985-04-12T23:20:30Z",
+            "2004-01-01T10:10:10+05:30",
         ];
         for case in cases {
             let mut input = case;
             let res = parse(&mut input).unwrap();
             assert_eq!(res.to_string(), case);
         }
+    }
+
+    #[test]
+    fn test_parse_datetime_utc() {
+        let mut input = "1985-04-12T23:20:30Z";
+        let res = parse_date(&mut input).unwrap();
+        let t = res.time.unwrap();
+        assert_eq!(t.hour, 23);
+        assert_eq!(t.minute, 20);
+        assert_eq!(t.second, 30);
+        assert_eq!(t.timezone, Some(Timezone::Utc));
+    }
+
+    #[test]
+    fn test_parse_datetime_offset() {
+        let mut input = "2004-01-01T10:10:10+05:30";
+        let res = parse_date(&mut input).unwrap();
+        let t = res.time.unwrap();
+        assert_eq!(t.timezone, Some(Timezone::Offset(330)));
+    }
+
+    #[test]
+    fn test_parse_datetime_no_tz() {
+        let mut input = "2004-01-01T10:10:10";
+        let res = parse_date(&mut input).unwrap();
+        let t = res.time.unwrap();
+        assert_eq!(t.timezone, None);
     }
 }

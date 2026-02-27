@@ -9,6 +9,17 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+/// Time display format.
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum TimeFormat {
+    /// 12-hour clock with AM/PM (e.g., "11:30 PM")
+    Hour12,
+    /// 24-hour clock (e.g., "23:30")
+    Hour24,
+}
+
 /// Date config: either a preset name or explicit configuration.
 ///
 /// Allows styles to write `dates: long` as shorthand, or provide
@@ -60,6 +71,15 @@ pub struct DateConfig {
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
+    /// Time display format. None suppresses time rendering.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub time_format: Option<TimeFormat>,
+    /// Whether to include seconds in time display (default: false).
+    #[serde(default)]
+    pub show_seconds: bool,
+    /// Whether to include timezone in time display (default: false).
+    #[serde(default)]
+    pub show_timezone: bool,
 }
 
 fn default_range_delimiter() -> String {
@@ -75,6 +95,9 @@ impl Default for DateConfig {
             range_delimiter: default_range_delimiter(),
             open_range_marker: None,
             custom: None,
+            time_format: None,
+            show_seconds: false,
+            show_timezone: false,
         }
     }
 }

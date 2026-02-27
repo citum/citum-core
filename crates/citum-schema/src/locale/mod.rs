@@ -468,6 +468,9 @@ impl Locale {
             seasons: raw.dates.seasons,
             uncertainty_term: raw.dates.uncertainty_term,
             open_ended_term: raw.dates.open_ended_term,
+            am: raw.dates.am,
+            pm: raw.dates.pm,
+            timezone_utc: raw.dates.timezone_utc,
         };
         locale.punctuation_in_quote = punctuation_in_quote;
         // Set locale-specific articles based on language
