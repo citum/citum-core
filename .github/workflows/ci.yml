@@ -34,6 +34,9 @@ jobs:
       - name: Install script dependencies
         run: npm install --prefix scripts
 
+      - name: Check testing infrastructure contracts
+        run: node scripts/check-testing-infra.js
+
       - name: Check formatting
         run: cargo fmt --all -- --check
 

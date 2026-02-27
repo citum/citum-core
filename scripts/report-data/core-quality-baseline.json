@@ -2,6 +2,29 @@
   "generated": "2026-02-19",
   "commit": "eb4dbad",
   "source": "scripts/report-core.js",
+  "metadata": {
+    "timestamp": "2026-02-19",
+    "gitCommit": "eb4dbad",
+    "fixture": "tests/fixtures/references-expanded.json",
+    "styleSelector": "core-styles",
+    "styles": [
+      "american-medical-association",
+      "apa-7th",
+      "chicago-notes",
+      "elsevier-harvard",
+      "elsevier-vancouver",
+      "elsevier-with-titles",
+      "springer-basic-author-date",
+      "springer-basic-brackets",
+      "springer-socpsych-author-date",
+      "springer-vancouver-brackets",
+      "taylor-and-francis-chicago-author-date"
+    ],
+    "generator": "scripts/report-core.js",
+    "extraFixtures": [
+      "tests/fixtures/citations-note-expanded.json"
+    ]
+  },
   "styles": {
     "american-medical-association": {
       "fidelityScore": 1,

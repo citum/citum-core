@@ -727,6 +727,8 @@ function generateReport(options) {
   const stylesDir = getStylesDir(options.stylesDir);
   const coreStyles = discoverCoreStyles();
   const divergences = loadDivergences();
+  const generated = getTimestamp();
+  const gitCommit = getGitCommit();
 
   const styles = [];
   let citationsTotal = 0;
@@ -824,8 +826,18 @@ function generateReport(options) {
 
   return {
     report: {
-      generated: getTimestamp(),
-      commit: getGitCommit(),
+      generated,
+      commit: gitCommit,
+      source: 'scripts/report-core.js',
+      metadata: {
+        timestamp: generated,
+        gitCommit,
+        fixture: 'tests/fixtures/references-expanded.json',
+        styleSelector: 'core-styles',
+        styles: coreStyles.map((style) => style.name),
+        generator: 'scripts/report-core.js',
+        extraFixtures: ['tests/fixtures/citations-note-expanded.json'],
+      },
       totalImpact: parseFloat(totalImpact),
       totalStyles: coreStyles.length,
       citationsOverall: { passed: citationsPassed, total: citationsTotal },
