@@ -1950,20 +1950,9 @@ impl TemplateCompiler {
     /// Map a String delimiter to DelimiterPunctuation.
     /// Preserves custom delimiters that don't match standard patterns.
     fn map_delimiter(&self, delimiter: &Option<String>) -> Option<DelimiterPunctuation> {
-        let d = delimiter.as_ref()?;
-        match d.as_str() {
-            ", " | "," => Some(DelimiterPunctuation::Comma),
-            "; " | ";" => Some(DelimiterPunctuation::Semicolon),
-            ". " | "." => Some(DelimiterPunctuation::Period),
-            ": " | ":" => Some(DelimiterPunctuation::Colon),
-            " & " | "&" => Some(DelimiterPunctuation::Ampersand),
-            " | " | "|" => Some(DelimiterPunctuation::VerticalLine),
-            " / " | "/" => Some(DelimiterPunctuation::Slash),
-            " - " | "-" => Some(DelimiterPunctuation::Hyphen),
-            " " => Some(DelimiterPunctuation::Space),
-            "" => Some(DelimiterPunctuation::None),
-            _ => Some(DelimiterPunctuation::Custom(d.clone())),
-        }
+        delimiter
+            .as_deref()
+            .map(DelimiterPunctuation::from_csl_string)
     }
 
     /// Get the rendering options from a component.

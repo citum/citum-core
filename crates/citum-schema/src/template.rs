@@ -665,33 +665,25 @@ impl DelimiterPunctuation {
     /// Handles common patterns like ", ", ": ", etc.
     /// Returns Custom variant for unrecognized delimiters.
     pub fn from_csl_string(s: &str) -> Self {
-        match s {
-            "," | ", " => Self::Comma,
-            ";" | "; " => Self::Semicolon,
-            "." | ". " => Self::Period,
-            ":" | ": " => Self::Colon,
-            "&" | " & " => Self::Ampersand,
-            "|" | " | " => Self::VerticalLine,
+        if s == " " {
+            return Self::Space;
+        }
+
+        let trimmed = s.trim();
+        if trimmed.is_empty() || trimmed.eq_ignore_ascii_case("none") {
+            return Self::None;
+        }
+
+        match trimmed {
+            "," => Self::Comma,
+            ";" => Self::Semicolon,
+            "." => Self::Period,
+            ":" => Self::Colon,
+            "&" => Self::Ampersand,
+            "|" => Self::VerticalLine,
             "/" => Self::Slash,
             "-" => Self::Hyphen,
-            " " => Self::Space,
-            "" => Self::None,
-            "none" => Self::None,
-            _ => {
-                let trimmed = s.trim();
-                match trimmed {
-                    "," => Self::Comma,
-                    ";" => Self::Semicolon,
-                    "." => Self::Period,
-                    ":" => Self::Colon,
-                    "&" => Self::Ampersand,
-                    "|" => Self::VerticalLine,
-                    "/" => Self::Slash,
-                    "-" => Self::Hyphen,
-                    "" => Self::None,
-                    _ => Self::Custom(s.to_string()),
-                }
-            }
+            _ => Self::Custom(s.to_string()),
         }
     }
 }
@@ -822,5 +814,25 @@ wrap: parentheses
         assert!(mixed.matches("default"));
         assert!(mixed.matches("chapter"));
         assert!(!mixed.matches("book"));
+    }
+
+    #[test]
+    fn test_delimiter_from_csl_string_normalizes_none_and_trimmed_values() {
+        assert_eq!(
+            DelimiterPunctuation::from_csl_string("none"),
+            DelimiterPunctuation::None
+        );
+        assert_eq!(
+            DelimiterPunctuation::from_csl_string(" none "),
+            DelimiterPunctuation::None
+        );
+        assert_eq!(
+            DelimiterPunctuation::from_csl_string(" "),
+            DelimiterPunctuation::Space
+        );
+        assert_eq!(
+            DelimiterPunctuation::from_csl_string(" : "),
+            DelimiterPunctuation::Colon
+        );
     }
 }

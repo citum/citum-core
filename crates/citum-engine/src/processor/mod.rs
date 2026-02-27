@@ -38,7 +38,7 @@ use citum_schema::Style;
 use citum_schema::citation::Position;
 use citum_schema::locale::Locale;
 use citum_schema::options::Config;
-use citum_schema::template::WrapPunctuation;
+use citum_schema::template::{DelimiterPunctuation, WrapPunctuation};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 
@@ -639,7 +639,10 @@ impl Processor {
         let sorted_items = self.sort_citation_items(citation.items.clone(), &effective_spec);
 
         let intra_delimiter = effective_spec.delimiter.as_deref().unwrap_or(", ");
-        let renderer_delimiter = if intra_delimiter == "none" || intra_delimiter.is_empty() {
+        let renderer_delimiter = if matches!(
+            DelimiterPunctuation::from_csl_string(intra_delimiter),
+            DelimiterPunctuation::None
+        ) {
             ""
         } else {
             intra_delimiter
@@ -649,6 +652,14 @@ impl Processor {
             .multi_cite_delimiter
             .as_deref()
             .unwrap_or("; ");
+        let renderer_inter_delimiter = if matches!(
+            DelimiterPunctuation::from_csl_string(inter_delimiter),
+            DelimiterPunctuation::None
+        ) {
+            ""
+        } else {
+            inter_delimiter
+        };
 
         let cite_config = self.get_citation_config();
         let processing = cite_config.processing.clone().unwrap_or_default();
@@ -686,7 +697,7 @@ impl Processor {
         };
 
         let fmt = F::default();
-        let content = fmt.join(rendered_groups, inter_delimiter);
+        let content = fmt.join(rendered_groups, renderer_inter_delimiter);
 
         // Apply citation-level prefix/suffix from input
         let citation_prefix = citation.prefix.as_deref().unwrap_or("");
