@@ -1,11 +1,11 @@
 use crate::reference::{EdtfString, Reference};
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
+use citum_edtf::Timezone;
 use citum_schema::options::dates::TimeFormat;
 use citum_schema::template::{DateForm, DateVariable as TemplateDateVar, TemplateDate};
-use csln_edtf::Timezone;
 
 fn format_time(
-    time: csln_edtf::Time,
+    time: citum_edtf::Time,
     format: &TimeFormat,
     show_seconds: bool,
     show_timezone: bool,
@@ -394,7 +394,7 @@ mod tests {
 #[cfg(test)]
 mod time_tests {
     use super::*;
-    use csln_edtf::{Time, Timezone};
+    use citum_edtf::{Time, Timezone};
 
     #[test]
     fn test_format_time_12h_utc() {

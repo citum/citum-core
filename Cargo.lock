@@ -233,15 +233,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "citum-edtf"
+version = "0.6.0"
+dependencies = [
+ "serde",
+ "winnow",
+]
+
+[[package]]
 name = "citum-engine"
 version = "0.6.0"
 dependencies = [
  "biblatex",
+ "citum-edtf",
  "citum-migrate",
  "citum-schema",
  "criterion",
  "csl-legacy",
- "csln-edtf",
  "indexmap",
  "jotdown",
  "regex",
@@ -272,9 +280,9 @@ dependencies = [
 name = "citum-schema"
 version = "0.6.0"
 dependencies = [
+ "citum-edtf",
  "criterion",
  "csl-legacy",
- "csln-edtf",
  "schemars",
  "serde",
  "serde_cbor",
@@ -427,14 +435,6 @@ dependencies = [
  "roxmltree",
  "serde",
  "serde_json",
-]
-
-[[package]]
-name = "csln-edtf"
-version = "0.6.0"
-dependencies = [
- "serde",
- "winnow",
 ]
 
 [[package]]

@@ -1,6 +1,6 @@
 use crate::locale::MonthList;
 use crate::reference::types::RefDate;
-use csln_edtf::{Day, Edtf, MonthOrSeason, Time};
+use citum_edtf::{Day, Edtf, MonthOrSeason, Time};
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -15,7 +15,7 @@ impl EdtfString {
     /// Parse the string as an EDTF date etc, or return the string as a literal.
     pub fn parse(&self) -> RefDate {
         let mut input = self.0.as_str();
-        match csln_edtf::parse(&mut input) {
+        match citum_edtf::parse(&mut input) {
             Ok(edtf) => RefDate::Edtf(edtf),
             Err(_) => RefDate::Literal(self.0.clone()),
         }

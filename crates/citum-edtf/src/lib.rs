@@ -1,4 +1,4 @@
-//! csln_edtf - A modern EDTF (Extended Date/Time Format) parser
+//! citum_edtf - A modern EDTF (Extended Date/Time Format) parser
 //!
 //! This crate implements ISO 8601-2:2019 (EDTF) Level 0 and Level 1.
 
