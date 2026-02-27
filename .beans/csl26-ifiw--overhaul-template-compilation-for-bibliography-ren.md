@@ -5,7 +5,14 @@ status: todo
 type: epic
 priority: high
 created_at: 2026-02-07T18:20:28Z
-updated_at: 2026-02-07T18:20:28Z
+updated_at: 2026-02-27T01:14:33Z
 ---
 
-Epic to track the template compilation improvements needed for bibliography rendering. The delimiter infrastructure (Tasks #1-6) is working, but migration has deeper issues in component selection, ordering, and suppress logic. Oracle verification shows 0/10 top parent styles with perfect bibliography match despite 60% citation match. This epic tracks the systematic fixes needed in citum_migrate/src/template_compiler/.
+Epic to track remaining template-compilation and post-processing issues for bibliography rendering.
+
+Historical baseline at creation time showed broad failures, but current migration quality is substantially improved. As of 2026-02-27:
+
+- Top-10 aggregate: bibliography 100% for `7/10` styles
+- Primary observed component issue: `publisher:extra`
+
+This epic should now focus on residual style-level mismatches (especially `chicago-author-date`, `nature`, and `cell`) and concrete pass-level regressions in `citum-migrate` (`template_compiler` and `passes/*`), rather than broad "ordering is broken everywhere" assumptions.

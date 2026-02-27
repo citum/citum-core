@@ -2,7 +2,7 @@
 
 ## Context
 
-Bean `csl26-rh2u` and the broader epic `csl26-ifiw` track a fundamental problem: the template compiler produces bibliography templates with wrong component ordering, duplicate/missing components, and incorrect suppress logic. Current results: **87-100% citation match, 0% bibliography match** across all top parent styles. The template compiler (`../../crates/citum-migrate/src/template_compiler/mod.rs`, 2,077 lines) is the bottleneck.
+Bean `csl26-rh2u` (now canceled/superseded) and the broader epic `csl26-ifiw` track bibliography-template quality problems in the migration pipeline. Historical results at the time of the original analysis were severe, but current baseline (2026-02-27) is improved: top-10 aggregate shows **100% citation match and 7/10 bibliography-perfect styles**. The remaining issues are concentrated in a smaller set of style-level deltas rather than global failure.
 
 **Design origin:** CSL 1.0 was designed with XSLT - a side-effect-free language where nodes are processed in document order and macro calls are simple substitutions. This means the XML node order in the layout IS the rendering order. The challenge is not node ordering itself, but that macros like `source` contain `choose/if/else` branches creating different component sequences for different reference types (e.g., journals get container-title + volume(issue) + pages, while chapters get editor + container-title + pages). Flattening these type-specific branches into one declarative template with overrides is the core difficulty.
 
@@ -92,7 +92,7 @@ The critical insight is that these approaches fail at *different things*:
 | Capability | XML Compiler | Output-Driven | Hand-Authored |
 |---|---|---|---|
 | Global options (names, dates, et-al) | Excellent | Cannot do | Manual |
-| Template component ordering | Failed (0% bib) | Validated (6 styles correct) | Excellent |
+| Template component ordering | Improved but still style-fragile (7/10 bib perfect in top-10) | Validated (6 styles correct) | Excellent |
 | Type-specific overrides/suppress | Fragile (heuristic) | Validated (observable) | Excellent |
 | Coverage of rare types | Complete | Test-data dependent | Domain-expert dependent |
 | Scalability to 2,844 styles | One compiler | Per-style inference | Not feasible |
@@ -121,7 +121,7 @@ The critical insight is that these approaches fail at *different things*:
 
 ### Why hybrid, not pure XML compiler
 
-- The template compiler has hit a wall. The 0% bibliography match across ALL top styles is not a bug to fix; it is evidence that flattening type-specific choose/if/else branches into a single declarative template with overrides is fundamentally harder than the XML approach can handle with heuristic post-processing passes.
+- The template compiler and pass chain remain the highest-risk area for residual bibliography deltas. Even with major progress, flattening type-specific choose/if/else behavior into declarative templates still introduces style-fragile edge cases that require targeted fixes.
 - The template structure for most styles is simple: 8-12 components in a predictable order. Hand-authoring or inferring this is far more reliable than deducing it from 126 choose blocks.
 
 ### Estimated effort
@@ -138,7 +138,7 @@ The critical insight is that these approaches fail at *different things*:
 - Expand test fixtures from 16 references to 25-30, covering all major reference types (add article-newspaper, dataset, legal_case, entry at minimum)
 - Use the XML's choose/if type conditions as a validation checklist (ensure inferred template has overrides for all types the XML mentions)
 - Start with APA (the most complex, 99 macros) as proof-of-concept; the hand-authored version already exists
-- **Preserve citation template generation** - The XML compiler achieves 87-100% citation match; any template changes must not regress this
+- **Preserve citation template generation** - Current top-10 baseline is 100% citation match; any template changes must not regress this
 - Harden oracle.js component parser before building inference on top of it
 
 ---
@@ -183,7 +183,7 @@ Several Approach B cons identified in the original analysis have been mitigated:
 
 ### Key architectural insight
 
-The inferrer validates that **the hard problem (template structure) is better solved by observing output than by parsing XML**. The XML compiler's 0% bibliography match was not a bug — it was evidence that procedural-to-declarative translation via macro flattening is fundamentally harder than reverse-engineering from rendered output. Meanwhile, the XML pipeline remains the right tool for options extraction where it achieves 87-100% accuracy.
+The inferrer validates that **template structure is often easier to solve from observed output than from procedural XML alone**. Early 0%-bibliography periods exposed the procedural-to-declarative translation difficulty; current results show this can be improved substantially but not fully eliminated with heuristics. Meanwhile, the XML pipeline remains the right tool for options extraction and currently sustains perfect citation match on the top-10 set.
 
 ### Updated effort estimates
 
