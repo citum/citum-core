@@ -54,11 +54,11 @@ function normalizeText(text) {
       m => monthMap[m] || m
     )
     .replace(/\bet al\./gi, 'et al')   // Normalize equivalent et-al punctuation
-    // Strip bibliography numbering prefix (allow hidden directional marks).
-    .replace(/^[\s\u200e\u200f\u202a-\u202e\u2066-\u2069]*\d+\.\s*/, '')
     .replace(/;\./g, ';')
     .replace(/\s+([,.;:])/g, '$1')     // Normalize stray spaces before punctuation
     .replace(/\s+/g, ' ')             // Normalize whitespace
+    // Strip bibliography numbering prefix after whitespace normalization (allow hidden directional marks).
+    .replace(/^[\u200e\u200f\u202a-\u202e\u2066-\u2069]*\d+\.\s*/, '')
     .replace(/[.,;:]\s*$/g, '')
     .trim();
 }
