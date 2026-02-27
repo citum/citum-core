@@ -33,6 +33,7 @@ When the active style uses `options.processing: note`, `Processor::process_docum
 2. Generated footnote definitions are emitted before the bibliography heading.
 3. Citations inside authored Djot footnote definitions are rendered in place and keep the note number of that manual footnote.
 4. Manual and generated notes share one note-number sequence based on body reference order, not source-definition order.
+5. Punctuation and note-marker placement are configurable through `options.notes`. When omitted, the processor falls back to locale-based defaults modeled on org-cite note rules. In particular, `punctuation: adaptive` means punctuation stays inside a closing quote when it is already flush with that quote, and otherwise moves outside.
 
 This support is currently Djot-only.
 
