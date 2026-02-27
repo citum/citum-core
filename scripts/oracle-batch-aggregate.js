@@ -24,6 +24,7 @@ const path = require('path');
 const os = require('os');
 
 const WORKSPACE_ROOT = path.resolve(__dirname, '..');
+const DEFAULT_CITATIONS_FIXTURE = 'tests/fixtures/citations-expanded.json';
 
 // Priority parent styles (from STYLE_PRIORITY.md)
 const PRIORITY_STYLES = [
@@ -61,6 +62,18 @@ function detectTemplateSource(styleName) {
   if (fs.existsSync(cachePath)) return 'inferred';
 
   return 'xml';
+}
+
+function getGitCommit() {
+  try {
+    return execSync('git rev-parse --short HEAD', {
+      cwd: WORKSPACE_ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return 'unknown';
+  }
 }
 
 /**
@@ -416,10 +429,20 @@ async function main() {
   const summary = aggregateResults(results);
   
   // Add metadata
+  const styleSelector = specificStyles
+    ? 'explicit'
+    : runAll
+      ? 'all'
+      : `top:${topN}`;
   summary.metadata = {
     timestamp: new Date().toISOString(),
+    gitCommit: getGitCommit(),
+    generator: 'scripts/oracle-batch-aggregate.js',
     duration: ((Date.now() - startTime) / 1000).toFixed(1) + 's',
     concurrency: runAll ? concurrency : 1,
+    fixture: DEFAULT_CITATIONS_FIXTURE,
+    styleSelector,
+    styles: stylesToTest.map((stylePath) => path.basename(stylePath, '.csl')),
   };
 
   // Compare against baseline if requested

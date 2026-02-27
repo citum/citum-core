@@ -1,6 +1,15 @@
 # Regression Detection Baselines
 
-This directory stores baseline test results for regression detection in the rendering fidelity workflow.
+This directory stores local baseline snapshots for regression detection in the
+rendering fidelity workflow.
+
+These files are distinct from the canonical committed CI baselines:
+
+- `scripts/report-data/oracle-top10-baseline.json`
+- `scripts/report-data/core-quality-baseline.json`
+
+Use `baselines/` for local milestone snapshots, refactor safety checks, and
+ad hoc comparison runs. Do not treat it as the source of truth for CI.
 
 ## Usage
 
@@ -65,10 +74,23 @@ Baseline files are JSON with the structure:
   ],
   "metadata": {
     "timestamp": "2026-02-06T12:00:00.000Z",
+    "gitCommit": "abcdef0",
+    "generator": "scripts/oracle-batch-aggregate.js",
+    "fixture": "tests/fixtures/citations-expanded.json",
+    "styleSelector": "top:20",
+    "styles": ["apa", "ieee"],
     "duration": "45.2s"
   }
 }
 ```
+
+Committed baseline/report artifacts should always carry:
+
+- `metadata.timestamp`
+- `metadata.gitCommit`
+- `metadata.fixture`
+- `metadata.generator`
+- `metadata.styles` or `metadata.styleSelector`
 
 ## Best Practices
 
@@ -99,17 +121,28 @@ Baseline JSON files are gitignored by default (`baselines/*.json`) to avoid repo
 
 ## Integration with Workflow
 
-See [docs/RENDERING_WORKFLOW.md](../docs/RENDERING_WORKFLOW.md) and [docs/WORKFLOW_ANALYSIS.md](../docs/WORKFLOW_ANALYSIS.md) for how regression detection integrates into the overall rendering fidelity workflow.
+See [docs/guides/RENDERING_WORKFLOW.md](../docs/guides/RENDERING_WORKFLOW.md) and [docs/guides/WORKFLOW_ANALYSIS.md](../docs/guides/WORKFLOW_ANALYSIS.md) for how regression detection integrates into the overall rendering fidelity workflow.
 
-## CI Canonical Baseline
+## CI Canonical Baselines
 
-The committed CI oracle baseline lives at:
+The committed CI baselines live at:
 
 - `scripts/report-data/oracle-top10-baseline.json`
+- `scripts/report-data/core-quality-baseline.json`
 
-CI checks this file via:
+CI checks these files via:
 
 ```bash
+node scripts/check-testing-infra.js
+
 node scripts/check-oracle-regression.js \
   --baseline scripts/report-data/oracle-top10-baseline.json
+
+node scripts/report-core.js > /tmp/core-report.json
+node scripts/check-core-quality.js \
+  --report /tmp/core-report.json \
+  --baseline scripts/report-data/core-quality-baseline.json
 ```
+
+Refresh committed baselines only in dedicated baseline PRs with a short
+before/after summary and justification for the reset.

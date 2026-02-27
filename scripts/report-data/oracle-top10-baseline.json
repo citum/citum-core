@@ -91,9 +91,12 @@
   "errors": [],
   "metadata": {
     "timestamp": "2026-02-27T01:52:20.419Z",
+    "gitCommit": "f61026f",
+    "generator": "scripts/oracle-batch-aggregate.js",
     "duration": "21.2s",
     "concurrency": 1,
     "fixture": "tests/fixtures/citations-expanded.json",
+    "styleSelector": "top:10",
     "styles": [
       "apa",
       "elsevier-with-titles",

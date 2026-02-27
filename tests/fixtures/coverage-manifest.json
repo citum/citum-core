@@ -1,0 +1,306 @@
+{
+  "version": 1,
+  "fixtures": [
+    {
+      "fixture": "tests/fixtures/references-expanded.json",
+      "domain": "core",
+      "kind": "references",
+      "reference_types": [
+        "article-journal",
+        "article-magazine",
+        "article-newspaper",
+        "book",
+        "broadcast",
+        "chapter",
+        "dataset",
+        "entry-encyclopedia",
+        "interview",
+        "legal_case",
+        "motion_picture",
+        "paper-conference",
+        "patent",
+        "personal_communication",
+        "report",
+        "thesis",
+        "webpage"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "reference-type coverage",
+        "bibliography template structure",
+        "title/container formatting",
+        "core citation fixture pairing"
+      ],
+      "used_by": [
+        "scripts/oracle.js",
+        "scripts/oracle-yaml.js",
+        "scripts/oracle-e2e.js",
+        "scripts/report-core.js",
+        "scripts/generate-test-item.js",
+        "crates/citum-engine/src/processor/tests.rs"
+      ],
+      "ci_status": "required",
+      "notes": "Canonical bibliography fixture for oracle fidelity and core-style reporting."
+    },
+    {
+      "fixture": "tests/fixtures/citations-expanded.json",
+      "domain": "core",
+      "kind": "citations",
+      "reference_types": [
+        "article-journal",
+        "book",
+        "paper-conference"
+      ],
+      "citation_scenarios": [
+        "single item",
+        "multi-item cluster",
+        "locator",
+        "mixed locators",
+        "suppress-author",
+        "prefix and suffix",
+        "et-al shortening",
+        "add-names disambiguation",
+        "year-suffix disambiguation"
+      ],
+      "rendering_risks": [
+        "citation punctuation",
+        "cite grouping",
+        "locator rendering",
+        "suppress-author handling",
+        "disambiguation"
+      ],
+      "used_by": [
+        "scripts/oracle.js",
+        "scripts/oracle-batch-aggregate.js",
+        "scripts/generate-test-item.js",
+        "scripts/lint-rendering.sh",
+        "crates/citum-engine/src/processor/tests.rs"
+      ],
+      "ci_status": "required",
+      "notes": "Canonical strict citation regression surface used by the top-10 oracle baseline."
+    },
+    {
+      "fixture": "tests/fixtures/citations-note-expanded.json",
+      "domain": "note",
+      "kind": "citations",
+      "reference_types": [
+        "all core references paired with note citation scenarios"
+      ],
+      "citation_scenarios": [
+        "32 single-item note citations",
+        "add-names et-al note disambiguation",
+        "year-suffix note disambiguation"
+      ],
+      "rendering_risks": [
+        "note citation punctuation",
+        "note disambiguation",
+        "note-style citation coverage"
+      ],
+      "used_by": [
+        "scripts/report-core.js",
+        "scripts/oracle.js"
+      ],
+      "ci_status": "required",
+      "notes": "Specialized citation fixture used for note-style fidelity in the core compatibility report."
+    },
+    {
+      "fixture": "tests/fixtures/references-legal.json",
+      "domain": "legal",
+      "kind": "references",
+      "reference_types": [
+        "legal_case",
+        "legislation",
+        "treaty"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "legal type parsing",
+        "legal bibliography rendering",
+        "legal citation labels"
+      ],
+      "used_by": [
+        "crates/citum-engine/tests/domain_fixtures.rs"
+      ],
+      "ci_status": "required",
+      "notes": "Processor-domain fixture for legal references."
+    },
+    {
+      "fixture": "tests/fixtures/references-legal.yaml",
+      "domain": "legal",
+      "kind": "references",
+      "reference_types": [
+        "legal_case",
+        "legislation",
+        "treaty"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "YAML bibliography parsing parity"
+      ],
+      "used_by": [
+        "docs/architecture/design/LEGAL_CITATIONS.md"
+      ],
+      "ci_status": "advisory",
+      "notes": "YAML companion fixture retained for schema/examples and manual parity checks."
+    },
+    {
+      "fixture": "tests/fixtures/references-scientific.json",
+      "domain": "scientific",
+      "kind": "references",
+      "reference_types": [
+        "dataset",
+        "patent",
+        "software",
+        "standard"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "scientific domain parsing",
+        "scientific labels",
+        "dataset and patent bibliography output"
+      ],
+      "used_by": [
+        "crates/citum-engine/tests/domain_fixtures.rs"
+      ],
+      "ci_status": "required",
+      "notes": "Processor-domain fixture for scientific and technical reference classes."
+    },
+    {
+      "fixture": "tests/fixtures/references-multilingual.yaml",
+      "domain": "multilingual",
+      "kind": "references",
+      "reference_types": [
+        "book",
+        "article-journal"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "multilingual bibliography rendering",
+        "script preservation",
+        "locale-sensitive output"
+      ],
+      "used_by": [
+        "crates/citum-engine/tests/domain_fixtures.rs"
+      ],
+      "ci_status": "required",
+      "notes": "Canonical processor fixture for multilingual bibliography rendering."
+    },
+    {
+      "fixture": "tests/fixtures/multilingual/multilingual-cjk.json",
+      "domain": "multilingual",
+      "kind": "references",
+      "reference_types": [
+        "article-journal",
+        "book"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "CJK transliteration coverage",
+        "script fallback behavior"
+      ],
+      "used_by": [
+        "docs/architecture/MULTILINGUAL_GROUPING_STYLE_TARGETS.md"
+      ],
+      "ci_status": "advisory",
+      "notes": "Specialized multilingual planning fixture for CJK references."
+    },
+    {
+      "fixture": "tests/fixtures/multilingual/multilingual-cyrillic.json",
+      "domain": "multilingual",
+      "kind": "references",
+      "reference_types": [
+        "article-journal",
+        "book"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "Cyrillic transliteration coverage",
+        "script fallback behavior"
+      ],
+      "used_by": [
+        "docs/architecture/MULTILINGUAL_GROUPING_STYLE_TARGETS.md"
+      ],
+      "ci_status": "advisory",
+      "notes": "Specialized multilingual planning fixture for Cyrillic references."
+    },
+    {
+      "fixture": "tests/fixtures/multilingual/multilingual-mixed.json",
+      "domain": "multilingual",
+      "kind": "references",
+      "reference_types": [
+        "article-journal",
+        "book"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "romanization collision handling",
+        "multilingual disambiguation"
+      ],
+      "used_by": [
+        "docs/architecture/MULTILINGUAL_GROUPING_STYLE_TARGETS.md"
+      ],
+      "ci_status": "advisory",
+      "notes": "Specialized multilingual fixture for disambiguation edge cases."
+    },
+    {
+      "fixture": "tests/fixtures/grouping/primary-secondary.json",
+      "domain": "grouping",
+      "kind": "references",
+      "reference_types": [
+        "article-journal",
+        "interview",
+        "manuscript"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "sectional bibliography headings",
+        "group assignment",
+        "document rendering integration"
+      ],
+      "used_by": [
+        "crates/citum-engine/tests/document.rs"
+      ],
+      "ci_status": "required",
+      "notes": "Primary grouping fixture for document-level bibliography sections."
+    },
+    {
+      "fixture": "tests/fixtures/grouping/legal-hierarchy.json",
+      "domain": "grouping",
+      "kind": "references",
+      "reference_types": [
+        "book",
+        "legal-case",
+        "statute",
+        "treaty"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "legal grouping hierarchy",
+        "section ordering"
+      ],
+      "used_by": [
+        "crates/citum-engine/tests/document.rs"
+      ],
+      "ci_status": "required",
+      "notes": "Legal grouping fixture used for Juris-M style hierarchy checks."
+    },
+    {
+      "fixture": "tests/fixtures/grouping/multilingual-groups.json",
+      "domain": "grouping",
+      "kind": "references",
+      "reference_types": [
+        "book"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "per-group disambiguation restart",
+        "multilingual group sorting"
+      ],
+      "used_by": [
+        "crates/citum-engine/tests/document.rs"
+      ],
+      "ci_status": "required",
+      "notes": "Grouping fixture for local year-suffix resets across multilingual sections."
+    }
+  ]
+}

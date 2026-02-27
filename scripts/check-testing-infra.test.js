@@ -1,0 +1,182 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+
+const {
+  validateCoreQualityBaseline,
+  validateCoverageManifest,
+  validateOracleBaseline,
+} = require('./check-testing-infra');
+
+function makeTempProject() {
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'citum-testing-infra-'));
+}
+
+function writeJson(filePath, value) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
+}
+
+function writeFile(filePath, contents = '') {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, contents, 'utf8');
+}
+
+function baseManifest() {
+  return {
+    version: 1,
+    fixtures: [
+      {
+        fixture: 'tests/fixtures/references-expanded.json',
+        domain: 'core',
+        kind: 'references',
+        reference_types: ['book'],
+        citation_scenarios: [],
+        rendering_risks: ['core rendering'],
+        used_by: ['scripts/oracle.js'],
+        ci_status: 'required',
+        notes: 'core',
+      },
+      {
+        fixture: 'tests/fixtures/citations-note-expanded.json',
+        domain: 'note',
+        kind: 'citations',
+        reference_types: ['book'],
+        citation_scenarios: ['single item'],
+        rendering_risks: ['note rendering'],
+        used_by: ['scripts/oracle.js'],
+        ci_status: 'required',
+        notes: 'note',
+      },
+      {
+        fixture: 'tests/fixtures/references-legal.json',
+        domain: 'legal',
+        kind: 'references',
+        reference_types: ['legal_case'],
+        citation_scenarios: [],
+        rendering_risks: ['legal rendering'],
+        used_by: ['scripts/oracle.js'],
+        ci_status: 'required',
+        notes: 'legal',
+      },
+      {
+        fixture: 'tests/fixtures/references-scientific.json',
+        domain: 'scientific',
+        kind: 'references',
+        reference_types: ['dataset'],
+        citation_scenarios: [],
+        rendering_risks: ['scientific rendering'],
+        used_by: ['scripts/oracle.js'],
+        ci_status: 'required',
+        notes: 'scientific',
+      },
+      {
+        fixture: 'tests/fixtures/references-multilingual.yaml',
+        domain: 'multilingual',
+        kind: 'references',
+        reference_types: ['book'],
+        citation_scenarios: [],
+        rendering_risks: ['multilingual rendering'],
+        used_by: ['scripts/oracle.js'],
+        ci_status: 'required',
+        notes: 'multilingual',
+      },
+      {
+        fixture: 'tests/fixtures/grouping/primary-secondary.json',
+        domain: 'grouping',
+        kind: 'references',
+        reference_types: ['manuscript'],
+        citation_scenarios: [],
+        rendering_risks: ['grouping rendering'],
+        used_by: ['scripts/oracle.js'],
+        ci_status: 'required',
+        notes: 'grouping',
+      },
+    ],
+  };
+}
+
+function baselineMetadata() {
+  return {
+    timestamp: '2026-02-27T00:00:00.000Z',
+    gitCommit: 'abcdef0',
+    generator: 'scripts/report-core.js',
+    fixture: 'tests/fixtures/references-expanded.json',
+    styleSelector: 'core-styles',
+    styles: ['apa-7th'],
+  };
+}
+
+function seedProject(root) {
+  writeJson(path.join(root, 'tests/fixtures/coverage-manifest.json'), baseManifest());
+  writeJson(path.join(root, 'tests/fixtures/references-expanded.json'), { ITEM: { type: 'book' } });
+  writeJson(path.join(root, 'tests/fixtures/citations-note-expanded.json'), []);
+  writeJson(path.join(root, 'tests/fixtures/references-legal.json'), {});
+  writeJson(path.join(root, 'tests/fixtures/references-scientific.json'), {});
+  writeFile(path.join(root, 'tests/fixtures/references-multilingual.yaml'), '[]\n');
+  writeJson(path.join(root, 'tests/fixtures/grouping/primary-secondary.json'), []);
+  writeFile(path.join(root, 'scripts/oracle.js'), '#!/usr/bin/env node\n');
+  writeJson(path.join(root, 'scripts/report-data/oracle-top10-baseline.json'), {
+    styleBreakdown: [{ style: 'apa', citations: '1/1', bibliography: '1/1' }],
+    metadata: {
+      ...baselineMetadata(),
+      generator: 'scripts/oracle-batch-aggregate.js',
+    },
+  });
+  writeJson(path.join(root, 'scripts/report-data/core-quality-baseline.json'), {
+    generated: '2026-02-27',
+    commit: 'abcdef0',
+    source: 'scripts/report-core.js',
+    styles: { 'apa-7th': { fidelityScore: 1, quality: 90, concision: 90, presetUsage: 90 } },
+    metadata: baselineMetadata(),
+  });
+}
+
+test('validation passes for a complete testing-infra fixture set', () => {
+  const root = makeTempProject();
+  seedProject(root);
+
+  assert.doesNotThrow(() => validateCoverageManifest(root));
+  assert.doesNotThrow(() => validateOracleBaseline(root));
+  assert.doesNotThrow(() => validateCoreQualityBaseline(root));
+});
+
+test('coverage manifest fails when a fixture path is missing', () => {
+  const root = makeTempProject();
+  seedProject(root);
+  fs.rmSync(path.join(root, 'tests/fixtures/references-scientific.json'));
+
+  assert.throws(() => validateCoverageManifest(root), /Fixture path does not exist/);
+});
+
+test('coverage manifest fails when a used_by path is missing', () => {
+  const root = makeTempProject();
+  seedProject(root);
+  const manifestPath = path.join(root, 'tests/fixtures/coverage-manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  manifest.fixtures[0].used_by = ['scripts/missing.js'];
+  writeJson(manifestPath, manifest);
+
+  assert.throws(() => validateCoverageManifest(root), /Referenced owner path does not exist/);
+});
+
+test('baseline validation fails when metadata fields are missing', () => {
+  const root = makeTempProject();
+  seedProject(root);
+  const baselinePath = path.join(root, 'scripts/report-data/core-quality-baseline.json');
+  const baseline = JSON.parse(fs.readFileSync(baselinePath, 'utf8'));
+  delete baseline.metadata.generator;
+  writeJson(baselinePath, baseline);
+
+  assert.throws(() => validateCoreQualityBaseline(root), /missing generator/);
+});
+
+test('coverage manifest fails when structure is malformed', () => {
+  const root = makeTempProject();
+  seedProject(root);
+  writeJson(path.join(root, 'tests/fixtures/coverage-manifest.json'), { version: 1, fixtures: {} });
+
+  assert.throws(() => validateCoverageManifest(root), /fixtures must be an array/);
+});

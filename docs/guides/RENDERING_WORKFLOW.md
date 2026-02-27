@@ -2,6 +2,20 @@
 
 This guide describes the standard workflow for debugging and fixing rendering issues in Citum. It assumes you have basic familiarity with the project structure and oracle comparison tools.
 
+## Testing Contract
+
+The rendering workflow now sits inside four explicit testing layers:
+
+1. Rust correctness: `cargo nextest run`
+2. Oracle fidelity: `scripts/oracle.js`, `scripts/oracle-batch-aggregate.js`, `scripts/check-oracle-regression.js`
+3. Portfolio quality: `scripts/report-core.js`, `scripts/check-core-quality.js`
+4. Fixture governance: `tests/fixtures/coverage-manifest.json`, `scripts/check-testing-infra.js`
+
+Use the canonical CI baselines in `scripts/report-data/`, and use `baselines/`
+only for local comparison snapshots. The authoritative layer map is:
+
+- `docs/architecture/CSL26_R6FN_TESTING_INFRASTRUCTURE_CONSOLIDATION_PLAN_2026-02-27.md`
+
 ## Quick Reference
 
 ```bash
@@ -19,6 +33,9 @@ citum render refs -b references.json -s styles/apa-7th.yaml -O html
 
 # Test a single style (default: structured diff)
 node ../scripts/oracle.js styles-legacy/apa.csl
+
+# Validate fixture ownership and committed baseline metadata contracts
+node ../scripts/check-testing-infra.js
 ```
 
 ## Style Catalog Scope

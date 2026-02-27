@@ -6,6 +6,9 @@
 > **Oracle scoring:** Strict 12-scenario citation set (`tests/fixtures/citations-expanded.json`).
 > Hard-fails on processor/style errors. Includes suppress-author, mixed locator/prefix/suffix
 > edge cases. Run `node scripts/oracle-batch-aggregate.js styles-legacy/ --top 10` to refresh.
+> Testing contract and fixture governance are defined in
+> `docs/architecture/CSL26_R6FN_TESTING_INFRASTRUCTURE_CONSOLIDATION_PLAN_2026-02-27.md`
+> and `tests/fixtures/coverage-manifest.json`.
 
 ## Top-10 Parent Styles
 
@@ -192,6 +195,9 @@ node scripts/check-core-quality.js \
 node scripts/check-oracle-regression.js \
   --baseline scripts/report-data/oracle-top10-baseline.json
 
+# Check testing-infrastructure contracts and fixture governance
+node scripts/check-testing-infra.js
+
 # Refresh pinned top-10 oracle baseline (dedicated baseline PR only)
 node scripts/oracle-batch-aggregate.js styles-legacy/ \
   --styles apa,elsevier-with-titles,elsevier-harvard,elsevier-vancouver,springer-vancouver-brackets,springer-basic-author-date,springer-basic-brackets,springer-socpsych-author-date,american-medical-association,taylor-and-francis-chicago-author-date \
@@ -201,5 +207,6 @@ node scripts/oracle-batch-aggregate.js styles-legacy/ \
 ## Related
 
 - **beans:** `csl26-heqm` (top 10 at 100% fidelity), `csl26-gidg` (90% corpus match), `csl26-l2hg` (numeric triage)
-- **docs:** `docs/architecture/SQI_REFINEMENT_PLAN.md`, `docs/reference/STYLE_PRIORITY.md`
-- **CI:** `.github/workflows/ci.yml` — core fidelity gate (`check-core-quality.js`) + oracle regression gate (`check-oracle-regression.js`)
+- **docs:** `docs/architecture/SQI_REFINEMENT_PLAN.md`, `docs/reference/STYLE_PRIORITY.md`, `docs/architecture/CSL26_R6FN_TESTING_INFRASTRUCTURE_CONSOLIDATION_PLAN_2026-02-27.md`
+- **fixtures:** `tests/fixtures/coverage-manifest.json`
+- **CI:** `.github/workflows/ci.yml` — testing contract gate (`check-testing-infra.js`) + core fidelity gate (`check-core-quality.js`) + oracle regression gate (`check-oracle-regression.js`)
