@@ -1,11 +1,11 @@
 ---
 # csl26-gczk
 title: Achieve 95%+ component coverage in migration
-status: todo
+status: in-progress
 type: feature
 priority: critical
 created_at: 2026-02-07T12:11:57Z
-updated_at: 2026-02-07T12:11:57Z
+updated_at: 2026-02-27T18:00:00Z
 parent: csl26-u1in
 ---
 
@@ -23,3 +23,10 @@ Verification:
 - Add coverage metrics to migration output
 
 Impact: Prevents silent feature loss
+
+## Progress (2026-02-27)
+
+- Added component coverage threshold reporting (`--component-threshold`, default `0.95`) to migration gap analysis.
+- Added failure listing for styles under threshold.
+- Added aggregated unmapped component reporting from oracle component diffs.
+- Added execution runbook: `docs/architecture/CSL26_GCZK_COMPONENT_COVERAGE_PLAN_2026-02-27.md`.
