@@ -1,11 +1,11 @@
 ---
 # csl26-e6v4
 title: Create test data generator tool
-status: todo
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-07T06:53:23Z
-updated_at: 2026-02-07T07:40:14Z
+updated_at: 2026-02-27T00:00:00Z
 blocking:
     - csl26-r6fn
 ---

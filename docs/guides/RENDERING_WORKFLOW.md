@@ -581,6 +581,44 @@ The current test data (`tests/fixtures/references-expanded.json`) has 28 items a
 - Very long titles (>200 chars)
 - Corporate authors (literal names)
 
+### Adding Test Items Quickly
+
+Use the interactive generator when you need a new bibliography item without hand-editing the fixture files:
+
+```bash
+node scripts/generate-test-item.js
+node scripts/generate-test-item.js --with-citation
+node scripts/generate-test-item.js --style styles-legacy/apa.csl
+node scripts/generate-test-item.js --no-oracle
+```
+
+Supported templates in the first pass:
+- `article-journal`
+- `article-magazine`
+- `article-newspaper`
+- `book`
+- `chapter`
+- `paper-conference`
+- `report`
+- `thesis`
+- `webpage`
+- `dataset`
+- `legal_case`
+- `patent`
+- `software`
+
+What the generator does:
+- Prompts for the fields needed by the selected current-format fixture template
+- Assigns the next `ITEM-N` identifier automatically
+- Appends the item to `tests/fixtures/references-expanded.json`
+- Optionally scaffolds a simple citation scenario in `tests/fixtures/citations-expanded.json`
+- Optionally runs `node scripts/oracle.js <style> --verbose`
+
+Important:
+- The generator still writes the existing oracle-compatible legacy JSON fixture shape.
+- It does **not** switch test data authoring to schema-first `InputReference` yet.
+- The separate architecture follow-up for schema-first fixture authoring lives in `docs/architecture/CSL26_E6V4_SCHEMA_FIRST_FIXTURE_ARCHITECTURE_PLAN_2026-02-27.md`.
+
 ### Performance Optimization
 
 When running many tests:
@@ -667,7 +705,7 @@ node ../scripts/oracle-batch-aggregate.js styles-legacy/ --top 20 --compare base
 # Output: "Regression: APA bibliography 93% → 89%"
 ```
 
-### Phase 4: Test Data Generator (Task #26)
+### Phase 4: Test Data Generator (Task #26, implemented)
 ```bash
 node ../scripts/generate-test-item.js
 # Interactive prompt to add new reference types to test fixtures
