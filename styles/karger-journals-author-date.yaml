@@ -109,9 +109,4 @@ bibliography:
     - number: pages
       prefix: ", pp "
     - variable: url
-  sort:
-    template:
-      - key: author
-        ascending: true
-      - key: issued
-        ascending: true
+  sort: author-date-title

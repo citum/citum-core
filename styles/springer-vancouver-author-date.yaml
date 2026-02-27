@@ -133,7 +133,4 @@ bibliography:
           prefix: "pp. "
       prefix: ":"
     - variable: url
-  sort:
-    template:
-      - key: author
-        ascending: true
+  sort: author-date-title

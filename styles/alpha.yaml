@@ -30,9 +30,7 @@ options:
     entry-suffix: .
     separator: ', '
 citation:
-  sort:
-    template:
-      - key: author
+  sort: author-date-title
   template:
     - number: citation-label
     - variable: locator
@@ -47,10 +45,7 @@ bibliography:
       delimiter: ', '
       delimiter-precedes-last: contextual
       sort-separator: ', '
-  sort:
-    template:
-      - key: author
-      - key: issued
+  sort: author-date-title
   template:
     - number: citation-label
       wrap: brackets

@@ -72,11 +72,7 @@ citation:
   delimiter: " "
   multi-cite-delimiter: "; "
 bibliography:
-  sort:
-    template:
-      - key: author
-      - key: issued
-      - key: title
+  sort: author-date-title
   options:
     contributors:
       display-as-sort: all

@@ -119,9 +119,4 @@ bibliography:
         chapter:
           prefix: "pp. "
     - variable: publisher
-  sort:
-    template:
-      - key: author
-        ascending: true
-      - key: issued
-        ascending: true
+  sort: author-date-title
