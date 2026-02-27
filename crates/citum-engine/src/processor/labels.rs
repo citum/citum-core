@@ -12,7 +12,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //!
 //! - 1 author:  up to `single_author_chars` chars from family name + year
 //! - 2+ authors (below et_al_min): `multi_author_chars` chars each + year
-//! - >= et_al_min authors: first 3 authors' initials + et_al_marker + year
+//! - >= et_al_min authors: first N authors' initials (N from `et_al_names`) + et_al_marker + year
 
 use crate::reference::Reference;
 use citum_schema::options::LabelParams;
@@ -67,10 +67,10 @@ fn generate_name_part(reference: &Reference, params: &LabelParams) -> String {
             .collect::<Vec<_>>()
             .join("")
     } else {
-        // et_al_min or more authors: first 3 initials + et_al_marker
+        // et_al_min or more authors: first N initials + et_al_marker
         let initials: String = names
             .iter()
-            .take(3)
+            .take(params.et_al_names as usize)
             .map(|n| {
                 n.family_or_literal()
                     .chars()
@@ -122,6 +122,14 @@ mod tests {
             year_digits: 4,
             ..alpha_params()
         }
+    }
+
+    fn ams_params() -> LabelParams {
+        LabelConfig {
+            preset: LabelPreset::Ams,
+            ..Default::default()
+        }
+        .effective_params()
     }
 
     fn make_ref(authors: Vec<Name>, year: i32) -> Reference {
@@ -291,5 +299,39 @@ mod tests {
             ..Default::default()
         });
         assert_eq!(generate_base_label(&r, &alpha_params()), "Knu");
+    }
+
+    #[test]
+    fn test_ams_et_al_uses_4_initials() {
+        // AMS should use 4 initials in et-al case, not 3
+        // Vaswani, Shazeer, Parmar, Uszkoreit, ... 2017 → "VSPU+17" (4 chars)
+        let r = make_ref(
+            vec![
+                Name::new("Vaswani", "Ashish"),
+                Name::new("Shazeer", "Noam"),
+                Name::new("Parmar", "Niki"),
+                Name::new("Uszkoreit", "Jakob"),
+                Name::new("Jones", "Llion"),
+            ],
+            2017,
+        );
+        assert_eq!(generate_base_label(&r, &ams_params()), "VSPU+17");
+    }
+
+    #[test]
+    fn test_alpha_et_al_uses_3_initials() {
+        // Alpha should still use 3 initials
+        // Vaswani, Shazeer, Parmar, Uszkoreit, ... 2017 → "VSP+17" (3 chars)
+        let r = make_ref(
+            vec![
+                Name::new("Vaswani", "Ashish"),
+                Name::new("Shazeer", "Noam"),
+                Name::new("Parmar", "Niki"),
+                Name::new("Uszkoreit", "Jakob"),
+                Name::new("Jones", "Llion"),
+            ],
+            2017,
+        );
+        assert_eq!(generate_base_label(&r, &alpha_params()), "VSP+17");
     }
 }
