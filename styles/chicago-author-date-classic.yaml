@@ -126,7 +126,6 @@ bibliography:
       - term: at
         form: long
       - variable: locator
-      - variable: locator
       - variable: doi
         prefix: https://doi.org/
   sort:
@@ -135,13 +134,5 @@ bibliography:
         ascending: true
       - key: issued
         ascending: true
-      - key: issued
-        ascending: true
-      - key: issued
-        ascending: true
       - key: title
-        ascending: true
-      - key: issued
-        ascending: true
-      - key: issued
         ascending: true
