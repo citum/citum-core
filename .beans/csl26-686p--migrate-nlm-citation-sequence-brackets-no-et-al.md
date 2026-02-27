@@ -1,11 +1,11 @@
 ---
 # csl26-686p
 title: 'Migrate: nlm-citation-sequence-brackets-no-et-al'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:45:23Z
-updated_at: 2026-02-23T17:45:24Z
+updated_at: 2026-02-26T23:53:38Z
 ---
 
 Migration prep completed ✅

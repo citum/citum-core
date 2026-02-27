@@ -1,11 +1,11 @@
 ---
 # csl26-ecws
 title: 'Migrate: nlm-name-year'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:45:24Z
-updated_at: 2026-02-23T17:45:24Z
+updated_at: 2026-02-26T23:53:43Z
 ---
 
 Migration prep completed ✅

@@ -1,11 +1,11 @@
 ---
 # csl26-8bww
 title: 'Migrate: chicago-notes'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:45:03Z
-updated_at: 2026-02-23T17:45:03Z
+updated_at: 2026-02-26T23:53:38Z
 ---
 
 Auto-created by prep-migration.sh

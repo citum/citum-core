@@ -1,11 +1,11 @@
 ---
 # csl26-0amy
 title: 'Migrate: the-geological-society-of-london'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T22:50:56Z
-updated_at: 2026-02-23T22:50:57Z
+updated_at: 2026-02-26T23:53:38Z
 ---
 
 Migration prep completed ✅

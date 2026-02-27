@@ -1,11 +1,11 @@
 ---
 # csl26-7jmo
 title: 'Migrate: begell-house-chicago-author-date'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:45:00Z
-updated_at: 2026-02-23T17:45:01Z
+updated_at: 2026-02-26T23:53:38Z
 ---
 
 Migration prep completed ✅

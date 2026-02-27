@@ -1,11 +1,11 @@
 ---
 # csl26-gcsx
 title: 'Migrate: american-institute-of-aeronautics-and-astronautics'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T21:20:13Z
-updated_at: 2026-02-23T21:20:18Z
+updated_at: 2026-02-26T23:53:43Z
 ---
 
 Migration prep completed ✅

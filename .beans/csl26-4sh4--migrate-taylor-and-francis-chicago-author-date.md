@@ -1,11 +1,11 @@
 ---
 # csl26-4sh4
 title: 'Migrate: taylor-and-francis-chicago-author-date'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-14T16:44:32Z
-updated_at: 2026-02-14T16:44:49Z
+updated_at: 2026-02-26T23:53:38Z
 ---
 
 Migration prep completed ✅

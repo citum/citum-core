@@ -1,11 +1,11 @@
 ---
 # csl26-f7kp
 title: 'Migrate: springer-vancouver-author-date'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:45:29Z
-updated_at: 2026-02-23T17:45:29Z
+updated_at: 2026-02-26T23:53:43Z
 ---
 
 Migration prep completed ✅

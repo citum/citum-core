@@ -1,11 +1,11 @@
 ---
 # csl26-m325
 title: Refine APA 7th style fidelity
-status: in-progress
+status: completed
 type: task
 priority: high
 created_at: 2026-02-18T14:42:36Z
-updated_at: 2026-02-18T21:32:08Z
+updated_at: 2026-02-26T23:53:43Z
 ---
 
 Address remaining fidelity gaps in APA 7th style:

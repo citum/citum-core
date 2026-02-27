@@ -1,11 +1,11 @@
 ---
 # csl26-iml3
 title: 'Migrate: springer-basic-brackets'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-14T14:46:41Z
-updated_at: 2026-02-14T15:05:55Z
+updated_at: 2026-02-26T23:53:43Z
 ---
 
 Migration prep completed ✅

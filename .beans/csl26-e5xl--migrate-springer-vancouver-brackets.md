@@ -1,11 +1,11 @@
 ---
 # csl26-e5xl
 title: 'Migrate: springer-vancouver-brackets'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:45:29Z
-updated_at: 2026-02-23T17:45:30Z
+updated_at: 2026-02-26T23:53:43Z
 ---
 
 Migration prep completed ✅
