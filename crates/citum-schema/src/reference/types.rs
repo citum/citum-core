@@ -361,7 +361,7 @@ impl fmt::Display for Title {
 /// Date type.
 #[derive(Debug, Clone, PartialEq)]
 pub enum RefDate {
-    Edtf(csln_edtf::Edtf),
+    Edtf(citum_edtf::Edtf),
     Literal(String),
 }
 

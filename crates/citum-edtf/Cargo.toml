@@ -1,5 +1,5 @@
 [package]
-name = "csln-edtf"
+name = "citum-edtf"
 version.workspace = true
 edition.workspace = true
 description = "A modern EDTF (Extended Date/Time Format) parser built with winnow."
