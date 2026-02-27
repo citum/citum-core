@@ -1,11 +1,11 @@
 ---
 # csl26-6n3c
 title: Support name formatting without periods in initials
-status: todo
+status: completed
 type: feature
 priority: high
 created_at: 2026-02-07T06:53:07Z
-updated_at: 2026-02-07T07:40:14Z
+updated_at: 2026-02-27T02:16:07Z
 blocking:
     - csl26-1p1o
 ---
