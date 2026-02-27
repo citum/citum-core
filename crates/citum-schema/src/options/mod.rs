@@ -24,7 +24,7 @@ pub use localization::{Localize, MonthFormat, Scope};
 pub use multilingual::{MultilingualConfig, MultilingualMode, ScriptConfig};
 pub use processing::{
     Disambiguation, Group, LabelConfig, LabelParams, LabelPreset, Processing, ProcessingCustom,
-    Sort, SortKey, SortSpec,
+    Sort, SortEntry, SortKey, SortSpec,
 };
 pub use substitute::{Substitute, SubstituteConfig, SubstituteKey};
 

@@ -54,11 +54,11 @@ fn build_sorted_style(sort: Vec<SortSpec>) -> Style {
         },
         options: Some(Config {
             processing: Some(Processing::Custom(ProcessingCustom {
-                sort: Some(Sort {
+                sort: Some(citum_schema::options::SortEntry::Explicit(Sort {
                     template: sort,
                     shorten_names: false,
                     render_substitutions: false,
-                }),
+                })),
                 ..Default::default()
             })),
             contributors: Some(ContributorConfig {

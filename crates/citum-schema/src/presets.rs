@@ -29,8 +29,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 use crate::options::{
     AndOptions, ContributorConfig, DateConfig, DelimiterPrecedesLast, DemoteNonDroppingParticle,
-    DisplayAsSort, MonthFormat, ShortenListOptions, Substitute, SubstituteKey, TitleRendering,
-    TitlesConfig,
+    DisplayAsSort, MonthFormat, ShortenListOptions, Sort, SortKey, SortSpec, Substitute,
+    SubstituteKey, TitleRendering, TitlesConfig,
 };
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
@@ -429,6 +429,75 @@ impl TitlePreset {
                 monograph: Some(TitleRendering::default()),
                 periodical: Some(TitleRendering::default()),
                 ..Default::default()
+            },
+        }
+    }
+}
+
+/// Sort order presets for bibliography entries.
+///
+/// Each preset encodes the sort key sequence for a citation style family.
+/// Use for the `bibliography.sort` field to avoid repeating boilerplate key lists.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+#[non_exhaustive]
+pub enum SortPreset {
+    /// Author → year → title. Standard for author-date styles (APA, Chicago, Harvard).
+    AuthorDateTitle,
+    /// Author → title → year. Used in some footnote and note styles.
+    AuthorTitleDate,
+    /// Citation number only. Used in numeric styles (Vancouver, IEEE).
+    CitationNumber,
+}
+
+impl SortPreset {
+    /// Convert this preset to a concrete `Sort`.
+    pub fn sort(&self) -> Sort {
+        match self {
+            SortPreset::AuthorDateTitle => Sort {
+                shorten_names: false,
+                render_substitutions: false,
+                template: vec![
+                    SortSpec {
+                        key: SortKey::Author,
+                        ascending: true,
+                    },
+                    SortSpec {
+                        key: SortKey::Year,
+                        ascending: true,
+                    },
+                    SortSpec {
+                        key: SortKey::Title,
+                        ascending: true,
+                    },
+                ],
+            },
+            SortPreset::AuthorTitleDate => Sort {
+                shorten_names: false,
+                render_substitutions: false,
+                template: vec![
+                    SortSpec {
+                        key: SortKey::Author,
+                        ascending: true,
+                    },
+                    SortSpec {
+                        key: SortKey::Title,
+                        ascending: true,
+                    },
+                    SortSpec {
+                        key: SortKey::Year,
+                        ascending: true,
+                    },
+                ],
+            },
+            SortPreset::CitationNumber => Sort {
+                shorten_names: false,
+                render_substitutions: false,
+                template: vec![SortSpec {
+                    key: SortKey::CitationNumber,
+                    ascending: true,
+                }],
             },
         }
     }
