@@ -245,14 +245,14 @@ impl<'a> Renderer<'a> {
     pub fn render_ungrouped_citation(
         &self,
         items: &[crate::reference::CitationItem],
-        template: &[TemplateComponent],
+        spec: &citum_schema::CitationSpec,
         mode: &citum_schema::citation::CitationMode,
         intra_delimiter: &str,
         suppress_author: bool,
     ) -> Result<Vec<String>, ProcessorError> {
         self.render_ungrouped_citation_with_format::<crate::render::plain::PlainText>(
             items,
-            template,
+            spec,
             mode,
             intra_delimiter,
             suppress_author,
@@ -262,7 +262,7 @@ impl<'a> Renderer<'a> {
     pub fn render_ungrouped_citation_with_format<F>(
         &self,
         items: &[crate::reference::CitationItem],
-        template: &[TemplateComponent],
+        spec: &citum_schema::CitationSpec,
         mode: &citum_schema::citation::CitationMode,
         intra_delimiter: &str,
         suppress_author: bool,
@@ -336,27 +336,10 @@ impl<'a> Renderer<'a> {
             } else {
                 // Standard rendering: use template with citation number
                 let citation_number = self.get_or_assign_citation_number(&item.id);
-
-                // Check for integral mode specific template
-                let integral_spec =
-                    if matches!(mode, citum_schema::citation::CitationMode::Integral) {
-                        self.style
-                            .citation
-                            .as_ref()
-                            .and_then(|cs| cs.integral.as_ref())
-                    } else {
-                        None
-                    };
-
-                let (effective_template, effective_delim) = if let Some(spec) = integral_spec {
-                    if let Some(t) = spec.template.as_ref() {
-                        (t.as_slice(), spec.delimiter.as_deref().unwrap_or(" "))
-                    } else {
-                        (template, intra_delimiter)
-                    }
-                } else {
-                    (template, intra_delimiter)
-                };
+                let item_language = crate::values::effective_item_language(reference);
+                let template = spec.resolve_template_for_language(item_language.as_deref());
+                let effective_template = template.as_deref().unwrap_or(&[]);
+                let effective_delim = spec.delimiter.as_deref().unwrap_or(intra_delimiter);
 
                 if let Some(proc) = self.process_template_with_number_with_format::<F>(
                     reference,
@@ -405,14 +388,14 @@ impl<'a> Renderer<'a> {
     pub fn render_grouped_citation(
         &self,
         items: &[crate::reference::CitationItem],
-        template: &[TemplateComponent],
+        spec: &citum_schema::CitationSpec,
         mode: &citum_schema::citation::CitationMode,
         intra_delimiter: &str,
         suppress_author: bool,
     ) -> Result<Vec<String>, ProcessorError> {
         self.render_grouped_citation_with_format::<crate::render::plain::PlainText>(
             items,
-            template,
+            spec,
             mode,
             intra_delimiter,
             suppress_author,
@@ -422,7 +405,7 @@ impl<'a> Renderer<'a> {
     pub fn render_grouped_citation_with_format<F>(
         &self,
         items: &[crate::reference::CitationItem],
-        template: &[TemplateComponent],
+        spec: &citum_schema::CitationSpec,
         mode: &citum_schema::citation::CitationMode,
         intra_delimiter: &str,
         suppress_author: bool,
@@ -461,20 +444,21 @@ impl<'a> Renderer<'a> {
                 .bibliography
                 .get(&first_item.id)
                 .ok_or_else(|| ProcessorError::ReferenceNotFound(first_item.id.clone()))?;
+            let first_language = crate::values::effective_item_language(first_ref);
+            let first_template = spec.resolve_template_for_language(first_language.as_deref());
+            let template = first_template.as_deref().unwrap_or(&[]);
+            let has_explicit_integral_template = self
+                .style
+                .citation
+                .as_ref()
+                .and_then(|citation| citation.integral.as_ref())
+                .is_some_and(|integral| integral.template.is_some() || integral.locales.is_some());
 
             // If we have an explicit integral template and we're in integral mode,
             // we should try to use it.
-            let integral_spec = if matches!(mode, citum_schema::citation::CitationMode::Integral) {
-                self.style
-                    .citation
-                    .as_ref()
-                    .and_then(|cs| cs.integral.as_ref())
-            } else {
-                None
-            };
-
-            if let Some(spec) = integral_spec
-                && let Some(template) = spec.template.as_ref()
+            if matches!(mode, citum_schema::citation::CitationMode::Integral)
+                && has_explicit_integral_template
+                && !template.is_empty()
             {
                 // Narrative mode with explicit template (e.g., APA 7th)
                 let citation_number = self.get_or_assign_citation_number(&first_item.id);
@@ -534,10 +518,13 @@ impl<'a> Renderer<'a> {
                         .bibliography
                         .get(&item.id)
                         .ok_or_else(|| ProcessorError::ReferenceNotFound(item.id.clone()))?;
+                    let item_language = crate::values::effective_item_language(reference);
+                    let template = spec.resolve_template_for_language(item_language.as_deref());
+                    let effective_template = template.as_deref().unwrap_or(&[]);
                     let citation_number = self.get_or_assign_citation_number(&item.id);
                     if let Some(proc) = self.process_template_with_number_with_format::<F>(
                         reference,
-                        template,
+                        effective_template,
                         RenderContext::Citation,
                         mode.clone(),
                         suppress_author,
@@ -578,13 +565,16 @@ impl<'a> Renderer<'a> {
             let author_part =
                 self.render_author_for_grouping_with_format::<F>(first_ref, template, mode);
 
-            let filtered_template = self.filter_author_from_template(template);
             let mut item_parts = Vec::new();
             for item in &group {
                 let reference = self
                     .bibliography
                     .get(&item.id)
                     .ok_or_else(|| ProcessorError::ReferenceNotFound(item.id.clone()))?;
+                let item_language = crate::values::effective_item_language(reference);
+                let template = spec.resolve_template_for_language(item_language.as_deref());
+                let effective_template = template.as_deref().unwrap_or(&[]);
+                let filtered_template = self.filter_author_from_template(effective_template);
 
                 let citation_number = self.get_or_assign_citation_number(&item.id);
                 if let Some(proc) = self.process_template_with_number_with_format::<F>(
@@ -875,7 +865,8 @@ impl<'a> Renderer<'a> {
         let bib_spec = self.style.bibliography.as_ref()?;
 
         // Resolve default template (handles preset vs explicit)
-        let default_template = bib_spec.resolve_template()?;
+        let item_language = crate::values::effective_item_language(reference);
+        let default_template = bib_spec.resolve_template_for_language(item_language.as_deref())?;
 
         // Determine effective template (override or default)
         let ref_type = reference.ref_type();
@@ -1048,6 +1039,8 @@ impl<'a> Renderer<'a> {
                 if values.value.is_empty() {
                     return None;
                 }
+                let item_language =
+                    crate::values::effective_component_language(reference, &resolved_component);
 
                 // If whole-entry linking is enabled and this component doesn't have a URL,
                 // try to resolve it from global config.
@@ -1078,6 +1071,7 @@ impl<'a> Renderer<'a> {
                     url: values.url,
                     ref_type: Some(ref_type),
                     config: Some(options.config.clone()),
+                    item_language,
                     pre_formatted: values.pre_formatted,
                 })
             })

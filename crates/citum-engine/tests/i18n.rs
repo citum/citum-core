@@ -7,12 +7,17 @@ mod common;
 use common::*;
 
 use citum_engine::Processor;
-use citum_engine::values::resolve_multilingual_string;
+use citum_engine::values::{
+    effective_field_language, effective_item_language, resolve_multilingual_string,
+};
 use citum_schema::{
-    CitationSpec, Style, StyleInfo,
-    options::{Config, MultilingualConfig, MultilingualMode, Processing},
+    BibliographySpec, CitationSpec, LocalizedTemplateSpec, Style, StyleInfo,
+    options::{Config, MultilingualConfig, MultilingualMode, Processing, TitleRendering},
     reference::contributor::{Contributor, MultilingualName, StructuredName},
-    reference::types::{MultilingualComplex, MultilingualString},
+    reference::types::{
+        Collection, CollectionComponent, MultilingualComplex, MultilingualString, Title,
+    },
+    reference::{EdtfString, InputReference, Monograph, MonographType, Parent},
 };
 use std::collections::HashMap;
 
@@ -502,6 +507,7 @@ fn test_multilingual_rendering_numeric_integral_translated() {
                 url: None,
                 accessed: None,
                 language: None,
+                field_languages: Default::default(),
                 note: None,
                 isbn: None,
                 doi: None,
@@ -526,5 +532,349 @@ fn test_multilingual_rendering_numeric_integral_translated() {
             ))
             .unwrap(),
         "Tolstoy [1]"
+    );
+}
+
+#[test]
+fn test_effective_field_language_prefers_field_languages() {
+    let reference = InputReference::Monograph(Box::new(Monograph {
+        id: Some("item1".to_string()),
+        r#type: MonographType::Book,
+        title: Title::Multilingual(MultilingualComplex {
+            original: "Titel".to_string(),
+            lang: Some("de".to_string()),
+            transliterations: HashMap::new(),
+            translations: HashMap::new(),
+        }),
+        author: None,
+        editor: None,
+        translator: None,
+        issued: EdtfString("2024".to_string()),
+        publisher: None,
+        url: None,
+        accessed: None,
+        language: Some("fr".to_string()),
+        field_languages: HashMap::from([("title".to_string(), "en".to_string())]),
+        note: None,
+        isbn: None,
+        doi: None,
+        edition: None,
+        report_number: None,
+        collection_number: None,
+        genre: None,
+        medium: None,
+        keywords: None,
+        original_date: None,
+        original_title: None,
+    }));
+
+    assert_eq!(
+        effective_field_language(&reference, "title", reference.title().as_ref()),
+        Some("en".to_string())
+    );
+}
+
+#[test]
+fn test_effective_item_language_falls_back_to_multilingual_title_lang() {
+    let reference = InputReference::Monograph(Box::new(Monograph {
+        id: Some("item1".to_string()),
+        r#type: MonographType::Book,
+        title: Title::Multilingual(MultilingualComplex {
+            original: "東京".to_string(),
+            lang: Some("ja".to_string()),
+            transliterations: HashMap::new(),
+            translations: HashMap::new(),
+        }),
+        author: None,
+        editor: None,
+        translator: None,
+        issued: EdtfString("2024".to_string()),
+        publisher: None,
+        url: None,
+        accessed: None,
+        language: None,
+        field_languages: HashMap::new(),
+        note: None,
+        isbn: None,
+        doi: None,
+        edition: None,
+        report_number: None,
+        collection_number: None,
+        genre: None,
+        medium: None,
+        keywords: None,
+        original_date: None,
+        original_title: None,
+    }));
+
+    assert_eq!(effective_item_language(&reference), Some("ja".to_string()));
+}
+
+#[test]
+fn test_citation_localized_template_selection_uses_item_language() {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Localized Citation".to_string()),
+            ..Default::default()
+        },
+        citation: Some(CitationSpec {
+            template: Some(vec![citum_schema::tc_variable!(Note)]),
+            locales: Some(vec![
+                LocalizedTemplateSpec {
+                    locale: Some(vec!["de".to_string()]),
+                    default: None,
+                    template: vec![citum_schema::tc_variable!(Publisher)],
+                },
+                LocalizedTemplateSpec {
+                    locale: None,
+                    default: Some(true),
+                    template: vec![citum_schema::tc_variable!(Note)],
+                },
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let mut bibliography = indexmap::IndexMap::new();
+    bibliography.insert(
+        "de-item".to_string(),
+        InputReference::Monograph(Box::new(Monograph {
+            id: Some("de-item".to_string()),
+            r#type: MonographType::Book,
+            title: Title::Single("Titel".to_string()),
+            author: None,
+            editor: None,
+            translator: None,
+            issued: EdtfString("2024".to_string()),
+            publisher: Some(Contributor::SimpleName(
+                citum_schema::reference::SimpleName {
+                    name: MultilingualString::Simple("Verlag".to_string()),
+                    location: None,
+                },
+            )),
+            url: None,
+            accessed: None,
+            language: Some("de-AT".to_string()),
+            field_languages: HashMap::new(),
+            note: Some("fallback".to_string()),
+            isbn: None,
+            doi: None,
+            edition: None,
+            report_number: None,
+            collection_number: None,
+            genre: None,
+            medium: None,
+            keywords: None,
+            original_date: None,
+            original_title: None,
+        })),
+    );
+    bibliography.insert(
+        "fr-item".to_string(),
+        InputReference::Monograph(Box::new(Monograph {
+            id: Some("fr-item".to_string()),
+            r#type: MonographType::Book,
+            title: Title::Single("Titre".to_string()),
+            author: None,
+            editor: None,
+            translator: None,
+            issued: EdtfString("2024".to_string()),
+            publisher: Some(Contributor::SimpleName(
+                citum_schema::reference::SimpleName {
+                    name: MultilingualString::Simple("Editeur".to_string()),
+                    location: None,
+                },
+            )),
+            url: None,
+            accessed: None,
+            language: Some("fr".to_string()),
+            field_languages: HashMap::new(),
+            note: Some("fallback".to_string()),
+            isbn: None,
+            doi: None,
+            edition: None,
+            report_number: None,
+            collection_number: None,
+            genre: None,
+            medium: None,
+            keywords: None,
+            original_date: None,
+            original_title: None,
+        })),
+    );
+
+    let processor = Processor::new(style, bibliography);
+    assert_eq!(
+        processor
+            .process_citation(&citum_schema::cite!("de-item"))
+            .unwrap(),
+        "Verlag"
+    );
+    assert_eq!(
+        processor
+            .process_citation(&citum_schema::cite!("fr-item"))
+            .unwrap(),
+        "fallback"
+    );
+}
+
+#[test]
+fn test_bibliography_localized_template_selection_uses_multilingual_title_lang() {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Localized Bibliography".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![citum_schema::tc_variable!(Note)]),
+            locales: Some(vec![
+                LocalizedTemplateSpec {
+                    locale: Some(vec!["ja".to_string()]),
+                    default: None,
+                    template: vec![citum_schema::tc_title!(Primary)],
+                },
+                LocalizedTemplateSpec {
+                    locale: None,
+                    default: Some(true),
+                    template: vec![citum_schema::tc_variable!(Note)],
+                },
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let mut bibliography = indexmap::IndexMap::new();
+    bibliography.insert(
+        "item1".to_string(),
+        InputReference::Monograph(Box::new(Monograph {
+            id: Some("item1".to_string()),
+            r#type: MonographType::Book,
+            title: Title::Multilingual(MultilingualComplex {
+                original: "東京".to_string(),
+                lang: Some("ja".to_string()),
+                transliterations: HashMap::new(),
+                translations: HashMap::new(),
+            }),
+            author: None,
+            editor: None,
+            translator: None,
+            issued: EdtfString("2024".to_string()),
+            publisher: None,
+            url: None,
+            accessed: None,
+            language: None,
+            field_languages: HashMap::new(),
+            note: Some("fallback".to_string()),
+            isbn: None,
+            doi: None,
+            edition: None,
+            report_number: None,
+            collection_number: None,
+            genre: None,
+            medium: None,
+            keywords: None,
+            original_date: None,
+            original_title: None,
+        })),
+    );
+
+    let processor = Processor::new(style, bibliography);
+    assert_eq!(processor.render_bibliography(), "東京");
+}
+
+#[test]
+fn test_mixed_language_title_formatting_uses_field_languages() {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Mixed Language Titles".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            titles: Some(citum_schema::options::TitlesConfig {
+                component: Some(TitleRendering {
+                    quote: Some(true),
+                    locale_overrides: Some(HashMap::from([(
+                        "de".to_string(),
+                        TitleRendering {
+                            quote: Some(false),
+                            emph: Some(true),
+                            ..Default::default()
+                        },
+                    )])),
+                    ..Default::default()
+                }),
+                container_monograph: Some(TitleRendering {
+                    emph: Some(true),
+                    locale_overrides: Some(HashMap::from([(
+                        "en".to_string(),
+                        TitleRendering {
+                            emph: Some(false),
+                            quote: Some(true),
+                            ..Default::default()
+                        },
+                    )])),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                citum_schema::tc_title!(Primary),
+                citum_schema::tc_title!(ParentMonograph),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let reference = InputReference::CollectionComponent(Box::new(CollectionComponent {
+        id: Some("chapter-1".to_string()),
+        r#type: citum_schema::reference::MonographComponentType::Chapter,
+        title: Some(Title::Single("English Article".to_string())),
+        author: None,
+        translator: None,
+        issued: EdtfString("2024".to_string()),
+        parent: Parent::Embedded(Collection {
+            id: None,
+            r#type: citum_schema::reference::CollectionType::EditedBook,
+            title: Some(Title::Single("Deutscher Sammelband".to_string())),
+            editor: None,
+            translator: None,
+            issued: EdtfString("2024".to_string()),
+            publisher: None,
+            collection_number: None,
+            url: None,
+            accessed: None,
+            language: Some("de".to_string()),
+            field_languages: HashMap::new(),
+            note: None,
+            isbn: None,
+            keywords: None,
+        }),
+        pages: None,
+        url: None,
+        accessed: None,
+        language: Some("de".to_string()),
+        field_languages: HashMap::from([
+            ("title".to_string(), "en".to_string()),
+            ("parent-monograph.title".to_string(), "de".to_string()),
+        ]),
+        note: None,
+        doi: None,
+        genre: None,
+        medium: None,
+        keywords: None,
+    }));
+
+    let bibliography = indexmap::IndexMap::from([("chapter-1".to_string(), reference)]);
+    let processor = Processor::new(style, bibliography);
+
+    assert_eq!(
+        processor.render_bibliography(),
+        "“English Article”. _Deutscher Sammelband_"
     );
 }

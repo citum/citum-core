@@ -632,9 +632,6 @@ impl Processor {
             },
         );
 
-        let template_vec = effective_spec.resolve_template().unwrap_or_default();
-        let template = template_vec.as_slice();
-
         // Sort items if sort spec is present
         let sorted_items = self.sort_citation_items(citation.items.clone(), &effective_spec);
 
@@ -681,7 +678,7 @@ impl Processor {
         let rendered_groups = if is_author_date {
             renderer.render_grouped_citation_with_format::<F>(
                 &sorted_items,
-                template,
+                &effective_spec,
                 &citation.mode,
                 renderer_delimiter,
                 citation.suppress_author,
@@ -689,7 +686,7 @@ impl Processor {
         } else {
             renderer.render_ungrouped_citation_with_format::<F>(
                 &sorted_items,
-                template,
+                &effective_spec,
                 &citation.mode,
                 renderer_delimiter,
                 citation.suppress_author,

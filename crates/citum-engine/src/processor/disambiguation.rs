@@ -507,6 +507,7 @@ mod tests {
             url: None,
             accessed: None,
             language: None,
+            field_languages: Default::default(),
             note: None,
             isbn: None,
             doi: None,

@@ -23,6 +23,8 @@ pub struct ProcTemplateComponent {
     pub ref_type: Option<String>,
     /// Optional global configuration.
     pub config: Option<Config>,
+    /// Effective language for this rendered component.
+    pub item_language: Option<String>,
     /// Whether the value is already pre-formatted (e.g. from a List or substitution).
     pub pre_formatted: bool,
 }
@@ -213,9 +215,12 @@ pub fn get_effective_rendering(component: &ProcTemplateComponent) -> Rendering {
     if let Some(config) = &component.config {
         match &component.template_component {
             TemplateComponent::Title(t) => {
-                if let Some(global_title) =
-                    get_title_category_rendering(&t.title, component.ref_type.as_deref(), config)
-                {
+                if let Some(global_title) = get_title_category_rendering(
+                    &t.title,
+                    component.ref_type.as_deref(),
+                    component.item_language.as_deref(),
+                    config,
+                ) {
                     effective.merge(&global_title);
                 }
             }
@@ -273,6 +278,7 @@ pub fn get_effective_rendering(component: &ProcTemplateComponent) -> Rendering {
 pub fn get_title_category_rendering(
     title_type: &TitleType,
     ref_type: Option<&str>,
+    language: Option<&str>,
     config: &Config,
 ) -> Option<Rendering> {
     let titles_config = config.titles.as_ref()?;
@@ -341,9 +347,12 @@ pub fn get_title_category_rendering(
         _ => None,
     };
 
-    rendering
-        .map(|r| r.to_rendering())
-        .or_else(|| titles_config.default.as_ref().map(|d| d.to_rendering()))
+    let selected = rendering.or(titles_config.default.as_ref())?;
+    let mut effective = selected.to_rendering();
+    if let Some(override_rendering) = selected.locale_override(language) {
+        effective.merge(&override_rendering.to_rendering());
+    }
+    Some(effective)
 }
 
 #[cfg(test)]

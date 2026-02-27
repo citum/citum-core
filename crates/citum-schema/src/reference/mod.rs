@@ -538,6 +538,27 @@ impl InputReference {
         }
     }
 
+    /// Return field-level language overrides.
+    pub fn field_languages(&self) -> &FieldLanguageMap {
+        match self {
+            InputReference::Monograph(r) => &r.field_languages,
+            InputReference::CollectionComponent(r) => &r.field_languages,
+            InputReference::SerialComponent(r) => &r.field_languages,
+            InputReference::Collection(r) => &r.field_languages,
+            InputReference::LegalCase(r) => &r.field_languages,
+            InputReference::Statute(r) => &r.field_languages,
+            InputReference::Treaty(r) => &r.field_languages,
+            InputReference::Hearing(r) => &r.field_languages,
+            InputReference::Regulation(r) => &r.field_languages,
+            InputReference::Brief(r) => &r.field_languages,
+            InputReference::Classic(r) => &r.field_languages,
+            InputReference::Patent(r) => &r.field_languages,
+            InputReference::Dataset(r) => &r.field_languages,
+            InputReference::Standard(r) => &r.field_languages,
+            InputReference::Software(r) => &r.field_languages,
+        }
+    }
+
     /// Set the reference ID.
     pub fn set_id(&mut self, id: String) {
         match self {

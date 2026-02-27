@@ -151,6 +151,24 @@ impl TemplatePreset {
     }
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Default)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct LocalizedTemplateSpec {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub locale: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub default: Option<bool>,
+    pub template: Template,
+}
+
+fn locale_matches(targets: &[String], language: &str) -> bool {
+    let primary = language.split('-').next().unwrap_or(language);
+    targets.iter().any(|candidate| {
+        candidate == language || candidate.split('-').next().unwrap_or(candidate) == primary
+    })
+}
+
 /// Citation specification.
 #[derive(Debug, Deserialize, Serialize, Clone, Default)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
@@ -164,6 +182,8 @@ pub struct CitationSpec {
     pub use_preset: Option<TemplatePreset>,
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub template: Option<Template>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub locales: Option<Vec<LocalizedTemplateSpec>>,
     /// Wrap the entire citation in punctuation. Preferred over prefix/suffix.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub wrap: Option<template::WrapPunctuation>,
@@ -221,6 +241,29 @@ impl CitationSpec {
             .or_else(|| self.use_preset.as_ref().map(|p| p.citation_template()))
     }
 
+    pub fn resolve_template_for_language(&self, language: Option<&str>) -> Option<Template> {
+        if let Some(language) = language
+            && let Some(locales) = &self.locales
+            && let Some(matched) = locales.iter().find(|spec| {
+                spec.locale
+                    .as_ref()
+                    .is_some_and(|targets| locale_matches(targets, language))
+            })
+        {
+            return Some(matched.template.clone());
+        }
+
+        self.locales
+            .as_ref()
+            .and_then(|locales| {
+                locales
+                    .iter()
+                    .find(|spec| spec.default.unwrap_or(false))
+                    .map(|spec| spec.template.clone())
+            })
+            .or_else(|| self.resolve_template())
+    }
+
     /// Resolve the effective spec for a given citation mode.
     ///
     /// If a mode-specific spec exists (e.g., `integral`), it merges with and overrides
@@ -251,6 +294,9 @@ impl CitationSpec {
                 }
                 if spec.template.is_some() {
                     merged.template = spec.template.clone();
+                }
+                if spec.locales.is_some() {
+                    merged.locales = spec.locales.clone();
                 }
                 if spec.wrap.is_some() {
                     merged.wrap = spec.wrap.clone();
@@ -313,6 +359,9 @@ impl CitationSpec {
                 if spec.template.is_some() {
                     merged.template = spec.template.clone();
                 }
+                if spec.locales.is_some() {
+                    merged.locales = spec.locales.clone();
+                }
                 if spec.wrap.is_some() {
                     merged.wrap = spec.wrap.clone();
                 }
@@ -353,6 +402,8 @@ pub struct BibliographySpec {
     /// The default template for bibliography entries.
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub template: Option<Template>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub locales: Option<Vec<LocalizedTemplateSpec>>,
     /// Type-specific template overrides. When present, replaces the default
     /// template for entries of the specified types. Keys are reference type
     /// names (e.g., "chapter", "article-journal").
@@ -387,6 +438,29 @@ impl BibliographySpec {
         self.template
             .clone()
             .or_else(|| self.use_preset.as_ref().map(|p| p.bibliography_template()))
+    }
+
+    pub fn resolve_template_for_language(&self, language: Option<&str>) -> Option<Template> {
+        if let Some(language) = language
+            && let Some(locales) = &self.locales
+            && let Some(matched) = locales.iter().find(|spec| {
+                spec.locale
+                    .as_ref()
+                    .is_some_and(|targets| locale_matches(targets, language))
+            })
+        {
+            return Some(matched.template.clone());
+        }
+
+        self.locales
+            .as_ref()
+            .and_then(|locales| {
+                locales
+                    .iter()
+                    .find(|spec| spec.default.unwrap_or(false))
+                    .map(|spec| spec.template.clone())
+            })
+            .or_else(|| self.resolve_template())
     }
 }
 
@@ -631,6 +705,89 @@ citation:
                 assert_eq!(v.variable, template::SimpleVariable::Doi)
             }
             _ => panic!("Expected Variable"),
+        }
+    }
+
+    #[test]
+    fn test_citation_localized_templates() {
+        let yaml = r#"
+info:
+  title: Localized Citation
+citation:
+  template:
+    - variable: note
+  locales:
+    - locale: [de]
+      template:
+        - variable: publisher
+    - default: true
+      template:
+        - variable: doi
+"#;
+        let style: Style = serde_yaml::from_str(yaml).unwrap();
+        let citation = style.citation.unwrap();
+
+        assert_eq!(
+            citation
+                .resolve_template_for_language(Some("de-AT"))
+                .unwrap()
+                .len(),
+            1
+        );
+        assert_eq!(
+            citation
+                .resolve_template_for_language(Some("fr"))
+                .unwrap()
+                .len(),
+            1
+        );
+        match &citation.resolve_template_for_language(Some("de")).unwrap()[0] {
+            template::TemplateComponent::Variable(v) => {
+                assert_eq!(v.variable, template::SimpleVariable::Publisher)
+            }
+            _ => panic!("Expected Variable"),
+        }
+        match &citation.resolve_template_for_language(Some("fr")).unwrap()[0] {
+            template::TemplateComponent::Variable(v) => {
+                assert_eq!(v.variable, template::SimpleVariable::Doi)
+            }
+            _ => panic!("Expected Variable"),
+        }
+    }
+
+    #[test]
+    fn test_bibliography_localized_templates() {
+        let yaml = r#"
+info:
+  title: Localized Bibliography
+bibliography:
+  template:
+    - variable: note
+  locales:
+    - locale: [ja, zh]
+      template:
+        - title: primary
+    - default: true
+      template:
+        - contributor: author
+          form: long
+"#;
+        let style: Style = serde_yaml::from_str(yaml).unwrap();
+        let bibliography = style.bibliography.unwrap();
+
+        match &bibliography
+            .resolve_template_for_language(Some("ja-JP"))
+            .unwrap()[0]
+        {
+            template::TemplateComponent::Title(_) => {}
+            _ => panic!("Expected Title"),
+        }
+        match &bibliography
+            .resolve_template_for_language(Some("en-US"))
+            .unwrap()[0]
+        {
+            template::TemplateComponent::Contributor(_) => {}
+            _ => panic!("Expected Contributor"),
         }
     }
 

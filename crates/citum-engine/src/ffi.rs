@@ -18,6 +18,7 @@ use crate::render::plain::PlainText;
 use citum_schema::Style;
 use citum_schema::locale::Locale;
 use citum_schema::reference::InputReference;
+use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
 use std::path::Path;
@@ -238,6 +239,7 @@ fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
                 url: field_str("url").and_then(|u| Url::parse(&u).ok()),
                 accessed: None,
                 language,
+                field_languages: HashMap::new(),
                 note: field_str("note"),
                 isbn: field_str("isbn"),
                 doi: field_str("doi"),
@@ -288,6 +290,7 @@ fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
                     url: None,
                     accessed: None,
                     language: None,
+                    field_languages: HashMap::new(),
                     note: None,
                     isbn: None,
                     keywords: None,
@@ -296,6 +299,7 @@ fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
                 url: field_str("url").and_then(|u| Url::parse(&u).ok()),
                 accessed: field_str("urldate").map(EdtfString),
                 language,
+                field_languages: HashMap::new(),
                 note: field_str("note"),
                 doi: field_str("doi"),
                 genre: field_str("type"),
@@ -325,6 +329,7 @@ fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
                 url: field_str("url").and_then(|u| Url::parse(&u).ok()),
                 accessed: field_str("urldate").map(EdtfString),
                 language,
+                field_languages: HashMap::new(),
                 note: field_str("note"),
                 doi: field_str("doi"),
                 pages: field_str("pages"),
@@ -347,6 +352,7 @@ fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
             url: field_str("url").and_then(|u| Url::parse(&u).ok()),
             accessed: field_str("urldate").map(EdtfString),
             language,
+            field_languages: HashMap::new(),
             note: field_str("note"),
             isbn: field_str("isbn"),
             doi: field_str("doi"),

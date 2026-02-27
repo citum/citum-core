@@ -2,6 +2,7 @@ use crate::reference::InputReference;
 use crate::reference::contributor::{Contributor, ContributorList, SimpleName, StructuredName};
 use crate::reference::date::EdtfString;
 use crate::reference::types::*;
+use std::collections::HashMap;
 use url::Url;
 
 fn format_interviewer_note(names: &[csl_legacy::csl_json::Name]) -> Option<String> {
@@ -109,6 +110,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                     url,
                     accessed,
                     language,
+                    field_languages: HashMap::new(),
                     note: note.clone(),
                     isbn,
                     doi,
@@ -160,6 +162,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                         url: None,
                         accessed: None,
                         language: None,
+                        field_languages: HashMap::new(),
                         note: None,
                         isbn: None,
                         keywords: None,
@@ -168,6 +171,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                     url,
                     accessed,
                     language,
+                    field_languages: HashMap::new(),
                     note: note.clone(),
                     doi,
                     genre: legacy.genre,
@@ -215,6 +219,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                     url,
                     accessed,
                     language,
+                    field_languages: HashMap::new(),
                     note: note.clone(),
                     doi,
                     pages: legacy.page,
@@ -254,6 +259,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                 url,
                 accessed,
                 language,
+                field_languages: HashMap::new(),
                 note: note.clone(),
                 doi,
                 keywords: None,
@@ -269,6 +275,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                 url,
                 accessed,
                 language,
+                field_languages: HashMap::new(),
                 note: note.clone(),
                 keywords: None,
             })),
@@ -283,6 +290,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                 url,
                 accessed,
                 language,
+                field_languages: HashMap::new(),
                 note: note.clone(),
                 keywords: None,
             })),
@@ -302,6 +310,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                 url,
                 accessed,
                 language,
+                field_languages: HashMap::new(),
                 note: note.clone(),
                 keywords: None,
             })),
@@ -319,6 +328,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                 url,
                 accessed,
                 language,
+                field_languages: HashMap::new(),
                 note: note.clone(),
                 keywords: None,
             })),
@@ -341,6 +351,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                 url,
                 accessed,
                 language,
+                field_languages: HashMap::new(),
                 note: note.clone(),
                 keywords: None,
             })),
@@ -361,6 +372,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                 url,
                 accessed,
                 language,
+                field_languages: HashMap::new(),
                 note,
                 isbn,
                 doi,
