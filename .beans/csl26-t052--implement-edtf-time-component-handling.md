@@ -5,7 +5,7 @@ status: todo
 type: feature
 priority: normal
 created_at: 2026-02-13T11:26:58Z
-updated_at: 2026-02-13T11:26:58Z
+updated_at: 2026-02-27T22:33:29Z
 ---
 
 Add support for rendering time components from EDTF datetime values.
@@ -63,4 +63,4 @@ Update values/date.rs rendering to:
 
 Blocked by: EDTF date handling implementation (ranges, uncertainty)
 
-Refs: #64
+Refs: csl26-u5de
