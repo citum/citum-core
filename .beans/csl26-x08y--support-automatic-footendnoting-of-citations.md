@@ -1,11 +1,11 @@
 ---
 # csl26-x08y
 title: Support automatic foot/endnoting of citations
-status: todo
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-07T06:53:39Z
-updated_at: 2026-02-24T16:14:33Z
+updated_at: 2026-02-27T21:51:03Z
 parent: csl26-u1in
 blocking:
     - csl26-5t6s
