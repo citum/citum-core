@@ -25,10 +25,34 @@ Build with `--features http` to expose the same three methods over HTTP via
 `axum`. Useful for the citum-hub live preview panel.
 
 ```sh
-cargo build --features http
-citum-server --http --port 8080
-# POST http://localhost:8080/rpc  (same JSON-RPC envelope)
+cargo run -p citum-server --features http -- --http --port 8080
 ```
+
+```sh
+curl -s http://localhost:8080/rpc \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "id": 1,
+    "method": "render_bibliography",
+    "params": {
+      "style_path": "styles/apa-7th.yaml",
+      "refs": {
+        "hawking1988": {
+          "id": "hawking1988",
+          "class": "monograph",
+          "type": "book",
+          "title": "A Brief History of Time",
+          "author": [{"family": "Hawking", "given": "Stephen"}],
+          "issued": "1988"
+        }
+      }
+    }
+  }'
+# {"id":1,"result":["Hawking, S. (1988). A Brief History of Time."]}
+```
+
+> **Note:** `refs` uses native Citum schema format. `issued` is an EDTF string
+> (`"1988"`), not a CSL-JSON `{"date-parts": [[1988]]}` object.
 
 ## Methods
 
