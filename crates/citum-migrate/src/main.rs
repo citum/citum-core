@@ -450,7 +450,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             use_preset: None,
             template: Some(new_bib),
             type_templates,
-            sort: bibliography_sort,
+            sort: bibliography_sort.map(citum_schema::grouping::GroupSortEntry::Explicit),
             ..Default::default()
         }),
         ..Default::default()

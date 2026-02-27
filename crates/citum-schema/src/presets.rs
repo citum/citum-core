@@ -27,6 +27,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! 2. Override individual fields as needed
 //! 3. Skip presets entirely and specify everything explicitly
 
+use crate::grouping::{GroupSort, GroupSortKey, SortKey as GroupSortKey_};
 use crate::options::{
     AndOptions, ContributorConfig, DateConfig, DelimiterPrecedesLast, DemoteNonDroppingParticle,
     DisplayAsSort, MonthFormat, ShortenListOptions, Sort, SortKey, SortSpec, Substitute,
@@ -500,6 +501,54 @@ impl SortPreset {
                 }],
             },
         }
+    }
+
+    /// Convert this preset to a `GroupSort` for use in citation sorting.
+    pub fn group_sort(&self) -> GroupSort {
+        let keys: Vec<GroupSortKey> = match self {
+            SortPreset::AuthorDateTitle => vec![
+                GroupSortKey {
+                    key: GroupSortKey_::Author,
+                    ascending: true,
+                    order: None,
+                    sort_order: None,
+                },
+                GroupSortKey {
+                    key: GroupSortKey_::Issued,
+                    ascending: true,
+                    order: None,
+                    sort_order: None,
+                },
+                GroupSortKey {
+                    key: GroupSortKey_::Title,
+                    ascending: true,
+                    order: None,
+                    sort_order: None,
+                },
+            ],
+            SortPreset::AuthorTitleDate => vec![
+                GroupSortKey {
+                    key: GroupSortKey_::Author,
+                    ascending: true,
+                    order: None,
+                    sort_order: None,
+                },
+                GroupSortKey {
+                    key: GroupSortKey_::Title,
+                    ascending: true,
+                    order: None,
+                    sort_order: None,
+                },
+                GroupSortKey {
+                    key: GroupSortKey_::Issued,
+                    ascending: true,
+                    order: None,
+                    sort_order: None,
+                },
+            ],
+            SortPreset::CitationNumber => vec![],
+        };
+        GroupSort { template: keys }
     }
 }
 
