@@ -29,6 +29,7 @@ pub struct LabelParams {
     pub multi_author_chars: u8,
     pub et_al_min: u8,
     pub et_al_marker: String,
+    pub et_al_names: u8,
     pub year_digits: u8,
 }
 
@@ -52,6 +53,9 @@ pub struct LabelConfig {
     /// Suffix appended when truncated. Alpha/Ams default: "+", Din default: "".
     #[serde(skip_serializing_if = "Option::is_none")]
     pub et_al_marker: Option<String>,
+    /// Names shown when truncated (et-al). Alpha default: 3, Ams default: 4.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub et_al_names: Option<u8>,
     /// Year digits: 2 or 4. Preset default: 2.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub year_digits: Option<u8>,
@@ -65,9 +69,11 @@ impl LabelConfig {
             default_multi_author_chars,
             default_et_al_min,
             default_marker,
+            default_et_al_names,
         ) = match self.preset {
-            LabelPreset::Alpha | LabelPreset::Ams => (3u8, 1u8, 4u8, "+".to_string()),
-            LabelPreset::Din => (4u8, 1u8, 3u8, String::new()),
+            LabelPreset::Alpha => (3u8, 1u8, 4u8, "+".to_string(), 3u8),
+            LabelPreset::Ams => (3u8, 1u8, 4u8, "+".to_string(), 4u8),
+            LabelPreset::Din => (4u8, 1u8, 3u8, String::new(), 3u8),
         };
         LabelParams {
             single_author_chars: self
@@ -78,6 +84,7 @@ impl LabelConfig {
                 .unwrap_or(default_multi_author_chars),
             et_al_min: self.et_al_min.unwrap_or(default_et_al_min),
             et_al_marker: self.et_al_marker.clone().unwrap_or(default_marker),
+            et_al_names: self.et_al_names.unwrap_or(default_et_al_names),
             year_digits: self.year_digits.unwrap_or(2),
         }
     }
