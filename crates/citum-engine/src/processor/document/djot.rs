@@ -5,14 +5,25 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 //! Djot document parsing and HTML conversion.
 
-use super::CitationParser;
+use super::{
+    CitationParser, CitationPlacement, ManualNoteReference, ParsedCitation, ParsedDocument,
+};
 use crate::{Citation, CitationItem};
 use citum_schema::citation::{CitationMode, LocatorType};
+use jotdown::{Container, Event, Parser};
+use std::collections::HashSet;
+use std::ops::Range;
+use winnow::Parser as WinnowParser;
 use winnow::ascii::space0;
 use winnow::combinator::{opt, repeat};
 use winnow::error::ContextError;
-use winnow::prelude::*;
 use winnow::token::{take_until, take_while};
+
+#[derive(Debug, Clone)]
+struct FootnoteDefinitionRange {
+    label: String,
+    content: Range<usize>,
+}
 
 /// A parser for Djot citations using winnow.
 /// Syntax: `[@key]`, `[+@key]`, or `[-@key]`. Multi-cites: `[@key1; @key2]`.
@@ -35,40 +46,129 @@ fn parse_integral_modifier(input: &mut &str) -> winnow::Result<bool, ContextErro
 }
 
 impl CitationParser for DjotParser {
-    fn parse_citations(&self, content: &str) -> Vec<(usize, usize, Citation)> {
-        let mut results = Vec::new();
-        let mut input = content;
-        let mut offset = 0;
+    fn parse_document(&self, content: &str) -> ParsedDocument {
+        let (manual_note_references, manual_note_labels, footnote_definitions) =
+            scan_manual_notes(content);
 
-        while !input.is_empty() {
-            let next_bracket = input.find('[');
-            let start_pos = match next_bracket {
-                Some(b) => b,
-                None => break,
-            };
-
-            let potential = &input[start_pos..];
-            let mut p_input = potential;
-
-            // Try to parse the citation structure: [content]
-            if let Ok(citation) = parse_parenthetical_citation(&mut p_input) {
-                let consumed = potential.len() - p_input.len();
-                let end_pos = start_pos + consumed;
-                results.push((offset + start_pos, offset + end_pos, citation));
-
-                let shift = end_pos;
-                input = &input[shift..];
-                offset += shift;
-            } else {
-                // Not a citation, skip and continue
-                let shift = start_pos + 1;
-                input = &input[shift..];
-                offset += shift;
+        let mut manual_note_order = Vec::new();
+        let mut seen_manual = HashSet::new();
+        for note in &manual_note_references {
+            if seen_manual.insert(note.label.clone()) {
+                manual_note_order.push(note.label.clone());
             }
         }
 
-        results
+        let citations = find_citations(content)
+            .into_iter()
+            .map(|(start, end, citation)| ParsedCitation {
+                start,
+                end,
+                citation,
+                placement: citation_placement(start, end, &footnote_definitions),
+            })
+            .collect();
+
+        ParsedDocument {
+            citations,
+            manual_note_order,
+            manual_note_references,
+            manual_note_labels,
+        }
     }
+}
+
+fn scan_manual_notes(
+    content: &str,
+) -> (
+    Vec<ManualNoteReference>,
+    HashSet<String>,
+    Vec<FootnoteDefinitionRange>,
+) {
+    let mut manual_note_references = Vec::new();
+    let mut manual_note_labels = HashSet::new();
+    let mut footnote_definitions = Vec::new();
+    let mut footnote_stack: Vec<(String, usize)> = Vec::new();
+
+    for (event, range) in Parser::new(content).into_offset_iter() {
+        match event {
+            Event::FootnoteReference(label) => {
+                if footnote_stack.is_empty() {
+                    manual_note_references.push(ManualNoteReference {
+                        label: label.to_string(),
+                        start: range.start,
+                    });
+                    manual_note_labels.insert(label.to_string());
+                }
+            }
+            Event::Start(Container::Footnote { label }, ..) => {
+                manual_note_labels.insert(label.to_string());
+                footnote_stack.push((label.to_string(), range.end));
+            }
+            Event::End(Container::Footnote { label }) => {
+                if let Some((open_label, content_start)) = footnote_stack.pop() {
+                    debug_assert_eq!(open_label, label);
+                    footnote_definitions.push(FootnoteDefinitionRange {
+                        label: open_label,
+                        content: content_start..range.start,
+                    });
+                }
+            }
+            _ => {}
+        }
+    }
+
+    (
+        manual_note_references,
+        manual_note_labels,
+        footnote_definitions,
+    )
+}
+
+fn citation_placement(
+    start: usize,
+    end: usize,
+    footnote_definitions: &[FootnoteDefinitionRange],
+) -> CitationPlacement {
+    footnote_definitions
+        .iter()
+        .find(|definition| definition.content.start <= start && end <= definition.content.end)
+        .map(|definition| CitationPlacement::ManualFootnote {
+            label: definition.label.clone(),
+        })
+        .unwrap_or(CitationPlacement::InlineProse)
+}
+
+fn find_citations(content: &str) -> Vec<(usize, usize, Citation)> {
+    let mut results = Vec::new();
+    let mut input = content;
+    let mut offset = 0;
+
+    while !input.is_empty() {
+        let next_bracket = input.find('[');
+        let start_pos = match next_bracket {
+            Some(b) => b,
+            None => break,
+        };
+
+        let potential = &input[start_pos..];
+        let mut p_input = potential;
+
+        if let Ok(citation) = parse_parenthetical_citation(&mut p_input) {
+            let consumed = potential.len() - p_input.len();
+            let end_pos = start_pos + consumed;
+            results.push((offset + start_pos, offset + end_pos, citation));
+
+            let shift = end_pos;
+            input = &input[shift..];
+            offset += shift;
+        } else {
+            let shift = start_pos + 1;
+            input = &input[shift..];
+            offset += shift;
+        }
+    }
+
+    results
 }
 
 /// Parse `[content]`
@@ -84,10 +184,8 @@ fn parse_citation_content(input: &mut &str) -> winnow::Result<Citation, ContextE
     let mut detected_integral = false;
     let mut suppress_author = false;
 
-    // Split by semicolon for multiple items
     let inner: &str = take_until(0.., ']').parse_next(input)?;
 
-    // Basic item parsing: items are separated by semicolons
     let items: Vec<CitationItem> = repeat(1.., |input: &mut &str| {
         let _ = space0.parse_next(input)?;
         let is_integral = parse_integral_modifier.parse_next(input).unwrap_or(false);
@@ -127,8 +225,6 @@ fn parse_citation_item_no_integral(input: &mut &str) -> winnow::Result<CitationI
 
     let _ = space0.parse_next(input)?;
 
-    // Only consume text after key if there's a comma. Otherwise,
-    // leave remaining text for the multi-cite separator.
     let checkpoint = *input;
     let after_key: &str = take_while(0.., |c: char| c != ';' && c != ']').parse_next(input)?;
 
@@ -136,7 +232,6 @@ fn parse_citation_item_no_integral(input: &mut &str) -> winnow::Result<CitationI
         let locator_part = after_key[comma_pos + 1..].trim();
         parse_hybrid_locators(&mut item, locator_part);
     } else {
-        // No comma found: don't consume the text, restore position
         *input = checkpoint;
     }
 
@@ -150,7 +245,6 @@ fn parse_hybrid_locators(item: &mut CitationItem, locator_str: &str) {
         return;
     }
 
-    // Check for explicit key-value: `page: 23`
     if let Some(colon_pos) = lp.find(':') {
         let key = lp[..colon_pos].trim().to_lowercase();
         let val_with_rest = lp[colon_pos + 1..].trim();
@@ -163,25 +257,20 @@ fn parse_hybrid_locators(item: &mut CitationItem, locator_str: &str) {
 
         item.label = map_label_str(&key);
         item.locator = Some(val.trim().to_string());
-    } else {
-        // Fallback to shorthand: `p. 23`
-        if let Some(space_pos) = lp.find(' ') {
-            let label_str = lp[..space_pos].trim_end_matches('.');
-            let value = &lp[space_pos + 1..];
+    } else if let Some(space_pos) = lp.find(' ') {
+        let label_str = lp[..space_pos].trim_end_matches('.');
+        let value = &lp[space_pos + 1..];
 
-            if let Some(lt) = map_label_str(label_str) {
-                item.label = Some(lt);
-                item.locator = Some(value.to_string());
-            } else {
-                // Not a known label, treat whole string as locator (default to page)
-                item.label = Some(LocatorType::Page);
-                item.locator = Some(lp.to_string());
-            }
+        if let Some(lt) = map_label_str(label_str) {
+            item.label = Some(lt);
+            item.locator = Some(value.to_string());
         } else {
-            // No label, assume page
             item.label = Some(LocatorType::Page);
             item.locator = Some(lp.to_string());
         }
+    } else {
+        item.label = Some(LocatorType::Page);
+        item.locator = Some(lp.to_string());
     }
 }
 
@@ -202,7 +291,7 @@ fn map_label_str(s: &str) -> Option<LocatorType> {
 
 /// Convert Djot markup to HTML using jotdown.
 pub fn djot_to_html(djot: &str) -> String {
-    let events = jotdown::Parser::new(djot);
+    let events = Parser::new(djot);
     jotdown::html::render_to_string(events)
 }
 
@@ -268,7 +357,36 @@ mod tests {
         let content = "[foo; bar]";
         let citations = parser.parse_citations(content);
 
-        // Should not parse as a citation if no '@' keys are present
         assert_eq!(citations.len(), 0);
+    }
+
+    #[test]
+    fn test_parse_document_tracks_manual_footnotes() {
+        let parser = DjotParser;
+        let content = "Text[^m1].\n\n[^m1]: See [@kuhn1962].";
+        let parsed = parser.parse_document(content);
+
+        assert_eq!(parsed.manual_note_order, vec!["m1".to_string()]);
+        assert_eq!(parsed.manual_note_references.len(), 1);
+        assert_eq!(parsed.citations.len(), 1);
+        assert_eq!(
+            parsed.citations[0].placement,
+            CitationPlacement::ManualFootnote {
+                label: "m1".to_string()
+            }
+        );
+    }
+
+    #[test]
+    fn test_parse_document_marks_prose_citations_as_inline() {
+        let parser = DjotParser;
+        let content = "Text [@kuhn1962].";
+        let parsed = parser.parse_document(content);
+
+        assert_eq!(parsed.citations.len(), 1);
+        assert_eq!(
+            parsed.citations[0].placement,
+            CitationPlacement::InlineProse
+        );
     }
 }
