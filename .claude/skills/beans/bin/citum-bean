@@ -56,6 +56,17 @@ case "$CMD" in
         fi
 
         READY_JSON=$(beans list --json --ready)
+        # Defensive filter: keep only actionable statuses for /beans next.
+        # This prevents canceled/superseded/closed items from being recommended
+        # even if upstream ready-query semantics drift.
+        READY_JSON=$(printf "%s\n" "$READY_JSON" | jq '
+            map(
+                select(
+                    (.status // "" | ascii_downcase) as $s |
+                    ($s == "todo" or $s == "in-progress")
+                )
+            )
+        ')
         READY_COUNT=$(printf "%s\n" "$READY_JSON" | jq 'length')
         if [[ "$READY_COUNT" -eq 0 ]]; then
             if [[ "$JSON_OUTPUT" -eq 1 ]]; then
