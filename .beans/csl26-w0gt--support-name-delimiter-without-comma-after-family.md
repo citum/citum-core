@@ -1,11 +1,11 @@
 ---
 # csl26-w0gt
 title: Support name delimiter without comma after family
-status: todo
+status: completed
 type: feature
 priority: high
 created_at: 2026-02-07T06:53:10Z
-updated_at: 2026-02-07T07:40:14Z
+updated_at: 2026-02-27T15:20:59Z
 blocking:
     - csl26-1p1o
 ---
@@ -22,3 +22,7 @@ Fix:
 - Ensure family-given delimiter is configurable per style
 
 Refs: GitHub #133, TIER3_PLAN.md Issue 2.3
+
+## Summary of Changes
+
+Confirmed sort_separator=' ' is handled correctly in contributor.rs. Added unit test verifying space separator produces 'Smith J' (no comma) when inverted, and default produces 'Smith, J'.
