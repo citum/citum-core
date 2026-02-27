@@ -414,6 +414,113 @@ fn test_demote_non_dropping_particle() {
 }
 
 #[test]
+fn test_initialize_with_variants_for_multi_part_given_names() {
+    let name = FlatName {
+        family: Some("Kuhn".to_string()),
+        given: Some("Thomas Samuel".to_string()),
+        ..Default::default()
+    };
+
+    let init_compact = String::new();
+    let compact = contributor::format_single_name(
+        &name,
+        &ContributorForm::Long,
+        0,
+        &Some(DisplayAsSort::All),
+        None,
+        Some(&init_compact),
+        None,
+        None,
+        None,
+        false,
+    );
+    assert_eq!(compact, "Kuhn, TS");
+
+    let init_space = " ".to_string();
+    let space = contributor::format_single_name(
+        &name,
+        &ContributorForm::Long,
+        0,
+        &Some(DisplayAsSort::All),
+        None,
+        Some(&init_space),
+        None,
+        None,
+        None,
+        false,
+    );
+    assert_eq!(space, "Kuhn, T S");
+
+    let init_dot = ".".to_string();
+    let dot = contributor::format_single_name(
+        &name,
+        &ContributorForm::Long,
+        0,
+        &Some(DisplayAsSort::All),
+        None,
+        Some(&init_dot),
+        None,
+        None,
+        None,
+        false,
+    );
+    assert_eq!(dot, "Kuhn, T.S.");
+
+    let init_dot_space = ". ".to_string();
+    let dot_space = contributor::format_single_name(
+        &name,
+        &ContributorForm::Long,
+        0,
+        &Some(DisplayAsSort::All),
+        None,
+        Some(&init_dot_space),
+        None,
+        None,
+        None,
+        false,
+    );
+    assert_eq!(dot_space, "Kuhn, T. S.");
+}
+
+#[test]
+fn test_initialize_with_hyphen_guard() {
+    let name = FlatName {
+        family: Some("Kuhn".to_string()),
+        given: Some("Jean-Paul".to_string()),
+        ..Default::default()
+    };
+    let init_dot = ".".to_string();
+
+    let hyphen_default = contributor::format_single_name(
+        &name,
+        &ContributorForm::Long,
+        0,
+        &Some(DisplayAsSort::All),
+        None,
+        Some(&init_dot),
+        None,
+        None,
+        None,
+        false,
+    );
+    assert_eq!(hyphen_default, "Kuhn, J.-P.");
+
+    let hyphen_disabled = contributor::format_single_name(
+        &name,
+        &ContributorForm::Long,
+        0,
+        &Some(DisplayAsSort::All),
+        None,
+        Some(&init_dot),
+        Some(false),
+        None,
+        None,
+        false,
+    );
+    assert_eq!(hyphen_disabled, "Kuhn, J.");
+}
+
+#[test]
 fn test_template_list_suppression() {
     let config = make_config();
     let locale = make_locale();

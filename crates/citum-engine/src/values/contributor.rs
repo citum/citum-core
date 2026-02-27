@@ -915,9 +915,9 @@ pub fn format_single_name(
                             }
                             current_part.clear();
                         }
-                        // Push separator if: it's not whitespace (e.g., hyphen for J.-P.),
-                        // or if init already has whitespace (so we don't double-space)
-                        if !c.is_whitespace() || init.chars().any(|ic| ic.is_whitespace()) {
+                        // Preserve only non-whitespace separators (e.g., hyphen for J.-P.).
+                        // Whitespace separators are represented by `initialize_with` itself.
+                        if !c.is_whitespace() {
                             result.push(c);
                         }
                     } else {
