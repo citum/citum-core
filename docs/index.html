@@ -364,19 +364,21 @@
                     </p>
                 </a>
 
-                <!-- JSON Server Mode (Roadmap) -->
-                <div class="feature-card p-8 rounded-xl border border-slate-200 border-dashed transition-all group">
+                <!-- JSON Server Mode -->
+                <a href="https://github.com/citum/citum-core/tree/main/crates/citum-server"
+                    class="feature-card p-8 rounded-xl border border-slate-200 transition-all group block"
+                    target="_blank">
                     <div
-                        class="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 mb-6">
+                        class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons">hub</span>
                     </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">JSON Server Mode <span class="text-xs font-normal text-slate-400 ml-1">Roadmap</span></h3>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">JSON-RPC Server</h3>
                     <p class="text-slate-500 leading-relaxed text-sm">
-                        Planned async service mode: a long-running background process that eliminates startup latency
-                        for interactive editors (Word, Zotero, web apps). Modelled on Haskell citeproc&#8217;s server
-                        design, powered by Tokio and axum.
+                        Long-running server process for real-time citation formatting. Reads newline-delimited
+                        JSON-RPC from stdin/stdout (compatible with Zotero and Pandoc plugins) or runs an optional
+                        HTTP mode via axum for web app integrations.
                     </p>
-                </div>
+                </a>
 
                 <!-- Web Interactivity -->
                 <a href="examples.html#web-interactivity"
