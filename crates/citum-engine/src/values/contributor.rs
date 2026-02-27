@@ -110,6 +110,11 @@ impl ComponentValues for TemplateContributor {
                 .multilingual
                 .as_ref()
                 .and_then(|m| m.name_mode.as_ref());
+            let preferred_transliteration = options
+                .config
+                .multilingual
+                .as_ref()
+                .and_then(|m| m.preferred_transliteration.as_deref());
             let preferred_script = options
                 .config
                 .multilingual
@@ -117,7 +122,13 @@ impl ComponentValues for TemplateContributor {
                 .and_then(|m| m.preferred_script.as_ref());
             let locale_str = &options.locale.locale;
 
-            crate::values::resolve_multilingual_name(&contrib, mode, preferred_script, locale_str)
+            crate::values::resolve_multilingual_name(
+                &contrib,
+                mode,
+                preferred_transliteration,
+                preferred_script,
+                locale_str,
+            )
         } else {
             Vec::new()
         };
@@ -150,6 +161,11 @@ impl ComponentValues for TemplateContributor {
                                 .multilingual
                                 .as_ref()
                                 .and_then(|m| m.name_mode.as_ref());
+                            let preferred_transliteration = options
+                                .config
+                                .multilingual
+                                .as_ref()
+                                .and_then(|m| m.preferred_transliteration.as_deref());
                             let preferred_script = options
                                 .config
                                 .multilingual
@@ -160,6 +176,7 @@ impl ComponentValues for TemplateContributor {
                             let names_vec = crate::values::resolve_multilingual_name(
                                 &editors,
                                 mode,
+                                preferred_transliteration,
                                 preferred_script,
                                 locale_str,
                             );
@@ -291,6 +308,11 @@ impl ComponentValues for TemplateContributor {
                                 .multilingual
                                 .as_ref()
                                 .and_then(|m| m.name_mode.as_ref());
+                            let preferred_transliteration = options
+                                .config
+                                .multilingual
+                                .as_ref()
+                                .and_then(|m| m.preferred_transliteration.as_deref());
                             let preferred_script = options
                                 .config
                                 .multilingual
@@ -301,6 +323,7 @@ impl ComponentValues for TemplateContributor {
                             let names_vec = crate::values::resolve_multilingual_name(
                                 &translators,
                                 mode,
+                                preferred_transliteration,
                                 preferred_script,
                                 locale_str,
                             );

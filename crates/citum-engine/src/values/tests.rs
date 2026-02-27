@@ -1202,3 +1202,97 @@ fn test_sort_separator_space() {
     );
     assert_eq!(result_default, "Smith, J");
 }
+
+#[test]
+fn preferred_transliteration_exact_match() {
+    use citum_schema::reference::types::{MultilingualComplex, MultilingualString};
+    use std::collections::HashMap;
+
+    let s = MultilingualString::Complex(MultilingualComplex {
+        original: "战争".to_string(),
+        lang: None,
+        transliterations: vec![
+            ("zh-Latn-wadegile".to_string(), "Chan-cheng".to_string()),
+            ("zh-Latn-pinyin".to_string(), "Zhànzhēng".to_string()),
+        ]
+        .into_iter()
+        .collect(),
+        translations: HashMap::new(),
+    });
+    let result = super::resolve_multilingual_string(
+        &s,
+        Some(&citum_schema::options::MultilingualMode::Transliterated),
+        Some(&["zh-Latn-wadegile".to_string()]),
+        None,
+        "en",
+    );
+    assert_eq!(result, "Chan-cheng");
+}
+
+#[test]
+fn preferred_transliteration_substring_match() {
+    use citum_schema::reference::types::{MultilingualComplex, MultilingualString};
+    use std::collections::HashMap;
+
+    let s = MultilingualString::Complex(MultilingualComplex {
+        original: "战争".to_string(),
+        lang: None,
+        transliterations: vec![("zh-Latn-pinyin".to_string(), "Zhànzhēng".to_string())]
+            .into_iter()
+            .collect(),
+        translations: HashMap::new(),
+    });
+    let result = super::resolve_multilingual_string(
+        &s,
+        Some(&citum_schema::options::MultilingualMode::Transliterated),
+        Some(&["zh-Latn".to_string()]),
+        None,
+        "en",
+    );
+    assert_eq!(result, "Zhànzhēng");
+}
+
+#[test]
+fn preferred_transliteration_fallback_to_preferred_script() {
+    use citum_schema::reference::types::{MultilingualComplex, MultilingualString};
+    use std::collections::HashMap;
+
+    let s = MultilingualString::Complex(MultilingualComplex {
+        original: "战争".to_string(),
+        lang: None,
+        transliterations: vec![("zh-Latn-pinyin".to_string(), "Zhànzhēng".to_string())]
+            .into_iter()
+            .collect(),
+        translations: HashMap::new(),
+    });
+    let script = "Latn".to_string();
+    let result = super::resolve_multilingual_string(
+        &s,
+        Some(&citum_schema::options::MultilingualMode::Transliterated),
+        None,
+        Some(&script),
+        "en",
+    );
+    assert_eq!(result, "Zhànzhēng");
+}
+
+#[test]
+fn preferred_transliteration_fallback_to_original() {
+    use citum_schema::reference::types::{MultilingualComplex, MultilingualString};
+    use std::collections::HashMap;
+
+    let s = MultilingualString::Complex(MultilingualComplex {
+        original: "战争".to_string(),
+        lang: None,
+        transliterations: HashMap::new(),
+        translations: HashMap::new(),
+    });
+    let result = super::resolve_multilingual_string(
+        &s,
+        Some(&citum_schema::options::MultilingualMode::Transliterated),
+        None,
+        None,
+        "en",
+    );
+    assert_eq!(result, "战争");
+}

@@ -77,6 +77,11 @@ impl ComponentValues for TemplateTitle {
                         .multilingual
                         .as_ref()
                         .and_then(|ml| ml.title_mode.as_ref());
+                    let preferred_transliteration = options
+                        .config
+                        .multilingual
+                        .as_ref()
+                        .and_then(|ml| ml.preferred_transliteration.as_deref());
                     let preferred_script = options
                         .config
                         .multilingual
@@ -89,6 +94,7 @@ impl ComponentValues for TemplateTitle {
                     crate::values::resolve_multilingual_string(
                         &complex,
                         mode,
+                        preferred_transliteration,
                         preferred_script,
                         locale_str,
                     )
