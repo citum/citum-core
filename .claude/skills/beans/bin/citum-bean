@@ -57,8 +57,8 @@ case "$CMD" in
 
         READY_JSON=$(beans list --json --ready)
         # Defensive filter: keep only actionable statuses for /beans next.
-        # This prevents canceled/superseded/closed items from being recommended
-        # even if upstream ready-query semantics drift.
+        # beans list --ready has a known bug where it leaks canceled beans;
+        # this filter is the authoritative gate.
         READY_JSON=$(printf "%s\n" "$READY_JSON" | jq '
             map(
                 select(

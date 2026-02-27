@@ -3,9 +3,9 @@
 title: Evaluate addition of a server mode with Open API
 status: todo
 type: task
-priority: medium
+priority: normal
 created_at: 2026-02-07T11:35:47Z
-updated_at: 2026-02-07T12:12:34Z
+updated_at: 2026-02-27T15:45:16Z
 parent: csl26-li63
 blocking:
     - csl26-ismq

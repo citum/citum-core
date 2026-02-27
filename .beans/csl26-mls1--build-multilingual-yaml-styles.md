@@ -1,11 +1,11 @@
 ---
 # csl26-mls1
 title: Build multilingual YAML styles for ISO-690, GOST, APA, and JM-Turabian
-status: todo
+status: in-progress
 type: feature
 priority: high
 created_at: 2026-02-22T00:00:00Z
-updated_at: 2026-02-22T00:00:00Z
+updated_at: 2026-02-27T16:25:40Z
 ---
 
 Build concrete YAML style files and test fixtures for the priority multilingual style families.
@@ -30,3 +30,12 @@ Build concrete YAML style files and test fixtures for the priority multilingual 
 - No regressions in APA 7th oracle scores (8/8 citations, 27/27 bibliography)
 
 **Refs:** docs/architecture/MULTILINGUAL_GROUPING_STYLE_TARGETS.md, csl26-mlt2, docs/architecture/MULTILINGUAL.md
+
+## Summary of Changes
+
+- Added `multilingual` options block to GOST R 7.0.5-2008 author-date + numeric (Cyrl preferred-script, transliterated name-mode)
+- Created `styles/iso690-author-date.yaml` and `styles/iso690-numeric.yaml` (locale-agnostic, combined title-mode)
+- Created `styles/experimental/jm-turabian-multilingual.yaml` (CJK, given-family order, note format)
+- Created `tests/fixtures/multilingual/` with three fixture files: cjk, cyrillic, mixed
+- APA 7th oracle: 31/31 bibliography, 13/13 citations — no regression
+- PR: https://github.com/citum/citum-core/pull/245
