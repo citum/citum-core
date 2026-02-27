@@ -1160,3 +1160,45 @@ fn test_should_strip_periods_precedence() {
     };
     assert!(!should_strip_periods(&rendering_default, &options_none));
 }
+
+#[test]
+fn test_sort_separator_space() {
+    use citum_schema::options::DisplayAsSort;
+
+    // Test sort_separator directly via format_single_name with inverted display
+    let name = FlatName {
+        family: Some("Smith".to_string()),
+        given: Some("John".to_string()),
+        ..Default::default()
+    };
+
+    // Test with space separator: should produce "Smith J" (no comma)
+    let result_space = contributor::format_single_name(
+        &name,
+        &ContributorForm::Long,
+        0,
+        &Some(DisplayAsSort::All), // Force inverted (family-first)
+        None,
+        Some(&"".to_string()),  // initialize_with (no separator after initials)
+        None,                   // initialize_with_hyphen
+        None,                   // demote_ndp
+        Some(&" ".to_string()), // sort_separator - space instead of comma
+        false,                  // expand_given_names
+    );
+    assert_eq!(result_space, "Smith J");
+
+    // Test with default (no sort_separator set): should produce "Smith, J" (with comma)
+    let result_default = contributor::format_single_name(
+        &name,
+        &ContributorForm::Long,
+        0,
+        &Some(DisplayAsSort::All), // Force inverted (family-first)
+        None,
+        Some(&"".to_string()), // initialize_with (no separator after initials)
+        None,                  // initialize_with_hyphen
+        None,                  // demote_ndp
+        None,                  // sort_separator - default to ", "
+        false,                 // expand_given_names
+    );
+    assert_eq!(result_default, "Smith, J");
+}
