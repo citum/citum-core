@@ -57,6 +57,43 @@ author:
       given: "Leo"
 ```
 
+### 1.1a Field-Scoped Language Metadata
+
+Entry-level `language` is not always enough.
+
+Some records are genuinely mixed-language at the field level. A common case is an edited volume where:
+
+- the chapter title is English
+- the container book title is German
+- the entry as a whole is still cataloged as German
+
+For that case, Citum supports `field-languages` on the reference:
+
+```yaml
+title: "English Article"
+language: de
+field-languages:
+  title: en
+  parent-monograph.title: de
+```
+
+Interpretation:
+
+- `language: de` remains the default language for the item
+- `field-languages.title: en` overrides the language only for the chapter/article title
+- `field-languages.parent-monograph.title: de` explicitly marks the container title as German
+
+This is what "field-scoped language metadata" means in practice: language tags attached to specific bibliographic fields, not just to the whole entry.
+
+Current engine-supported scopes:
+
+- `title`
+- `title-short`
+- `parent-monograph.title`
+- `parent-serial.title`
+
+Unknown keys may be stored for forward compatibility, but current rendering logic ignores them.
+
 ### 1.2 Internal Representation
 
 We use Serde's `untagged` enum feature to seamlessly support both formats. This model incorporates feedback that alternate fields need explicit language and script tagging.
@@ -175,6 +212,8 @@ The processor must distinguish between:
 *   **Style Locale**: The language of the citation style (e.g., English for "edited by").
 
 Labels ("Ed.", "vol.") will always use the **Style Locale**. Data fields will use the script determined by the **Data Language** and **Multilingual Mode**.
+
+When `field-languages` is present, the processor should prefer the field-scoped language over the entry-level language for that specific field. This is how Citum can format a chapter title as English while formatting the containing book title as German in the same entry.
 
 ## 4. Sorting & Transliteration
 
