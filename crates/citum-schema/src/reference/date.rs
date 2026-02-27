@@ -1,6 +1,6 @@
 use crate::locale::MonthList;
 use crate::reference::types::RefDate;
-use csln_edtf::{Day, Edtf, MonthOrSeason};
+use csln_edtf::{Day, Edtf, MonthOrSeason, Time};
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -174,6 +174,19 @@ impl EdtfString {
     /// Check if the range is open-ended (ends with "..").
     pub fn is_open_range(&self) -> bool {
         matches!(self.parse(), RefDate::Edtf(Edtf::IntervalFrom(_)))
+    }
+
+    /// Extract the time component from the date, if present.
+    pub fn time(&self) -> Option<Time> {
+        match self.parse() {
+            RefDate::Edtf(Edtf::Date(date)) => date.time,
+            _ => None,
+        }
+    }
+
+    /// Check if the date has a time component.
+    pub fn has_time(&self) -> bool {
+        self.time().is_some()
     }
 }
 

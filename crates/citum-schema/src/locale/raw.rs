@@ -40,6 +40,12 @@ pub struct RawDateTerms {
     pub uncertainty_term: Option<String>,
     #[serde(default)]
     pub open_ended_term: Option<String>,
+    #[serde(default)]
+    pub am: Option<String>,
+    #[serde(default)]
+    pub pm: Option<String>,
+    #[serde(default)]
+    pub timezone_utc: Option<String>,
 }
 
 /// Raw month names for YAML parsing.

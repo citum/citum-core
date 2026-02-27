@@ -1,11 +1,11 @@
 ---
 # csl26-t052
 title: Implement EDTF time component handling
-status: todo
+status: in-progress
 type: feature
 priority: normal
 created_at: 2026-02-13T11:26:58Z
-updated_at: 2026-02-27T22:33:29Z
+updated_at: 2026-02-27T22:43:52Z
 ---
 
 Add support for rendering time components from EDTF datetime values.

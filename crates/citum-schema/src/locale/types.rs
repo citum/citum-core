@@ -187,6 +187,15 @@ pub struct DateTerms {
     /// Term for open-ended date ranges (e.g., "present").
     #[serde(skip_serializing_if = "Option::is_none")]
     pub open_ended_term: Option<String>,
+    /// AM period term (e.g., "AM").
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub am: Option<String>,
+    /// PM period term (e.g., "PM").
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pm: Option<String>,
+    /// UTC timezone term (e.g., "UTC").
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub timezone_utc: Option<String>,
 }
 
 impl DateTerms {
@@ -202,6 +211,9 @@ impl DateTerms {
             ],
             uncertainty_term: Some("uncertain".into()),
             open_ended_term: Some("present".into()),
+            am: Some("AM".into()),
+            pm: Some("PM".into()),
+            timezone_utc: Some("UTC".into()),
         }
     }
 }

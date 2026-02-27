@@ -1,6 +1,64 @@
 use crate::reference::{EdtfString, Reference};
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
+use citum_schema::options::dates::TimeFormat;
 use citum_schema::template::{DateForm, DateVariable as TemplateDateVar, TemplateDate};
+use csln_edtf::Timezone;
+
+fn format_time(
+    time: csln_edtf::Time,
+    format: &TimeFormat,
+    show_seconds: bool,
+    show_timezone: bool,
+    am_term: Option<&str>,
+    pm_term: Option<&str>,
+    utc_term: Option<&str>,
+) -> String {
+    let (display_hour, period) = match format {
+        TimeFormat::Hour12 => {
+            let (h, p) = if time.hour == 0 {
+                (12u32, am_term.unwrap_or("AM"))
+            } else if time.hour < 12 {
+                (time.hour, am_term.unwrap_or("AM"))
+            } else if time.hour == 12 {
+                (12u32, pm_term.unwrap_or("PM"))
+            } else {
+                (time.hour - 12, pm_term.unwrap_or("PM"))
+            };
+            (h, Some(p))
+        }
+        TimeFormat::Hour24 => (time.hour, None),
+    };
+
+    let time_str = if show_seconds {
+        format!("{:02}:{:02}:{:02}", display_hour, time.minute, time.second)
+    } else {
+        format!("{:02}:{:02}", display_hour, time.minute)
+    };
+
+    let with_period = match period {
+        Some(p) => format!("{} {}", time_str, p),
+        None => time_str,
+    };
+
+    if show_timezone {
+        let tz_str = match time.timezone {
+            Some(Timezone::Utc) => utc_term.unwrap_or("UTC").to_string(),
+            Some(Timezone::Offset(mins)) => {
+                let sign = if mins >= 0 { '+' } else { '-' };
+                let abs = mins.unsigned_abs();
+                format!("{}{:02}:{:02}", sign, abs / 60, abs % 60)
+            }
+            None => String::new(),
+        };
+        if tz_str.is_empty() {
+            with_period
+        } else {
+            format!("{} {}", with_period, tz_str)
+        }
+    } else {
+        with_period
+    }
+}
 
 impl ComponentValues for TemplateDate {
     fn values<F: crate::render::format::OutputFormat<Output = String>>(
@@ -180,10 +238,30 @@ impl ComponentValues for TemplateDate {
                     }
                     let month = date.month(&locale.dates.months.long);
                     let day = date.day();
-                    match (month.is_empty(), day) {
-                        (true, _) => Some(year),
-                        (false, None) => Some(format!("{} {}", month, year)),
-                        (false, Some(d)) => Some(format!("{} {}, {}", month, d, year)),
+                    let base = match (month.is_empty(), day) {
+                        (true, _) => year,
+                        (false, None) => format!("{} {}", month, year),
+                        (false, Some(d)) => format!("{} {}, {}", month, d, year),
+                    };
+                    // Append time component if configured and present
+                    if let (Some(time_fmt), Some(time)) = (
+                        date_config.and_then(|c| c.time_format.as_ref()),
+                        date.time(),
+                    ) {
+                        let show_secs = date_config.map(|c| c.show_seconds).unwrap_or(false);
+                        let show_tz = date_config.map(|c| c.show_timezone).unwrap_or(false);
+                        let time_str = format_time(
+                            time,
+                            time_fmt,
+                            show_secs,
+                            show_tz,
+                            locale.dates.am.as_deref(),
+                            locale.dates.pm.as_deref(),
+                            locale.dates.timezone_utc.as_deref(),
+                        );
+                        Some(format!("{}, {}", base, time_str))
+                    } else {
+                        Some(base)
                     }
                 }
                 DateForm::YearMonthDay => {
@@ -310,5 +388,83 @@ mod tests {
 
         // Test zero returns None
         assert_eq!(int_to_letter(0), None);
+    }
+}
+
+#[cfg(test)]
+mod time_tests {
+    use super::*;
+    use csln_edtf::{Time, Timezone};
+
+    #[test]
+    fn test_format_time_12h_utc() {
+        let time = Time {
+            hour: 23,
+            minute: 20,
+            second: 30,
+            timezone: Some(Timezone::Utc),
+        };
+        let result = format_time(
+            time,
+            &TimeFormat::Hour12,
+            false,
+            true,
+            Some("AM"),
+            Some("PM"),
+            Some("UTC"),
+        );
+        assert_eq!(result, "11:20 PM UTC");
+    }
+
+    #[test]
+    fn test_format_time_24h_utc() {
+        let time = Time {
+            hour: 23,
+            minute: 20,
+            second: 30,
+            timezone: Some(Timezone::Utc),
+        };
+        let result = format_time(
+            time,
+            &TimeFormat::Hour24,
+            false,
+            true,
+            None,
+            None,
+            Some("UTC"),
+        );
+        assert_eq!(result, "23:20 UTC");
+    }
+
+    #[test]
+    fn test_format_time_with_offset() {
+        let time = Time {
+            hour: 10,
+            minute: 10,
+            second: 10,
+            timezone: Some(Timezone::Offset(330)),
+        };
+        let result = format_time(
+            time,
+            &TimeFormat::Hour24,
+            false,
+            true,
+            None,
+            None,
+            Some("UTC"),
+        );
+        assert_eq!(result, "10:10 +05:30");
+    }
+
+    #[test]
+    fn test_format_time_no_timezone() {
+        let time = Time {
+            hour: 14,
+            minute: 30,
+            second: 0,
+            timezone: None,
+        };
+        let result = format_time(time, &TimeFormat::Hour24, false, false, None, None, None);
+        assert_eq!(result, "14:30");
     }
 }
