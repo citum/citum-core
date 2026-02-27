@@ -4,12 +4,11 @@
 **LLM Access:** Yes  
 **Purpose:** Task tracking and smart next-step selection using `beans`
 
-## Bootstrap (Required)
+## Usage
 
-1. Run `beans prime` at session start (or when task context changes).
-2. Treat `beans prime` output as authoritative for command syntax and workflow.
-3. Prefer `--json` for agent parsing and automation.
-4. Do not use TodoWrite or ad-hoc todo lists; track work in beans.
+1. Treat `beans prime` output as authoritative for command syntax and workflow.
+2. Prefer `--json` for agent parsing and automation.
+3. Do not use TodoWrite or ad-hoc todo lists; track work in beans.
 
 ## Citum Overlay
 
