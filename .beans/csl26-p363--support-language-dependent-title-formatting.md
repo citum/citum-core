@@ -1,11 +1,11 @@
 ---
 # csl26-p363
 title: Support language-dependent title formatting
-status: todo
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-07T06:53:34Z
-updated_at: 2026-02-08T21:04:12Z
+updated_at: 2026-02-27T00:00:00Z
 parent: csl26-m3lb
 ---
 
