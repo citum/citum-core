@@ -5,6 +5,7 @@
  * Usage:
  *   node scripts/analyze-migration-gaps.js --report /tmp/core-report.json
  *   node scripts/analyze-migration-gaps.js --report /tmp/core-report.json --min-occurrences 2
+ *   node scripts/analyze-migration-gaps.js --report /tmp/core-report.json --component-threshold 0.95
  */
 
 'use strict';
@@ -16,6 +17,7 @@ function parseArgs(argv) {
   const args = {
     report: null,
     minOccurrences: 2,
+    componentThreshold: 0.95,
   };
 
   for (let i = 2; i < argv.length; i++) {
@@ -24,6 +26,8 @@ function parseArgs(argv) {
       args.report = argv[++i];
     } else if (arg === '--min-occurrences' && i + 1 < argv.length) {
       args.minOccurrences = Number(argv[++i]);
+    } else if (arg === '--component-threshold' && i + 1 < argv.length) {
+      args.componentThreshold = Number(argv[++i]);
     } else if (arg === '-h' || arg === '--help') {
       printHelp();
       process.exit(0);
@@ -38,6 +42,13 @@ function parseArgs(argv) {
   if (!Number.isFinite(args.minOccurrences) || args.minOccurrences < 1) {
     throw new Error('--min-occurrences must be a positive number');
   }
+  if (
+    !Number.isFinite(args.componentThreshold) ||
+    args.componentThreshold <= 0 ||
+    args.componentThreshold > 1
+  ) {
+    throw new Error('--component-threshold must be a number in the range (0, 1]');
+  }
 
   return args;
 }
@@ -48,6 +59,7 @@ function printHelp() {
   console.log('Usage:');
   console.log('  node scripts/analyze-migration-gaps.js --report /tmp/core-report.json');
   console.log('  node scripts/analyze-migration-gaps.js --report /tmp/core-report.json --min-occurrences 2');
+  console.log('  node scripts/analyze-migration-gaps.js --report /tmp/core-report.json --component-threshold 0.95');
 }
 
 function ratioSafe(passed, total) {
@@ -61,6 +73,12 @@ function topEntries(map, minOccurrences) {
     .sort((a, b) => b[1] - a[1]);
 }
 
+function percentile(sortedValues, p) {
+  if (sortedValues.length === 0) return null;
+  const idx = Math.min(sortedValues.length - 1, Math.max(0, Math.floor(sortedValues.length * p)));
+  return Number(sortedValues[idx].toFixed(3));
+}
+
 function main() {
   const args = parseArgs(process.argv);
   const reportPath = path.resolve(args.report);
@@ -69,7 +87,10 @@ function main() {
   const styles = report.styles || [];
   const citationClusters = new Map();
   const bibliographyClusters = new Map();
+  const unmappedComponents = new Map();
   const targets = [];
+  const componentCoverage = [];
+  const componentCoverageFailures = [];
 
   for (const style of styles) {
     const citationRatio = ratioSafe(style.citations?.passed || 0, style.citations?.total || 0);
@@ -100,10 +121,32 @@ function main() {
 
     for (const [cluster, count] of Object.entries(style.componentSummary || {})) {
       bibliographyClusters.set(cluster, (bibliographyClusters.get(cluster) || 0) + count);
+      unmappedComponents.set(cluster, (unmappedComponents.get(cluster) || 0) + count);
+    }
+
+    if (typeof style.componentMatchRate === 'number') {
+      componentCoverage.push(style.componentMatchRate);
+      if (style.componentMatchRate < args.componentThreshold) {
+        componentCoverageFailures.push({
+          style: style.name,
+          componentMatchRate: Number(style.componentMatchRate.toFixed(3)),
+          bibliography: style.bibliography || null,
+          topGaps: Object.entries(style.componentSummary || {})
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([cluster, count]) => ({ cluster, count })),
+        });
+      }
     }
   }
 
   targets.sort((a, b) => (a.fidelity - b.fidelity) || (a.sqi - b.sqi));
+  componentCoverageFailures.sort((a, b) => a.componentMatchRate - b.componentMatchRate);
+
+  const sortedCoverage = [...componentCoverage].sort((a, b) => a - b);
+  const coverageAvg = componentCoverage.length
+    ? componentCoverage.reduce((sum, value) => sum + value, 0) / componentCoverage.length
+    : null;
 
   const output = {
     report: reportPath,
@@ -119,6 +162,17 @@ function main() {
       bibliography: report.bibliographyOverall || null,
       sqi: report.qualityOverall || null,
     },
+    componentCoverage: {
+      threshold: args.componentThreshold,
+      measuredStyles: componentCoverage.length,
+      passStyles: componentCoverage.filter((value) => value >= args.componentThreshold).length,
+      failStyles: componentCoverageFailures.length,
+      average: coverageAvg !== null ? Number(coverageAvg.toFixed(3)) : null,
+      p50: percentile(sortedCoverage, 0.5),
+      p10: percentile(sortedCoverage, 0.1),
+      p90: percentile(sortedCoverage, 0.9),
+      failures: componentCoverageFailures,
+    },
     targetStyles: targets,
     citationClusters: topEntries(citationClusters, args.minOccurrences).map(([id, count]) => ({
       id,
@@ -127,6 +181,12 @@ function main() {
     bibliographyClusters: topEntries(bibliographyClusters, args.minOccurrences).map(
       ([cluster, count]) => ({
         cluster,
+        count,
+      })
+    ),
+    unmappedComponents: topEntries(unmappedComponents, args.minOccurrences).map(
+      ([component, count]) => ({
+        component,
         count,
       })
     ),
