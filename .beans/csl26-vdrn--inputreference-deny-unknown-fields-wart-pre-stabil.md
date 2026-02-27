@@ -1,11 +1,11 @@
 ---
 # csl26-vdrn
 title: 'InputReference deny_unknown_fields wart: pre-stabilization mitigation'
-status: todo
+status: completed
 type: bug
 priority: normal
 created_at: 2026-02-25T12:21:13Z
-updated_at: 2026-02-25T12:21:13Z
+updated_at: 2026-02-27T14:23:24Z
 ---
 
 ## Problem
@@ -32,3 +32,7 @@ Once the schema is declared stable, callers (Zotero, Pandoc, etc.) will rely on 
 
 - DESIGN_PRINCIPLES.md §3 (existing documentation of the trade-off)
 - ARCHITECTURAL_SOUNDNESS_2026-02-25.md
+
+## Summary of Changes
+
+Resolved via Option 3 (accept + document). The trade-off is documented in DESIGN_PRINCIPLES.md §3 and the code comment at reference/types.rs:93 and :140 explains the serde limitation. No behavioral mitigation was added pre-stabilization — the explicit validation path via `citum check` is the recommended approach for callers. Bean body's own recommendation was Option 3; that is the current state.
