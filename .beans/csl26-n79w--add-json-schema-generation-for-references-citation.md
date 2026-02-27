@@ -1,11 +1,11 @@
 ---
 # csl26-n79w
 title: Add JSON schema generation for references, citations, locales
-status: todo
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-07T11:18:08Z
-updated_at: 2026-02-27T15:45:16Z
+updated_at: 2026-02-27T20:10:52Z
 parent: csl26-li63
 ---
 
