@@ -20,6 +20,97 @@ Fidelity is the hard gate. SQI helps choose between equally correct solutions.
 - Preserve multilingual fallback behavior (original -> transliterated -> translated).
 - Prefer readable, reusable style definitions over one-off hacks.
 
+## Field-Scoped Language Metadata
+
+`language` on a reference means "the item is generally in this language."
+
+`field-languages` means "this specific field is in a different language than the rest of the item."
+
+This matters for mixed-language works such as:
+
+- a German edited volume containing an English-language chapter
+- a Japanese article published in an English-language journal
+- a bilingual record where the short title is English but the full title is German
+
+Example:
+
+```yaml
+references:
+  - id: chapter-1
+    class: collection-component
+    type: chapter
+    title: English Article
+    language: de
+    field-languages:
+      title: en
+      parent-monograph.title: de
+    issued: "2024"
+    parent:
+      type: edited-book
+      title: Deutscher Sammelband
+      issued: "2024"
+```
+
+How to read that example:
+
+- `language: de` says the item is generally treated as German.
+- `field-languages.title: en` says the chapter title itself should use English-sensitive formatting rules.
+- `field-languages.parent-monograph.title: de` says the container book title should use German-sensitive formatting rules.
+
+In practice, this lets a style apply different title formatting to the chapter title and the book title inside the same bibliography entry.
+
+### When to use `field-languages`
+
+Use `field-languages` only when entry-level `language` is not precise enough.
+
+Do use it when:
+
+- the chapter/article title and the container title are in different languages
+- a `title-short` is in a different language than `title`
+- the record is intentionally mixed-language and formatting must follow the field's own language
+
+Do not use it when:
+
+- the whole item is in one language
+- the multilingual value already carries its own `lang` and you do not need to override it
+
+### Supported scopes in this pass
+
+Current engine support recognizes these keys:
+
+- `title`
+- `title-short`
+- `parent-monograph.title`
+- `parent-serial.title`
+
+Unknown keys are accepted in data, but ignored by the engine for now.
+
+### Relationship to localized templates
+
+`field-languages` affects which language the engine uses for a specific title field.
+
+`citation.locales[]` and `bibliography.locales[]` affect which template branch the engine picks for the item as a whole.
+
+Example:
+
+```yaml
+citation:
+  template:
+    - variable: note
+  locales:
+    - locale: [de]
+      template:
+        - variable: publisher
+    - default: true
+      template:
+        - variable: note
+```
+
+That means:
+
+- template selection is per item
+- title formatting can still vary per field inside that item
+
 ## Practical Workflow
 
 1. Start from a nearby style in `/styles`.
