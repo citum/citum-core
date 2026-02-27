@@ -62,15 +62,15 @@ impl Locale {
             ContributorTerm {
                 singular: SimpleTerm {
                     long: "editor".into(),
-                    short: "Ed.".into(),
+                    short: "ed.".into(),
                 },
                 plural: SimpleTerm {
                     long: "editors".into(),
-                    short: "Eds.".into(),
+                    short: "eds.".into(),
                 },
                 verb: SimpleTerm {
                     long: "edited by".into(),
-                    short: "Ed.".into(),
+                    short: "ed.".into(),
                 },
             },
         );
@@ -782,11 +782,11 @@ mod tests {
 
         assert_eq!(
             locale.role_term(&ContributorRole::Editor, false, TermForm::Short),
-            Some("Ed.")
+            Some("ed.")
         );
         assert_eq!(
             locale.role_term(&ContributorRole::Editor, true, TermForm::Short),
-            Some("Eds.")
+            Some("eds.")
         );
         assert_eq!(
             locale.role_term(&ContributorRole::Translator, false, TermForm::Verb),

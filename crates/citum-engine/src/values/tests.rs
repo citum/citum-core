@@ -845,8 +845,8 @@ fn test_editor_label_format() {
         let values = component
             .values::<PlainText>(&reference, &hints, &options)
             .unwrap();
-        // Assuming locale for "editor" short is "Ed."
-        assert_eq!(values.suffix, Some(" (Ed.)".to_string()));
+        // Locale for "editor" short is "ed." (CSL standard lowercase)
+        assert_eq!(values.suffix, Some(" (ed.)".to_string()));
     }
 
     // Test LongSuffix
@@ -1015,9 +1015,9 @@ fn test_strip_periods_global_config() {
     let values = component
         .values::<PlainText>(&reference, &hints, &options)
         .unwrap();
-    // Should have "(Ed)" instead of "(Ed.)" due to strip_periods
+    // Should have "(ed)" instead of "(ed.)" due to strip_periods
     assert!(values.suffix.is_some());
-    assert_eq!(values.suffix.as_ref().unwrap(), " (Ed)");
+    assert_eq!(values.suffix.as_ref().unwrap(), " (ed)");
 }
 
 #[test]
@@ -1062,7 +1062,7 @@ fn test_strip_periods_component_override() {
         .unwrap();
     // Should strip periods because component overrides global
     assert!(values.suffix.is_some());
-    assert_eq!(values.suffix.as_ref().unwrap(), " (Ed)");
+    assert_eq!(values.suffix.as_ref().unwrap(), " (ed)");
 }
 
 #[test]
@@ -1101,7 +1101,7 @@ fn test_strip_periods_no_strip_by_default() {
         .unwrap();
     // Should preserve periods by default
     assert!(values.suffix.is_some());
-    assert_eq!(values.suffix.as_ref().unwrap(), " (Ed.)");
+    assert_eq!(values.suffix.as_ref().unwrap(), " (ed.)");
 }
 
 #[test]
