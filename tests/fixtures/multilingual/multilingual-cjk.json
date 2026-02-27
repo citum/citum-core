@@ -1,0 +1,109 @@
+{
+  "comment": "CJK multilingual test data with original scripts and transliterations",
+  "CJK-JAPANESE-BOOK": {
+    "id": "CJK-JAPANESE-BOOK",
+    "class": "monograph",
+    "type": "book",
+    "title": {
+      "original": "戦争と平和",
+      "lang": "ja",
+      "transliterations": {
+        "ja-Latn-hepburn": "Sensō to Heiwa"
+      },
+      "translations": {
+        "en": "War and Peace"
+      }
+    },
+    "author": [
+      {
+        "original": {
+          "family": "トルストイ",
+          "given": "レオ"
+        },
+        "lang": "ja",
+        "transliterations": {
+          "ja-Latn-hepburn": {
+            "family": "Torusutoi",
+            "given": "Leo"
+          }
+        },
+        "translations": {
+          "en": {
+            "family": "Tolstoy",
+            "given": "Leo"
+          }
+        }
+      }
+    ],
+    "issued": { "date-parts": [[1869]] },
+    "publisher": "Iwanami Shoten",
+    "publisher-place": "Tokyo"
+  },
+  "CJK-CHINESE-ARTICLE": {
+    "id": "CJK-CHINESE-ARTICLE",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": {
+      "original": "中国哲学的发展",
+      "lang": "zh",
+      "transliterations": {
+        "zh-Latn-pinyin": "Zhōngguó Zhéxué de Fāzhǎn"
+      },
+      "translations": {
+        "en": "Development of Chinese Philosophy"
+      }
+    },
+    "author": [
+      {
+        "original": {
+          "family": "孔",
+          "given": "子"
+        },
+        "lang": "zh",
+        "transliterations": {
+          "zh-Latn-pinyin": {
+            "family": "Kǒng",
+            "given": "zǐ"
+          }
+        }
+      }
+    ],
+    "container-title": "中文学刊",
+    "issued": { "date-parts": [[2020]] },
+    "volume": "15",
+    "pages": "123-145"
+  },
+  "CJK-KOREAN-BOOK": {
+    "id": "CJK-KOREAN-BOOK",
+    "class": "monograph",
+    "type": "book",
+    "title": {
+      "original": "한국 문화의 이해",
+      "lang": "ko",
+      "transliterations": {
+        "ko-Latn-hangul": "Hanguk Munhwaui Ihaе"
+      },
+      "translations": {
+        "en": "Understanding Korean Culture"
+      }
+    },
+    "author": [
+      {
+        "original": {
+          "family": "김",
+          "given": "영희"
+        },
+        "lang": "ko",
+        "transliterations": {
+          "ko-Latn-hangul": {
+            "family": "Kim",
+            "given": "Young-hee"
+          }
+        }
+      }
+    ],
+    "issued": { "date-parts": [[2021]] },
+    "publisher": "Seoul University Press",
+    "publisher-place": "Seoul"
+  }
+}

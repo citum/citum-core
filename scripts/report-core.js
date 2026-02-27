@@ -56,7 +56,7 @@ const KNOWN_DEPENDENTS = {
   'chicago-notes': 5,
 };
 
-const SKIPPED_STYLES = ['alpha'];
+const SKIPPED_STYLES = ['alpha', 'iso690-author-date', 'iso690-numeric'];
 
 const TOTAL_DEPENDENTS = 7987;
 const CORE_FALLBACK_TYPES = [

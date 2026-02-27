@@ -1,0 +1,121 @@
+{
+  "comment": "Cyrillic multilingual test data with Russian references and ALA-LC transliterations",
+  "RU-TOLSTOY-BOOK": {
+    "id": "RU-TOLSTOY-BOOK",
+    "class": "monograph",
+    "type": "book",
+    "title": {
+      "original": "Война и мир",
+      "lang": "ru",
+      "transliterations": {
+        "ru-Latn-alalc97": "Voĭna i mir"
+      },
+      "translations": {
+        "en": "War and Peace"
+      }
+    },
+    "author": [
+      {
+        "original": {
+          "family": "Толстой",
+          "given": "Лев"
+        },
+        "lang": "ru",
+        "transliterations": {
+          "ru-Latn-alalc97": {
+            "family": "Tolstoĭ",
+            "given": "Lev"
+          }
+        },
+        "translations": {
+          "en": {
+            "family": "Tolstoy",
+            "given": "Leo"
+          }
+        }
+      }
+    ],
+    "issued": { "date-parts": [[1869]] },
+    "publisher": "Русское слово",
+    "publisher-place": "Москва"
+  },
+  "RU-DOSTOEVSKY-ARTICLE": {
+    "id": "RU-DOSTOEVSKY-ARTICLE",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": {
+      "original": "Записки из подполья",
+      "lang": "ru",
+      "transliterations": {
+        "ru-Latn-alalc97": "Zapiski iz podpol'ia"
+      },
+      "translations": {
+        "en": "Notes from Underground"
+      }
+    },
+    "author": [
+      {
+        "original": {
+          "family": "Достоевский",
+          "given": "Федор"
+        },
+        "lang": "ru",
+        "transliterations": {
+          "ru-Latn-alalc97": {
+            "family": "Dostoevskiĭ",
+            "given": "Fedor"
+          }
+        },
+        "translations": {
+          "en": {
+            "family": "Dostoevsky",
+            "given": "Fyodor"
+          }
+        }
+      }
+    ],
+    "container-title": "Библиографический журнал",
+    "issued": { "date-parts": [[1864]] },
+    "volume": "12",
+    "pages": "1-32"
+  },
+  "RU-PUSHKIN-POETRY": {
+    "id": "RU-PUSHKIN-POETRY",
+    "class": "monograph",
+    "type": "book",
+    "title": {
+      "original": "Евгений Онегин",
+      "lang": "ru",
+      "transliterations": {
+        "ru-Latn-alalc97": "Evgeniĭ Onegin"
+      },
+      "translations": {
+        "en": "Eugene Onegin"
+      }
+    },
+    "author": [
+      {
+        "original": {
+          "family": "Пушкин",
+          "given": "Александр"
+        },
+        "lang": "ru",
+        "transliterations": {
+          "ru-Latn-alalc97": {
+            "family": "Pushkin",
+            "given": "Aleksandr"
+          }
+        },
+        "translations": {
+          "en": {
+            "family": "Pushkin",
+            "given": "Alexander"
+          }
+        }
+      }
+    ],
+    "issued": { "date-parts": [[1833]] },
+    "publisher": "Литературное издательство",
+    "publisher-place": "Санкт-Петербург"
+  }
+}

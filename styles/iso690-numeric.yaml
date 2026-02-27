@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/style.json
+info:
+  title: ISO 690 (numeric)
+  id: iso690-numeric
+  description: >
+    ISO 690 numeric citation-sequence style for international bibliography standards.
+    Locale-agnostic with support for multilingual citations.
+  link: https://www.iso.org/standard/43320.html
+
+options:
+  processing: numeric
+  contributors:
+    initialize-with: ''
+    delimiter: ', '
+    delimiter-precedes-last: always
+    demote-non-dropping-particle: never
+  dates: numeric
+  multilingual:
+    title-mode: combined
+    name-mode: transliterated
+    preferred-script: Latn
+  page-range-format: minimal
+  bibliography:
+    entry-suffix: .
+    separator: ''
+
+citation:
+  use-preset: numeric-citation
+  wrap: brackets
+  multi-cite-delimiter: ','
+  delimiter: ''
+
+bibliography:
+  template:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: "."
+    - title: primary
+      prefix: " "
+      suffix: "."
+    - title: parent-monograph
+      emph: true
+      prefix: " "
+    - title: parent-serial
+      emph: true
+      prefix: " "
+    - contributor: editor
+      form: long
+      name-order: given-first
+      prefix: " "
+    - variable: publisher-place
+      prefix: " "
+    - variable: publisher
+      prefix: ": "
+      suffix: "."
+    - number: volume
+      prefix: " Vol. "
+    - number: issue
+      prefix: "No. "
+    - number: pages
+      prefix: ", p. "
+    - date: issued
+      form: year
+      prefix: " "
+    - variable: doi
+      prefix: " https://doi.org/"
+    - variable: url
+      prefix: " "
