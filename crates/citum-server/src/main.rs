@@ -3,12 +3,9 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-mod error;
-mod rpc;
-
 #[cfg(feature = "http")]
-mod http;
-
+use citum_server::http;
+use citum_server::rpc;
 use std::env;
 
 /// Parse command-line arguments for server mode.
