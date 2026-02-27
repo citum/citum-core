@@ -52,3 +52,8 @@ jobs:
           node scripts/check-core-quality.js \
             --report /tmp/core-report.json \
             --baseline scripts/report-data/core-quality-baseline.json
+
+      - name: Check oracle top-10 regression baseline
+        run: |
+          node scripts/check-oracle-regression.js \
+            --baseline scripts/report-data/oracle-top10-baseline.json

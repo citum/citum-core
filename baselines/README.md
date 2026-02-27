@@ -100,3 +100,16 @@ Baseline JSON files are gitignored by default (`baselines/*.json`) to avoid repo
 ## Integration with Workflow
 
 See [docs/RENDERING_WORKFLOW.md](../docs/RENDERING_WORKFLOW.md) and [docs/WORKFLOW_ANALYSIS.md](../docs/WORKFLOW_ANALYSIS.md) for how regression detection integrates into the overall rendering fidelity workflow.
+
+## CI Canonical Baseline
+
+The committed CI oracle baseline lives at:
+
+- `scripts/report-data/oracle-top10-baseline.json`
+
+CI checks this file via:
+
+```bash
+node scripts/check-oracle-regression.js \
+  --baseline scripts/report-data/oracle-top10-baseline.json
+```

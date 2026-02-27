@@ -187,10 +187,19 @@ node scripts/report-core.js > /tmp/core-report.json
 node scripts/check-core-quality.js \
   --report /tmp/core-report.json \
   --baseline scripts/report-data/core-quality-baseline.json
+
+# Check oracle regression gate against pinned top-10 baseline
+node scripts/check-oracle-regression.js \
+  --baseline scripts/report-data/oracle-top10-baseline.json
+
+# Refresh pinned top-10 oracle baseline (dedicated baseline PR only)
+node scripts/oracle-batch-aggregate.js styles-legacy/ \
+  --styles apa,elsevier-with-titles,elsevier-harvard,elsevier-vancouver,springer-vancouver-brackets,springer-basic-author-date,springer-basic-brackets,springer-socpsych-author-date,american-medical-association,taylor-and-francis-chicago-author-date \
+  --json > scripts/report-data/oracle-top10-baseline.json
 ```
 
 ## Related
 
 - **beans:** `csl26-heqm` (top 10 at 100% fidelity), `csl26-gidg` (90% corpus match), `csl26-l2hg` (numeric triage)
 - **docs:** `docs/architecture/SQI_REFINEMENT_PLAN.md`, `docs/reference/STYLE_PRIORITY.md`
-- **CI:** `.github/workflows/ci.yml` — core fidelity gate (`check-core-quality.js`)
+- **CI:** `.github/workflows/ci.yml` — core fidelity gate (`check-core-quality.js`) + oracle regression gate (`check-oracle-regression.js`)

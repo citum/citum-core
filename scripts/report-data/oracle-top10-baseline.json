@@ -1,0 +1,110 @@
+{
+  "totalStyles": 10,
+  "citationsPerfect": 10,
+  "bibliographyPerfect": 10,
+  "citationsPartial": 0,
+  "bibliographyPartial": 0,
+  "componentIssues": {},
+  "orderingIssues": 0,
+  "styleBreakdown": [
+    {
+      "style": "apa",
+      "citations": "13/13",
+      "bibliography": "31/31",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "templateSource": "xml"
+    },
+    {
+      "style": "elsevier-with-titles",
+      "citations": "13/13",
+      "bibliography": "32/32",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "templateSource": "xml"
+    },
+    {
+      "style": "elsevier-harvard",
+      "citations": "13/13",
+      "bibliography": "32/32",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "templateSource": "xml"
+    },
+    {
+      "style": "elsevier-vancouver",
+      "citations": "13/13",
+      "bibliography": "32/32",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "templateSource": "xml"
+    },
+    {
+      "style": "springer-vancouver-brackets",
+      "citations": "13/13",
+      "bibliography": "32/32",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "templateSource": "xml"
+    },
+    {
+      "style": "springer-basic-author-date",
+      "citations": "13/13",
+      "bibliography": "32/32",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "templateSource": "xml"
+    },
+    {
+      "style": "springer-basic-brackets",
+      "citations": "13/13",
+      "bibliography": "32/32",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "templateSource": "xml"
+    },
+    {
+      "style": "springer-socpsych-author-date",
+      "citations": "13/13",
+      "bibliography": "32/32",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "templateSource": "xml"
+    },
+    {
+      "style": "american-medical-association",
+      "citations": "13/13",
+      "bibliography": "32/32",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "templateSource": "xml"
+    },
+    {
+      "style": "taylor-and-francis-chicago-author-date",
+      "citations": "13/13",
+      "bibliography": "31/31",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "templateSource": "xml"
+    }
+  ],
+  "errors": [],
+  "metadata": {
+    "timestamp": "2026-02-27T01:52:20.419Z",
+    "duration": "21.2s",
+    "concurrency": 1,
+    "fixture": "tests/fixtures/citations-expanded.json",
+    "styles": [
+      "apa",
+      "elsevier-with-titles",
+      "elsevier-harvard",
+      "elsevier-vancouver",
+      "springer-vancouver-brackets",
+      "springer-basic-author-date",
+      "springer-basic-brackets",
+      "springer-socpsych-author-date",
+      "american-medical-association",
+      "taylor-and-francis-chicago-author-date"
+    ]
+  }
+}
