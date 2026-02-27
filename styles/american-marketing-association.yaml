@@ -120,9 +120,4 @@ bibliography:
         - number: volume
         - number: issue
     - number: pages
-  sort:
-    template:
-      - key: author
-        ascending: true
-      - key: issued
-        ascending: true
+  sort: author-date-title

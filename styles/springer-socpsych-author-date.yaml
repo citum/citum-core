@@ -41,10 +41,7 @@ citation:
       shorten:
         min: 3
         use-first: 1
-  sort:
-    template:
-      - key: author
-      - key: issued
+  sort: author-date-title
   template:
     - items:
         - contributor: author

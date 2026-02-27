@@ -153,11 +153,4 @@ bibliography:
         article-journal:
           prefix: https://doi.org/
     - variable: url
-  sort:
-    template:
-      - key: author
-        ascending: true
-      - key: issued
-        ascending: true
-      - key: title
-        ascending: true
+  sort: author-date-title

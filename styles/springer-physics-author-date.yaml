@@ -146,7 +146,4 @@ bibliography:
         form: year
       - term: no-date
         form: short
-  sort:
-    template:
-      - key: author
-        ascending: true
+  sort: author-date-title

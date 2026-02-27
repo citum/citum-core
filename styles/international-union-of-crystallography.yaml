@@ -115,11 +115,4 @@ bibliography:
       prefix: ", "
     - variable: publisher
       prefix: ". "
-  sort:
-    template:
-      - key: author
-        ascending: true
-      - key: issued
-        ascending: true
-      - key: title
-        ascending: true
+  sort: author-date-title

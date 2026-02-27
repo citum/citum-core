@@ -129,9 +129,4 @@ bibliography:
           prefix: "pp. "
         paper-conference:
           prefix: "pp. "
-  sort:
-    template:
-      - key: author
-        ascending: true
-      - key: issued
-        ascending: true
+  sort: author-date-title

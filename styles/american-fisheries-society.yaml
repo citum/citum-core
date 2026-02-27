@@ -168,9 +168,4 @@ bibliography:
       - variable: genre
       - variable: publisher
       - variable: publisher-place
-  sort:
-    template:
-      - key: author
-        ascending: true
-      - key: issued
-        ascending: true
+  sort: author-date-title

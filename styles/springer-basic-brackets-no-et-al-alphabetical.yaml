@@ -78,9 +78,4 @@ bibliography:
     - variable: doi
     - variable: publisher-place
       prefix: ", "
-  sort:
-    template:
-      - key: author
-        ascending: true
-      - key: issued
-        ascending: true
+  sort: author-date-title
