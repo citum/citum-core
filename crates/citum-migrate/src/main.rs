@@ -679,6 +679,9 @@ fn compile_from_xml(
         // Remove duplicate titles from Lists that already appear at top level.
         passes::deduplicate::deduplicate_titles_in_lists(&mut new_bib);
 
+        // Suppress variables that appear in multiple sibling lists (enforce variable-once rule).
+        passes::deduplicate::deduplicate_variables_cross_lists(&mut new_bib);
+
         // Propagate type-specific overrides within Lists.
         passes::reorder::propagate_list_overrides(&mut new_bib);
 
