@@ -12,9 +12,59 @@ mod tests;
 
 use crate::Citation;
 use crate::processor::Processor;
+use citum_schema::options::{
+    NoteConfig as StyleNoteConfig, NoteMarkerOrder, NoteNumberPlacement, NoteQuotePlacement,
+};
 use std::collections::{HashMap, HashSet};
 
 const GENERATED_NOTE_LABEL_PREFIX: &str = "citum-auto-";
+const MOVABLE_PUNCTUATION: [char; 6] = ['.', ',', ';', ':', '!', '?'];
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum QuoteSide {
+    Inside,
+    Outside,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum NoteOrder {
+    Before,
+    After,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum PunctuationRule {
+    Inside,
+    Outside,
+    Adaptive,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum NumberRule {
+    Inside,
+    Outside,
+    Same,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct NoteRule {
+    punctuation: PunctuationRule,
+    number: NumberRule,
+    order: NoteOrder,
+}
+
+#[derive(Debug, Default)]
+struct LeftContext {
+    punctuation: Option<char>,
+    quote: Option<char>,
+}
+
+#[derive(Debug, Default)]
+struct RightContext {
+    punctuation: Option<char>,
+    quote: Option<char>,
+    consumed_len: usize,
+}
 
 /// Describes where a parsed citation appears in the source document.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -167,6 +217,7 @@ impl Processor {
     {
         let (generated_notes, rendered_notes) =
             self.prepare_note_citations::<F>(content, &mut parsed);
+        let note_rule = self.note_rule();
 
         let mut result = String::new();
         let mut last_idx = 0;
@@ -185,13 +236,19 @@ impl Processor {
                         .iter()
                         .find(|note| note.citation_index == index)
                     {
-                        result.push_str(&format!("[^{}]", note.label));
+                        let consumed_right = render_note_reference_in_prose(
+                            &mut result,
+                            &content[parsed_citation.end..],
+                            &format!("[^{}]", note.label),
+                            note_rule,
+                        );
+                        last_idx = parsed_citation.end + consumed_right;
                     } else {
                         result.push_str(&content[parsed_citation.start..parsed_citation.end]);
+                        last_idx = parsed_citation.end;
                     }
                 }
             }
-            last_idx = parsed_citation.end;
         }
         result.push_str(&content[last_idx..]);
 
@@ -352,6 +409,246 @@ impl Processor {
 
         (generated_notes, rendered_notes)
     }
+}
+
+impl Processor {
+    fn note_rule(&self) -> NoteRule {
+        if let Some(notes) = self.get_config().notes.as_ref() {
+            return merge_note_rule(self.locale_note_rule(), notes);
+        }
+
+        self.locale_note_rule()
+    }
+
+    fn locale_note_rule(&self) -> NoteRule {
+        let locale = self
+            .style
+            .info
+            .default_locale
+            .as_deref()
+            .unwrap_or(self.locale.locale.as_str())
+            .to_ascii_lowercase();
+        match locale.as_str() {
+            "en-us" => NoteRule {
+                punctuation: PunctuationRule::Inside,
+                number: NumberRule::Outside,
+                order: NoteOrder::After,
+            },
+            tag if language_tag(tag) == "fr" => NoteRule {
+                punctuation: PunctuationRule::Adaptive,
+                number: NumberRule::Same,
+                order: NoteOrder::Before,
+            },
+            _ => NoteRule {
+                punctuation: PunctuationRule::Adaptive,
+                number: NumberRule::Outside,
+                order: NoteOrder::After,
+            },
+        }
+    }
+}
+
+fn merge_note_rule(default: NoteRule, config: &StyleNoteConfig) -> NoteRule {
+    NoteRule {
+        punctuation: config
+            .punctuation
+            .map(map_quote_placement)
+            .unwrap_or(default.punctuation),
+        number: config
+            .number
+            .map(map_number_placement)
+            .unwrap_or(default.number),
+        order: config.order.map(map_note_order).unwrap_or(default.order),
+    }
+}
+
+fn map_quote_placement(value: NoteQuotePlacement) -> PunctuationRule {
+    match value {
+        NoteQuotePlacement::Inside => PunctuationRule::Inside,
+        NoteQuotePlacement::Outside => PunctuationRule::Outside,
+        NoteQuotePlacement::Adaptive => PunctuationRule::Adaptive,
+    }
+}
+
+fn map_number_placement(value: NoteNumberPlacement) -> NumberRule {
+    match value {
+        NoteNumberPlacement::Inside => NumberRule::Inside,
+        NoteNumberPlacement::Outside => NumberRule::Outside,
+        NoteNumberPlacement::Same => NumberRule::Same,
+    }
+}
+
+fn map_note_order(value: NoteMarkerOrder) -> NoteOrder {
+    match value {
+        NoteMarkerOrder::Before => NoteOrder::Before,
+        NoteMarkerOrder::After => NoteOrder::After,
+    }
+}
+
+fn language_tag(locale: &str) -> &str {
+    locale.split('-').next().unwrap_or(locale)
+}
+
+fn render_note_reference_in_prose(
+    result: &mut String,
+    right: &str,
+    note_ref: &str,
+    rule: NoteRule,
+) -> usize {
+    let left = pop_left_context(result);
+    let right_ctx = inspect_right_context(right);
+
+    let quote = left.quote.or(right_ctx.quote);
+    if let Some(quote_char) = quote {
+        let mut inside_punctuation = if left.quote.is_some() {
+            left.punctuation
+        } else {
+            None
+        };
+        let mut outside_punctuation = if right_ctx.quote.is_some() || left.quote.is_some() {
+            right_ctx.punctuation
+        } else {
+            None
+        };
+
+        if inside_punctuation.is_some() ^ outside_punctuation.is_some() {
+            let punctuation = inside_punctuation.take().or(outside_punctuation.take());
+            match desired_punctuation_side(rule, left.punctuation.is_some() && left.quote.is_some())
+            {
+                QuoteSide::Inside => inside_punctuation = punctuation,
+                QuoteSide::Outside => outside_punctuation = punctuation,
+            }
+        }
+
+        let note_side = desired_note_side(rule, inside_punctuation, outside_punctuation);
+        let inside = side_content(
+            note_side == QuoteSide::Inside,
+            inside_punctuation,
+            rule.order,
+            note_ref,
+        );
+        let outside = side_content(
+            note_side == QuoteSide::Outside,
+            outside_punctuation,
+            rule.order,
+            note_ref,
+        );
+
+        result.push_str(&inside);
+        result.push(quote_char);
+        result.push_str(&outside);
+        right_ctx.consumed_len
+    } else {
+        let punctuation = right_ctx.punctuation.or(left.punctuation);
+        result.push_str(&side_content(true, punctuation, rule.order, note_ref));
+        right_ctx.consumed_len
+    }
+}
+
+fn desired_punctuation_side(rule: NoteRule, punctuation_inside_quote: bool) -> QuoteSide {
+    match rule.punctuation {
+        PunctuationRule::Inside => QuoteSide::Inside,
+        PunctuationRule::Outside => QuoteSide::Outside,
+        PunctuationRule::Adaptive => {
+            if punctuation_inside_quote {
+                QuoteSide::Inside
+            } else {
+                QuoteSide::Outside
+            }
+        }
+    }
+}
+
+fn desired_note_side(
+    rule: NoteRule,
+    inside_punctuation: Option<char>,
+    outside_punctuation: Option<char>,
+) -> QuoteSide {
+    match rule.number {
+        NumberRule::Inside => QuoteSide::Inside,
+        NumberRule::Outside => QuoteSide::Outside,
+        NumberRule::Same => match (inside_punctuation.is_some(), outside_punctuation.is_some()) {
+            (true, false) => QuoteSide::Inside,
+            (false, true) => QuoteSide::Outside,
+            _ => QuoteSide::Outside,
+        },
+    }
+}
+
+fn side_content(
+    include_note: bool,
+    punctuation: Option<char>,
+    order: NoteOrder,
+    note_ref: &str,
+) -> String {
+    match (include_note, punctuation) {
+        (true, Some(punctuation)) => match order {
+            NoteOrder::Before => format!("{note_ref}{punctuation}"),
+            NoteOrder::After => format!("{punctuation}{note_ref}"),
+        },
+        (true, None) => note_ref.to_string(),
+        (false, Some(punctuation)) => punctuation.to_string(),
+        (false, None) => String::new(),
+    }
+}
+
+fn pop_left_context(result: &mut String) -> LeftContext {
+    while result.ends_with(char::is_whitespace) {
+        result.pop();
+    }
+
+    let mut context = LeftContext::default();
+    if let Some(last) = result.chars().last()
+        && is_quote(last)
+    {
+        result.pop();
+        context.quote = Some(last);
+    }
+    if let Some(last) = result.chars().last()
+        && is_movable_punctuation(last)
+    {
+        result.pop();
+        context.punctuation = Some(last);
+    }
+    context
+}
+
+fn inspect_right_context(right: &str) -> RightContext {
+    let mut chars = right.char_indices();
+    let mut context = RightContext::default();
+
+    if let Some((idx, ch)) = chars.next() {
+        if is_movable_punctuation(ch) {
+            context.punctuation = Some(ch);
+            context.consumed_len = idx + ch.len_utf8();
+            if let Some((next_idx, next)) = chars.next()
+                && is_quote(next)
+            {
+                context.quote = Some(next);
+                context.consumed_len = next_idx + next.len_utf8();
+            }
+            return context;
+        }
+        if is_quote(ch) {
+            context.quote = Some(ch);
+            context.consumed_len = idx + ch.len_utf8();
+            if let Some((next_idx, next)) = chars.next()
+                && is_movable_punctuation(next)
+            {
+                context.punctuation = Some(next);
+                context.consumed_len = next_idx + next.len_utf8();
+            }
+        }
+    }
+    context
+}
+
+fn is_movable_punctuation(ch: char) -> bool {
+    MOVABLE_PUNCTUATION.contains(&ch)
+}
+
+fn is_quote(ch: char) -> bool {
+    matches!(ch, '"' | '\'' | '”' | '’' | '»')
 }
 
 fn build_note_order_indices(

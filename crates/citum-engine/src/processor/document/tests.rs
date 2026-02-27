@@ -2,7 +2,9 @@ use crate::processor::Processor;
 use crate::processor::document::{CitationParser, DocumentFormat, djot::DjotParser};
 use crate::reference::{Bibliography, Reference};
 use crate::render::plain::PlainText;
-use citum_schema::options::{Config, Processing};
+use citum_schema::options::{
+    Config, NoteConfig, NoteMarkerOrder, NoteNumberPlacement, NoteQuotePlacement, Processing,
+};
 use citum_schema::template::{
     ContributorForm, ContributorRole, DateForm, DateVariable, Rendering, TemplateComponent,
     TemplateContributor, TemplateDate, TemplateList, TemplateTerm, TemplateTitle, TitleType,
@@ -143,6 +145,16 @@ fn make_note_style() -> Style {
     }
 }
 
+fn make_note_style_with_rules(notes: NoteConfig) -> Style {
+    let mut style = make_note_style();
+    style.options = Some(Config {
+        processing: Some(Processing::Note),
+        notes: Some(notes),
+        ..Default::default()
+    });
+    style
+}
+
 #[test]
 fn test_author_date_documents_still_render_inline() {
     let bib = make_test_bib();
@@ -168,7 +180,7 @@ fn test_note_style_prose_citation_generates_footnote() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("Text [^citum-auto-1]."));
+    assert!(result.contains("Text.[^citum-auto-1]"));
     assert!(result.contains("[^citum-auto-1]:"));
     assert!(result.contains("Book One"));
     assert!(result.contains("# Bibliography"));
@@ -200,7 +212,7 @@ fn test_mixed_manual_and_auto_notes_share_sequence() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("Auto [^citum-auto-2]."));
+    assert!(result.contains("Auto.[^citum-auto-2]"));
     assert!(result.contains("[^m1]: First"));
     assert!(result.contains("[^m2]: Second"));
     assert!(result.contains("[^citum-auto-2]:"));
@@ -234,7 +246,7 @@ fn test_multi_cite_prose_marker_produces_one_generated_note() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("Text [^citum-auto-1]."));
+    assert!(result.contains("Text.[^citum-auto-1]"));
     assert_eq!(result.matches("[^citum-auto-1]:").count(), 1);
 }
 
@@ -248,8 +260,62 @@ fn test_note_style_preserves_surrounding_punctuation() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("Sentence [^citum-auto-1]."));
-    assert!(result.contains("Next, [^citum-auto-2] (see [^citum-auto-3])."));
+    assert!(result.contains("Sentence.[^citum-auto-1]"));
+    assert!(result.contains("Next,[^citum-auto-2] (see[^citum-auto-3])."));
+}
+
+#[test]
+fn test_note_style_default_rule_places_marker_after_period() {
+    let bib = make_test_bib();
+    let processor = Processor::new(make_note_style(), bib);
+    let parser = DjotParser;
+
+    let content = "Sentence [@item1].";
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    assert!(result.contains("Sentence.[^citum-auto-1]"));
+}
+
+#[test]
+fn test_note_style_config_can_place_marker_before_period() {
+    let bib = make_test_bib();
+    let processor = Processor::new(
+        make_note_style_with_rules(NoteConfig {
+            punctuation: Some(NoteQuotePlacement::Outside),
+            number: Some(NoteNumberPlacement::Outside),
+            order: Some(NoteMarkerOrder::Before),
+        }),
+        bib,
+    );
+    let parser = DjotParser;
+
+    let content = "Sentence [@item1].";
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    assert!(result.contains("Sentence[^citum-auto-1]."));
+    assert!(!result.contains("Sentence.[^citum-auto-1]"));
+}
+
+#[test]
+fn test_note_style_config_moves_marker_inside_quotes() {
+    let bib = make_test_bib();
+    let processor = Processor::new(
+        make_note_style_with_rules(NoteConfig {
+            punctuation: Some(NoteQuotePlacement::Outside),
+            number: Some(NoteNumberPlacement::Inside),
+            order: Some(NoteMarkerOrder::After),
+        }),
+        bib,
+    );
+    let parser = DjotParser;
+
+    let content = "\"Quoted [@item1].\"";
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    assert!(result.contains("\"Quoted[^citum-auto-1]\"."));
 }
 
 #[test]
@@ -374,6 +440,6 @@ fn test_real_chicago_note_style_generates_djot_footnotes() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("Text [^citum-auto-1]."));
+    assert!(result.contains("Text.[^citum-auto-1]"));
     assert!(result.contains("[^citum-auto-1]:"));
 }

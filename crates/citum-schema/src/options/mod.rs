@@ -104,9 +104,67 @@ pub struct Config {
     /// Strip trailing periods from terms, labels, and abbreviated dates.
     #[serde(skip_serializing_if = "Option::is_none", rename = "strip-periods")]
     pub strip_periods: Option<bool>,
+    /// Document-level note marker placement and punctuation movement rules.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub notes: Option<NoteConfig>,
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
+}
+
+/// Document-level note marker placement rules.
+#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct NoteConfig {
+    /// Desired location of movable punctuation relative to closing quotation
+    /// marks when note markers are introduced.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub punctuation: Option<NoteQuotePlacement>,
+    /// Desired location of the note marker relative to closing quotation marks.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub number: Option<NoteNumberPlacement>,
+    /// Whether the note marker appears before or after the closest movable
+    /// punctuation mark.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub order: Option<NoteMarkerOrder>,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum NoteQuotePlacement {
+    /// Keep movable punctuation inside the closing quotation mark.
+    Inside,
+    /// Keep movable punctuation outside the closing quotation mark.
+    Outside,
+    /// Follow org-cite-style adaptive behavior: punctuation stays inside when
+    /// it is already flush with the closing quote, otherwise it is placed
+    /// outside.
+    Adaptive,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum NoteNumberPlacement {
+    /// Place the note marker inside the closing quotation mark.
+    Inside,
+    /// Place the note marker outside the closing quotation mark.
+    Outside,
+    /// Place the note marker on the same side as the movable punctuation when
+    /// only one side has punctuation; otherwise default to outside.
+    Same,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum NoteMarkerOrder {
+    /// Place the note marker before the closest movable punctuation mark.
+    Before,
+    /// Place the note marker after the closest movable punctuation mark.
+    After,
 }
 
 /// Page range formatting options.
@@ -201,6 +259,7 @@ impl Config {
             volume_pages_delimiter,
             semantic_classes,
             strip_periods,
+            notes,
             custom,
         );
 
