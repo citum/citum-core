@@ -1,11 +1,11 @@
 ---
 # csl26-iek4
 title: Add baseline tracking for regression detection
-status: todo
+status: completed
 type: feature
 priority: high
 created_at: 2026-02-07T06:44:23Z
-updated_at: 2026-02-07T07:40:14Z
+updated_at: 2026-02-27T02:07:53Z
 blocking:
     - csl26-r6fn
 ---
