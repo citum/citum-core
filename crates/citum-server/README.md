@@ -14,9 +14,9 @@ works cleanly inside word-processor plugins (Zotero, Pandoc pipelines) with no
 port management.
 
 ```sh
-echo '{"id":1,"method":"render_citation","params":{"style_path":"styles/apa-7th.yaml","refs":[...],"citation":{...}}}' \
+echo '{"id":1,"method":"render_citation","params":{"style_path":"styles/apa-7th.yaml","refs":{"hawking1988":{"id":"hawking1988","class":"monograph","type":"book","title":"A Brief History of Time","author":[{"family":"Hawking","given":"Stephen"}],"issued":"1988"}},"citation":{"id":"cite-1","items":[{"id":"hawking1988"}]}}}' \
   | citum-server
-# {"id":1,"result":"Smith (2024)"}
+# {"id":1,"result":"(Hawking, 1988)"}
 ```
 
 ### HTTP (feature-gated)
