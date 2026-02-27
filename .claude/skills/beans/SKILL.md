@@ -26,7 +26,7 @@ Use these project-specific rules on top of `beans prime`:
 `/beans next` is a local helper that ranks and presents multiple ready options.
 
 - Default output: top 3 options.
-- Ranking: priority (`critical` > `high` > `normal` > `low` > `deferred`), then type (`bug` > `feature` > `task` > `milestone` > `epic`), then oldest first.
+- Ranking: prioritize executable work first (`bug`/`feature`/`task`), then use priority (`critical` > `high` > `normal` > `low` > `deferred`), then oldest first. `milestone` and `epic` beans are fallback suggestions only when there are not enough concrete ready items.
 - Includes short rationale and parent title (when present).
 
 **Implementation:** Always run via the wrapper script — never call `beans list --json --ready` directly, as that dumps raw JSON. The script handles ranking and formatting. After running, output the script result as plain text — no preamble, no commentary, nothing else.

@@ -77,22 +77,35 @@ case "$CMD" in
             exit 0
         fi
 
+        # Prefer executable work over umbrella tracking beans. Epics and
+        # milestones remain visible only when there are not enough concrete
+        # bugs/features/tasks to fill the requested limit.
         RANKED_JSON=$(printf "%s\n" "$READY_JSON" | jq --argjson limit "$LIMIT" '
-            map(.priority = (.priority // "normal")) |
-            sort_by(
-                (if .priority == "critical" then 0
-                 elif .priority == "high" then 1
-                 elif .priority == "normal" then 2
-                 elif .priority == "low" then 3
-                 else 4 end),
-                (if .type == "bug" then 0
-                 elif .type == "feature" then 1
-                 elif .type == "task" then 2
-                 elif .type == "milestone" then 3
-                 elif .type == "epic" then 4
-                 else 5 end),
-                .created_at
-            )[:$limit]
+            map(.priority = (.priority // "normal")) as $items |
+            def priority_rank:
+                if .priority == "critical" then 0
+                elif .priority == "high" then 1
+                elif .priority == "normal" then 2
+                elif .priority == "low" then 3
+                else 4 end;
+            def type_rank:
+                if .type == "bug" then 0
+                elif .type == "feature" then 1
+                elif .type == "task" then 2
+                elif .type == "milestone" then 3
+                elif .type == "epic" then 4
+                else 5 end;
+            (
+                $items
+                | map(select((.type // "") != "epic" and (.type // "") != "milestone"))
+                | sort_by(priority_rank, type_rank, .created_at)
+            ) as $concrete |
+            (
+                $items
+                | map(select((.type // "") == "epic" or (.type // "") == "milestone"))
+                | sort_by(priority_rank, type_rank, .created_at)
+            ) as $meta |
+            ($concrete + $meta)[:$limit]
         ')
 
         PARENT_IDS=$(printf "%s\n" "$RANKED_JSON" | jq -r '.[].parent // empty' | sort -u | tr '\n' ' ')
