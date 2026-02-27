@@ -98,6 +98,7 @@ mod tests {
                 ref_type: None,
                 config: None,
                 url: None,
+                item_language: None,
                 pre_formatted: false,
             },
             ProcTemplateComponent {
@@ -113,6 +114,7 @@ mod tests {
                 ref_type: None,
                 config: None,
                 url: None,
+                item_language: None,
                 pre_formatted: false,
             },
         ];

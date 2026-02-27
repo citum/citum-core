@@ -88,6 +88,8 @@ pub struct TitleRendering {
     pub prefix: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suffix: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub locale_overrides: Option<HashMap<String, TitleRendering>>,
 }
 
 impl TitleRendering {
@@ -101,5 +103,16 @@ impl TitleRendering {
             suffix: self.suffix.clone(),
             ..Default::default()
         }
+    }
+
+    pub fn locale_override(&self, language: Option<&str>) -> Option<&TitleRendering> {
+        let overrides = self.locale_overrides.as_ref()?;
+        let language = language?;
+        overrides.get(language).or_else(|| {
+            language
+                .split('-')
+                .next()
+                .and_then(|tag| overrides.get(tag))
+        })
     }
 }

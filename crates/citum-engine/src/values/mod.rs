@@ -22,7 +22,8 @@ mod tests;
 use crate::reference::Reference;
 use citum_schema::locale::Locale;
 use citum_schema::options::Config;
-use citum_schema::template::TemplateComponent;
+use citum_schema::reference::types::Title;
+use citum_schema::template::{TemplateComponent, TitleType};
 
 pub use contributor::format_contributors_short;
 pub use date::int_to_letter;
@@ -115,6 +116,66 @@ pub fn resolve_multilingual_string(
                 }
             }
         }
+    }
+}
+
+pub fn effective_field_language(
+    reference: &Reference,
+    scope: &str,
+    title: Option<&Title>,
+) -> Option<String> {
+    reference
+        .field_languages()
+        .get(scope)
+        .cloned()
+        .or_else(|| match title {
+            Some(Title::Multilingual(multilingual)) => multilingual.lang.clone(),
+            _ => None,
+        })
+        .or_else(|| reference.language())
+}
+
+pub fn effective_item_language(reference: &Reference) -> Option<String> {
+    effective_field_language(reference, "title", reference.title().as_ref())
+}
+
+pub fn effective_component_language(
+    reference: &Reference,
+    component: &TemplateComponent,
+) -> Option<String> {
+    match component {
+        TemplateComponent::Title(title_component) => {
+            let title = match title_component.title {
+                TitleType::Primary => reference.title(),
+                TitleType::ParentMonograph => match reference {
+                    Reference::CollectionComponent(component) => match &component.parent {
+                        citum_schema::reference::Parent::Embedded(parent) => parent.title.clone(),
+                        citum_schema::reference::Parent::Id(_) => None,
+                    },
+                    _ => None,
+                },
+                TitleType::ParentSerial => match reference {
+                    Reference::SerialComponent(component) => match &component.parent {
+                        citum_schema::reference::Parent::Embedded(parent) => {
+                            Some(parent.title.clone())
+                        }
+                        citum_schema::reference::Parent::Id(_) => None,
+                    },
+                    _ => None,
+                },
+                _ => reference.title(),
+            };
+
+            let scope = match title_component.title {
+                TitleType::Primary => "title",
+                TitleType::ParentMonograph => "parent-monograph.title",
+                TitleType::ParentSerial => "parent-serial.title",
+                _ => "title",
+            };
+
+            effective_field_language(reference, scope, title.as_ref())
+        }
+        _ => effective_item_language(reference),
     }
 }
 

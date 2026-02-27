@@ -10,6 +10,7 @@ use url::Url;
 
 pub type RefID = String;
 pub type LangID = String;
+pub type FieldLanguageMap = HashMap<String, LangID>;
 
 /// A value that could be either a number or a string.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
@@ -104,6 +105,8 @@ pub struct Monograph {
     pub url: Option<Url>,
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub field_languages: FieldLanguageMap,
     pub note: Option<String>,
     #[serde(alias = "ISBN")]
     pub isbn: Option<String>,
@@ -151,6 +154,8 @@ pub struct Collection {
     pub url: Option<Url>,
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub field_languages: FieldLanguageMap,
     pub note: Option<String>,
     #[serde(alias = "ISBN")]
     pub isbn: Option<String>,
@@ -187,6 +192,8 @@ pub struct CollectionComponent {
     pub url: Option<Url>,
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub field_languages: FieldLanguageMap,
     pub note: Option<String>,
     #[serde(alias = "DOI")]
     pub doi: Option<String>,
@@ -224,6 +231,8 @@ pub struct SerialComponent {
     pub url: Option<Url>,
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub field_languages: FieldLanguageMap,
     pub note: Option<String>,
     #[serde(alias = "DOI")]
     pub doi: Option<String>,
@@ -379,6 +388,8 @@ pub struct LegalCase {
     pub url: Option<Url>,
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub field_languages: FieldLanguageMap,
     pub note: Option<String>,
     #[serde(alias = "DOI")]
     pub doi: Option<String>,
@@ -408,6 +419,8 @@ pub struct Statute {
     pub url: Option<Url>,
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub field_languages: FieldLanguageMap,
     pub note: Option<String>,
     pub keywords: Option<Vec<String>>,
 }
@@ -435,6 +448,8 @@ pub struct Treaty {
     pub url: Option<Url>,
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub field_languages: FieldLanguageMap,
     pub note: Option<String>,
     pub keywords: Option<Vec<String>>,
 }
@@ -458,6 +473,8 @@ pub struct Hearing {
     pub url: Option<Url>,
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub field_languages: FieldLanguageMap,
     pub note: Option<String>,
     pub keywords: Option<Vec<String>>,
 }
@@ -485,6 +502,8 @@ pub struct Regulation {
     pub url: Option<Url>,
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub field_languages: FieldLanguageMap,
     pub note: Option<String>,
     pub keywords: Option<Vec<String>>,
 }
@@ -510,6 +529,8 @@ pub struct Brief {
     pub url: Option<Url>,
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub field_languages: FieldLanguageMap,
     pub note: Option<String>,
     pub keywords: Option<Vec<String>>,
 }
@@ -539,6 +560,8 @@ pub struct Classic {
     pub url: Option<Url>,
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub field_languages: FieldLanguageMap,
     pub note: Option<String>,
     pub keywords: Option<Vec<String>>,
 }
@@ -572,6 +595,8 @@ pub struct Patent {
     pub url: Option<Url>,
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub field_languages: FieldLanguageMap,
     pub note: Option<String>,
     pub keywords: Option<Vec<String>>,
 }
@@ -605,6 +630,8 @@ pub struct Dataset {
     pub url: Option<Url>,
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub field_languages: FieldLanguageMap,
     pub note: Option<String>,
     pub keywords: Option<Vec<String>>,
 }
@@ -632,6 +659,8 @@ pub struct Standard {
     pub url: Option<Url>,
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub field_languages: FieldLanguageMap,
     pub note: Option<String>,
     pub keywords: Option<Vec<String>>,
 }
@@ -665,6 +694,8 @@ pub struct Software {
     pub url: Option<Url>,
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub field_languages: FieldLanguageMap,
     pub note: Option<String>,
     pub keywords: Option<Vec<String>>,
 }

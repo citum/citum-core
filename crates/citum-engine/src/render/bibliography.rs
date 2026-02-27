@@ -251,6 +251,7 @@ mod tests {
             ref_type: None,
             config: Some(config.clone()),
             url: None,
+            item_language: None,
             pre_formatted: false,
         };
 
@@ -271,6 +272,7 @@ mod tests {
             ref_type: None,
             config: Some(config),
             url: None,
+            item_language: None,
             pre_formatted: false,
         };
 
@@ -313,6 +315,7 @@ mod tests {
             ref_type: None,
             config: Some(config.clone()),
             url: None,
+            item_language: None,
             pre_formatted: false,
         };
 
@@ -328,6 +331,7 @@ mod tests {
             ref_type: None,
             config: Some(config),
             url: None,
+            item_language: None,
             pre_formatted: false,
         };
 
@@ -398,6 +402,7 @@ mod tests {
             ref_type: None,
             config: Some(config.clone()),
             url: None,
+            item_language: None,
             pre_formatted: false,
         };
 
@@ -416,6 +421,7 @@ mod tests {
             ref_type: None,
             config: Some(config),
             url: None,
+            item_language: None,
             pre_formatted: false,
         };
 
