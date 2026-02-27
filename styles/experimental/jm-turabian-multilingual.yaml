@@ -1,0 +1,82 @@
+# yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/style.json
+info:
+  title: Turabian Notes (Multilingual)
+  id: jm-turabian-multilingual
+  description: >
+    Experimental multilingual variant of Chicago/Turabian notes style.
+    Supports CJK and other complex scripts with original name ordering and transliterations.
+  link: https://www.chicagomanualofstyle.org/
+
+options:
+  processing: note
+  contributors:
+    initialize-with: ". "
+    delimiter: ", "
+    delimiter-precedes-last: always
+    demote-non-dropping-particle: never
+  dates: long
+  bibliography:
+    hanging-indent: true
+  multilingual:
+    title-mode: combined
+    name-mode: primary
+    preferred-script: CJK
+    scripts:
+      cjk:
+        use-native-ordering: true
+        delimiter: ""
+
+citation:
+  template:
+    - contributor: author
+      form: long
+      name-order: given-first
+      suffix: ", "
+    - title: primary
+      emph: true
+      suffix: ", "
+    - title: parent-monograph
+      emph: true
+      suffix: ", "
+    - title: parent-serial
+      emph: true
+      suffix: ", "
+    - variable: publisher-place
+      suffix: ": "
+    - variable: publisher
+      suffix: ", "
+    - date: issued
+      form: year
+      suffix: "."
+    - variable: locator
+      prefix: " "
+      suffix: "."
+
+bibliography:
+  template:
+    - contributor: author
+      form: long
+      name-order: given-first
+      suffix: ". "
+    - title: primary
+      emph: true
+      suffix: ". "
+    - title: parent-monograph
+      emph: true
+      suffix: ". "
+    - title: parent-serial
+      emph: true
+      suffix: ". "
+    - variable: publisher-place
+      suffix: ": "
+    - variable: publisher
+      suffix: ", "
+    - date: issued
+      form: year
+      suffix: "."
+    - number: pages
+      prefix: " P. "
+    - variable: doi
+      prefix: " https://doi.org/"
+    - variable: url
+      prefix: " "

@@ -13,6 +13,10 @@ options:
       names: false
       add-givenname: false
       year-suffix: true
+  multilingual:
+    title-mode: combined
+    name-mode: transliterated
+    preferred-script: Cyrl
 
 citation:
   options:

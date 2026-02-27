@@ -1,0 +1,99 @@
+# yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/style.json
+info:
+  title: ISO 690 (author-date)
+  id: iso690-author-date
+  description: >
+    ISO 690 author-date style for international bibliography standards.
+    Locale-agnostic with support for multilingual citations.
+  link: https://www.iso.org/standard/43320.html
+
+options:
+  processing: !custom
+    sort:
+      template:
+        - key: author
+        - key: year
+    group:
+      template: [author, year]
+    disambiguate:
+      names: false
+      add-givenname: false
+      year-suffix: true
+  substitute:
+    contributor-role-form: short
+    template:
+      - translator
+      - title
+  contributors:
+    initialize-with: .
+    delimiter: ", "
+    delimiter-precedes-last: always
+    demote-non-dropping-particle: never
+  dates: numeric
+  multilingual:
+    title-mode: combined
+    name-mode: transliterated
+    preferred-script: Latn
+  bibliography:
+    hanging-indent: false
+    separator: ". "
+
+citation:
+  options:
+    contributors:
+      shorten:
+        min: 3
+        use-first: 1
+  sort:
+    template:
+      - key: author
+      - key: issued
+  template:
+    - contributor: author
+      form: short
+      shorten:
+        min: 3
+        use-first: 1
+    - date: issued
+      form: year
+    - variable: locator
+  wrap: parentheses
+  delimiter: ", "
+  multi-cite-delimiter: "; "
+
+bibliography:
+  template:
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: "."
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+      prefix: " "
+      suffix: "."
+    - title: parent-monograph
+      emph: true
+      prefix: " "
+    - title: parent-serial
+      emph: true
+      prefix: " "
+    - contributor: editor
+      form: long
+      name-order: given-first
+      prefix: " "
+    - variable: publisher-place
+      prefix: " "
+    - variable: publisher
+      prefix: ": "
+      suffix: "."
+    - number: volume
+      prefix: " Vol. "
+    - number: pages
+      prefix: ", p. "
+    - variable: doi
+      prefix: " https://doi.org/"
+    - variable: url
+      prefix: " "

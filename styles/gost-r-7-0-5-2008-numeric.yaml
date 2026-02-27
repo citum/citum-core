@@ -9,6 +9,10 @@ info:
 
 options:
   processing: numeric
+  multilingual:
+    title-mode: combined
+    name-mode: transliterated
+    preferred-script: Cyrl
 
 citation:
   template:

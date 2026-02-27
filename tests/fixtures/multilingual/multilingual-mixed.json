@@ -1,0 +1,85 @@
+{
+  "comment": "Mixed multilingual test data with disambiguation of romanized names from different script origins",
+  "MIXED-CHEN-CHINESE": {
+    "id": "MIXED-CHEN-CHINESE",
+    "class": "monograph",
+    "type": "book",
+    "title": {
+      "original": "现代中国文学",
+      "lang": "zh",
+      "transliterations": {
+        "zh-Latn-pinyin": "Xiàndài Zhōngguó Wénxué"
+      },
+      "translations": {
+        "en": "Modern Chinese Literature"
+      }
+    },
+    "author": [
+      {
+        "original": {
+          "family": "陈",
+          "given": "舜臣"
+        },
+        "lang": "zh",
+        "transliterations": {
+          "zh-Latn-pinyin": {
+            "family": "Chén",
+            "given": "Shùnchén"
+          }
+        }
+      }
+    ],
+    "issued": { "date-parts": [[2019]] },
+    "publisher": "Beijing University Press",
+    "publisher-place": "Beijing"
+  },
+  "MIXED-CHEN-JAPANESE": {
+    "id": "MIXED-CHEN-JAPANESE",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": {
+      "original": "日本の現代文学",
+      "lang": "ja",
+      "transliterations": {
+        "ja-Latn-hepburn": "Nihon no Gendai Bungaku"
+      },
+      "translations": {
+        "en": "Contemporary Japanese Literature"
+      }
+    },
+    "author": [
+      {
+        "original": {
+          "family": "陳",
+          "given": "舜臣"
+        },
+        "lang": "ja",
+        "transliterations": {
+          "ja-Latn-hepburn": {
+            "family": "Chen",
+            "given": "Shunshun"
+          }
+        }
+      }
+    ],
+    "container-title": "日本文学研究",
+    "issued": { "date-parts": [[2020]] },
+    "volume": "5",
+    "pages": "45-67"
+  },
+  "MIXED-SMITH-WESTERN": {
+    "id": "MIXED-SMITH-WESTERN",
+    "class": "monograph",
+    "type": "book",
+    "title": "Comparative East Asian Studies",
+    "author": [
+      {
+        "family": "Smith",
+        "given": "John"
+      }
+    ],
+    "issued": { "date-parts": [[2021]] },
+    "publisher": "Oxford University Press",
+    "publisher-place": "Oxford"
+  }
+}
