@@ -356,22 +356,24 @@ pub fn build_author_date_style(
             ..Default::default()
         }),
         citation: Some(CitationSpec {
-            sort: Some(citum_schema::grouping::GroupSort {
-                template: vec![
-                    citum_schema::grouping::GroupSortKey {
-                        key: citum_schema::grouping::SortKey::Author,
-                        ascending: true,
-                        order: None,
-                        sort_order: None,
-                    },
-                    citum_schema::grouping::GroupSortKey {
-                        key: citum_schema::grouping::SortKey::Issued,
-                        ascending: true,
-                        order: None,
-                        sort_order: None,
-                    },
-                ],
-            }),
+            sort: Some(citum_schema::grouping::GroupSortEntry::Explicit(
+                citum_schema::grouping::GroupSort {
+                    template: vec![
+                        citum_schema::grouping::GroupSortKey {
+                            key: citum_schema::grouping::SortKey::Author,
+                            ascending: true,
+                            order: None,
+                            sort_order: None,
+                        },
+                        citum_schema::grouping::GroupSortKey {
+                            key: citum_schema::grouping::SortKey::Issued,
+                            ascending: true,
+                            order: None,
+                            sort_order: None,
+                        },
+                    ],
+                },
+            )),
             template: Some(citation_template),
             multi_cite_delimiter: Some("; ".to_string()),
             ..Default::default()

@@ -1500,14 +1500,16 @@ fn test_numeric_citation_numbers_follow_bibliography_sort() {
         ..Default::default()
     });
     style.bibliography = Some(BibliographySpec {
-        sort: Some(citum_schema::grouping::GroupSort {
-            template: vec![citum_schema::grouping::GroupSortKey {
-                key: citum_schema::grouping::SortKey::Author,
-                ascending: true,
-                order: None,
-                sort_order: None,
-            }],
-        }),
+        sort: Some(citum_schema::grouping::GroupSortEntry::Explicit(
+            citum_schema::grouping::GroupSort {
+                template: vec![citum_schema::grouping::GroupSortKey {
+                    key: citum_schema::grouping::SortKey::Author,
+                    ascending: true,
+                    order: None,
+                    sort_order: None,
+                }],
+            },
+        )),
         ..Default::default()
     });
 

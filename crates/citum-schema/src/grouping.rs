@@ -5,6 +5,7 @@ use std::collections::HashMap;
 
 use crate::Template;
 use crate::locale::{GeneralTerm, TermForm};
+use crate::presets::SortPreset;
 
 /// A bibliography group with selector, optional heading, and per-group sorting.
 ///
@@ -47,7 +48,7 @@ pub struct BibliographyGroup {
     /// Optional per-group sorting specification.
     /// Falls back to global bibliography sort if omitted.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sort: Option<GroupSort>,
+    pub sort: Option<GroupSortEntry>,
 
     /// Optional per-group template override.
     /// Falls back to global bibliography template if omitted.
@@ -157,6 +158,27 @@ pub enum FieldMatcher {
     /// Match any of multiple values.
     Multiple(Vec<String>),
     // Future: Pattern(FieldPattern) for regex/glob matching
+}
+
+/// Citation sort configuration: either a preset name or explicit configuration.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(untagged)]
+pub enum GroupSortEntry {
+    /// A named sort preset (e.g., "author-date-title").
+    Preset(SortPreset),
+    /// Explicit sort configuration.
+    Explicit(GroupSort),
+}
+
+impl GroupSortEntry {
+    /// Resolve this entry to a concrete `GroupSort`.
+    pub fn resolve(&self) -> GroupSort {
+        match self {
+            GroupSortEntry::Preset(preset) => preset.group_sort(),
+            GroupSortEntry::Explicit(sort) => sort.clone(),
+        }
+    }
 }
 
 /// Per-group sorting specification.
@@ -329,7 +351,7 @@ sort:
             _ => panic!("Expected localized heading"),
         }
 
-        let sort = group.sort.unwrap();
+        let sort = group.sort.unwrap().resolve();
         assert_eq!(sort.template.len(), 2);
 
         match &sort.template[0].key {

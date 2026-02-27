@@ -25,7 +25,7 @@ pub mod macros;
 pub use citation::{Citation, CitationItem, CitationMode, Citations, LocatorType, Position};
 pub use grouping::{
     BibliographyGroup, CitedStatus, FieldMatcher, GroupHeading, GroupSelector, GroupSort,
-    GroupSortKey, NameSortOrder, SortKey, TypeSelector,
+    GroupSortEntry, GroupSortKey, NameSortOrder, SortKey, TypeSelector,
 };
 pub use legacy::{
     AndTerm, ConditionBlock, CslnInfo, CslnLocale, CslnNode, CslnStyle, DateBlock, DateForm,
@@ -36,7 +36,7 @@ pub use legacy::{
 };
 pub use locale::Locale;
 pub use options::Config;
-pub use presets::{ContributorPreset, DatePreset, SubstitutePreset, TitlePreset};
+pub use presets::{ContributorPreset, DatePreset, SortPreset, SubstitutePreset, TitlePreset};
 pub use template::TemplateComponent;
 
 /// A collection of bibliographic references with optional metadata.
@@ -204,7 +204,7 @@ pub struct CitationSpec {
     pub multi_cite_delimiter: Option<String>,
     /// Optional citation sorting specification.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sort: Option<grouping::GroupSort>,
+    pub sort: Option<grouping::GroupSortEntry>,
     /// Configuration for integral (narrative) citations (e.g., "Smith (2020)").
     /// Overrides fields from the main citation spec when mode is Integral.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -414,7 +414,7 @@ pub struct BibliographySpec {
     /// When present, used for sorting the flat bibliography or as default
     /// for groups that don't specify their own sort.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sort: Option<grouping::GroupSort>,
+    pub sort: Option<grouping::GroupSortEntry>,
     /// Optional bibliography grouping specification.
     ///
     /// When present, divides the bibliography into labeled sections with

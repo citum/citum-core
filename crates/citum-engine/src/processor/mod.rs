@@ -254,7 +254,7 @@ impl Processor {
         {
             let sorter = crate::grouping::GroupSorter::new(&self.locale);
             sorter
-                .sort_references(self.bibliography.values().collect(), sort_spec)
+                .sort_references(self.bibliography.values().collect(), &sort_spec.resolve())
                 .into_iter()
                 .filter_map(|reference| reference.id())
                 .collect()
@@ -455,7 +455,7 @@ impl Processor {
             .and_then(|b| b.sort.as_ref())
         {
             let sorter = crate::grouping::GroupSorter::new(&self.locale);
-            return sorter.sort_references(references, sort_spec);
+            return sorter.sort_references(references, &sort_spec.resolve());
         }
 
         let sorter = Sorter::new(self.get_config(), &self.locale);
@@ -474,9 +474,10 @@ impl Processor {
                 .filter_map(|item| self.bibliography.get(&item.id).map(|r| (item, r)))
                 .collect();
 
+            let resolved_sort = sort_spec.resolve();
             let sorter = crate::grouping::GroupSorter::new(&self.locale);
             items_with_refs.sort_by(|a, b| {
-                for sort_key in &sort_spec.template {
+                for sort_key in &resolved_sort.template {
                     let cmp = sorter.compare_by_key(a.1, b.1, sort_key);
                     if cmp != std::cmp::Ordering::Equal {
                         return cmp;
@@ -501,9 +502,10 @@ impl Processor {
             .bibliography
             .as_ref()
             .and_then(|b| b.sort.as_ref());
+        let bib_sort_resolved = bib_sort.map(|s| s.resolve());
 
-        let disambiguator = if let Some(sort_spec) = bib_sort {
-            Disambiguator::with_group_sort(&self.bibliography, config, &self.locale, sort_spec)
+        let disambiguator = if let Some(resolved) = &bib_sort_resolved {
+            Disambiguator::with_group_sort(&self.bibliography, config, &self.locale, resolved)
         } else {
             Disambiguator::new(&self.bibliography, config, &self.locale)
         };
@@ -897,7 +899,7 @@ impl Processor {
 
             // Sort using per-group or global sort
             let sorted_refs = if let Some(sort_spec) = &group.sort {
-                sorter.sort_references(matching_refs, sort_spec)
+                sorter.sort_references(matching_refs, &sort_spec.resolve())
             } else {
                 // references in `matching_refs` are in original global-sort order
                 matching_refs
@@ -909,12 +911,13 @@ impl Processor {
                 for r in &sorted_refs {
                     group_bib.insert(r.id().unwrap_or_default(), (*r).clone());
                 }
-                let disambiguator = if let Some(sort_spec) = &group.sort {
+                let group_sort_resolved = group.sort.as_ref().map(|s| s.resolve());
+                let disambiguator = if let Some(resolved) = &group_sort_resolved {
                     Disambiguator::with_group_sort(
                         &group_bib,
                         self.get_config(),
                         &self.locale,
-                        sort_spec,
+                        resolved,
                     )
                 } else {
                     Disambiguator::new(&group_bib, self.get_config(), &self.locale)
