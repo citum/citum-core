@@ -1,13 +1,11 @@
 ---
 # csl26-srvr
-title: 'citum-server mode (epic)'
-status: todo
+title: citum-server mode (epic)
+status: completed
 type: milestone
 priority: normal
 created_at: 2026-02-23T00:00:00Z
-updated_at: 2026-02-23T00:00:00Z
-blocking: []
-blocked_by: []
+updated_at: 2026-02-27T18:13:46Z
 ---
 
 Epic tracking the creation of a dedicated `citum-server` binary crate for
@@ -30,3 +28,12 @@ See docs/architecture/CITUM_SERVER_MODE.md for the full plan.
 - HTTP (axum) is opt-in behind a second feature flag
 - Three methods: render_citation, render_bibliography, validate_style
 - Same API surface as the planned citum-bindings (but different deployment)
+
+## Summary of Changes
+
+- Created  binary crate with JSON-RPC stdin/stdout transport
+- Feature-gated  (tokio) and  (axum) modes
+- Three methods: render_citation, render_bibliography, validate_style
+- Fixed two pre-existing test bugs in citum-engine (unwrap, #[ignore])
+- Added README for the crate
+- PR #246 merged

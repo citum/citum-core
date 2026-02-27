@@ -1,13 +1,13 @@
 ---
 # csl26-shtp
-title: 'citum-server HTTP feature (axum, feature-gated)'
-status: todo
+title: citum-server HTTP feature (axum, feature-gated)
+status: completed
 type: task
 priority: low
 created_at: 2026-02-23T00:00:00Z
-updated_at: 2026-02-23T00:00:00Z
-blocking: []
-blocked_by: [csl26-srpc]
+updated_at: 2026-02-27T18:13:47Z
+blocked_by:
+    - csl26-srpc
 ---
 
 Add an optional `http` feature to `citum-server` that exposes the same three

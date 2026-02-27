@@ -1,13 +1,11 @@
 ---
 # csl26-srpc
-title: 'Implement citum-server JSON-RPC stdin/stdout handler'
-status: todo
+title: Implement citum-server JSON-RPC stdin/stdout handler
+status: completed
 type: task
 priority: normal
 created_at: 2026-02-23T00:00:00Z
-updated_at: 2026-02-23T00:00:00Z
-blocking: []
-blocked_by: []
+updated_at: 2026-02-27T18:13:47Z
 ---
 
 Create the `crates/citum-server/` crate and implement the core JSON-RPC
