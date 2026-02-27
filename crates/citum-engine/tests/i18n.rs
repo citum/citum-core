@@ -56,7 +56,7 @@ fn build_ml_style(name_mode: MultilingualMode, preferred_script: Option<String>)
 #[test]
 fn test_resolve_simple_string() {
     let simple = MultilingualString::Simple("Hello".to_string());
-    let result = resolve_multilingual_string(&simple, None, None, "en");
+    let result = resolve_multilingual_string(&simple, None, None, None, "en");
     assert_eq!(result, "Hello");
 }
 
@@ -81,8 +81,13 @@ fn test_resolve_primary_mode() {
     };
 
     let ml_string = MultilingualString::Complex(complex);
-    let result =
-        resolve_multilingual_string(&ml_string, Some(&MultilingualMode::Primary), None, "en");
+    let result = resolve_multilingual_string(
+        &ml_string,
+        Some(&MultilingualMode::Primary),
+        None,
+        None,
+        "en",
+    );
 
     assert_eq!(result, "战争与和平");
 }
@@ -111,7 +116,8 @@ fn test_resolve_transliterated_exact_match() {
     let result = resolve_multilingual_string(
         &ml_string,
         Some(&MultilingualMode::Transliterated),
-        Some(&"ja-Latn-hepburn".to_string()),
+        Some(&["ja-Latn-hepburn".to_string()]),
+        None,
         "en",
     );
     assert_eq!(result, "Tōkyō");
@@ -136,7 +142,8 @@ fn test_resolve_transliterated_prefix_match() {
     let result = resolve_multilingual_string(
         &ml_string,
         Some(&MultilingualMode::Transliterated),
-        Some(&"ja-Latn".to_string()),
+        Some(&["ja-Latn".to_string()]),
+        None,
         "en",
     );
     assert_eq!(result, "Tōkyō");
@@ -157,6 +164,7 @@ fn test_resolve_transliterated_fallback_to_original() {
     let result = resolve_multilingual_string(
         &ml_string,
         Some(&MultilingualMode::Transliterated),
+        None,
         Some(&"Latn".to_string()),
         "en",
     );
@@ -180,13 +188,23 @@ fn test_resolve_translated_mode() {
     let ml_string = MultilingualString::Complex(complex);
 
     // English translation
-    let result =
-        resolve_multilingual_string(&ml_string, Some(&MultilingualMode::Translated), None, "en");
+    let result = resolve_multilingual_string(
+        &ml_string,
+        Some(&MultilingualMode::Translated),
+        None,
+        None,
+        "en",
+    );
     assert_eq!(result, "War and Peace");
 
     // French translation
-    let result =
-        resolve_multilingual_string(&ml_string, Some(&MultilingualMode::Translated), None, "fr");
+    let result = resolve_multilingual_string(
+        &ml_string,
+        Some(&MultilingualMode::Translated),
+        None,
+        None,
+        "fr",
+    );
     assert_eq!(result, "Guerre et Paix");
 }
 
@@ -215,7 +233,8 @@ fn test_resolve_combined_mode() {
     let result = resolve_multilingual_string(
         &ml_string,
         Some(&MultilingualMode::Combined),
-        Some(&"zh-Latn-pinyin".to_string()),
+        Some(&["zh-Latn-pinyin".to_string()]),
+        None,
         "en",
     );
 
@@ -241,6 +260,7 @@ fn test_resolve_combined_fallback() {
     let result = resolve_multilingual_string(
         &ml_string,
         Some(&MultilingualMode::Combined),
+        None,
         Some(&"Latn".to_string()),
         "en",
     );
@@ -258,7 +278,7 @@ fn test_resolve_multilingual_name_simple() {
         non_dropping_particle: None,
     });
 
-    let result = citum_engine::values::resolve_multilingual_name(&name, None, None, "en");
+    let result = citum_engine::values::resolve_multilingual_name(&name, None, None, None, "en");
 
     assert_eq!(result.len(), 1);
     assert_eq!(result[0].given, Some("John".to_string()));
@@ -296,7 +316,8 @@ fn test_resolve_multilingual_name_transliterated() {
     let result = citum_engine::values::resolve_multilingual_name(
         &name,
         Some(&MultilingualMode::Transliterated),
-        Some(&"Latn".to_string()),
+        Some(&["Latn".to_string()]),
+        None,
         "en",
     );
 
@@ -337,7 +358,8 @@ fn test_resolve_multilingual_name_prefix_match() {
     let result = citum_engine::values::resolve_multilingual_name(
         &name,
         Some(&MultilingualMode::Transliterated),
-        Some(&"Latn".to_string()),
+        Some(&["Latn".to_string()]),
+        None,
         "en",
     );
 
@@ -365,7 +387,8 @@ fn test_resolve_multilingual_name_fallback_to_original() {
     let result = citum_engine::values::resolve_multilingual_name(
         &name,
         Some(&MultilingualMode::Transliterated),
-        Some(&"Latn".to_string()),
+        Some(&["Latn".to_string()]),
+        None,
         "en",
     );
 

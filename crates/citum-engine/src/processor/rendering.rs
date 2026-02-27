@@ -145,6 +145,11 @@ impl<'a> Renderer<'a> {
                 .multilingual
                 .as_ref()
                 .and_then(|m| m.name_mode.as_ref());
+            let preferred_transliteration = self
+                .config
+                .multilingual
+                .as_ref()
+                .and_then(|m| m.preferred_transliteration.as_deref());
             let preferred_script = self
                 .config
                 .multilingual
@@ -155,6 +160,7 @@ impl<'a> Renderer<'a> {
             let names_vec = crate::values::resolve_multilingual_name(
                 &authors,
                 mode,
+                preferred_transliteration,
                 preferred_script,
                 locale_str,
             );
@@ -214,6 +220,11 @@ impl<'a> Renderer<'a> {
                 .multilingual
                 .as_ref()
                 .and_then(|m| m.name_mode.as_ref());
+            let preferred_transliteration = self
+                .config
+                .multilingual
+                .as_ref()
+                .and_then(|m| m.preferred_transliteration.as_deref());
             let preferred_script = self
                 .config
                 .multilingual
@@ -224,6 +235,7 @@ impl<'a> Renderer<'a> {
             let names_vec = crate::values::resolve_multilingual_name(
                 &contributor,
                 mode,
+                preferred_transliteration,
                 preferred_script,
                 locale_str,
             );
@@ -733,6 +745,11 @@ impl<'a> Renderer<'a> {
                 .multilingual
                 .as_ref()
                 .and_then(|m| m.name_mode.as_ref());
+            let preferred_transliteration = self
+                .config
+                .multilingual
+                .as_ref()
+                .and_then(|m| m.preferred_transliteration.as_deref());
             let preferred_script = self
                 .config
                 .multilingual
@@ -743,6 +760,7 @@ impl<'a> Renderer<'a> {
             let names_vec = crate::values::resolve_multilingual_name(
                 &authors,
                 mode,
+                preferred_transliteration,
                 preferred_script,
                 locale_str,
             );

@@ -28,6 +28,49 @@ use citum_schema::template::{TemplateComponent, TitleType};
 pub use contributor::format_contributors_short;
 pub use date::int_to_letter;
 
+/// Resolve preferred transliteration from a map of transliterations.
+///
+/// Applies priority-based matching:
+/// 1. Preferred transliteration list: exact match
+/// 2. Preferred transliteration list: substring match
+/// 3. Preferred script: exact match
+/// 4. Preferred script: substring match
+fn resolve_transliteration<'a>(
+    transliterations: &'a std::collections::HashMap<String, String>,
+    preferred_transliteration: Option<&[String]>,
+    preferred_script: Option<&String>,
+) -> Option<&'a str> {
+    // 1. Priority list: exact match
+    if let Some(tags) = preferred_transliteration {
+        for tag in tags {
+            if let Some(v) = transliterations.get(tag) {
+                return Some(v.as_str());
+            }
+        }
+        // 2. Priority list: substring match
+        for tag in tags {
+            for (k, v) in transliterations {
+                if k.contains(tag.as_str()) {
+                    return Some(v.as_str());
+                }
+            }
+        }
+    }
+    // 3. preferred_script exact match
+    if let Some(script) = preferred_script {
+        if let Some(v) = transliterations.get(script) {
+            return Some(v.as_str());
+        }
+        // 4. preferred_script substring match
+        for (k, v) in transliterations {
+            if k.contains(script.as_str()) {
+                return Some(v.as_str());
+            }
+        }
+    }
+    None
+}
+
 /// Resolve a multilingual string based on style configuration.
 ///
 /// Applies BCP 47 fallback logic:
@@ -38,11 +81,13 @@ pub use date::int_to_letter;
 /// # Arguments
 /// * `string` - The multilingual string to resolve
 /// * `mode` - The rendering mode from style config
+/// * `preferred_transliteration` - Optional ordered list of BCP 47 transliteration tags
 /// * `preferred_script` - Optional preferred script (e.g., "Latn")
 /// * `style_locale` - The style's locale for translation matching
 pub fn resolve_multilingual_string(
     string: &citum_schema::reference::types::MultilingualString,
     mode: Option<&citum_schema::options::MultilingualMode>,
+    preferred_transliteration: Option<&[String]>,
     preferred_script: Option<&String>,
     style_locale: &str,
 ) -> String {
@@ -58,19 +103,12 @@ pub fn resolve_multilingual_string(
                 MultilingualMode::Primary => complex.original.clone(),
 
                 MultilingualMode::Transliterated => {
-                    // Try exact match first, then prefix match, then fallback
-                    if let Some(script) = preferred_script {
-                        // Try exact script match
-                        if let Some(trans) = complex.transliterations.get(script) {
-                            return trans.clone();
-                        }
-
-                        // Try substring match (e.g., "Latn" matches "ja-Latn-hepburn")
-                        for (tag, trans) in &complex.transliterations {
-                            if tag.contains(script) {
-                                return trans.clone();
-                            }
-                        }
+                    if let Some(trans) = resolve_transliteration(
+                        &complex.transliterations,
+                        preferred_transliteration,
+                        preferred_script,
+                    ) {
+                        return trans.to_string();
                     }
 
                     // Fallback: use any available transliteration, or original
@@ -93,23 +131,17 @@ pub fn resolve_multilingual_string(
 
                 MultilingualMode::Combined => {
                     // Format: "transliterated [translated]" or fallback variants
-                    let trans = if let Some(script) = preferred_script {
-                        complex.transliterations.get(script).or_else(|| {
-                            complex
-                                .transliterations
-                                .iter()
-                                .find(|(tag, _)| tag.contains(script))
-                                .map(|(_, v)| v)
-                        })
-                    } else {
-                        complex.transliterations.values().next()
-                    };
+                    let trans = resolve_transliteration(
+                        &complex.transliterations,
+                        preferred_transliteration,
+                        preferred_script,
+                    );
 
                     let translation = complex.translations.get(style_locale);
 
                     match (trans, translation) {
                         (Some(t), Some(tr)) => format!("{} [{}]", t, tr),
-                        (Some(t), None) => t.clone(),
+                        (Some(t), None) => t.to_string(),
                         (None, Some(tr)) => format!("{} [{}]", complex.original, tr),
                         (None, None) => complex.original.clone(),
                     }
@@ -187,11 +219,13 @@ pub fn effective_component_language(
 /// # Arguments
 /// * `contributor` - The contributor to resolve
 /// * `mode` - The rendering mode from style config
+/// * `preferred_transliteration` - Optional ordered list of BCP 47 transliteration tags
 /// * `preferred_script` - Optional preferred script (e.g., "Latn")
 /// * `style_locale` - The style's locale for translation matching
 pub fn resolve_multilingual_name(
     contributor: &citum_schema::reference::contributor::Contributor,
     mode: Option<&citum_schema::options::MultilingualMode>,
+    preferred_transliteration: Option<&[String]>,
     preferred_script: Option<&String>,
     style_locale: &str,
 ) -> Vec<crate::reference::FlatName> {
@@ -210,12 +244,44 @@ pub fn resolve_multilingual_name(
                 MultilingualMode::Primary => &m.original,
 
                 MultilingualMode::Transliterated => {
+                    // 1. Priority list: exact match
+                    if let Some(tags) = preferred_transliteration {
+                        for tag in tags {
+                            if let Some(name) = m.transliterations.get(tag) {
+                                return vec![crate::reference::FlatName {
+                                    given: Some(name.given.to_string()),
+                                    family: Some(name.family.to_string()),
+                                    suffix: name.suffix.clone(),
+                                    dropping_particle: name.dropping_particle.clone(),
+                                    non_dropping_particle: name.non_dropping_particle.clone(),
+                                    literal: None,
+                                }];
+                            }
+                        }
+                        // 2. Priority list: substring match
+                        for tag in tags {
+                            if let Some((_, name)) = m
+                                .transliterations
+                                .iter()
+                                .find(|(k, _)| k.contains(tag.as_str()))
+                            {
+                                return vec![crate::reference::FlatName {
+                                    given: Some(name.given.to_string()),
+                                    family: Some(name.family.to_string()),
+                                    suffix: name.suffix.clone(),
+                                    dropping_particle: name.dropping_particle.clone(),
+                                    non_dropping_particle: name.non_dropping_particle.clone(),
+                                    literal: None,
+                                }];
+                            }
+                        }
+                    }
+                    // 3. Preferred script: exact match
                     if let Some(script) = preferred_script {
-                        // Try exact script match
                         if let Some(name) = m.transliterations.get(script) {
                             name
                         } else {
-                            // Try substring match (e.g., "Latn" matches "ru-Latn-alalc97")
+                            // 4. Preferred script: substring match
                             m.transliterations
                                 .iter()
                                 .find(|(tag, _)| tag.contains(script))
@@ -234,6 +300,37 @@ pub fn resolve_multilingual_name(
 
                 // Combined mode for names defaults to transliterated (parenthetical combo not common for names)
                 MultilingualMode::Combined => {
+                    // Use same logic as Transliterated: priority list then preferred_script
+                    if let Some(tags) = preferred_transliteration {
+                        for tag in tags {
+                            if let Some(name) = m.transliterations.get(tag) {
+                                return vec![crate::reference::FlatName {
+                                    given: Some(name.given.to_string()),
+                                    family: Some(name.family.to_string()),
+                                    suffix: name.suffix.clone(),
+                                    dropping_particle: name.dropping_particle.clone(),
+                                    non_dropping_particle: name.non_dropping_particle.clone(),
+                                    literal: None,
+                                }];
+                            }
+                        }
+                        for tag in tags {
+                            if let Some((_, name)) = m
+                                .transliterations
+                                .iter()
+                                .find(|(k, _)| k.contains(tag.as_str()))
+                            {
+                                return vec![crate::reference::FlatName {
+                                    given: Some(name.given.to_string()),
+                                    family: Some(name.family.to_string()),
+                                    suffix: name.suffix.clone(),
+                                    dropping_particle: name.dropping_particle.clone(),
+                                    non_dropping_particle: name.non_dropping_particle.clone(),
+                                    literal: None,
+                                }];
+                            }
+                        }
+                    }
                     if let Some(script) = preferred_script {
                         m.transliterations
                             .get(script)
@@ -263,7 +360,15 @@ pub fn resolve_multilingual_name(
 
         Contributor::ContributorList(l) => {
             l.0.iter()
-                .flat_map(|c| resolve_multilingual_name(c, mode, preferred_script, style_locale))
+                .flat_map(|c| {
+                    resolve_multilingual_name(
+                        c,
+                        mode,
+                        preferred_transliteration,
+                        preferred_script,
+                        style_locale,
+                    )
+                })
                 .collect()
         }
     }

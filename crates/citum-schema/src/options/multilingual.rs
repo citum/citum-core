@@ -22,6 +22,10 @@ pub struct MultilingualConfig {
     /// Preferred script for transliterations (e.g., "Latn").
     #[serde(skip_serializing_if = "Option::is_none")]
     pub preferred_script: Option<String>,
+    /// Ordered priority list of BCP 47 transliteration tags (e.g. ["ja-Latn-hepburn", "ja-Latn"]).
+    /// Takes precedence over `preferred_script` when resolving transliterations.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub preferred_transliteration: Option<Vec<String>>,
     /// Script-specific behavior configuration.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub scripts: HashMap<String, ScriptConfig>,
