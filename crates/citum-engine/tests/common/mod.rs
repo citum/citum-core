@@ -7,13 +7,13 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 use citum_engine::Processor;
 use citum_schema::{
+    CitationSpec, Style, StyleInfo,
     citation::{Citation, CitationItem, CitationMode},
     reference::{
         Contributor, ContributorList, EdtfString, InputReference as Reference, Monograph,
         MonographType, MultilingualString, Parent, Serial, SerialComponent, SerialComponentType,
         SerialType, StructuredName, Title,
     },
-    CitationSpec, Style, StyleInfo,
 };
 
 // --- Helper Functions for Test Data Construction ---
