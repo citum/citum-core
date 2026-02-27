@@ -211,6 +211,42 @@ fn test_process_citations_batch_api() {
 }
 
 #[test]
+fn test_process_citation_treats_trimmed_none_delimiter_as_empty() {
+    let mut style = make_style();
+    style.citation = Some(CitationSpec {
+        template: Some(vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                form: ContributorForm::Short,
+                ..Default::default()
+            }),
+            TemplateComponent::Date(TemplateDate {
+                date: TDateVar::Issued,
+                form: DateForm::Year,
+                ..Default::default()
+            }),
+        ]),
+        wrap: Some(WrapPunctuation::Parentheses),
+        delimiter: Some(" none ".to_string()),
+        ..Default::default()
+    });
+
+    let bib = make_bibliography();
+    let processor = Processor::new(style, bib);
+    let citation = Citation {
+        id: Some("c1".to_string()),
+        items: vec![crate::reference::CitationItem {
+            id: "kuhn1962".to_string(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let result = processor.process_citation(&citation).unwrap();
+    assert_eq!(result, "(Kuhn1962)");
+}
+
+#[test]
 fn test_citation_locator_label_renders_term() {
     let mut style = make_style();
     style.citation = Some(citum_schema::CitationSpec {
