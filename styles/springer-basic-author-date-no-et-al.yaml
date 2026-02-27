@@ -112,9 +112,4 @@ bibliography:
           prefix: https://doi.org/
     - variable: publisher-place
       prefix: ", "
-  sort:
-    template:
-      - key: author
-        ascending: true
-      - key: author
-        ascending: true
+  sort: author-date-title

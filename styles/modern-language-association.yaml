@@ -110,11 +110,4 @@ bibliography:
           prefix: https://doi.org/
       prefix: ", "
     - variable: url
-  sort:
-    template:
-      - key: author
-        ascending: true
-      - key: title
-        ascending: true
-      - key: title
-        ascending: true
+  sort: author-title-date

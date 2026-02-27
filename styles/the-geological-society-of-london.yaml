@@ -176,15 +176,4 @@ bibliography:
       - number: number
         strong: true
       - title: parent-monograph
-  sort:
-    template:
-      - key: author
-        ascending: true
-      - key: author
-        ascending: true
-      - key: author
-        ascending: true
-      - key: issued
-        ascending: true
-      - key: title
-        ascending: true
+  sort: author-date-title

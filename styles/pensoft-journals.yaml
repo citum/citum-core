@@ -154,13 +154,4 @@ bibliography:
         suppress: true
       - variable: doi
         prefix: https://doi.org/
-  sort:
-    template:
-      - key: author
-        ascending: true
-      - key: author
-        ascending: true
-      - key: issued
-        ascending: true
-      - key: title
-        ascending: true
+  sort: author-date-title

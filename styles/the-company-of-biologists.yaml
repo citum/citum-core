@@ -130,13 +130,4 @@ bibliography:
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
-  sort:
-    template:
-      - key: author
-        ascending: true
-      - key: author
-        ascending: true
-      - key: author
-        ascending: true
-      - key: issued
-        ascending: true
+  sort: author-date-title

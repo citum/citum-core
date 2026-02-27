@@ -98,15 +98,4 @@ bibliography:
           prefix: "pp. "
     - variable: doi
     - variable: url
-  sort:
-    template:
-      - key: author
-        ascending: true
-      - key: title
-        ascending: true
-      - key: issued
-        ascending: true
-      - key: issued
-        ascending: true
-      - key: issued
-        ascending: true
+  sort: author-title-date
