@@ -13,6 +13,13 @@ info:
   title: Chicago Manual of Style 18th edition (author-date)
   id: http://www.zotero.org/styles/chicago-author-date
 options:
+  processing:
+    sort:
+      template:
+        - key: author
+          ascending: true
+        - key: year
+          ascending: true
   contributors:
     shorten:
       min: 7

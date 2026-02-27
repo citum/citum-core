@@ -8,11 +8,11 @@ use common::*;
 
 use citum_engine::Processor;
 use citum_schema::{
-    BibliographySpec, CitationSpec, Style, StyleInfo,
     options::{
         BibliographyConfig, Config, ContributorConfig, DisplayAsSort, Processing, ProcessingCustom,
         Sort, SortKey, SortSpec,
     },
+    BibliographySpec, CitationSpec, Style, StyleInfo,
 };
 
 // --- Helper Functions ---
@@ -248,4 +248,70 @@ fn test_numeric_bibliography() {
 
     let result = processor.render_bibliography();
     assert_eq!(result, "1. John Smith (2020)");
+}
+
+#[test]
+fn test_anonymous_works_sort_by_title_without_article() {
+    let style = build_sorted_style(vec![
+        SortSpec {
+            key: SortKey::Author,
+            ascending: true,
+        },
+        SortSpec {
+            key: SortKey::Year,
+            ascending: true,
+        },
+    ]);
+
+    let mut bib = indexmap::IndexMap::new();
+    // Anonymous work with "The" article should sort as "Chicago Manual"
+    bib.insert(
+        "anon1".to_string(),
+        make_book("anon1", "", "", 2018, "The Chicago Manual of Style"),
+    );
+    // Another anonymous work starting with title after article
+    bib.insert(
+        "anon2".to_string(),
+        make_book("anon2", "", "", 2015, "A Guide to Citation"),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    // "A Guide..." should come before "The Chicago..." when articles are stripped
+    assert!(result.find("A Guide").unwrap() < result.find("The Chicago").unwrap());
+}
+
+#[test]
+fn test_anonymous_same_year_tiebreak() {
+    let style = build_sorted_style(vec![
+        SortSpec {
+            key: SortKey::Author,
+            ascending: true,
+        },
+        SortSpec {
+            key: SortKey::Year,
+            ascending: true,
+        },
+    ]);
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "anon1".to_string(),
+        make_book("anon1", "", "", 2020, "The Chicago Manual"),
+    );
+    bib.insert(
+        "anon2".to_string(),
+        make_book("anon2", "", "", 2020, "An Earlier Publication"),
+    );
+    bib.insert(
+        "anon3".to_string(),
+        make_book("anon3", "", "", 2019, "The Chicago Manual"),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    // 2019 entry should come before 2020 entries
+    assert!(result.find("2019").unwrap() < result.find("2020"));
 }
