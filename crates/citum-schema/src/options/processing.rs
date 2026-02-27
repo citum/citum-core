@@ -115,7 +115,7 @@ pub enum Processing {
 #[serde(rename_all = "kebab-case")]
 pub struct ProcessingCustom {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sort: Option<Sort>,
+    pub sort: Option<SortEntry>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub group: Option<Group>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -127,7 +127,7 @@ impl Processing {
     pub fn config(&self) -> ProcessingCustom {
         match self {
             Processing::AuthorDate => ProcessingCustom {
-                sort: Some(Sort {
+                sort: Some(SortEntry::Explicit(Sort {
                     shorten_names: false,
                     render_substitutions: false,
                     template: vec![
@@ -140,7 +140,7 @@ impl Processing {
                             ascending: true,
                         },
                     ],
-                }),
+                })),
                 group: Some(Group {
                     template: vec![SortKey::Author, SortKey::Year],
                 }),
@@ -320,6 +320,27 @@ pub struct Sort {
     pub render_substitutions: bool,
     /// Sort keys in order.
     pub template: Vec<SortSpec>,
+}
+
+/// Sort configuration: either a preset name or explicit configuration.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(untagged)]
+pub enum SortEntry {
+    /// A named sort preset (e.g., "author-date-title").
+    Preset(crate::presets::SortPreset),
+    /// Explicit sort configuration.
+    Explicit(Sort),
+}
+
+impl SortEntry {
+    /// Resolve this entry to a concrete `Sort`.
+    pub fn resolve(&self) -> Sort {
+        match self {
+            SortEntry::Preset(preset) => preset.sort(),
+            SortEntry::Explicit(sort) => sort.clone(),
+        }
+    }
 }
 
 /// A single sort specification.

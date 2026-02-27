@@ -1,11 +1,11 @@
 ---
 # csl26-t052
 title: Implement EDTF time component handling
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-13T11:26:58Z
-updated_at: 2026-02-27T22:43:52Z
+updated_at: 2026-02-27T22:47:09Z
 ---
 
 Add support for rendering time components from EDTF datetime values.
@@ -64,3 +64,7 @@ Update values/date.rs rendering to:
 Blocked by: EDTF date handling implementation (ranges, uncertainty)
 
 Refs: csl26-u5de
+
+## Summary of Changes
+
+Added Timezone enum to csln-edtf::Time with parser support for Z and +HH:MM offsets. Added TimeFormat enum (Hour12/Hour24) and show_seconds/show_timezone fields to DateConfig. Added am/pm/timezone_utc to DateTerms. Added time() and has_time() accessors to EdtfString. Added format_time() fn in citum-engine wired into DateForm::Full. All 7 unit tests pass.

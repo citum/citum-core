@@ -105,7 +105,7 @@ fn test_extract_processing_sort_and_disambiguation() {
     assert!(disamb.names);
     assert!(disamb.add_givenname);
 
-    let sort = custom.sort.unwrap();
+    let sort = custom.sort.unwrap().resolve();
     assert_eq!(sort.template.len(), 3);
     assert_eq!(sort.template[0].key, SortKey::Author);
     assert_eq!(sort.template[1].key, SortKey::Year);

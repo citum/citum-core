@@ -1,5 +1,5 @@
 use citum_schema::options::{
-    Disambiguation, Group, Processing, ProcessingCustom, Sort, SortKey, SortSpec,
+    Disambiguation, Group, Processing, ProcessingCustom, Sort, SortEntry, SortKey, SortSpec,
 };
 use csl_legacy::model::{CslNode, Style};
 use std::collections::HashSet;
@@ -57,7 +57,7 @@ pub fn detect_processing_mode(style: &Style) -> Option<Processing> {
         let group = sort.as_ref().and_then(extract_group_from_sort);
 
         return Some(Processing::Custom(ProcessingCustom {
-            sort,
+            sort: sort.map(SortEntry::Explicit),
             group,
             disambiguate: Some(disamb),
         }));

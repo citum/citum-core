@@ -21,8 +21,9 @@ impl<'a> Sorter<'a> {
         if let Some(sort_config) = &proc_config.sort {
             // Build a composite sort that handles all keys together
             // For author-date styles: sort by author (with title fallback), then by year
+            let resolved = sort_config.resolve();
             refs.sort_by(|a, b| {
-                for sort in &sort_config.template {
+                for sort in &resolved.template {
                     let cmp = match sort.key {
                         SortKey::Author => {
                             let a_sort_key = a

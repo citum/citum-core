@@ -526,7 +526,7 @@ fn test_disambiguation_givenname() {
     let mut style = make_style();
     style.options = Some(Config {
         processing: Some(Processing::Custom(ProcessingCustom {
-            sort: Some(Sort {
+            sort: Some(citum_schema::options::SortEntry::Explicit(Sort {
                 shorten_names: false,
                 render_substitutions: false,
                 template: vec![
@@ -539,7 +539,7 @@ fn test_disambiguation_givenname() {
                         ascending: true,
                     },
                 ],
-            }),
+            })),
             group: Some(Group {
                 template: vec![SortKey::Author, SortKey::Year],
             }),
@@ -624,7 +624,7 @@ fn test_disambiguation_add_names() {
     let mut style = make_style();
     style.options = Some(Config {
         processing: Some(Processing::Custom(ProcessingCustom {
-            sort: Some(Sort {
+            sort: Some(citum_schema::options::SortEntry::Explicit(Sort {
                 shorten_names: false,
                 render_substitutions: false,
                 template: vec![
@@ -637,7 +637,7 @@ fn test_disambiguation_add_names() {
                         ascending: true,
                     },
                 ],
-            }),
+            })),
             group: Some(Group {
                 template: vec![SortKey::Author, SortKey::Year],
             }),
@@ -744,7 +744,7 @@ fn test_disambiguation_combined_expansion() {
     let mut style = make_style();
     style.options = Some(Config {
         processing: Some(Processing::Custom(ProcessingCustom {
-            sort: Some(Sort {
+            sort: Some(citum_schema::options::SortEntry::Explicit(Sort {
                 shorten_names: false,
                 render_substitutions: false,
                 template: vec![
@@ -757,7 +757,7 @@ fn test_disambiguation_combined_expansion() {
                         ascending: true,
                     },
                 ],
-            }),
+            })),
             group: Some(Group {
                 template: vec![SortKey::Author, SortKey::Year],
             }),
