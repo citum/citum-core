@@ -68,8 +68,14 @@ bibliography:
     - number: pages
     - variable: publisher
       prefix: " ("
+      overrides:
+        report:
+          suppress: true
     - variable: publisher-place
       prefix: ", "
+      overrides:
+        report:
+          suppress: true
     - date: issued
       form: year
       wrap: parentheses
