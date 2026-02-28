@@ -146,7 +146,7 @@ struct RenderDocArgs {
         short,
         long,
         value_enum,
-        default_value_t = OutputFormat::Html
+        default_value_t = OutputFormat::Plain
     )]
     format: OutputFormat,
 
@@ -194,7 +194,7 @@ struct RenderRefsArgs {
         short,
         long,
         value_enum,
-        default_value_t = OutputFormat::Html
+        default_value_t = OutputFormat::Plain
     )]
     format: OutputFormat,
 
