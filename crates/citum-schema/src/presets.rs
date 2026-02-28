@@ -439,7 +439,7 @@ impl TitlePreset {
 ///
 /// Each preset encodes the sort key sequence for a citation style family.
 /// Use for the `bibliography.sort` field to avoid repeating boilerplate key lists.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 #[non_exhaustive]

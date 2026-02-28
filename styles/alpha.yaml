@@ -45,7 +45,6 @@ bibliography:
       delimiter: ', '
       delimiter-precedes-last: contextual
       sort-separator: ', '
-  sort: author-date-title
   template:
     - number: citation-label
       wrap: brackets

@@ -161,7 +161,7 @@ pub enum FieldMatcher {
 }
 
 /// Citation sort configuration: either a preset name or explicit configuration.
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(untagged)]
 pub enum GroupSortEntry {
@@ -185,7 +185,7 @@ impl GroupSortEntry {
 ///
 /// Sorting follows a template of sort keys, applied in order.
 /// The first key is the primary sort, second is the tiebreaker, etc.
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub struct GroupSort {
@@ -194,7 +194,7 @@ pub struct GroupSort {
 }
 
 /// A single sort key in a group sorting template.
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub struct GroupSortKey {
@@ -224,7 +224,7 @@ fn default_true() -> bool {
 }
 
 /// Sort key selector.
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum SortKey {

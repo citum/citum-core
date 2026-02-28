@@ -149,4 +149,3 @@ bibliography:
           prefix: "pp. "
     - variable: doi
     - variable: url
-  sort: author-title-date
