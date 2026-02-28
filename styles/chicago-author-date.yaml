@@ -14,6 +14,10 @@ info:
   id: http://www.zotero.org/styles/chicago-author-date
 options:
   processing:
+    disambiguate:
+      names: true
+      add-givenname: true
+      year-suffix: true
     sort:
       template:
         - key: author
@@ -40,7 +44,7 @@ citation:
     contributors:
       shorten:
         min: 3
-        use-first: 1
+        use-first: 3
         and-others: et-al
         delimiter-precedes-last: contextual
   template:
@@ -48,7 +52,7 @@ citation:
       form: short
       shorten:
         min: 3
-        use-first: 1
+        use-first: 3
         and-others: et-al
     - date: issued
       form: year
@@ -57,8 +61,10 @@ citation:
         personal_communication:
           suppress: true
     - variable: locator
+      show-label: false
+      prefix: ", "
   wrap: parentheses
-  delimiter: ", "
+  delimiter: " "
   multi-cite-delimiter: "; "
 bibliography:
   options:
@@ -102,6 +108,24 @@ bibliography:
             note:
               - primary
               - archival
+  type-templates:
+    patent:
+      - contributor: author
+        form: long
+        name-order: family-first
+      - date: issued
+        form: year
+      - title: primary
+      - items:
+          - term: patent
+            suffix: " "
+          - number: number
+          - date: issued
+            form: full
+            prefix: ", issued "
+        prefix: ". "
+        delimiter: none
+    personal-communication: []
   template:
     - contributor: author
       form: long

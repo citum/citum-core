@@ -50,6 +50,20 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: ", "
+  type-templates:
+    dataset:
+      - contributor: author
+        form: long
+        name-order: family-first
+      - date: issued
+        form: year
+        wrap: parentheses
+        prefix: " "
+      - title: primary
+      - variable: publisher
+        wrap: parentheses
+        prefix: ". "
+      - variable: url
   template:
     - contributor: author
       form: long

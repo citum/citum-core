@@ -1,7 +1,7 @@
 # Citum Style Tier Status
 
 > **Living document** — updated after each significant batch oracle run.
-> Last updated: 2026-02-21
+> Last updated: 2026-02-28
 >
 > **Oracle scoring:** Strict 12-scenario citation set (`tests/fixtures/citations-expanded.json`).
 > Hard-fails on processor/style errors. Includes suppress-author, mixed locator/prefix/suffix
@@ -23,7 +23,7 @@
 | springer-basic-brackets | 352 | 12/12 | 32/32 ✅ | 100% fidelity |
 | springer-socpsych-author-date | 317 | 12/12 | 32/32 ✅ | 100% fidelity |
 | american-medical-association | 293 | 12/12 | 32/32 ✅ | 100% fidelity |
-| taylor-and-francis-chicago-author-date | 234 | 12/12 | 31/31 ✅ | 100% fidelity |
+| chicago-author-date | — | 13/13 | 31/31 ✅ | 100% fidelity in the explicit 2026-02-28 cohort |
 
 **Strict 100% citation match (top 10):** 10/10 styles
 **Strict 100% bibliography match (top 10):** 10/10 styles
