@@ -37,6 +37,9 @@ jobs:
       - name: Check testing infrastructure contracts
         run: node scripts/check-testing-infra.js
 
+      - name: Run script regression tests
+        run: node --test scripts/*.test.js
+
       - name: Check formatting
         run: cargo fmt --all -- --check
 

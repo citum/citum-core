@@ -467,7 +467,9 @@ mod tests {
     fn test_html_separator_logic_uses_visible_punctuation() {
         use crate::render::html::Html;
         use citum_schema::options::{BibliographyConfig, Config};
-        use citum_schema::template::{NumberVariable, SimpleVariable, TemplateNumber, TemplateVariable};
+        use citum_schema::template::{
+            NumberVariable, SimpleVariable, TemplateNumber, TemplateVariable,
+        };
 
         let config = Config {
             bibliography: Some(BibliographyConfig {
@@ -552,8 +554,11 @@ mod tests {
             "separator should not inject a period before DOI: {result}"
         );
         assert!(
-            result.contains("<span class=\"csln-pages\">, 891–921.</span><span class=\"csln-doi\">")
-                || result.contains("<span class=\"csln-pages\">, 891–921.</span> <span class=\"csln-doi\">"),
+            result
+                .contains("<span class=\"csln-pages\">, 891–921.</span><span class=\"csln-doi\">")
+                || result.contains(
+                    "<span class=\"csln-pages\">, 891–921.</span> <span class=\"csln-doi\">"
+                ),
             "HTML output should preserve pages punctuation without duplicate separators: {result}"
         );
     }

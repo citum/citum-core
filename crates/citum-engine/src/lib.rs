@@ -15,43 +15,82 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! # Example
 //!
 //! ```rust
-//! use citum_engine::{Processor, Reference, Citation, CitationItem};
-//! use csl_legacy::csl_json::{Reference as LegacyReference, Name, DateVariable};
-//! use citum_schema::Style;
-//! use std::collections::HashMap;
+//! use citum_engine::{
+//!     Bibliography, Citation, CitationItem, CitationSpec, Config, Contributor,
+//!     ContributorForm, ContributorList, ContributorRole, DateForm, EdtfString,
+//!     Monograph, MonographType, MultilingualString, Processing, Processor, Reference,
+//!     Rendering, StructuredName, Style, StyleInfo, TemplateComponent, TemplateContributor,
+//!     TemplateDate, TemplateDateVariable, Title, WrapPunctuation,
+//! };
 //!
-//! // Create a simple style
-//! let style_yaml = r#"
-//! info:
-//!   title: Simple
-//! options:
-//!   processing: author-date
-//! citation:
-//!   wrap: parentheses
-//!   template:
-//!     - contributor: author
-//!       form: short
-//!     - date: issued
-//!       form: year
-//! bibliography:
-//!   template:
-//!     - contributor: author
-//!       form: long
-//!     - date: issued
-//!       form: year
-//! "#;
-//! let style: Style = serde_yaml::from_str(style_yaml).unwrap();
-//!
-//! // Create a bibliography
-//! let mut bib = indexmap::IndexMap::new();
-//! bib.insert("kuhn1962".to_string(), Reference::from(LegacyReference {
-//!     id: "kuhn1962".to_string(),
-//!     ref_type: "book".to_string(),
-//!     author: Some(vec![Name::new("Kuhn", "Thomas")]),
-//!     title: Some("The Structure of Scientific Revolutions".to_string()),
-//!     issued: Some(DateVariable::year(1962)),
+//! // Create a simple style using native Citum types
+//! let style = Style {
+//!     info: StyleInfo {
+//!         title: Some("Simple".to_string()),
+//!         id: Some("simple".to_string()),
+//!         ..Default::default()
+//!     },
+//!     options: Some(Config {
+//!         processing: Some(Processing::AuthorDate),
+//!         ..Default::default()
+//!     }),
+//!     citation: Some(CitationSpec {
+//!         template: Some(vec![
+//!             TemplateComponent::Contributor(TemplateContributor {
+//!                 contributor: ContributorRole::Author,
+//!                 form: ContributorForm::Short,
+//!                 rendering: Rendering::default(),
+//!                 ..Default::default()
+//!             }),
+//!             TemplateComponent::Date(TemplateDate {
+//!                 date: TemplateDateVariable::Issued,
+//!                 form: DateForm::Year,
+//!                 rendering: Rendering::default(),
+//!                 ..Default::default()
+//!             }),
+//!         ]),
+//!         wrap: Some(WrapPunctuation::Parentheses),
+//!         ..Default::default()
+//!     }),
 //!     ..Default::default()
+//! };
+//!
+//! // Create a bibliography using native Citum reference data
+//! let mut bib = Bibliography::new();
+//! let reference = Reference::Monograph(Box::new(Monograph {
+//!     id: Some("kuhn1962".to_string()),
+//!     r#type: MonographType::Book,
+//!     title: Title::Single("The Structure of Scientific Revolutions".to_string()),
+//!     author: Some(Contributor::ContributorList(ContributorList(vec![
+//!         Contributor::StructuredName(StructuredName {
+//!             family: MultilingualString::Simple("Kuhn".to_string()),
+//!             given: MultilingualString::Simple("Thomas".to_string()),
+//!             suffix: None,
+//!             dropping_particle: None,
+//!             non_dropping_particle: None,
+//!         }),
+//!     ]))),
+//!     editor: None,
+//!     translator: None,
+//!     issued: EdtfString("1962".to_string()),
+//!     publisher: None,
+//!     url: None,
+//!     accessed: None,
+//!     language: None,
+//!     field_languages: Default::default(),
+//!     note: None,
+//!     isbn: None,
+//!     doi: None,
+//!     edition: None,
+//!     report_number: None,
+//!     collection_number: None,
+//!     genre: None,
+//!     medium: None,
+//!     keywords: None,
+//!     original_date: None,
+//!     original_title: None,
 //! }));
+//! bib.insert("kuhn1962".to_string(), reference);
 //!
 //! // Create processor and render
 //! let processor = Processor::new(style, bib);
@@ -74,6 +113,16 @@ pub mod reference;
 pub mod render;
 pub mod values;
 
+pub use citum_schema::options::{Config, Processing};
+pub use citum_schema::reference::{
+    Contributor, ContributorList, EdtfString, Monograph, MonographType, MultilingualString,
+    StructuredName, Title,
+};
+pub use citum_schema::template::{
+    ContributorForm, ContributorRole, DateForm, DateVariable as TemplateDateVariable, Rendering,
+    TemplateComponent, TemplateContributor, TemplateDate, WrapPunctuation,
+};
+pub use citum_schema::{CitationSpec, Style, StyleInfo};
 pub use error::ProcessorError;
 pub use processor::document::DocumentFormat;
 pub use processor::{ProcessedReferences, Processor};
