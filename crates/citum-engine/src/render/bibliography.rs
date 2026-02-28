@@ -14,6 +14,33 @@ fn is_final_punctuation(c: char) -> bool {
     matches!(c, '.' | ',' | ':' | ';' | '!' | '?')
 }
 
+fn visible_text(input: &str) -> String {
+    let mut output = String::with_capacity(input.len());
+    let mut in_tag = false;
+
+    for ch in input.chars() {
+        match ch {
+            '<' => in_tag = true,
+            '>' if in_tag => in_tag = false,
+            _ if !in_tag => output.push(ch),
+            _ => {}
+        }
+    }
+
+    output
+}
+
+fn first_visible_char(input: &str) -> Option<char> {
+    visible_text(input).chars().next()
+}
+
+fn last_visible_non_space_char(input: &str) -> Option<char> {
+    visible_text(input)
+        .chars()
+        .rev()
+        .find(|ch| !ch.is_whitespace())
+}
+
 /// Render processed templates into a final bibliography string using PlainText format.
 pub fn refs_to_string(proc_entries: Vec<ProcEntry>) -> String {
     refs_to_string_with_format::<PlainText>(proc_entries)
@@ -53,7 +80,7 @@ pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
             // Add separator between components.
             if j > 0 && !entry_output.is_empty() {
                 let last_char = entry_output.chars().last().unwrap_or(' ');
-                let first_char = rendered.chars().next().unwrap_or(' ');
+                let first_char = first_visible_char(&rendered).unwrap_or(' ');
 
                 // Derive the first punctuation/char of the separator for comparison
                 let sep_first_char = default_separator.chars().next().unwrap_or('.');
@@ -61,7 +88,7 @@ pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
                 // Check if last output ends with intentional punctuation (not just space).
                 // Component suffixes like ", " should be preserved and NOT followed by default separator.
                 // We only suppress the separator if the last non-space character is punctuation.
-                let trimmed_last = entry_output.trim_end().chars().last().unwrap_or(' ');
+                let trimmed_last = last_visible_non_space_char(&entry_output).unwrap_or(' ');
                 let ends_with_punctuation = is_final_punctuation(trimmed_last);
 
                 // Skip adding separator if:
@@ -173,7 +200,8 @@ pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
 
 /// Check if the output ends with a URL or DOI (to suppress trailing period).
 fn ends_with_url_or_doi(output: &str) -> bool {
-    let trimmed = output.trim_end_matches('.');
+    let visible = visible_text(output);
+    let trimmed = visible.trim_end_matches('.');
     let trimmed = trimmed.trim_end();
     // Check if the last "word" looks like a URL or DOI
     if let Some(last_segment) = trimmed.rsplit_once(' ') {
@@ -433,5 +461,100 @@ mod tests {
         let result = refs_to_string(entries);
         // The comma from author's suffix should be preserved
         assert_eq!(result, "Hawking, S., 1988.");
+    }
+
+    #[test]
+    fn test_html_separator_logic_uses_visible_punctuation() {
+        use crate::render::html::Html;
+        use citum_schema::options::{BibliographyConfig, Config};
+        use citum_schema::template::{NumberVariable, SimpleVariable, TemplateNumber, TemplateVariable};
+
+        let config = Config {
+            bibliography: Some(BibliographyConfig {
+                separator: Some(". ".to_string()),
+                entry_suffix: Some("".to_string()),
+                ..Default::default()
+            }),
+            semantic_classes: Some(true),
+            ..Default::default()
+        };
+
+        let volume_issue = ProcTemplateComponent {
+            template_component: TemplateComponent::Number(TemplateNumber {
+                number: NumberVariable::Volume,
+                rendering: Rendering {
+                    emph: Some(true),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+            value: "322(10)".to_string(),
+            prefix: None,
+            suffix: None,
+            ref_type: Some("article-journal".to_string()),
+            config: Some(config.clone()),
+            url: None,
+            item_language: None,
+            pre_formatted: false,
+        };
+
+        let pages = ProcTemplateComponent {
+            template_component: TemplateComponent::Number(TemplateNumber {
+                number: NumberVariable::Pages,
+                rendering: Rendering {
+                    prefix: Some(", ".to_string()),
+                    suffix: Some(".".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+            value: "891–921".to_string(),
+            prefix: None,
+            suffix: None,
+            ref_type: Some("article-journal".to_string()),
+            config: Some(config.clone()),
+            url: None,
+            item_language: None,
+            pre_formatted: false,
+        };
+
+        let doi = ProcTemplateComponent {
+            template_component: TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::Doi,
+                rendering: Rendering {
+                    prefix: Some("https://doi.org/".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+            value: "10.1002/andp.19053221004".to_string(),
+            prefix: None,
+            suffix: None,
+            ref_type: Some("article-journal".to_string()),
+            config: Some(config),
+            url: None,
+            item_language: None,
+            pre_formatted: false,
+        };
+
+        let result = refs_to_string_with_format::<Html>(vec![ProcEntry {
+            id: "einstein1905".to_string(),
+            template: vec![volume_issue, pages, doi],
+            metadata: crate::render::format::ProcEntryMetadata::default(),
+        }]);
+
+        assert!(
+            !result.contains("322(10)</i></span>. <span class=\"csln-pages\">, 891–921."),
+            "separator should not inject a period before pages: {result}"
+        );
+        assert!(
+            !result.contains("891–921.</span>. <span class=\"csln-doi\">"),
+            "separator should not inject a period before DOI: {result}"
+        );
+        assert!(
+            result.contains("<span class=\"csln-pages\">, 891–921.</span><span class=\"csln-doi\">")
+                || result.contains("<span class=\"csln-pages\">, 891–921.</span> <span class=\"csln-doi\">"),
+            "HTML output should preserve pages punctuation without duplicate separators: {result}"
+        );
     }
 }
