@@ -83,7 +83,10 @@ fn render_bibliography_returns_entries() {
     );
     let result = dispatch(req).expect("dispatch should succeed");
     assert_eq!(result["id"], 3);
-    let entries = result["result"].as_array().expect("result should be array");
+    assert_eq!(result["result"]["format"], "plain");
+    let entries = result["result"]["entries"]
+        .as_array()
+        .expect("entries should be array");
     assert!(
         !entries.is_empty(),
         "expected at least one bibliography entry"
@@ -94,6 +97,37 @@ fn render_bibliography_returns_entries() {
         "entry should contain author name"
     );
     assert!(entry.contains("1988"), "entry should contain year");
+    assert!(
+        result["result"]["content"]
+            .as_str()
+            .expect("content should be string")
+            .contains("Hawking"),
+        "content should contain author name"
+    );
+}
+
+#[test]
+fn render_bibliography_html_returns_wrapped_markup() {
+    let req = make_request(
+        8,
+        "render_bibliography",
+        json!({
+            "style_path": apa_style_path(),
+            "refs": hawking_refs(),
+            "output_format": "html"
+        }),
+    );
+    let result = dispatch(req).expect("dispatch should succeed");
+    assert_eq!(result["id"], 8);
+    assert_eq!(result["result"]["format"], "html");
+    assert!(result["result"]["entries"].is_null());
+    let content = result["result"]["content"]
+        .as_str()
+        .expect("content should be a string");
+    assert!(
+        content.contains("csln-bibliography"),
+        "html bibliography should include wrapper markup"
+    );
 }
 
 // --- render_citation ---
@@ -118,6 +152,30 @@ fn render_citation_returns_string() {
     assert!(
         citation.contains("Hawking") || citation.contains("1988"),
         "citation should reference the work: {citation}"
+    );
+}
+
+#[test]
+fn render_citation_html_returns_markup() {
+    let req = make_request(
+        9,
+        "render_citation",
+        json!({
+            "style_path": apa_style_path(),
+            "refs": hawking_refs(),
+            "output_format": "html",
+            "citation": {
+                "id": "cite-1",
+                "items": [{"id": "ITEM-2"}]
+            }
+        }),
+    );
+    let result = dispatch(req).expect("dispatch should succeed");
+    assert_eq!(result["id"], 9);
+    let citation = result["result"].as_str().expect("result should be string");
+    assert!(
+        citation.contains("csln-citation"),
+        "html citation should contain citation wrapper: {citation}"
     );
 }
 
@@ -146,4 +204,19 @@ fn missing_refs_returns_error() {
     );
     let err = dispatch(req).expect_err("missing refs should error");
     assert!(err.1.contains("refs"));
+}
+
+#[test]
+fn unsupported_output_format_returns_error() {
+    let req = make_request(
+        10,
+        "render_bibliography",
+        json!({
+            "style_path": apa_style_path(),
+            "refs": hawking_refs(),
+            "output_format": "typst"
+        }),
+    );
+    let err = dispatch(req).expect_err("unsupported output format should error");
+    assert!(err.1.contains("unsupported output format"));
 }

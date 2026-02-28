@@ -36,6 +36,7 @@ curl -s http://localhost:8080/rpc \
     "method": "render_bibliography",
     "params": {
       "style_path": "styles/apa-7th.yaml",
+      "output_format": "html",
       "refs": {
         "hawking1988": {
           "id": "hawking1988",
@@ -48,7 +49,7 @@ curl -s http://localhost:8080/rpc \
       }
     }
   }'
-# {"id":1,"result":["Hawking, S. (1988). A Brief History of Time."]}
+# {"id":1,"result":{"format":"html","content":"<div class=\"csln-bibliography\">...","entries":null}}
 ```
 
 > **Note:** `refs` uses native Citum schema format. `issued` is an EDTF string
@@ -58,14 +59,23 @@ curl -s http://localhost:8080/rpc \
 
 | Method | Params | Result |
 |---|---|---|
-| `render_citation` | `style_path`, `refs`, `citation` | `String` |
-| `render_bibliography` | `style_path`, `refs` | `[String]` |
+| `render_citation` | `style_path`, `refs`, `citation`, `output_format?` | `String` |
+| `render_bibliography` | `style_path`, `refs`, `output_format?` | `{format, content, entries?}` |
 | `validate_style` | `style_path` | `{valid, warnings}` |
+
+Supported `output_format` values:
+
+- `plain` (default)
+- `html`
+- `djot`
+- `latex`
+
+`typst` is reserved but not implemented yet.
 
 ### Request / response envelope
 
 ```json
-{"id": 1, "method": "render_citation", "params": {"style_path": "styles/apa-7th.yaml", "refs": [...], "citation": {...}}}
+{"id": 1, "method": "render_citation", "params": {"style_path": "styles/apa-7th.yaml", "refs": [...], "citation": {...}, "output_format": "html"}}
 {"id": 1, "result": "Smith (2024)"}
 
 {"id": 2, "error": "style not found: missing.yaml"}

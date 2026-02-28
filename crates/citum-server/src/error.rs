@@ -36,4 +36,7 @@ pub enum ServerError {
 
     #[error("missing required field: {0}")]
     MissingField(String),
+
+    #[error("unsupported output format: {0}")]
+    UnsupportedOutputFormat(String),
 }

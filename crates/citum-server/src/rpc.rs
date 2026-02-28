@@ -4,9 +4,12 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
 use crate::error::ServerError;
-use citum_engine::{Bibliography, Citation, Processor};
+use citum_engine::{
+    Bibliography, Citation, Processor,
+    render::{djot::Djot, html::Html, latex::Latex, plain::PlainText},
+};
 use citum_schema::Style;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::fs;
 use std::io::{self, BufRead, Write};
@@ -20,8 +23,34 @@ pub struct RpcRequest {
     pub params: Value,
 }
 
-/// Bibliography rendering response (array of strings).
-type BibliographyResult = Vec<String>;
+#[derive(Debug, Clone, Copy, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+enum OutputFormat {
+    #[default]
+    Plain,
+    Html,
+    Djot,
+    Latex,
+    Typst,
+}
+
+impl OutputFormat {
+    fn parse(params: &Value) -> Result<Self, ServerError> {
+        match params.get("output_format") {
+            Some(value) => serde_json::from_value(value.clone())
+                .map_err(|_| ServerError::UnsupportedOutputFormat(value.to_string())),
+            None => Ok(Self::default()),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+struct BibliographyResult {
+    format: OutputFormat,
+    content: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    entries: Option<Vec<String>>,
+}
 
 /// Main RPC dispatcher that processes a single request.
 pub fn dispatch(req: RpcRequest) -> Result<Value, (Option<Value>, String)> {
@@ -55,6 +84,7 @@ fn render_citation(params: &Value, id: Value) -> Result<Value, ServerError> {
     let citation_obj = params
         .get("citation")
         .ok_or_else(|| ServerError::MissingField("citation".to_string()))?;
+    let output_format = OutputFormat::parse(params)?;
 
     // Load the style.
     let style = load_style(style_path)?;
@@ -69,8 +99,7 @@ fn render_citation(params: &Value, id: Value) -> Result<Value, ServerError> {
     // Create processor and render.
     let processor = Processor::new(style, bibliography);
 
-    let result = processor
-        .process_citation(&citation)
+    let result = render_citation_with_format(&processor, &citation, output_format)
         .map_err(|e| ServerError::CitationError(e.to_string()))?;
 
     Ok(json!({
@@ -89,6 +118,7 @@ fn render_bibliography(params: &Value, id: Value) -> Result<Value, ServerError> 
     let refs = params
         .get("refs")
         .ok_or_else(|| ServerError::MissingField("refs".to_string()))?;
+    let output_format = OutputFormat::parse(params)?;
 
     // Load the style.
     let style = load_style(style_path)?;
@@ -100,19 +130,51 @@ fn render_bibliography(params: &Value, id: Value) -> Result<Value, ServerError> 
     // Create processor and render bibliography.
     let processor = Processor::new(style, bibliography);
 
-    let bib_string = processor.render_bibliography();
-
-    // Split by newlines to return as array.
-    let result: BibliographyResult = bib_string
-        .lines()
-        .filter(|line| !line.is_empty())
-        .map(|s| s.to_string())
-        .collect();
+    let content = render_bibliography_with_format(&processor, output_format)?;
+    let entries = matches!(output_format, OutputFormat::Plain).then(|| {
+        content
+            .lines()
+            .filter(|line| !line.is_empty())
+            .map(|s| s.to_string())
+            .collect()
+    });
+    let result = BibliographyResult {
+        format: output_format,
+        content,
+        entries,
+    };
 
     Ok(json!({
         "id": id,
         "result": result
     }))
+}
+
+fn render_citation_with_format(
+    processor: &Processor,
+    citation: &Citation,
+    format: OutputFormat,
+) -> Result<String, ServerError> {
+    match format {
+        OutputFormat::Plain => Ok(processor.process_citation_with_format::<PlainText>(citation)?),
+        OutputFormat::Html => Ok(processor.process_citation_with_format::<Html>(citation)?),
+        OutputFormat::Djot => Ok(processor.process_citation_with_format::<Djot>(citation)?),
+        OutputFormat::Latex => Ok(processor.process_citation_with_format::<Latex>(citation)?),
+        OutputFormat::Typst => Err(ServerError::UnsupportedOutputFormat("typst".to_string())),
+    }
+}
+
+fn render_bibliography_with_format(
+    processor: &Processor,
+    format: OutputFormat,
+) -> Result<String, ServerError> {
+    match format {
+        OutputFormat::Plain => Ok(processor.render_bibliography_with_format::<PlainText>()),
+        OutputFormat::Html => Ok(processor.render_bibliography_with_format::<Html>()),
+        OutputFormat::Djot => Ok(processor.render_bibliography_with_format::<Djot>()),
+        OutputFormat::Latex => Ok(processor.render_bibliography_with_format::<Latex>()),
+        OutputFormat::Typst => Err(ServerError::UnsupportedOutputFormat("typst".to_string())),
+    }
 }
 
 /// Validate a style YAML file.

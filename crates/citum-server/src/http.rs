@@ -105,6 +105,33 @@ mod tests {
     }
 
     #[tokio::test(flavor = "current_thread")]
+    async fn rpc_handler_render_bibliography_html_returns_ok() {
+        let payload = serde_json::from_value(json!({
+            "id": 4,
+            "method": "render_bibliography",
+            "params": {
+                "style_path": apa_style_path(),
+                "refs": hawking_refs(),
+                "output_format": "html"
+            }
+        }))
+        .expect("payload should deserialize");
+
+        let response = rpc_handler(Json(payload)).await.into_response();
+        assert_eq!(response.status(), axum::http::StatusCode::OK);
+
+        let body = response_body_json(response).await;
+        assert_eq!(body["result"]["format"], "html");
+        let content = body["result"]["content"]
+            .as_str()
+            .expect("content should be a string");
+        assert!(
+            content.contains("csln-bibliography"),
+            "html bibliography should include wrapper markup"
+        );
+    }
+
+    #[tokio::test(flavor = "current_thread")]
     async fn rpc_handler_unknown_method_returns_bad_request() {
         let payload = serde_json::from_value(json!({
             "id": 2,
