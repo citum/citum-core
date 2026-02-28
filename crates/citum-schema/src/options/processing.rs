@@ -7,6 +7,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::presets::SortPreset;
+
 /// Label style preset conventions.
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
@@ -18,7 +20,7 @@ pub enum LabelPreset {
     Alpha,
     /// DIN 1505-2: up to 3 authors, no et-al marker, 2-digit year.
     Din,
-    /// American Mathematical Society: same algorithm as Alpha, sorted by citation-number.
+    /// American Mathematical Society: same label-generation algorithm as Alpha.
     Ams,
 }
 
@@ -101,12 +103,26 @@ impl LabelConfig {
 #[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
 pub enum Processing {
+    /// Author-date styles default bibliography ordering to author, year, title.
     #[default]
     AuthorDate,
+    /// Numeric styles do not imply a bibliography sort.
     Numeric,
+    /// Note styles with a bibliography default to author, title, year ordering.
     Note,
+    /// Label styles default bibliography ordering to author, year, title.
     Label(LabelConfig),
+    /// Fully custom processing behavior; explicit `sort` remains authoritative.
     Custom(ProcessingCustom),
+}
+
+/// How citation-item sorting is resolved when `citation.sort` is absent.
+#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum CitationSortPolicy {
+    /// Only an explicit `citation.sort` reorders multi-cite clusters.
+    ExplicitOnly,
 }
 
 /// Custom processing configuration.
@@ -123,24 +139,27 @@ pub struct ProcessingCustom {
 }
 
 impl Processing {
-    /// Get the effective configuration for this processing mode.
+    /// Default bibliography sort for the processing family, if any.
+    pub fn default_bibliography_sort(&self) -> Option<SortPreset> {
+        match self {
+            Processing::AuthorDate => Some(SortPreset::AuthorDateTitle),
+            Processing::Numeric => None,
+            Processing::Note => Some(SortPreset::AuthorTitleDate),
+            Processing::Label(_) => Some(SortPreset::AuthorDateTitle),
+            Processing::Custom(_) => None,
+        }
+    }
+
+    /// Citation sorting remains explicit-only for all processing families.
+    pub fn default_citation_sort_policy(&self) -> CitationSortPolicy {
+        CitationSortPolicy::ExplicitOnly
+    }
+
+    /// Get the effective bibliography/disambiguation configuration for this processing mode.
     pub fn config(&self) -> ProcessingCustom {
         match self {
             Processing::AuthorDate => ProcessingCustom {
-                sort: Some(SortEntry::Explicit(Sort {
-                    shorten_names: false,
-                    render_substitutions: false,
-                    template: vec![
-                        SortSpec {
-                            key: SortKey::Author,
-                            ascending: true,
-                        },
-                        SortSpec {
-                            key: SortKey::Year,
-                            ascending: true,
-                        },
-                    ],
-                })),
+                sort: Some(SortEntry::Preset(SortPreset::AuthorDateTitle)),
                 group: Some(Group {
                     template: vec![SortKey::Author, SortKey::Year],
                 }),
@@ -156,7 +175,7 @@ impl Processing {
                 disambiguate: None,
             },
             Processing::Note => ProcessingCustom {
-                sort: None,
+                sort: Some(SortEntry::Preset(SortPreset::AuthorTitleDate)),
                 group: None,
                 disambiguate: Some(Disambiguation {
                     names: true,
@@ -165,7 +184,7 @@ impl Processing {
                 }),
             },
             Processing::Label(_) => ProcessingCustom {
-                sort: None,
+                sort: Some(SortEntry::Preset(SortPreset::AuthorDateTitle)),
                 group: None,
                 disambiguate: Some(Disambiguation {
                     names: false,

@@ -1551,6 +1551,44 @@ fn test_numeric_citation_numbers_follow_bibliography_sort() {
 }
 
 #[test]
+fn test_author_date_citations_preserve_input_order_without_explicit_sort() {
+    let style = make_style();
+
+    let mut bib = make_bibliography();
+    bib.insert(
+        "smith2020".to_string(),
+        Reference::from(LegacyReference {
+            id: "smith2020".to_string(),
+            ref_type: "book".to_string(),
+            author: Some(vec![Name::new("Smith", "Jane")]),
+            title: Some("Another Book".to_string()),
+            issued: Some(DateVariable::year(2020)),
+            ..Default::default()
+        }),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor
+        .process_citation(&Citation {
+            id: Some("c1".to_string()),
+            items: vec![
+                crate::reference::CitationItem {
+                    id: "smith2020".to_string(),
+                    ..Default::default()
+                },
+                crate::reference::CitationItem {
+                    id: "kuhn1962".to_string(),
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        })
+        .unwrap();
+
+    assert!(result.find("Smith").unwrap() < result.find("Kuhn").unwrap());
+}
+
+#[test]
 fn test_numeric_integral_with_multiple_items() {
     use citum_schema::options::Processing;
 

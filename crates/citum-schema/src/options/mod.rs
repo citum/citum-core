@@ -23,8 +23,8 @@ pub use dates::{DateConfig, DateConfigEntry};
 pub use localization::{Localize, MonthFormat, Scope};
 pub use multilingual::{MultilingualConfig, MultilingualMode, ScriptConfig};
 pub use processing::{
-    Disambiguation, Group, LabelConfig, LabelParams, LabelPreset, Processing, ProcessingCustom,
-    Sort, SortEntry, SortKey, SortSpec,
+    CitationSortPolicy, Disambiguation, Group, LabelConfig, LabelParams, LabelPreset, Processing,
+    ProcessingCustom, Sort, SortEntry, SortKey, SortSpec,
 };
 pub use substitute::{Substitute, SubstituteConfig, SubstituteKey};
 
@@ -338,6 +338,41 @@ mod tests {
         let processing = Processing::AuthorDate;
         let config = processing.config();
         assert!(config.disambiguate.unwrap().year_suffix);
+        assert_eq!(
+            processing.default_bibliography_sort(),
+            Some(crate::presets::SortPreset::AuthorDateTitle)
+        );
+        assert_eq!(
+            config.sort,
+            Some(SortEntry::Preset(
+                crate::presets::SortPreset::AuthorDateTitle
+            ))
+        );
+    }
+
+    #[test]
+    fn test_processing_default_bibliography_sorts() {
+        assert_eq!(Processing::Numeric.default_bibliography_sort(), None);
+        assert_eq!(
+            Processing::Note.default_bibliography_sort(),
+            Some(crate::presets::SortPreset::AuthorTitleDate)
+        );
+        assert_eq!(
+            Processing::Label(LabelConfig::default()).default_bibliography_sort(),
+            Some(crate::presets::SortPreset::AuthorDateTitle)
+        );
+    }
+
+    #[test]
+    fn test_processing_default_citation_sort_policy_is_explicit_only() {
+        assert_eq!(
+            Processing::AuthorDate.default_citation_sort_policy(),
+            CitationSortPolicy::ExplicitOnly
+        );
+        assert_eq!(
+            Processing::Note.default_citation_sort_policy(),
+            CitationSortPolicy::ExplicitOnly
+        );
     }
 
     #[test]

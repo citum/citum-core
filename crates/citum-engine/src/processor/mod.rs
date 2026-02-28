@@ -99,6 +99,23 @@ impl Processor {
             .is_some_and(|p| matches!(p, citum_schema::options::Processing::Note))
     }
 
+    fn resolved_bibliography_sort(&self) -> Option<citum_schema::grouping::GroupSort> {
+        if let Some(sort_spec) = self
+            .style
+            .bibliography
+            .as_ref()
+            .and_then(|b| b.sort.as_ref())
+        {
+            return Some(sort_spec.resolve());
+        }
+
+        self.get_config()
+            .processing
+            .as_ref()
+            .and_then(|processing| processing.default_bibliography_sort())
+            .map(|preset| preset.group_sort())
+    }
+
     /// Detect and annotate citation positions.
     ///
     /// Analyzes citations in order and assigns positions based on whether an item
@@ -229,8 +246,9 @@ impl Processor {
     /// the oracle workflow, so numeric labels are stable by reference registry
     /// order rather than first-citation order.
     ///
-    /// When the style declares an explicit bibliography sort, citation numbers
-    /// must follow that sorted bibliography order.
+    /// When the style declares an explicit bibliography sort, or the
+    /// processing family provides a bibliography default, citation numbers
+    /// must follow that resolved bibliography order.
     fn initialize_numeric_citation_numbers(&self) {
         let is_numeric = self
             .get_config()
@@ -246,15 +264,10 @@ impl Processor {
             return;
         }
 
-        let ordered_ids: Vec<String> = if let Some(sort_spec) = self
-            .style
-            .bibliography
-            .as_ref()
-            .and_then(|b| b.sort.as_ref())
-        {
+        let ordered_ids: Vec<String> = if let Some(sort_spec) = self.resolved_bibliography_sort() {
             let sorter = crate::grouping::GroupSorter::new(&self.locale);
             sorter
-                .sort_references(self.bibliography.values().collect(), &sort_spec.resolve())
+                .sort_references(self.bibliography.values().collect(), &sort_spec)
                 .into_iter()
                 .filter_map(|reference| reference.id())
                 .collect()
@@ -447,15 +460,9 @@ impl Processor {
 
     /// Sort references according to style instructions.
     pub fn sort_references<'a>(&self, references: Vec<&'a Reference>) -> Vec<&'a Reference> {
-        // Use global bibliography sort spec if present
-        if let Some(sort_spec) = self
-            .style
-            .bibliography
-            .as_ref()
-            .and_then(|b| b.sort.as_ref())
-        {
+        if let Some(sort_spec) = self.resolved_bibliography_sort() {
             let sorter = crate::grouping::GroupSorter::new(&self.locale);
-            return sorter.sort_references(references, &sort_spec.resolve());
+            return sorter.sort_references(references, &sort_spec);
         }
 
         let sorter = Sorter::new(self.get_config(), &self.locale);
@@ -496,13 +503,7 @@ impl Processor {
         let cite_config = self.get_citation_config();
         let config = cite_config.as_ref();
 
-        // Use global bibliography sort spec if present for year-suffix sorting
-        let bib_sort = self
-            .style
-            .bibliography
-            .as_ref()
-            .and_then(|b| b.sort.as_ref());
-        let bib_sort_resolved = bib_sort.map(|s| s.resolve());
+        let bib_sort_resolved = self.resolved_bibliography_sort();
 
         let disambiguator = if let Some(resolved) = &bib_sort_resolved {
             Disambiguator::with_group_sort(&self.bibliography, config, &self.locale, resolved)

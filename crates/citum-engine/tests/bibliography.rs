@@ -78,6 +78,33 @@ fn build_sorted_style(sort: Vec<SortSpec>) -> Style {
     }
 }
 
+fn build_processing_style(processing: Processing) -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Processing Default Sort Test".to_string()),
+            id: Some("processing-default-sort-test".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(processing),
+            contributors: Some(ContributorConfig {
+                display_as_sort: Some(DisplayAsSort::All),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                citum_schema::tc_contributor!(Author, Long),
+                citum_schema::tc_date!(Issued, Year, prefix = " "),
+                citum_schema::tc_title!(Primary, prefix = ". "),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
 fn make_style_with_substitute(substitute: Option<String>) -> Style {
     Style {
         info: StyleInfo {
@@ -194,6 +221,46 @@ fn test_sorting_multiple_keys() {
     // Then Smith (2020)
     assert!(result.find("Adams").unwrap() < result.find("Smith, J 2022").unwrap());
     assert!(result.find("Smith, J 2022").unwrap() < result.find("Smith, J 2020").unwrap());
+}
+
+#[test]
+fn test_author_date_processing_defaults_bibliography_to_author_date_title() {
+    let style = build_processing_style(Processing::AuthorDate);
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "zeta".to_string(),
+        make_book("zeta", "Smith", "Jane", 2020, "Zeta Work"),
+    );
+    bib.insert(
+        "alpha".to_string(),
+        make_book("alpha", "Smith", "Jane", 2020, "Alpha Work"),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert!(result.find("Alpha Work").unwrap() < result.find("Zeta Work").unwrap());
+}
+
+#[test]
+fn test_note_processing_defaults_bibliography_to_author_title_date() {
+    let style = build_processing_style(Processing::Note);
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "zeta".to_string(),
+        make_book("zeta", "Smith", "Jane", 2020, "Zeta Work"),
+    );
+    bib.insert(
+        "alpha".to_string(),
+        make_book("alpha", "Smith", "Jane", 2022, "Alpha Work"),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert!(result.find("Alpha Work").unwrap() < result.find("Zeta Work").unwrap());
 }
 
 // --- Substitution Tests ---
