@@ -149,6 +149,10 @@ cargo bench --bench rendering                            # Hot path benchmarks
 
 Direct commits to `main` allowed (rapid development mode). Pre-commit checks required for Rust; docs/styles skip.
 
+**When the user says "PR"**: Create a branch, implement, then `gh pr create`. Never push directly to main for that task.
+**Never create a branch unless the user asked for a PR or explicitly asked for a branch.**
+**Never make content decisions unilaterally** (e.g. what text to put in a title field) — confirm with the user first.
+
 ```bash
 # Rust change
 cargo fmt && cargo clippy && cargo nextest run && \
