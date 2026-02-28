@@ -4,7 +4,6 @@ info:
   fields:
   - humanities
   - literature
-  is-base: true
   source:
     csl-id: http://www.zotero.org/styles/modern-language-association
     adapted-by: citum-migrate

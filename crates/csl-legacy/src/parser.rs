@@ -100,12 +100,8 @@ fn parse_info(node: Node) -> Result<Info, String> {
             "updated" => info.updated = child.text().unwrap_or_default().to_string(),
             "summary" => info.summary = child.text().map(|s| s.to_string()),
             "category" => {
-                if let Some(field) = child.attribute("field") {
-                    if field == "generic-base" {
-                        info.is_base = true;
-                    } else {
-                        info.fields.push(field.to_string());
-                    }
+                if let Some(field) = child.attribute("field").filter(|f| *f != "generic-base") {
+                    info.fields.push(field.to_string());
                 }
                 // citation-format attribute is intentionally ignored here
                 // (handled separately by options_extractor/processing.rs)

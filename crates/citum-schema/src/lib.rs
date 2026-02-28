@@ -467,7 +467,7 @@ impl BibliographySpec {
 /// Discipline/field classification for a citation style.
 ///
 /// Values correspond to the CSL 1.0 `<category field="..."/>` attribute,
-/// excluding `generic-base` which is represented as `StyleInfo::is_base`.
+/// `generic-base` is silently ignored during migration.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -562,9 +562,6 @@ pub struct StyleInfo {
     /// Discipline classifications for this style.
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub fields: Vec<CitationField>,
-    /// True if this style is a generic base for dependent styles.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub is_base: Option<bool>,
     /// Provenance: set when this style was adapted from a CSL 1.0 source.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub source: Option<StyleSource>,

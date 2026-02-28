@@ -3,7 +3,6 @@ info:
   description: IEEE style as per the 2023 guidelines.
   fields:
   - engineering
-  is-base: true
   source:
     csl-id: http://www.zotero.org/styles/ieee
     adapted-by: citum-migrate

@@ -2,7 +2,6 @@ info:
   title: Nature
   fields:
   - science
-  is-base: true
   source:
     csl-id: http://www.zotero.org/styles/nature
     adapted-by: citum-migrate

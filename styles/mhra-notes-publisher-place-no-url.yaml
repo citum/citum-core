@@ -8,7 +8,6 @@ info:
   - literature
   - philosophy
   - theology
-  is-base: true
   source:
     csl-id: http://www.zotero.org/styles/mhra-notes-publisher-place-no-url
     adapted-by: citum-migrate

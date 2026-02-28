@@ -31,8 +31,7 @@ pub struct Info {
     pub title: String,
     pub id: String,
     pub updated: String,
-    pub fields: Vec<String>, // category field= values (excluding "generic-base")
-    pub is_base: bool,       // true if any category field="generic-base"
+    pub fields: Vec<String>, // category field= values (generic-base silently ignored)
     pub summary: Option<String>,
     pub links: Vec<InfoLink>,
     pub authors: Vec<InfoPerson>,

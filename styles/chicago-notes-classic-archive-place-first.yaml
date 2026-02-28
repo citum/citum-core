@@ -14,7 +14,6 @@ info:
   - science
   - sociology
   - theology
-  is-base: true
   source:
     csl-id: http://www.zotero.org/styles/chicago-notes-classic-archive-place-first
     adapted-by: citum-migrate

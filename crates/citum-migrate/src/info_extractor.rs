@@ -12,8 +12,6 @@ impl InfoExtractor {
             .filter_map(|f| parse_field(f))
             .collect::<Vec<_>>();
 
-        let is_base = if legacy.is_base { Some(true) } else { None };
-
         let original_authors = legacy
             .authors
             .iter()
@@ -51,7 +49,6 @@ impl InfoExtractor {
             description: legacy.summary.clone(),
             default_locale: None, // populated elsewhere
             fields,
-            is_base,
             source,
         }
     }
