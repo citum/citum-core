@@ -376,6 +376,7 @@ macro_rules! ref_article_authors {
                 url: None,
                 accessed: None,
                 language: None,
+                field_languages: ::std::collections::HashMap::new(),
                 note: None,
                 doi: None,
                 pages: None,
