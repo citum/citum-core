@@ -12,6 +12,7 @@ references:
   # Transliteration: Latin romanization (Hepburn)
   # Translation: English
   - id: genji_tale
+    class: monograph
     type: book
     title:
       original: "源氏物語"
@@ -40,6 +41,7 @@ references:
 
   # 2. Arabic journal article with original title and translation
   - id: alghazali_logic
+    class: serial-component
     type: article
     title:
       original: "منطق الفلاسفة والمنطق الأرسطي"
@@ -63,6 +65,7 @@ references:
 
   # 3. Plain English monograph (no multilingual metadata)
   - id: english_book_1
+    class: monograph
     type: book
     title: "Contemporary Approaches to Citation"
     author:
@@ -75,6 +78,7 @@ references:
 
   # 4. Second English book
   - id: english_book_2
+    class: monograph
     type: book
     title: "Bibliographic Data in the Digital Age"
     author:
@@ -87,6 +91,7 @@ references:
 
   # 5. Chinese book with Pinyin transliteration
   - id: confucius_analects
+    class: monograph
     type: book
     title:
       original: "论语"
@@ -115,6 +120,7 @@ references:
 
   # 6. Korean monograph with Hangul and romanization
   - id: korean_literature
+    class: monograph
     type: book
     title:
       original: "한국 문학의 역사"

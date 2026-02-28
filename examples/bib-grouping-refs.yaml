@@ -9,6 +9,7 @@ info:
 references:
   # PRIMARY SOURCES (note: primary)
   - id: darwin1859
+    class: monograph
     type: book
     title: On the Origin of Species
     author:
@@ -21,6 +22,7 @@ references:
     note: primary
 
   - id: freud1900
+    class: monograph
     type: book
     title: Die Traumdeutung
     author:
@@ -35,6 +37,7 @@ references:
 
   # ARCHIVAL SOURCES (note: archival)
   - id: letter1876
+    class: monograph
     type: document
     title: Letter to T.H. Huxley, 14 September 1876
     author:
@@ -45,6 +48,7 @@ references:
 
   # SECONDARY SOURCES (no note — fallback group)
   - id: browne2002
+    class: monograph
     type: book
     title: "Charles Darwin: The Power of Place"
     author:
@@ -56,6 +60,7 @@ references:
       location: New York
 
   - id: gay1988
+    class: monograph
     type: book
     title: "Freud: A Life for Our Time"
     author:
@@ -67,6 +72,7 @@ references:
       location: New York
 
   - id: mayr1991
+    class: serial-component
     type: article
     title: "Darwin's Impact on Modern Thought"
     author:
@@ -78,4 +84,4 @@ references:
       title: Proceedings of the American Philosophical Society
     volume: "135"
     issue: "4"
-    pages: 317-330
+    pages: "317-330"
