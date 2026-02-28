@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/style.json
 info:
-  title: APA 7th Edition (Citum)
+  title: APA 7th Edition
   fields:
   - anthropology
   - communications
