@@ -20,7 +20,8 @@ impl<'a> Sorter<'a> {
 
         if let Some(sort_config) = &proc_config.sort {
             // Build a composite sort that handles all keys together
-            // For author-date styles: sort by author (with title fallback), then by year
+            // Built-in processing defaults are bibliography-facing only; citation
+            // cluster ordering remains explicit at the citation spec level.
             let resolved = sort_config.resolve();
             refs.sort_by(|a, b| {
                 for sort in &resolved.template {

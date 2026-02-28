@@ -203,6 +203,17 @@ Controls what replaces the author when it is missing:
 
 - `citation.use-preset: numeric-citation` for numeric styles that render citation numbers via style-level wrapping (`[1]`, `(1)`, or superscript contexts).
 
+### Processing defaults
+
+`options.processing` sets bibliography-family defaults, not citation-list sorting:
+
+- `author-date`: bibliography defaults to `author-date-title`
+- `note`: bibliography defaults to `author-title-date` when a bibliography is present
+- `label`: bibliography defaults to `author-date-title`
+- `numeric`: no bibliography sort is implied; insertion order is preserved unless `bibliography.sort` is set
+
+`citation.sort` remains explicit-only. If you omit it, multi-cite clusters keep the citation input order.
+
 ### Example combining presets
 
 ```yaml
