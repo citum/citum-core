@@ -415,13 +415,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Preserve legacy bibliography sort semantics at the CSLN bibliography spec level.
     // This is required for numeric alphabetical variants where citation numbers
     // follow bibliography order rather than reference registry order.
-    let bibliography_sort = legacy_style
-        .bibliography
-        .as_ref()
-        .and_then(|bib| bib.sort.as_ref())
-        .and_then(
-            citum_migrate::options_extractor::bibliography::extract_group_sort_from_bibliography,
-        );
+    let bibliography_sort = resolve_migrated_bibliography_sort(
+        options.processing.as_ref(),
+        legacy_style
+            .bibliography
+            .as_ref()
+            .and_then(|bib| bib.sort.as_ref()),
+    );
 
     let style = Style {
         info: StyleInfo {
@@ -450,7 +450,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             use_preset: None,
             template: Some(new_bib),
             type_templates,
-            sort: bibliography_sort.map(citum_schema::grouping::GroupSortEntry::Explicit),
+            sort: bibliography_sort,
             ..Default::default()
         }),
         ..Default::default()
@@ -487,6 +487,30 @@ fn print_help(program_name: &str) {
     eprintln!("  --template-source <mode>        Template source: auto|hand|inferred|xml");
     eprintln!("  --template-dir <path>           Override directory for hand-authored templates");
     eprintln!("  --min-template-confidence <n>   Minimum inferred confidence [0.0, 1.0]");
+}
+
+fn resolve_migrated_bibliography_sort(
+    processing: Option<&citum_schema::options::Processing>,
+    legacy_sort: Option<&csl_legacy::model::Sort>,
+) -> Option<citum_schema::grouping::GroupSortEntry> {
+    let extracted = legacy_sort.and_then(
+        citum_migrate::options_extractor::bibliography::extract_group_sort_from_bibliography,
+    )?;
+
+    if bibliography_sort_matches_processing_default(processing, &extracted) {
+        None
+    } else {
+        Some(citum_schema::grouping::GroupSortEntry::Explicit(extracted))
+    }
+}
+
+fn bibliography_sort_matches_processing_default(
+    processing: Option<&citum_schema::options::Processing>,
+    sort: &citum_schema::grouping::GroupSort,
+) -> bool {
+    processing
+        .and_then(|processing| processing.default_bibliography_sort())
+        .is_some_and(|preset| preset.group_sort() == *sort)
 }
 
 /// Run the full XML compilation pipeline for bibliography and citation templates.
@@ -1596,5 +1620,90 @@ impl TypeSelectorNames for TypeSelector {
             TypeSelector::Single(name) => vec![name.clone()],
             TypeSelector::Multiple(names) => names.clone(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use csl_legacy::model::{Sort as LegacySort, SortKey as LegacySortKey};
+
+    fn legacy_sort(keys: &[&str]) -> LegacySort {
+        LegacySort {
+            keys: keys
+                .iter()
+                .map(|key| LegacySortKey {
+                    variable: Some((*key).to_string()),
+                    macro_name: None,
+                    sort: None,
+                })
+                .collect(),
+        }
+    }
+
+    #[test]
+    fn suppresses_author_date_default_bibliography_sort() {
+        let sort = resolve_migrated_bibliography_sort(
+            Some(&citum_schema::options::Processing::AuthorDate),
+            Some(&legacy_sort(&["author", "issued", "title"])),
+        );
+
+        assert_eq!(sort, None);
+    }
+
+    #[test]
+    fn suppresses_note_default_bibliography_sort() {
+        let sort = resolve_migrated_bibliography_sort(
+            Some(&citum_schema::options::Processing::Note),
+            Some(&legacy_sort(&["author", "title", "issued"])),
+        );
+
+        assert_eq!(sort, None);
+    }
+
+    #[test]
+    fn preserves_numeric_bibliography_sort() {
+        let sort = resolve_migrated_bibliography_sort(
+            Some(&citum_schema::options::Processing::Numeric),
+            Some(&legacy_sort(&["author", "issued", "title"])),
+        );
+
+        assert_eq!(
+            sort,
+            Some(citum_schema::grouping::GroupSortEntry::Explicit(
+                citum_schema::grouping::GroupSort {
+                    template: vec![
+                        citum_schema::grouping::GroupSortKey {
+                            key: citum_schema::grouping::SortKey::Author,
+                            ascending: true,
+                            order: None,
+                            sort_order: None,
+                        },
+                        citum_schema::grouping::GroupSortKey {
+                            key: citum_schema::grouping::SortKey::Issued,
+                            ascending: true,
+                            order: None,
+                            sort_order: None,
+                        },
+                        citum_schema::grouping::GroupSortKey {
+                            key: citum_schema::grouping::SortKey::Title,
+                            ascending: true,
+                            order: None,
+                            sort_order: None,
+                        },
+                    ],
+                }
+            ))
+        );
+    }
+
+    #[test]
+    fn preserves_note_family_exceptions() {
+        let sort = resolve_migrated_bibliography_sort(
+            Some(&citum_schema::options::Processing::Note),
+            Some(&legacy_sort(&["author", "issued", "title"])),
+        );
+
+        assert!(sort.is_some());
     }
 }
