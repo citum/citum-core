@@ -4,6 +4,7 @@ use std::collections::HashMap;
 pub mod analysis;
 pub mod compressor;
 pub mod debug_output;
+pub mod info_extractor;
 pub mod options_extractor;
 pub mod passes;
 pub mod preset_detector;
@@ -14,6 +15,7 @@ pub mod upsampler;
 
 pub use compressor::Compressor;
 pub use debug_output::DebugOutputFormatter;
+pub use info_extractor::InfoExtractor;
 pub use options_extractor::OptionsExtractor;
 pub use preset_detector::{detect_contributor_preset, detect_date_preset, detect_title_preset};
 pub use provenance::{ProvenanceTracker, SourceLocation};

@@ -1,8 +1,24 @@
-version: ''
 info:
-  title: American Mathematical Society (label)
-  id: http://www.zotero.org/styles/american-mathematical-society-label
-  default-locale: en-US
+  title: Amercian Mathematical Society (label)
+  fields:
+  - math
+  source:
+    csl-id: http://www.zotero.org/styles/american-mathematical-society-label
+    adapted-by: citum-migrate
+    license: http://creativecommons.org/licenses/by-sa/3.0/
+    original-authors:
+    - name: American Mathematical Society
+      email: tech-support@ams.org
+      uri: https://www.ams.org
+    links:
+    - href: http://www.zotero.org/styles/american-mathematical-society-label
+      rel: self
+    - href: http://www.zotero.org/styles/elsevier-with-titles
+      rel: template
+    - href: https://www.ams.org/arc/styleguide
+      rel: documentation
+    - href: https://mirrors.ctan.org/biblio/bibtex/contrib/misc/amsplain.bst
+      rel: documentation
 options:
   processing:
     label:

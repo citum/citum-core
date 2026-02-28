@@ -1,12 +1,25 @@
-# yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/style.json
 info:
-  id: gost-r-7-0-5-2008-numeric
-  title: GOST R 7.0.5-2008 (Numeric)
-  description: >
-    Russian bibliography standard GOST R 7.0.5-2008 demonstrating
-    bibliography grouping by reference type with localized Russian headings.
-  default-locale: ru-RU
+  title: Russian GOST R 7.0.5-2008 (numeric)
+  description: |-
+    This style is independent from style "GOST-R-7.0.5-2008", and the main difference is that this is numeric, contrary to author-date. The structure of these two styles is also very different. !!! IMPORTANT !!! Citations are numeric, order of bibliography is in order of citations, default locale is "ru-RU".
 
+        Стиль основан на ГОСТ Р 7.0.5-2008 и ГОСТ 7.1.2003. Основная проблема сейчас — это локализация терминов (С., Т., под ред., и др. ... или соответственно P., Vol., ed., et al.). В принципе это работает и контролируется полем  default-locale (выше, во второй строчке). Для русского надо заменить на "ru-RU". Это определяет одни настройки для всей библиографии. Однако, идеальное решение — это выбирать язык локализации терминов в зависимости от языка записи (как и предписывает ГОСТ). Это невозможно сделать в рамках Zotero 4.0 и CSL 1.0, но уже сейчас что-то можно сделать в рамках MultiLingual Zotero — см. например http://forums.zotero.org/discussion/18482/multilingual-zotero-fields-and-csl-variables. Typst позволяет изменять локаль библиографии и цитат, используя поле lang элемента text.
+
+        И последнее, патенты по умолчанию представлены как USA, поскольку в CSL 1.0 нет переменной, соответствующей полю country в базе Zotero 4.0+. Надеюсь, это будет исправлено в будущих версиях.
+  is-base: true
+  source:
+    csl-id: http://www.zotero.org/styles/gost-r-7-0-5-2008-numeric
+    adapted-by: citum-migrate
+    license: http://creativecommons.org/licenses/by-sa/3.0/
+    original-authors:
+    - name: Yurkin Maxim
+      email: yurkin@gmail.com
+      uri: http://sites.google.com/site/yurkin/
+    links:
+    - href: http://www.zotero.org/styles/gost-r-7-0-5-2008-numeric
+      rel: self
+    - href: http://protect.gost.ru/document.aspx?control=7&id=173511
+      rel: documentation
 options:
   processing: numeric
   multilingual:

@@ -1,23 +1,25 @@
-# yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/style.json
-# Springer Basic (numeric, brackets) - migrated from CSL 1.0
-#
-# Source: http://www.zotero.org/styles/springer-basic-brackets
-# Refs: springer-basic-brackets.csl (CSL 1.0)
-#
-# Migration notes:
-# - Numeric citation format with bracket wrapping [1, 2]
-# - Bibliography: Author (Year) Title. Container Vol:Pages. DOI
-# - Chapter: In: Editor (eds) Container. Publisher, Place, pp X-Y
-# - strip-periods at global level matches CSL source's consistent strip-periods usage
-# - No contributor-role-form in substitute: editors substitute as plain names per CSL source
-# - Tested against oracle-migration.js
-#
-version: '0.2.0'
 info:
   title: Springer - Basic (numeric, brackets)
-  id: springer-basic-brackets
-  link: http://www.zotero.org/styles/springer-basic-brackets
-
+  description: Springer Numbered Style for the disciplines Medicine, Biomedicine, Life Sciences, Chemistry, Geosciences, Computer Science, Engineering, Economics. This style is based on Harvard style and recommendations of the Council of Biology Editors.
+  source:
+    csl-id: http://www.zotero.org/styles/springer-basic-brackets
+    adapted-by: citum-migrate
+    license: http://creativecommons.org/licenses/by-sa/3.0/
+    original-authors:
+    - name: Charles Parnot
+      email: charles.parnot@gmail.com
+      uri: http://twitter.com/cparnot
+    links:
+    - href: http://www.zotero.org/styles/springer-basic-brackets
+      rel: self
+    - href: http://www.zotero.org/styles/springer-basic-author-date
+      rel: template
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/instruct-authors-e.pdf
+      rel: documentation
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
+      rel: documentation
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
+      rel: documentation
 options:
   substitute:
     template:

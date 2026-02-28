@@ -98,10 +98,57 @@ fn parse_info(node: Node) -> Result<Info, String> {
             "title" => info.title = child.text().unwrap_or_default().to_string(),
             "id" => info.id = child.text().unwrap_or_default().to_string(),
             "updated" => info.updated = child.text().unwrap_or_default().to_string(),
+            "summary" => info.summary = child.text().map(|s| s.to_string()),
+            "category" => {
+                if let Some(field) = child.attribute("field") {
+                    if field == "generic-base" {
+                        info.is_base = true;
+                    } else {
+                        info.fields.push(field.to_string());
+                    }
+                }
+                // citation-format attribute is intentionally ignored here
+                // (handled separately by options_extractor/processing.rs)
+            }
+            "link" => {
+                let href = child.attribute("href").unwrap_or_default().to_string();
+                let rel = child.attribute("rel").map(|s| s.to_string());
+                info.links.push(crate::model::InfoLink { href, rel });
+            }
+            "author" => info.authors.push(parse_info_person(child)),
+            "contributor" => info.contributors.push(parse_info_person(child)),
+            "rights" => {
+                // Prefer license= attribute; fall back to text content
+                info.rights = child
+                    .attribute("license")
+                    .map(|s| s.to_string())
+                    .or_else(|| {
+                        child
+                            .text()
+                            .map(|s| s.trim().to_string())
+                            .filter(|s| !s.is_empty())
+                    });
+            }
             _ => {}
         }
     }
     Ok(info)
+}
+
+fn parse_info_person(node: Node) -> crate::model::InfoPerson {
+    let mut person = crate::model::InfoPerson::default();
+    for child in node.children() {
+        if !child.is_element() {
+            continue;
+        }
+        match child.tag_name().name() {
+            "name" => person.name = child.text().map(|s| s.to_string()),
+            "email" => person.email = child.text().map(|s| s.to_string()),
+            "uri" => person.uri = child.text().map(|s| s.to_string()),
+            _ => {}
+        }
+    }
+    person
 }
 
 fn parse_locale(node: Node) -> Result<Locale, String> {

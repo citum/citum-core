@@ -464,6 +464,86 @@ impl BibliographySpec {
     }
 }
 
+/// Discipline/field classification for a citation style.
+///
+/// Values correspond to the CSL 1.0 `<category field="..."/>` attribute,
+/// excluding `generic-base` which is represented as `StyleInfo::is_base`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum CitationField {
+    Anthropology,
+    Biology,
+    Botany,
+    Chemistry,
+    Communications,
+    Engineering,
+    Geography,
+    Geology,
+    History,
+    Humanities,
+    Law,
+    Linguistics,
+    Literature,
+    Math,
+    Medicine,
+    Philosophy,
+    Physics,
+    #[serde(rename = "political-science")]
+    PoliticalScience,
+    Psychology,
+    Science,
+    #[serde(rename = "social-science")]
+    SocialScience,
+    Sociology,
+    Theology,
+    Zoology,
+}
+
+/// A hyperlink associated with a style (documentation, self-link, etc.).
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub struct StyleLink {
+    pub href: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rel: Option<String>,
+}
+
+/// A person credit (author or contributor) for a style.
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub struct StylePerson {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub email: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub uri: Option<String>,
+}
+
+/// Provenance block for styles adapted from a CSL 1.0 source.
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub struct StyleSource {
+    /// The original CSL style ID (URI).
+    pub csl_id: String,
+    /// Who performed the adaptation (e.g., "citum-migrate" or a person's name).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub adapted_by: Option<String>,
+    /// License URI (e.g., CC BY-SA).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub license: Option<String>,
+    /// Original CSL style authors.
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub original_authors: Vec<StylePerson>,
+    /// Links from the original CSL style (documentation, self, etc.).
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub links: Vec<StyleLink>,
+}
+
 /// Style metadata.
 #[derive(Debug, Default, Deserialize, Serialize, Clone)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
@@ -479,6 +559,15 @@ pub struct StyleInfo {
     /// Used for locale-aware term resolution.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub default_locale: Option<String>,
+    /// Discipline classifications for this style.
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub fields: Vec<CitationField>,
+    /// True if this style is a generic base for dependent styles.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_base: Option<bool>,
+    /// Provenance: set when this style was adapted from a CSL 1.0 source.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source: Option<StyleSource>,
 }
 
 #[cfg(test)]

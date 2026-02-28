@@ -1,11 +1,19 @@
-# yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/style.json
-version: '0.2.0'
 info:
   title: Elsevier - NLM/Vancouver (citation-sequence)
-  id: elsevier-vancouver
-  link: http://www.zotero.org/styles/elsevier-vancouver
-  default-locale: en-US
-
+  description: A style for some Elsevier journals, resembles Vancouver style
+  source:
+    csl-id: http://www.zotero.org/styles/elsevier-vancouver
+    adapted-by: citum-migrate
+    license: http://creativecommons.org/licenses/by-sa/3.0/
+    original-authors:
+    - name: Richard Karnesky
+      email: karnesky+zotero@gmail.com
+      uri: http://arc.nucapt.northwestern.edu/Richard_Karnesky
+    links:
+    - href: http://www.zotero.org/styles/elsevier-vancouver
+      rel: self
+    - href: http://www.elsevier.com/journals/energy/0360-5442/guide-for-authors#68000
+      rel: documentation
 options:
   substitute:
     contributor-role-form: long

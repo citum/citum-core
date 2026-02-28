@@ -31,7 +31,26 @@ pub struct Info {
     pub title: String,
     pub id: String,
     pub updated: String,
-    // Simplification for now
+    pub fields: Vec<String>, // category field= values (excluding "generic-base")
+    pub is_base: bool,       // true if any category field="generic-base"
+    pub summary: Option<String>,
+    pub links: Vec<InfoLink>,
+    pub authors: Vec<InfoPerson>,
+    pub contributors: Vec<InfoPerson>,
+    pub rights: Option<String>, // the license URI from rights/@license
+}
+
+#[derive(Debug, Serialize, Deserialize, Default, Clone)]
+pub struct InfoLink {
+    pub href: String,
+    pub rel: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Default, Clone)]
+pub struct InfoPerson {
+    pub name: Option<String>,
+    pub email: Option<String>,
+    pub uri: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
