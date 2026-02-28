@@ -4,11 +4,11 @@ title: Position-based citation variants (ibid, short-form)
 status: completed
 type: task
 priority: high
+created_at: 2026-02-24T07:37:47Z
+updated_at: 2026-02-28T00:01:09Z
 parent: csl26-5t6s
 blocking:
-  - csl26-sqsd
-created_at: 2026-02-24T07:37:47Z
-updated_at: 2026-02-24T13:30:00Z
+    - csl26-sqsd
 ---
 
 Implements `position` conditions (2,431 uses in corpus; listed as Medium Priority in CLAUDE.md) covering first, subsequent, ibid, and ibid-with-locator. This is a prerequisite for note-style rendering.
@@ -69,3 +69,7 @@ Implement the **Hybrid Model**. It treats positional logic as a "Document-Side U
 [1] Microsoft Word Office JS API (Range.getLocation)
 [2] LibreOffice UNO API Layout Information
 [3] Citavi Word Add-in (evidence of "first on page" ibid support)
+
+## Summary of Changes
+
+Position-based citation variants (ibid, ibid-with-locator, subsequent) now fully integrated in chicago-notes.yaml style. Engine already supported position detection and spec resolution. Integration tests verify all variants render correctly.

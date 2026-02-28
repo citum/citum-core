@@ -16,6 +16,40 @@ options:
   punctuation-in-quote: true
 citation:
   delimiter: ", "
+  ibid:
+    template:
+      - variable: locator
+        prefix: ", "
+    suffix: "Ibid."
+  subsequent:
+    template:
+      - contributor: author
+        form: short
+      - title: primary
+        form: short
+        wrap: quotes
+        overrides:
+          book:
+            wrap: none
+          report:
+            wrap: none
+          legal-case:
+            wrap: none
+          patent:
+            wrap: none
+          motion-picture:
+            wrap: none
+      - variable: locator
+        prefix: ", "
+        overrides:
+          book:
+            suppress: false
+          chapter:
+            suppress: false
+          article-journal:
+            suppress: false
+          default:
+            suppress: true
   template:
     - contributor: author
       form: long

@@ -349,3 +349,160 @@ fn test_grouped_citation_sorting_by_year() {
 
     run_test_case_native(&input, &citation_items, expected, "citation");
 }
+
+// --- Position-Based Citation Tests (Note Styles) ---
+
+#[test]
+fn test_chicago_notes_ibid_renders_compact() {
+    use std::path::PathBuf;
+
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("styles/chicago-notes.yaml");
+
+    let yaml = std::fs::read_to_string(&path).expect("Failed to read chicago-notes.yaml");
+    let style: citum_schema::Style =
+        serde_yaml::from_str(&yaml).expect("Failed to parse chicago-notes.yaml");
+
+    let bib = citum_schema::bib_map![
+        "smith1995" => make_book("smith1995", "Smith", "John", 1995, "A Great Book"),
+    ];
+
+    let processor = Processor::new(style, bib);
+
+    // First citation (full form)
+    let first_citation = citum_schema::Citation {
+        items: vec![citum_schema::citation::CitationItem {
+            id: "smith1995".to_string(),
+            ..Default::default()
+        }],
+        position: Some(citum_schema::citation::Position::First),
+        ..Default::default()
+    };
+
+    let first_result = processor
+        .process_citation(&first_citation)
+        .expect("Failed to process first citation");
+    assert!(
+        first_result.contains("Smith"),
+        "First citation should contain author name"
+    );
+
+    // Second citation with Ibid position (should render "Ibid.")
+    let ibid_citation = citum_schema::Citation {
+        items: vec![citum_schema::citation::CitationItem {
+            id: "smith1995".to_string(),
+            ..Default::default()
+        }],
+        position: Some(citum_schema::citation::Position::Ibid),
+        ..Default::default()
+    };
+
+    let ibid_result = processor
+        .process_citation(&ibid_citation)
+        .expect("Failed to process ibid citation");
+    assert!(
+        ibid_result.contains("Ibid."),
+        "Ibid citation should contain 'Ibid.': got {}",
+        ibid_result
+    );
+    // The ibid position is being respected - the citation should be shorter
+    // than the full first citation because it uses the ibid spec
+    assert!(
+        ibid_result.len() < first_result.len(),
+        "Ibid citation should be shorter than full first citation"
+    );
+}
+
+#[test]
+fn test_chicago_notes_ibid_with_locator() {
+    use std::path::PathBuf;
+
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("styles/chicago-notes.yaml");
+
+    let yaml = std::fs::read_to_string(&path).expect("Failed to read chicago-notes.yaml");
+    let style: citum_schema::Style =
+        serde_yaml::from_str(&yaml).expect("Failed to parse chicago-notes.yaml");
+
+    let bib = citum_schema::bib_map![
+        "smith1995" => make_book("smith1995", "Smith", "John", 1995, "A Great Book"),
+    ];
+
+    let processor = Processor::new(style, bib);
+
+    // Citation with IbidWithLocator position and locator
+    let ibid_with_locator = citum_schema::Citation {
+        items: vec![citum_schema::citation::CitationItem {
+            id: "smith1995".to_string(),
+            label: Some(citum_schema::citation::LocatorType::Page),
+            locator: Some("45".to_string()),
+            ..Default::default()
+        }],
+        position: Some(citum_schema::citation::Position::IbidWithLocator),
+        ..Default::default()
+    };
+
+    let result = processor
+        .process_citation(&ibid_with_locator)
+        .expect("Failed to process ibid with locator citation");
+    assert!(
+        result.contains("Ibid."),
+        "IbidWithLocator should contain 'Ibid.'"
+    );
+    assert!(
+        result.contains("45"),
+        "IbidWithLocator should contain locator value"
+    );
+}
+
+#[test]
+fn test_chicago_notes_subsequent_renders_short() {
+    use std::path::PathBuf;
+
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("styles/chicago-notes.yaml");
+
+    let yaml = std::fs::read_to_string(&path).expect("Failed to read chicago-notes.yaml");
+    let style: citum_schema::Style =
+        serde_yaml::from_str(&yaml).expect("Failed to parse chicago-notes.yaml");
+
+    let bib = citum_schema::bib_map![
+        "smith1995" => make_book("smith1995", "Smith", "John", 1995, "A Great Book"),
+    ];
+
+    let processor = Processor::new(style, bib);
+
+    // Subsequent citation (after another source in between)
+    let subsequent_citation = citum_schema::Citation {
+        items: vec![citum_schema::citation::CitationItem {
+            id: "smith1995".to_string(),
+            ..Default::default()
+        }],
+        position: Some(citum_schema::citation::Position::Subsequent),
+        ..Default::default()
+    };
+
+    let result = processor
+        .process_citation(&subsequent_citation)
+        .expect("Failed to process subsequent citation");
+    assert!(
+        result.contains("Smith"),
+        "Subsequent citation should contain shortened author"
+    );
+    assert!(
+        result.contains("Great Book"),
+        "Subsequent citation should contain shortened title"
+    );
+}
