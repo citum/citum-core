@@ -10,10 +10,11 @@ use citum_engine::Processor;
 use citum_schema::{
     BibliographySpec, CitationSpec, Style, StyleInfo,
     options::{
-        BibliographyConfig, Config, ContributorConfig, DisplayAsSort, Processing, ProcessingCustom,
-        Sort, SortKey, SortSpec,
+        AndOptions, BibliographyConfig, Config, ContributorConfig, DelimiterPrecedesLast,
+        DemoteNonDroppingParticle, DisplayAsSort, Processing, ProcessingCustom, Sort, SortKey,
+        SortSpec,
     },
-    reference::InputReference,
+    reference::{Contributor, InputReference, Monograph, MonographType, StructuredName, Title},
     template::{
         DelimiterPunctuation, SimpleVariable, TemplateComponent, TemplateList, TemplateTitle,
         TemplateVariable, TitleForm, TitleType,
@@ -205,6 +206,79 @@ fn make_style_with_substitute(substitute: Option<String>) -> Style {
                 citum_schema::tc_contributor!(Author, Long),
                 citum_schema::tc_date!(Issued, Year),
             ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn make_particle_book(
+    id: &str,
+    family: &str,
+    given: &str,
+    particle: Option<&str>,
+) -> InputReference {
+    InputReference::Monograph(Box::new(Monograph {
+        id: Some(id.to_string()),
+        r#type: MonographType::Book,
+        title: Title::Single(format!("Title {id}")),
+        author: Some(Contributor::StructuredName(StructuredName {
+            family: family.into(),
+            given: given.into(),
+            suffix: None,
+            dropping_particle: None,
+            non_dropping_particle: particle.map(Into::into),
+        })),
+        editor: None,
+        translator: None,
+        issued: citum_schema::reference::EdtfString("2000".to_string()),
+        publisher: None,
+        url: None,
+        accessed: None,
+        language: None,
+        field_languages: Default::default(),
+        note: None,
+        isbn: None,
+        doi: None,
+        edition: None,
+        report_number: None,
+        collection_number: None,
+        genre: None,
+        medium: None,
+        keywords: None,
+        original_date: None,
+        original_title: None,
+    }))
+}
+
+fn make_name_particle_style(display_as_sort: DisplayAsSort) -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Hyphenated Particle Test".to_string()),
+            id: Some("hyphenated-particle-test".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::Custom(ProcessingCustom {
+                sort: Some(citum_schema::options::SortEntry::Explicit(Sort {
+                    template: vec![SortSpec {
+                        key: SortKey::Author,
+                        ascending: true,
+                    }],
+                    shorten_names: false,
+                    render_substitutions: false,
+                })),
+                ..Default::default()
+            })),
+            contributors: Some(ContributorConfig {
+                display_as_sort: Some(display_as_sort),
+                demote_non_dropping_particle: Some(DemoteNonDroppingParticle::DisplayAndSort),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![citum_schema::tc_contributor!(Author, Long)]),
             ..Default::default()
         }),
         ..Default::default()
@@ -449,6 +523,53 @@ fn test_subsequent_author_substitute() {
 }
 
 #[test]
+fn test_magic_subsequentauthorsubstitute() {
+    // Upstream provenance: CSL fixture `magic_SubsequentAuthorSubstitute`.
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Magic Subsequent Author Substitute Test".to_string()),
+            id: Some("magic-subsequent-author-substitute-test".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::AuthorDate),
+            bibliography: Some(BibliographyConfig {
+                subsequent_author_substitute: Some("———".to_string()),
+                ..Default::default()
+            }),
+            contributors: Some(ContributorConfig {
+                and: Some(AndOptions::Text),
+                delimiter_precedes_last: Some(DelimiterPrecedesLast::Never),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                citum_schema::tc_contributor!(Author, Long),
+                citum_schema::tc_title!(Primary, prefix = ", "),
+                citum_schema::tc_date!(Issued, Year, prefix = " (", suffix = ")"),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let bib = citum_schema::bib_map![
+        "item-1" => make_book_multi_author("item-1", vec![("Smith", "John"), ("Roe", "Jane")], 2000, "Book A"),
+        "item-2" => make_book_multi_author("item-2", vec![("Smith", "John"), ("Roe", "Jane")], 2001, "Book B"),
+        "item-3" => make_book("item-3", "Smith", "John", 2002, "Book C"),
+    ];
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+    assert_eq!(
+        result,
+        "John Smith and Jane Roe, Book A (2000)\n\n———, Book B (2001)\n\nJohn Smith, Book C (2002)"
+    );
+}
+
+#[test]
 fn test_no_substitute_if_different() {
     let style = make_style_with_substitute(Some("———".to_string()));
 
@@ -463,6 +584,38 @@ fn test_no_substitute_if_different() {
     // Doe comes before Smith alphabetically
     let expected = "Doe, Jane. 2021.\n\nSmith, John. 2020.";
     assert_eq!(result, expected);
+}
+
+#[test]
+fn test_name_hyphenatednondroppingparticle1() {
+    // Upstream provenance: CSL fixture `name_HyphenatedNonDroppingParticle1`.
+    let style = make_name_particle_style(DisplayAsSort::All);
+
+    let bib = citum_schema::bib_map![
+        "ITEM-1" => make_particle_book("ITEM-1", "One", "Alan", Some("al-")),
+        "ITEM-2" => make_particle_book("ITEM-2", "Marple", "Mary", None),
+        "ITEM-3" => make_particle_book("ITEM-3", "Participle", "Paul", None),
+    ];
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert_eq!(result, "Marple, Mary\n\nOne, Alan al-\n\nParticiple, Paul");
+}
+
+#[test]
+fn test_name_hyphenatednondroppingparticle2() {
+    // Upstream provenance: CSL fixture `name_HyphenatedNonDroppingParticle2`.
+    let style = make_name_particle_style(DisplayAsSort::None);
+
+    let bib = citum_schema::bib_map![
+        "ITEM-1" => make_particle_book("ITEM-1", "One", "Alan", Some("al-")),
+        "ITEM-2" => make_particle_book("ITEM-2", "Marple", "Mary", None),
+        "ITEM-3" => make_particle_book("ITEM-3", "Participle", "Paul", None),
+    ];
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert_eq!(result, "Mary Marple\n\nAlan al-One\n\nPaul Participle");
 }
 
 // --- Numeric Bibliography Tests ---
