@@ -616,20 +616,39 @@ pub fn format_names(
         .unwrap_or(AndOtherOptions::EtAl);
 
     let (first_names, use_et_al, last_names) = if let Some(opts) = shorten {
+        // Determine effective min/use_first based on citation position.
+        // For subsequent cites (not first), use subsequent-specific settings if available.
+        let is_subsequent = matches!(
+            hints.position,
+            Some(citum_schema::citation::Position::Subsequent)
+                | Some(citum_schema::citation::Position::Ibid)
+                | Some(citum_schema::citation::Position::IbidWithLocator)
+        );
+        let effective_min_threshold = if is_subsequent {
+            opts.subsequent_min.unwrap_or(opts.min) as usize
+        } else {
+            opts.min as usize
+        };
+        let effective_use_first = if is_subsequent {
+            opts.subsequent_use_first.unwrap_or(opts.use_first) as usize
+        } else {
+            opts.use_first as usize
+        };
+
         // Phase 3: Et-al Disambiguation Logic
         // When min_names_to_show is set (name expansion disambiguation),
         // determine effective threshold for et-al application.
         let effective_min = if let Some(expanded) = hints.min_names_to_show {
             // Name expansion disambiguation: show at least 'expanded' names.
             // If normal et-al threshold is met, apply et-al but show 'expanded' names.
-            expanded.max(opts.use_first as usize)
+            expanded.max(effective_use_first)
         } else {
             // Normal mode: use standard et-al threshold
-            opts.use_first as usize
+            effective_use_first
         };
 
         // Apply et-al only if the list exceeds the minimum threshold
-        if names.len() >= opts.min as usize {
+        if names.len() >= effective_min_threshold {
             if effective_min >= names.len() {
                 // Show all names (no et-al)
                 (names.iter().collect::<Vec<_>>(), false, Vec::new())

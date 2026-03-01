@@ -463,6 +463,8 @@ pub struct ProcHints {
     pub min_names_to_show: Option<usize>,
     /// Citation number for numeric citation styles (1-based).
     pub citation_number: Option<usize>,
+    /// Citation position (first, subsequent, ibid, etc.).
+    pub position: Option<citum_schema::citation::Position>,
 }
 
 /// Context for rendering (citation vs bibliography).

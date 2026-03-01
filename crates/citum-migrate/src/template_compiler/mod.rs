@@ -1535,6 +1535,8 @@ impl TemplateCompiler {
                     }
                     _ => citum_schema::options::DelimiterPrecedesLast::Contextual,
                 },
+                subsequent_min: None,
+                subsequent_use_first: None,
             }
         });
 
