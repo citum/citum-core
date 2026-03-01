@@ -136,6 +136,24 @@ This one-shot PR is successful if it leaves the project with:
 - a documented policy that de-centers Hayagriva while still using it
 - a clean handoff for the next PR that actually imports native regressions
 
+## Current PR Status
+
+This PR now includes real native regressions, not just intake scaffolding.
+
+Native regressions landed so far:
+
+- `disambiguate_YearSuffixAtTwoLevels`
+- `date_SortEmptyDatesBibliography`
+- `date_SortEmptyDatesCitation`
+- `bugreports_ContainerTitleShort`
+- `variables_ContainerTitleShort`
+- `flipflop_LeadingSingleQuote`
+
+Adjacent renderer coverage also landed for quote and punctuation movement:
+
+- `punctuation_FullMontyQuotesIn` (partial, low-level renderer regression)
+- `bugreports_MovePunctuationInsideQuotesForLocator` (partial, low-level renderer regression)
+
 ## Commands
 
 Generate the external-signal report:
