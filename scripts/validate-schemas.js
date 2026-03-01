@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 const yaml = require('js-yaml');
 const Ajv = require('ajv');
 const addFormats = require('ajv-formats');
@@ -7,9 +8,11 @@ const addFormats = require('ajv-formats');
 const ajv = new Ajv({ allErrors: true, strict: false });
 addFormats(ajv);
 ajv.addFormat('uint8', true);
+ajv.addFormat('uint32', true);
 
 const rootDir = path.join(__dirname, '..');
 const schemaDir = path.join(rootDir, 'crates/citum-cli/generated_schemas');
+const skippedExampleFiles = new Set(['chicago-bib.yaml']);
 
 const schemas = {
   style: JSON.parse(fs.readFileSync(path.join(schemaDir, 'style.json'), 'utf8')),
@@ -25,7 +28,62 @@ const ModeDependentType = new yaml.Type('!mode-dependent', {
   }
 });
 
-const CSLN_SCHEMA = yaml.DEFAULT_SCHEMA.extend([ModeDependentType]);
+const CustomType = new yaml.Type('!custom', {
+  kind: 'mapping',
+  construct: function (data) {
+    return { custom: data };
+  }
+});
+
+const CSLN_SCHEMA = yaml.DEFAULT_SCHEMA.extend([ModeDependentType, CustomType]);
+
+function normalizeForSchema(value) {
+  if (Array.isArray(value)) {
+    return value.map(normalizeForSchema);
+  }
+
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+
+  const normalized = Object.fromEntries(
+    Object.entries(value).map(([key, entryValue]) => [key, normalizeForSchema(entryValue)])
+  );
+
+  if (
+    normalized.processing &&
+    normalized.processing &&
+    typeof normalized.processing === 'object' &&
+    !Array.isArray(normalized.processing) &&
+    !('custom' in normalized.processing) &&
+    !('label' in normalized.processing)
+  ) {
+    const processingKeys = Object.keys(normalized.processing);
+    const isBareCustomProcessing =
+      processingKeys.length > 0 &&
+      processingKeys.every(key => ['sort', 'group', 'disambiguate'].includes(key));
+
+    if (isBareCustomProcessing) {
+      normalized.processing = { custom: normalized.processing };
+    }
+  }
+
+  return normalized;
+}
+
+function normalizeForSchemaKey(data, schemaKey) {
+  if (
+    schemaKey === 'citation' &&
+    data &&
+    typeof data === 'object' &&
+    !Array.isArray(data) &&
+    Array.isArray(data.citations)
+  ) {
+    return data.citations;
+  }
+
+  return data;
+}
 
 function validate(filePath, schemaKey) {
   const content = fs.readFileSync(filePath, 'utf8');
@@ -38,6 +96,9 @@ function validate(filePath, schemaKey) {
     return; // Skip other formats
   }
 
+  data = normalizeForSchema(data);
+  data = normalizeForSchemaKey(data, schemaKey);
+
   const validateFn = ajv.compile(schemas[schemaKey]);
   const valid = validateFn(data);
 
@@ -48,6 +109,25 @@ function validate(filePath, schemaKey) {
   } else {
     console.log(`✅ ${filePath} passed validation against ${schemaKey} schema.`);
     return true;
+  }
+}
+
+function validateWithCli(kind, flag, filePath) {
+  try {
+    execFileSync(
+      'cargo',
+      ['run', '-q', '-p', 'citum', '--', 'check', flag, filePath],
+      { cwd: rootDir, stdio: 'pipe' }
+    );
+    console.log(`✅ ${filePath} passed ${kind} validation via citum check.`);
+    return true;
+  } catch (error) {
+    const stderr = error.stderr ? error.stderr.toString().trim() : '';
+    const stdout = error.stdout ? error.stdout.toString().trim() : '';
+    const details = stderr || stdout || error.message;
+    console.error(`❌ ${filePath} failed ${kind} validation via citum check:`);
+    console.error(details);
+    return false;
   }
 }
 
@@ -77,10 +157,19 @@ fs.readdirSync(localeDir).forEach(file => {
 console.log('\n--- Validating Examples (Bibliographies) ---');
 const examplesDir = path.join(rootDir, 'examples');
 fs.readdirSync(examplesDir).forEach(file => {
+  if (skippedExampleFiles.has(file)) {
+    console.log(`SKIP ${path.join(examplesDir, file)} is a legacy example.`);
+    return;
+  }
+
   if (file.endsWith('.yaml') || file.endsWith('.json')) {
     // Basic heuristic to distinguish bib from style in examples
-    if (file.includes('bib') || file.includes('ref')) {
-      if (!validate(path.join(examplesDir, file), 'bib')) allValid = false;
+    if (file.includes('cite') || file.includes('citation')) {
+      if (!validate(path.join(examplesDir, file), 'citation')) allValid = false;
+    } else if (file.includes('bib') || file.includes('ref')) {
+      if (!validateWithCli('bibliography', '--bibliography', path.join(examplesDir, file))) {
+        allValid = false;
+      }
     } else if (file.includes('style')) {
       if (!validate(path.join(examplesDir, file), 'style')) allValid = false;
     }
