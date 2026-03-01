@@ -273,6 +273,14 @@ pub struct ShortenListOptions {
     /// When to use delimiter before last name.
     #[serde(default)]
     pub delimiter_precedes_last: DelimiterPrecedesLast,
+    /// Minimum number of names to trigger shortening on subsequent cites.
+    /// Defaults to `min` if not set.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subsequent_min: Option<u8>,
+    /// Number of names to show when shortened on subsequent cites.
+    /// Defaults to `use_first` if not set.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subsequent_use_first: Option<u8>,
 }
 
 impl Default for ShortenListOptions {
@@ -283,6 +291,8 @@ impl Default for ShortenListOptions {
             use_last: None,
             and_others: AndOtherOptions::default(),
             delimiter_precedes_last: DelimiterPrecedesLast::default(),
+            subsequent_min: None,
+            subsequent_use_first: None,
         }
     }
 }

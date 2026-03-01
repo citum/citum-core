@@ -261,6 +261,7 @@ impl<'a> Renderer<'a> {
         mode: &citum_schema::citation::CitationMode,
         intra_delimiter: &str,
         suppress_author: bool,
+        position: Option<&citum_schema::citation::Position>,
     ) -> Result<Vec<String>, ProcessorError> {
         self.render_ungrouped_citation_with_format::<crate::render::plain::PlainText>(
             items,
@@ -268,6 +269,7 @@ impl<'a> Renderer<'a> {
             mode,
             intra_delimiter,
             suppress_author,
+            position,
         )
     }
 
@@ -278,6 +280,7 @@ impl<'a> Renderer<'a> {
         mode: &citum_schema::citation::CitationMode,
         intra_delimiter: &str,
         suppress_author: bool,
+        position: Option<&citum_schema::citation::Position>,
     ) -> Result<Vec<String>, ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -362,6 +365,7 @@ impl<'a> Renderer<'a> {
                     citation_number,
                     item.locator.as_deref(),
                     item.label.clone(),
+                    position,
                 ) {
                     let item_str = crate::render::citation::citation_to_string_with_format::<F>(
                         &proc,
@@ -404,6 +408,7 @@ impl<'a> Renderer<'a> {
         mode: &citum_schema::citation::CitationMode,
         intra_delimiter: &str,
         suppress_author: bool,
+        position: Option<&citum_schema::citation::Position>,
     ) -> Result<Vec<String>, ProcessorError> {
         self.render_grouped_citation_with_format::<crate::render::plain::PlainText>(
             items,
@@ -411,6 +416,7 @@ impl<'a> Renderer<'a> {
             mode,
             intra_delimiter,
             suppress_author,
+            position,
         )
     }
 
@@ -421,6 +427,7 @@ impl<'a> Renderer<'a> {
         mode: &citum_schema::citation::CitationMode,
         intra_delimiter: &str,
         suppress_author: bool,
+        position: Option<&citum_schema::citation::Position>,
     ) -> Result<Vec<String>, ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -495,6 +502,7 @@ impl<'a> Renderer<'a> {
                     citation_number,
                     first_item.locator.as_deref(),
                     first_item.label.clone(),
+                    position,
                 ) {
                     // Use integral-specific delimiter, defaulting to space for narrative
                     let integral_delimiter = spec.delimiter.as_deref().unwrap_or(" ");
@@ -555,6 +563,7 @@ impl<'a> Renderer<'a> {
                         citation_number,
                         item.locator.as_deref(),
                         item.label.clone(),
+                        position,
                     ) {
                         let item_str = crate::render::citation::citation_to_string_with_format::<F>(
                             &proc,
@@ -610,6 +619,7 @@ impl<'a> Renderer<'a> {
                     citation_number,
                     item.locator.as_deref(),
                     item.label.clone(),
+                    position,
                 ) {
                     let item_str = crate::render::citation::citation_to_string_with_format::<F>(
                         &proc,
@@ -930,6 +940,7 @@ impl<'a> Renderer<'a> {
             template_ref,
             options,
             entry_number,
+            None,
         )
     }
 
@@ -945,6 +956,7 @@ impl<'a> Renderer<'a> {
         citation_number: usize,
         locator: Option<&str>,
         locator_label: Option<citum_schema::citation::LocatorType>,
+        position: Option<&citum_schema::citation::Position>,
     ) -> Option<ProcTemplate> {
         self.process_template_with_number_with_format::<crate::render::plain::PlainText>(
             reference,
@@ -955,6 +967,7 @@ impl<'a> Renderer<'a> {
             citation_number,
             locator,
             locator_label,
+            position,
         )
     }
 
@@ -970,6 +983,7 @@ impl<'a> Renderer<'a> {
         citation_number: usize,
         locator: Option<&str>,
         locator_label: Option<citum_schema::citation::LocatorType>,
+        position: Option<&citum_schema::citation::Position>,
     ) -> Option<ProcTemplate>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -988,6 +1002,7 @@ impl<'a> Renderer<'a> {
             template,
             options,
             citation_number,
+            position,
         )
     }
 
@@ -998,12 +1013,14 @@ impl<'a> Renderer<'a> {
         template: &[TemplateComponent],
         options: RenderOptions<'_>,
         citation_number: usize,
+        position: Option<&citum_schema::citation::Position>,
     ) -> Option<ProcTemplate> {
         self.process_template_with_number_internal_with_format::<crate::render::plain::PlainText>(
             reference,
             template,
             options,
             citation_number,
+            position,
         )
     }
 
@@ -1013,6 +1030,7 @@ impl<'a> Renderer<'a> {
         template: &[TemplateComponent],
         options: RenderOptions<'_>,
         citation_number: usize,
+        position: Option<&citum_schema::citation::Position>,
     ) -> Option<ProcTemplate>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -1023,13 +1041,14 @@ impl<'a> Renderer<'a> {
             .get(&reference.id().unwrap_or_default())
             .unwrap_or(&default_hint);
 
-        // Create a hint with citation number
+        // Create a hint with citation number and position
         let hint = ProcHints {
             citation_number: if citation_number > 0 {
                 Some(citation_number)
             } else {
                 None
             },
+            position: position.cloned(),
             ..base_hint.clone()
         };
 
