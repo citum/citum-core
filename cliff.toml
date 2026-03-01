@@ -23,7 +23,7 @@ body = """
 {% if scope %}**{{ scope }}**
 {% endif %}\
 {% for commit in scoped_commits %}
-- {{ commit.message | upper_first }}
+- {{ commit.message | upper_first }} ([`{{ commit.id | truncate(length=7, end="") }}`](https://github.com/citum/citum-core/commit/{{ commit.id }}))
 {% endfor %}
 {% endfor %}
 {% endfor %}
