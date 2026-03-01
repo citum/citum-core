@@ -75,9 +75,11 @@ pub fn citation_to_string_with_format<F: OutputFormat<Output = String>>(
 mod tests {
     use super::*;
     use crate::render::component::ProcTemplateComponent;
+    use crate::render::typst::Typst;
+    use citum_schema::options::Config;
     use citum_schema::template::{
         ContributorForm, ContributorRole, DateForm, DateVariable, Rendering, TemplateComponent,
-        TemplateContributor, TemplateDate,
+        TemplateContributor, TemplateDate, TemplateTitle, TitleType,
     };
 
     #[test]
@@ -127,5 +129,56 @@ mod tests {
             Some(", "),
         );
         assert_eq!(result, "(Kuhn, 1962)");
+    }
+
+    #[test]
+    fn test_punctuation_in_quote_moves_comma_inside_closing_quote() {
+        let config = Config {
+            punctuation_in_quote: true,
+            ..Default::default()
+        };
+        let template = vec![
+            ProcTemplateComponent {
+                template_component: TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Primary,
+                    rendering: Rendering {
+                        quote: Some(true),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+                value: "colon".to_string(),
+                prefix: None,
+                suffix: None,
+                ref_type: None,
+                config: Some(config.clone()),
+                url: None,
+                item_language: None,
+                pre_formatted: false,
+            },
+            ProcTemplateComponent {
+                template_component: TemplateComponent::Date(TemplateDate {
+                    date: DateVariable::Issued,
+                    form: DateForm::Year,
+                    rendering: Rendering::default(),
+                    ..Default::default()
+                }),
+                value: "period".to_string(),
+                prefix: None,
+                suffix: None,
+                ref_type: None,
+                config: Some(config),
+                url: None,
+                item_language: None,
+                pre_formatted: false,
+            },
+        ];
+
+        let plain = citation_to_string(&template, None, None, None, Some(", "));
+        let typst =
+            citation_to_string_with_format::<Typst>(&template, None, None, None, Some(", "));
+
+        assert_eq!(plain, "“colon,” period");
+        assert_eq!(typst, "“colon,” period");
     }
 }

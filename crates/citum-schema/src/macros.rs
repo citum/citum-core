@@ -313,6 +313,7 @@ macro_rules! ref_article {
                 parent: $crate::reference::Parent::Embedded($crate::reference::Serial {
                     r#type: $crate::reference::SerialType::AcademicJournal,
                     title: $crate::reference::Title::Single(String::new()),
+                    short_title: None,
                     editor: None,
                     publisher: None,
                     issn: None,
@@ -369,6 +370,7 @@ macro_rules! ref_article_authors {
                 parent: $crate::reference::Parent::Embedded($crate::reference::Serial {
                     r#type: $crate::reference::SerialType::AcademicJournal,
                     title: $crate::reference::Title::Single(String::new()),
+                    short_title: None,
                     editor: None,
                     publisher: None,
                     issn: None,

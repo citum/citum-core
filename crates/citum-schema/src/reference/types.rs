@@ -145,6 +145,8 @@ pub struct Collection {
     pub id: Option<RefID>,
     pub r#type: CollectionType,
     pub title: Option<Title>,
+    /// Optional short form of the parent title for style-directed rendering.
+    pub short_title: Option<String>,
     pub editor: Option<Contributor>,
     pub translator: Option<Contributor>,
     pub issued: EdtfString,
@@ -261,6 +263,8 @@ pub enum SerialComponentType {
 pub struct Serial {
     pub r#type: SerialType,
     pub title: Title,
+    /// Optional short form of the parent title for style-directed rendering.
+    pub short_title: Option<String>,
     pub editor: Option<Contributor>,
     pub publisher: Option<Contributor>,
     #[serde(alias = "ISSN")]

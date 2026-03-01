@@ -14,6 +14,10 @@ use citum_schema::{
         Sort, SortKey, SortSpec,
     },
     reference::InputReference,
+    template::{
+        DelimiterPunctuation, SimpleVariable, TemplateComponent, TemplateList, TemplateTitle,
+        TemplateVariable, TitleForm, TitleType,
+    },
 };
 
 // --- Helper Functions ---
@@ -102,6 +106,44 @@ fn build_title_year_sorted_style(sort: Vec<SortSpec>) -> Style {
                 citum_schema::tc_title!(Primary),
                 citum_schema::tc_date!(Issued, Year, prefix = " "),
             ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn build_container_title_short_style(title_type: TitleType) -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Container Title Short Test".to_string()),
+            id: Some("container-title-short-test".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::Numeric),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::List(TemplateList {
+                items: vec![
+                    TemplateComponent::Variable(TemplateVariable {
+                        variable: SimpleVariable::ContainerTitleShort,
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Title(TemplateTitle {
+                        title: title_type.clone(),
+                        form: Some(TitleForm::Short),
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Title(TemplateTitle {
+                        title: title_type,
+                        form: Some(TitleForm::Long),
+                        ..Default::default()
+                    }),
+                ],
+                delimiter: Some(DelimiterPunctuation::Slash),
+                ..Default::default()
+            })]),
             ..Default::default()
         }),
         ..Default::default()
@@ -258,6 +300,56 @@ fn test_sorting_empty_dates_bibliography() {
     assert!(result.find("BookB 2000").unwrap() < result.find("BookA").unwrap());
     assert!(result.find("BookA").unwrap() < result.find("BookC").unwrap());
     assert!(result.find("BookC").unwrap() < result.find("BookE").unwrap());
+}
+
+#[test]
+fn test_container_title_short_from_journal_abbreviation() {
+    // Upstream provenance: CSL fixtures `bugreports_ContainerTitleShort` and
+    // `variables_ContainerTitleShort`.
+    let style = build_container_title_short_style(TitleType::ParentSerial);
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_value(serde_json::json!({
+        "id": "ITEM-1",
+        "type": "article-journal",
+        "title": "Ignored",
+        "container-title": "Anonymous Journal",
+        "journalAbbreviation": "Anon J"
+    }))
+    .expect("legacy fixture should parse");
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert("ITEM-1".to_string(), legacy.into());
+
+    let processor = Processor::new(style, bib);
+    assert_eq!(
+        processor.render_bibliography(),
+        "Anon J/Anon J/Anonymous Journal"
+    );
+}
+
+#[test]
+fn test_container_title_short_from_container_title_short_field() {
+    // Upstream provenance: CSL fixtures `bugreports_ContainerTitleShort` and
+    // `variables_ContainerTitleShort`.
+    let style = build_container_title_short_style(TitleType::ParentMonograph);
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_value(serde_json::json!({
+        "id": "ITEM-2",
+        "type": "chapter",
+        "title": "Ignored",
+        "container-title": "Anonymous Journal One",
+        "container-title-short": "Journal-1"
+    }))
+    .expect("legacy fixture should parse");
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert("ITEM-2".to_string(), legacy.into());
+
+    let processor = Processor::new(style, bib);
+    assert_eq!(
+        processor.render_bibliography(),
+        "Journal-1/Journal-1/Anonymous Journal One"
+    );
 }
 
 #[test]

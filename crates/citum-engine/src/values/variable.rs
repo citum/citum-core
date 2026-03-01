@@ -1,6 +1,21 @@
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
+use citum_schema::reference::Parent;
 use citum_schema::template::{SimpleVariable, TemplateVariable};
+
+fn container_title_short(reference: &Reference) -> Option<String> {
+    match reference {
+        Reference::CollectionComponent(component) => match &component.parent {
+            Parent::Embedded(parent) => parent.short_title.clone(),
+            Parent::Id(_) => None,
+        },
+        Reference::SerialComponent(component) => match &component.parent {
+            Parent::Embedded(parent) => parent.short_title.clone(),
+            Parent::Id(_) => None,
+        },
+        _ => None,
+    }
+}
 
 impl ComponentValues for TemplateVariable {
     fn values<F: crate::render::format::OutputFormat<Output = String>>(
@@ -42,6 +57,7 @@ impl ComponentValues for TemplateVariable {
                 _ => None,
             },
             SimpleVariable::Version => reference.version(),
+            SimpleVariable::ContainerTitleShort => container_title_short(reference),
             SimpleVariable::Locator => {
                 // If we have a locator value in options, use it
                 options.locator.map(|loc| {

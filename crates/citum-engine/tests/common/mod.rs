@@ -105,6 +105,7 @@ pub fn make_article_multi_author(
         parent: Parent::Embedded(Serial {
             r#type: SerialType::AcademicJournal,
             title: Title::Single(String::new()),
+            short_title: None,
             editor: None,
             publisher: None,
             issn: None,
