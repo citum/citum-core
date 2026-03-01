@@ -282,6 +282,7 @@ fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
                     id: None,
                     r#type: CollectionType::EditedBook,
                     title: Some(parent_title),
+                    short_title: None,
                     editor,
                     translator: None,
                     issued: EdtfString(String::new()),
@@ -322,6 +323,7 @@ fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
                 parent: Parent::Embedded(Serial {
                     r#type: SerialType::AcademicJournal,
                     title: parent_title,
+                    short_title: None,
                     editor: None,
                     publisher: None,
                     issn: field_str("issn"),

@@ -566,6 +566,7 @@ pub enum SimpleVariable {
     Scale,
     Version,
     Locator,
+    ContainerTitleShort,
     Authority,
     Reporter,
     Page,

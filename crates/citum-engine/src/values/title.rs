@@ -5,8 +5,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
-use citum_schema::reference::Parent;
-use citum_schema::template::{TemplateTitle, TitleType};
+use citum_schema::reference::{Parent, types::Title};
+use citum_schema::template::{TemplateTitle, TitleForm, TitleType};
 
 fn smarten_apostrophes(input: &str) -> String {
     let mut out = String::with_capacity(input.len());
@@ -28,6 +28,40 @@ fn smarten_apostrophes(input: &str) -> String {
     out
 }
 
+fn title_text(title: &Title, form: Option<&TitleForm>) -> String {
+    match title {
+        Title::Shorthand(short, long) => {
+            if matches!(form, Some(TitleForm::Short)) {
+                short.clone()
+            } else {
+                long.clone()
+            }
+        }
+        Title::Single(s) => s.clone(),
+        _ => title.to_string(),
+    }
+}
+
+fn parent_short_title(reference: &Reference, title_type: &TitleType) -> Option<String> {
+    match title_type {
+        TitleType::ParentMonograph => match reference {
+            Reference::CollectionComponent(component) => match &component.parent {
+                Parent::Embedded(parent) => parent.short_title.clone(),
+                Parent::Id(_) => None,
+            },
+            _ => None,
+        },
+        TitleType::ParentSerial => match reference {
+            Reference::SerialComponent(component) => match &component.parent {
+                Parent::Embedded(parent) => parent.short_title.clone(),
+                Parent::Id(_) => None,
+            },
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
 impl ComponentValues for TemplateTitle {
     fn values<F: crate::render::format::OutputFormat<Output = String>>(
         &self,
@@ -41,6 +75,20 @@ impl ComponentValues for TemplateTitle {
         // exists solely to resolve same-author ambiguity.
         if self.disambiguate_only == Some(true) && hints.group_length <= 1 {
             return None;
+        }
+
+        if matches!(self.form, Some(TitleForm::Short))
+            && let Some(short_title) = parent_short_title(reference, &self.title)
+            && !short_title.is_empty()
+        {
+            return Some(ProcValues {
+                value: smarten_apostrophes(&short_title),
+                prefix: None,
+                suffix: None,
+                url: None,
+                substituted_key: None,
+                pre_formatted: false,
+            });
         }
 
         // Get the raw title based on type and template requirement
@@ -66,41 +114,36 @@ impl ComponentValues for TemplateTitle {
         };
 
         // Resolve multilingual title if configured
-        let value = raw_title.map(|title| {
-            use citum_schema::reference::types::Title;
+        let value = raw_title.map(|title| match title {
+            Title::Multilingual(m) => {
+                let mode = options
+                    .config
+                    .multilingual
+                    .as_ref()
+                    .and_then(|ml| ml.title_mode.as_ref());
+                let preferred_transliteration = options
+                    .config
+                    .multilingual
+                    .as_ref()
+                    .and_then(|ml| ml.preferred_transliteration.as_deref());
+                let preferred_script = options
+                    .config
+                    .multilingual
+                    .as_ref()
+                    .and_then(|ml| ml.preferred_script.as_ref());
+                let locale_str = options.locale.locale.as_str();
 
-            match title {
-                Title::Single(s) => s.clone(),
-                Title::Multilingual(m) => {
-                    let mode = options
-                        .config
-                        .multilingual
-                        .as_ref()
-                        .and_then(|ml| ml.title_mode.as_ref());
-                    let preferred_transliteration = options
-                        .config
-                        .multilingual
-                        .as_ref()
-                        .and_then(|ml| ml.preferred_transliteration.as_deref());
-                    let preferred_script = options
-                        .config
-                        .multilingual
-                        .as_ref()
-                        .and_then(|ml| ml.preferred_script.as_ref());
-                    let locale_str = options.locale.locale.as_str();
-
-                    let complex =
-                        citum_schema::reference::types::MultilingualString::Complex(m.clone());
-                    crate::values::resolve_multilingual_string(
-                        &complex,
-                        mode,
-                        preferred_transliteration,
-                        preferred_script,
-                        locale_str,
-                    )
-                }
-                _ => title.to_string(),
+                let complex =
+                    citum_schema::reference::types::MultilingualString::Complex(m.clone());
+                crate::values::resolve_multilingual_string(
+                    &complex,
+                    mode,
+                    preferred_transliteration,
+                    preferred_script,
+                    locale_str,
+                )
             }
+            _ => title_text(&title, self.form.as_ref()),
         });
 
         value.filter(|s: &String| !s.is_empty()).map(|value| {

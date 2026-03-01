@@ -192,6 +192,7 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
                     SimpleVariable::Note => "note",
                     SimpleVariable::Publisher => "publisher",
                     SimpleVariable::PublisherPlace => "publisher-place",
+                    SimpleVariable::ContainerTitleShort => "container-title-short",
                     SimpleVariable::Archive => "archive",
                     _ => "variable",
                 }

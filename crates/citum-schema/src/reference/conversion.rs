@@ -5,6 +5,14 @@ use crate::reference::types::*;
 use std::collections::HashMap;
 use url::Url;
 
+fn short_title_from_legacy(legacy: &csl_legacy::csl_json::Reference, key: &str) -> Option<String> {
+    legacy
+        .extra
+        .get(key)
+        .and_then(serde_json::Value::as_str)
+        .map(str::to_string)
+}
+
 fn format_interviewer_note(names: &[csl_legacy::csl_json::Name]) -> Option<String> {
     if names.is_empty() {
         return None;
@@ -38,6 +46,9 @@ fn format_interviewer_note(names: &[csl_legacy::csl_json::Name]) -> Option<Strin
 
 impl From<csl_legacy::csl_json::Reference> for InputReference {
     fn from(legacy: csl_legacy::csl_json::Reference) -> Self {
+        let legacy_container_title_short =
+            short_title_from_legacy(&legacy, "container-title-short");
+        let legacy_journal_abbreviation = short_title_from_legacy(&legacy, "journalAbbreviation");
         let id = Some(legacy.id);
         let language = legacy.language;
         let title = legacy
@@ -144,6 +155,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                         id: None,
                         r#type: CollectionType::EditedBook,
                         title: Some(parent_title),
+                        short_title: legacy_container_title_short,
                         editor: legacy.editor.map(Contributor::from),
                         translator: None,
                         issued: EdtfString(String::new()),
@@ -207,6 +219,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                     parent: Parent::Embedded(Serial {
                         r#type: serial_type,
                         title: parent_title,
+                        short_title: legacy_container_title_short.or(legacy_journal_abbreviation),
                         editor: None,
                         publisher: legacy.publisher.clone().map(|n| {
                             Contributor::SimpleName(SimpleName {

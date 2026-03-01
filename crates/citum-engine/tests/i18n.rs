@@ -865,6 +865,7 @@ fn test_mixed_language_title_formatting_uses_field_languages() {
             id: None,
             r#type: citum_schema::reference::CollectionType::EditedBook,
             title: Some(Title::Single("Deutscher Sammelband".to_string())),
+            short_title: None,
             editor: None,
             translator: None,
             issued: EdtfString("2024".to_string()),
