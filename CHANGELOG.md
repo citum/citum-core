@@ -270,6 +270,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix stdio example with valid JSON ([`ed229e2`](https://github.com/citum/citum-core/commit/ed229e2812289d7d3a54dd32009c22109c95a350))
 
 
+**tests**
+
+- Record deferred wave 1 follow-up ([`1a4a1de`](https://github.com/citum/citum-core/commit/1a4a1de47533aac33f71792bad3c8d162d569256))
+
+
 
 ### Features
 
@@ -429,12 +434,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support output formats ([`f876c1a`](https://github.com/citum/citum-core/commit/f876c1a1e70e31969807b6a3d94f745a35cd14b0))
 
 
-**style**
+**styles**
 
 - Complete core fidelity and probes ([`3873fc4`](https://github.com/citum/citum-core/commit/3873fc47a4a3f9cef4225356561009fc3908a85c))
-
-
-**styles**
 
 - Add 58 priority styles with presets ([`f1bb4a3`](https://github.com/citum/citum-core/commit/f1bb4a337d2555c822dcefe6729a8e4b0b92b894))
 
@@ -451,14 +453,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multilingual YAML styles csl26-mls1 ([`677ce78`](https://github.com/citum/citum-core/commit/677ce78faf058f57b536c9782477a3ce8946ac6e))
 
 
-**testing**
+**tests**
 
 - Add interactive fixture generator ([`c37ab43`](https://github.com/citum/citum-core/commit/c37ab430d1e3ab419423a45820cca53584c91c2f))
 
 - Add csl intake audit ([`902928a`](https://github.com/citum/citum-core/commit/902928ab19a466a9bd2c0b5ec7755ef309e028ac))
-
-
-**tests**
 
 - Extract CJK/Arabic CSL fixtures + native test ([`432d2e4`](https://github.com/citum/citum-core/commit/432d2e41726d0b10373d738e1b78928f0cb8146b))
 
@@ -781,7 +780,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Richer compatibility metrics and detail view ([`9e9fe20`](https://github.com/citum/citum-core/commit/9e9fe20fa87defcb949ba7bc5f45d165f4c8802e))
 
 
-**style**
+**styles**
 
 - Modernize apa-7th conjunctions ([`912b576`](https://github.com/citum/citum-core/commit/912b576729bafb1b514831624d755bc8dea84368))
 
@@ -899,7 +898,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implement group disambiguation ([`caf7f50`](https://github.com/citum/citum-core/commit/caf7f504082d79c56d263ca2cb8cde734ddeda29))
 
 
-**style**
+**styles**
 
 - Support integral citations in Springer Vancouver ([`43a6af2`](https://github.com/citum/citum-core/commit/43a6af2290418b209fa7a3f7f6b9ed440e5cae9b))
 

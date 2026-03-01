@@ -43,6 +43,10 @@ commit_preprocessors = [
   # render/rendering → engine (old scope for the rendering subsystem)
   { pattern = "^([a-z]+)\\(rendering?\\)", replace = "$1(engine)" },
   { pattern = "^([a-z]+)\\(render,inferrer\\)", replace = "$1(engine)" },
+  # style → styles (singular/plural inconsistency)
+  { pattern = "^([a-z]+)\\(style\\):", replace = "$1(styles):" },
+  # testing → tests (singular/plural inconsistency)
+  { pattern = "^([a-z]+)\\(testing\\)", replace = "$1(tests)" },
 ]
 filter_unconventional = true
 split_commits = false
