@@ -6,71 +6,50 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 #[cfg(feature = "http")]
 use citum_server::http;
 use citum_server::rpc;
-use std::env;
+use clap::Parser;
+use clap::builder::styling::{AnsiColor, Effects, Styles};
 
-/// Parse command-line arguments for server mode.
-/// Returns (use_http, port) tuple.
-fn parse_args() -> (bool, u16) {
-    let args: Vec<String> = env::args().collect();
-    let mut use_http = false;
-    let mut port = 8080u16;
+const CLAP_STYLES: Styles = Styles::styled()
+    .header(AnsiColor::Green.on_default().effects(Effects::BOLD))
+    .usage(AnsiColor::Green.on_default().effects(Effects::BOLD))
+    .literal(AnsiColor::Cyan.on_default().effects(Effects::BOLD))
+    .placeholder(AnsiColor::Cyan.on_default());
 
-    let mut i = 1;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--http" => use_http = true,
-            "--port" => {
-                if i + 1 < args.len() {
-                    if let Ok(p) = args[i + 1].parse::<u16>() {
-                        port = p;
-                    }
-                    i += 1;
-                }
-            }
-            "--help" => {
-                print_help();
-                std::process::exit(0);
-            }
-            "--version" => {
-                println!("citum-server {}", env!("CARGO_PKG_VERSION"));
-                std::process::exit(0);
-            }
-            _ => {}
-        }
-        i += 1;
-    }
+#[derive(Parser)]
+#[command(
+    name = "citum-server",
+    author,
+    version,
+    about = "JSON-RPC and HTTP server for citation, bibliography, and document processing",
+    long_about = "citum-server provides a programmable interface for citation processing.\n\n\
+                  It supports both a persistent JSON-RPC mode via stdin/stdout and an \
+                  optional HTTP server mode for remote processing.\n\n\
+                  EXAMPLES:\n  \
+                  Run in default JSON-RPC mode (stdin/stdout):\n    \
+                  citum-server\n\n  \
+                  Run as an HTTP server on a specific port:\n    \
+                  citum-server --http --port 8081",
+    styles = CLAP_STYLES,
+)]
+struct Cli {
+    /// Enable HTTP server mode (requires 'http' feature)
+    #[arg(long)]
+    http: bool,
 
-    (use_http, port)
-}
-
-fn print_help() {
-    eprintln!(
-        "citum-server {}
-
-USAGE:
-    citum-server [OPTIONS]
-
-OPTIONS:
-    --http              Enable HTTP server mode (requires 'http' feature)
-    --port <PORT>       HTTP port to listen on (default: 8080)
-    --help              Print help information
-    --version           Print version information
-
-Without --http, the server runs in stdin/stdout JSON-RPC mode.
-",
-        env!("CARGO_PKG_VERSION")
-    );
+    /// HTTP port to listen on
+    #[arg(short, long, default_value_t = 8080)]
+    port: u16,
 }
 
 #[cfg(feature = "async")]
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let (use_http, port) = parse_args();
+    let cli = Cli::parse();
 
-    if use_http {
+    if cli.http {
         #[cfg(feature = "http")]
         {
-            http::run_http(port).await
+            http::run_http(cli.port).await
         }
         #[cfg(not(feature = "http"))]
         {
@@ -85,9 +64,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 #[cfg(not(feature = "async"))]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let (use_http, _port) = parse_args();
+    let cli = Cli::parse();
 
-    if use_http {
+    if cli.http {
         eprintln!("Error: --http requires the 'http' feature to be enabled");
         eprintln!("Build with: cargo build --features http");
         std::process::exit(1);
