@@ -7,6 +7,7 @@ use citum_engine::{
 use citum_schema::locale::RawLocale;
 use citum_schema::reference::InputReference;
 use citum_schema::{InputBibliography, Locale, Style};
+use clap::builder::styling::{AnsiColor, Effects, Styles};
 use clap::{ArgAction, Args, CommandFactory, Parser, Subcommand, ValueEnum};
 use clap_complete::{Shell, generate};
 #[cfg(feature = "schema")]
@@ -20,8 +21,32 @@ use std::path::{Path, PathBuf};
 
 mod typst_pdf;
 
+const CLAP_STYLES: Styles = Styles::styled()
+    .header(AnsiColor::Green.on_default().effects(Effects::BOLD))
+    .usage(AnsiColor::Green.on_default().effects(Effects::BOLD))
+    .literal(AnsiColor::Cyan.on_default().effects(Effects::BOLD))
+    .placeholder(AnsiColor::Cyan.on_default());
+
 #[derive(Parser)]
-#[command(author, version, about, long_about = None, arg_required_else_help = true)]
+#[command(
+    name = "citum",
+    author,
+    version,
+    about = "Modern, performant, and multilingual citation, bibliography, and document processor",
+    long_about = "Citum is a Rust-based, declarative citation styling system.\n\n\
+                  It is the successor-focused evolution of CSL 1.0: styles are expressed as \
+                  YAML templates and options, then rendered by a type-safe processor \
+                  with oracle verification against `citeproc-js`.\n\n\
+                  EXAMPLES:\n  \
+                  Render references:\n    \
+                  citum render refs -b refs.json -s styles/apa-7th.yaml\n\n  \
+                  Render a document:\n    \
+                  citum render doc input.djot -b refs.json -s styles/apa-7th.yaml -I djot -O html\n\n  \
+                  Check style and bibliography:\n    \
+                  citum check -s styles/apa-7th.yaml -b refs.json",
+    styles = CLAP_STYLES,
+    arg_required_else_help = true
+)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
