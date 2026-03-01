@@ -2,13 +2,13 @@
 # scripts/release.sh — bump workspace version and prepare a release commit
 #
 # Usage:
-#   ./scripts/release.sh patch|minor|major [--name "Release Name"]
-#   ./scripts/release.sh <X.Y.Z>           [--name "Release Name"]
+#   ./scripts/release.sh patch|minor|major [--name "Release Name"] [--dry-run]
+#   ./scripts/release.sh <X.Y.Z>           [--name "Release Name"] [--dry-run]
 #
 # Examples:
 #   ./scripts/release.sh patch
 #   ./scripts/release.sh minor --name "Andromeda"
-#   ./scripts/release.sh major
+#   ./scripts/release.sh major --dry-run
 #   ./scripts/release.sh 1.0.0 --name "Andromeda"
 set -euo pipefail
 
@@ -19,12 +19,17 @@ CHANGELOG="$ROOT/CHANGELOG.md"
 # ── Parse arguments ───────────────────────────────────────────────────────────
 BUMP_ARG=""
 RELEASE_NAME=""
+DRY_RUN=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --name)
       shift
       RELEASE_NAME="${1:-}"
+      shift
+      ;;
+    --dry-run)
+      DRY_RUN=true
       shift
       ;;
     -*)
@@ -43,8 +48,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z "$BUMP_ARG" ]]; then
-  echo "Usage: $0 patch|minor|major [--name \"Release Name\"]" >&2
-  echo "       $0 <X.Y.Z>           [--name \"Release Name\"]" >&2
+  echo "Usage: $0 patch|minor|major [--name \"Release Name\"] [--dry-run]" >&2
+  echo "       $0 <X.Y.Z>           [--name \"Release Name\"] [--dry-run]" >&2
   exit 1
 fi
 
@@ -89,6 +94,7 @@ fi
 UNRELEASED=$(awk '/^## \[Unreleased\]/{found=1; next} found && /^## \[/{exit} found{print}' "$CHANGELOG" | sed '/^[[:space:]]*$/d')
 
 # ── Major confirmation ────────────────────────────────────────────────────────
+# ── Print summary (always) ────────────────────────────────────────────────────
 if [[ "$IS_MAJOR" == "true" ]]; then
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo "  MAJOR VERSION BUMP: $CURRENT_VERSION → $NEW_VERSION"
@@ -104,17 +110,30 @@ if [[ "$IS_MAJOR" == "true" ]]; then
     echo "(No unreleased changes documented in CHANGELOG.md)"
     echo ""
   fi
+else
+  echo "Release summary:"
+  echo "  $CURRENT_VERSION → $NEW_VERSION  ($(date +%Y-%m-%d))"
+  [[ -n "$RELEASE_NAME" ]] && echo "  Name: $RELEASE_NAME"
+  if [[ -n "$UNRELEASED" ]]; then
+    echo ""
+    echo "Unreleased changes:"
+    echo ""
+    echo "$UNRELEASED"
+  fi
+  echo ""
+fi
+
+if [[ "$DRY_RUN" == "true" ]]; then
+  echo "(dry run — no files modified)"
+  exit 0
+fi
+
+if [[ "$IS_MAJOR" == "true" ]]; then
   read -r -p "Type CONFIRM to proceed: " REPLY
   if [[ "$REPLY" != "CONFIRM" ]]; then
     echo "Aborted." >&2
     exit 1
   fi
-  echo ""
-else
-  # Dry-run summary for patch/minor
-  echo "Release summary:"
-  echo "  $CURRENT_VERSION → $NEW_VERSION  ($(date +%Y-%m-%d))"
-  [[ -n "$RELEASE_NAME" ]] && echo "  Name: $RELEASE_NAME"
   echo ""
 fi
 
