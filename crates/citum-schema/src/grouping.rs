@@ -3,9 +3,9 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::Template;
 use crate::locale::{GeneralTerm, TermForm};
 use crate::presets::SortPreset;
+use crate::Template;
 
 /// A bibliography group with selector, optional heading, and per-group sorting.
 ///
@@ -172,7 +172,10 @@ pub enum GroupSortEntry {
 }
 
 impl GroupSortEntry {
-    /// Resolve this entry to a concrete `GroupSort`.
+    /// Resolve this sort entry to a concrete `GroupSort`.
+    ///
+    /// If this is a preset, the preset is resolved to its corresponding sort configuration.
+    /// If already explicit, it is returned as-is.
     pub fn resolve(&self) -> GroupSort {
         match self {
             GroupSortEntry::Preset(preset) => preset.group_sort(),

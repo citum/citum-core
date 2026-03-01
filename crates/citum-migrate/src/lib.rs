@@ -1,16 +1,27 @@
 use csl_legacy::model::{CslNode, Style};
 use std::collections::HashMap;
 
+/// CSL 1.0 analysis utilities.
 pub mod analysis;
+/// YAML/template compressor for reducing style size.
 pub mod compressor;
+/// Debug output formatting.
 pub mod debug_output;
+/// Style metadata extraction.
 pub mod info_extractor;
+/// Options extraction from CSL 1.0.
 pub mod options_extractor;
+/// Multi-pass processing pipeline.
 pub mod passes;
+/// Preset detector for style classification.
 pub mod preset_detector;
+/// Provenance tracking for style migration.
 pub mod provenance;
+/// CSL 1.0 to Citum template compilation.
 pub mod template_compiler;
+/// Template resolution and preprocessing.
 pub mod template_resolver;
+/// Upsampler for style enhancement.
 pub mod upsampler;
 
 pub use compressor::Compressor;
@@ -21,12 +32,17 @@ pub use preset_detector::{detect_contributor_preset, detect_date_preset, detect_
 pub use provenance::{ProvenanceTracker, SourceLocation};
 pub use template_compiler::TemplateCompiler;
 pub use upsampler::Upsampler;
+
+/// Recursively expands CSL 1.0 macro references into their definitions.
+///
+/// Handles nested macros and preserves rendering order across macro boundaries.
 pub struct MacroInliner {
     macros: HashMap<String, Vec<CslNode>>,
     provenance: Option<ProvenanceTracker>,
 }
 
 impl MacroInliner {
+    /// Create a new macro inliner from a CSL 1.0 style.
     pub fn new(style: &Style) -> Self {
         let mut macros = HashMap::new();
         for m in &style.macros {
@@ -38,6 +54,9 @@ impl MacroInliner {
         }
     }
 
+    /// Create a new macro inliner with provenance tracking.
+    ///
+    /// Tracks source locations to help debug migration issues.
     pub fn with_provenance(style: &Style, provenance: ProvenanceTracker) -> Self {
         let mut macros = HashMap::new();
         for m in &style.macros {
@@ -49,25 +68,30 @@ impl MacroInliner {
         }
     }
 
+    /// Return the optional provenance tracker.
     pub fn provenance(&self) -> Option<&ProvenanceTracker> {
         self.provenance.as_ref()
     }
 
-    /// Recursively expands all macro calls in a list of nodes.
+    /// Expand all macro calls in a node list.
+    ///
+    /// Recursively replaces macro references with their definitions.
     pub fn expand_nodes(&self, nodes: &[CslNode]) -> Vec<CslNode> {
         let mut order_counter = 0;
         self.expand_nodes_with_order(nodes, &mut order_counter)
     }
 
-    /// Expands macros starting from a specific order counter value.
+    /// Expand macros starting from a specific order counter.
+    ///
     /// Used when layout macros have pre-assigned orders and nested macros
-    /// should continue numbering from where layout assignment left off.
+    /// should continue numbering from where layout left off.
     fn expand_nodes_from_order(&self, nodes: &[CslNode], initial_order: usize) -> Vec<CslNode> {
         let mut order_counter = initial_order;
         self.expand_nodes_with_order(nodes, &mut order_counter)
     }
 
-    /// Expand macros without incrementing order counter (for nested macros).
+    /// Expand macros without incrementing order counter.
+    ///
     /// Nested macros inherit their parent's order.
     fn expand_macros_no_increment(&self, nodes: &[CslNode]) -> Vec<CslNode> {
         let mut expanded = Vec::new();

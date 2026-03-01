@@ -1,11 +1,11 @@
 ---
 # csl26-tb4i
 title: Implement Core vs. Community Style Split
-status: todo
+status: completed
 type: task
 priority: normal
 created_at: 2026-02-08T18:45:51Z
-updated_at: 2026-02-08T22:26:16Z
+updated_at: 2026-03-01T14:20:02Z
 parent: csl26-li63
 ---
 

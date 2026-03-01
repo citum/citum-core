@@ -89,7 +89,9 @@ pub struct Citation {
 }
 
 impl Citation {
-    /// Create a simple citation for a single ID.
+    /// Create a simple single-item citation.
+    ///
+    /// Convenience constructor for a citation with a single reference ID and default settings.
     pub fn simple(id: &str) -> Self {
         Self {
             items: vec![CitationItem {

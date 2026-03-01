@@ -84,14 +84,16 @@ impl Default for Processor {
 /// Processed output containing citations and bibliography.
 #[derive(Debug, Default)]
 pub struct ProcessedReferences {
-    /// Rendered bibliography entries.
+    /// Rendered bibliography entries with metadata.
     pub bibliography: Vec<ProcEntry>,
-    /// Rendered citations (if any).
+    /// Rendered citations as formatted strings.
+    ///
+    /// None if no citations were processed; Some(vec) otherwise.
     pub citations: Option<Vec<String>>,
 }
 
 impl Processor {
-    /// Returns true when style processing mode is note-based.
+    /// Check whether the style uses note-based citations (footnotes/endnotes).
     fn is_note_style(&self) -> bool {
         self.get_config()
             .processing
@@ -280,12 +282,14 @@ impl Processor {
         }
     }
 
-    /// Create a new processor with default English locale.
+    /// Create a new processor with default English locale (en-US).
     pub fn new(style: Style, bibliography: Bibliography) -> Self {
         Self::with_locale(style, bibliography, Locale::en_us())
     }
 
-    /// Create a new processor with a custom locale.
+    /// Create a new processor with a specified locale.
+    ///
+    /// The locale determines term translations and locale-specific formatting behavior.
     pub fn with_locale(style: Style, bibliography: Bibliography, locale: Locale) -> Self {
         let mut processor = Processor {
             style,
@@ -302,8 +306,10 @@ impl Processor {
         processor
     }
 
-    /// Create a new processor with an existing style, bibliography, and locale.
-    /// Used for testing when you already have loaded components.
+    /// Create a new processor, loading the locale from disk.
+    ///
+    /// Loads the locale specified in the style's `default_locale` field from the given directory,
+    /// falling back to en-US if not found or not specified.
     pub fn with_style_locale(
         style: Style,
         bibliography: Bibliography,
@@ -317,14 +323,14 @@ impl Processor {
         Self::with_locale(style, bibliography, locale)
     }
 
-    /// Get the style configuration.
+    /// Return the global style configuration.
     pub fn get_config(&self) -> &Config {
         self.style.options.as_ref().unwrap_or(&self.default_config)
     }
 
-    /// Get merged config for citation context.
+    /// Return merged config for citation rendering.
     ///
-    /// Combines global options with citation-specific overrides.
+    /// Combines global style options with citation-specific overrides.
     pub fn get_citation_config(&self) -> std::borrow::Cow<'_, Config> {
         let base = self.get_config();
         match self
@@ -338,9 +344,9 @@ impl Processor {
         }
     }
 
-    /// Get merged config for bibliography context.
+    /// Return merged config for bibliography rendering.
     ///
-    /// Combines global options with bibliography-specific overrides.
+    /// Combines global style options with bibliography-specific overrides.
     pub fn get_bibliography_config(&self) -> std::borrow::Cow<'_, Config> {
         let base = self.get_config();
         match self
@@ -354,7 +360,10 @@ impl Processor {
         }
     }
 
-    /// Process all references to get rendered output.
+    /// Process all bibliography references and render them.
+    ///
+    /// Returns sorted and formatted bibliography entries. For numeric styles,
+    /// citations must have been processed first to assign citation numbers.
     pub fn process_references(&self) -> ProcessedReferences {
         self.initialize_numeric_citation_numbers();
         let sorted_refs = self.sort_references(self.bibliography.values().collect());
@@ -433,12 +442,16 @@ impl Processor {
         }
     }
 
-    /// Process a single citation.
+    /// Render a single citation to plain text.
+    ///
+    /// Returns the formatted citation string or an error if processing fails.
     pub fn process_citation(&self, citation: &Citation) -> Result<String, ProcessorError> {
         self.process_citation_with_format::<crate::render::plain::PlainText>(citation)
     }
 
-    /// Process a bibliography entry.
+    /// Process and render a bibliography entry.
+    ///
+    /// Returns a processed template with metadata if the entry matches the style.
     pub fn process_bibliography_entry(
         &self,
         reference: &Reference,
@@ -458,7 +471,9 @@ impl Processor {
         renderer.process_bibliography_entry(reference, entry_number)
     }
 
-    /// Sort references according to style instructions.
+    /// Sort references according to the style's bibliography sort specification.
+    ///
+    /// Uses style-specified sort keys (author, title, issued, etc.) and sort order.
     pub fn sort_references<'a>(&self, references: Vec<&'a Reference>) -> Vec<&'a Reference> {
         if let Some(sort_spec) = self.resolved_bibliography_sort() {
             let sorter = crate::grouping::GroupSorter::new(&self.locale);
@@ -469,7 +484,7 @@ impl Processor {
         sorter.sort_references(references)
     }
 
-    /// Sort citation items according to style instructions.
+    /// Sort citation items according to the style's citation sort specification.
     pub fn sort_citation_items(
         &self,
         items: Vec<CitationItem>,
@@ -498,7 +513,10 @@ impl Processor {
         items
     }
 
-    /// Calculate processing hints for disambiguation.
+    /// Calculate disambiguation hints needed for the style.
+    ///
+    /// Analyzes the bibliography to determine which items need disambiguation
+    /// (year suffixes, etc.) and calculates hints for efficient rendering.
     pub fn calculate_hints(&self) -> HashMap<String, ProcHints> {
         let cite_config = self.get_citation_config();
         let config = cite_config.as_ref();
@@ -514,13 +532,17 @@ impl Processor {
         disambiguator.calculate_hints()
     }
 
-    /// Check if primary contributors (authors/editors) match between two references.
+    /// Check whether primary contributors match between two references.
+    ///
+    /// Used for subsequent author substitution in bibliographies.
     pub fn contributors_match(&self, prev: &Reference, current: &Reference) -> bool {
         let matcher = Matcher::new(&self.style, &self.default_config);
         matcher.contributors_match(prev, current)
     }
 
-    /// Apply the substitution string to the primary contributor component.
+    /// Replace the primary contributor in a bibliography entry with a substitution string.
+    ///
+    /// Used for subsequent author substitution (e.g., "———" for repeating authors).
     pub fn apply_author_substitution(&self, proc: &mut ProcTemplate, substitute: &str) {
         let renderer = Renderer::new(
             &self.style,
@@ -756,12 +778,14 @@ impl Processor {
         Ok(fmt.finish(wrapped))
     }
 
-    /// Render multiple citations in order with note-context normalization.
+    /// Render multiple citations in document order.
+    ///
+    /// For note-based styles, normalizes context and assigns citation positions.
     pub fn process_citations(&self, citations: &[Citation]) -> Result<Vec<String>, ProcessorError> {
         self.process_citations_with_format::<crate::render::plain::PlainText>(citations)
     }
 
-    /// Render multiple citations in order with note-context normalization.
+    /// Render multiple citations with a custom output format.
     pub fn process_citations_with_format<F>(
         &self,
         citations: &[Citation],
@@ -777,7 +801,7 @@ impl Processor {
             .collect()
     }
 
-    /// Render the bibliography to a string.
+    /// Render the entire bibliography to a formatted string.
     pub fn render_bibliography(&self) -> String {
         self.render_bibliography_with_format::<crate::render::plain::PlainText>()
     }

@@ -3,23 +3,31 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-pub mod renderer; // Expose the renderer
+/// Renderer for converting processor output to different formats.
+pub mod renderer;
 pub use renderer::Renderer;
 
-// New CSLN schema modules
+/// Citation input model.
 pub mod citation;
+/// Bibliography grouping and sorting specifications.
 pub mod grouping;
+/// Legacy CSL 1.0 compatibility types.
 pub mod legacy;
+/// Locale-specific terms and translations.
 pub mod locale;
+/// Style configuration options.
 pub mod options;
+/// Configuration presets for common styles.
 pub mod presets;
+/// Bibliographic reference data types.
 pub mod reference;
+/// Citation and bibliography template components.
 pub mod template;
 
-// Embedded templates for priority styles (APA, Chicago, Vancouver, IEEE, Harvard)
+/// Embedded templates for priority styles (APA, Chicago, Vancouver, IEEE, Harvard).
 pub mod embedded;
 
-// Declarative macros for AST and configurations
+/// Declarative macros for AST and configurations.
 pub mod macros;
 
 pub use citation::{Citation, CitationItem, CitationMode, Citations, LocatorType, Position};
@@ -37,7 +45,7 @@ pub use legacy::{
 pub use locale::Locale;
 pub use options::Config;
 pub use presets::{ContributorPreset, DatePreset, SortPreset, SubstitutePreset, TitlePreset};
-pub use template::TemplateComponent;
+pub use template::{TemplateComponent, TemplateContributor, TemplateDate, TemplateNumber, TemplateTitle, TemplateVariable, TemplateTerm, TemplateList, Rendering, WrapPunctuation};
 
 /// A collection of bibliographic references with optional metadata.
 #[derive(Debug, Default, Deserialize, Serialize, Clone)]

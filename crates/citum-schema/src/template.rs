@@ -92,7 +92,9 @@ pub struct Rendering {
 }
 
 impl Rendering {
-    /// Merge another rendering into this one, with the other taking precedence.
+    /// Merge another rendering configuration into this one.
+    ///
+    /// The other rendering takes precedence, overwriting any fields that are present.
     pub fn merge(&mut self, other: &Rendering) {
         crate::merge_options!(
             self,
@@ -146,11 +148,13 @@ pub enum TypeSelector {
 }
 
 impl TypeSelector {
-    /// Check if this selector matches a reference type.
+    /// Check whether this selector matches a reference type.
     ///
     /// Type names are compared after normalizing underscores to hyphens, so
     /// "legal_case" and "legal-case" are treated as equivalent (matching both
     /// CSL 1.0 underscore convention and CSLN hyphen convention).
+    ///
+    /// The special keyword "all" always matches any reference type.
     pub fn matches(&self, ref_type: &str) -> bool {
         let normalized_ref = ref_type.replace('_', "-");
         let eq = |s: &str| -> bool {
@@ -190,12 +194,17 @@ impl Default for TemplateComponent {
 }
 
 impl TemplateComponent {
-    /// Get the rendering options for this component.
+    /// Return the rendering options for this component.
+    ///
+    /// Every template component has rendering options like emphasis, wrapping, and prefixes.
     pub fn rendering(&self) -> &Rendering {
         crate::dispatch_component!(self, |inner| &inner.rendering)
     }
 
-    /// Get the type-specific rendering overrides for this component.
+    /// Return the type-specific rendering overrides for this component.
+    ///
+    /// Type overrides allow different formatting based on the reference type
+    /// (e.g., suppress publisher for journals).
     pub fn overrides(&self) -> Option<&HashMap<TypeSelector, ComponentOverride>> {
         crate::dispatch_component!(self, |inner| inner.overrides.as_ref())
     }
@@ -643,8 +652,9 @@ impl JsonSchema for DelimiterPunctuation {
 }
 
 impl DelimiterPunctuation {
-    /// Convert to string with trailing space (for most delimiters).
-    /// Returns the punctuation followed by a space, except for Space and None.
+    /// Convert this delimiter to a string with trailing space.
+    ///
+    /// Returns the punctuation followed by a space, except for Space (single space) and None (empty string).
     pub fn to_string_with_space(&self) -> String {
         match self {
             Self::Comma => ", ".to_string(),
@@ -661,9 +671,10 @@ impl DelimiterPunctuation {
         }
     }
 
-    /// Parse from a CSL delimiter string.
+    /// Parse a delimiter from a CSL 1.0 delimiter string.
+    ///
     /// Handles common patterns like ", ", ": ", etc.
-    /// Returns Custom variant for unrecognized delimiters.
+    /// Returns the Custom variant for unrecognized delimiters.
     pub fn from_csl_string(s: &str) -> Self {
         if s == " " {
             return Self::Space;

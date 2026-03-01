@@ -1,11 +1,11 @@
 ---
 # csl26-5l9j
 title: Create style authors guide
-status: todo
+status: completed
 type: task
 priority: normal
 created_at: 2026-02-07T06:53:44Z
-updated_at: 2026-02-07T07:40:14Z
+updated_at: 2026-03-01T14:21:01Z
 blocking:
     - csl26-c7rf
 ---

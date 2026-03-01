@@ -1,11 +1,11 @@
 ---
 # csl26-zoou
 title: 'Design decision: citation-level suppress-author'
-status: todo
+status: completed
 type: task
 priority: normal
 created_at: 2026-02-21T14:07:32Z
-updated_at: 2026-02-21T14:07:32Z
+updated_at: 2026-03-01T14:22:14Z
 ---
 
 Moved suppress-author from per-item (ItemVisibility on CitationItem) to citation-level (suppress_author: bool on Citation). Applies uniformly to all items in a citation.
