@@ -105,6 +105,8 @@ pub struct ParsedDocument {
     pub bibliography_blocks: Vec<djot::BibliographyBlock>,
     /// Bibliography groups from YAML frontmatter.
     pub frontmatter_groups: Option<Vec<citum_schema::grouping::BibliographyGroup>>,
+    /// Byte offset where the document body starts (past any frontmatter).
+    pub body_start: usize,
 }
 
 /// A trait for document parsers that can identify citations.
@@ -171,6 +173,9 @@ impl Processor {
     {
         let parsed = parser.parse_document(content);
 
+        // Strip any frontmatter from the content passed to rendering.
+        let body = &content[parsed.body_start..];
+
         // Check what mode we're in before consuming parsed
         let has_frontmatter = parsed.frontmatter_groups.is_some();
         let has_blocks = !parsed.bibliography_blocks.is_empty();
@@ -179,9 +184,9 @@ impl Processor {
         if has_frontmatter {
             let groups = parsed.frontmatter_groups.as_ref().unwrap().clone();
             let rendered = if self.is_note_style() {
-                self.process_note_document::<F>(content, parsed)
+                self.process_note_document::<F>(body, parsed)
             } else {
-                self.process_inline_document::<F>(content, parsed)
+                self.process_inline_document::<F>(body, parsed)
             };
 
             let bib_content = self
@@ -205,7 +210,7 @@ impl Processor {
 
             // Replace each block with a stable placeholder before citation rendering so
             // that citation-text length changes don't corrupt the block byte offsets.
-            let mut staged = content.to_string();
+            let mut staged = body.to_string();
             for (i, block) in blocks.iter().enumerate().rev() {
                 let placeholder = format!("\x00BIBBLOCK{i}\x00");
                 staged.replace_range(block.start..block.end, &placeholder);
@@ -249,9 +254,9 @@ impl Processor {
 
         // Default behavior: append bibliography with heading
         let rendered = if self.is_note_style() {
-            self.process_note_document::<F>(content, parsed)
+            self.process_note_document::<F>(body, parsed)
         } else {
-            self.process_inline_document::<F>(content, parsed)
+            self.process_inline_document::<F>(body, parsed)
         };
 
         let bib_heading = match format {

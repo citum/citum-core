@@ -61,6 +61,7 @@ impl CitationParser for DjotParser {
     fn parse_document(&self, content: &str) -> ParsedDocument {
         // Try to parse frontmatter and get remaining content
         let (frontmatter_groups, remaining_content) = parse_frontmatter(content);
+        let body_start = content.len() - remaining_content.len();
 
         let (manual_note_references, manual_note_labels, footnote_definitions) =
             scan_manual_notes(remaining_content);
@@ -93,6 +94,7 @@ impl CitationParser for DjotParser {
             manual_note_labels,
             bibliography_blocks,
             frontmatter_groups,
+            body_start,
         }
     }
 }
