@@ -1,11 +1,11 @@
 ---
 # csl26-mo6c
 title: 'Sorting verification: oracle test across all bibliography styles'
-status: todo
+status: completed
 type: task
 priority: normal
 created_at: 2026-02-25T12:21:13Z
-updated_at: 2026-02-25T12:21:13Z
+updated_at: 2026-03-01T14:38:15Z
 ---
 
 ## Problem
@@ -35,3 +35,22 @@ Sort templates are designed (PRIOR_ART.md Issue #61) but bibliography sorting or
 - PRIOR_ART.md (Issue #61, sort templates)
 - ARCHITECTURAL_SOUNDNESS_2026-02-25.md (gap inventory)
 - ROADMAP.md Phase 2 (numeric styles require correct sort)
+
+## Summary of Changes
+
+Added tests/fixtures/sort-oracle.json with 10 references covering sort edge cases:
+- Multiple works by same author/year (Adams 2020 × 3)
+- Anonymous works with article-prefixed titles
+- All-caps surnames (SMITH, WILLIAMS)
+- Multi-author books and articles
+- Varied volume/issue numbers for numeric style independence
+
+Added crates/citum-engine/tests/sort_oracle.rs with 6 oracle-level sort assertions:
+1. test_apa_7th_sort_same_author_year_by_title — verifies title-based tiebreaker
+2. test_apa_7th_sort_anonymous_works_by_title — documents article-stripping gap
+3. test_numeric_sort_by_citation_order — numeric assignment by citation order
+4. test_uppercase_surname_sort_order — SMITH before WILLIAMS alphabetically
+5. test_multiauthor_same_year_sort — multi-author books sorted correctly
+6. test_numeric_style_volume_issue_independence — citation order trumps volume
+
+Updated bibliography.rs test_anonymous_works_sort_by_title_without_article with improved TODO comment linking to csl26-srvr and csl26-mo6c.
