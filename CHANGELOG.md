@@ -91,6 +91,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Normalize space-only initials formatting ([`906586c`](https://github.com/citum/citum-core/commit/906586c7793862c2b16f520eef85fee18d6919e6))
 
+- Make bibliography sort defaults explicit ([`bfd7e5d`](https://github.com/citum/citum-core/commit/bfd7e5de15baf55c10638571aca26c3c6205f772))
+
 - Repair bibliography block rendering ([`e91f649`](https://github.com/citum/citum-core/commit/e91f649e8c69fdb6754344adb31dd06cb1608df7))
 
 - Add trailing newline after bibliography blocks ([`2bad291`](https://github.com/citum/citum-core/commit/2bad29109301b2f0d1d32f851a187c513898440d))
@@ -159,11 +161,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use token-similarity matching ([`65a4175`](https://github.com/citum/citum-core/commit/65a417591ce8114e15fdeb672c2fff32e765786c))
 
 - Strip bibliography numbering after whitespace normalization ([`24bf41a`](https://github.com/citum/citum-core/commit/24bf41a89b32e32e68f19fe34b69bf962536b36f))
-
-
-**processing**
-
-- Make bibliography sort defaults explicit ([`bfd7e5d`](https://github.com/citum/citum-core/commit/bfd7e5de15baf55c10638571aca26c3c6205f772))
 
 
 **render**

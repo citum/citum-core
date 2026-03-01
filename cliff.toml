@@ -38,6 +38,8 @@ commit_preprocessors = [
   { pattern = "^([a-z]+)\\(processor\\)", replace = "$1(engine)" },
   # csln → engine (old project name for the processor crate)
   { pattern = "^([a-z]+)\\(csln\\)", replace = "$1(engine)" },
+  # processing → engine (transitional scope name)
+  { pattern = "^([a-z]+)\\(processing\\)", replace = "$1(engine)" },
 ]
 filter_unconventional = true
 split_commits = false
