@@ -1,5 +1,5 @@
-use crate::processor::document::{djot::DjotParser, CitationParser, DocumentFormat};
 use crate::processor::Processor;
+use crate::processor::document::{CitationParser, DocumentFormat, djot::DjotParser};
 use crate::reference::{Bibliography, Reference};
 use crate::render::plain::PlainText;
 use citum_schema::options::{

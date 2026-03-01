@@ -1,11 +1,11 @@
 ---
 # csl26-extg
 title: Support document-level bibliography grouping configuration
-status: todo
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-16T16:15:00Z
-updated_at: 2026-03-01T13:14:20Z
+updated_at: 2026-03-01T13:29:51Z
 ---
 
 Allow bibliography grouping criteria to be defined within the document (e.g., in Djot metadata or via placeholders), enabling idiosyncratic grouping needs for a specific paper without modifying the style. This mimics Biblatex's capability to customize bibliography output per-document.
@@ -22,3 +22,14 @@ There has been discussion a broader generated content feature addition to djot, 
 https://github.com/jgm/djot/issues/283#issue-2210834031
 
 **Related:** csl26-group
+
+## Summary of Changes
+
+Implemented document-level bibliography grouping (commit 86dca5f):
+
+- **Djot fenced divs**: `::: bibliography :::` blocks with optional attributes (`title`, `type`) are detected by byte offset and replaced with a filtered, headed bibliography section at render time.
+- **YAML frontmatter**: a leading `---` block with a `bibliography:` key accepts `Vec<BibliographyGroup>`, taking precedence over inline blocks.
+- **`BibliographyBlock`** struct (start/end offsets + `BibliographyGroup`) added to `djot.rs`; `ParsedDocument` extended with `bibliography_blocks` and `frontmatter_groups`.
+- **`render_bibliography_for_group()`** added to `Processor` for per-block rendering.
+- Full backward compatibility: documents without either construct are unchanged.
+- 217 tests passing, 3 new.
