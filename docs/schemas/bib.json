@@ -69,6 +69,12 @@
             }
           ]
         },
+        "field-languages": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
         "id": {
           "type": [
             "string",
@@ -113,6 +119,13 @@
             {
               "type": "null"
             }
+          ]
+        },
+        "short-title": {
+          "description": "Optional short form of the parent title for style-directed rendering.",
+          "type": [
+            "string",
+            "null"
           ]
         },
         "title": {
@@ -270,6 +283,12 @@
                 }
               ]
             },
+            "field-languages": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
             "genre": {
               "type": [
                 "string",
@@ -421,6 +440,12 @@
                 "null"
               ]
             },
+            "field-languages": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
             "genre": {
               "type": [
                 "string",
@@ -549,6 +574,12 @@
                 "string",
                 "null"
               ]
+            },
+            "field-languages": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             },
             "genre": {
               "type": [
@@ -699,6 +730,12 @@
                 }
               ]
             },
+            "field-languages": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
             "id": {
               "type": [
                 "string",
@@ -743,6 +780,13 @@
                 {
                   "type": "null"
                 }
+              ]
+            },
+            "short-title": {
+              "description": "Optional short form of the parent title for style-directed rendering.",
+              "type": [
+                "string",
+                "null"
               ]
             },
             "title": {
@@ -812,6 +856,12 @@
                 "string",
                 "null"
               ]
+            },
+            "field-languages": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             },
             "id": {
               "type": [
@@ -925,6 +975,12 @@
                 "null"
               ]
             },
+            "field-languages": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
             "id": {
               "type": [
                 "string",
@@ -1026,6 +1082,12 @@
               "enum": [
                 "treaty"
               ]
+            },
+            "field-languages": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             },
             "id": {
               "type": [
@@ -1132,6 +1194,12 @@
                 "hearing"
               ]
             },
+            "field-languages": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
             "id": {
               "type": [
                 "string",
@@ -1229,6 +1297,12 @@
                 "string",
                 "null"
               ]
+            },
+            "field-languages": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             },
             "id": {
               "type": [
@@ -1346,6 +1420,12 @@
                 "null"
               ]
             },
+            "field-languages": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
             "id": {
               "type": [
                 "string",
@@ -1444,6 +1524,12 @@
                   "type": "null"
                 }
               ]
+            },
+            "field-languages": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             },
             "id": {
               "type": [
@@ -1593,6 +1679,12 @@
                 "patent"
               ]
             },
+            "field-languages": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
             "filing-date": {
               "description": "Filing date",
               "anyOf": [
@@ -1708,6 +1800,12 @@
                 "string",
                 "null"
               ]
+            },
+            "field-languages": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             },
             "format": {
               "description": "File format (e.g., \"CSV\", \"NetCDF\", \"HDF5\")",
@@ -1833,6 +1931,12 @@
                 "standard"
               ]
             },
+            "field-languages": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
             "id": {
               "type": [
                 "string",
@@ -1948,6 +2052,12 @@
                 "string",
                 "null"
               ]
+            },
+            "field-languages": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             },
             "id": {
               "type": [
@@ -2215,6 +2325,13 @@
             }
           ]
         },
+        "short-title": {
+          "description": "Optional short form of the parent title for style-directed rendering.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "title": {
           "$ref": "#/definitions/Title"
         },
@@ -2299,7 +2416,7 @@
       }
     },
     "StructuredTitle": {
-      "description": "Where title parts are meaningful, use this struct; Citum processors will not parse title strings.",
+      "description": "Where title parts are meaningful, use this struct; CSLN processors will not parse title strings.",
       "type": "object",
       "required": [
         "main",

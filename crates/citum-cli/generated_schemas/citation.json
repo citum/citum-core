@@ -1,59 +1,80 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Citation",
-  "description": "A citation containing one or more references.",
-  "type": "object",
-  "required": [
-    "items"
-  ],
-  "properties": {
-    "id": {
-      "description": "The citation ID (optional, for tracking).",
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "items": {
-      "description": "The citation items (references being cited).",
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/CitationItem"
-      }
-    },
-    "mode": {
-      "description": "Citation mode: integral (narrative) vs non-integral (parenthetical). Only relevant for author-date styles.",
-      "allOf": [
-        {
-          "$ref": "#/definitions/CitationMode"
-        }
-      ]
-    },
-    "note-number": {
-      "description": "Note number for footnote/endnote styles. Assigned by the document processor, not the citation processor.",
-      "type": [
-        "integer",
-        "null"
-      ],
-      "format": "uint32",
-      "minimum": 0.0
-    },
-    "prefix": {
-      "description": "Prefix text before all citation items.",
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "suffix": {
-      "description": "Suffix text after all citation items.",
-      "type": [
-        "string",
-        "null"
-      ]
-    }
+  "title": "Array_of_Citation",
+  "type": "array",
+  "items": {
+    "$ref": "#/definitions/Citation"
   },
   "definitions": {
+    "Citation": {
+      "description": "A citation containing one or more references.",
+      "type": "object",
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "id": {
+          "description": "The citation ID (optional, for tracking).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "items": {
+          "description": "The citation items (references being cited).",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CitationItem"
+          }
+        },
+        "mode": {
+          "description": "Citation mode: integral (narrative) vs non-integral (parenthetical). Only relevant for author-date styles.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/CitationMode"
+            }
+          ]
+        },
+        "note-number": {
+          "description": "Note number for footnote/endnote styles. Assigned by the document processor, not the citation processor.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "position": {
+          "description": "Position of this citation in the document flow. Detected automatically by the processor or set explicitly by the caller.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Position"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "prefix": {
+          "description": "Prefix text before all citation items.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "suffix": {
+          "description": "Suffix text after all citation items.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "suppress-author": {
+          "description": "Suppress the author name across all items in this citation. Used when the author is already named in the prose: \"Smith argues (2020)\". Applies uniformly to all items — per-item suppression is not supported because mixed-visibility citations are typographically incoherent.",
+          "type": "boolean"
+        }
+      }
+    },
     "CitationItem": {
       "description": "A single citation item referencing a bibliography entry.",
       "type": "object",
@@ -139,6 +160,39 @@
         "verse",
         "volume",
         "issue"
+      ]
+    },
+    "Position": {
+      "description": "Position of a citation in the document flow.\n\nIndicates where this citation appears relative to previous citations of the same item(s). Used for note-based styles to detect ibid and subsequent citations, and for author-date styles to apply position-specific formatting rules (e.g., short forms after first citation).",
+      "oneOf": [
+        {
+          "description": "First citation of an item.",
+          "type": "string",
+          "enum": [
+            "first"
+          ]
+        },
+        {
+          "description": "Subsequent citation of an item (non-consecutive).",
+          "type": "string",
+          "enum": [
+            "subsequent"
+          ]
+        },
+        {
+          "description": "Same item cited immediately before, no locator on either.",
+          "type": "string",
+          "enum": [
+            "ibid"
+          ]
+        },
+        {
+          "description": "Same item cited immediately before, with different locator.",
+          "type": "string",
+          "enum": [
+            "ibid-with-locator"
+          ]
+        }
       ]
     }
   }

@@ -250,7 +250,7 @@
           "description": "Optional per-group sorting specification. Falls back to global bibliography sort if omitted.",
           "anyOf": [
             {
-              "$ref": "#/definitions/GroupSort"
+              "$ref": "#/definitions/GroupSortEntry"
             },
             {
               "type": "null"
@@ -291,6 +291,15 @@
             "$ref": "#/definitions/BibliographyGroup"
           }
         },
+        "locales": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/LocalizedTemplateSpec"
+          }
+        },
         "options": {
           "anyOf": [
             {
@@ -305,7 +314,7 @@
           "description": "Optional global bibliography sorting specification.\n\nWhen present, used for sorting the flat bibliography or as default for groups that don't specify their own sort.",
           "anyOf": [
             {
-              "$ref": "#/definitions/GroupSort"
+              "$ref": "#/definitions/GroupSortEntry"
             },
             {
               "type": "null"
@@ -349,6 +358,36 @@
       },
       "additionalProperties": false
     },
+    "CitationField": {
+      "description": "Discipline/field classification for a citation style.\n\nValues correspond to the CSL 1.0 `<category field=\"...\"/>` attribute, `generic-base` is silently ignored during migration.",
+      "type": "string",
+      "enum": [
+        "anthropology",
+        "biology",
+        "botany",
+        "chemistry",
+        "communications",
+        "engineering",
+        "geography",
+        "geology",
+        "history",
+        "humanities",
+        "law",
+        "linguistics",
+        "literature",
+        "math",
+        "medicine",
+        "philosophy",
+        "physics",
+        "political-science",
+        "psychology",
+        "science",
+        "social-science",
+        "sociology",
+        "theology",
+        "zoology"
+      ]
+    },
     "CitationSpec": {
       "description": "Citation specification.",
       "type": "object",
@@ -368,6 +407,17 @@
             "null"
           ]
         },
+        "ibid": {
+          "description": "Configuration for ibid citations (ibid or ibid with locator). Overrides fields from the main citation spec when position is Ibid or IbidWithLocator. If present, takes precedence over `subsequent` for these positions. Allows compact rendering like \"ibid.\" or \"ibid., p. 45\".",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CitationSpec"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "integral": {
           "description": "Configuration for integral (narrative) citations (e.g., \"Smith (2020)\"). Overrides fields from the main citation spec when mode is Integral.",
           "anyOf": [
@@ -378,6 +428,15 @@
               "type": "null"
             }
           ]
+        },
+        "locales": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/LocalizedTemplateSpec"
+          }
         },
         "multi-cite-delimiter": {
           "description": "Delimiter between multiple citation items (e.g., \"; \"). Defaults to \"; \".",
@@ -418,7 +477,18 @@
           "description": "Optional citation sorting specification.",
           "anyOf": [
             {
-              "$ref": "#/definitions/GroupSort"
+              "$ref": "#/definitions/GroupSortEntry"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "subsequent": {
+          "description": "Configuration for subsequent citations. Overrides fields from the main citation spec when position is Subsequent. Useful for short-form citations in note-based styles or author-date styles that show abbreviated citations after the first mention.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CitationSpec"
             },
             {
               "type": "null"
@@ -578,6 +648,17 @@
           "anyOf": [
             {
               "$ref": "#/definitions/MultilingualConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notes": {
+          "description": "Document-level note marker placement and punctuation movement rules.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NoteConfig"
             },
             {
               "type": "null"
@@ -819,6 +900,7 @@
       "enum": [
         "long",
         "short",
+        "family-only",
         "verb",
         "verb-short"
       ]
@@ -880,6 +962,62 @@
           "type": "string",
           "enum": [
             "numeric-medium"
+          ]
+        },
+        {
+          "description": "Numeric tight: all family-first, no initials, et al. after 3 of 7+. Tighter than `numeric-compact` (use-first: 3 vs 6). Example: \"Smith J, Jones M, Brown A, et al.\"",
+          "type": "string",
+          "enum": [
+            "numeric-tight"
+          ]
+        },
+        {
+          "description": "Numeric large: all family-first, no initials, et al. after 10 of 11+. For biomedical journals that show nearly all authors. Example: \"Smith J, Jones M, Brown A, [10 authors], et al.\"",
+          "type": "string",
+          "enum": [
+            "numeric-large"
+          ]
+        },
+        {
+          "description": "Numeric all-authors: all family-first, no conjunction, compact initials, no list shortening, particle demotion disabled. Example: \"Smith JD, Jones MK, Brown AB\"",
+          "type": "string",
+          "enum": [
+            "numeric-all-authors"
+          ]
+        },
+        {
+          "description": "Numeric given-first with period-only initials (no space), no conjunction, and comma delimiters. Example: \"J.D. Smith, M.K. Jones, A.B. Brown\"",
+          "type": "string",
+          "enum": [
+            "numeric-given-dot"
+          ]
+        },
+        {
+          "description": "Annual Reviews style: all family-first, no initials, et al. after 5 of 7+, particle demotion never. Distinguishable by \"never\" demote policy. Example: \"van der Berg J, Smith M, Jones A, Brown B, White C, et al.\"",
+          "type": "string",
+          "enum": [
+            "annual-reviews"
+          ]
+        },
+        {
+          "description": "Math/physics author-date: all family-first, period initial (no trailing space), comma sort-separator, no conjunction. Used across Springer math/physics and related author-date journals. Example: \"Smith, J., Jones, M., Brown, A.\"",
+          "type": "string",
+          "enum": [
+            "math-phys"
+          ]
+        },
+        {
+          "description": "Social science first-author inversion: first author family-first, remaining authors given-first, period-space initials, comma sort-separator, no conjunction. Common in sociology and civil engineering. Example: \"Smith, J. D., M. K. Jones, A. B. Brown\"",
+          "type": "string",
+          "enum": [
+            "soc-sci-first"
+          ]
+        },
+        {
+          "description": "Physics numeric given-first: no author inversion, period-space initial, no conjunction, sort-only particle demotion. Used by numeric physics journals like APS. Example: \"J. Smith, M. Jones, A. Brown\"",
+          "type": "string",
+          "enum": [
+            "physics-numeric"
           ]
         }
       ]
@@ -944,6 +1082,27 @@
           "default": "–",
           "type": "string"
         },
+        "show-seconds": {
+          "description": "Whether to include seconds in time display (default: false).",
+          "default": false,
+          "type": "boolean"
+        },
+        "show-timezone": {
+          "description": "Whether to include timezone in time display (default: false).",
+          "default": false,
+          "type": "boolean"
+        },
+        "time-format": {
+          "description": "Time display format. None suppresses time rendering.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TimeFormat"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "uncertainty-marker": {
           "description": "Marker for uncertain dates (e.g., \"?\" or \"uncertain\"). None suppresses display.",
           "type": [
@@ -983,7 +1142,8 @@
         "year-month",
         "full",
         "month-day",
-        "year-month-day"
+        "year-month-day",
+        "day-month-abbr-year"
       ]
     },
     "DatePreset": {
@@ -1315,6 +1475,27 @@
         }
       }
     },
+    "GroupSortEntry": {
+      "description": "Citation sort configuration: either a preset name or explicit configuration.",
+      "anyOf": [
+        {
+          "description": "A named sort preset (e.g., \"author-date-title\").",
+          "allOf": [
+            {
+              "$ref": "#/definitions/SortPreset"
+            }
+          ]
+        },
+        {
+          "description": "Explicit sort configuration.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/GroupSort"
+            }
+          ]
+        }
+      ]
+    },
     "GroupSortKey": {
       "description": "A single sort key in a group sorting template.",
       "type": "object",
@@ -1371,6 +1552,15 @@
         },
         "et-al-min": {
           "description": "Max authors before truncation. Alpha/Ams default: 4, Din default: 3.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "et-al-names": {
+          "description": "Names shown when truncated (et-al). Alpha default: 3, Ams default: 4.",
           "type": [
             "integer",
             "null"
@@ -1451,7 +1641,7 @@
           ]
         },
         {
-          "description": "American Mathematical Society: same algorithm as Alpha, sorted by citation-number.",
+          "description": "American Mathematical Society: same label-generation algorithm as Alpha.",
           "type": "string",
           "enum": [
             "ams"
@@ -1564,6 +1754,36 @@
         }
       }
     },
+    "LocalizedTemplateSpec": {
+      "type": "object",
+      "required": [
+        "template"
+      ],
+      "properties": {
+        "default": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "locale": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "template": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TemplateComponent"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "MonthFormat": {
       "description": "Month display format.",
       "type": "string",
@@ -1594,6 +1814,16 @@
             "string",
             "null"
           ]
+        },
+        "preferred-transliteration": {
+          "description": "Ordered priority list of BCP 47 transliteration tags (e.g. [\"ja-Latn-hepburn\", \"ja-Latn\"]). Takes precedence over `preferred_script` when resolving transliterations.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
         },
         "scripts": {
           "description": "Script-specific behavior configuration.",
@@ -1686,6 +1916,114 @@
         }
       ]
     },
+    "NoteConfig": {
+      "description": "Document-level note marker placement rules.",
+      "type": "object",
+      "properties": {
+        "number": {
+          "description": "Desired location of the note marker relative to closing quotation marks.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NoteNumberPlacement"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "order": {
+          "description": "Whether the note marker appears before or after the closest movable punctuation mark.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NoteMarkerOrder"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "punctuation": {
+          "description": "Desired location of movable punctuation relative to closing quotation marks when note markers are introduced.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NoteQuotePlacement"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "NoteMarkerOrder": {
+      "oneOf": [
+        {
+          "description": "Place the note marker before the closest movable punctuation mark.",
+          "type": "string",
+          "enum": [
+            "before"
+          ]
+        },
+        {
+          "description": "Place the note marker after the closest movable punctuation mark.",
+          "type": "string",
+          "enum": [
+            "after"
+          ]
+        }
+      ]
+    },
+    "NoteNumberPlacement": {
+      "oneOf": [
+        {
+          "description": "Place the note marker inside the closing quotation mark.",
+          "type": "string",
+          "enum": [
+            "inside"
+          ]
+        },
+        {
+          "description": "Place the note marker outside the closing quotation mark.",
+          "type": "string",
+          "enum": [
+            "outside"
+          ]
+        },
+        {
+          "description": "Place the note marker on the same side as the movable punctuation when only one side has punctuation; otherwise default to outside.",
+          "type": "string",
+          "enum": [
+            "same"
+          ]
+        }
+      ]
+    },
+    "NoteQuotePlacement": {
+      "oneOf": [
+        {
+          "description": "Keep movable punctuation inside the closing quotation mark.",
+          "type": "string",
+          "enum": [
+            "inside"
+          ]
+        },
+        {
+          "description": "Keep movable punctuation outside the closing quotation mark.",
+          "type": "string",
+          "enum": [
+            "outside"
+          ]
+        },
+        {
+          "description": "Follow org-cite-style adaptive behavior: punctuation stays inside when it is already flush with the closing quote, otherwise it is placed outside.",
+          "type": "string",
+          "enum": [
+            "adaptive"
+          ]
+        }
+      ]
+    },
     "NumberForm": {
       "description": "Number rendering forms.",
       "type": "string",
@@ -1760,14 +2098,28 @@
       "description": "Processing mode for citation/bibliography generation.\n\nCan be specified as: - A string: \"author-date\", \"numeric\", \"note\", or \"label\" - A label config map: { label: { preset: din } } - A custom config map: { sort: ..., group: ..., disambiguate: ... }",
       "oneOf": [
         {
+          "description": "Author-date styles default bibliography ordering to author, year, title.",
           "type": "string",
           "enum": [
-            "author-date",
-            "numeric",
+            "author-date"
+          ]
+        },
+        {
+          "description": "Numeric styles do not imply a bibliography sort.",
+          "type": "string",
+          "enum": [
+            "numeric"
+          ]
+        },
+        {
+          "description": "Note styles with a bibliography default to author, title, year ordering.",
+          "type": "string",
+          "enum": [
             "note"
           ]
         },
         {
+          "description": "Label styles default bibliography ordering to author, year, title.",
           "type": "object",
           "required": [
             "label"
@@ -1780,6 +2132,7 @@
           "additionalProperties": false
         },
         {
+          "description": "Fully custom processing behavior; explicit `sort` remains authoritative.",
           "type": "object",
           "required": [
             "custom"
@@ -1820,7 +2173,7 @@
         "sort": {
           "anyOf": [
             {
-              "$ref": "#/definitions/Sort"
+              "$ref": "#/definitions/SortEntry"
             },
             {
               "type": "null"
@@ -2155,6 +2508,7 @@
         "scale",
         "version",
         "locator",
+        "container-title-short",
         "authority",
         "reporter",
         "page",
@@ -2191,6 +2545,27 @@
           }
         }
       }
+    },
+    "SortEntry": {
+      "description": "Sort configuration: either a preset name or explicit configuration.",
+      "anyOf": [
+        {
+          "description": "A named sort preset (e.g., \"author-date-title\").",
+          "allOf": [
+            {
+              "$ref": "#/definitions/SortPreset"
+            }
+          ]
+        },
+        {
+          "description": "Explicit sort configuration.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Sort"
+            }
+          ]
+        }
+      ]
     },
     "SortKey": {
       "description": "Available sort keys.",
@@ -2258,6 +2633,32 @@
         }
       ]
     },
+    "SortPreset": {
+      "description": "Sort order presets for bibliography entries.\n\nEach preset encodes the sort key sequence for a citation style family. Use for the `bibliography.sort` field to avoid repeating boilerplate key lists.",
+      "oneOf": [
+        {
+          "description": "Author → year → title. Standard for author-date styles (APA, Chicago, Harvard).",
+          "type": "string",
+          "enum": [
+            "author-date-title"
+          ]
+        },
+        {
+          "description": "Author → title → year. Used in some footnote and note styles.",
+          "type": "string",
+          "enum": [
+            "author-title-date"
+          ]
+        },
+        {
+          "description": "Citation number only. Used in numeric styles (Vancouver, IEEE).",
+          "type": "string",
+          "enum": [
+            "citation-number"
+          ]
+        }
+      ]
+    },
     "SortSpec": {
       "description": "A single sort specification.",
       "type": "object",
@@ -2291,10 +2692,28 @@
             "null"
           ]
         },
+        "fields": {
+          "description": "Discipline classifications for this style.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CitationField"
+          }
+        },
         "id": {
           "type": [
             "string",
             "null"
+          ]
+        },
+        "source": {
+          "description": "Provenance: set when this style was adapted from a CSL 1.0 source.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/StyleSource"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "title": {
@@ -2302,6 +2721,89 @@
             "string",
             "null"
           ]
+        }
+      }
+    },
+    "StyleLink": {
+      "description": "A hyperlink associated with a style (documentation, self-link, etc.).",
+      "type": "object",
+      "required": [
+        "href"
+      ],
+      "properties": {
+        "href": {
+          "type": "string"
+        },
+        "rel": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "StylePerson": {
+      "description": "A person credit (author or contributor) for a style.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "uri": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "StyleSource": {
+      "description": "Provenance block for styles adapted from a CSL 1.0 source.",
+      "type": "object",
+      "required": [
+        "csl-id"
+      ],
+      "properties": {
+        "adapted-by": {
+          "description": "Who performed the adaptation (e.g., \"citum-migrate\" or a person's name).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "csl-id": {
+          "description": "The original CSL style ID (URI).",
+          "type": "string"
+        },
+        "license": {
+          "description": "License URI (e.g., CC BY-SA).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "links": {
+          "description": "Links from the original CSL style (documentation, self, etc.).",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StyleLink"
+          }
+        },
+        "original-authors": {
+          "description": "Original CSL style authors.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StylePerson"
+          }
         }
       }
     },
@@ -3333,6 +3835,13 @@
           ],
           "additionalProperties": true
         },
+        "disambiguate-only": {
+          "description": "When true, suppress this title component unless the reference needs disambiguation (i.e. multiple works by the same author appear in the document). Used by author-class styles (e.g. MLA) where the title appears in citations only to resolve same-author ambiguity.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
         "emph": {
           "description": "Render in italics/emphasis.",
           "type": [
@@ -3613,6 +4122,25 @@
         "symbol"
       ]
     },
+    "TimeFormat": {
+      "description": "Time display format.",
+      "oneOf": [
+        {
+          "description": "12-hour clock with AM/PM (e.g., \"11:30 PM\")",
+          "type": "string",
+          "enum": [
+            "hour12"
+          ]
+        },
+        {
+          "description": "24-hour clock (e.g., \"23:30\")",
+          "type": "string",
+          "enum": [
+            "hour24"
+          ]
+        }
+      ]
+    },
     "TitleForm": {
       "description": "Title rendering forms.",
       "type": "string",
@@ -3677,6 +4205,15 @@
             "boolean",
             "null"
           ]
+        },
+        "locale-overrides": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "$ref": "#/definitions/TitleRendering"
+          }
         },
         "prefix": {
           "type": [

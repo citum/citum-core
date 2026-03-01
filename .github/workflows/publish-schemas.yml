@@ -27,7 +27,7 @@ jobs:
       - name: Generate Schemas
         run: |
           mkdir -p docs/schemas
-          cargo run --release --bin citum-cli --features schema -- schema --out-dir docs/schemas
+          cargo run --release --bin citum --features schema -- schema --out-dir docs/schemas
 
       - name: Commit updated schemas
         uses: stefanzweifel/git-auto-commit-action@v5

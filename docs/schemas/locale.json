@@ -10,12 +10,15 @@
     "dates": {
       "description": "Date-related terms.",
       "default": {
+        "am": null,
         "months": {
           "long": [],
           "short": []
         },
         "open-ended-term": null,
+        "pm": null,
         "seasons": [],
+        "timezone-utc": null,
         "uncertainty-term": null
       },
       "allOf": [
@@ -50,6 +53,13 @@
       "description": "Raw date terms for YAML parsing.",
       "type": "object",
       "properties": {
+        "am": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "months": {
           "default": {
             "long": [],
@@ -68,12 +78,26 @@
             "null"
           ]
         },
+        "pm": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "seasons": {
           "default": [],
           "type": "array",
           "items": {
             "type": "string"
           }
+        },
+        "timezone-utc": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "uncertainty-term": {
           "default": null,

@@ -363,7 +363,7 @@ fn run_schema(args: SchemaArgs) -> Result<(), Box<dyn Error>> {
             (DataType::Style, "style.json"),
             (DataType::Bib, "bib.json"),
             (DataType::Locale, "locale.json"),
-            (DataType::Citations, "citations.json"),
+            (DataType::Citations, "citation.json"),
         ];
         for (t, filename) in types {
             let schema = match t {
