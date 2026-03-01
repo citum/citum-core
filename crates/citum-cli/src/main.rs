@@ -105,6 +105,20 @@ enum Commands {
     Check(CheckArgs),
 
     /// Convert between CSLN formats (YAML, JSON, CBOR)
+    #[command(
+        about = "Convert between CSLN formats (YAML, JSON, CBOR)",
+        long_about = "Convert between CSLN formats (YAML, JSON, CBOR).\n\n\
+                      The tool automatically detects the data type (style, bib, locale, or citations) \
+                      based on file stems and extensions, but this can be explicitly overridden \
+                      with the --type flag.\n\n\
+                      EXAMPLES:\n  \
+                      Convert a style from YAML to binary CBOR:\n    \
+                      citum convert style.yaml -o style.cbor\n\n  \
+                      Convert a bibliography from JSON to YAML:\n    \
+                      citum convert refs.json -o refs.yaml\n\n  \
+                      Convert citations with explicit type override:\n    \
+                      citum convert input.data -o citations.json -t citations"
+    )]
     Convert(ConvertArgs),
 
     /// List and inspect embedded (builtin) citation styles
