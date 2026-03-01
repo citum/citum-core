@@ -21,9 +21,10 @@ const CLAP_STYLES: Styles = Styles::styled()
     author,
     version,
     about = "JSON-RPC and HTTP server for citation, bibliography, and document processing",
-    long_about = "citum-server provides a programmable interface for citation processing.\n\n\
-                  It supports both a persistent JSON-RPC mode via stdin/stdout and an \
-                  optional HTTP server mode for remote processing.\n\n\
+    long_about = "citum-server provides a programmable interface for citation\n\
+                  processing.\n\n\
+                  It supports both a persistent JSON-RPC mode via stdin/stdout\n\
+                  and an optional HTTP server mode for remote processing.\n\n\
                   EXAMPLES:\n  \
                   Run in default JSON-RPC mode (stdin/stdout):\n    \
                   citum-server\n\n  \

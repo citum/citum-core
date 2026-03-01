@@ -37,12 +37,17 @@ const CLAP_STYLES: Styles = Styles::styled()
                   Styles are expressed as YAML templates and options, then rendered\n\
                   by a type-safe processor.\n\n\
                   EXAMPLES:\n  \
-                  Render references:\n    \
-                  citum render refs -b refs.json -s styles/apa-7th.yaml\n\n  \
                   Render a document:\n    \
-                  citum render doc input.djot -b refs.json -s styles/apa-7th.yaml -I djot -O html\n\n  \
+                  citum render doc input.djot -b refs.json -s apa-7th\n\n  \
+                  Render references (human-readable):\n    \
+                  citum render refs -b refs.json -s apa-7th\n\n  \
                   Check style and bibliography:\n    \
-                  citum check -s styles/apa-7th.yaml -b refs.json",
+                  citum check -s apa-7th -b refs.json\n\n  \
+                  Convert a style to binary CBOR:\n    \
+                  citum convert style.yaml -o style.cbor\n\n  \
+                  List all builtin styles:\n    \
+                  citum styles list\n\n\
+                  Run 'citum <COMMAND> --help' for more detailed examples and options.",
     styles = CLAP_STYLES,
     arg_required_else_help = true
 )]
@@ -102,15 +107,28 @@ enum Commands {
     },
 
     /// Validate style, bibliography, and citations files
+    #[command(
+        about = "Validate style, bibliography, and citations files",
+        long_about = "Perform schema validation on input files.\n\n\
+                      Citum checks the syntax and structure of style (YAML/JSON/CBOR),\n\
+                      bibliography (JSON/YAML), and citation files against their\n\
+                      respective schemas. Use this to ensure your data is compatible\n\
+                      before processing.\n\n\
+                      EXAMPLES:\n  \
+                      Validate a style and its bibliography:\n    \
+                      citum check -s apa-7th -b refs.json\n\n  \
+                      Validate and output detailed results as JSON:\n    \
+                      citum check -s apa-7th -b refs.json --json"
+    )]
     Check(CheckArgs),
 
     /// Convert between CSLN formats (YAML, JSON, CBOR)
     #[command(
         about = "Convert between CSLN formats (YAML, JSON, CBOR)",
         long_about = "Convert between CSLN formats (YAML, JSON, CBOR).\n\n\
-                      The tool automatically detects the data type (style, bib, locale, or citations) \
-                      based on file stems and extensions, but this can be explicitly overridden \
-                      with the --type flag.\n\n\
+                      The tool automatically detects the data type (style, bib, locale,\n\
+                      or citations) based on file stems and extensions, but this can\n\
+                      be explicitly overridden with the --type flag.\n\n\
                       EXAMPLES:\n  \
                       Convert a style from YAML to binary CBOR:\n    \
                       citum convert style.yaml -o style.cbor\n\n  \
@@ -122,6 +140,16 @@ enum Commands {
     Convert(ConvertArgs),
 
     /// List and inspect embedded (builtin) citation styles
+    #[command(
+        about = "List and inspect embedded (builtin) citation styles",
+        long_about = "Browse and inspect Citum's library of embedded citation styles.\n\n\
+                      Citum includes several standard styles (APA, MLA, Chicago, etc.)\n\
+                      built directly into the binary. You can reference these styles\n\
+                      by their alias (e.g., 'apa-7th') instead of a file path.\n\n\
+                      EXAMPLES:\n  \
+                      List all builtin styles and their aliases:\n    \
+                      citum styles list"
+    )]
     Styles {
         #[command(subcommand)]
         command: Option<StylesCommands>,
@@ -147,11 +175,47 @@ enum Commands {
 }
 
 #[derive(Subcommand)]
+#[command(
+    about = "Render documents or references",
+    long_about = "Render documents or references using a specified citation style.\n\n\
+                  Citum supports two primary rendering modes:\n\
+                  - doc: Process a full document (Djot) with integrated citations.\n\
+                  - refs: Direct rendering of a bibliography file for debugging\n\
+                    or inspection.\n\n\
+                  Run 'citum render <COMMAND> --help' for specific examples."
+)]
 enum RenderCommands {
     /// Render a full document with citations and bibliography
+    #[command(
+        about = "Render a full document with citations and bibliography",
+        long_about = "Process a full document with citations and bibliography.\n\n\
+                      Citum parses the input document (default: Djot) for citations,\n\
+                      matches them against the provided bibliography, and renders\n\
+                      the final output in various formats (Plain, HTML, Latex, etc.).\n\n\
+                      EXAMPLES:\n  \
+                      Render to HTML:\n    \
+                      citum render doc manuscript.djot -b refs.json -s apa-7th -f html\n\n  \
+                      Render to PDF (requires 'typst-pdf' feature):\n    \
+                      citum render doc manuscript.djot -b refs.json -s apa-7th\n\
+                      -f typst -o paper.pdf --pdf"
+    )]
     Doc(RenderDocArgs),
 
     /// Render references/citations directly
+    #[command(
+        about = "Render references/citations directly",
+        long_about = "Directly render a set of references and/or citations from files.\n\n\
+                      This command is useful for inspecting how a style renders\n\
+                      specific entries or testing bibliography grouping logic.\n\n\
+                      EXAMPLES:\n  \
+                      Render bibliography entries (APA 7th style):\n    \
+                      citum render refs -b refs.json -s apa-7th\n\n  \
+                      Render specific citations with keys:\n    \
+                      citum render refs -b refs.json -s apa-7th -m cite\n\
+                      -k Doe2020,Smith2021\n\n  \
+                      Output as JSON with human-readable rendered text:\n    \
+                      citum render refs -b refs.json -s apa-7th --json"
+    )]
     Refs(RenderRefsArgs),
 }
 
