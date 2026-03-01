@@ -1,6 +1,6 @@
-# CSLN Processor
+# Citum Engine
 
-The core citation and bibliography processing engine for CSLN.
+The core citation and bibliography processing engine for Citum.
 
 ## Djot Citation Syntax
 
