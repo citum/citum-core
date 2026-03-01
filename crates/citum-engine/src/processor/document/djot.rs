@@ -373,19 +373,32 @@ fn scan_bibliography_blocks(content: &str) -> Vec<BibliographyBlock> {
 
 /// Extract bibliography group definition from div attributes.
 fn extract_group_from_attrs(_class: &str, attrs: Attributes) -> String {
-    let mut group_yaml = String::from("id: default\nselector: {}\n");
+    let mut title: Option<String> = None;
+    let mut ref_type: Option<String> = None;
 
-    // Parse attributes into YAML-like structure
     for (kind, value) in attrs {
         if let Some(key) = kind.key() {
-            let val_str = value.to_string();
-            if key == "title" {
-                group_yaml.push_str(&format!("heading:\n  literal: \"{}\"\n", val_str));
+            let val = value.to_string();
+            match key {
+                "title" => title = Some(val),
+                "type" => ref_type = Some(val),
+                _ => {}
             }
         }
     }
 
-    group_yaml
+    let mut yaml = String::from("id: default\n");
+
+    if let Some(t) = title {
+        yaml.push_str(&format!("heading:\n  literal: \"{t}\"\n"));
+    }
+
+    match ref_type {
+        Some(t) => yaml.push_str(&format!("selector:\n  type: {t}\n")),
+        None => yaml.push_str("selector: {}\n"),
+    }
+
+    yaml
 }
 
 /// Convert Djot markup to HTML using jotdown.

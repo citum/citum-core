@@ -201,35 +201,46 @@ impl Processor {
 
         // Handle inline bibliography blocks
         if has_blocks {
-            // For inline blocks, we need to process the original content to preserve block structure
-            // Process citations but don't render blocks yet
             let blocks = parsed.bibliography_blocks.clone();
+
+            // Replace each block with a stable placeholder before citation rendering so
+            // that citation-text length changes don't corrupt the block byte offsets.
+            let mut staged = content.to_string();
+            for (i, block) in blocks.iter().enumerate().rev() {
+                let placeholder = format!("\x00BIBBLOCK{i}\x00");
+                staged.replace_range(block.start..block.end, &placeholder);
+            }
+
+            // Re-parse on the placeholder content so citation offsets are correct.
+            let parsed_staged = parser.parse_document(&staged);
             let rendered = if self.is_note_style() {
-                self.process_note_document::<F>(content, parsed)
+                self.process_note_document::<F>(&staged, parsed_staged)
             } else {
-                self.process_inline_document::<F>(content, parsed)
+                self.process_inline_document::<F>(&staged, parsed_staged)
             };
 
-            // Replace blocks with bibliographies (process right-to-left to preserve offsets)
+            // Swap placeholders for rendered bibliographies.
             let mut result = rendered;
-            for block in blocks.iter().rev() {
-                let bib_content = self.render_bibliography_for_group::<F>(&block.group);
-                if let Some(heading) = &block.group.heading {
-                    let heading_text = self.resolve_group_heading(heading).unwrap_or_default();
-                    let heading_output = match format {
-                        DocumentFormat::Latex => {
-                            format!("\\subsection*{{{}}}\n\n", heading_text)
-                        }
-                        _ => format!("## {}\n\n", heading_text),
+            for (i, block) in blocks.iter().enumerate() {
+                let placeholder = format!("\x00BIBBLOCK{i}\x00");
+                // Render without heading so render_with_custom_groups doesn't emit one;
+                // we emit the heading ourselves at the correct document level (##).
+                let mut headingless = block.group.clone();
+                let heading = headingless.heading.take();
+                let bib_content = self.render_bibliography_for_group::<F>(&headingless);
+                let replacement = if let Some(h) = heading {
+                    let heading_text = self.resolve_group_heading(&h).unwrap_or_default();
+                    let prefix = match format {
+                        DocumentFormat::Latex => format!("\\subsection*{{{heading_text}}}\n\n"),
+                        _ => format!("## {heading_text}\n\n"),
                     };
-                    let replacement = format!("{}{}", heading_output, bib_content);
-                    if block.end <= result.len() {
-                        result.replace_range(block.start..block.end, &replacement);
-                    }
-                } else if block.end <= result.len() {
-                    result.replace_range(block.start..block.end, &bib_content);
-                }
+                    format!("{prefix}{bib_content}")
+                } else {
+                    bib_content
+                };
+                result = result.replace(&placeholder, &replacement);
             }
+
             return match format {
                 DocumentFormat::Html => self::djot::djot_to_html(&result),
                 DocumentFormat::Djot | DocumentFormat::Plain | DocumentFormat::Latex => result,

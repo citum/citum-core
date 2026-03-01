@@ -1,4 +1,4 @@
-# Testing CSLN Document Processing
+# Testing Citum Document Processing
 
 This is a test document using the proposed Djot citation syntax.
 
@@ -19,3 +19,24 @@ Integral with locator: [+@kuhn1962, p. 10] argues...
 ## Visibility Modifiers
 
 Suppress author: [-@kuhn1962].
+
+## In-Document Bibliography Grouping
+
+Citum supports `::: bibliography :::` fenced divs to place and filter
+bibliography sections inline. Each block renders independently; the
+default appended bibliography is suppressed when any block is present.
+
+### Unfiltered (all references)
+
+::: bibliography
+:::
+
+### Filtered by type
+
+{ type="article-journal" title="Journal Articles" }
+::: bibliography
+:::
+
+{ type="book" title="Books" }
+::: bibliography
+:::

@@ -1,0 +1,37 @@
+---
+bibliography:
+  - id: articles
+    heading:
+      literal: "Journal Articles"
+    selector:
+      type: article-journal
+      cited: visible
+  - id: books
+    heading:
+      literal: "Books"
+    selector:
+      type: book
+  - id: rest
+    heading:
+      literal: "Other References"
+    selector: {}
+---
+
+# Document with Frontmatter Bibliography Config
+
+This document uses YAML frontmatter to declare bibliography grouping.
+The `bibliography:` key accepts the same `BibliographyGroup` schema
+used in Citum styles, making it straightforward to copy groups from
+a style into a document when per-document customisation is needed.
+
+Frontmatter groups override the style's bibliography groups for this
+document only. In-document `::: bibliography :::` blocks take
+precedence over frontmatter if both are present.
+
+## Citations
+
+Parenthetical: [@kuhn1962; @watson1953].
+
+Integral: [+@smith2010] surveys the broader literature.
+
+Book reference: [@brown1954].

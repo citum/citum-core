@@ -812,8 +812,44 @@ impl Processor {
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
+        use crate::grouping::{GroupSorter, SelectorEvaluator};
+
         let processed = self.process_references();
-        self.render_with_custom_groups::<F>(&processed.bibliography, std::slice::from_ref(group))
+        let bibliography = &processed.bibliography;
+
+        let fmt = F::default();
+        let cited_ids = self.cited_ids.borrow();
+        let evaluator = SelectorEvaluator::new(&cited_ids);
+        let sorter = GroupSorter::new(&self.locale);
+
+        let matching_refs: Vec<&Reference> = bibliography
+            .iter()
+            .filter_map(|entry| {
+                self.bibliography
+                    .get(&entry.id)
+                    .filter(|reference| evaluator.matches(reference, &group.selector))
+            })
+            .collect();
+
+        if matching_refs.is_empty() {
+            return fmt.finish(String::new());
+        }
+
+        let sorted_refs = if let Some(sort_spec) = &group.sort {
+            sorter.sort_references(matching_refs, &sort_spec.resolve())
+        } else {
+            matching_refs
+        };
+
+        let entries: Vec<ProcEntry> = sorted_refs
+            .into_iter()
+            .filter_map(|r| {
+                let id = r.id()?;
+                bibliography.iter().find(|e| e.id == id).cloned()
+            })
+            .collect();
+
+        fmt.finish(crate::render::refs_to_string_with_format::<F>(entries))
     }
 
     fn resolve_group_heading(&self, heading: &citum_schema::GroupHeading) -> Option<String> {
