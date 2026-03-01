@@ -15,6 +15,15 @@ use citum_schema::locale::Locale;
 
 use crate::reference::Reference;
 
+fn compare_optional_years(a_year: Option<i32>, b_year: Option<i32>) -> std::cmp::Ordering {
+    match (a_year, b_year) {
+        (Some(a), Some(b)) => a.cmp(&b),
+        (Some(_), None) => std::cmp::Ordering::Less,
+        (None, Some(_)) => std::cmp::Ordering::Greater,
+        (None, None) => std::cmp::Ordering::Equal,
+    }
+}
+
 pub struct GroupSorter<'a> {
     locale: &'a Locale,
 }
@@ -227,12 +236,12 @@ impl<'a> GroupSorter<'a> {
         let a_year = a
             .issued()
             .and_then(|d| d.year().parse::<i32>().ok())
-            .unwrap_or(0);
+            .filter(|year| *year != 0);
         let b_year = b
             .issued()
             .and_then(|d| d.year().parse::<i32>().ok())
-            .unwrap_or(0);
-        a_year.cmp(&b_year)
+            .filter(|year| *year != 0);
+        compare_optional_years(a_year, b_year)
     }
 
     /// Compare by custom field.
@@ -383,6 +392,36 @@ mod tests {
         assert_eq!(refs[0].id().unwrap(), "r2"); // 2020
         assert_eq!(refs[1].id().unwrap(), "r3"); // 2005
         assert_eq!(refs[2].id().unwrap(), "r1"); // 1990
+    }
+
+    #[test]
+    fn test_issued_ascending_places_undated_last() {
+        let locale = make_locale();
+        let sorter = GroupSorter::new(&locale);
+
+        let dated_early = make_reference("r1", "book", "Smith", "Book D", 1999);
+        let dated_late = make_reference("r2", "book", "Jones", "Book B", 2000);
+        let mut undated = make_reference("r3", "book", "Brown", "Book A", 2000);
+        if let Reference::Monograph(monograph) = &mut undated {
+            monograph.issued = citum_schema::reference::EdtfString(String::new());
+        }
+
+        let mut refs = vec![&undated, &dated_late, &dated_early];
+
+        let sort_spec = GroupSort {
+            template: vec![GroupSortKey {
+                key: GroupSortKeyType::Issued,
+                ascending: true,
+                order: None,
+                sort_order: None,
+            }],
+        };
+
+        refs = sorter.sort_references(refs, &sort_spec);
+
+        assert_eq!(refs[0].id().unwrap(), "r1");
+        assert_eq!(refs[1].id().unwrap(), "r2");
+        assert_eq!(refs[2].id().unwrap(), "r3");
     }
 
     #[test]
