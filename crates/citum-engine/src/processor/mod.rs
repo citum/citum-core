@@ -804,6 +804,18 @@ impl Processor {
         self.render_with_legacy_grouping::<F>(&processed.bibliography)
     }
 
+    /// Render bibliography for a specific group selector.
+    pub(crate) fn render_bibliography_for_group<F>(
+        &self,
+        group: &citum_schema::BibliographyGroup,
+    ) -> String
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let processed = self.process_references();
+        self.render_with_custom_groups::<F>(&processed.bibliography, std::slice::from_ref(group))
+    }
+
     fn resolve_group_heading(&self, heading: &citum_schema::GroupHeading) -> Option<String> {
         match heading {
             citum_schema::GroupHeading::Literal { literal } => Some(literal.clone()),

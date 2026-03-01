@@ -7,6 +7,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 pub mod djot;
 
+pub use djot::BibliographyBlock;
+
 #[cfg(test)]
 mod tests;
 
@@ -99,6 +101,10 @@ pub struct ParsedDocument {
     pub manual_note_order: Vec<String>,
     pub(crate) manual_note_references: Vec<ManualNoteReference>,
     pub(crate) manual_note_labels: HashSet<String>,
+    /// Bibliography blocks found in the document.
+    pub bibliography_blocks: Vec<djot::BibliographyBlock>,
+    /// Bibliography groups from YAML frontmatter.
+    pub frontmatter_groups: Option<Vec<citum_schema::grouping::BibliographyGroup>>,
 }
 
 /// A trait for document parsers that can identify citations.
@@ -165,6 +171,72 @@ impl Processor {
     {
         let parsed = parser.parse_document(content);
 
+        // Check what mode we're in before consuming parsed
+        let has_frontmatter = parsed.frontmatter_groups.is_some();
+        let has_blocks = !parsed.bibliography_blocks.is_empty();
+
+        // Handle frontmatter groups if present (check before inline blocks)
+        if has_frontmatter {
+            let groups = parsed.frontmatter_groups.as_ref().unwrap().clone();
+            let rendered = if self.is_note_style() {
+                self.process_note_document::<F>(content, parsed)
+            } else {
+                self.process_inline_document::<F>(content, parsed)
+            };
+
+            let bib_content = self
+                .render_with_custom_groups::<F>(&self.process_references().bibliography, &groups);
+            let bib_heading = match format {
+                DocumentFormat::Latex => "\n\n\\section*{Bibliography}\n\n",
+                _ => "\n\n# Bibliography\n\n",
+            };
+            let mut result = rendered;
+            result.push_str(bib_heading);
+            result.push_str(&bib_content);
+            return match format {
+                DocumentFormat::Html => self::djot::djot_to_html(&result),
+                DocumentFormat::Djot | DocumentFormat::Plain | DocumentFormat::Latex => result,
+            };
+        }
+
+        // Handle inline bibliography blocks
+        if has_blocks {
+            // For inline blocks, we need to process the original content to preserve block structure
+            // Process citations but don't render blocks yet
+            let blocks = parsed.bibliography_blocks.clone();
+            let rendered = if self.is_note_style() {
+                self.process_note_document::<F>(content, parsed)
+            } else {
+                self.process_inline_document::<F>(content, parsed)
+            };
+
+            // Replace blocks with bibliographies (process right-to-left to preserve offsets)
+            let mut result = rendered;
+            for block in blocks.iter().rev() {
+                let bib_content = self.render_bibliography_for_group::<F>(&block.group);
+                if let Some(heading) = &block.group.heading {
+                    let heading_text = self.resolve_group_heading(heading).unwrap_or_default();
+                    let heading_output = match format {
+                        DocumentFormat::Latex => {
+                            format!("\\subsection*{{{}}}\n\n", heading_text)
+                        }
+                        _ => format!("## {}\n\n", heading_text),
+                    };
+                    let replacement = format!("{}{}", heading_output, bib_content);
+                    if block.end <= result.len() {
+                        result.replace_range(block.start..block.end, &replacement);
+                    }
+                } else if block.end <= result.len() {
+                    result.replace_range(block.start..block.end, &bib_content);
+                }
+            }
+            return match format {
+                DocumentFormat::Html => self::djot::djot_to_html(&result),
+                DocumentFormat::Djot | DocumentFormat::Plain | DocumentFormat::Latex => result,
+            };
+        }
+
+        // Default behavior: append bibliography with heading
         let rendered = if self.is_note_style() {
             self.process_note_document::<F>(content, parsed)
         } else {

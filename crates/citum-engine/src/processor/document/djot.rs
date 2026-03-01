@@ -10,7 +10,8 @@ use super::{
 };
 use crate::{Citation, CitationItem};
 use citum_schema::citation::{CitationMode, LocatorType};
-use jotdown::{Container, Event, Parser};
+use citum_schema::grouping::BibliographyGroup;
+use jotdown::{Attributes, Container, Event, Parser};
 use std::collections::HashSet;
 use std::ops::Range;
 use winnow::Parser as WinnowParser;
@@ -23,6 +24,17 @@ use winnow::token::{take_until, take_while};
 struct FootnoteDefinitionRange {
     label: String,
     content: Range<usize>,
+}
+
+/// A bibliography block parsed from djot source.
+#[derive(Debug, Clone)]
+pub struct BibliographyBlock {
+    /// Byte offset of the opening `:::` in source.
+    pub start: usize,
+    /// Byte offset past the closing `:::`.
+    pub end: usize,
+    /// The bibliography group for this block.
+    pub group: BibliographyGroup,
 }
 
 /// A parser for Djot citations using winnow.
@@ -47,8 +59,11 @@ fn parse_integral_modifier(input: &mut &str) -> winnow::Result<bool, ContextErro
 
 impl CitationParser for DjotParser {
     fn parse_document(&self, content: &str) -> ParsedDocument {
+        // Try to parse frontmatter and get remaining content
+        let (frontmatter_groups, remaining_content) = parse_frontmatter(content);
+
         let (manual_note_references, manual_note_labels, footnote_definitions) =
-            scan_manual_notes(content);
+            scan_manual_notes(remaining_content);
 
         let mut manual_note_order = Vec::new();
         let mut seen_manual = HashSet::new();
@@ -58,7 +73,7 @@ impl CitationParser for DjotParser {
             }
         }
 
-        let citations = find_citations(content)
+        let citations = find_citations(remaining_content)
             .into_iter()
             .map(|(start, end, citation)| ParsedCitation {
                 start,
@@ -68,11 +83,16 @@ impl CitationParser for DjotParser {
             })
             .collect();
 
+        // Scan for inline bibliography blocks in remaining content
+        let bibliography_blocks = scan_bibliography_blocks(remaining_content);
+
         ParsedDocument {
             citations,
             manual_note_order,
             manual_note_references,
             manual_note_labels,
+            bibliography_blocks,
+            frontmatter_groups,
         }
     }
 }
@@ -287,6 +307,85 @@ fn map_label_str(s: &str) -> Option<LocatorType> {
         "col" | "column" => Some(LocatorType::Column),
         _ => None,
     }
+}
+
+/// Parse YAML frontmatter from content.
+/// Returns (Option<groups>, remaining_content).
+fn parse_frontmatter(content: &str) -> (Option<Vec<BibliographyGroup>>, &str) {
+    let trimmed = content.trim_start();
+    if !trimmed.starts_with("---") {
+        return (None, content);
+    }
+
+    let after_opening = &trimmed[3..];
+    if let Some(closing_pos) = after_opening.find("---") {
+        let frontmatter_content = &after_opening[..closing_pos];
+        let remaining = &after_opening[closing_pos + 3..].trim_start();
+
+        match serde_yaml::from_str::<serde_yaml::Value>(frontmatter_content) {
+            Ok(value) => {
+                if let Some(bib_value) = value.get("bibliography")
+                    && let Ok(groups) =
+                        serde_yaml::from_value::<Vec<BibliographyGroup>>(bib_value.clone())
+                {
+                    return (Some(groups), remaining);
+                }
+                (None, remaining)
+            }
+            Err(_) => (None, remaining),
+        }
+    } else {
+        (None, content)
+    }
+}
+
+/// Scan document for inline bibliography blocks (`::: bibliography :::`)
+/// and extract their metadata from attributes.
+fn scan_bibliography_blocks(content: &str) -> Vec<BibliographyBlock> {
+    let mut blocks = Vec::new();
+    let mut div_stack: Vec<(usize, String)> = Vec::new();
+
+    for (event, range) in Parser::new(content).into_offset_iter() {
+        match event {
+            Event::Start(Container::Div { class }, attrs) => {
+                if class.contains("bibliography") {
+                    div_stack.push((range.start, extract_group_from_attrs(class, attrs)));
+                }
+            }
+            Event::End(Container::Div { class }) => {
+                if class.contains("bibliography")
+                    && let Some((start, group_id)) = div_stack.pop()
+                    && let Ok(group) = serde_yaml::from_str::<BibliographyGroup>(&group_id)
+                {
+                    blocks.push(BibliographyBlock {
+                        start,
+                        end: range.end,
+                        group,
+                    });
+                }
+            }
+            _ => {}
+        }
+    }
+
+    blocks
+}
+
+/// Extract bibliography group definition from div attributes.
+fn extract_group_from_attrs(_class: &str, attrs: Attributes) -> String {
+    let mut group_yaml = String::from("id: default\nselector: {}\n");
+
+    // Parse attributes into YAML-like structure
+    for (kind, value) in attrs {
+        if let Some(key) = kind.key() {
+            let val_str = value.to_string();
+            if key == "title" {
+                group_yaml.push_str(&format!("heading:\n  literal: \"{}\"\n", val_str));
+            }
+        }
+    }
+
+    group_yaml
 }
 
 /// Convert Djot markup to HTML using jotdown.

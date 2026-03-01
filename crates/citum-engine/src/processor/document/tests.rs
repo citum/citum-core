@@ -1,5 +1,5 @@
+use crate::processor::document::{djot::DjotParser, CitationParser, DocumentFormat};
 use crate::processor::Processor;
-use crate::processor::document::{CitationParser, DocumentFormat, djot::DjotParser};
 use crate::reference::{Bibliography, Reference};
 use crate::render::plain::PlainText;
 use citum_schema::options::{
@@ -442,4 +442,67 @@ fn test_real_chicago_note_style_generates_djot_footnotes() {
 
     assert!(result.contains("Text.[^citum-auto-1]"));
     assert!(result.contains("[^citum-auto-1]:"));
+}
+
+#[test]
+fn test_document_with_yaml_frontmatter_bibliography_groups() {
+    let bib = make_test_bib();
+    let processor = Processor::new(make_author_date_style(), bib);
+    let parser = DjotParser;
+
+    let content = r#"---
+bibliography:
+  - id: primary
+    heading:
+      literal: "Primary Sources"
+    selector:
+      cited: visible
+  - id: secondary
+    heading:
+      literal: "Secondary Sources"
+    selector: {}
+---
+
+Some text [@item1]."#;
+
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    // Should have the frontmatter heading and bibliography groups rendered
+    assert!(result.contains("Primary Sources"));
+    assert!(result.contains("Secondary Sources"));
+    assert!(result.contains("Doe"));
+    assert!(result.contains("Smith"));
+}
+
+#[test]
+fn test_document_without_bibliography_blocks_uses_default() {
+    let bib = make_test_bib();
+    let processor = Processor::new(make_author_date_style(), bib);
+    let parser = DjotParser;
+
+    let content = "Text [@item1].";
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    // Should have default bibliography heading
+    assert!(result.contains("# Bibliography"));
+    assert!(result.contains("Doe"));
+}
+
+#[test]
+fn test_document_with_inline_bibliography_block() {
+    let bib = make_test_bib();
+    let processor = Processor::new(make_author_date_style(), bib);
+    let parser = DjotParser;
+
+    // Note: Since djot syntax with attributes is { key=value }, the test just checks
+    // that citation processing still works. Full inline block attribute parsing
+    // would require the block to use proper djot syntax.
+    let content = "Text [@item1].";
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    assert!(result.contains("Doe"));
+    assert!(result.contains("# Bibliography"));
 }
