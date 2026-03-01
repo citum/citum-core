@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Miscellaneous Tasks
+
+- **tooling**: Regenerate changelog via git-cliff
+
+## [0.7.0] - 2026-03-01
+
 ### Bug Fixes
 
 - **processor**: Stabilize numeric cite ordering
