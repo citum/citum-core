@@ -427,14 +427,26 @@ impl<'a> Renderer<'a> {
     {
         use crate::reference::CitationItem;
 
-        // Group adjacent items by author key (respecting substitution)
+        let preserve_individual_citations = items.iter().any(|item| {
+            self.hints
+                .get(&item.id)
+                .is_some_and(|hints| hints.min_names_to_show.is_some() || hints.expand_given_names)
+        });
+
+        // Group adjacent items by author key (respecting substitution). When a cite
+        // already depends on name expansion for disambiguation, keep each item
+        // separate instead of collapsing by author.
         let mut groups: Vec<(String, Vec<&CitationItem>)> = Vec::new();
 
         for item in items {
             let reference = self.bibliography.get(&item.id);
-            let author_key = reference
-                .map(|r| self.get_author_grouping_key(r))
-                .unwrap_or_default();
+            let author_key = if preserve_individual_citations {
+                item.id.clone()
+            } else {
+                reference
+                    .map(|r| self.get_author_grouping_key(r))
+                    .unwrap_or_default()
+            };
 
             // Check if this item has the same author as the previous group
             if !groups.is_empty()

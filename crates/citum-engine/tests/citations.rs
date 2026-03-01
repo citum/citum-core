@@ -9,7 +9,11 @@ use common::*;
 use citum_engine::Processor;
 use citum_schema::{
     CitationSpec, Style, StyleInfo,
-    options::{Config, Processing},
+    citation::{Citation, CitationItem, CitationMode},
+    options::{
+        AndOptions, Config, ContributorConfig, DelimiterPrecedesLast, DisplayAsSort, Processing,
+        ProcessingCustom, ShortenListOptions,
+    },
 };
 
 // --- Helper Functions ---
@@ -49,14 +53,126 @@ fn test_disambiguate_yearsuffixandsort() {
     run_test_case_native(&input, &citation_items, expected, "citation");
 }
 
-/// Test empty input handling (placeholder test).
+/// Test the upstream YearSuffixAtTwoLevels disambiguation cascade.
 #[test]
 fn test_disambiguate_yearsuffixattwolevels() {
-    let input = vec![];
-    let citation_items: Vec<Vec<&str>> = vec![];
-    let expected = "";
+    let input = vec![
+        make_book_multi_author(
+            "ITEM-1",
+            vec![("Smith", "John"), ("Jones", "John"), ("Brown", "John")],
+            1986,
+            "Book A",
+        ),
+        make_book_multi_author(
+            "ITEM-2",
+            vec![("Smith", "John"), ("Jones", "John"), ("Brown", "John")],
+            1986,
+            "Book B",
+        ),
+        make_book_multi_author(
+            "ITEM-3",
+            vec![
+                ("Smith", "John"),
+                ("Jones", "John"),
+                ("Brown", "John"),
+                ("Green", "John"),
+            ],
+            1986,
+            "Book C",
+        ),
+        make_book_multi_author(
+            "ITEM-4",
+            vec![
+                ("Smith", "John"),
+                ("Jones", "John"),
+                ("Brown", "John"),
+                ("Green", "John"),
+            ],
+            1986,
+            "Book D",
+        ),
+    ];
 
-    run_test_case_native(&input, &citation_items, expected, "citation");
+    let mut style = build_author_date_style(true, true, false, Some(3), Some(1));
+    style.options = Some(Config {
+        processing: Some(Processing::Custom(ProcessingCustom {
+            disambiguate: Some(citum_schema::options::Disambiguation {
+                year_suffix: true,
+                names: true,
+                add_givenname: false,
+            }),
+            ..Default::default()
+        })),
+        contributors: Some(ContributorConfig {
+            display_as_sort: Some(DisplayAsSort::First),
+            initialize_with: Some("".to_string()),
+            shorten: Some(ShortenListOptions {
+                min: 3,
+                use_first: 1,
+                ..Default::default()
+            }),
+            and: Some(AndOptions::Symbol),
+            delimiter_precedes_last: Some(DelimiterPrecedesLast::Never),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    style.citation = Some(CitationSpec {
+        sort: build_author_date_style(true, true, false, Some(3), Some(1))
+            .citation
+            .as_ref()
+            .and_then(|spec| spec.sort.clone()),
+        template: Some(vec![
+            citum_schema::tc_contributor!(Author, Short),
+            citum_schema::tc_date!(
+                Issued,
+                Year,
+                wrap = citum_schema::template::WrapPunctuation::Parentheses
+            ),
+        ]),
+        delimiter: Some(" ".to_string()),
+        multi_cite_delimiter: Some("; ".to_string()),
+        ..Default::default()
+    });
+
+    let mut bibliography = indexmap::IndexMap::new();
+    for item in input {
+        if let Some(id) = item.id() {
+            bibliography.insert(id, item);
+        }
+    }
+
+    let processor = Processor::new(style, bibliography);
+    let citation = Citation {
+        items: vec![
+            CitationItem {
+                id: "ITEM-1".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ITEM-2".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ITEM-3".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ITEM-4".to_string(),
+                ..Default::default()
+            },
+        ],
+        mode: CitationMode::NonIntegral,
+        ..Default::default()
+    };
+
+    let result = processor
+        .process_citation(&citation)
+        .expect("Failed to process two-level year-suffix disambiguation citation");
+    assert_eq!(
+        result,
+        "Smith, Jones & Brown (1986a); Smith, Jones & Brown (1986b); Smith, Jones, Brown, et al. (1986a); Smith, Jones, Brown, et al. (1986b)"
+    );
 }
 
 /// Test year suffix disambiguation with multiple identical references.

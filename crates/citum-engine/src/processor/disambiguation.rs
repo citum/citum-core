@@ -163,26 +163,64 @@ impl<'a> Disambiguator<'a> {
                         group_len,
                         false,
                         &author_group_lengths,
+                        None,
                     );
                 } else {
-                    // 1. Try expanding names (et-al expansion)
-                    if add_names && let Some(n) = self.check_names_resolution(&group) {
-                        for (i, reference) in group.iter().enumerate() {
-                            let author_key = self.make_author_key(reference);
-                            let global_author_length =
-                                author_group_lengths.get(&author_key).copied().unwrap_or(1);
-                            hints.insert(
-                                reference.id().unwrap_or_default(),
-                                ProcHints {
-                                    disamb_condition: false,
-                                    group_index: i + 1,
-                                    group_length: global_author_length,
-                                    group_key: key.clone(),
-                                    expand_given_names: false,
-                                    min_names_to_show: Some(n),
-                                    ..Default::default()
-                                },
-                            );
+                    // 1. Try expanding names (et-al expansion). Partial separation is useful:
+                    // if some items split into distinct subgroups, keep that expansion and
+                    // apply year-suffix only within the remaining identical subgroups.
+                    if add_names
+                        && let Some((n, partitions)) = self.partition_by_name_expansion(&group)
+                    {
+                        for subgroup in partitions.values() {
+                            if subgroup.len() == 1 {
+                                let reference = subgroup[0];
+                                let author_key = self.make_author_key(reference);
+                                let global_author_length =
+                                    author_group_lengths.get(&author_key).copied().unwrap_or(1);
+                                hints.insert(
+                                    reference.id().unwrap_or_default(),
+                                    ProcHints {
+                                        disamb_condition: false,
+                                        group_index: 1,
+                                        group_length: global_author_length,
+                                        group_key: key.clone(),
+                                        expand_given_names: false,
+                                        min_names_to_show: Some(n),
+                                        ..Default::default()
+                                    },
+                                );
+                            } else if add_givenname
+                                && self.check_givenname_resolution(subgroup, Some(n))
+                            {
+                                for (idx, reference) in subgroup.iter().enumerate() {
+                                    let author_key = self.make_author_key(reference);
+                                    let global_author_length =
+                                        author_group_lengths.get(&author_key).copied().unwrap_or(1);
+                                    hints.insert(
+                                        reference.id().unwrap_or_default(),
+                                        ProcHints {
+                                            disamb_condition: false,
+                                            group_index: idx + 1,
+                                            group_length: global_author_length,
+                                            group_key: key.clone(),
+                                            expand_given_names: true,
+                                            min_names_to_show: Some(n),
+                                            ..Default::default()
+                                        },
+                                    );
+                                }
+                            } else {
+                                self.apply_year_suffix(
+                                    &mut hints,
+                                    subgroup,
+                                    key.clone(),
+                                    subgroup.len(),
+                                    false,
+                                    &author_group_lengths,
+                                    Some(n),
+                                );
+                            }
                         }
                         resolved = true;
                     }
@@ -252,6 +290,7 @@ impl<'a> Disambiguator<'a> {
                             group_len,
                             false,
                             &author_group_lengths,
+                            None,
                         );
                     }
                 }
@@ -273,6 +312,7 @@ impl<'a> Disambiguator<'a> {
         hints
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn apply_year_suffix(
         &self,
         hints: &mut HashMap<String, ProcHints>,
@@ -281,6 +321,7 @@ impl<'a> Disambiguator<'a> {
         _len: usize,
         expand_names: bool,
         author_group_lengths: &HashMap<String, usize>,
+        min_names_to_show: Option<usize>,
     ) {
         let sorted_group = if let Some(sort_spec) = self.group_sort {
             // Use GroupSorter for per-group ordering
@@ -328,15 +369,19 @@ impl<'a> Disambiguator<'a> {
                     group_length: global_author_length,
                     group_key: key.clone(),
                     expand_given_names: expand_names,
-                    min_names_to_show: None,
+                    min_names_to_show,
                     ..Default::default()
                 },
             );
         }
     }
 
-    /// Check if showing more names resolves ambiguity in the group.
-    fn check_names_resolution(&self, group: &[&Reference]) -> Option<usize> {
+    /// Partition a collision group by showing more names, preserving `et al.`
+    /// distinction when some references still have hidden trailing names.
+    fn partition_by_name_expansion<'b>(
+        &self,
+        group: &[&'b Reference],
+    ) -> Option<(usize, HashMap<String, Vec<&'b Reference>>)> {
         let max_authors = group
             .iter()
             .map(|r| r.author().map(|a| a.to_names_vec().len()).unwrap_or(0))
@@ -344,29 +389,39 @@ impl<'a> Disambiguator<'a> {
             .unwrap_or(0);
 
         for n in 2..=max_authors {
-            let mut seen = HashSet::new();
-            let mut collision = false;
+            let mut partitions: HashMap<String, Vec<&Reference>> = HashMap::new();
             for reference in group {
-                let key = if let Some(a) = reference.author() {
-                    a.to_names_vec()
-                        .iter()
-                        .take(n)
-                        .map(|name| name.family_or_literal().to_lowercase())
-                        .collect::<Vec<_>>()
-                        .join("|")
-                } else {
-                    "".to_string()
-                };
-                if !seen.insert(key) {
-                    collision = true;
-                    break;
-                }
+                partitions
+                    .entry(self.make_name_expansion_key(reference, n))
+                    .or_default()
+                    .push(*reference);
             }
-            if !collision {
-                return Some(n);
+
+            if partitions.len() > 1 {
+                return Some((n, partitions));
             }
         }
+
         None
+    }
+
+    fn make_name_expansion_key(&self, reference: &Reference, n: usize) -> String {
+        if let Some(authors) = reference.author() {
+            let names = authors.to_names_vec();
+            let mut parts = names
+                .iter()
+                .take(n)
+                .map(|name| name.family_or_literal().to_lowercase())
+                .collect::<Vec<_>>();
+
+            if names.len() > n {
+                parts.push("et-al".to_string());
+            }
+
+            parts.join("|")
+        } else {
+            String::new()
+        }
     }
 
     /// Check if expanding to full names resolves ambiguity in the group.

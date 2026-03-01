@@ -1,0 +1,251 @@
+{
+  "metadata": {
+    "title": "CSL Native Test Intake Wave 1",
+    "updated_at": "2026-03-01",
+    "purpose": "Curated multi-signal intake candidates for native Citum regression coverage.",
+    "selection_policy": [
+      "Hayagriva issue 327 is a useful external signal, not the intake queue.",
+      "Prioritize cases that are architecturally relevant to Citum, likely to affect oracle fidelity, or sensitive to Typst/plain rendering differences.",
+      "Defer cases that require unsupported CSL processor features or second-field-align style layout semantics."
+    ]
+  },
+  "source_weights": {
+    "citum_relevance": "high",
+    "oracle_or_style_risk": "high",
+    "current_native_gap": "high",
+    "renderer_sensitivity": "medium",
+    "hayagriva_issue_327": "secondary"
+  },
+  "entries": [
+    {
+      "id": "disambiguate_YearSuffixAndSort",
+      "area": "citation-disambiguation",
+      "priority": "p0",
+      "decision": "integrate-now",
+      "current_coverage": "partial-native",
+      "source_signals": ["hayagriva-327", "current-native-gap"],
+      "typst_sensitive": false,
+      "rationale": "Already represented indirectly in native tests, but should be traceable to the upstream CSL fixture."
+    },
+    {
+      "id": "disambiguate_YearSuffixAtTwoLevels",
+      "area": "citation-disambiguation",
+      "priority": "p0",
+      "decision": "integrate-now",
+      "current_coverage": "placeholder-native",
+      "source_signals": ["hayagriva-327", "current-native-gap"],
+      "typst_sensitive": false,
+      "rationale": "This is the clearest existing native placeholder and should become a real regression test first."
+    },
+    {
+      "id": "disambiguate_ByCiteMinimalGivennameExpandMinimalNames",
+      "area": "citation-disambiguation",
+      "priority": "p0",
+      "decision": "integrate-now",
+      "current_coverage": "no-native",
+      "source_signals": ["hayagriva-327", "current-native-gap"],
+      "typst_sensitive": false,
+      "rationale": "Exercises incremental by-cite given-name expansion, an area where native coverage is still narrow."
+    },
+    {
+      "id": "disambiguate_PrimaryNameWithInitialsLimitedToPrimary",
+      "area": "citation-disambiguation",
+      "priority": "p0",
+      "decision": "integrate-now",
+      "current_coverage": "no-native",
+      "source_signals": ["hayagriva-327", "current-native-gap"],
+      "typst_sensitive": false,
+      "rationale": "Matches current Citum work on initials and primary-name handling without depending on unsupported processor APIs."
+    },
+    {
+      "id": "disambiguate_BasedOnEtAlSubsequent",
+      "area": "citation-disambiguation",
+      "priority": "p1",
+      "decision": "integrate-now",
+      "current_coverage": "partial-native",
+      "source_signals": ["local-csl-conversion-scaffold", "current-native-gap"],
+      "typst_sensitive": false,
+      "rationale": "Useful local control case even though the exact Hayagriva issue name differs."
+    },
+    {
+      "id": "bugreports_ContainerTitleShort",
+      "area": "variables",
+      "priority": "p0",
+      "decision": "integrate-now",
+      "current_coverage": "no-native",
+      "source_signals": ["hayagriva-327", "oracle-or-style-risk"],
+      "typst_sensitive": false,
+      "rationale": "Container-title short form is style-critical and aligns with known citation/bibliography fidelity concerns."
+    },
+    {
+      "id": "variables_ContainerTitleShort",
+      "area": "variables",
+      "priority": "p0",
+      "decision": "integrate-now",
+      "current_coverage": "no-native",
+      "source_signals": ["hayagriva-327", "oracle-or-style-risk"],
+      "typst_sensitive": false,
+      "rationale": "Pairs with the bugreport variant to give a focused variable-level regression."
+    },
+    {
+      "id": "date_SortEmptyDatesBibliography",
+      "area": "bibliography-sorting",
+      "priority": "p0",
+      "decision": "integrate-now",
+      "current_coverage": "oracle-only",
+      "source_signals": ["hayagriva-327", "oracle-or-style-risk"],
+      "typst_sensitive": false,
+      "rationale": "Sorting with empty dates is a direct bibliography correctness case and is not Typst-specific."
+    },
+    {
+      "id": "date_SortEmptyDatesCitation",
+      "area": "citation-sorting",
+      "priority": "p1",
+      "decision": "integrate-now",
+      "current_coverage": "oracle-only",
+      "source_signals": ["hayagriva-327", "oracle-or-style-risk"],
+      "typst_sensitive": false,
+      "rationale": "Complements the bibliography case and guards ordering behavior before rendering."
+    },
+    {
+      "id": "magic_SubsequentAuthorSubstitute",
+      "area": "bibliography-rendering",
+      "priority": "p1",
+      "decision": "integrate-now",
+      "current_coverage": "partial-native",
+      "source_signals": ["hayagriva-327", "oracle-or-style-risk"],
+      "typst_sensitive": false,
+      "rationale": "The repo already tests substitute basics; this should become a traceable CSL-sourced regression."
+    },
+    {
+      "id": "name_HyphenatedNonDroppingParticle1",
+      "area": "names",
+      "priority": "p1",
+      "decision": "integrate-now",
+      "current_coverage": "no-native",
+      "source_signals": ["hayagriva-327", "multilingual-name-risk"],
+      "typst_sensitive": false,
+      "rationale": "Targets name particle handling, which is architecturally relevant to Citum's richer name model."
+    },
+    {
+      "id": "name_HyphenatedNonDroppingParticle2",
+      "area": "names",
+      "priority": "p1",
+      "decision": "integrate-now",
+      "current_coverage": "no-native",
+      "source_signals": ["hayagriva-327", "multilingual-name-risk"],
+      "typst_sensitive": false,
+      "rationale": "Companion case for particle handling to avoid overfitting to a single fixture."
+    },
+    {
+      "id": "textcase_SkipNameParticlesInTitleCase",
+      "area": "textcase",
+      "priority": "p1",
+      "decision": "integrate-now",
+      "current_coverage": "no-native",
+      "source_signals": ["hayagriva-327", "multilingual-name-risk"],
+      "typst_sensitive": false,
+      "rationale": "Relevant to Citum's language-aware rendering and can reveal regressions beyond the pure CSL pipeline."
+    },
+    {
+      "id": "bugreports_MovePunctuationInsideQuotesForLocator",
+      "area": "punctuation",
+      "priority": "p0",
+      "decision": "integrate-now",
+      "current_coverage": "no-native",
+      "source_signals": ["hayagriva-327", "renderer-sensitivity", "typst-followup"],
+      "typst_sensitive": true,
+      "rationale": "Combines punctuation, quoting, and locator formatting in a way that can diverge across renderers."
+    },
+    {
+      "id": "punctuation_FullMontyQuotesIn",
+      "area": "punctuation",
+      "priority": "p0",
+      "decision": "integrate-now",
+      "current_coverage": "no-native",
+      "source_signals": ["hayagriva-327", "renderer-sensitivity", "typst-followup"],
+      "typst_sensitive": true,
+      "rationale": "Renderer-visible punctuation behavior should be explicitly checked for Typst and plain output."
+    },
+    {
+      "id": "punctuation_FullMontyQuotesOut",
+      "area": "punctuation",
+      "priority": "p0",
+      "decision": "integrate-now",
+      "current_coverage": "no-native",
+      "source_signals": ["hayagriva-327", "renderer-sensitivity", "typst-followup"],
+      "typst_sensitive": true,
+      "rationale": "Paired with the quotes-in case to verify quote-placement policy rather than a single rendering path."
+    },
+    {
+      "id": "flipflop_Apostrophes",
+      "area": "rendering-flipflop",
+      "priority": "p0",
+      "decision": "integrate-now",
+      "current_coverage": "no-native",
+      "source_signals": ["hayagriva-327", "renderer-sensitivity", "typst-followup"],
+      "typst_sensitive": true,
+      "rationale": "Typst follow-up work should cover apostrophe and quote flip-flop semantics directly."
+    },
+    {
+      "id": "flipflop_LeadingSingleQuote",
+      "area": "rendering-flipflop",
+      "priority": "p0",
+      "decision": "integrate-now",
+      "current_coverage": "no-native",
+      "source_signals": ["hayagriva-327", "renderer-sensitivity", "typst-followup"],
+      "typst_sensitive": true,
+      "rationale": "Leading quote behavior is renderer-visible and easy to regress in format-specific output."
+    },
+    {
+      "id": "flipflop_StartingApostrophe",
+      "area": "rendering-flipflop",
+      "priority": "p1",
+      "decision": "integrate-now",
+      "current_coverage": "no-native",
+      "source_signals": ["hayagriva-327", "renderer-sensitivity", "typst-followup"],
+      "typst_sensitive": true,
+      "rationale": "Complements other flip-flop cases with a simpler starting-apostrophe regression."
+    },
+    {
+      "id": "display_AuthorAsHeading",
+      "area": "document-display",
+      "priority": "p1",
+      "decision": "integrate-now",
+      "current_coverage": "adjacent-native",
+      "source_signals": ["hayagriva-327", "document-grouping-risk"],
+      "typst_sensitive": true,
+      "rationale": "This is close to existing bibliography grouping and heading logic already present in document tests."
+    },
+    {
+      "id": "display_SecondFieldAlignClone",
+      "area": "document-display",
+      "priority": "p2",
+      "decision": "adapt-later",
+      "current_coverage": "no-native",
+      "source_signals": ["hayagriva-327"],
+      "typst_sensitive": true,
+      "rationale": "Second-field-align semantics do not map cleanly to the current Citum style model and should not drive Wave 1."
+    },
+    {
+      "id": "decorations_Baseline",
+      "area": "renderer-markup",
+      "priority": "p2",
+      "decision": "adapt-later",
+      "current_coverage": "no-native",
+      "source_signals": ["hayagriva-327", "renderer-sensitivity"],
+      "typst_sensitive": true,
+      "rationale": "This is more about markup normalization than bibliography semantics, so it should come after Wave 1."
+    },
+    {
+      "id": "date_InPress",
+      "area": "dates",
+      "priority": "p3",
+      "decision": "exclude-for-now",
+      "current_coverage": "unsupported",
+      "source_signals": ["hayagriva-327"],
+      "typst_sensitive": false,
+      "rationale": "The upstream issue itself marks this as unsupported due to literal/raw date handling."
+    }
+  ]
+}

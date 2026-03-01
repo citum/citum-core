@@ -47,6 +47,15 @@ cargo nextest run --test citations
 3. Test Citum-specific rendering against expected outputs
 4. Document intentional divergences from CSL 1.0
 
+**Current intake policy**:
+- Use the full local CSL suite as the candidate corpus.
+- Treat external processor reports such as Hayagriva issue `#327` as one signal,
+  not the definition of scope.
+- Prioritize native intake by Citum relevance, oracle/style risk, current native
+  coverage gaps, and renderer sensitivity.
+- See `docs/architecture/CSL_NATIVE_TEST_INTAKE_ONE_SHOT_PR_2026-03-01.md` and
+  `tests/fixtures/csl-native-intake-wave1.json`.
+
 ## Two-Phase Testing Strategy
 
 ### Phase 1: CSL 1.0 Parity (Current)
