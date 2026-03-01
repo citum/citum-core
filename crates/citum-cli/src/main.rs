@@ -34,9 +34,8 @@ const CLAP_STYLES: Styles = Styles::styled()
     version,
     about = "Modern, performant, and multilingual citation, bibliography, and document processor",
     long_about = "Citum is a Rust-based, declarative citation styling system.\n\n\
-                  It is the successor-focused evolution of CSL 1.0: styles are expressed as \
-                  YAML templates and options, then rendered by a type-safe processor \
-                  with oracle verification against `citeproc-js`.\n\n\
+                  Styles are expressed as YAML templates and options, then rendered\n\
+                  by a type-safe processor.\n\n\
                   EXAMPLES:\n  \
                   Render references:\n    \
                   citum render refs -b refs.json -s styles/apa-7th.yaml\n\n  \
