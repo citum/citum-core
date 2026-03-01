@@ -13,16 +13,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 """
 body = """
 {% if version %}\
-    ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
 {% else %}\
-    ## [unreleased]
+## [unreleased]
 {% endif %}\
 {% for group, commits in commits | group_by(attribute="group") %}
-    ### {{ group | upper_first }}
-    {% for commit in commits %}
-        - {% if commit.scope %}**{{commit.scope}}**: {% endif %}{{ commit.message | upper_first }}\
-    {% endfor %}
-{% endfor %}\n
+### {{ group | upper_first }}
+{% for scope, scoped_commits in commits | group_by(attribute="scope") %}
+{% if scope %}**{{ scope }}**
+{% endif %}\
+{% for commit in scoped_commits %}
+- {{ commit.message | upper_first }}
+{% endfor %}
+{% endfor %}
+{% endfor %}
 """
 trim = true
 
@@ -33,13 +37,36 @@ split_commits = false
 commit_parsers = [
   { message = "^feat", group = "Features" },
   { message = "^fix", group = "Bug Fixes" },
-  { message = "^doc", group = "Documentation" },
   { message = "^perf", group = "Performance" },
   { message = "^refactor", group = "Refactor" },
+  # Skip internal/low-signal doc scopes
+  { message = "^docs?\\(beans\\)", skip = true },
+  { message = "^docs?\\(claude\\)", skip = true },
+  { message = "^docs?\\(testing\\)", skip = true },
+  { message = "^docs?\\(web\\)", skip = true },
+  { message = "^docs?\\(compat\\)", skip = true },
+  { message = "^docs?\\(site\\)", skip = true },
+  { message = "^docs?\\(status\\)", skip = true },
+  { message = "^docs?\\(branding\\)", skip = true },
+  { message = "^docs?\\(readme\\)", skip = true },
+  { message = "^docs?\\(migration\\)", skip = true },
+  { message = "^docs?\\(workflow\\)", skip = true },
+  { message = "^docs?\\(styleauthor\\)", skip = true },
+  { message = "^docs?\\(index\\)", skip = true },
+  { message = "^docs?\\(citum\\)", skip = true },
+  { message = "^docs?\\(arch\\b", skip = true },
+  { message = "^doc", group = "Documentation" },
   { message = "^style", group = "Styling" },
   { message = "^test", group = "Testing" },
-  { message = "^chore\\(release\\): prepare for", skip = true },
-  { message = "^chore", group = "Miscellaneous Tasks" },
+  # Skip all chore commits (no Miscellaneous Tasks section)
+  { message = "^chore", skip = true },
+  # Skip CI, revert, and other low-signal commit types
+  { message = "^ci", skip = true },
+  { message = "^revert", skip = true },
+  { message = "^beans", skip = true },
+  { message = "^core", skip = true },
+  { message = "^examples?", skip = true },
+  { message = "^agent", skip = true },
   { body = ".*security", group = "Security" },
 ]
 protect_breaking_commits = false
