@@ -179,6 +179,30 @@ fn render_citation_html_returns_markup() {
     );
 }
 
+#[test]
+fn render_citation_typst_returns_internal_link_markup() {
+    let req = make_request(
+        11,
+        "render_citation",
+        json!({
+            "style_path": apa_style_path(),
+            "refs": hawking_refs(),
+            "output_format": "typst",
+            "citation": {
+                "id": "cite-1",
+                "items": [{"id": "ITEM-2"}]
+            }
+        }),
+    );
+    let result = dispatch(req).expect("dispatch should succeed");
+    assert_eq!(result["id"], 11);
+    let citation = result["result"].as_str().expect("result should be string");
+    assert!(
+        citation.contains("#link(<ref-ITEM-2>)"),
+        "typst citation should contain an internal link: {citation}"
+    );
+}
+
 // --- error handling ---
 
 #[test]
@@ -207,7 +231,7 @@ fn missing_refs_returns_error() {
 }
 
 #[test]
-fn unsupported_output_format_returns_error() {
+fn render_bibliography_typst_returns_labeled_markup() {
     let req = make_request(
         10,
         "render_bibliography",
@@ -217,6 +241,12 @@ fn unsupported_output_format_returns_error() {
             "output_format": "typst"
         }),
     );
-    let err = dispatch(req).expect_err("unsupported output format should error");
-    assert!(err.1.contains("unsupported output format"));
+    let result = dispatch(req).expect("dispatch should succeed");
+    assert_eq!(result["id"], 10);
+    assert_eq!(result["result"]["format"], "typst");
+    assert!(result["result"]["entries"].is_null());
+    let content = result["result"]["content"]
+        .as_str()
+        .expect("content should be a string");
+    assert!(content.contains("<ref-ITEM-2>"));
 }

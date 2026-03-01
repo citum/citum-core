@@ -1410,6 +1410,60 @@ fn test_global_title_linking_html() {
 }
 
 #[test]
+fn test_whole_entry_linking_typst() {
+    use crate::render::typst::Typst;
+    use citum_schema::options::{LinkAnchor, LinkTarget, LinksConfig};
+
+    let mut style = make_style();
+    style.options.as_mut().unwrap().links = Some(LinksConfig {
+        target: Some(LinkTarget::Url),
+        anchor: Some(LinkAnchor::Entry),
+        ..Default::default()
+    });
+
+    let mut bib = Bibliography::new();
+    bib.insert(
+        "link1".to_string(),
+        Reference::from(LegacyReference {
+            id: "link1".to_string(),
+            ref_type: "webpage".to_string(),
+            title: Some("Linked Page".to_string()),
+            url: Some("https://example.com".to_string()),
+            issued: Some(DateVariable::year(2023)),
+            ..Default::default()
+        }),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography_with_format::<Typst>();
+
+    assert!(result.contains(r#"#link("https://example.com/")["#));
+    assert!(result.contains("<ref-link1>"));
+    assert!(result.contains("Linked Page"));
+}
+
+#[test]
+fn test_typst_single_item_citation_links_to_bibliography_entry() {
+    use crate::render::typst::Typst;
+
+    let bib = make_bibliography();
+    let processor = Processor::new(make_style(), bib);
+    let citation = Citation {
+        id: Some("cite-1".to_string()),
+        items: vec![CitationItem {
+            id: "kuhn1962".to_string(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let result = processor
+        .process_citation_with_format::<Typst>(&citation)
+        .unwrap();
+    assert!(result.contains("#link(<ref-kuhn1962>)"));
+}
+
+#[test]
 fn test_numeric_integral_citation_author_year() {
     use citum_schema::options::Processing;
 

@@ -330,8 +330,8 @@
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Pluggable Output</h3>
                     <p class="text-slate-500 leading-relaxed text-sm">
-                        Generate semantic output in Plain Text, HTML, Djot, or LaTeX. High-fidelity PDF publishing
-                        workflows via native LaTeX escaping.
+                        Generate semantic output in Plain Text, HTML, Djot, LaTeX, or Typst. Build high-fidelity PDF
+                        workflows through either native Typst compilation or LaTeX integration.
                     </p>
                 </a>
 
@@ -408,7 +408,8 @@
                     <h2 class="text-4xl font-bold text-slate-900 mb-6">CLI First Workflow.</h2>
                     <p class="text-lg text-slate-500 mb-8 leading-relaxed">
                         Designed for developers and automation. Generate citations directly from your terminal or
-                        integrate into your build pipeline.
+                        integrate into your build pipeline. Typst is now the native Rust path to finished PDFs, while
+                        LuaLaTeX remains available for TeX-first workflows.
                     </p>
 
                     <div class="space-y-6">
@@ -451,6 +452,34 @@
                                 </code>
                                 <button class="text-slate-500 hover:text-white transition-colors"
                                     onclick="navigator.clipboard.writeText('citum render refs -b tests/fixtures/references-expanded.json -s mla -f latex')"
+                                    title="Copy to clipboard">
+                                    <span class="material-icons text-base">content_copy</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-900 mb-2">Render for Typst (Native Markup)</h4>
+                            <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
+                                <code class="font-mono text-sm text-slate-300">
+                                    <span class="text-primary">$</span> citum render refs -b tests/fixtures/references-expanded.json -s mla <span class="text-emerald-400">-f typst</span>
+                                </code>
+                                <button class="text-slate-500 hover:text-white transition-colors"
+                                    onclick="navigator.clipboard.writeText('citum render refs -b tests/fixtures/references-expanded.json -s mla -f typst')"
+                                    title="Copy to clipboard">
+                                    <span class="material-icons text-base">content_copy</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-900 mb-2">Compile a Typst PDF (Pure Rust)</h4>
+                            <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
+                                <code class="font-mono text-sm text-slate-300">
+                                    <span class="text-primary">$</span> cargo run -p citum --features typst-pdf -- render doc examples/document.djot -b examples/document-refs.json -s mla <span class="text-emerald-400">-f typst --pdf -o paper.pdf</span>
+                                </code>
+                                <button class="text-slate-500 hover:text-white transition-colors"
+                                    onclick="navigator.clipboard.writeText('cargo run -p citum --features typst-pdf -- render doc examples/document.djot -b examples/document-refs.json -s mla -f typst --pdf -o paper.pdf')"
                                     title="Copy to clipboard">
                                     <span class="material-icons text-base">content_copy</span>
                                 </button>

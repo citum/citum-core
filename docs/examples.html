@@ -176,6 +176,10 @@
                         <span class="material-icons text-lg opacity-60">html</span>
                         Output Formats
                     </a>
+                    <a href="#typst-pdf-publishing" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+                        <span class="material-icons text-lg opacity-60">picture_as_pdf</span>
+                        Typst PDF
+                    </a>
                     <a href="#lualatex-integration" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
                         <span class="material-icons text-lg opacity-60">integration_instructions</span>
                         LuaLaTeX
@@ -923,7 +927,7 @@ Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the Ameri
                 <p class="text-slate-600 leading-relaxed mb-6">
                     Citum supports multiple output formats with a pluggable
                     architecture. Generate semantic HTML, native LaTeX, flexible Djot for
-                    static site generators, or clean Plain Text.
+                    static site generators, native Typst markup, or clean Plain Text.
                 </p>
             </div>
 
@@ -975,6 +979,17 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
 [Smith, J. A.]<span class="text-primary">{.citum-author}</span> (2023). _The Future of Citations_<span class="text-primary">{.citum-title}</span>. Academic Press.</pre>
                         </div>
                     </div>
+
+                    <!-- Typst -->
+                    <div class="border-l-4 border-sky-500 pl-4">
+                        <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
+                            Typst Markup (-f typst)
+                        </div>
+                        <div class="bg-slate-900 rounded p-3 overflow-x-auto mt-1">
+                            <pre class="font-mono text-xs text-slate-300 leading-relaxed">
+Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith2023&gt;</pre>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -987,8 +1002,90 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                     <div class="text-sm text-slate-600 leading-relaxed">
                         <strong class="text-slate-900">Consistent Rendering:</strong>
                         The pluggable renderer system ensures that complex CSL rules (sorting, disambiguation, name
-                        formatting) are applied identically regardless of the output target. LaTeX support includes
-                        native escaping for TeX special characters.
+                        formatting) are applied identically regardless of the output target. LaTeX and Typst support include
+                        native escaping for their respective markup systems, and Typst can now be compiled to PDF directly
+                        from the CLI.
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Typst PDF Publishing -->
+        <article id="typst-pdf-publishing" class="example-card rounded-xl overflow-hidden shadow-sm scroll-mt-24">
+            <div class="p-8 bg-slate-50 border-b border-slate-200">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center text-sky-700">
+                        <span class="material-icons">picture_as_pdf</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900">
+                        Typst PDF Publishing
+                        <span class="text-xs font-normal ml-2 bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full align-middle">Native Rust path</span>
+                    </h2>
+                </div>
+                <p class="text-slate-600 leading-relaxed mb-6">
+                    Citum now supports a native Typst workflow for PDF publishing. The Rust engine renders citations,
+                    notes, and bibliography entries to Typst markup, then the CLI can compile that markup to PDF in
+                    process with the optional <code class="text-xs bg-slate-200 px-1 rounded">typst-pdf</code> feature.
+                    This keeps citation logic in Citum while giving you a modern PDF toolchain without a TeX or FFI step.
+                </p>
+                <div class="bg-slate-900 rounded-lg p-4 font-mono text-xs text-slate-300 leading-relaxed">
+                    <pre>.djot + refs.json + style.yaml
+  └─► citum render doc -f typst
+         └─► Typst markup (.typ)
+                └─► embedded Typst Rust crates
+                       └─► PDF with internal citation links and live DOI/URL links</pre>
+                </div>
+            </div>
+
+            <div class="border-b border-slate-200">
+                <div class="px-8 py-4 bg-slate-100">
+                    <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                        CLI Workflow
+                    </h3>
+                </div>
+                <div class="bg-slate-900 p-6 overflow-x-auto">
+                    <pre class="font-mono text-sm text-slate-300 leading-relaxed">
+<span class="text-slate-500"># 1. Render Typst markup</span>
+<span class="text-primary">$</span> citum render doc examples/document.djot -b examples/document-refs.json -s mla -f typst
+
+<span class="text-slate-500"># 2. Compile directly to PDF</span>
+<span class="text-primary">$</span> cargo run -p citum --features typst-pdf -- render doc examples/document.djot -b examples/document-refs.json -s mla -f typst --pdf -o paper.pdf</pre>
+                </div>
+            </div>
+
+            <div class="border-b border-slate-200">
+                <div class="px-8 py-4 bg-slate-100">
+                    <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                        What This Gives You
+                    </h3>
+                </div>
+                <div class="p-8 bg-white">
+                    <div class="grid md:grid-cols-2 gap-6 text-sm text-slate-600 leading-relaxed">
+                        <div class="rounded-lg border border-slate-200 bg-slate-50 p-5">
+                            <h4 class="font-bold text-slate-900 mb-2">Citum stays authoritative</h4>
+                            Citum still handles citation formatting, bibliography grouping, note behavior, and link
+                            resolution. Typst is the markup and PDF backend, not the bibliography engine.
+                        </div>
+                        <div class="rounded-lg border border-slate-200 bg-slate-50 p-5">
+                            <h4 class="font-bold text-slate-900 mb-2">Practical PDF interactivity</h4>
+                            Generated PDFs include internal citation-to-bibliography links and external DOI/URL links.
+                            Advanced hover-only behaviors and custom metadata popups are not currently part of the Typst path.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 p-6 border-t border-slate-200">
+                <div class="flex items-start gap-3">
+                    <div
+                        class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 mt-1">
+                        <span class="material-icons text-sm">compare</span>
+                    </div>
+                    <div class="text-sm text-slate-600 leading-relaxed">
+                        <strong class="text-slate-900">Positioning:</strong>
+                        Use Typst when you want a pure Rust markup-to-PDF workflow driven by the CLI. The
+                        LuaLaTeX example below remains useful for TeX-native documents and direct
+                        <code class="text-xs bg-slate-200 px-1 rounded">\cite{...}</code> integration.
                     </div>
                 </div>
             </div>
@@ -1011,6 +1108,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                     No Biber, no <code class="text-xs bg-slate-200 px-1 rounded">.bbl</code> file, no
                     external bibliography step. The processor runs inline during compilation via LuaJIT FFI,
                     and all Citum output rules (disambiguation, name formatting, et-al) apply identically.
+                    If you want a pure Rust PDF path instead, see the Typst example above.
                 </p>
                 <div class="bg-slate-900 rounded-lg p-4 font-mono text-xs text-slate-300 leading-relaxed">
                     <pre>.tex \cite{key}

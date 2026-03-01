@@ -1,11 +1,11 @@
 ---
 # csl26-93yh
 title: Typst Interactive PDF Renderer
-status: todo
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-16T02:56:33Z
-updated_at: 2026-02-16T02:56:33Z
+updated_at: 2026-03-01T15:12:10Z
 blocking:
     - csl26-li63
 ---
@@ -119,3 +119,25 @@ Medium (7-9 weeks):
 * **Risk:** Font licensing restrictions for distribution
   - **Mitigation:** Document user-provided font installation, don't bundle fonts
 
+## Completion Notes
+
+Implemented as native Typst markup output in the engine, CLI, and server, with optional in-process PDF compilation behind the `typst-pdf` Cargo feature.
+
+What shipped:
+* Typst renderer in `citum-engine`
+* Typst document output in `citum-cli`
+* Typst RPC output in `citum-server`
+* Optional embedded Typst PDF generation in the CLI
+* Tests and documentation updates
+
+What was intentionally deferred:
+* bibliography-to-citation backlinks
+* hover-state citation color changes in generated PDFs
+* custom metadata popups/tooltips for citations in generated PDFs
+
+Constraint observed during implementation:
+* Typst/PDF output supports hyperlinks, but not CSS-like hover styling for citation links.
+* PDF viewers may show built-in destination tooltips for links, but custom citation metadata popups are not implemented by the current Typst output path.
+
+Follow-up:
+* See `csl26-k7nf` for the next-step investigation into richer citation interactivity.

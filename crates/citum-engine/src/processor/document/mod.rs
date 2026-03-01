@@ -136,6 +136,8 @@ pub enum DocumentFormat {
     Html,
     /// LaTeX output.
     Latex,
+    /// Typst output.
+    Typst,
 }
 
 #[derive(Debug, Clone)]
@@ -189,18 +191,28 @@ impl Processor {
                 self.process_inline_document::<F>(body, parsed)
             };
 
-            let bib_content = self
-                .render_with_custom_groups::<F>(&self.process_references().bibliography, &groups);
+            let bib_content = rewrite_group_headings_for_document(
+                self.render_with_custom_groups::<F>(
+                    &self.process_references().bibliography,
+                    &groups,
+                ),
+                format,
+            );
             let bib_heading = match format {
                 DocumentFormat::Latex => "\n\n\\section*{Bibliography}\n\n",
+                DocumentFormat::Typst => "\n\n= Bibliography\n\n",
                 _ => "\n\n# Bibliography\n\n",
             };
             let mut result = rendered;
             result.push_str(bib_heading);
             result.push_str(&bib_content);
+            let result = rewrite_document_markup_for_typst(result, format);
             return match format {
                 DocumentFormat::Html => self::djot::djot_to_html(&result),
-                DocumentFormat::Djot | DocumentFormat::Plain | DocumentFormat::Latex => result,
+                DocumentFormat::Djot
+                | DocumentFormat::Plain
+                | DocumentFormat::Latex
+                | DocumentFormat::Typst => result,
             };
         }
 
@@ -237,6 +249,7 @@ impl Processor {
                     let heading_text = self.resolve_group_heading(&h).unwrap_or_default();
                     let prefix = match format {
                         DocumentFormat::Latex => format!("\\subsection*{{{heading_text}}}\n\n"),
+                        DocumentFormat::Typst => format!("== {heading_text}\n\n"),
                         _ => format!("## {heading_text}\n\n"),
                     };
                     format!("{prefix}{bib_content}\n")
@@ -246,9 +259,13 @@ impl Processor {
                 result = result.replace(&placeholder, &replacement);
             }
 
+            let result = rewrite_document_markup_for_typst(result, format);
             return match format {
                 DocumentFormat::Html => self::djot::djot_to_html(&result),
-                DocumentFormat::Djot | DocumentFormat::Plain | DocumentFormat::Latex => result,
+                DocumentFormat::Djot
+                | DocumentFormat::Plain
+                | DocumentFormat::Latex
+                | DocumentFormat::Typst => result,
             };
         }
 
@@ -261,15 +278,20 @@ impl Processor {
 
         let bib_heading = match format {
             DocumentFormat::Latex => "\n\n\\section*{Bibliography}\n\n",
+            DocumentFormat::Typst => "\n\n= Bibliography\n\n",
             _ => "\n\n# Bibliography\n\n",
         };
         let mut result = rendered;
         result.push_str(bib_heading);
         result.push_str(&self.render_grouped_bibliography_with_format::<F>());
+        let result = rewrite_document_markup_for_typst(result, format);
 
         match format {
             DocumentFormat::Html => self::djot::djot_to_html(&result),
-            DocumentFormat::Djot | DocumentFormat::Plain | DocumentFormat::Latex => result,
+            DocumentFormat::Djot
+            | DocumentFormat::Plain
+            | DocumentFormat::Latex
+            | DocumentFormat::Typst => result,
         }
     }
 
@@ -575,6 +597,55 @@ fn map_note_order(value: NoteMarkerOrder) -> NoteOrder {
 
 fn language_tag(locale: &str) -> &str {
     locale.split('-').next().unwrap_or(locale)
+}
+
+fn rewrite_group_headings_for_document(rendered: String, format: DocumentFormat) -> String {
+    match format {
+        DocumentFormat::Typst => rendered
+            .lines()
+            .map(|line| {
+                if let Some(rest) = line.strip_prefix("# ") {
+                    format!("== {rest}")
+                } else {
+                    line.to_string()
+                }
+            })
+            .collect::<Vec<_>>()
+            .join("\n"),
+        _ => rendered,
+    }
+}
+
+fn rewrite_document_markup_for_typst(rendered: String, format: DocumentFormat) -> String {
+    match format {
+        DocumentFormat::Typst => {
+            let mut seen_labels = HashSet::new();
+            rendered
+                .lines()
+                .map(|line| {
+                    let hashes = line.chars().take_while(|ch| *ch == '#').count();
+                    let normalized = if hashes > 0 && line.chars().nth(hashes) == Some(' ') {
+                        format!("{}{}", "=".repeat(hashes), &line[hashes..])
+                    } else {
+                        line.to_string()
+                    };
+
+                    if let Some(idx) = normalized.rfind(" <ref-")
+                        && normalized.ends_with('>')
+                    {
+                        let label = &normalized[idx + 2..normalized.len() - 1];
+                        if !seen_labels.insert(label.to_string()) {
+                            return normalized[..idx].to_string();
+                        }
+                    }
+
+                    normalized
+                })
+                .collect::<Vec<_>>()
+                .join("\n")
+        }
+        _ => rendered,
+    }
 }
 
 fn render_note_reference_in_prose(

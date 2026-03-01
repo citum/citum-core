@@ -29,7 +29,13 @@ citum render refs -b references.json -s styles/apa-7th.yaml --show-keys
 citum convert styles/apa-7th.yaml --output styles/apa-7th.cbor
 
 # Generate semantic HTML
-citum render refs -b references.json -s styles/apa-7th.yaml -O html
+citum render refs -b references.json -s styles/apa-7th.yaml -f html
+
+# Generate Typst markup
+citum render refs -b references.json -s styles/apa-7th.yaml -f typst
+
+# Compile Typst markup to PDF (requires cargo feature: typst-pdf)
+cargo run -p citum --features typst-pdf -- render doc document.djot -b references.json -s styles/apa-7th.yaml -f typst --pdf -o document.pdf
 
 # Test a single style (default: structured diff)
 node ../scripts/oracle.js styles-legacy/apa.csl

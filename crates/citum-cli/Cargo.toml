@@ -20,7 +20,11 @@ schemars = { version = "0.8", optional = true }
 indexmap = "2.2.3"
 citum_schema = { package = "citum-schema", path = "../citum-schema" }
 citum_engine = { package = "citum-engine", path = "../citum-engine" }
+typst = { version = "0.13.1", optional = true }
+typst-pdf = { version = "0.13.1", optional = true }
+typst-kit = { version = "0.13.1", optional = true, default-features = false, features = ["fonts", "embed-fonts"] }
 
 [features]
 default = []
 schema = ["dep:schemars", "citum_schema/schema"]
+typst-pdf = ["dep:typst", "dep:typst-pdf", "dep:typst-kit"]

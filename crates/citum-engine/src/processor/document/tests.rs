@@ -2,6 +2,7 @@ use crate::processor::Processor;
 use crate::processor::document::{CitationParser, DocumentFormat, djot::DjotParser};
 use crate::reference::{Bibliography, Reference};
 use crate::render::plain::PlainText;
+use crate::render::typst::Typst;
 use citum_schema::options::{
     Config, NoteConfig, NoteMarkerOrder, NoteNumberPlacement, NoteQuotePlacement, Processing,
 };
@@ -491,6 +492,20 @@ fn test_document_without_bibliography_blocks_uses_default() {
 }
 
 #[test]
+fn test_document_without_bibliography_blocks_uses_typst_heading() {
+    let bib = make_test_bib();
+    let processor = Processor::new(make_author_date_style(), bib);
+    let parser = DjotParser;
+
+    let content = "Text [@item1].";
+    let result = processor.process_document::<_, Typst>(content, &parser, DocumentFormat::Typst);
+
+    assert!(result.contains("= Bibliography"));
+    assert!(!result.contains("# Bibliography"));
+    assert!(result.contains("#link(<ref-item1>)"));
+}
+
+#[test]
 fn test_document_with_inline_bibliography_block() {
     let bib = make_test_bib();
     let processor = Processor::new(make_author_date_style(), bib);
@@ -505,4 +520,32 @@ fn test_document_with_inline_bibliography_block() {
 
     assert!(result.contains("Doe"));
     assert!(result.contains("# Bibliography"));
+}
+
+#[test]
+fn test_document_with_yaml_frontmatter_uses_typst_group_headings() {
+    let bib = make_test_bib();
+    let processor = Processor::new(make_author_date_style(), bib);
+    let parser = DjotParser;
+
+    let content = r#"---
+bibliography:
+  - id: primary
+    heading:
+      literal: "Primary Sources"
+    selector:
+      cited: visible
+  - id: secondary
+    heading:
+      literal: "Secondary Sources"
+    selector: {}
+---
+
+Some text [@item1]."#;
+
+    let result = processor.process_document::<_, Typst>(content, &parser, DocumentFormat::Typst);
+
+    assert!(result.contains("== Primary Sources"));
+    assert!(result.contains("== Secondary Sources"));
+    assert!(!result.contains("## Primary Sources"));
 }

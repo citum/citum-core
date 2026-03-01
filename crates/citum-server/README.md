@@ -69,8 +69,7 @@ Supported `output_format` values:
 - `html`
 - `djot`
 - `latex`
-
-`typst` is reserved but not implemented yet.
+- `typst`
 
 ### Request / response envelope
 

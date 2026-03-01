@@ -6,7 +6,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 use crate::error::ServerError;
 use citum_engine::{
     Bibliography, Citation, Processor,
-    render::{djot::Djot, html::Html, latex::Latex, plain::PlainText},
+    render::{djot::Djot, html::Html, latex::Latex, plain::PlainText, typst::Typst},
 };
 use citum_schema::Style;
 use serde::{Deserialize, Serialize};
@@ -160,7 +160,7 @@ fn render_citation_with_format(
         OutputFormat::Html => Ok(processor.process_citation_with_format::<Html>(citation)?),
         OutputFormat::Djot => Ok(processor.process_citation_with_format::<Djot>(citation)?),
         OutputFormat::Latex => Ok(processor.process_citation_with_format::<Latex>(citation)?),
-        OutputFormat::Typst => Err(ServerError::UnsupportedOutputFormat("typst".to_string())),
+        OutputFormat::Typst => Ok(processor.process_citation_with_format::<Typst>(citation)?),
     }
 }
 
@@ -173,7 +173,7 @@ fn render_bibliography_with_format(
         OutputFormat::Html => Ok(processor.render_bibliography_with_format::<Html>()),
         OutputFormat::Djot => Ok(processor.render_bibliography_with_format::<Djot>()),
         OutputFormat::Latex => Ok(processor.render_bibliography_with_format::<Latex>()),
-        OutputFormat::Typst => Err(ServerError::UnsupportedOutputFormat("typst".to_string())),
+        OutputFormat::Typst => Ok(processor.render_bibliography_with_format::<Typst>()),
     }
 }
 

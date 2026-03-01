@@ -3,10 +3,10 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-use citum_engine::io::load_bibliography;
 use citum_engine::Processor;
-use citum_schema::citation::{Citation, CitationItem};
+use citum_engine::io::load_bibliography;
 use citum_schema::Style;
+use citum_schema::citation::{Citation, CitationItem};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -20,8 +20,8 @@ fn load_style(path: &Path) -> Style {
 }
 
 /// Load sort oracle fixture into native Citum references for testing.
-fn load_sort_oracle_bibliography(
-) -> indexmap::IndexMap<String, citum_schema::reference::InputReference> {
+fn load_sort_oracle_bibliography()
+-> indexmap::IndexMap<String, citum_schema::reference::InputReference> {
     let root = project_root();
     let path = root.join("tests/fixtures/sort-oracle.json");
     load_bibliography(&path).expect("sort-oracle fixture should load")
@@ -92,7 +92,7 @@ fn test_numeric_sort_by_citation_order() {
     // Build a simple numeric style for testing
     let style = {
         use citum_schema::options::Processing;
-        use citum_schema::{options::Config, BibliographySpec, CitationSpec, StyleInfo};
+        use citum_schema::{BibliographySpec, CitationSpec, StyleInfo, options::Config};
 
         Style {
             info: StyleInfo {
@@ -206,7 +206,7 @@ fn test_numeric_style_volume_issue_independence() {
     // Build a simple numeric style for testing
     let style = {
         use citum_schema::options::Processing;
-        use citum_schema::{options::Config, BibliographySpec, CitationSpec, StyleInfo};
+        use citum_schema::{BibliographySpec, CitationSpec, StyleInfo, options::Config};
 
         Style {
             info: StyleInfo {

@@ -45,7 +45,10 @@ pub use legacy::{
 pub use locale::Locale;
 pub use options::Config;
 pub use presets::{ContributorPreset, DatePreset, SortPreset, SubstitutePreset, TitlePreset};
-pub use template::{TemplateComponent, TemplateContributor, TemplateDate, TemplateNumber, TemplateTitle, TemplateVariable, TemplateTerm, TemplateList, Rendering, WrapPunctuation};
+pub use template::{
+    Rendering, TemplateComponent, TemplateContributor, TemplateDate, TemplateList, TemplateNumber,
+    TemplateTerm, TemplateTitle, TemplateVariable, WrapPunctuation,
+};
 
 /// A collection of bibliographic references with optional metadata.
 #[derive(Debug, Default, Deserialize, Serialize, Clone)]

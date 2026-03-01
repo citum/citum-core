@@ -2,7 +2,7 @@ use citum_engine::{
     Bibliography, Citation, CitationItem, DocumentFormat, Processor,
     io::{load_bibliography, load_citations},
     processor::document::djot::DjotParser,
-    render::{djot::Djot, html::Html, latex::Latex, plain::PlainText},
+    render::{djot::Djot, html::Html, latex::Latex, plain::PlainText, typst::Typst},
 };
 use citum_schema::locale::RawLocale;
 use citum_schema::reference::InputReference;
@@ -17,6 +17,8 @@ use std::error::Error;
 use std::fmt::Write as _;
 use std::fs;
 use std::path::{Path, PathBuf};
+
+mod typst_pdf;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None, arg_required_else_help = true)]
@@ -153,6 +155,14 @@ struct RenderDocArgs {
     /// Write output to file (defaults to stdout)
     #[arg(short = 'o', long)]
     output: Option<PathBuf>,
+
+    /// Compile Typst output to PDF (requires `typst-pdf` feature)
+    #[arg(long)]
+    pdf: bool,
+
+    /// Preserve generated Typst source next to the PDF output
+    #[arg(long)]
+    typst_keep_source: bool,
 
     /// Disable semantic classes (HTML spans, Djot attributes)
     #[arg(long)]
@@ -327,6 +337,8 @@ fn run() -> Result<(), Box<dyn Error>> {
                 input_format: InputFormat::Djot,
                 format: args.format,
                 output: None,
+                pdf: false,
+                typst_keep_source: false,
                 no_semantics: false,
             };
             run_render_doc(doc_args)
@@ -418,6 +430,10 @@ fn truncate(s: &str, max_len: usize) -> String {
 }
 
 fn run_render_doc(args: RenderDocArgs) -> Result<(), Box<dyn Error>> {
+    if args.pdf && args.format != OutputFormat::Typst {
+        return Err("`--pdf` is only supported with `--format typst`.".into());
+    }
+
     let style_obj = load_any_style(&args.style, args.no_semantics)?;
     let bibliography = load_merged_bibliography(&args.bibliography)?;
 
@@ -443,6 +459,15 @@ fn run_render_doc(args: RenderDocArgs) -> Result<(), Box<dyn Error>> {
             );
         }
     };
+
+    if args.pdf {
+        let output_path = args
+            .output
+            .as_ref()
+            .ok_or("`--pdf` requires `--output <file.pdf>`.")?;
+        typst_pdf::compile_document_to_pdf(&output, output_path, args.typst_keep_source)?;
+        return Ok(());
+    }
 
     write_output(&output, args.output.as_ref())
 }
@@ -733,9 +758,9 @@ fn render_doc_with_output_format(
                 OutputFormat::Latex => {
                     Ok(processor.process_document::<_, Latex>(content, &parser, doc_format))
                 }
-                OutputFormat::Typst => Err(
-                    "Output format `typst` is not implemented yet for document rendering.".into(),
-                ),
+                OutputFormat::Typst => {
+                    Ok(processor.process_document::<_, Typst>(content, &parser, doc_format))
+                }
             }
         }
     }
@@ -747,9 +772,7 @@ fn to_document_format(output_format: OutputFormat) -> Result<DocumentFormat, Box
         OutputFormat::Html => Ok(DocumentFormat::Html),
         OutputFormat::Djot => Ok(DocumentFormat::Djot),
         OutputFormat::Latex => Ok(DocumentFormat::Latex),
-        OutputFormat::Typst => {
-            Err("Output format `typst` is not implemented yet for document rendering.".into())
-        }
+        OutputFormat::Typst => Ok(DocumentFormat::Typst),
     }
 }
 
@@ -781,9 +804,10 @@ fn render_refs_human(
             processor, style_name, show_cite, show_bib, item_ids, citations, show_keys,
         )
         .map_err(|e| e.into()),
-        OutputFormat::Typst => {
-            Err("Output format `typst` is not implemented yet for reference rendering.".into())
-        }
+        OutputFormat::Typst => print_human_safe::<Typst>(
+            processor, style_name, show_cite, show_bib, item_ids, citations, show_keys,
+        )
+        .map_err(|e| e.into()),
     }
 }
 
@@ -810,9 +834,9 @@ fn render_refs_json(
         OutputFormat::Latex => print_json_with_format::<Latex>(
             processor, style_name, show_cite, show_bib, item_ids, citations,
         ),
-        OutputFormat::Typst => {
-            Err("Output format `typst` is not implemented yet for JSON reference rendering.".into())
-        }
+        OutputFormat::Typst => print_json_with_format::<Typst>(
+            processor, style_name, show_cite, show_bib, item_ids, citations,
+        ),
     }
 }
 

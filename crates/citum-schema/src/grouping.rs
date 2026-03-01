@@ -3,9 +3,9 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use crate::Template;
 use crate::locale::{GeneralTerm, TermForm};
 use crate::presets::SortPreset;
-use crate::Template;
 
 /// A bibliography group with selector, optional heading, and per-group sorting.
 ///
