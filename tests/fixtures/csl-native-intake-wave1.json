@@ -22,7 +22,7 @@
       "area": "citation-disambiguation",
       "priority": "p0",
       "decision": "integrate-now",
-      "current_coverage": "partial-native",
+      "current_coverage": "native-regression",
       "source_signals": ["hayagriva-327", "current-native-gap"],
       "typst_sensitive": false,
       "rationale": "Already represented indirectly in native tests, but should be traceable to the upstream CSL fixture."
@@ -41,31 +41,34 @@
       "id": "disambiguate_ByCiteMinimalGivennameExpandMinimalNames",
       "area": "citation-disambiguation",
       "priority": "p0",
-      "decision": "integrate-now",
+      "decision": "adapt-later",
+      "deferred_class": "core-feature-candidate",
       "current_coverage": "no-native",
       "source_signals": ["hayagriva-327", "current-native-gap"],
       "typst_sensitive": false,
-      "rationale": "Exercises incremental by-cite given-name expansion, an area where native coverage is still narrow."
+      "rationale": "Requires per-name minimal given-name expansion rather than the current global initialized-name expansion path."
     },
     {
       "id": "disambiguate_PrimaryNameWithInitialsLimitedToPrimary",
       "area": "citation-disambiguation",
       "priority": "p0",
-      "decision": "integrate-now",
+      "decision": "adapt-later",
+      "deferred_class": "core-feature-candidate",
       "current_coverage": "no-native",
       "source_signals": ["hayagriva-327", "current-native-gap"],
       "typst_sensitive": false,
-      "rationale": "Matches current Citum work on initials and primary-name handling without depending on unsupported processor APIs."
+      "rationale": "Depends on the CSL primary-name-with-initials disambiguation rule, which Citum does not model explicitly today."
     },
     {
       "id": "disambiguate_BasedOnEtAlSubsequent",
       "area": "citation-disambiguation",
       "priority": "p1",
-      "decision": "integrate-now",
+      "decision": "adapt-later",
+      "deferred_class": "core-feature-candidate",
       "current_coverage": "partial-native",
       "source_signals": ["local-csl-conversion-scaffold", "current-native-gap"],
       "typst_sensitive": false,
-      "rationale": "Useful local control case even though the exact Hayagriva issue name differs."
+      "rationale": "Depends on et-al-subsequent controls that are not currently modeled in Citum contributor options."
     },
     {
       "id": "bugreports_ContainerTitleShort",
@@ -112,7 +115,7 @@
       "area": "bibliography-rendering",
       "priority": "p1",
       "decision": "integrate-now",
-      "current_coverage": "partial-native",
+      "current_coverage": "native-regression",
       "source_signals": ["hayagriva-327", "oracle-or-style-risk"],
       "typst_sensitive": false,
       "rationale": "The repo already tests substitute basics; this should become a traceable CSL-sourced regression."
@@ -122,7 +125,7 @@
       "area": "names",
       "priority": "p1",
       "decision": "integrate-now",
-      "current_coverage": "no-native",
+      "current_coverage": "native-regression",
       "source_signals": ["hayagriva-327", "multilingual-name-risk"],
       "typst_sensitive": false,
       "rationale": "Targets name particle handling, which is architecturally relevant to Citum's richer name model."
@@ -132,7 +135,7 @@
       "area": "names",
       "priority": "p1",
       "decision": "integrate-now",
-      "current_coverage": "no-native",
+      "current_coverage": "native-regression",
       "source_signals": ["hayagriva-327", "multilingual-name-risk"],
       "typst_sensitive": false,
       "rationale": "Companion case for particle handling to avoid overfitting to a single fixture."
@@ -141,11 +144,12 @@
       "id": "textcase_SkipNameParticlesInTitleCase",
       "area": "textcase",
       "priority": "p1",
-      "decision": "integrate-now",
+      "decision": "adapt-later",
+      "deferred_class": "csl-specific-or-out-of-model",
       "current_coverage": "no-native",
       "source_signals": ["hayagriva-327", "multilingual-name-risk"],
       "typst_sensitive": false,
-      "rationale": "Relevant to Citum's language-aware rendering and can reveal regressions beyond the pure CSL pipeline."
+      "rationale": "Requires title-case transformation controls that are not part of the current Citum template rendering model."
     },
     {
       "id": "bugreports_MovePunctuationInsideQuotesForLocator",
@@ -172,7 +176,7 @@
       "area": "punctuation",
       "priority": "p0",
       "decision": "integrate-now",
-      "current_coverage": "no-native",
+      "current_coverage": "native-regression",
       "source_signals": ["hayagriva-327", "renderer-sensitivity", "typst-followup"],
       "typst_sensitive": true,
       "rationale": "Paired with the quotes-in case to verify quote-placement policy rather than a single rendering path."
@@ -182,10 +186,10 @@
       "area": "rendering-flipflop",
       "priority": "p0",
       "decision": "integrate-now",
-      "current_coverage": "no-native",
+      "current_coverage": "adjacent-native",
       "source_signals": ["hayagriva-327", "renderer-sensitivity", "typst-followup"],
       "typst_sensitive": true,
-      "rationale": "Typst follow-up work should cover apostrophe and quote flip-flop semantics directly."
+      "rationale": "The full upstream note-style fixture is broader than Citum's title-only apostrophe normalization, but the underlying smart-apostrophe path now has focused native coverage."
     },
     {
       "id": "flipflop_LeadingSingleQuote",
@@ -202,7 +206,7 @@
       "area": "rendering-flipflop",
       "priority": "p1",
       "decision": "integrate-now",
-      "current_coverage": "no-native",
+      "current_coverage": "native-regression",
       "source_signals": ["hayagriva-327", "renderer-sensitivity", "typst-followup"],
       "typst_sensitive": true,
       "rationale": "Complements other flip-flop cases with a simpler starting-apostrophe regression."
@@ -211,11 +215,12 @@
       "id": "display_AuthorAsHeading",
       "area": "document-display",
       "priority": "p1",
-      "decision": "integrate-now",
+      "decision": "adapt-later",
+      "deferred_class": "csl-specific-or-out-of-model",
       "current_coverage": "adjacent-native",
       "source_signals": ["hayagriva-327", "document-grouping-risk"],
       "typst_sensitive": true,
-      "rationale": "This is close to existing bibliography grouping and heading logic already present in document tests."
+      "rationale": "The upstream case depends on CSL display blocks and second-field-like layout behavior, while current Citum coverage only exercises adjacent document grouping and headings."
     },
     {
       "id": "display_SecondFieldAlignClone",
