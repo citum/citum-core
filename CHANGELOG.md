@@ -101,6 +101,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Sort undated bibliography entries last ([`ec1cfa8`](https://github.com/citum/citum-core/commit/ec1cfa8569567de16bfd3c982ae7652a1e5d63df))
 
+- Smarten leading single quotes ([`351cf5a`](https://github.com/citum/citum-core/commit/351cf5a50e839511fbc037839d8f68395b0d2635))
+
 - Complete high-fit wave 1 regressions ([`da851ef`](https://github.com/citum/citum-core/commit/da851ef9c2a82fdfd61c27e254e26b725b2e619c))
 
 - Format title apostrophe logic ([`6bf61f8`](https://github.com/citum/citum-core/commit/6bf61f81b17bef515692f31a342f790b6fb1705b))
@@ -166,11 +168,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **render**
 
 - Make HTML bibliography separators markup-aware ([`d3a1da3`](https://github.com/citum/citum-core/commit/d3a1da3fdd44e055c61533ba545896306c2be95b))
-
-
-**rendering**
-
-- Smarten leading single quotes ([`351cf5a`](https://github.com/citum/citum-core/commit/351cf5a50e839511fbc037839d8f68395b0d2635))
 
 
 **report**
@@ -972,6 +969,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add contributor labels and sorting fixes ([`31a96aa`](https://github.com/citum/citum-core/commit/31a96aa20c6d49e6eadb612ba605e40d3165c141))
 
+- Improve delimiter detection and URL suffix handling ([`872906f`](https://github.com/citum/citum-core/commit/872906f45292808fc525aeb6ead76fbdf07faf8a))
+
 - Resolve mode-dependent conjunctions and implement deep config merging ([`6acd4b8`](https://github.com/citum/citum-core/commit/6acd4b890ae1947ce122b20d4a7f90c3c0d1bad5))
 
 - Allow variable repetition with different context ([`34670a4`](https://github.com/citum/citum-core/commit/34670a46e7a43243e1f2934b530cebda734489cd))
@@ -1072,11 +1071,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **render**
 
 - Suppress trailing period after URLs in nested lists ([`ee7989f`](https://github.com/citum/citum-core/commit/ee7989fa3e26187e738055193e17f560e00b1ed7))
-
-
-**render,inferrer**
-
-- Improve delimiter detection and URL suffix handling ([`872906f`](https://github.com/citum/citum-core/commit/872906f45292808fc525aeb6ead76fbdf07faf8a))
 
 
 **scripts**
@@ -1311,6 +1305,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Improve bibliography separator handling ([`ffc718a`](https://github.com/citum/citum-core/commit/ffc718a5dca9dba2550b84a27b74a85de2ee2e78))
 
+- Implement inner/outer affixes ([`5fd7f66`](https://github.com/citum/citum-core/commit/5fd7f6613152097fd1fc30026287e7ccfa8acb23))
+
 - Improve rendering engine and test dataset ([`1a74457`](https://github.com/citum/citum-core/commit/1a7445778746bb1b43e96e040c1871b358426bbf))
 
 - Add integral citation mode to CLI output ([`66db9b0`](https://github.com/citum/citum-core/commit/66db9b0299d3316a0b57f2efcc05c8f9f4fee4ad))
@@ -1416,11 +1412,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add title quotes and fix period-inside-quotes ([`86b2f37`](https://github.com/citum/citum-core/commit/86b2f37fd0a75e0fb4d3d0b815545720edf50a74))
 
 - Implement structured hyperlinking in templates ([`34395d9`](https://github.com/citum/citum-core/commit/34395d9edb42e2bc89cba53612849a65509a0113))
-
-
-**rendering**
-
-- Implement inner/outer affixes ([`5fd7f66`](https://github.com/citum/citum-core/commit/5fd7f6613152097fd1fc30026287e7ccfa8acb23))
 
 
 **scripts**

@@ -40,6 +40,9 @@ commit_preprocessors = [
   { pattern = "^([a-z]+)\\(csln\\)", replace = "$1(engine)" },
   # processing → engine (transitional scope name)
   { pattern = "^([a-z]+)\\(processing\\)", replace = "$1(engine)" },
+  # render/rendering → engine (old scope for the rendering subsystem)
+  { pattern = "^([a-z]+)\\(rendering?\\)", replace = "$1(engine)" },
+  { pattern = "^([a-z]+)\\(render,inferrer\\)", replace = "$1(engine)" },
 ]
 filter_unconventional = true
 split_commits = false
