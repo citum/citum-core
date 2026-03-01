@@ -147,9 +147,17 @@ impl Upsampler {
         let mut et_al_use_first = n.et_al_use_first.or(self.et_al_use_first);
         let et_al_subsequent =
             if n.et_al_subsequent_min.is_some() || n.et_al_subsequent_use_first.is_some() {
+                let fallback_min = et_al_min.unwrap_or(0) as u8;
+                let fallback_use_first = et_al_use_first.unwrap_or(0) as u8;
                 Some(Box::new(csln::EtAlSubsequent {
-                    min: n.et_al_subsequent_min.unwrap_or(0) as u8,
-                    use_first: n.et_al_subsequent_use_first.unwrap_or(0) as u8,
+                    min: n
+                        .et_al_subsequent_min
+                        .map(|v| v as u8)
+                        .unwrap_or(fallback_min),
+                    use_first: n
+                        .et_al_subsequent_use_first
+                        .map(|v| v as u8)
+                        .unwrap_or(fallback_use_first),
                 }))
             } else {
                 None
