@@ -196,11 +196,11 @@ Taken together, the reclassified cases depend on one of:
 Generate the external-signal report:
 
 ```bash
-node scripts/report-csl-intake.js
+bun scripts/report-csl-intake.js
 ```
 
 Emit JSON for scripting:
 
 ```bash
-node scripts/report-csl-intake.js --json
+bun scripts/report-csl-intake.js --json
 ```
