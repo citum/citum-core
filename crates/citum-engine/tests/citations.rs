@@ -10,10 +10,12 @@ use citum_engine::Processor;
 use citum_schema::{
     CitationSpec, Style, StyleInfo,
     citation::{Citation, CitationItem, CitationMode},
+    grouping::{GroupSort, GroupSortEntry, GroupSortKey, SortKey as GroupSortKeyType},
     options::{
         AndOptions, Config, ContributorConfig, DelimiterPrecedesLast, DisplayAsSort, Processing,
         ProcessingCustom, ShortenListOptions,
     },
+    reference::InputReference,
 };
 
 // --- Helper Functions ---
@@ -32,6 +34,31 @@ fn build_numeric_style() -> Style {
         citation: Some(CitationSpec {
             template: Some(vec![citum_schema::tc_number!(CitationNumber)]),
             wrap: Some(citum_schema::template::WrapPunctuation::Brackets),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn build_title_year_citation_style(sort: Vec<GroupSortKey>) -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Title Year Citation Sort Test".to_string()),
+            id: Some("title-year-citation-sort-test".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::Numeric),
+            ..Default::default()
+        }),
+        citation: Some(CitationSpec {
+            sort: Some(GroupSortEntry::Explicit(GroupSort { template: sort })),
+            template: Some(vec![
+                citum_schema::tc_title!(Primary),
+                citum_schema::tc_date!(Issued, Year),
+            ]),
+            delimiter: Some(" ".to_string()),
+            multi_cite_delimiter: Some("; ".to_string()),
             ..Default::default()
         }),
         ..Default::default()
@@ -464,6 +491,79 @@ fn test_grouped_citation_sorting_by_year() {
     let expected = "Kuhn, (1962), (1970)";
 
     run_test_case_native(&input, &citation_items, expected, "citation");
+}
+
+#[test]
+fn test_sorting_empty_dates_citation() {
+    // Upstream provenance: CSL fixture `date_SortEmptyDatesCitation`.
+    fn make_undated_book(id: &str, title: &str) -> InputReference {
+        let mut reference = make_book(id, "Smith", "Jane", 2000, title);
+        if let InputReference::Monograph(monograph) = &mut reference {
+            monograph.issued = citum_schema::reference::EdtfString(String::new());
+        }
+        reference
+    }
+
+    let style = build_title_year_citation_style(vec![
+        GroupSortKey {
+            key: GroupSortKeyType::Issued,
+            ascending: true,
+            order: None,
+            sort_order: None,
+        },
+        GroupSortKey {
+            key: GroupSortKeyType::Title,
+            ascending: true,
+            order: None,
+            sort_order: None,
+        },
+    ]);
+
+    let mut bibliography = indexmap::IndexMap::new();
+    bibliography.insert("ITEM-1".to_string(), make_undated_book("ITEM-1", "BookA"));
+    bibliography.insert(
+        "ITEM-2".to_string(),
+        make_book("ITEM-2", "Smith", "Jane", 2000, "BookB"),
+    );
+    bibliography.insert("ITEM-3".to_string(), make_undated_book("ITEM-3", "BookC"));
+    bibliography.insert(
+        "ITEM-4".to_string(),
+        make_book("ITEM-4", "Smith", "Jane", 1999, "BookD"),
+    );
+    bibliography.insert("ITEM-5".to_string(), make_undated_book("ITEM-5", "BookE"));
+
+    let processor = Processor::new(style, bibliography);
+    let citation = Citation {
+        items: vec![
+            CitationItem {
+                id: "ITEM-1".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ITEM-2".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ITEM-3".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ITEM-4".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ITEM-5".to_string(),
+                ..Default::default()
+            },
+        ],
+        mode: CitationMode::NonIntegral,
+        ..Default::default()
+    };
+
+    let result = processor
+        .process_citation(&citation)
+        .expect("Failed to process citation with empty-date sort");
+    assert_eq!(result, "BookD 1999; BookB 2000; BookA; BookC; BookE");
 }
 
 // --- Position-Based Citation Tests (Note Styles) ---
