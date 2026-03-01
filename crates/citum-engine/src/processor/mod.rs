@@ -707,6 +707,7 @@ impl Processor {
                 &citation.mode,
                 renderer_delimiter,
                 citation.suppress_author,
+                citation.position.as_ref(),
             )?
         } else {
             renderer.render_ungrouped_citation_with_format::<F>(
@@ -715,6 +716,7 @@ impl Processor {
                 &citation.mode,
                 renderer_delimiter,
                 citation.suppress_author,
+                citation.position.as_ref(),
             )?
         };
 
