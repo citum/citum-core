@@ -2,6 +2,21 @@ use crate::reference::Reference;
 use citum_schema::locale::Locale;
 use citum_schema::options::{Config, SortKey};
 
+fn compare_optional_years(
+    a_year: Option<i32>,
+    b_year: Option<i32>,
+    ascending: bool,
+) -> std::cmp::Ordering {
+    let cmp = match (a_year, b_year) {
+        (Some(a), Some(b)) => a.cmp(&b),
+        (Some(_), None) => std::cmp::Ordering::Less,
+        (None, Some(_)) => std::cmp::Ordering::Greater,
+        (None, None) => std::cmp::Ordering::Equal,
+    };
+
+    if ascending { cmp } else { cmp.reverse() }
+}
+
 pub struct Sorter<'a> {
     config: &'a Config,
     locale: &'a Locale,
@@ -72,17 +87,13 @@ impl<'a> Sorter<'a> {
                             let a_year = a
                                 .issued()
                                 .and_then(|d| d.year().parse::<i32>().ok())
-                                .unwrap_or(0);
+                                .filter(|year| *year != 0);
                             let b_year = b
                                 .issued()
                                 .and_then(|d| d.year().parse::<i32>().ok())
-                                .unwrap_or(0);
+                                .filter(|year| *year != 0);
 
-                            if sort.ascending {
-                                a_year.cmp(&b_year)
-                            } else {
-                                b_year.cmp(&a_year)
-                            }
+                            compare_optional_years(a_year, b_year, sort.ascending)
                         }
                         SortKey::Title => {
                             let a_title = self

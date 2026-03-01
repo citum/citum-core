@@ -13,6 +13,7 @@ use citum_schema::{
         BibliographyConfig, Config, ContributorConfig, DisplayAsSort, Processing, ProcessingCustom,
         Sort, SortKey, SortSpec,
     },
+    reference::InputReference,
 };
 
 // --- Helper Functions ---
@@ -70,6 +71,35 @@ fn build_sorted_style(sort: Vec<SortSpec>) -> Style {
         bibliography: Some(BibliographySpec {
             template: Some(vec![
                 citum_schema::tc_contributor!(Author, Long),
+                citum_schema::tc_date!(Issued, Year, prefix = " "),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn build_title_year_sorted_style(sort: Vec<SortSpec>) -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Title Year Sorted Test".to_string()),
+            id: Some("title-year-sort-test".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::Custom(ProcessingCustom {
+                sort: Some(citum_schema::options::SortEntry::Explicit(Sort {
+                    template: sort,
+                    shorten_names: false,
+                    render_substitutions: false,
+                })),
+                ..Default::default()
+            })),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                citum_schema::tc_title!(Primary),
                 citum_schema::tc_date!(Issued, Year, prefix = " "),
             ]),
             ..Default::default()
@@ -184,6 +214,50 @@ fn test_sorting_by_year() {
 
     // 2020 should come before 2022
     assert!(result.find("2020").unwrap() < result.find("2022").unwrap());
+}
+
+#[test]
+fn test_sorting_empty_dates_bibliography() {
+    // Upstream provenance: CSL fixture `date_SortEmptyDatesBibliography`.
+    let style = build_title_year_sorted_style(vec![
+        SortSpec {
+            key: SortKey::Year,
+            ascending: true,
+        },
+        SortSpec {
+            key: SortKey::Title,
+            ascending: true,
+        },
+    ]);
+
+    fn make_undated_book(id: &str, title: &str) -> InputReference {
+        let mut reference = make_book(id, "Smith", "Jane", 2000, title);
+        if let InputReference::Monograph(monograph) = &mut reference {
+            monograph.issued = citum_schema::reference::EdtfString(String::new());
+        }
+        reference
+    }
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert("item1".to_string(), make_undated_book("item1", "BookA"));
+    bib.insert(
+        "item2".to_string(),
+        make_book("item2", "Smith", "Jane", 2000, "BookB"),
+    );
+    bib.insert("item3".to_string(), make_undated_book("item3", "BookC"));
+    bib.insert(
+        "item4".to_string(),
+        make_book("item4", "Smith", "Jane", 1999, "BookD"),
+    );
+    bib.insert("item5".to_string(), make_undated_book("item5", "BookE"));
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert!(result.find("BookD 1999").unwrap() < result.find("BookB 2000").unwrap());
+    assert!(result.find("BookB 2000").unwrap() < result.find("BookA").unwrap());
+    assert!(result.find("BookA").unwrap() < result.find("BookC").unwrap());
+    assert!(result.find("BookC").unwrap() < result.find("BookE").unwrap());
 }
 
 #[test]
