@@ -18,6 +18,10 @@ Fallback if nextest missing: `cargo test`. **DO NOT commit if any check fails.**
 
 Docs/styles (`.md`, `.yaml` in `styles/`) skip checks entirely.
 
+### Documentation Rule
+
+**All new or modified public Rust items must have `///` doc comments.** This applies to structs, enums, traits, functions, and public fields. One clear sentence minimum — describe *what* it is/does. Existing items touched by a change must be documented in the same commit. Doc-only commits skip build checks.
+
 **Planning Documents:** Place all plans in `docs/architecture/`. Never in project root.
 
 **Commit Messages:** Conventional Commits `type(scope): subject`, lowercase, 50/72 rule, no `--amend`, no `Co-Authored-By`.
