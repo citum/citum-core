@@ -15,7 +15,18 @@ fn smarten_apostrophes(input: &str) -> String {
     while let Some((_, ch)) = it.next() {
         if ch == '\'' {
             let next = it.peek().map(|(_, c)| *c);
-            if prev.is_some_and(|c| c.is_alphabetic()) && next.is_some_and(|c| c.is_alphabetic()) {
+            let prev_is_alpha = prev.is_some_and(|c| c.is_alphabetic());
+            let next_is_alpha = next.is_some_and(|c| c.is_alphabetic());
+            let prev_opens_quote =
+                prev.is_none_or(|c| c.is_whitespace() || "([{\u{201C}\"".contains(c));
+            let next_closes_quote =
+                next.is_none_or(|c| c.is_whitespace() || ".,;:!?)]}\u{201D}\"".contains(c));
+
+            if prev_is_alpha && next_is_alpha {
+                out.push('\u{2019}');
+            } else if prev_opens_quote && next_is_alpha {
+                out.push('\u{2018}');
+            } else if prev_is_alpha && next_closes_quote {
                 out.push('\u{2019}');
             } else {
                 out.push('\'');

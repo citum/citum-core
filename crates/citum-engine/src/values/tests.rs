@@ -746,6 +746,42 @@ fn test_title_hyperlink_url_fallback() {
 }
 
 #[test]
+fn test_title_values_smarten_leading_single_quotes() {
+    let config = make_config();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        locale: &locale,
+        context: RenderContext::Citation,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator: None,
+        locator_label: None,
+    };
+    let hints = ProcHints::default();
+
+    let reference = Reference::from(LegacyReference {
+        id: "parmenides".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("'Parmenides' 132c-133a and the development of Plato's thought".to_string()),
+        ..Default::default()
+    });
+
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+    assert_eq!(
+        values.value,
+        "‘Parmenides’ 132c-133a and the development of Plato’s thought"
+    );
+}
+
+#[test]
 fn test_variable_hyperlink() {
     use citum_schema::options::LinksConfig;
 
