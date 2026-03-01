@@ -1,0 +1,107 @@
+{
+  "comment": "Sort oracle test data covering edge cases: multiple works by same author/year, anonymous works, all-caps surnames, varied volumes for numeric styles",
+  "SORT-1": {
+    "id": "SORT-1",
+    "class": "monograph",
+    "type": "book",
+    "title": "The Academic Enterprise",
+    "author": [{ "family": "Adams", "given": "John" }],
+    "issued": { "date-parts": [[2020]] }
+  },
+  "SORT-2": {
+    "id": "SORT-2",
+    "class": "monograph",
+    "type": "book",
+    "title": "Digital Transformation",
+    "author": [{ "family": "Adams", "given": "John" }],
+    "issued": { "date-parts": [[2020]] }
+  },
+  "SORT-3": {
+    "id": "SORT-3",
+    "class": "monograph",
+    "type": "book",
+    "title": "Ethics in Research",
+    "author": [{ "family": "Adams", "given": "John" }],
+    "issued": { "date-parts": [[2020]] }
+  },
+  "SORT-4": {
+    "id": "SORT-4",
+    "class": "monograph",
+    "type": "book",
+    "title": "The Chicago Manual of Style",
+    "author": [],
+    "issued": { "date-parts": [[2017]] }
+  },
+  "SORT-5": {
+    "id": "SORT-5",
+    "class": "monograph",
+    "type": "book",
+    "title": "A Brief Guide to Citations",
+    "author": [],
+    "issued": { "date-parts": [[2018]] }
+  },
+  "SORT-6": {
+    "id": "SORT-6",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Machine Learning Advances",
+    "author": [
+      { "family": "SMITH", "given": "Robert" },
+      { "family": "Jones", "given": "Patricia" }
+    ],
+    "issued": { "date-parts": [[2021]] },
+    "container-title": "Nature",
+    "volume": "15",
+    "issue": "3"
+  },
+  "SORT-7": {
+    "id": "SORT-7",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Quantum Computing Systems",
+    "author": [
+      { "family": "SMITH", "given": "Robert" },
+      { "family": "Williams", "given": "David" }
+    ],
+    "issued": { "date-parts": [[2021]] },
+    "container-title": "IEEE Transactions",
+    "volume": "8",
+    "issue": "2"
+  },
+  "SORT-8": {
+    "id": "SORT-8",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Artificial Intelligence in Practice",
+    "author": [{ "family": "WILLIAMS", "given": "David" }],
+    "issued": { "date-parts": [[2019]] },
+    "container-title": "Computer Science Review",
+    "volume": "22",
+    "issue": "1"
+  },
+  "SORT-9": {
+    "id": "SORT-9",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Neural Networks and Deep Learning",
+    "author": [
+      { "family": "Brown", "given": "Michael" },
+      { "family": "Lee", "given": "Susan" }
+    ],
+    "issued": { "date-parts": [[2022]] },
+    "container-title": "Journal of AI Research",
+    "volume": "45",
+    "issue": "4"
+  },
+  "SORT-10": {
+    "id": "SORT-10",
+    "class": "monograph",
+    "type": "book",
+    "title": "Data Science Fundamentals",
+    "author": [
+      { "family": "Brown", "given": "Michael" },
+      { "family": "Green", "given": "Lisa" }
+    ],
+    "issued": { "date-parts": [[2022]] }
+  }
+}

@@ -8,11 +8,11 @@ use common::*;
 
 use citum_engine::Processor;
 use citum_schema::{
-    BibliographySpec, CitationSpec, Style, StyleInfo,
     options::{
         BibliographyConfig, Config, ContributorConfig, DisplayAsSort, Processing, ProcessingCustom,
         Sort, SortKey, SortSpec,
     },
+    BibliographySpec, CitationSpec, Style, StyleInfo,
 };
 
 // --- Helper Functions ---
@@ -317,8 +317,14 @@ fn test_numeric_bibliography() {
     assert_eq!(result, "1. John Smith (2020)");
 }
 
+// TODO: Article-stripping for anonymous work sort not yet implemented.
+// See csl26-srvr known gaps and csl26-mo6c sort oracle tests.
+// This test documents the expected behavior:
+// - Anonymous works sort by title
+// - Leading articles ("The", "A", "An") should be stripped for sort purposes
+// - Current implementation sorts without stripping, so this test is commented out.
 #[test]
-#[ignore = "article-stripping sort not yet implemented; see csl26-srvr known gaps"]
+#[ignore = "article-stripping sort not yet implemented; see csl26-srvr known gaps and csl26-mo6c"]
 fn test_anonymous_works_sort_by_title_without_article() {
     let style = build_sorted_style(vec![
         SortSpec {
