@@ -1,11 +1,11 @@
 ---
 # csl26-si08
 title: 'Migrate: museum-national-dhistoire-naturelle'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:45:21Z
-updated_at: 2026-02-23T17:45:21Z
+updated_at: 2026-03-01T13:05:44Z
 ---
 
 Migration prep completed ✅

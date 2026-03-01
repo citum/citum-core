@@ -1,11 +1,11 @@
 ---
 # csl26-cmye
 title: 'Migrate: din-1505-2-alphanumeric'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:45:05Z
-updated_at: 2026-02-23T17:45:06Z
+updated_at: 2026-03-01T12:54:28Z
 ---
 
 Migration prep completed ✅

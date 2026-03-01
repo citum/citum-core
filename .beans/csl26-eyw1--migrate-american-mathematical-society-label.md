@@ -1,11 +1,11 @@
 ---
 # csl26-eyw1
 title: 'Migrate: american-mathematical-society-label'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-21T15:07:32Z
-updated_at: 2026-02-21T15:07:33Z
+updated_at: 2026-03-01T12:54:20Z
 ---
 
 Migration prep completed ✅

@@ -1,11 +1,11 @@
 ---
 # csl26-8qwp
 title: 'Migrate: mhra-notes'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:45:18Z
-updated_at: 2026-02-23T17:45:19Z
+updated_at: 2026-03-01T12:54:42Z
 ---
 
 Migration prep completed ✅

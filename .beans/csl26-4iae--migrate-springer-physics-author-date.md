@@ -1,11 +1,11 @@
 ---
 # csl26-4iae
 title: 'Migrate: springer-physics-author-date'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:45:28Z
-updated_at: 2026-02-23T17:45:29Z
+updated_at: 2026-03-01T13:07:18Z
 ---
 
 Migration prep completed ✅

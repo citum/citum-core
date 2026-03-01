@@ -1,11 +1,11 @@
 ---
 # csl26-0jud
 title: 'Migrate: annual-reviews-author-date'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:44:59Z
-updated_at: 2026-02-23T17:45:00Z
+updated_at: 2026-03-01T13:05:44Z
 ---
 
 Migration prep completed ✅

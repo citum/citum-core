@@ -1,11 +1,11 @@
 ---
 # csl26-poti
 title: 'Migrate: inter-research-science-center'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:45:15Z
-updated_at: 2026-02-23T17:45:16Z
+updated_at: 2026-03-01T12:54:35Z
 ---
 
 Migration prep completed ✅

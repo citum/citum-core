@@ -1,11 +1,11 @@
 ---
 # csl26-p1rn
 title: 'Phase 1: GitHub org transfer and crate rename'
-status: todo
+status: completed
 type: milestone
 priority: normal
 created_at: 2026-02-22T00:00:00Z
-updated_at: 2026-02-22T00:00:00Z
+updated_at: 2026-03-01T13:06:14Z
 blocking:
     - csl26-modz
     - csl26-p0dc

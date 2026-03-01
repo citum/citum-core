@@ -1,11 +1,11 @@
 ---
 # csl26-p6sc
 title: 'Migrate: annals-of-the-association-of-american-geographers'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-14T14:17:16Z
-updated_at: 2026-02-14T14:17:18Z
+updated_at: 2026-03-01T12:54:23Z
 ---
 
 Migration prep completed ✅

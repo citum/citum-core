@@ -1,11 +1,11 @@
 ---
 # csl26-51ll
 title: 'Migrate: african-online-scientific-information-systems-harvard'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:44:50Z
-updated_at: 2026-02-23T17:44:54Z
+updated_at: 2026-03-01T12:54:10Z
 ---
 
 Migration prep completed ✅

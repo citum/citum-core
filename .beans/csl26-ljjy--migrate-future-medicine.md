@@ -1,11 +1,11 @@
 ---
 # csl26-ljjy
 title: 'Migrate: future-medicine'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:45:11Z
-updated_at: 2026-02-23T17:45:13Z
+updated_at: 2026-03-01T12:54:30Z
 ---
 
 Migration prep completed ✅

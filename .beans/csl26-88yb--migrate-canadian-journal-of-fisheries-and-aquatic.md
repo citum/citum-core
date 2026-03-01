@@ -1,11 +1,11 @@
 ---
 # csl26-88yb
 title: 'Migrate: canadian-journal-of-fisheries-and-aquatic-sciences'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:45:01Z
-updated_at: 2026-02-23T17:45:02Z
+updated_at: 2026-03-01T13:05:44Z
 ---
 
 Migration prep completed ✅

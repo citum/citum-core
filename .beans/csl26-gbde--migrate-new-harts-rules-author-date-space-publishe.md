@@ -1,11 +1,11 @@
 ---
 # csl26-gbde
 title: 'Migrate: new-harts-rules-author-date-space-publisher'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:45:21Z
-updated_at: 2026-02-23T17:45:23Z
+updated_at: 2026-03-01T13:05:44Z
 ---
 
 Migration prep completed ✅

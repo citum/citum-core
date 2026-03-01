@@ -1,11 +1,11 @@
 ---
 # csl26-kpv4
 title: Evaluate addition of a server mode with Open API
-status: todo
+status: completed
 type: task
 priority: normal
 created_at: 2026-02-07T11:35:47Z
-updated_at: 2026-02-27T15:45:16Z
+updated_at: 2026-03-01T13:07:34Z
 parent: csl26-li63
 blocking:
     - csl26-ismq

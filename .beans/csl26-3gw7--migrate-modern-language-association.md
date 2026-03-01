@@ -1,11 +1,11 @@
 ---
 # csl26-3gw7
 title: 'Migrate: modern-language-association'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-21T20:22:32Z
-updated_at: 2026-02-21T20:22:33Z
+updated_at: 2026-03-01T13:05:44Z
 ---
 
 Migration prep completed ✅

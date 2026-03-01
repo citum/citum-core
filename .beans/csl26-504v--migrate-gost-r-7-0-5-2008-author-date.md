@@ -1,11 +1,11 @@
 ---
 # csl26-504v
 title: 'Migrate: gost-r-7-0-5-2008-author-date'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:45:14Z
-updated_at: 2026-02-23T17:45:14Z
+updated_at: 2026-03-01T12:54:32Z
 ---
 
 Auto-created by prep-migration.sh

@@ -1,11 +1,11 @@
 ---
 # csl26-tyvx
 title: 'Migrate: royal-society-of-chemistry'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:45:25Z
-updated_at: 2026-02-23T17:45:26Z
+updated_at: 2026-03-01T13:05:44Z
 ---
 
 Migration prep completed ✅

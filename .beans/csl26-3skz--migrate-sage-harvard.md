@@ -1,11 +1,11 @@
 ---
 # csl26-3skz
 title: 'Migrate: sage-harvard'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T22:52:07Z
-updated_at: 2026-02-23T22:52:09Z
+updated_at: 2026-03-01T13:05:44Z
 ---
 
 Migration prep completed ✅

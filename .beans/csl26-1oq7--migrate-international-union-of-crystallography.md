@@ -1,11 +1,11 @@
 ---
 # csl26-1oq7
 title: 'Migrate: international-union-of-crystallography'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:45:16Z
-updated_at: 2026-02-23T17:45:16Z
+updated_at: 2026-03-01T12:54:36Z
 ---
 
 Migration prep completed ✅

@@ -1,11 +1,11 @@
 ---
 # csl26-06vm
 title: 'Migrate: apa'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-14T14:08:19Z
-updated_at: 2026-02-14T14:08:20Z
+updated_at: 2026-03-01T12:54:26Z
 ---
 
 Migration prep completed ✅

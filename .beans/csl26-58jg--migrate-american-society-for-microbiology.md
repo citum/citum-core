@@ -1,11 +1,11 @@
 ---
 # csl26-58jg
 title: 'Migrate: american-society-for-microbiology'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T17:44:58Z
-updated_at: 2026-02-23T17:44:59Z
+updated_at: 2026-03-01T13:05:44Z
 ---
 
 Migration prep completed ✅
