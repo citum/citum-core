@@ -234,9 +234,9 @@ impl Processor {
                         DocumentFormat::Latex => format!("\\subsection*{{{heading_text}}}\n\n"),
                         _ => format!("## {heading_text}\n\n"),
                     };
-                    format!("{prefix}{bib_content}")
+                    format!("{prefix}{bib_content}\n")
                 } else {
-                    bib_content
+                    format!("{bib_content}\n")
                 };
                 result = result.replace(&placeholder, &replacement);
             }
