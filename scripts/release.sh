@@ -90,40 +90,23 @@ if ! git -C "$ROOT" diff --quiet || ! git -C "$ROOT" diff --cached --quiet; then
   exit 1
 fi
 
-# ── Extract [Unreleased] content ──────────────────────────────────────────────
-UNRELEASED=$(awk '/^## \[Unreleased\]/{found=1; next} found && /^## \[/{exit} found{print}' "$CHANGELOG" | sed '/^[[:space:]]*$/d')
-
-# ── Major confirmation ────────────────────────────────────────────────────────
-# ── Print summary (always) ────────────────────────────────────────────────────
+# ── Print summary ─────────────────────────────────────────────────────────────
 if [[ "$IS_MAJOR" == "true" ]]; then
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo "  MAJOR VERSION BUMP: $CURRENT_VERSION → $NEW_VERSION"
   [[ -n "$RELEASE_NAME" ]] && echo "  Name: $RELEASE_NAME"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo ""
-  if [[ -n "$UNRELEASED" ]]; then
-    echo "Unreleased changes included in this release:"
-    echo ""
-    echo "$UNRELEASED"
-    echo ""
-  else
-    echo "(No unreleased changes documented in CHANGELOG.md)"
-    echo ""
-  fi
 else
   echo "Release summary:"
   echo "  $CURRENT_VERSION → $NEW_VERSION  ($(date +%Y-%m-%d))"
   [[ -n "$RELEASE_NAME" ]] && echo "  Name: $RELEASE_NAME"
-  if [[ -n "$UNRELEASED" ]]; then
-    echo ""
-    echo "Unreleased changes:"
-    echo ""
-    echo "$UNRELEASED"
-  fi
-  echo ""
 fi
+echo ""
 
 if [[ "$DRY_RUN" == "true" ]]; then
+  echo "Changelog preview (git cliff --unreleased):"
+  git cliff --unreleased 2>/dev/null || echo "(git-cliff not available)"
+  echo ""
   echo "(dry run — no files modified)"
   exit 0
 fi
@@ -140,30 +123,23 @@ fi
 # ── Bump Cargo.toml ───────────────────────────────────────────────────────────
 sed -i '' "s/^version = \"$CURRENT_VERSION\"/version = \"$NEW_VERSION\"/" "$CARGO_TOML"
 
-# ── Update CHANGELOG.md ───────────────────────────────────────────────────────
-TODAY=$(date +%Y-%m-%d)
-HEADING="## [$NEW_VERSION] - $TODAY"
-[[ -n "$RELEASE_NAME" ]] && HEADING="$HEADING — $RELEASE_NAME"
-
-if ! grep -q '## \[Unreleased\]' "$CHANGELOG"; then
-  echo "Error: CHANGELOG.md missing '## [Unreleased]' section" >&2
-  exit 1
-fi
-
-# Promote [Unreleased] → versioned heading
-sed -i '' "s|## \[Unreleased\]|$HEADING|" "$CHANGELOG"
-
-# Prepend fresh [Unreleased] section
-sed -i '' "s|$HEADING|## [Unreleased]\n\n$HEADING|" "$CHANGELOG"
-
 # ── Refresh Cargo.lock ────────────────────────────────────────────────────────
 echo "Running cargo check to refresh Cargo.lock..."
 cargo check --quiet --manifest-path "$CARGO_TOML" 2>&1
 
-# ── Commit ────────────────────────────────────────────────────────────────────
-git -C "$ROOT" add -A
+# ── Commit version bump ───────────────────────────────────────────────────────
+git -C "$ROOT" add "$CARGO_TOML" "$ROOT/Cargo.lock"
 git -C "$ROOT" commit -m "chore(release): bump workspace version to $NEW_VERSION"
+
+# ── Tag the release ───────────────────────────────────────────────────────────
+git -C "$ROOT" tag "v$NEW_VERSION"
+
+# ── Regenerate CHANGELOG.md via git-cliff ─────────────────────────────────────
+echo "Generating CHANGELOG.md with git-cliff..."
+git cliff -o "$CHANGELOG" 2>/dev/null
+git -C "$ROOT" add "$CHANGELOG"
+git -C "$ROOT" commit --amend --no-edit
 
 echo ""
 echo "Done. Push when ready:"
-echo "  git push origin main"
+echo "  git push origin main --tags"
