@@ -83,7 +83,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **engine**
 
+- Stabilize numeric cite ordering ([`aaf48b4`](https://github.com/citum/citum-core/commit/aaf48b49e8ccc8542aab1320e191b4d90aee7c02))
+
+- Align note locator and serial metadata ([`a2715ab`](https://github.com/citum/citum-core/commit/a2715ab36aaf10216edcbc70f6a72dde0cabc819))
+
+- Calculate group_length for author-format disambiguation ([`6e7e810`](https://github.com/citum/citum-core/commit/6e7e8106c95ad6e170995afd57ce07bc12509912))
+
 - Normalize space-only initials formatting ([`906586c`](https://github.com/citum/citum-core/commit/906586c7793862c2b16f520eef85fee18d6919e6))
+
+- Repair bibliography block rendering ([`e91f649`](https://github.com/citum/citum-core/commit/e91f649e8c69fdb6754344adb31dd06cb1608df7))
+
+- Add trailing newline after bibliography blocks ([`2bad291`](https://github.com/citum/citum-core/commit/2bad29109301b2f0d1d32f851a187c513898440d))
+
+- Strip YAML frontmatter from rendered output ([`8ea72b9`](https://github.com/citum/citum-core/commit/8ea72b9782e882c03274e4f7135333de4831df3c))
 
 - Sort undated bibliography entries last ([`ec1cfa8`](https://github.com/citum/citum-core/commit/ec1cfa8569567de16bfd3c982ae7652a1e5d63df))
 
@@ -152,21 +164,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **processing**
 
 - Make bibliography sort defaults explicit ([`bfd7e5d`](https://github.com/citum/citum-core/commit/bfd7e5de15baf55c10638571aca26c3c6205f772))
-
-
-**processor**
-
-- Stabilize numeric cite ordering ([`aaf48b4`](https://github.com/citum/citum-core/commit/aaf48b49e8ccc8542aab1320e191b4d90aee7c02))
-
-- Align note locator and serial metadata ([`a2715ab`](https://github.com/citum/citum-core/commit/a2715ab36aaf10216edcbc70f6a72dde0cabc819))
-
-- Calculate group_length for author-format disambiguation ([`6e7e810`](https://github.com/citum/citum-core/commit/6e7e8106c95ad6e170995afd57ce07bc12509912))
-
-- Repair bibliography block rendering ([`e91f649`](https://github.com/citum/citum-core/commit/e91f649e8c69fdb6754344adb31dd06cb1608df7))
-
-- Add trailing newline after bibliography blocks ([`2bad291`](https://github.com/citum/citum-core/commit/2bad29109301b2f0d1d32f851a187c513898440d))
-
-- Strip YAML frontmatter from rendered output ([`8ea72b9`](https://github.com/citum/citum-core/commit/8ea72b9782e882c03274e4f7135333de4831df3c))
 
 
 **render**
@@ -332,6 +329,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **engine**
 
+- Normalize note citations and locator rules ([`3378a8f`](https://github.com/citum/citum-core/commit/3378a8fb3e92b5eed6d9357b16cd9b8cca299865))
+
+- Add locator label controls ([`9f79f43`](https://github.com/citum/citum-core/commit/9f79f4398d2b626e5b03b3fe677748f424f40938))
+
+- Sort numeric label assignment ([`52fa7e9`](https://github.com/citum/citum-core/commit/52fa7e926f6d139672163430bae947a1ae6927a8))
+
+- Support FamilyOnly and DayMonthAbbrYear rendering ([`12b83ac`](https://github.com/citum/citum-core/commit/12b83ac6bdd40576d759c176d16067e2ffaf1130))
+
+- Add position-based citation variants (ibid, subsequent) ([`22dff4c`](https://github.com/citum/citum-core/commit/22dff4c20c6452a9b516eac43cefda243b141542))
+
+- Add document-level bibliography grouping via djot and YAML ([`86dca5f`](https://github.com/citum/citum-core/commit/86dca5f89f98b859f12568bf1969c248b30b9ead))
+
 - Support container short titles ([`29794d0`](https://github.com/citum/citum-core/commit/29794d02c10cf3ef341127a219a9f947b846facd))
 
 
@@ -387,21 +396,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add 6 new ContributorPreset variants ([`9a187b8`](https://github.com/citum/citum-core/commit/9a187b8f0646ec1cd52b9ce0682d400399bd824d))
 
 - Add numeric contributor variants ([`b2007d1`](https://github.com/citum/citum-core/commit/b2007d1ecebf9f66d365d8f07d2a884e862e78a1))
-
-
-**processor**
-
-- Normalize note citations and locator rules ([`3378a8f`](https://github.com/citum/citum-core/commit/3378a8fb3e92b5eed6d9357b16cd9b8cca299865))
-
-- Add locator label controls ([`9f79f43`](https://github.com/citum/citum-core/commit/9f79f4398d2b626e5b03b3fe677748f424f40938))
-
-- Sort numeric label assignment ([`52fa7e9`](https://github.com/citum/citum-core/commit/52fa7e926f6d139672163430bae947a1ae6927a8))
-
-- Support FamilyOnly and DayMonthAbbrYear rendering ([`12b83ac`](https://github.com/citum/citum-core/commit/12b83ac6bdd40576d759c176d16067e2ffaf1130))
-
-- Add position-based citation variants (ibid, subsequent) ([`22dff4c`](https://github.com/citum/citum-core/commit/22dff4c20c6452a9b516eac43cefda243b141542))
-
-- Add document-level bibliography grouping via djot and YAML ([`86dca5f`](https://github.com/citum/citum-core/commit/86dca5f89f98b859f12568bf1969c248b30b9ead))
 
 
 **report**
@@ -518,6 +512,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename crate csln-edtf → citum-edtf ([`51cfc24`](https://github.com/citum/citum-core/commit/51cfc24ba677424104a8e9a2a77ad60002a8bc03))
 
 
+**engine**
+
+- Remove unused clap dependency ([`35bae75`](https://github.com/citum/citum-core/commit/35bae7523d0d4f20144463fc2378978f3b206db3))
+
+
 **migrate**
 
 - Harden inferred template merge ([`fedba76`](https://github.com/citum/citum-core/commit/fedba76587fb073d59b263c44af5effdab2c4e12))
@@ -525,11 +524,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Trim redundant bibliography sorts ([`b5d0be4`](https://github.com/citum/citum-core/commit/b5d0be427bd5aaf8ad14a93c5df15ea343a578bd))
 
 - Modularize template_compiler ([`8e484ef`](https://github.com/citum/citum-core/commit/8e484ef8d38f7ff5bf71555045c4f2ca4f5b8d69))
-
-
-**processor**
-
-- Remove unused clap dependency ([`35bae75`](https://github.com/citum/citum-core/commit/35bae7523d0d4f20144463fc2378978f3b206db3))
 
 
 **sqi**
@@ -676,7 +670,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add concurrency group to prevent parallel runs ([`6f94e83`](https://github.com/citum/citum-core/commit/6f94e83c21b71eb5261c237c8dcc682a0c104530))
 
 
-**csln**
+**engine**
 
 - Align process alias with render refs flags ([`d64b926`](https://github.com/citum/citum-core/commit/d64b926fa170f0277714b57ef5f0ebca1abc010b))
 
@@ -726,7 +720,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unneeded ref ([`10961c1`](https://github.com/citum/citum-core/commit/10961c164db8f6548b243b7eb8c6fb5c3e51db5b))
 
 
-**processor**
+**engine**
 
 - Fix table formatting ([`a9967af`](https://github.com/citum/citum-core/commit/a9967af083d2f6ae3f4e40038449e851b8883f07))
 
@@ -768,7 +762,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add TypeSelector and semantic number fields ([`3b4e100`](https://github.com/citum/citum-core/commit/3b4e10017dfd077afcc8f54fd7de725482ee1d42))
 
 
-**processor**
+**engine**
 
 - Add native LaTeX renderer ([`a042f25`](https://github.com/citum/citum-core/commit/a042f25be4317ad7791cab57316f7196957f6ded))
 
@@ -803,7 +797,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Refactor
 
-**csln**
+**engine**
+
+- Format-aware value extraction pipeline ([`5f8b499`](https://github.com/citum/citum-core/commit/5f8b499cbfcbe6ef7e3b43d7ed8909eafd2dabdc))
 
 - Unify cli ux around render/check ([`328ed3b`](https://github.com/citum/citum-core/commit/328ed3b0ac755900caa41bc8c4a1a41a8378da9a))
 
@@ -813,11 +809,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **i18n**
 
 - Localize bib group headings ([`d5c3919`](https://github.com/citum/citum-core/commit/d5c391964fe92307a9216235e6ab109552a8b3c6))
-
-
-**processor**
-
-- Format-aware value extraction pipeline ([`5f8b499`](https://github.com/citum/citum-core/commit/5f8b499cbfcbe6ef7e3b43d7ed8909eafd2dabdc))
 
 
 
@@ -836,14 +827,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Testing
 
+**engine**
+
+- Wire domain fixtures into CI runs ([`05fdca4`](https://github.com/citum/citum-core/commit/05fdca489600bcb0689fcc917921a569f4b85f0d))
+
+
 **i18n**
 
 - Align multilingual tests ([`b17e042`](https://github.com/citum/citum-core/commit/b17e04207c72c0322bcc2b42eaefff28d943f4bc))
-
-
-**processor**
-
-- Wire domain fixtures into CI runs ([`05fdca4`](https://github.com/citum/citum-core/commit/05fdca489600bcb0689fcc917921a569f4b85f0d))
 
 
 ## [0.5.0] - 2026-02-16
@@ -855,14 +846,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove nextest to avoid yanked deps ([`4b2a345`](https://github.com/citum/citum-core/commit/4b2a345d9aa0250135b1c3e3181b9f866e9b8337))
 
 
+**engine**
+
+- Resolve clippy warnings in document tests ([`156202c`](https://github.com/citum/citum-core/commit/156202c01b788e3069c326909b87961b67162387))
+
+
 **nextest**
 
 - Correct config field types ([`81b1cbb`](https://github.com/citum/citum-core/commit/81b1cbb2b748a08057bd51dd3deead2a679efd84))
-
-
-**processor**
-
-- Resolve clippy warnings in document tests ([`156202c`](https://github.com/citum/citum-core/commit/156202c01b788e3069c326909b87961b67162387))
 
 
 **release**
@@ -940,7 +931,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Testing
 
-**processor**
+**engine**
 
 - Expand native test suite and refactor existing tests ([`3a0eb43`](https://github.com/citum/citum-core/commit/3a0eb4397c1c5f79d58915b417e4701da7219d49))
 
@@ -966,6 +957,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **csln_migrate**
 
 - Improve substitute extraction for real styles ([`b767d88`](https://github.com/citum/citum-core/commit/b767d886d656da0874fe8ff6089960a30af62548))
+
+
+**engine**
+
+- Use container_title for chapter book titles ([`56a70ec`](https://github.com/citum/citum-core/commit/56a70ecb51dca1921dec31c7929d80b37b2abba8))
+
+- Correctly map ParentSerial/ParentMonograph to container_title ([`43b0785`](https://github.com/citum/citum-core/commit/43b07851a5aa983703c39f1403c0785a24099b29))
+
+- Implement contributor verb and label forms ([`4bdadb3`](https://github.com/citum/citum-core/commit/4bdadb34e51bb75a98b4a98990992af077c6ac6a))
+
+- Add context-aware delimiter for two-author bibliographies ([`65a2e15`](https://github.com/citum/citum-core/commit/65a2e1595a1aed52892e8cf604e867e5ceaa6df3))
+
+- Implement variable-once rule for substituted titles ([`75efee2`](https://github.com/citum/citum-core/commit/75efee2d13f431f1a467ce2a825f99342cb659de))
+
+- Improve bibliography sorting with proper key chaining ([`5620190`](https://github.com/citum/citum-core/commit/56201900255388d2568445f2ecf1b2cf48138a8d))
+
+- Add contributor labels and sorting fixes ([`31a96aa`](https://github.com/citum/citum-core/commit/31a96aa20c6d49e6eadb612ba605e40d3165c141))
+
+- Resolve mode-dependent conjunctions and implement deep config merging ([`6acd4b8`](https://github.com/citum/citum-core/commit/6acd4b890ae1947ce122b20d4a7f90c3c0d1bad5))
+
+- Allow variable repetition with different context ([`34670a4`](https://github.com/citum/citum-core/commit/34670a46e7a43243e1f2934b530cebda734489cd))
+
+- Author substitution and grouping bugs ([`ef4e075`](https://github.com/citum/citum-core/commit/ef4e0755c2f296ec0c47aed1a48e6a5cf51ebab2))
+
+- Use correct jotdown API ([`b195afc`](https://github.com/citum/citum-core/commit/b195afcf39971dd5e4ad233d975d873013addb48))
+
+- Prevent HTML escaping in docs ([`c57ee77`](https://github.com/citum/citum-core/commit/c57ee7716a5ab5b7198d7b8f41f5b7b4a9f4e44f))
 
 
 **gitignore**
@@ -1047,33 +1065,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Preserve macro call order across choose branches ([`b4b96ae`](https://github.com/citum/citum-core/commit/b4b96aece112d5dc7093b5b31cbcb7f04fe4248d))
 
 - Correct contributor name order logic ([`d2dba73`](https://github.com/citum/citum-core/commit/d2dba732dfa92f5fa5b9d8bc3c4ffa8e68593137))
-
-
-**processor**
-
-- Use container_title for chapter book titles ([`56a70ec`](https://github.com/citum/citum-core/commit/56a70ecb51dca1921dec31c7929d80b37b2abba8))
-
-- Correctly map ParentSerial/ParentMonograph to container_title ([`43b0785`](https://github.com/citum/citum-core/commit/43b07851a5aa983703c39f1403c0785a24099b29))
-
-- Implement contributor verb and label forms ([`4bdadb3`](https://github.com/citum/citum-core/commit/4bdadb34e51bb75a98b4a98990992af077c6ac6a))
-
-- Add context-aware delimiter for two-author bibliographies ([`65a2e15`](https://github.com/citum/citum-core/commit/65a2e1595a1aed52892e8cf604e867e5ceaa6df3))
-
-- Implement variable-once rule for substituted titles ([`75efee2`](https://github.com/citum/citum-core/commit/75efee2d13f431f1a467ce2a825f99342cb659de))
-
-- Improve bibliography sorting with proper key chaining ([`5620190`](https://github.com/citum/citum-core/commit/56201900255388d2568445f2ecf1b2cf48138a8d))
-
-- Add contributor labels and sorting fixes ([`31a96aa`](https://github.com/citum/citum-core/commit/31a96aa20c6d49e6eadb612ba605e40d3165c141))
-
-- Resolve mode-dependent conjunctions and implement deep config merging ([`6acd4b8`](https://github.com/citum/citum-core/commit/6acd4b890ae1947ce122b20d4a7f90c3c0d1bad5))
-
-- Allow variable repetition with different context ([`34670a4`](https://github.com/citum/citum-core/commit/34670a46e7a43243e1f2934b530cebda734489cd))
-
-- Author substitution and grouping bugs ([`ef4e075`](https://github.com/citum/citum-core/commit/ef4e0755c2f296ec0c47aed1a48e6a5cf51ebab2))
-
-- Use correct jotdown API ([`b195afc`](https://github.com/citum/citum-core/commit/b195afcf39971dd5e4ad233d975d873013addb48))
-
-- Prevent HTML escaping in docs ([`c57ee77`](https://github.com/citum/citum-core/commit/c57ee7716a5ab5b7198d7b8f41f5b7b4a9f4e44f))
 
 
 **reference**
@@ -1305,6 +1296,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implement modern winnow-based parser ([`cfa8732`](https://github.com/citum/citum-core/commit/cfa873250ad0699d9643232b6304ef31bb146b04))
 
 
+**engine**
+
+- Add citation layout support ([`910f3d5`](https://github.com/citum/citum-core/commit/910f3d5a2b0b93b50e872af5ac117e9d477db03d))
+
+- Add bibliography entry numbering for numeric styles ([`3b2faa3`](https://github.com/citum/citum-core/commit/3b2faa3933c2766218219941185ea867c57c634e))
+
+- Fix name initials formatting and extraction ([`e9247bf`](https://github.com/citum/citum-core/commit/e9247bffd630d6f36ecddcf961ad8b6db046907c))
+
+- Support per-component name conjunction override ([`03b1d35`](https://github.com/citum/citum-core/commit/03b1d35dd1c2ba0fc5501adb33d5bf0227b40db4))
+
+- Implement declarative title and contributor rendering logic ([`1fd8a5f`](https://github.com/citum/citum-core/commit/1fd8a5f5e92e889a673c41a92b8e9d172b2ed655))
+
+- Achieve 15/15 oracle parity for Chicago and APA (#54) ([`4892bd9`](https://github.com/citum/citum-core/commit/4892bd96de7e25d6b7acc21fa1b2df6453ca5fa2))
+
+- Add citation grouping and year suffix ordering ([`175df7d`](https://github.com/citum/citum-core/commit/175df7df5dc96cf20f2d67566b8dd7a4e107d020))
+
+- Improve bibliography separator handling ([`ffc718a`](https://github.com/citum/citum-core/commit/ffc718a5dca9dba2550b84a27b74a85de2ee2e78))
+
+- Improve rendering engine and test dataset ([`1a74457`](https://github.com/citum/citum-core/commit/1a7445778746bb1b43e96e040c1871b358426bbf))
+
+- Add integral citation mode to CLI output ([`66db9b0`](https://github.com/citum/citum-core/commit/66db9b0299d3316a0b57f2efcc05c8f9f4fee4ad))
+
+- Implement multilingual BCP 47 resolution ([`828a7ff`](https://github.com/citum/citum-core/commit/828a7ff00d00d0a1ec7b9e833a11b641a6bf97de))
+
+- Implement strip-periods in term and number labels ([`a58ee37`](https://github.com/citum/citum-core/commit/a58ee37d00bfdc2e6083cd8b93071a14cc1079dd))
+
+- Add document-level processing prototype ([`02dba48`](https://github.com/citum/citum-core/commit/02dba48cda1ea5ba7f9f207e3566d4d7f12e0af1))
+
+- Implement WinnowCitationParser for Djot syntax ([`9c7e787`](https://github.com/citum/citum-core/commit/9c7e7876ddc252c860100e53f6a61ce94a5fd49b))
+
+- Simplify Djot citation syntax by removing mandatory attribute ([`b2f487c`](https://github.com/citum/citum-core/commit/b2f487cb503dc3bf8f8b63c965d24e0466193086))
+
+- Support hybrid and structured locators in Djot parser ([`08f24d9`](https://github.com/citum/citum-core/commit/08f24d9c755ecd7a00d34b792570c165638090ec))
+
+- Implement djot document processing and structured locators ([`a28b741`](https://github.com/citum/citum-core/commit/a28b7410165829a5b336c4f08e44222116414c9b))
+
+- Add HTML output for Djot document processing ([`183314a`](https://github.com/citum/citum-core/commit/183314a4383d4a3f93610e717b6d9286c85f5c55))
+
+- Support infix variable in integral citations ([`2fa7f7b`](https://github.com/citum/citum-core/commit/2fa7f7b46918c0ffc3f3f9f4c6c5f2dfe3fa724c))
+
+
 **fixtures**
 
 - Expand test references to 28 items across 17 types ([`18e915a`](https://github.com/citum/citum-core/commit/18e915a8e0a652e3e85f37bfe08259e183d5eb95))
@@ -1375,47 +1407,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **presets**
 
 - Add options-level preset support ([`8824ff5`](https://github.com/citum/citum-core/commit/8824ff5e536f60650e9ff92c32c8e852b1213dd4))
-
-
-**processor**
-
-- Add citation layout support ([`910f3d5`](https://github.com/citum/citum-core/commit/910f3d5a2b0b93b50e872af5ac117e9d477db03d))
-
-- Add bibliography entry numbering for numeric styles ([`3b2faa3`](https://github.com/citum/citum-core/commit/3b2faa3933c2766218219941185ea867c57c634e))
-
-- Fix name initials formatting and extraction ([`e9247bf`](https://github.com/citum/citum-core/commit/e9247bffd630d6f36ecddcf961ad8b6db046907c))
-
-- Support per-component name conjunction override ([`03b1d35`](https://github.com/citum/citum-core/commit/03b1d35dd1c2ba0fc5501adb33d5bf0227b40db4))
-
-- Implement declarative title and contributor rendering logic ([`1fd8a5f`](https://github.com/citum/citum-core/commit/1fd8a5f5e92e889a673c41a92b8e9d172b2ed655))
-
-- Achieve 15/15 oracle parity for Chicago and APA (#54) ([`4892bd9`](https://github.com/citum/citum-core/commit/4892bd96de7e25d6b7acc21fa1b2df6453ca5fa2))
-
-- Add citation grouping and year suffix ordering ([`175df7d`](https://github.com/citum/citum-core/commit/175df7df5dc96cf20f2d67566b8dd7a4e107d020))
-
-- Improve bibliography separator handling ([`ffc718a`](https://github.com/citum/citum-core/commit/ffc718a5dca9dba2550b84a27b74a85de2ee2e78))
-
-- Improve rendering engine and test dataset ([`1a74457`](https://github.com/citum/citum-core/commit/1a7445778746bb1b43e96e040c1871b358426bbf))
-
-- Add integral citation mode to CLI output ([`66db9b0`](https://github.com/citum/citum-core/commit/66db9b0299d3316a0b57f2efcc05c8f9f4fee4ad))
-
-- Implement multilingual BCP 47 resolution ([`828a7ff`](https://github.com/citum/citum-core/commit/828a7ff00d00d0a1ec7b9e833a11b641a6bf97de))
-
-- Implement strip-periods in term and number labels ([`a58ee37`](https://github.com/citum/citum-core/commit/a58ee37d00bfdc2e6083cd8b93071a14cc1079dd))
-
-- Add document-level processing prototype ([`02dba48`](https://github.com/citum/citum-core/commit/02dba48cda1ea5ba7f9f207e3566d4d7f12e0af1))
-
-- Implement WinnowCitationParser for Djot syntax ([`9c7e787`](https://github.com/citum/citum-core/commit/9c7e7876ddc252c860100e53f6a61ce94a5fd49b))
-
-- Simplify Djot citation syntax by removing mandatory attribute ([`b2f487c`](https://github.com/citum/citum-core/commit/b2f487cb503dc3bf8f8b63c965d24e0466193086))
-
-- Support hybrid and structured locators in Djot parser ([`08f24d9`](https://github.com/citum/citum-core/commit/08f24d9c755ecd7a00d34b792570c165638090ec))
-
-- Implement djot document processing and structured locators ([`a28b741`](https://github.com/citum/citum-core/commit/a28b7410165829a5b336c4f08e44222116414c9b))
-
-- Add HTML output for Djot document processing ([`183314a`](https://github.com/citum/citum-core/commit/183314a4383d4a3f93610e717b6d9286c85f5c55))
-
-- Support infix variable in integral citations ([`2fa7f7b`](https://github.com/citum/citum-core/commit/2fa7f7b46918c0ffc3f3f9f4c6c5f2dfe3fa724c))
 
 
 **reference**
@@ -1536,14 +1527,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Strict typing with custom fields ([`19a5f18`](https://github.com/citum/citum-core/commit/19a5f18f6f846e4c848c8c7fea29210d7c919d8f))
 
 
+**engine**
+
+- Modularize document processing ([`0fe8d54`](https://github.com/citum/citum-core/commit/0fe8d54d8eb7311183dfd1d2ed88dc990760994d))
+
+
 **migrate**
 
 - Implement occurrence-based template compilation ([`f40fb9a`](https://github.com/citum/citum-core/commit/f40fb9aea6cc41dfdf1b0f2b044647f9c8a841ab))
-
-
-**processor**
-
-- Modularize document processing ([`0fe8d54`](https://github.com/citum/citum-core/commit/0fe8d54d8eb7311183dfd1d2ed88dc990760994d))
 
 
 **scripts**

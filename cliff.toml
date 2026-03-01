@@ -32,6 +32,13 @@ trim = true
 
 [git]
 conventional_commits = true
+# Normalize stale scope names from before the project rename
+commit_preprocessors = [
+  # processor → engine (renamed during 0.7.0 cycle)
+  { pattern = "^([a-z]+)\\(processor\\)", replace = "$1(engine)" },
+  # csln → engine (old project name for the processor crate)
+  { pattern = "^([a-z]+)\\(csln\\)", replace = "$1(engine)" },
+]
 filter_unconventional = true
 split_commits = false
 commit_parsers = [
