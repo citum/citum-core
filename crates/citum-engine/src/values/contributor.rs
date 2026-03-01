@@ -863,6 +863,14 @@ pub fn format_single_name(
 ) -> String {
     use citum_schema::template::NameOrder;
 
+    fn join_particle_family(particle: &str, family: &str) -> String {
+        if particle.ends_with('-') {
+            format!("{particle}{family}")
+        } else {
+            format!("{particle} {family}")
+        }
+    }
+
     // Handle literal names (e.g., corporate authors)
     if let Some(literal) = &name.literal {
         return literal.clone();
@@ -914,7 +922,7 @@ pub fn format_single_name(
             let demote = matches!(demote_ndp, Some(DemoteNonDroppingParticle::DisplayAndSort));
 
             let family_part = if !ndp.is_empty() && !demote {
-                format!("{} {}", ndp, family)
+                join_particle_family(ndp, family)
             } else {
                 family.to_string()
             };
@@ -1008,7 +1016,13 @@ pub fn format_single_name(
                     parts.push(particle_part);
                 }
                 if !family_part.is_empty() {
-                    parts.push(family_part);
+                    if let Some(last) = parts.last_mut()
+                        && last.ends_with('-')
+                    {
+                        last.push_str(&family_part);
+                    } else {
+                        parts.push(family_part);
+                    }
                 }
                 if !suffix.is_empty() {
                     parts.push(suffix.to_string());

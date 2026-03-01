@@ -747,6 +747,7 @@ fn test_title_hyperlink_url_fallback() {
 
 #[test]
 fn test_title_values_smarten_leading_single_quotes() {
+    // Upstream provenance: CSL fixture `flipflop_LeadingSingleQuote`.
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
@@ -778,6 +779,85 @@ fn test_title_values_smarten_leading_single_quotes() {
     assert_eq!(
         values.value,
         "‘Parmenides’ 132c-133a and the development of Plato’s thought"
+    );
+}
+
+#[test]
+fn test_title_values_smarten_starting_apostrophe() {
+    // Upstream provenance: CSL fixture `flipflop_StartingApostrophe`.
+    let config = make_config();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        locale: &locale,
+        context: RenderContext::Citation,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator: None,
+        locator_label: None,
+    };
+    let hints = ProcHints::default();
+
+    let reference = Reference::from(LegacyReference {
+        id: "etfa-09".to_string(),
+        ref_type: "book".to_string(),
+        title: Some(
+            "IEEE Conference on Emerging Technologies and Factory Automation (ETFA '09)"
+                .to_string(),
+        ),
+        ..Default::default()
+    });
+
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("title value should render");
+    assert_eq!(
+        values.value,
+        "IEEE Conference on Emerging Technologies and Factory Automation (ETFA ’09)"
+    );
+}
+
+#[test]
+fn test_title_values_smarten_french_apostrophes() {
+    // Upstream provenance: adapted from CSL fixture `flipflop_Apostrophes`.
+    let config = make_config();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        locale: &locale,
+        context: RenderContext::Citation,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator: None,
+        locator_label: None,
+    };
+    let hints = ProcHints::default();
+
+    let reference = Reference::from(LegacyReference {
+        id: "egypt".to_string(),
+        ref_type: "book".to_string(),
+        title: Some(
+            "Supplément aux annales du Service des Antiquités de l'Egypte, Cahier".to_string(),
+        ),
+        ..Default::default()
+    });
+
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("title value should render");
+    assert_eq!(
+        values.value,
+        "Supplément aux annales du Service des Antiquités de l’Egypte, Cahier"
     );
 }
 

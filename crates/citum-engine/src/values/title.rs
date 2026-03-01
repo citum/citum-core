@@ -17,6 +17,7 @@ fn smarten_apostrophes(input: &str) -> String {
             let next = it.peek().map(|(_, c)| *c);
             let prev_is_alpha = prev.is_some_and(|c| c.is_alphabetic());
             let next_is_alpha = next.is_some_and(|c| c.is_alphabetic());
+            let next_is_digit = next.is_some_and(|c| c.is_ascii_digit());
             let prev_opens_quote =
                 prev.is_none_or(|c| c.is_whitespace() || "([{\u{201C}\"".contains(c));
             let next_closes_quote =
@@ -26,7 +27,8 @@ fn smarten_apostrophes(input: &str) -> String {
                 out.push('\u{2019}');
             } else if prev_opens_quote && next_is_alpha {
                 out.push('\u{2018}');
-            } else if prev_is_alpha && next_closes_quote {
+            } else if (prev_opens_quote && next_is_digit) || (prev_is_alpha && next_closes_quote)
+            {
                 out.push('\u{2019}');
             } else {
                 out.push('\'');
