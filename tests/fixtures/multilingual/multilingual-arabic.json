@@ -1,0 +1,31 @@
+{
+  "comment": "Arabic multilingual test data with diacritics and short forms",
+  "ARABIC-ASWANI-DIACRITICS": {
+    "id": "ARABIC-ASWANI-DIACRITICS",
+    "class": "monograph",
+    "type": "book",
+    "title": "Arabic Work",
+    "author": [
+      {
+        "family": "al-Aswānī",
+        "given": "ʿAlāʾ"
+      }
+    ],
+    "issued": { "date-parts": [[2015]] },
+    "publisher": "Cairo Publishers"
+  },
+  "ARABIC-ASWANI-TRANSLITERATED": {
+    "id": "ARABIC-ASWANI-TRANSLITERATED",
+    "class": "monograph",
+    "type": "book",
+    "title": "Arabic Work",
+    "author": [
+      {
+        "family": "al-Aswānī",
+        "given": "`Alā'"
+      }
+    ],
+    "issued": { "date-parts": [[2015]] },
+    "publisher": "Cairo Publishers"
+  }
+}
