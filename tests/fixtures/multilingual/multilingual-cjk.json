@@ -105,5 +105,41 @@
     "issued": { "date-parts": [[2021]] },
     "publisher": "Seoul University Press",
     "publisher-place": "Seoul"
+  },
+  "CSL-ASIAN-GLYPHS": {
+    "id": "CSL-ASIAN-GLYPHS",
+    "class": "monograph",
+    "type": "book",
+    "title": "民法",
+    "author": [
+      {
+        "family": "我妻",
+        "given": "栄"
+      }
+    ],
+    "issued": { "date-parts": [[1960]] },
+    "publisher": "有斐閣"
+  },
+  "CSL-ET-AL-KANJI": {
+    "id": "CSL-ET-AL-KANJI",
+    "class": "monograph",
+    "type": "book",
+    "title": "Test Book",
+    "author": [
+      {
+        "family": "Zither",
+        "given": "Ziggy"
+      },
+      {
+        "family": "Yoda",
+        "given": "Yossarian"
+      },
+      {
+        "family": "Xylophone",
+        "given": "Xerxes"
+      }
+    ],
+    "issued": { "date-parts": [[2020]] },
+    "publisher": "Test Publisher"
   }
 }
