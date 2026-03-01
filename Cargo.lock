@@ -367,7 +367,7 @@ dependencies = [
 
 [[package]]
 name = "citum"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "citum-engine",
  "citum-schema",
@@ -388,7 +388,7 @@ dependencies = [
 
 [[package]]
 name = "citum-analyze"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "citum-schema",
  "csl-legacy",
@@ -401,7 +401,7 @@ dependencies = [
 
 [[package]]
 name = "citum-edtf"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "serde",
  "winnow",
@@ -409,7 +409,7 @@ dependencies = [
 
 [[package]]
 name = "citum-engine"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "biblatex 0.11.0",
  "citum-edtf",
@@ -432,7 +432,7 @@ dependencies = [
 
 [[package]]
 name = "citum-migrate"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "citum-schema",
  "csl-legacy",
@@ -445,7 +445,7 @@ dependencies = [
 
 [[package]]
 name = "citum-schema"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "citum-edtf",
  "criterion",
@@ -460,7 +460,7 @@ dependencies = [
 
 [[package]]
 name = "citum-server"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "axum",
  "citum-engine",
@@ -658,7 +658,7 @@ checksum = "460fbee9c2c2f33933d720630a6a0bac33ba7053db5344fac858d4b8952d77d5"
 
 [[package]]
 name = "csl-legacy"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "indexmap",
  "roxmltree",
