@@ -348,6 +348,111 @@ T Smith, (2000); T Smith, (2000)";
     );
 }
 
+/// Test subsequent et-al: first cite shows full list; repeat cite applies subsequent_min/use_first.
+#[test]
+fn test_subsequent_etal_position_aware() {
+    use citum_schema::options::{Disambiguation, Processing, ProcessingCustom, ShortenListOptions};
+
+    let authors = vec![("Doe", "John"), ("Smith", "Jane"), ("Jones", "Alice")];
+
+    let item = make_book_multi_author("REF-1", authors, 2020, "A Multi-Author Book");
+    let mut bibliography = indexmap::IndexMap::new();
+    bibliography.insert("REF-1".to_string(), item);
+
+    // Style: min=3 (show all on first cite), subsequent_min=1 + subsequent_use_first=1
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Subsequent Et-Al Test".to_string()),
+            id: Some("subsequent-etal-test".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::Custom(ProcessingCustom {
+                disambiguate: Some(Disambiguation {
+                    year_suffix: false,
+                    names: false,
+                    add_givenname: false,
+                }),
+                ..Default::default()
+            })),
+            contributors: Some(citum_schema::options::ContributorConfig {
+                shorten: Some(ShortenListOptions {
+                    // min=4: first citation has 3 names → below threshold → show all (no et al.)
+                    min: 4,
+                    use_first: 3,
+                    // subsequent_min=2: repeat citation has 3 names → ≥ threshold → et al.
+                    subsequent_min: Some(2),
+                    subsequent_use_first: Some(1),
+                    ..Default::default()
+                }),
+                initialize_with: Some(" ".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        citation: Some(CitationSpec {
+            template: Some(vec![
+                citum_schema::tc_contributor!(Author, Short),
+                citum_schema::tc_date!(
+                    Issued,
+                    Year,
+                    wrap = citum_schema::template::WrapPunctuation::Parentheses
+                ),
+            ]),
+            multi_cite_delimiter: Some("; ".to_string()),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let processor = Processor::new(style, bibliography);
+
+    let first_cite = Citation {
+        items: vec![CitationItem {
+            id: "REF-1".to_string(),
+            ..Default::default()
+        }],
+        mode: CitationMode::NonIntegral,
+        ..Default::default()
+    };
+    let repeat_cite = Citation {
+        items: vec![CitationItem {
+            id: "REF-1".to_string(),
+            ..Default::default()
+        }],
+        mode: CitationMode::NonIntegral,
+        ..Default::default()
+    };
+
+    let results = processor
+        .process_citations(&[first_cite, repeat_cite])
+        .expect("citations should render");
+
+    // First cite: all 3 authors visible (no et al.)
+    assert!(
+        results[0].contains("Doe") && results[0].contains("Smith") && results[0].contains("Jones"),
+        "First citation should show all authors, got: {}",
+        results[0]
+    );
+    assert!(
+        !results[0].contains("et al"),
+        "First citation should not use et al., got: {}",
+        results[0]
+    );
+
+    // Subsequent cite: only 1 author + et al. (subsequent_use_first=1)
+    assert!(
+        results[1].contains("et al"),
+        "Subsequent citation should use et al., got: {}",
+        results[1]
+    );
+    assert!(
+        !results[1].contains("Smith") && !results[1].contains("Jones"),
+        "Subsequent citation should hide Smith and Jones, got: {}",
+        results[1]
+    );
+}
+
 /// Test year suffix + et-al with varying author list lengths.
 #[test]
 fn test_disambiguate_basedonetalsubsequent() {
