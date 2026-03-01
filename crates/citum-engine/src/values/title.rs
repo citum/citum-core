@@ -27,8 +27,7 @@ fn smarten_apostrophes(input: &str) -> String {
                 out.push('\u{2019}');
             } else if prev_opens_quote && next_is_alpha {
                 out.push('\u{2018}');
-            } else if (prev_opens_quote && next_is_digit) || (prev_is_alpha && next_closes_quote)
-            {
+            } else if (prev_opens_quote && next_is_digit) || (prev_is_alpha && next_closes_quote) {
                 out.push('\u{2019}');
             } else {
                 out.push('\'');
