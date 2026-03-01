@@ -1535,8 +1535,8 @@ impl TemplateCompiler {
                     }
                     _ => citum_schema::options::DelimiterPrecedesLast::Contextual,
                 },
-                subsequent_min: None,
-                subsequent_use_first: None,
+                subsequent_min: et.subsequent.as_ref().map(|s| s.min),
+                subsequent_use_first: et.subsequent.as_ref().map(|s| s.use_first),
             }
         });
 

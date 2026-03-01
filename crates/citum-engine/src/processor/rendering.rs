@@ -595,8 +595,8 @@ impl<'a> Renderer<'a> {
             }
 
             // Fallback to default hardcoded grouping (or if no integral template)
-            let author_part =
-                self.render_author_for_grouping_with_format::<F>(first_ref, template, mode);
+            let author_part = self
+                .render_author_for_grouping_with_format::<F>(first_ref, template, mode, position);
 
             let mut item_parts = Vec::new();
             for item in &group {
@@ -730,6 +730,7 @@ impl<'a> Renderer<'a> {
         reference: &Reference,
         template: &[TemplateComponent],
         mode: &citum_schema::citation::CitationMode,
+        position: Option<&citum_schema::citation::Position>,
     ) -> String
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -748,11 +749,16 @@ impl<'a> Renderer<'a> {
         // so disambiguation hints and component-specific formatting are preserved.
         // This ensures substitution, shortening, and mode-dependent conjunctions are respected.
         if let Some(comp) = template.first().and_then(find_grouping_component) {
-            let hints = self
+            let base_hints = self
                 .hints
                 .get(&reference.id().unwrap_or_default())
                 .cloned()
                 .unwrap_or_default();
+            // Inject citation position so subsequent et-al thresholds are applied.
+            let hints = ProcHints {
+                position: position.cloned(),
+                ..base_hints
+            };
             if let Some(vals) = comp.values::<F>(reference, &hints, &options)
                 && !vals.value.is_empty()
             {
@@ -799,9 +805,10 @@ impl<'a> Renderer<'a> {
         reference: &Reference,
         template: &[TemplateComponent],
         mode: &citum_schema::citation::CitationMode,
+        position: Option<&citum_schema::citation::Position>,
     ) -> String {
         self.render_author_for_grouping_with_format::<crate::render::plain::PlainText>(
-            reference, template, mode,
+            reference, template, mode, position,
         )
     }
 
