@@ -183,13 +183,28 @@ pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
                 ParagraphBreak::BlankLine => "\n\n",
                 ParagraphBreak::SingleLine => "\n",
             };
-            let indent = if style.indent { "    " } else { "" };
-            let text = if style.italic {
-                format!("<em>{}</em>", annotation_text)
-            } else {
-                annotation_text.clone()
-            };
-            entry_output.push_str(&format!("{}{}{}", separator, indent, text));
+            let indent_prefix = if style.indent { "    " } else { "" };
+            
+            // Apply indentation to each line (preserving blank lines for paragraph breaks)
+            let indented_text = annotation_text
+                .lines()
+                .map(|line| {
+                    if line.trim().is_empty() {
+                        line.to_string()
+                    } else {
+                        let indented_line = format!("{}{}", indent_prefix, line);
+                        if style.italic {
+                            fmt.emph(indented_line)
+                        } else {
+                            indented_line
+                        }
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join("\n");
+
+            entry_output.push_str(separator);
+            entry_output.push_str(&indented_text);
         }
 
         // Resolve entry URL if whole-entry linking is enabled
