@@ -113,17 +113,23 @@ All style files inherit this default unless explicitly overridden in YAML.
 
 ### Bumping Schema Version
 
-Use the `../scripts/bump-schema.sh` script to update the schema version:
+Use the `../scripts/bump.sh` script to update the schema version:
 
 ```bash
-# Bump to new schema version
-./../scripts/bump-schema.sh 1.1.0
+# Bump schema by patch version
+../scripts/bump.sh schema patch
+
+# Bump both schema and engine together
+../scripts/bump.sh patch
+
+# Preview changes without modifying files
+../scripts/bump.sh schema minor --dry-run
 
 # What it does:
 # 1. Updates default_version() in citum_schema/src/lib.rs
 # 2. Validates all styles parse correctly with new version
 # 3. Updates ./SCHEMA_VERSIONING.md with timestamp
-# 4. Creates git tag: schema-v1.1.0
+# 4. Creates git tag: schema-vX.Y.Z
 ```
 
 **Manual process:**
