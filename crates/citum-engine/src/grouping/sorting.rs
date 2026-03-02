@@ -24,11 +24,13 @@ fn compare_optional_years(a_year: Option<i32>, b_year: Option<i32>) -> std::cmp:
     }
 }
 
+/// Sorts grouped bibliography entries using group-specific sort rules.
 pub struct GroupSorter<'a> {
     locale: &'a Locale,
 }
 
 impl<'a> GroupSorter<'a> {
+    /// Create a sorter that uses `locale` for locale-sensitive comparisons.
     pub fn new(locale: &'a Locale) -> Self {
         Self { locale }
     }

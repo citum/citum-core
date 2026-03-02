@@ -9,6 +9,7 @@ use super::format::OutputFormat;
 use citum_schema::template::WrapPunctuation;
 
 #[derive(Default, Clone)]
+/// Renders processed citations and bibliography entries as Djot markup.
 pub struct Djot;
 
 impl OutputFormat for Djot {
