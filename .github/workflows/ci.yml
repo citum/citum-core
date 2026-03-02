@@ -46,6 +46,9 @@ jobs:
       - name: Lint with Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
 
+      - name: Enforce public API docs for citum-edtf
+        run: RUSTFLAGS='-D missing-docs' cargo check -p citum-edtf --lib --all-features
+
       - name: Build
         run: cargo build --verbose
 

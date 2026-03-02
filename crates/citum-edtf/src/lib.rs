@@ -1,9 +1,10 @@
 //! citum_edtf - A modern EDTF (Extended Date/Time Format) parser
 //!
 //! This crate implements ISO 8601-2:2019 (EDTF) Level 0 and Level 1.
+#![deny(missing_docs)]
 
 use winnow::ascii::dec_int;
-use winnow::combinator::{alt, opt, preceded};
+use winnow::combinator::{alt, opt};
 use winnow::error::{ContextError, ErrMode};
 use winnow::prelude::*;
 use winnow::token::take;
@@ -29,35 +30,47 @@ pub enum Edtf {
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Interval {
+    /// The starting date of the interval.
     pub start: Date,
+    /// The ending date of the interval.
     pub end: Date,
 }
 
-/// Represents the Month or the EDTF Season (Level 1)
+/// Represents either a calendar month or an EDTF Level 1 season code.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum MonthOrSeason {
+    /// A calendar month value from `1` through `12`.
     Month(u32),
-    Unspecified, // 'uu' or 'XX'
-    Spring,      // 21
-    Summer,      // 22
-    Autumn,      // 23
-    Winter,      // 24
+    /// An unspecified month marker such as `uu` or `XX`.
+    Unspecified,
+    /// The EDTF season code `21`.
+    Spring,
+    /// The EDTF season code `22`.
+    Summer,
+    /// The EDTF season code `23`.
+    Autumn,
+    /// The EDTF season code `24`.
+    Winter,
 }
 
-/// Metadata about the certainty and precision of a date component
+/// Records EDTF uncertainty and approximation qualifiers for one date component.
 #[derive(Debug, PartialEq, Eq, Default, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Quality {
-    pub uncertain: bool,   // '?'
-    pub approximate: bool, // '~'
+    /// Whether the component is marked uncertain with `?`.
+    pub uncertain: bool,
+    /// Whether the component is marked approximate with `~`.
+    pub approximate: bool,
 }
 
 /// A year in an EDTF date, which may contain unspecified digits.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Year {
+    /// The numeric year value with unspecified digits normalized to `0`.
     pub value: i64,
+    /// The number of trailing unspecified digits represented in the source.
     pub unspecified: UnspecifiedYear,
 }
 
@@ -66,6 +79,7 @@ pub struct Year {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum UnspecifiedYear {
     #[default]
+    /// The year is fully specified.
     None,
     /// One unspecified digit (e.g., 199u)
     One,
@@ -81,20 +95,29 @@ pub enum UnspecifiedYear {
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum Day {
+    /// A calendar day value from `1` through `31`.
     Day(u32),
-    Unspecified, // 'uu'
+    /// An unspecified day marker such as `uu` or `XX`.
+    Unspecified,
 }
 
-/// The core EDTF Date structure
+/// Stores a parsed EDTF date or datetime with per-component quality markers.
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Date {
+    /// The parsed year component.
     pub year: Year,
+    /// Qualifiers that apply to the year component.
     pub year_quality: Quality,
+    /// The parsed month or season component, if present.
     pub month_or_season: Option<MonthOrSeason>,
+    /// Qualifiers that apply to the month or season component.
     pub month_quality: Quality,
+    /// The parsed day component, if present.
     pub day: Option<Day>,
+    /// Qualifiers that apply to the day component.
     pub day_quality: Quality,
+    /// The parsed time component, if present.
     pub time: Option<Time>,
 }
 
@@ -108,13 +131,17 @@ pub enum Timezone {
     Offset(i16),
 }
 
-/// Basic ISO 8601-style time
+/// Stores a basic ISO 8601 time with an optional timezone offset.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Time {
+    /// The hour component in the range `0..=23`.
     pub hour: u32,
+    /// The minute component in the range `0..=59`.
     pub minute: u32,
+    /// The second component in the range `0..=59`.
     pub second: u32,
+    /// The parsed timezone designator, if present.
     pub timezone: Option<Timezone>,
 }
 
@@ -341,7 +368,10 @@ fn parse_day(input: &mut &str) -> Result<Day, ErrMode<ContextError>> {
     let val: u32 = s
         .parse()
         .map_err(|_| ErrMode::Backtrack(ContextError::default()))?;
-    Ok(Day::Day(val))
+    match val {
+        1..=31 => Ok(Day::Day(val)),
+        _ => Err(ErrMode::Backtrack(ContextError::default())),
+    }
 }
 
 fn parse_timezone(input: &mut &str) -> Result<Option<Timezone>, ErrMode<ContextError>> {
@@ -379,6 +409,10 @@ fn parse_time(input: &mut &str) -> Result<Time, ErrMode<ContextError>> {
         .parse_next(input)?;
     let timezone = parse_timezone(input)?;
 
+    if hour > 23 || minute > 59 || second > 59 {
+        return Err(ErrMode::Backtrack(ContextError::default()));
+    }
+
     Ok(Time {
         hour,
         minute,
@@ -387,12 +421,20 @@ fn parse_time(input: &mut &str) -> Result<Time, ErrMode<ContextError>> {
     })
 }
 
-/// Parses a single date component.
+/// Parses one EDTF date or datetime from the start of `input`.
+///
+/// This parser consumes only the recognized prefix and leaves any remaining
+/// input in `input`, following `winnow` parser conventions.
 pub fn parse_date(input: &mut &str) -> Result<Date, ErrMode<ContextError>> {
     let year = parse_year.parse_next(input)?;
     let year_quality = parse_quality.parse_next(input)?;
 
-    let month_or_season = opt(preceded('-', parse_month_or_season)).parse_next(input)?;
+    let month_or_season = if input.starts_with('-') {
+        let _ = '-'.parse_next(input)?;
+        Some(parse_month_or_season.parse_next(input)?)
+    } else {
+        None
+    };
     let month_quality = if month_or_season.is_some() {
         parse_quality.parse_next(input)?
     } else {
@@ -401,7 +443,12 @@ pub fn parse_date(input: &mut &str) -> Result<Date, ErrMode<ContextError>> {
 
     let day =
         if let Some(MonthOrSeason::Month(_)) | Some(MonthOrSeason::Unspecified) = month_or_season {
-            opt(preceded('-', parse_day)).parse_next(input)?
+            if input.starts_with('-') {
+                let _ = '-'.parse_next(input)?;
+                Some(parse_day.parse_next(input)?)
+            } else {
+                None
+            }
         } else {
             None
         };
@@ -411,7 +458,12 @@ pub fn parse_date(input: &mut &str) -> Result<Date, ErrMode<ContextError>> {
         Quality::default()
     };
 
-    let time = opt(preceded('T', parse_time)).parse_next(input)?;
+    let time = if input.starts_with('T') {
+        let _ = 'T'.parse_next(input)?;
+        Some(parse_time.parse_next(input)?)
+    } else {
+        None
+    };
 
     // Final check: if the last component parsed didn't have a quality marker,
     // but there is one at the end of the string, it applies to the whole thing?
@@ -429,7 +481,10 @@ pub fn parse_date(input: &mut &str) -> Result<Date, ErrMode<ContextError>> {
     })
 }
 
-/// Main entry point for parsing an EDTF Level 1 string.
+/// Parses one top-level EDTF value from the start of `input`.
+///
+/// This parser accepts a single date, a closed interval, or an open-ended
+/// interval and leaves any unconsumed suffix in `input`.
 pub fn parse(input: &mut &str) -> Result<Edtf, ErrMode<ContextError>> {
     if input.starts_with("../") {
         let _ = "../".parse_next(input)?;
@@ -533,6 +588,26 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_interval_to() {
+        let mut input = "../2023-05";
+        let res = parse(&mut input).unwrap();
+        if let Edtf::IntervalTo(date) = res {
+            assert_eq!(date.year.value, 2023);
+            assert_eq!(date.month_or_season, Some(MonthOrSeason::Month(5)));
+        } else {
+            panic!("Expected IntervalTo");
+        }
+    }
+
+    #[test]
+    fn test_parse_season() {
+        let mut input = "2023-21";
+        let res = parse_date(&mut input).unwrap();
+        assert_eq!(res.month_or_season, Some(MonthOrSeason::Spring));
+        assert_eq!(res.to_string(), "2023-21");
+    }
+
+    #[test]
     fn test_round_trip() {
         let cases = vec![
             "2023-05-15",
@@ -579,5 +654,31 @@ mod tests {
         let res = parse_date(&mut input).unwrap();
         let t = res.time.unwrap();
         assert_eq!(t.timezone, None);
+    }
+
+    #[test]
+    fn test_parse_leaves_unconsumed_suffix() {
+        let mut input = "2023-05 trailing";
+        let res = parse(&mut input).unwrap();
+        assert_eq!(res.to_string(), "2023-05");
+        assert_eq!(input, " trailing");
+    }
+
+    #[test]
+    fn test_invalid_day_is_rejected() {
+        let mut input = "2023-05-32";
+        assert!(parse_date(&mut input).is_err());
+    }
+
+    #[test]
+    fn test_invalid_time_is_rejected() {
+        let mut invalid_hour = "2023-05-15T24:00:00";
+        assert!(parse_date(&mut invalid_hour).is_err());
+
+        let mut invalid_minute = "2023-05-15T23:60:00";
+        assert!(parse_date(&mut invalid_minute).is_err());
+
+        let mut invalid_second = "2023-05-15T23:59:60";
+        assert!(parse_date(&mut invalid_second).is_err());
     }
 }
