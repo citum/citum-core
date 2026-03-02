@@ -3,6 +3,11 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
+//! Rendering logic for localized term components.
+//!
+//! This module handles term component rendering with locale-aware lookup
+//! and proper text handling for plural/singular forms.
+
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
 use citum_schema::locale::TermForm;

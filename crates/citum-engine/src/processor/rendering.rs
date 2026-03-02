@@ -1,3 +1,9 @@
+//! Rendering logic for citation and bibliography output.
+//!
+//! This module handles template-based rendering of citations and bibliographies,
+//! including handling of localization, numbering, formatting, and special modes
+//! like integral (narrative) citations for numeric and label styles.
+
 use crate::error::ProcessorError;
 use crate::reference::{Bibliography, Reference};
 use crate::render::{ProcTemplate, ProcTemplateComponent};
@@ -1181,6 +1187,10 @@ impl<'a> Renderer<'a> {
     }
 }
 
+/// Recursively removes author components from a template.
+///
+/// Filters out top-level author contributors and descends into lists,
+/// returning `None` if the entire template becomes empty after filtering.
 fn strip_author_component(component: &TemplateComponent) -> Option<TemplateComponent> {
     match component {
         TemplateComponent::Contributor(c)
@@ -1207,6 +1217,10 @@ fn strip_author_component(component: &TemplateComponent) -> Option<TemplateCompo
     }
 }
 
+/// Finds a grouping component (contributor or title) within a template.
+///
+/// Descends into lists to find the first semantically relevant component
+/// for grouping citations by author or title.
 fn find_grouping_component(component: &TemplateComponent) -> Option<&TemplateComponent> {
     match component {
         TemplateComponent::Contributor(_) | TemplateComponent::Title(_) => Some(component),
@@ -1259,6 +1273,10 @@ pub fn get_variable_key(component: &TemplateComponent) -> Option<String> {
     }
 }
 
+/// Resolves a template component by applying type-specific overrides.
+///
+/// Checks the component's overrides for the given reference type and returns
+/// either the override (if matched) or the original component.
 fn resolve_component_for_ref_type(
     component: &TemplateComponent,
     ref_type: &str,

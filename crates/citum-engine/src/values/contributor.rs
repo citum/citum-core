@@ -1,3 +1,8 @@
+//! Rendering logic for contributors (authors, editors, translators).
+//!
+//! This module handles contributor rendering with support for name ordering,
+//! role labels, et-al formatting, and multilingual name resolution.
+
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderContext, RenderOptions};
 use citum_schema::locale::TermForm;
@@ -7,6 +12,9 @@ use citum_schema::options::{
 };
 use citum_schema::template::{ContributorForm, ContributorRole, NameOrder, TemplateContributor};
 
+/// Checks if a contributor role label should be omitted for a given reference.
+///
+/// Returns true if the role appears in the configuration's role.omit list.
 fn is_role_label_omitted(options: &RenderOptions<'_>, role: &ContributorRole) -> bool {
     options
         .config

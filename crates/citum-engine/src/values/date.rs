@@ -1,9 +1,18 @@
+//! Rendering logic for date fields with locale-aware formatting.
+//!
+//! This module handles date component rendering with support for different date forms,
+//! time formatting, and locale-specific date presentation.
+
 use crate::reference::{EdtfString, Reference};
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
 use citum_edtf::Timezone;
 use citum_schema::options::dates::TimeFormat;
 use citum_schema::template::{DateForm, DateVariable as TemplateDateVar, TemplateDate};
 
+/// Formats a time with the specified format, optionally including seconds and timezone.
+///
+/// Converts 24-hour time to 12-hour format if specified, and appends localized
+/// AM/PM or timezone indicators as configured.
 fn format_time(
     time: citum_edtf::Time,
     format: &TimeFormat,

@@ -1,10 +1,21 @@
+//! Matching logic for determining if references share primary contributors.
+//!
+//! This module implements contributor matching according to substitution rules,
+//! allowing comparison of references (particularly for "ibid" tracking) based on author,
+//! editor, translator, or title fallback logic.
+
 use crate::reference::Reference;
 use citum_schema::Style;
 use citum_schema::options::{Config, Substitute, SubstituteKey};
 
-/// Matches references using the processor's substitution configuration.
+/// Matcher for determining if references share the same primary contributors.
+///
+/// Uses the style's substitution configuration to determine which contributor
+/// (author, editor, translator) should be used for comparison.
 pub struct Matcher<'a> {
+    /// The active citation style.
     style: &'a Style,
+    /// The default configuration used as a fallback.
     default_config: &'a Config,
 }
 
@@ -30,7 +41,10 @@ impl<'a> Matcher<'a> {
         }
     }
 
-    /// Get the substitute configuration from the style or use defaults.
+    /// Gets the substitute configuration from the style or falls back to defaults.
+    ///
+    /// Resolves the substitute template from the style's options if available,
+    /// otherwise falls back to the default configuration's substitute settings.
     fn get_substitute_config(&self) -> Substitute {
         self.style
             .options
