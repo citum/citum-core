@@ -1,0 +1,21 @@
+# Sample annotations for testing and demonstration of annotated bibliography rendering.
+# Each key is a reference ID from references-expanded.json.
+
+ITEM-1: >
+  A landmark work that fundamentally reshaped how historians and philosophers
+  understand scientific change. Kuhn's concept of the paradigm shift has become
+  indispensable vocabulary across the sciences and humanities. Essential reading
+  for anyone working in science studies, epistemology, or the sociology of
+  knowledge.
+
+ITEM-2: >
+  Accessible and intellectually ambitious, Hawking's account of cosmology and
+  theoretical physics balances rigour with clarity for a general audience.
+  Particularly valuable for its treatment of time's arrow and the boundary
+  conditions of the universe.
+
+ITEM-3: >
+  Seminal overview of deep learning by three researchers who collectively defined
+  the field. Provides a unified treatment of convolutional networks, recurrent
+  architectures, and representation learning. The standard citation for the
+  deep learning approach in scientific literature.

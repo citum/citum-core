@@ -1,0 +1,33 @@
+kuhn1962:
+  id: kuhn1962
+  type: book
+  title: The Structure of Scientific Revolutions
+  author:
+    - family: Kuhn
+      given: Thomas S.
+  issued:
+    date-parts: [[1962]]
+  publisher: University of Chicago Press
+  publisher-place: Chicago
+
+zotero2023:
+  id: zotero2023
+  type: software
+  title: "Zotero: Your personal research assistant"
+  author:
+    - literal: Corporation for Digital Scholarship
+  issued:
+    date-parts: [[2023]]
+  URL: https://www.zotero.org
+
+ahrens2022:
+  id: ahrens2022
+  type: book
+  title: "How to Take Smart Notes: One Simple Technique to Boost Writing, Learning and Thinking"
+  author:
+    - family: Ahrens
+      given: Sönke
+  issued:
+    date-parts: [[2022]]
+  edition: "2"
+  publisher: Sönke Ahrens

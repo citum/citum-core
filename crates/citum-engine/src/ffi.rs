@@ -774,10 +774,9 @@ pub unsafe extern "C" fn citum_render_citations_json(
         }
     };
 
-    let format_str = match unsafe { CStr::from_ptr(format) }.to_str() {
-        Ok(s) => s,
-        Err(_) => "plain",
-    };
+    let format_str = unsafe { CStr::from_ptr(format) }
+        .to_str()
+        .unwrap_or("plain");
 
     let result = match format_str {
         "html" => processor.process_citations_with_format::<Html>(&citations),
