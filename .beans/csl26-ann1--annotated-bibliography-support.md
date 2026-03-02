@@ -5,7 +5,7 @@ status: todo
 type: feature
 priority: normal
 created_at: 2026-02-23T00:00:00Z
-updated_at: 2026-02-23T00:00:00Z
+updated_at: 2026-03-02T18:38:29Z
 ---
 
 Add support for rendering annotated bibliographies where each reference entry is followed by a descriptive annotation paragraph.
@@ -19,6 +19,11 @@ Current state: The `note` field exists on all reference types as `Option<String>
 * Decide: use existing `note` field or add a dedicated `abstract` field (note is for internal notes, abstract is for reader-facing summaries)
 * Update style YAML schema to allow `- annotation: note` or similar template component
 * Add oracle/integration test with an annotated bibliography style
+
+But it's also possible, maybe even likely, that these notes don't belong in the bibliographic data, but instead reference them.
+In that scenario, citum might perpahs have to consider paired entries for this case: (key, note).
+A GUI app, then, might allow the user to select a few specific notes associated with their respective references, but omit others.
+So then there might need to be a dedicate API for this?
 
 ## References
 
