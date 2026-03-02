@@ -1,7 +1,17 @@
+//! Sorting logic for bibliography and citation entries.
+//!
+//! This module handles multi-key sorting of references according to style instructions,
+//! including support for anonymous works and article stripping for title-based sorting.
+
 use crate::reference::Reference;
 use citum_schema::locale::Locale;
 use citum_schema::options::{Config, SortKey};
 
+/// Compares two optional years with configurable ascending/descending order.
+///
+/// When both years are present, compares them numerically. If only one is present,
+/// the year-bearing reference comes before the year-less reference. If neither is present,
+/// they are considered equal.
 fn compare_optional_years(
     a_year: Option<i32>,
     b_year: Option<i32>,
@@ -18,8 +28,13 @@ fn compare_optional_years(
 }
 
 /// Sorter for bibliography and citation entries.
+///
+/// Sorts references according to style instructions, handling multi-key sorting
+/// and special cases like anonymous works falling back from author to editor to title.
 pub struct Sorter<'a> {
+    /// The configuration containing sort specifications.
     config: &'a Config,
+    /// The locale used for article stripping in title-based sorts.
     locale: &'a Locale,
 }
 

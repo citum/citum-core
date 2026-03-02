@@ -3,11 +3,21 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
+//! Rendering logic for title fields with smartening and form selection.
+//!
+//! This module handles title component rendering, including main titles,
+//! container titles, and proper smart apostrophe handling.
+
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
 use citum_schema::reference::{Parent, types::Title};
 use citum_schema::template::{TemplateTitle, TitleForm, TitleType};
 
+/// Converts straight apostrophes to smart apostrophes or quotes based on context.
+///
+/// Distinguishes between contractions/possessives (right single quotation mark)
+/// and opening quotes (left single quotation mark), preserving straight apostrophes
+/// in ambiguous contexts.
 fn smarten_apostrophes(input: &str) -> String {
     let mut out = String::with_capacity(input.len());
     let mut it = input.char_indices().peekable();

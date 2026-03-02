@@ -1,8 +1,18 @@
+//! Rendering logic for simple variables (DOI, URL, ISBN, etc.).
+//!
+//! This module handles template variable rendering, including proper localization
+//! of locator labels and special handling for reference-type-specific variables.
+
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
 use citum_schema::reference::Parent;
 use citum_schema::template::{SimpleVariable, TemplateVariable};
 
+/// Extracts the short title from a parent reference if available.
+///
+/// Returns the short_title from the embedded parent of collection or serial
+/// components, or None if the parent is an ID reference or the component
+/// type doesn't support short titles.
 fn container_title_short(reference: &Reference) -> Option<String> {
     match reference {
         Reference::CollectionComponent(component) => match &component.parent {

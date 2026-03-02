@@ -1,3 +1,8 @@
+//! Rendering logic for numeric variables (volume, issue, pages, citation numbers, etc.).
+//!
+//! This module handles number component rendering with support for page range formatting,
+//! edition labels, and numeric citation identifiers.
+
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
 use citum_schema::locale::TermForm;
@@ -147,7 +152,11 @@ impl ComponentValues for TemplateNumber {
     }
 }
 
-/// Map a number variable to the nearest locator label used in citations.
+/// Maps a number variable to its corresponding locator type.
+///
+/// Determines which `LocatorType` corresponds to a given numeric variable,
+/// allowing proper label selection when rendering page, volume, or issue information.
+/// Returns `None` for variables with no locator equivalent (e.g. edition, version).
 pub fn number_var_to_locator_type(
     var: &NumberVariable,
 ) -> Option<citum_schema::citation::LocatorType> {
@@ -169,6 +178,10 @@ pub fn number_var_to_locator_type(
 }
 
 /// Heuristically detect whether a locator string should use plural labeling.
+///
+/// Returns `true` if the value contains range or list separators — hyphens (`-`),
+/// en-dashes (`–`), commas (`,`), or ampersands (`&`) — indicating multiple items
+/// such as `"1-10"`, `"1, 3"`, or `"1 & 3"`.
 pub fn check_plural(value: &str, _locator_type: &citum_schema::citation::LocatorType) -> bool {
     // Simple heuristic: if contains ranges or separators, it's plural.
     // "1-10", "1, 3", "1 & 3"

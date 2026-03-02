@@ -120,6 +120,10 @@ fn make_bibliography() -> Bibliography {
     bib
 }
 
+/// Tests basic citation processing with author-date format.
+///
+/// Verifies that a simple citation with one item produces correctly formatted
+/// output with author name and year wrapped in parentheses.
 #[test]
 fn test_process_citation() {
     let style = make_style();
@@ -139,6 +143,10 @@ fn test_process_citation() {
     assert_eq!(result, "(Kuhn, 1962)");
 }
 
+/// Tests that note citations receive proper sequential numbering.
+///
+/// Verifies that citations with missing note numbers are auto-assigned,
+/// and that the numbering sequence is correct when some numbers are already provided.
 #[test]
 fn test_normalize_note_context_assigns_missing_numbers() {
     let style = make_note_style();
@@ -179,6 +187,10 @@ fn test_normalize_note_context_assigns_missing_numbers() {
     assert_eq!(normalized[2].note_number, Some(8));
 }
 
+/// Tests batch processing of multiple citations with the public API.
+///
+/// Verifies that multiple citations can be processed together and each produces
+/// the expected formatted output independently.
 #[test]
 fn test_process_citations_batch_api() {
     let style = make_style();
@@ -210,6 +222,10 @@ fn test_process_citations_batch_api() {
     assert_eq!(rendered[1], "(Kuhn, 1962)");
 }
 
+/// Tests that a delimiter of "none" (with surrounding spaces) renders as no delimiter.
+///
+/// Verifies that when a delimiter is set to " none " (trimmed to "none"),
+/// components are concatenated without any separator.
 #[test]
 fn test_process_citation_treats_trimmed_none_delimiter_as_empty() {
     let mut style = make_style();
@@ -246,6 +262,10 @@ fn test_process_citation_treats_trimmed_none_delimiter_as_empty() {
     assert_eq!(result, "(Kuhn1962)");
 }
 
+/// Tests that locator labels are properly rendered using localized terms.
+///
+/// Verifies that a page locator renders with the appropriate term "p." and
+/// that the full citation includes author, year, and locator information.
 #[test]
 fn test_citation_locator_label_renders_term() {
     let mut style = make_style();
@@ -289,6 +309,10 @@ fn test_citation_locator_label_renders_term() {
     assert_eq!(rendered, "(Kuhn, 1962, p. 23)");
 }
 
+/// Tests locator label rendering with explicitly loaded locale data.
+///
+/// Verifies that locator terms are correctly rendered when a locale is explicitly
+/// loaded from the locale directory, not using defaults.
 #[test]
 fn test_citation_locator_label_renders_term_with_loaded_locale() {
     use std::path::Path;
@@ -335,6 +359,7 @@ fn test_citation_locator_label_renders_term_with_loaded_locale() {
     assert_eq!(rendered, "(Kuhn, 1962, p. 23)");
 }
 
+/// Tests the behavior of test_citation_locator_can_suppress_label.
 #[test]
 fn test_citation_locator_can_suppress_label() {
     let mut style = make_style();
@@ -379,6 +404,7 @@ fn test_citation_locator_can_suppress_label() {
     assert_eq!(rendered, "(Kuhn, 1962, 23)");
 }
 
+/// Tests the behavior of test_citation_locator_can_strip_label_periods.
 #[test]
 fn test_citation_locator_can_strip_label_periods() {
     let mut style = make_style();
@@ -423,6 +449,7 @@ fn test_citation_locator_can_strip_label_periods() {
     assert_eq!(rendered, "(Kuhn, 1962, p23)");
 }
 
+/// Tests the behavior of test_springer_locator_label_survives_sorting.
 #[test]
 fn test_springer_locator_label_survives_sorting() {
     use std::{fs, path::Path};
@@ -476,6 +503,7 @@ fn test_springer_locator_label_survives_sorting() {
     );
 }
 
+/// Tests the behavior of test_render_bibliography.
 #[test]
 fn test_render_bibliography() {
     let style = make_style();
@@ -490,6 +518,7 @@ fn test_render_bibliography() {
     assert!(result.contains("_The Structure of Scientific Revolutions_"));
 }
 
+/// Tests the behavior of test_disambiguation_hints.
 #[test]
 fn test_disambiguation_hints() {
     let style = make_style();
@@ -516,6 +545,7 @@ fn test_disambiguation_hints() {
     assert!(hints.get("kuhn1962b").unwrap().disamb_condition);
 }
 
+/// Tests the behavior of test_disambiguation_givenname.
 #[test]
 fn test_disambiguation_givenname() {
     use citum_schema::options::{
@@ -615,6 +645,7 @@ fn test_disambiguation_givenname() {
     assert!(cit_b.contains("A. Smith"));
 }
 
+/// Tests the behavior of test_disambiguation_add_names.
 #[test]
 fn test_disambiguation_add_names() {
     use citum_schema::options::{
@@ -728,6 +759,7 @@ fn test_disambiguation_add_names() {
     assert!(cit_2.contains("Smith") && cit_2.contains("Brown"));
 }
 
+/// Tests the behavior of test_disambiguation_combined_expansion.
 #[test]
 fn test_disambiguation_combined_expansion() {
     use citum_schema::options::{
@@ -839,6 +871,7 @@ fn test_disambiguation_combined_expansion() {
     );
 }
 
+/// Tests the behavior of test_apa_titles_config.
 #[test]
 fn test_apa_titles_config() {
     use crate::reference::Reference;
@@ -957,6 +990,7 @@ fn test_apa_titles_config() {
     );
 }
 
+/// Tests the behavior of test_numeric_citation_numbers_with_repeated_refs.
 #[test]
 fn test_numeric_citation_numbers_with_repeated_refs() {
     // Citation numbers should remain stable once assigned.
@@ -1044,6 +1078,7 @@ fn test_numeric_citation_numbers_with_repeated_refs() {
     assert_eq!(cit3, "[1]", "Second citation of ref1 should still be [1]");
 }
 
+/// Tests the behavior of test_numeric_citation_numbers_follow_registry_order.
 #[test]
 fn test_numeric_citation_numbers_follow_registry_order() {
     use citum_schema::CitationSpec;
@@ -1105,6 +1140,7 @@ fn test_numeric_citation_numbers_follow_registry_order() {
     );
 }
 
+/// Tests the behavior of test_citation_grouping_same_author.
 #[test]
 fn test_citation_grouping_same_author() {
     // Test that adjacent citations by the same author are collapsed:
@@ -1159,6 +1195,7 @@ fn test_citation_grouping_same_author() {
     );
 }
 
+/// Tests the behavior of test_label_mode_does_not_group_by_author.
 #[test]
 fn test_label_mode_does_not_group_by_author() {
     let mut style = make_style();
@@ -1221,6 +1258,7 @@ fn test_label_mode_does_not_group_by_author() {
     );
 }
 
+/// Tests the behavior of test_citation_grouping_different_authors.
 #[test]
 fn test_citation_grouping_different_authors() {
     // Different authors should NOT be grouped
@@ -1271,6 +1309,7 @@ fn test_citation_grouping_different_authors() {
     );
 }
 
+/// Tests the behavior of test_sort_anonymous_work_by_title.
 #[test]
 fn test_sort_anonymous_work_by_title() {
     // Anonymous works (no author) should sort by title, with leading articles stripped
@@ -1337,6 +1376,7 @@ fn test_sort_anonymous_work_by_title() {
     );
 }
 
+/// Tests the behavior of test_whole_entry_linking_html.
 #[test]
 fn test_whole_entry_linking_html() {
     use crate::render::html::Html;
@@ -1371,6 +1411,7 @@ fn test_whole_entry_linking_html() {
     assert!(result.contains("Linked Page"));
 }
 
+/// Tests the behavior of test_global_title_linking_html.
 #[test]
 fn test_global_title_linking_html() {
     use crate::render::html::Html;
@@ -1409,6 +1450,7 @@ fn test_global_title_linking_html() {
     assert!(result.contains("Linked Title"));
 }
 
+/// Tests the behavior of test_whole_entry_linking_typst.
 #[test]
 fn test_whole_entry_linking_typst() {
     use crate::render::typst::Typst;
@@ -1442,6 +1484,7 @@ fn test_whole_entry_linking_typst() {
     assert!(result.contains("Linked Page"));
 }
 
+/// Tests the behavior of test_typst_single_item_citation_links_to_bibliography_entry.
 #[test]
 fn test_typst_single_item_citation_links_to_bibliography_entry() {
     use crate::render::typst::Typst;
@@ -1463,6 +1506,7 @@ fn test_typst_single_item_citation_links_to_bibliography_entry() {
     assert!(result.contains("#link(<ref-kuhn1962>)"));
 }
 
+/// Tests the behavior of test_numeric_integral_citation_author_year.
 #[test]
 fn test_numeric_integral_citation_author_year() {
     use citum_schema::options::Processing;
@@ -1493,6 +1537,7 @@ fn test_numeric_integral_citation_author_year() {
     assert_eq!(result, "Kuhn [1]");
 }
 
+/// Tests the behavior of test_numeric_non_integral_citation_number.
 #[test]
 fn test_numeric_non_integral_citation_number() {
     use citum_schema::citation::CitationMode;
@@ -1536,6 +1581,7 @@ fn test_numeric_non_integral_citation_number() {
     assert_eq!(result, "[1]");
 }
 
+/// Tests the behavior of test_numeric_citation_numbers_follow_bibliography_sort.
 #[test]
 fn test_numeric_citation_numbers_follow_bibliography_sort() {
     let mut style = make_style();
@@ -1604,6 +1650,7 @@ fn test_numeric_citation_numbers_follow_bibliography_sort() {
     assert_eq!(result, "[1]");
 }
 
+/// Tests the behavior of test_author_date_citations_preserve_input_order_without_explicit_sort.
 #[test]
 fn test_author_date_citations_preserve_input_order_without_explicit_sort() {
     let style = make_style();
@@ -1642,6 +1689,7 @@ fn test_author_date_citations_preserve_input_order_without_explicit_sort() {
     assert!(result.find("Smith").unwrap() < result.find("Kuhn").unwrap());
 }
 
+/// Tests the behavior of test_numeric_integral_with_multiple_items.
 #[test]
 fn test_numeric_integral_with_multiple_items() {
     use citum_schema::options::Processing;
@@ -1689,6 +1737,7 @@ fn test_numeric_integral_with_multiple_items() {
     assert!(result.contains("Smith [2]"));
 }
 
+/// Tests the behavior of test_label_integral_citation_uses_author_text.
 #[test]
 fn test_label_integral_citation_uses_author_text() {
     use citum_schema::options::Processing;
@@ -1729,6 +1778,7 @@ fn test_label_integral_citation_uses_author_text() {
     assert_eq!(result, "Kuhn");
 }
 
+/// Tests the behavior of test_citation_visibility_modifiers.
 #[test]
 fn test_citation_visibility_modifiers() {
     use citum_schema::citation::CitationMode;
@@ -1764,6 +1814,7 @@ fn test_citation_visibility_modifiers() {
     assert_eq!(res_integral, "Kuhn (1962)");
 }
 
+/// Tests the behavior of test_bibliography_per_group_disambiguation.
 #[test]
 fn test_bibliography_per_group_disambiguation() {
     use citum_schema::grouping::{
@@ -1884,6 +1935,7 @@ fn test_bibliography_per_group_disambiguation() {
     );
 }
 
+/// Tests the behavior of test_group_heading_localized_uses_processor_locale.
 #[test]
 fn test_group_heading_localized_uses_processor_locale() {
     use citum_schema::grouping::{BibliographyGroup, GroupHeading, GroupSelector};
@@ -1913,6 +1965,7 @@ fn test_group_heading_localized_uses_processor_locale() {
     assert!(output.contains("# Tài liệu tiếng Việt"));
 }
 
+/// Tests the behavior of test_group_heading_term_resolves_from_locale.
 #[test]
 fn test_group_heading_term_resolves_from_locale() {
     use citum_schema::grouping::{BibliographyGroup, GroupHeading, GroupSelector};
@@ -1938,6 +1991,7 @@ fn test_group_heading_term_resolves_from_locale() {
     assert!(output.contains("# and"));
 }
 
+/// Tests the behavior of test_position_detection_first.
 #[test]
 fn test_position_detection_first() {
     use crate::reference::CitationItem;
@@ -1957,6 +2011,7 @@ fn test_position_detection_first() {
     assert_eq!(citations[0].position, Some(citum_schema::Position::First));
 }
 
+/// Tests the behavior of test_position_detection_subsequent.
 #[test]
 fn test_position_detection_subsequent() {
     use crate::reference::CitationItem;
@@ -1997,6 +2052,7 @@ fn test_position_detection_subsequent() {
     );
 }
 
+/// Tests the behavior of test_position_detection_ibid.
 #[test]
 fn test_position_detection_ibid() {
     use crate::reference::CitationItem;
@@ -2028,6 +2084,7 @@ fn test_position_detection_ibid() {
     assert_eq!(citations[1].position, Some(citum_schema::Position::Ibid));
 }
 
+/// Tests the behavior of test_position_detection_ibid_with_locator.
 #[test]
 fn test_position_detection_ibid_with_locator() {
     use crate::reference::CitationItem;
@@ -2062,6 +2119,7 @@ fn test_position_detection_ibid_with_locator() {
     );
 }
 
+/// Tests the behavior of test_position_detection_multi_item_no_ibid.
 #[test]
 fn test_position_detection_multi_item_no_ibid() {
     use crate::reference::CitationItem;
@@ -2109,6 +2167,7 @@ fn test_position_detection_multi_item_no_ibid() {
     );
 }
 
+/// Tests the behavior of test_position_detection_explicit_position_respected.
 #[test]
 fn test_position_detection_explicit_position_respected() {
     use crate::reference::CitationItem;
@@ -2128,4 +2187,207 @@ fn test_position_detection_explicit_position_respected() {
 
     // Explicit position should be preserved
     assert_eq!(citations[0].position, Some(citum_schema::Position::Ibid));
+}
+
+/// Tests annotate_positions via process_citations for ibid case.
+///
+/// Verifies that when the same item is cited consecutively with no locator,
+/// the second citation is marked as Ibid position.
+#[test]
+fn test_annotate_positions_ibid_via_public_api() {
+    use crate::reference::CitationItem;
+    use citum_schema::Citation;
+
+    let processor = Processor::new(make_style(), make_bibliography());
+    let citations = vec![
+        Citation {
+            items: vec![CitationItem {
+                id: "kuhn1962".to_string(),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+        Citation {
+            items: vec![CitationItem {
+                id: "kuhn1962".to_string(),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+    ];
+
+    let mut citations_mut = citations;
+    processor.annotate_positions(&mut citations_mut);
+
+    assert_eq!(
+        citations_mut[0].position,
+        Some(citum_schema::Position::First)
+    );
+    assert_eq!(
+        citations_mut[1].position,
+        Some(citum_schema::Position::Ibid)
+    );
+}
+
+/// Tests annotate_positions for ibid-with-locator case.
+///
+/// Verifies that when the same item is cited consecutively with different locators,
+/// the second citation is marked as IbidWithLocator position.
+#[test]
+fn test_annotate_positions_ibid_with_locator_via_public_api() {
+    use crate::reference::CitationItem;
+    use citum_schema::Citation;
+
+    let processor = Processor::new(make_style(), make_bibliography());
+    let citations = vec![
+        Citation {
+            items: vec![CitationItem {
+                id: "kuhn1962".to_string(),
+                locator: Some("50".to_string()),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+        Citation {
+            items: vec![CitationItem {
+                id: "kuhn1962".to_string(),
+                locator: Some("75".to_string()),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+    ];
+
+    let mut citations_mut = citations;
+    processor.annotate_positions(&mut citations_mut);
+
+    assert_eq!(
+        citations_mut[0].position,
+        Some(citum_schema::Position::First)
+    );
+    assert_eq!(
+        citations_mut[1].position,
+        Some(citum_schema::Position::IbidWithLocator)
+    );
+}
+
+/// Tests annotate_positions for subsequent case.
+///
+/// Verifies that when the same item is cited non-consecutively (with another item in between),
+/// the second citation is marked as Subsequent position (not Ibid).
+#[test]
+fn test_annotate_positions_subsequent_via_public_api() {
+    use crate::reference::CitationItem;
+    use citum_schema::Citation;
+
+    let mut bib = make_bibliography();
+    bib.insert(
+        "smith2020".to_string(),
+        Reference::from(LegacyReference {
+            id: "smith2020".to_string(),
+            ref_type: "book".to_string(),
+            author: Some(vec![Name::new("Smith", "John")]),
+            issued: Some(DateVariable::year(2020)),
+            ..Default::default()
+        }),
+    );
+
+    let processor = Processor::new(make_style(), bib);
+    let citations = vec![
+        Citation {
+            items: vec![CitationItem {
+                id: "kuhn1962".to_string(),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+        Citation {
+            items: vec![CitationItem {
+                id: "smith2020".to_string(),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+        Citation {
+            items: vec![CitationItem {
+                id: "kuhn1962".to_string(),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+    ];
+
+    let mut citations_mut = citations;
+    processor.annotate_positions(&mut citations_mut);
+
+    assert_eq!(
+        citations_mut[0].position,
+        Some(citum_schema::Position::First)
+    );
+    assert_eq!(
+        citations_mut[1].position,
+        Some(citum_schema::Position::First)
+    );
+    assert_eq!(
+        citations_mut[2].position,
+        Some(citum_schema::Position::Subsequent)
+    );
+}
+
+/// Tests annotate_positions for multi-item citations.
+///
+/// Verifies that positions are tracked correctly per-item in a multi-item citation group,
+/// with multi-item citations never being marked as Ibid.
+#[test]
+fn test_annotate_positions_multi_item_via_public_api() {
+    use crate::reference::CitationItem;
+    use citum_schema::Citation;
+
+    let mut bib = make_bibliography();
+    bib.insert(
+        "smith2020".to_string(),
+        Reference::from(LegacyReference {
+            id: "smith2020".to_string(),
+            ref_type: "book".to_string(),
+            author: Some(vec![Name::new("Smith", "John")]),
+            issued: Some(DateVariable::year(2020)),
+            ..Default::default()
+        }),
+    );
+    let processor = Processor::new(make_style(), bib);
+    let citations = vec![
+        Citation {
+            items: vec![CitationItem {
+                id: "kuhn1962".to_string(),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+        Citation {
+            items: vec![
+                CitationItem {
+                    id: "kuhn1962".to_string(),
+                    ..Default::default()
+                },
+                CitationItem {
+                    id: "smith2020".to_string(),
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        },
+    ];
+
+    let mut citations_mut = citations;
+    processor.annotate_positions(&mut citations_mut);
+
+    assert_eq!(
+        citations_mut[0].position,
+        Some(citum_schema::Position::First)
+    );
+    // Multi-item citations are First because at least one item is new
+    assert_eq!(
+        citations_mut[1].position,
+        Some(citum_schema::Position::First)
+    );
 }

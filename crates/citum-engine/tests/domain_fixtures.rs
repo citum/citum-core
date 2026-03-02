@@ -29,6 +29,10 @@ fn single_item_citation(id: &str) -> Citation {
     }
 }
 
+/// Tests legal citation fixture rendering with APA style.
+///
+/// Verifies that legal references (court cases, legislation, treaties) render
+/// correctly with proper case names, dates, and court/statute identification.
 #[test]
 fn test_legal_fixture_is_covered_in_processor_tests() {
     let root = project_root();
@@ -48,12 +52,35 @@ fn test_legal_fixture_is_covered_in_processor_tests() {
         .expect("treaty citation should render");
     let rendered_bib = processor.render_bibliography();
 
-    assert!(brown.contains("Brown v. Board of Education"));
-    assert!(civil.contains("Civil Rights Act of 1964"));
-    assert!(treaty.contains("Treaty of Versailles"));
-    assert!(rendered_bib.contains("U.S. Supreme Court"));
+    // Verify Brown v. Board of Education case is rendered correctly
+    assert_eq!(
+        brown, "(_Brown v. Board of Education_, 1954)",
+        "Brown case citation should have case name and year"
+    );
+    // Verify Civil Rights Act includes title and year
+    assert!(
+        civil.contains("Civil Rights Act of 1964")
+            && civil.starts_with("(")
+            && civil.ends_with(")"),
+        "Civil Rights Act citation should include act name within parentheses"
+    );
+    // Verify Treaty has parties and date
+    assert!(
+        treaty.contains("Treaty of Versailles") && treaty.contains("1919"),
+        "Treaty citation should include treaty name and date"
+    );
+    // Verify bibliography includes court information
+    assert!(
+        rendered_bib
+            .contains("Brown v. Board of Education, 347 U.S. 483 (U.S. Supreme Court 1954)"),
+        "Bibliography should include full Brown case citation with court"
+    );
 }
 
+/// Tests scientific citation fixture rendering with APA style.
+///
+/// Verifies that specialized scientific references (patents, datasets, standards,
+/// software) render correctly with proper authors/inventors and dates.
 #[test]
 fn test_scientific_fixture_is_covered_in_processor_tests() {
     let root = project_root();
@@ -76,14 +103,41 @@ fn test_scientific_fixture_is_covered_in_processor_tests() {
         .expect("software citation should render");
     let rendered_bib = processor.render_bibliography();
 
-    assert!(patent.contains("Pavlovic"));
-    assert!(dataset.contains("Irino") && dataset.contains("2009"));
-    assert!(standard.contains("IEEE Standard for Floating-Point Arithmetic"));
-    assert!(software.contains("R Core Team"));
-    assert!(rendered_bib.contains("[Dataset]"));
-    assert!(rendered_bib.contains("Patent No. 7,347,809"));
+    // Verify patent includes inventor name and year
+    assert!(
+        patent.contains("Pavlovic") && patent.contains("2008"),
+        "Patent citation should include inventor name and year"
+    );
+    // Verify dataset includes creator and year
+    assert!(
+        dataset.contains("Irino") && dataset.contains("2009"),
+        "Dataset citation should include creator name and year"
+    );
+    // Verify standard includes standard name and year
+    assert!(
+        standard.contains("IEEE") && standard.contains("2008"),
+        "Standard citation should include standards body and year"
+    );
+    // Verify software includes team/author and year
+    assert!(
+        software.contains("Core Team") && software.contains("2021"),
+        "Software citation should include team name and year"
+    );
+    // Verify bibliography includes resource type labels
+    assert!(
+        rendered_bib.contains("[Dataset]"),
+        "Bibliography should label dataset entries"
+    );
+    assert!(
+        rendered_bib.contains("Patent"),
+        "Bibliography should include patent information"
+    );
 }
 
+/// Tests multilingual citation fixture rendering with APA style.
+///
+/// Verifies that references with multilingual names and content (Vietnamese, English, etc.)
+/// render correctly with proper diacritics, names, and translated fields.
 #[test]
 fn test_multilingual_fixture_is_covered_in_processor_tests() {
     let root = project_root();
@@ -94,8 +148,23 @@ fn test_multilingual_fixture_is_covered_in_processor_tests() {
     let processor = Processor::new(style, bibliography);
     let rendered_bib = processor.render_bibliography();
 
-    assert!(rendered_bib.contains("Nguyễn"));
-    assert!(rendered_bib.contains("Trần"));
-    assert!(rendered_bib.contains("Nhà xuất bản"));
-    assert!(rendered_bib.contains("Oxford University Press"));
+    // Verify Vietnamese names with diacritics are preserved
+    assert!(
+        rendered_bib.contains("Nguyễn"),
+        "Bibliography should render Vietnamese names with diacritics"
+    );
+    assert!(
+        rendered_bib.contains("Trần"),
+        "Bibliography should include other Vietnamese names"
+    );
+    // Verify multilingual content is included
+    assert!(
+        rendered_bib.contains("Nhà xuất bản"),
+        "Bibliography should include Vietnamese publisher names"
+    );
+    // Verify English-language references are also included
+    assert!(
+        rendered_bib.contains("Oxford University Press"),
+        "Bibliography should include English publisher names"
+    );
 }

@@ -1,3 +1,8 @@
+//! Rendering logic for list components with configurable delimiters.
+//!
+//! This module handles rendering of lists of template items, with support for
+//! different delimiters between items (commas, semicolons, etc.) and rendering modes.
+
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
 use citum_schema::template::{DelimiterPunctuation, TemplateList};
