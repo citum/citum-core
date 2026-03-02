@@ -17,17 +17,23 @@ fn compare_optional_years(
     if ascending { cmp } else { cmp.reverse() }
 }
 
+/// Sorter for bibliography and citation entries.
 pub struct Sorter<'a> {
     config: &'a Config,
     locale: &'a Locale,
 }
 
 impl<'a> Sorter<'a> {
+    /// Creates a new `Sorter` instance.
     pub fn new(config: &'a Config, locale: &'a Locale) -> Self {
         Self { config, locale }
     }
 
     /// Sort references according to style instructions.
+    ///
+    /// This handles multi-key sorting based on the style's `SortSpec`. It includes
+    /// specific logic for handling anonymous works (falling back from author to editor
+    /// to title) and stripping articles for title-based sorting.
     pub fn sort_references<'b>(&self, references: Vec<&'b Reference>) -> Vec<&'b Reference> {
         let mut refs = references;
         let processing = self.config.processing.as_ref().cloned().unwrap_or_default();
@@ -46,10 +52,12 @@ impl<'a> Sorter<'a> {
                                 .author()
                                 .and_then(|c| c.to_names_vec().first().cloned())
                                 .map(|n| n.family_or_literal().to_lowercase())
+                                .filter(|s| !s.is_empty())
                                 .or_else(|| {
                                     a.editor()
                                         .and_then(|c| c.to_names_vec().first().cloned())
                                         .map(|n| n.family_or_literal().to_lowercase())
+                                        .filter(|s| !s.is_empty())
                                 })
                                 .or_else(|| {
                                     a.title().map(|t| {
@@ -63,10 +71,12 @@ impl<'a> Sorter<'a> {
                                 .author()
                                 .and_then(|c| c.to_names_vec().first().cloned())
                                 .map(|n| n.family_or_literal().to_lowercase())
+                                .filter(|s| !s.is_empty())
                                 .or_else(|| {
                                     b.editor()
                                         .and_then(|c| c.to_names_vec().first().cloned())
                                         .map(|n| n.family_or_literal().to_lowercase())
+                                        .filter(|s| !s.is_empty())
                                 })
                                 .or_else(|| {
                                     b.title().map(|t| {

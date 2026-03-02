@@ -104,7 +104,8 @@ fn build_title_year_sorted_style(sort: Vec<SortSpec>) -> Style {
         }),
         bibliography: Some(BibliographySpec {
             template: Some(vec![
-                citum_schema::tc_title!(Primary),
+                citum_schema::tc_contributor!(Author, Long),
+                citum_schema::tc_title!(Primary, prefix = ". "),
                 citum_schema::tc_date!(Issued, Year, prefix = " "),
             ]),
             ..Default::default()
@@ -636,16 +637,9 @@ fn test_numeric_bibliography() {
     assert_eq!(result, "1. John Smith (2020)");
 }
 
-// TODO: Article-stripping for anonymous work sort not yet implemented.
-// See csl26-srvr known gaps and csl26-mo6c sort oracle tests.
-// This test documents the expected behavior:
-// - Anonymous works sort by title
-// - Leading articles ("The", "A", "An") should be stripped for sort purposes
-// - Current implementation sorts without stripping, so this test is commented out.
 #[test]
-#[ignore = "article-stripping sort not yet implemented; see csl26-srvr known gaps and csl26-mo6c"]
 fn test_anonymous_works_sort_by_title_without_article() {
-    let style = build_sorted_style(vec![
+    let style = build_title_year_sorted_style(vec![
         SortSpec {
             key: SortKey::Author,
             ascending: true,
@@ -670,9 +664,10 @@ fn test_anonymous_works_sort_by_title_without_article() {
 
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography();
+    println!("DEBUG RESULT:\n{}", result);
 
-    // "A Guide..." should come before "The Chicago..." when articles are stripped
-    assert!(result.find("A Guide").unwrap() < result.find("The Chicago").unwrap());
+    // "The Chicago..." (C) should come BEFORE "A Guide..." (G) when articles are stripped
+    assert!(result.find("The Chicago").unwrap() < result.find("A Guide").unwrap());
 }
 
 #[test]

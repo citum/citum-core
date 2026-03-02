@@ -346,18 +346,6 @@ impl<'a> Disambiguator<'a> {
             sorted
         };
 
-        // Note: we still accept `len` as a parameter to keep the original signature,
-        // but wait, we need the global author length here too.
-        // We'll calculate it inside the loop. No need to pass it in. If we don't have author_group_lengths,
-        // we can't easily lookup. But `apply_year_suffix` uses `make_author_key` which we will create now.
-        // But we don't have `author_group_lengths` inside `apply_year_suffix`.
-        // Oh actually `apply_year_suffix` just blindly used `len`. To make `apply_year_suffix` use
-        // the correct value, since that could be expensive to recalculate here without the hashmap,
-        // let's pass a function or maybe just keep using `len` ... wait. If we are in `apply_year_suffix`
-        // the `len` was the collision group length.
-        // But if `disambiguate_only: true` is checking `group_length`, we MUST put the global author length there.
-        // So `apply_year_suffix` needs to know the global author length.
-        // Let's modify `apply_year_suffix` signature in the next chunk. Oh wait, I am already writing this chunk.
         for (i, reference) in sorted_group.iter().enumerate() {
             let author_key = self.make_author_key(reference);
             let global_author_length = author_group_lengths.get(&author_key).copied().unwrap_or(1);
@@ -542,15 +530,15 @@ mod tests {
         Contributor, EdtfString, InputReference as Reference, Monograph, MonographType,
         MultilingualString, StructuredName, Title,
     };
-
-    fn make_ref(id: &str, family: &str, title: &str, year: i32) -> Reference {
+    fn make_ref(id: &str, family: &str, given: &str, year: i32) -> Reference {
+        let title = format!("Title {}", id);
         Reference::Monograph(Box::new(Monograph {
             id: Some(id.to_string()),
             r#type: MonographType::Book,
             title: Title::Single(title.to_string()),
             author: Some(Contributor::StructuredName(StructuredName {
                 family: MultilingualString::Simple(family.to_string()),
-                given: MultilingualString::Simple("Test".to_string()),
+                given: MultilingualString::Simple(given.to_string()),
                 suffix: None,
                 dropping_particle: None,
                 non_dropping_particle: None,
@@ -579,8 +567,8 @@ mod tests {
 
     #[test]
     fn test_group_aware_year_suffix_sort() {
-        let r1 = make_ref("r1", "Smith", "Beta", 2020);
-        let r2 = make_ref("r2", "Smith", "Alpha", 2020);
+        let r1 = make_ref("r1", "Smith", "Same", 2020);
+        let r2 = make_ref("r2", "Smith", "Same", 2020);
 
         let mut bib = Bibliography::new();
         bib.insert("r1".to_string(), r1);
@@ -589,14 +577,15 @@ mod tests {
         let config = Config::default();
         let locale = Locale::en_us();
 
-        // 1. Default sorting (by title): r2 (Alpha) should be 'a', r1 (Beta) should be 'b'
+        // 1. Default sorting (by title): r1 should be 'a', r2 should be 'b'.
+        // Title r1 < Title r2 alphabetically, so r1 gets group_index 1.
         let disamb_default = Disambiguator::new(&bib, &config, &locale);
         let hints_default = disamb_default.calculate_hints();
 
-        assert_eq!(hints_default.get("r2").unwrap().group_index, 1);
-        assert_eq!(hints_default.get("r1").unwrap().group_index, 2);
+        assert_eq!(hints_default.get("r1").unwrap().group_index, 1);
+        assert_eq!(hints_default.get("r2").unwrap().group_index, 2);
 
-        // 2. Custom group sort: Sort by title descending -> r1 (Beta) should be 'a', r2 (Alpha) should be 'b'
+        // 2. Custom group sort: Sort by title descending -> r2 should be 'a', r1 should be 'b'
         let sort_spec = GroupSort {
             template: vec![GroupSortKey {
                 key: SortKey::Title,
@@ -609,7 +598,50 @@ mod tests {
         let disamb_custom = Disambiguator::with_group_sort(&bib, &config, &locale, &sort_spec);
         let hints_custom = disamb_custom.calculate_hints();
 
-        assert_eq!(hints_custom.get("r1").unwrap().group_index, 1);
-        assert_eq!(hints_custom.get("r2").unwrap().group_index, 2);
+        assert_eq!(hints_custom.get("r2").unwrap().group_index, 1);
+        assert_eq!(hints_custom.get("r1").unwrap().group_index, 2);
+    }
+
+    #[test]
+    fn test_disambiguate_given_names() {
+        use citum_schema::options::{Disambiguation, Processing, ProcessingCustom};
+
+        // Use different given names to test if expansion resolves the collision
+        let r1 = make_ref("r1", "Smith", "John", 2020);
+        let r2 = make_ref("r2", "Smith", "Jane", 2020);
+
+        let mut bib = Bibliography::new();
+        bib.insert("r1".to_string(), r1);
+        bib.insert("r2".to_string(), r2);
+
+        let config = Config {
+            processing: Some(Processing::Custom(ProcessingCustom {
+                disambiguate: Some(Disambiguation {
+                    names: false,
+                    add_givenname: true,
+                    year_suffix: false,
+                }),
+                ..Default::default()
+            })),
+            ..Default::default()
+        };
+        let locale = Locale::en_us();
+
+        let disamb = Disambiguator::new(&bib, &config, &locale);
+        let hints = disamb.calculate_hints();
+
+        // Both should have expand_given_names set to true to resolve the Smith (2020) collision
+        assert!(hints.get("r1").unwrap().expand_given_names);
+        assert!(hints.get("r2").unwrap().expand_given_names);
+
+        // Should NOT have year suffix since it's disabled in config (and given names resolve it)
+        assert!(!hints.get("r1").unwrap().disamb_condition);
+        assert!(!hints.get("r2").unwrap().disamb_condition);
+
+        // Collision resolved: entries occupy distinct positions
+        assert_ne!(
+            hints.get("r1").unwrap().group_index,
+            hints.get("r2").unwrap().group_index
+        );
     }
 }
