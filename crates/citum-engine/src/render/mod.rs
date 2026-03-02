@@ -16,8 +16,11 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! - [`citation`]: Logic for joining components into full citations.
 //! - [`bibliography`]: Logic for rendering bibliographies.
 
+/// Bibliography-level rendering and output assembly helpers.
 pub mod bibliography;
+/// Citation-level rendering and output assembly helpers.
 pub mod citation;
+/// Component-level rendering primitives shared by citations and bibliographies.
 pub mod component;
 pub mod djot;
 pub mod format;

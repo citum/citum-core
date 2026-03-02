@@ -20,11 +20,15 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //!
 //! This is tracked via `rendered_vars` in `process_template()`.
 
+/// Author/date disambiguation and year-suffix assignment.
 pub mod disambiguation;
 pub mod document;
 pub mod labels;
+/// Matching helpers for substitution and repeated-contributor detection.
 pub mod matching;
+/// Template rendering orchestration and per-component state handling.
 pub mod rendering;
+/// Citation and bibliography sorting helpers.
 pub mod sorting;
 
 #[cfg(test)]

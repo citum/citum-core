@@ -9,6 +9,7 @@ use super::format::OutputFormat;
 use citum_schema::template::WrapPunctuation;
 
 #[derive(Default, Clone)]
+/// Renders processed citations and bibliography entries as HTML fragments.
 pub struct Html;
 
 impl OutputFormat for Html {

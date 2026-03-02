@@ -103,14 +103,19 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! assert_eq!(result, "(Kuhn, 1962)");
 //! ```
 
+/// Error types returned by citation and bibliography processing.
 pub mod error;
 #[cfg(feature = "ffi")]
 pub mod ffi;
 pub mod grouping;
+/// File loading and deserialization helpers for processor inputs.
 pub mod io;
+/// Citation, bibliography, sorting, and document processing logic.
 pub mod processor;
 pub mod reference;
+/// Output-format renderers and string conversion helpers.
 pub mod render;
+/// Template value resolution and formatting helpers.
 pub mod values;
 
 pub use citum_schema::options::{Config, Processing};

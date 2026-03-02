@@ -276,6 +276,10 @@ pub fn get_effective_rendering(component: &ProcTemplateComponent) -> Rendering {
     effective
 }
 
+/// Resolve title-category-specific rendering overrides for a title component.
+///
+/// The returned rendering reflects title type, mapped reference category, and
+/// optional language-specific overrides from the style configuration.
 pub fn get_title_category_rendering(
     title_type: &TitleType,
     ref_type: Option<&str>,

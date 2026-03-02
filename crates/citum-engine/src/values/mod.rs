@@ -151,6 +151,11 @@ pub fn resolve_multilingual_string(
     }
 }
 
+/// Resolve the effective language for one logical field scope on a reference.
+///
+/// This prefers an explicit `field_languages` entry, then a multilingual title
+/// language tag for the provided title value, and finally the reference-level
+/// language.
 pub fn effective_field_language(
     reference: &Reference,
     scope: &str,
@@ -167,10 +172,12 @@ pub fn effective_field_language(
         .or_else(|| reference.language())
 }
 
+/// Resolve the effective language for the primary title of a reference.
 pub fn effective_item_language(reference: &Reference) -> Option<String> {
     effective_field_language(reference, "title", reference.title().as_ref())
 }
 
+/// Resolve the effective language for the specific template component being rendered.
 pub fn effective_component_language(
     reference: &Reference,
     component: &TemplateComponent,

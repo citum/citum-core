@@ -431,6 +431,11 @@ impl<'a> Renderer<'a> {
         )
     }
 
+    /// Render a grouped citation into one formatted string per citation item.
+    ///
+    /// This preserves per-item output when grouping rules require items to stay
+    /// separate, and otherwise applies the requested renderer format to the
+    /// grouped citation output.
     pub fn render_grouped_citation_with_format<F>(
         &self,
         items: &[crate::reference::CitationItem],

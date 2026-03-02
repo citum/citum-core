@@ -2,12 +2,14 @@ use crate::reference::Reference;
 use citum_schema::Style;
 use citum_schema::options::{Config, Substitute, SubstituteKey};
 
+/// Matches references using the processor's substitution configuration.
 pub struct Matcher<'a> {
     style: &'a Style,
     default_config: &'a Config,
 }
 
 impl<'a> Matcher<'a> {
+    /// Build a matcher from the active style and default configuration.
     pub fn new(style: &'a Style, default_config: &'a Config) -> Self {
         Self {
             style,
