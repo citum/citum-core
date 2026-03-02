@@ -27,6 +27,7 @@ pub mod format;
 pub mod html;
 pub mod latex;
 pub mod plain;
+pub mod rich_text;
 pub mod typst;
 
 #[cfg(test)]
@@ -38,3 +39,4 @@ pub use component::{
     ProcEntry, ProcTemplate, ProcTemplateComponent, render_component,
     render_component_with_format_and_renderer,
 };
+pub use rich_text::render_djot_inline;
