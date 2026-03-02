@@ -438,7 +438,7 @@ impl Locale {
         let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
 
         match ext {
-            "cbor" => serde_cbor::from_slice::<raw::RawLocale>(&bytes)
+            "cbor" => ciborium::de::from_reader::<raw::RawLocale, _>(std::io::Cursor::new(&bytes))
                 .map(Self::from_raw)
                 .map_err(|e| format!("Failed to parse CBOR locale: {}", e)),
             "json" => serde_json::from_slice::<raw::RawLocale>(&bytes)

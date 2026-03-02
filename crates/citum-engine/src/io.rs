@@ -144,20 +144,22 @@ pub fn load_bibliography(path: &Path) -> Result<Bibliography, ProcessorError> {
 
     // Try parsing as CSLN formats
     match ext {
-        "cbor" => match serde_cbor::from_slice::<InputBibliography>(&bytes) {
-            Ok(input_bib) => {
-                for r in input_bib.references {
-                    if let Some(id) = r.id() {
-                        bib.insert(id.to_string(), r);
+        "cbor" => {
+            match ciborium::de::from_reader::<InputBibliography, _>(std::io::Cursor::new(&bytes)) {
+                Ok(input_bib) => {
+                    for r in input_bib.references {
+                        if let Some(id) = r.id() {
+                            bib.insert(id.to_string(), r);
+                        }
                     }
+                    Ok(bib)
                 }
-                Ok(bib)
+                Err(e) => Err(ProcessorError::ParseError(
+                    "CBOR".to_string(),
+                    e.to_string(),
+                )),
             }
-            Err(e) => Err(ProcessorError::ParseError(
-                "CBOR".to_string(),
-                e.to_string(),
-            )),
-        },
+        }
         "json" => {
             // Check for syntax errors first
             let _: serde_json::Value = serde_json::from_slice(&bytes)

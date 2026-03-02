@@ -12,7 +12,8 @@ fn bench_formats(c: &mut Criterion) {
     let style: Style = serde_yaml::from_str(&style_yaml).expect("failed to parse style yaml");
 
     let style_json = serde_json::to_string(&style).expect("failed to serialize style to json");
-    let style_cbor = serde_cbor::to_vec(&style).expect("failed to serialize style to cbor");
+    let mut style_cbor = Vec::new();
+    ciborium::ser::into_writer(&style, &mut style_cbor).expect("failed to serialize style to cbor");
 
     let mut group = c.benchmark_group("Style Deserialization");
 
@@ -30,7 +31,8 @@ fn bench_formats(c: &mut Criterion) {
 
     group.bench_function("CBOR", |b| {
         b.iter(|| {
-            let _: Style = serde_cbor::from_slice(black_box(&style_cbor)).unwrap();
+            let _: Style =
+                ciborium::de::from_reader(std::io::Cursor::new(black_box(&style_cbor))).unwrap();
         })
     });
 
@@ -41,7 +43,8 @@ fn bench_formats(c: &mut Criterion) {
     let bib: InputBibliography = serde_yaml::from_str(&bib_yaml).expect("failed to parse bib yaml");
 
     let bib_json = serde_json::to_string(&bib).expect("failed to serialize bib to json");
-    let bib_cbor = serde_cbor::to_vec(&bib).expect("failed to serialize bib to cbor");
+    let mut bib_cbor = Vec::new();
+    ciborium::ser::into_writer(&bib, &mut bib_cbor).expect("failed to serialize bib to cbor");
 
     let mut group = c.benchmark_group("Bibliography Deserialization");
 
@@ -59,7 +62,8 @@ fn bench_formats(c: &mut Criterion) {
 
     group.bench_function("CBOR", |b| {
         b.iter(|| {
-            let _: InputBibliography = serde_cbor::from_slice(black_box(&bib_cbor)).unwrap();
+            let _: InputBibliography =
+                ciborium::de::from_reader(std::io::Cursor::new(black_box(&bib_cbor))).unwrap();
         })
     });
 

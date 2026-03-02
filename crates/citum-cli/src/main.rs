@@ -1141,7 +1141,7 @@ fn load_style(path: &Path, no_semantics: bool) -> Result<Style, Box<dyn Error>> 
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
 
     let mut style_obj: Style = match ext {
-        "cbor" => serde_cbor::from_slice(&bytes)?,
+        "cbor" => ciborium::de::from_reader(std::io::Cursor::new(&bytes))?,
         "json" => serde_json::from_slice(&bytes)?,
         _ => serde_yaml::from_slice(&bytes)?,
     };
@@ -1224,7 +1224,7 @@ fn deserialize_any<T: serde::de::DeserializeOwned>(
     match ext {
         "yaml" | "yml" => Ok(serde_yaml::from_slice(bytes)?),
         "json" => Ok(serde_json::from_slice(bytes)?),
-        "cbor" => Ok(serde_cbor::from_slice(bytes)?),
+        "cbor" => Ok(ciborium::de::from_reader(std::io::Cursor::new(bytes))?),
         _ => Ok(serde_yaml::from_slice(bytes)?),
     }
 }
@@ -1236,7 +1236,11 @@ fn serialize_any<T: Serialize>(obj: &T, ext: &str) -> Result<Vec<u8>, Box<dyn Er
     match ext {
         "yaml" | "yml" => Ok(serde_yaml::to_string(obj)?.into_bytes()),
         "json" => Ok(serde_json::to_string_pretty(obj)?.into_bytes()),
-        "cbor" => Ok(serde_cbor::to_vec(obj)?),
+        "cbor" => {
+            let mut buf = Vec::new();
+            ciborium::ser::into_writer(obj, &mut buf)?;
+            Ok(buf)
+        }
         _ => Ok(serde_yaml::to_string(obj)?.into_bytes()),
     }
 }
