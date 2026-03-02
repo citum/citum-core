@@ -32,18 +32,25 @@ pub struct RawLocale {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub struct RawDateTerms {
+    /// Localized month names.
     #[serde(default)]
     pub months: RawMonthNames,
+    /// Localized season names in display order.
     #[serde(default)]
     pub seasons: Vec<String>,
+    /// Localized term for uncertain dates.
     #[serde(default)]
     pub uncertainty_term: Option<String>,
+    /// Localized term for open-ended date ranges.
     #[serde(default)]
     pub open_ended_term: Option<String>,
+    /// Localized ante meridiem marker.
     #[serde(default)]
     pub am: Option<String>,
+    /// Localized post meridiem marker.
     #[serde(default)]
     pub pm: Option<String>,
+    /// Localized label for UTC.
     #[serde(default)]
     pub timezone_utc: Option<String>,
 }
@@ -52,8 +59,10 @@ pub struct RawDateTerms {
 #[derive(Debug, Default, Deserialize, Serialize, Clone)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct RawMonthNames {
+    /// Full month names.
     #[serde(default)]
     pub long: Vec<String>,
+    /// Abbreviated month names.
     #[serde(default)]
     pub short: Vec<String>,
 }
@@ -62,12 +71,16 @@ pub struct RawMonthNames {
 #[derive(Debug, Default, Deserialize, Serialize, Clone)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct RawRoleTerm {
+    /// Long-form role term.
     #[serde(default)]
     pub long: Option<RawTermValue>,
+    /// Short-form role term.
     #[serde(default)]
     pub short: Option<RawTermValue>,
+    /// Verb-form role term.
     #[serde(default)]
     pub verb: Option<RawTermValue>,
+    /// Short verb-form role term.
     #[serde(default, rename = "verb-short")]
     pub verb_short: Option<RawTermValue>,
 }
@@ -82,7 +95,12 @@ pub enum RawTermValue {
     /// Form-keyed value (for terms with long/short forms).
     Forms(HashMap<String, RawTermValue>),
     /// Singular/plural forms.
-    SingularPlural { singular: String, plural: String },
+    SingularPlural {
+        /// Singular form of the term.
+        singular: String,
+        /// Plural form of the term.
+        plural: String,
+    },
 }
 
 impl Default for RawTermValue {

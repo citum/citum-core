@@ -5,13 +5,19 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 //! Embedded priority templates for common citation styles.
 
+/// Embedded APA templates.
 pub mod apa;
+/// Embedded Chicago author-date templates.
 pub mod chicago;
+/// Embedded Harvard templates.
 pub mod harvard;
+/// Embedded IEEE templates.
 pub mod ieee;
 pub mod locales;
+/// Embedded numeric citation templates.
 pub mod numeric;
 pub mod styles;
+/// Embedded Vancouver templates.
 pub mod vancouver;
 
 use crate::template::TemplateComponent;

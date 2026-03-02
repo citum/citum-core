@@ -12,10 +12,15 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum TermForm {
+    /// Long form of a term.
     Long,
+    /// Short form of a term.
     Short,
+    /// Verb form of a term.
     Verb,
+    /// Short verb form of a term.
     VerbShort,
+    /// Symbol form of a term.
     Symbol,
 }
 
@@ -25,30 +30,55 @@ pub enum TermForm {
 #[serde(rename_all = "kebab-case")]
 pub enum GeneralTerm {
     #[default]
+    /// The preposition "in".
     In,
+    /// The term used for access dates.
     Accessed,
+    /// The term used for retrieval statements.
     Retrieved,
+    /// The preposition "at".
     At,
+    /// The preposition "from".
     From,
+    /// The preposition "by".
     By,
+    /// The term used when no date is available.
     NoDate,
+    /// The term used for anonymous authorship.
     Anonymous,
+    /// The term used for approximate dates.
     Circa,
+    /// The phrase used for availability statements.
     AvailableAt,
+    /// The term used for immediately repeated citations.
     Ibid,
+    /// The conjunction "and".
     And,
+    /// The abbreviation for omitted additional names.
     EtAl,
+    /// The phrase "and others".
     AndOthers,
+    /// The term used for forthcoming works.
     Forthcoming,
+    /// The term used for online resources.
     Online,
+    /// The phrase used to introduce reviewed works.
     ReviewOf,
+    /// The phrase used for original publication references.
     OriginalWorkPublished,
+    /// The term used for patents.
     Patent,
+    /// The general term for volume locators.
     Volume,
+    /// The general term for issue locators.
     Issue,
+    /// The general term for page locators.
     Page,
+    /// The general term for chapter locators.
     Chapter,
+    /// The general term for editions.
     Edition,
+    /// The general term for section locators.
     Section,
 }
 

@@ -23,6 +23,7 @@ macro_rules! str_enum {
         $vis enum $name {
             $(
                 $(#[$vmeta])*
+                #[doc = "String-backed enum variant."]
                 $variant,
             )+
         }
@@ -72,6 +73,7 @@ macro_rules! merge_options {
 // AST Builder macros for tests and embedded styles.
 // These use a quasi-DSL to quickly stamp out TemplateComponents.
 
+/// Build a contributor `TemplateComponent` with optional rendering overrides.
 #[macro_export]
 macro_rules! tc_contributor {
     ($role:ident, $form:ident $(, $key:ident = $val:expr)*) => {
@@ -89,6 +91,7 @@ macro_rules! tc_contributor {
     };
 }
 
+/// Build a date `TemplateComponent` with optional rendering overrides.
 #[macro_export]
 macro_rules! tc_date {
     ($date_var:ident, $form:ident $(, $key:ident = $val:expr)*) => {
@@ -106,6 +109,7 @@ macro_rules! tc_date {
     };
 }
 
+/// Build a title `TemplateComponent` with optional rendering overrides.
 #[macro_export]
 macro_rules! tc_title {
     ($title_type:ident $(, $key:ident = $val:expr)*) => {
@@ -122,6 +126,7 @@ macro_rules! tc_title {
     };
 }
 
+/// Build a number `TemplateComponent` with optional rendering overrides.
 #[macro_export]
 macro_rules! tc_number {
     ($num_var:ident $(, $key:ident = $val:expr)*) => {
@@ -138,6 +143,7 @@ macro_rules! tc_number {
     };
 }
 
+/// Build a variable `TemplateComponent` with optional rendering overrides.
 #[macro_export]
 macro_rules! tc_variable {
     ($var:ident $(, $key:ident = $val:expr)*) => {
@@ -154,6 +160,7 @@ macro_rules! tc_variable {
     };
 }
 
+/// Build a term `TemplateComponent` with optional rendering overrides.
 #[macro_export]
 macro_rules! tc_term {
     ($term_var:ident $(, $key:ident = $val:expr)*) => {
@@ -170,6 +177,7 @@ macro_rules! tc_term {
     };
 }
 
+/// Build a list `TemplateComponent` with optional rendering overrides.
 #[macro_export]
 macro_rules! tc_list {
     ([$($item:expr),* $(,)?] $(, $key:ident = $val:expr)*) => {
