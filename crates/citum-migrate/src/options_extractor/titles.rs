@@ -1,6 +1,10 @@
 use citum_schema::options::{TitleRendering, TitlesConfig};
 use csl_legacy::model::{CslNode, Style};
 
+/// Extracts title formatting configuration from a CSL style.
+///
+/// Analyzes the style's layouts to determine formatting rules for different
+/// types of titles (primary, container, periodical, etc.).
 pub fn extract_title_config(style: &Style) -> Option<TitlesConfig> {
     let mut config = TitlesConfig::default();
     let mut has_config = false;

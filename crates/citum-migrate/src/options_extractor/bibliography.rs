@@ -5,6 +5,10 @@ use citum_schema::options::{
 use citum_schema::template::DelimiterPunctuation;
 use csl_legacy::model::{CslNode, Layout, Macro, Sort as LegacySort, Style};
 
+/// Extracts bibliography configuration options from a CSL style.
+///
+/// Collects settings for subsequent author substitution, hanging indent,
+/// entry suffix, and separator punctuation from the bibliography element.
 pub fn extract_bibliography_config(style: &Style) -> Option<BibliographyConfig> {
     let bib = style.bibliography.as_ref()?;
 
@@ -65,6 +69,10 @@ pub fn extract_bibliography_config(style: &Style) -> Option<BibliographyConfig> 
     if has_config { Some(config) } else { None }
 }
 
+/// Determines if periods should be suppressed after URL components.
+///
+/// Returns true if the CSL style indicates that URL components should not
+/// be followed by a period in bibliography output.
 pub fn should_suppress_period_after_url(style: &Style, layout: &Layout) -> bool {
     if layout.suffix.as_ref().is_some_and(|s| !s.is_empty()) {
         return false;
@@ -145,6 +153,10 @@ fn nodes_have_doi_without_period(nodes: &[CslNode]) -> bool {
 /// The extraction should return the inner group's delimiter, not stop at the
 /// outer group without one. Also expands macro calls to find delimiters inside
 /// referenced macros.
+/// Extracts the bibliography separator punctuation from the layout element.
+///
+/// Parses the delimiter between bibliography entries to determine the
+/// appropriate separator character (comma, semicolon, etc.).
 pub fn extract_bibliography_separator_from_layout(
     layout: &Layout,
     macros: &[Macro],
@@ -252,6 +264,9 @@ pub fn extract_bibliography_separator_from_layout(
         .map(|(d, _)| DelimiterPunctuation::from_csl_string(&d))
 }
 
+/// Extracts bibliography sort configuration from a CSL sort element.
+///
+/// Converts CSL sort keys and order (ascending/descending) to the citum format.
 pub fn extract_sort_from_bibliography(sort: &LegacySort) -> Option<Sort> {
     let mut csln_sort = Sort::default();
     for key in &sort.keys {
@@ -280,6 +295,9 @@ pub fn extract_sort_from_bibliography(sort: &LegacySort) -> Option<Sort> {
 ///
 /// This mapping is used by processor numeric citation-number assignment, where
 /// citation numbers follow bibliography order when a sort spec is present.
+/// Extracts group sort configuration for multi-group bibliographies.
+///
+/// Converts CSL sort keys with grouping context to citum GroupSort format.
 pub fn extract_group_sort_from_bibliography(sort: &LegacySort) -> Option<GroupSort> {
     let template: Vec<GroupSortKey> = sort
         .keys
