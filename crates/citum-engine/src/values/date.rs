@@ -351,6 +351,7 @@ impl ComponentValues for TemplateDate {
     }
 }
 
+/// Convert a 1-based index into an alphabetic suffix (`1 -> "a"`, `27 -> "aa"`).
 pub fn int_to_letter(n: u32) -> Option<String> {
     if n == 0 {
         return None;

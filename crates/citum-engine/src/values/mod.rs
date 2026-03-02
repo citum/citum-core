@@ -8,12 +8,19 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! This module provides the logic to extract formatted values from references
 //! based on template component specifications.
 
+/// Contributor extraction and name-formatting helpers.
 pub mod contributor;
+/// Date extraction and date-formatting helpers.
 pub mod date;
+/// List-component value extraction helpers.
 pub mod list;
+/// Numeric variable extraction and page-range helpers.
 pub mod number;
+/// Locale term resolution helpers.
 pub mod term;
+/// Title extraction and title-formatting helpers.
 pub mod title;
+/// Generic variable extraction helpers.
 pub mod variable;
 
 #[cfg(test)]
@@ -454,6 +461,7 @@ pub struct ProcValues<T = String> {
     pub pre_formatted: bool,
 }
 
+/// Processing hints computed before rendering a reference or citation item.
 #[derive(Debug, Clone, Default)]
 pub struct ProcHints {
     /// Whether disambiguation is active (triggers year-suffix).
@@ -478,15 +486,21 @@ pub struct ProcHints {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum RenderContext {
     #[default]
+    /// Render values for citation output.
     Citation,
+    /// Render values for bibliography output.
     Bibliography,
 }
 
 /// Options for rendering.
 pub struct RenderOptions<'a> {
+    /// Effective configuration after style and default resolution.
     pub config: &'a Config,
+    /// Locale used for term lookup and locale-sensitive formatting.
     pub locale: &'a Locale,
+    /// Whether the current render target is a citation or bibliography.
     pub context: RenderContext,
+    /// Citation mode for the current render operation.
     pub mode: citum_schema::citation::CitationMode,
     /// Whether to suppress the author name for this citation.
     /// Set from the citation-level `suppress_author` flag.
@@ -499,6 +513,7 @@ pub struct RenderOptions<'a> {
 
 /// Trait for extracting values from template components.
 pub trait ComponentValues {
+    /// Resolve the component into processed render values for one reference.
     fn values<F: crate::render::format::OutputFormat<Output = String>>(
         &self,
         reference: &Reference,
