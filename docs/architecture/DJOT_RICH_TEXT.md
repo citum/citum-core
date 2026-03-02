@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned — bean `csl26-suz3`, branch `feat/djot-rich-text`.
+Implemented (Phase 1) — bean `csl26-suz3`, branch `feat/djot-rich-text`, commit `df059ae`.
 
 ## Summary
 
@@ -80,26 +80,26 @@ Rare; mostly style-driven (some styles render `BCE`/`CE` in smallcaps). Djot spa
 
 ### `render_djot_inline<F: OutputFormat>`
 
-New function in `crates/citum-engine/src/render/rich_text.rs`:
+Implemented in `crates/citum-engine/src/render/rich_text.rs`:
 
 ```rust
 pub fn render_djot_inline<F: OutputFormat<Output = String>>(src: &str, fmt: &F) -> String
 ```
 
-Uses `jotdown::Parser` over the input string, maps inline `Event` variants to `OutputFormat` methods:
+Uses a stack-based approach over `jotdown::Parser::new(src)`. Each `Event::Start` pushes a new scope; `Event::End` pops the scope, applies the format method, and pushes the result to the parent scope.
 
 | jotdown event | OutputFormat method |
 |---|---|
 | `Container::Emphasis` | `fmt.emph(…)` |
 | `Container::Strong` | `fmt.strong(…)` |
-| `Container::Link(url, …)` | `fmt.link(url, …)` |
+| `Container::Link(…)` | `fmt.text(…)` (link URL not available at End; degrades to text — known limitation) |
 | `Container::Verbatim` | `fmt.text(…)` (preserve as-is) |
-| `Container::Span` with `.smallcaps` | `fmt.small_caps(…)` |
-| `Container::Span` with `.nocase` | content passed through, case flag set |
-| Block-level containers | Ignored; fall back to plain text |
+| `Container::Span` with class `smallcaps` | `fmt.small_caps(…)` |
+| Block-level containers (`Heading`, `Paragraph`, `CodeBlock`, etc.) | Text content collected, block structure dropped |
 | `Event::Str(s)` | `fmt.text(s)` |
+| `Event::Softbreak` / `Hardbreak` | `fmt.text(" ")` |
 
-Block-level djot constructs (headings, bullet lists, fenced code) are invalid in a field context and are silently degraded to their text content.
+**Known limitation:** Link URL is only accessible at `Event::Start(Container::Link(url, …))` but the formatted inner content is only available at `Event::End`. The current implementation degrades links to plain text. Fix requires stashing the URL on the stack alongside the content buffer.
 
 ### `AnnotationFormat` enum
 
@@ -115,19 +115,21 @@ pub enum AnnotationFormat {
 }
 ```
 
-`AnnotationStyle` gets a new field `format: AnnotationFormat` defaulting to `Djot`.
+`AnnotationStyle` gets `format: AnnotationFormat` defaulting to `Djot`. CLI (`citum-cli/src/main.rs`) also updated to default to `Djot`.
 
 ### Annotation render path
 
-`refs_to_string_with_format` in `bibliography.rs`: when `AnnotationFormat::Djot`, replace the current string concatenation with `render_djot_inline::<F>(annotation_text, &fmt)`.
+`refs_to_string_with_format` in `bibliography.rs`: when `AnnotationFormat::Djot`, calls `render_djot_inline::<F>(annotation_text, &fmt)` before applying indent and italic. `AnnotationFormat::Plain` passes through unchanged.
 
-## Test Coverage
+## Test Coverage (implemented)
 
-- Djot annotation with emphasis renders correctly in HTML, PlainText, and Djot output formats
-- Djot annotation with a link renders correctly in HTML only (plain text degrades to label)
-- Block-level djot in an annotation field degrades gracefully to plain text
-- `AnnotationFormat::Plain` passes the string through unmodified
-- Unicode math characters in annotation text pass through unmodified
+Unit tests in `rich_text.rs`:
+
+- `test_djot_emphasis_plain` — `_foo_` with PlainText renders as `_foo_` (PlainText wraps emph in underscores)
+- `test_djot_strong_single_asterisk` — `*bar*` with PlainText renders as `**bar**`
+- `test_djot_unicode_math` — `H₂O` passes through unchanged
+- `test_djot_plain_no_markup` — plain string passes through unchanged
+- `test_djot_combined_formatting` — nested emphasis + strong renders correctly
 
 ## Non-Goals
 
