@@ -114,7 +114,7 @@ pub struct Style {
 }
 
 fn default_version() -> String {
-    "1.0".to_string()
+    env!("CARGO_PKG_VERSION").to_string()
 }
 
 /// Available embedded template presets.
