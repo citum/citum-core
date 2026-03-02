@@ -126,28 +126,31 @@ Use the `../scripts/bump.sh` script to update the schema version:
 ../scripts/bump.sh schema minor --dry-run
 
 # What it does:
-# 1. Updates default_version() in citum_schema/src/lib.rs
-# 2. Validates all styles parse correctly with new version
-# 3. Updates ./SCHEMA_VERSIONING.md with timestamp
-# 4. Creates git tag: schema-vX.Y.Z
+# 1. Updates the shared workspace version in Cargo.toml
+# 2. Refreshes workspace package entries in Cargo.lock
+# 3. For schema bumps, updates ./SCHEMA_VERSIONING.md with a changelog entry
+# 4. Validates with `cargo test --quiet --lib`
+# 5. Creates the appropriate git tag(s)
 ```
 
 **Manual process:**
-1. Update `default_version()` in `../crates/citum-schema/src/lib.rs`
-2. Run `cargo test` to ensure all styles parse
-3. Update this file with schema changelog entry
-4. Commit with message: `chore(schema): bump schema version to X.Y.Z`
-5. Create git tag: `git tag schema-vX.Y.Z`
+1. Update the shared workspace version in `../Cargo.toml`
+2. Refresh `../Cargo.lock`
+3. Run `cargo test --quiet --lib`
+4. For schema bumps, update this file with a schema changelog entry
+5. Commit the version bump
+6. Create the appropriate release tag(s)
 
 ### Schema Changelog
 
 Track schema changes separately from code changes:
 
-#### schema-v1.0.0 (Unreleased)
-- Initial Citum schema stabilization
-- Core fields: info, options, citation, bibliography
-- Supported options: contributors, dates, titles, page-range-format
-- Validated against APA 7th, Chicago Author-Date
+#### schema-v0.7.1 (2026-03-02)
+- Schema version bumped from 0.7.0 to 0.7.1
+
+#### schema-v0.7.1 (2026-03-02)
+- Schema version bumped from 0.7.0 to 0.7.1
+
 
 ## CI Validation
 
