@@ -1,3 +1,9 @@
+//! Minimal renderer for the legacy CSLN (CSL Node) AST.
+//!
+//! This module provides a basic AST renderer used internally for schema tests and migration workflows.
+//! It is not the production rendering engine (see `citum_engine` for that). The renderer handles
+//! conditional branches, variable substitution, formatting, and basic grouping of citation elements.
+
 use crate::{
     ConditionBlock, CslnNode, DateBlock, GroupBlock, ItemType, NamesBlock, TermBlock, Variable,
     VariableBlock,
@@ -5,8 +11,10 @@ use crate::{
 use std::collections::HashMap;
 
 /// A mock reference item with metadata for rendering.
-/// This is an internal type used by the legacy Renderer, distinct from
-/// the input `CitationItem` in `crate::citation`.
+///
+/// This is an internal type used by the legacy Renderer, distinct from the input `CitationItem`
+/// in `crate::citation`. It holds an item type and a flat HashMap of resolved variable values
+/// keyed by legacy CSL variable names.
 pub struct RenderItem {
     /// Legacy CSL item type used by conditional rendering branches.
     pub item_type: ItemType,
@@ -15,10 +23,27 @@ pub struct RenderItem {
 }
 
 /// Minimal renderer for the legacy CSLN AST used in schema tests and migration.
+///
+/// This renderer walks a CSLN AST and produces a string output by concatenating rendered nodes.
+/// It handles text nodes, variables with optional labels, dates, names, groups, conditions,
+/// and term lookups. Formatting (italic, bold, underline, superscript) and prefix/suffix options
+/// are applied to text output.
 pub struct Renderer;
 
 impl Renderer {
     /// Render a citation by concatenating the rendered output of each AST node.
+    ///
+    /// Takes a sequence of CSLN AST nodes and a reference item, walks the tree, and produces
+    /// a single string by joining all rendered node outputs.
+    ///
+    /// # Arguments
+    ///
+    /// * `nodes` - A slice of CSLN AST nodes to render.
+    /// * `item` - The reference item providing variables and type information.
+    ///
+    /// # Returns
+    ///
+    /// A `String` containing the concatenated rendered output of all nodes.
     pub fn render_citation(&self, nodes: &[CslnNode], item: &RenderItem) -> String {
         let mut output = String::new();
         for node in nodes {
@@ -27,6 +52,9 @@ impl Renderer {
         output
     }
 
+    /// Render a single CSLN AST node.
+    ///
+    /// Dispatches on the node variant and calls the appropriate rendering method.
     fn render_node(&self, node: &CslnNode, item: &RenderItem) -> String {
         match node {
             CslnNode::Text { value } => value.clone(),
@@ -39,6 +67,7 @@ impl Renderer {
         }
     }
 
+    /// Render a term block by looking up the term and applying formatting.
     fn render_term(&self, block: &TermBlock) -> String {
         self.apply_formatting(
             &format!("{:?}", block.term).to_lowercase(),
@@ -46,6 +75,7 @@ impl Renderer {
         )
     }
 
+    /// Render a variable block by looking up the variable value and applying optional label and formatting.
     fn render_variable(&self, block: &VariableBlock, item: &RenderItem) -> String {
         if let Some(val) = item.variables.get(&block.variable) {
             let mut text = val.clone();
@@ -67,6 +97,7 @@ impl Renderer {
         }
     }
 
+    /// Render a date block by looking up the date variable and applying formatting.
     fn render_date(&self, block: &DateBlock, item: &RenderItem) -> String {
         if let Some(val) = item.variables.get(&block.variable) {
             self.apply_formatting(val, &block.formatting)
@@ -75,6 +106,7 @@ impl Renderer {
         }
     }
 
+    /// Render a names block with variable substitution, initialization, and sorting options.
     fn render_names(&self, block: &NamesBlock, item: &RenderItem) -> String {
         let active_val = if let Some(val) = item.variables.get(&block.variable) {
             Some(val.clone())
@@ -103,6 +135,9 @@ impl Renderer {
         }
     }
 
+    /// Render a group block by rendering all children and joining them with a delimiter.
+    ///
+    /// Returns an empty string if all children render to empty strings (suppresses empty groups).
     fn render_group(&self, block: &GroupBlock, item: &RenderItem) -> String {
         let mut parts = Vec::new();
         for child in &block.children {
@@ -122,6 +157,9 @@ impl Renderer {
         self.apply_formatting(&content, &block.formatting)
     }
 
+    /// Render a condition block by evaluating if/else-if/else branches based on item type and variable presence.
+    ///
+    /// Evaluates the main if-branch first, then else-if branches in order, and finally the else-branch.
     fn render_condition(&self, block: &ConditionBlock, item: &RenderItem) -> String {
         // Check if the main if-branch matches
         let type_match =
@@ -184,6 +222,7 @@ impl Renderer {
         }
     }
 
+    /// Apply formatting options (prefix, suffix, font style, weight, decoration, alignment) to text.
     fn apply_formatting(&self, text: &str, fmt: &crate::FormattingOptions) -> String {
         let prefix = fmt.prefix.as_deref().unwrap_or("");
         let suffix = fmt.suffix.as_deref().unwrap_or("");
@@ -203,5 +242,113 @@ impl Renderer {
         }
 
         format!("{}{}{}", prefix, res, suffix)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Test that RenderItem can be constructed with an item type and variables.
+    #[test]
+    fn test_render_item_construction() {
+        let mut variables = HashMap::new();
+        variables.insert(Variable::Author, "Smith, John".to_string());
+
+        let item = RenderItem {
+            item_type: ItemType::Book,
+            variables,
+        };
+
+        assert_eq!(item.item_type, ItemType::Book);
+        assert_eq!(
+            item.variables.get(&Variable::Author),
+            Some(&"Smith, John".to_string())
+        );
+    }
+
+    /// Test that Renderer produces a simple text node output.
+    #[test]
+    fn test_render_simple_text_node() {
+        let renderer = Renderer;
+        let nodes = vec![CslnNode::Text {
+            value: "Hello, World!".to_string(),
+        }];
+        let item = RenderItem {
+            item_type: ItemType::Book,
+            variables: HashMap::new(),
+        };
+
+        let output = renderer.render_citation(&nodes, &item);
+        assert_eq!(output, "Hello, World!");
+    }
+
+    /// Test that Renderer concatenates multiple text nodes.
+    #[test]
+    fn test_render_multiple_text_nodes() {
+        let renderer = Renderer;
+        let nodes = vec![
+            CslnNode::Text {
+                value: "First".to_string(),
+            },
+            CslnNode::Text {
+                value: " Second".to_string(),
+            },
+        ];
+        let item = RenderItem {
+            item_type: ItemType::Book,
+            variables: HashMap::new(),
+        };
+
+        let output = renderer.render_citation(&nodes, &item);
+        assert_eq!(output, "First Second");
+    }
+
+    /// Test that Renderer renders a minimal group with a single text node.
+    #[test]
+    fn test_render_minimal_group() {
+        let renderer = Renderer;
+        let nodes = vec![CslnNode::Group(GroupBlock {
+            children: vec![CslnNode::Text {
+                value: "grouped".to_string(),
+            }],
+            delimiter: None,
+            formatting: crate::FormattingOptions::default(),
+            source_order: None,
+        })];
+        let item = RenderItem {
+            item_type: ItemType::Book,
+            variables: HashMap::new(),
+        };
+
+        let output = renderer.render_citation(&nodes, &item);
+        assert_eq!(output, "grouped");
+    }
+
+    /// Test that Renderer suppresses empty groups.
+    #[test]
+    fn test_render_empty_group_suppressed() {
+        let renderer = Renderer;
+        let nodes = vec![
+            CslnNode::Text {
+                value: "Before".to_string(),
+            },
+            CslnNode::Group(GroupBlock {
+                children: vec![],
+                delimiter: None,
+                formatting: crate::FormattingOptions::default(),
+                source_order: None,
+            }),
+            CslnNode::Text {
+                value: "After".to_string(),
+            },
+        ];
+        let item = RenderItem {
+            item_type: ItemType::Book,
+            variables: HashMap::new(),
+        };
+
+        let output = renderer.render_citation(&nodes, &item);
+        assert_eq!(output, "BeforeAfter");
     }
 }
