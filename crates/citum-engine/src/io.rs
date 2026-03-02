@@ -25,6 +25,9 @@ pub struct AnnotationStyle {
     /// Line break style before annotation. Default: BlankLine.
     #[serde(default)]
     pub paragraph_break: ParagraphBreak,
+    /// Markup format for annotation text. Default: Djot.
+    #[serde(default)]
+    pub format: AnnotationFormat,
 }
 
 fn default_true() -> bool {
@@ -37,6 +40,7 @@ impl Default for AnnotationStyle {
             italic: false,
             indent: true,
             paragraph_break: ParagraphBreak::BlankLine,
+            format: AnnotationFormat::Djot,
         }
     }
 }
@@ -49,6 +53,17 @@ pub enum ParagraphBreak {
     /// Blank line before annotation (default).
     #[default]
     BlankLine,
+}
+
+/// Markup format for annotation text.
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum AnnotationFormat {
+    /// Parse annotation as djot inline markup (default).
+    #[default]
+    Djot,
+    /// Treat annotation as plain text with no markup interpretation.
+    Plain,
 }
 
 /// Load a list of citations from a file.

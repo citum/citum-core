@@ -1,6 +1,9 @@
 use citum_engine::{
     Bibliography, Citation, CitationItem, DocumentFormat, Processor,
-    io::{AnnotationStyle, ParagraphBreak, load_annotations, load_bibliography, load_citations},
+    io::{
+        AnnotationFormat, AnnotationStyle, ParagraphBreak, load_annotations, load_bibliography,
+        load_citations,
+    },
     processor::document::djot::DjotParser,
     render::{djot::Djot, html::Html, latex::Latex, plain::PlainText, typst::Typst},
 };
@@ -639,6 +642,7 @@ fn run_render_refs(args: RenderRefsArgs) -> Result<(), Box<dyn Error>> {
             ParagraphBreakArg::BlankLine => ParagraphBreak::BlankLine,
             ParagraphBreakArg::SingleLine => ParagraphBreak::SingleLine,
         },
+        format: AnnotationFormat::Djot,
     };
 
     let processor = create_processor(style_obj, bibliography, &args.style);

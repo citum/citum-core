@@ -6,10 +6,11 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 use std::collections::HashMap;
 use std::fmt::Write;
 
-use crate::io::{AnnotationStyle, ParagraphBreak};
+use crate::io::{AnnotationFormat, AnnotationStyle, ParagraphBreak};
 use crate::render::component::{ProcEntry, render_component_with_format};
 use crate::render::format::OutputFormat;
 use crate::render::plain::PlainText;
+use crate::render::rich_text::render_djot_inline;
 
 /// Check if a character is a final punctuation mark (not a space).
 /// This distinguishes between intentional component suffixes and separator duplication.
@@ -184,9 +185,15 @@ pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
                 ParagraphBreak::SingleLine => "\n",
             };
             let indent_prefix = if style.indent { "    " } else { "" };
-            
+
+            // Render annotation text through djot if enabled
+            let rendered = match style.format {
+                AnnotationFormat::Djot => render_djot_inline(annotation_text, &fmt),
+                AnnotationFormat::Plain => annotation_text.to_string(),
+            };
+
             // Apply indentation to each line (preserving blank lines for paragraph breaks)
-            let indented_text = annotation_text
+            let indented_text = rendered
                 .lines()
                 .map(|line| {
                     if line.trim().is_empty() {
@@ -194,7 +201,7 @@ pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
                     } else {
                         let indented_line = format!("{}{}", indent_prefix, line);
                         if style.italic {
-                            fmt.emph(indented_line)
+                            fmt.finish(fmt.emph(fmt.text(&indented_line)))
                         } else {
                             indented_line
                         }
@@ -691,6 +698,7 @@ mod tests {
             italic: false,
             indent: false,
             paragraph_break: ParagraphBreak::SingleLine,
+            format: AnnotationFormat::Plain,
         };
 
         let result = refs_to_string_with_format::<PlainText>(
