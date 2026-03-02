@@ -18,8 +18,11 @@ use std::path::Path;
 /// JSON-RPC request envelope.
 #[derive(Debug, Deserialize)]
 pub struct RpcRequest {
+    /// The request identifier echoed back in success and error responses.
     pub id: Value,
+    /// The JSON-RPC method name to dispatch.
     pub method: String,
+    /// The method-specific parameter object.
     pub params: Value,
 }
 
@@ -53,6 +56,10 @@ struct BibliographyResult {
 }
 
 /// Main RPC dispatcher that processes a single request.
+///
+/// On success, this returns a JSON object containing the original request ID
+/// and a method-specific `result` payload. On failure, it returns the request
+/// ID when available plus a human-readable error string.
 pub fn dispatch(req: RpcRequest) -> Result<Value, (Option<Value>, String)> {
     let id = req.id.clone();
 

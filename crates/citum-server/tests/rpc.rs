@@ -231,6 +231,23 @@ fn missing_refs_returns_error() {
 }
 
 #[test]
+fn invalid_output_format_returns_error() {
+    let req = make_request(
+        12,
+        "render_bibliography",
+        json!({
+            "style_path": apa_style_path(),
+            "refs": hawking_refs(),
+            "output_format": "pdf"
+        }),
+    );
+    let err = dispatch(req).expect_err("invalid output format should error");
+    assert_eq!(err.0, Some(json!(12)));
+    assert!(err.1.contains("unsupported output format"));
+    assert!(err.1.contains("pdf"));
+}
+
+#[test]
 fn render_bibliography_typst_returns_labeled_markup() {
     let req = make_request(
         10,
