@@ -1,3 +1,9 @@
+//! Processing mode and citation/bibliography rendering options.
+//!
+//! This module defines the processing modes (author-date, numeric, note, label, custom) that
+//! determine how citations and bibliographies are sorted, grouped, and disambiguated. Each
+//! mode provides default configurations for sorting and disambiguation strategies.
+
 /*
 SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
@@ -25,13 +31,22 @@ pub enum LabelPreset {
 }
 
 /// Resolved label generation parameters after applying preset defaults.
+///
+/// Stores the resolved (effective) parameters for label citation mode, combining
+/// preset defaults with any user-specified overrides from `LabelConfig`.
 #[derive(Debug, Clone)]
 pub struct LabelParams {
+    /// Number of characters from a single author's family name.
     pub single_author_chars: u8,
+    /// Number of characters per author when multiple authors are present.
     pub multi_author_chars: u8,
+    /// Maximum number of authors before truncation (et-al).
     pub et_al_min: u8,
+    /// Suffix to append when authors are truncated (e.g., "+").
     pub et_al_marker: String,
+    /// Number of names to show in et-al truncation.
     pub et_al_names: u8,
+    /// Number of year digits to use (typically 2 or 4).
     pub year_digits: u8,
 }
 
@@ -65,6 +80,14 @@ pub struct LabelConfig {
 
 impl LabelConfig {
     /// Resolve effective parameters by merging preset defaults with overrides.
+    ///
+    /// This method applies the `LabelPreset` defaults first, then applies any user-specified
+    /// overrides from optional fields. For example, if the preset is `Alpha` but `single_author_chars`
+    /// is specified, the specified value takes precedence over the preset default of 3.
+    ///
+    /// # Returns
+    ///
+    /// A `LabelParams` struct with all parameters resolved to concrete values.
     pub fn effective_params(&self) -> LabelParams {
         let (
             default_single_author_chars,
@@ -94,52 +117,72 @@ impl LabelConfig {
 
 /// Processing mode for citation/bibliography generation.
 ///
-/// Can be specified as:
-/// - A string: "author-date", "numeric", "note", or "label"
-/// - A label config map: { label: { preset: din } }
-/// - A custom config map: { sort: ..., group: ..., disambiguate: ... }
+/// Determines how citations and bibliographies are sorted, grouped, and disambiguated.
+/// Can be specified as a simple string or with complex configuration maps:
+/// - A string: `"author-date"`, `"numeric"`, `"note"`, or `"label"`
+/// - A label config map: `{ label: { preset: din } }`
+/// - A custom config map: `{ sort: ..., group: ..., disambiguate: ... }`
 #[derive(Debug, Default, PartialEq, Clone, Serialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
 pub enum Processing {
-    /// Author-date styles default bibliography ordering to author, year, title.
+    /// Author-date styles (e.g., APA, Chicago).
+    /// Default bibliography ordering: author, year, title.
     #[default]
     AuthorDate,
-    /// Numeric styles do not imply a bibliography sort.
+    /// Numeric styles (e.g., IEEE, Nature).
+    /// Do not imply a bibliography sort; citations are numbered in order of appearance.
     Numeric,
-    /// Note styles with a bibliography default to author, title, year ordering.
+    /// Note styles (e.g., Chicago Notes-Bibliography).
+    /// With a bibliography default to author, title, year ordering.
     Note,
-    /// Label styles default bibliography ordering to author, year, title.
+    /// Label styles (e.g., Alpha, DIN 1505-2).
+    /// Default bibliography ordering: author, year, title.
     Label(LabelConfig),
-    /// Fully custom processing behavior; explicit `sort` remains authoritative.
+    /// Fully custom processing behavior.
+    /// Explicit `sort` configuration remains authoritative.
     Custom(ProcessingCustom),
 }
 
 /// How citation-item sorting is resolved when `citation.sort` is absent.
+///
+/// Determines whether citation clusters can be reordered automatically or only
+/// when explicitly configured.
 #[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum CitationSortPolicy {
-    /// Only an explicit `citation.sort` reorders multi-cite clusters.
+    /// Only an explicit `citation.sort` can reorder multi-cite clusters.
     ExplicitOnly,
 }
 
 /// Custom processing configuration.
+///
+/// Allows explicit specification of sorting, grouping, and disambiguation rules
+/// without relying on preset defaults.
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub struct ProcessingCustom {
+    /// Bibliography sorting configuration (optional).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sort: Option<SortEntry>,
+    /// Bibliography grouping configuration (optional).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub group: Option<Group>,
+    /// Disambiguation settings (optional).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub disambiguate: Option<Disambiguation>,
 }
 
 impl Processing {
     /// Default bibliography sort for the processing family, if any.
+    ///
+    /// Returns the standard bibliography sort order for the processing mode:
+    /// - `AuthorDate` / `Label`: author, year, title
+    /// - `Note`: author, title, year
+    /// - `Numeric` / `Custom`: None (no automatic sort)
     pub fn default_bibliography_sort(&self) -> Option<SortPreset> {
         match self {
             Processing::AuthorDate => Some(SortPreset::AuthorDateTitle),
@@ -151,11 +194,17 @@ impl Processing {
     }
 
     /// Citation sorting remains explicit-only for all processing families.
+    ///
+    /// All processing modes use `ExplicitOnly`, meaning citation clusters are only
+    /// reordered when explicitly configured via `citation.sort`.
     pub fn default_citation_sort_policy(&self) -> CitationSortPolicy {
         CitationSortPolicy::ExplicitOnly
     }
 
     /// Get the effective bibliography/disambiguation configuration for this processing mode.
+    ///
+    /// Returns a `ProcessingCustom` struct with the resolved configuration combining
+    /// preset defaults and user overrides. For `Custom` mode, returns the user-provided config as-is.
     pub fn config(&self) -> ProcessingCustom {
         match self {
             Processing::AuthorDate => ProcessingCustom {
@@ -306,13 +355,18 @@ impl<'de> Deserialize<'de> for Processing {
 }
 
 /// Disambiguation settings.
+///
+/// Controls how ambiguous citations are disambiguated in the output.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub struct Disambiguation {
+    /// Whether to attempt disambiguation by expanding author names.
     pub names: bool,
+    /// Whether to add given names to disambiguate similarly-named authors.
     #[serde(default)]
     pub add_givenname: bool,
+    /// Whether to append year suffixes (a, b, c, ...) for multiple works from the same author-year.
     pub year_suffix: bool,
 }
 
@@ -327,33 +381,39 @@ impl Default for Disambiguation {
 }
 
 /// Sorting configuration.
+///
+/// Specifies how bibliography entries are ordered.
 #[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub struct Sort {
-    /// Shorten name lists for sorting the same as for display.
+    /// Whether to shorten name lists for sorting the same as for display.
     #[serde(default)]
     pub shorten_names: bool,
-    /// Use same substitutions for sorting as for rendering.
+    /// Whether to apply the same name substitutions during sorting as during rendering.
     #[serde(default)]
     pub render_substitutions: bool,
-    /// Sort keys in order.
+    /// Sort keys in order of application.
     pub template: Vec<SortSpec>,
 }
 
 /// Sort configuration: either a preset name or explicit configuration.
+///
+/// Can be a preset name like `author-date-title` or a full `Sort` struct with explicit settings.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(untagged)]
 pub enum SortEntry {
-    /// A named sort preset (e.g., "author-date-title").
+    /// A named sort preset (e.g., `author-date-title`, `author-title-date`).
     Preset(crate::presets::SortPreset),
-    /// Explicit sort configuration.
+    /// Explicit sort configuration with custom keys and order.
     Explicit(Sort),
 }
 
 impl SortEntry {
     /// Resolve this entry to a concrete `Sort`.
+    ///
+    /// If this is a preset, returns the preset's sort definition. Otherwise returns the explicit sort as-is.
     pub fn resolve(&self) -> Sort {
         match self {
             SortEntry::Preset(preset) => preset.sort(),
@@ -363,11 +423,15 @@ impl SortEntry {
 }
 
 /// A single sort specification.
+///
+/// Defines one sort dimension with its key and direction.
 #[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub struct SortSpec {
+    /// The field to sort by.
     pub key: SortKey,
+    /// Whether to sort in ascending order (default: true).
     #[serde(default = "default_ascending")]
     pub ascending: bool,
 }
@@ -377,23 +441,201 @@ fn default_ascending() -> bool {
 }
 
 /// Available sort keys.
+///
+/// Specifies what field to sort bibliography entries by.
 #[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
 pub enum SortKey {
+    /// Sort by the work's author(s).
     #[default]
     Author,
+    /// Sort by publication year.
     Year,
+    /// Sort by the work's title.
     Title,
-    /// Sort by citation order (for numeric styles).
+    /// Sort by citation order (typically used for numeric styles).
     CitationNumber,
 }
 
 /// Grouping configuration for bibliography.
+///
+/// Specifies how bibliography entries should be grouped in the output.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub struct Group {
+    /// Sort keys used to define group boundaries (e.g., [Author, Year]).
     pub template: Vec<SortKey>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Test that LabelConfig::effective_params() applies Alpha preset defaults.
+    #[test]
+    fn test_label_config_alpha_preset_defaults() {
+        let config = LabelConfig {
+            preset: LabelPreset::Alpha,
+            single_author_chars: None,
+            multi_author_chars: None,
+            et_al_min: None,
+            et_al_marker: None,
+            et_al_names: None,
+            year_digits: None,
+        };
+
+        let params = config.effective_params();
+        assert_eq!(params.single_author_chars, 3);
+        assert_eq!(params.multi_author_chars, 1);
+        assert_eq!(params.et_al_min, 4);
+        assert_eq!(params.et_al_marker, "+");
+        assert_eq!(params.et_al_names, 3);
+        assert_eq!(params.year_digits, 2);
+    }
+
+    /// Test that LabelConfig overrides take precedence over preset defaults.
+    #[test]
+    fn test_label_config_alpha_with_overrides() {
+        let config = LabelConfig {
+            preset: LabelPreset::Alpha,
+            single_author_chars: Some(5),
+            multi_author_chars: Some(2),
+            et_al_min: Some(5),
+            et_al_marker: Some("*".to_string()),
+            et_al_names: Some(4),
+            year_digits: Some(4),
+        };
+
+        let params = config.effective_params();
+        assert_eq!(params.single_author_chars, 5);
+        assert_eq!(params.multi_author_chars, 2);
+        assert_eq!(params.et_al_min, 5);
+        assert_eq!(params.et_al_marker, "*");
+        assert_eq!(params.et_al_names, 4);
+        assert_eq!(params.year_digits, 4);
+    }
+
+    /// Test that LabelConfig::effective_params() applies Din preset defaults.
+    #[test]
+    fn test_label_config_din_preset_defaults() {
+        let config = LabelConfig {
+            preset: LabelPreset::Din,
+            single_author_chars: None,
+            multi_author_chars: None,
+            et_al_min: None,
+            et_al_marker: None,
+            et_al_names: None,
+            year_digits: None,
+        };
+
+        let params = config.effective_params();
+        assert_eq!(params.single_author_chars, 4);
+        assert_eq!(params.multi_author_chars, 1);
+        assert_eq!(params.et_al_min, 3);
+        assert_eq!(params.et_al_marker, "");
+        assert_eq!(params.et_al_names, 3);
+        assert_eq!(params.year_digits, 2);
+    }
+
+    /// Test that Processing::AuthorDate returns correct default sort.
+    #[test]
+    fn test_processing_author_date_default_bibliography_sort() {
+        let processing = Processing::AuthorDate;
+        let sort = processing.default_bibliography_sort();
+        assert_eq!(sort, Some(SortPreset::AuthorDateTitle));
+    }
+
+    /// Test that Processing::Numeric returns no default sort.
+    #[test]
+    fn test_processing_numeric_default_bibliography_sort() {
+        let processing = Processing::Numeric;
+        let sort = processing.default_bibliography_sort();
+        assert_eq!(sort, None);
+    }
+
+    /// Test that Processing::Note returns correct default sort.
+    #[test]
+    fn test_processing_note_default_bibliography_sort() {
+        let processing = Processing::Note;
+        let sort = processing.default_bibliography_sort();
+        assert_eq!(sort, Some(SortPreset::AuthorTitleDate));
+    }
+
+    /// Test that all Processing modes return ExplicitOnly citation sort policy.
+    #[test]
+    fn test_processing_citation_sort_policy() {
+        let modes = vec![
+            Processing::AuthorDate,
+            Processing::Numeric,
+            Processing::Note,
+            Processing::Label(LabelConfig::default()),
+            Processing::Custom(ProcessingCustom::default()),
+        ];
+
+        for mode in modes {
+            assert_eq!(
+                mode.default_citation_sort_policy(),
+                CitationSortPolicy::ExplicitOnly
+            );
+        }
+    }
+
+    /// Test that Processing::config() returns correct configuration for AuthorDate.
+    #[test]
+    fn test_processing_author_date_config() {
+        let processing = Processing::AuthorDate;
+        let config = processing.config();
+
+        assert!(config.sort.is_some());
+        assert!(config.group.is_some());
+        assert!(config.disambiguate.is_some());
+
+        let disambig = config.disambiguate.unwrap();
+        assert!(disambig.names);
+        assert!(disambig.add_givenname);
+        assert!(disambig.year_suffix);
+    }
+
+    /// Test that Disambiguation defaults have correct values.
+    #[test]
+    fn test_disambiguation_defaults() {
+        let disambig = Disambiguation::default();
+        assert!(disambig.names);
+        assert!(!disambig.add_givenname);
+        assert!(!disambig.year_suffix);
+    }
+
+    /// Test that SortEntry::resolve() returns preset sort for Preset variant.
+    #[test]
+    fn test_sort_entry_resolve_preset() {
+        let entry = SortEntry::Preset(SortPreset::AuthorDateTitle);
+        let sort = entry.resolve();
+
+        // Verify it resolves to a valid Sort
+        assert!(!sort.template.is_empty());
+    }
+
+    /// Test that SortEntry::resolve() returns explicit sort for Explicit variant.
+    #[test]
+    fn test_sort_entry_resolve_explicit() {
+        let explicit = Sort {
+            shorten_names: true,
+            render_substitutions: false,
+            template: vec![SortSpec {
+                key: SortKey::Title,
+                ascending: false,
+            }],
+        };
+        let entry = SortEntry::Explicit(explicit.clone());
+        let resolved = entry.resolve();
+
+        assert!(resolved.shorten_names);
+        assert!(!resolved.render_substitutions);
+        assert_eq!(resolved.template.len(), 1);
+        assert_eq!(resolved.template[0].key, SortKey::Title);
+        assert!(!resolved.template[0].ascending);
+    }
 }
