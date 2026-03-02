@@ -1441,6 +1441,21 @@ jones2021: >
 
                 <div class="mt-8 bg-white p-4 rounded-lg border border-slate-200">
                     <h4 class="font-bold text-slate-900 text-sm mb-2 flex items-center gap-2">
+                        <span class="material-icons text-primary text-base">format_bold</span>
+                        Djot Inline Markup
+                    </h4>
+                    <p class="text-xs text-slate-500 mb-3">Annotation text is parsed as <a href="https://djot.net" class="text-primary hover:underline">djot</a> inline markup by default.
+                        Emphasis, strong, small-caps spans, and verbatim code are rendered into the target output format automatically.</p>
+                    <div class="bg-slate-900 rounded p-3 overflow-x-auto">
+                        <pre class="font-mono text-xs text-emerald-400">smith2019: >
+  A _landmark_ work. Particularly useful for its
+  {.smallcaps}[comparative methodology].</pre>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2">To opt out, set <code class="bg-slate-100 px-1 rounded">format: plain</code> in the annotation style options.</p>
+                </div>
+
+                <div class="mt-4 bg-white p-4 rounded-lg border border-slate-200">
+                    <h4 class="font-bold text-slate-900 text-sm mb-2 flex items-center gap-2">
                         <span class="material-icons text-primary text-base">description</span>
                         Why Separate from References?
                     </h4>
