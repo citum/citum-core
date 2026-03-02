@@ -9,16 +9,27 @@ use citum_schema::template::TemplateComponent;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 
+/// The renderer for citation and bibliography templates.
+///
+/// The `Renderer` is responsible for taking compiled templates and applying them
+/// to bibliographic data, handling localization, numbering, and formatting.
 pub struct Renderer<'a> {
+    /// The style definition containing templates and options.
     pub style: &'a citum_schema::Style,
+    /// The bibliography containing the reference data.
     pub bibliography: &'a Bibliography,
+    /// The locale used for terms and formatting.
     pub locale: &'a Locale,
+    /// The active configuration options.
     pub config: &'a Config,
+    /// Pre-calculated hints for optimization.
     pub hints: &'a HashMap<String, ProcHints>,
+    /// Shared state for citation numbers (used in numeric styles).
     pub citation_numbers: &'a RefCell<HashMap<String, usize>>,
 }
 
 impl<'a> Renderer<'a> {
+    /// Creates a new `Renderer` instance.
     pub fn new(
         style: &'a citum_schema::Style,
         bibliography: &'a Bibliography,
@@ -37,7 +48,11 @@ impl<'a> Renderer<'a> {
         }
     }
 
-    /// Check if this is a numeric style with integral mode.
+    /// Determines if the processor should render author-year text for a numeric style
+    /// when in "integral" (narrative) citation mode.
+    ///
+    /// This happens when the style is numeric and the user requests a narrative
+    /// citation (e.g., "Smith [1]"), but hasn't provided an explicit narrative template.
     fn should_render_author_year_for_numeric_integral(
         &self,
         mode: &citum_schema::citation::CitationMode,
@@ -68,7 +83,8 @@ impl<'a> Renderer<'a> {
         !has_explicit_integral
     }
 
-    /// Check if this is a label style with integral mode.
+    /// Determines if the processor should render author text for a label style
+    /// when in "integral" (narrative) citation mode.
     fn should_render_author_for_label_integral(
         &self,
         mode: &citum_schema::citation::CitationMode,
@@ -118,6 +134,9 @@ impl<'a> Renderer<'a> {
     }
 
     /// Render author + citation number for numeric integral citations.
+    ///
+    /// This is used as a default for numeric styles in narrative mode (e.g., "Smith [1]").
+    /// It renders the author's short name followed by the citation number in brackets.
     fn render_author_year_for_numeric_integral_with_format<F>(
         &self,
         reference: &Reference,
@@ -180,21 +199,9 @@ impl<'a> Renderer<'a> {
         }
     }
 
-    #[allow(dead_code)]
-    fn render_author_year_for_numeric_integral(
-        &self,
-        reference: &Reference,
-        item: &crate::reference::CitationItem,
-        citation_number: usize,
-    ) -> String {
-        self.render_author_year_for_numeric_integral_with_format::<crate::render::plain::PlainText>(
-            reference,
-            item,
-            citation_number,
-        )
-    }
-
     /// Render author-only text for label integral citations.
+    ///
+    /// Used as a default for label-based styles in narrative mode (e.g., "Smith [Smi20]").
     fn render_author_for_label_integral_with_format<F>(
         &self,
         reference: &Reference,
@@ -253,7 +260,7 @@ impl<'a> Renderer<'a> {
             .unwrap_or_default()
     }
 
-    /// Render citation items without grouping.
+    /// Render citation items without grouping, using plain text format.
     pub fn render_ungrouped_citation(
         &self,
         items: &[crate::reference::CitationItem],
@@ -273,6 +280,10 @@ impl<'a> Renderer<'a> {
         )
     }
 
+    /// Render citation items without grouping, generic over the output format.
+    ///
+    /// This is the core logic for iterating over citation items, looking up references,
+    /// and applying the appropriate template or fallback logic.
     pub fn render_ungrouped_citation_with_format<F>(
         &self,
         items: &[crate::reference::CitationItem],
