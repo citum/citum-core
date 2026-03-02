@@ -589,4 +589,128 @@ mod tests {
             "HTML output should preserve pages punctuation without duplicate separators: {result}"
         );
     }
+
+    fn make_entry(id: &str, value: &str) -> ProcEntry {
+        ProcEntry {
+            id: id.to_string(),
+            template: vec![ProcTemplateComponent {
+                template_component: TemplateComponent::Variable(
+                    citum_schema::template::TemplateVariable {
+                        variable: citum_schema::template::SimpleVariable::Publisher,
+                        rendering: Rendering::default(),
+                        ..Default::default()
+                    },
+                ),
+                value: value.to_string(),
+                prefix: None,
+                suffix: None,
+                ref_type: None,
+                config: None,
+                url: None,
+                item_language: None,
+                pre_formatted: false,
+            }],
+            metadata: crate::render::format::ProcEntryMetadata::default(),
+        }
+    }
+
+    #[test]
+    fn test_annotation_appended_after_entry() {
+        let mut annotations = HashMap::new();
+        annotations.insert(
+            "ref1".to_string(),
+            "A useful overview of the topic.".to_string(),
+        );
+
+        let style = AnnotationStyle::default(); // indent=true, no italic, blank line
+
+        let result = refs_to_string_with_format::<PlainText>(
+            vec![make_entry("ref1", "Some Publisher")],
+            Some(&annotations),
+            Some(&style),
+        );
+
+        assert!(
+            result.contains("Some Publisher"),
+            "entry text should appear: {result}"
+        );
+        assert!(
+            result.contains("A useful overview of the topic."),
+            "annotation should appear: {result}"
+        );
+        // Blank line separator: entry text followed by \n\n then indent
+        assert!(
+            result.contains("\n\n    A useful overview"),
+            "annotation should be separated by blank line and indented: {result}"
+        );
+    }
+
+    #[test]
+    fn test_no_annotation_when_id_absent() {
+        let mut annotations = HashMap::new();
+        annotations.insert(
+            "other-ref".to_string(),
+            "Annotation for someone else.".to_string(),
+        );
+
+        let style = AnnotationStyle::default();
+
+        let result = refs_to_string_with_format::<PlainText>(
+            vec![make_entry("ref1", "Some Publisher")],
+            Some(&annotations),
+            Some(&style),
+        );
+
+        assert!(
+            !result.contains("Annotation for someone else."),
+            "annotation for a different ref should not appear: {result}"
+        );
+    }
+
+    #[test]
+    fn test_annotation_single_line_break() {
+        let mut annotations = HashMap::new();
+        annotations.insert("ref1".to_string(), "Short note.".to_string());
+
+        let style = AnnotationStyle {
+            italic: false,
+            indent: false,
+            paragraph_break: ParagraphBreak::SingleLine,
+        };
+
+        let result = refs_to_string_with_format::<PlainText>(
+            vec![make_entry("ref1", "Publisher")],
+            Some(&annotations),
+            Some(&style),
+        );
+
+        assert!(
+            result.contains("\nShort note."),
+            "single line break should precede annotation: {result}"
+        );
+        assert!(
+            !result.contains("\n\n"),
+            "should not have blank line with SingleLine break: {result}"
+        );
+    }
+
+    #[test]
+    fn test_no_annotations_when_none_supplied() {
+        let result = refs_to_string_with_format::<PlainText>(
+            vec![make_entry("ref1", "Some Publisher")],
+            None,
+            None,
+        );
+
+        assert!(
+            result.contains("Some Publisher"),
+            "entry should render normally: {result}"
+        );
+        // No extra blank lines beyond entry separator
+        let blank_line_count = result.matches("\n\n").count();
+        assert!(
+            blank_line_count <= 1,
+            "should not have spurious blank lines: {result}"
+        );
+    }
 }
