@@ -148,6 +148,9 @@ Track schema changes separately from code changes:
 #### schema-v0.7.1 (2026-03-02)
 - Schema version bumped from 0.7.0 to 0.7.1
 
+#### schema-v0.7.1 (2026-03-02)
+- Schema version bumped from 0.7.0 to 0.7.1
+
 
 ## CI Validation
 
