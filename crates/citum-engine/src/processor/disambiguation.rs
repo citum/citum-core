@@ -529,11 +529,16 @@ impl<'a> Disambiguator<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Processor;
+    use citum_schema::citation::Citation;
     use citum_schema::grouping::{GroupSort, GroupSortKey, SortKey};
+    use citum_schema::options::{Config, ContributorConfig, DisplayAsSort};
     use citum_schema::reference::{
         Contributor, EdtfString, InputReference as Reference, Monograph, MonographType,
         MultilingualString, StructuredName, Title,
     };
+    use citum_schema::template::{TemplateComponent, WrapPunctuation};
+    use citum_schema::{BibliographySpec, CitationSpec, Style, StyleInfo};
 
     fn make_ref(id: &str, family: &str, given: &str, year: i32) -> Reference {
         let title = format!("Title {}", id);
@@ -570,8 +575,40 @@ mod tests {
         }))
     }
 
+    fn make_author_date_style(config: Config, bibliography_sort: Option<GroupSort>) -> Style {
+        Style {
+            info: StyleInfo {
+                title: Some("Disambiguation Test".to_string()),
+                id: Some("disambiguation-test".to_string()),
+                ..Default::default()
+            },
+            options: Some(config),
+            citation: Some(CitationSpec {
+                template: Some(vec![
+                    citum_schema::tc_contributor!(Author, Short),
+                    citum_schema::tc_date!(Issued, Year, prefix = ", "),
+                ]),
+                wrap: Some(WrapPunctuation::Parentheses),
+                ..Default::default()
+            }),
+            bibliography: Some(BibliographySpec {
+                sort: bibliography_sort.map(citum_schema::grouping::GroupSortEntry::Explicit),
+                template: Some(vec![TemplateComponent::Title(
+                    citum_schema::template::TemplateTitle {
+                        title: citum_schema::template::TitleType::Primary,
+                        ..Default::default()
+                    },
+                )]),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }
+    }
+
     #[test]
     fn test_group_aware_year_suffix_sort() {
+        use citum_schema::options::{Disambiguation, Processing, ProcessingCustom};
+
         let r1 = make_ref("r1", "Smith", "Same", 2020);
         let r2 = make_ref("r2", "Smith", "Same", 2020);
 
@@ -605,6 +642,38 @@ mod tests {
 
         assert_eq!(hints_custom.get("r2").unwrap().group_index, 1);
         assert_eq!(hints_custom.get("r1").unwrap().group_index, 2);
+
+        let style = make_author_date_style(
+            Config {
+                processing: Some(Processing::Custom(ProcessingCustom {
+                    disambiguate: Some(Disambiguation {
+                        names: false,
+                        add_givenname: false,
+                        year_suffix: true,
+                    }),
+                    ..Default::default()
+                })),
+                contributors: Some(ContributorConfig {
+                    display_as_sort: Some(DisplayAsSort::First),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+            Some(sort_spec),
+        );
+        let processor = Processor::new(style, bib);
+
+        let rendered_r1 = processor.process_citation(&Citation::simple("r1")).unwrap();
+        let rendered_r2 = processor.process_citation(&Citation::simple("r2")).unwrap();
+
+        assert!(
+            rendered_r1.contains("2020b"),
+            "expected r1 to sort second: {rendered_r1}"
+        );
+        assert!(
+            rendered_r2.contains("2020a"),
+            "expected r2 to sort first: {rendered_r2}"
+        );
     }
 
     #[test]
@@ -613,7 +682,7 @@ mod tests {
 
         // Use different given names to test if expansion resolves the collision
         let r1 = make_ref("r1", "Smith", "John", 2020);
-        let r2 = make_ref("r2", "Smith", "Jane", 2020);
+        let r2 = make_ref("r2", "Smith", "Alice", 2020);
 
         let mut bib = Bibliography::new();
         bib.insert("r1".to_string(), r1);
@@ -647,6 +716,38 @@ mod tests {
         assert_ne!(
             hints.get("r1").unwrap().group_index,
             hints.get("r2").unwrap().group_index
+        );
+
+        let style = make_author_date_style(
+            Config {
+                processing: Some(Processing::Custom(ProcessingCustom {
+                    disambiguate: Some(Disambiguation {
+                        names: false,
+                        add_givenname: true,
+                        year_suffix: false,
+                    }),
+                    ..Default::default()
+                })),
+                contributors: Some(ContributorConfig {
+                    initialize_with: Some(". ".to_string()),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+            None,
+        );
+        let processor = Processor::new(style, bib);
+
+        let rendered_r1 = processor.process_citation(&Citation::simple("r1")).unwrap();
+        let rendered_r2 = processor.process_citation(&Citation::simple("r2")).unwrap();
+
+        assert!(
+            rendered_r1.contains("J. Smith"),
+            "expected expanded given name for r1: {rendered_r1}"
+        );
+        assert!(
+            rendered_r2.contains("A. Smith"),
+            "expected expanded given name for r2: {rendered_r2}"
         );
     }
 }

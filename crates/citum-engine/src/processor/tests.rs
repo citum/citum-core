@@ -1477,7 +1477,7 @@ fn test_numeric_integral_citation_author_year() {
     let bib = make_bibliography();
     let processor = Processor::new(style, bib);
 
-    // Integral mode citation - should render author-year instead of number
+    // Integral mode citation - should render author + citation number
     let citation = Citation {
         id: Some("c1".to_string()),
         mode: citum_schema::citation::CitationMode::Integral,
