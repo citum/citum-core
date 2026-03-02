@@ -1,6 +1,20 @@
+//! CSL 1.0 XML → [`model`](crate::model) parser.
+//!
+//! The entry point is [`parse_style`], which accepts a [`roxmltree::Node`] rooted
+//! at `<style>` and returns a fully-populated [`model::Style`].
+//!
+//! All helper functions follow the same pattern: they receive a node, extract
+//! attributes / children, and return a `Result<T, String>` where `Err` carries
+//! a human-readable description of what was missing or unexpected.
+
 use crate::model::*;
 use roxmltree::Node;
 
+/// Parse the root `<style>` element into a [`Style`].
+///
+/// # Errors
+/// Returns `Err` if any required child element is malformed or if an unknown
+/// top-level tag is encountered.
 pub fn parse_style(node: Node) -> Result<Style, String> {
     let version = node.attribute("version").unwrap_or_default().to_string();
     let xmlns = node.attribute("xmlns").unwrap_or_default().to_string();
@@ -88,6 +102,7 @@ pub fn parse_style(node: Node) -> Result<Style, String> {
     })
 }
 
+/// Parse the `<info>` element into an [`Info`] struct.
 fn parse_info(node: Node) -> Result<Info, String> {
     let mut info = Info::default();
     for child in node.children() {
@@ -131,6 +146,7 @@ fn parse_info(node: Node) -> Result<Info, String> {
     Ok(info)
 }
 
+/// Parse an `<author>` or `<contributor>` element into an [`InfoPerson`].
 fn parse_info_person(node: Node) -> crate::model::InfoPerson {
     let mut person = crate::model::InfoPerson::default();
     for child in node.children() {
@@ -147,6 +163,10 @@ fn parse_info_person(node: Node) -> crate::model::InfoPerson {
     person
 }
 
+/// Parse a `<locale>` element into a [`Locale`].
+///
+/// The `xml:lang` attribute is read as `lang`; all `<term>` children inside
+/// `<terms>` are collected and parsed individually.
 fn parse_locale(node: Node) -> Result<Locale, String> {
     let lang = node.attribute("lang").map(|s| s.to_string());
     let mut terms = Vec::new();
@@ -164,6 +184,10 @@ fn parse_locale(node: Node) -> Result<Locale, String> {
     Ok(Locale { lang, terms })
 }
 
+/// Parse a `<term>` element into a [`Term`].
+///
+/// Handles both simple terms (text content only) and terms with
+/// `<single>` / `<multiple>` child elements.
 fn parse_term(node: Node) -> Result<Term, String> {
     let name = node.attribute("name").unwrap_or_default().to_string();
     let form = node.attribute("form").map(|s| s.to_string());
@@ -194,6 +218,10 @@ fn parse_term(node: Node) -> Result<Term, String> {
     })
 }
 
+/// Parse a `<macro>` element into a [`Macro`].
+///
+/// # Errors
+/// Returns `Err` when the `name` attribute is missing.
 fn parse_macro(node: Node) -> Result<Macro, String> {
     let name = node
         .attribute("name")
@@ -203,6 +231,7 @@ fn parse_macro(node: Node) -> Result<Macro, String> {
     Ok(Macro { name, children })
 }
 
+/// Parse a `<citation>` element into a [`Citation`].
 fn parse_citation(node: Node) -> Result<Citation, String> {
     let mut layout = Layout {
         children: vec![],
@@ -246,6 +275,7 @@ fn parse_citation(node: Node) -> Result<Citation, String> {
     })
 }
 
+/// Parse a `<bibliography>` element into a [`Bibliography`].
 fn parse_bibliography(node: Node) -> Result<Bibliography, String> {
     let mut layout = Layout {
         children: vec![],
@@ -288,6 +318,7 @@ fn parse_bibliography(node: Node) -> Result<Bibliography, String> {
     })
 }
 
+/// Parse a `<layout>` element into a [`Layout`].
 fn parse_layout(node: Node) -> Result<Layout, String> {
     let prefix = node.attribute("prefix").map(|s| s.to_string());
     let suffix = node.attribute("suffix").map(|s| s.to_string());
@@ -301,6 +332,7 @@ fn parse_layout(node: Node) -> Result<Layout, String> {
     })
 }
 
+/// Parse a `<sort>` element into a [`Sort`].
 fn parse_sort(node: Node) -> Result<Sort, String> {
     let mut keys = Vec::new();
     for child in node.children() {
@@ -314,6 +346,7 @@ fn parse_sort(node: Node) -> Result<Sort, String> {
     Ok(Sort { keys })
 }
 
+/// Parse a `<key>` element into a [`SortKey`].
 fn parse_sort_key(node: Node) -> Result<SortKey, String> {
     let variable = node.attribute("variable").map(|s| s.to_string());
     let macro_name = node.attribute("macro").map(|s| s.to_string());
@@ -325,6 +358,9 @@ fn parse_sort_key(node: Node) -> Result<SortKey, String> {
     })
 }
 
+/// Collect all element children of `node` into a [`Vec<CslNode>`].
+///
+/// Text nodes and processing instructions are ignored.
 fn parse_children(node: Node) -> Result<Vec<CslNode>, String> {
     let mut children = Vec::new();
     for child in node.children() {
@@ -338,6 +374,10 @@ fn parse_children(node: Node) -> Result<Vec<CslNode>, String> {
     Ok(children)
 }
 
+/// Dispatch an XML element to the appropriate node parser.
+///
+/// Returns `Ok(None)` for unknown tags that should be silently ignored (none
+/// currently), or `Err` for genuinely unrecognised tags.
 fn parse_node(node: Node) -> Result<Option<CslNode>, String> {
     match node.tag_name().name() {
         "text" => Ok(Some(CslNode::Text(parse_text(node)?))),
@@ -354,6 +394,10 @@ fn parse_node(node: Node) -> Result<Option<CslNode>, String> {
     }
 }
 
+/// Parse a `<text>` element into a [`Text`] node.
+///
+/// # Errors
+/// Returns `Err` when an unrecognised attribute is present.
 fn parse_text(node: Node) -> Result<Text, String> {
     for attr in node.attributes() {
         match attr.name() {
@@ -382,6 +426,11 @@ fn parse_text(node: Node) -> Result<Text, String> {
     })
 }
 
+/// Parse a `<date>` element into a [`Date`] node.
+///
+/// # Errors
+/// Returns `Err` when the mandatory `variable` attribute is absent, or when
+/// an unrecognised attribute is present.
 fn parse_date(node: Node) -> Result<Date, String> {
     let variable = node
         .attribute("variable")
@@ -421,6 +470,10 @@ fn parse_date(node: Node) -> Result<Date, String> {
     })
 }
 
+/// Parse a `<date-part>` child element into a [`DatePart`].
+///
+/// # Errors
+/// Returns `Err` when the mandatory `name` attribute is absent.
 fn parse_date_part(node: Node) -> Result<DatePart, String> {
     Ok(DatePart {
         name: node
@@ -433,6 +486,10 @@ fn parse_date_part(node: Node) -> Result<DatePart, String> {
     })
 }
 
+/// Parse a `<label>` element into a [`Label`] node.
+///
+/// # Errors
+/// Returns `Err` when an unrecognised attribute is present.
 fn parse_label(node: Node) -> Result<Label, String> {
     for attr in node.attributes() {
         match attr.name() {
@@ -459,6 +516,10 @@ fn parse_label(node: Node) -> Result<Label, String> {
     })
 }
 
+/// Parse a `<names>` element into a [`Names`] node.
+///
+/// # Errors
+/// Returns `Err` when the mandatory `variable` attribute is absent.
 fn parse_names(node: Node) -> Result<Names, String> {
     let variable = node
         .attribute("variable")
@@ -490,6 +551,7 @@ fn parse_names(node: Node) -> Result<Names, String> {
     })
 }
 
+/// Extract inline formatting attributes from any CSL element node.
 fn parse_formatting(node: Node) -> Formatting {
     Formatting {
         font_style: node.attribute("font-style").map(|s| s.to_string()),
@@ -501,6 +563,10 @@ fn parse_formatting(node: Node) -> Formatting {
     }
 }
 
+/// Parse a `<group>` element into a [`Group`] node.
+///
+/// # Errors
+/// Returns `Err` when an unrecognised attribute is present.
 fn parse_group(node: Node) -> Result<Group, String> {
     for attr in node.attributes() {
         match attr.name() {
@@ -521,6 +587,10 @@ fn parse_group(node: Node) -> Result<Group, String> {
     })
 }
 
+/// Parse a `<choose>` element into a [`Choose`] node.
+///
+/// # Errors
+/// Returns `Err` when the mandatory `<if>` child is absent.
 fn parse_choose(node: Node) -> Result<Choose, String> {
     let mut if_branch = None;
     let mut else_if_branches = Vec::new();
@@ -545,6 +615,7 @@ fn parse_choose(node: Node) -> Result<Choose, String> {
     })
 }
 
+/// Parse an `<if>` or `<else-if>` element into a [`ChooseBranch`].
 fn parse_choose_branch(node: Node) -> Result<ChooseBranch, String> {
     Ok(ChooseBranch {
         match_mode: node.attribute("match").map(|s| s.to_string()),
@@ -558,6 +629,11 @@ fn parse_choose_branch(node: Node) -> Result<ChooseBranch, String> {
     })
 }
 
+/// Parse a `<number>` element into a [`Number`] node.
+///
+/// # Errors
+/// Returns `Err` when the mandatory `variable` attribute is absent, or when
+/// an unrecognised attribute is present.
 fn parse_number(node: Node) -> Result<Number, String> {
     let variable = node
         .attribute("variable")
@@ -586,6 +662,7 @@ fn parse_number(node: Node) -> Result<Number, String> {
     })
 }
 
+/// Parse a `<name>` element into a [`Name`] node.
 fn parse_name(node: Node) -> Result<Name, String> {
     let formatting = parse_formatting(node);
     Ok(Name {
@@ -620,13 +697,183 @@ fn parse_name(node: Node) -> Result<Name, String> {
     })
 }
 
+/// Parse an `<et-al>` element into an [`EtAl`] node.
 fn parse_et_al(node: Node) -> Result<EtAl, String> {
     Ok(EtAl {
         term: node.attribute("term").map(|s| s.to_string()),
     })
 }
 
+/// Parse a `<substitute>` element into a [`Substitute`] node.
 fn parse_substitute(node: Node) -> Result<Substitute, String> {
     let children = parse_children(node)?;
     Ok(Substitute { children })
+}
+
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use roxmltree::Document;
+
+    /// Minimal valid CSL XML wrapper — provides the mandatory `<citation><layout/></citation>`.
+    fn wrap_style(inner: &str) -> String {
+        format!(
+            r#"<style version="1.0" xmlns="http://purl.org/net/xbiblio/csl" class="in-text">
+  <info><title>Test</title><id>test</id><updated>2024-01-01T00:00:00+00:00</updated></info>
+  {inner}
+  <citation><layout/></citation>
+</style>"#
+        )
+    }
+
+    fn parse(xml: &str) -> Result<Style, String> {
+        let doc = Document::parse(xml).map_err(|e| e.to_string())?;
+        parse_style(doc.root_element())
+    }
+
+    // ------------------------------------------------------------------
+    // parse_style
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn test_parse_minimal_style() {
+        let xml = wrap_style("");
+        let style = parse(&xml).unwrap();
+        assert_eq!(style.version, "1.0");
+        assert_eq!(style.class, "in-text");
+        assert_eq!(style.info.title, "Test");
+        assert!(style.bibliography.is_none());
+    }
+
+    #[test]
+    fn test_parse_style_name_options() {
+        let xml = wrap_style("");
+        // Inject name-option attrs on the root <style> element
+        let xml = xml.replace(
+            r#"class="in-text""#,
+            r#"class="in-text" initialize-with="." names-delimiter="; " and="text""#,
+        );
+        let style = parse(&xml).unwrap();
+        assert_eq!(style.initialize_with.as_deref(), Some("."));
+        assert_eq!(style.names_delimiter.as_deref(), Some("; "));
+        assert_eq!(style.and.as_deref(), Some("text"));
+    }
+
+    #[test]
+    fn test_parse_style_unknown_top_level_tag_errors() {
+        let xml = wrap_style("<not-a-csl-tag/>");
+        assert!(parse(&xml).is_err());
+    }
+
+    // ------------------------------------------------------------------
+    // parse_info (rights)
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn test_parse_info_rights_license_attr() {
+        let xml = wrap_style(
+            r#"<!-- rights override handled in info block -->"#,
+        )
+        .replace(
+            "<updated>2024-01-01T00:00:00+00:00</updated>",
+            "<updated>2024-01-01T00:00:00+00:00</updated><rights license=\"https://example.com/license\">Some text</rights>",
+        );
+        let style = parse(&xml).unwrap();
+        // license= attribute takes priority over element text
+        assert_eq!(
+            style.info.rights.as_deref(),
+            Some("https://example.com/license")
+        );
+    }
+
+    #[test]
+    fn test_parse_info_rights_text_fallback() {
+        let xml = wrap_style("").replace(
+            "<updated>2024-01-01T00:00:00+00:00</updated>",
+            "<updated>2024-01-01T00:00:00+00:00</updated><rights>MIT License</rights>",
+        );
+        let style = parse(&xml).unwrap();
+        assert_eq!(style.info.rights.as_deref(), Some("MIT License"));
+    }
+
+    // ------------------------------------------------------------------
+    // parse_locale / parse_term
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn test_parse_locale_terms() {
+        let xml = wrap_style(
+            r#"<locale xml:lang="en-US">
+              <terms>
+                <term name="editor" form="short">ed.<single>ed.</single><multiple>eds.</multiple></term>
+              </terms>
+            </locale>"#,
+        );
+        let style = parse(&xml).unwrap();
+        assert_eq!(style.locale.len(), 1);
+        let term = &style.locale[0].terms[0];
+        assert_eq!(term.name, "editor");
+        assert_eq!(term.form.as_deref(), Some("short"));
+        assert_eq!(term.single.as_deref(), Some("ed."));
+        assert_eq!(term.multiple.as_deref(), Some("eds."));
+    }
+
+    // ------------------------------------------------------------------
+    // parse_choose
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn test_parse_choose_requires_if() {
+        // A <choose> with only an <else> but no <if> should fail.
+        let xml = wrap_style(
+            r#"<citation>
+              <layout>
+                <choose><else><text value="x"/></else></choose>
+              </layout>
+            </citation>"#,
+        )
+        // Remove the auto-generated citation wrapper by supplying our own
+        .replace("<citation><layout/></citation>", "");
+        assert!(parse(&xml).is_err());
+    }
+
+    // ------------------------------------------------------------------
+    // parse_node
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn test_parse_node_unknown_tag_errors() {
+        let xml = wrap_style("").replace(
+            "<citation><layout/></citation>",
+            "<citation><layout><unknown-tag/></layout></citation>",
+        );
+        assert!(parse(&xml).is_err());
+    }
+
+    // ------------------------------------------------------------------
+    // parse_date
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn test_parse_date_missing_variable_errors() {
+        let xml = wrap_style("").replace(
+            "<citation><layout/></citation>",
+            "<citation><layout><date/></layout></citation>",
+        );
+        assert!(parse(&xml).is_err());
+    }
+
+    // ------------------------------------------------------------------
+    // parse_macro
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn test_parse_macro_missing_name_errors() {
+        let xml = wrap_style("<macro><text value=\"x\"/></macro>");
+        assert!(parse(&xml).is_err());
+    }
 }
