@@ -127,17 +127,19 @@ Use the `../scripts/bump.sh` script to update the schema version:
 
 # What it does:
 # 1. Updates the shared workspace version in Cargo.toml
-# 2. For schema bumps, updates ./SCHEMA_VERSIONING.md with a changelog entry
-# 3. Validates with `cargo test --quiet --lib`
-# 4. Creates the appropriate git tag(s)
+# 2. Refreshes workspace package entries in Cargo.lock
+# 3. For schema bumps, updates ./SCHEMA_VERSIONING.md with a changelog entry
+# 4. Validates with `cargo test --quiet --lib`
+# 5. Creates the appropriate git tag(s)
 ```
 
 **Manual process:**
 1. Update the shared workspace version in `../Cargo.toml`
-2. Run `cargo test --quiet --lib`
-3. For schema bumps, update this file with a schema changelog entry
-4. Commit the version bump
-5. Create the appropriate release tag(s)
+2. Refresh `../Cargo.lock`
+3. Run `cargo test --quiet --lib`
+4. For schema bumps, update this file with a schema changelog entry
+5. Commit the version bump
+6. Create the appropriate release tag(s)
 
 ### Schema Changelog
 

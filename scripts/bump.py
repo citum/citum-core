@@ -15,6 +15,7 @@ from typing import Sequence
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CARGO_TOML = REPO_ROOT / "Cargo.toml"
+LOCKFILE = REPO_ROOT / "Cargo.lock"
 SCHEMA_DOC = REPO_ROOT / "docs/reference/SCHEMA_VERSIONING.md"
 TRACK_CHOICES = ("schema", "engine", "all")
 BUMP_CHOICES = ("patch", "minor", "major")
@@ -44,6 +45,14 @@ class ReleasePlan:
     tags_to_create: tuple[str, ...]
     commit_message: str
     changelog_tag_prefix: str
+
+
+@dataclass(frozen=True)
+class FileSnapshot:
+    """Captured pre-run state for a file the bump may modify."""
+
+    existed: bool
+    content: str
 
 
 def info(message: str) -> None:
@@ -139,7 +148,7 @@ def resolve_plan(track: str, bump_type: str, release_name: str) -> ReleasePlan:
     old_version = read_workspace_version()
     new_version = bump_version(old_version, bump_type)
 
-    files_to_modify = [CARGO_TOML]
+    files_to_modify = [CARGO_TOML, LOCKFILE]
     if track in {"schema", "all"}:
         files_to_modify.append(SCHEMA_DOC)
 
@@ -225,6 +234,7 @@ def print_preview(plan: ReleasePlan) -> None:
         print("  Scope        : bump the shared workspace version for both engine and schema releases")
         print(f"  Bump type    : {plan.bump_type}")
         print(f"  Cargo.toml   : workspace version -> {plan.new_version}")
+        print("  Cargo.lock   : refresh workspace package entries during validation")
         print(f"  Engine tag   : {plan.tags_to_create[0]}")
         print(f"  Schema tag   : {plan.tags_to_create[1]}")
         print(f"  Schema doc   : add changelog entry in {SCHEMA_DOC.relative_to(REPO_ROOT)}")
@@ -233,6 +243,7 @@ def print_preview(plan: ReleasePlan) -> None:
         print("  Scope        : bump the shared workspace version and record a schema release")
         print(f"  Bump type    : {plan.bump_type}")
         print(f"  Cargo.toml   : workspace version -> {plan.new_version}")
+        print("  Cargo.lock   : refresh workspace package entries during validation")
         print(f"  Schema tag   : {plan.tags_to_create[0]}")
         print(f"  Schema doc   : add changelog entry in {SCHEMA_DOC.relative_to(REPO_ROOT)}")
     else:
@@ -240,6 +251,7 @@ def print_preview(plan: ReleasePlan) -> None:
         print("  Scope        : bump the shared workspace version and record an engine release")
         print(f"  Bump type    : {plan.bump_type}")
         print(f"  Cargo.toml   : workspace version -> {plan.new_version}")
+        print("  Cargo.lock   : refresh workspace package entries during validation")
         print(f"  Engine tag   : {plan.tags_to_create[0]}")
 
     if plan.release_name:
@@ -316,13 +328,15 @@ def print_diff(path: Path, original: str, updated: str) -> None:
     print("\n".join(diff))
 
 
-def show_review(modified_files: dict[Path, str]) -> None:
+def show_review(modified_files: dict[Path, FileSnapshot]) -> None:
     """Print diffs for all files changed by this run."""
 
     print()
     info("Review changes:")
-    for path, original in modified_files.items():
-        print_diff(path, original, path.read_text(encoding="utf-8"))
+    for path, snapshot in modified_files.items():
+        if not path.exists():
+            continue
+        print_diff(path, snapshot.content, path.read_text(encoding="utf-8"))
 
 
 def stage_commit_and_tag(plan: ReleasePlan) -> None:
@@ -339,11 +353,26 @@ def stage_commit_and_tag(plan: ReleasePlan) -> None:
         success(f"Tag created: {tag}")
 
 
-def rollback(modified_files: dict[Path, str]) -> None:
+def capture_snapshots(paths: Sequence[Path]) -> dict[Path, FileSnapshot]:
+    """Capture whether each file exists and, if so, its contents."""
+
+    snapshots: dict[Path, FileSnapshot] = {}
+    for path in paths:
+        if path.exists():
+            snapshots[path] = FileSnapshot(existed=True, content=path.read_text(encoding="utf-8"))
+        else:
+            snapshots[path] = FileSnapshot(existed=False, content="")
+    return snapshots
+
+
+def rollback(modified_files: dict[Path, FileSnapshot]) -> None:
     """Restore original file contents for files changed during this run."""
 
-    for path, original in modified_files.items():
-        path.write_text(original, encoding="utf-8")
+    for path, snapshot in modified_files.items():
+        if snapshot.existed:
+            path.write_text(snapshot.content, encoding="utf-8")
+        elif path.exists():
+            path.unlink()
 
 
 def parse_args(argv: Sequence[str]) -> argparse.Namespace:
@@ -382,9 +411,7 @@ def main(argv: Sequence[str]) -> int:
             info("Cancelled before making changes")
             return 0
 
-        modified_files = {
-            path: path.read_text(encoding="utf-8") for path in plan.files_to_modify
-        }
+        modified_files = capture_snapshots(plan.files_to_modify)
         try:
             update_cargo_version(plan)
             if plan.track in {"schema", "all"}:
