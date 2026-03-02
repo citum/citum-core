@@ -147,6 +147,7 @@ impl ComponentValues for TemplateNumber {
     }
 }
 
+/// Map a number variable to the nearest locator label used in citations.
 pub fn number_var_to_locator_type(
     var: &NumberVariable,
 ) -> Option<citum_schema::citation::LocatorType> {
@@ -167,6 +168,7 @@ pub fn number_var_to_locator_type(
     }
 }
 
+/// Heuristically detect whether a locator string should use plural labeling.
 pub fn check_plural(value: &str, _locator_type: &citum_schema::citation::LocatorType) -> bool {
     // Simple heuristic: if contains ranges or separators, it's plural.
     // "1-10", "1, 3", "1 & 3"

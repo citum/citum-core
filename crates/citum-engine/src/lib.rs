@@ -3,6 +3,8 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
+#![deny(missing_docs)]
+
 //! CSLN Processor
 //!
 //! This crate provides the core citation and bibliography processing functionality

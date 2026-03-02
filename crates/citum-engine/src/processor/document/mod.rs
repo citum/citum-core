@@ -76,15 +76,22 @@ pub enum CitationPlacement {
     InlineProse,
     /// The citation marker appears inside a manually authored footnote
     /// definition and should render in place.
-    ManualFootnote { label: String },
+    ManualFootnote {
+        /// The source footnote label that identifies the manual note block.
+        label: String,
+    },
 }
 
 /// A citation marker parsed from a document.
 #[derive(Debug, Clone)]
 pub struct ParsedCitation {
+    /// Byte offset where the citation marker starts in the source document.
     pub start: usize,
+    /// Byte offset immediately after the citation marker in the source document.
     pub end: usize,
+    /// The parsed citation payload and its items.
     pub citation: Citation,
+    /// Where the citation was found in the source document.
     pub placement: CitationPlacement,
 }
 
@@ -97,7 +104,9 @@ pub(crate) struct ManualNoteReference {
 /// Structured output from a document parser.
 #[derive(Debug, Clone, Default)]
 pub struct ParsedDocument {
+    /// Citation markers discovered in source order.
     pub citations: Vec<ParsedCitation>,
+    /// Manual footnote labels in the order they appear in the document.
     pub manual_note_order: Vec<String>,
     pub(crate) manual_note_references: Vec<ManualNoteReference>,
     pub(crate) manual_note_labels: HashSet<String>,
