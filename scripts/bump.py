@@ -19,6 +19,16 @@ LOCKFILE = REPO_ROOT / "Cargo.lock"
 SCHEMA_DOC = REPO_ROOT / "docs/reference/SCHEMA_VERSIONING.md"
 TRACK_CHOICES = ("schema", "engine", "all")
 BUMP_CHOICES = ("patch", "minor", "major")
+WORKSPACE_PACKAGES = (
+    "csl-legacy",
+    "citum-schema",
+    "citum-edtf",
+    "citum-migrate",
+    "citum-engine",
+    "citum-analyze",
+    "citum",
+    "citum-server",
+)
 
 BLUE = "\033[0;34m"
 GREEN = "\033[0;32m"
@@ -301,6 +311,13 @@ def update_schema_doc(plan: ReleasePlan) -> None:
 def validate_build() -> None:
     """Run the existing validation step after applying the bump."""
 
+    info("Cleaning workspace package artifacts for the new version")
+    subprocess.run(
+        ["cargo", "clean", *[flag for pkg in WORKSPACE_PACKAGES for flag in ("-p", pkg)]],
+        cwd=REPO_ROOT,
+        text=True,
+        check=True,
+    )
     info("Validating with cargo test --quiet --lib")
     result = subprocess.run(
         ["cargo", "test", "--quiet", "--lib"],
