@@ -664,7 +664,6 @@ fn test_anonymous_works_sort_by_title_without_article() {
 
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography();
-    println!("DEBUG RESULT:\n{}", result);
 
     // "The Chicago..." (C) should come BEFORE "A Guide..." (G) when articles are stripped
     assert!(result.find("The Chicago").unwrap() < result.find("A Guide").unwrap());
