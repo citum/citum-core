@@ -444,6 +444,12 @@ impl Processor {
 
     /// Render a single citation to plain text.
     ///
+    /// This is the primary entry point for citation processing. It handles:
+    /// 1. Looking up references in the bibliography.
+    /// 2. Annotating positions (ibid, subsequent, etc.).
+    /// 3. Resolving disambiguation (name expansion, year suffixes).
+    /// 4. Applying the style's citation template.
+    ///
     /// Returns the formatted citation string or an error if processing fails.
     pub fn process_citation(&self, citation: &Citation) -> Result<String, ProcessorError> {
         self.process_citation_with_format::<crate::render::plain::PlainText>(citation)
