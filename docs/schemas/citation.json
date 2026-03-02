@@ -141,25 +141,126 @@
     },
     "LocatorType": {
       "description": "Locator types for pinpoint citations.",
-      "type": "string",
-      "enum": [
-        "book",
-        "chapter",
-        "column",
-        "figure",
-        "folio",
-        "line",
-        "note",
-        "number",
-        "opus",
-        "page",
-        "paragraph",
-        "part",
-        "section",
-        "sub-verbo",
-        "verse",
-        "volume",
-        "issue"
+      "oneOf": [
+        {
+          "description": "Locator refers to a book within a larger work.",
+          "type": "string",
+          "enum": [
+            "book"
+          ]
+        },
+        {
+          "description": "Locator refers to a chapter.",
+          "type": "string",
+          "enum": [
+            "chapter"
+          ]
+        },
+        {
+          "description": "Locator refers to a column.",
+          "type": "string",
+          "enum": [
+            "column"
+          ]
+        },
+        {
+          "description": "Locator refers to a figure.",
+          "type": "string",
+          "enum": [
+            "figure"
+          ]
+        },
+        {
+          "description": "Locator refers to a folio.",
+          "type": "string",
+          "enum": [
+            "folio"
+          ]
+        },
+        {
+          "description": "Locator refers to a numbered line.",
+          "type": "string",
+          "enum": [
+            "line"
+          ]
+        },
+        {
+          "description": "Locator refers to a note.",
+          "type": "string",
+          "enum": [
+            "note"
+          ]
+        },
+        {
+          "description": "Locator refers to a numbered unit.",
+          "type": "string",
+          "enum": [
+            "number"
+          ]
+        },
+        {
+          "description": "Locator refers to an opus number.",
+          "type": "string",
+          "enum": [
+            "opus"
+          ]
+        },
+        {
+          "description": "Locator refers to a page.",
+          "type": "string",
+          "enum": [
+            "page"
+          ]
+        },
+        {
+          "description": "Locator refers to a paragraph.",
+          "type": "string",
+          "enum": [
+            "paragraph"
+          ]
+        },
+        {
+          "description": "Locator refers to a part or division.",
+          "type": "string",
+          "enum": [
+            "part"
+          ]
+        },
+        {
+          "description": "Locator refers to a section.",
+          "type": "string",
+          "enum": [
+            "section"
+          ]
+        },
+        {
+          "description": "Locator refers to an entry under a headword.",
+          "type": "string",
+          "enum": [
+            "sub-verbo"
+          ]
+        },
+        {
+          "description": "Locator refers to a verse.",
+          "type": "string",
+          "enum": [
+            "verse"
+          ]
+        },
+        {
+          "description": "Locator refers to a volume.",
+          "type": "string",
+          "enum": [
+            "volume"
+          ]
+        },
+        {
+          "description": "Locator refers to an issue.",
+          "type": "string",
+          "enum": [
+            "issue"
+          ]
+        }
       ]
     },
     "Position": {

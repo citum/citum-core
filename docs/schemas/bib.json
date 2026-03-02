@@ -203,12 +203,14 @@
       "type": "object",
       "properties": {
         "author": {
+          "description": "Creator or maintainer of the bibliography dataset.",
           "type": [
             "string",
             "null"
           ]
         },
         "title": {
+          "description": "Human-readable title for the bibliography dataset.",
           "type": [
             "string",
             "null"

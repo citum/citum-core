@@ -292,6 +292,7 @@
           }
         },
         "locales": {
+          "description": "Locale-specific template overrides checked before the default template.",
           "type": [
             "array",
             "null"
@@ -301,6 +302,7 @@
           }
         },
         "options": {
+          "description": "Bibliography-specific option overrides merged over the style config.",
           "anyOf": [
             {
               "$ref": "#/definitions/Config"
@@ -322,7 +324,7 @@
           ]
         },
         "template": {
-          "description": "The default template for bibliography entries.",
+          "description": "The default template for bibliography entries. Default template for entries when no localized override is selected.",
           "type": [
             "array",
             "null"
@@ -360,32 +362,175 @@
     },
     "CitationField": {
       "description": "Discipline/field classification for a citation style.\n\nValues correspond to the CSL 1.0 `<category field=\"...\"/>` attribute, `generic-base` is silently ignored during migration.",
-      "type": "string",
-      "enum": [
-        "anthropology",
-        "biology",
-        "botany",
-        "chemistry",
-        "communications",
-        "engineering",
-        "geography",
-        "geology",
-        "history",
-        "humanities",
-        "law",
-        "linguistics",
-        "literature",
-        "math",
-        "medicine",
-        "philosophy",
-        "physics",
-        "political-science",
-        "psychology",
-        "science",
-        "social-science",
-        "sociology",
-        "theology",
-        "zoology"
+      "oneOf": [
+        {
+          "description": "Anthropology styles.",
+          "type": "string",
+          "enum": [
+            "anthropology"
+          ]
+        },
+        {
+          "description": "Biology styles.",
+          "type": "string",
+          "enum": [
+            "biology"
+          ]
+        },
+        {
+          "description": "Botany styles.",
+          "type": "string",
+          "enum": [
+            "botany"
+          ]
+        },
+        {
+          "description": "Chemistry styles.",
+          "type": "string",
+          "enum": [
+            "chemistry"
+          ]
+        },
+        {
+          "description": "Communications studies styles.",
+          "type": "string",
+          "enum": [
+            "communications"
+          ]
+        },
+        {
+          "description": "Engineering styles.",
+          "type": "string",
+          "enum": [
+            "engineering"
+          ]
+        },
+        {
+          "description": "Geography styles.",
+          "type": "string",
+          "enum": [
+            "geography"
+          ]
+        },
+        {
+          "description": "Geology styles.",
+          "type": "string",
+          "enum": [
+            "geology"
+          ]
+        },
+        {
+          "description": "History styles.",
+          "type": "string",
+          "enum": [
+            "history"
+          ]
+        },
+        {
+          "description": "Humanities styles.",
+          "type": "string",
+          "enum": [
+            "humanities"
+          ]
+        },
+        {
+          "description": "Law styles.",
+          "type": "string",
+          "enum": [
+            "law"
+          ]
+        },
+        {
+          "description": "Linguistics styles.",
+          "type": "string",
+          "enum": [
+            "linguistics"
+          ]
+        },
+        {
+          "description": "Literature styles.",
+          "type": "string",
+          "enum": [
+            "literature"
+          ]
+        },
+        {
+          "description": "Mathematics styles.",
+          "type": "string",
+          "enum": [
+            "math"
+          ]
+        },
+        {
+          "description": "Medicine styles.",
+          "type": "string",
+          "enum": [
+            "medicine"
+          ]
+        },
+        {
+          "description": "Philosophy styles.",
+          "type": "string",
+          "enum": [
+            "philosophy"
+          ]
+        },
+        {
+          "description": "Physics styles.",
+          "type": "string",
+          "enum": [
+            "physics"
+          ]
+        },
+        {
+          "description": "Political science styles.",
+          "type": "string",
+          "enum": [
+            "political-science"
+          ]
+        },
+        {
+          "description": "Psychology styles.",
+          "type": "string",
+          "enum": [
+            "psychology"
+          ]
+        },
+        {
+          "description": "General science styles.",
+          "type": "string",
+          "enum": [
+            "science"
+          ]
+        },
+        {
+          "description": "Social science styles.",
+          "type": "string",
+          "enum": [
+            "social-science"
+          ]
+        },
+        {
+          "description": "Sociology styles.",
+          "type": "string",
+          "enum": [
+            "sociology"
+          ]
+        },
+        {
+          "description": "Theology styles.",
+          "type": "string",
+          "enum": [
+            "theology"
+          ]
+        },
+        {
+          "description": "Zoology styles.",
+          "type": "string",
+          "enum": [
+            "zoology"
+          ]
+        }
       ]
     },
     "CitationSpec": {
@@ -430,6 +575,7 @@
           ]
         },
         "locales": {
+          "description": "Locale-specific template overrides checked before the default template.",
           "type": [
             "array",
             "null"
@@ -457,6 +603,7 @@
           ]
         },
         "options": {
+          "description": "Citation-specific option overrides merged over the style config.",
           "anyOf": [
             {
               "$ref": "#/definitions/Config"
@@ -503,6 +650,7 @@
           ]
         },
         "template": {
+          "description": "Default template when no localized override is selected.",
           "type": [
             "array",
             "null"
@@ -1755,18 +1903,21 @@
       }
     },
     "LocalizedTemplateSpec": {
+      "description": "Locale-scoped template override with optional fallback behavior.",
       "type": "object",
       "required": [
         "template"
       ],
       "properties": {
         "default": {
+          "description": "Whether this override is the fallback when no locale matches.",
           "type": [
             "boolean",
             "null"
           ]
         },
         "locale": {
+          "description": "Language tags that should select this template override.",
           "type": [
             "array",
             "null"
@@ -1776,6 +1927,7 @@
           }
         },
         "template": {
+          "description": "Template used when this localized override is selected.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/TemplateComponent"
@@ -2705,6 +2857,7 @@
           ]
         },
         "description": {
+          "description": "Short summary of the style's intended use or provenance.",
           "type": [
             "string",
             "null"
@@ -2718,6 +2871,7 @@
           }
         },
         "id": {
+          "description": "Stable identifier for the style, usually a URI or slug.",
           "type": [
             "string",
             "null"
@@ -2735,6 +2889,7 @@
           ]
         },
         "title": {
+          "description": "Human-readable title of the style.",
           "type": [
             "string",
             "null"
@@ -2750,9 +2905,11 @@
       ],
       "properties": {
         "href": {
+          "description": "Link target for related style metadata.",
           "type": "string"
         },
         "rel": {
+          "description": "Relationship type for the link, such as `self` or `documentation`.",
           "type": [
             "string",
             "null"
@@ -2765,18 +2922,21 @@
       "type": "object",
       "properties": {
         "email": {
+          "description": "Contact email for the credited person.",
           "type": [
             "string",
             "null"
           ]
         },
         "name": {
+          "description": "Display name for the credited person.",
           "type": [
             "string",
             "null"
           ]
         },
         "uri": {
+          "description": "URI identifying the credited person.",
           "type": [
             "string",
             "null"
