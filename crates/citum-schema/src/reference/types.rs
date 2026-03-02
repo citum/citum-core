@@ -1,3 +1,9 @@
+//! Reference data types and structures for citation items.
+//!
+//! This module defines the core data model for bibliographic references, including
+//! different work types (monographs, serials, legal documents, etc.) and multilingual
+//! support. References can be structured as flat items or with parent-child relationships.
+
 use crate::reference::contributor::Contributor;
 use crate::reference::date::EdtfString;
 #[cfg(feature = "schema")]
@@ -13,13 +19,17 @@ pub type LangID = String;
 pub type FieldLanguageMap = HashMap<String, LangID>;
 
 /// A value that could be either a number or a string.
+///
+/// Used for fields that may contain numeric or string values, such as issue numbers,
+/// volume numbers, or similar identifiers that can be formatted as either type.
+/// The `Display` implementation shows the value in its appropriate form.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(untagged)]
 pub enum NumOrStr {
-    /// It's a number!
+    /// A numeric value.
     Number(i64),
-    /// It's a string!
+    /// A string value.
     Str(String),
 }
 
@@ -33,29 +43,44 @@ impl Display for NumOrStr {
 }
 
 /// A string that can be represented in multiple languages and scripts.
+///
+/// This is an enum that supports both simple strings and complex multilingual representations.
+/// Use `Simple` for basic strings and `Complex` when you need to track original language,
+/// transliterations, and translations.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(untagged)]
 pub enum MultilingualString {
+    /// A simple string in a single language.
     Simple(String),
+    /// A complex multilingual string with original, transliterations, and translations.
     Complex(MultilingualComplex),
 }
 
 /// Complex multilingual representation with original, transliterations, and translations.
+///
+/// Allows capturing the original text in its native script, along with transliterations
+/// (phonetic representations in different scripts) and translations (semantic equivalents
+/// in different languages). This is essential for accurately rendering bibliographies in
+/// multilingual and non-Latin-script contexts.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub struct MultilingualComplex {
-    /// The text in its original script.
+    /// The text in its original script and language.
     pub original: String,
     /// ISO 639/BCP 47 language code for the original text.
     pub lang: Option<LangID>,
-    /// Transliterations/Transcriptions of the original text.
-    /// Keys are script codes or full BCP 47 tags.
+    /// Transliterations/Transcriptions of the original text into other scripts.
+    ///
+    /// Keys are typically script codes (e.g., "Latn" for Latin) or full BCP 47 tags.
+    /// Values are the transliterated or transcribed text.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub transliterations: HashMap<String, String>,
     /// Translations of the text into other languages.
-    /// Keys are ISO 639/BCP 47 language codes.
+    ///
+    /// Keys are ISO 639/BCP 47 language codes (e.g., "en" for English, "fr" for French).
+    /// Values are the translated text.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub translations: HashMap<LangID, String>,
 }
