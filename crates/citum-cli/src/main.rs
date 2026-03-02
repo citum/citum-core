@@ -523,6 +523,10 @@ fn run_styles_list() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+/// Truncate `s` to at most `max_len` characters.
+///
+/// If `s` is longer than `max_len`, the returned string ends with `"..."`
+/// and has a total length of exactly `max_len`.
 fn truncate(s: &str, max_len: usize) -> String {
     if s.len() <= max_len {
         s.to_string()
@@ -531,6 +535,10 @@ fn truncate(s: &str, max_len: usize) -> String {
     }
 }
 
+/// Execute the `render doc` subcommand.
+///
+/// Reads a Djot document, resolves citations against the provided bibliography,
+/// and writes the rendered output to stdout or a file.
 fn run_render_doc(args: RenderDocArgs) -> Result<(), Box<dyn Error>> {
     if args.pdf && args.format != OutputFormat::Typst {
         return Err("`--pdf` is only supported with `--format typst`.".into());
@@ -574,6 +582,10 @@ fn run_render_doc(args: RenderDocArgs) -> Result<(), Box<dyn Error>> {
     write_output(&output, args.output.as_ref())
 }
 
+/// Execute the `render refs` subcommand.
+///
+/// Renders bibliography entries and/or citations directly from data files
+/// without requiring a full document.
 fn run_render_refs(args: RenderRefsArgs) -> Result<(), Box<dyn Error>> {
     let style_obj = load_any_style(&args.style, args.no_semantics)?;
     let bibliography = load_merged_bibliography(&args.bibliography)?;
@@ -627,6 +639,11 @@ fn run_render_refs(args: RenderRefsArgs) -> Result<(), Box<dyn Error>> {
     write_output(&output, args.output.as_ref())
 }
 
+/// Construct a [`Processor`] from a style, bibliography, and optional locale.
+///
+/// When the style declares a `default_locale`, the locale is resolved first
+/// from disk (for file-based styles) and then from embedded data, falling back
+/// to the hardcoded `en-US` defaults.
 fn create_processor(style: Style, bib: Bibliography, style_input: &str) -> Processor {
     if let Some(ref locale_id) = style.info.default_locale {
         let path = Path::new(style_input);
@@ -684,6 +701,10 @@ fn load_any_style(style_input: &str, no_semantics: bool) -> Result<Style, Box<dy
     Err(msg.into())
 }
 
+/// Execute the `check` subcommand.
+///
+/// Attempts to load each provided style, bibliography, and citations file,
+/// reporting per-item pass/fail results.  Exits with an error when any check fails.
 fn run_check(args: CheckArgs) -> Result<(), Box<dyn Error>> {
     let mut checks = Vec::<CheckItem>::new();
 
@@ -765,6 +786,12 @@ fn run_check(args: CheckArgs) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+/// Execute the `convert` subcommand.
+///
+/// Deserialises the input file (YAML, JSON, or CBOR), then re-serialises it
+/// to the output format inferred from the output file extension.  The data type
+/// (style, bib, locale, citations) is auto-detected from the filename stem
+/// unless overridden with `--type`.
 fn run_convert(args: ConvertArgs) -> Result<(), Box<dyn Error>> {
     let input_bytes = fs::read(&args.input)?;
     let input_ext = args
@@ -836,6 +863,9 @@ enum DocumentInput {
     Djot,
 }
 
+/// Render a full document through the processor using the given output format.
+///
+/// Dispatches to the monomorphised `process_document` call matching `output_format`.
 fn render_doc_with_output_format(
     processor: &Processor,
     content: &str,
@@ -868,6 +898,7 @@ fn render_doc_with_output_format(
     }
 }
 
+/// Map the CLI [`OutputFormat`] enum to the engine's [`DocumentFormat`].
 fn to_document_format(output_format: OutputFormat) -> Result<DocumentFormat, Box<dyn Error>> {
     match output_format {
         OutputFormat::Plain => Ok(DocumentFormat::Plain),
@@ -878,6 +909,9 @@ fn to_document_format(output_format: OutputFormat) -> Result<DocumentFormat, Box
     }
 }
 
+/// Render bibliography/citation output as a human-readable string.
+///
+/// Dispatches to the correct monomorphised format renderer based on `output_format`.
 fn render_refs_human(
     processor: &Processor,
     style_name: &str,
@@ -913,6 +947,10 @@ fn render_refs_human(
     }
 }
 
+/// Render bibliography/citation output as a JSON string.
+///
+/// Builds a JSON object containing rendered citation and/or bibliography entries,
+/// keyed by reference ID.
 fn render_refs_json(
     processor: &Processor,
     style_name: &str,
@@ -942,6 +980,11 @@ fn render_refs_json(
     }
 }
 
+/// Heuristically locate the `locales/` directory relative to a style file.
+///
+/// Checks the style's own directory and up to two parent directories, then falls
+/// back to a `locales/` folder in the current working directory.  Returns `"."`
+/// if no matching directory is found.
 fn find_locales_dir(style_path: &str) -> PathBuf {
     let style_dir = Path::new(style_path).parent().unwrap_or(Path::new("."));
     let candidates = [
@@ -960,6 +1003,11 @@ fn find_locales_dir(style_path: &str) -> PathBuf {
     PathBuf::from(".")
 }
 
+/// Load a CSLN style from a file path.
+///
+/// Selects the deserialiser based on the file extension (`cbor`, `json`, or YAML
+/// for anything else).  When `no_semantics` is `true`, the `semantic_classes`
+/// option is forced to `false` before returning.
 fn load_style(path: &Path, no_semantics: bool) -> Result<Style, Box<dyn Error>> {
     let bytes = fs::read(path)?;
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
@@ -995,6 +1043,12 @@ fn load_locale_builtin(locale_id: &str) -> Locale {
     }
 }
 
+/// Load and merge one or more bibliography files into a single [`Bibliography`].
+///
+/// Entries from later files overwrite entries with the same ID from earlier files.
+///
+/// # Errors
+/// Returns `Err` when `paths` is empty or any file fails to parse.
 fn load_merged_bibliography(paths: &[PathBuf]) -> Result<Bibliography, Box<dyn Error>> {
     if paths.is_empty() {
         return Err("At least one --bibliography file is required.".into());
@@ -1011,6 +1065,7 @@ fn load_merged_bibliography(paths: &[PathBuf]) -> Result<Bibliography, Box<dyn E
     Ok(merged)
 }
 
+/// Load and concatenate one or more citations files into a single list.
 fn load_merged_citations(paths: &[PathBuf]) -> Result<Vec<Citation>, Box<dyn Error>> {
     let mut merged = Vec::new();
     for path in paths {
@@ -1020,6 +1075,7 @@ fn load_merged_citations(paths: &[PathBuf]) -> Result<Vec<Citation>, Box<dyn Err
     Ok(merged)
 }
 
+/// Write `output` to a file at `path`, or to stdout when `path` is `None`.
 fn write_output(output: &str, path: Option<&PathBuf>) -> Result<(), Box<dyn Error>> {
     if let Some(file) = path {
         fs::write(file, output)?;
@@ -1029,6 +1085,10 @@ fn write_output(output: &str, path: Option<&PathBuf>) -> Result<(), Box<dyn Erro
     Ok(())
 }
 
+/// Deserialise bytes into `T` using the format indicated by `ext`.
+///
+/// Recognised extensions: `yaml` / `yml`, `json`, `cbor`.  All other values
+/// fall back to YAML.
 fn deserialize_any<T: serde::de::DeserializeOwned>(
     bytes: &[u8],
     ext: &str,
@@ -1041,6 +1101,9 @@ fn deserialize_any<T: serde::de::DeserializeOwned>(
     }
 }
 
+/// Serialise `obj` to bytes using the format indicated by `ext`.
+///
+/// Recognised extensions: `yaml` / `yml` (default), `json`, `cbor`.
 fn serialize_any<T: Serialize>(obj: &T, ext: &str) -> Result<Vec<u8>, Box<dyn Error>> {
     match ext {
         "yaml" | "yml" => Ok(serde_yaml::to_string(obj)?.into_bytes()),
@@ -1050,6 +1113,10 @@ fn serialize_any<T: Serialize>(obj: &T, ext: &str) -> Result<Vec<u8>, Box<dyn Er
     }
 }
 
+/// Panic-safe wrapper around [`print_human`].
+///
+/// Catches any Rust panics that escape the processor and converts them into an
+/// `Err` with a user-friendly message, preventing the CLI from crashing.
 fn print_human_safe<F>(
     processor: &Processor,
     style_name: &str,
@@ -1079,6 +1146,10 @@ where
     }
 }
 
+/// Core human-readable renderer for references and citations.
+///
+/// Builds a formatted string containing citation clusters and/or bibliography
+/// entries, optionally prefixed with reference IDs when `show_keys` is `true`.
 fn print_human<F>(
     processor: &Processor,
     style_name: &str,
@@ -1243,6 +1314,10 @@ where
     output
 }
 
+/// Core JSON renderer for references and citations.
+///
+/// Returns a pretty-printed JSON object with `style`, `items`, and optionally
+/// `citations` and `bibliography` keys.
 fn print_json_with_format<F>(
     processor: &Processor,
     style_name: &str,
@@ -1346,4 +1421,96 @@ where
     }
 
     Ok(serde_json::to_string_pretty(&result)?)
+}
+
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ------------------------------------------------------------------
+    // truncate
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn test_truncate_short_string_unchanged() {
+        assert_eq!(truncate("hello", 10), "hello");
+    }
+
+    #[test]
+    fn test_truncate_exact_length_unchanged() {
+        assert_eq!(truncate("hello", 5), "hello");
+    }
+
+    #[test]
+    fn test_truncate_long_string_ends_with_ellipsis() {
+        let result = truncate("hello world", 8);
+        assert_eq!(result, "hello...");
+        assert_eq!(result.len(), 8);
+    }
+
+    #[test]
+    fn test_truncate_empty_string() {
+        assert_eq!(truncate("", 5), "");
+    }
+
+    // ------------------------------------------------------------------
+    // OutputFormat Display
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn test_output_format_display() {
+        assert_eq!(OutputFormat::Plain.to_string(), "plain");
+        assert_eq!(OutputFormat::Html.to_string(), "html");
+        assert_eq!(OutputFormat::Djot.to_string(), "djot");
+        assert_eq!(OutputFormat::Latex.to_string(), "latex");
+        assert_eq!(OutputFormat::Typst.to_string(), "typst");
+    }
+
+    // ------------------------------------------------------------------
+    // run_convert data-type inference (via stem heuristic)
+    // The heuristic lives inline in run_convert; we replicate it here so
+    // we can test it without spawning a process.
+    // ------------------------------------------------------------------
+
+    fn infer_data_type(stem: &str) -> DataType {
+        if stem.contains("bib") || stem.contains("ref") {
+            DataType::Bib
+        } else if stem.contains("cite") || stem.contains("citation") {
+            DataType::Citations
+        } else if stem.len() == 5 && stem.contains('-') {
+            DataType::Locale
+        } else {
+            DataType::Style
+        }
+    }
+
+    #[test]
+    fn test_infer_data_type_bib_stem() {
+        assert!(matches!(infer_data_type("bibliography"), DataType::Bib));
+        assert!(matches!(infer_data_type("refs"), DataType::Bib));
+        assert!(matches!(infer_data_type("my-bib"), DataType::Bib));
+    }
+
+    #[test]
+    fn test_infer_data_type_citations_stem() {
+        assert!(matches!(infer_data_type("citations"), DataType::Citations));
+        assert!(matches!(infer_data_type("cite-list"), DataType::Citations));
+    }
+
+    #[test]
+    fn test_infer_data_type_locale_stem() {
+        // Locale stems are exactly 5 chars and contain a hyphen (e.g. "en-US")
+        assert!(matches!(infer_data_type("en-US"), DataType::Locale));
+        assert!(matches!(infer_data_type("de-DE"), DataType::Locale));
+    }
+
+    #[test]
+    fn test_infer_data_type_style_stem() {
+        assert!(matches!(infer_data_type("apa-7th"), DataType::Style));
+        assert!(matches!(infer_data_type("my-style"), DataType::Style));
+    }
 }
