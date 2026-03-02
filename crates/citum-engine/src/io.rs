@@ -91,9 +91,6 @@ pub fn load_citations(path: &Path) -> Result<Vec<Citation>, ProcessorError> {
         }
         _ => {
             let content = String::from_utf8_lossy(&bytes);
-            // Check for syntax errors first
-            let _: serde_yaml::Value = serde_yaml::from_str(&content)
-                .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string()))?;
 
             if let Ok(citations) = serde_yaml::from_str::<Vec<Citation>>(&content) {
                 return Ok(citations);
@@ -125,9 +122,6 @@ pub fn load_annotations(path: &Path) -> Result<HashMap<String, String>, Processo
         }
         _ => {
             let content = String::from_utf8_lossy(&bytes);
-            let _: serde_yaml::Value = serde_yaml::from_str(&content)
-                .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string()))?;
-
             serde_yaml::from_str::<HashMap<String, String>>(&content)
                 .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string()))
         }
@@ -215,10 +209,6 @@ pub fn load_bibliography(path: &Path) -> Result<Bibliography, ProcessorError> {
             // YAML/Fallback
             let content = String::from_utf8_lossy(&bytes);
 
-            // Check for syntax errors first
-            let _: serde_yaml::Value = serde_yaml::from_str(&content)
-                .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string()))?;
-
             if let Ok(input_bib) = serde_yaml::from_str::<InputBibliography>(&content) {
                 for r in input_bib.references {
                     if let Some(id) = r.id() {
@@ -228,30 +218,31 @@ pub fn load_bibliography(path: &Path) -> Result<Bibliography, ProcessorError> {
                 return Ok(bib);
             }
 
-            // Try parsing as IndexMap<String, serde_yaml::Value> (YAML/JSON, preserves order)
+            // Try parsing as IndexMap<String, InputReference> (key-keyed YAML map, preserves order)
             if let Ok(map) =
-                serde_yaml::from_str::<indexmap::IndexMap<String, serde_yaml::Value>>(&content)
+                serde_yaml::from_str::<indexmap::IndexMap<String, InputReference>>(&content)
             {
-                let mut found = false;
-                for (key, val) in map {
-                    if let Ok(mut r) = serde_yaml::from_value::<InputReference>(val.clone()) {
-                        if r.id().is_none() {
-                            r.set_id(key.clone());
-                        }
-                        bib.insert(key, r);
-                        found = true;
-                    } else if let Ok(ref_item) = serde_yaml::from_value::<LegacyReference>(val) {
-                        let mut r = Reference::from(ref_item);
-                        if r.id().is_none() {
-                            r.set_id(key.clone());
-                        }
-                        bib.insert(key, r);
-                        found = true;
+                for (key, mut r) in map {
+                    if r.id().is_none() {
+                        r.set_id(key.clone());
                     }
+                    bib.insert(key, r);
                 }
-                if found {
-                    return Ok(bib);
+                return Ok(bib);
+            }
+
+            // Try parsing as IndexMap<String, LegacyReference> (CSL-JSON key-keyed map)
+            if let Ok(map) =
+                serde_yaml::from_str::<indexmap::IndexMap<String, LegacyReference>>(&content)
+            {
+                for (key, ref_item) in map {
+                    let mut r = Reference::from(ref_item);
+                    if r.id().is_none() {
+                        r.set_id(key.clone());
+                    }
+                    bib.insert(key, r);
                 }
+                return Ok(bib);
             }
 
             // Try parsing as Vec<InputReference> (YAML/JSON)

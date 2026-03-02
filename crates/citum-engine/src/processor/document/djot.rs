@@ -324,16 +324,12 @@ fn parse_frontmatter(content: &str) -> (Option<Vec<BibliographyGroup>>, &str) {
         let frontmatter_content = &after_opening[..closing_pos];
         let remaining = &after_opening[closing_pos + 3..].trim_start();
 
-        match serde_yaml::from_str::<serde_yaml::Value>(frontmatter_content) {
-            Ok(value) => {
-                if let Some(bib_value) = value.get("bibliography")
-                    && let Ok(groups) =
-                        serde_yaml::from_value::<Vec<BibliographyGroup>>(bib_value.clone())
-                {
-                    return (Some(groups), remaining);
-                }
-                (None, remaining)
-            }
+        #[derive(serde::Deserialize)]
+        struct Frontmatter {
+            bibliography: Option<Vec<BibliographyGroup>>,
+        }
+        match serde_yaml::from_str::<Frontmatter>(frontmatter_content) {
+            Ok(fm) => (fm.bibliography, remaining),
             Err(_) => (None, remaining),
         }
     } else {
