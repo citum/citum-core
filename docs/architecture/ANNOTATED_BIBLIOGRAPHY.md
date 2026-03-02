@@ -34,16 +34,20 @@ pub enum ParagraphBreak {
 
 ## Rendering
 
-Annotations are appended after the rendered bibliography entry as a post-render step. Styles require no modification. The processor checks: does an annotation exist for this reference ID? If yes, append it according to `AnnotationStyle`.
+Annotations are appended after the rendered bibliography entry as a post-render step. **All styles support annotated bibliographies by default** — no style modification or opt-in is required. Annotation rendering is controlled entirely by the caller: pass `--annotations` to enable it, omit it for a standard bibliography.
+
+The processor checks: does an annotation exist for this reference ID in the overlay map? If yes, append it according to `AnnotationStyle`. If no annotation map is supplied, output is identical to a standard bibliography.
 
 Default rendering (no `AnnotationStyle` supplied):
 - Blank line before annotation
 - Indented paragraph
 - Plain text
 
-## Style Escape Hatch
+## Style Formatting Defaults (Optional)
 
-For styles that mandate specific annotation formatting (rare), a future style-level `annotation_style` override can be added. This avoids style proliferation — no separate `apa-7th-annotated.yaml` variants are needed.
+Styles may optionally declare `annotation_style` defaults to influence formatting for their specific context — for example, a journal style that mandates italic annotations. This is never required and is purely a formatting convenience. It does not gate annotation support; all styles render annotations when an annotation map is supplied.
+
+This avoids style proliferation entirely: there are no `apa-7th-annotated.yaml` variants. The same style file serves both standard and annotated bibliography use cases.
 
 ## Input Formats
 
