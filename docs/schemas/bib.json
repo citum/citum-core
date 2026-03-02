@@ -2175,7 +2175,7 @@
       ]
     },
     "MultilingualComplex": {
-      "description": "Complex multilingual representation with original, transliterations, and translations.",
+      "description": "Complex multilingual representation with original, transliterations, and translations.\n\nAllows capturing the original text in its native script, along with transliterations (phonetic representations in different scripts) and translations (semantic equivalents in different languages). This is essential for accurately rendering bibliographies in multilingual and non-Latin-script contexts.",
       "type": "object",
       "required": [
         "original"
@@ -2189,18 +2189,18 @@
           ]
         },
         "original": {
-          "description": "The text in its original script.",
+          "description": "The text in its original script and language.",
           "type": "string"
         },
         "translations": {
-          "description": "Translations of the text into other languages. Keys are ISO 639/BCP 47 language codes.",
+          "description": "Translations of the text into other languages.\n\nKeys are ISO 639/BCP 47 language codes (e.g., \"en\" for English, \"fr\" for French). Values are the translated text.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "transliterations": {
-          "description": "Transliterations/Transcriptions of the original text. Keys are script codes or full BCP 47 tags.",
+          "description": "Transliterations/Transcriptions of the original text into other scripts.\n\nKeys are typically script codes (e.g., \"Latn\" for Latin) or full BCP 47 tags. Values are the transliterated or transcribed text.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
@@ -2247,26 +2247,32 @@
       }
     },
     "MultilingualString": {
-      "description": "A string that can be represented in multiple languages and scripts.",
+      "description": "A string that can be represented in multiple languages and scripts.\n\nThis is an enum that supports both simple strings and complex multilingual representations. Use `Simple` for basic strings and `Complex` when you need to track original language, transliterations, and translations.",
       "anyOf": [
         {
+          "description": "A simple string in a single language.",
           "type": "string"
         },
         {
-          "$ref": "#/definitions/MultilingualComplex"
+          "description": "A complex multilingual string with original, transliterations, and translations.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/MultilingualComplex"
+            }
+          ]
         }
       ]
     },
     "NumOrStr": {
-      "description": "A value that could be either a number or a string.",
+      "description": "A value that could be either a number or a string.\n\nUsed for fields that may contain numeric or string values, such as issue numbers, volume numbers, or similar identifiers that can be formatted as either type. The `Display` implementation shows the value in its appropriate form.",
       "anyOf": [
         {
-          "description": "It's a number!",
+          "description": "A numeric value.",
           "type": "integer",
           "format": "int64"
         },
         {
-          "description": "It's a string!",
+          "description": "A string value.",
           "type": "string"
         }
       ]

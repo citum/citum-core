@@ -1462,7 +1462,7 @@
       ]
     },
     "Disambiguation": {
-      "description": "Disambiguation settings.",
+      "description": "Disambiguation settings.\n\nControls how ambiguous citations are disambiguated in the output.",
       "type": "object",
       "required": [
         "names",
@@ -1470,13 +1470,16 @@
       ],
       "properties": {
         "add-givenname": {
+          "description": "Whether to add given names to disambiguate similarly-named authors.",
           "default": false,
           "type": "boolean"
         },
         "names": {
+          "description": "Whether to attempt disambiguation by expanding author names.",
           "type": "boolean"
         },
         "year-suffix": {
+          "description": "Whether to append year suffixes (a, b, c, ...) for multiple works from the same author-year.",
           "type": "boolean"
         }
       }
@@ -1552,178 +1555,178 @@
       ]
     },
     "GeneralTerm": {
-      "description": "A list of general terms for citation formatting.",
+      "description": "A list of general terms for citation formatting.\n\nThese are the standard terms that appear in bibliographies and citations, including prepositions (in, at, from, by), punctuation terms (and, et al), date-related terms (accessed, no-date, circa), locator terms (page, chapter, volume), and special phrases (ibid, forthcoming, available-at).",
       "oneOf": [
         {
-          "description": "The preposition \"in\".",
+          "description": "The preposition \"in\" (e.g., \"in Smith, 2020\").",
           "type": "string",
           "enum": [
             "in"
           ]
         },
         {
-          "description": "The term used for access dates.",
+          "description": "The term used for access dates (e.g., \"accessed May 1\").",
           "type": "string",
           "enum": [
             "accessed"
           ]
         },
         {
-          "description": "The term used for retrieval statements.",
+          "description": "The term used for retrieval statements (e.g., \"retrieved from URL\").",
           "type": "string",
           "enum": [
             "retrieved"
           ]
         },
         {
-          "description": "The preposition \"at\".",
+          "description": "The preposition \"at\" (e.g., \"at the conference\").",
           "type": "string",
           "enum": [
             "at"
           ]
         },
         {
-          "description": "The preposition \"from\".",
+          "description": "The preposition \"from\" (e.g., \"from the publisher\").",
           "type": "string",
           "enum": [
             "from"
           ]
         },
         {
-          "description": "The preposition \"by\".",
+          "description": "The preposition \"by\" (e.g., \"by John Smith\").",
           "type": "string",
           "enum": [
             "by"
           ]
         },
         {
-          "description": "The term used when no date is available.",
+          "description": "The term used when no date is available (e.g., \"n.d.\").",
           "type": "string",
           "enum": [
             "no-date"
           ]
         },
         {
-          "description": "The term used for anonymous authorship.",
+          "description": "The term used for anonymous authorship (e.g., \"anonymous\").",
           "type": "string",
           "enum": [
             "anonymous"
           ]
         },
         {
-          "description": "The term used for approximate dates.",
+          "description": "The term used for approximate dates (e.g., \"circa\").",
           "type": "string",
           "enum": [
             "circa"
           ]
         },
         {
-          "description": "The phrase used for availability statements.",
+          "description": "The phrase used for availability statements (e.g., \"available at URL\").",
           "type": "string",
           "enum": [
             "available-at"
           ]
         },
         {
-          "description": "The term used for immediately repeated citations.",
+          "description": "The term used for immediately repeated citations (e.g., \"ibid.\").",
           "type": "string",
           "enum": [
             "ibid"
           ]
         },
         {
-          "description": "The conjunction \"and\".",
+          "description": "The conjunction \"and\" (e.g., \"Smith and Jones\").",
           "type": "string",
           "enum": [
             "and"
           ]
         },
         {
-          "description": "The abbreviation for omitted additional names.",
+          "description": "The abbreviation for omitted additional names (e.g., \"et al.\").",
           "type": "string",
           "enum": [
             "et-al"
           ]
         },
         {
-          "description": "The phrase \"and others\".",
+          "description": "The phrase \"and others\" (generic use).",
           "type": "string",
           "enum": [
             "and-others"
           ]
         },
         {
-          "description": "The term used for forthcoming works.",
+          "description": "The term used for forthcoming works (e.g., \"forthcoming\").",
           "type": "string",
           "enum": [
             "forthcoming"
           ]
         },
         {
-          "description": "The term used for online resources.",
+          "description": "The term used for online resources (e.g., \"online\").",
           "type": "string",
           "enum": [
             "online"
           ]
         },
         {
-          "description": "The phrase used to introduce reviewed works.",
+          "description": "The phrase used to introduce reviewed works (e.g., \"review of\").",
           "type": "string",
           "enum": [
             "review-of"
           ]
         },
         {
-          "description": "The phrase used for original publication references.",
+          "description": "The phrase used for original publication references (e.g., \"originally published\").",
           "type": "string",
           "enum": [
             "original-work-published"
           ]
         },
         {
-          "description": "The term used for patents.",
+          "description": "The term used for patents (e.g., \"patent\").",
           "type": "string",
           "enum": [
             "patent"
           ]
         },
         {
-          "description": "The general term for volume locators.",
+          "description": "The general term for volume locators (e.g., \"volume\", \"vol.\").",
           "type": "string",
           "enum": [
             "volume"
           ]
         },
         {
-          "description": "The general term for issue locators.",
+          "description": "The general term for issue locators (e.g., \"issue\", \"no.\").",
           "type": "string",
           "enum": [
             "issue"
           ]
         },
         {
-          "description": "The general term for page locators.",
+          "description": "The general term for page locators (e.g., \"page\", \"p.\", \"pp.\").",
           "type": "string",
           "enum": [
             "page"
           ]
         },
         {
-          "description": "The general term for chapter locators.",
+          "description": "The general term for chapter locators (e.g., \"chapter\", \"ch.\").",
           "type": "string",
           "enum": [
             "chapter"
           ]
         },
         {
-          "description": "The general term for editions.",
+          "description": "The general term for editions (e.g., \"edition\", \"ed.\").",
           "type": "string",
           "enum": [
             "edition"
           ]
         },
         {
-          "description": "The general term for section locators.",
+          "description": "The general term for section locators (e.g., \"section\", \"§\").",
           "type": "string",
           "enum": [
             "section"
@@ -1732,13 +1735,14 @@
       ]
     },
     "Group": {
-      "description": "Grouping configuration for bibliography.",
+      "description": "Grouping configuration for bibliography.\n\nSpecifies how bibliography entries should be grouped in the output.",
       "type": "object",
       "required": [
         "template"
       ],
       "properties": {
         "template": {
+          "description": "Sort keys used to define group boundaries (e.g., [Author, Year]).",
           "type": "array",
           "items": {
             "$ref": "#/definitions/SortKey"
@@ -2497,31 +2501,31 @@
       ]
     },
     "Processing": {
-      "description": "Processing mode for citation/bibliography generation.\n\nCan be specified as: - A string: \"author-date\", \"numeric\", \"note\", or \"label\" - A label config map: { label: { preset: din } } - A custom config map: { sort: ..., group: ..., disambiguate: ... }",
+      "description": "Processing mode for citation/bibliography generation.\n\nDetermines how citations and bibliographies are sorted, grouped, and disambiguated. Can be specified as a simple string or with complex configuration maps: - A string: `\"author-date\"`, `\"numeric\"`, `\"note\"`, or `\"label\"` - A label config map: `{ label: { preset: din } }` - A custom config map: `{ sort: ..., group: ..., disambiguate: ... }`",
       "oneOf": [
         {
-          "description": "Author-date styles default bibliography ordering to author, year, title.",
+          "description": "Author-date styles (e.g., APA, Chicago). Default bibliography ordering: author, year, title.",
           "type": "string",
           "enum": [
             "author-date"
           ]
         },
         {
-          "description": "Numeric styles do not imply a bibliography sort.",
+          "description": "Numeric styles (e.g., IEEE, Nature). Do not imply a bibliography sort; citations are numbered in order of appearance.",
           "type": "string",
           "enum": [
             "numeric"
           ]
         },
         {
-          "description": "Note styles with a bibliography default to author, title, year ordering.",
+          "description": "Note styles (e.g., Chicago Notes-Bibliography). With a bibliography default to author, title, year ordering.",
           "type": "string",
           "enum": [
             "note"
           ]
         },
         {
-          "description": "Label styles default bibliography ordering to author, year, title.",
+          "description": "Label styles (e.g., Alpha, DIN 1505-2). Default bibliography ordering: author, year, title.",
           "type": "object",
           "required": [
             "label"
@@ -2534,7 +2538,7 @@
           "additionalProperties": false
         },
         {
-          "description": "Fully custom processing behavior; explicit `sort` remains authoritative.",
+          "description": "Fully custom processing behavior. Explicit `sort` configuration remains authoritative.",
           "type": "object",
           "required": [
             "custom"
@@ -2549,10 +2553,11 @@
       ]
     },
     "ProcessingCustom": {
-      "description": "Custom processing configuration.",
+      "description": "Custom processing configuration.\n\nAllows explicit specification of sorting, grouping, and disambiguation rules without relying on preset defaults.",
       "type": "object",
       "properties": {
         "disambiguate": {
+          "description": "Disambiguation settings (optional).",
           "anyOf": [
             {
               "$ref": "#/definitions/Disambiguation"
@@ -2563,6 +2568,7 @@
           ]
         },
         "group": {
+          "description": "Bibliography grouping configuration (optional).",
           "anyOf": [
             {
               "$ref": "#/definitions/Group"
@@ -2573,6 +2579,7 @@
           ]
         },
         "sort": {
+          "description": "Bibliography sorting configuration (optional).",
           "anyOf": [
             {
               "$ref": "#/definitions/SortEntry"
@@ -2941,24 +2948,24 @@
       ]
     },
     "Sort": {
-      "description": "Sorting configuration.",
+      "description": "Sorting configuration.\n\nSpecifies how bibliography entries are ordered.",
       "type": "object",
       "required": [
         "template"
       ],
       "properties": {
         "render-substitutions": {
-          "description": "Use same substitutions for sorting as for rendering.",
+          "description": "Whether to apply the same name substitutions during sorting as during rendering.",
           "default": false,
           "type": "boolean"
         },
         "shorten-names": {
-          "description": "Shorten name lists for sorting the same as for display.",
+          "description": "Whether to shorten name lists for sorting the same as for display.",
           "default": false,
           "type": "boolean"
         },
         "template": {
-          "description": "Sort keys in order.",
+          "description": "Sort keys in order of application.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/SortSpec"
@@ -2967,10 +2974,10 @@
       }
     },
     "SortEntry": {
-      "description": "Sort configuration: either a preset name or explicit configuration.",
+      "description": "Sort configuration: either a preset name or explicit configuration.\n\nCan be a preset name like `author-date-title` or a full `Sort` struct with explicit settings.",
       "anyOf": [
         {
-          "description": "A named sort preset (e.g., \"author-date-title\").",
+          "description": "A named sort preset (e.g., `author-date-title`, `author-title-date`).",
           "allOf": [
             {
               "$ref": "#/definitions/SortPreset"
@@ -2978,7 +2985,7 @@
           ]
         },
         {
-          "description": "Explicit sort configuration.",
+          "description": "Explicit sort configuration with custom keys and order.",
           "allOf": [
             {
               "$ref": "#/definitions/Sort"
@@ -2988,18 +2995,31 @@
       ]
     },
     "SortKey": {
-      "description": "Available sort keys.",
+      "description": "Available sort keys.\n\nSpecifies what field to sort bibliography entries by.",
       "oneOf": [
         {
+          "description": "Sort by the work's author(s).",
           "type": "string",
           "enum": [
-            "author",
-            "year",
+            "author"
+          ]
+        },
+        {
+          "description": "Sort by publication year.",
+          "type": "string",
+          "enum": [
+            "year"
+          ]
+        },
+        {
+          "description": "Sort by the work's title.",
+          "type": "string",
+          "enum": [
             "title"
           ]
         },
         {
-          "description": "Sort by citation order (for numeric styles).",
+          "description": "Sort by citation order (typically used for numeric styles).",
           "type": "string",
           "enum": [
             "citation-number"
@@ -3080,18 +3100,24 @@
       ]
     },
     "SortSpec": {
-      "description": "A single sort specification.",
+      "description": "A single sort specification.\n\nDefines one sort dimension with its key and direction.",
       "type": "object",
       "required": [
         "key"
       ],
       "properties": {
         "ascending": {
+          "description": "Whether to sort in ascending order (default: true).",
           "default": true,
           "type": "boolean"
         },
         "key": {
-          "$ref": "#/definitions/SortKey"
+          "description": "The field to sort by.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/SortKey"
+            }
+          ]
         }
       }
     },
@@ -4540,38 +4566,38 @@
       "additionalProperties": false
     },
     "TermForm": {
-      "description": "Form for term lookup.",
+      "description": "Form for term lookup.\n\nSpecifies which form variant of a term should be used in citation output.",
       "oneOf": [
         {
-          "description": "Long form of a term.",
+          "description": "Long form of a term (e.g., \"page\" vs \"p.\").",
           "type": "string",
           "enum": [
             "long"
           ]
         },
         {
-          "description": "Short form of a term.",
+          "description": "Short form of a term (e.g., \"p.\" vs \"page\").",
           "type": "string",
           "enum": [
             "short"
           ]
         },
         {
-          "description": "Verb form of a term.",
+          "description": "Verb form of a term (e.g., \"edited by\").",
           "type": "string",
           "enum": [
             "verb"
           ]
         },
         {
-          "description": "Short verb form of a term.",
+          "description": "Short verb form of a term (e.g., \"ed.\" vs \"edited by\").",
           "type": "string",
           "enum": [
             "verb-short"
           ]
         },
         {
-          "description": "Symbol form of a term.",
+          "description": "Symbol form of a term (e.g., \"§\" for section).",
           "type": "string",
           "enum": [
             "symbol"
