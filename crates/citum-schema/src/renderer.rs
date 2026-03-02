@@ -8,13 +8,17 @@ use std::collections::HashMap;
 /// This is an internal type used by the legacy Renderer, distinct from
 /// the input `CitationItem` in `crate::citation`.
 pub struct RenderItem {
+    /// Legacy CSL item type used by conditional rendering branches.
     pub item_type: ItemType,
+    /// Pre-resolved variable values keyed by legacy CSL variable name.
     pub variables: HashMap<Variable, String>,
 }
 
+/// Minimal renderer for the legacy CSLN AST used in schema tests and migration.
 pub struct Renderer;
 
 impl Renderer {
+    /// Render a citation by concatenating the rendered output of each AST node.
     pub fn render_citation(&self, nodes: &[CslnNode], item: &RenderItem) -> String {
         let mut output = String::new();
         for node in nodes {
