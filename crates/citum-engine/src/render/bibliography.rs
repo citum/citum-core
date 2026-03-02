@@ -3,10 +3,13 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
+use std::collections::HashMap;
+use std::fmt::Write;
+
+use crate::io::{AnnotationStyle, ParagraphBreak};
 use crate::render::component::{ProcEntry, render_component_with_format};
 use crate::render::format::OutputFormat;
 use crate::render::plain::PlainText;
-use std::fmt::Write;
 
 /// Check if a character is a final punctuation mark (not a space).
 /// This distinguishes between intentional component suffixes and separator duplication.
@@ -43,12 +46,14 @@ fn last_visible_non_space_char(input: &str) -> Option<char> {
 
 /// Render processed templates into a final bibliography string using PlainText format.
 pub fn refs_to_string(proc_entries: Vec<ProcEntry>) -> String {
-    refs_to_string_with_format::<PlainText>(proc_entries)
+    refs_to_string_with_format::<PlainText>(proc_entries, None, None)
 }
 
 /// Render processed templates into a final bibliography string using a specific format.
 pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
     proc_entries: Vec<ProcEntry>,
+    annotations: Option<&HashMap<String, String>>,
+    annotation_style: Option<&AnnotationStyle>,
 ) -> String {
     let fmt = F::default();
     let mut rendered_entries = Vec::new();
@@ -168,6 +173,24 @@ pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
         }
 
         cleanup_dangling_punctuation(&mut entry_output);
+
+        // Apply annotation if present
+        if let Some(annotations) = annotations
+            && let Some(annotation_text) = annotations.get(&entry.id)
+        {
+            let style = annotation_style.cloned().unwrap_or_default();
+            let separator = match style.paragraph_break {
+                ParagraphBreak::BlankLine => "\n\n",
+                ParagraphBreak::SingleLine => "\n",
+            };
+            let indent = if style.indent { "    " } else { "" };
+            let text = if style.italic {
+                format!("<em>{}</em>", annotation_text)
+            } else {
+                annotation_text.clone()
+            };
+            entry_output.push_str(&format!("{}{}{}", separator, indent, text));
+        }
 
         // Resolve entry URL if whole-entry linking is enabled
         let entry_url = proc_template
@@ -389,7 +412,7 @@ mod tests {
             metadata: crate::render::format::ProcEntryMetadata::default(),
         }];
 
-        let result = refs_to_string_with_format::<Html>(entries);
+        let result = refs_to_string_with_format::<Html>(entries, None, None);
         assert_eq!(
             result,
             r#"<div class="csln-bibliography">
@@ -539,11 +562,15 @@ mod tests {
             pre_formatted: false,
         };
 
-        let result = refs_to_string_with_format::<Html>(vec![ProcEntry {
-            id: "einstein1905".to_string(),
-            template: vec![volume_issue, pages, doi],
-            metadata: crate::render::format::ProcEntryMetadata::default(),
-        }]);
+        let result = refs_to_string_with_format::<Html>(
+            vec![ProcEntry {
+                id: "einstein1905".to_string(),
+                template: vec![volume_issue, pages, doi],
+                metadata: crate::render::format::ProcEntryMetadata::default(),
+            }],
+            None,
+            None,
+        );
 
         assert!(
             !result.contains("322(10)</i></span>. <span class=\"csln-pages\">, 891–921."),

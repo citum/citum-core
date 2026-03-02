@@ -3,6 +3,7 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
+use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
@@ -11,6 +12,44 @@ use citum_schema::reference::InputReference;
 use csl_legacy::csl_json::Reference as LegacyReference;
 
 use crate::{Bibliography, Citation, ProcessorError, Reference};
+
+/// Controls how annotation text is rendered in an annotated bibliography.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct AnnotationStyle {
+    /// Render annotation text in italics. Default: false.
+    #[serde(default)]
+    pub italic: bool,
+    /// Indent the annotation paragraph. Default: true.
+    #[serde(default = "default_true")]
+    pub indent: bool,
+    /// Line break style before annotation. Default: BlankLine.
+    #[serde(default)]
+    pub paragraph_break: ParagraphBreak,
+}
+
+fn default_true() -> bool {
+    true
+}
+
+impl Default for AnnotationStyle {
+    fn default() -> Self {
+        Self {
+            italic: false,
+            indent: true,
+            paragraph_break: ParagraphBreak::BlankLine,
+        }
+    }
+}
+
+/// Line break style preceding an annotation block.
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+pub enum ParagraphBreak {
+    /// Single newline before annotation.
+    SingleLine,
+    /// Blank line before annotation (default).
+    #[default]
+    BlankLine,
+}
 
 /// Load a list of citations from a file.
 /// Supports CSLN YAML/JSON.
@@ -51,6 +90,31 @@ pub fn load_citations(path: &Path) -> Result<Vec<Citation>, ProcessorError> {
                     e.to_string(),
                 )),
             }
+        }
+    }
+}
+
+/// Load annotations from a file (YAML or JSON).
+/// Returns a mapping from reference ID to annotation text.
+pub fn load_annotations(path: &Path) -> Result<HashMap<String, String>, ProcessorError> {
+    let bytes = fs::read(path)?;
+    let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
+
+    match ext {
+        "json" => {
+            let _: serde_json::Value = serde_json::from_slice(&bytes)
+                .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
+
+            serde_json::from_slice::<HashMap<String, String>>(&bytes)
+                .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))
+        }
+        _ => {
+            let content = String::from_utf8_lossy(&bytes);
+            let _: serde_yaml::Value = serde_yaml::from_str(&content)
+                .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string()))?;
+
+            serde_yaml::from_str::<HashMap<String, String>>(&content)
+                .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string()))
         }
     }
 }

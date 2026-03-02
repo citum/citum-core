@@ -615,7 +615,7 @@ impl Processor {
             }
         }
 
-        crate::render::refs_to_string_with_format::<F>(bibliography)
+        crate::render::refs_to_string_with_format::<F>(bibliography, None, None)
     }
 
     /// Process a bibliography entry with specific format.
@@ -885,7 +885,9 @@ impl Processor {
             })
             .collect();
 
-        fmt.finish(crate::render::refs_to_string_with_format::<F>(entries))
+        fmt.finish(crate::render::refs_to_string_with_format::<F>(
+            entries, None, None,
+        ))
     }
 
     fn resolve_group_heading(&self, heading: &citum_schema::GroupHeading) -> Option<String> {
@@ -1070,7 +1072,11 @@ impl Processor {
             }
 
             // Render entries
-            result.push_str(&crate::render::refs_to_string_with_format::<F>(entries_vec));
+            result.push_str(&crate::render::refs_to_string_with_format::<F>(
+                entries_vec,
+                None,
+                None,
+            ));
         }
 
         // Fallback for ungrouped items
@@ -1084,7 +1090,9 @@ impl Processor {
             if !result.is_empty() {
                 result.push_str("\n\n");
             }
-            result.push_str(&crate::render::refs_to_string_with_format::<F>(unassigned));
+            result.push_str(&crate::render::refs_to_string_with_format::<F>(
+                unassigned, None, None,
+            ));
         }
 
         fmt.finish(result)
@@ -1110,6 +1118,8 @@ impl Processor {
         if !cited_entries.is_empty() {
             result.push_str(&crate::render::refs_to_string_with_format::<F>(
                 cited_entries,
+                None,
+                None,
             ));
         }
 

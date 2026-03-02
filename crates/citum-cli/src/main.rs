@@ -1,6 +1,6 @@
 use citum_engine::{
     Bibliography, Citation, CitationItem, DocumentFormat, Processor,
-    io::{load_bibliography, load_citations},
+    io::{AnnotationStyle, ParagraphBreak, load_annotations, load_bibliography, load_citations},
     processor::document::djot::DjotParser,
     render::{djot::Djot, html::Html, latex::Latex, plain::PlainText, typst::Typst},
 };
@@ -271,6 +271,14 @@ struct RenderDocArgs {
     no_semantics: bool,
 }
 
+/// Line break style for annotation paragraphs.
+#[derive(Clone, Debug, Default, clap::ValueEnum)]
+enum ParagraphBreakArg {
+    #[default]
+    BlankLine,
+    SingleLine,
+}
+
 #[derive(Args, Debug)]
 struct RenderRefsArgs {
     /// Path(s) to bibliography input files (repeat for multiple)
@@ -317,6 +325,22 @@ struct RenderRefsArgs {
     /// Disable semantic classes (HTML spans, Djot attributes)
     #[arg(long)]
     no_semantics: bool,
+
+    /// Path to annotations file (JSON or YAML mapping ref IDs to annotation text)
+    #[arg(long, value_name = "FILE")]
+    annotations: Option<PathBuf>,
+
+    /// Render annotation text in italics
+    #[arg(long)]
+    annotation_italic: bool,
+
+    /// Indent annotation paragraphs (default: true)
+    #[arg(long, default_value_t = true)]
+    annotation_indent: bool,
+
+    /// Line break before annotation paragraph
+    #[arg(long, value_enum, default_value_t = ParagraphBreakArg::BlankLine)]
+    annotation_break: ParagraphBreakArg,
 }
 
 #[derive(Args, Debug)]
@@ -602,6 +626,21 @@ fn run_render_refs(args: RenderRefsArgs) -> Result<(), Box<dyn Error>> {
         Some(load_merged_citations(&args.citations)?)
     };
 
+    let annotations = if let Some(path) = &args.annotations {
+        Some(load_annotations(path)?)
+    } else {
+        None
+    };
+
+    let annotation_style = AnnotationStyle {
+        italic: args.annotation_italic,
+        indent: args.annotation_indent,
+        paragraph_break: match args.annotation_break {
+            ParagraphBreakArg::BlankLine => ParagraphBreak::BlankLine,
+            ParagraphBreakArg::SingleLine => ParagraphBreak::SingleLine,
+        },
+    };
+
     let processor = create_processor(style_obj, bibliography, &args.style);
 
     let style_name = {
@@ -623,6 +662,8 @@ fn run_render_refs(args: RenderRefsArgs) -> Result<(), Box<dyn Error>> {
             &item_ids,
             input_citations,
             args.format,
+            annotations.as_ref(),
+            &annotation_style,
         )?
     } else {
         render_refs_human(
@@ -633,6 +674,8 @@ fn run_render_refs(args: RenderRefsArgs) -> Result<(), Box<dyn Error>> {
             input_citations,
             args.show_keys,
             args.format,
+            annotations.as_ref(),
+            &annotation_style,
         )?
     };
 
@@ -912,6 +955,7 @@ fn to_document_format(output_format: OutputFormat) -> Result<DocumentFormat, Box
 /// Render bibliography/citation output as a human-readable string.
 ///
 /// Dispatches to the correct monomorphised format renderer based on `output_format`.
+#[allow(clippy::too_many_arguments)]
 fn render_refs_human(
     processor: &Processor,
     style_name: &str,
@@ -920,28 +964,70 @@ fn render_refs_human(
     citations: Option<Vec<Citation>>,
     show_keys: bool,
     output_format: OutputFormat,
+    annotations: Option<&std::collections::HashMap<String, String>>,
+    annotation_style: &AnnotationStyle,
 ) -> Result<String, Box<dyn Error>> {
     let show_cite = matches!(mode, RenderMode::Cite | RenderMode::Both);
     let show_bib = matches!(mode, RenderMode::Bib | RenderMode::Both);
     match output_format {
         OutputFormat::Plain => print_human_safe::<PlainText>(
-            processor, style_name, show_cite, show_bib, item_ids, citations, show_keys,
+            processor,
+            style_name,
+            show_cite,
+            show_bib,
+            item_ids,
+            citations,
+            show_keys,
+            annotations,
+            annotation_style,
         )
         .map_err(|e| e.into()),
         OutputFormat::Html => print_human_safe::<Html>(
-            processor, style_name, show_cite, show_bib, item_ids, citations, show_keys,
+            processor,
+            style_name,
+            show_cite,
+            show_bib,
+            item_ids,
+            citations,
+            show_keys,
+            annotations,
+            annotation_style,
         )
         .map_err(|e| e.into()),
         OutputFormat::Djot => print_human_safe::<Djot>(
-            processor, style_name, show_cite, show_bib, item_ids, citations, show_keys,
+            processor,
+            style_name,
+            show_cite,
+            show_bib,
+            item_ids,
+            citations,
+            show_keys,
+            annotations,
+            annotation_style,
         )
         .map_err(|e| e.into()),
         OutputFormat::Latex => print_human_safe::<Latex>(
-            processor, style_name, show_cite, show_bib, item_ids, citations, show_keys,
+            processor,
+            style_name,
+            show_cite,
+            show_bib,
+            item_ids,
+            citations,
+            show_keys,
+            annotations,
+            annotation_style,
         )
         .map_err(|e| e.into()),
         OutputFormat::Typst => print_human_safe::<Typst>(
-            processor, style_name, show_cite, show_bib, item_ids, citations, show_keys,
+            processor,
+            style_name,
+            show_cite,
+            show_bib,
+            item_ids,
+            citations,
+            show_keys,
+            annotations,
+            annotation_style,
         )
         .map_err(|e| e.into()),
     }
@@ -951,6 +1037,7 @@ fn render_refs_human(
 ///
 /// Builds a JSON object containing rendered citation and/or bibliography entries,
 /// keyed by reference ID.
+#[allow(clippy::too_many_arguments)]
 fn render_refs_json(
     processor: &Processor,
     style_name: &str,
@@ -958,24 +1045,61 @@ fn render_refs_json(
     item_ids: &[String],
     citations: Option<Vec<Citation>>,
     output_format: OutputFormat,
+    annotations: Option<&std::collections::HashMap<String, String>>,
+    annotation_style: &AnnotationStyle,
 ) -> Result<String, Box<dyn Error>> {
     let show_cite = matches!(mode, RenderMode::Cite | RenderMode::Both);
     let show_bib = matches!(mode, RenderMode::Bib | RenderMode::Both);
     match output_format {
         OutputFormat::Plain => print_json_with_format::<PlainText>(
-            processor, style_name, show_cite, show_bib, item_ids, citations,
+            processor,
+            style_name,
+            show_cite,
+            show_bib,
+            item_ids,
+            citations,
+            annotations,
+            annotation_style,
         ),
         OutputFormat::Html => print_json_with_format::<Html>(
-            processor, style_name, show_cite, show_bib, item_ids, citations,
+            processor,
+            style_name,
+            show_cite,
+            show_bib,
+            item_ids,
+            citations,
+            annotations,
+            annotation_style,
         ),
         OutputFormat::Djot => print_json_with_format::<Djot>(
-            processor, style_name, show_cite, show_bib, item_ids, citations,
+            processor,
+            style_name,
+            show_cite,
+            show_bib,
+            item_ids,
+            citations,
+            annotations,
+            annotation_style,
         ),
         OutputFormat::Latex => print_json_with_format::<Latex>(
-            processor, style_name, show_cite, show_bib, item_ids, citations,
+            processor,
+            style_name,
+            show_cite,
+            show_bib,
+            item_ids,
+            citations,
+            annotations,
+            annotation_style,
         ),
         OutputFormat::Typst => print_json_with_format::<Typst>(
-            processor, style_name, show_cite, show_bib, item_ids, citations,
+            processor,
+            style_name,
+            show_cite,
+            show_bib,
+            item_ids,
+            citations,
+            annotations,
+            annotation_style,
         ),
     }
 }
@@ -1117,6 +1241,7 @@ fn serialize_any<T: Serialize>(obj: &T, ext: &str) -> Result<Vec<u8>, Box<dyn Er
 ///
 /// Catches any Rust panics that escape the processor and converts them into an
 /// `Err` with a user-friendly message, preventing the CLI from crashing.
+#[allow(clippy::too_many_arguments)]
 fn print_human_safe<F>(
     processor: &Processor,
     style_name: &str,
@@ -1125,6 +1250,8 @@ fn print_human_safe<F>(
     item_ids: &[String],
     citations: Option<Vec<Citation>>,
     show_keys: bool,
+    annotations: Option<&std::collections::HashMap<String, String>>,
+    annotation_style: &AnnotationStyle,
 ) -> Result<String, String>
 where
     F: citum_engine::render::format::OutputFormat<Output = String> + Send + Sync + 'static,
@@ -1133,7 +1260,15 @@ where
 
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
         print_human::<F>(
-            processor, style_name, show_cite, show_bib, item_ids, citations, show_keys,
+            processor,
+            style_name,
+            show_cite,
+            show_bib,
+            item_ids,
+            citations,
+            show_keys,
+            annotations,
+            annotation_style,
         )
     }));
 
@@ -1150,6 +1285,7 @@ where
 ///
 /// Builds a formatted string containing citation clusters and/or bibliography
 /// entries, optionally prefixed with reference IDs when `show_keys` is `true`.
+#[allow(clippy::too_many_arguments)]
 fn print_human<F>(
     processor: &Processor,
     style_name: &str,
@@ -1158,6 +1294,8 @@ fn print_human<F>(
     item_ids: &[String],
     citations: Option<Vec<Citation>>,
     show_keys: bool,
+    annotations: Option<&std::collections::HashMap<String, String>>,
+    annotation_style: &AnnotationStyle,
 ) -> String
 where
     F: citum_engine::render::format::OutputFormat<Output = String>,
@@ -1265,9 +1403,11 @@ where
                 let processed = processor.process_references();
                 for entry in processed.bibliography {
                     if filter.contains(entry.id.as_str()) {
-                        let text = citum_engine::render::refs_to_string_with_format::<F>(vec![
-                            entry.clone(),
-                        ]);
+                        let text = citum_engine::render::refs_to_string_with_format::<F>(
+                            vec![entry.clone()],
+                            annotations,
+                            Some(annotation_style),
+                        );
                         let trimmed = text.trim();
                         if !trimmed.is_empty() {
                             let _ = writeln!(output, "  [{}] {}", entry.id, trimmed);
@@ -1288,8 +1428,11 @@ where
 
             for entry in processed.bibliography {
                 if filter.contains(entry.id.as_str()) {
-                    let text =
-                        citum_engine::render::refs_to_string_with_format::<F>(vec![entry.clone()]);
+                    let text = citum_engine::render::refs_to_string_with_format::<F>(
+                        vec![entry.clone()],
+                        annotations,
+                        Some(annotation_style),
+                    );
                     let trimmed = text.trim();
                     if !trimmed.is_empty() {
                         if show_keys {
@@ -1318,6 +1461,7 @@ where
 ///
 /// Returns a pretty-printed JSON object with `style`, `items`, and optionally
 /// `citations` and `bibliography` keys.
+#[allow(clippy::too_many_arguments)]
 fn print_json_with_format<F>(
     processor: &Processor,
     style_name: &str,
@@ -1325,6 +1469,8 @@ fn print_json_with_format<F>(
     show_bib: bool,
     item_ids: &[String],
     citations: Option<Vec<Citation>>,
+    annotations: Option<&std::collections::HashMap<String, String>>,
+    annotation_style: &AnnotationStyle,
 ) -> Result<String, Box<dyn Error>>
 where
     F: citum_engine::render::format::OutputFormat<Output = String>,
@@ -1408,8 +1554,11 @@ where
             .into_iter()
             .filter(|entry| filter.contains(entry.id.as_str()))
             .map(|entry| {
-                let text =
-                    citum_engine::render::refs_to_string_with_format::<F>(vec![entry.clone()]);
+                let text = citum_engine::render::refs_to_string_with_format::<F>(
+                    vec![entry.clone()],
+                    annotations,
+                    Some(annotation_style),
+                );
                 json!({
                     "id": entry.id,
                     "text": text.trim()

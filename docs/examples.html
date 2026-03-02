@@ -196,6 +196,10 @@
                         <span class="material-icons text-lg opacity-60">mouse</span>
                         Web Interactivity
                     </a>
+                    <a href="#annotated-bibliography" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+                        <span class="material-icons text-lg opacity-60">comment</span>
+                        Annotated Bibliography
+                    </a>
                 </div>
             </nav>
         </aside>
@@ -1351,6 +1355,98 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                             and bibliography in a container with the class <code
                                 class="bg-slate-100 px-1 rounded">citum-with-sidebar</code>.</p>
                     </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Annotated Bibliography -->
+        <article id="annotated-bibliography" class="example-card rounded-xl overflow-hidden shadow-sm scroll-mt-24">
+            <div class="p-8 bg-slate-50 border-b border-slate-200">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                        <span class="material-icons">comment</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900">
+                        Annotated Bibliography
+                    </h2>
+                </div>
+                <p class="text-slate-600 leading-relaxed">
+                    Attach reader-authored annotations to any bibliography without style variants. Annotations are passed as a separate
+                    YAML or JSON file mapping reference IDs to annotation text. The processor appends annotations after each entry,
+                    respecting formatting options for italic, indentation, and paragraph spacing.
+                </p>
+            </div>
+            <div class="p-6 bg-white">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Render with Annotations</div>
+                <div class="bg-slate-900 rounded p-3 overflow-x-auto mb-6">
+                    <pre class="font-mono text-xs text-emerald-400">citum render refs \
+  -b references.json \
+  -s apa-7th \
+  --annotations annotations.yaml</pre>
+                </div>
+
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Sample Output</div>
+                <div class="bg-slate-50 border border-slate-200 rounded p-4 text-sm space-y-4 overflow-x-auto">
+                    <div class="font-mono text-slate-700 whitespace-pre-wrap">
+Smith, J. (2019). Foundations of knowledge. Oxford University Press.
+
+    A landmark work that fundamentally reshaped our understanding of the field.
+    Particularly useful for its comparative methodology.
+
+Hawking, S. (1988). A brief history of time. Bantam Books.
+
+    Accessible and intellectually ambitious. Balances rigour with clarity
+    for a general audience.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuration Guide -->
+            <div class="bg-slate-50 p-8 border-t border-slate-200">
+                <h3 class="text-lg font-bold text-slate-900 mb-4">Annotation Format</h3>
+                <p class="text-slate-600 text-sm mb-6">Annotations are stored in a simple flat map. YAML is recommended for hand-authoring;
+                JSON is also supported.</p>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">YAML Format</div>
+                        <div class="bg-slate-900 rounded p-3 overflow-x-auto">
+                            <pre class="font-mono text-xs text-emerald-400">smith2019: >
+  A landmark work that fundamentally
+  reshaped our understanding.
+
+jones2021: >
+  Builds on smith2019 with modern
+  empirical analysis.</pre>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Formatting Options</div>
+                        <div class="space-y-2 text-sm text-slate-600">
+                            <div class="flex items-center gap-2">
+                                <code class="bg-slate-100 px-2 py-1 rounded text-xs">--annotation-italic</code>
+                                <span>Render annotations in italics</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <code class="bg-slate-100 px-2 py-1 rounded text-xs">--no-annotation-indent</code>
+                                <span>Disable indentation</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <code class="bg-slate-100 px-2 py-1 rounded text-xs">--annotation-break</code>
+                                <span>single-line or blank-line</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 bg-white p-4 rounded-lg border border-slate-200">
+                    <h4 class="font-bold text-slate-900 text-sm mb-2 flex items-center gap-2">
+                        <span class="material-icons text-primary text-base">description</span>
+                        Why Separate from References?
+                    </h4>
+                    <p class="text-xs text-slate-500">Annotations are document-scoped overlays. The same reference carries different
+                        annotations in different contexts (a course syllabus vs. a grant proposal vs. a personal reading list).
+                        This design avoids style proliferation and keeps concerns separated.</p>
                 </div>
             </div>
         </article>

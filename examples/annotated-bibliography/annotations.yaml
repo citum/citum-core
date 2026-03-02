@@ -1,0 +1,22 @@
+# Annotations for a reading list on knowledge management and research practice.
+# Edit these to match your own evaluative notes.
+
+kuhn1962: >
+  The foundational text for understanding how scientific disciplines evolve.
+  Kuhn's distinction between normal science and revolutionary science is
+  particularly relevant to anyone studying how research communities form
+  consensus. Read this before engaging with the secondary literature on
+  paradigms.
+
+zotero2023: >
+  The de facto standard for reference management in academic research.
+  Free, open-source, and actively maintained. Integrates with word
+  processors and supports collaborative libraries. The annotation field
+  in Zotero stores private notes — not the same as the annotations in
+  an annotated bibliography, which are authored for a specific audience.
+
+ahrens2022: >
+  A practical guide to the Zettelkasten method of note-taking, which
+  treats notes as atomic, interlinked ideas rather than hierarchical
+  folders. Directly relevant to understanding why annotation context
+  matters: the same paper means different things in different projects.
