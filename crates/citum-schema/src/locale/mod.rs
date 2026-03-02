@@ -8,7 +8,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! Locales provide language-specific terms, date formats, and punctuation rules
 //! for citation formatting.
 
+/// Raw locale types used during locale file parsing.
 pub mod raw;
+/// Structured locale types used by the processor.
 pub mod types;
 
 use crate::citation::LocatorType;
@@ -700,6 +702,7 @@ impl Locale {
         }
     }
 
+    /// Parse a locale term key into a structured general-term identifier.
     pub fn parse_general_term(name: &str) -> Option<GeneralTerm> {
         match name {
             "in" => Some(GeneralTerm::In),
