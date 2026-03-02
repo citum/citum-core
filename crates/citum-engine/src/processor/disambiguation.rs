@@ -542,15 +542,15 @@ mod tests {
         Contributor, EdtfString, InputReference as Reference, Monograph, MonographType,
         MultilingualString, StructuredName, Title,
     };
-
-    fn make_ref(id: &str, family: &str, title: &str, year: i32) -> Reference {
+    fn make_ref(id: &str, family: &str, given: &str, year: i32) -> Reference {
+        let title = format!("Title {}", id);
         Reference::Monograph(Box::new(Monograph {
             id: Some(id.to_string()),
             r#type: MonographType::Book,
             title: Title::Single(title.to_string()),
             author: Some(Contributor::StructuredName(StructuredName {
                 family: MultilingualString::Simple(family.to_string()),
-                given: MultilingualString::Simple("Test".to_string()),
+                given: MultilingualString::Simple(given.to_string()),
                 suffix: None,
                 dropping_particle: None,
                 non_dropping_particle: None,
@@ -579,8 +579,8 @@ mod tests {
 
     #[test]
     fn test_group_aware_year_suffix_sort() {
-        let r1 = make_ref("r1", "Smith", "Beta", 2020);
-        let r2 = make_ref("r2", "Smith", "Alpha", 2020);
+        let r1 = make_ref("r1", "Smith", "Same", 2020);
+        let r2 = make_ref("r2", "Smith", "Same", 2020);
 
         let mut bib = Bibliography::new();
         bib.insert("r1".to_string(), r1);
@@ -589,14 +589,14 @@ mod tests {
         let config = Config::default();
         let locale = Locale::en_us();
 
-        // 1. Default sorting (by title): r2 (Alpha) should be 'a', r1 (Beta) should be 'b'
+        // 1. Default sorting (by title): r1 should be 'a', r2 should be 'b'
         let disamb_default = Disambiguator::new(&bib, &config, &locale);
         let hints_default = disamb_default.calculate_hints();
 
-        assert_eq!(hints_default.get("r2").unwrap().group_index, 1);
-        assert_eq!(hints_default.get("r1").unwrap().group_index, 2);
+        assert_eq!(hints_default.get("r1").unwrap().group_index, 1);
+        assert_eq!(hints_default.get("r2").unwrap().group_index, 2);
 
-        // 2. Custom group sort: Sort by title descending -> r1 (Beta) should be 'a', r2 (Alpha) should be 'b'
+        // 2. Custom group sort: Sort by title descending -> r2 should be 'a', r1 should be 'b'
         let sort_spec = GroupSort {
             template: vec![GroupSortKey {
                 key: SortKey::Title,
@@ -609,7 +609,42 @@ mod tests {
         let disamb_custom = Disambiguator::with_group_sort(&bib, &config, &locale, &sort_spec);
         let hints_custom = disamb_custom.calculate_hints();
 
-        assert_eq!(hints_custom.get("r1").unwrap().group_index, 1);
-        assert_eq!(hints_custom.get("r2").unwrap().group_index, 2);
+        assert_eq!(hints_custom.get("r2").unwrap().group_index, 1);
+        assert_eq!(hints_custom.get("r1").unwrap().group_index, 2);
+    }
+
+    #[test]
+    fn test_disambiguate_given_names() {
+        use citum_schema::options::{Disambiguation, Processing, ProcessingCustom};
+
+        // Use different given names to test if expansion resolves the collision
+        let r1 = make_ref("r1", "Smith", "John", 2020);
+        let r2 = make_ref("r2", "Smith", "Jane", 2020);
+
+        let mut bib = Bibliography::new();
+        bib.insert("r1".to_string(), r1);
+        bib.insert("r2".to_string(), r2);
+
+        let config = Config {
+            processing: Some(Processing::Custom(ProcessingCustom {
+                disambiguate: Some(Disambiguation {
+                    names: false,
+                    add_givenname: true,
+                    year_suffix: false,
+                }),
+                ..Default::default()
+            })),
+            ..Default::default()
+        };
+        let locale = Locale::en_us();
+
+        let disamb = Disambiguator::new(&bib, &config, &locale);
+        let hints = disamb.calculate_hints();
+
+        // Both should have expand_given_names set to true to resolve the Smith (2020) collision
+        assert!(hints.get("r1").unwrap().expand_given_names);
+        assert!(hints.get("r2").unwrap().expand_given_names);
+        // Should NOT have year suffix since it's disabled in config
+        assert!(!hints.get("r1").unwrap().disamb_condition);
     }
 }
