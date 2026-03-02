@@ -25,14 +25,16 @@ use citum_schema::locale::Locale;
 ///
 /// 4. **Year suffix fallback** (`disambiguate-add-year-suffix`): If above
 ///    strategies fail, append letters (a, b, c, ..., z, aa, ab, ...) to
-///    the year. Sorting is deterministic by reference title (lowercase).
+///    the year. Ordering follows the resolved per-group sort when one is
+///    configured, otherwise lowercase reference title order.
 ///
 /// ## Algorithm Overview
 ///
-/// - References are grouped by author-year key (e.g., "smith:2020")
+/// - References are grouped by their base collision key
+///   (for example, `smith:2020` or a label key)
 /// - For each group with 2+ collisions, strategies are applied in order
 /// - Once a strategy resolves ambiguity, higher-priority strategies skip
-/// - Year suffix assignment is deterministic by title sort order
+/// - Year suffix assignment is deterministic from the resolved per-group sort
 ///
 /// ## Output
 ///
@@ -51,6 +53,7 @@ pub struct Disambiguator<'a> {
 }
 
 impl<'a> Disambiguator<'a> {
+    /// Creates a disambiguator that uses the default title-based fallback order.
     pub fn new(bibliography: &'a Bibliography, config: &'a Config, locale: &'a Locale) -> Self {
         Self {
             bibliography,
@@ -60,6 +63,7 @@ impl<'a> Disambiguator<'a> {
         }
     }
 
+    /// Creates a disambiguator with an explicit per-group sort specification.
     pub fn with_group_sort(
         bibliography: &'a Bibliography,
         config: &'a Config,
@@ -77,7 +81,7 @@ impl<'a> Disambiguator<'a> {
     /// Calculate processing hints for disambiguation across all references.
     ///
     /// This is a single-pass algorithm that:
-    /// 1. Groups references by author-year collision key
+    /// 1. Groups references by their base collision key
     /// 2. For each group with multiple references, applies disambiguation
     ///    strategies in cascade order
     /// 3. Returns pre-calculated hints for the renderer
@@ -104,9 +108,9 @@ impl<'a> Disambiguator<'a> {
     /// - Brown, Tom (2020) - "Article C"
     ///
     /// Output hints:
-    /// - "smith-john-2020": { expand_given_names: true, group_length: 2 }
-    /// - "smith-jane-2020": { expand_given_names: true, group_length: 2 }
-    /// - "brown-tom-2020": { } (no collision)
+    /// - "item-1": { group_key: "smith:2020", expand_given_names: true, group_length: 2 }
+    /// - "item-2": { group_key: "smith:2020", expand_given_names: true, group_length: 2 }
+    /// - "item-3": { group_key: "brown:2020" } (no collision)
     pub fn calculate_hints(&self) -> HashMap<String, ProcHints> {
         let mut hints = HashMap::new();
 
@@ -446,7 +450,7 @@ impl<'a> Disambiguator<'a> {
         !collision
     }
 
-    /// Group references by author-year for disambiguation.
+    /// Group references by their base collision key for disambiguation.
     fn group_references<'b>(
         &self,
         references: Vec<&'b Reference>,
@@ -530,6 +534,7 @@ mod tests {
         Contributor, EdtfString, InputReference as Reference, Monograph, MonographType,
         MultilingualString, StructuredName, Title,
     };
+
     fn make_ref(id: &str, family: &str, given: &str, year: i32) -> Reference {
         let title = format!("Title {}", id);
         Reference::Monograph(Box::new(Monograph {

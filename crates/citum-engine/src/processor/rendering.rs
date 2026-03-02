@@ -48,12 +48,12 @@ impl<'a> Renderer<'a> {
         }
     }
 
-    /// Determines if the processor should render author-year text for a numeric style
+    /// Determines if the processor should render author-plus-number text for a numeric style
     /// when in "integral" (narrative) citation mode.
     ///
     /// This happens when the style is numeric and the user requests a narrative
     /// citation (e.g., "Smith [1]"), but hasn't provided an explicit narrative template.
-    fn should_render_author_year_for_numeric_integral(
+    fn should_render_author_number_for_numeric_integral(
         &self,
         mode: &citum_schema::citation::CitationMode,
     ) -> bool {
@@ -137,7 +137,7 @@ impl<'a> Renderer<'a> {
     ///
     /// This is used as a default for numeric styles in narrative mode (e.g., "Smith [1]").
     /// It renders the author's short name followed by the citation number in brackets.
-    fn render_author_year_for_numeric_integral_with_format<F>(
+    fn render_author_number_for_numeric_integral_with_format<F>(
         &self,
         reference: &Reference,
         item: &crate::reference::CitationItem,
@@ -299,8 +299,8 @@ impl<'a> Renderer<'a> {
         let mut rendered_items = Vec::new();
         let fmt = F::default();
 
-        // For numeric styles with integral mode, render author-year instead
-        let use_author_year = self.should_render_author_year_for_numeric_integral(mode);
+        // For numeric styles with integral mode, render author + citation number instead.
+        let use_author_number = self.should_render_author_number_for_numeric_integral(mode);
         // For label styles with integral mode, render narrative contributor text.
         let use_label_author = self.should_render_author_for_label_integral(mode);
 
@@ -310,10 +310,10 @@ impl<'a> Renderer<'a> {
                 .get(&item.id)
                 .ok_or_else(|| ProcessorError::ReferenceNotFound(item.id.clone()))?;
 
-            if use_author_year {
+            if use_author_number {
                 // Numeric integral: render author + citation number
                 let citation_number = self.get_or_assign_citation_number(&item.id);
-                let item_str = self.render_author_year_for_numeric_integral_with_format::<F>(
+                let item_str = self.render_author_number_for_numeric_integral_with_format::<F>(
                     reference,
                     item,
                     citation_number,
