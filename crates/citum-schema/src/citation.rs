@@ -118,23 +118,40 @@ fn is_false(b: &bool) -> bool {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum LocatorType {
+    /// Locator refers to a book within a larger work.
     Book,
+    /// Locator refers to a chapter.
     Chapter,
+    /// Locator refers to a column.
     Column,
+    /// Locator refers to a figure.
     Figure,
+    /// Locator refers to a folio.
     Folio,
+    /// Locator refers to a numbered line.
     Line,
+    /// Locator refers to a note.
     Note,
+    /// Locator refers to a numbered unit.
     Number,
+    /// Locator refers to an opus number.
     Opus,
     #[default]
+    /// Locator refers to a page.
     Page,
+    /// Locator refers to a paragraph.
     Paragraph,
+    /// Locator refers to a part or division.
     Part,
+    /// Locator refers to a section.
     Section,
+    /// Locator refers to an entry under a headword.
     SubVerbo,
+    /// Locator refers to a verse.
     Verse,
+    /// Locator refers to a volume.
     Volume,
+    /// Locator refers to an issue.
     Issue,
 }
 
