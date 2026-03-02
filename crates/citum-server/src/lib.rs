@@ -27,11 +27,15 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //!
 //! - `async`: Enable tokio runtime (required for HTTP)
 //! - `http`: Enable HTTP server (implies async)
+#![deny(missing_docs)]
 
+/// Server error types and conversions.
 pub mod error;
+/// JSON-RPC request handling and stdio transport.
 pub mod rpc;
 
 #[cfg(feature = "http")]
+/// Optional HTTP transport built on axum.
 pub mod http;
 
 pub use error::ServerError;
