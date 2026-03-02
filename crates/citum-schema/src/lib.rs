@@ -1,3 +1,5 @@
+//! Public schema types for Citum styles, citations, references, and locales.
+
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -70,8 +72,10 @@ pub struct InputBibliography {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub struct InputBibliographyInfo {
+    /// Human-readable title for the bibliography dataset.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
+    /// Creator or maintainer of the bibliography dataset.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub author: Option<String>,
 }
@@ -162,14 +166,18 @@ impl TemplatePreset {
     }
 }
 
+/// Locale-scoped template override with optional fallback behavior.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Default)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct LocalizedTemplateSpec {
+    /// Language tags that should select this template override.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub locale: Option<Vec<String>>,
+    /// Whether this override is the fallback when no locale matches.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub default: Option<bool>,
+    /// Template used when this localized override is selected.
     pub template: Template,
 }
 
@@ -185,14 +193,17 @@ fn locale_matches(targets: &[String], language: &str) -> bool {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct CitationSpec {
+    /// Citation-specific option overrides merged over the style config.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub options: Option<Config>,
     /// Reference to an embedded template preset.
     /// If both `use_preset` and `template` are present, `template` takes precedence.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub use_preset: Option<TemplatePreset>,
+    /// Default template when no localized override is selected.
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub template: Option<Template>,
+    /// Locale-specific template overrides checked before the default template.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub locales: Option<Vec<LocalizedTemplateSpec>>,
     /// Wrap the entire citation in punctuation. Preferred over prefix/suffix.
@@ -252,6 +263,8 @@ impl CitationSpec {
             .or_else(|| self.use_preset.as_ref().map(|p| p.citation_template()))
     }
 
+    /// Resolve the template for a language by checking localized overrides,
+    /// then the localized default, then the base template or preset.
     pub fn resolve_template_for_language(&self, language: Option<&str>) -> Option<Template> {
         if let Some(language) = language
             && let Some(locales) = &self.locales
@@ -404,6 +417,7 @@ impl CitationSpec {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct BibliographySpec {
+    /// Bibliography-specific option overrides merged over the style config.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub options: Option<Config>,
     /// Reference to an embedded template preset.
@@ -411,8 +425,10 @@ pub struct BibliographySpec {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub use_preset: Option<TemplatePreset>,
     /// The default template for bibliography entries.
+    /// Default template for entries when no localized override is selected.
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub template: Option<Template>,
+    /// Locale-specific template overrides checked before the default template.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub locales: Option<Vec<LocalizedTemplateSpec>>,
     /// Type-specific template overrides. When present, replaces the default
@@ -451,6 +467,8 @@ impl BibliographySpec {
             .or_else(|| self.use_preset.as_ref().map(|p| p.bibliography_template()))
     }
 
+    /// Resolve the template for a language by checking localized overrides,
+    /// then the localized default, then the base template or preset.
     pub fn resolve_template_for_language(&self, language: Option<&str>) -> Option<Template> {
         if let Some(language) = language
             && let Some(locales) = &self.locales
@@ -483,31 +501,55 @@ impl BibliographySpec {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum CitationField {
+    /// Anthropology styles.
     Anthropology,
+    /// Biology styles.
     Biology,
+    /// Botany styles.
     Botany,
+    /// Chemistry styles.
     Chemistry,
+    /// Communications studies styles.
     Communications,
+    /// Engineering styles.
     Engineering,
+    /// Geography styles.
     Geography,
+    /// Geology styles.
     Geology,
+    /// History styles.
     History,
+    /// Humanities styles.
     Humanities,
+    /// Law styles.
     Law,
+    /// Linguistics styles.
     Linguistics,
+    /// Literature styles.
     Literature,
+    /// Mathematics styles.
     Math,
+    /// Medicine styles.
     Medicine,
+    /// Philosophy styles.
     Philosophy,
+    /// Physics styles.
     Physics,
     #[serde(rename = "political-science")]
+    /// Political science styles.
     PoliticalScience,
+    /// Psychology styles.
     Psychology,
+    /// General science styles.
     Science,
     #[serde(rename = "social-science")]
+    /// Social science styles.
     SocialScience,
+    /// Sociology styles.
     Sociology,
+    /// Theology styles.
     Theology,
+    /// Zoology styles.
     Zoology,
 }
 
@@ -516,7 +558,9 @@ pub enum CitationField {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub struct StyleLink {
+    /// Link target for related style metadata.
     pub href: String,
+    /// Relationship type for the link, such as `self` or `documentation`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rel: Option<String>,
 }
@@ -526,10 +570,13 @@ pub struct StyleLink {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub struct StylePerson {
+    /// Display name for the credited person.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
+    /// Contact email for the credited person.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub email: Option<String>,
+    /// URI identifying the credited person.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub uri: Option<String>,
 }
@@ -560,10 +607,13 @@ pub struct StyleSource {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub struct StyleInfo {
+    /// Human-readable title of the style.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
+    /// Stable identifier for the style, usually a URI or slug.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
+    /// Short summary of the style's intended use or provenance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     /// Default locale for the style (e.g., "en-US", "de-DE").
