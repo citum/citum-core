@@ -1172,25 +1172,126 @@
     },
     "ContributorRole": {
       "description": "Contributor roles.",
-      "type": "string",
-      "enum": [
-        "author",
-        "editor",
-        "translator",
-        "director",
-        "publisher",
-        "recipient",
-        "interviewer",
-        "interviewee",
-        "inventor",
-        "counsel",
-        "composer",
-        "collection-editor",
-        "container-author",
-        "editorial-director",
-        "illustrator",
-        "original-author",
-        "reviewed-author"
+      "oneOf": [
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "author"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "editor"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "translator"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "director"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "publisher"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "recipient"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "interviewer"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "interviewee"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "inventor"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "counsel"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "composer"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "collection-editor"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "container-author"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "editorial-director"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "illustrator"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "original-author"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "reviewed-author"
+          ]
+        }
       ]
     },
     "DateConfig": {
@@ -1452,33 +1553,182 @@
     },
     "GeneralTerm": {
       "description": "A list of general terms for citation formatting.",
-      "type": "string",
-      "enum": [
-        "in",
-        "accessed",
-        "retrieved",
-        "at",
-        "from",
-        "by",
-        "no-date",
-        "anonymous",
-        "circa",
-        "available-at",
-        "ibid",
-        "and",
-        "et-al",
-        "and-others",
-        "forthcoming",
-        "online",
-        "review-of",
-        "original-work-published",
-        "patent",
-        "volume",
-        "issue",
-        "page",
-        "chapter",
-        "edition",
-        "section"
+      "oneOf": [
+        {
+          "description": "The preposition \"in\".",
+          "type": "string",
+          "enum": [
+            "in"
+          ]
+        },
+        {
+          "description": "The term used for access dates.",
+          "type": "string",
+          "enum": [
+            "accessed"
+          ]
+        },
+        {
+          "description": "The term used for retrieval statements.",
+          "type": "string",
+          "enum": [
+            "retrieved"
+          ]
+        },
+        {
+          "description": "The preposition \"at\".",
+          "type": "string",
+          "enum": [
+            "at"
+          ]
+        },
+        {
+          "description": "The preposition \"from\".",
+          "type": "string",
+          "enum": [
+            "from"
+          ]
+        },
+        {
+          "description": "The preposition \"by\".",
+          "type": "string",
+          "enum": [
+            "by"
+          ]
+        },
+        {
+          "description": "The term used when no date is available.",
+          "type": "string",
+          "enum": [
+            "no-date"
+          ]
+        },
+        {
+          "description": "The term used for anonymous authorship.",
+          "type": "string",
+          "enum": [
+            "anonymous"
+          ]
+        },
+        {
+          "description": "The term used for approximate dates.",
+          "type": "string",
+          "enum": [
+            "circa"
+          ]
+        },
+        {
+          "description": "The phrase used for availability statements.",
+          "type": "string",
+          "enum": [
+            "available-at"
+          ]
+        },
+        {
+          "description": "The term used for immediately repeated citations.",
+          "type": "string",
+          "enum": [
+            "ibid"
+          ]
+        },
+        {
+          "description": "The conjunction \"and\".",
+          "type": "string",
+          "enum": [
+            "and"
+          ]
+        },
+        {
+          "description": "The abbreviation for omitted additional names.",
+          "type": "string",
+          "enum": [
+            "et-al"
+          ]
+        },
+        {
+          "description": "The phrase \"and others\".",
+          "type": "string",
+          "enum": [
+            "and-others"
+          ]
+        },
+        {
+          "description": "The term used for forthcoming works.",
+          "type": "string",
+          "enum": [
+            "forthcoming"
+          ]
+        },
+        {
+          "description": "The term used for online resources.",
+          "type": "string",
+          "enum": [
+            "online"
+          ]
+        },
+        {
+          "description": "The phrase used to introduce reviewed works.",
+          "type": "string",
+          "enum": [
+            "review-of"
+          ]
+        },
+        {
+          "description": "The phrase used for original publication references.",
+          "type": "string",
+          "enum": [
+            "original-work-published"
+          ]
+        },
+        {
+          "description": "The term used for patents.",
+          "type": "string",
+          "enum": [
+            "patent"
+          ]
+        },
+        {
+          "description": "The general term for volume locators.",
+          "type": "string",
+          "enum": [
+            "volume"
+          ]
+        },
+        {
+          "description": "The general term for issue locators.",
+          "type": "string",
+          "enum": [
+            "issue"
+          ]
+        },
+        {
+          "description": "The general term for page locators.",
+          "type": "string",
+          "enum": [
+            "page"
+          ]
+        },
+        {
+          "description": "The general term for chapter locators.",
+          "type": "string",
+          "enum": [
+            "chapter"
+          ]
+        },
+        {
+          "description": "The general term for editions.",
+          "type": "string",
+          "enum": [
+            "edition"
+          ]
+        },
+        {
+          "description": "The general term for section locators.",
+          "type": "string",
+          "enum": [
+            "section"
+          ]
+        }
       ]
     },
     "Group": {
@@ -4291,13 +4541,42 @@
     },
     "TermForm": {
       "description": "Form for term lookup.",
-      "type": "string",
-      "enum": [
-        "long",
-        "short",
-        "verb",
-        "verb-short",
-        "symbol"
+      "oneOf": [
+        {
+          "description": "Long form of a term.",
+          "type": "string",
+          "enum": [
+            "long"
+          ]
+        },
+        {
+          "description": "Short form of a term.",
+          "type": "string",
+          "enum": [
+            "short"
+          ]
+        },
+        {
+          "description": "Verb form of a term.",
+          "type": "string",
+          "enum": [
+            "verb"
+          ]
+        },
+        {
+          "description": "Short verb form of a term.",
+          "type": "string",
+          "enum": [
+            "verb-short"
+          ]
+        },
+        {
+          "description": "Symbol form of a term.",
+          "type": "string",
+          "enum": [
+            "symbol"
+          ]
+        }
       ]
     },
     "TimeFormat": {

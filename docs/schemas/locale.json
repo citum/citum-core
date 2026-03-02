@@ -54,6 +54,7 @@
       "type": "object",
       "properties": {
         "am": {
+          "description": "Localized ante meridiem marker.",
           "default": null,
           "type": [
             "string",
@@ -61,6 +62,7 @@
           ]
         },
         "months": {
+          "description": "Localized month names.",
           "default": {
             "long": [],
             "short": []
@@ -72,6 +74,7 @@
           ]
         },
         "open-ended-term": {
+          "description": "Localized term for open-ended date ranges.",
           "default": null,
           "type": [
             "string",
@@ -79,6 +82,7 @@
           ]
         },
         "pm": {
+          "description": "Localized post meridiem marker.",
           "default": null,
           "type": [
             "string",
@@ -86,6 +90,7 @@
           ]
         },
         "seasons": {
+          "description": "Localized season names in display order.",
           "default": [],
           "type": "array",
           "items": {
@@ -93,6 +98,7 @@
           }
         },
         "timezone-utc": {
+          "description": "Localized label for UTC.",
           "default": null,
           "type": [
             "string",
@@ -100,6 +106,7 @@
           ]
         },
         "uncertainty-term": {
+          "description": "Localized term for uncertain dates.",
           "default": null,
           "type": [
             "string",
@@ -113,6 +120,7 @@
       "type": "object",
       "properties": {
         "long": {
+          "description": "Full month names.",
           "default": [],
           "type": "array",
           "items": {
@@ -120,6 +128,7 @@
           }
         },
         "short": {
+          "description": "Abbreviated month names.",
           "default": [],
           "type": "array",
           "items": {
@@ -133,6 +142,7 @@
       "type": "object",
       "properties": {
         "long": {
+          "description": "Long-form role term.",
           "default": null,
           "anyOf": [
             {
@@ -144,6 +154,7 @@
           ]
         },
         "short": {
+          "description": "Short-form role term.",
           "default": null,
           "anyOf": [
             {
@@ -155,6 +166,7 @@
           ]
         },
         "verb": {
+          "description": "Verb-form role term.",
           "default": null,
           "anyOf": [
             {
@@ -166,6 +178,7 @@
           ]
         },
         "verb-short": {
+          "description": "Short verb-form role term.",
           "default": null,
           "anyOf": [
             {
@@ -201,9 +214,11 @@
           ],
           "properties": {
             "plural": {
+              "description": "Plural form of the term.",
               "type": "string"
             },
             "singular": {
+              "description": "Singular form of the term.",
               "type": "string"
             }
           }
