@@ -1,6 +1,10 @@
 use citum_schema::options::{DateConfig, MonthFormat};
 use csl_legacy::model::{CslNode, Style};
 
+/// Extracts date configuration options from a CSL style.
+///
+/// Analyzes the style's date layouts to determine month format
+/// and other date presentation options.
 pub fn extract_date_config(style: &Style) -> Option<DateConfig> {
     let mut config = DateConfig::default();
     let mut found_date = false;

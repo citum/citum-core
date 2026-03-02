@@ -4,6 +4,10 @@ use citum_schema::options::{
 use csl_legacy::model::{CslNode, Style};
 use std::collections::HashSet;
 
+/// Detects the citation processing mode from a CSL style.
+///
+/// Analyzes style attributes and layout patterns to determine if the style
+/// uses author-date, numeric, note-based, or label-based citation processing.
 pub fn detect_processing_mode(style: &Style) -> Option<Processing> {
     // 0. Note styles are explicit in CSL and should map directly.
     if style.class == "note" {
