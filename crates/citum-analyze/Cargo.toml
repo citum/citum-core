@@ -2,7 +2,7 @@
 name = "citum-analyze"
 version.workspace = true
 edition.workspace = true
-license = "MPL-2.0"
+license.workspace = true
 description = "Analyze CSL 1.0 styles to guide migration development"
 
 [[bin]]

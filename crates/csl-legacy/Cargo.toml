@@ -2,6 +2,7 @@
 name = "csl-legacy"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
 
 [dependencies]
 indexmap = "2.13.0"
