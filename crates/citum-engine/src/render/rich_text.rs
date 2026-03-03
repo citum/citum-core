@@ -129,31 +129,65 @@ pub fn render_djot_inline<F: OutputFormat<Output = String>>(src: &str, fmt: &F) 
     }
 }
 
-/// Render org-mode inline markup and map events to OutputFormat methods.
+/// Render org-mode inline markup by walking the orgize event stream.
 ///
-/// Parses the input as org-mode inline markup and transforms inline elements
-/// into formatted output. Bold, italic, links, and plain text are rendered
-/// using the format's methods.
-///
-/// # Arguments
-/// * `src` - Input string with org-mode inline markup
-/// * `fmt` - OutputFormat implementation for rendering
-///
-/// # Returns
-/// Formatted string with markup applied according to the OutputFormat's methods
+/// Parses `src` as org-mode and maps inline elements to `OutputFormat` methods:
+/// bold (`*text*`) → `strong`, italic (`/text/`) → `emph`, verbatim/code →
+/// `text` (stripped), links (`[[url][desc]]`) → `link`, plain text → `text`.
+/// Container elements (Bold, Italic) are collected via a stack so nested
+/// markup is handled correctly.
 pub fn render_org_inline<F: OutputFormat<Output = String>>(src: &str, fmt: &F) -> String {
+    use orgize::Event;
     use orgize::Org;
+    use orgize::elements::Element;
 
-    // Simple org-mode parser: extract text while parsing document structure.
-    // Orgize is used to validate/parse the structure, but we process text as plain.
-    let _org = Org::parse(src); // Validates org syntax
+    let org = Org::parse(src);
+    // Stack of (tag, accumulated_children) for open containers.
+    // Tags: 0 = Bold, 1 = Italic, 2 = root paragraph accumulator.
+    let mut stack: Vec<(u8, String)> = vec![(2, String::new())];
 
-    // For a basic implementation, we treat org-mode text as plain text.
-    // Full markup rendering (bold, italic, links) would require
-    // traversing the Event stream with proper text collection.
-    // This is sufficient for annotation use cases where org markup
-    // is preserved structurally.
-    fmt.text(src)
+    for event in org.iter() {
+        match event {
+            Event::Start(Element::Bold) => stack.push((0, String::new())),
+            Event::Start(Element::Italic) => stack.push((1, String::new())),
+            Event::End(Element::Bold) => {
+                if let Some((0, inner)) = stack.pop() {
+                    let rendered = fmt.strong(inner);
+                    if let Some(top) = stack.last_mut() {
+                        top.1.push_str(&rendered);
+                    }
+                }
+            }
+            Event::End(Element::Italic) => {
+                if let Some((1, inner)) = stack.pop() {
+                    let rendered = fmt.emph(inner);
+                    if let Some(top) = stack.last_mut() {
+                        top.1.push_str(&rendered);
+                    }
+                }
+            }
+            Event::Start(Element::Link(link)) => {
+                let desc = link.desc.as_deref().unwrap_or(&link.path);
+                let rendered = fmt.link(&link.path, fmt.text(desc));
+                if let Some(top) = stack.last_mut() {
+                    top.1.push_str(&rendered);
+                }
+            }
+            Event::Start(Element::Text { value }) => {
+                if let Some(top) = stack.last_mut() {
+                    top.1.push_str(&fmt.text(value));
+                }
+            }
+            Event::Start(Element::Verbatim { value }) | Event::Start(Element::Code { value }) => {
+                if let Some(top) = stack.last_mut() {
+                    top.1.push_str(&fmt.text(value));
+                }
+            }
+            _ => {}
+        }
+    }
+
+    stack.into_iter().next().map(|(_, s)| s).unwrap_or_default()
 }
 
 #[cfg(test)]
@@ -211,16 +245,16 @@ mod tests {
     #[test]
     fn test_org_bold() {
         let fmt = PlainText;
-        // render_org_inline returns plain text as-is (preserves org markup markers)
+        // PlainText.strong() wraps in **...**
         let result = render_org_inline("*bold*", &fmt);
-        assert_eq!(result, "*bold*");
+        assert_eq!(result, "**bold**");
     }
 
     #[test]
     fn test_org_italic() {
         let fmt = PlainText;
-        // render_org_inline returns plain text as-is (preserves org markup markers)
+        // PlainText.emph() wraps in _..._
         let result = render_org_inline("/italic/", &fmt);
-        assert_eq!(result, "/italic/");
+        assert_eq!(result, "_italic_");
     }
 }
