@@ -44,3 +44,6 @@ bindings/latex/libcsln_processor.dylib
 
 # Benchmark baselines (local-only performance tracking)
 .bench-baselines/
+
+# Claude worktrees (local development)
+.claude/worktrees/
