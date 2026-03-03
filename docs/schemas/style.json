@@ -71,7 +71,7 @@
     },
     "version": {
       "description": "Style schema version.",
-      "default": "0.7.0",
+      "default": "0.7.1",
       "type": "string"
     }
   },
