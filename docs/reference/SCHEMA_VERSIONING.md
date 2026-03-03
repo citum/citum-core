@@ -85,7 +85,7 @@ Check the default schema version in `../crates/citum-schema/src/lib.rs`:
 
 ```rust
 fn default_version() -> String {
-    "1.0".to_string()  // Current schema version
+    "0.7.1".to_string()  // Current schema version
 }
 ```
 
@@ -119,34 +119,34 @@ Use the `../scripts/bump.sh` script to update the schema version:
 # Bump schema by patch version
 ../scripts/bump.sh schema patch
 
-# Bump both schema and engine together
-../scripts/bump.sh patch
-
 # Preview changes without modifying files
 ../scripts/bump.sh schema minor --dry-run
 
 # What it does:
-# 1. Updates the shared workspace version in Cargo.toml
-# 2. Refreshes workspace package entries in Cargo.lock
-# 3. For schema bumps, updates ./SCHEMA_VERSIONING.md with a changelog entry
-# 4. Validates with `cargo test --quiet --lib`
-# 5. Creates the appropriate git tag(s)
+# 1. Updates default_version() in citum_schema/src/lib.rs
+# 2. Updates ./SCHEMA_VERSIONING.md with a schema changelog entry
+# 3. Validates with `cargo test --quiet --lib`
+# 4. Creates a schema-vX.Y.Z git tag
 ```
 
 **Manual process:**
-1. Update the shared workspace version in `../Cargo.toml`
-2. Refresh `../Cargo.lock`
-3. Run `cargo test --quiet --lib`
-4. For schema bumps, update this file with a schema changelog entry
-5. Commit the version bump
-6. Create the appropriate release tag(s)
+1. Update `default_version()` in `../crates/citum-schema/src/lib.rs`
+2. Run `cargo test --quiet --lib`
+3. Update this file with a schema changelog entry
+4. Commit the schema bump
+5. Create the `schema-vX.Y.Z` tag
+
+### Code Releases
+
+Code releases are managed by `release-plz`.
+
+- Do not use `../scripts/bump.sh` to bump `Cargo.toml` or create `v*` tags.
+- Do not use `../scripts/release.sh`; it is deprecated.
+- Push conventional-commit changes to `main` and let the `release-plz` workflow prepare the code release PR.
 
 ### Schema Changelog
 
 Track schema changes separately from code changes:
-
-#### schema-v0.7.1 (2026-03-02)
-- Schema version bumped from 0.7.0 to 0.7.1
 
 #### schema-v0.7.1 (2026-03-02)
 - Schema version bumped from 0.7.0 to 0.7.1

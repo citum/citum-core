@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Release bump workflow for Citum engine and schema tracks."""
+"""Schema bump workflow for Citum with release-plz-aware guidance."""
 
 from __future__ import annotations
 
 import argparse
 import difflib
+import re
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -14,21 +15,11 @@ from typing import Sequence
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-CARGO_TOML = REPO_ROOT / "Cargo.toml"
-LOCKFILE = REPO_ROOT / "Cargo.lock"
+SCHEMA_LIB = REPO_ROOT / "crates/citum-schema/src/lib.rs"
 SCHEMA_DOC = REPO_ROOT / "docs/reference/SCHEMA_VERSIONING.md"
-TRACK_CHOICES = ("schema", "engine", "all")
+RELEASE_PLZ_WORKFLOW = REPO_ROOT / ".github/workflows/release-plz.yml"
+TRACK_CHOICES = ("schema", "code", "engine", "all")
 BUMP_CHOICES = ("patch", "minor", "major")
-WORKSPACE_PACKAGES = (
-    "csl-legacy",
-    "citum-schema",
-    "citum-edtf",
-    "citum-migrate",
-    "citum-engine",
-    "citum-analyze",
-    "citum",
-    "citum-server",
-)
 
 BLUE = "\033[0;34m"
 GREEN = "\033[0;32m"
@@ -97,20 +88,16 @@ def run_git(args: Sequence[str], check: bool = True) -> subprocess.CompletedProc
     )
 
 
-def read_workspace_version() -> str:
-    """Read the workspace package version from Cargo.toml."""
+def read_schema_version() -> str:
+    """Read the default schema version from citum-schema."""
 
-    in_workspace_package = False
-    for line in CARGO_TOML.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if stripped == "[workspace.package]":
-            in_workspace_package = True
-            continue
-        if in_workspace_package and stripped.startswith("[") and stripped.endswith("]"):
-            break
-        if in_workspace_package and stripped.startswith("version = "):
-            return stripped.split('"')[1]
-    raise BumpError("Could not find version in [workspace.package] in Cargo.toml")
+    content = SCHEMA_LIB.read_text(encoding="utf-8")
+    match = re.search(r'fn default_version\(\) -> String \{\s*"([^"]+)"\.to_string\(\)\s*\}', content)
+    if match is None:
+        raise BumpError(
+            "Could not find a string-returning default_version() in crates/citum-schema/src/lib.rs"
+        )
+    return match.group(1)
 
 
 def bump_version(current: str, bump_type: str) -> str:
@@ -136,41 +123,29 @@ def build_commit_message(track: str, old_version: str, new_version: str, release
     """Build the commit message for the selected track."""
 
     name_suffix = f" - {release_name}" if release_name else ""
-    if track == "all":
-        return (
-            f"chore(release): bump shared version to v{new_version}{name_suffix}\n\n"
-            f"Engine and schema {old_version} -> {new_version}."
-        )
     if track == "schema":
         return (
             f"chore(schema): bump to schema-v{new_version}{name_suffix}\n\n"
             f"Schema {old_version} -> {new_version}."
         )
-    return (
-        f"chore(engine): bump to v{new_version}{name_suffix}\n\n"
-        f"Engine {old_version} -> {new_version}."
-    )
+    raise BumpError(f"Unsupported local bump track: {track}")
 
 
 def resolve_plan(track: str, bump_type: str, release_name: str) -> ReleasePlan:
     """Resolve the full release plan before any edits occur."""
 
-    old_version = read_workspace_version()
+    old_version = read_schema_version()
     new_version = bump_version(old_version, bump_type)
 
-    files_to_modify = [CARGO_TOML, LOCKFILE]
-    if track in {"schema", "all"}:
-        files_to_modify.append(SCHEMA_DOC)
-
-    if track == "all":
-        tags_to_create = (f"v{new_version}", f"schema-v{new_version}")
-        changelog_tag_prefix = "v"
-    elif track == "schema":
+    if track == "schema":
+        files_to_modify = [SCHEMA_LIB, SCHEMA_DOC]
         tags_to_create = (f"schema-v{new_version}",)
         changelog_tag_prefix = "schema-v"
     else:
-        tags_to_create = (f"v{new_version}",)
-        changelog_tag_prefix = "v"
+        raise BumpError(
+            "Local code bumps are disabled in this repository. "
+            "Code releases are managed by release-plz; use this command only for schema bumps."
+        )
 
     return ReleasePlan(
         track=track,
@@ -239,30 +214,15 @@ def print_changelog(plan: ReleasePlan) -> None:
 def print_preview(plan: ReleasePlan) -> None:
     """Print a precise summary of what the bump will do."""
 
-    if plan.track == "all":
-        header(f"Shared version bump: {plan.old_version} -> {plan.new_version}")
-        print("  Scope        : bump the shared workspace version for both engine and schema releases")
-        print(f"  Bump type    : {plan.bump_type}")
-        print(f"  Cargo.toml   : workspace version -> {plan.new_version}")
-        print("  Cargo.lock   : refresh workspace package entries during validation")
-        print(f"  Engine tag   : {plan.tags_to_create[0]}")
-        print(f"  Schema tag   : {plan.tags_to_create[1]}")
-        print(f"  Schema doc   : add changelog entry in {SCHEMA_DOC.relative_to(REPO_ROOT)}")
-    elif plan.track == "schema":
+    if plan.track == "schema":
         header(f"Schema release bump: {plan.old_version} -> {plan.new_version}")
-        print("  Scope        : bump the shared workspace version and record a schema release")
+        print("  Scope        : bump the default style schema version without changing code release versions")
         print(f"  Bump type    : {plan.bump_type}")
-        print(f"  Cargo.toml   : workspace version -> {plan.new_version}")
-        print("  Cargo.lock   : refresh workspace package entries during validation")
+        print(f"  Schema lib   : update default_version() in {SCHEMA_LIB.relative_to(REPO_ROOT)}")
         print(f"  Schema tag   : {plan.tags_to_create[0]}")
         print(f"  Schema doc   : add changelog entry in {SCHEMA_DOC.relative_to(REPO_ROOT)}")
     else:
-        header(f"Engine release bump: {plan.old_version} -> {plan.new_version}")
-        print("  Scope        : bump the shared workspace version and record an engine release")
-        print(f"  Bump type    : {plan.bump_type}")
-        print(f"  Cargo.toml   : workspace version -> {plan.new_version}")
-        print("  Cargo.lock   : refresh workspace package entries during validation")
-        print(f"  Engine tag   : {plan.tags_to_create[0]}")
+        raise BumpError(f"Unsupported local bump track: {plan.track}")
 
     if plan.release_name:
         print(f"  Release name : {plan.release_name}")
@@ -282,15 +242,15 @@ def confirm_prompt() -> bool:
     return reply.lower() == "y"
 
 
-def update_cargo_version(plan: ReleasePlan) -> None:
-    """Replace the workspace version in Cargo.toml."""
+def update_schema_version(plan: ReleasePlan) -> None:
+    """Replace the default schema version in citum-schema."""
 
-    content = CARGO_TOML.read_text(encoding="utf-8")
-    old = f'version = "{plan.old_version}"'
-    new = f'version = "{plan.new_version}"'
-    if old not in content:
-        raise BumpError(f"Expected to find {old} in Cargo.toml")
-    CARGO_TOML.write_text(content.replace(old, new, 1), encoding="utf-8")
+    content = SCHEMA_LIB.read_text(encoding="utf-8")
+    pattern = r'(fn default_version\(\) -> String \{\s*")([^"]+)("\.to_string\(\)\s*\})'
+    updated, count = re.subn(pattern, rf"\g<1>{plan.new_version}\g<3>", content, count=1)
+    if count != 1:
+        raise BumpError("Failed to update default_version() in crates/citum-schema/src/lib.rs")
+    SCHEMA_LIB.write_text(updated, encoding="utf-8")
 
 
 def update_schema_doc(plan: ReleasePlan) -> None:
@@ -311,13 +271,6 @@ def update_schema_doc(plan: ReleasePlan) -> None:
 def validate_build() -> None:
     """Run the existing validation step after applying the bump."""
 
-    info("Cleaning workspace package artifacts for the new version")
-    subprocess.run(
-        ["cargo", "clean", *[flag for pkg in WORKSPACE_PACKAGES for flag in ("-p", pkg)]],
-        cwd=REPO_ROOT,
-        text=True,
-        check=True,
-    )
     info("Validating with cargo test --quiet --lib")
     result = subprocess.run(
         ["cargo", "test", "--quiet", "--lib"],
@@ -397,7 +350,7 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
 
     normalized = list(argv)
     if normalized and normalized[0] in BUMP_CHOICES:
-        normalized.insert(0, "all")
+        normalized.insert(0, "code")
 
     parser = argparse.ArgumentParser(
         prog="./scripts/bump.sh",
@@ -415,6 +368,12 @@ def main(argv: Sequence[str]) -> int:
 
     try:
         args = parse_args(argv)
+        if args.track != "schema" and RELEASE_PLZ_WORKFLOW.exists():
+            raise BumpError(
+                "Code releases are managed by release-plz in this repository. "
+                "Use `./scripts/bump.sh schema <patch|minor|major>` for schema-only bumps. "
+                "Do not use this command to bump Cargo versions or create `v*` tags."
+            )
         plan = resolve_plan(args.track, args.bump_type, args.name)
         print_preview(plan)
 
@@ -430,9 +389,8 @@ def main(argv: Sequence[str]) -> int:
 
         modified_files = capture_snapshots(plan.files_to_modify)
         try:
-            update_cargo_version(plan)
-            if plan.track in {"schema", "all"}:
-                update_schema_doc(plan)
+            update_schema_version(plan)
+            update_schema_doc(plan)
             validate_build()
             show_review(modified_files)
             stage_commit_and_tag(plan)
