@@ -10,7 +10,7 @@ use crate::io::{AnnotationFormat, AnnotationStyle, ParagraphBreak};
 use crate::render::component::{ProcEntry, render_component_with_format};
 use crate::render::format::OutputFormat;
 use crate::render::plain::PlainText;
-use crate::render::rich_text::render_djot_inline;
+use crate::render::rich_text::{render_djot_inline, render_org_inline};
 
 /// Check if a character is a final punctuation mark (not a space).
 /// This distinguishes between intentional component suffixes and separator duplication.
@@ -186,10 +186,11 @@ pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
             };
             let indent_prefix = if style.indent { "    " } else { "" };
 
-            // Render annotation text through djot if enabled
+            // Render annotation text through markup format if enabled
             let rendered = match style.format {
                 AnnotationFormat::Djot => render_djot_inline(annotation_text, &fmt),
                 AnnotationFormat::Plain => annotation_text.to_string(),
+                AnnotationFormat::Org => render_org_inline(annotation_text, &fmt),
             };
 
             // Apply indentation to each line (preserving blank lines for paragraph breaks)

@@ -26,6 +26,7 @@ pub mod djot;
 pub mod format;
 pub mod html;
 pub mod latex;
+pub mod org;
 pub mod plain;
 pub mod rich_text;
 pub mod typst;

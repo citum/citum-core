@@ -25,6 +25,7 @@ indexmap = { version = "2.2.6", features = ["serde"] }
 regex = "1.10"
 winnow = "0.7"
 jotdown = "0.5"
+orgize = "0.9"
 
 [features]
 ffi = []

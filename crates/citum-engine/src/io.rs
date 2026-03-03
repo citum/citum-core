@@ -64,6 +64,8 @@ pub enum AnnotationFormat {
     Djot,
     /// Treat annotation as plain text with no markup interpretation.
     Plain,
+    /// Parse annotation as org-mode markup.
+    Org,
 }
 
 /// Load a list of citations from a file.
