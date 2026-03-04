@@ -18,8 +18,12 @@ use std::path::PathBuf;
 
 /// Returns the platform-specific data directory for Citum user files.
 ///
-/// On Linux/macOS: `~/.local/share/citum/`
-/// On Windows: `%APPDATA%\Citum\`
+/// This path is derived from [`dirs::data_dir()`] with a `citum` subdirectory appended.
+///
+/// Typical locations:
+/// - Linux:   `~/.local/share/citum/`
+/// - macOS:   `~/Library/Application Support/citum/`
+/// - Windows: `%APPDATA%\citum\`
 pub fn platform_data_dir() -> Option<PathBuf> {
     dirs::data_dir().map(|d| d.join("citum"))
 }
