@@ -16,3 +16,7 @@ toml = "0.8"
 
 [features]
 hub = []
+
+[dev-dependencies]
+tempfile = "3"
+serde_yaml = { package = "serde_yaml_ng", version = "0.10" }

@@ -7,6 +7,9 @@ pub mod config;
 pub mod format;
 pub mod resolver;
 
+#[cfg(test)]
+mod resolver_tests;
+
 pub use config::StoreConfig;
 pub use format::StoreFormat;
 pub use resolver::StoreResolver;
