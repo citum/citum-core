@@ -106,7 +106,12 @@ impl StoreResolver {
         }
 
         // If we got here, file wasn't found in any format
-        Err(ResolverError::StyleNotFound(name.to_string()))
+        let error = if category == "locales" {
+            ResolverError::LocaleNotFound(name.to_string())
+        } else {
+            ResolverError::StyleNotFound(name.to_string())
+        };
+        Err(error)
     }
 
     // Helper: deserialize an item from file based on format.
@@ -186,6 +191,10 @@ impl StoreResolver {
             }
         }
 
-        Err(ResolverError::StyleNotFound(name.to_string()))
+        if category == "locales" {
+            Err(ResolverError::LocaleNotFound(name.to_string()))
+        } else {
+            Err(ResolverError::StyleNotFound(name.to_string()))
+        }
     }
 }

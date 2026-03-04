@@ -164,9 +164,10 @@ enum Commands {
     #[command(
         about = "Manage user-installed styles and locales",
         long_about = "Install, remove, and list user-owned styles and locales.\n\n\
-                      Stored in the platform data directory (~/.local/share/citum/ on Linux/macOS,\n\
-                      %APPDATA%\\Citum\\ on Windows) and checked before builtin styles when\n\
-                      resolving names.\n\n\
+                      Stored in the platform-specific user data directory (for example,\n\
+                      ~/.local/share/citum/ on Linux, ~/Library/Application Support/citum/ on\n\
+                      macOS, or %APPDATA%\\citum\\ on Windows) and checked before builtin styles\n\
+                      when resolving names.\n\n\
                       EXAMPLES:\n  \
                       List all installed styles and locales:\n    \
                       citum store list\n\n  \

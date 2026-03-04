@@ -19,7 +19,8 @@ A new `citum_store` crate provides:
 
 | Platform | Path |
 |----------|------|
-| Linux/macOS (XDG) | `~/.local/share/citum/` |
+| Linux (XDG) | `~/.local/share/citum/` |
+| macOS | `~/Library/Application Support/Citum/` |
 | Windows | `%APPDATA%\Citum\` |
 | WASM / embedded | configurable override |
 
