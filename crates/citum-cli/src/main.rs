@@ -10,6 +10,7 @@ use citum_engine::{
 use citum_schema::locale::RawLocale;
 use citum_schema::reference::InputReference;
 use citum_schema::{InputBibliography, Locale, Style};
+use citum_store::{StoreConfig, StoreResolver, platform_data_dir};
 use clap::builder::styling::{AnsiColor, Effects, Styles};
 use clap::{ArgAction, Args, CommandFactory, Parser, Subcommand, ValueEnum};
 use clap_complete::{Shell, generate};
@@ -20,6 +21,7 @@ use std::collections::HashSet;
 use std::error::Error;
 use std::fmt::Write as _;
 use std::fs;
+use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 
 mod typst_pdf;
@@ -158,6 +160,26 @@ enum Commands {
         command: Option<StylesCommands>,
     },
 
+    /// Manage user-installed styles and locales
+    #[command(
+        about = "Manage user-installed styles and locales",
+        long_about = "Install, remove, and list user-owned styles and locales.\n\n\
+                      Stored in the platform data directory (~/.local/share/citum/ on Linux/macOS,\n\
+                      %APPDATA%\\Citum\\ on Windows) and checked before builtin styles when\n\
+                      resolving names.\n\n\
+                      EXAMPLES:\n  \
+                      List all installed styles and locales:\n    \
+                      citum store list\n\n  \
+                      Install a style from a local file:\n    \
+                      citum store install /path/to/my-style.yaml\n\n  \
+                      Remove an installed style:\n    \
+                      citum store remove my-style"
+    )]
+    Store {
+        #[command(subcommand)]
+        command: StoreCommands,
+    },
+
     /// Generate JSON schema for CSLN models
     #[cfg(feature = "schema")]
     Schema(SchemaArgs),
@@ -226,6 +248,47 @@ enum RenderCommands {
 enum StylesCommands {
     /// List all embedded (builtin) style names
     List,
+}
+
+#[derive(Subcommand)]
+enum StoreCommands {
+    /// List all installed user styles and locales
+    #[command(
+        about = "List all installed user styles and locales",
+        long_about = "Display names of all styles and locales installed in the user store\n\
+                      directory. Does not include embedded/builtin styles."
+    )]
+    List,
+
+    /// Install a style or locale from a local file
+    #[command(
+        about = "Install a style or locale from a local file",
+        long_about = "Copy a local style or locale file into the user store directory.\n\
+                      The style/locale name is derived from the file stem (without extension).\n\
+                      Supports YAML, JSON, and CBOR formats.\n\n\
+                      EXAMPLES:\n  \
+                      Install a style:\n    \
+                      citum store install /path/to/my-custom-style.yaml\n\n  \
+                      Install a locale:\n    \
+                      citum store install /path/to/my-locale.yaml"
+    )]
+    Install {
+        /// Path to the style or locale file to install
+        #[arg(index = 1, required = true)]
+        source: PathBuf,
+    },
+
+    /// Remove an installed style or locale
+    #[command(
+        about = "Remove an installed style or locale",
+        long_about = "Delete a style or locale from the user store directory.\n\
+                      Requires confirmation before deletion."
+    )]
+    Remove {
+        /// Name of the style or locale to remove (without extension)
+        #[arg(index = 1, required = true)]
+        name: String,
+    },
 }
 
 #[derive(Args, Debug)]
@@ -446,6 +509,11 @@ fn run() -> Result<(), Box<dyn Error>> {
         Commands::Styles { command } => match command.unwrap_or(StylesCommands::List) {
             StylesCommands::List => run_styles_list(),
         },
+        Commands::Store { command } => match command {
+            StoreCommands::List => run_store_list(),
+            StoreCommands::Install { source } => run_store_install(&source),
+            StoreCommands::Remove { name } => run_store_remove(&name),
+        },
         #[cfg(feature = "schema")]
         Commands::Schema(args) => run_schema(args),
         Commands::Completions { shell } => {
@@ -560,6 +628,113 @@ fn truncate(s: &str, max_len: usize) -> String {
     } else {
         format!("{}...", &s[..max_len - 3])
     }
+}
+
+/// List all installed user styles and locales.
+fn run_store_list() -> Result<(), Box<dyn Error>> {
+    let Some(data_dir) = platform_data_dir() else {
+        return Err("Unable to determine platform data directory".into());
+    };
+
+    let config = StoreConfig::load().unwrap_or_default();
+    let resolver = StoreResolver::new(data_dir.clone(), config.store_format());
+
+    let styles = resolver.list_styles().unwrap_or_default();
+    let locales = resolver.list_locales().unwrap_or_default();
+
+    println!("User store location: {}", data_dir.display());
+    println!("Configured format: {}", config.store_format());
+    println!();
+
+    if !styles.is_empty() {
+        println!("Installed styles ({}):", styles.len());
+        for name in &styles {
+            println!("  - {}", name);
+        }
+        println!();
+    } else {
+        println!("No installed styles.");
+        println!();
+    }
+
+    if !locales.is_empty() {
+        println!("Installed locales ({}):", locales.len());
+        for name in &locales {
+            println!("  - {}", name);
+        }
+        println!();
+    } else {
+        println!("No installed locales.");
+        println!();
+    }
+
+    println!("Usage:");
+    println!("  Install a style:  citum store install <path>");
+    println!("  Remove a style:   citum store remove <name>");
+
+    Ok(())
+}
+
+/// Install a style or locale from a local file.
+fn run_store_install(source: &Path) -> Result<(), Box<dyn Error>> {
+    if !source.exists() || !source.is_file() {
+        return Err(format!("file not found: {}", source.display()).into());
+    }
+
+    let Some(data_dir) = platform_data_dir() else {
+        return Err("Unable to determine platform data directory".into());
+    };
+
+    let config = StoreConfig::load().unwrap_or_default();
+    let resolver = StoreResolver::new(data_dir, config.store_format());
+
+    let name = resolver
+        .install_style(source)
+        .or_else(|_| resolver.install_locale(source))?;
+
+    println!("Successfully installed: {}", name);
+    Ok(())
+}
+
+/// Remove an installed style or locale.
+fn run_store_remove(name: &str) -> Result<(), Box<dyn Error>> {
+    let Some(data_dir) = platform_data_dir() else {
+        return Err("Unable to determine platform data directory".into());
+    };
+
+    let config = StoreConfig::load().unwrap_or_default();
+    let resolver = StoreResolver::new(data_dir, config.store_format());
+
+    // Check if style or locale exists
+    let styles = resolver.list_styles().unwrap_or_default();
+    let locales = resolver.list_locales().unwrap_or_default();
+
+    if !styles.contains(&name.to_string()) && !locales.contains(&name.to_string()) {
+        return Err(format!("style or locale not found: {}", name).into());
+    }
+
+    // Ask for confirmation
+    print!(
+        "Are you sure you want to remove '{}'? This cannot be undone. [y/N] ",
+        name
+    );
+    io::stdout().flush()?;
+
+    let mut response = String::new();
+    io::stdin().read_line(&mut response)?;
+
+    if response.trim().to_lowercase() != "y" && response.trim().to_lowercase() != "yes" {
+        println!("Cancelled.");
+        return Ok(());
+    }
+
+    // Try removing as style first, then as locale
+    resolver
+        .remove_style(name)
+        .or_else(|_| resolver.remove_locale(name))?;
+
+    println!("Successfully removed: {}", name);
+    Ok(())
 }
 
 /// Execute the `render doc` subcommand.
@@ -713,11 +888,33 @@ fn create_processor(style: Style, bib: Bibliography, style_input: &str) -> Proce
     }
 }
 
-/// Load a style from a file path, or fallback to builtin name / alias.
+/// Load a style from a file path, user store, or fallback to builtin name/alias.
 fn load_any_style(style_input: &str, no_semantics: bool) -> Result<Style, Box<dyn Error>> {
     let path = Path::new(style_input);
     if path.exists() && path.is_file() {
         return load_style(path, no_semantics);
+    }
+
+    // Try user store first
+    if let Some(data_dir) = platform_data_dir()
+        && data_dir.exists()
+    {
+        let config = StoreConfig::load().unwrap_or_default();
+        let resolver = StoreResolver::new(data_dir, config.store_format());
+        if let Ok(style) = resolver.resolve_style(style_input) {
+            let mut style_obj = style;
+            if no_semantics {
+                if let Some(ref mut options) = style_obj.options {
+                    options.semantic_classes = Some(false);
+                } else {
+                    style_obj.options = Some(citum_schema::options::Config {
+                        semantic_classes: Some(false),
+                        ..Default::default()
+                    });
+                }
+            }
+            return Ok(style_obj);
+        }
     }
 
     if let Some(res) = citum_schema::embedded::get_embedded_style(style_input) {
