@@ -7,7 +7,8 @@ members = [
     "crates/citum-analyze",
     "crates/citum-cli",
     "crates/citum-server",
-    "crates/citum-edtf"
+    "crates/citum-edtf",
+    "crates/citum_store"
 ]
 resolver = "2"
 
