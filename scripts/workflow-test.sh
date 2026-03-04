@@ -51,7 +51,7 @@ fi
 STYLE_NAME=$(basename "$STYLE_PATH" .csl)
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "CSLN Workflow Test: $STYLE_NAME"
+echo "Citum Workflow Test: $STYLE_NAME"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo
 

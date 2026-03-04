@@ -68,6 +68,14 @@ impl OutputFormat for Latex {
         format!(r"\textsc{{{}}}", content)
     }
 
+    fn code(&self, content: Self::Output) -> Self::Output {
+        format!(r"\texttt{{{}}}", content)
+    }
+
+    fn verbatim(&self, content: Self::Output) -> Self::Output {
+        format!(r"\texttt{{{}}}", content)
+    }
+
     fn quote(&self, content: Self::Output) -> Self::Output {
         format!("``{}''", content)
     }

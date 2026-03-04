@@ -125,10 +125,10 @@ enum Commands {
     )]
     Check(CheckArgs),
 
-    /// Convert between CSLN formats (YAML, JSON, CBOR)
+    /// Convert between Citum formats (YAML, JSON, CBOR)
     #[command(
-        about = "Convert between CSLN formats (YAML, JSON, CBOR)",
-        long_about = "Convert between CSLN formats (YAML, JSON, CBOR).\n\n\
+        about = "Convert between Citum formats (YAML, JSON, CBOR)",
+        long_about = "Convert between Citum formats (YAML, JSON, CBOR).\n\n\
                       The tool automatically detects the data type (style, bib, locale,\n\
                       or citations) based on file stems and extensions, but this can\n\
                       be explicitly overridden with the --type flag.\n\n\
@@ -158,7 +158,7 @@ enum Commands {
         command: Option<StylesCommands>,
     },
 
-    /// Generate JSON schema for CSLN models
+    /// Generate JSON schema for Citum models
     #[cfg(feature = "schema")]
     Schema(SchemaArgs),
 
@@ -1131,7 +1131,7 @@ fn find_locales_dir(style_path: &str) -> PathBuf {
     PathBuf::from(".")
 }
 
-/// Load a CSLN style from a file path.
+/// Load a Citum style from a file path.
 ///
 /// Selects the deserialiser based on the file extension (`cbor`, `json`, or YAML
 /// for anything else).  When `no_semantics` is `true`, the `semantic_classes`

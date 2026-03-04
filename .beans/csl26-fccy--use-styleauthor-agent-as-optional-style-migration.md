@@ -20,7 +20,7 @@ We could initially just use it for the top 10 or so styles, which we would maint
 
 # Possible example prompt
 
-Use @styleauthor to take the top 10 CSL 1.0 styles and "hand author" CSLN equivalents. 
+Use @styleauthor to take the top 10 CSL 1.0 styles and "hand author" Citum equivalents. 
 
 The target output formatting is whatever citeproc-js produces. 
 

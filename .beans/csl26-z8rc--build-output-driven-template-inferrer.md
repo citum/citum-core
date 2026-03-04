@@ -12,14 +12,14 @@ blocking:
     - csl26-qb6h
 ---
 
-Build a template inference engine that generates CSLN bibliography templates from citeproc-js output, for parent styles beyond the hand-authored top 10.
+Build a template inference engine that generates Citum bibliography templates from citeproc-js output, for parent styles beyond the hand-authored top 10.
 
 Architecture (~500-800 lines):
 - Run citeproc-js with expanded test fixtures per style
 - Use hardened oracle.js component parser to extract structured components
 - Cross-reference extracted components with input reference data to map variables
 - Compare outputs across reference types to infer type-specific suppress overrides
-- Generate CSLN YAML template with correct component ordering and overrides
+- Generate Citum YAML template with correct component ordering and overrides
 - Merge with XML-extracted options to produce complete style
 
 Dependencies:
@@ -29,5 +29,5 @@ Dependencies:
 Key risks:
 - Delimiter inference between components is non-trivial
 - Formatting (italics/bold) detection depends on output format
-- Compensating errors if CSLN processor has bugs
+- Compensating errors if Citum processor has bugs
 - Non-deterministic: different test data may produce different templates

@@ -69,7 +69,7 @@ pub enum AnnotationFormat {
 }
 
 /// Load a list of citations from a file.
-/// Supports CSLN YAML/JSON.
+/// Supports Citum YAML/JSON.
 pub fn load_citations(path: &Path) -> Result<Vec<Citation>, ProcessorError> {
     let bytes = fs::read(path)?;
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
@@ -137,14 +137,14 @@ pub fn load_annotations(path: &Path) -> Result<HashMap<String, String>, Processo
 }
 
 /// Load a bibliography from a file given its path.
-/// Supports CSLN YAML/JSON/CBOR and CSL-JSON.
+/// Supports Citum YAML/JSON/CBOR and CSL-JSON.
 pub fn load_bibliography(path: &Path) -> Result<Bibliography, ProcessorError> {
     let bytes = fs::read(path)?;
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
 
     let mut bib = indexmap::IndexMap::new();
 
-    // Try parsing as CSLN formats
+    // Try parsing as Citum formats
     match ext {
         "cbor" => {
             match ciborium::de::from_reader::<InputBibliography, _>(std::io::Cursor::new(&bytes)) {
@@ -174,7 +174,7 @@ pub fn load_bibliography(path: &Path) -> Result<Bibliography, ProcessorError> {
                 }
                 return Ok(bib);
             }
-            // Try CSLN JSON (InputBibliography)
+            // Try Citum JSON (InputBibliography)
             if let Ok(input_bib) = serde_json::from_slice::<InputBibliography>(&bytes) {
                 for r in input_bib.references {
                     if let Some(id) = r.id() {
@@ -204,7 +204,7 @@ pub fn load_bibliography(path: &Path) -> Result<Bibliography, ProcessorError> {
                 }
             }
 
-            // If all failed, return the error from the most likely format (CSLN JSON)
+            // If all failed, return the error from the most likely format (Citum JSON)
             match serde_json::from_slice::<InputBibliography>(&bytes) {
                 Ok(_) => unreachable!(),
                 Err(e) => Err(ProcessorError::ParseError(
@@ -266,7 +266,7 @@ pub fn load_bibliography(path: &Path) -> Result<Bibliography, ProcessorError> {
                 return Ok(bib);
             }
 
-            // If all failed, return error from CSLN YAML
+            // If all failed, return error from Citum YAML
             match serde_yaml::from_str::<InputBibliography>(&content) {
                 Ok(_) => unreachable!(),
                 Err(e) => Err(ProcessorError::ParseError(

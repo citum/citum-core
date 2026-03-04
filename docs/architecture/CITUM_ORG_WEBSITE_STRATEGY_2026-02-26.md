@@ -74,7 +74,7 @@ citum.org
    - Website: `https://citum.org`
    - Source: `https://github.com/citum/citum-core`
 3. Add a short migration note on the homepage for one release cycle:
-   - “Citum was previously published under CSLN/csl26 naming.”
+   - “Citum was previously published under Citum/csl26 naming.”
 
 ## 7) Release Sequence
 

@@ -33,7 +33,7 @@ Complete infrastructure for type addition policy enforcement.
    - Add to docs/architecture/TYPE_ADDITION_POLICY.md
 
 4. **biblatex Mapping Guide**
-   - Document biblatex @types → CSLN type mapping
+   - Document biblatex @types → Citum type mapping
    - Explain structural (collection/serial) vs flat decisions
    - Add to migration documentation
 

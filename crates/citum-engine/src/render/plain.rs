@@ -47,6 +47,16 @@ impl OutputFormat for PlainText {
         content
     }
 
+    fn code(&self, content: Self::Output) -> Self::Output {
+        // Plain text just passes through as-is
+        content
+    }
+
+    fn verbatim(&self, content: Self::Output) -> Self::Output {
+        // Plain text just passes through as-is
+        content
+    }
+
     fn quote(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;

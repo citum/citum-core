@@ -1,6 +1,6 @@
 ---
 name: Style Request
-about: Request a new CSLN citation style, providing reference materials and examples
+about: Request a new Citum citation style, providing reference materials and examples
 title: 'style: '
 labels: style-request
 assignees: ''

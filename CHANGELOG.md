@@ -200,7 +200,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Close top-10 bibliography deltas ([`05875e6`](https://github.com/citum/citum-core/commit/05875e6a4dd0f0ba0c05ac62fed09fa4d5e1d4ba))
 
-- Rename CSLN to Citum in apa-7th title ([`c1ce553`](https://github.com/citum/citum-core/commit/c1ce553782f26d872fe3462a69e410cecdd62df1))
+- Rename Citum to Citum in apa-7th title ([`c1ce553`](https://github.com/citum/citum-core/commit/c1ce553782f26d872fe3462a69e410cecdd62df1))
 
 - Remove parenthetical from apa-7th title ([`47e50df`](https://github.com/citum/citum-core/commit/47e50df12be1aa7dac52449a0a83e2ce911b722f))
 
@@ -918,7 +918,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **test**
 
-- Use pure CSLN types ([`b78febd`](https://github.com/citum/citum-core/commit/b78febdd8dec29e8c5c7b297b4c228d2e8e7aa6e))
+- Use pure Citum types ([`b78febd`](https://github.com/citum/citum-core/commit/b78febdd8dec29e8c5c7b297b4c228d2e8e7aa6e))
 
 
 
@@ -1088,7 +1088,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **styles**
 
-- Update metadata to CSLN conventions ([`1fac31e`](https://github.com/citum/citum-core/commit/1fac31efa6d0d1820bb5704175b8805388740bf4))
+- Update metadata to Citum conventions ([`1fac31e`](https://github.com/citum/citum-core/commit/1fac31efa6d0d1820bb5704175b8805388740bf4))
 
 - APA integral and config ([`c0010cc`](https://github.com/citum/citum-core/commit/c0010cc6c10ecf608fb15ea7a77d53b896785e4d))
 
@@ -1264,14 +1264,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **csln_core, csln_migrate**
 
-- Add CSLN schema and OptionsExtractor ([`0501dc0`](https://github.com/citum/citum-core/commit/0501dc0b9b3f43b3bac9b5bd9e93dff9309baf5b))
+- Add Citum schema and OptionsExtractor ([`0501dc0`](https://github.com/citum/citum-core/commit/0501dc0b9b3f43b3bac9b5bd9e93dff9309baf5b))
 
 
 **csln_migrate**
 
 - Integrate OptionsExtractor into migration CLI ([`db842a1`](https://github.com/citum/citum-core/commit/db842a135e08694f301f928c354bb6585f53b05f))
 
-- Add TemplateCompiler for clean CSLN output ([`e919140`](https://github.com/citum/citum-core/commit/e9191407a75b5807b85a9f781a597ac76269e010))
+- Add TemplateCompiler for clean Citum output ([`e919140`](https://github.com/citum/citum-core/commit/e9191407a75b5807b85a9f781a597ac76269e010))
 
 - Improve template ordering and author-date citation ([`a80aeee`](https://github.com/citum/citum-core/commit/a80aeeefc6555965855209fe2d8ba43778b3f795))
 
@@ -1448,9 +1448,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **styles**
 
-- Add APA 7th edition CSLN style ([`cceab8c`](https://github.com/citum/citum-core/commit/cceab8ca39a905dfde124c06650d7060fe92880e))
+- Add APA 7th edition Citum style ([`cceab8c`](https://github.com/citum/citum-core/commit/cceab8ca39a905dfde124c06650d7060fe92880e))
 
-- Add APA 7th edition CSLN style with integral/narrative support ([`32341ed`](https://github.com/citum/citum-core/commit/32341ed12f0603d00a9d163dc78fafa75449f2df))
+- Add APA 7th edition Citum style with integral/narrative support ([`32341ed`](https://github.com/citum/citum-core/commit/32341ed12f0603d00a9d163dc78fafa75449f2df))
 
 - Add elsevier-with-titles style ([`3d795d4`](https://github.com/citum/citum-core/commit/3d795d404502917fbff17c6926c00fbd602eae10))
 

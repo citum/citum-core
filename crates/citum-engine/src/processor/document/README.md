@@ -1,6 +1,6 @@
 # Document Processor
 
-This module provides the infrastructure for document-level citation processing. It allows the CSLN processor to scan entire documents (currently Djot), identify citation markers, and replace them with rendered citations or generated footnotes depending on the active style.
+This module provides the infrastructure for document-level citation processing. It allows the Citum processor to scan entire documents (currently Djot), identify citation markers, and replace them with rendered citations or generated footnotes depending on the active style.
 
 ## Architecture
 

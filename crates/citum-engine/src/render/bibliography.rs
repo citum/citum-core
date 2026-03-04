@@ -267,7 +267,7 @@ fn cleanup_dangling_punctuation(output: &mut String) {
         (": .", "."),
         ("; .", "."),
         // NOTE: Removed (".,", ".") pattern - it was too aggressive and removed legitimate
-        // component suffixes like "S.," from author initials. In CSLN, component suffixes are
+        // component suffixes like "S.," from author initials. In Citum, component suffixes are
         // explicit and well-defined, so we don't have the CSL 1.0 dual-punctuation issue.
         (" ,", ","),
         (" ;", ";"),

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Validate all CSLN style files parse correctly with current schema version
+# Validate all Citum style files parse correctly with current schema version
 #
 # Usage: ./scripts/validate-schema.sh
 

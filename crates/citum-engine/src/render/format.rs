@@ -42,12 +42,18 @@ pub trait OutputFormat: Default + Clone {
     /// Render content in small capitals.
     fn small_caps(&self, content: Self::Output) -> Self::Output;
 
+    /// Render content as inline code.
+    fn code(&self, content: Self::Output) -> Self::Output;
+
+    /// Render content in verbatim (monospace, literal) style.
+    fn verbatim(&self, content: Self::Output) -> Self::Output;
+
     /// Render content enclosed in quotation marks.
     fn quote(&self, content: Self::Output) -> Self::Output;
 
     /// Apply outer prefix and suffix strings to the content.
     ///
-    /// These are typically the "prefix" and "suffix" fields from the CSLN style.
+    /// These are typically the "prefix" and "suffix" fields from the Citum style.
     fn affix(&self, prefix: &str, content: Self::Output, suffix: &str) -> Self::Output;
 
     /// Apply inner prefix and suffix strings to the content.

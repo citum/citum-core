@@ -3,7 +3,7 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-//! Locale definitions for CSLN.
+//! Locale definitions for Citum.
 //!
 //! Locales provide language-specific terms, date formats, and punctuation rules
 //! for citation formatting.

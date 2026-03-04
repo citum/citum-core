@@ -3,7 +3,7 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-//! Compiles legacy CslnNode trees into CSLN TemplateComponents.
+//! Compiles legacy CslnNode trees into Citum TemplateComponents.
 //!
 //! This is the final step in migration: converting the upsampled node tree
 //! into the clean, declarative TemplateComponent format.

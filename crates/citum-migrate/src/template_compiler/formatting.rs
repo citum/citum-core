@@ -22,7 +22,7 @@ impl TemplateCompiler {
         let (mut wrap, remaining_prefix, remaining_suffix) =
             Self::infer_wrap_from_affixes(&fmt.prefix, &fmt.suffix);
 
-        // quotes="true" in CSL maps to wrap: quotes in CSLN
+        // quotes="true" in CSL maps to wrap: quotes in Citum
         if fmt.quotes == Some(true) {
             wrap = Some(citum_schema::template::WrapPunctuation::Quotes);
         }
@@ -57,13 +57,15 @@ impl TemplateCompiler {
             suppress: None,
             initialize_with: None,
             strip_periods: fmt.strip_periods,
+            verbatim: None,
+            code: None,
         }
     }
 
     /// Infer wrap type from prefix/suffix patterns.
     ///
     /// CSL 1.0 uses `prefix="("` and `suffix=")"` for parentheses wrapping.
-    /// CSLN prefers explicit `wrap: parentheses` for cleaner representation.
+    /// Citum prefers explicit `wrap: parentheses` for cleaner representation.
     ///
     /// Returns (wrap, remaining_prefix, remaining_suffix) where the wrap chars
     /// have been extracted and remaining affixes are returned.

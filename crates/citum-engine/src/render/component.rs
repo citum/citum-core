@@ -103,6 +103,12 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
     if rendering.small_caps == Some(true) {
         output = fmt.small_caps(output);
     }
+    if rendering.verbatim == Some(true) {
+        output = fmt.verbatim(output);
+    }
+    if rendering.code == Some(true) {
+        output = fmt.code(output);
+    }
     if rendering.quote == Some(true) {
         output = fmt.quote(output);
     }

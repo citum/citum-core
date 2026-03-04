@@ -1,15 +1,15 @@
-# Contributing to CSLN
+# Contributing to Citum
 
-CSLN (Citation Style Language Next) is a declarative, type-safe Rust implementation for managing and processing citation styles. We welcome contributions from domain experts, style authors, developers, and community members.
+Citum (Citation Style Language Next) is a declarative, type-safe Rust implementation for managing and processing citation styles. We welcome contributions from domain experts, style authors, developers, and community members.
 
 ## How to Contribute
 
-CSLN follows an **AI-first development model** that values expertise over implementation speed. The most impactful contributions come from those who understand citation semantics:
+Citum follows an **AI-first development model** that values expertise over implementation speed. The most impactful contributions come from those who understand citation semantics:
 
 **Domain Experts & Style Authors:**
 - Surface real-world gaps: describe formatting requirements or edge cases that current systems handle poorly
 - Provide contextual resources: share style guides, official manuals, and sample documents
-- Report pain points: open GitHub issues describing what is difficult in the CSLN model
+- Report pain points: open GitHub issues describing what is difficult in the Citum model
 - Refine instructions: suggest improvements to agent personas and skills
 
 **Developers:**
@@ -84,4 +84,4 @@ See [CLAUDE.md](./CLAUDE.md) for maintainer instructions:
 
 ---
 
-Thank you for contributing to CSLN!
+Thank you for contributing to Citum!

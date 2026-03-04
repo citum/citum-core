@@ -29,6 +29,6 @@ grouping references by their primary author key.
 
 Discovered during MLA style authoring (oracle: 11/13 citations, failing items:
 locator-section-with-suffix and single-with-prefix-and-suffix).
-Both show title in CSLN output but not in citeproc-js oracle output, confirming
+Both show title in Citum output but not in citeproc-js oracle output, confirming
 the items have only one work per author in the fixture.
 

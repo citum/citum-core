@@ -1,4 +1,4 @@
-//! Template resolution for CSLN migration.
+//! Template resolution for Citum migration.
 //!
 //! Resolves bibliography and citation templates from multiple sources:
 //! 1. Hand-authored YAML files (`examples/{style-name}-style.yaml`)

@@ -83,9 +83,9 @@ pub struct InputBibliographyInfo {
 /// A named template (reusable sequence of components).
 pub type Template = Vec<TemplateComponent>;
 
-/// The new CSLN Style model.
+/// The new Citum Style model.
 ///
-/// This is the target schema for CSLN, featuring declarative options
+/// This is the target schema for Citum, featuring declarative options
 /// and simple template components instead of procedural conditionals.
 #[derive(Debug, Default, Deserialize, Serialize, Clone)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]

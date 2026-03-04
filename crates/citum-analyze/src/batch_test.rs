@@ -5,7 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 //! Batch Migration Tester
 //!
-//! Runs CSL 1.0 → CSLN migration on all styles and reports success rates.
+//! Runs CSL 1.0 → Citum migration on all styles and reports success rates.
 //!
 //! Usage: csln_batch_test <styles_dir> [--verbose] [--sample N]
 

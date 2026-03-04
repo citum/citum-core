@@ -26,7 +26,7 @@ impl Upsampler {
         }
     }
 
-    /// The entry point for converting a flattened legacy tree into CSLN nodes.
+    /// The entry point for converting a flattened legacy tree into Citum nodes.
     pub fn upsample_nodes(&self, legacy_nodes: &[LNode]) -> Vec<csln::CslnNode> {
         let mut csln_nodes = Vec::new();
         let mut i = 0;

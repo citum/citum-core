@@ -3,7 +3,7 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-//! Embedded CSLN style YAML files for priority citation styles.
+//! Embedded Citum style YAML files for priority citation styles.
 //!
 //! These are baked into the binary at compile time via `include_bytes!`,
 //! allowing the CLI to load styles without a file path using `--builtin`.

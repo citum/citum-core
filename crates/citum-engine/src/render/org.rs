@@ -51,6 +51,22 @@ impl OutputFormat for OrgOutputFormat {
         format!("~{}~", content)
     }
 
+    /// Render content as inline code (org-mode uses ~text~).
+    fn code(&self, content: Self::Output) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        format!("~{}~", content)
+    }
+
+    /// Render content in verbatim (monospace) style (org-mode uses =text=).
+    fn verbatim(&self, content: Self::Output) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        format!("={}=", content)
+    }
+
     fn quote(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;

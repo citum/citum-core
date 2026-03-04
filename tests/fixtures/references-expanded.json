@@ -348,7 +348,7 @@
     "id": "ITEM-28",
     "class": "monograph",
     "type": "personal_communication",
-    "title": "Discussion on CSLN Schema Design",
+    "title": "Discussion on Citum Schema Design",
     "author": [{ "family": "Smith", "given": "Patricia" }],
     "issued": { "date-parts": [[2024, 2, 7]] },
     "type-translated": "Email",

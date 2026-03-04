@@ -113,13 +113,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let enable_provenance = debug_variable.is_some();
     let tracker = ProvenanceTracker::new(enable_provenance);
 
-    eprintln!("Migrating {} to CSLN...", path);
+    eprintln!("Migrating {} to Citum...", path);
 
     let text = fs::read_to_string(path)?;
     let doc = Document::parse(&text)?;
     let legacy_style = parse_style(doc.root_element())?;
 
-    // 0. Extract global options (new CSLN Config)
+    // 0. Extract global options (new Citum Config)
     let mut options = OptionsExtractor::extract(&legacy_style);
     apply_preset_extractions(&mut options);
 
@@ -412,7 +412,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ..Default::default()
         });
 
-    // Preserve legacy bibliography sort semantics at the CSLN bibliography spec level.
+    // Preserve legacy bibliography sort semantics at the Citum bibliography spec level.
     // This is required for numeric alphabetical variants where citation numbers
     // follow bibliography order rather than reference registry order.
     let bibliography_sort = resolve_migrated_bibliography_sort(
@@ -472,7 +472,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn print_help(program_name: &str) {
-    eprintln!("CSLN style migration tool");
+    eprintln!("Citum style migration tool");
     eprintln!();
     eprintln!("Usage:");
     eprintln!("  {program_name} [STYLE.csl] [options]");

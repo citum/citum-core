@@ -77,6 +77,20 @@ impl OutputFormat for Typst {
         format!("#smallcaps[{}]", content)
     }
 
+    fn code(&self, content: Self::Output) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        format!("`{}`", content)
+    }
+
+    fn verbatim(&self, content: Self::Output) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        format!("#raw(\"{}\")", Self::escape_string(&content))
+    }
+
     fn quote(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;

@@ -40,7 +40,7 @@ Provide optional CSS and JavaScript libraries to enhance HTML output with intera
 ```
 HTML Document
     ↓
-CSLN HTML Renderer (semantic markup)
+Citum HTML Renderer (semantic markup)
     ↓
 HTML with class/id attributes
     ↓
@@ -127,12 +127,12 @@ docs/
 <!DOCTYPE html>
 <html>
 <head>
-  <!-- Optional: Include CSLN interactive enhancements -->
+  <!-- Optional: Include Citum interactive enhancements -->
   <link rel="stylesheet" href="csln-interactive.css">
   <script src="csln-interactive.js" defer></script>
 </head>
 <body>
-  <!-- CSLN-generated HTML with semantic markup -->
+  <!-- Citum-generated HTML with semantic markup -->
   <article>
     <p>Citation here <span class="csln-citation" data-ref="doe2023">...</span></p>
   </article>
@@ -162,7 +162,7 @@ For advanced users who want programmatic control:
 
 ```javascript
 // Initialize with custom options
-CSLN.init({
+Citum.init({
   smoothScroll: true,
   tooltipDelay: 300,
   highlightDuration: 2000,
@@ -170,8 +170,8 @@ CSLN.init({
 });
 
 // Manual control
-CSLN.scrollToCitation('ref-doe2023');
-CSLN.highlightEntry('ref-doe2023');
+Citum.scrollToCitation('ref-doe2023');
+Citum.highlightEntry('ref-doe2023');
 ```
 
 ## Browser Support
@@ -217,7 +217,7 @@ Low-Medium (6 weeks):
 * **Risk:** Large bundle size impacts page load
   - **Mitigation:** Minify + gzip, lazy load JS, use efficient selectors
 * **Risk:** JavaScript conflicts with existing page scripts
-  - **Mitigation:** Namespace all functions under `CSLN` object, use event delegation
+  - **Mitigation:** Namespace all functions under `Citum` object, use event delegation
 * **Risk:** Accessibility issues with dynamic tooltips
   - **Mitigation:** Use ARIA live regions, test with screen readers early
 * **Risk:** Browser compatibility (older browsers)

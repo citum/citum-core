@@ -21,22 +21,22 @@ updated_at: 2026-02-16T09:41:26Z
 **Architecture Decision - Dual Test Modes**:
 
 **Integration Mode** (current): Parse CSL XML → migrate → validate
-**Processor Mode** (new): Use native CSLN structs, skip migration
+**Processor Mode** (new): Use native Citum structs, skip migration
 
 Add --mode flag to update_disambiguation_tests.py
 
 **Implementation Tasks**:
 
 1. Add --mode processor flag to update_disambiguation_tests.py
-2. Extract native CSLN structures from compiled Style (skip XML in tests)
-3. Serialize CSLN Reference/Style/Citation as inline Rust using serde_json::to_string_pretty
+2. Extract native Citum structures from compiled Style (skip XML in tests)
+3. Serialize Citum Reference/Style/Citation as inline Rust using serde_json::to_string_pretty
 4. Create crates/csln_processor/tests/disambiguation_native.rs for processor-only tests
 5. Extract ~10-15 edge cases: year suffix baseline, name expansion priority, given name expansion, combined strategies, missing author fallback
 6. Mark with #[ignore] initially
 7. Document in docs/reference/DISAMBIGUATION.md
 
 **Assumptions for @builder**:
-- CSLN types implement Serialize (confirmed)
+- Citum types implement Serialize (confirmed)
 - Native tests use #[ignore] initially for baseline
 - Integration tests (XML-based) unchanged, new mode additive
 - Native mode skips compile_style_from_xml, expects pre-compiled Style

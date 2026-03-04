@@ -16,7 +16,7 @@ bibliography, 11/13 citations.
 
 ## Missing contributor roles
 
-MLA uses contributor roles not yet in CSLN schema:
+MLA uses contributor roles not yet in Citum schema:
 - director -- needed for film entries (Entry 30: "Directed by Louis Lumiere")
 - interviewer -- needed for interview entries (Entry 31: "Interview by Stephen Colbert")
 
@@ -26,7 +26,7 @@ then the MLA bibliography template can use form: verb with these roles.
 ## Abbreviated month date format
 
 Entry 31 oracle output: "10 Nov. 2023" -- day + abbreviated month + year.
-Current CSLN date options support month: long or month: short but the
+Current Citum date options support month: long or month: short but the
 MLA format requires a day-month-year order with abbreviated month
 (Jan., Feb., Mar., etc.).
 
@@ -34,7 +34,7 @@ MLA format requires a day-month-year order with abbreviated month
 
 Entries 30 and 31 include media type labels ("Short film", "Film",
 "Video interview") from the reference genre or medium field.
-CSLN needs a variable: genre or variable: medium component to render these.
+Citum needs a variable: genre or variable: medium component to render these.
 
 ## Patent number field
 

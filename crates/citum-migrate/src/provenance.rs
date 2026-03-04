@@ -43,7 +43,7 @@ pub enum TransformationEvent {
         macro_name: String,
         source: SourceLocation,
     },
-    /// Upsampled to CSLN representation
+    /// Upsampled to Citum representation
     Upsampled { from_type: String, to_type: String },
     /// Merged with another node
     Merged {

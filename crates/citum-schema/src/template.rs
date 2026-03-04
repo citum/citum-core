@@ -3,9 +3,9 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-//! Template components for CSLN styles.
+//! Template components for Citum styles.
 //!
-//! This module defines the declarative template language for CSLN.
+//! This module defines the declarative template language for Citum.
 //! Unlike CSL 1.0's procedural rendering elements, these components
 //! are simple, typed instructions that the processor interprets.
 //!
@@ -89,6 +89,12 @@ pub struct Rendering {
     /// Strip trailing periods from rendered value.
     #[serde(skip_serializing_if = "Option::is_none", rename = "strip-periods")]
     pub strip_periods: Option<bool>,
+    /// Render the value in verbatim (monospace, literal) style.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub verbatim: Option<bool>,
+    /// Render the value as inline code.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub code: Option<bool>,
 }
 
 impl Rendering {
@@ -111,6 +117,8 @@ impl Rendering {
             suppress,
             initialize_with,
             strip_periods,
+            verbatim,
+            code,
         );
     }
 }
@@ -152,7 +160,7 @@ impl TypeSelector {
     ///
     /// Type names are compared after normalizing underscores to hyphens, so
     /// "legal_case" and "legal-case" are treated as equivalent (matching both
-    /// CSL 1.0 underscore convention and CSLN hyphen convention).
+    /// CSL 1.0 underscore convention and Citum hyphen convention).
     ///
     /// The special keyword "all" always matches any reference type.
     pub fn matches(&self, ref_type: &str) -> bool {

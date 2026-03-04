@@ -29,7 +29,7 @@ Agent transitions and visual diffs — COMPLETED
 
 ### OPT-3.4: Visual Component Diff (oracle-migration.js)
 - ✅ Table-based mismatch analysis with box-drawing characters
-- ✅ Per-entry ORACLE vs CSLN side-by-side comparison
+- ✅ Per-entry ORACLE vs Citum side-by-side comparison
 - ✅ Text wrapping for long entries
 - ✅ Summary scoring (X/7 citations, X/7 bibliography, overall %)
 - ✅ Clear PASS/FAIL verdict

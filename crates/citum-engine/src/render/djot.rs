@@ -49,6 +49,20 @@ impl OutputFormat for Djot {
         format!("[{}]{{.small-caps}}", content)
     }
 
+    fn code(&self, content: Self::Output) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        format!("`{}`", content)
+    }
+
+    fn verbatim(&self, content: Self::Output) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        format!("[{}]{{.verbatim}}", content)
+    }
+
     fn quote(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;
