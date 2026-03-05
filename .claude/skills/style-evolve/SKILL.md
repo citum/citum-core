@@ -1,7 +1,11 @@
 ---
 name: style-evolve
 type: user-invocable, agent-invocable
-description: Single human-facing command for Citum style co-evolution (style + processor). Use for all style work: upgrade (improve existing), migrate (CSL 1.0 to Citum), create (from source evidence). Fidelity is the hard gate; SQI is secondary.
+description: Single human-facing command for all Citum style work. Use whenever someone
+  asks to fix, improve, convert, or create a citation style — even if they don't say
+  "style-evolve". Routes to upgrade (fix existing Citum style), migrate (CSL 1.0 to
+  Citum), or create (new style from scratch). Always use this rather than calling
+  style-maintain or style-migrate-enhance directly.
 model: sonnet
 routes-to: style-maintain, style-migrate-enhance, style-qa
 ---
@@ -9,57 +13,84 @@ routes-to: style-maintain, style-migrate-enhance, style-qa
 # Style Evolve
 
 ## Human UX (Public Entry Point)
-Use this command for all style work:
-- `/style-evolve upgrade ...`
-- `/style-evolve migrate ...`
-- `/style-evolve create ...`
 
-Do not require users to choose internal pipeline skills.
+```
+/style-evolve upgrade <style-path>    # fix or improve an existing Citum style
+/style-evolve migrate <csl-path>      # convert CSL 1.0 → Citum
+/style-evolve create                  # new style from scratch or spec (see below)
+```
+
+Do not ask users to call internal skills directly.
+
+## Mode Disambiguation
+
+| Situation | Mode |
+|---|---|
+| Existing Citum style has a bug or formatting issue | `upgrade` |
+| A CSL 1.0 `.csl` file exists and needs converting | `migrate` |
+| No existing style; building from a spec or samples | `create` |
+
+If the mode is unclear, ask exactly one question: *"Is there an existing Citum style
+to fix, a CSL 1.0 file to convert, or are we building from scratch?"*
 
 ## Modes
-1. `upgrade`
-- Improve existing Citum styles.
-- Route to `../style-maintain/SKILL.md`.
 
-2. `migrate`
-- Convert one or more CSL 1.0 styles to high-fidelity Citum.
-- Route to `../style-migrate-enhance/SKILL.md`.
+### 1. upgrade
+Route to `../style-maintain/SKILL.md`.
 
-3. `create`
-- Build a style from source evidence.
-- Accept one or more sources:
-  - `--source-url`
-  - `--source-text`
-  - `--source-issue`
-  - `--source-file`
-- Default planner path: `@dstyleplan` -> `@styleplan` -> `@builder`.
+### 2. migrate
+Route to `../style-migrate-enhance/SKILL.md`.
+
+### 3. create *(aspirational — not yet fully supported)*
+Build a new Citum style from source evidence. Escalate to `@dplanner` for design.
+Accepted source hints: `--source-url`, `--source-text`, `--source-issue`, `--source-file`.
 
 ## Co-Evolution Rule (Mandatory)
-Every iteration must assess two tracks:
-- Track A: style/template edits
-- Track B: reusable code opportunities (presets, missing features, processor fixes)
 
-A task is not complete until Track B is explicitly marked as:
-- implemented, or
-- deferred with rationale.
+Every style iteration must also assess processor/preset opportunities — not just fix
+the style. This is not a checkbox; it requires a delivered artifact.
+
+At the end of every task, produce this table:
+
+```
+## Code Opportunities
+
+| Description | Type | Action |
+|---|---|---|
+| <what was observed> | preset / missing-feature / processor-defect | implemented / deferred: <reason> |
+```
+
+**Types:**
+- **preset** — a pattern repeated across styles that could become a shared preset
+- **missing-feature** — behavior the processor can't express; requires engine work
+- **processor-defect** — incorrect output from a valid template; requires an engine fix
+
+**Rules:**
+- Every task must include this table, even when empty (write "no opportunities
+  observed this iteration" as the only row).
+- `deferred` requires a rationale (e.g., "only needed in this one style" or "tracked
+  in csl26-xxxx").
+- A missing or uncommented-empty table means the task is **incomplete**.
 
 ## Shared Gates
+
 - Fidelity regression is never allowed.
-- SQI is optimization only after fidelity.
+- SQI is optimization-only after fidelity is stable.
 - All modes must pass `../style-qa/SKILL.md` before completion.
-- If docs/beans are changed, `./scripts/check-docs-beans-hygiene.sh` must pass.
+- If docs or beans are changed: `./scripts/check-docs-beans-hygiene.sh` must pass.
 
 ## Output Contract
-- Fidelity metrics (citations and bibliography pass counts).
-- SQI delta.
-- Code-opportunity table:
-  - preset candidate
-  - missing feature
-  - processor defect
-  - defer rationale
+
+Every completed task delivers:
+
+1. Fidelity metrics: citations `N/M` and bibliography `N/M`
+2. SQI delta: `+N`, `-N`, or `±0`
+3. Code Opportunities table (mandatory — see above)
+4. QA verdict from `../style-qa/SKILL.md`
 
 ## Internal Skills (Pipeline Components)
-- `style-maintain`
-- `style-migrate-enhance`
-- `style-qa`
-- `pr-workflow-fast`
+
+- `style-maintain` — targeted fixes to existing Citum styles
+- `style-migrate-enhance` — CSL 1.0 batch migration
+- `style-qa` — QA gate
+- `pr-workflow-fast` — PR packaging
