@@ -215,6 +215,10 @@ pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
             entry_output.push_str(&indented_text);
         }
 
+        if visible_text(&entry_output).trim().is_empty() {
+            continue;
+        }
+
         // Resolve entry URL if whole-entry linking is enabled
         let entry_url = proc_template
             .first()
