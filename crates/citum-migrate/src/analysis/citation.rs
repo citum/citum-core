@@ -37,21 +37,107 @@ fn find_group_wrapping(
         if let CslNode::Group(g) = node {
             match (g.prefix.as_deref(), g.suffix.as_deref()) {
                 (Some("("), Some(")")) => {
-                    return Some((Some(WrapPunctuation::Parentheses), None, None));
-                }
-                (Some("["), Some("]")) => {
-                    return Some((Some(WrapPunctuation::Brackets), None, None));
-                }
-                _ => {
-                    // Recurse into nested groups
-                    if let Some(wrap) = find_group_wrapping(&g.children) {
-                        return Some(wrap);
+                    if group_is_primary_citation_cluster(&g.children) {
+                        return Some((Some(WrapPunctuation::Parentheses), None, None));
                     }
                 }
+                (Some("["), Some("]")) => {
+                    if group_is_primary_citation_cluster(&g.children) {
+                        return Some((Some(WrapPunctuation::Brackets), None, None));
+                    }
+                }
+                _ => {}
+            }
+            // Recurse into nested groups
+            if let Some(wrap) = find_group_wrapping(&g.children) {
+                return Some(wrap);
             }
         }
     }
     None
+}
+
+fn group_is_primary_citation_cluster(nodes: &[CslNode]) -> bool {
+    nodes_contain_citation_number(nodes)
+        || (nodes_contain_author(nodes) && nodes_contain_date(nodes))
+}
+
+fn nodes_contain_citation_number(nodes: &[CslNode]) -> bool {
+    nodes.iter().any(node_contains_citation_number)
+}
+
+fn node_contains_citation_number(node: &CslNode) -> bool {
+    match node {
+        CslNode::Text(text) => text.variable.as_deref() == Some("citation-number"),
+        CslNode::Number(number) => number.variable == "citation-number",
+        CslNode::Group(group) => nodes_contain_citation_number(&group.children),
+        CslNode::Choose(choose) => {
+            nodes_contain_citation_number(&choose.if_branch.children)
+                || choose
+                    .else_if_branches
+                    .iter()
+                    .any(|branch| nodes_contain_citation_number(&branch.children))
+                || choose
+                    .else_branch
+                    .as_ref()
+                    .is_some_and(|children| nodes_contain_citation_number(children))
+        }
+        _ => false,
+    }
+}
+
+fn nodes_contain_author(nodes: &[CslNode]) -> bool {
+    nodes.iter().any(node_contains_author)
+}
+
+fn node_contains_author(node: &CslNode) -> bool {
+    match node {
+        CslNode::Names(_) => true,
+        CslNode::Text(text) => text
+            .macro_name
+            .as_deref()
+            .is_some_and(|macro_name| macro_name.contains("author")),
+        CslNode::Group(group) => nodes_contain_author(&group.children),
+        CslNode::Choose(choose) => {
+            nodes_contain_author(&choose.if_branch.children)
+                || choose
+                    .else_if_branches
+                    .iter()
+                    .any(|branch| nodes_contain_author(&branch.children))
+                || choose
+                    .else_branch
+                    .as_ref()
+                    .is_some_and(|children| nodes_contain_author(children))
+        }
+        _ => false,
+    }
+}
+
+fn nodes_contain_date(nodes: &[CslNode]) -> bool {
+    nodes.iter().any(node_contains_date)
+}
+
+fn node_contains_date(node: &CslNode) -> bool {
+    match node {
+        CslNode::Date(_) => true,
+        CslNode::Text(text) => text
+            .macro_name
+            .as_deref()
+            .is_some_and(|macro_name| macro_name.contains("year") || macro_name.contains("date")),
+        CslNode::Group(group) => nodes_contain_date(&group.children),
+        CslNode::Choose(choose) => {
+            nodes_contain_date(&choose.if_branch.children)
+                || choose
+                    .else_if_branches
+                    .iter()
+                    .any(|branch| nodes_contain_date(&branch.children))
+                || choose
+                    .else_branch
+                    .as_ref()
+                    .is_some_and(|children| nodes_contain_date(children))
+        }
+        _ => false,
+    }
 }
 
 /// Extract the intra-citation delimiter from the layout.

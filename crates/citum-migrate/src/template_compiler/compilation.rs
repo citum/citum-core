@@ -262,33 +262,40 @@ impl TemplateCompiler {
             result.push((merged, min_order));
         }
 
-        // Debug: Print source orders before sorting
-        eprintln!("=== Component source orders before sorting ===");
-        for (comp, order) in &result {
-            let comp_type = match comp {
-                TemplateComponent::Contributor(c) => format!("Contributor({:?})", c.contributor),
-                TemplateComponent::Date(d) => format!("Date({:?})", d.date),
-                TemplateComponent::Title(t) => format!("Title({:?})", t.title),
-                TemplateComponent::Number(n) => format!("Number({:?})", n.number),
-                TemplateComponent::Variable(v) => format!("Variable({:?})", v.variable),
-                TemplateComponent::List(_) => "List".to_string(),
-                _ => "Other".to_string(),
-            };
-            eprintln!("  {} -> order: {:?}", comp_type, order);
+        if super::migrate_debug_enabled() {
+            eprintln!("=== Component source orders before sorting ===");
+            for (comp, order) in &result {
+                let comp_type = match comp {
+                    TemplateComponent::Contributor(c) => {
+                        format!("Contributor({:?})", c.contributor)
+                    }
+                    TemplateComponent::Date(d) => format!("Date({:?})", d.date),
+                    TemplateComponent::Title(t) => format!("Title({:?})", t.title),
+                    TemplateComponent::Number(n) => format!("Number({:?})", n.number),
+                    TemplateComponent::Variable(v) => format!("Variable({:?})", v.variable),
+                    TemplateComponent::List(_) => "List".to_string(),
+                    _ => "Other".to_string(),
+                };
+                eprintln!("  {} -> order: {:?}", comp_type, order);
+            }
         }
 
         // Sort result by source_order to preserve macro call order
         result.sort_by_key(|(_, order)| order.unwrap_or(usize::MAX));
 
-        eprintln!("=== After sorting ===");
-        for (comp, order) in &result {
-            let comp_type = match comp {
-                TemplateComponent::Contributor(c) => format!("Contributor({:?})", c.contributor),
-                TemplateComponent::Date(d) => format!("Date({:?})", d.date),
-                TemplateComponent::Title(t) => format!("Title({:?})", t.title),
-                _ => "...".to_string(),
-            };
-            eprintln!("  {} -> order: {:?}", comp_type, order);
+        if super::migrate_debug_enabled() {
+            eprintln!("=== After sorting ===");
+            for (comp, order) in &result {
+                let comp_type = match comp {
+                    TemplateComponent::Contributor(c) => {
+                        format!("Contributor({:?})", c.contributor)
+                    }
+                    TemplateComponent::Date(d) => format!("Date({:?})", d.date),
+                    TemplateComponent::Title(t) => format!("Title({:?})", t.title),
+                    _ => "...".to_string(),
+                };
+                eprintln!("  {} -> order: {:?}", comp_type, order);
+            }
         }
 
         // Extract just the components (drop the ordering metadata)

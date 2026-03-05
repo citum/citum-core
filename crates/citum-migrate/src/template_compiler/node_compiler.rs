@@ -187,8 +187,10 @@ impl TemplateCompiler {
             let overrides = if var.overrides.is_empty() {
                 None
             } else {
-                for (t, fmt) in &var.overrides {
-                    eprintln!("  {:?} -> {:?}", t, fmt);
+                if super::migrate_debug_enabled() {
+                    for (t, fmt) in &var.overrides {
+                        eprintln!("  {:?} -> {:?}", t, fmt);
+                    }
                 }
                 Some(
                     var.overrides
