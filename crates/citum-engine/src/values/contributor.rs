@@ -942,13 +942,13 @@ pub fn format_single_name(
 
             // Determine how to render the given name based on NameForm.
             // If name_form is None and initialize_with is present, treat as Initials for backward compat.
-            let effective_form = match name_form {
+            let effective_name_form = match name_form {
                 Some(f) => f,
                 None if initialize_with.is_some() => NameForm::Initials,
                 _ => NameForm::Full,
             };
 
-            let given_part = match effective_form {
+            let given_part = match effective_name_form {
                 NameForm::FamilyOnly => String::new(),
                 NameForm::Initials => {
                     // Use initialize_with if provided, else default to ". "
@@ -972,8 +972,11 @@ pub fn format_single_name(
                                 current_part.clear();
                             }
                             // Preserve only non-whitespace separators (e.g., hyphen for J.-P.).
-                            // Whitespace separators are represented by `initialize_with` itself.
+                            // Strip any trailing separator space before the hyphen so we get
+                            // "J.-P." rather than "J. -P." when init contains a trailing space.
                             if !c.is_whitespace() {
+                                let trimmed_len = result.trim_end().len();
+                                result.truncate(trimmed_len);
                                 result.push(c);
                             }
                         } else {

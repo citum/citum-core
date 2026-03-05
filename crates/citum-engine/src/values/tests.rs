@@ -543,6 +543,127 @@ fn test_initialize_with_hyphen_guard() {
     assert_eq!(hyphen_disabled, "Kuhn, J.");
 }
 
+/// Tests NameForm variants: Full, FamilyOnly, Initials, and backward-compat defaulting.
+#[test]
+fn test_name_form_variants() {
+    use citum_schema::options::contributors::NameForm;
+
+    let name = FlatName {
+        family: Some("Smith".to_string()),
+        given: Some("John David".to_string()),
+        ..Default::default()
+    };
+
+    // Full: render complete given names
+    let full = contributor::format_single_name(
+        &name,
+        &ContributorForm::Long,
+        0,
+        &None,
+        None,
+        None,
+        None,
+        Some(NameForm::Full),
+        None,
+        None,
+        false,
+    );
+    assert_eq!(full, "John David Smith");
+
+    // FamilyOnly: suppress given names entirely
+    let family_only = contributor::format_single_name(
+        &name,
+        &ContributorForm::Long,
+        0,
+        &None,
+        None,
+        None,
+        None,
+        Some(NameForm::FamilyOnly),
+        None,
+        None,
+        false,
+    );
+    assert_eq!(family_only, "Smith");
+
+    // Initials with explicit initialize_with
+    let init_str = ". ".to_string();
+    let initials = contributor::format_single_name(
+        &name,
+        &ContributorForm::Long,
+        0,
+        &None,
+        None,
+        Some(&init_str),
+        None,
+        Some(NameForm::Initials),
+        None,
+        None,
+        false,
+    );
+    assert_eq!(initials, "J. D. Smith");
+
+    // Initials with defaulted initialize_with (None → ". ")
+    let initials_default = contributor::format_single_name(
+        &name,
+        &ContributorForm::Long,
+        0,
+        &None,
+        None,
+        None,
+        None,
+        Some(NameForm::Initials),
+        None,
+        None,
+        false,
+    );
+    assert_eq!(initials_default, "J. D. Smith");
+
+    // Backward compat: name_form=None + initialize_with=Some → treated as Initials
+    let compat = contributor::format_single_name(
+        &name,
+        &ContributorForm::Long,
+        0,
+        &None,
+        None,
+        Some(&init_str),
+        None,
+        None, // name_form absent
+        None,
+        None,
+        false,
+    );
+    assert_eq!(compat, "J. D. Smith");
+}
+
+/// Tests that Initials + defaulted separator produces correct hyphenated output.
+#[test]
+fn test_name_form_initials_hyphen_default_separator() {
+    use citum_schema::options::contributors::NameForm;
+
+    let name = FlatName {
+        family: Some("Sartre".to_string()),
+        given: Some("Jean-Paul".to_string()),
+        ..Default::default()
+    };
+
+    // Default separator ". " should produce "J.-P." not "J. -P."
+    let result = contributor::format_single_name(
+        &name,
+        &ContributorForm::Long,
+        0,
+        &None,
+        None,
+        None, // initialize_with=None → defaults to ". "
+        None,
+        Some(NameForm::Initials),
+        None,
+        None,
+        false,
+    );
+    assert_eq!(result, "J.-P. Sartre");
+}
+
 /// Tests the behavior of test_template_list_suppression.
 #[test]
 fn test_template_list_suppression() {

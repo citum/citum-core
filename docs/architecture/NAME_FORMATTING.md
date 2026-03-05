@@ -49,8 +49,8 @@ pub enum NameForm {
     /// Used for subsequent mentions in Chicago/Turabian note styles
     FamilyOnly,
 
-    /// Render initialized given names using `initialize_with` separator
-    /// If `initialize_with` is None, defaults to ". " (e.g., "J. Smith")
+    /// Render initialized given names using `initialize-with` separator
+    /// If `initialize-with` is None, defaults to ". " (e.g., "J. Smith")
     /// Empty string gives compact initials: "JD Smith"
     Initials,
 }
@@ -72,19 +72,19 @@ For a contributor named "John David Smith":
 
 The effective `NameForm` is resolved through a three-layer configuration hierarchy:
 
-1. **Global level** (`options.contributors.name_form`): Default for all contexts
-2. **Scope level** (`citation.options.contributors.name_form`, `bibliography.options.contributors.name_form`): Per-context override
-3. **Position/Mode level** (`citation.subsequent.options.contributors.name_form`, `citation.integral.options.contributors.name_form`): Per-position or per-mode override
+1. **Global level** (`options.contributors.name-form`): Default for all contexts
+2. **Scope level** (`citation.options.contributors.name-form`, `bibliography.options.contributors.name-form`): Per-context override
+3. **Position/Mode level** (`citation.subsequent.options.contributors.name-form`, `citation.integral.options.contributors.name-form`): Per-position or per-mode override
 
 **Resolution algorithm**:
 ```
-if position-specific name_form exists:
-    use position-specific name_form
-else if context-specific name_form exists:
-    use context-specific name_form
-else if global name_form exists:
-    use global name_form
-else if initialize_with is set:
+if position-specific name-form exists:
+    use position-specific name-form
+else if context-specific name-form exists:
+    use context-specific name-form
+else if global name-form exists:
+    use global name-form
+else if initialize-with is set:
     treat as NameForm::Initials (backward compat)
 else:
     use NameForm::Full (default)
@@ -116,14 +116,14 @@ citation:
 
 ## Initialization Rules
 
-The `initialize_with` and `initialize_with_hyphen` fields are **formatting details** for the `NameForm::Initials` variant, not a switch themselves:
+The `initialize-with` and `initialize-with_hyphen` fields are **formatting details** for the `NameForm::Initials` variant, not a switch themselves:
 
-- `initialize_with: ". "` → "J. Smith"
-- `initialize_with: " "` → "J Smith"
-- `initialize_with: ""` → "JSmith"
-- `initialize_with_hyphen: false` → suppress hyphen in compound initials (e.g., "J.-P." becomes "J. P.")
+- `initialize-with: ". "` → "J. Smith"
+- `initialize-with: " "` → "J Smith"
+- `initialize-with: ""` → "JSmith"
+- `initialize-with_hyphen: false` → suppress hyphen in compound initials (e.g., "J.-P." becomes "J. P.")
 
-**Backward compatibility**: If `name_form` is `None` and `initialize_with` is `Some`, the engine treats it as `NameForm::Initials` for existing styles.
+**Backward compatibility**: If `name-form` is absent and `initialize-with` is set, the engine treats it as `NameForm::Initials` for existing styles.
 
 ## Use Cases
 
@@ -208,7 +208,7 @@ citation:
 **Benefits**:
 - Clearer semantics: per-scope options are declarative, not imperative
 - Composability: independent axes (name form, conjunction, order) can be mixed freely
-- Extensibility: future additions (e.g., per-scope `initialize_with`) follow the same pattern
+- Extensibility: future additions (e.g., per-scope `initialize-with`) follow the same pattern
 
 ## biblatex Parallels
 
@@ -226,7 +226,7 @@ Citum does **not** model biblatex's author-editor-translator disambiguation dire
 
 ## Future Extensions
 
-### Per-Scope `initialize_with` Override
+### Per-Scope `initialize-with` Override
 
 Future support for style-specific initialization separators:
 
