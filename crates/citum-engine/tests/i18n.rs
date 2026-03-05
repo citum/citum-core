@@ -542,6 +542,7 @@ fn test_multilingual_rendering_numeric_integral_translated() {
                 keywords: None,
                 original_date: None,
                 original_title: None,
+                ads_bibcode: None,
             },
         )),
     );
@@ -589,6 +590,7 @@ fn test_effective_field_language_prefers_field_languages() {
         keywords: None,
         original_date: None,
         original_title: None,
+        ads_bibcode: None,
     }));
 
     assert_eq!(
@@ -628,6 +630,7 @@ fn test_effective_item_language_falls_back_to_multilingual_title_lang() {
         keywords: None,
         original_date: None,
         original_title: None,
+        ads_bibcode: None,
     }));
 
     assert_eq!(effective_item_language(&reference), Some("ja".to_string()));
@@ -691,6 +694,7 @@ fn test_citation_localized_template_selection_uses_item_language() {
             keywords: None,
             original_date: None,
             original_title: None,
+            ads_bibcode: None,
         })),
     );
     bibliography.insert(
@@ -724,6 +728,7 @@ fn test_citation_localized_template_selection_uses_item_language() {
             keywords: None,
             original_date: None,
             original_title: None,
+            ads_bibcode: None,
         })),
     );
 
@@ -800,6 +805,7 @@ fn test_bibliography_localized_template_selection_uses_multilingual_title_lang()
             keywords: None,
             original_date: None,
             original_title: None,
+            ads_bibcode: None,
         })),
     );
 

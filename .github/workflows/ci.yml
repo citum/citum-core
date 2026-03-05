@@ -61,6 +61,12 @@ jobs:
       - name: Run tests
         run: cargo test --verbose
 
+      - name: Verify JSON schemas are up to date
+        run: |
+          tmp_dir="$(mktemp -d)"
+          cargo run --bin citum --features schema -- schema --out-dir "$tmp_dir"
+          diff -ru "$tmp_dir" docs/schemas
+
       - name: Check core fidelity and SQI drift
         run: |
           node scripts/report-core.js > /tmp/core-report.json

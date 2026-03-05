@@ -55,6 +55,9 @@ impl ComponentValues for TemplateNumber {
                 Reference::Monograph(r) => r.report_number.clone(),
                 _ => None,
             },
+            NumberVariable::PartNumber
+            | NumberVariable::SupplementNumber
+            | NumberVariable::PrintingNumber => None,
             NumberVariable::CitationNumber => hints.citation_number.map(|n| n.to_string()),
             NumberVariable::CitationLabel => {
                 let config = match options.config.processing.as_ref() {
@@ -171,7 +174,10 @@ pub fn number_var_to_locator_type(
         | NumberVariable::DocketNumber
         | NumberVariable::PatentNumber
         | NumberVariable::StandardNumber
-        | NumberVariable::ReportNumber => Some(LocatorType::Number),
+        | NumberVariable::ReportNumber
+        | NumberVariable::PrintingNumber => Some(LocatorType::Number),
+        NumberVariable::PartNumber => Some(LocatorType::Part),
+        NumberVariable::SupplementNumber => Some(LocatorType::Supplement),
         NumberVariable::Issue => Some(LocatorType::Issue),
         _ => None,
     }

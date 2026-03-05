@@ -122,14 +122,24 @@ pub enum LocatorType {
     Book,
     /// Locator refers to a chapter.
     Chapter,
+    /// Locator refers to a clause.
+    Clause,
     /// Locator refers to a column.
     Column,
+    /// Locator refers to a corollary.
+    Corollary,
+    /// Locator refers to a definition.
+    Definition,
+    /// Locator refers to a division.
+    Division,
     /// Locator refers to a figure.
     Figure,
     /// Locator refers to a folio.
     Folio,
     /// Locator refers to a numbered line.
     Line,
+    /// Locator refers to a lemma.
+    Lemma,
     /// Locator refers to a note.
     Note,
     /// Locator refers to a numbered unit.
@@ -141,18 +151,46 @@ pub enum LocatorType {
     Page,
     /// Locator refers to a paragraph.
     Paragraph,
+    /// Locator refers to a sub-paragraph.
+    Subparagraph,
+    /// Locator refers to a sub-clause.
+    Subclause,
+    /// Locator refers to a sub-division.
+    Subdivision,
+    /// Locator refers to a sub-section.
+    Subsection,
     /// Locator refers to a part or division.
     Part,
+    /// Locator refers to a problem.
+    Problem,
+    /// Locator refers to a proposition.
+    Proposition,
+    /// Locator refers to a recital.
+    Recital,
+    /// Locator refers to a schedule.
+    Schedule,
     /// Locator refers to a section.
     Section,
+    /// Locator refers to a surah.
+    Surah,
+    /// Locator refers to a theorem.
+    Theorem,
     /// Locator refers to an entry under a headword.
     SubVerbo,
+    /// Locator refers to a supplement.
+    Supplement,
     /// Locator refers to a verse.
     Verse,
     /// Locator refers to a volume.
     Volume,
+    /// Locator refers to a periodical volume.
+    VolumePeriodical,
+    /// Locator refers to a monograph volume.
+    VolumeBook,
     /// Locator refers to an issue.
     Issue,
+    /// Locator refers to an algorithm.
+    Algorithm,
 }
 
 /// A single citation item referencing a bibliography entry.

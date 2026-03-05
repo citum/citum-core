@@ -572,6 +572,7 @@ mod tests {
             keywords: None,
             original_date: None,
             original_title: None,
+            ads_bibcode: None,
         }))
     }
 

@@ -332,6 +332,7 @@ crate::str_enum! {
         CollectionEditor = "collection-editor",
         ContainerAuthor = "container-author",
         EditorialDirector = "editorial-director",
+        TextualEditor = "textual-editor",
         Illustrator = "illustrator",
         OriginalAuthor = "original-author",
         ReviewedAuthor = "reviewed-author"
@@ -485,6 +486,9 @@ pub enum NumberVariable {
     PatentNumber,
     StandardNumber,
     ReportNumber,
+    PartNumber,
+    SupplementNumber,
+    PrintingNumber,
 }
 
 /// Number rendering forms.
@@ -576,6 +580,7 @@ pub enum SimpleVariable {
     PatentNumber,
     StandardNumber,
     ReportNumber,
+    AdsBibcode,
 }
 
 /// A term component for rendering locale-specific text.

@@ -62,6 +62,7 @@ impl ComponentValues for TemplateVariable {
                 Reference::Standard(r) => Some(r.standard_number.clone()),
                 _ => None,
             },
+            SimpleVariable::AdsBibcode => reference.ads_bibcode(),
             SimpleVariable::ReportNumber => match reference {
                 Reference::Monograph(r) => r.report_number.clone(),
                 _ => None,
