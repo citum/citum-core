@@ -17,8 +17,7 @@ Remove ModeDependent from AndOptions; add NameForm enum (Full|FamilyOnly|Initial
 - [x] Remove ModeDependent resolver loop in contributor.rs
 - [x] Implement NameForm dispatch in given-name rendering path
 - [x] Migrate apa-7th.yaml: replace mode-dependent with integral.options.contributors.and
-- [ ] Migrate chicago-author-date.yaml: add name_form per-position
-- [ ] Migrate jm-turabian-multilingual.yaml: audit and add name_form
-- [ ] Audit all other styles for name_form needs
+- [x] Migrate chicago-notes.yaml: add name_form=family-only to subsequent block
+- [x] Audit all other styles for name_form needs
 - [ ] Write docs/architecture/NAME_FORMATTING.md
 - [ ] Oracle + batch-aggregate verification; update baseline if scores improve
