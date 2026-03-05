@@ -157,10 +157,38 @@
           ]
         },
         {
+          "description": "Locator refers to a clause.",
+          "type": "string",
+          "enum": [
+            "clause"
+          ]
+        },
+        {
           "description": "Locator refers to a column.",
           "type": "string",
           "enum": [
             "column"
+          ]
+        },
+        {
+          "description": "Locator refers to a corollary.",
+          "type": "string",
+          "enum": [
+            "corollary"
+          ]
+        },
+        {
+          "description": "Locator refers to a definition.",
+          "type": "string",
+          "enum": [
+            "definition"
+          ]
+        },
+        {
+          "description": "Locator refers to a division.",
+          "type": "string",
+          "enum": [
+            "division"
           ]
         },
         {
@@ -182,6 +210,13 @@
           "type": "string",
           "enum": [
             "line"
+          ]
+        },
+        {
+          "description": "Locator refers to a lemma.",
+          "type": "string",
+          "enum": [
+            "lemma"
           ]
         },
         {
@@ -220,10 +255,66 @@
           ]
         },
         {
+          "description": "Locator refers to a sub-paragraph.",
+          "type": "string",
+          "enum": [
+            "subparagraph"
+          ]
+        },
+        {
+          "description": "Locator refers to a sub-clause.",
+          "type": "string",
+          "enum": [
+            "subclause"
+          ]
+        },
+        {
+          "description": "Locator refers to a sub-division.",
+          "type": "string",
+          "enum": [
+            "subdivision"
+          ]
+        },
+        {
+          "description": "Locator refers to a sub-section.",
+          "type": "string",
+          "enum": [
+            "subsection"
+          ]
+        },
+        {
           "description": "Locator refers to a part or division.",
           "type": "string",
           "enum": [
             "part"
+          ]
+        },
+        {
+          "description": "Locator refers to a problem.",
+          "type": "string",
+          "enum": [
+            "problem"
+          ]
+        },
+        {
+          "description": "Locator refers to a proposition.",
+          "type": "string",
+          "enum": [
+            "proposition"
+          ]
+        },
+        {
+          "description": "Locator refers to a recital.",
+          "type": "string",
+          "enum": [
+            "recital"
+          ]
+        },
+        {
+          "description": "Locator refers to a schedule.",
+          "type": "string",
+          "enum": [
+            "schedule"
           ]
         },
         {
@@ -234,10 +325,31 @@
           ]
         },
         {
+          "description": "Locator refers to a surah.",
+          "type": "string",
+          "enum": [
+            "surah"
+          ]
+        },
+        {
+          "description": "Locator refers to a theorem.",
+          "type": "string",
+          "enum": [
+            "theorem"
+          ]
+        },
+        {
           "description": "Locator refers to an entry under a headword.",
           "type": "string",
           "enum": [
             "sub-verbo"
+          ]
+        },
+        {
+          "description": "Locator refers to a supplement.",
+          "type": "string",
+          "enum": [
+            "supplement"
           ]
         },
         {
@@ -255,10 +367,31 @@
           ]
         },
         {
+          "description": "Locator refers to a periodical volume.",
+          "type": "string",
+          "enum": [
+            "volume-periodical"
+          ]
+        },
+        {
+          "description": "Locator refers to a monograph volume.",
+          "type": "string",
+          "enum": [
+            "volume-book"
+          ]
+        },
+        {
           "description": "Locator refers to an issue.",
           "type": "string",
           "enum": [
             "issue"
+          ]
+        },
+        {
+          "description": "Locator refers to an algorithm.",
+          "type": "string",
+          "enum": [
+            "algorithm"
           ]
         }
       ]

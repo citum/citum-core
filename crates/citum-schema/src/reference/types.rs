@@ -137,6 +137,8 @@ pub struct Monograph {
     pub isbn: Option<String>,
     #[serde(alias = "DOI")]
     pub doi: Option<String>,
+    /// ADS bibcode identifier.
+    pub ads_bibcode: Option<String>,
     pub edition: Option<String>,
     pub report_number: Option<String>,
     pub collection_number: Option<String>,
@@ -153,6 +155,7 @@ pub struct Monograph {
 #[non_exhaustive]
 pub enum MonographType {
     Book,
+    Manual,
     Report,
     Thesis,
     Webpage,
@@ -263,6 +266,8 @@ pub struct SerialComponent {
     pub note: Option<String>,
     #[serde(alias = "DOI")]
     pub doi: Option<String>,
+    /// ADS bibcode identifier.
+    pub ads_bibcode: Option<String>,
     pub pages: Option<String>,
     pub volume: Option<NumOrStr>,
     pub issue: Option<NumOrStr>,

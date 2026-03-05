@@ -237,6 +237,7 @@ macro_rules! ref_book {
                 keywords: None,
                 original_date: None,
                 original_title: None,
+                ads_bibcode: None,
             },
         ))
     };
@@ -279,6 +280,7 @@ macro_rules! ref_book_authors {
                 url: None,
                 accessed: None,
                 language: None,
+                field_languages: ::std::collections::HashMap::new(),
                 note: None,
                 isbn: None,
                 doi: None,
@@ -290,6 +292,7 @@ macro_rules! ref_book_authors {
                 keywords: None,
                 original_date: None,
                 original_title: None,
+                ads_bibcode: None,
             },
         ))
     }};
@@ -338,6 +341,7 @@ macro_rules! ref_article {
                 genre: None,
                 medium: None,
                 keywords: None,
+                ads_bibcode: None,
             },
         ))
     };
@@ -395,6 +399,7 @@ macro_rules! ref_article_authors {
                 genre: None,
                 medium: None,
                 keywords: None,
+                ads_bibcode: None,
             },
         ))
     }};

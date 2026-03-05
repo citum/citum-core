@@ -70,6 +70,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
             "book"
             | "report"
             | "thesis"
+            | "manual"
             | "webpage"
             | "post"
             | "post-weblog"
@@ -93,6 +94,8 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                     MonographType::Report
                 } else if legacy.ref_type == "thesis" {
                     MonographType::Thesis
+                } else if legacy.ref_type == "manual" {
+                    MonographType::Manual
                 } else if legacy.ref_type == "webpage" {
                     MonographType::Webpage
                 } else if legacy.ref_type.contains("post") {
@@ -125,6 +128,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                     note: note.clone(),
                     isbn,
                     doi,
+                    ads_bibcode: None,
                     edition,
                     report_number: legacy.number.map(|v| v.to_string()),
                     collection_number: legacy.collection_number.map(|v| v.to_string()),
@@ -235,6 +239,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                     field_languages: HashMap::new(),
                     note: note.clone(),
                     doi,
+                    ads_bibcode: None,
                     pages: legacy.page,
                     volume: legacy.volume.map(|v| match v {
                         csl_legacy::csl_json::StringOrNumber::String(s) => NumOrStr::Str(s),
@@ -389,6 +394,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                 note,
                 isbn,
                 doi,
+                ads_bibcode: None,
                 edition,
                 report_number: legacy.number.map(|v| v.to_string()),
                 collection_number: legacy.collection_number.map(|v| v.to_string()),

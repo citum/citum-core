@@ -304,8 +304,12 @@ fn map_label_str(s: &str) -> Option<LocatorType> {
         "sec" | "section" => Some(LocatorType::Section),
         "fig" | "figure" => Some(LocatorType::Figure),
         "line" | "l" => Some(LocatorType::Line),
+        "lemma" | "lem" => Some(LocatorType::Lemma),
         "note" | "n" => Some(LocatorType::Note),
+        "recital" => Some(LocatorType::Recital),
         "part" => Some(LocatorType::Part),
+        "surah" => Some(LocatorType::Surah),
+        "theorem" | "thm" => Some(LocatorType::Theorem),
         "col" | "column" => Some(LocatorType::Column),
         _ => None,
     }

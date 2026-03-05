@@ -249,6 +249,7 @@ fn make_particle_book(
         keywords: None,
         original_date: None,
         original_title: None,
+        ads_bibcode: None,
     }))
 }
 

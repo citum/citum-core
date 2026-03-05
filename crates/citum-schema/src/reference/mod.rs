@@ -211,6 +211,15 @@ impl InputReference {
         }
     }
 
+    /// Return the ADS bibcode.
+    pub fn ads_bibcode(&self) -> Option<String> {
+        match self {
+            InputReference::Monograph(r) => r.ads_bibcode.clone(),
+            InputReference::SerialComponent(r) => r.ads_bibcode.clone(),
+            _ => None,
+        }
+    }
+
     /// Return the note.
     pub fn note(&self) -> Option<String> {
         match self {
@@ -594,6 +603,7 @@ impl InputReference {
                         "book".to_string()
                     }
                 }
+                MonographType::Manual => "manual".to_string(),
                 MonographType::Report => "report".to_string(),
                 MonographType::Thesis => "thesis".to_string(),
                 MonographType::Webpage => "webpage".to_string(),

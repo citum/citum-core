@@ -178,6 +178,36 @@ impl Locale {
             },
         );
 
+        locators.insert(
+            LocatorType::Part,
+            LocatorTerm {
+                long: Some(SingularPlural {
+                    singular: "part".into(),
+                    plural: "parts".into(),
+                }),
+                short: Some(SingularPlural {
+                    singular: "pt.".into(),
+                    plural: "pts.".into(),
+                }),
+                symbol: None,
+            },
+        );
+
+        locators.insert(
+            LocatorType::Supplement,
+            LocatorTerm {
+                long: Some(SingularPlural {
+                    singular: "supplement".into(),
+                    plural: "supplements".into(),
+                }),
+                short: Some(SingularPlural {
+                    singular: "suppl.".into(),
+                    plural: "suppls.".into(),
+                }),
+                symbol: None,
+            },
+        );
+
         Self {
             locale: "en-US".into(),
             dates: DateTerms::en_us(),
@@ -331,6 +361,16 @@ impl Locale {
             GeneralTerm::At => self.terms.at.as_deref(),
             GeneralTerm::By => self.terms.by.as_deref(),
             GeneralTerm::From => self.terms.from.as_deref(),
+            GeneralTerm::Of => self
+                .terms
+                .general
+                .get(term)
+                .map(|value| value.long.as_str()),
+            GeneralTerm::To => self
+                .terms
+                .general
+                .get(term)
+                .map(|value| value.long.as_str()),
             GeneralTerm::Anonymous => Some(&self.terms.anonymous.long),
             GeneralTerm::Circa => Some(&self.terms.circa.long),
             // Fallback to locators for shared terms
@@ -339,6 +379,16 @@ impl Locale {
             GeneralTerm::Page => self.locator_term(&LocatorType::Page, false, form),
             GeneralTerm::Chapter => self.locator_term(&LocatorType::Chapter, false, form),
             GeneralTerm::Section => self.locator_term(&LocatorType::Section, false, form),
+            GeneralTerm::Here => self
+                .terms
+                .general
+                .get(term)
+                .map(|value| value.long.as_str()),
+            GeneralTerm::Deposited => self
+                .terms
+                .general
+                .get(term)
+                .map(|value| value.long.as_str()),
             _ => None,
         }
     }
@@ -575,11 +625,18 @@ impl Locale {
 
     fn parse_locator_type(name: &str) -> Option<LocatorType> {
         match name {
+            "algorithm" => Some(LocatorType::Algorithm),
             "book" => Some(LocatorType::Book),
             "chapter" => Some(LocatorType::Chapter),
+            "clause" => Some(LocatorType::Clause),
             "column" => Some(LocatorType::Column),
+            "corollary" => Some(LocatorType::Corollary),
+            "definition" => Some(LocatorType::Definition),
+            "division" => Some(LocatorType::Division),
             "figure" => Some(LocatorType::Figure),
             "folio" => Some(LocatorType::Folio),
+            "issue" => Some(LocatorType::Issue),
+            "lemma" => Some(LocatorType::Lemma),
             "line" => Some(LocatorType::Line),
             "note" => Some(LocatorType::Note),
             "number" => Some(LocatorType::Number),
@@ -587,11 +644,23 @@ impl Locale {
             "page" => Some(LocatorType::Page),
             "paragraph" => Some(LocatorType::Paragraph),
             "part" => Some(LocatorType::Part),
+            "problem" => Some(LocatorType::Problem),
+            "proposition" => Some(LocatorType::Proposition),
+            "recital" => Some(LocatorType::Recital),
+            "schedule" => Some(LocatorType::Schedule),
             "section" => Some(LocatorType::Section),
+            "subclause" | "sub-clause" | "sub_clause" => Some(LocatorType::Subclause),
+            "subdivision" | "sub-division" | "sub_division" => Some(LocatorType::Subdivision),
+            "subparagraph" | "sub-paragraph" | "sub_paragraph" => Some(LocatorType::Subparagraph),
+            "subsection" | "sub-section" | "sub_section" => Some(LocatorType::Subsection),
             "sub_verbo" | "sub-verbo" => Some(LocatorType::SubVerbo),
+            "supplement" => Some(LocatorType::Supplement),
+            "surah" => Some(LocatorType::Surah),
+            "theorem" => Some(LocatorType::Theorem),
             "verse" => Some(LocatorType::Verse),
             "volume" => Some(LocatorType::Volume),
-            "issue" => Some(LocatorType::Issue),
+            "volume-book" | "volume_book" => Some(LocatorType::VolumeBook),
+            "volume-periodical" | "volume_periodical" => Some(LocatorType::VolumePeriodical),
             _ => None,
         }
     }
@@ -607,6 +676,7 @@ impl Locale {
             "collection-editor" => Some(ContributorRole::CollectionEditor),
             "container-author" => Some(ContributorRole::ContainerAuthor),
             "editorial-director" => Some(ContributorRole::EditorialDirector),
+            "textual-editor" | "textual_editor" => Some(ContributorRole::TextualEditor),
             "interviewer" => Some(ContributorRole::Interviewer),
             "original-author" => Some(ContributorRole::OriginalAuthor),
             "recipient" => Some(ContributorRole::Recipient),
@@ -710,6 +780,8 @@ impl Locale {
             "retrieved" => Some(GeneralTerm::Retrieved),
             "at" => Some(GeneralTerm::At),
             "from" => Some(GeneralTerm::From),
+            "of" => Some(GeneralTerm::Of),
+            "to" => Some(GeneralTerm::To),
             "by" => Some(GeneralTerm::By),
             "no-date" | "no_date" | "no date" => Some(GeneralTerm::NoDate),
             "anonymous" => Some(GeneralTerm::Anonymous),
@@ -721,6 +793,8 @@ impl Locale {
             "and-others" | "and_others" | "and others" => Some(GeneralTerm::AndOthers),
             "forthcoming" => Some(GeneralTerm::Forthcoming),
             "online" => Some(GeneralTerm::Online),
+            "here" => Some(GeneralTerm::Here),
+            "deposited" => Some(GeneralTerm::Deposited),
             "review-of" | "review_of" | "review of" => Some(GeneralTerm::ReviewOf),
             "original-work-published" => Some(GeneralTerm::OriginalWorkPublished),
             "patent" => Some(GeneralTerm::Patent),

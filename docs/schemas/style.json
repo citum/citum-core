@@ -100,41 +100,6 @@
           "enum": [
             "none"
           ]
-        },
-        {
-          "description": "Context-sensitive conjunction based on the citation mode.\n\nThis allows styles like APA 7th to use \"and\" in narrative (integral) citations but \"&\" in parenthetical (non-integral) ones.",
-          "type": "object",
-          "required": [
-            "mode-dependent"
-          ],
-          "properties": {
-            "mode-dependent": {
-              "type": "object",
-              "required": [
-                "integral",
-                "non-integral"
-              ],
-              "properties": {
-                "integral": {
-                  "description": "The option to use for integral/narrative citations (e.g., \"Smith and Jones\").",
-                  "allOf": [
-                    {
-                      "$ref": "#/definitions/AndOptions"
-                    }
-                  ]
-                },
-                "non-integral": {
-                  "description": "The option to use for non-integral/parenthetical citations (e.g., \"(Smith & Jones)\"). Also typically serves as the default for bibliographies.",
-                  "allOf": [
-                    {
-                      "$ref": "#/definitions/AndOptions"
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "additionalProperties": false
         }
       ]
     },
@@ -989,6 +954,17 @@
             "null"
           ]
         },
+        "name-form": {
+          "description": "How to render given names. See `NameForm` for variants. Per-scope overrides (per-mode, per-position) are expressed by setting this field in the appropriate scope's contributor config block.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NameForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "role": {
           "description": "When and how to display contributor roles.",
           "anyOf": [
@@ -1269,6 +1245,13 @@
           "type": "string",
           "enum": [
             "editorial-director"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "textual-editor"
           ]
         },
         {
@@ -1593,6 +1576,20 @@
           ]
         },
         {
+          "description": "The preposition \"of\" (e.g., \"special issue of\").",
+          "type": "string",
+          "enum": [
+            "of"
+          ]
+        },
+        {
+          "description": "The preposition \"to\" (e.g., \"from x to y\").",
+          "type": "string",
+          "enum": [
+            "to"
+          ]
+        },
+        {
           "description": "The preposition \"by\" (e.g., \"by John Smith\").",
           "type": "string",
           "enum": [
@@ -1667,6 +1664,20 @@
           "type": "string",
           "enum": [
             "online"
+          ]
+        },
+        {
+          "description": "The adverb \"here\".",
+          "type": "string",
+          "enum": [
+            "here"
+          ]
+        },
+        {
+          "description": "The term used for deposited materials.",
+          "type": "string",
+          "enum": [
+            "deposited"
           ]
         },
         {
@@ -2284,6 +2295,32 @@
         }
       ]
     },
+    "NameForm": {
+      "description": "How to render the given-name component of a contributor name.\n\nControls whether full given names, family name only, or initialized given names are rendered. Used to express first/subsequent mention differences (Chicago) and integral/non-integral differences.\n\nInitialization formatting details (`initialize_with`, `initialize_with_hyphen`) are separate fields and only take effect when `NameForm::Initials` is active.",
+      "oneOf": [
+        {
+          "description": "Render full given names: \"John D. Smith\".",
+          "type": "string",
+          "enum": [
+            "full"
+          ]
+        },
+        {
+          "description": "Render family name only, suppressing given names: \"Smith\". Used for subsequent mentions in Chicago/Turabian note styles.",
+          "type": "string",
+          "enum": [
+            "family-only"
+          ]
+        },
+        {
+          "description": "Render initialized given names using `initialize_with` separator. If `initialize_with` is None, defaults to \". \" (e.g., \"J. Smith\"). Empty string gives compact initials: \"JD Smith\".",
+          "type": "string",
+          "enum": [
+            "initials"
+          ]
+        }
+      ]
+    },
     "NameOrder": {
       "description": "Name display order.",
       "oneOf": [
@@ -2457,7 +2494,10 @@
         "docket-number",
         "patent-number",
         "standard-number",
-        "report-number"
+        "report-number",
+        "part-number",
+        "supplement-number",
+        "printing-number"
       ]
     },
     "PageRangeFormat": {
@@ -2944,7 +2984,8 @@
         "docket-number",
         "patent-number",
         "standard-number",
-        "report-number"
+        "report-number",
+        "ads-bibcode"
       ]
     },
     "Sort": {

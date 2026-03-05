@@ -91,6 +91,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //!     keywords: None,
 //!     original_date: None,
 //!     original_title: None,
+//!     ads_bibcode: None,
 //! }));
 //! bib.insert("kuhn1962".to_string(), reference);
 //!

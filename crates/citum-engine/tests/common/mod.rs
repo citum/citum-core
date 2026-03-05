@@ -67,6 +67,7 @@ pub fn make_book_multi_author(
         keywords: None,
         original_date: None,
         original_title: None,
+        ads_bibcode: None,
     }))
 }
 
@@ -122,6 +123,7 @@ pub fn make_article_multi_author(
         genre: None,
         medium: None,
         keywords: None,
+        ads_bibcode: None,
     }))
 }
 
@@ -187,6 +189,7 @@ pub fn make_multilingual_book(
         keywords: None,
         original_date: None,
         original_title: None,
+        ads_bibcode: None,
     }))
 }
 

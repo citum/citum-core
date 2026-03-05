@@ -241,6 +241,13 @@
                 }
               ]
             },
+            "ads-bibcode": {
+              "description": "ADS bibcode identifier.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "author": {
               "anyOf": [
                 {
@@ -553,6 +560,13 @@
                 {
                   "type": "null"
                 }
+              ]
+            },
+            "ads-bibcode": {
+              "description": "ADS bibcode identifier.",
+              "type": [
+                "string",
+                "null"
               ]
             },
             "author": {
@@ -2166,6 +2180,7 @@
       "type": "string",
       "enum": [
         "book",
+        "manual",
         "report",
         "thesis",
         "webpage",

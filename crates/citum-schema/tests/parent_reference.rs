@@ -26,6 +26,7 @@ fn test_serial_component_with_parent_id() {
         genre: None,
         medium: None,
         keywords: None,
+        ads_bibcode: None,
     };
 
     match component.parent {

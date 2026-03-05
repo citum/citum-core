@@ -279,10 +279,17 @@ fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
     let language = field_str("langid").or_else(|| field_str("language"));
 
     match entry.entry_type.to_string().to_lowercase().as_str() {
-        "book" | "mvbook" | "collection" | "mvcollection" => {
+        "book" | "mvbook" | "collection" | "mvcollection" | "manual" => {
             InputReference::Monograph(Box::new(Monograph {
                 id,
-                r#type: MonographType::Book,
+                r#type: if matches!(
+                    entry.entry_type.to_string().to_lowercase().as_str(),
+                    "manual"
+                ) {
+                    MonographType::Manual
+                } else {
+                    MonographType::Book
+                },
                 title,
                 author,
                 editor,
@@ -296,6 +303,7 @@ fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
                 note: field_str("note"),
                 isbn: field_str("isbn"),
                 doi: field_str("doi"),
+                ads_bibcode: field_str("bibcode"),
                 edition: field_str("edition"),
                 report_number: if matches!(
                     entry.entry_type.to_string().to_lowercase().as_str(),
@@ -387,6 +395,7 @@ fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
                 field_languages: HashMap::new(),
                 note: field_str("note"),
                 doi: field_str("doi"),
+                ads_bibcode: field_str("bibcode"),
                 pages: field_str("pages"),
                 volume: field_str("volume").map(NumOrStr::Str),
                 issue: field_str("number").map(NumOrStr::Str),
@@ -411,6 +420,7 @@ fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
             note: field_str("note"),
             isbn: field_str("isbn"),
             doi: field_str("doi"),
+            ads_bibcode: field_str("bibcode"),
             edition: field_str("edition"),
             report_number: if matches!(
                 entry.entry_type.to_string().to_lowercase().as_str(),

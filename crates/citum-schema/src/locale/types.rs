@@ -54,6 +54,10 @@ pub enum GeneralTerm {
     At,
     /// The preposition "from" (e.g., "from the publisher").
     From,
+    /// The preposition "of" (e.g., "special issue of").
+    Of,
+    /// The preposition "to" (e.g., "from x to y").
+    To,
     /// The preposition "by" (e.g., "by John Smith").
     By,
     /// The term used when no date is available (e.g., "n.d.").
@@ -76,6 +80,10 @@ pub enum GeneralTerm {
     Forthcoming,
     /// The term used for online resources (e.g., "online").
     Online,
+    /// The adverb "here".
+    Here,
+    /// The term used for deposited materials.
+    Deposited,
     /// The phrase used to introduce reviewed works (e.g., "review of").
     ReviewOf,
     /// The phrase used for original publication references (e.g., "originally published").
@@ -338,6 +346,8 @@ mod tests {
             (r#""retrieved""#, GeneralTerm::Retrieved),
             (r#""at""#, GeneralTerm::At),
             (r#""from""#, GeneralTerm::From),
+            (r#""of""#, GeneralTerm::Of),
+            (r#""to""#, GeneralTerm::To),
             (r#""by""#, GeneralTerm::By),
             (r#""no-date""#, GeneralTerm::NoDate),
             (r#""anonymous""#, GeneralTerm::Anonymous),
@@ -349,6 +359,8 @@ mod tests {
             (r#""and-others""#, GeneralTerm::AndOthers),
             (r#""forthcoming""#, GeneralTerm::Forthcoming),
             (r#""online""#, GeneralTerm::Online),
+            (r#""here""#, GeneralTerm::Here),
+            (r#""deposited""#, GeneralTerm::Deposited),
             (r#""review-of""#, GeneralTerm::ReviewOf),
             (
                 r#""original-work-published""#,
