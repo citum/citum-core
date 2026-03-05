@@ -1,8 +1,8 @@
 use citum_engine::{
     Bibliography, Citation, CitationItem, DocumentFormat, Processor,
     io::{
-        AnnotationFormat, AnnotationStyle, ParagraphBreak, load_annotations, load_bibliography,
-        load_citations,
+        AnnotationFormat, AnnotationStyle, LoadedBibliography, ParagraphBreak, load_annotations,
+        load_bibliography, load_bibliography_with_sets, load_citations, validate_compound_sets,
     },
     processor::document::djot::DjotParser,
     render::{djot::Djot, html::Html, latex::Latex, plain::PlainText, typst::Typst},
@@ -756,7 +756,7 @@ fn run_render_doc(args: RenderDocArgs) -> Result<(), Box<dyn Error>> {
         );
     }
 
-    let processor = create_processor(style_obj, bibliography, &args.style);
+    let processor = create_processor(style_obj, bibliography, &args.style)?;
 
     let doc_content = fs::read_to_string(&args.input)?;
     let output = match args.input_format {
@@ -796,7 +796,7 @@ fn run_render_refs(args: RenderRefsArgs) -> Result<(), Box<dyn Error>> {
     let item_ids = if let Some(k) = args.keys.clone() {
         k
     } else {
-        bibliography.keys().cloned().collect()
+        bibliography.references.keys().cloned().collect()
     };
 
     let input_citations = if args.citations.is_empty() {
@@ -821,7 +821,7 @@ fn run_render_refs(args: RenderRefsArgs) -> Result<(), Box<dyn Error>> {
         format: AnnotationFormat::Djot,
     };
 
-    let processor = create_processor(style_obj, bibliography, &args.style);
+    let processor = create_processor(style_obj, bibliography, &args.style)?;
 
     let style_name = {
         let path = Path::new(&args.style);
@@ -867,7 +867,13 @@ fn run_render_refs(args: RenderRefsArgs) -> Result<(), Box<dyn Error>> {
 /// When the style declares a `default_locale`, the locale is resolved first
 /// from disk (for file-based styles) and then from embedded data, falling back
 /// to the hardcoded `en-US` defaults.
-fn create_processor(style: Style, bib: Bibliography, style_input: &str) -> Processor {
+fn create_processor(
+    style: Style,
+    loaded: LoadedBibliography,
+    style_input: &str,
+) -> Result<Processor, Box<dyn Error>> {
+    let LoadedBibliography { references, sets } = loaded;
+    let compound_sets = sets.unwrap_or_default();
     if let Some(ref locale_id) = style.info.default_locale {
         let path = Path::new(style_input);
         let locale = if path.exists() && path.is_file() {
@@ -883,9 +889,10 @@ fn create_processor(style: Style, bib: Bibliography, style_input: &str) -> Proce
             // Builtin style: use embedded locale directly.
             load_locale_builtin(locale_id)
         };
-        Processor::with_locale(style, bib, locale)
+        Processor::try_with_locale_and_compound_sets(style, references, locale, compound_sets)
+            .map_err(|e| e.into())
     } else {
-        Processor::new(style, bib)
+        Processor::try_with_compound_sets(style, references, compound_sets).map_err(|e| e.into())
     }
 }
 
@@ -1375,20 +1382,42 @@ fn load_locale_builtin(locale_id: &str) -> Locale {
 ///
 /// # Errors
 /// Returns `Err` when `paths` is empty or any file fails to parse.
-fn load_merged_bibliography(paths: &[PathBuf]) -> Result<Bibliography, Box<dyn Error>> {
+fn load_merged_bibliography(paths: &[PathBuf]) -> Result<LoadedBibliography, Box<dyn Error>> {
     if paths.is_empty() {
         return Err("At least one --bibliography file is required.".into());
     }
 
     let mut merged = Bibliography::new();
+    let mut merged_sets = indexmap::IndexMap::<String, Vec<String>>::new();
     for path in paths {
-        let loaded = load_bibliography(path)?;
-        for (id, reference) in loaded {
+        let loaded = load_bibliography_with_sets(path)?;
+        for (id, reference) in loaded.references {
             merged.insert(id, reference);
+        }
+        if let Some(sets) = loaded.sets {
+            for (set_id, members) in sets {
+                if merged_sets.insert(set_id.clone(), members).is_some() {
+                    return Err(
+                        format!("Duplicate compound set id while merging: {}", set_id).into(),
+                    );
+                }
+            }
         }
     }
 
-    Ok(merged)
+    let validated_sets = validate_compound_sets(
+        if merged_sets.is_empty() {
+            None
+        } else {
+            Some(merged_sets)
+        },
+        &merged,
+    )?;
+
+    Ok(LoadedBibliography {
+        references: merged,
+        sets: validated_sets,
+    })
 }
 
 /// Load and concatenate one or more citations files into a single list.
@@ -1785,6 +1814,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::time::{SystemTime, UNIX_EPOCH};
 
     // ------------------------------------------------------------------
     // truncate
@@ -1867,5 +1897,59 @@ mod tests {
     fn test_infer_data_type_style_stem() {
         assert!(matches!(infer_data_type("apa-7th"), DataType::Style));
         assert!(matches!(infer_data_type("my-style"), DataType::Style));
+    }
+
+    #[test]
+    fn test_load_merged_bibliography_rejects_cross_file_duplicate_membership() {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock should be after epoch")
+            .as_nanos();
+        let base = std::env::temp_dir().join(format!("citum-merged-bib-{now}"));
+        std::fs::create_dir_all(&base).expect("temp dir should be created");
+
+        let bib_a = base.join("a.yaml");
+        let bib_b = base.join("b.yaml");
+
+        std::fs::write(
+            &bib_a,
+            r#"
+references:
+  - class: monograph
+    id: ref-a
+    type: book
+    title: Book A
+    issued: "2020"
+sets:
+  group-1: [ref-a]
+"#,
+        )
+        .expect("first fixture should write");
+        std::fs::write(
+            &bib_b,
+            r#"
+references:
+  - class: monograph
+    id: ref-a
+    type: book
+    title: Book A
+    issued: "2020"
+sets:
+  group-2: [ref-a]
+"#,
+        )
+        .expect("second fixture should write");
+
+        let err = load_merged_bibliography(&[bib_a.clone(), bib_b.clone()])
+            .expect_err("must reject cross-file duplicate membership");
+        let msg = err.to_string();
+        assert!(
+            msg.contains("appears in both compound sets 'group-1' and 'group-2'"),
+            "unexpected error: {msg}"
+        );
+
+        let _ = std::fs::remove_file(bib_a);
+        let _ = std::fs::remove_file(bib_b);
+        let _ = std::fs::remove_dir(base);
     }
 }

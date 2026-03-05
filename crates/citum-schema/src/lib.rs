@@ -1,5 +1,6 @@
 //! Public schema types for Citum styles, citations, references, and locales.
 
+use indexmap::IndexMap;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -62,6 +63,16 @@ pub struct InputBibliography {
     pub info: Option<InputBibliographyInfo>,
     /// The list of references.
     pub references: Vec<reference::InputReference>,
+    /// Optional compound entry sets keyed by set id.
+    ///
+    /// Each set id maps to an ordered list of reference ids that should be treated
+    /// as one compound numeric group when `compound-numeric` is enabled by style.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(
+        feature = "schema",
+        schemars(with = "Option<std::collections::BTreeMap<String, Vec<String>>>")
+    )]
+    pub sets: Option<IndexMap<String, Vec<String>>>,
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,

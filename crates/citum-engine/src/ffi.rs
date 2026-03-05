@@ -219,7 +219,7 @@ pub unsafe extern "C" fn citum_processor_new_from_yaml(
         }
     };
 
-    let bib = match crate::io::load_bibliography(Path::new(bib_path_str)) {
+    let loaded = match crate::io::load_bibliography_with_sets(Path::new(bib_path_str)) {
         Ok(b) => b,
         Err(e) => {
             set_error(format!("Failed to load bibliography: {}", e));
@@ -227,7 +227,17 @@ pub unsafe extern "C" fn citum_processor_new_from_yaml(
         }
     };
 
-    let processor = Box::new(Processor::new(style, bib));
+    let processor = match Processor::try_with_compound_sets(
+        style,
+        loaded.references,
+        loaded.sets.unwrap_or_default(),
+    ) {
+        Ok(p) => Box::new(p),
+        Err(e) => {
+            set_error(format!("Invalid compound sets: {}", e));
+            return ptr::null_mut();
+        }
+    };
     Box::into_raw(processor)
 }
 

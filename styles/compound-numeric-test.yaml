@@ -1,0 +1,36 @@
+info:
+  title: Compound Numeric Test Style
+  description: Test style for compound numeric citations (csl26-zafv)
+  experimental: true
+options:
+  processing: numeric
+  contributors:
+    display-as-sort: all
+    initialize-with: ". "
+    delimiter: "; "
+    delimiter-precedes-last: always
+  dates: long
+  titles: humanities
+  bibliography:
+    compound-numeric:
+      sub-label: alphabetic
+      sub-label-suffix: ")"
+      sub-delimiter: ", "
+    entry-suffix: .
+    separator: ". "
+citation:
+  use-preset: numeric-citation
+bibliography:
+  template:
+    - contributor: author
+      form: long
+    - title: primary
+    - title: parent-serial
+      emph: true
+    - date: issued
+      form: year
+      prefix: ", "
+    - number: volume
+      prefix: ", "
+    - number: pages
+      prefix: ", "
