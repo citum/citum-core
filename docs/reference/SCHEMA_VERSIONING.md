@@ -85,7 +85,7 @@ Check the default schema version in `../crates/citum-schema/src/lib.rs`:
 
 ```rust
 fn default_version() -> String {
-    "0.7.1".to_string()  // Current schema version
+    "0.8.0".to_string()  // Current schema version
 }
 ```
 
@@ -147,6 +147,11 @@ Code releases are managed by `release-plz`.
 ### Schema Changelog
 
 Track schema changes separately from code changes:
+
+#### schema-v0.8.0 (2026-03-05)
+- Schema version bumped from 0.7.1 to 0.8.0
+- Breaking change: compound grouping moved from per-reference `group-key`
+  to top-level bibliography `sets`
 
 #### schema-v0.7.1 (2026-03-02)
 - Schema version bumped from 0.7.0 to 0.7.1

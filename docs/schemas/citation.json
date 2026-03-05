@@ -105,14 +105,15 @@
           ]
         },
         "locators": {
-          "description": "Compound locator segments for multi-part references.\n\nWhen present, takes priority over `label`/`locator`. Example: `[{ label: chapter, value: \"3\" }, { label: section, value: \"42\" }]`",
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
-            "$ref": "#/definitions/LocatorSegment"
-          }
+          "description": "Compound locator segments for multi-part references.\n\nWhen present, takes priority over `label`/`locator`. Supports both verbose list form and compact map form. Example list: `[{ label: chapter, value: \"3\" }, { label: section, value: \"42\" }]` Example map: `{ page: \"23\", line: \"13\" }`",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LocatorsInput"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "prefix": {
           "description": "Prefix text before this item",
@@ -167,7 +168,11 @@
         },
         "value": {
           "description": "The locator value (e.g., \"3\", \"42-45\").",
-          "type": "string"
+          "allOf": [
+            {
+              "$ref": "#/definitions/LocatorValue"
+            }
+          ]
         }
       }
     },
@@ -425,6 +430,49 @@
           "enum": [
             "algorithm"
           ]
+        }
+      ]
+    },
+    "LocatorValue": {
+      "description": "A locator value that supports both plain strings and explicit plurality.\n\nPlain strings use heuristic plural detection (checking for `-`, `–`, `,`, `&`). Use the explicit form to override when the heuristic fails (e.g., \"figure A-3\" should be singular despite containing a hyphen).",
+      "anyOf": [
+        {
+          "description": "Plain string value with heuristic plural detection.",
+          "type": "string"
+        },
+        {
+          "description": "Explicit value with manual plural override.",
+          "type": "object",
+          "required": [
+            "plural",
+            "value"
+          ],
+          "properties": {
+            "plural": {
+              "description": "Whether this locator is plural.",
+              "type": "boolean"
+            },
+            "value": {
+              "description": "The locator value string.",
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "LocatorsInput": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LocatorSegment"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/LocatorValue"
+          }
         }
       ]
     },

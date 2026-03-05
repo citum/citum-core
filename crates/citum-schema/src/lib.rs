@@ -125,7 +125,7 @@ pub struct Style {
 }
 
 fn default_version() -> String {
-    "0.7.1".to_string()
+    "0.8.0".to_string()
 }
 
 /// Available embedded template presets.
