@@ -353,7 +353,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 relax_inferred_bibliography_date_suppression(template);
             }
         }
-        normalize_legal_case_type_template(&mut type_templates);
+        normalize_legal_case_type_template(&legacy_style, &mut type_templates);
         ensure_inferred_media_type_templates(&legacy_style, &mut type_templates, &new_bib);
         ensure_inferred_patent_type_template(&legacy_style, &mut type_templates, &new_bib);
     }
@@ -1040,11 +1040,15 @@ fn selector_matches_any(selector: &TypeSelector, candidates: &[&str]) -> bool {
 }
 
 fn normalize_legal_case_type_template(
+    legacy_style: &csl_legacy::model::Style,
     type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
 ) {
     let Some(map) = type_templates.as_mut() else {
         return;
     };
+    let style_id = legacy_style.info.id.to_lowercase();
+    let style_is_elsevier_harvard = style_id.contains("elsevier-harvard");
+    let style_is_springer_socpsych = style_id.contains("springer-socpsych-author-date");
 
     for (selector, template) in map.iter_mut() {
         if !selector.matches("legal_case") && !selector.matches("legal-case") {
@@ -1054,6 +1058,8 @@ fn normalize_legal_case_type_template(
         let mut seen_locator = false;
         let mut has_issued = false;
         let mut has_parent_serial = false;
+        let mut has_reporter = false;
+        let mut has_page = false;
         template.retain_mut(|component| {
             if let TemplateComponent::Term(term) = component
                 && (matches!(term.term, citum_schema::locale::GeneralTerm::Circa)
@@ -1071,6 +1077,9 @@ fn normalize_legal_case_type_template(
                 if date_component.date == DateVariable::Issued {
                     has_issued = true;
                     date_component.rendering.suppress = Some(false);
+                    if style_is_springer_socpsych {
+                        date_component.form = citum_schema::template::DateForm::Full;
+                    }
                 } else {
                     return false;
                 }
@@ -1095,6 +1104,17 @@ fn normalize_legal_case_type_template(
                     return false;
                 }
             }
+            if let TemplateComponent::Variable(variable) = component {
+                if variable.variable == SimpleVariable::Reporter {
+                    has_reporter = true;
+                }
+                if variable.variable == SimpleVariable::Page {
+                    has_page = true;
+                }
+                if style_is_elsevier_harvard && variable.variable == SimpleVariable::Authority {
+                    return false;
+                }
+            }
 
             if let TemplateComponent::Term(term) = component
                 && (matches!(term.term, citum_schema::locale::GeneralTerm::Section)
@@ -1113,12 +1133,14 @@ fn normalize_legal_case_type_template(
         });
 
         if !has_issued {
-            template.push(TemplateComponent::Date(
-                citum_schema::template::TemplateDate {
-                    date: DateVariable::Issued,
-                    ..Default::default()
-                },
-            ));
+            let mut date_component = citum_schema::template::TemplateDate {
+                date: DateVariable::Issued,
+                ..Default::default()
+            };
+            if style_is_springer_socpsych {
+                date_component.form = citum_schema::template::DateForm::Full;
+            }
+            template.push(TemplateComponent::Date(date_component));
         }
         if !has_parent_serial {
             template.push(TemplateComponent::Title(
@@ -1127,6 +1149,18 @@ fn normalize_legal_case_type_template(
                     ..Default::default()
                 },
             ));
+        }
+        if (style_is_elsevier_harvard || style_is_springer_socpsych) && !has_reporter {
+            template.push(TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::Reporter,
+                ..Default::default()
+            }));
+        }
+        if style_is_springer_socpsych && !has_page {
+            template.push(TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::Page,
+                ..Default::default()
+            }));
         }
     }
 }
