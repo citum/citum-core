@@ -1,11 +1,11 @@
 ---
 # csl26-j007
 title: 'Locator ergonomics: compact syntax and structured values'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-03-05T16:42:31Z
-updated_at: 2026-03-05T18:05:47Z
+updated_at: 2026-03-05T18:06:20Z
 ---
 
 Two related improvements to compound locator input ergonomics, building on csl26-z4t6.
@@ -68,3 +68,15 @@ locators:
 - Orthogonal to csl26-zafv (numeric compound citations)
 
 Needs /dplan session to finalize exact serde strategy and test plan.
+
+## Summary
+
+Implemented locator ergonomics for compound locators:
+
+- **LocatorValue enum**: Supports plain strings (heuristic plural detection) or explicit form with manual plural override
+- **LocatorsInput enum**: Accepts either verbose list form or compact map (IndexMap) form
+- **Plural detection**: Heuristically detects ranges (`-`, `–`), commas, and ampersands in plain strings
+- **Manual override**: Explicit form allows specifying `{ value: string, plural: bool }` to override heuristic
+- **Engine updates**: All locator handling in rendering and processor modules updated to use new types
+- **Comprehensive tests**: Added tests for both input forms, heuristic detection, and explicit overrides
+- **All tests pass**: 511/511 tests passing with clippy clean
