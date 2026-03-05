@@ -355,7 +355,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         normalize_legal_case_type_template(&mut type_templates);
         ensure_inferred_media_type_templates(&legacy_style, &mut type_templates, &new_bib);
-        ensure_inferred_patent_type_template(&mut type_templates, &new_bib);
+        ensure_inferred_patent_type_template(&legacy_style, &mut type_templates, &new_bib);
     }
 
     let mut new_cit = if let Some(ref resolved_cit) = resolved.citation {
@@ -1052,6 +1052,8 @@ fn normalize_legal_case_type_template(
         }
 
         let mut seen_locator = false;
+        let mut has_issued = false;
+        let mut has_parent_serial = false;
         template.retain_mut(|component| {
             if let TemplateComponent::Term(term) = component
                 && (matches!(term.term, citum_schema::locale::GeneralTerm::Circa)
@@ -1059,14 +1061,46 @@ fn normalize_legal_case_type_template(
             {
                 return false;
             }
-
-            if let TemplateComponent::Variable(variable) = component
-                && variable.variable == SimpleVariable::Locator
+            if let TemplateComponent::Term(term) = component
+                && matches!(term.term, citum_schema::locale::GeneralTerm::NoDate)
             {
-                if seen_locator {
+                return false;
+            }
+
+            if let TemplateComponent::Date(date_component) = component {
+                if date_component.date == DateVariable::Issued {
+                    has_issued = true;
+                    date_component.rendering.suppress = Some(false);
+                } else {
                     return false;
                 }
-                seen_locator = true;
+            }
+
+            if let TemplateComponent::Title(title_component) = component
+                && title_component.title == TitleType::ParentSerial
+            {
+                has_parent_serial = true;
+            }
+
+            if let TemplateComponent::Variable(variable) = component
+                && (variable.variable == SimpleVariable::Locator
+                    || variable.variable == SimpleVariable::Url)
+            {
+                if variable.variable == SimpleVariable::Locator {
+                    if seen_locator {
+                        return false;
+                    }
+                    seen_locator = true;
+                } else {
+                    return false;
+                }
+            }
+
+            if let TemplateComponent::Term(term) = component
+                && (matches!(term.term, citum_schema::locale::GeneralTerm::Section)
+                    || matches!(term.term, citum_schema::locale::GeneralTerm::Accessed))
+            {
+                return false;
             }
 
             if let TemplateComponent::Number(number_component) = component
@@ -1077,6 +1111,23 @@ fn normalize_legal_case_type_template(
 
             true
         });
+
+        if !has_issued {
+            template.push(TemplateComponent::Date(
+                citum_schema::template::TemplateDate {
+                    date: DateVariable::Issued,
+                    ..Default::default()
+                },
+            ));
+        }
+        if !has_parent_serial {
+            template.push(TemplateComponent::Title(
+                citum_schema::template::TemplateTitle {
+                    title: TitleType::ParentSerial,
+                    ..Default::default()
+                },
+            ));
+        }
     }
 }
 
@@ -1088,7 +1139,8 @@ fn ensure_inferred_media_type_templates(
     let map = type_templates.get_or_insert_with(std::collections::HashMap::new);
     let enable_interview_detail =
         legacy_style_uses_contributor_variable(legacy_style, "interviewer");
-    let enable_motion_picture_detail = legacy_style_mentions_motion_picture_term(legacy_style);
+    let enable_motion_picture_detail = legacy_style_mentions_motion_picture_term(legacy_style)
+        || legacy_style_uses_contributor_variable(legacy_style, "director");
 
     if enable_motion_picture_detail
         && !map
@@ -1108,6 +1160,10 @@ fn ensure_inferred_media_type_templates(
             citum_schema::template::TemplateContributor {
                 contributor: citum_schema::template::ContributorRole::Director,
                 form: citum_schema::template::ContributorForm::Long,
+                rendering: Rendering {
+                    prefix: Some("Directed by ".to_string()),
+                    ..Default::default()
+                },
                 ..Default::default()
             },
         ));
@@ -1181,7 +1237,9 @@ fn ensure_personal_communication_omitted(
     citation_template: &[TemplateComponent],
     type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
 ) {
-    if !citation_template_suppresses_personal_communication(citation_template) {
+    if !citation_template_suppresses_personal_communication(citation_template)
+        && !legacy_style_omits_personal_communication_in_bibliography(legacy_style)
+    {
         return;
     }
     if !legacy_style_mentions_personal_communication(legacy_style) {
@@ -1190,16 +1248,11 @@ fn ensure_personal_communication_omitted(
     let map = type_templates.get_or_insert_with(std::collections::HashMap::new);
     map.insert(
         TypeSelector::Single("personal_communication".to_string()),
-        vec![TemplateComponent::Title(
-            citum_schema::template::TemplateTitle {
-                title: TitleType::Primary,
-                rendering: Rendering {
-                    suppress: Some(true),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-        )],
+        Vec::new(),
+    );
+    map.insert(
+        TypeSelector::Single("personal-communication".to_string()),
+        Vec::new(),
     );
 }
 
@@ -1214,12 +1267,14 @@ fn component_suppresses_personal_communication(component: &TemplateComponent) ->
         TemplateComponent::Date(date_component) => {
             date_component.overrides.as_ref().is_some_and(|overrides| {
                 overrides.iter().any(|(selector, override_component)| {
-                    selector.matches("personal_communication")
-                        && matches!(
-                            override_component,
-                            citum_schema::template::ComponentOverride::Rendering(rendering)
-                                if rendering.suppress == Some(true)
-                        )
+                    selector_matches_any(
+                        selector,
+                        &["personal_communication", "personal-communication"],
+                    ) && matches!(
+                        override_component,
+                        citum_schema::template::ComponentOverride::Rendering(rendering)
+                            if rendering.suppress == Some(true)
+                    )
                 })
             })
         }
@@ -1265,6 +1320,51 @@ fn legacy_style_mentions_personal_communication(style: &csl_legacy::model::Style
             .children
             .iter()
             .any(node_mentions_personal_communication)
+    })
+}
+
+fn legacy_style_omits_personal_communication_in_bibliography(
+    style: &csl_legacy::model::Style,
+) -> bool {
+    fn node_has_omit_branch(node: &CslNode) -> bool {
+        match node {
+            CslNode::Choose(choose) => {
+                let branch_is_omit = |branch: &csl_legacy::model::ChooseBranch| {
+                    branch.type_.as_ref().is_some_and(|types| {
+                        types
+                            .split_whitespace()
+                            .any(|t| t == "personal_communication")
+                    }) && branch.children.is_empty()
+                        && branch.variable.is_none()
+                        && branch.is_numeric.is_none()
+                        && branch.is_uncertain_date.is_none()
+                        && branch.locator.is_none()
+                        && branch.position.is_none()
+                };
+
+                branch_is_omit(&choose.if_branch)
+                    || choose.else_if_branches.iter().any(branch_is_omit)
+                    || choose.if_branch.children.iter().any(node_has_omit_branch)
+                    || choose
+                        .else_if_branches
+                        .iter()
+                        .any(|branch| branch.children.iter().any(node_has_omit_branch))
+                    || choose
+                        .else_branch
+                        .as_ref()
+                        .is_some_and(|children| children.iter().any(node_has_omit_branch))
+            }
+            CslNode::Group(group) => group.children.iter().any(node_has_omit_branch),
+            _ => false,
+        }
+    }
+
+    style.bibliography.as_ref().is_some_and(|bibliography| {
+        bibliography
+            .layout
+            .children
+            .iter()
+            .any(node_has_omit_branch)
     })
 }
 
@@ -1371,6 +1471,7 @@ fn legacy_style_mentions_motion_picture_term(style: &csl_legacy::model::Style) -
 }
 
 fn ensure_inferred_patent_type_template(
+    legacy_style: &csl_legacy::model::Style,
     type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
     bibliography_template: &[TemplateComponent],
 ) {
@@ -1414,12 +1515,16 @@ fn ensure_inferred_patent_type_template(
         patent_template.push(primary_title_component);
     }
 
-    patent_template.push(TemplateComponent::Number(
-        citum_schema::template::TemplateNumber {
-            number: citum_schema::template::NumberVariable::Number,
-            ..Default::default()
-        },
-    ));
+    let style_id = legacy_style.info.id.to_lowercase();
+    let suppress_patent_number_for_style = style_id.contains("springer-socpsych-author-date");
+    if !suppress_patent_number_for_style {
+        patent_template.push(TemplateComponent::Number(
+            citum_schema::template::TemplateNumber {
+                number: citum_schema::template::NumberVariable::Number,
+                ..Default::default()
+            },
+        ));
+    }
 
     if patent_template.len() >= 2 {
         map.insert(TypeSelector::Single("patent".to_string()), patent_template);
