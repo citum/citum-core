@@ -305,19 +305,21 @@ impl TemplateCompiler {
             CslnNode::Term(t) => t.source_order,
             _ => None,
         };
-        eprintln!(
-            "TemplateCompiler: extract_source_order({:?}) = {:?}",
-            match node {
-                CslnNode::Variable(v) => format!("Variable({:?})", v.variable),
-                CslnNode::Date(d) => format!("Date({:?})", d.variable),
-                CslnNode::Names(n) => format!("Names({:?})", n.variable),
-                CslnNode::Group(_) => "Group".to_string(),
-                CslnNode::Text { value } => format!("Text({})", value),
-                CslnNode::Condition(_) => "Condition".to_string(),
-                CslnNode::Term(t) => format!("Term({:?})", t.term),
-            },
-            order
-        );
+        if super::migrate_debug_enabled() {
+            eprintln!(
+                "TemplateCompiler: extract_source_order({:?}) = {:?}",
+                match node {
+                    CslnNode::Variable(v) => format!("Variable({:?})", v.variable),
+                    CslnNode::Date(d) => format!("Date({:?})", d.variable),
+                    CslnNode::Names(n) => format!("Names({:?})", n.variable),
+                    CslnNode::Group(_) => "Group".to_string(),
+                    CslnNode::Text { value } => format!("Text({})", value),
+                    CslnNode::Condition(_) => "Condition".to_string(),
+                    CslnNode::Term(t) => format!("Term({:?})", t.term),
+                },
+                order
+            );
+        }
         order
     }
 }

@@ -18,6 +18,7 @@ use citum_schema::{
 };
 use indexmap::IndexMap;
 use std::collections::HashMap;
+use std::sync::OnceLock;
 
 mod bibliography;
 mod compilation;
@@ -49,6 +50,20 @@ struct ComponentOccurrence {
 
 /// Compiles CslnNode trees into TemplateComponents.
 pub struct TemplateCompiler;
+
+fn migrate_debug_enabled() -> bool {
+    static ENABLED: OnceLock<bool> = OnceLock::new();
+    *ENABLED.get_or_init(|| {
+        std::env::var("CITUM_MIGRATE_DEBUG")
+            .map(|value| {
+                matches!(
+                    value.to_ascii_lowercase().as_str(),
+                    "1" | "true" | "yes" | "on"
+                )
+            })
+            .unwrap_or(false)
+    })
+}
 
 impl TemplateCompiler {
     /// Compile a list of CslnNodes into TemplateComponents.

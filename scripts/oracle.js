@@ -51,6 +51,12 @@ function parseArgs() {
     verbose: false,
     refsFixture: DEFAULT_REFS_FIXTURE,
     citationsFixture: DEFAULT_CITATIONS_FIXTURE,
+    forceMigrate: false,
+    migrate: {
+      templateSource: null,
+      minTemplateConfidence: null,
+      templateDir: null,
+    },
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -59,10 +65,18 @@ function parseArgs() {
       options.jsonOutput = true;
     } else if (arg === '--verbose') {
       options.verbose = true;
+    } else if (arg === '--force-migrate') {
+      options.forceMigrate = true;
     } else if (arg === '--refs-fixture') {
       options.refsFixture = path.resolve(args[++i]);
     } else if (arg === '--citations-fixture') {
       options.citationsFixture = path.resolve(args[++i]);
+    } else if (arg === '--migrate-template-source') {
+      options.migrate.templateSource = args[++i];
+    } else if (arg === '--migrate-min-template-confidence') {
+      options.migrate.minTemplateConfidence = args[++i];
+    } else if (arg === '--migrate-template-dir') {
+      options.migrate.templateDir = path.resolve(args[++i]);
     } else if (!arg.startsWith('--') && !options.stylePath) {
       options.stylePath = arg;
     }
@@ -208,16 +222,37 @@ function renderWithCiteprocJs(stylePath, testItems, testCitations) {
   return { citations, bibliography };
 }
 
-function renderWithCslnProcessor(stylePath, testItems, testCitations) {
+function buildMigrateCommand(absStylePath, migrateOptions = {}) {
+  const parts = [
+    'cargo run -q --bin citum-migrate --',
+    `"${absStylePath}"`,
+  ];
+
+  if (migrateOptions.templateSource) {
+    parts.push(`--template-source ${migrateOptions.templateSource}`);
+  }
+  if (migrateOptions.minTemplateConfidence) {
+    parts.push(`--min-template-confidence ${migrateOptions.minTemplateConfidence}`);
+  }
+  if (migrateOptions.templateDir) {
+    parts.push(`--template-dir "${migrateOptions.templateDir}"`);
+  }
+
+  return parts.join(' ');
+}
+
+function renderWithCslnProcessor(stylePath, testItems, testCitations, cliOptions = {}) {
   const projectRoot = path.resolve(__dirname, '..');
   const styleName = path.basename(stylePath, '.csl');
   const stylesDir = path.join(projectRoot, 'styles');
   const workspace = createOracleTempWorkspace();
+  const migrateOptions = cliOptions.migrate || {};
+  const forceMigrate = Boolean(cliOptions.forceMigrate);
 
   try {
     // 1. Try to find a hand-authored style first
     let cslnStylePath = null;
-    if (fs.existsSync(stylesDir)) {
+    if (!forceMigrate && fs.existsSync(stylesDir)) {
       const files = fs.readdirSync(stylesDir);
       const exactMatch = `${styleName}.yaml`;
 
@@ -247,8 +282,9 @@ function renderWithCslnProcessor(stylePath, testItems, testCitations) {
       const absStylePath = path.resolve(stylePath);
       let migratedYaml;
       try {
+        const migrateCmd = buildMigrateCommand(absStylePath, migrateOptions);
         migratedYaml = execSync(
-          `cargo run -q --bin citum-migrate -- "${absStylePath}"`,
+          migrateCmd,
           { cwd: projectRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
         );
       } catch (e) {
@@ -504,7 +540,7 @@ function runOracle(cliOptions = parseArgs()) {
     console.log('Migrating and rendering with CSLN...');
   }
 
-  const csln = renderWithCslnProcessor(stylePath, testItems, testCitations);
+  const csln = renderWithCslnProcessor(stylePath, testItems, testCitations, cliOptions);
 
   if (!csln || csln.error) {
     if (jsonOutput) {

@@ -122,6 +122,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 0. Extract global options (new CSLN Config)
     let mut options = OptionsExtractor::extract(&legacy_style);
     apply_preset_extractions(&mut options);
+    let citation_contributor_overrides =
+        citum_migrate::options_extractor::contributors::extract_citation_contributor_overrides(
+            &legacy_style,
+        );
+    let bibliography_contributor_overrides =
+        citum_migrate::options_extractor::contributors::extract_bibliography_contributor_overrides(
+            &legacy_style,
+        );
+    let citation_has_scope_shorten = citation_contributor_overrides
+        .as_ref()
+        .and_then(|contributors| contributors.shorten.as_ref())
+        .is_some();
 
     // Resolve template: try hand-authored, cached inferred, or live inference
     // before falling back to the XML compiler pipeline.
@@ -219,6 +231,33 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    // For inferred in-text author-year citations, normalize contributor rendering
+    // toward family-only short forms and defer et-al thresholds to citation-scope
+    // options when present. Some styles are extracted as `processing: custom`
+    // despite using author-year in-text behavior, so detect by template shape.
+    let is_in_text_class = legacy_style.class == "in-text";
+    if is_in_text_class && let Some(resolved_cit) = resolved.citation.as_mut() {
+        let is_inferred_source = matches!(
+            resolved_cit.source,
+            template_resolver::TemplateSource::InferredCached(_)
+                | template_resolver::TemplateSource::InferredLive
+        );
+        let is_author_year_shape = citation_template_is_author_year_only(&resolved_cit.template)
+            && !citation_template_has_citation_number(&resolved_cit.template);
+        if is_inferred_source
+            && is_author_year_shape
+            && normalize_author_date_inferred_contributors(
+                &mut resolved_cit.template,
+                citation_has_scope_shorten,
+            )
+        {
+            eprintln!(
+                "Normalized inferred author-date citation contributors for {} (family-short + scoped shorten).",
+                style_name
+            );
+        }
+    }
+
     let xml_fallback = Some(compile_from_xml(
         &legacy_style,
         &mut options,
@@ -305,13 +344,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         for component in &mut new_bib {
             scrub_inferred_literal_artifacts(component);
         }
+        relax_inferred_bibliography_date_suppression(&mut new_bib);
         if let Some(type_templates) = type_templates.as_mut() {
             for template in type_templates.values_mut() {
-                for component in template {
+                for component in template.iter_mut() {
                     scrub_inferred_literal_artifacts(component);
                 }
+                relax_inferred_bibliography_date_suppression(template);
             }
         }
+        normalize_legal_case_type_template(&mut type_templates);
+        ensure_inferred_media_type_templates(&legacy_style, &mut type_templates, &new_bib);
+        ensure_inferred_patent_type_template(&mut type_templates, &new_bib);
     }
 
     let mut new_cit = if let Some(ref resolved_cit) = resolved.citation {
@@ -322,6 +366,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .expect("XML fallback must exist when citation is unresolved");
         new_cit.clone()
     };
+
+    if inferred_bib_source {
+        ensure_personal_communication_omitted(&legacy_style, &new_cit, &mut type_templates);
+    }
 
     // Override bibliography options with inferred values when available.
     // The XML options extractor often gets the wrong delimiter because it reads group
@@ -380,6 +428,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some(citum_schema::options::Processing::Numeric)
     ) {
         ensure_numeric_locator_citation_component(&legacy_style.citation.layout, &mut new_cit);
+        normalize_wrapped_numeric_locator_citation_component(
+            &legacy_style.citation.layout,
+            &mut new_cit,
+            &mut citation_delimiter,
+        );
         move_group_wrap_to_citation_items(
             &legacy_style.citation.layout,
             &mut new_cit,
@@ -395,19 +448,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 5. Build Style in correct format for citum_engine
     let citation_scope_options =
-        citum_migrate::options_extractor::contributors::extract_citation_contributor_overrides(
-            &legacy_style,
-        )
-        .map(|contributors| citum_schema::options::Config {
+        citation_contributor_overrides.map(|contributors| citum_schema::options::Config {
             contributors: Some(contributors),
             ..Default::default()
         });
 
     let bibliography_scope_options =
-        citum_migrate::options_extractor::contributors::extract_bibliography_contributor_overrides(
-            &legacy_style,
-        )
-        .map(|contributors| citum_schema::options::Config {
+        bibliography_contributor_overrides.map(|contributors| citum_schema::options::Config {
             contributors: Some(contributors),
             ..Default::default()
         });
@@ -946,6 +993,439 @@ fn apply_type_overrides(
     }
 }
 
+fn relax_inferred_bibliography_date_suppression(template: &mut [TemplateComponent]) {
+    for component in template {
+        match component {
+            TemplateComponent::Date(date_component) => {
+                if date_component.date != DateVariable::Issued {
+                    continue;
+                }
+                if let Some(overrides) = date_component.overrides.as_mut() {
+                    for (selector, override_value) in overrides.iter_mut() {
+                        if !selector_matches_any(
+                            selector,
+                            &[
+                                "patent",
+                                "broadcast",
+                                "interview",
+                                "motion_picture",
+                                "webpage",
+                                "legal_case",
+                                "legal-case",
+                            ],
+                        ) {
+                            continue;
+                        }
+                        if let citum_schema::template::ComponentOverride::Rendering(rendering) =
+                            override_value
+                            && rendering.suppress == Some(true)
+                        {
+                            rendering.suppress = Some(false);
+                        }
+                    }
+                }
+            }
+            TemplateComponent::List(list) => {
+                relax_inferred_bibliography_date_suppression(&mut list.items)
+            }
+            _ => {}
+        }
+    }
+}
+
+fn selector_matches_any(selector: &TypeSelector, candidates: &[&str]) -> bool {
+    candidates
+        .iter()
+        .any(|candidate| selector.matches(candidate))
+}
+
+fn normalize_legal_case_type_template(
+    type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+) {
+    let Some(map) = type_templates.as_mut() else {
+        return;
+    };
+
+    for (selector, template) in map.iter_mut() {
+        if !selector.matches("legal_case") && !selector.matches("legal-case") {
+            continue;
+        }
+
+        let mut seen_locator = false;
+        template.retain_mut(|component| {
+            if let TemplateComponent::Term(term) = component
+                && (matches!(term.term, citum_schema::locale::GeneralTerm::Circa)
+                    || matches!(term.term, citum_schema::locale::GeneralTerm::At))
+            {
+                return false;
+            }
+
+            if let TemplateComponent::Variable(variable) = component
+                && variable.variable == SimpleVariable::Locator
+            {
+                if seen_locator {
+                    return false;
+                }
+                seen_locator = true;
+            }
+
+            if let TemplateComponent::Number(number_component) = component
+                && number_component.number == citum_schema::template::NumberVariable::Volume
+            {
+                number_component.rendering.suppress = Some(false);
+            }
+
+            true
+        });
+    }
+}
+
+fn ensure_inferred_media_type_templates(
+    legacy_style: &csl_legacy::model::Style,
+    type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+    bibliography_template: &[TemplateComponent],
+) {
+    let map = type_templates.get_or_insert_with(std::collections::HashMap::new);
+    let enable_interview_detail =
+        legacy_style_uses_contributor_variable(legacy_style, "interviewer");
+    let enable_motion_picture_detail = legacy_style_mentions_motion_picture_term(legacy_style);
+
+    if enable_motion_picture_detail
+        && !map
+            .keys()
+            .any(|selector| selector.matches("motion_picture"))
+    {
+        let mut template = base_media_template_from_bibliography(bibliography_template);
+        template.push(TemplateComponent::Variable(TemplateVariable {
+            variable: SimpleVariable::Genre,
+            ..Default::default()
+        }));
+        template.push(TemplateComponent::Variable(TemplateVariable {
+            variable: SimpleVariable::Medium,
+            ..Default::default()
+        }));
+        template.push(TemplateComponent::Contributor(
+            citum_schema::template::TemplateContributor {
+                contributor: citum_schema::template::ContributorRole::Director,
+                form: citum_schema::template::ContributorForm::Long,
+                ..Default::default()
+            },
+        ));
+        if template.len() >= 3 {
+            map.insert(TypeSelector::Single("motion_picture".to_string()), template);
+        }
+    }
+
+    if enable_interview_detail && !map.keys().any(|selector| selector.matches("interview")) {
+        let mut template = base_media_template_from_bibliography(bibliography_template);
+        template.push(TemplateComponent::Contributor(
+            citum_schema::template::TemplateContributor {
+                contributor: citum_schema::template::ContributorRole::Interviewer,
+                form: citum_schema::template::ContributorForm::Long,
+                ..Default::default()
+            },
+        ));
+        template.push(TemplateComponent::Variable(TemplateVariable {
+            variable: SimpleVariable::Medium,
+            ..Default::default()
+        }));
+        template.push(TemplateComponent::Variable(TemplateVariable {
+            variable: SimpleVariable::Url,
+            ..Default::default()
+        }));
+        if template.len() >= 3 {
+            map.insert(TypeSelector::Single("interview".to_string()), template);
+        }
+    }
+}
+
+fn base_media_template_from_bibliography(
+    bibliography_template: &[TemplateComponent],
+) -> Vec<TemplateComponent> {
+    let mut template = Vec::new();
+    if let Some(author_component) = bibliography_template.iter().find_map(|component| {
+        if let TemplateComponent::Contributor(contributor) = component
+            && contributor.contributor == citum_schema::template::ContributorRole::Author
+        {
+            return Some(component.clone());
+        }
+        None
+    }) {
+        template.push(author_component);
+    }
+    if let Some(issued_component) = bibliography_template.iter().find_map(|component| {
+        if let TemplateComponent::Date(date_component) = component
+            && date_component.date == DateVariable::Issued
+        {
+            return Some(component.clone());
+        }
+        None
+    }) {
+        template.push(issued_component);
+    }
+    if let Some(title_component) = bibliography_template.iter().find_map(|component| {
+        if let TemplateComponent::Title(title_component) = component
+            && title_component.title == TitleType::Primary
+        {
+            return Some(component.clone());
+        }
+        None
+    }) {
+        template.push(title_component);
+    }
+    template
+}
+
+fn ensure_personal_communication_omitted(
+    legacy_style: &csl_legacy::model::Style,
+    citation_template: &[TemplateComponent],
+    type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+) {
+    if !citation_template_suppresses_personal_communication(citation_template) {
+        return;
+    }
+    if !legacy_style_mentions_personal_communication(legacy_style) {
+        return;
+    }
+    let map = type_templates.get_or_insert_with(std::collections::HashMap::new);
+    map.insert(
+        TypeSelector::Single("personal_communication".to_string()),
+        vec![TemplateComponent::Title(
+            citum_schema::template::TemplateTitle {
+                title: TitleType::Primary,
+                rendering: Rendering {
+                    suppress: Some(true),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+        )],
+    );
+}
+
+fn citation_template_suppresses_personal_communication(template: &[TemplateComponent]) -> bool {
+    template
+        .iter()
+        .any(component_suppresses_personal_communication)
+}
+
+fn component_suppresses_personal_communication(component: &TemplateComponent) -> bool {
+    match component {
+        TemplateComponent::Date(date_component) => {
+            date_component.overrides.as_ref().is_some_and(|overrides| {
+                overrides.iter().any(|(selector, override_component)| {
+                    selector.matches("personal_communication")
+                        && matches!(
+                            override_component,
+                            citum_schema::template::ComponentOverride::Rendering(rendering)
+                                if rendering.suppress == Some(true)
+                        )
+                })
+            })
+        }
+        TemplateComponent::List(list) => list
+            .items
+            .iter()
+            .any(component_suppresses_personal_communication),
+        _ => false,
+    }
+}
+
+fn legacy_style_mentions_personal_communication(style: &csl_legacy::model::Style) -> bool {
+    fn node_mentions_personal_communication(node: &CslNode) -> bool {
+        match node {
+            CslNode::Choose(choose) => {
+                let branch_mentions = |branch: &csl_legacy::model::ChooseBranch| {
+                    branch.type_.as_ref().is_some_and(|types| {
+                        types
+                            .split_whitespace()
+                            .any(|t| t == "personal_communication")
+                    }) || branch
+                        .children
+                        .iter()
+                        .any(node_mentions_personal_communication)
+                };
+                branch_mentions(&choose.if_branch)
+                    || choose.else_if_branches.iter().any(branch_mentions)
+                    || choose.else_branch.as_ref().is_some_and(|children| {
+                        children.iter().any(node_mentions_personal_communication)
+                    })
+            }
+            CslNode::Group(group) => group
+                .children
+                .iter()
+                .any(node_mentions_personal_communication),
+            _ => false,
+        }
+    }
+
+    style.bibliography.as_ref().is_some_and(|bibliography| {
+        bibliography
+            .layout
+            .children
+            .iter()
+            .any(node_mentions_personal_communication)
+    })
+}
+
+fn legacy_style_uses_contributor_variable(
+    style: &csl_legacy::model::Style,
+    variable_name: &str,
+) -> bool {
+    fn node_uses_contributor_variable(node: &CslNode, variable_name: &str) -> bool {
+        match node {
+            CslNode::Names(names) => names
+                .variable
+                .split_whitespace()
+                .any(|candidate| candidate == variable_name),
+            CslNode::Group(group) => group
+                .children
+                .iter()
+                .any(|child| node_uses_contributor_variable(child, variable_name)),
+            CslNode::Choose(choose) => {
+                choose
+                    .if_branch
+                    .children
+                    .iter()
+                    .any(|child| node_uses_contributor_variable(child, variable_name))
+                    || choose.else_if_branches.iter().any(|branch| {
+                        branch
+                            .children
+                            .iter()
+                            .any(|child| node_uses_contributor_variable(child, variable_name))
+                    })
+                    || choose.else_branch.as_ref().is_some_and(|children| {
+                        children
+                            .iter()
+                            .any(|child| node_uses_contributor_variable(child, variable_name))
+                    })
+            }
+            _ => false,
+        }
+    }
+
+    style.macros.iter().any(|macro_def| {
+        macro_def
+            .children
+            .iter()
+            .any(|node| node_uses_contributor_variable(node, variable_name))
+    }) || style
+        .citation
+        .layout
+        .children
+        .iter()
+        .any(|node| node_uses_contributor_variable(node, variable_name))
+        || style.bibliography.as_ref().is_some_and(|bibliography| {
+            bibliography
+                .layout
+                .children
+                .iter()
+                .any(|node| node_uses_contributor_variable(node, variable_name))
+        })
+}
+
+fn legacy_style_mentions_motion_picture_term(style: &csl_legacy::model::Style) -> bool {
+    fn node_mentions_motion_picture(node: &CslNode) -> bool {
+        match node {
+            CslNode::Text(text) => text
+                .term
+                .as_ref()
+                .is_some_and(|term| term == "motion_picture"),
+            CslNode::Group(group) => group.children.iter().any(node_mentions_motion_picture),
+            CslNode::Choose(choose) => {
+                choose
+                    .if_branch
+                    .children
+                    .iter()
+                    .any(node_mentions_motion_picture)
+                    || choose
+                        .else_if_branches
+                        .iter()
+                        .any(|branch| branch.children.iter().any(node_mentions_motion_picture))
+                    || choose
+                        .else_branch
+                        .as_ref()
+                        .is_some_and(|children| children.iter().any(node_mentions_motion_picture))
+            }
+            _ => false,
+        }
+    }
+
+    style
+        .macros
+        .iter()
+        .any(|macro_def| macro_def.children.iter().any(node_mentions_motion_picture))
+        || style
+            .citation
+            .layout
+            .children
+            .iter()
+            .any(node_mentions_motion_picture)
+        || style.bibliography.as_ref().is_some_and(|bibliography| {
+            bibliography
+                .layout
+                .children
+                .iter()
+                .any(node_mentions_motion_picture)
+        })
+}
+
+fn ensure_inferred_patent_type_template(
+    type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+    bibliography_template: &[TemplateComponent],
+) {
+    let map = type_templates.get_or_insert_with(std::collections::HashMap::new);
+    if map.keys().any(|selector| selector.matches("patent")) {
+        return;
+    }
+
+    let mut patent_template = Vec::new();
+
+    if let Some(author_component) = bibliography_template.iter().find_map(|component| {
+        if let TemplateComponent::Contributor(contributor) = component
+            && contributor.contributor == citum_schema::template::ContributorRole::Author
+        {
+            return Some(component.clone());
+        }
+        None
+    }) {
+        patent_template.push(author_component);
+    }
+
+    if let Some(issued_component) = bibliography_template.iter().find_map(|component| {
+        if let TemplateComponent::Date(date_component) = component
+            && date_component.date == DateVariable::Issued
+        {
+            return Some(component.clone());
+        }
+        None
+    }) {
+        patent_template.push(issued_component);
+    }
+
+    if let Some(primary_title_component) = bibliography_template.iter().find_map(|component| {
+        if let TemplateComponent::Title(title_component) = component
+            && title_component.title == TitleType::Primary
+        {
+            return Some(component.clone());
+        }
+        None
+    }) {
+        patent_template.push(primary_title_component);
+    }
+
+    patent_template.push(TemplateComponent::Number(
+        citum_schema::template::TemplateNumber {
+            number: citum_schema::template::NumberVariable::Number,
+            ..Default::default()
+        },
+    ));
+
+    if patent_template.len() >= 2 {
+        map.insert(TypeSelector::Single("patent".to_string()), patent_template);
+    }
+}
+
 fn ensure_numeric_locator_citation_component(layout: &Layout, template: &mut [TemplateComponent]) {
     if !layout_uses_citation_locator(layout) || citation_template_has_locator(template) {
         return;
@@ -979,6 +1459,140 @@ fn ensure_numeric_locator_citation_component(layout: &Layout, template: &mut [Te
             }
         }
     }
+}
+
+fn normalize_wrapped_numeric_locator_citation_component(
+    layout: &Layout,
+    template: &mut [TemplateComponent],
+    citation_delimiter: &mut Option<String>,
+) {
+    let Some((locator_wrap, no_inner_delimiter, strip_label_periods)) =
+        find_wrapped_locator_group_format(&layout.children)
+    else {
+        return;
+    };
+
+    if !citation_template_has_citation_number(template) || !citation_template_has_locator(template)
+    {
+        return;
+    }
+
+    if apply_wrapped_locator_formatting(template, &locator_wrap, strip_label_periods)
+        && no_inner_delimiter
+    {
+        *citation_delimiter = Some(String::new());
+    }
+}
+
+fn find_wrapped_locator_group_format(nodes: &[CslNode]) -> Option<(WrapPunctuation, bool, bool)> {
+    for node in nodes {
+        match node {
+            CslNode::Group(group) => {
+                let wrap = match (group.prefix.as_deref(), group.suffix.as_deref()) {
+                    (Some("("), Some(")")) => Some(WrapPunctuation::Parentheses),
+                    (Some("["), Some("]")) => Some(WrapPunctuation::Brackets),
+                    _ => None,
+                };
+                if let Some(wrap) = wrap
+                    && nodes_use_citation_locator(&group.children)
+                {
+                    let strip_label_periods =
+                        nodes_have_locator_label_with_stripped_periods(&group.children);
+                    return Some((wrap, group.delimiter.is_none(), strip_label_periods));
+                }
+
+                if let Some(found) = find_wrapped_locator_group_format(&group.children) {
+                    return Some(found);
+                }
+            }
+            CslNode::Choose(choose) => {
+                if let Some(found) = find_wrapped_locator_group_format(&choose.if_branch.children) {
+                    return Some(found);
+                }
+                for branch in &choose.else_if_branches {
+                    if let Some(found) = find_wrapped_locator_group_format(&branch.children) {
+                        return Some(found);
+                    }
+                }
+                if let Some(else_branch) = choose.else_branch.as_ref()
+                    && let Some(found) = find_wrapped_locator_group_format(else_branch)
+                {
+                    return Some(found);
+                }
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+fn nodes_have_locator_label_with_stripped_periods(nodes: &[CslNode]) -> bool {
+    nodes
+        .iter()
+        .any(node_has_locator_label_with_stripped_periods)
+}
+
+fn node_has_locator_label_with_stripped_periods(node: &CslNode) -> bool {
+    match node {
+        CslNode::Label(label) => {
+            label.variable.as_deref() == Some("locator") && label.strip_periods == Some(true)
+        }
+        CslNode::Group(group) => nodes_have_locator_label_with_stripped_periods(&group.children),
+        CslNode::Choose(choose) => {
+            nodes_have_locator_label_with_stripped_periods(&choose.if_branch.children)
+                || choose
+                    .else_if_branches
+                    .iter()
+                    .any(|branch| nodes_have_locator_label_with_stripped_periods(&branch.children))
+                || choose.else_branch.as_ref().is_some_and(|children| {
+                    nodes_have_locator_label_with_stripped_periods(children)
+                })
+        }
+        _ => false,
+    }
+}
+
+fn apply_wrapped_locator_formatting(
+    template: &mut [TemplateComponent],
+    wrap: &WrapPunctuation,
+    strip_label_periods: bool,
+) -> bool {
+    let mut changed = false;
+    for component in template {
+        match component {
+            TemplateComponent::Variable(variable)
+                if variable.variable == SimpleVariable::Locator =>
+            {
+                if variable.show_label != Some(true) {
+                    variable.show_label = Some(true);
+                    changed = true;
+                }
+                if strip_label_periods && variable.strip_label_periods != Some(true) {
+                    variable.strip_label_periods = Some(true);
+                    changed = true;
+                }
+                if variable.rendering.wrap.as_ref() != Some(wrap) {
+                    variable.rendering.wrap = Some(wrap.clone());
+                    changed = true;
+                }
+                if variable.rendering.prefix.is_some() {
+                    variable.rendering.prefix = None;
+                    changed = true;
+                }
+                if variable.rendering.suffix.is_some() {
+                    variable.rendering.suffix = None;
+                    changed = true;
+                }
+            }
+            TemplateComponent::List(list) => {
+                if apply_wrapped_locator_formatting(&mut list.items, wrap, strip_label_periods) {
+                    changed = true;
+                }
+            }
+            _ => {}
+        }
+    }
+    changed
 }
 
 fn ensure_author_date_locator_citation_component(
@@ -1276,6 +1890,41 @@ fn normalize_contributor_form_to_short(template: &mut [TemplateComponent]) -> bo
             }
             TemplateComponent::List(list) => {
                 if normalize_contributor_form_to_short(&mut list.items) {
+                    changed = true;
+                }
+            }
+            _ => {}
+        }
+    }
+    changed
+}
+
+fn normalize_author_date_inferred_contributors(
+    template: &mut [TemplateComponent],
+    drop_component_shorten: bool,
+) -> bool {
+    let mut changed = false;
+    for component in template {
+        match component {
+            TemplateComponent::Contributor(c) => {
+                if c.form == citum_schema::template::ContributorForm::Long {
+                    c.form = citum_schema::template::ContributorForm::Short;
+                    changed = true;
+                }
+                if c.name_order == Some(citum_schema::template::NameOrder::GivenFirst) {
+                    c.name_order = Some(citum_schema::template::NameOrder::FamilyFirst);
+                    changed = true;
+                }
+                if drop_component_shorten && c.shorten.is_some() {
+                    c.shorten = None;
+                    changed = true;
+                }
+            }
+            TemplateComponent::List(list) => {
+                if normalize_author_date_inferred_contributors(
+                    &mut list.items,
+                    drop_component_shorten,
+                ) {
                     changed = true;
                 }
             }

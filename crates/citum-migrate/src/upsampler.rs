@@ -1,6 +1,21 @@
 use citum_schema::{self as csln, FormattingOptions, ItemType, Variable};
 use csl_legacy::model::{self as legacy, CslNode as LNode};
 use std::collections::HashMap;
+use std::sync::OnceLock;
+
+fn migrate_debug_enabled() -> bool {
+    static ENABLED: OnceLock<bool> = OnceLock::new();
+    *ENABLED.get_or_init(|| {
+        std::env::var("CITUM_MIGRATE_DEBUG")
+            .map(|value| {
+                matches!(
+                    value.to_ascii_lowercase().as_str(),
+                    "1" | "true" | "yes" | "on"
+                )
+            })
+            .unwrap_or(false)
+    })
+}
 
 #[derive(Default)]
 pub struct Upsampler {
@@ -62,10 +77,12 @@ impl Upsampler {
                         let var_name = format!("{:?}", var).to_lowercase();
                         prov.record_upsampling(&var_name, "Text", "Variable");
                     }
-                    eprintln!(
-                        "Upsampler: Text({:?}) macro_call_order={:?}",
-                        var, t.macro_call_order
-                    );
+                    if migrate_debug_enabled() {
+                        eprintln!(
+                            "Upsampler: Text({:?}) macro_call_order={:?}",
+                            var, t.macro_call_order
+                        );
+                    }
                     return Some(csln::CslnNode::Variable(csln::VariableBlock {
                         variable: var,
                         label: None,
@@ -248,10 +265,12 @@ impl Upsampler {
             });
         }
 
-        eprintln!(
-            "Upsampler: Names({:?}) macro_call_order={:?}",
-            variable, n.macro_call_order
-        );
+        if migrate_debug_enabled() {
+            eprintln!(
+                "Upsampler: Names({:?}) macro_call_order={:?}",
+                variable, n.macro_call_order
+            );
+        }
         Some(csln::CslnNode::Names(csln::NamesBlock {
             variable,
             options,
@@ -478,10 +497,12 @@ impl Upsampler {
             }
         }
 
-        eprintln!(
-            "Upsampler: Date({:?}) macro_call_order={:?}",
-            variable, d.macro_call_order
-        );
+        if migrate_debug_enabled() {
+            eprintln!(
+                "Upsampler: Date({:?}) macro_call_order={:?}",
+                variable, d.macro_call_order
+            );
+        }
         Some(csln::CslnNode::Date(csln::DateBlock {
             variable,
             options: csln::DateOptions {

@@ -58,8 +58,15 @@ function detectTemplateSource(styleName) {
   const handPath = path.join(WORKSPACE_ROOT, 'examples', `${styleName}-style.yaml`);
   if (fs.existsSync(handPath)) return 'hand';
 
-  const cachePath = path.join(WORKSPACE_ROOT, 'templates', 'inferred', `${styleName}.json`);
-  if (fs.existsSync(cachePath)) return 'inferred';
+  const inferredDir = path.join(WORKSPACE_ROOT, 'templates', 'inferred');
+  const inferredCandidates = [
+    `${styleName}.bibliography.json`,
+    `${styleName}.citation.json`,
+    `${styleName}.json`, // legacy fallback naming
+  ];
+  if (inferredCandidates.some((name) => fs.existsSync(path.join(inferredDir, name)))) {
+    return 'inferred';
+  }
 
   return 'xml';
 }
