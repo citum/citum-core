@@ -53,11 +53,11 @@ use std::collections::{HashMap, HashSet};
 fn effective_locator_string(item: &CitationItem) -> Option<String> {
     use citum_schema::citation::ResolvedLocator;
     match item.resolved_locator() {
-        Some(ResolvedLocator::Flat { value, .. }) => Some(value.to_string()),
+        Some(ResolvedLocator::Flat { value, .. }) => Some(value),
         Some(ResolvedLocator::Compound(segments)) => {
             let parts: Vec<String> = segments
                 .iter()
-                .map(|s| format!("{:?}:{}", s.label, s.value))
+                .map(|s| format!("{:?}:{}", s.label, s.value.value_str()))
                 .collect();
             Some(parts.join(","))
         }

@@ -465,6 +465,7 @@ dependencies = [
  "citum-edtf",
  "criterion",
  "csl-legacy",
+ "indexmap 2.13.0",
  "schemars",
  "serde",
  "serde_json",

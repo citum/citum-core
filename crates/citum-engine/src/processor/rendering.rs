@@ -43,10 +43,7 @@ fn collapse_compound_locator(segments: &[LocatorSegment], locale: &Locale) -> St
     segments
         .iter()
         .map(|seg| {
-            let plural = seg.value.contains('\u{2013}')
-                || seg.value.contains('-')
-                || seg.value.contains(',')
-                || seg.value.contains('&');
+            let plural = seg.value.is_plural();
             let term = locale
                 .locator_term(&seg.label, plural, TermForm::Short)
                 .or_else(|| locale.locator_term(&seg.label, plural, TermForm::Symbol))
@@ -58,7 +55,7 @@ fn collapse_compound_locator(segments: &[LocatorSegment], locale: &Locale) -> St
                         .and_then(|v| v.as_str().map(String::from))
                         .unwrap_or_else(|| format!("{:?}", seg.label))
                 });
-            format!("{} {}", term, seg.value)
+            format!("{} {}", term, seg.value.value_str())
         })
         .collect::<Vec<_>>()
         .join(", ")
@@ -74,9 +71,9 @@ fn resolve_item_locator(
 ) -> (Option<String>, Option<LocatorType>) {
     match item.resolved_locator() {
         Some(ResolvedLocator::Compound(segments)) => {
-            (Some(collapse_compound_locator(segments, locale)), None)
+            (Some(collapse_compound_locator(&segments, locale)), None)
         }
-        Some(ResolvedLocator::Flat { label, value }) => (Some(value.to_string()), Some(label)),
+        Some(ResolvedLocator::Flat { label, value }) => (Some(value), Some(label)),
         None => (None, None),
     }
 }
@@ -1366,6 +1363,7 @@ fn resolve_component_for_ref_type(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use citum_schema::citation::{LocatorValue, LocatorsInput};
     use citum_schema::template::*;
 
     #[test]
@@ -1473,11 +1471,11 @@ mod tests {
         let segments = vec![
             LocatorSegment {
                 label: LocatorType::Chapter,
-                value: "3".to_string(),
+                value: LocatorValue::from("3"),
             },
             LocatorSegment {
                 label: LocatorType::Section,
-                value: "42".to_string(),
+                value: LocatorValue::from("42"),
             },
         ];
         let rendered = collapse_compound_locator(&segments, &locale);
@@ -1492,7 +1490,7 @@ mod tests {
         // Range with en-dash should trigger plural
         let segments = vec![LocatorSegment {
             label: LocatorType::Page,
-            value: "10\u{2013}12".to_string(),
+            value: LocatorValue::from("10\u{2013}12"),
         }];
         let rendered = collapse_compound_locator(&segments, &locale);
         assert!(rendered.contains("10\u{2013}12"));
@@ -1503,7 +1501,7 @@ mod tests {
         let locale = Locale::default();
         let segments = vec![LocatorSegment {
             label: LocatorType::SubVerbo,
-            value: "test".to_string(),
+            value: LocatorValue::from("test"),
         }];
         let rendered = collapse_compound_locator(&segments, &locale);
         // Should use kebab-case "sub-verbo", not PascalCase "SubVerbo"
@@ -1520,10 +1518,10 @@ mod tests {
             id: "test".to_string(),
             label: Some(LocatorType::Page),
             locator: Some("99".to_string()),
-            locators: Some(vec![LocatorSegment {
+            locators: Some(LocatorsInput::List(vec![LocatorSegment {
                 label: LocatorType::Chapter,
-                value: "5".to_string(),
-            }]),
+                value: LocatorValue::from("5"),
+            }])),
             ..Default::default()
         };
         let (value, label) = resolve_item_locator(&item, &locale);
