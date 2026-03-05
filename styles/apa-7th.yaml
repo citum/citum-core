@@ -33,10 +33,7 @@ options:
     editor-label-format: short-suffix
     demote-non-dropping-particle: never
     delimiter-precedes-last: always
-    and:
-      mode-dependent:
-        integral: text
-        non-integral: symbol
+    and: symbol
     shorten:
       min: 21
       use-first: 19
@@ -89,6 +86,9 @@ citation:
   multi-cite-delimiter: "; "
   integral:
     delimiter: " "
+    options:
+      contributors:
+        and: text
     template:
       - contributor: author
         form: short

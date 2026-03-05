@@ -80,6 +80,11 @@ pub struct ContributorConfig {
     /// Delimiter between family and given name when inverted (default: ", ").
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sort_separator: Option<String>,
+    /// How to render given names. See `NameForm` for variants.
+    /// Per-scope overrides (per-mode, per-position) are expressed by setting
+    /// this field in the appropriate scope's contributor config block.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name_form: Option<NameForm>,
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
@@ -124,6 +129,9 @@ impl ContributorConfig {
         if other.sort_separator.is_some() {
             self.sort_separator = other.sort_separator.clone();
         }
+        if other.name_form.is_some() {
+            self.name_form = other.name_form;
+        }
     }
 }
 
@@ -162,6 +170,30 @@ pub enum DisplayAsSort {
     None,
 }
 
+/// How to render the given-name component of a contributor name.
+///
+/// Controls whether full given names, family name only, or initialized
+/// given names are rendered. Used to express first/subsequent mention
+/// differences (Chicago) and integral/non-integral differences.
+///
+/// Initialization formatting details (`initialize_with`, `initialize_with_hyphen`)
+/// are separate fields and only take effect when `NameForm::Initials` is active.
+#[derive(Debug, Default, Deserialize, Serialize, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum NameForm {
+    /// Render full given names: "John D. Smith".
+    #[default]
+    Full,
+    /// Render family name only, suppressing given names: "Smith".
+    /// Used for subsequent mentions in Chicago/Turabian note styles.
+    FamilyOnly,
+    /// Render initialized given names using `initialize_with` separator.
+    /// If `initialize_with` is None, defaults to ". " (e.g., "J. Smith").
+    /// Empty string gives compact initials: "JD Smith".
+    Initials,
+}
+
 /// Conjunction options between contributors.
 #[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
@@ -175,18 +207,6 @@ pub enum AndOptions {
     /// No conjunction (e.g., "Smith, Jones").
     #[default]
     None,
-    /// Context-sensitive conjunction based on the citation mode.
-    ///
-    /// This allows styles like APA 7th to use "and" in narrative (integral)
-    /// citations but "&" in parenthetical (non-integral) ones.
-    ModeDependent {
-        /// The option to use for integral/narrative citations (e.g., "Smith and Jones").
-        integral: Box<AndOptions>,
-        /// The option to use for non-integral/parenthetical citations (e.g., "(Smith & Jones)").
-        /// Also typically serves as the default for bibliographies.
-        #[serde(rename = "non-integral")]
-        non_integral: Box<AndOptions>,
-    },
 }
 
 /// Role display options.
