@@ -152,6 +152,10 @@
                         <span class="material-icons text-lg opacity-60">library_books</span>
                         Bibliography Grouping
                     </a>
+                    <a href="#compound-numeric-sets" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+                        <span class="material-icons text-lg opacity-60">view_agenda</span>
+                        Compound Numeric Sets
+                    </a>
                     <a href="#multilingual-support" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
                         <span class="material-icons text-lg opacity-60">translate</span>
                         Multilingual Support
@@ -527,6 +531,86 @@ Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the Ameri
                     <p class="text-xs text-slate-500 mt-2">
                         Expected output with German headings (Primärquellen, Sekundärquellen, Archivalische Quellen).
                     </p>
+                </div>
+            </div>
+        </article>
+
+        <!-- Compound Numeric Sets -->
+        <article id="compound-numeric-sets" class="example-card rounded-xl overflow-hidden shadow-sm scroll-mt-24">
+            <div class="p-8 bg-slate-50 border-b border-slate-200">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                        <span class="material-icons">view_agenda</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900">
+                        Compound Numeric Sets
+                    </h2>
+                </div>
+                <p class="text-slate-600 leading-relaxed mb-6">
+                    Chemistry-style compound numeric output is modeled via top-level bibliography
+                    <code class="text-xs bg-slate-200 px-1 rounded">sets</code>, not per-reference fields.
+                    Styles opt in with <code class="text-xs bg-slate-200 px-1 rounded">compound-numeric</code>.
+                </p>
+            </div>
+
+            <div class="border-b border-slate-200">
+                <div class="px-8 py-4 bg-slate-100">
+                    <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                        Input Bibliography (Independent Sets)
+                    </h3>
+                </div>
+                <div class="bg-slate-900 p-6 overflow-x-auto">
+                    <pre class="font-mono text-sm text-slate-300 leading-relaxed">
+<span class="text-indigo-400">references</span>:
+  - <span class="text-primary">id</span>: <span class="text-emerald-400">doe2024a</span>
+    <span class="text-primary">class</span>: <span class="text-emerald-400">monograph</span>
+    <span class="text-primary">type</span>: <span class="text-emerald-400">book</span>
+    <span class="text-primary">title</span>: <span class="text-emerald-400">"Catalysis I"</span>
+    <span class="text-primary">issued</span>: <span class="text-emerald-400">"2024"</span>
+  - <span class="text-primary">id</span>: <span class="text-emerald-400">doe2024b</span>
+    <span class="text-primary">class</span>: <span class="text-emerald-400">monograph</span>
+    <span class="text-primary">type</span>: <span class="text-emerald-400">book</span>
+    <span class="text-primary">title</span>: <span class="text-emerald-400">"Catalysis II"</span>
+    <span class="text-primary">issued</span>: <span class="text-emerald-400">"2024"</span>
+
+<span class="text-indigo-400">sets</span>:
+  <span class="text-primary">catalysis-series</span>: [<span class="text-emerald-400">doe2024a, doe2024b</span>]</pre>
+                </div>
+            </div>
+
+            <div class="border-b border-slate-200">
+                <div class="px-8 py-4 bg-slate-100">
+                    <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                        Style Opt-In
+                    </h3>
+                </div>
+                <div class="bg-slate-900 p-6 overflow-x-auto">
+                    <pre class="font-mono text-sm text-slate-300 leading-relaxed">
+<span class="text-indigo-400">options</span>:
+  <span class="text-primary">processing</span>: <span class="text-emerald-400">numeric</span>
+  <span class="text-primary">bibliography</span>:
+    <span class="text-primary">compound-numeric</span>:
+      <span class="text-primary">subentry</span>: <span class="text-emerald-400">true</span>
+      <span class="text-primary">sub-label</span>: <span class="text-emerald-400">alphabetic</span>
+      <span class="text-primary">sub-label-suffix</span>: <span class="text-emerald-400">")"</span>
+      <span class="text-primary">sub-delimiter</span>: <span class="text-emerald-400">", "</span></pre>
+                </div>
+            </div>
+
+            <div class="p-6 bg-white">
+                <div class="grid gap-4">
+                    <div class="border-l-4 border-indigo-500 pl-4">
+                        <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Citation Behavior</div>
+                        <div class="font-mono text-sm text-slate-900">subentry=true: [2a]/[2b], subentry=false: [2]</div>
+                    </div>
+                    <div class="border-l-4 border-emerald-500 pl-4">
+                        <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Loader Validation</div>
+                        <div class="text-sm text-slate-700">Unknown IDs and duplicate membership across sets are rejected.</div>
+                    </div>
+                    <div class="border-l-4 border-amber-500 pl-4">
+                        <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Design Note</div>
+                        <div class="text-sm text-slate-700">No per-reference <code class="text-xs bg-slate-100 px-1 rounded">group-key</code> is required or supported.</div>
+                    </div>
                 </div>
             </div>
         </article>

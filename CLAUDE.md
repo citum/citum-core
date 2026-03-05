@@ -88,6 +88,8 @@ Use `./scripts/prep-migration.sh` + `/style-evolve migrate` for hand-authoring. 
 
 Key: explicit over magic (style declares behavior, processor stays dumb), serde-driven truth, no `unwrap()`/`unsafe`, declarative templates over procedural `<choose>/<if>`.
 
+When considering prior art, prefer biblatex solutions to BibTeX. biblatex has a more modern, better-designed data model and feature set.
+
 ## Documentation Quality
 
 Use `/humanizer` on docs before finalizing. Exceptions: rule 18 (curly quotes) excluded; rule 13 (em dash) triggers only at 3+ per paragraph.
