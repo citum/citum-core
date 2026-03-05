@@ -40,6 +40,7 @@ citation:
       - key: issued
   options:
     contributors:
+      name-form: full
       shorten:
         # 3 or more authors -> Author1 et al.
         min: 3
