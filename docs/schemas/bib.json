@@ -32,6 +32,19 @@
       "items": {
         "$ref": "#/definitions/InputReference"
       }
+    },
+    "sets": {
+      "description": "Optional compound entry sets keyed by set id.\n\nEach set id maps to an ordered list of reference ids that should be treated as one compound numeric group when `compound-numeric` is enabled by style.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
     }
   },
   "definitions": {

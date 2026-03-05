@@ -71,7 +71,7 @@
     },
     "version": {
       "description": "Style schema version.",
-      "default": "0.7.1",
+      "default": "0.8.0",
       "type": "string"
     }
   },
@@ -115,6 +115,17 @@
       "description": "Bibliography-specific configuration.",
       "type": "object",
       "properties": {
+        "compound-numeric": {
+          "description": "Configuration for compound numeric bibliography entries. When present, enables grouping of references by input bibliography `sets`.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CompoundNumericConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "custom": {
           "description": "Custom user-defined fields for extensions.",
           "type": [
@@ -688,6 +699,37 @@
           ]
         }
       ]
+    },
+    "CompoundNumericConfig": {
+      "description": "Configuration for compound numeric bibliography entries.\n\nGroups multiple references under a single citation number with sub-labels. Used in chemistry journals (e.g., Angewandte Chemie).",
+      "type": "object",
+      "properties": {
+        "sub-delimiter": {
+          "description": "Delimiter between sub-items (default: \", \").",
+          "default": ", ",
+          "type": "string"
+        },
+        "sub-label": {
+          "description": "Sub-label style: alphabetic (a, b, c) or numeric (1, 2, 3).",
+          "default": "alphabetic",
+          "allOf": [
+            {
+              "$ref": "#/definitions/SubLabelStyle"
+            }
+          ]
+        },
+        "sub-label-suffix": {
+          "description": "Suffix after sub-label (e.g., \")\" → \"a)\", \".\" → \"a.\").",
+          "default": ")",
+          "type": "string"
+        },
+        "subentry": {
+          "description": "Whether grouped item citations render sub-entry labels (`1a`, `1b`).\n\nWhen false, grouped item citations render the whole-group number (`1`).",
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
     },
     "Config": {
       "description": "Top-level style configuration.",
@@ -3301,6 +3343,25 @@
           }
         }
       }
+    },
+    "SubLabelStyle": {
+      "description": "Sub-label style for compound numeric bibliography entries.",
+      "oneOf": [
+        {
+          "description": "Alphabetic sub-labels: a, b, c, ...",
+          "type": "string",
+          "enum": [
+            "alphabetic"
+          ]
+        },
+        {
+          "description": "Numeric sub-labels: 1, 2, 3, ...",
+          "type": "string",
+          "enum": [
+            "numeric"
+          ]
+        }
+      ]
     },
     "SubsequentAuthorSubstituteRule": {
       "description": "Rules for subsequent author substitution.",
