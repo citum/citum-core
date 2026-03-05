@@ -47,6 +47,9 @@ citation:
         prefix: ", "
     suffix: "Ibid."
   subsequent:
+    options:
+      contributors:
+        name-form: family-only
     template:
       - contributor: author
         form: short
