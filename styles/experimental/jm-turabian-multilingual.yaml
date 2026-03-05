@@ -27,6 +27,13 @@ options:
         delimiter: ""
 
 citation:
+  options:
+    contributors:
+      name-form: full
+  subsequent:
+    options:
+      contributors:
+        name-form: family-only
   template:
     - contributor: author
       form: long
