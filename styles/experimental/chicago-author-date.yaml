@@ -13,25 +13,22 @@ info:
 
 options:
   processing: author-date
+  substitute:
+    template:
+      - editor
+      - translator
+      - title
   contributors:
     and: text
     initialize-with: ". "
     # For author-date, CMOS uses family-first only for the first author in bib
     display-as-sort: first
     delimiter-precedes-last: always
-    et-al:
+    shorten:
       min: 10
       use-first: 7
-    substitute:
-      - editor
-      - translator
-      - title
   dates:
-    form: numeric
     month: long
-    substitute:
-      - term: no-date
-        form: short
 
 citation:
   sort:
