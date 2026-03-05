@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+msg_file="${1:?missing commit message path}"
+header="$(sed -n '1p' "$msg_file")"
+
+# Allow Git-generated merge/squash/revert messages.
+if [[ "$header" =~ ^(Merge|Revert|fixup!|squash!) ]]; then
+  exit 0
+fi
+
+header_regex='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9._/-]+\))?(!)?: [a-z].+$'
+
+if [[ ! "$header" =~ $header_regex ]]; then
+  cat <<'EOF' >&2
+Invalid commit header.
+Expected: type(scope): lowercase subject
+Allowed types: feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert
+EOF
+  exit 1
+fi
+
+if (( ${#header} > 50 )); then
+  echo "Commit header must be 50 characters or fewer." >&2
+  exit 1
+fi
+
+line_count="$(wc -l < "$msg_file" | tr -d ' ')"
+if (( line_count > 1 )); then
+  second_line="$(sed -n '2p' "$msg_file")"
+  if [[ -n "$second_line" ]]; then
+    echo "Second line must be blank between header and body." >&2
+    exit 1
+  fi
+fi
+
+line_no=0
+while IFS= read -r line || [[ -n "$line" ]]; do
+  line_no=$((line_no + 1))
+
+  # Header validated separately.
+  if (( line_no == 1 )); then
+    continue
+  fi
+
+  # Skip empty lines and URL lines.
+  if [[ -z "$line" || "$line" =~ ^https?:// ]]; then
+    continue
+  fi
+
+  if (( ${#line} > 72 )); then
+    echo "Commit body line $line_no exceeds 72 characters." >&2
+    exit 1
+  fi
+done < "$msg_file"
+
