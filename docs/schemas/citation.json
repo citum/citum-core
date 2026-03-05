@@ -104,6 +104,16 @@
             "null"
           ]
         },
+        "locators": {
+          "description": "Compound locator segments for multi-part references.\n\nWhen present, takes priority over `label`/`locator`. Example: `[{ label: chapter, value: \"3\" }, { label: section, value: \"42\" }]`",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/LocatorSegment"
+          }
+        },
         "prefix": {
           "description": "Prefix text before this item",
           "type": [
@@ -138,6 +148,28 @@
           ]
         }
       ]
+    },
+    "LocatorSegment": {
+      "description": "A single segment of a compound locator.\n\nPairs a locator type with its value, e.g. `{ label: chapter, value: \"3\" }`.",
+      "type": "object",
+      "required": [
+        "label",
+        "value"
+      ],
+      "properties": {
+        "label": {
+          "description": "The locator type for this segment.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/LocatorType"
+            }
+          ]
+        },
+        "value": {
+          "description": "The locator value (e.g., \"3\", \"42-45\").",
+          "type": "string"
+        }
+      }
     },
     "LocatorType": {
       "description": "Locator types for pinpoint citations.",

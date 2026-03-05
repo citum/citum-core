@@ -193,6 +193,33 @@ pub enum LocatorType {
     Algorithm,
 }
 
+/// A single segment of a compound locator.
+///
+/// Pairs a locator type with its value, e.g. `{ label: chapter, value: "3" }`.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub struct LocatorSegment {
+    /// The locator type for this segment.
+    pub label: LocatorType,
+    /// The locator value (e.g., "3", "42-45").
+    pub value: String,
+}
+
+/// A resolved locator that abstracts over flat and compound forms.
+#[derive(Debug, Clone, PartialEq)]
+pub enum ResolvedLocator<'a> {
+    /// A single label + value pair (the traditional flat form).
+    Flat {
+        /// The locator type.
+        label: LocatorType,
+        /// The locator value.
+        value: &'a str,
+    },
+    /// Multiple label + value segments (compound locator).
+    Compound(&'a [LocatorSegment]),
+}
+
 /// A single citation item referencing a bibliography entry.
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
@@ -206,12 +233,40 @@ pub struct CitationItem {
     /// Locator value (e.g., "42-45" for pages)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub locator: Option<String>,
+    /// Compound locator segments for multi-part references.
+    ///
+    /// When present, takes priority over `label`/`locator`.
+    /// Example: `[{ label: chapter, value: "3" }, { label: section, value: "42" }]`
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub locators: Option<Vec<LocatorSegment>>,
     /// Prefix text before this item
     #[serde(skip_serializing_if = "Option::is_none")]
     pub prefix: Option<String>,
     /// Suffix text after this item
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suffix: Option<String>,
+}
+
+impl CitationItem {
+    /// Resolve the locator, preferring compound `locators` over flat `label`/`locator`.
+    pub fn resolved_locator(&self) -> Option<ResolvedLocator<'_>> {
+        if let Some(segments) = &self.locators
+            && !segments.is_empty()
+        {
+            return Some(ResolvedLocator::Compound(segments));
+        }
+        match (&self.label, &self.locator) {
+            (Some(label), Some(value)) => Some(ResolvedLocator::Flat {
+                label: label.clone(),
+                value,
+            }),
+            (None, Some(value)) => Some(ResolvedLocator::Flat {
+                label: LocatorType::default(),
+                value,
+            }),
+            _ => None,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -249,5 +304,90 @@ mod tests {
         assert_eq!(item.id, "kuhn1962");
         assert_eq!(item.label, Some(LocatorType::Page));
         assert_eq!(item.locator, Some("42-45".to_string()));
+    }
+
+    #[test]
+    fn test_compound_locator_serde_roundtrip() {
+        let json = r#"
+        {
+            "id": "smith2020",
+            "locators": [
+                { "label": "chapter", "value": "3" },
+                { "label": "section", "value": "42" }
+            ]
+        }
+        "#;
+        let item: CitationItem = serde_json::from_str(json).unwrap();
+        assert_eq!(item.locators.as_ref().unwrap().len(), 2);
+        assert_eq!(
+            item.locators.as_ref().unwrap()[0].label,
+            LocatorType::Chapter
+        );
+        assert_eq!(item.locators.as_ref().unwrap()[0].value, "3");
+        assert_eq!(
+            item.locators.as_ref().unwrap()[1].label,
+            LocatorType::Section
+        );
+        assert_eq!(item.locators.as_ref().unwrap()[1].value, "42");
+
+        // Round-trip
+        let serialized = serde_json::to_string(&item).unwrap();
+        let deserialized: CitationItem = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(deserialized.locators, item.locators);
+    }
+
+    #[test]
+    fn test_resolved_locator_compound_priority() {
+        let item = CitationItem {
+            id: "test".to_string(),
+            label: Some(LocatorType::Page),
+            locator: Some("99".to_string()),
+            locators: Some(vec![
+                LocatorSegment {
+                    label: LocatorType::Chapter,
+                    value: "3".to_string(),
+                },
+                LocatorSegment {
+                    label: LocatorType::Section,
+                    value: "42".to_string(),
+                },
+            ]),
+            ..Default::default()
+        };
+        let resolved = item.resolved_locator().unwrap();
+        assert!(matches!(resolved, ResolvedLocator::Compound(_)));
+    }
+
+    #[test]
+    fn test_resolved_locator_flat_fallback() {
+        let item = CitationItem {
+            id: "test".to_string(),
+            label: Some(LocatorType::Page),
+            locator: Some("42".to_string()),
+            ..Default::default()
+        };
+        let resolved = item.resolved_locator().unwrap();
+        assert!(matches!(resolved, ResolvedLocator::Flat { .. }));
+    }
+
+    #[test]
+    fn test_resolved_locator_none() {
+        let item = CitationItem {
+            id: "test".to_string(),
+            ..Default::default()
+        };
+        assert!(item.resolved_locator().is_none());
+    }
+
+    #[test]
+    fn test_flat_locator_skips_serializing_locators() {
+        let item = CitationItem {
+            id: "test".to_string(),
+            label: Some(LocatorType::Page),
+            locator: Some("42".to_string()),
+            ..Default::default()
+        };
+        let json = serde_json::to_value(&item).unwrap();
+        assert!(!json.as_object().unwrap().contains_key("locators"));
     }
 }

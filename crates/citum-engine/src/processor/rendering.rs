@@ -8,7 +8,8 @@ use crate::error::ProcessorError;
 use crate::reference::{Bibliography, Reference};
 use crate::render::{ProcTemplate, ProcTemplateComponent};
 use crate::values::{ComponentValues, ProcHints, RenderContext, RenderOptions};
-use citum_schema::locale::Locale;
+use citum_schema::citation::{LocatorSegment, LocatorType, ResolvedLocator};
+use citum_schema::locale::{Locale, TermForm};
 use citum_schema::options::Config;
 use citum_schema::template::ComponentOverride;
 use citum_schema::template::TemplateComponent;
@@ -32,6 +33,52 @@ pub struct Renderer<'a> {
     pub hints: &'a HashMap<String, ProcHints>,
     /// Shared state for citation numbers (used in numeric styles).
     pub citation_numbers: &'a RefCell<HashMap<String, usize>>,
+}
+
+/// Collapse compound locator segments into a pre-labelled string.
+///
+/// Each segment is rendered as `"term value"` using the locale's short-form term,
+/// then joined with `", "`. Falls back to the label name if no locale term exists.
+fn collapse_compound_locator(segments: &[LocatorSegment], locale: &Locale) -> String {
+    segments
+        .iter()
+        .map(|seg| {
+            let plural = seg.value.contains('\u{2013}')
+                || seg.value.contains('-')
+                || seg.value.contains(',')
+                || seg.value.contains('&');
+            let term = locale
+                .locator_term(&seg.label, plural, TermForm::Short)
+                .or_else(|| locale.locator_term(&seg.label, plural, TermForm::Symbol))
+                .map(|t| t.to_string())
+                .unwrap_or_else(|| {
+                    // Fall back to serde kebab-case name for user-facing output
+                    serde_json::to_value(&seg.label)
+                        .ok()
+                        .and_then(|v| v.as_str().map(String::from))
+                        .unwrap_or_else(|| format!("{:?}", seg.label))
+                });
+            format!("{} {}", term, seg.value)
+        })
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
+/// Resolve a citation item's locator into a `(value, label)` pair for `RenderOptions`.
+///
+/// Compound locators are collapsed to a pre-labelled string with no separate label
+/// (since labels are embedded per-segment). Flat locators pass through unchanged.
+fn resolve_item_locator(
+    item: &citum_schema::citation::CitationItem,
+    locale: &Locale,
+) -> (Option<String>, Option<LocatorType>) {
+    match item.resolved_locator() {
+        Some(ResolvedLocator::Compound(segments)) => {
+            (Some(collapse_compound_locator(segments, locale)), None)
+        }
+        Some(ResolvedLocator::Flat { label, value }) => (Some(value.to_string()), Some(label)),
+        None => (None, None),
+    }
 }
 
 impl<'a> Renderer<'a> {
@@ -153,14 +200,15 @@ impl<'a> Renderer<'a> {
         F: crate::render::format::OutputFormat<Output = String>,
     {
         let fmt = F::default();
+        let (loc_value, loc_label) = resolve_item_locator(item, self.locale);
         let options = RenderOptions {
             config: self.config,
             locale: self.locale,
             context: RenderContext::Citation,
             mode: citum_schema::citation::CitationMode::Integral,
             suppress_author: false,
-            locator: item.locator.as_deref(),
-            locator_label: item.label.clone(),
+            locator: loc_value.as_deref(),
+            locator_label: loc_label,
         };
 
         // Render author in short form
@@ -217,14 +265,15 @@ impl<'a> Renderer<'a> {
         F: crate::render::format::OutputFormat<Output = String>,
     {
         let fmt = F::default();
+        let (loc_value, loc_label) = resolve_item_locator(item, self.locale);
         let options = RenderOptions {
             config: self.config,
             locale: self.locale,
             context: RenderContext::Citation,
             mode: citum_schema::citation::CitationMode::Integral,
             suppress_author: false,
-            locator: item.locator.as_deref(),
-            locator_label: item.label.clone(),
+            locator: loc_value.as_deref(),
+            locator_label: loc_label,
         };
 
         if let Some(contributor) = reference.author().or_else(|| reference.editor()) {
@@ -373,6 +422,7 @@ impl<'a> Renderer<'a> {
                 let effective_template = template.as_deref().unwrap_or(&[]);
                 let effective_delim = spec.delimiter.as_deref().unwrap_or(intra_delimiter);
 
+                let (loc_value, loc_label) = resolve_item_locator(item, self.locale);
                 if let Some(proc) = self.process_template_with_number_with_format::<F>(
                     reference,
                     effective_template,
@@ -380,8 +430,8 @@ impl<'a> Renderer<'a> {
                     mode.clone(),
                     suppress_author,
                     citation_number,
-                    item.locator.as_deref(),
-                    item.label.clone(),
+                    loc_value.as_deref(),
+                    loc_label,
                     position,
                 ) {
                     let item_str = crate::render::citation::citation_to_string_with_format::<F>(
@@ -515,6 +565,7 @@ impl<'a> Renderer<'a> {
             {
                 // Narrative mode with explicit template (e.g., APA 7th)
                 let citation_number = self.get_or_assign_citation_number(&first_item.id);
+                let (loc_value, loc_label) = resolve_item_locator(first_item, self.locale);
                 if let Some(proc) = self.process_template_with_number_with_format::<F>(
                     first_ref,
                     template,
@@ -522,8 +573,8 @@ impl<'a> Renderer<'a> {
                     mode.clone(),
                     suppress_author,
                     citation_number,
-                    first_item.locator.as_deref(),
-                    first_item.label.clone(),
+                    loc_value.as_deref(),
+                    loc_label,
                     position,
                 ) {
                     // Use integral-specific delimiter, defaulting to space for narrative
@@ -576,6 +627,7 @@ impl<'a> Renderer<'a> {
                     let template = spec.resolve_template_for_language(item_language.as_deref());
                     let effective_template = template.as_deref().unwrap_or(&[]);
                     let citation_number = self.get_or_assign_citation_number(&item.id);
+                    let (loc_value, loc_label) = resolve_item_locator(item, self.locale);
                     if let Some(proc) = self.process_template_with_number_with_format::<F>(
                         reference,
                         effective_template,
@@ -583,8 +635,8 @@ impl<'a> Renderer<'a> {
                         mode.clone(),
                         suppress_author,
                         citation_number,
-                        item.locator.as_deref(),
-                        item.label.clone(),
+                        loc_value.as_deref(),
+                        loc_label,
                         position,
                     ) {
                         let item_str = crate::render::citation::citation_to_string_with_format::<F>(
@@ -632,6 +684,7 @@ impl<'a> Renderer<'a> {
                 let filtered_template = self.filter_author_from_template(effective_template);
 
                 let citation_number = self.get_or_assign_citation_number(&item.id);
+                let (loc_value, loc_label) = resolve_item_locator(item, self.locale);
                 if let Some(proc) = self.process_template_with_number_with_format::<F>(
                     reference,
                     &filtered_template,
@@ -639,8 +692,8 @@ impl<'a> Renderer<'a> {
                     mode.clone(),
                     suppress_author,
                     citation_number,
-                    item.locator.as_deref(),
-                    item.label.clone(),
+                    loc_value.as_deref(),
+                    loc_label,
                     position,
                 ) {
                     let item_str = crate::render::citation::citation_to_string_with_format::<F>(
@@ -1412,5 +1465,72 @@ mod tests {
 
         assert_eq!(filtered_list.items.len(), 1);
         assert!(matches!(filtered_list.items[0], TemplateComponent::Date(_)));
+    }
+
+    #[test]
+    fn compound_locator_joins_segments_with_separator() {
+        let locale = Locale::default();
+        let segments = vec![
+            LocatorSegment {
+                label: LocatorType::Chapter,
+                value: "3".to_string(),
+            },
+            LocatorSegment {
+                label: LocatorType::Section,
+                value: "42".to_string(),
+            },
+        ];
+        let rendered = collapse_compound_locator(&segments, &locale);
+        assert!(rendered.contains("3"), "should contain first value");
+        assert!(rendered.contains("42"), "should contain second value");
+        assert!(rendered.contains(", "), "should join with comma-space");
+    }
+
+    #[test]
+    fn compound_locator_plural_detection() {
+        let locale = Locale::default();
+        // Range with en-dash should trigger plural
+        let segments = vec![LocatorSegment {
+            label: LocatorType::Page,
+            value: "10\u{2013}12".to_string(),
+        }];
+        let rendered = collapse_compound_locator(&segments, &locale);
+        assert!(rendered.contains("10\u{2013}12"));
+    }
+
+    #[test]
+    fn compound_locator_fallback_uses_kebab_case() {
+        let locale = Locale::default();
+        let segments = vec![LocatorSegment {
+            label: LocatorType::SubVerbo,
+            value: "test".to_string(),
+        }];
+        let rendered = collapse_compound_locator(&segments, &locale);
+        // Should use kebab-case "sub-verbo", not PascalCase "SubVerbo"
+        assert!(
+            rendered.contains("sub-verbo"),
+            "expected kebab-case fallback, got: {rendered}"
+        );
+    }
+
+    #[test]
+    fn resolve_item_locator_prefers_compound() {
+        let locale = Locale::default();
+        let item = citum_schema::citation::CitationItem {
+            id: "test".to_string(),
+            label: Some(LocatorType::Page),
+            locator: Some("99".to_string()),
+            locators: Some(vec![LocatorSegment {
+                label: LocatorType::Chapter,
+                value: "5".to_string(),
+            }]),
+            ..Default::default()
+        };
+        let (value, label) = resolve_item_locator(&item, &locale);
+        assert!(value.unwrap().contains("5"));
+        assert!(
+            label.is_none(),
+            "compound locators embed labels per-segment"
+        );
     }
 }
