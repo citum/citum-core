@@ -13,6 +13,7 @@ use citum_schema::locale::{Locale, TermForm};
 use citum_schema::options::Config;
 use citum_schema::template::ComponentOverride;
 use citum_schema::template::TemplateComponent;
+use indexmap::IndexMap;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 
@@ -33,6 +34,22 @@ pub struct Renderer<'a> {
     pub hints: &'a HashMap<String, ProcHints>,
     /// Shared state for citation numbers (used in numeric styles).
     pub citation_numbers: &'a RefCell<HashMap<String, usize>>,
+    /// Optional compound set membership indexed by reference id.
+    pub compound_set_by_ref: &'a HashMap<String, String>,
+    /// Optional 0-based member index within each compound set.
+    pub compound_member_index: &'a HashMap<String, usize>,
+    /// Compound sets keyed by set id.
+    pub compound_sets: &'a IndexMap<String, Vec<String>>,
+}
+
+/// Borrowed compound-set context for rendering.
+pub struct CompoundRenderData<'a> {
+    /// Optional compound set membership indexed by reference id.
+    pub set_by_ref: &'a HashMap<String, String>,
+    /// Optional 0-based member index within each compound set.
+    pub member_index: &'a HashMap<String, usize>,
+    /// Compound sets keyed by set id.
+    pub sets: &'a IndexMap<String, Vec<String>>,
 }
 
 /// Collapse compound locator segments into a pre-labelled string.
@@ -87,6 +104,7 @@ impl<'a> Renderer<'a> {
         config: &'a Config,
         hints: &'a HashMap<String, ProcHints>,
         citation_numbers: &'a RefCell<HashMap<String, usize>>,
+        compound: CompoundRenderData<'a>,
     ) -> Self {
         Self {
             style,
@@ -95,6 +113,34 @@ impl<'a> Renderer<'a> {
             config,
             hints,
             citation_numbers,
+            compound_set_by_ref: compound.set_by_ref,
+            compound_member_index: compound.member_index,
+            compound_sets: compound.sets,
+        }
+    }
+
+    fn citation_sub_label_for_ref(&self, ref_id: &str) -> Option<String> {
+        let compound = self
+            .config
+            .bibliography
+            .as_ref()
+            .and_then(|b| b.compound_numeric.as_ref())?;
+        let set_id = self.compound_set_by_ref.get(ref_id)?;
+        let members = self.compound_sets.get(set_id)?;
+        if members.len() <= 1 {
+            return None;
+        }
+        if !compound.subentry {
+            return None;
+        }
+        let idx = *self.compound_member_index.get(ref_id)?;
+        match compound.sub_label {
+            citum_schema::options::bibliography::SubLabelStyle::Alphabetic => {
+                crate::values::int_to_letter((idx + 1) as u32)
+            }
+            citum_schema::options::bibliography::SubLabelStyle::Numeric => {
+                Some((idx + 1).to_string())
+            }
         }
     }
 
@@ -1124,6 +1170,14 @@ impl<'a> Renderer<'a> {
         let hint = ProcHints {
             citation_number: if citation_number > 0 {
                 Some(citation_number)
+            } else {
+                None
+            },
+            citation_sub_label: if options.context == RenderContext::Citation {
+                reference
+                    .id()
+                    .as_deref()
+                    .and_then(|id| self.citation_sub_label_for_ref(id))
             } else {
                 None
             },

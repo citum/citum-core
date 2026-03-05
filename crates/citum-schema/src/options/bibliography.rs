@@ -40,6 +40,10 @@ pub struct BibliographyConfig {
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
+    /// Configuration for compound numeric bibliography entries.
+    /// When present, enables grouping of references by input bibliography `sets`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub compound_numeric: Option<CompoundNumericConfig>,
 }
 
 /// Rules for subsequent author substitution.
@@ -56,4 +60,105 @@ pub enum SubsequentAuthorSubstituteRule {
     PartialEach,
     /// Substitute only the first name if it matches.
     PartialFirst,
+}
+
+/// Sub-label style for compound numeric bibliography entries.
+#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum SubLabelStyle {
+    /// Alphabetic sub-labels: a, b, c, ...
+    #[default]
+    Alphabetic,
+    /// Numeric sub-labels: 1, 2, 3, ...
+    Numeric,
+}
+
+/// Default sub-label suffix.
+fn default_sub_label_suffix() -> String {
+    ")".to_string()
+}
+
+/// Default sub-item delimiter.
+fn default_sub_delimiter() -> String {
+    ", ".to_string()
+}
+
+/// Default subentry citation behavior.
+fn default_subentry() -> bool {
+    true
+}
+
+/// Configuration for compound numeric bibliography entries.
+///
+/// Groups multiple references under a single citation number with sub-labels.
+/// Used in chemistry journals (e.g., Angewandte Chemie).
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct CompoundNumericConfig {
+    /// Whether grouped item citations render sub-entry labels (`1a`, `1b`).
+    ///
+    /// When false, grouped item citations render the whole-group number (`1`).
+    #[serde(default = "default_subentry")]
+    pub subentry: bool,
+    /// Sub-label style: alphabetic (a, b, c) or numeric (1, 2, 3).
+    #[serde(default)]
+    pub sub_label: SubLabelStyle,
+    /// Suffix after sub-label (e.g., ")" → "a)", "." → "a.").
+    #[serde(default = "default_sub_label_suffix")]
+    pub sub_label_suffix: String,
+    /// Delimiter between sub-items (default: ", ").
+    #[serde(default = "default_sub_delimiter")]
+    pub sub_delimiter: String,
+}
+
+impl Default for CompoundNumericConfig {
+    fn default() -> Self {
+        Self {
+            subentry: default_subentry(),
+            sub_label: SubLabelStyle::default(),
+            sub_label_suffix: default_sub_label_suffix(),
+            sub_delimiter: default_sub_delimiter(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_compound_numeric_config_defaults() {
+        let config: CompoundNumericConfig = serde_json::from_str("{}").unwrap();
+        assert!(config.subentry);
+        assert_eq!(config.sub_label, SubLabelStyle::Alphabetic);
+        assert_eq!(config.sub_label_suffix, ")");
+        assert_eq!(config.sub_delimiter, ", ");
+    }
+
+    #[test]
+    fn test_compound_numeric_config_custom() {
+        let json = r#"{"subentry": false, "sub-label": "numeric", "sub-label-suffix": ".", "sub-delimiter": "; "}"#;
+        let config: CompoundNumericConfig = serde_json::from_str(json).unwrap();
+        assert!(!config.subentry);
+        assert_eq!(config.sub_label, SubLabelStyle::Numeric);
+        assert_eq!(config.sub_label_suffix, ".");
+        assert_eq!(config.sub_delimiter, "; ");
+    }
+
+    #[test]
+    fn test_compound_numeric_roundtrip() {
+        let config = CompoundNumericConfig::default();
+        let json = serde_json::to_string(&config).unwrap();
+        let deserialized: CompoundNumericConfig = serde_json::from_str(&json).unwrap();
+        assert_eq!(config, deserialized);
+    }
+
+    #[test]
+    fn test_bibliography_config_with_compound() {
+        let json = r#"{"compound-numeric": {"sub-label": "alphabetic"}}"#;
+        let config: BibliographyConfig = serde_json::from_str(json).unwrap();
+        assert!(config.compound_numeric.is_some());
+    }
 }

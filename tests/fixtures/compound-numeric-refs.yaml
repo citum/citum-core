@@ -1,0 +1,63 @@
+info:
+  title: Compound Numeric Fixture
+references:
+  - id: zwart1983
+    class: monograph
+    type: book
+    title: An immunochemical analysis of the biogenesis of peroxisomes in Saccharomyces cerevisiae
+    author:
+      - family: Zwart
+        given: K. B.
+      - family: Veenhuis
+        given: M.
+      - family: Harder
+        given: W.
+    issued: "1983"
+
+  - id: vanderklei1991
+    class: monograph
+    type: book
+    title: A morphological view on the biogenesis of peroxisomes in intact cells
+    author:
+      - family: van der Klei
+        given: I. J.
+      - family: Harder
+        given: W.
+      - family: Veenhuis
+        given: M.
+    issued: "1991"
+
+  - id: smith2020
+    class: monograph
+    type: book
+    title: A standalone article not in any compound group
+    author:
+      - family: Smith
+        given: John
+    issued: "2020"
+
+  - id: jones2019a
+    class: monograph
+    type: book
+    title: Catalytic activity of transition metals
+    author:
+      - family: Jones
+        given: Alice
+    issued: "2019"
+
+  - id: jones2019b
+    class: monograph
+    type: book
+    title: Selectivity in heterogeneous catalysis
+    author:
+      - family: Jones
+        given: Alice
+    issued: "2019"
+
+sets:
+  peroxisome-biogenesis:
+    - zwart1983
+    - vanderklei1991
+  catalysis-studies:
+    - jones2019a
+    - jones2019b

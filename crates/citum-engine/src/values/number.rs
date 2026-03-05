@@ -58,7 +58,14 @@ impl ComponentValues for TemplateNumber {
             NumberVariable::PartNumber
             | NumberVariable::SupplementNumber
             | NumberVariable::PrintingNumber => None,
-            NumberVariable::CitationNumber => hints.citation_number.map(|n| n.to_string()),
+            NumberVariable::CitationNumber => hints.citation_number.map(|n| {
+                if options.context == crate::values::RenderContext::Citation
+                    && let Some(sub_label) = &hints.citation_sub_label
+                {
+                    return format!("{}{}", n, sub_label);
+                }
+                n.to_string()
+            }),
             NumberVariable::CitationLabel => {
                 let config = match options.config.processing.as_ref() {
                     Some(citum_schema::options::Processing::Label(cfg)) => cfg,

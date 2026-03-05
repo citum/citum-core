@@ -43,6 +43,7 @@ use citum_schema::citation::Position;
 use citum_schema::locale::Locale;
 use citum_schema::options::Config;
 use citum_schema::template::{DelimiterPunctuation, WrapPunctuation};
+use indexmap::IndexMap;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 
@@ -67,7 +68,7 @@ fn effective_locator_string(item: &CitationItem) -> Option<String> {
 
 use self::disambiguation::Disambiguator;
 use self::matching::Matcher;
-use self::rendering::Renderer;
+use self::rendering::{CompoundRenderData, Renderer};
 use self::sorting::Sorter;
 
 /// The CSLN processor.
@@ -89,10 +90,21 @@ pub struct Processor {
     pub citation_numbers: RefCell<HashMap<String, usize>>,
     /// IDs of items that were cited in a visible way.
     pub cited_ids: RefCell<HashSet<String>>,
+    /// Compound sets keyed by set ID.
+    pub compound_sets: IndexMap<String, Vec<String>>,
+    /// Reverse lookup for set membership by reference ID.
+    pub compound_set_by_ref: HashMap<String, String>,
+    /// Position within a set (0-based) for each reference ID.
+    pub compound_member_index: HashMap<String, usize>,
+    /// Compound numeric groups: citation number → ordered ref IDs in the group.
+    pub compound_groups: RefCell<IndexMap<usize, Vec<String>>>,
 }
 
 impl Default for Processor {
     fn default() -> Self {
+        let compound_sets = IndexMap::new();
+        let (compound_set_by_ref, compound_member_index) =
+            Self::build_compound_set_indexes(&compound_sets);
         Self {
             style: Style::default(),
             bibliography: Bibliography::default(),
@@ -101,6 +113,10 @@ impl Default for Processor {
             hints: HashMap::new(),
             citation_numbers: RefCell::new(HashMap::new()),
             cited_ids: RefCell::new(HashSet::new()),
+            compound_sets,
+            compound_set_by_ref,
+            compound_member_index,
+            compound_groups: RefCell::new(IndexMap::new()),
         }
     }
 }
@@ -116,6 +132,47 @@ pub struct ProcessedReferences {
 }
 
 impl Processor {
+    fn build_processor(
+        style: Style,
+        bibliography: Bibliography,
+        locale: Locale,
+        compound_sets: IndexMap<String, Vec<String>>,
+    ) -> Self {
+        let (compound_set_by_ref, compound_member_index) =
+            Self::build_compound_set_indexes(&compound_sets);
+        let mut processor = Processor {
+            style,
+            bibliography,
+            locale,
+            default_config: Config::default(),
+            hints: HashMap::new(),
+            citation_numbers: RefCell::new(HashMap::new()),
+            cited_ids: RefCell::new(HashSet::new()),
+            compound_sets,
+            compound_set_by_ref,
+            compound_member_index,
+            compound_groups: RefCell::new(IndexMap::new()),
+        };
+
+        // Pre-calculate hints for disambiguation.
+        processor.hints = processor.calculate_hints();
+        processor
+    }
+
+    fn build_compound_set_indexes(
+        sets: &IndexMap<String, Vec<String>>,
+    ) -> (HashMap<String, String>, HashMap<String, usize>) {
+        let mut by_ref = HashMap::new();
+        let mut member_index = HashMap::new();
+        for (set_id, members) in sets {
+            for (idx, member) in members.iter().enumerate() {
+                by_ref.insert(member.clone(), set_id.clone());
+                member_index.insert(member.clone(), idx);
+            }
+        }
+        (by_ref, member_index)
+    }
+
     /// Check whether the style uses note-based citations (footnotes/endnotes).
     fn is_note_style(&self) -> bool {
         self.get_config()
@@ -300,33 +357,126 @@ impl Processor {
             self.bibliography.keys().cloned().collect()
         };
 
-        for (index, ref_id) in ordered_ids.into_iter().enumerate() {
-            numbers.insert(ref_id.clone(), index + 1);
+        let compound_config = self
+            .get_config()
+            .bibliography
+            .as_ref()
+            .and_then(|b| b.compound_numeric.as_ref())
+            .cloned();
+
+        if compound_config.is_some() {
+            let mut set_first_seen: IndexMap<String, usize> = IndexMap::new();
+            let mut current_number = 1usize;
+            let mut compound_groups = self.compound_groups.borrow_mut();
+            compound_groups.clear();
+
+            for ref_id in &ordered_ids {
+                if let Some(set_id) = self.compound_set_by_ref.get(ref_id) {
+                    if let Some(&num) = set_first_seen.get(set_id) {
+                        numbers.insert(ref_id.clone(), num);
+                    } else {
+                        set_first_seen.insert(set_id.clone(), current_number);
+                        if let Some(members) = self.compound_sets.get(set_id) {
+                            let present_members: Vec<String> = members
+                                .iter()
+                                .filter(|id| self.bibliography.contains_key(*id))
+                                .cloned()
+                                .collect();
+                            for member in &present_members {
+                                numbers.insert(member.clone(), current_number);
+                            }
+                            if present_members.len() > 1 {
+                                compound_groups.insert(current_number, present_members);
+                            }
+                        } else {
+                            numbers.insert(ref_id.clone(), current_number);
+                        }
+                        current_number += 1;
+                    }
+                } else if !numbers.contains_key(ref_id) {
+                    numbers.insert(ref_id.clone(), current_number);
+                    current_number += 1;
+                }
+            }
+        } else {
+            for (index, ref_id) in ordered_ids.into_iter().enumerate() {
+                numbers.insert(ref_id.clone(), index + 1);
+            }
         }
     }
 
     /// Create a new processor with default English locale (en-US).
     pub fn new(style: Style, bibliography: Bibliography) -> Self {
-        Self::with_locale(style, bibliography, Locale::en_us())
+        Self::with_compound_sets(style, bibliography, IndexMap::new())
+    }
+
+    /// Create a new processor with explicit compound sets, returning an error for invalid sets.
+    pub fn try_with_compound_sets(
+        style: Style,
+        bibliography: Bibliography,
+        compound_sets: IndexMap<String, Vec<String>>,
+    ) -> Result<Self, ProcessorError> {
+        Self::try_with_locale_and_compound_sets(style, bibliography, Locale::en_us(), compound_sets)
+    }
+
+    /// Create a new processor with explicit compound sets.
+    ///
+    /// If `compound_sets` is invalid, this constructor ignores the supplied sets
+    /// and falls back to a processor without compound sets.
+    pub fn with_compound_sets(
+        style: Style,
+        bibliography: Bibliography,
+        compound_sets: IndexMap<String, Vec<String>>,
+    ) -> Self {
+        let validated_sets = crate::io::validate_compound_sets(Some(compound_sets), &bibliography)
+            .ok()
+            .flatten()
+            .unwrap_or_default();
+        Self::build_processor(style, bibliography, Locale::en_us(), validated_sets)
     }
 
     /// Create a new processor with a specified locale.
     ///
     /// The locale determines term translations and locale-specific formatting behavior.
     pub fn with_locale(style: Style, bibliography: Bibliography, locale: Locale) -> Self {
-        let mut processor = Processor {
+        Self::with_locale_and_compound_sets(style, bibliography, locale, IndexMap::new())
+    }
+
+    /// Create a new processor with explicit locale and compound sets, returning
+    /// an error for invalid sets.
+    pub fn try_with_locale_and_compound_sets(
+        style: Style,
+        bibliography: Bibliography,
+        locale: Locale,
+        compound_sets: IndexMap<String, Vec<String>>,
+    ) -> Result<Self, ProcessorError> {
+        let validated_sets = crate::io::validate_compound_sets(Some(compound_sets), &bibliography)?
+            .unwrap_or_default();
+        Ok(Self::build_processor(
             style,
             bibliography,
             locale,
-            default_config: Config::default(),
-            hints: HashMap::new(),
-            citation_numbers: RefCell::new(HashMap::new()),
-            cited_ids: RefCell::new(HashSet::new()),
-        };
+            validated_sets,
+        ))
+    }
 
-        // Pre-calculate hints for disambiguation
-        processor.hints = processor.calculate_hints();
-        processor
+    /// Create a new processor with a specified locale and explicit compound sets.
+    ///
+    /// The locale determines term translations and locale-specific formatting behavior.
+    ///
+    /// If `compound_sets` is invalid, this constructor ignores the supplied sets
+    /// and falls back to a processor without compound sets.
+    pub fn with_locale_and_compound_sets(
+        style: Style,
+        bibliography: Bibliography,
+        locale: Locale,
+        compound_sets: IndexMap<String, Vec<String>>,
+    ) -> Self {
+        let validated_sets = crate::io::validate_compound_sets(Some(compound_sets), &bibliography)
+            .ok()
+            .flatten()
+            .unwrap_or_default();
+        Self::build_processor(style, bibliography, locale, validated_sets)
     }
 
     /// Create a new processor, loading the locale from disk.
@@ -343,7 +493,7 @@ impl Processor {
         } else {
             Locale::en_us()
         };
-        Self::with_locale(style, bibliography, locale)
+        Self::with_locale_and_compound_sets(style, bibliography, locale, IndexMap::new())
     }
 
     /// Return the global style configuration.
@@ -421,6 +571,11 @@ impl Processor {
                             &bib_config,
                             &self.hints,
                             &self.citation_numbers,
+                            CompoundRenderData {
+                                set_by_ref: &self.compound_set_by_ref,
+                                member_index: &self.compound_member_index,
+                                sets: &self.compound_sets,
+                            },
                         );
                         renderer.apply_author_substitution(&mut proc, sub_string);
                     }
@@ -496,6 +651,11 @@ impl Processor {
             &bib_config,
             &self.hints,
             &self.citation_numbers,
+            CompoundRenderData {
+                set_by_ref: &self.compound_set_by_ref,
+                member_index: &self.compound_member_index,
+                sets: &self.compound_sets,
+            },
         );
         renderer.process_bibliography_entry(reference, entry_number)
     }
@@ -580,8 +740,123 @@ impl Processor {
             self.get_config(),
             &self.hints,
             &self.citation_numbers,
+            CompoundRenderData {
+                set_by_ref: &self.compound_set_by_ref,
+                member_index: &self.compound_member_index,
+                sets: &self.compound_sets,
+            },
         );
         renderer.apply_author_substitution(proc, substitute);
+    }
+
+    /// Merge compound numeric groups in the bibliography.
+    ///
+    /// Entries sharing a compound group are collapsed: the first entry's
+    /// rendered content is prefixed with "a)" and subsequent entries are
+    /// appended with "b)", "c)", etc., joined by the configured sub-delimiter.
+    fn merge_compound_entries<F>(&self, entries: Vec<ProcEntry>) -> Vec<ProcEntry>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let compound_groups = self.compound_groups.borrow();
+        if compound_groups.is_empty() {
+            return entries;
+        }
+
+        let compound_config = match self
+            .get_config()
+            .bibliography
+            .as_ref()
+            .and_then(|b| b.compound_numeric.as_ref())
+        {
+            Some(c) => c.clone(),
+            None => return entries,
+        };
+
+        // Build lookup: ref_id -> (group_number, index_within_group)
+        let mut ref_to_group: HashMap<String, (usize, usize)> = HashMap::new();
+        for (&num, ids) in compound_groups.iter() {
+            if ids.len() > 1 {
+                for (i, id) in ids.iter().enumerate() {
+                    ref_to_group.insert(id.clone(), (num, i));
+                }
+            }
+        }
+
+        if ref_to_group.is_empty() {
+            return entries;
+        }
+
+        // First pass: render each entry to string and collect by group
+        let mut rendered_strings: HashMap<String, String> = HashMap::new();
+        for entry in &entries {
+            let rendered = crate::render::citation::citation_to_string_with_format::<F>(
+                &entry.template,
+                None,
+                None,
+                None,
+                None,
+            );
+            rendered_strings.insert(entry.id.clone(), rendered.trim().to_string());
+        }
+
+        // Second pass: build merged output
+        let mut result: Vec<ProcEntry> = Vec::new();
+
+        for entry in entries {
+            if let Some(&(group_num, idx)) = ref_to_group.get(&entry.id) {
+                if idx == 0 {
+                    // First in group — build merged entry
+                    let group_ids = &compound_groups[&group_num];
+                    let mut parts: Vec<String> = Vec::new();
+
+                    for (i, id) in group_ids.iter().enumerate() {
+                        let sub_label = match compound_config.sub_label {
+                            citum_schema::options::bibliography::SubLabelStyle::Alphabetic => {
+                                format!(
+                                    "{}{}",
+                                    crate::values::int_to_letter((i + 1) as u32)
+                                        .unwrap_or_else(|| "a".to_string()),
+                                    compound_config.sub_label_suffix
+                                )
+                            }
+                            citum_schema::options::bibliography::SubLabelStyle::Numeric => {
+                                format!("{}{}", i + 1, compound_config.sub_label_suffix)
+                            }
+                        };
+                        if let Some(rendered) = rendered_strings.get(id) {
+                            parts.push(format!("{} {}", sub_label, rendered));
+                        }
+                    }
+
+                    let merged_text = parts.join(&compound_config.sub_delimiter);
+                    let merged_component = entry
+                        .template
+                        .first()
+                        .map(|c| c.template_component.clone())
+                        .unwrap_or_default();
+
+                    let merged_entry = ProcEntry {
+                        id: entry.id.clone(),
+                        template: vec![crate::render::component::ProcTemplateComponent {
+                            template_component: merged_component,
+                            value: merged_text,
+                            pre_formatted: true,
+                            ..Default::default()
+                        }],
+                        metadata: entry.metadata,
+                    };
+
+                    result.push(merged_entry);
+                }
+                // else: skip non-first members of a group
+            } else {
+                // Not in any compound group — pass through
+                result.push(entry);
+            }
+        }
+
+        result
     }
 
     /// Render the bibliography to a string using a specific format.
@@ -621,6 +896,11 @@ impl Processor {
                         &bib_config,
                         &self.hints,
                         &self.citation_numbers,
+                        CompoundRenderData {
+                            set_by_ref: &self.compound_set_by_ref,
+                            member_index: &self.compound_member_index,
+                            sets: &self.compound_sets,
+                        },
                     );
                     renderer.apply_author_substitution_with_format::<F>(&mut proc, sub_string);
                 }
@@ -634,6 +914,7 @@ impl Processor {
             }
         }
 
+        let bibliography = self.merge_compound_entries::<F>(bibliography);
         crate::render::refs_to_string_with_format::<F>(bibliography, None, None)
     }
 
@@ -656,6 +937,11 @@ impl Processor {
             &bib_config,
             &self.hints,
             &self.citation_numbers,
+            CompoundRenderData {
+                set_by_ref: &self.compound_set_by_ref,
+                member_index: &self.compound_member_index,
+                sets: &self.compound_sets,
+            },
         );
         renderer.process_bibliography_entry_with_format::<F>(reference, entry_number)
     }
@@ -726,6 +1012,11 @@ impl Processor {
             &cite_config,
             &self.hints,
             &self.citation_numbers,
+            CompoundRenderData {
+                set_by_ref: &self.compound_set_by_ref,
+                member_index: &self.compound_member_index,
+                sets: &self.compound_sets,
+            },
         );
 
         // Process group components
@@ -847,16 +1138,17 @@ impl Processor {
         F: crate::render::format::OutputFormat<Output = String>,
     {
         let processed = self.process_references();
+        let merged_bibliography = self.merge_compound_entries::<F>(processed.bibliography);
 
         // Check if style defines custom groups
         if let Some(bib_spec) = &self.style.bibliography
             && let Some(groups) = &bib_spec.groups
         {
-            return self.render_with_custom_groups::<F>(&processed.bibliography, groups);
+            return self.render_with_custom_groups::<F>(&merged_bibliography, groups);
         }
 
         // Fallback to hardcoded cited/uncited grouping
-        self.render_with_legacy_grouping::<F>(&processed.bibliography)
+        self.render_with_legacy_grouping::<F>(&merged_bibliography)
     }
 
     /// Render bibliography for a specific group selector.
@@ -870,7 +1162,8 @@ impl Processor {
         use crate::grouping::{GroupSorter, SelectorEvaluator};
 
         let processed = self.process_references();
-        let bibliography = &processed.bibliography;
+        let merged_bibliography = self.merge_compound_entries::<F>(processed.bibliography);
+        let bibliography = &merged_bibliography;
 
         let fmt = F::default();
         let cited_ids = self.cited_ids.borrow();
@@ -1056,6 +1349,11 @@ impl Processor {
                     &bib_config,
                     hints,
                     &self.citation_numbers,
+                    CompoundRenderData {
+                        set_by_ref: &self.compound_set_by_ref,
+                        member_index: &self.compound_member_index,
+                        sets: &self.compound_sets,
+                    },
                 );
 
                 sorted_refs

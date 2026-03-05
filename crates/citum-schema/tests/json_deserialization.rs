@@ -1,3 +1,4 @@
+use citum_schema::InputBibliography;
 use citum_schema::reference::{InputReference, Monograph};
 
 #[test]
@@ -44,4 +45,42 @@ fn test_input_reference_url_alias() {
     } else {
         panic!("Expected Monograph");
     }
+}
+
+#[test]
+fn test_input_bibliography_sets_round_trip() {
+    let json = r#"{
+        "references": [
+            {
+                "class": "monograph",
+                "id": "ref-a",
+                "type": "book",
+                "title": "Book A",
+                "issued": "2020"
+            },
+            {
+                "class": "monograph",
+                "id": "ref-b",
+                "type": "book",
+                "title": "Book B",
+                "issued": "2021"
+            }
+        ],
+        "sets": {
+            "compound-1": ["ref-a", "ref-b"]
+        }
+    }"#;
+
+    let bibliography: InputBibliography =
+        serde_json::from_str(json).expect("input bibliography should parse");
+    let sets = bibliography.sets.as_ref().expect("sets should exist");
+    assert_eq!(
+        sets.get("compound-1"),
+        Some(&vec!["ref-a".to_string(), "ref-b".to_string()])
+    );
+
+    let serialized = serde_json::to_string(&bibliography).expect("serialization should work");
+    let reparsed: InputBibliography =
+        serde_json::from_str(&serialized).expect("round-trip parse should work");
+    assert_eq!(reparsed.sets, bibliography.sets);
 }

@@ -2391,3 +2391,292 @@ fn test_annotate_positions_multi_item_via_public_api() {
         Some(citum_schema::Position::First)
     );
 }
+
+/// Tests that compound numeric mode assigns the same citation number to grouped refs.
+#[test]
+fn test_compound_numeric_number_assignment() {
+    use citum_schema::options::bibliography::CompoundNumericConfig;
+    use citum_schema::options::{BibliographyConfig, Config, Processing};
+    use indexmap::IndexMap;
+
+    let style = Style {
+        options: Some(Config {
+            processing: Some(Processing::Numeric),
+            bibliography: Some(BibliographyConfig {
+                compound_numeric: Some(CompoundNumericConfig::default()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    // Build bibliography and group membership using top-level sets.
+    let refs_json = r#"[
+        {
+            "class": "monograph",
+            "id": "ref-a",
+            "type": "book",
+            "title": "Book A",
+            "issued": "2020"
+        },
+        {
+            "class": "monograph",
+            "id": "ref-b",
+            "type": "book",
+            "title": "Book B",
+            "issued": "2021"
+        },
+        {
+            "class": "monograph",
+            "id": "ref-c",
+            "type": "book",
+            "title": "Book C",
+            "issued": "2022"
+        }
+    ]"#;
+
+    let refs: Vec<Reference> = serde_json::from_str(refs_json).unwrap();
+    let mut bib = Bibliography::new();
+    for r in refs {
+        if let Some(id) = r.id() {
+            bib.insert(id, r);
+        }
+    }
+
+    let mut sets = IndexMap::new();
+    sets.insert(
+        "group-1".to_string(),
+        vec!["ref-a".to_string(), "ref-b".to_string()],
+    );
+
+    let processor = Processor::with_compound_sets(style, bib, sets);
+    // Trigger number initialization via process_references
+    let _ = processor.process_references();
+
+    let numbers = processor.citation_numbers.borrow();
+    // ref-a and ref-b share the same set membership -> same citation number.
+    assert_eq!(
+        numbers.get("ref-a"),
+        numbers.get("ref-b"),
+        "grouped refs should have the same citation number"
+    );
+    // ref-c has no set membership -> different number.
+    assert_ne!(
+        numbers.get("ref-a"),
+        numbers.get("ref-c"),
+        "ungrouped ref should have a different citation number"
+    );
+    assert_eq!(numbers.get("ref-a"), Some(&1), "first group should be 1");
+    assert_eq!(numbers.get("ref-c"), Some(&2), "ungrouped ref should be 2");
+
+    // Verify compound_groups tracking
+    let groups = processor.compound_groups.borrow();
+    assert!(
+        groups.contains_key(&1),
+        "compound_groups should track group 1"
+    );
+    let group1 = &groups[&1];
+    assert!(group1.contains(&"ref-a".to_string()));
+    assert!(group1.contains(&"ref-b".to_string()));
+}
+
+/// Verifies compound numeric bibliography rendering merges grouped entries.
+#[test]
+fn test_compound_numeric_bibliography_rendering() {
+    use indexmap::IndexMap;
+
+    let yaml = r#"
+info:
+  title: Test Compound Numeric
+  id: test-compound-numeric
+options:
+  processing: numeric
+  bibliography:
+    compound-numeric:
+      sub-label: alphabetic
+      sub-label-suffix: ")"
+      sub-delimiter: ", "
+    entry-suffix: .
+    separator: ". "
+bibliography:
+  template:
+    - contributor: author
+      form: long
+    - title: primary
+"#;
+    let style: Style = serde_yaml::from_str(yaml).unwrap();
+
+    let refs_json = r#"[
+        {
+            "id": "ref-a",
+            "class": "monograph",
+            "type": "book",
+            "title": "Article A",
+            "author": [{"family": "Smith", "given": "A."}],
+            "issued": "2020"
+        },
+        {
+            "id": "ref-b",
+            "class": "monograph",
+            "type": "book",
+            "title": "Article B",
+            "author": [{"family": "Jones", "given": "B."}],
+            "issued": "2021"
+        },
+        {
+            "id": "ref-c",
+            "class": "monograph",
+            "type": "book",
+            "title": "Standalone Article",
+            "author": [{"family": "Brown", "given": "C."}],
+            "issued": "2022"
+        }
+    ]"#;
+    let refs: Vec<crate::reference::Reference> = serde_json::from_str(refs_json).unwrap();
+    let mut bib = crate::reference::Bibliography::new();
+    for r in refs {
+        if let Some(id) = r.id() {
+            bib.insert(id, r);
+        }
+    }
+
+    let mut sets = IndexMap::new();
+    sets.insert(
+        "group-1".to_string(),
+        vec!["ref-a".to_string(), "ref-b".to_string()],
+    );
+
+    let processor = Processor::with_compound_sets(style, bib, sets);
+    let result = processor.render_bibliography();
+
+    // Compound group should have sub-labels
+    assert!(
+        result.contains("a)"),
+        "Should contain sub-label a): {}",
+        result
+    );
+    assert!(
+        result.contains("b)"),
+        "Should contain sub-label b): {}",
+        result
+    );
+    // Should have 2 entries (1 compound + 1 standalone), not 3
+    let entries: Vec<&str> = result.trim().split("\n\n").collect();
+    assert_eq!(
+        entries.len(),
+        2,
+        "Expected 2 entries (1 compound + 1 standalone), got {}: {:?}",
+        entries.len(),
+        entries
+    );
+    // Standalone entry should not have sub-labels
+    let standalone = entries.iter().find(|e| e.contains("Brown")).unwrap();
+    assert!(
+        !standalone.contains("a)"),
+        "Standalone should not have sub-labels"
+    );
+}
+
+/// Verifies `subentry: false` keeps grouped citations at whole-group addressing.
+#[test]
+fn test_compound_numeric_citation_subentry_disabled() {
+    use citum_schema::CitationSpec;
+    use citum_schema::options::bibliography::CompoundNumericConfig;
+    use citum_schema::options::{BibliographyConfig, Config, Processing};
+    use citum_schema::template::{NumberVariable, TemplateNumber};
+    use indexmap::IndexMap;
+
+    let style = Style {
+        citation: Some(CitationSpec {
+            wrap: Some(WrapPunctuation::Brackets),
+            template: Some(vec![TemplateComponent::Number(TemplateNumber {
+                number: NumberVariable::CitationNumber,
+                ..Default::default()
+            })]),
+            ..Default::default()
+        }),
+        options: Some(Config {
+            processing: Some(Processing::Numeric),
+            bibliography: Some(BibliographyConfig {
+                compound_numeric: Some(CompoundNumericConfig {
+                    subentry: false,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let refs_json = r#"[
+        {
+            "class": "monograph",
+            "id": "ref-a",
+            "type": "book",
+            "title": "Book A",
+            "issued": "2020"
+        },
+        {
+            "class": "monograph",
+            "id": "ref-b",
+            "type": "book",
+            "title": "Book B",
+            "issued": "2021"
+        }
+    ]"#;
+    let refs: Vec<Reference> = serde_json::from_str(refs_json).unwrap();
+    let mut bib = Bibliography::new();
+    for r in refs {
+        if let Some(id) = r.id() {
+            bib.insert(id, r);
+        }
+    }
+
+    let mut sets = IndexMap::new();
+    sets.insert(
+        "group-1".to_string(),
+        vec!["ref-a".to_string(), "ref-b".to_string()],
+    );
+
+    let processor = Processor::try_with_compound_sets(style, bib, sets).unwrap();
+
+    let citation = Citation {
+        id: Some("c1".to_string()),
+        items: vec![CitationItem {
+            id: "ref-a".to_string(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let rendered = processor.process_citation(&citation).unwrap();
+    assert_eq!(rendered, "[1]");
+}
+
+/// Verifies checked constructors reject duplicate membership across sets.
+#[test]
+fn test_try_with_compound_sets_rejects_invalid_membership() {
+    let style = Style::default();
+    let mut bib = Bibliography::new();
+    bib.insert(
+        "ref-a".to_string(),
+        Reference::from(LegacyReference {
+            id: "ref-a".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("Book A".to_string()),
+            ..Default::default()
+        }),
+    );
+
+    let mut sets = IndexMap::new();
+    sets.insert("group-1".to_string(), vec!["ref-a".to_string()]);
+    sets.insert("group-2".to_string(), vec!["ref-a".to_string()]);
+
+    let err = Processor::try_with_compound_sets(style, bib, sets).expect_err("must reject sets");
+    assert!(
+        err.to_string()
+            .contains("appears in both compound sets 'group-1' and 'group-2'"),
+        "unexpected error: {err}"
+    );
+}
