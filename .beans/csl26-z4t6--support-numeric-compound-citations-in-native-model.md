@@ -1,11 +1,11 @@
 ---
 # csl26-z4t6
 title: Support numeric compound citations in native model
-status: todo
+status: completed
 type: feature
 priority: high
 created_at: 2026-03-05T15:22:32Z
-updated_at: 2026-03-05T15:24:36Z
+updated_at: 2026-03-05T15:57:47Z
 ---
 
 Tentative conclusion from PR #285 analysis:
@@ -29,3 +29,18 @@ Definition of done (tentative):
 - Processor and renderers handle compound locators deterministically.
 - Backward compatibility tests confirm unchanged output for existing
   non-compound styles.
+
+
+## Summary of Changes
+
+Added compound locator support as an additive, backward-compatible schema extension:
+
+- `LocatorSegment` struct (`label` + `value`) in `citum-schema`
+- `ResolvedLocator` enum (Flat | Compound) with `CitationItem::resolved_locator()`
+- `locators: Option<Vec<LocatorSegment>>` on `CitationItem` (takes priority when present)
+- `collapse_compound_locator()` and `resolve_item_locator()` in rendering engine
+- 6 call sites updated to use resolver; variable.rs and templates unchanged
+- 6 new unit tests (serde roundtrip, priority, flat fallback, none, skip-serializing)
+- All 504 tests pass, no regressions
+
+Branch: `feat/compound-locators`

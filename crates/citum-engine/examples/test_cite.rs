@@ -27,6 +27,7 @@ fn main() {
             id: "weinberg1971".to_string(),
             label: None,
             locator: None,
+            locators: None,
             prefix: None,
             suffix: None,
         }],

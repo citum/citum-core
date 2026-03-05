@@ -46,6 +46,25 @@ use citum_schema::template::{DelimiterPunctuation, WrapPunctuation};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 
+/// Get a canonical locator string for ibid comparison.
+///
+/// Accounts for both flat (`label`/`locator`) and compound (`locators`) forms.
+/// Returns `None` when no locator is present.
+fn effective_locator_string(item: &CitationItem) -> Option<String> {
+    use citum_schema::citation::ResolvedLocator;
+    match item.resolved_locator() {
+        Some(ResolvedLocator::Flat { value, .. }) => Some(value.to_string()),
+        Some(ResolvedLocator::Compound(segments)) => {
+            let parts: Vec<String> = segments
+                .iter()
+                .map(|s| format!("{:?}:{}", s.label, s.value))
+                .collect();
+            Some(parts.join(","))
+        }
+        None => None,
+    }
+}
+
 use self::disambiguation::Disambiguator;
 use self::matching::Matcher;
 use self::rendering::Renderer;
@@ -145,13 +164,13 @@ impl Processor {
                     .items
                     .iter()
                     .map(|item| {
-                        let locator = item.locator.clone();
+                        let locator = effective_locator_string(item);
                         (item.id.clone(), locator)
                     })
                     .collect();
                 previous_items = Some(current_items);
                 for item in &citation.items {
-                    seen_items.insert(item.id.clone(), item.locator.clone());
+                    seen_items.insert(item.id.clone(), effective_locator_string(item));
                 }
                 continue;
             }
@@ -159,7 +178,7 @@ impl Processor {
             // Single-item citation: check for ibid cases
             if citation.items.len() == 1 {
                 let current_id = &citation.items[0].id;
-                let current_locator = &citation.items[0].locator;
+                let current_locator = effective_locator_string(&citation.items[0]);
 
                 // Check if this is immediately after the previous citation with same item
                 if let Some(ref prev_items) = previous_items
@@ -171,7 +190,7 @@ impl Processor {
                     if prev_locator.is_none() && current_locator.is_none() {
                         // No locators on either: plain ibid
                         citation.position = Some(Position::Ibid);
-                    } else if prev_locator != current_locator {
+                    } else if *prev_locator != current_locator {
                         // Different locators: ibid with locator
                         citation.position = Some(Position::IbidWithLocator);
                     }
@@ -187,7 +206,7 @@ impl Processor {
                     }
                 }
 
-                seen_items.insert(current_id.clone(), current_locator.clone());
+                seen_items.insert(current_id.clone(), current_locator);
             } else {
                 // Multi-item citation: never ibid, just First or Subsequent
                 let all_seen = citation
@@ -202,7 +221,7 @@ impl Processor {
                 };
 
                 for item in &citation.items {
-                    seen_items.insert(item.id.clone(), item.locator.clone());
+                    seen_items.insert(item.id.clone(), effective_locator_string(item));
                 }
             }
 
@@ -211,7 +230,7 @@ impl Processor {
                 .items
                 .iter()
                 .map(|item| {
-                    let locator = item.locator.clone();
+                    let locator = effective_locator_string(item);
                     (item.id.clone(), locator)
                 })
                 .collect();
