@@ -6,6 +6,7 @@
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderContext, RenderOptions};
 use citum_schema::locale::TermForm;
+use citum_schema::options::contributors::NameForm;
 use citum_schema::options::{
     AndOptions, AndOtherOptions, DemoteNonDroppingParticle, DisplayAsSort, EditorLabelFormat,
     ShortenListOptions, SubstituteKey,
@@ -688,6 +689,7 @@ pub fn format_names(
     let initialize_with =
         initialize_with_override.or_else(|| config.and_then(|c| c.initialize_with.as_ref()));
     let initialize_with_hyphen = config.and_then(|c| c.initialize_with_hyphen);
+    let name_form = config.and_then(|c| c.name_form);
     let demote_ndp = config.and_then(|c| c.demote_non_dropping_particle.as_ref());
     let sort_separator =
         sort_separator_override.or_else(|| config.and_then(|c| c.sort_separator.as_ref()));
@@ -705,6 +707,7 @@ pub fn format_names(
                 name_order,
                 initialize_with,
                 initialize_with_hyphen,
+                name_form,
                 demote_ndp,
                 sort_separator,
                 hints.expand_given_names,
@@ -725,6 +728,7 @@ pub fn format_names(
                 name_order,
                 initialize_with,
                 initialize_with_hyphen,
+                name_form,
                 demote_ndp,
                 sort_separator,
                 hints.expand_given_names,
@@ -733,26 +737,7 @@ pub fn format_names(
         .collect();
 
     // Determine "and" setting: use override if provided, else global config
-    let mut and_option = and_override.or_else(|| config.and_then(|c| c.and.as_ref()));
-
-    // Resolve mode-dependent "and" if necessary
-    while let Some(AndOptions::ModeDependent {
-        integral,
-        non_integral,
-    }) = and_option
-    {
-        if options.context == RenderContext::Citation {
-            and_option = if options.mode == citum_schema::citation::CitationMode::Integral {
-                Some(integral)
-            } else {
-                Some(non_integral)
-            };
-        } else {
-            // In bibliography, always use the non-integral (parenthetical) conjunction style
-            // for APA (which uses & in bib but 'and' in narrative citations)
-            and_option = Some(non_integral);
-        }
-    }
+    let and_option = and_override.or_else(|| config.and_then(|c| c.and.as_ref()));
 
     // Determine conjunction between last two names
     // Default (None or no config) means no conjunction, matching CSL behavior
@@ -760,7 +745,7 @@ pub fn format_names(
         Some(AndOptions::Text) => Some(locale.and_term(false)),
         Some(AndOptions::Symbol) => Some(locale.and_term(true)),
         Some(AndOptions::None) | None => None, // No conjunction
-        _ => None,                             // Already resolved ModeDependent
+        _ => None,                             // Catch-all for future non_exhaustive variants
     };
     // When "et al." is applied, most styles expect comma-separated shown names
     // before the abbreviation (e.g., "Smith, Jones, et al."), not a final
@@ -884,6 +869,7 @@ pub fn format_single_name(
     name_order: Option<&citum_schema::template::NameOrder>,
     initialize_with: Option<&String>,
     initialize_with_hyphen: Option<bool>,
+    name_form: Option<NameForm>,
     demote_ndp: Option<&DemoteNonDroppingParticle>,
     sort_separator: Option<&String>,
     expand_given_names: bool,
@@ -954,44 +940,56 @@ pub fn format_single_name(
                 family.to_string()
             };
 
-            let given_part = if let Some(init) = initialize_with {
-                let separators = if initialize_with_hyphen == Some(false) {
-                    vec![' ', '\u{00A0}'] // Non-breaking space too
-                } else {
-                    vec![' ', '-', '\u{00A0}']
-                };
+            // Determine how to render the given name based on NameForm.
+            // If name_form is None and initialize_with is present, treat as Initials for backward compat.
+            let effective_form = match name_form {
+                Some(f) => f,
+                None if initialize_with.is_some() => NameForm::Initials,
+                _ => NameForm::Full,
+            };
 
-                let mut result = String::new();
-                let mut current_part = String::new();
-
-                for c in given.chars() {
-                    if separators.contains(&c) {
-                        if !current_part.is_empty() {
-                            if let Some(first) = current_part.chars().next() {
-                                result.push(first);
-                                result.push_str(init);
-                            }
-                            current_part.clear();
-                        }
-                        // Preserve only non-whitespace separators (e.g., hyphen for J.-P.).
-                        // Whitespace separators are represented by `initialize_with` itself.
-                        if !c.is_whitespace() {
-                            result.push(c);
-                        }
+            let given_part = match effective_form {
+                NameForm::FamilyOnly => String::new(),
+                NameForm::Initials => {
+                    // Use initialize_with if provided, else default to ". "
+                    let init = initialize_with.map(|s| s.as_str()).unwrap_or(". ");
+                    let separators = if initialize_with_hyphen == Some(false) {
+                        vec![' ', '\u{00A0}'] // Non-breaking space too
                     } else {
-                        current_part.push(c);
-                    }
-                }
+                        vec![' ', '-', '\u{00A0}']
+                    };
 
-                if !current_part.is_empty()
-                    && let Some(first) = current_part.chars().next()
-                {
-                    result.push(first);
-                    result.push_str(init);
+                    let mut result = String::new();
+                    let mut current_part = String::new();
+
+                    for c in given.chars() {
+                        if separators.contains(&c) {
+                            if !current_part.is_empty() {
+                                if let Some(first) = current_part.chars().next() {
+                                    result.push(first);
+                                    result.push_str(init);
+                                }
+                                current_part.clear();
+                            }
+                            // Preserve only non-whitespace separators (e.g., hyphen for J.-P.).
+                            // Whitespace separators are represented by `initialize_with` itself.
+                            if !c.is_whitespace() {
+                                result.push(c);
+                            }
+                        } else {
+                            current_part.push(c);
+                        }
+                    }
+
+                    if !current_part.is_empty()
+                        && let Some(first) = current_part.chars().next()
+                    {
+                        result.push(first);
+                        result.push_str(init);
+                    }
+                    result.trim().to_string()
                 }
-                result.trim().to_string()
-            } else {
-                given.to_string()
+                NameForm::Full => given.to_string(),
             };
 
             // Construct particle part (dropping + demoted non-dropping)

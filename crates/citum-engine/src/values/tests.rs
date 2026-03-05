@@ -369,6 +369,7 @@ fn test_demote_non_dropping_particle() {
         None,
         None,
         None, // initialize_with_hyphen
+        None, // name_form
         Some(&DemoteNonDroppingParticle::Never),
         None, // sort_separator
         false,
@@ -385,6 +386,7 @@ fn test_demote_non_dropping_particle() {
         None,
         None,
         None, // initialize_with_hyphen
+        None, // name_form
         Some(&DemoteNonDroppingParticle::DisplayAndSort),
         None, // sort_separator
         false,
@@ -401,6 +403,7 @@ fn test_demote_non_dropping_particle() {
         None,
         None,
         None, // initialize_with_hyphen
+        None, // name_form
         Some(&DemoteNonDroppingParticle::SortOnly),
         None, // sort_separator
         false,
@@ -417,6 +420,7 @@ fn test_demote_non_dropping_particle() {
         None,
         None,
         None, // initialize_with_hyphen
+        None, // name_form
         Some(&DemoteNonDroppingParticle::DisplayAndSort),
         None, // sort_separator
         false,
@@ -442,6 +446,7 @@ fn test_initialize_with_variants_for_multi_part_given_names() {
         None,
         Some(&init_compact),
         None,
+        None, // name_form
         None,
         None,
         false,
@@ -457,6 +462,7 @@ fn test_initialize_with_variants_for_multi_part_given_names() {
         None,
         Some(&init_space),
         None,
+        None, // name_form
         None,
         None,
         false,
@@ -472,6 +478,7 @@ fn test_initialize_with_variants_for_multi_part_given_names() {
         None,
         Some(&init_dot),
         None,
+        None, // name_form
         None,
         None,
         false,
@@ -487,6 +494,7 @@ fn test_initialize_with_variants_for_multi_part_given_names() {
         None,
         Some(&init_dot_space),
         None,
+        None, // name_form
         None,
         None,
         false,
@@ -512,6 +520,7 @@ fn test_initialize_with_hyphen_guard() {
         None,
         Some(&init_dot),
         None,
+        None, // name_form
         None,
         None,
         false,
@@ -526,6 +535,7 @@ fn test_initialize_with_hyphen_guard() {
         None,
         Some(&init_dot),
         Some(false),
+        None, // name_form
         None,
         None,
         false,
@@ -1329,6 +1339,7 @@ fn test_sort_separator_space() {
         None,
         Some(&"".to_string()),  // initialize_with (no separator after initials)
         None,                   // initialize_with_hyphen
+        None,                   // name_form
         None,                   // demote_ndp
         Some(&" ".to_string()), // sort_separator - space instead of comma
         false,                  // expand_given_names
@@ -1344,6 +1355,7 @@ fn test_sort_separator_space() {
         None,
         Some(&"".to_string()), // initialize_with (no separator after initials)
         None,                  // initialize_with_hyphen
+        None,                  // name_form
         None,                  // demote_ndp
         None,                  // sort_separator - default to ", "
         false,                 // expand_given_names
