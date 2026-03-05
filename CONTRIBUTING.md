@@ -64,6 +64,11 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/) format:
 - **References**: Include issue references (e.g., `Refs: csln#64`)
 - **No Co-Authored-By**: Do not include co-author footers
 
+Enable the repository commit hook to enforce this automatically:
+```bash
+git config core.hooksPath .githooks
+```
+
 Example:
 ```
 fix(processor): handle empty contributor list
