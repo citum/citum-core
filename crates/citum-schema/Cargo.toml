@@ -13,6 +13,7 @@ schemars = { version = "0.8", features = ["derive", "url"], optional = true }
 citum_edtf = { package = "citum-edtf", path = "../citum-edtf", features = ["serde"] }
 url = { version = "2.5", features = ["serde"] }
 csl_legacy = { package = "csl-legacy", path = "../csl-legacy", optional = true }
+indexmap = { version = "2", features = ["serde"] }
 
 [features]
 default = []
