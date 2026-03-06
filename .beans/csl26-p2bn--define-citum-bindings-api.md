@@ -1,11 +1,11 @@
 ---
 # csl26-p2bn
 title: 'Phase 2: Define citum-bindings public API surface'
-status: todo
+status: in-progress
 type: feature
 priority: normal
 created_at: 2026-02-22T00:00:00Z
-updated_at: 2026-02-22T00:00:00Z
+updated_at: 2026-03-06T14:51:10Z
 blocking:
     - csl26-modz
     - csl26-p1rn
