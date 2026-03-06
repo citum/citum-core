@@ -32,7 +32,8 @@ options:
   bibliography:
     entry-suffix: .
     separator: ". "
-    compound-numeric: {}
+    compound-numeric:
+      collapse-subentries: true
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation

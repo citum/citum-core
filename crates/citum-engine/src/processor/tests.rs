@@ -2501,6 +2501,9 @@ options:
     separator: ". "
 bibliography:
   template:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
     - contributor: author
       form: long
     - title: primary
@@ -2550,7 +2553,12 @@ bibliography:
     let processor = Processor::with_compound_sets(style, bib, sets);
     let result = processor.render_bibliography();
 
-    // Compound group should have sub-labels
+    // Compound group should have one shared group label and sub-labels.
+    assert_eq!(
+        result.matches("[1]").count(),
+        1,
+        "Expected one group label: {result}"
+    );
     assert!(
         result.contains("a)"),
         "Should contain sub-label a): {}",
@@ -2652,6 +2660,525 @@ fn test_compound_numeric_citation_subentry_disabled() {
     };
     let rendered = processor.process_citation(&citation).unwrap();
     assert_eq!(rendered, "[1]");
+}
+
+/// Verifies integral (narrative) citations include sub-labels for compound groups.
+///
+/// Regression test: render_author_number_for_numeric_integral_with_format was
+/// using a bare citation number without consulting citation_sub_label_for_ref,
+/// so grouped refs rendered "Smith [1]" instead of "Smith [1a]".
+#[test]
+fn test_compound_numeric_integral_citation_sub_label() {
+    use citum_schema::options::bibliography::CompoundNumericConfig;
+    use citum_schema::options::{BibliographyConfig, Config, Processing};
+    use indexmap::IndexMap;
+
+    let style = Style {
+        options: Some(Config {
+            processing: Some(Processing::Numeric),
+            bibliography: Some(BibliographyConfig {
+                compound_numeric: Some(CompoundNumericConfig::default()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let refs_json = r#"[
+        {
+            "class": "monograph",
+            "id": "ref-a",
+            "type": "book",
+            "title": "Book A",
+            "author": [{"family": "Smith", "given": "A."}],
+            "issued": "2020"
+        },
+        {
+            "class": "monograph",
+            "id": "ref-b",
+            "type": "book",
+            "title": "Book B",
+            "author": [{"family": "Jones", "given": "B."}],
+            "issued": "2021"
+        }
+    ]"#;
+    let refs: Vec<Reference> = serde_json::from_str(refs_json).unwrap();
+    let mut bib = Bibliography::new();
+    for r in refs {
+        if let Some(id) = r.id() {
+            bib.insert(id, r);
+        }
+    }
+
+    let mut sets = IndexMap::new();
+    sets.insert(
+        "group-1".to_string(),
+        vec!["ref-a".to_string(), "ref-b".to_string()],
+    );
+
+    let processor = Processor::with_compound_sets(style, bib, sets);
+
+    // First member should render "Smith [1a]", not "Smith [1]"
+    let cite_a = Citation {
+        id: Some("c-a".to_string()),
+        items: vec![CitationItem {
+            id: "ref-a".to_string(),
+            ..Default::default()
+        }],
+        mode: citum_schema::citation::CitationMode::Integral,
+        ..Default::default()
+    };
+    let rendered_a = processor.process_citation(&cite_a).unwrap();
+    assert!(
+        rendered_a.contains("[1a]"),
+        "first compound member should show sub-label 'a': got '{}'",
+        rendered_a
+    );
+
+    // Second member should render "Jones [1b]", not "Jones [1]"
+    let cite_b = Citation {
+        id: Some("c-b".to_string()),
+        items: vec![CitationItem {
+            id: "ref-b".to_string(),
+            ..Default::default()
+        }],
+        mode: citum_schema::citation::CitationMode::Integral,
+        ..Default::default()
+    };
+    let rendered_b = processor.process_citation(&cite_b).unwrap();
+    assert!(
+        rendered_b.contains("[1b]"),
+        "second compound member should show sub-label 'b': got '{}'",
+        rendered_b
+    );
+}
+
+/// Verifies render_bibliography correctly merges compound groups when called
+/// through the standard public API (regression guard for Bug 3).
+///
+/// The CLI's non-show_keys bibliography path was calling process_references()
+/// directly and rendering entries one-by-one, bypassing merge_compound_entries.
+/// This test ensures render_bibliography (the correct path) produces a single
+/// merged entry — not two separate [1] entries.
+#[test]
+fn test_compound_numeric_bibliography_no_duplicate_labels() {
+    use indexmap::IndexMap;
+
+    let yaml = r#"
+info:
+  title: Test Compound Numeric Dedup
+  id: test-compound-dedup
+options:
+  processing: numeric
+  bibliography:
+    compound-numeric: {}
+    entry-suffix: .
+bibliography:
+  template:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
+    - contributor: author
+      form: long
+    - title: primary
+"#;
+    let style: Style = serde_yaml::from_str(yaml).unwrap();
+
+    let refs_json = r#"[
+        {
+            "id": "ref-a",
+            "class": "monograph",
+            "type": "book",
+            "title": "Article A",
+            "author": [{"family": "Smith", "given": "A."}],
+            "issued": "2020"
+        },
+        {
+            "id": "ref-b",
+            "class": "monograph",
+            "type": "book",
+            "title": "Article B",
+            "author": [{"family": "Jones", "given": "B."}],
+            "issued": "2021"
+        }
+    ]"#;
+    let refs: Vec<crate::reference::Reference> = serde_json::from_str(refs_json).unwrap();
+    let mut bib = crate::reference::Bibliography::new();
+    for r in refs {
+        if let Some(id) = r.id() {
+            bib.insert(id, r);
+        }
+    }
+
+    let mut sets = IndexMap::new();
+    sets.insert(
+        "group-1".to_string(),
+        vec!["ref-a".to_string(), "ref-b".to_string()],
+    );
+
+    let processor = Processor::with_compound_sets(style, bib, sets);
+    let result = processor.render_bibliography();
+
+    // Must have exactly one [1] label — compound group must be merged
+    let label_1_count = result.matches("[1]").count();
+    assert_eq!(
+        label_1_count, 1,
+        "expected exactly one [1] label for the merged group, got {}: {}",
+        label_1_count, result
+    );
+
+    // Should contain exactly one compound group entry
+    let entries: Vec<&str> = result.trim().split("\n\n").collect();
+    assert_eq!(
+        entries.len(),
+        1,
+        "expected 1 merged entry for the compound group, got {}: {:?}",
+        entries.len(),
+        entries
+    );
+}
+
+/// Verifies merged HTML bibliography output does not nest bibliography wrappers.
+#[test]
+fn test_compound_numeric_bibliography_html_has_no_nested_wrappers() {
+    use crate::render::html::Html;
+    use indexmap::IndexMap;
+
+    let yaml = r#"
+info:
+  title: Test Compound Numeric HTML
+  id: test-compound-html
+options:
+  processing: numeric
+  bibliography:
+    compound-numeric: {}
+    entry-suffix: .
+    separator: ". "
+bibliography:
+  template:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
+    - contributor: author
+      form: long
+    - title: primary
+"#;
+    let style: Style = serde_yaml::from_str(yaml).unwrap();
+
+    let refs_json = r#"[
+        {
+            "id": "ref-a",
+            "class": "monograph",
+            "type": "book",
+            "title": "Article A",
+            "author": [{"family": "Smith", "given": "A."}],
+            "issued": "2020"
+        },
+        {
+            "id": "ref-b",
+            "class": "monograph",
+            "type": "book",
+            "title": "Article B",
+            "author": [{"family": "Jones", "given": "B."}],
+            "issued": "2021"
+        }
+    ]"#;
+    let refs: Vec<Reference> = serde_json::from_str(refs_json).unwrap();
+    let mut bib = Bibliography::new();
+    for r in refs {
+        if let Some(id) = r.id() {
+            bib.insert(id, r);
+        }
+    }
+
+    let mut sets = IndexMap::new();
+    sets.insert(
+        "group-1".to_string(),
+        vec!["ref-a".to_string(), "ref-b".to_string()],
+    );
+
+    let processor = Processor::with_compound_sets(style, bib, sets);
+    let result = processor.render_bibliography_with_format::<Html>();
+
+    assert_eq!(
+        result.matches("csln-bibliography").count(),
+        1,
+        "merged HTML should have exactly one bibliography wrapper: {result}"
+    );
+    assert_eq!(
+        result.matches("csln-entry").count(),
+        1,
+        "merged HTML should have exactly one entry wrapper: {result}"
+    );
+}
+
+/// Verifies subset bibliography rendering honors keys and does not force a merge.
+#[test]
+fn test_compound_numeric_selected_bibliography_subset_respects_keys() {
+    use indexmap::IndexMap;
+
+    let yaml = r#"
+info:
+  title: Test Compound Numeric Selection
+  id: test-compound-selection
+options:
+  processing: numeric
+  bibliography:
+    compound-numeric:
+      sub-label: alphabetic
+      sub-label-suffix: ")"
+    entry-suffix: .
+    separator: ". "
+bibliography:
+  template:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
+    - contributor: author
+      form: long
+    - title: primary
+"#;
+    let style: Style = serde_yaml::from_str(yaml).unwrap();
+
+    let refs_json = r#"[
+        {
+            "id": "ref-a",
+            "class": "monograph",
+            "type": "book",
+            "title": "Article A",
+            "author": [{"family": "Smith", "given": "A."}],
+            "issued": "2020"
+        },
+        {
+            "id": "ref-b",
+            "class": "monograph",
+            "type": "book",
+            "title": "Article B",
+            "author": [{"family": "Jones", "given": "B."}],
+            "issued": "2021"
+        }
+    ]"#;
+    let refs: Vec<Reference> = serde_json::from_str(refs_json).unwrap();
+    let mut bib = Bibliography::new();
+    for r in refs {
+        if let Some(id) = r.id() {
+            bib.insert(id, r);
+        }
+    }
+
+    let mut sets = IndexMap::new();
+    sets.insert(
+        "group-1".to_string(),
+        vec!["ref-a".to_string(), "ref-b".to_string()],
+    );
+
+    let processor = Processor::with_compound_sets(style, bib, sets);
+    let result = processor
+        .render_selected_bibliography_with_format::<crate::render::plain::PlainText, _>(vec![
+            "ref-b".to_string(),
+        ]);
+
+    assert!(
+        result.contains("Jones"),
+        "selected entry should be rendered: {result}"
+    );
+    assert!(
+        !result.contains("Smith"),
+        "unselected entry should be omitted: {result}"
+    );
+    assert!(
+        result.contains("[1]"),
+        "selected entry should keep the group number: {result}"
+    );
+    assert!(
+        !result.contains("a)"),
+        "single selected member should not be merged: {result}"
+    );
+    assert!(
+        !result.contains("b)"),
+        "single selected member should not be merged: {result}"
+    );
+}
+
+/// Verifies compound numeric citations remain explicit when collapse is disabled.
+#[test]
+fn test_compound_numeric_citation_subentry_collapse_disabled() {
+    use citum_schema::CitationSpec;
+    use citum_schema::options::bibliography::CompoundNumericConfig;
+    use citum_schema::options::{BibliographyConfig, Config, Processing};
+    use citum_schema::template::{NumberVariable, TemplateNumber};
+    use indexmap::IndexMap;
+
+    let style = Style {
+        citation: Some(CitationSpec {
+            wrap: Some(WrapPunctuation::Brackets),
+            template: Some(vec![TemplateComponent::Number(TemplateNumber {
+                number: NumberVariable::CitationNumber,
+                ..Default::default()
+            })]),
+            delimiter: Some(",".to_string()),
+            multi_cite_delimiter: Some(",".to_string()),
+            ..Default::default()
+        }),
+        options: Some(Config {
+            processing: Some(Processing::Numeric),
+            bibliography: Some(BibliographyConfig {
+                compound_numeric: Some(CompoundNumericConfig {
+                    subentry: true,
+                    collapse_subentries: false,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let refs_json = r#"[
+        {"class": "monograph", "id": "ref-a", "type": "book", "title": "Book A", "issued": "2020"},
+        {"class": "monograph", "id": "ref-b", "type": "book", "title": "Book B", "issued": "2021"},
+        {"class": "monograph", "id": "ref-c", "type": "book", "title": "Book C", "issued": "2022"}
+    ]"#;
+    let refs: Vec<Reference> = serde_json::from_str(refs_json).unwrap();
+    let mut bib = Bibliography::new();
+    for r in refs {
+        if let Some(id) = r.id() {
+            bib.insert(id, r);
+        }
+    }
+
+    let mut sets = IndexMap::new();
+    sets.insert(
+        "group-1".to_string(),
+        vec![
+            "ref-a".to_string(),
+            "ref-b".to_string(),
+            "ref-c".to_string(),
+        ],
+    );
+
+    let processor = Processor::with_compound_sets(style, bib, sets);
+    let citation = Citation {
+        id: Some("c1".to_string()),
+        items: vec![
+            CitationItem {
+                id: "ref-a".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ref-b".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ref-c".to_string(),
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+    let rendered = processor.process_citation(&citation).unwrap();
+    assert_eq!(rendered, "[1a,1b,1c]");
+}
+
+/// Verifies compound numeric citations collapse adjacent grouped subentries.
+#[test]
+fn test_compound_numeric_citation_subentry_collapse_enabled() {
+    use citum_schema::CitationSpec;
+    use citum_schema::options::bibliography::CompoundNumericConfig;
+    use citum_schema::options::{BibliographyConfig, Config, Processing};
+    use citum_schema::template::{NumberVariable, TemplateNumber};
+    use indexmap::IndexMap;
+
+    let style = Style {
+        citation: Some(CitationSpec {
+            wrap: Some(WrapPunctuation::Brackets),
+            template: Some(vec![TemplateComponent::Number(TemplateNumber {
+                number: NumberVariable::CitationNumber,
+                ..Default::default()
+            })]),
+            delimiter: Some(",".to_string()),
+            multi_cite_delimiter: Some(",".to_string()),
+            ..Default::default()
+        }),
+        options: Some(Config {
+            processing: Some(Processing::Numeric),
+            bibliography: Some(BibliographyConfig {
+                compound_numeric: Some(CompoundNumericConfig {
+                    subentry: true,
+                    collapse_subentries: true,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let refs_json = r#"[
+        {"class": "monograph", "id": "ref-a", "type": "book", "title": "Book A", "issued": "2020"},
+        {"class": "monograph", "id": "ref-b", "type": "book", "title": "Book B", "issued": "2021"},
+        {"class": "monograph", "id": "ref-c", "type": "book", "title": "Book C", "issued": "2022"},
+        {"class": "monograph", "id": "ref-d", "type": "book", "title": "Book D", "issued": "2023"}
+    ]"#;
+    let refs: Vec<Reference> = serde_json::from_str(refs_json).unwrap();
+    let mut bib = Bibliography::new();
+    for r in refs {
+        if let Some(id) = r.id() {
+            bib.insert(id, r);
+        }
+    }
+
+    let mut sets = IndexMap::new();
+    sets.insert(
+        "group-1".to_string(),
+        vec![
+            "ref-a".to_string(),
+            "ref-b".to_string(),
+            "ref-c".to_string(),
+            "ref-d".to_string(),
+        ],
+    );
+
+    let processor = Processor::with_compound_sets(style, bib, sets);
+
+    let contiguous = Citation {
+        id: Some("c1".to_string()),
+        items: vec![
+            CitationItem {
+                id: "ref-a".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ref-b".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ref-c".to_string(),
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+    assert_eq!(processor.process_citation(&contiguous).unwrap(), "[1a-c]");
+
+    let sparse = Citation {
+        id: Some("c2".to_string()),
+        items: vec![
+            CitationItem {
+                id: "ref-a".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ref-c".to_string(),
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+    assert_eq!(processor.process_citation(&sparse).unwrap(), "[1a,c]");
 }
 
 /// Verifies checked constructors reject duplicate membership across sets.

@@ -704,6 +704,11 @@
       "description": "Configuration for compound numeric bibliography entries.\n\nGroups multiple references under a single citation number with sub-labels. Used in chemistry journals (e.g., Angewandte Chemie).",
       "type": "object",
       "properties": {
+        "collapse-subentries": {
+          "description": "Whether adjacent grouped sub-entries collapse in citations.\n\nWhen true, adjacent members from the same group may render as `1a,b` or `1a-c` instead of `1a,1b` or `1a,1b,1c`.",
+          "default": false,
+          "type": "boolean"
+        },
         "sub-delimiter": {
           "description": "Delimiter between sub-items (default: \", \").",
           "default": ", ",

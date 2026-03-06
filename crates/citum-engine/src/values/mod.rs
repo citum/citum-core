@@ -16,6 +16,8 @@ pub mod date;
 pub mod list;
 /// Numeric variable extraction and page-range helpers.
 pub mod number;
+/// Shared helpers for collapsing consecutive numeric or ordinal sequences.
+pub mod range;
 /// Locale term resolution helpers.
 pub mod term;
 /// Title extraction and title-formatting helpers.

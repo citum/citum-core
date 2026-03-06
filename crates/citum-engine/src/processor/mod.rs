@@ -36,6 +36,7 @@ mod tests;
 
 use crate::error::ProcessorError;
 use crate::reference::{Bibliography, Citation, CitationItem, Reference};
+use crate::render::bibliography::render_entry_body_with_format;
 use crate::render::{ProcEntry, ProcTemplate};
 use crate::values::ProcHints;
 use citum_schema::Style;
@@ -773,12 +774,12 @@ impl Processor {
             None => return entries,
         };
 
-        // Build lookup: ref_id -> (group_number, index_within_group)
-        let mut ref_to_group: HashMap<String, (usize, usize)> = HashMap::new();
+        // Build lookup: ref_id -> group_number for all compound groups.
+        let mut ref_to_group: HashMap<String, usize> = HashMap::new();
         for (&num, ids) in compound_groups.iter() {
             if ids.len() > 1 {
-                for (i, id) in ids.iter().enumerate() {
-                    ref_to_group.insert(id.clone(), (num, i));
+                for id in ids {
+                    ref_to_group.insert(id.clone(), num);
                 }
             }
         }
@@ -787,30 +788,82 @@ impl Processor {
             return entries;
         }
 
-        // First pass: render each entry to string and collect by group
+        // Helper: is this component a citation-number label (e.g. `[1]`)?
+        let is_label_component = |comp: &crate::render::component::ProcTemplateComponent| -> bool {
+            matches!(
+                &comp.template_component,
+                citum_schema::template::TemplateComponent::Number(n)
+                    if n.number
+                        == citum_schema::template::NumberVariable::CitationNumber
+            )
+        };
+
+        // First pass: render each entry's content WITHOUT the citation-number label.
+        // This prevents the label from appearing inside each sub-entry when merged
+        // (e.g. "a) [1] Zwart..." is wrong; content should be "a) Zwart...").
+        // Use refs_to_string_with_format (not citation renderer) so bibliography
+        // separators are applied correctly between author/title/year etc.
         let mut rendered_strings: HashMap<String, String> = HashMap::new();
         for entry in &entries {
-            let rendered = crate::render::citation::citation_to_string_with_format::<F>(
-                &entry.template,
-                None,
-                None,
-                None,
-                None,
-            );
+            let content_components: Vec<_> = entry
+                .template
+                .iter()
+                .filter(|c| !is_label_component(c))
+                .cloned()
+                .collect();
+            let content_entry = ProcEntry {
+                id: entry.id.clone(),
+                template: content_components,
+                metadata: entry.metadata.clone(),
+            };
+            let rendered = render_entry_body_with_format::<F>(&content_entry);
             rendered_strings.insert(entry.id.clone(), rendered.trim().to_string());
         }
+
+        let entries_by_id: HashMap<String, ProcEntry> = entries
+            .iter()
+            .map(|entry| (entry.id.clone(), entry.clone()))
+            .collect();
+
+        let mut group_members_present: HashMap<usize, Vec<String>> = HashMap::new();
+        for entry in &entries {
+            if let Some(&group_num) = ref_to_group.get(&entry.id) {
+                group_members_present
+                    .entry(group_num)
+                    .or_default()
+                    .push(entry.id.clone());
+            }
+        }
+
+        let first_present_by_group: HashMap<usize, String> = group_members_present
+            .iter()
+            .filter_map(|(&group_num, ids)| ids.first().cloned().map(|id| (group_num, id)))
+            .collect();
 
         // Second pass: build merged output
         let mut result: Vec<ProcEntry> = Vec::new();
 
         for entry in entries {
-            if let Some(&(group_num, idx)) = ref_to_group.get(&entry.id) {
-                if idx == 0 {
+            if let Some(&group_num) = ref_to_group.get(&entry.id) {
+                let Some(present_ids) = group_members_present.get(&group_num) else {
+                    result.push(entry);
+                    continue;
+                };
+
+                if present_ids.len() == 1 {
+                    result.push(entry);
+                    continue;
+                }
+
+                if first_present_by_group.get(&group_num) == Some(&entry.id) {
                     // First in group — build merged entry
                     let group_ids = &compound_groups[&group_num];
                     let mut parts: Vec<String> = Vec::new();
 
                     for (i, id) in group_ids.iter().enumerate() {
+                        if !entries_by_id.contains_key(id) {
+                            continue;
+                        }
                         let sub_label = match compound_config.sub_label {
                             citum_schema::options::bibliography::SubLabelStyle::Alphabetic => {
                                 format!(
@@ -829,25 +882,30 @@ impl Processor {
                         }
                     }
 
-                    let merged_text = parts.join(&compound_config.sub_delimiter);
-                    let merged_component = entry
+                    let merged_content = parts.join(&compound_config.sub_delimiter);
+
+                    // Keep citation-number label components intact so the bibliography
+                    // renderer outputs the label (e.g. "[1] ") once, then appends the
+                    // merged sub-entries as a single pre-formatted content component.
+                    let mut merged_template: Vec<_> = entry
                         .template
-                        .first()
-                        .map(|c| c.template_component.clone())
-                        .unwrap_or_default();
+                        .iter()
+                        .filter(|c| is_label_component(c))
+                        .cloned()
+                        .collect();
+                    merged_template.push(crate::render::component::ProcTemplateComponent {
+                        template_component: citum_schema::template::TemplateComponent::default(),
+                        value: merged_content,
+                        pre_formatted: true,
+                        config: entry.template.first().and_then(|c| c.config.clone()),
+                        ..Default::default()
+                    });
 
-                    let merged_entry = ProcEntry {
+                    result.push(ProcEntry {
                         id: entry.id.clone(),
-                        template: vec![crate::render::component::ProcTemplateComponent {
-                            template_component: merged_component,
-                            value: merged_text,
-                            pre_formatted: true,
-                            ..Default::default()
-                        }],
+                        template: merged_template,
                         metadata: entry.metadata,
-                    };
-
-                    result.push(merged_entry);
+                    });
                 }
                 // else: skip non-first members of a group
             } else {
@@ -864,7 +922,19 @@ impl Processor {
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
+        self.render_selected_bibliography_with_format::<F, _>(
+            self.bibliography.keys().cloned().collect::<Vec<_>>(),
+        )
+    }
+
+    /// Render a selected bibliography subset to a string using a specific format.
+    pub fn render_selected_bibliography_with_format<F, I>(&self, item_ids: I) -> String
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+        I: IntoIterator<Item = String>,
+    {
         self.initialize_numeric_citation_numbers();
+        let selected: HashSet<String> = item_ids.into_iter().collect();
         let sorted_refs = self.sort_references(self.bibliography.values().collect());
         let mut bibliography: Vec<ProcEntry> = Vec::new();
         let mut prev_reference: Option<&Reference> = None;
@@ -874,6 +944,9 @@ impl Processor {
 
         for (index, reference) in sorted_refs.iter().enumerate() {
             let ref_id = reference.id().unwrap_or_default();
+            if !selected.contains(&ref_id) {
+                continue;
+            }
             let entry_number = self
                 .citation_numbers
                 .borrow()

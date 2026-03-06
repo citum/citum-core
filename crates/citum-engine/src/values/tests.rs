@@ -234,6 +234,33 @@ fn test_format_page_range_no_format() {
     assert_eq!(number::format_page_range("321-328", None), "321–328");
 }
 
+/// Tests the behavior of shared consecutive sequence collapsing.
+#[test]
+fn test_consecutive_segments() {
+    use crate::values::range::{ConsecutiveSegment, consecutive_segments};
+
+    assert_eq!(consecutive_segments(&[]), Vec::<ConsecutiveSegment>::new());
+    assert_eq!(
+        consecutive_segments(&[4]),
+        vec![ConsecutiveSegment::Single(4)]
+    );
+    assert_eq!(
+        consecutive_segments(&[1, 2, 3, 5, 7, 8]),
+        vec![
+            ConsecutiveSegment::Range { start: 1, end: 3 },
+            ConsecutiveSegment::Single(5),
+            ConsecutiveSegment::Range { start: 7, end: 8 },
+        ]
+    );
+    assert_eq!(
+        consecutive_segments(&[2, 2, 3, 6]),
+        vec![
+            ConsecutiveSegment::Range { start: 2, end: 3 },
+            ConsecutiveSegment::Single(6),
+        ]
+    );
+}
+
 /// Tests the behavior of test_et_al_delimiter_never.
 #[test]
 fn test_et_al_delimiter_never() {

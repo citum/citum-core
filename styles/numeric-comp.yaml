@@ -21,7 +21,8 @@ options:
   bibliography:
     entry-suffix: .
     separator: ". "
-    compound-numeric: {}
+    compound-numeric:
+      collapse-subentries: true
 citation:
   use-preset: numeric-citation
   wrap: brackets

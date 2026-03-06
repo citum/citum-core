@@ -50,6 +50,102 @@ pub fn refs_to_string(proc_entries: Vec<ProcEntry>) -> String {
     refs_to_string_with_format::<PlainText>(proc_entries, None, None)
 }
 
+/// Render one processed bibliography entry body without outer entry/bibliography wrappers.
+pub fn render_entry_body_with_format<F: OutputFormat<Output = String>>(
+    entry: &ProcEntry,
+) -> String {
+    let mut entry_output = String::new();
+    let proc_template = &entry.template;
+
+    // Check locale option for punctuation placement in quotes.
+    let punctuation_in_quote = proc_template
+        .first()
+        .and_then(|c| c.config.as_ref())
+        .is_some_and(|cfg| cfg.punctuation_in_quote);
+
+    // Get the bibliography separator from the config, defaulting to ". "
+    let default_separator = proc_template
+        .first()
+        .and_then(|c| c.config.as_ref())
+        .and_then(|cfg| cfg.bibliography.as_ref())
+        .and_then(|bib| bib.separator.as_deref())
+        .unwrap_or(". ");
+
+    for (j, component) in proc_template.iter().enumerate() {
+        let rendered = render_component_with_format::<F>(component);
+        if rendered.is_empty() {
+            continue;
+        }
+
+        if j > 0 && !entry_output.is_empty() {
+            let last_char = entry_output.chars().last().unwrap_or(' ');
+            let first_char = first_visible_char(&rendered).unwrap_or(' ');
+            let sep_first_char = default_separator.chars().next().unwrap_or('.');
+            let trimmed_last = last_visible_non_space_char(&entry_output).unwrap_or(' ');
+            let ends_with_punctuation = is_final_punctuation(trimmed_last);
+            let starts_with_separator = matches!(first_char, ',' | ';' | ':' | ' ' | '.' | '(');
+
+            if starts_with_separator {
+                if first_char == '(' && !last_char.is_whitespace() && last_char != '[' {
+                    entry_output.push(' ');
+                }
+            } else if ends_with_punctuation {
+                if !last_char.is_whitespace() {
+                    entry_output.push(' ');
+                }
+            } else if punctuation_in_quote
+                && (last_char == '"' || last_char == '\u{201D}')
+                && sep_first_char == '.'
+            {
+                entry_output.pop();
+                let quote_str = if last_char == '\u{201D}' {
+                    ".\u{201D} "
+                } else {
+                    ".\" "
+                };
+                entry_output.push_str(quote_str);
+            } else if !last_char.is_whitespace() && !first_char.is_whitespace() {
+                entry_output.push_str(default_separator);
+            } else if !last_char.is_whitespace()
+                && first_char.is_whitespace()
+                && default_separator.starts_with('.')
+                && !ends_with_punctuation
+            {
+                entry_output.push('.');
+            }
+        }
+
+        let _ = write!(&mut entry_output, "{}", rendered);
+    }
+
+    let bib_cfg = proc_template
+        .first()
+        .and_then(|c| c.config.as_ref())
+        .and_then(|cfg| cfg.bibliography.as_ref());
+    let entry_suffix = bib_cfg.and_then(|bib| bib.entry_suffix.as_deref());
+    match entry_suffix {
+        Some(suffix) if !suffix.is_empty() => {
+            let ends_with_url = ends_with_url_or_doi(&entry_output);
+            if !ends_with_url && !entry_output.ends_with(suffix.chars().next().unwrap_or('.')) {
+                if suffix == "."
+                    && punctuation_in_quote
+                    && (entry_output.ends_with('"') || entry_output.ends_with('\u{201D}'))
+                {
+                    let is_curly = entry_output.ends_with('\u{201D}');
+                    entry_output.pop();
+                    entry_output.push_str(if is_curly { ".\u{201D}" } else { ".\"" });
+                } else {
+                    entry_output.push_str(suffix);
+                }
+            }
+        }
+        _ => {}
+    }
+
+    cleanup_dangling_punctuation(&mut entry_output);
+    entry_output
+}
+
 /// Render processed templates into a final bibliography string using a specific format.
 pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
     proc_entries: Vec<ProcEntry>,
@@ -60,120 +156,8 @@ pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
     let mut rendered_entries = Vec::new();
 
     for entry in &proc_entries {
-        let mut entry_output = String::new();
+        let mut entry_output = render_entry_body_with_format::<F>(entry);
         let proc_template = &entry.template;
-
-        // Check locale option for punctuation placement in quotes.
-        let punctuation_in_quote = proc_template
-            .first()
-            .and_then(|c| c.config.as_ref())
-            .is_some_and(|cfg| cfg.punctuation_in_quote);
-
-        // Get the bibliography separator from the config, defaulting to ". "
-        let default_separator = proc_template
-            .first()
-            .and_then(|c| c.config.as_ref())
-            .and_then(|cfg| cfg.bibliography.as_ref())
-            .and_then(|bib| bib.separator.as_deref())
-            .unwrap_or(". ");
-
-        for (j, component) in proc_template.iter().enumerate() {
-            let rendered = render_component_with_format::<F>(component);
-            if rendered.is_empty() {
-                continue;
-            }
-
-            // Add separator between components.
-            if j > 0 && !entry_output.is_empty() {
-                let last_char = entry_output.chars().last().unwrap_or(' ');
-                let first_char = first_visible_char(&rendered).unwrap_or(' ');
-
-                // Derive the first punctuation/char of the separator for comparison
-                let sep_first_char = default_separator.chars().next().unwrap_or('.');
-
-                // Check if last output ends with intentional punctuation (not just space).
-                // Component suffixes like ", " should be preserved and NOT followed by default separator.
-                // We only suppress the separator if the last non-space character is punctuation.
-                let trimmed_last = last_visible_non_space_char(&entry_output).unwrap_or(' ');
-                let ends_with_punctuation = is_final_punctuation(trimmed_last);
-
-                // Skip adding separator if:
-                // 1. The rendered component already starts with separator-like punctuation
-                // 2. Special handling for quotes with punctuation-in-quote locales
-                let starts_with_separator = matches!(first_char, ',' | ';' | ':' | ' ' | '.' | '(');
-
-                if starts_with_separator {
-                    // Component prefix already provides separation (or opens with paren)
-                    // If it starts with '(' and entry_output doesn't end with space, add one
-                    if first_char == '(' && !last_char.is_whitespace() && last_char != '[' {
-                        entry_output.push(' ');
-                    }
-                } else if ends_with_punctuation {
-                    // entry_output ends with punctuation (component suffix with punctuation).
-                    // This suffix is intentional formatting. Do NOT add default separator.
-                    // Just ensure there's space before the next component.
-                    if !last_char.is_whitespace() {
-                        entry_output.push(' ');
-                    }
-                    // If last_char is already whitespace, it's part of the component suffix,
-                    // so we preserve it as-is (e.g., ", " stays as ", ")
-                } else if punctuation_in_quote
-                    && (last_char == '"' || last_char == '\u{201D}')
-                    && sep_first_char == '.'
-                {
-                    // Special case: move period inside closing quote for locales that want it
-                    entry_output.pop();
-                    let quote_str = if last_char == '\u{201D}' {
-                        ".\u{201D} "
-                    } else {
-                        ".\" "
-                    };
-                    entry_output.push_str(quote_str);
-                } else {
-                    // Normal case: add the configured separator
-                    // Skip adding separator if we already have a space
-                    if !last_char.is_whitespace() && !first_char.is_whitespace() {
-                        entry_output.push_str(default_separator);
-                    } else if !last_char.is_whitespace() && first_char.is_whitespace() {
-                        // entry_output ends with content, component starts with space
-                        // don't add separator, but maybe ensure it has punctuation if separator is ". "
-                        if default_separator.starts_with('.') && !ends_with_punctuation {
-                            entry_output.push('.');
-                        }
-                    }
-                }
-            }
-            let _ = write!(&mut entry_output, "{}", rendered);
-        }
-
-        // Apply entry suffix
-        let bib_cfg = proc_template
-            .first()
-            .and_then(|c| c.config.as_ref())
-            .and_then(|cfg| cfg.bibliography.as_ref());
-        let entry_suffix = bib_cfg.and_then(|bib| bib.entry_suffix.as_deref());
-        match entry_suffix {
-            Some(suffix) if !suffix.is_empty() => {
-                let ends_with_url = ends_with_url_or_doi(&entry_output);
-                if ends_with_url {
-                    // Skip entry suffix for entries ending with URL/DOI
-                } else if !entry_output.ends_with(suffix.chars().next().unwrap_or('.')) {
-                    if suffix == "."
-                        && punctuation_in_quote
-                        && (entry_output.ends_with('"') || entry_output.ends_with('\u{201D}'))
-                    {
-                        let is_curly = entry_output.ends_with('\u{201D}');
-                        entry_output.pop();
-                        entry_output.push_str(if is_curly { ".\u{201D}" } else { ".\"" });
-                    } else {
-                        entry_output.push_str(suffix);
-                    }
-                }
-            }
-            _ => {}
-        }
-
-        cleanup_dangling_punctuation(&mut entry_output);
 
         // Apply annotation if present
         if let Some(annotations) = annotations

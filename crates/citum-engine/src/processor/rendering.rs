@@ -7,6 +7,7 @@
 use crate::error::ProcessorError;
 use crate::reference::{Bibliography, Reference};
 use crate::render::{ProcTemplate, ProcTemplateComponent};
+use crate::values::range::{ConsecutiveSegment, consecutive_segments};
 use crate::values::{ComponentValues, ProcHints, RenderContext, RenderOptions};
 use citum_schema::citation::{LocatorSegment, LocatorType, ResolvedLocator};
 use citum_schema::locale::{Locale, TermForm};
@@ -211,6 +212,124 @@ impl<'a> Renderer<'a> {
         !has_explicit_integral
     }
 
+    fn should_collapse_compound_subentries(
+        &self,
+        mode: &citum_schema::citation::CitationMode,
+    ) -> bool {
+        if !matches!(mode, citum_schema::citation::CitationMode::NonIntegral) {
+            return false;
+        }
+
+        self.config
+            .bibliography
+            .as_ref()
+            .and_then(|b| b.compound_numeric.as_ref())
+            .is_some_and(|c| c.subentry && c.collapse_subentries)
+    }
+
+    fn collapse_compound_citation_chunks(
+        &self,
+        chunks: Vec<(Vec<String>, String)>,
+    ) -> Vec<(Vec<String>, String)> {
+        let Some(compound) = self
+            .config
+            .bibliography
+            .as_ref()
+            .and_then(|b| b.compound_numeric.as_ref())
+        else {
+            return chunks;
+        };
+
+        if !matches!(
+            compound.sub_label,
+            citum_schema::options::bibliography::SubLabelStyle::Alphabetic
+        ) {
+            return chunks;
+        }
+
+        let citation_numbers = self.citation_numbers.borrow();
+        let mut collapsed = Vec::new();
+        let mut i = 0;
+
+        while i < chunks.len() {
+            let Some(ref_id) = chunks[i].0.first() else {
+                collapsed.push(chunks[i].clone());
+                i += 1;
+                continue;
+            };
+            let Some(group_id) = self.compound_set_by_ref.get(ref_id) else {
+                collapsed.push(chunks[i].clone());
+                i += 1;
+                continue;
+            };
+            let Some(&citation_number) = citation_numbers.get(ref_id) else {
+                collapsed.push(chunks[i].clone());
+                i += 1;
+                continue;
+            };
+
+            let mut j = i;
+            let mut block_ids = Vec::new();
+            let mut member_ordinals = Vec::new();
+
+            while j < chunks.len() {
+                let Some(candidate_id) = chunks[j].0.first() else {
+                    break;
+                };
+                if chunks[j].0.len() != 1
+                    || self.compound_set_by_ref.get(candidate_id) != Some(group_id)
+                    || citation_numbers.get(candidate_id).copied() != Some(citation_number)
+                {
+                    break;
+                }
+
+                let Some(member_index) = self.compound_member_index.get(candidate_id).copied()
+                else {
+                    break;
+                };
+                let expected = format!(
+                    "{}{}",
+                    citation_number,
+                    self.citation_sub_label_for_ref(candidate_id)
+                        .unwrap_or_default()
+                );
+                if chunks[j].1 != expected {
+                    break;
+                }
+
+                block_ids.push(candidate_id.clone());
+                member_ordinals.push((member_index + 1) as u32);
+                j += 1;
+            }
+
+            if block_ids.len() < 2 {
+                collapsed.push(chunks[i].clone());
+                i += 1;
+                continue;
+            }
+
+            let labels = consecutive_segments(&member_ordinals)
+                .into_iter()
+                .map(|segment| match segment {
+                    ConsecutiveSegment::Single(value) => {
+                        crate::values::int_to_letter(value).unwrap_or_default()
+                    }
+                    ConsecutiveSegment::Range { start, end } => {
+                        let start_label = crate::values::int_to_letter(start).unwrap_or_default();
+                        let end_label = crate::values::int_to_letter(end).unwrap_or_default();
+                        format!("{start_label}-{end_label}")
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(",");
+
+            collapsed.push((block_ids, format!("{citation_number}{labels}")));
+            i = j;
+        }
+
+        collapsed
+    }
+
     /// Ensure suffix has proper spacing (add space if suffix doesn't start with
     /// punctuation and isn't empty).
     fn ensure_suffix_spacing(&self, suffix: &str) -> String {
@@ -287,12 +406,16 @@ impl<'a> Renderer<'a> {
             String::new()
         };
 
-        // Format: "Author [N]"
+        // Include compound sub-label (e.g. "a", "b") when applicable.
+        let ref_id = reference.id().unwrap_or_default();
+        let sub_label = self.citation_sub_label_for_ref(&ref_id).unwrap_or_default();
+
+        // Format: "Author [Na]"
         if !author_part.is_empty() {
-            format!("{} [{}]", author_part, citation_number)
+            format!("{} [{}{}]", author_part, citation_number, sub_label)
         } else {
             // Fallback: just citation number if no author
-            format!("[{}]", citation_number)
+            format!("[{}{}]", citation_number, sub_label)
         }
     }
 
@@ -394,8 +517,8 @@ impl<'a> Renderer<'a> {
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
-        let mut rendered_items = Vec::new();
         let fmt = F::default();
+        let mut chunks: Vec<(Vec<String>, String)> = Vec::new();
 
         // For numeric styles with integral mode, render author + citation number instead.
         let use_author_number = self.should_render_author_number_for_numeric_integral(mode);
@@ -433,7 +556,7 @@ impl<'a> Renderer<'a> {
                     } else {
                         item_str
                     };
-                    rendered_items.push(fmt.citation(vec![item.id.clone()], content));
+                    chunks.push((vec![item.id.clone()], content));
                 }
             } else if use_label_author {
                 let item_str =
@@ -455,7 +578,7 @@ impl<'a> Renderer<'a> {
                     } else {
                         item_str
                     };
-                    rendered_items.push(fmt.citation(vec![item.id.clone()], content));
+                    chunks.push((vec![item.id.clone()], content));
                 }
             } else {
                 // Standard rendering: use template with citation number
@@ -501,13 +624,20 @@ impl<'a> Renderer<'a> {
                         } else {
                             item_str
                         };
-                        rendered_items.push(fmt.citation(vec![item.id.clone()], content));
+                        chunks.push((vec![item.id.clone()], content));
                     }
                 }
             }
         }
 
-        Ok(rendered_items)
+        if self.should_collapse_compound_subentries(mode) {
+            chunks = self.collapse_compound_citation_chunks(chunks);
+        }
+
+        Ok(chunks
+            .into_iter()
+            .map(|(ids, content)| fmt.citation(ids, content))
+            .collect())
     }
 
     /// Render citation items with author grouping for author-date styles.

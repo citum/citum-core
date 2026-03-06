@@ -29,6 +29,7 @@ options:
     entry-suffix: .
     separator: ". "
     compound-numeric:
+      collapse-subentries: true
       sub-label: alphabetic
       sub-label-suffix: ")"
       sub-delimiter: " "
