@@ -1,0 +1,28 @@
+
+=== numeric-comp.yaml ===
+
+CITATIONS (Non-Integral):
+  [1a]
+  [1b]
+  [2]
+  [3a]
+  [3b]
+
+CITATIONS (Integral):
+  Zwart, Veenhuis, Harder [1]
+  van der Klei, Harder, Veenhuis [1]
+  Smith [2]
+  Jones [3]
+  Jones [3]
+
+BIBLIOGRAPHY:
+[1] Zwart, K. B., Veenhuis, M., Harder, W. An immunochemical analysis of the biogenesis of peroxisomes in Saccharomyces cerevisiae. 1983.
+
+[1] van der Klei, I. J., Harder, W., Veenhuis, M. A morphological view on the biogenesis of peroxisomes in intact cells. 1991.
+
+[2] Smith, J. A standalone article not in any compound group. 2020.
+
+[3] Jones, A. Catalytic activity of transition metals. 2019.
+
+[3] Jones, A. Selectivity in heterogeneous catalysis. 2019.
+
