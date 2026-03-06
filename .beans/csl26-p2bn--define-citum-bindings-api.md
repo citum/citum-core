@@ -1,11 +1,11 @@
 ---
 # csl26-p2bn
 title: 'Phase 2: Define citum-bindings public API surface'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-22T00:00:00Z
-updated_at: 2026-03-06T14:51:10Z
+updated_at: 2026-03-06T14:57:02Z
 blocking:
     - csl26-modz
     - csl26-p1rn
@@ -35,3 +35,11 @@ FFI binding generation (boltffi or similar) is deferred until the engine
 API is stable. Do not introduce until Phase 4 at earliest.
 
 Refs: csl26-modz, docs/architecture/CITUM_MODULARIZATION.md
+
+## Summary of Changes
+
+- Added `crates/citum-bindings` crate with `cdylib + rlib` crate-type
+- Public API: `render_citation`, `render_bibliography`, `validate_style` — all `&str` in / `Result<String, String>` out
+- `wasm` feature flag gates `wasm-bindgen` annotations (js_name camelCase)
+- Moved `cdylib` from `citum-engine` (now `rlib` only)
+- 6 integration tests passing; fixture uses Citum-native JSON (monograph/book)
