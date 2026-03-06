@@ -55,19 +55,27 @@ case "$CMD" in
             exit 1
         fi
 
-        READY_JSON=$(beans list --json --ready)
-        # Defensive filter: keep only actionable statuses for /beans next.
-        # beans list --ready has a known bug where it leaks canceled beans;
-        # this filter is the authoritative gate.
-        READY_JSON=$(printf "%s\n" "$READY_JSON" | jq '
-            map(
-                select(
-                    (.status // "" | ascii_downcase) as $s |
-                    ($s == "todo" or $s == "in-progress")
-                )
-            )
+        # Single GraphQL query: fetch all non-terminal beans with relationship
+        # data. Resolving leverage and in-progress state in one round trip avoids
+        # multiple CLI calls and gives us the full dependency picture.
+        ALL_JSON=$(beans query --json '{
+            beans(filter: {
+                excludeStatus: ["completed", "scrapped", "draft", "canceled"]
+            }) {
+                id title status type priority parentId blockingIds blockedByIds
+            }
+        }' | jq '.beans')
+
+        # Separate in-progress from ready (unblocked todo beans).
+        IN_PROGRESS=$(printf "%s\n" "$ALL_JSON" | jq '[.[] | select(.status == "in-progress")]')
+        READY=$(printf "%s\n" "$ALL_JSON" | jq '
+            [.[] | select(
+                (.status == "todo") and
+                (.blockedByIds | length == 0)
+            )]
         ')
-        READY_COUNT=$(printf "%s\n" "$READY_JSON" | jq 'length')
+
+        READY_COUNT=$(printf "%s\n" "$READY" | jq 'length')
         if [[ "$READY_COUNT" -eq 0 ]]; then
             if [[ "$JSON_OUTPUT" -eq 1 ]]; then
                 echo "[]"
@@ -77,11 +85,23 @@ case "$CMD" in
             exit 0
         fi
 
-        # Prefer executable work over umbrella tracking beans. Epics and
-        # milestones remain visible only when there are not enough concrete
-        # bugs/features/tasks to fill the requested limit.
-        RANKED_JSON=$(printf "%s\n" "$READY_JSON" | jq --argjson limit "$LIMIT" '
-            map(.priority = (.priority // "normal")) as $items |
+        # Build a set of open IDs so leverage counts only beans still in play
+        # (not already completed or scrapped).
+        OPEN_IDS_JSON=$(printf "%s\n" "$ALL_JSON" | jq '[.[].id]')
+
+        # Rank candidates.
+        # Leverage = count of blockingIds whose targets are still open.
+        # Epics and milestones are fallback options shown only when concrete
+        # work (bug/feature/task) is insufficient to fill the limit.
+        # Sort key: priority asc, leverage desc, type rank asc, created_at asc.
+        RANKED_JSON=$(printf "%s\n" "$READY" | jq --argjson limit "$LIMIT" --argjson open_ids "$OPEN_IDS_JSON" '
+            (($open_ids) | map({key: ., value: true}) | from_entries) as $open |
+            map(
+                . + {
+                    leverage: ([.blockingIds[] | select($open[.] == true)] | length),
+                    priority: (.priority // "normal")
+                }
+            ) as $items |
             def priority_rank:
                 if .priority == "critical" then 0
                 elif .priority == "high" then 1
@@ -98,17 +118,18 @@ case "$CMD" in
             (
                 $items
                 | map(select((.type // "") != "epic" and (.type // "") != "milestone"))
-                | sort_by(priority_rank, type_rank, .created_at)
+                | sort_by(priority_rank, (-.leverage), type_rank, .created_at)
             ) as $concrete |
             (
                 $items
                 | map(select((.type // "") == "epic" or (.type // "") == "milestone"))
-                | sort_by(priority_rank, type_rank, .created_at)
+                | sort_by(priority_rank, (-.leverage), type_rank, .created_at)
             ) as $meta |
             ($concrete + $meta)[:$limit]
         ')
 
-        PARENT_IDS=$(printf "%s\n" "$RANKED_JSON" | jq -r '.[].parent // empty' | sort -u | tr '\n' ' ')
+        # Resolve parent titles for ranked candidates.
+        PARENT_IDS=$(printf "%s\n" "$RANKED_JSON" | jq -r '.[].parentId // empty' | sort -u | tr '\n' ' ')
         PARENT_MAP='{}'
         if [[ -n "${PARENT_IDS// /}" ]]; then
             PARENTS_JSON=$(beans show --json $PARENT_IDS)
@@ -124,14 +145,16 @@ case "$CMD" in
             --argjson parents "$PARENT_MAP" '
             $items | map(
                 . + {
-                    parent_title: (if (.parent != null and ($parents[.parent] != null)) then $parents[.parent] else null end),
+                    parent_title: (
+                        if (.parentId != null and ($parents[.parentId] != null))
+                        then $parents[.parentId]
+                        else null
+                        end
+                    ),
                     reason: (
-                        [
-                            "ready",
-                            ("priority=" + (.priority // "normal")),
-                            ("type=" + (.type // "task"))
-                        ] +
-                        (if (.parent != null and ($parents[.parent] != null)) then [("parent=" + $parents[.parent])] else [] end)
+                        ["priority=" + (.priority // "normal")] +
+                        (if .leverage > 0 then ["unblocks=" + (.leverage | tostring)] else [] end) +
+                        ["type=" + (.type // "task")]
                     ) | join(", ")
                 }
             )
@@ -142,9 +165,22 @@ case "$CMD" in
             exit 0
         fi
 
+        # Show in-progress context so the user can see what is already running
+        # before deciding what to start next.
+        IN_PROGRESS_COUNT=$(printf "%s\n" "$IN_PROGRESS" | jq 'length')
+        if [[ "$IN_PROGRESS_COUNT" -gt 0 ]]; then
+            echo "In progress:"
+            printf "%s\n" "$IN_PROGRESS" | jq -r '.[] | "  \(.id)  \(.type) · \(.priority // "normal")\n  \(.title)"'
+            echo ""
+        fi
+
+        # Print ranked candidates.
         printf "%s\n" "$CANDIDATES_JSON" | jq -r '
             to_entries[] |
-            "#\(.key + 1)  \(.value.id)  \(.value.type) · \(.value.priority)\n    \(.value.title)" +
+            (.value.leverage // 0) as $lev |
+            "#\(.key + 1)  \(.value.id)  \(.value.type) · \(.value.priority)" +
+            (if $lev > 0 then " · unblocks \($lev)" else "" end) +
+            "\n    \(.value.title)" +
             (if .value.parent_title then "\n    Parent: \(.value.parent_title)" else "" end)
         '
         FIRST_ID=$(printf "%s\n" "$CANDIDATES_JSON" | jq -r '.[0].id')
@@ -165,7 +201,8 @@ USAGE:
 
 COMMANDS:
     next [--limit N] [--json]
-        Show top ready bean options ranked by priority, type, and age.
+        Show top ready bean options ranked by priority, leverage (unblock
+        count), type, and age. Shows in-progress beans as context header.
 
     list ...
     show ...
