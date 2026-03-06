@@ -70,7 +70,7 @@ citation:
         form: short
         suppress: false
         overrides:
-          [book, chapter, article-journal, article-magazine, article-newspaper, report, webpage, paper-conference, patent, motion-picture, broadcast, interview, dataset, standard, software, entry-encyclopedia, personal-communication]:
+          [book, chapter, thesis, article-journal, article-magazine, article-newspaper, report, webpage, paper-conference, patent, motion-picture, broadcast, interview, dataset, standard, software, entry-encyclopedia, personal-communication]:
             suppress: true
           legal-case:
             emph: true
@@ -103,7 +103,7 @@ citation:
         form: short
         suppress: false
         overrides:
-          [book, chapter, article-journal, article-magazine, article-newspaper, report, webpage, paper-conference, patent, motion-picture, broadcast, interview, dataset, standard, software, entry-encyclopedia, personal-communication]:
+          [book, chapter, thesis, article-journal, article-magazine, article-newspaper, report, webpage, paper-conference, patent, motion-picture, broadcast, interview, dataset, standard, software, entry-encyclopedia, personal-communication]:
             suppress: true
           legal-case:
             emph: true

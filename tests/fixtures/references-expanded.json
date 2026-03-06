@@ -413,5 +413,14 @@
     "volume": "4",
     "page": "81-104",
     "DOI": "10.5555/arcs.2019.4.81"
+  },
+  "ITEM-33": {
+    "id": "ITEM-33",
+    "class": "monograph",
+    "type": "book",
+    "title": "Foundations of Declarative Bibliography",
+    "author": [{ "family": "Forthcoming", "given": "A." }],
+    "publisher": "University Press",
+    "publisher-place": "Cambridge"
   }
 }
