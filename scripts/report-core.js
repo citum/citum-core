@@ -163,6 +163,10 @@ function discoverCoreStyles() {
       dependents: KNOWN_DEPENDENTS[name] ?? null,
       format: inferStyleFormat(styleData),
       hasBibliography: hasBibliographyTemplate(styleData),
+      isNative: Boolean(
+        styleData?.options?.bibliography?.['compound-numeric'] != null &&
+        styleData?.info?.source?.['adapted-by'] === 'citum-create'
+      ),
     };
   });
 }
@@ -269,6 +273,39 @@ function runOracle(stylePath, styleName, styleFormat) {
     // Fatal error (exit code 2 or other)
     const stderr = error.stderr ? error.stderr.toString() : '';
     return { error: `Oracle fatal error: ${error.message}\n${stderr}`, style: styleName };
+  }
+}
+
+/**
+ * Run oracle-native.js for a snapshot-based (native) style
+ */
+function runNativeOracle(styleName) {
+  const scriptPath = path.join(__dirname, 'oracle-native.js');
+  const styleYamlPath = path.join(path.dirname(__dirname), 'styles', `${styleName}.yaml`);
+  const fixturePath = path.join(
+    path.dirname(__dirname),
+    'tests', 'fixtures', 'compound-numeric-refs.yaml'
+  );
+  const snapshotsDir = path.join(path.dirname(__dirname), 'tests', 'snapshots', 'compound');
+  const command = `node "${scriptPath}" "${styleName}" "${styleYamlPath}" "${fixturePath}" "${snapshotsDir}"`;
+
+  try {
+    const result = execSync(command, {
+      encoding: 'utf8',
+      timeout: 120000,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+    return JSON.parse(result);
+  } catch (error) {
+    if (error.status === 1 && error.stdout) {
+      try {
+        return JSON.parse(error.stdout.toString());
+      } catch {
+        return { error: `Native oracle parse failed: ${error.message}`, style: styleName };
+      }
+    }
+    const stderr = error.stderr ? error.stderr.toString() : '';
+    return { error: `Native oracle fatal: ${error.message}\n${stderr}`, style: styleName };
   }
 }
 
@@ -740,6 +777,52 @@ function generateReport(options) {
   let errorCount = 0;
 
   for (const styleSpec of coreStyles) {
+    // Native styles have no CSL equivalent — use snapshot-based oracle
+    if (styleSpec.isNative) {
+      const oracleResult = runNativeOracle(styleSpec.name);
+      if (oracleResult.error) {
+        errorCount++;
+        process.stderr.write(`Error processing native ${styleSpec.name}: ${oracleResult.error}\n`);
+      }
+      const fidelityScore = computeFidelityScore(oracleResult);
+      const bibliography = oracleResult.bibliography || { passed: 0, total: 0 };
+      biblioPassed += bibliography.passed || 0;
+      biblioTotal += bibliography.total || 0;
+      const qualityMetrics = computeQualityMetrics(styleSpec, oracleResult);
+      const qualityScore = qualityMetrics.score / 100;
+      qualityTotal += qualityScore;
+      qualityCount += 1;
+      let statusTier = 'failing';
+      if (oracleResult.error) {
+        statusTier = 'error';
+      } else if (fidelityScore === 1.0) {
+        statusTier = 'perfect';
+      } else if (fidelityScore > 0) {
+        statusTier = 'partial';
+      }
+      styles.push({
+        name: styleSpec.name,
+        dependents: styleSpec.dependents,
+        format: styleSpec.format,
+        hasBibliography: styleSpec.hasBibliography,
+        impactPct: null,
+        fidelityScore: parseFloat(fidelityScore.toFixed(3)),
+        citations: { passed: 0, total: 0 },
+        bibliography,
+        knownDivergences: divergences[styleSpec.name] || [],
+        citationsByType: {},
+        error: oracleResult.error || null,
+        componentMatchRate: null,
+        statusTier,
+        componentSummary: {},
+        citationEntries: null,
+        oracleDetail: oracleResult.bibliography ? oracleResult.bibliography.entries : null,
+        qualityScore: parseFloat(qualityScore.toFixed(3)),
+        qualityBreakdown: qualityMetrics,
+      });
+      continue;
+    }
+
     const stylePath = path.join(stylesDir, `${styleSpec.sourceName}.csl`);
 
     if (!fs.existsSync(stylePath)) {
