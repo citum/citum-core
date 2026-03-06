@@ -1,0 +1,122 @@
+info:
+  title: Angewandte Chemie International Edition
+  description: >
+    Style for Wiley-VCH's journal Angewandte Chemie International Edition.
+    Supports compound citation grouping with alphabetic sub-labels (a, b, c),
+    addressing the primary limitation of prior CSL 1.0 implementations.
+    Distinctive: bold year in bibliography, semicolon-delimited author list.
+  fields:
+  - chemistry
+  source:
+    csl-id: http://www.zotero.org/styles/angewandte-chemie
+    adapted-by: citum-create
+    license: http://creativecommons.org/licenses/by-sa/3.0/
+    original-authors:
+    - name: Richard Karnesky
+      email: karnesky+zotero@gmail.com
+    links:
+    - href: http://www.zotero.org/styles/angewandte-chemie
+      rel: self
+    - href: https://onlinelibrary.wiley.com/page/journal/15213773/homepage/notice-to-authors
+      rel: documentation
+options:
+  processing: numeric
+  contributors:
+    initialize-with: ". "
+    delimiter: ", "
+    delimiter-precedes-last: always
+    demote-non-dropping-particle: sort-only
+    sort-separator: ", "
+  bibliography:
+    entry-suffix: .
+    separator: ", "
+    compound-numeric: {}
+citation:
+  use-preset: numeric-citation
+  wrap: brackets
+  multi-cite-delimiter: ","
+bibliography:
+  options:
+    contributors:
+      initialize-with: ". "
+      delimiter: ", "
+      delimiter-precedes-last: always
+  template:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+      overrides:
+        article-journal:
+          suppress: true
+        article-magazine:
+          suppress: true
+    - title: parent-serial
+      emph: true
+      prefix: " "
+      overrides:
+        book:
+          suppress: true
+        chapter:
+          suppress: true
+    - title: parent-monograph
+      emph: true
+      prefix: " "
+    - contributor: editor
+      form: short
+      name-order: given-first
+      prefix: " ("
+      suffix: ")"
+    - variable: publisher
+      prefix: ", "
+    - variable: publisher-place
+      prefix: ", "
+    - date: issued
+      form: year
+      strong: true
+      prefix: " "
+    - number: volume
+      emph: true
+      prefix: ", "
+    - number: pages
+      prefix: ", "
+    - variable: doi
+      prefix: " DOI "
+  type-templates:
+    webpage:
+      - number: citation-number
+        wrap: brackets
+        suffix: " "
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+        prefix: " "
+      - variable: url
+        prefix: " can be found under "
+      - term: accessed
+        form: long
+        prefix: " ("
+      - date: accessed
+        form: full
+        suffix: ")"
+    patent:
+      - number: citation-number
+        wrap: brackets
+        suffix: " "
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+        emph: true
+        prefix: " "
+      - date: issued
+        form: year
+        strong: true
+        prefix: ", "
+      - number: number
+        prefix: ", "

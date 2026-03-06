@@ -1,0 +1,144 @@
+info:
+  title: Royal Society of Chemistry (Compound)
+  description: >
+    Royal Society of Chemistry journal style with compound citation support.
+    Groups related references under a shared citation number with
+    alphabetic sub-labels. Based on the standard RSC style.
+  fields:
+  - chemistry
+  source:
+    csl-id: http://www.zotero.org/styles/royal-society-of-chemistry
+    adapted-by: citum-create
+    license: http://creativecommons.org/licenses/by-sa/3.0/
+    links:
+    - href: http://www.zotero.org/styles/royal-society-of-chemistry
+      rel: template
+    - href: http://www.rsc.org/learn-chemistry/resource/download/res00001664/cmp00004956/pdf
+      rel: documentation
+options:
+  substitute:
+    contributor-role-form: short
+    template:
+    - editor
+  processing: numeric
+  contributors:
+    initialize-with: ". "
+    delimiter: ", "
+    delimiter-precedes-last: never
+    demote-non-dropping-particle: sort-only
+  dates:
+    month: long
+    uncertainty-marker: "?"
+    approximation-marker: "ca. "
+    range-delimiter: –
+  titles:
+    component: {}
+    monograph:
+      emph: true
+    periodical:
+      emph: true
+  bibliography:
+    entry-suffix: .
+    separator: ", "
+    compound-numeric: {}
+citation:
+  use-preset: numeric-citation
+  wrap: brackets
+  multi-cite-delimiter: ","
+bibliography:
+  options:
+    contributors:
+      initialize-with: ". "
+      delimiter: ", "
+      delimiter-precedes-last: never
+  template:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - variable: publisher
+    - date: issued
+      form: year
+    - number: volume
+    - number: pages
+      overrides:
+        chapter:
+          prefix: "pp. "
+        paper-conference:
+          prefix: "pp. "
+    - title: primary
+      emph: true
+      overrides:
+        article-journal:
+          suppress: true
+        article-magazine:
+          suppress: true
+        article-newspaper:
+          suppress: true
+    - variable: publisher-place
+  type-templates:
+    webpage:
+      - number: citation-number
+        wrap: brackets
+        suffix: " "
+      - contributor: author
+        form: long
+        and: text
+      - title: primary
+      - variable: url
+      - term: accessed
+        form: long
+      - date: accessed
+        form: full
+    legal_case:
+      - number: citation-number
+        wrap: brackets
+        suffix: " "
+      - contributor: author
+        form: long
+        and: text
+      - title: primary
+        overrides:
+          song:
+            emph: true
+          bill:
+            emph: true
+          legal_case:
+            emph: true
+          motion_picture:
+            emph: true
+          book:
+            emph: true
+          graphic:
+            emph: true
+          legislation:
+            emph: true
+          report:
+            emph: true
+      - variable: authority
+      - variable: publisher
+      - variable: publisher-place
+      - number: edition
+      - date: issued
+        form: year
+      - number: volume
+        prefix: "vol. "
+        suppress: true
+    patent:
+      - number: citation-number
+        wrap: brackets
+        suffix: " "
+      - variable: publisher
+      - number: number
+      - title: parent-serial
+        emph: true
+      - date: issued
+        form: year
+      - number: volume
+      - number: pages
