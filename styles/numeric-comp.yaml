@@ -1,0 +1,60 @@
+info:
+  title: Numeric Compound
+  description: >
+    A generic numeric style with compound citation support. Groups related
+    references under a shared citation number with alphabetic sub-labels
+    (a, b, c). Analog of the biblatex numeric-comp style.
+  source:
+    csl-id: https://ctan.org/pkg/biblatex
+    adapted-by: citum-create
+    license: http://creativecommons.org/licenses/by-sa/3.0/
+    links:
+    - href: https://ctan.org/pkg/biblatex
+      rel: documentation
+options:
+  processing: numeric
+  contributors:
+    initialize-with: ". "
+    delimiter: ", "
+    delimiter-precedes-last: never
+    demote-non-dropping-particle: sort-only
+  bibliography:
+    entry-suffix: .
+    separator: ". "
+    compound-numeric: {}
+citation:
+  use-preset: numeric-citation
+  wrap: brackets
+  multi-cite-delimiter: ","
+bibliography:
+  template:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      overrides:
+        article-journal:
+          suppress: true
+        article-magazine:
+          suppress: true
+        article-newspaper:
+          suppress: true
+    - title: parent-serial
+      emph: true
+    - title: parent-monograph
+      emph: true
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - variable: publisher
+    - variable: publisher-place
+      prefix: ": "
+    - date: issued
+      form: year
+    - number: volume
+    - number: pages
+    - variable: doi
+    - variable: url
