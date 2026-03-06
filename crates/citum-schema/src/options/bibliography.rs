@@ -89,6 +89,11 @@ fn default_subentry() -> bool {
     true
 }
 
+/// Default compound subentry collapse behavior.
+fn default_collapse_subentries() -> bool {
+    false
+}
+
 /// Configuration for compound numeric bibliography entries.
 ///
 /// Groups multiple references under a single citation number with sub-labels.
@@ -102,6 +107,12 @@ pub struct CompoundNumericConfig {
     /// When false, grouped item citations render the whole-group number (`1`).
     #[serde(default = "default_subentry")]
     pub subentry: bool,
+    /// Whether adjacent grouped sub-entries collapse in citations.
+    ///
+    /// When true, adjacent members from the same group may render as
+    /// `1a,b` or `1a-c` instead of `1a,1b` or `1a,1b,1c`.
+    #[serde(default = "default_collapse_subentries")]
+    pub collapse_subentries: bool,
     /// Sub-label style: alphabetic (a, b, c) or numeric (1, 2, 3).
     #[serde(default)]
     pub sub_label: SubLabelStyle,
@@ -117,6 +128,7 @@ impl Default for CompoundNumericConfig {
     fn default() -> Self {
         Self {
             subentry: default_subentry(),
+            collapse_subentries: default_collapse_subentries(),
             sub_label: SubLabelStyle::default(),
             sub_label_suffix: default_sub_label_suffix(),
             sub_delimiter: default_sub_delimiter(),
@@ -132,6 +144,7 @@ mod tests {
     fn test_compound_numeric_config_defaults() {
         let config: CompoundNumericConfig = serde_json::from_str("{}").unwrap();
         assert!(config.subentry);
+        assert!(!config.collapse_subentries);
         assert_eq!(config.sub_label, SubLabelStyle::Alphabetic);
         assert_eq!(config.sub_label_suffix, ")");
         assert_eq!(config.sub_delimiter, ", ");
@@ -139,9 +152,10 @@ mod tests {
 
     #[test]
     fn test_compound_numeric_config_custom() {
-        let json = r#"{"subentry": false, "sub-label": "numeric", "sub-label-suffix": ".", "sub-delimiter": "; "}"#;
+        let json = r#"{"subentry": false, "collapse-subentries": true, "sub-label": "numeric", "sub-label-suffix": ".", "sub-delimiter": "; "}"#;
         let config: CompoundNumericConfig = serde_json::from_str(json).unwrap();
         assert!(!config.subentry);
+        assert!(config.collapse_subentries);
         assert_eq!(config.sub_label, SubLabelStyle::Numeric);
         assert_eq!(config.sub_label_suffix, ".");
         assert_eq!(config.sub_delimiter, "; ");

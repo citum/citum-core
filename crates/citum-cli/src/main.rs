@@ -1655,36 +1655,32 @@ where
                 output.push_str(&grouped);
             }
         } else {
-            // Fall back to entry-by-entry rendering for ungrouped styles
             let _ = writeln!(output, "BIBLIOGRAPHY:");
-            let filter: HashSet<&str> = item_ids.iter().map(|id| id.as_str()).collect();
-            let processed = processor.process_references();
-            let mut rendered_entries = Vec::new();
-
-            for entry in processed.bibliography {
-                if filter.contains(entry.id.as_str()) {
-                    let text = citum_engine::render::refs_to_string_with_format::<F>(
-                        vec![entry.clone()],
-                        annotations,
-                        Some(annotation_style),
-                    );
-                    let trimmed = text.trim();
-                    if !trimmed.is_empty() {
-                        if show_keys {
-                            rendered_entries.push(format!("  [{}] {}", entry.id, trimmed));
-                        } else {
-                            rendered_entries.push(trimmed.to_string());
+            if show_keys {
+                // Oracle/show_keys path: render each entry individually so entries
+                // can be matched by reference ID. Compound merging is skipped here
+                // because the oracle addresses each ref independently.
+                let filter: HashSet<&str> = item_ids.iter().map(|id| id.as_str()).collect();
+                let processed = processor.process_references();
+                for entry in processed.bibliography {
+                    if filter.contains(entry.id.as_str()) {
+                        let text = citum_engine::render::refs_to_string_with_format::<F>(
+                            vec![entry.clone()],
+                            annotations,
+                            Some(annotation_style),
+                        );
+                        let trimmed = text.trim();
+                        if !trimmed.is_empty() {
+                            let _ = writeln!(output, "  [{}] {}", entry.id, trimmed);
                         }
                     }
                 }
-            }
-
-            if show_keys {
-                for entry in rendered_entries {
-                    let _ = writeln!(output, "{}", entry);
-                }
-            } else if !rendered_entries.is_empty() {
-                let _ = writeln!(output, "{}", rendered_entries.join("\n\n"));
+            } else {
+                // Human-readable path: use the engine bibliography renderer so
+                // compound numeric groups are merged while still honoring keys.
+                let bib =
+                    processor.render_selected_bibliography_with_format::<F, _>(item_ids.to_vec());
+                let _ = writeln!(output, "{}", bib);
             }
         }
     }

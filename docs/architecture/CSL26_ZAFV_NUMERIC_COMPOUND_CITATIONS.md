@@ -42,6 +42,8 @@ Compound behavior only activates when style enables `options.bibliography.compou
 
 - `subentry: true` enables member addressing (`[2a]`, `[2b]`).
 - `subentry: false` keeps whole-group addressing (`[2]`).
+- `collapse-subentries: true` enables collapsing adjacent member cites from the
+  same group (`[2a,2b,2c]` → `[2a-c]`).
 - `sub-label`, `sub-label-suffix`, and `sub-delimiter` configure bibliography sub-item labels.
 
 ## Validation Rules
@@ -61,6 +63,8 @@ During bibliography loading:
 4. Citation output mode is style-controlled:
    - `subentry: true` → sub-item form (`[2a]`)
    - `subentry: false` → whole-group form (`[2]`)
+   - `collapse-subentries: true` → adjacent same-group member cites may collapse
+     (`[2a,2b]` → `[2a,b]`, `[2a,2b,2c]` → `[2a-c]`)
 
 ## Public API Surface
 
