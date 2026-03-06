@@ -413,6 +413,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "citum-bindings"
+version = "0.8.0"
+dependencies = [
+ "citum-engine",
+ "citum-schema",
+ "serde_json",
+ "serde_yaml_ng",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "citum-edtf"
 version = "0.8.0"
 dependencies = [

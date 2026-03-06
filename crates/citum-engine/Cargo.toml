@@ -8,7 +8,7 @@ description = "Citum citation and bibliography processor"
 
 [lib]
 name = "citum_engine"
-crate-type = ["rlib", "cdylib"]
+crate-type = ["rlib"]
 
 [dependencies]
 citum_schema = { package = "citum-schema", path = "../citum-schema", features = ["legacy-convert"] }

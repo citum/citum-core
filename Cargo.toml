@@ -8,7 +8,8 @@ members = [
     "crates/citum-cli",
     "crates/citum-server",
     "crates/citum-edtf",
-    "crates/citum_store"
+    "crates/citum_store",
+    "crates/citum-bindings"
 ]
 resolver = "2"
 
