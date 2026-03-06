@@ -17,12 +17,17 @@ model: haiku
 - One focused objective (formatting bug, missing type, or modernization).
 - Optional reference oracle style in `styles-legacy/`.
 
+## Autonomous Operation
+
+Run the full fix loop without pausing for approval. Commit automatically when QA passes.
+Only interrupt for `Cargo.toml`/`Cargo.lock` changes or `git push origin main` (per CLAUDE.md).
+
 ## Workflow
 1. Reproduce mismatch with one oracle snapshot.
 2. Apply smallest YAML-first fix.
 3. Recheck oracle metrics.
-4. Run QA gate.
-5. Stop when target is reached.
+4. Run QA gate — if rejected, iterate (max 5 attempts) before surfacing to user.
+5. On QA pass: `git add -A && git commit -m "fix(styles): <name> <change>"` and report results.
 
 ## Fix Ordering
 1. Component overrides and punctuation/wrap controls.

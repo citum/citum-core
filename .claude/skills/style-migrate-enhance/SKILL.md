@@ -26,19 +26,31 @@ model: sonnet
   - rerun (fresh `citum-migrate` for comparison)
 - List of migration-pattern gaps and recommended converter/preset follow-up.
 
+## Autonomous Operation
+
+Run the full wave — seed, fix, verify, QA, commit — without pausing between styles.
+Only interrupt for `Cargo.toml`/`Cargo.lock` changes or `git push origin main` (per CLAUDE.md).
+
+Commit after each successfully QA'd style rather than batching everything:
+```bash
+git add -A && git commit -m "feat(styles): migrate <style-name>"
+```
+
 ## Workflow
 1. Select next priority wave.
 2. Seed with migration baseline (`scripts/prep-migration.sh` or `citum-migrate`).
 3. Capture baseline metrics (`node scripts/report-core.js`, `node scripts/oracle.js ... --json`).
 4. Run iterative style fixes with fidelity-first ordering.
 5. Re-run migration for apples-to-apples comparison.
-6. Produce metrics + follow-up recommendations.
+6. Commit each passing style; produce final metrics + follow-up recommendations.
 
 ## Hard Gates
 - Never accept a fidelity regression.
 - SQI is tie-breaker and optimization only.
-- Stop and escalate if iteration 1 bibliography is below 50%.
-- Stop after bounded retries and return a redesign request to planner.
+- If iteration 1 bibliography is below 50%: log it, attempt up to 3 more fix passes before
+  flagging in the final summary — do not stop mid-wave and wait for user input.
+- After bounded retries with no progress: note it in the wave summary and move to the next
+  style rather than halting the entire wave.
 
 ## Required Artifacts
 - Iteration log (what changed, what improved, what remains).

@@ -22,6 +22,27 @@ routes-to: style-maintain, style-migrate-enhance, style-qa
 
 Do not ask users to call internal skills directly.
 
+## Autonomous Operation
+
+Run the full pipeline without stopping to ask questions or seek approval between steps.
+The user's goal is hands-off execution — they want a result, not a dialogue.
+
+**Only interrupt for these explicit permission gates (per CLAUDE.md):**
+- `Cargo.toml` / `Cargo.lock` changes (confirm before touching)
+- `styles-legacy/` submodule operations
+- `git push origin main`
+- `gh pr create`
+
+Everything else — reading files, running oracle/QA scripts, editing YAML, committing
+the result — proceeds automatically. When in doubt, proceed and report at the end.
+
+After QA passes, commit automatically:
+```bash
+git add -A && git commit -m "fix(styles): <style-name> <brief-description>"
+```
+
+Deliver the output contract as a final summary. Do not ask "what should I do next?"
+
 ## Mode Disambiguation
 
 | Situation | Mode |
@@ -30,8 +51,12 @@ Do not ask users to call internal skills directly.
 | A CSL 1.0 `.csl` file exists and needs converting | `migrate` |
 | No existing style; building from a spec or samples | `create` |
 
-If the mode is unclear, ask exactly one question: *"Is there an existing Citum style
-to fix, a CSL 1.0 file to convert, or are we building from scratch?"*
+**Infer mode from context — do not ask if you can determine it:**
+- Path ends in `.csl` or is under `styles-legacy/` → `migrate`
+- Path is under `styles/` or the style already exists as Citum YAML → `upgrade`
+- No path given, but a spec or sample is provided → `create`
+
+Only ask if the mode is genuinely ambiguous after checking the filesystem.
 
 ## Modes
 
