@@ -141,5 +141,45 @@
                 "label": "page"
             }
         ]
+    },
+    {
+        "id": "chapter-single",
+        "items": [
+            {
+                "id": "ITEM-4"
+            }
+        ]
+    },
+    {
+        "id": "report-single",
+        "items": [
+            {
+                "id": "ITEM-5"
+            }
+        ]
+    },
+    {
+        "id": "thesis-single",
+        "items": [
+            {
+                "id": "ITEM-11"
+            }
+        ]
+    },
+    {
+        "id": "webpage-single",
+        "items": [
+            {
+                "id": "ITEM-13"
+            }
+        ]
+    },
+    {
+        "id": "no-date-single",
+        "items": [
+            {
+                "id": "ITEM-33"
+            }
+        ]
     }
 ]

@@ -26,6 +26,18 @@ Docs/styles (`.md`, `.yaml` in `styles/`) skip checks entirely.
 
 **Commit Messages:** Conventional Commits `type(scope): subject`, lowercase, 50/72 rule, no `--amend`, no `Co-Authored-By`.
 
+### Post-Push CI Check (PR branches)
+
+After every `git push` on a PR branch, check CI before stopping:
+```bash
+gh pr checks <PR> --watch
+```
+If any check fails, read the logs and fix:
+```bash
+gh run view <run-id> --log-failed
+```
+Do not consider the task done until CI passes.
+
 ### Confirmations Required
 
 - `Cargo.toml` / `Cargo.lock` changes

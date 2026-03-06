@@ -22,7 +22,8 @@
         "personal_communication",
         "report",
         "thesis",
-        "webpage"
+        "webpage",
+        "book (no-date)"
       ],
       "citation_scenarios": [],
       "rendering_risks": [
@@ -60,7 +61,12 @@
         "prefix and suffix",
         "et-al shortening",
         "add-names disambiguation",
-        "year-suffix disambiguation"
+        "year-suffix disambiguation",
+        "chapter type",
+        "report type",
+        "thesis type",
+        "webpage type",
+        "no-date item"
       ],
       "rendering_risks": [
         "citation punctuation",
