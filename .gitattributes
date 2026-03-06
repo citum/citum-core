@@ -1,0 +1,4 @@
+# Mark generated snapshot files so GitHub doesn't diff them in PRs
+# and git merge treats them as binary (no conflict markers).
+tests/snapshots/csl/*.json linguist-generated=true merge=union
+tests/snapshots/biblatex/*.json linguist-generated=true merge=union

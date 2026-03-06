@@ -239,41 +239,70 @@ function hasBibliographyTemplate(styleData) {
 }
 
 /**
- * Run oracle.js for a single style and parse output
+ * Run the oracle for a single style.
+ *
+ * Tries oracle-fast.js (snapshot-based) first. Falls back to oracle.js
+ * (live citeproc-js) if no snapshot exists yet (exit 2).
  */
 function runOracle(stylePath, styleName, styleFormat) {
-  const oracleScript = path.join(__dirname, 'oracle.js');
+  const fastScript = path.join(__dirname, 'oracle-fast.js');
+  const liveScript = path.join(__dirname, 'oracle.js');
   const noteCitationsFixture = path.join(
     path.dirname(__dirname),
     'tests',
     'fixtures',
     'citations-note-expanded.json'
   );
-  const command = styleFormat === 'note'
-    ? `node "${oracleScript}" "${stylePath}" --json --citations-fixture "${noteCitationsFixture}"`
-    : `node "${oracleScript}" "${stylePath}" --json`;
 
-  try {
-    const result = execSync(command, {
-      encoding: 'utf8',
-      timeout: 120000,
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
+  const noteFlag = styleFormat === 'note'
+    ? ` --citations-fixture "${noteCitationsFixture}"`
+    : '';
 
-    return JSON.parse(result);
-  } catch (error) {
-    // Exit code 1 means validation failed but execution was successful (JSON is in stdout)
-    if (error.status === 1 && error.stdout) {
+  function tryRun(script) {
+    const cmd = `node "${script}" "${stylePath}" --json${noteFlag}`;
+    try {
+      const stdout = execSync(cmd, {
+        encoding: 'utf8',
+        timeout: 120000,
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      return { stdout, status: 0 };
+    } catch (err) {
+      return { stdout: err.stdout, status: err.status ?? 99, stderr: err.stderr, message: err.message };
+    }
+  }
+
+  // Fast path (snapshot)
+  const fast = tryRun(fastScript);
+  if (fast.status !== 2) {
+    // 0 = all match, 1 = mismatches found — both have valid JSON
+    const raw = fast.stdout?.toString() ?? '';
+    if (raw.trim()) {
       try {
-        return JSON.parse(error.stdout.toString());
+        return JSON.parse(raw);
       } catch {
-        return { error: `Oracle execution failed to parse JSON: ${error.message}`, style: styleName };
+        // Fall through to live oracle
       }
     }
-    // Fatal error (exit code 2 or other)
-    const stderr = error.stderr ? error.stderr.toString() : '';
-    return { error: `Oracle fatal error: ${error.message}\n${stderr}`, style: styleName };
   }
+
+  // Live fallback (no snapshot yet, or fast oracle parse failure)
+  if (fast.status === 2) {
+    process.stderr.write(`[snapshot missing] ${styleName} — falling back to live oracle\n`);
+  }
+  const live = tryRun(liveScript);
+  const raw = (live.status === 0 || live.status === 1) ? live.stdout?.toString() ?? '' : '';
+  if (raw.trim()) {
+    try {
+      const result = JSON.parse(raw);
+      result.oracleSource = 'citeproc-js-live';
+      return result;
+    } catch {
+      return { error: `Oracle JSON parse failed: ${live.message}`, style: styleName };
+    }
+  }
+  const stderr = live.stderr?.toString() ?? '';
+  return { error: `Oracle fatal error: ${live.message}\n${stderr}`, style: styleName };
 }
 
 /**
@@ -819,6 +848,7 @@ function generateReport(options) {
         oracleDetail: oracleResult.bibliography ? oracleResult.bibliography.entries : null,
         qualityScore: parseFloat(qualityScore.toFixed(3)),
         qualityBreakdown: qualityMetrics,
+        oracleSource: 'citum-native',
       });
       continue;
     }
@@ -899,6 +929,7 @@ function generateReport(options) {
       oracleDetail: oracleResult.bibliography ? oracleResult.bibliography.entries : null,
       qualityScore: parseFloat(qualityScore.toFixed(3)),
       qualityBreakdown: qualityMetrics,
+      oracleSource: oracleResult.oracleSource || 'citeproc-js',
     });
   }
 
@@ -1252,6 +1283,7 @@ function generateHtmlTable(report) {
                     data-sqi-tier-rank="${sqiTierRank}">
                     <td class="px-6 py-4 text-sm font-medium text-slate-900">${style.name}</td>
                     <td class="px-6 py-4 text-sm text-slate-600">${style.format}</td>
+                    <td class="px-6 py-4 text-sm text-slate-500 font-mono">${escapeHtml(style.oracleSource || '—')}</td>
                     <td class="px-6 py-4 text-sm text-slate-600">${style.dependents ?? '—'}</td>
                     <td class="px-6 py-4">
                         <span class="inline-flex items-center px-3 py-1 rounded text-xs font-medium ${citationBadge}">
@@ -1318,6 +1350,9 @@ ${generateDetailContent(style)}
                                 <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('format')">
                                     Format <span class="text-slate-400" id="sort-ind-format">↕</span>
                                 </button>
+                            </th>
+                            <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                                Oracle
                             </th>
                             <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
                                 <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('dependents')">
