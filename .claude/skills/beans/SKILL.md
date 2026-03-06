@@ -1,8 +1,17 @@
-# Beans (Citum)
+---
+name: beans
+type: user-invocable, agent-invocable
+description: >
+  Task tracking and issue management for this Citum project using the `beans`
+  CLI. Always use this skill — never TodoWrite — when the user mentions tasks,
+  todos, work items, what to work on next, creating/updating/closing issues, or
+  asks about project status. Trigger on: "what should I work on", "create a
+  task for", "mark that done", "what's in progress", "next task", "check my
+  tasks", "/beans next", "track this", "log a bug". Also trigger at the start
+  of any multi-step task to check for an existing bean before creating one.
+---
 
-**Type:** User-Invocable, Agent-Invocable  
-**LLM Access:** Yes  
-**Purpose:** Task tracking and smart next-step selection using `beans`
+# Beans (Citum)
 
 ## Usage
 
@@ -20,6 +29,10 @@ Use these project-specific rules on top of `beans prime`:
 - Mark completed only when all checklist items are checked.
 - When completing, append a `## Summary of Changes`.
 - When scrapping, append a `## Reasons for Scrapping`.
+
+## Commit Rule
+
+**Always include the bean file in commits.** Use `git add -A` (not selective adds) so `.beans/` changes are never left out. Code changes and bean state must be committed together.
 
 ## `/beans next` Helper
 
