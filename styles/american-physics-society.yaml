@@ -33,6 +33,7 @@ citation:
   use-preset: numeric-citation
   prefix: "\_["
   suffix: "]"
+  collapse: citation-number
   multi-cite-delimiter: ","
 bibliography:
   options:
@@ -73,6 +74,17 @@ bibliography:
           prefix: "pp. "
       prefix: "), "
   type-templates:
+    software:
+      - number: citation-number
+        wrap: brackets
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: primary
+        emph: true
+      - date: issued
+        form: year
+        wrap: parentheses
     patent:
       - number: citation-number
         wrap: brackets

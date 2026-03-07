@@ -30,7 +30,7 @@ info:
       rel: documentation
 options:
   processing: note
-  substitute: standard
+  substitute: editor-translator-short
   contributors:
     and: text
     delimiter-precedes-last: contextual
@@ -98,6 +98,49 @@ citation:
           wrap: none
         motion-picture:
           wrap: none
+    - contributor: translator
+      form: long
+      prefix: ", trans. "
+      overrides:
+        book:
+          suppress: false
+        chapter:
+          suppress: false
+        article-journal:
+          suppress: false
+        default:
+          suppress: true
+    - variable: genre
+      prefix: ", "
+      overrides:
+        manuscript:
+          suppress: false
+        default:
+          suppress: true
+    - date: issued
+      form: year
+      prefix: ", "
+      overrides:
+        manuscript:
+          suppress: false
+        default:
+          suppress: true
+    - variable: archive-location
+      prefix: ", "
+      overrides:
+        manuscript:
+          suppress: false
+        default:
+          suppress: true
+    - variable: archive
+      prefix: ", "
+      overrides:
+        manuscript:
+          suppress: false
+        personal-communication:
+          suppress: false
+        default:
+          suppress: true
     - date: issued
       form: month-day
       prefix: ", "
@@ -129,11 +172,15 @@ citation:
               suppress: true
             dataset:
               suppress: true
+            entry-encyclopedia:
+              suppress: true
             legal-case:
               suppress: true
             patent:
               suppress: true
             motion-picture:
+              suppress: true
+            manuscript:
               suppress: true
             interview:
               suppress: true
@@ -155,11 +202,15 @@ citation:
               suppress: true
             dataset:
               suppress: true
+            entry-encyclopedia:
+              suppress: true
             legal-case:
               suppress: true
             patent:
               suppress: true
             motion-picture:
+              suppress: true
+            manuscript:
               suppress: true
             interview:
               suppress: true
@@ -180,11 +231,15 @@ citation:
               suppress: true
             dataset:
               suppress: true
+            entry-encyclopedia:
+              suppress: true
             legal-case:
               suppress: true
             patent:
               suppress: true
             motion-picture:
+              suppress: true
+            manuscript:
               suppress: true
             interview:
               suppress: true
@@ -205,11 +260,15 @@ citation:
               suppress: true
             dataset:
               suppress: true
+            entry-encyclopedia:
+              suppress: true
             legal-case:
               suppress: true
             patent:
               suppress: true
             motion-picture:
+              suppress: true
+            manuscript:
               suppress: true
             interview:
               suppress: true
@@ -232,11 +291,15 @@ citation:
               suppress: true
             dataset:
               suppress: true
+            entry-encyclopedia:
+              suppress: true
             legal-case:
               suppress: true
             patent:
               suppress: true
             motion-picture:
+              suppress: true
+            manuscript:
               suppress: true
             interview:
               suppress: true
@@ -256,6 +319,8 @@ citation:
             webpage:
               suppress: true
             dataset:
+              suppress: true
+            entry-encyclopedia:
               suppress: true
             legal-case:
               suppress: true
@@ -317,6 +382,8 @@ citation:
           suppress: true
         broadcast:
           suppress: true
+        manuscript:
+          suppress: true
         interview:
           suppress: true
         personal-communication:
@@ -349,6 +416,8 @@ citation:
         motion-picture:
           suppress: true
         broadcast:
+          suppress: true
+        manuscript:
           suppress: true
         interview:
           suppress: true
@@ -389,6 +458,8 @@ citation:
         motion-picture:
           suppress: true
         broadcast:
+          suppress: true
+        manuscript:
           suppress: true
         interview:
           suppress: true
@@ -512,6 +583,28 @@ citation:
           suppress: false
         default:
           suppress: true
+    - title: parent-monograph
+      prefix: ", "
+      overrides:
+        interview:
+          suppress: false
+        default:
+          suppress: true
+    - variable: publisher-place
+      wrap: parentheses
+      prefix: " "
+      overrides:
+        interview:
+          suppress: false
+        default:
+          suppress: true
+    - variable: publisher
+      prefix: ", "
+      overrides:
+        interview:
+          suppress: false
+        default:
+          suppress: true
     - contributor: recipient
       form: long
       prefix: ", to "
@@ -548,6 +641,8 @@ citation:
         chapter:
           suppress: false
         article-journal:
+          suppress: false
+        interview:
           suppress: false
         default:
           suppress: true

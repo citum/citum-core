@@ -35,6 +35,7 @@ options:
 citation:
   use-preset: numeric-citation
   wrap: brackets
+  collapse: citation-number
   multi-cite-delimiter: ","
 bibliography:
   options:
@@ -55,6 +56,10 @@ bibliography:
         article-journal:
           suppress: true
         article-magazine:
+          suppress: true
+        dataset:
+          suppress: true
+        standard:
           suppress: true
     - title: parent-serial
       emph: true
@@ -88,6 +93,12 @@ bibliography:
     - variable: doi
       prefix: " DOI "
   type-templates:
+    standard:
+      - number: citation-number
+        wrap: brackets
+        suffix: " "
+      - date: issued
+        form: year
     webpage:
       - number: citation-number
         wrap: brackets
