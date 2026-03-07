@@ -67,6 +67,7 @@ fn title_text(title: &Title, form: Option<&TitleForm>) -> String {
 fn parent_short_title(reference: &Reference, title_type: &TitleType) -> Option<String> {
     match title_type {
         TitleType::ParentMonograph => match reference {
+            Reference::Monograph(_) => None,
             Reference::CollectionComponent(component) => match &component.parent {
                 Parent::Embedded(parent) => parent.short_title.clone(),
                 Parent::Id(_) => None,
@@ -125,18 +126,18 @@ impl ComponentValues for TemplateTitle {
             }
             .cloned(),
             TitleType::ParentMonograph => match reference {
+                Reference::Monograph(r) => r.container_title.clone(),
                 Reference::CollectionComponent(r) => match &r.parent {
-                    Parent::Embedded(p) => p.title.as_ref(),
+                    Parent::Embedded(p) => p.title.clone(),
                     _ => None,
                 },
                 _ => None,
-            }
-            .cloned(),
+            },
             _ => None,
         };
 
         // Resolve multilingual title if configured
-        let value = raw_title.map(|title| match title {
+        let value: Option<String> = raw_title.map(|title| match title {
             Title::Multilingual(m) => {
                 let mode = options
                     .config

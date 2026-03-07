@@ -668,7 +668,10 @@ fn test_sorting_empty_dates_citation() {
     let result = processor
         .process_citation(&citation)
         .expect("Failed to process citation with empty-date sort");
-    assert_eq!(result, "BookD 1999; BookB 2000; BookA; BookC; BookE");
+    assert_eq!(
+        result,
+        "BookD 1999; BookB 2000; BookA n.d.; BookC n.d.; BookE n.d."
+    );
 }
 
 // --- Position-Based Citation Tests (Note Styles) ---

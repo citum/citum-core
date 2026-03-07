@@ -63,6 +63,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //!     id: Some("kuhn1962".to_string()),
 //!     r#type: MonographType::Book,
 //!     title: Title::Single("The Structure of Scientific Revolutions".to_string()),
+//!     container_title: None,
 //!     author: Some(Contributor::ContributorList(ContributorList(vec![
 //!         Contributor::StructuredName(StructuredName {
 //!             family: MultilingualString::Simple("Kuhn".to_string()),
@@ -74,6 +75,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //!     ]))),
 //!     editor: None,
 //!     translator: None,
+//!     recipient: None,
+//!     interviewer: None,
 //!     issued: EdtfString("1962".to_string()),
 //!     publisher: None,
 //!     url: None,
@@ -88,6 +91,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //!     collection_number: None,
 //!     genre: None,
 //!     medium: None,
+//!     archive: None,
+//!     archive_location: None,
 //!     keywords: None,
 //!     original_date: None,
 //!     original_title: None,

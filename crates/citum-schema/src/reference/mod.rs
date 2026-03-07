@@ -129,6 +129,22 @@ impl InputReference {
         }
     }
 
+    /// Return the recipient.
+    pub fn recipient(&self) -> Option<Contributor> {
+        match self {
+            InputReference::Monograph(r) => r.recipient.clone(),
+            _ => None,
+        }
+    }
+
+    /// Return the interviewer.
+    pub fn interviewer(&self) -> Option<Contributor> {
+        match self {
+            InputReference::Monograph(r) => r.interviewer.clone(),
+            _ => None,
+        }
+    }
+
     /// Return the publisher.
     pub fn publisher(&self) -> Option<Contributor> {
         match self {
@@ -307,6 +323,22 @@ impl InputReference {
         }
     }
 
+    /// Return the archive or repository name.
+    pub fn archive(&self) -> Option<String> {
+        match self {
+            InputReference::Monograph(r) => r.archive.clone(),
+            _ => None,
+        }
+    }
+
+    /// Return the archive shelfmark or repository location.
+    pub fn archive_location(&self) -> Option<String> {
+        match self {
+            InputReference::Monograph(r) => r.archive_location.clone(),
+            _ => None,
+        }
+    }
+
     /// Return the medium.
     pub fn medium(&self) -> Option<String> {
         match self {
@@ -333,6 +365,7 @@ impl InputReference {
 
     pub fn container_title(&self) -> Option<Title> {
         match self {
+            InputReference::Monograph(r) => r.container_title.clone(),
             InputReference::CollectionComponent(r) => {
                 let r = r.as_ref();
                 match &r.parent {
@@ -404,6 +437,7 @@ impl InputReference {
             InputReference::Hearing(r) => r.authority.clone(),
             InputReference::Regulation(r) => r.authority.clone(),
             InputReference::Brief(r) => r.authority.clone(),
+            InputReference::Patent(r) => r.authority.clone(),
             InputReference::Standard(r) => r.authority.clone(),
             _ => None,
         }
@@ -482,6 +516,14 @@ impl InputReference {
     pub fn original_date(&self) -> Option<EdtfString> {
         match self {
             InputReference::Monograph(r) => r.original_date.clone(),
+            _ => None,
+        }
+    }
+
+    /// Return the original title.
+    pub fn original_title(&self) -> Option<Title> {
+        match self {
+            InputReference::Monograph(r) => r.original_title.clone(),
             _ => None,
         }
     }
@@ -608,6 +650,8 @@ impl InputReference {
                 MonographType::Thesis => "thesis".to_string(),
                 MonographType::Webpage => "webpage".to_string(),
                 MonographType::Post => "post".to_string(),
+                MonographType::Interview => "interview".to_string(),
+                MonographType::Manuscript => "manuscript".to_string(),
                 MonographType::PersonalCommunication => "personal-communication".to_string(),
                 MonographType::Document => {
                     if r.medium
@@ -629,6 +673,8 @@ impl InputReference {
                     SerialType::AcademicJournal => {
                         if r.genre.as_deref() == Some("entry-encyclopedia") {
                             "entry-encyclopedia".to_string()
+                        } else if matches!(s.title, Title::Single(ref title) if title == "arXiv") {
+                            "article-journal+arxiv".to_string()
                         } else {
                             "article-journal".to_string()
                         }

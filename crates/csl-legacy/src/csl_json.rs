@@ -106,6 +106,13 @@ pub struct Reference {
     /// Medium
     #[serde(skip_serializing_if = "Option::is_none")]
     pub medium: Option<String>,
+    /// Archive or repository name.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub archive: Option<String>,
+    /// Archive shelfmark, repository location, or call number.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(alias = "archive_location")]
+    pub archive_location: Option<String>,
     /// Number
     #[serde(skip_serializing_if = "Option::is_none")]
     pub number: Option<String>,
@@ -115,6 +122,9 @@ pub struct Reference {
     /// Language (BCP 47)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub language: Option<String>,
+    /// Original title in the source language.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub original_title: Option<String>,
     /// Abstract
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "abstract")]

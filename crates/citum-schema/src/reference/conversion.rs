@@ -67,14 +67,37 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
         let edition = legacy.edition.map(|e| e.to_string());
 
         match legacy.ref_type.as_str() {
+            "software" => InputReference::Software(Box::new(Software {
+                id,
+                title,
+                author: legacy.author.map(Contributor::from),
+                issued,
+                publisher: legacy.publisher.map(|n| {
+                    Contributor::SimpleName(SimpleName {
+                        name: n.into(),
+                        location: legacy.publisher_place,
+                    })
+                }),
+                version: None,
+                repository: None,
+                license: None,
+                platform: None,
+                doi,
+                url,
+                accessed,
+                language,
+                field_languages: HashMap::new(),
+                note,
+                keywords: None,
+            })),
             "book"
             | "report"
             | "thesis"
             | "manual"
+            | "manuscript"
             | "webpage"
             | "post"
             | "post-weblog"
-            | "software"
             | "interview"
             | "personal_communication"
             | "personal-communication" => {
@@ -96,10 +119,14 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                     MonographType::Thesis
                 } else if legacy.ref_type == "manual" {
                     MonographType::Manual
+                } else if legacy.ref_type == "manuscript" {
+                    MonographType::Manuscript
                 } else if legacy.ref_type == "webpage" {
                     MonographType::Webpage
                 } else if legacy.ref_type.contains("post") {
                     MonographType::Post
+                } else if legacy.ref_type == "interview" {
+                    MonographType::Interview
                 } else if legacy.ref_type == "personal_communication"
                     || legacy.ref_type == "personal-communication"
                 {
@@ -111,9 +138,12 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                     id,
                     r#type,
                     title,
+                    container_title: legacy.container_title.clone().map(Title::Single),
                     author: legacy.author.map(Contributor::from),
                     editor: legacy.editor.map(Contributor::from),
                     translator: legacy.translator.map(Contributor::from),
+                    recipient: legacy.recipient.map(Contributor::from),
+                    interviewer: legacy.interviewer.map(Contributor::from),
                     issued,
                     publisher: legacy.publisher.map(|n| {
                         Contributor::SimpleName(SimpleName {
@@ -134,9 +164,11 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                     collection_number: legacy.collection_number.map(|v| v.to_string()),
                     genre: legacy.genre,
                     medium: legacy.medium,
+                    archive: legacy.archive,
+                    archive_location: legacy.archive_location,
                     keywords: None,
                     original_date: None,
-                    original_title: None,
+                    original_title: legacy.original_title.map(Title::Single),
                 }))
             }
             "chapter" | "paper-conference" | "entry-dictionary" => {
@@ -377,9 +409,12 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                 id,
                 r#type: MonographType::Document,
                 title,
+                container_title: legacy.container_title.clone().map(Title::Single),
                 author: legacy.author.map(Contributor::from),
                 editor: legacy.editor.map(Contributor::from),
                 translator: legacy.translator.map(Contributor::from),
+                recipient: legacy.recipient.map(Contributor::from),
+                interviewer: legacy.interviewer.map(Contributor::from),
                 issued,
                 publisher: legacy.publisher.map(|n| {
                     Contributor::SimpleName(SimpleName {
@@ -400,9 +435,11 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                 collection_number: legacy.collection_number.map(|v| v.to_string()),
                 genre: legacy.genre,
                 medium: legacy.medium,
+                archive: legacy.archive,
+                archive_location: legacy.archive_location,
                 keywords: None,
                 original_date: None,
-                original_title: None,
+                original_title: legacy.original_title.map(Title::Single),
             })),
         }
     }
@@ -418,7 +455,13 @@ impl From<csl_legacy::csl_json::DateVariable> for EdtfString {
         {
             let year = first
                 .first()
-                .map(|y| format!("{:04}", y))
+                .map(|y| {
+                    if *y < 0 {
+                        format!("-{:04}", y.abs())
+                    } else {
+                        format!("{:04}", y)
+                    }
+                })
                 .unwrap_or_default();
             let month = first
                 .get(1)

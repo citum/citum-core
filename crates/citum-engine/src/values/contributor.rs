@@ -93,6 +93,9 @@ impl ComponentValues for TemplateContributor {
         if options.context == RenderContext::Citation
             && reference.ref_type() == "personal-communication"
             && matches!(component.contributor, ContributorRole::Author)
+            && matches!(component.form, ContributorForm::Long)
+            && component.name_order.is_none()
+            && effective_rendering.suffix.is_none()
         {
             component.form = ContributorForm::Long;
             component.name_order = Some(NameOrder::GivenFirst);
@@ -109,6 +112,8 @@ impl ComponentValues for TemplateContributor {
             }
             ContributorRole::Editor => reference.editor(),
             ContributorRole::Translator => reference.translator(),
+            ContributorRole::Recipient => reference.recipient(),
+            ContributorRole::Interviewer => reference.interviewer(),
             _ => None,
         };
 

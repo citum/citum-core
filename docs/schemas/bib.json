@@ -261,6 +261,20 @@
                 "null"
               ]
             },
+            "archive": {
+              "description": "Archive or repository name for unpublished material.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "archive-location": {
+              "description": "Archive location, shelfmark, or call number for unpublished material.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "author": {
               "anyOf": [
                 {
@@ -281,6 +295,17 @@
               "type": [
                 "string",
                 "null"
+              ]
+            },
+            "container-title": {
+              "description": "Parent or container title for monographic interviews and similar sources.",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Title"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "doi": {
@@ -321,6 +346,17 @@
               "type": [
                 "string",
                 "null"
+              ]
+            },
+            "interviewer": {
+              "description": "Interviewer for interview-style references.",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "isbn": {
@@ -380,6 +416,17 @@
               ]
             },
             "publisher": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "recipient": {
+              "description": "Recipient for personal communications such as letters or emails.",
               "anyOf": [
                 {
                   "$ref": "#/definitions/Contributor"
@@ -2190,16 +2237,34 @@
       ]
     },
     "MonographType": {
-      "type": "string",
-      "enum": [
-        "book",
-        "manual",
-        "report",
-        "thesis",
-        "webpage",
-        "post",
-        "personal-communication",
-        "document"
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "book",
+            "manual",
+            "report",
+            "thesis",
+            "webpage",
+            "post",
+            "personal-communication",
+            "document"
+          ]
+        },
+        {
+          "description": "An interview treated as a standalone monographic source.",
+          "type": "string",
+          "enum": [
+            "interview"
+          ]
+        },
+        {
+          "description": "An unpublished manuscript or archival document.",
+          "type": "string",
+          "enum": [
+            "manuscript"
+          ]
+        }
       ]
     },
     "MultilingualComplex": {
