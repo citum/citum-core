@@ -35,6 +35,7 @@ options:
     separator: ". "
 citation:
   use-preset: numeric-citation
+  collapse: citation-number
   multi-cite-delimiter: ","
 bibliography:
   options:
@@ -81,3 +82,20 @@ bibliography:
       form: year
       wrap: parentheses
       prefix: ", "
+  type-templates:
+    article-journal+arxiv:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 1
+      - title: primary
+        prefix: " "
+      - title: parent-serial
+      - variable: doi
+        prefix: " https://doi.org/"
+      - date: issued
+        form: year
+        wrap: parentheses
+        prefix: ", "

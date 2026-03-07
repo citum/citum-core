@@ -116,4 +116,60 @@ bibliography:
           prefix: https://doi.org/
       prefix: ", "
     - variable: url
+  type-templates:
+    manuscript:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 3
+          use-first: 1
+      - title: primary
+        quote: true
+      - variable: genre
+        prefix: ". "
+      - date: issued
+        form: day-month-abbr-year
+        prefix: ". "
+      - variable: archive
+        prefix: ", "
+      - variable: archive-location
+        prefix: ", "
+    personal_communication:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 3
+          use-first: 1
+      - title: primary
+        quote: true
+      - variable: genre
+        prefix: ". "
+      - date: issued
+        form: day-month-abbr-year
+        prefix: ". "
+      - variable: archive
+        prefix: ", "
+    interview:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 3
+          use-first: 1
+      - title: primary
+        quote: true
+      - contributor: interviewer
+        form: long
+        name-order: given-first
+        prefix: ". Interview by "
+      - title: parent-monograph
+        emph: true
+        prefix: ". "
+      - date: issued
+        form: year
+        prefix: ", "
+      - number: pages
+        prefix: ", pp. "
   sort: author-title-date

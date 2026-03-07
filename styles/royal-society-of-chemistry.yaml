@@ -45,6 +45,7 @@ options:
 citation:
   template:
     - number: citation-number
+  collapse: citation-number
   multi-cite-delimiter: ","
 bibliography:
   options:
@@ -79,8 +80,47 @@ bibliography:
           suppress: true
         article-newspaper:
           suppress: true
+        chapter:
+          suppress: true
+        paper-conference:
+          suppress: true
+        thesis:
+          suppress: true
+        dataset:
+          suppress: true
+        standard:
+          suppress: true
+    - contributor: editor
+      form: short
+      name-order: given-first
+      prefix: ", editors. "
+      suppress: true
+      overrides:
+        chapter:
+          suppress: false
     - variable: publisher-place
+      overrides:
+        dataset:
+          suppress: true
+        standard:
+          suppress: true
   type-templates:
+    dataset:
+      - items:
+          - number: citation-number
+          - contributor: author
+            form: long
+            name-order: given-first
+            and: text
+        delimiter: none
+      - date: issued
+        form: year
+    standard:
+      - items:
+          - number: citation-number
+          - date: issued
+            form: year
+        delimiter: none
     webpage:
       - number: citation-number
       - contributor: author
@@ -125,8 +165,10 @@ bibliography:
         prefix: "vol. "
         suppress: true
     patent:
-      - number: citation-number
-      - variable: publisher
+      - items:
+          - number: citation-number
+          - variable: authority
+        delimiter: none
       - number: number
       - title: parent-serial
         emph: true

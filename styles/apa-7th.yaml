@@ -357,6 +357,19 @@ bibliography:
       - variable: publisher
         prefix: ". "
         suffix: "."
+      - variable: doi
+        prefix: " https://doi.org/"
+      - items:
+          - date: accessed
+            form: month-day
+            prefix: "Retrieved "
+          - date: accessed
+            form: year
+            prefix: ", "
+            suffix: ", from"
+          - variable: url
+        delimiter: " "
+        prefix: " "
     legal-case:
       - title: primary
         emph: false
@@ -486,4 +499,11 @@ bibliography:
           delimiter: ""
     - variable: doi
       prefix: "https://doi.org/"
-    - variable: url
+    - items:
+        - date: accessed
+          form: year-month-day
+          prefix: "Retrieved "
+          suffix: ", from"
+        - variable: url
+      delimiter: " "
+      prefix: " "
