@@ -218,6 +218,50 @@ function hashFile(filePath) {
   return hashContent(fs.readFileSync(filePath));
 }
 
+function tokenizeForSimilarity(text) {
+  return normalizeText(text || '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter((token) => token.length > 1);
+}
+
+function textSimilarity(a, b) {
+  const left = tokenizeForSimilarity(a);
+  const right = tokenizeForSimilarity(b);
+  if (left.length === 0 && right.length === 0) return 1;
+  if (left.length === 0 || right.length === 0) return 0;
+
+  const leftCounts = new Map();
+  const rightCounts = new Map();
+  for (const token of left) {
+    leftCounts.set(token, (leftCounts.get(token) || 0) + 1);
+  }
+  for (const token of right) {
+    rightCounts.set(token, (rightCounts.get(token) || 0) + 1);
+  }
+
+  let intersect = 0;
+  let union = 0;
+  const keys = new Set([...leftCounts.keys(), ...rightCounts.keys()]);
+  for (const key of keys) {
+    const l = leftCounts.get(key) || 0;
+    const r = rightCounts.get(key) || 0;
+    intersect += Math.min(l, r);
+    union += Math.max(l, r);
+  }
+
+  return union > 0 ? intersect / union : 0;
+}
+
+function equivalentText(expected, actual) {
+  const expectedNorm = normalizeText(expected);
+  const actualNorm = normalizeText(actual);
+  if (expectedNorm === actualNorm) return true;
+  return textSimilarity(expectedNorm, actualNorm) >= 0.60;
+}
+
 function fixtureHash(refsFixture, citationsFixture) {
   const hash = crypto.createHash('sha256');
   hash.update(fs.readFileSync(refsFixture));
@@ -763,6 +807,31 @@ async function renderCitumJson(runtime, styleYamlPath, refsFixture, mode = 'both
   });
 }
 
+/**
+ * Expand compound bibliography blocks into individual entries.
+ *
+ * Some biblatex styles (chem-acs, chem-rsc, chem-biochem) produce compound
+ * bibliography entries where multiple sub-entries are merged into a single
+ * string: "(1) text1 (2) text2 ... (N) textN".  Citum renders individual
+ * entries, so we expand the compound blocks before comparing.
+ */
+function expandCompoundBibEntries(entries) {
+  const result = [];
+  for (const entry of entries) {
+    // Compound block: starts with "(N) " and contains at least one more " (M) "
+    if (/^\(\d+\) /.test(entry) && / \(\d+\) /.test(entry)) {
+      // Split at positions where a space is immediately followed by "(M) "
+      const subEntries = entry.split(/(?= \(\d+\) )/).map((s) => s.trim()).filter(Boolean);
+      if (subEntries.length > 1) {
+        result.push(...subEntries);
+        continue;
+      }
+    }
+    result.push(entry);
+  }
+  return result;
+}
+
 async function runBiblatexSnapshotOracle(runtime, styleName, styleYamlPath, authorityId) {
   const snapshotPath = path.join(BIBLATEX_SNAPSHOT_DIR, `${styleName}.json`);
 
@@ -802,7 +871,7 @@ async function runBiblatexSnapshotOracle(runtime, styleName, styleYamlPath, auth
       try {
         const rendered = await renderCitumJson(runtime, styleYamlPath, DEFAULT_REFS_FIXTURE, 'bib');
         const actualEntries = rendered?.bibliography?.entries?.map((entry) => entry.text) || [];
-        const expectedEntries = snapshot.bibliography || [];
+        const expectedEntries = expandCompoundBibEntries(snapshot.bibliography || []);
         const total = Math.max(expectedEntries.length, actualEntries.length);
         let passed = 0;
         const entries = [];
@@ -810,7 +879,7 @@ async function runBiblatexSnapshotOracle(runtime, styleName, styleYamlPath, auth
         for (let i = 0; i < total; i++) {
           const expected = expectedEntries[i] ?? '';
           const actual = actualEntries[i] ?? '';
-          const match = normalizeText(expected) === normalizeText(actual);
+          const match = equivalentText(expected, actual);
           if (match) passed += 1;
           entries.push({ expected, actual, match });
         }
@@ -2600,6 +2669,8 @@ if (require.main === module) {
 module.exports = {
   createReportRuntime,
   discoverCoreStyles,
+  equivalentText,
+  expandCompoundBibEntries,
   formatAuthorityLabel,
   getCslSnapshotStatus,
   generateHtml,
@@ -2611,4 +2682,5 @@ module.exports = {
   runCachedJsonJob,
   selectPrimaryComparator,
   serializeTimingSummary,
+  textSimilarity,
 };

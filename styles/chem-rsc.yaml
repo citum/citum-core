@@ -16,10 +16,6 @@ info:
     - href: http://www.rsc.org/learn-chemistry/resource/download/res00001664/cmp00004956/pdf
       rel: documentation
 options:
-  substitute:
-    contributor-role-form: short
-    template:
-    - editor
   processing: numeric
   contributors:
     initialize-with: ". "
@@ -31,12 +27,7 @@ options:
     uncertainty-marker: "?"
     approximation-marker: "ca. "
     range-delimiter: –
-  titles:
-    component: {}
-    monograph:
-      emph: true
-    periodical:
-      emph: true
+  titles: scientific
   bibliography:
     entry-suffix: .
     separator: ", "
@@ -54,27 +45,78 @@ bibliography:
       delimiter-precedes-last: never
   template:
     - number: citation-number
-      wrap: brackets
+      wrap: parentheses
       suffix: " "
     - contributor: author
       form: long
-      name-order: family-first
+      name-order: given-first
+      and: text
+    - title: primary
+      wrap: quotes
+      overrides:
+        article-journal: {}
+        article-magazine: {}
+        article-newspaper: {}
+        book:
+          quote: false
+        report:
+          quote: false
+        thesis:
+          suppress: true
+        chapter:
+          suppress: true
+        paper-conference:
+          suppress: true
+        entry-encyclopedia:
+          suppress: true
+        legal_case:
+          quote: false
+        motion_picture:
+          quote: false
     - title: parent-monograph
-      emph: true
+      prefix: ", "
+      overrides:
+        chapter:
+          prefix: "in "
+        entry-encyclopedia:
+          prefix: "in "
     - title: parent-serial
-      emph: true
-    - variable: publisher
+      prefix: ", "
+    - contributor: editor
+      form: long
+      name-order: given-first
+      and: text
+      prefix: ", ed. "
+    - variable: genre
+      prefix: ", "
+      overrides:
+        thesis: {}
     - date: issued
       form: year
+      prefix: ", "
+    - variable: publisher
+      prefix: ", "
+      overrides:
+        article-journal:
+          suppress: true
+        article-magazine:
+          suppress: true
+        article-newspaper:
+          suppress: true
+        thesis:
+          suppress: true
+        report:
+          suppress: true
     - number: volume
+      prefix: ", "
     - number: pages
       overrides:
         chapter:
           prefix: "pp. "
         paper-conference:
           prefix: "pp. "
-    - title: primary
-      emph: true
+    - variable: doi
+      prefix: ", DOI: "
       overrides:
         article-journal:
           suppress: true
@@ -83,10 +125,22 @@ bibliography:
         article-newspaper:
           suppress: true
     - variable: publisher-place
+      prefix: ", "
+      overrides:
+        article-journal:
+          suppress: true
+        article-magazine:
+          suppress: true
+        article-newspaper:
+          suppress: true
+        thesis:
+          suppress: true
+        legal_case:
+          suppress: true
   type-templates:
     webpage:
       - number: citation-number
-        wrap: brackets
+        wrap: parentheses
         suffix: " "
       - contributor: author
         form: long
@@ -97,9 +151,20 @@ bibliography:
         form: long
       - date: accessed
         form: full
+    thesis:
+      - number: citation-number
+        wrap: parentheses
+        suffix: " "
+      - contributor: author
+        form: long
+        and: text
+      - title: primary
+      - variable: genre
+      - date: issued
+        form: year
     legal_case:
       - number: citation-number
-        wrap: brackets
+        wrap: parentheses
         suffix: " "
       - contributor: author
         form: long
@@ -133,7 +198,7 @@ bibliography:
         suppress: true
     patent:
       - number: citation-number
-        wrap: brackets
+        wrap: parentheses
         suffix: " "
       - variable: publisher
       - number: number

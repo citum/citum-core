@@ -55,11 +55,14 @@ bibliography:
       form: year
       wrap: parentheses
       prefix: " "
+      suffix: "."
     - title: primary
       prefix: " "
       overrides:
         article-journal:
-          suppress: true
+          suffix: "."
+        report:
+          prefix: " "
     - title: parent-serial
       emph: true
       prefix: " "
@@ -68,6 +71,8 @@ bibliography:
           suppress: true
         chapter:
           suppress: true
+        article-journal:
+          prefix: " "
     - title: parent-monograph
       emph: true
       prefix: ", in "
@@ -80,10 +85,51 @@ bibliography:
       prefix: ", "
     - variable: publisher
       prefix: "; "
+      overrides:
+        article-journal:
+          suppress: true
+        thesis:
+          suppress: true
     - variable: publisher-place
       prefix: ", "
+      overrides:
+        article-journal:
+          suppress: true
+        thesis:
+          suppress: true
     - number: volume
       emph: true
       prefix: " "
     - number: pages
       prefix: ", "
+  type-templates:
+    report:
+      - number: citation-number
+        wrap: parentheses
+        suffix: " "
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+        prefix: " "
+      - variable: genre
+        prefix: ", "
+      - variable: publisher-place
+        prefix: ", "
+      - date: issued
+        form: year
+        prefix: ", "
+    thesis:
+      - number: citation-number
+        wrap: parentheses
+        suffix: " "
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+        prefix: " "
+      - variable: genre
+        prefix: ", "
+      - date: issued
+        form: year
+        prefix: ", "

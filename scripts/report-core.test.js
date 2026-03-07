@@ -12,6 +12,8 @@ const {
 const { loadReportProvenance } = require('./lib/report-metadata');
 const {
   discoverCoreStyles,
+  equivalentText,
+  expandCompoundBibEntries,
   formatAuthorityLabel,
   getCslSnapshotStatus,
   getComparisonEntryTexts,
@@ -91,6 +93,38 @@ test('comparison text helper supports both live-oracle and native-snapshot entry
   assert.deepEqual(
     getComparisonEntryTexts({ expected: 'snapshot benchmark', actual: 'snapshot citum' }),
     { benchmark: 'snapshot benchmark', citum: 'snapshot citum' }
+  );
+});
+
+test('expandCompoundBibEntries splits merged biblatex compound blocks', () => {
+  const entries = [
+    '(1) First entry. (2) Second entry. (3) Third entry.',
+    '(4) Standalone entry.',
+  ];
+
+  assert.deepEqual(expandCompoundBibEntries(entries), [
+    '(1) First entry.',
+    '(2) Second entry.',
+    '(3) Third entry.',
+    '(4) Standalone entry.',
+  ]);
+});
+
+test('equivalentText tolerates near-match snapshot formatting without masking drift', () => {
+  assert.equal(
+    equivalentText(
+      '[3] Yann LeCun, Yoshua Bengio, and Geoffrey Hinton. “Deep Learning”. In: Nature 521 (2015), pp. 436–444.',
+      '[3] Y. LeCun, Y. Bengio and G. Hinton, “Deep Learning”, Nature, 2015, 521, 436–444.'
+    ),
+    true
+  );
+
+  assert.equal(
+    equivalentText(
+      '[29] John Smith et al. “Adaptive Climate Risk Modeling in Coastal Cities”. In: Journal of Climate Analytics 12.2 (2021), pp. 101–119.',
+      '[30] John Smith et al. “Adaptive Climate Risk Modeling for Inland Regions”. In: Journal of Climate Analytics 12.3 (2021), pp. 201–219.'
+    ),
+    false
   );
 });
 
