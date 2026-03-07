@@ -237,7 +237,9 @@ function extractBibliography(rawText) {
   }
   if (bibStart === -1) return [];
 
-  const bibLines = lines.slice(bibStart);
+  // Strip form-feed characters (pdftotext page breaks) — they appear at the
+  // start of a line before the first entry on a new page.
+  const bibLines = lines.slice(bibStart).map((l) => l.replace(/\f/g, ''));
 
   // Detect numbered style: allow up to 3 leading spaces (handles right-aligned
   // numbering where "[1]" may be indented one space to align with "[10]"+),
@@ -265,15 +267,48 @@ function extractBibliography(rawText) {
   if (isNumbered) {
     // Numbered: each entry starts with [N] or N. (with at most 3 leading spaces
     // for right-aligned numbering). Continuation lines have 4+ spaces.
+    //
+    // pdftotext can collapse two short adjacent entries onto one line, e.g.:
+    //   "[24] Bengio ... 2023. [25] Kafka ..."
+    // Split on embedded [N] bracket markers only (unambiguous; avoids false splits
+    // on "2023. " year fragments that also match \d+\.\s).
+    function splitLine(t) {
+      const parts = [];
+      let last = 0;
+      for (const m of t.matchAll(/\[\d+\]/g)) {
+        if (m.index === 0) continue; // skip the leading marker
+        parts.push(t.slice(last, m.index).trimEnd());
+        last = m.index;
+      }
+      parts.push(t.slice(last));
+      return parts.filter(Boolean);
+    }
+
     let current = null;
     for (const line of bibLines) {
       const t = line.trim();
       if (!t || /^\d+$/.test(t)) continue; // blank or bare page number
       if (bracketNum.test(line) || dotNum.test(line)) {
-        if (current !== null) entries.push(current);
-        current = t;
+        // Split in case multiple entries collapsed onto one line
+        const parts = splitLine(t);
+        for (const part of parts) {
+          if (current !== null) entries.push(current);
+          current = part;
+        }
       } else if (current !== null) {
-        current = append(current, t);
+        // Continuation line — but it may contain an embedded [N] marker if
+        // pdftotext placed a new entry on the same indented line (e.g. after URL wrap).
+        const parts = splitLine(t);
+        if (parts.length > 1) {
+          // First part appends to current; remaining parts are new entries
+          current = append(current, parts[0]);
+          for (const part of parts.slice(1)) {
+            entries.push(current);
+            current = part;
+          }
+        } else {
+          current = append(current, t);
+        }
       }
     }
     if (current !== null) entries.push(current);
@@ -310,6 +345,15 @@ function extractBibliography(rawText) {
 
   return entries
     .map((e) => e.replace(/\s+/g, ' ').trim())
+    // Remove spaces inside URLs introduced by pdftotext line-wrapping,
+    // e.g. "https://stateofjs. com/2023" → "https://stateofjs.com/2023".
+    // Repeatedly join (url_prefix) + (space) + (lowercase/digit continuation)
+    // until no more matches (handles multi-segment wrapping).
+    .map((e) => {
+      let s = e, prev;
+      do { prev = s; s = s.replace(/(https?:\/\/\S+) ([a-z0-9/])/g, '$1$2'); } while (s !== prev);
+      return s;
+    })
     .filter(Boolean);
 }
 
