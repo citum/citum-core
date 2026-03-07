@@ -34,7 +34,7 @@ options:
         - key: author
           ascending: true
         - key: year
-          ascending: false
+          ascending: true
     group:
       template:
         - author
@@ -77,22 +77,26 @@ citation:
         delimiter-precedes-last: contextual
   template:
     - contributor: author
-      form: long
+      form: short
       name-order: family-first
       shorten:
         min: 3
         use-first: 1
+        and-others: et-al
     - date: issued
       form: year
-      prefix: " "
+      prefix: ""
   wrap: parentheses
-  delimiter: ". "
+  delimiter: " "
   multi-cite-delimiter: "; "
 bibliography:
   options:
     contributors:
       initialize-with: ". "
       delimiter: ", "
+      shorten:
+        min: 99
+        use-first: 99
   template:
     - contributor: author
       form: long
@@ -101,6 +105,9 @@ bibliography:
           prefix: "pp. "
       name-order: given-first
     - title: parent-monograph
+      overrides:
+        paper-conference:
+          prefix: "in "
     - title: parent-serial
     - title: primary
       emph: true
@@ -110,6 +117,22 @@ bibliography:
         article-magazine:
           suppress: true
         article-newspaper:
+          suppress: true
+        chapter:
+          suppress: true
+        paper-conference:
+          suppress: true
+        dataset:
+          suppress: true
+        entry-encyclopedia:
+          suppress: true
+        interview:
+          suppress: true
+        personal_communication:
+          suppress: true
+        webpage:
+          suppress: true
+        broadcast:
           suppress: true
     - variable: publisher-place
     - number: volume
@@ -121,9 +144,22 @@ bibliography:
           suppress: true
         article-journal:
           suppress: true
+        entry-encyclopedia:
+          suppress: true
+        dataset:
+          suppress: true
     - date: issued
       form: year
       wrap: parentheses
+    - number: pages
+      prefix: ", "
+      overrides:
+        article-journal: {}
+        article-magazine: {}
+        paper-conference:
+          prefix: ", pp. "
+        chapter:
+          prefix: ", pp. "
   type-templates:
     legal_case:
       - contributor: author
