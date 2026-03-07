@@ -281,6 +281,7 @@ function runOracle(stylePath, styleName, styleFormat) {
       try {
         return JSON.parse(raw);
       } catch {
+        process.stderr.write(`[snapshot invalid] ${styleName} — fast oracle JSON parse failed; falling back to live oracle\n`);
         // Fall through to live oracle
       }
     }
