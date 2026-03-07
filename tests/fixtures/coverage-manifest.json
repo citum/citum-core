@@ -110,6 +110,262 @@
       "notes": "Specialized citation fixture used for note-style fidelity in the core compatibility report."
     },
     {
+      "fixture": "tests/fixtures/compound-numeric-refs.json",
+      "domain": "core",
+      "kind": "references",
+      "reference_types": [
+        "article-journal",
+        "book",
+        "chapter",
+        "dataset",
+        "paper-conference",
+        "patent",
+        "report",
+        "standard",
+        "thesis"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "compound set membership",
+        "chemistry bibliography structure",
+        "compound numeric grouping"
+      ],
+      "used_by": [
+        "scripts/oracle-native.js"
+      ],
+      "ci_status": "required",
+      "notes": "Compound chemistry family reference fixture with wrapped references plus set metadata."
+    },
+    {
+      "fixture": "tests/fixtures/references-compound-numeric-family.json",
+      "domain": "core",
+      "kind": "references",
+      "reference_types": [
+        "article-journal",
+        "book",
+        "chapter",
+        "dataset",
+        "paper-conference",
+        "patent",
+        "report",
+        "standard",
+        "thesis"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "chemistry cross-source comparison",
+        "legacy fixture normalization",
+        "numeric family coverage"
+      ],
+      "used_by": [
+        "scripts/report-core.js",
+        "scripts/oracle.js"
+      ],
+      "ci_status": "required",
+      "notes": "Keyed CSL-JSON family fixture used for compound chemistry cross-source oracle runs."
+    },
+    {
+      "fixture": "tests/fixtures/citations-compound-numeric.json",
+      "domain": "core",
+      "kind": "citations",
+      "reference_types": [
+        "article-journal",
+        "book",
+        "chapter",
+        "dataset",
+        "paper-conference",
+        "patent",
+        "report",
+        "standard",
+        "thesis"
+      ],
+      "citation_scenarios": [
+        "compound set pair",
+        "mixed numeric cluster",
+        "locator citation",
+        "standard-only cluster"
+      ],
+      "rendering_risks": [
+        "compound citation grouping",
+        "numeric compression",
+        "chemistry locator output"
+      ],
+      "used_by": [
+        "scripts/report-core.js"
+      ],
+      "ci_status": "required",
+      "notes": "Chemistry family citation fixture paired with the compound numeric reference corpus."
+    },
+    {
+      "fixture": "tests/fixtures/references-author-date.json",
+      "domain": "core",
+      "kind": "references",
+      "reference_types": [
+        "article-journal",
+        "book",
+        "chapter",
+        "dataset",
+        "report",
+        "software",
+        "thesis",
+        "webpage"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "author-date bibliography coverage",
+        "no-date handling",
+        "same-author same-year collisions"
+      ],
+      "used_by": [
+        "scripts/report-core.js"
+      ],
+      "ci_status": "required",
+      "notes": "Expanded author-date family reference corpus used for source-comparison sufficiency."
+    },
+    {
+      "fixture": "tests/fixtures/citations-author-date.json",
+      "domain": "core",
+      "kind": "citations",
+      "reference_types": [
+        "article-journal",
+        "book",
+        "chapter",
+        "dataset",
+        "report",
+        "software",
+        "thesis",
+        "webpage"
+      ],
+      "citation_scenarios": [
+        "same-author same-year disambiguation",
+        "no-date citation",
+        "locator citation",
+        "corporate author cluster",
+        "long author list"
+      ],
+      "rendering_risks": [
+        "author-date citation punctuation",
+        "year suffix disambiguation",
+        "author truncation"
+      ],
+      "used_by": [
+        "scripts/report-core.js"
+      ],
+      "ci_status": "required",
+      "notes": "Author-date family citation fixture aligned with the expanded author-date reference corpus."
+    },
+    {
+      "fixture": "tests/fixtures/references-physics-numeric.json",
+      "domain": "core",
+      "kind": "references",
+      "reference_types": [
+        "article-journal",
+        "book",
+        "chapter",
+        "dataset",
+        "paper-conference",
+        "report",
+        "software",
+        "webpage"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "physics bibliography coverage",
+        "collaboration-name handling",
+        "preprint formatting"
+      ],
+      "used_by": [
+        "scripts/report-core.js"
+      ],
+      "ci_status": "required",
+      "notes": "Expanded physics numeric family reference corpus."
+    },
+    {
+      "fixture": "tests/fixtures/citations-physics-numeric.json",
+      "domain": "core",
+      "kind": "citations",
+      "reference_types": [
+        "article-journal",
+        "book",
+        "chapter",
+        "dataset",
+        "paper-conference",
+        "report",
+        "software",
+        "webpage"
+      ],
+      "citation_scenarios": [
+        "collaboration citation",
+        "mixed numeric cluster",
+        "locator citation",
+        "preprint citation"
+      ],
+      "rendering_risks": [
+        "numeric cluster punctuation",
+        "superscript vs bracket behavior",
+        "physics citation ordering"
+      ],
+      "used_by": [
+        "scripts/report-core.js"
+      ],
+      "ci_status": "required",
+      "notes": "Physics numeric family citation fixture aligned with the expanded physics corpus."
+    },
+    {
+      "fixture": "tests/fixtures/references-humanities-note.json",
+      "domain": "note",
+      "kind": "references",
+      "reference_types": [
+        "article-journal",
+        "book",
+        "chapter",
+        "entry-encyclopedia",
+        "interview",
+        "manuscript",
+        "personal_communication"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "note-style type routing",
+        "translator and interviewer handling",
+        "archive citation coverage"
+      ],
+      "used_by": [
+        "scripts/report-core.js"
+      ],
+      "ci_status": "required",
+      "notes": "Expanded humanities-note family reference corpus for Chicago and MLA-style note testing."
+    },
+    {
+      "fixture": "tests/fixtures/citations-humanities-note.json",
+      "domain": "note",
+      "kind": "citations",
+      "reference_types": [
+        "article-journal",
+        "book",
+        "chapter",
+        "entry-encyclopedia",
+        "interview",
+        "manuscript",
+        "personal_communication"
+      ],
+      "citation_scenarios": [
+        "single full note citations",
+        "note locator citations",
+        "multiple citations in one note"
+      ],
+      "rendering_risks": [
+        "note punctuation",
+        "translator handling",
+        "archive and personal communication rendering"
+      ],
+      "used_by": [
+        "scripts/report-core.js"
+      ],
+      "ci_status": "required",
+      "notes": "Humanities-note family citation fixture aligned with the expanded note reference corpus."
+    },
+    {
       "fixture": "tests/fixtures/references-legal.json",
       "domain": "legal",
       "kind": "references",
@@ -129,6 +385,83 @@
       ],
       "ci_status": "required",
       "notes": "Processor-domain fixture for legal references."
+    },
+    {
+      "fixture": "tests/fixtures/citations-legal.json",
+      "domain": "legal",
+      "kind": "citations",
+      "reference_types": [
+        "bill",
+        "hearing",
+        "legal_case",
+        "legislation",
+        "regulation",
+        "treaty"
+      ],
+      "citation_scenarios": [
+        "single legal citation",
+        "clustered cases",
+        "regulation cluster",
+        "hearing references"
+      ],
+      "rendering_risks": [
+        "legal citation labels",
+        "case-name handling",
+        "cluster punctuation"
+      ],
+      "used_by": [
+        "scripts/report-core.js"
+      ],
+      "ci_status": "required",
+      "notes": "Legal family citation fixture aligned with the expanded legal reference corpus."
+    },
+    {
+      "fixture": "tests/fixtures/references-csl-m-adapted.json",
+      "domain": "legal",
+      "kind": "references",
+      "reference_types": [
+        "legal_case",
+        "legislation",
+        "regulation",
+        "treaty"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "cross-jurisdiction legal coverage",
+        "neutral citation data",
+        "parallel citation notes"
+      ],
+      "used_by": [
+        "scripts/report-core.js"
+      ],
+      "ci_status": "required",
+      "notes": "CSL-M adapted legal reference corpus for future cross-source legal comparison."
+    },
+    {
+      "fixture": "tests/fixtures/citations-csl-m-adapted.json",
+      "domain": "legal",
+      "kind": "citations",
+      "reference_types": [
+        "legal_case",
+        "legislation",
+        "regulation",
+        "treaty"
+      ],
+      "citation_scenarios": [
+        "single cross-jurisdiction legal citation",
+        "clustered cases",
+        "clustered regulations"
+      ],
+      "rendering_risks": [
+        "cross-jurisdiction legal citation formatting",
+        "neutral citation handling",
+        "legal cluster punctuation"
+      ],
+      "used_by": [
+        "scripts/report-core.js"
+      ],
+      "ci_status": "required",
+      "notes": "CSL-M adapted legal citation fixture aligned with the cross-jurisdiction legal corpus."
     },
     {
       "fixture": "tests/fixtures/references-legal.yaml",

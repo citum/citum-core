@@ -1,0 +1,208 @@
+[
+  {
+    "id": "smith2020a",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Climate change impacts on coastal ecosystems",
+    "author": [
+      { "family": "Smith", "given": "John" },
+      { "family": "Lee", "given": "Alice" }
+    ],
+    "issued": { "date-parts": [[2020]] },
+    "container-title": "Nature Climate Change",
+    "volume": "10",
+    "page": "100-108",
+    "DOI": "10.1038/s41558-020-0001-1"
+  },
+  {
+    "id": "smith2020b",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Climate change impacts on freshwater systems",
+    "author": [
+      { "family": "Smith", "given": "John" },
+      { "family": "Lee", "given": "Alice" }
+    ],
+    "issued": { "date-parts": [[2020]] },
+    "container-title": "Environmental Research Letters",
+    "volume": "15",
+    "page": "114001",
+    "DOI": "10.1088/1748-9326/abc001"
+  },
+  {
+    "id": "johnson2019",
+    "class": "monograph",
+    "type": "book",
+    "title": "Research Methods in Environmental Science",
+    "author": [{ "family": "Johnson", "given": "David K." }],
+    "issued": { "date-parts": [[2019]] },
+    "publisher": "Oxford University Press",
+    "publisher-place": "Oxford"
+  },
+  {
+    "id": "garcia2021-ch",
+    "class": "collection-component",
+    "type": "chapter",
+    "title": "Statistical methods for climate attribution",
+    "author": [{ "family": "Garcia", "given": "Maria" }],
+    "issued": { "date-parts": [[2021]] },
+    "container-title": "Handbook of Climate Science Methods",
+    "editor": [
+      { "family": "Chen", "given": "Wei" },
+      { "family": "Park", "given": "Soo-Jin" }
+    ],
+    "publisher": "Springer",
+    "page": "301-340"
+  },
+  {
+    "id": "unep2023-report",
+    "class": "monograph",
+    "type": "report",
+    "title": "Emissions Gap Report 2023",
+    "author": [{ "literal": "United Nations Environment Programme" }],
+    "issued": { "date-parts": [[2023]] },
+    "publisher": "UNEP",
+    "publisher-place": "Nairobi",
+    "genre": "Annual report"
+  },
+  {
+    "id": "chen2018-thesis",
+    "class": "monograph",
+    "type": "thesis",
+    "title": "Modeling extreme precipitation events under climate change",
+    "author": [{ "family": "Chen", "given": "Wei" }],
+    "issued": { "date-parts": [[2018]] },
+    "publisher": "Stanford University",
+    "genre": "PhD dissertation"
+  },
+  {
+    "id": "noaa2024-web",
+    "class": "monograph",
+    "type": "webpage",
+    "title": "Global Climate Dashboard",
+    "author": [{ "literal": "National Oceanic and Atmospheric Administration" }],
+    "issued": { "date-parts": [[2024]] },
+    "URL": "https://www.climate.gov/climatedashboard",
+    "accessed": { "date-parts": [[2024, 3, 15]] }
+  },
+  {
+    "id": "nasa2024-dataset",
+    "class": "dataset",
+    "type": "dataset",
+    "title": "Global temperature anomalies 1880-2024",
+    "author": [{ "literal": "NASA Goddard Institute for Space Studies" }],
+    "issued": { "date-parts": [[2024]] },
+    "publisher": "NASA",
+    "DOI": "10.7289/V5NZ85MT",
+    "version": "4.0"
+  },
+  {
+    "id": "rcore2024-software",
+    "class": "software",
+    "type": "software",
+    "title": "R: A language and environment for statistical computing",
+    "author": [{ "literal": "R Core Team" }],
+    "issued": { "date-parts": [[2024]] },
+    "publisher": "R Foundation for Statistical Computing",
+    "publisher-place": "Vienna, Austria",
+    "version": "4.4.0",
+    "URL": "https://www.R-project.org/"
+  },
+  {
+    "id": "who-nodate",
+    "class": "monograph",
+    "type": "report",
+    "title": "Global health estimates: Leading causes of death",
+    "author": [{ "literal": "World Health Organization" }],
+    "publisher": "WHO",
+    "publisher-place": "Geneva",
+    "URL": "https://www.who.int/data/gho",
+    "accessed": { "date-parts": [[2024, 1, 10]] }
+  },
+  {
+    "id": "corp-author2022",
+    "class": "monograph",
+    "type": "report",
+    "title": "Annual sustainability report",
+    "author": [{ "literal": "International Energy Agency" }],
+    "issued": { "date-parts": [[2022]] },
+    "publisher": "IEA",
+    "publisher-place": "Paris"
+  },
+  {
+    "id": "twenty-authors2023",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Multi-model ensemble projections of European climate",
+    "author": [
+      { "family": "Adams", "given": "A." },
+      { "family": "Baker", "given": "B." },
+      { "family": "Clark", "given": "C." },
+      { "family": "Davis", "given": "D." },
+      { "family": "Evans", "given": "E." },
+      { "family": "Foster", "given": "F." },
+      { "family": "Green", "given": "G." },
+      { "family": "Harris", "given": "H." },
+      { "family": "Irving", "given": "I." },
+      { "family": "Jones", "given": "J." },
+      { "family": "King", "given": "K." },
+      { "family": "Lewis", "given": "L." },
+      { "family": "Moore", "given": "M." },
+      { "family": "Nelson", "given": "N." },
+      { "family": "Owen", "given": "O." },
+      { "family": "Price", "given": "P." },
+      { "family": "Quinn", "given": "Q." },
+      { "family": "Ross", "given": "R." },
+      { "family": "Scott", "given": "S." },
+      { "family": "Taylor", "given": "T." },
+      { "family": "Underwood", "given": "U." }
+    ],
+    "issued": { "date-parts": [[2023]] },
+    "container-title": "Journal of Climate",
+    "volume": "36",
+    "issue": "12",
+    "page": "4001-4025",
+    "DOI": "10.1175/JCLI-D-22-0543.1"
+  },
+  {
+    "id": "smith2020c",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Climate change and urban heat islands",
+    "author": [
+      { "family": "Smith", "given": "Jane" },
+      { "family": "Williams", "given": "Robert" }
+    ],
+    "issued": { "date-parts": [[2020]] },
+    "container-title": "Urban Climate",
+    "volume": "33",
+    "page": "100654",
+    "DOI": "10.1016/j.uclim.2020.100654"
+  },
+  {
+    "id": "garcia2019-indirect",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Methods for robust climate attribution",
+    "author": [{ "family": "Garcia", "given": "Maria" }],
+    "issued": { "date-parts": [[2019]] },
+    "container-title": "Annual Review of Climate Science",
+    "volume": "4",
+    "page": "55-80",
+    "DOI": "10.5555/arcs.2019.4.55",
+    "note": "As cited in Johnson (2019)"
+  },
+  {
+    "id": "ipcc2023",
+    "class": "monograph",
+    "type": "book",
+    "title": "Climate Change 2023: Synthesis Report",
+    "editor": [
+      { "family": "Lee", "given": "Hoesung" },
+      { "family": "Romero", "given": "Jose" }
+    ],
+    "issued": { "date-parts": [[2023]] },
+    "publisher": "Intergovernmental Panel on Climate Change",
+    "publisher-place": "Geneva"
+  }
+]

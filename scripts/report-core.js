@@ -16,6 +16,12 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const yaml = require('js-yaml');
+const {
+  loadFixtureSufficiency,
+  loadVerificationPolicy,
+  resolveFixtureSufficiency,
+  resolveVerificationPolicy,
+} = require('./lib/verification-policy');
 
 const CUSTOM_TAG_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
   new yaml.Type('!custom', {
@@ -57,6 +63,31 @@ const KNOWN_DEPENDENTS = {
 };
 
 const SKIPPED_STYLES = ['alpha', 'iso690-author-date', 'iso690-numeric'];
+
+/**
+ * Maps fixture set names (from fixture-sufficiency.yaml) to reference fixture
+ * file paths.  'core' is the default set and handled by the main oracle run.
+ * Sets listed here provide *additional* reference data exercised via a second
+ * oracle pass whose results are merged into the style's fidelity score.
+ *
+ */
+const FAMILY_REFS_FIXTURES = {
+  'compound-numeric': path.join(__dirname, '..', 'tests', 'fixtures', 'references-compound-numeric-family.json'),
+  'physics-numeric': path.join(__dirname, '..', 'tests', 'fixtures', 'references-physics-numeric.json'),
+  'author-date': path.join(__dirname, '..', 'tests', 'fixtures', 'references-author-date.json'),
+  'humanities-note': path.join(__dirname, '..', 'tests', 'fixtures', 'references-humanities-note.json'),
+  'legal': path.join(__dirname, '..', 'tests', 'fixtures', 'references-legal.json'),
+  'csl-m-adapted': path.join(__dirname, '..', 'tests', 'fixtures', 'references-csl-m-adapted.json'),
+};
+
+const FAMILY_CITATIONS_FIXTURES = {
+  'compound-numeric': path.join(__dirname, '..', 'tests', 'fixtures', 'citations-compound-numeric.json'),
+  'physics-numeric': path.join(__dirname, '..', 'tests', 'fixtures', 'citations-physics-numeric.json'),
+  'author-date': path.join(__dirname, '..', 'tests', 'fixtures', 'citations-author-date.json'),
+  'humanities-note': path.join(__dirname, '..', 'tests', 'fixtures', 'citations-humanities-note.json'),
+  'legal': path.join(__dirname, '..', 'tests', 'fixtures', 'citations-legal.json'),
+  'csl-m-adapted': path.join(__dirname, '..', 'tests', 'fixtures', 'citations-csl-m-adapted.json'),
+};
 
 const TOTAL_DEPENDENTS = 7987;
 const CORE_FALLBACK_TYPES = [
@@ -169,6 +200,14 @@ function discoverCoreStyles() {
       ),
     };
   });
+}
+
+function selectPrimaryComparator(styleSpec, verificationPolicy) {
+  const authority = verificationPolicy.authority;
+  if (authority === 'citum-baseline') {
+    return 'citum-baseline';
+  }
+  return 'citeproc-js';
 }
 
 function inferStyleFormat(styleData) {
@@ -339,6 +378,60 @@ function runNativeOracle(styleName) {
     const stderr = error.stderr ? error.stderr.toString() : '';
     return { error: `Native oracle fatal: ${error.message}\n${stderr}`, style: styleName };
   }
+}
+
+/**
+ * Run the oracle against a family-specific reference fixture.
+ * Returns an oracle-shaped result or null if the fixture file is missing.
+ */
+function runFamilyFixtureOracle(stylePath, styleName, styleFormat, fixtureSetName) {
+  const refsFixture = FAMILY_REFS_FIXTURES[fixtureSetName];
+  const citationsFixture = FAMILY_CITATIONS_FIXTURES[fixtureSetName];
+  if (!refsFixture || !citationsFixture) return null;
+  if (!fs.existsSync(refsFixture) || !fs.existsSync(citationsFixture)) return null;
+
+  try {
+    const liveScript = path.join(__dirname, 'oracle.js');
+    const cmd = `node "${liveScript}" "${stylePath}" --json --refs-fixture "${refsFixture}" --citations-fixture "${citationsFixture}"`;
+    const stdout = execSync(cmd, {
+      encoding: 'utf8',
+      timeout: 120000,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+    return JSON.parse(stdout);
+  } catch (err) {
+    if ((err.status === 1) && err.stdout) {
+      try { return JSON.parse(err.stdout.toString()); } catch { /* fall through */ }
+    }
+    process.stderr.write(`[family-fixture] ${styleName}/${fixtureSetName}: ${err.message}\n`);
+    return null;
+  }
+}
+
+/**
+ * Merge a family fixture oracle result into the main oracle result.
+ * Adds passed/total counts from the family run to the main result.
+ */
+function mergeOracleResults(main, extra) {
+  if (!extra) return main;
+
+  const mCit = main.citations || { passed: 0, total: 0 };
+  const eCit = extra.citations || { passed: 0, total: 0 };
+  const mBib = main.bibliography || { passed: 0, total: 0 };
+  const eBib = extra.bibliography || { passed: 0, total: 0 };
+
+  main.citations = {
+    passed: (mCit.passed || 0) + (eCit.passed || 0),
+    total: (mCit.total || 0) + (eCit.total || 0),
+    entries: [...(mCit.entries || []), ...(eCit.entries || [])],
+  };
+  main.bibliography = {
+    passed: (mBib.passed || 0) + (eBib.passed || 0),
+    total: (mBib.total || 0) + (eBib.total || 0),
+    entries: [...(mBib.entries || []), ...(eBib.entries || [])],
+  };
+
+  return main;
 }
 
 /**
@@ -796,6 +889,8 @@ function generateReport(options) {
   const stylesDir = getStylesDir(options.stylesDir);
   const coreStyles = discoverCoreStyles();
   const divergences = loadDivergences();
+  const verificationPolicy = loadVerificationPolicy();
+  const fixtureSufficiency = loadFixtureSufficiency();
   const generated = getTimestamp();
   const gitCommit = getGitCommit();
 
@@ -809,8 +904,13 @@ function generateReport(options) {
   let errorCount = 0;
 
   for (const styleSpec of coreStyles) {
-    // Native styles have no CSL equivalent — use snapshot-based oracle
-    if (styleSpec.isNative) {
+    const stylePolicy = resolveVerificationPolicy(styleSpec.name, verificationPolicy);
+    const sufficiencyPolicy = resolveFixtureSufficiency(stylePolicy.fixtureFamily, fixtureSufficiency);
+    const primaryComparator = selectPrimaryComparator(styleSpec, stylePolicy);
+
+    // Styles explicitly pinned to a Citum regression baseline keep that comparator
+    // until the family comparison corpus is sufficient for a safe authority flip.
+    if (primaryComparator === 'citum-baseline') {
       const oracleResult = runNativeOracle(styleSpec.name);
       if (oracleResult.error) {
         errorCount++;
@@ -854,7 +954,15 @@ function generateReport(options) {
         oracleDetail: oracleResult.bibliography ? oracleResult.bibliography.entries : null,
         qualityScore: parseFloat(qualityScore.toFixed(3)),
         qualityBreakdown: qualityMetrics,
-        oracleSource: 'snapshot',
+        oracleSource: 'citum-baseline',
+        secondarySources: stylePolicy.secondary,
+        verificationScopes: stylePolicy.scopes,
+        fixtureFamily: sufficiencyPolicy.family,
+        defaultReportSufficient: sufficiencyPolicy.defaultReportSufficient,
+        requiredReferenceTypes: sufficiencyPolicy.requiredReferenceTypes,
+        requiredScenarios: sufficiencyPolicy.requiredScenarios,
+        fixtureSets: sufficiencyPolicy.fixtureSets,
+        verificationNote: stylePolicy.note,
       });
       continue;
     }
@@ -889,6 +997,15 @@ function generateReport(options) {
       errorCount++;
       process.stderr.write(`Error processing ${styleSpec.name}: ${oracleResult.error}\n`);
     }
+
+    // Run additional oracle passes for family-specific fixture sets
+    const familySets = (sufficiencyPolicy.fixtureSets || [])
+      .filter(s => s !== 'core' && s !== 'note' && FAMILY_REFS_FIXTURES[s]);
+    for (const setName of familySets) {
+      const extra = runFamilyFixtureOracle(stylePath, styleSpec.name, styleSpec.format, setName);
+      if (extra) mergeOracleResults(oracleResult, extra);
+    }
+
     const fidelityScore = computeFidelityScore(oracleResult);
 
     const citations = oracleResult.citations || { passed: 0, total: 0 };
@@ -936,6 +1053,14 @@ function generateReport(options) {
       qualityScore: parseFloat(qualityScore.toFixed(3)),
       qualityBreakdown: qualityMetrics,
       oracleSource: oracleResult.oracleSource || 'citeproc-js',
+      secondarySources: stylePolicy.secondary,
+      verificationScopes: stylePolicy.scopes,
+      fixtureFamily: sufficiencyPolicy.family,
+      defaultReportSufficient: sufficiencyPolicy.defaultReportSufficient,
+      requiredReferenceTypes: sufficiencyPolicy.requiredReferenceTypes,
+      requiredScenarios: sufficiencyPolicy.requiredScenarios,
+      fixtureSets: sufficiencyPolicy.fixtureSets,
+      verificationNote: stylePolicy.note,
     });
   }
 

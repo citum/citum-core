@@ -31,5 +31,94 @@
     "container-title": "Parry's T.S.",
     "page": "188",
     "issued": { "date-parts": [[1919, 6, 28]] }
+  },
+  {
+    "id": "obergefell2015",
+    "class": "legal-case",
+    "type": "legal_case",
+    "title": "Obergefell v. Hodges",
+    "authority": "U.S. Supreme Court",
+    "volume": "576",
+    "container-title": "U.S.",
+    "page": "644",
+    "issued": { "date-parts": [[2015]] }
+  },
+  {
+    "id": "donoghue1932",
+    "class": "legal-case",
+    "type": "legal_case",
+    "title": "Donoghue v Stevenson",
+    "authority": "House of Lords",
+    "container-title": "AC",
+    "volume": "1932",
+    "page": "562",
+    "issued": { "date-parts": [[1932]] },
+    "jurisdiction": "GB"
+  },
+  {
+    "id": "clean-air-reg",
+    "class": "regulation",
+    "type": "regulation",
+    "title": "National Ambient Air Quality Standards for Particulate Matter",
+    "authority": "Environmental Protection Agency",
+    "container-title": "Federal Register",
+    "volume": "78",
+    "page": "3086",
+    "section": "40 CFR Parts 50, 51, 52, 53, and 58",
+    "issued": { "date-parts": [[2013, 1, 15]] }
+  },
+  {
+    "id": "gdpr-reg",
+    "class": "regulation",
+    "type": "regulation",
+    "title": "General Data Protection Regulation",
+    "authority": "European Parliament and Council of the European Union",
+    "number": "2016/679",
+    "container-title": "Official Journal of the European Union",
+    "volume": "L 119",
+    "page": "1-88",
+    "issued": { "date-parts": [[2016, 4, 27]] },
+    "jurisdiction": "EU"
+  },
+  {
+    "id": "voting-rights-bill",
+    "class": "bill",
+    "type": "bill",
+    "title": "John R. Lewis Voting Rights Advancement Act of 2021",
+    "authority": "U.S. House of Representatives",
+    "number": "H.R. 4",
+    "container-title": "117th Congress",
+    "issued": { "date-parts": [[2021, 8, 24]] },
+    "section": "2"
+  },
+  {
+    "id": "climate-bill-eu",
+    "class": "bill",
+    "type": "bill",
+    "title": "European Climate Law",
+    "authority": "European Commission",
+    "number": "COM(2020) 80",
+    "issued": { "date-parts": [[2020, 3, 4]] },
+    "jurisdiction": "EU"
+  },
+  {
+    "id": "senate-hearing-ai",
+    "class": "hearing",
+    "type": "hearing",
+    "title": "Oversight of A.I.: Rules for Artificial Intelligence",
+    "authority": "U.S. Senate Committee on the Judiciary",
+    "number": "S. Hrg. 118-56",
+    "issued": { "date-parts": [[2023, 5, 16]] },
+    "container-title": "118th Congress, 1st Session"
+  },
+  {
+    "id": "house-hearing-climate",
+    "class": "hearing",
+    "type": "hearing",
+    "title": "Climate Science and the Federal Role",
+    "authority": "U.S. House Committee on Science, Space, and Technology",
+    "number": "Serial No. 117-12",
+    "issued": { "date-parts": [[2021, 3, 18]] },
+    "container-title": "117th Congress, 1st Session"
   }
 ]

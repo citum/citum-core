@@ -89,13 +89,29 @@ function parseArgs() {
   return options;
 }
 
+function normalizeFixtureItems(fixturesData) {
+  if (Array.isArray(fixturesData)) {
+    return Object.fromEntries(fixturesData.map((item) => [item.id, item]));
+  }
+
+  if (fixturesData && Array.isArray(fixturesData.references)) {
+    return Object.fromEntries(fixturesData.references.map((item) => [item.id, item]));
+  }
+
+  return Object.fromEntries(
+    Object.entries(fixturesData).filter(([key, value]) => key !== 'comment' && value && typeof value === 'object')
+  );
+}
+
+function refsDataForProcessor(fixturesData) {
+  return fixturesData;
+}
+
 function loadFixtures(refsFixture, citationsFixture) {
   const fixturesData = JSON.parse(fs.readFileSync(refsFixture, 'utf8'));
-  const testItems = Object.fromEntries(
-    Object.entries(fixturesData).filter(([key]) => key !== 'comment')
-  );
+  const testItems = normalizeFixtureItems(fixturesData);
   const testCitations = JSON.parse(fs.readFileSync(citationsFixture, 'utf8'));
-  return { testItems, testCitations };
+  return { refsData: fixturesData, testItems, testCitations };
 }
 
 function createOracleTempWorkspace() {
@@ -241,7 +257,7 @@ function buildMigrateCommand(absStylePath, migrateOptions = {}) {
   return parts.join(' ');
 }
 
-function renderWithCslnProcessor(stylePath, testItems, testCitations, cliOptions = {}) {
+function renderWithCslnProcessor(stylePath, refsData, testItems, testCitations, cliOptions = {}) {
   const projectRoot = path.resolve(__dirname, '..');
   const styleName = path.basename(stylePath, '.csl');
   const stylesDir = path.join(projectRoot, 'styles');
@@ -274,7 +290,7 @@ function renderWithCslnProcessor(stylePath, testItems, testCitations, cliOptions
       }
     }
 
-    fs.writeFileSync(workspace.refsFile, JSON.stringify(testItems, null, 2));
+    fs.writeFileSync(workspace.refsFile, JSON.stringify(refsDataForProcessor(refsData), null, 2));
     fs.writeFileSync(workspace.citationsFile, JSON.stringify(testCitations, null, 2));
 
     if (!cslnStylePath) {
@@ -481,7 +497,10 @@ function matchBibliographyEntries(oracleBib, cslnBib) {
   // Build all candidate pairings with similarity score.
   for (let oi = 0; oi < oracleBib.length; oi++) {
     for (let ci = 0; ci < cslnBib.length; ci++) {
-      const score = textSimilarity(oracleBib[oi], cslnBib[ci]);
+      const score = textSimilarity(
+        normalizeText(oracleBib[oi]),
+        normalizeText(cslnBib[ci])
+      );
       // Keep weak matches out to avoid accidental cross-pairing.
       if (score >= 0.20) {
         candidates.push({ oi, ci, score });
@@ -523,7 +542,7 @@ function runOracle(cliOptions = parseArgs()) {
   const stylePath = cliOptions.stylePath;
   const jsonOutput = cliOptions.jsonOutput;
   const verbose = cliOptions.verbose;
-  const { testItems, testCitations } = loadFixtures(
+  const { refsData, testItems, testCitations } = loadFixtures(
     cliOptions.refsFixture,
     cliOptions.citationsFixture
   );
@@ -540,7 +559,7 @@ function runOracle(cliOptions = parseArgs()) {
     console.log('Migrating and rendering with CSLN...');
   }
 
-  const csln = renderWithCslnProcessor(stylePath, testItems, testCitations, cliOptions);
+  const csln = renderWithCslnProcessor(stylePath, refsData, testItems, testCitations, cliOptions);
 
   if (!csln || csln.error) {
     if (jsonOutput) {
@@ -760,6 +779,9 @@ if (require.main === module) {
 module.exports = {
   cleanupOracleTempWorkspace,
   createOracleTempWorkspace,
+  loadFixtures,
+  normalizeFixtureItems,
+  refsDataForProcessor,
   renderWithCslnProcessor,
   runOracle,
 };

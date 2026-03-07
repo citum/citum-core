@@ -1,0 +1,14 @@
+[
+  { "id": "cslm-marbury", "items": [{ "id": "marbury1803" }] },
+  { "id": "cslm-roe", "items": [{ "id": "roe1973" }] },
+  { "id": "cslm-jordan", "items": [{ "id": "r-v-jordan-2016" }] },
+  { "id": "cslm-mabo", "items": [{ "id": "mabo1992" }] },
+  { "id": "cslm-factortame", "items": [{ "id": "factortame1990" }] },
+  { "id": "cslm-clean-water", "items": [{ "id": "clean-water-act" }] },
+  { "id": "cslm-grundgesetz", "items": [{ "id": "grundgesetz" }] },
+  { "id": "cslm-rome-statute", "items": [{ "id": "rome-statute" }] },
+  { "id": "cslm-echr", "items": [{ "id": "echr1950" }] },
+  { "id": "cslm-regulations", "items": [{ "id": "eu-ai-act-reg" }, { "id": "sec-reg-climate" }] },
+  { "id": "cslm-un-charter", "items": [{ "id": "un-charter" }] },
+  { "id": "cslm-case-cluster", "items": [{ "id": "marbury1803" }, { "id": "roe1973" }, { "id": "r-v-jordan-2016" }] }
+]

@@ -1,0 +1,148 @@
+{
+  "comment": "Compound numeric family fixture for cross-source report comparisons",
+  "zwart1983": {
+    "id": "zwart1983",
+    "type": "book",
+    "author": [
+      { "family": "Zwart", "given": "K. B." },
+      { "family": "Veenhuis", "given": "M." },
+      { "family": "Harder", "given": "W." }
+    ],
+    "title": "An immunochemical analysis of the biogenesis of peroxisomes in Saccharomyces cerevisiae",
+    "issued": { "date-parts": [[1983]] }
+  },
+  "vanderklei1991": {
+    "id": "vanderklei1991",
+    "type": "book",
+    "author": [
+      { "family": "van der Klei", "given": "I. J." },
+      { "family": "Harder", "given": "W." },
+      { "family": "Veenhuis", "given": "M." }
+    ],
+    "title": "A morphological view on the biogenesis of peroxisomes in intact cells",
+    "issued": { "date-parts": [[1991]] }
+  },
+  "smith2020": {
+    "id": "smith2020",
+    "type": "book",
+    "author": [{ "family": "Smith", "given": "John" }],
+    "title": "A standalone article not in any compound group",
+    "issued": { "date-parts": [[2020]] }
+  },
+  "jones2019a": {
+    "id": "jones2019a",
+    "type": "book",
+    "author": [{ "family": "Jones", "given": "Alice" }],
+    "title": "Catalytic activity of transition metals",
+    "issued": { "date-parts": [[2019]] }
+  },
+  "jones2019b": {
+    "id": "jones2019b",
+    "type": "book",
+    "author": [{ "family": "Jones", "given": "Alice" }],
+    "title": "Selectivity in heterogeneous catalysis",
+    "issued": { "date-parts": [[2019]] }
+  },
+  "chen2022-journal": {
+    "id": "chen2022-journal",
+    "type": "article-journal",
+    "author": [
+      { "family": "Chen", "given": "L." },
+      { "family": "Zwart", "given": "K. B." }
+    ],
+    "title": "Kinetic analysis of peroxisomal protein import in yeast",
+    "issued": { "date-parts": [[2022]] },
+    "container-title": "Journal of Biological Chemistry",
+    "volume": "297",
+    "issue": "4",
+    "page": "101234",
+    "DOI": "10.1016/j.jbc.2022.101234"
+  },
+  "muller2018-chapter": {
+    "id": "muller2018-chapter",
+    "type": "chapter",
+    "author": [
+      { "family": "Muller", "given": "H." },
+      { "family": "Veenhuis", "given": "M." }
+    ],
+    "title": "Organelle biogenesis in the post-genomic era",
+    "issued": { "date-parts": [[2018]] },
+    "container-title": "Advances in Cell Biology",
+    "editor": [{ "family": "Alberts", "given": "B." }],
+    "publisher": "Academic Press",
+    "page": "145-189"
+  },
+  "takahashi2021-conf": {
+    "id": "takahashi2021-conf",
+    "type": "paper-conference",
+    "author": [
+      { "family": "Takahashi", "given": "Y." },
+      { "family": "Sato", "given": "K." }
+    ],
+    "title": "Machine learning approaches for protein localization prediction",
+    "issued": { "date-parts": [[2021]] },
+    "container-title": "Proceedings of the International Conference on Bioinformatics",
+    "event": "International Conference on Bioinformatics 2021",
+    "publisher": "IEEE",
+    "page": "312-320"
+  },
+  "who2020-report": {
+    "id": "who2020-report",
+    "type": "report",
+    "author": [{ "literal": "World Health Organization" }],
+    "title": "Global status report on noncommunicable diseases 2020",
+    "issued": { "date-parts": [[2020]] },
+    "publisher": "World Health Organization",
+    "publisher-place": "Geneva",
+    "genre": "Technical report"
+  },
+  "park2017-thesis": {
+    "id": "park2017-thesis",
+    "type": "thesis",
+    "author": [{ "family": "Park", "given": "S.-J." }],
+    "title": "Structural characterization of peroxisomal membrane proteins",
+    "issued": { "date-parts": [[2017]] },
+    "publisher": "University of Groningen",
+    "genre": "PhD thesis"
+  },
+  "irino2009-dataset": {
+    "id": "irino2009-dataset",
+    "type": "dataset",
+    "author": [
+      { "family": "Irino", "given": "T." },
+      { "family": "Tada", "given": "R." }
+    ],
+    "title": "Chemical compositions of sediments from ODP Site 127-797",
+    "issued": { "date-parts": [[2009]] },
+    "publisher": "PANGAEA",
+    "DOI": "10.1594/PANGAEA.726855"
+  },
+  "johnson2021-patent": {
+    "id": "johnson2021-patent",
+    "type": "patent",
+    "author": [
+      { "family": "Johnson", "given": "D." },
+      { "family": "Lee", "given": "S." }
+    ],
+    "title": "Method for rapid detection of enzymatic activity in cell organelles",
+    "issued": { "date-parts": [[2021]] },
+    "number": "US 11,043,211 B2",
+    "authority": "U.S. Patent and Trademark Office"
+  },
+  "iso17025-2017": {
+    "id": "iso17025-2017",
+    "type": "standard",
+    "title": "General requirements for the competence of testing and calibration laboratories",
+    "issued": { "date-parts": [[2017]] },
+    "number": "ISO/IEC 17025:2017",
+    "authority": "International Organization for Standardization"
+  },
+  "astm-e2881": {
+    "id": "astm-e2881",
+    "type": "standard",
+    "title": "Standard guide for chemical analysis of metals and metal alloys",
+    "issued": { "date-parts": [[2020]] },
+    "number": "ASTM E2881-20",
+    "authority": "ASTM International"
+  }
+}

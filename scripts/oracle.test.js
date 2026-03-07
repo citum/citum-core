@@ -7,6 +7,9 @@ const { spawn } = require('child_process');
 const {
   cleanupOracleTempWorkspace,
   createOracleTempWorkspace,
+  loadFixtures,
+  normalizeFixtureItems,
+  refsDataForProcessor,
 } = require('./oracle');
 
 const projectRoot = path.resolve(__dirname, '..');
@@ -90,4 +93,48 @@ test('parallel oracle invocations do not collide on temp files', { timeout: 2400
       `legacy shared temp file should not exist: ${tempFile}`
     );
   }
+});
+
+test('normalizeFixtureItems handles wrapped and array fixtures by item id', () => {
+  const wrapped = JSON.parse(
+    fs.readFileSync(path.join(projectRoot, 'tests', 'fixtures', 'compound-numeric-refs.json'), 'utf8')
+  );
+  const arrayFixture = JSON.parse(
+    fs.readFileSync(path.join(projectRoot, 'tests', 'fixtures', 'references-humanities-note.json'), 'utf8')
+  );
+
+  const wrappedItems = normalizeFixtureItems(wrapped);
+  const arrayItems = normalizeFixtureItems(arrayFixture);
+
+  assert.ok(wrappedItems['zwart1983']);
+  assert.ok(wrappedItems['astm-e2881']);
+  assert.ok(arrayItems['ginzburg1976']);
+  assert.ok(arrayItems['foucault-interview']);
+});
+
+test('loadFixtures preserves raw wrapped fixtures for processor rendering', () => {
+  const { refsData, testItems } = loadFixtures(
+    path.join(projectRoot, 'tests', 'fixtures', 'compound-numeric-refs.json'),
+    path.join(projectRoot, 'tests', 'fixtures', 'citations-compound-numeric.json')
+  );
+
+  assert.ok(Array.isArray(refsData.references));
+  assert.ok(refsData.sets);
+  assert.ok(testItems['zwart1983']);
+  assert.ok(testItems['johnson2021-patent']);
+});
+
+test('refsDataForProcessor preserves wrapped fixture sets', () => {
+  const wrapped = JSON.parse(
+    fs.readFileSync(path.join(projectRoot, 'tests', 'fixtures', 'compound-numeric-refs.json'), 'utf8')
+  );
+
+  const refsData = refsDataForProcessor(wrapped);
+
+  assert.ok(Array.isArray(refsData.references));
+  assert.ok(refsData.sets);
+  assert.deepEqual(Object.keys(refsData.sets).sort(), [
+    'catalysis-studies',
+    'peroxisome-biogenesis',
+  ]);
 });
