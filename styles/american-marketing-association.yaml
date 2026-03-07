@@ -75,25 +75,26 @@ citation:
       initialize-with: ". "
       shorten:
         min: 4
-        use-first: 1
+        use-first: 3
         and-others: et-al
         delimiter-precedes-last: contextual
       delimiter: ", "
   template:
     - contributor: author
-      form: long
+      form: short
       name-order: family-first
       shorten:
-        min: 8
-        use-first: 1
+        min: 4
+        use-first: 3
+        and-others: et-al
     - date: issued
       form: year
-      prefix: " "
+      prefix: ""
     - variable: locator
       show-label: true
-      prefix: " "
+      prefix: ", "
   wrap: parentheses
-  delimiter: ". "
+  delimiter: " "
   multi-cite-delimiter: "; "
 bibliography:
   options:
