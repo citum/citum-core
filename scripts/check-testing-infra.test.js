@@ -8,6 +8,7 @@ const {
   validateCoreQualityBaseline,
   validateCoverageManifest,
   validateOracleBaseline,
+  validateVerificationPolicyFiles,
 } = require('./check-testing-infra');
 
 function makeTempProject() {
@@ -22,6 +23,10 @@ function writeJson(filePath, value) {
 function writeFile(filePath, contents = '') {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, contents, 'utf8');
+}
+
+function writeYaml(filePath, contents) {
+  writeFile(filePath, `${contents.trim()}\n`);
 }
 
 function baseManifest() {
@@ -132,6 +137,34 @@ function seedProject(root) {
     styles: { 'apa-7th': { fidelityScore: 1, quality: 90, concision: 90, presetUsage: 90 } },
     metadata: baselineMetadata(),
   });
+  writeYaml(path.join(root, 'scripts/report-data/verification-policy.yaml'), `
+version: 1
+defaults:
+  authority: citeproc-js
+  secondary: []
+  scopes:
+    - citation
+    - bibliography
+styles:
+  apa-7th:
+    fixture_family: author-date
+    secondary:
+      - biblatex
+`);
+  writeYaml(path.join(root, 'scripts/report-data/fixture-sufficiency.yaml'), `
+version: 1
+defaults:
+  release_report_fixture: core
+families:
+  author-date:
+    default_report_sufficient: false
+    required_reference_types:
+      - article-journal
+    required_scenarios:
+      - same-author same-year collisions
+    fixture_sets:
+      - core
+`);
 }
 
 test('validation passes for a complete testing-infra fixture set', () => {
@@ -141,6 +174,7 @@ test('validation passes for a complete testing-infra fixture set', () => {
   assert.doesNotThrow(() => validateCoverageManifest(root));
   assert.doesNotThrow(() => validateOracleBaseline(root));
   assert.doesNotThrow(() => validateCoreQualityBaseline(root));
+  assert.doesNotThrow(() => validateVerificationPolicyFiles(root));
 });
 
 test('coverage manifest fails when a fixture path is missing', () => {
@@ -179,4 +213,23 @@ test('coverage manifest fails when structure is malformed', () => {
   writeJson(path.join(root, 'tests/fixtures/coverage-manifest.json'), { version: 1, fixtures: {} });
 
   assert.throws(() => validateCoverageManifest(root), /fixtures must be an array/);
+});
+
+test('verification policy fails when it references an unknown fixture family', () => {
+  const root = makeTempProject();
+  seedProject(root);
+  writeYaml(path.join(root, 'scripts/report-data/verification-policy.yaml'), `
+version: 1
+defaults:
+  authority: citeproc-js
+  secondary: []
+  scopes:
+    - citation
+    - bibliography
+styles:
+  apa-7th:
+    fixture_family: missing-family
+`);
+
+  assert.throws(() => validateVerificationPolicyFiles(root), /unknown fixture family/);
 });

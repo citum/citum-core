@@ -1,0 +1,110 @@
+version: 1
+defaults:
+  release_report_fixture: core
+
+families:
+  chemistry:
+    default_report_sufficient: false
+    required_reference_types:
+      - article-journal
+      - book
+      - chapter
+      - paper-conference
+      - report
+      - thesis
+      - dataset
+      - patent
+      - standard
+    required_scenarios:
+      - compound-numeric grouping
+      - subentry labels
+      - DOI and pages punctuation
+      - editor and conference container formatting
+      - preprint and ahead-of-print
+      - database record identifiers
+    fixture_sets:
+      - core
+      - compound-numeric
+  physics-numeric:
+    default_report_sufficient: false
+    required_reference_types:
+      - article-journal
+      - book
+      - chapter
+      - paper-conference
+      - report
+      - webpage
+      - dataset
+      - software
+    required_scenarios:
+      - superscript vs bracket labels
+      - article-title visibility
+      - DOI vs pages preference
+      - collaboration-name handling
+      - preprint and arXiv formatting
+      - long-author truncation
+      - mixed multiple citations
+    fixture_sets:
+      - core
+      - physics-numeric
+  author-date:
+    default_report_sufficient: false
+    required_reference_types:
+      - article-journal
+      - book
+      - chapter
+      - report
+      - thesis
+      - webpage
+      - dataset
+      - software
+    required_scenarios:
+      - same-author same-year collisions
+      - no-date items
+      - author truncation
+      - sorting and disambiguation
+      - twenty-plus author truncation
+      - secondary and indirect citations
+    fixture_sets:
+      - core
+      - author-date
+  note-humanities:
+    default_report_sufficient: false
+    required_reference_types:
+      - book
+      - chapter
+      - article-journal
+      - entry-encyclopedia
+      - manuscript
+      - interview
+      - personal_communication
+    required_scenarios:
+      - note shortening
+      - repeated-author handling
+      - translator and editor containers
+      - archive and manuscript references
+      - ibid vs no-ibid styles
+      - multiple citations in one note
+    fixture_sets:
+      - note
+      - humanities-note
+  legal:
+    default_report_sufficient: false
+    required_reference_types:
+      - legal_case
+      - legislation
+      - treaty
+      - regulation
+      - bill
+      - hearing
+    required_scenarios:
+      - reporters and courts
+      - parallel cites
+      - statute and treaty formatting
+      - CSL-M adapted legal coverage
+      - neutral citation formatting
+      - pinpoint references
+      - jurisdiction-specific formatting
+    fixture_sets:
+      - legal
+      - csl-m-adapted
