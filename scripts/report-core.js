@@ -99,6 +99,25 @@ const CORE_FALLBACK_TYPES = [
   'paper-conference',
   'webpage',
 ];
+const BENCHMARK_LABELS = {
+  'citeproc-js': 'citeproc-js',
+  'citeproc-js-live': 'citeproc-js',
+  'citum-baseline': 'Citum baseline',
+  biblatex: 'biblatex',
+  documentary: 'documentary',
+};
+const ORIGIN_LABELS = {
+  'csl-migrated': 'CSL migrated',
+  'csl-hand-authored': 'CSL hand-authored',
+  'biblatex-hand-authored': 'biblatex hand-authored',
+  unknown: 'Unknown',
+};
+const ORIGIN_SORT_RANKS = {
+  'csl-migrated': 1,
+  'csl-hand-authored': 2,
+  'biblatex-hand-authored': 3,
+  unknown: 99,
+};
 
 /**
  * Parse command-line arguments
@@ -162,6 +181,73 @@ function getStylesDir(optionsDir) {
   throw new Error(`Styles directory not found. Use --styles-dir to specify path.`);
 }
 
+function inferStyleUpstream(styleData) {
+  const sourceId = styleData?.info?.source?.['csl-id'];
+  if (typeof sourceId !== 'string' || sourceId.trim().length === 0) {
+    return 'unknown';
+  }
+
+  const normalized = sourceId.toLowerCase();
+  if (normalized.includes('ctan.org/pkg/biblatex') || normalized.includes('biblatex')) {
+    return 'biblatex';
+  }
+  if (normalized.includes('zotero.org/styles')) {
+    return 'csl';
+  }
+  return 'unknown';
+}
+
+function classifyStyleOrigin(styleData) {
+  const upstream = inferStyleUpstream(styleData);
+  const adaptedBy = styleData?.info?.source?.['adapted-by'];
+
+  if (upstream === 'biblatex') {
+    return {
+      key: 'biblatex-hand-authored',
+      label: ORIGIN_LABELS['biblatex-hand-authored'],
+      sortRank: ORIGIN_SORT_RANKS['biblatex-hand-authored'],
+    };
+  }
+
+  if (upstream === 'csl' && adaptedBy === 'citum-create') {
+    return {
+      key: 'csl-hand-authored',
+      label: ORIGIN_LABELS['csl-hand-authored'],
+      sortRank: ORIGIN_SORT_RANKS['csl-hand-authored'],
+    };
+  }
+
+  if (upstream === 'csl' || adaptedBy === 'citum-migrate') {
+    return {
+      key: 'csl-migrated',
+      label: ORIGIN_LABELS['csl-migrated'],
+      sortRank: ORIGIN_SORT_RANKS['csl-migrated'],
+    };
+  }
+
+  return {
+    key: 'unknown',
+    label: ORIGIN_LABELS.unknown,
+    sortRank: ORIGIN_SORT_RANKS.unknown,
+  };
+}
+
+function normalizeBenchmarkSource(authority) {
+  if (!authority) return 'unknown';
+  return authority === 'citeproc-js-live' ? 'citeproc-js' : authority;
+}
+
+function formatAuthorityLabel(authority) {
+  const normalized = normalizeBenchmarkSource(authority);
+  return BENCHMARK_LABELS[normalized] || String(normalized);
+}
+
+function computeImpactPct(cslReach) {
+  return cslReach != null
+    ? (cslReach / TOTAL_DEPENDENTS * 100).toFixed(2)
+    : null;
+}
+
 function discoverCoreStyles() {
   const stylesRoot = path.join(path.dirname(__dirname), 'styles');
   if (!fs.existsSync(stylesRoot)) {
@@ -180,6 +266,7 @@ function discoverCoreStyles() {
   return styleFiles.map((filename) => {
     const stylePath = path.join(stylesRoot, filename);
     const name = path.basename(filename, '.yaml');
+    const sourceName = LEGACY_SOURCE_OVERRIDES[name] || name;
     let styleData = null;
 
     try {
@@ -188,16 +275,27 @@ function discoverCoreStyles() {
       styleData = null;
     }
 
+    let origin = classifyStyleOrigin(styleData);
+    const legacySourcePath = path.join(path.dirname(__dirname), 'styles-legacy', `${sourceName}.csl`);
+    if (origin.key === 'unknown' && fs.existsSync(legacySourcePath)) {
+      origin = {
+        key: 'csl-migrated',
+        label: ORIGIN_LABELS['csl-migrated'],
+        sortRank: ORIGIN_SORT_RANKS['csl-migrated'],
+      };
+    }
+    const cslReach = KNOWN_DEPENDENTS[name] ?? null;
+
     return {
       name,
-      sourceName: LEGACY_SOURCE_OVERRIDES[name] || name,
-      dependents: KNOWN_DEPENDENTS[name] ?? null,
+      sourceName,
+      cslReach,
+      dependents: cslReach,
       format: inferStyleFormat(styleData),
       hasBibliography: hasBibliographyTemplate(styleData),
-      isNative: Boolean(
-        styleData?.options?.bibliography?.['compound-numeric'] != null &&
-        styleData?.info?.source?.['adapted-by'] === 'citum-create'
-      ),
+      originKey: origin.key,
+      originLabel: origin.label,
+      originSortRank: origin.sortRank,
     };
   });
 }
@@ -882,6 +980,29 @@ function computeQualityMetrics(styleSpec, oracleResult) {
   };
 }
 
+function buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy, benchmarkSource) {
+  const normalizedBenchmark = normalizeBenchmarkSource(benchmarkSource);
+  return {
+    cslReach: styleSpec.cslReach,
+    dependents: styleSpec.cslReach,
+    impactPct: computeImpactPct(styleSpec.cslReach),
+    originKey: styleSpec.originKey,
+    originLabel: styleSpec.originLabel,
+    originSortRank: styleSpec.originSortRank,
+    benchmarkSource: normalizedBenchmark,
+    benchmarkLabel: formatAuthorityLabel(normalizedBenchmark),
+    secondarySources: stylePolicy.secondary,
+    secondarySourceLabels: (stylePolicy.secondary || []).map(formatAuthorityLabel),
+    verificationScopes: stylePolicy.scopes,
+    fixtureFamily: sufficiencyPolicy.family,
+    defaultReportSufficient: sufficiencyPolicy.defaultReportSufficient,
+    requiredReferenceTypes: sufficiencyPolicy.requiredReferenceTypes,
+    requiredScenarios: sufficiencyPolicy.requiredScenarios,
+    fixtureSets: sufficiencyPolicy.fixtureSets,
+    verificationNote: stylePolicy.note,
+  };
+}
+
 /**
  * Generate compatibility report
  */
@@ -937,10 +1058,9 @@ function generateReport(options) {
       }
       styles.push({
         name: styleSpec.name,
-        dependents: styleSpec.dependents,
         format: styleSpec.format,
         hasBibliography: styleSpec.hasBibliography,
-        impactPct: null,
+        ...buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy, primaryComparator),
         fidelityScore: parseFloat(fidelityScore.toFixed(3)),
         citations: nativeCitations,
         bibliography,
@@ -955,14 +1075,6 @@ function generateReport(options) {
         qualityScore: parseFloat(qualityScore.toFixed(3)),
         qualityBreakdown: qualityMetrics,
         oracleSource: 'citum-baseline',
-        secondarySources: stylePolicy.secondary,
-        verificationScopes: stylePolicy.scopes,
-        fixtureFamily: sufficiencyPolicy.family,
-        defaultReportSufficient: sufficiencyPolicy.defaultReportSufficient,
-        requiredReferenceTypes: sufficiencyPolicy.requiredReferenceTypes,
-        requiredScenarios: sufficiencyPolicy.requiredScenarios,
-        fixtureSets: sufficiencyPolicy.fixtureSets,
-        verificationNote: stylePolicy.note,
       });
       continue;
     }
@@ -972,12 +1084,9 @@ function generateReport(options) {
     if (!fs.existsSync(stylePath)) {
       styles.push({
         name: styleSpec.name,
-        dependents: styleSpec.dependents,
         format: styleSpec.format,
         hasBibliography: styleSpec.hasBibliography,
-        impactPct: styleSpec.dependents != null
-          ? (styleSpec.dependents / TOTAL_DEPENDENTS * 100).toFixed(2)
-          : null,
+        ...buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy, primaryComparator),
         fidelityScore: 0,
         citations: { passed: 0, total: 0 },
         bibliography: { passed: 0, total: 0 },
@@ -1033,12 +1142,14 @@ function generateReport(options) {
 
     styles.push({
       name: styleSpec.name,
-      dependents: styleSpec.dependents,
       format: styleSpec.format,
       hasBibliography: styleSpec.hasBibliography,
-      impactPct: styleSpec.dependents != null
-        ? (styleSpec.dependents / TOTAL_DEPENDENTS * 100).toFixed(2)
-        : null,
+      ...buildPresentationFields(
+        styleSpec,
+        stylePolicy,
+        sufficiencyPolicy,
+        oracleResult.oracleSource || primaryComparator
+      ),
       fidelityScore: parseFloat(fidelityScore.toFixed(3)),
       citations,
       bibliography,
@@ -1053,20 +1164,12 @@ function generateReport(options) {
       qualityScore: parseFloat(qualityScore.toFixed(3)),
       qualityBreakdown: qualityMetrics,
       oracleSource: oracleResult.oracleSource || 'citeproc-js',
-      secondarySources: stylePolicy.secondary,
-      verificationScopes: stylePolicy.scopes,
-      fixtureFamily: sufficiencyPolicy.family,
-      defaultReportSufficient: sufficiencyPolicy.defaultReportSufficient,
-      requiredReferenceTypes: sufficiencyPolicy.requiredReferenceTypes,
-      requiredScenarios: sufficiencyPolicy.requiredScenarios,
-      fixtureSets: sufficiencyPolicy.fixtureSets,
-      verificationNote: stylePolicy.note,
     });
   }
 
   const knownDependents = coreStyles
-    .filter((s) => typeof s.dependents === 'number')
-    .reduce((sum, s) => sum + s.dependents, 0);
+    .filter((s) => typeof s.cslReach === 'number')
+    .reduce((sum, s) => sum + s.cslReach, 0);
   const totalImpact = ((knownDependents / TOTAL_DEPENDENTS) * 100).toFixed(2);
 
   return {
@@ -1277,7 +1380,7 @@ function generateHtmlStats(report) {
                 <div class="bg-white rounded-xl border border-slate-200 p-6">
                     <div class="text-sm font-medium text-slate-500 mb-2">Core Styles</div>
                     <div class="text-3xl font-bold text-slate-900">${report.totalStyles}</div>
-                    <div class="text-xs text-slate-400 mt-2">${report.totalImpact}% known dependent coverage</div>
+                    <div class="text-xs text-slate-400 mt-2">${report.totalImpact}% known CSL dependent coverage</div>
                 </div>
 
                 <!-- Citations Overall -->
@@ -1312,7 +1415,7 @@ function generateHtmlSqiExplainer() {
     <section class="py-8 px-6">
         <div class="max-w-7xl mx-auto">
             <div class="bg-white rounded-xl border border-slate-200 p-6">
-                <h2 class="text-lg font-semibold text-slate-900 mb-2">How To Read Fidelity And SQI</h2>
+                <h2 class="text-lg font-semibold text-slate-900 mb-2">How To Read This Report</h2>
                 <p class="text-sm text-slate-600 mb-3">
                     <strong>Fidelity</strong> is the hard gate: rendered output should match citeproc-js.
                     <strong>SQI</strong> (Style Quality Index) is secondary: it scores maintainability and fallback quality.
@@ -1320,6 +1423,11 @@ function generateHtmlSqiExplainer() {
                 <p class="text-sm text-slate-600 mb-4">
                     Current working target for style waves is <code>&gt;=95% fidelity</code> and <code>&gt;=90 SQI</code>.
                     SQI should never be improved at the cost of fidelity.
+                </p>
+                <p class="text-sm text-slate-600 mb-4">
+                    <strong>Origin</strong> shows whether a style was migrated from CSL or hand-authored from CSL or biblatex sources.
+                    <strong>Benchmark</strong> shows the primary authority used for fidelity checks.
+                    <strong>CSL Reach</strong> is the count of dependent legacy CSL styles for comparable parents and is blank when there is no meaningful CSL analogue.
                 </p>
                 <a class="text-sm font-medium text-primary hover:underline" href="reference/SQI.md">
                     Read the full SQI definition and scoring details
@@ -1340,7 +1448,7 @@ function generateHtmlTable(report) {
     const bibliographyRate = style.hasBibliography && style.bibliography.total > 0
       ? style.bibliography.passed / style.bibliography.total
       : -1;
-    const dependentsValue = style.dependents ?? -1;
+    const cslReachValue = style.cslReach ?? -1;
     const componentRateValue = style.componentMatchRate !== null ? style.componentMatchRate : -1;
 
     const sqiScore = style.qualityBreakdown?.score ?? (style.qualityScore || 0) * 100;
@@ -1405,7 +1513,8 @@ function generateHtmlTable(report) {
                     data-detail-id="${contentId}"
                     data-style-name="${escapeHtml(style.name.toLowerCase())}"
                     data-format="${escapeHtml(String(style.format).toLowerCase())}"
-                    data-dependents="${dependentsValue}"
+                    data-origin="${escapeHtml(String(style.originLabel || '').toLowerCase())}"
+                    data-csl-reach="${cslReachValue}"
                     data-citation-rate="${citationRate}"
                     data-bibliography-rate="${bibliographyRate}"
                     data-component-rate="${componentRateValue}"
@@ -1414,8 +1523,9 @@ function generateHtmlTable(report) {
                     data-sqi-tier-rank="${sqiTierRank}">
                     <td class="px-6 py-4 text-sm font-medium text-slate-900">${style.name}</td>
                     <td class="px-6 py-4 text-sm text-slate-600">${style.format}</td>
-                    <td class="px-6 py-4 text-sm text-slate-500 font-mono">${escapeHtml(style.oracleSource || '—')}</td>
-                    <td class="px-6 py-4 text-sm text-slate-600">${style.dependents ?? '—'}</td>
+                    <td class="px-6 py-4 text-sm text-slate-600">${escapeHtml(style.originLabel || '—')}</td>
+                    <td class="px-6 py-4 text-sm text-slate-500 font-mono">${escapeHtml(style.benchmarkLabel || '—')}</td>
+                    <td class="px-6 py-4 text-sm text-slate-600">${style.cslReach ?? '—'}</td>
                     <td class="px-6 py-4">
                         <span class="inline-flex items-center px-3 py-1 rounded text-xs font-medium ${citationBadge}">
                             ${style.citations.passed}/${style.citations.total}
@@ -1443,7 +1553,7 @@ function generateHtmlTable(report) {
                     </td>
                 </tr>
                 <tr class="accordion-content" id="${contentId}">
-                    <td colspan="10" class="px-6 py-4 bg-slate-50">
+                    <td colspan="12" class="px-6 py-4 bg-slate-50">
                         <div class="max-w-4xl">
 ${generateDetailContent(style)}
                         </div>
@@ -1483,11 +1593,16 @@ ${generateDetailContent(style)}
                                 </button>
                             </th>
                             <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
-                                Oracle
+                                <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('origin')">
+                                    Origin <span class="text-slate-400" id="sort-ind-origin">↕</span>
+                                </button>
                             </th>
                             <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
-                                <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('dependents')">
-                                    Dependents <span class="text-slate-400" id="sort-ind-dependents">↕</span>
+                                Benchmark
+                            </th>
+                            <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                                <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('csl-reach')">
+                                    CSL Reach <span class="text-slate-400" id="sort-ind-csl-reach">↕</span>
                                 </button>
                             </th>
                             <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
@@ -1533,8 +1648,32 @@ ${tableRows}
 `;
 }
 
+function getComparisonEntryTexts(entry) {
+  return {
+    benchmark: entry?.oracle ?? entry?.expected ?? '',
+    citum: entry?.csln ?? entry?.actual ?? '',
+  };
+}
+
 function generateDetailContent(style) {
   let html = '';
+  const secondaryLabels = Array.isArray(style.secondarySourceLabels) && style.secondarySourceLabels.length > 0
+    ? style.secondarySourceLabels.join(', ')
+    : '—';
+  const cslReachText = style.cslReach != null ? String(style.cslReach) : '—';
+
+  html += `
+                            <div class="mb-4 p-3 rounded border border-slate-200 bg-white">
+                                <div class="text-xs font-semibold text-slate-900 mb-2">Verification Context</div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                                    <div><span class="font-semibold text-slate-700">Origin:</span> <span class="font-mono text-slate-600">${escapeHtml(style.originLabel || '—')}</span></div>
+                                    <div><span class="font-semibold text-slate-700">Benchmark:</span> <span class="font-mono text-slate-600">${escapeHtml(style.benchmarkLabel || '—')}</span></div>
+                                    <div><span class="font-semibold text-slate-700">Secondary:</span> <span class="font-mono text-slate-600">${escapeHtml(secondaryLabels)}</span></div>
+                                    <div><span class="font-semibold text-slate-700">CSL Reach:</span> <span class="font-mono text-slate-600">${escapeHtml(cslReachText)}</span></div>
+                                </div>
+                                ${style.verificationNote ? `<div class="mt-3 text-xs text-slate-600"><strong>Note:</strong> ${escapeHtml(style.verificationNote)}</div>` : ''}
+                            </div>
+`;
 
   if (style.error) {
     html += `
@@ -1637,7 +1776,7 @@ function generateDetailContent(style) {
                                         <thead>
                                             <tr class="border-b border-slate-300 bg-slate-100">
                                                 <th class="text-left px-2 py-1 font-medium text-slate-700">#</th>
-                                                <th class="text-left px-2 py-1 font-medium text-slate-700">Oracle</th>
+                                                <th class="text-left px-2 py-1 font-medium text-slate-700">Benchmark</th>
                                                 <th class="text-left px-2 py-1 font-medium text-slate-700">Citum</th>
                                                 <th class="text-center px-2 py-1 font-medium text-slate-700">Match</th>
                                             </tr>
@@ -1645,13 +1784,14 @@ function generateDetailContent(style) {
                                         <tbody>
 `;
       for (const entry of failedEntries) {
-        const oracleText = entry.oracle ? entry.oracle.substring(0, 100) : '(empty)';
-        const cslnText = entry.csln ? entry.csln.substring(0, 100) : '(empty)';
+        const texts = getComparisonEntryTexts(entry);
+        const benchmarkText = texts.benchmark ? texts.benchmark.substring(0, 100) : '(empty)';
+        const citumText = texts.citum ? texts.citum.substring(0, 100) : '(empty)';
         html += `
                                             <tr class="border-b border-slate-200 hover:bg-slate-50">
                                                 <td class="px-2 py-1 text-slate-600">${escapeHtml(entry.id)}</td>
-                                                <td class="px-2 py-1 font-mono text-slate-600 text-xs" title="${escapeHtml(entry.oracle || '')}">${escapeHtml(oracleText)}</td>
-                                                <td class="px-2 py-1 font-mono text-slate-600 text-xs" title="${escapeHtml(entry.csln || '')}">${escapeHtml(cslnText)}</td>
+                                                <td class="px-2 py-1 font-mono text-slate-600 text-xs" title="${escapeHtml(texts.benchmark)}">${escapeHtml(benchmarkText)}</td>
+                                                <td class="px-2 py-1 font-mono text-slate-600 text-xs" title="${escapeHtml(texts.citum)}">${escapeHtml(citumText)}</td>
                                                 <td class="px-2 py-1 text-center font-bold text-red-600">✗</td>
                                             </tr>
 `;
@@ -1674,7 +1814,7 @@ function generateDetailContent(style) {
                                         <thead>
                                             <tr class="border-b border-slate-300 bg-slate-100">
                                                 <th class="text-left px-2 py-1 font-medium text-slate-700">#</th>
-                                                <th class="text-left px-2 py-1 font-medium text-slate-700">Oracle</th>
+                                                <th class="text-left px-2 py-1 font-medium text-slate-700">Benchmark</th>
                                                 <th class="text-left px-2 py-1 font-medium text-slate-700">Citum</th>
                                                 <th class="text-center px-2 py-1 font-medium text-slate-700">Match</th>
                                                 <th class="text-left px-2 py-1 font-medium text-slate-700">Issues</th>
@@ -1687,9 +1827,9 @@ function generateDetailContent(style) {
       const entry = style.oracleDetail[i];
       const matchIcon = entry.match === true ? '✓' : entry.match === false ? '✗' : '–';
       const matchColor = entry.match === true ? 'text-emerald-600' : entry.match === false ? 'text-red-600' : 'text-slate-400';
-
-      const oracleText = entry.oracle ? entry.oracle.substring(0, 100) : '(empty)';
-      const cslnText = entry.csln ? entry.csln.substring(0, 100) : '(empty)';
+      const texts = getComparisonEntryTexts(entry);
+      const benchmarkText = texts.benchmark ? texts.benchmark.substring(0, 100) : '(empty)';
+      const citumText = texts.citum ? texts.citum.substring(0, 100) : '(empty)';
 
       let issuesText = '—';
       if (!entry.match) {
@@ -1703,8 +1843,8 @@ function generateDetailContent(style) {
       html += `
                                             <tr class="border-b border-slate-200 hover:bg-slate-50">
                                                 <td class="px-2 py-1 text-slate-600">${i + 1}</td>
-                                                <td class="px-2 py-1 font-mono text-slate-600 text-xs" title="${escapeHtml(entry.oracle || '')}">${escapeHtml(oracleText)}</td>
-                                                <td class="px-2 py-1 font-mono text-slate-600 text-xs" title="${escapeHtml(entry.csln || '')}">${escapeHtml(cslnText)}</td>
+                                                <td class="px-2 py-1 font-mono text-slate-600 text-xs" title="${escapeHtml(texts.benchmark)}">${escapeHtml(benchmarkText)}</td>
+                                                <td class="px-2 py-1 font-mono text-slate-600 text-xs" title="${escapeHtml(texts.citum)}">${escapeHtml(citumText)}</td>
                                                 <td class="px-2 py-1 text-center font-bold ${matchColor}">${matchIcon}</td>
                                                 <td class="px-2 py-1 text-slate-600 text-xs font-mono">${escapeHtml(issuesText)}</td>
                                             </tr>
@@ -1801,7 +1941,7 @@ function generateHtmlFooter() {
                 return { summary, detail };
             });
 
-            const defaultAsc = key === 'style-name' || key === 'format';
+            const defaultAsc = key === 'style-name' || key === 'format' || key === 'origin';
             if (sortState.key === key) {
                 sortState.direction *= -1;
             } else {
@@ -1822,7 +1962,7 @@ function generateHtmlFooter() {
                 const left = a.summary.dataset[datasetKey] || '';
                 const right = b.summary.dataset[datasetKey] || '';
                 const numericKeys = new Set([
-                    'dependents',
+                    'csl-reach',
                     'citation-rate',
                     'bibliography-rate',
                     'component-rate',
@@ -1830,6 +1970,14 @@ function generateHtmlFooter() {
                     'quality',
                     'sqi-tier-rank',
                 ]);
+
+                if (key === 'csl-reach') {
+                    const leftUnknown = left === '' || Number(left) < 0;
+                    const rightUnknown = right === '' || Number(right) < 0;
+                    if (leftUnknown !== rightUnknown) {
+                        return leftUnknown ? 1 : -1;
+                    }
+                }
 
                 if (numericKeys.has(key)) {
                     return (asNumber(left) - asNumber(right)) * sortState.direction;
@@ -1942,4 +2090,17 @@ function main() {
   }
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  classifyStyleOrigin,
+  discoverCoreStyles,
+  formatAuthorityLabel,
+  generateHtml,
+  generateReport,
+  getComparisonEntryTexts,
+  normalizeBenchmarkSource,
+  selectPrimaryComparator,
+};
