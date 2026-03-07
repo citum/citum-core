@@ -8,55 +8,79 @@ defaults:
 
 styles:
   numeric-comp:
-    authority: citum-baseline
+    authority: biblatex
+    authority_id: numeric-comp
     secondary:
-      - biblatex
+      - citeproc-js
     scopes:
       - citation
       - bibliography
     fixture_family: chemistry
-    note: Preserve current high-fidelity compound regression baseline until a
-      fixture-aligned biblatex comparison corpus exists.
+    regression_baseline: citum-baseline
+    note: Authority follows biblatex numeric-comp. Citum snapshots remain only
+      as a regression baseline.
   chem-acs:
-    authority: citum-baseline
+    authority: biblatex
+    authority_id: chem-acs
     secondary:
-      - biblatex
+      - citeproc-js
     scopes:
       - citation
       - bibliography
+    scope_authorities:
+      citation:
+        authority: citeproc-js
     fixture_family: chemistry
-    note: Preserve current high-fidelity compound regression baseline until a
-      fixture-aligned biblatex comparison corpus exists.
+    regression_baseline: citum-baseline
+    note: Bibliography authority follows biblatex chem-acs; citation authority
+      remains citeproc-js until citation-side biblatex comparison is available.
   angewandte-chemie:
-    authority: citum-baseline
+    authority: biblatex
+    authority_id: chem-angew
     secondary:
-      - biblatex
+      - citeproc-js
     scopes:
       - citation
       - bibliography
+    scope_authorities:
+      citation:
+        authority: citeproc-js
     fixture_family: chemistry
-    note: Preserve current high-fidelity compound regression baseline until a
-      fixture-aligned biblatex comparison corpus exists.
+    regression_baseline: citum-baseline
+    note: Bibliography authority follows biblatex chem-angew; citation
+      authority remains citeproc-js until citation-side biblatex comparison is
+      available.
   chem-rsc:
-    authority: citum-baseline
+    authority: biblatex
+    authority_id: chem-rsc
     secondary:
-      - biblatex
+      - citeproc-js
     scopes:
       - citation
       - bibliography
+    scope_authorities:
+      citation:
+        authority: citeproc-js
     fixture_family: chemistry
-    note: Preserve current high-fidelity compound regression baseline until a
-      fixture-aligned biblatex comparison corpus exists.
+    regression_baseline: citum-baseline
+    note: Bibliography authority follows biblatex chem-rsc; citation authority
+      remains citeproc-js until citation-side biblatex comparison is available.
   chem-biochem:
-    authority: citum-baseline
+    authority: biblatex
+    authority_id: chem-biochem
     secondary:
-      - biblatex
+      - citeproc-js
     scopes:
       - citation
       - bibliography
+    scope_authorities:
+      citation:
+        authority: citeproc-js
     fixture_family: chemistry
-    note: Preserve current high-fidelity compound regression baseline until a
-      fixture-aligned biblatex comparison corpus exists.
+    regression_baseline: citum-baseline
+    note: Bibliography authority follows biblatex chem-biochem; citation
+      authority remains citeproc-js until citation-side biblatex comparison is
+      available.
   apa-7th:
     secondary:
       - biblatex

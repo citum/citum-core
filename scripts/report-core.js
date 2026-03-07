@@ -12,16 +12,23 @@
  *   node report-core.js --styles-dir /path/to/csl            # Override CSL directory
  */
 
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execFileSync, spawn } = require('child_process');
 const yaml = require('js-yaml');
 const {
   loadFixtureSufficiency,
   loadVerificationPolicy,
+  resolveScopeAuthority,
   resolveFixtureSufficiency,
   resolveVerificationPolicy,
 } = require('./lib/verification-policy');
+const {
+  getLineagePresentation,
+  loadReportProvenance,
+} = require('./lib/report-metadata');
+const { normalizeText } = require('./oracle-utils');
 
 const CUSTOM_TAG_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
   new yaml.Type('!custom', {
@@ -63,6 +70,22 @@ const KNOWN_DEPENDENTS = {
 };
 
 const SKIPPED_STYLES = ['alpha', 'iso690-author-date', 'iso690-numeric'];
+const PROJECT_ROOT = path.dirname(__dirname);
+const DEFAULT_REPORT_CACHE_DIR = path.join(PROJECT_ROOT, '.oracle-cache', 'report-core');
+const DEFAULT_PARALLELISM = 4;
+const DEFAULT_PROCESS_TIMEOUT_MS = 120000;
+const NOTE_CITATIONS_FIXTURE = path.join(
+  PROJECT_ROOT,
+  'tests',
+  'fixtures',
+  'citations-note-expanded.json'
+);
+const DEFAULT_REFS_FIXTURE = path.join(PROJECT_ROOT, 'tests', 'fixtures', 'references-expanded.json');
+const DEFAULT_CITATIONS_FIXTURE = path.join(PROJECT_ROOT, 'tests', 'fixtures', 'citations-expanded.json');
+const CSL_SNAPSHOT_DIR = path.join(PROJECT_ROOT, 'tests', 'snapshots', 'csl');
+const BIBLATEX_SNAPSHOT_DIR = path.join(PROJECT_ROOT, 'tests', 'snapshots', 'biblatex');
+const COMPOUND_SNAPSHOT_DIR = path.join(PROJECT_ROOT, 'tests', 'snapshots', 'compound');
+const REPORT_CACHE_VERSION = 3;
 
 /**
  * Maps fixture set names (from fixture-sufficiency.yaml) to reference fixture
@@ -106,18 +129,6 @@ const BENCHMARK_LABELS = {
   biblatex: 'biblatex',
   documentary: 'documentary',
 };
-const ORIGIN_LABELS = {
-  'csl-migrated': 'CSL migrated',
-  'csl-hand-authored': 'CSL hand-authored',
-  'biblatex-hand-authored': 'biblatex hand-authored',
-  unknown: 'Unknown',
-};
-const ORIGIN_SORT_RANKS = {
-  'csl-migrated': 1,
-  'csl-hand-authored': 2,
-  'biblatex-hand-authored': 3,
-  unknown: 99,
-};
 
 /**
  * Parse command-line arguments
@@ -128,6 +139,11 @@ function parseArgs() {
     writeHtml: false,
     outputHtml: null,
     stylesDir: null,
+    parallelism: DEFAULT_PARALLELISM,
+    allowLiveFallback: false,
+    timings: false,
+    cacheDir: DEFAULT_REPORT_CACHE_DIR,
+    citumBin: process.env.CITUM_BIN || null,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -138,6 +154,16 @@ function parseArgs() {
       options.writeHtml = true;
     } else if (args[i] === '--styles-dir') {
       options.stylesDir = args[++i];
+    } else if (args[i] === '--parallelism') {
+      options.parallelism = Math.max(1, parseInt(args[++i], 10) || DEFAULT_PARALLELISM);
+    } else if (args[i] === '--allow-live-fallback' || args[i] === '--refresh-missing') {
+      options.allowLiveFallback = true;
+    } else if (args[i] === '--timings') {
+      options.timings = true;
+    } else if (args[i] === '--cache-dir') {
+      options.cacheDir = path.resolve(args[++i]);
+    } else if (args[i] === '--citum-bin') {
+      options.citumBin = path.resolve(args[++i]);
     }
   }
 
@@ -149,8 +175,8 @@ function parseArgs() {
  */
 function getGitCommit() {
   try {
-    return execSync('git rev-parse --short HEAD', {
-      cwd: path.dirname(__dirname),
+    return execFileSync('git', ['rev-parse', '--short', 'HEAD'], {
+      cwd: PROJECT_ROOT,
       encoding: 'utf8',
     }).trim();
   } catch {
@@ -171,14 +197,176 @@ function getTimestamp() {
 function getStylesDir(optionsDir) {
   if (optionsDir) return optionsDir;
 
-  const projectRoot = path.dirname(__dirname);
-  const defaultDir = path.join(projectRoot, 'styles-legacy');
+  const defaultDir = path.join(PROJECT_ROOT, 'styles-legacy');
 
   if (fs.existsSync(defaultDir)) {
     return defaultDir;
   }
 
   throw new Error(`Styles directory not found. Use --styles-dir to specify path.`);
+}
+
+function ensureDir(dirPath) {
+  fs.mkdirSync(dirPath, { recursive: true });
+}
+
+function hashContent(value) {
+  return crypto.createHash('sha256').update(value).digest('hex');
+}
+
+function hashFile(filePath) {
+  return hashContent(fs.readFileSync(filePath));
+}
+
+function fixtureHash(refsFixture, citationsFixture) {
+  const hash = crypto.createHash('sha256');
+  hash.update(fs.readFileSync(refsFixture));
+  hash.update(fs.readFileSync(citationsFixture));
+  return hash.digest('hex').slice(0, 16);
+}
+
+function resolveCitumBinary(explicitPath = null) {
+  const candidates = [
+    explicitPath,
+    process.env.CITUM_BIN,
+    path.join(PROJECT_ROOT, 'target', 'debug', 'citum'),
+    path.join(PROJECT_ROOT, 'target', 'release', 'citum'),
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return path.resolve(candidate);
+    }
+  }
+
+  execFileSync('cargo', ['build', '-q', '--bin', 'citum'], {
+    cwd: PROJECT_ROOT,
+    encoding: 'utf8',
+    stdio: ['pipe', 'pipe', 'pipe'],
+  });
+
+  const builtBinary = path.join(PROJECT_ROOT, 'target', 'debug', 'citum');
+  if (!fs.existsSync(builtBinary)) {
+    throw new Error(`Expected Citum binary after build: ${builtBinary}`);
+  }
+  return builtBinary;
+}
+
+function createTimerBucket() {
+  return { count: 0, totalMs: 0, cacheHits: 0 };
+}
+
+function createReportRuntime(options = {}) {
+  const cacheDir = path.resolve(options.cacheDir || DEFAULT_REPORT_CACHE_DIR);
+  ensureDir(cacheDir);
+
+  return {
+    allowLiveFallback: Boolean(options.allowLiveFallback),
+    cacheDir,
+    timings: new Map(),
+    stylesDir: options.stylesDir ? path.resolve(options.stylesDir) : null,
+    citumBin: resolveCitumBinary(options.citumBin),
+    recordTiming(kind, durationMs, cacheHit = false) {
+      const bucket = this.timings.get(kind) || createTimerBucket();
+      bucket.count += 1;
+      bucket.totalMs += durationMs;
+      if (cacheHit) bucket.cacheHits += 1;
+      this.timings.set(kind, bucket);
+    },
+  };
+}
+
+function spawnProcess(command, args, options = {}) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd: options.cwd || PROJECT_ROOT,
+      env: options.env || process.env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let stdout = '';
+    let stderr = '';
+    let settled = false;
+    const timeoutMs = options.timeout ?? DEFAULT_PROCESS_TIMEOUT_MS;
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      child.kill('SIGKILL');
+      reject(new Error(`Command timed out: ${command} ${args.join(' ')}`));
+    }, timeoutMs);
+
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk.toString();
+    });
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk.toString();
+    });
+    child.on('error', (error) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      reject(error);
+    });
+    child.on('close', (code) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve({ code: code ?? 0, stdout, stderr });
+    });
+  });
+}
+
+async function runCachedJsonJob(runtime, config) {
+  const keyJson = JSON.stringify({
+    version: REPORT_CACHE_VERSION,
+    ...config.cacheKey,
+  });
+  const cacheFile = path.join(runtime.cacheDir, `${hashContent(keyJson)}.json`);
+  if (fs.existsSync(cacheFile)) {
+    const started = Date.now();
+    const cached = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
+    runtime.recordTiming(config.kind, Date.now() - started, true);
+    return cached;
+  }
+
+  const started = Date.now();
+  const result = await config.compute();
+  runtime.recordTiming(config.kind, Date.now() - started, false);
+  fs.writeFileSync(cacheFile, JSON.stringify(result));
+  return result;
+}
+
+async function mapWithConcurrency(items, limit, worker) {
+  const results = new Array(items.length);
+  let cursor = 0;
+
+  async function runNext() {
+    while (true) {
+      const index = cursor;
+      cursor += 1;
+      if (index >= items.length) return;
+      results[index] = await worker(items[index], index);
+    }
+  }
+
+  const workers = Array.from({ length: Math.min(limit, items.length || 1) }, () => runNext());
+  await Promise.all(workers);
+  return results;
+}
+
+function serializeTimingSummary(runtime) {
+  return Object.fromEntries(
+    [...runtime.timings.entries()]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([kind, stats]) => [
+        kind,
+        {
+          count: stats.count,
+          cacheHits: stats.cacheHits,
+          totalMs: parseFloat(stats.totalMs.toFixed(1)),
+          averageMs: stats.count > 0 ? parseFloat((stats.totalMs / stats.count).toFixed(1)) : 0,
+        },
+      ])
+  );
 }
 
 function inferStyleUpstream(styleData) {
@@ -197,39 +385,15 @@ function inferStyleUpstream(styleData) {
   return 'unknown';
 }
 
-function classifyStyleOrigin(styleData) {
+function inferLineageKey(styleData, hasLegacySource) {
   const upstream = inferStyleUpstream(styleData);
   const adaptedBy = styleData?.info?.source?.['adapted-by'];
 
-  if (upstream === 'biblatex') {
-    return {
-      key: 'biblatex-hand-authored',
-      label: ORIGIN_LABELS['biblatex-hand-authored'],
-      sortRank: ORIGIN_SORT_RANKS['biblatex-hand-authored'],
-    };
-  }
-
-  if (upstream === 'csl' && adaptedBy === 'citum-create') {
-    return {
-      key: 'csl-hand-authored',
-      label: ORIGIN_LABELS['csl-hand-authored'],
-      sortRank: ORIGIN_SORT_RANKS['csl-hand-authored'],
-    };
-  }
-
-  if (upstream === 'csl' || adaptedBy === 'citum-migrate') {
-    return {
-      key: 'csl-migrated',
-      label: ORIGIN_LABELS['csl-migrated'],
-      sortRank: ORIGIN_SORT_RANKS['csl-migrated'],
-    };
-  }
-
-  return {
-    key: 'unknown',
-    label: ORIGIN_LABELS.unknown,
-    sortRank: ORIGIN_SORT_RANKS.unknown,
-  };
+  if (upstream === 'biblatex') return 'biblatex-derived';
+  if (upstream === 'csl') return 'csl-derived';
+  if (adaptedBy === 'citum-migrate') return 'csl-derived';
+  if (hasLegacySource) return 'csl-derived';
+  return 'citum-native';
 }
 
 function normalizeBenchmarkSource(authority) {
@@ -237,8 +401,11 @@ function normalizeBenchmarkSource(authority) {
   return authority === 'citeproc-js-live' ? 'citeproc-js' : authority;
 }
 
-function formatAuthorityLabel(authority) {
+function formatAuthorityLabel(authority, authorityId = null) {
   const normalized = normalizeBenchmarkSource(authority);
+  if ((normalized === 'biblatex' || normalized === 'documentary') && authorityId) {
+    return `${BENCHMARK_LABELS[normalized] || normalized}: ${authorityId}`;
+  }
   return BENCHMARK_LABELS[normalized] || String(normalized);
 }
 
@@ -248,7 +415,18 @@ function computeImpactPct(cslReach) {
     : null;
 }
 
-function discoverCoreStyles() {
+function inferLegacySourceName(name, styleData) {
+  if (LEGACY_SOURCE_OVERRIDES[name]) {
+    return LEGACY_SOURCE_OVERRIDES[name];
+  }
+  const sourceId = styleData?.info?.source?.['csl-id'];
+  const match = typeof sourceId === 'string'
+    ? sourceId.match(/zotero\.org\/styles\/([^/?#]+)/i)
+    : null;
+  return match?.[1] || name;
+}
+
+function discoverCoreStyles(provenanceConfig = loadReportProvenance()) {
   const stylesRoot = path.join(path.dirname(__dirname), 'styles');
   if (!fs.existsSync(stylesRoot)) {
     throw new Error(`Core styles directory not found: ${stylesRoot}`);
@@ -266,7 +444,6 @@ function discoverCoreStyles() {
   return styleFiles.map((filename) => {
     const stylePath = path.join(stylesRoot, filename);
     const name = path.basename(filename, '.yaml');
-    const sourceName = LEGACY_SOURCE_OVERRIDES[name] || name;
     let styleData = null;
 
     try {
@@ -274,16 +451,13 @@ function discoverCoreStyles() {
     } catch {
       styleData = null;
     }
+    const sourceName = inferLegacySourceName(name, styleData);
 
-    let origin = classifyStyleOrigin(styleData);
     const legacySourcePath = path.join(path.dirname(__dirname), 'styles-legacy', `${sourceName}.csl`);
-    if (origin.key === 'unknown' && fs.existsSync(legacySourcePath)) {
-      origin = {
-        key: 'csl-migrated',
-        label: ORIGIN_LABELS['csl-migrated'],
-        sortRank: ORIGIN_SORT_RANKS['csl-migrated'],
-      };
-    }
+    const hasLegacySource = fs.existsSync(legacySourcePath);
+    const lineageKey = provenanceConfig.styles?.[name]?.lineage
+      || inferLineageKey(styleData, hasLegacySource);
+    const origin = getLineagePresentation(lineageKey, provenanceConfig);
     const cslReach = KNOWN_DEPENDENTS[name] ?? null;
 
     return {
@@ -301,11 +475,7 @@ function discoverCoreStyles() {
 }
 
 function selectPrimaryComparator(styleSpec, verificationPolicy) {
-  const authority = verificationPolicy.authority;
-  if (authority === 'citum-baseline') {
-    return 'citum-baseline';
-  }
-  return 'citeproc-js';
+  return verificationPolicy.authority;
 }
 
 function inferStyleFormat(styleData) {
@@ -375,135 +545,331 @@ function hasBibliographyTemplate(styleData) {
   return hasTemplate || hasTypeTemplates;
 }
 
-/**
- * Run the oracle for a single style.
- *
- * Tries oracle-fast.js (snapshot-based) first. Falls back to oracle.js
- * (live citeproc-js) if no snapshot exists yet (exit 2).
- */
-function runOracle(stylePath, styleName, styleFormat) {
+function buildEmptyOracleResult(overrides = {}) {
+  return {
+    citations: { passed: 0, total: 0, entries: [] },
+    bibliography: { passed: 0, total: 0, entries: [] },
+    citationsByType: {},
+    componentSummary: {},
+    ...overrides,
+  };
+}
+
+function getCslSnapshotStatus(stylePath, refsFixture, citationsFixture) {
+  const styleName = path.basename(stylePath, '.csl');
+  const snapshotPath = path.join(CSL_SNAPSHOT_DIR, `${styleName}.json`);
+  if (!fs.existsSync(snapshotPath)) {
+    return {
+      ok: false,
+      status: 'missing',
+      message: `Snapshot missing for ${styleName}. Run: node scripts/oracle-snapshot.js ${stylePath}`,
+      snapshotPath,
+    };
+  }
+
+  let snapshot;
+  try {
+    snapshot = JSON.parse(fs.readFileSync(snapshotPath, 'utf8'));
+  } catch (error) {
+    return {
+      ok: false,
+      status: 'invalid',
+      message: `Snapshot parse failed for ${styleName}: ${error.message}`,
+      snapshotPath,
+    };
+  }
+
+  const expectedHash = fixtureHash(refsFixture, citationsFixture);
+  if (snapshot.fixture_hash !== expectedHash) {
+    return {
+      ok: false,
+      status: 'stale',
+      message: `Snapshot stale for ${styleName}. Run: node scripts/oracle-snapshot.js ${stylePath}`,
+      snapshotPath,
+    };
+  }
+
+  return { ok: true, status: 'ok', snapshotPath };
+}
+
+async function runNodeOracleScript(scriptPath, args) {
+  const result = await spawnProcess(process.execPath, [scriptPath, ...args]);
+  return result;
+}
+
+async function runCiteprocSnapshotOracle(runtime, stylePath, styleName, styleFormat, refsFixture = DEFAULT_REFS_FIXTURE, citationsFixture = null) {
+  const resolvedCitationsFixture = citationsFixture
+    || (styleFormat === 'note' ? NOTE_CITATIONS_FIXTURE : DEFAULT_CITATIONS_FIXTURE);
+  const snapshotStatus = getCslSnapshotStatus(stylePath, refsFixture, resolvedCitationsFixture);
   const fastScript = path.join(__dirname, 'oracle-fast.js');
   const liveScript = path.join(__dirname, 'oracle.js');
-  const noteCitationsFixture = path.join(
-    path.dirname(__dirname),
-    'tests',
-    'fixtures',
-    'citations-note-expanded.json'
-  );
+  const cacheKey = {
+    backend: 'citeprocSnapshot',
+    styleName,
+    stylePath,
+    refsFixture,
+    citationsFixture: resolvedCitationsFixture,
+    styleHash: hashFile(stylePath),
+    refsHash: hashFile(refsFixture),
+    citationsHash: hashFile(resolvedCitationsFixture),
+    snapshotStatus: snapshotStatus.status,
+    snapshotHash: snapshotStatus.ok ? hashFile(snapshotStatus.snapshotPath) : null,
+    allowLiveFallback: runtime.allowLiveFallback,
+  };
 
-  const noteFlag = styleFormat === 'note'
-    ? ` --citations-fixture "${noteCitationsFixture}"`
-    : '';
+  return runCachedJsonJob(runtime, {
+    kind: 'citeprocSnapshot',
+    cacheKey,
+    async compute() {
+      const fastArgs = [stylePath, '--json', '--refs-fixture', refsFixture, '--citations-fixture', resolvedCitationsFixture];
 
-  function tryRun(script) {
-    const cmd = `node "${script}" "${stylePath}" --json${noteFlag}`;
-    try {
-      const stdout = execSync(cmd, {
-        encoding: 'utf8',
-        timeout: 120000,
-        stdio: ['pipe', 'pipe', 'pipe'],
+      if (snapshotStatus.ok) {
+        const fast = await runNodeOracleScript(fastScript, fastArgs);
+        if ((fast.code === 0 || fast.code === 1) && fast.stdout.trim()) {
+          try {
+            return JSON.parse(fast.stdout);
+          } catch (error) {
+            return buildEmptyOracleResult({
+              error: `Snapshot oracle JSON parse failed for ${styleName}: ${error.message}`,
+              style: styleName,
+              oracleSource: 'citeproc-js',
+            });
+          }
+        }
+
+        const fastFailure = (fast.stderr || fast.stdout || `exit ${fast.code}`).trim();
+        if (!runtime.allowLiveFallback) {
+          return buildEmptyOracleResult({
+            error: `Snapshot oracle failed for ${styleName}: ${fastFailure}`,
+            style: styleName,
+            oracleSource: 'citeproc-js',
+            snapshotStatus: snapshotStatus.status,
+          });
+        }
+      }
+
+      if (!runtime.allowLiveFallback) {
+        return buildEmptyOracleResult({
+          error: snapshotStatus.message || `Snapshot oracle unavailable for ${styleName}`,
+          style: styleName,
+          oracleSource: 'citeproc-js',
+          snapshotStatus: snapshotStatus.status,
+        });
+      }
+
+      const live = await runNodeOracleScript(liveScript, fastArgs);
+      if ((live.code === 0 || live.code === 1) && live.stdout.trim()) {
+        try {
+          const parsed = JSON.parse(live.stdout);
+          parsed.oracleSource = 'citeproc-js-live';
+          return parsed;
+        } catch (error) {
+          return buildEmptyOracleResult({
+            error: `Live oracle JSON parse failed for ${styleName}: ${error.message}`,
+            style: styleName,
+            oracleSource: 'citeproc-js-live',
+          });
+        }
+      }
+
+      return buildEmptyOracleResult({
+        error: `Live oracle failed for ${styleName}: ${live.stderr || live.stdout || `exit ${live.code}`}`.trim(),
+        style: styleName,
+        oracleSource: 'citeproc-js-live',
       });
-      return { stdout, status: 0 };
-    } catch (err) {
-      return { stdout: err.stdout, status: err.status ?? 99, stderr: err.stderr, message: err.message };
-    }
-  }
-
-  // Fast path (snapshot)
-  const fast = tryRun(fastScript);
-  if (fast.status !== 2 && fast.status !== 3) {
-    // 0 = all match, 1 = mismatches found — both have valid JSON
-    const raw = fast.stdout?.toString() ?? '';
-    if (raw.trim()) {
-      try {
-        return JSON.parse(raw);
-      } catch {
-        process.stderr.write(`[snapshot invalid] ${styleName} — fast oracle JSON parse failed; falling back to live oracle\n`);
-        // Fall through to live oracle
-      }
-    }
-  }
-
-  // Live fallback (snapshot absent or stale)
-  if (fast.status === 2) {
-    process.stderr.write(`[snapshot missing] ${styleName} — falling back to live oracle\n`);
-  } else if (fast.status === 3) {
-    process.stderr.write(`[snapshot stale] ${styleName} — falling back to live oracle\n`);
-  }
-  const live = tryRun(liveScript);
-  const raw = (live.status === 0 || live.status === 1) ? live.stdout?.toString() ?? '' : '';
-  if (raw.trim()) {
-    try {
-      const result = JSON.parse(raw);
-      result.oracleSource = 'citeproc-js-live';
-      return result;
-    } catch {
-      return { error: `Oracle JSON parse failed: ${live.message}`, style: styleName };
-    }
-  }
-  const stderr = live.stderr?.toString() ?? '';
-  return { error: `Oracle fatal error: ${live.message}\n${stderr}`, style: styleName };
+    },
+  });
 }
 
-/**
- * Run oracle-native.js for a snapshot-based (native) style
- */
-function runNativeOracle(styleName) {
+async function runNativeOracle(runtime, styleName) {
   const scriptPath = path.join(__dirname, 'oracle-native.js');
-  const styleYamlPath = path.join(path.dirname(__dirname), 'styles', `${styleName}.yaml`);
-  const fixturePath = path.join(
-    path.dirname(__dirname),
-    'tests', 'fixtures', 'compound-numeric-refs.yaml'
-  );
-  const snapshotsDir = path.join(path.dirname(__dirname), 'tests', 'snapshots', 'compound');
-  const command = `node "${scriptPath}" "${styleName}" "${styleYamlPath}" "${fixturePath}" "${snapshotsDir}"`;
+  const styleYamlPath = path.join(PROJECT_ROOT, 'styles', `${styleName}.yaml`);
+  const fixturePath = path.join(PROJECT_ROOT, 'tests', 'fixtures', 'compound-numeric-refs.yaml');
+  const snapshotPath = path.join(COMPOUND_SNAPSHOT_DIR, `${styleName}.txt`);
 
-  try {
-    const result = execSync(command, {
-      encoding: 'utf8',
-      timeout: 120000,
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
-    return JSON.parse(result);
-  } catch (error) {
-    if (error.status === 1 && error.stdout) {
-      try {
-        return JSON.parse(error.stdout.toString());
-      } catch {
-        return { error: `Native oracle parse failed: ${error.message}`, style: styleName };
+  return runCachedJsonJob(runtime, {
+    kind: 'nativeSnapshot',
+    cacheKey: {
+      backend: 'nativeSnapshot',
+      styleName,
+      styleYamlPath,
+      fixturePath,
+      snapshotPath,
+      styleHash: hashFile(styleYamlPath),
+      fixtureHash: hashFile(fixturePath),
+      snapshotHash: fs.existsSync(snapshotPath) ? hashFile(snapshotPath) : null,
+    },
+    async compute() {
+      const result = await runNodeOracleScript(scriptPath, [
+        styleName,
+        styleYamlPath,
+        fixturePath,
+        COMPOUND_SNAPSHOT_DIR,
+      ]);
+      if ((result.code === 0 || result.code === 1) && result.stdout.trim()) {
+        try {
+          return JSON.parse(result.stdout);
+        } catch (error) {
+          return buildEmptyOracleResult({
+            error: `Native oracle parse failed: ${error.message}`,
+            style: styleName,
+            oracleSource: 'citum-baseline',
+          });
+        }
       }
-    }
-    const stderr = error.stderr ? error.stderr.toString() : '';
-    return { error: `Native oracle fatal: ${error.message}\n${stderr}`, style: styleName };
-  }
+      return buildEmptyOracleResult({
+        error: `Native oracle failed: ${result.stderr || result.stdout || `exit ${result.code}`}`.trim(),
+        style: styleName,
+        oracleSource: 'citum-baseline',
+      });
+    },
+  });
 }
 
-/**
- * Run the oracle against a family-specific reference fixture.
- * Returns an oracle-shaped result or null if the fixture file is missing.
- */
-function runFamilyFixtureOracle(stylePath, styleName, styleFormat, fixtureSetName) {
+async function renderCitumJson(runtime, styleYamlPath, refsFixture, mode = 'both', citationsFixture = null) {
+  const resolvedCitationsFixture = citationsFixture ? path.resolve(citationsFixture) : null;
+  const cacheKey = {
+    backend: 'citumRender',
+    styleYamlPath,
+    refsFixture,
+    citationsFixture: resolvedCitationsFixture,
+    mode,
+    styleHash: hashFile(styleYamlPath),
+    refsHash: hashFile(refsFixture),
+    citationsHash: resolvedCitationsFixture ? hashFile(resolvedCitationsFixture) : null,
+    citumBin: runtime.citumBin,
+  };
+
+  return runCachedJsonJob(runtime, {
+    kind: 'citumRender',
+    cacheKey,
+    async compute() {
+      const args = [
+        'render', 'refs',
+        '-b', refsFixture,
+        '-s', styleYamlPath,
+        '--json',
+        '--mode', mode,
+      ];
+      if (resolvedCitationsFixture) {
+        args.splice(4, 0, '-c', resolvedCitationsFixture);
+      }
+      const result = await spawnProcess(runtime.citumBin, args, { cwd: PROJECT_ROOT });
+      if (result.code !== 0) {
+        throw new Error((result.stderr || result.stdout || `exit ${result.code}`).trim());
+      }
+      return JSON.parse(result.stdout);
+    },
+  });
+}
+
+async function runBiblatexSnapshotOracle(runtime, styleName, styleYamlPath, authorityId) {
+  const snapshotPath = path.join(BIBLATEX_SNAPSHOT_DIR, `${styleName}.json`);
+
+  if (!fs.existsSync(snapshotPath)) {
+    return buildEmptyOracleResult({
+      error: `Biblatex snapshot not found: ${snapshotPath}`,
+      oracleSource: 'biblatex',
+      authorityId,
+    });
+  }
+
+  return runCachedJsonJob(runtime, {
+    kind: 'biblatexSnapshot',
+    cacheKey: {
+      backend: 'biblatexSnapshot',
+      styleName,
+      authorityId,
+      styleYamlPath,
+      refsFixture: DEFAULT_REFS_FIXTURE,
+      snapshotPath,
+      styleHash: hashFile(styleYamlPath),
+      refsHash: hashFile(DEFAULT_REFS_FIXTURE),
+      snapshotHash: hashFile(snapshotPath),
+    },
+    async compute() {
+      let snapshot;
+      try {
+        snapshot = JSON.parse(fs.readFileSync(snapshotPath, 'utf8'));
+      } catch (error) {
+        return buildEmptyOracleResult({
+          error: `Biblatex snapshot parse failed: ${error.message}`,
+          oracleSource: 'biblatex',
+          authorityId,
+        });
+      }
+
+      try {
+        const rendered = await renderCitumJson(runtime, styleYamlPath, DEFAULT_REFS_FIXTURE, 'bib');
+        const actualEntries = rendered?.bibliography?.entries?.map((entry) => entry.text) || [];
+        const expectedEntries = snapshot.bibliography || [];
+        const total = Math.max(expectedEntries.length, actualEntries.length);
+        let passed = 0;
+        const entries = [];
+
+        for (let i = 0; i < total; i++) {
+          const expected = expectedEntries[i] ?? '';
+          const actual = actualEntries[i] ?? '';
+          const match = normalizeText(expected) === normalizeText(actual);
+          if (match) passed += 1;
+          entries.push({ expected, actual, match });
+        }
+
+        return buildEmptyOracleResult({
+          citations: { passed: 0, total: 0, entries: [] },
+          bibliography: { passed, total, entries },
+          oracleSource: 'biblatex',
+          authorityId,
+        });
+      } catch (error) {
+        return buildEmptyOracleResult({
+          error: `Biblatex comparator failed: ${error.message}`,
+          oracleSource: 'biblatex',
+          authorityId,
+        });
+      }
+    },
+  });
+}
+
+async function runFamilyFixtureOracle(runtime, stylePath, styleName, fixtureSetName) {
   const refsFixture = FAMILY_REFS_FIXTURES[fixtureSetName];
   const citationsFixture = FAMILY_CITATIONS_FIXTURES[fixtureSetName];
   if (!refsFixture || !citationsFixture) return null;
   if (!fs.existsSync(refsFixture) || !fs.existsSync(citationsFixture)) return null;
 
-  try {
-    const liveScript = path.join(__dirname, 'oracle.js');
-    const cmd = `node "${liveScript}" "${stylePath}" --json --refs-fixture "${refsFixture}" --citations-fixture "${citationsFixture}"`;
-    const stdout = execSync(cmd, {
-      encoding: 'utf8',
-      timeout: 120000,
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
-    return JSON.parse(stdout);
-  } catch (err) {
-    if ((err.status === 1) && err.stdout) {
-      try { return JSON.parse(err.stdout.toString()); } catch { /* fall through */ }
-    }
-    process.stderr.write(`[family-fixture] ${styleName}/${fixtureSetName}: ${err.message}\n`);
-    return null;
-  }
+  const liveScript = path.join(__dirname, 'oracle.js');
+  return runCachedJsonJob(runtime, {
+    kind: 'familyFixture',
+    cacheKey: {
+      backend: 'familyFixture',
+      styleName,
+      stylePath,
+      refsFixture,
+      citationsFixture,
+      styleHash: hashFile(stylePath),
+      refsHash: hashFile(refsFixture),
+      citationsHash: hashFile(citationsFixture),
+    },
+    async compute() {
+      const result = await runNodeOracleScript(liveScript, [
+        stylePath,
+        '--json',
+        '--refs-fixture', refsFixture,
+        '--citations-fixture', citationsFixture,
+      ]);
+      if ((result.code === 0 || result.code === 1) && result.stdout.trim()) {
+        try {
+          return JSON.parse(result.stdout);
+        } catch (error) {
+          process.stderr.write(`[family-fixture] ${styleName}/${fixtureSetName}: ${error.message}\n`);
+          return null;
+        }
+      }
+      process.stderr.write(`[family-fixture] ${styleName}/${fixtureSetName}: ${result.stderr || result.stdout || `exit ${result.code}`}\n`);
+      return null;
+    },
+  });
 }
 
 /**
@@ -530,6 +896,49 @@ function mergeOracleResults(main, extra) {
   };
 
   return main;
+}
+
+function mergeCitationResults(main, extra) {
+  if (!extra) return main;
+
+  const mainCitations = main.citations || { passed: 0, total: 0, entries: [] };
+  const extraCitations = extra.citations || { passed: 0, total: 0, entries: [] };
+  main.citations = {
+    passed: (mainCitations.passed || 0) + (extraCitations.passed || 0),
+    total: (mainCitations.total || 0) + (extraCitations.total || 0),
+    entries: [...(mainCitations.entries || []), ...(extraCitations.entries || [])],
+  };
+
+  const mergedByType = { ...(main.citationsByType || {}) };
+  for (const [refType, stats] of Object.entries(extra.citationsByType || {})) {
+    const current = mergedByType[refType] || { passed: 0, total: 0 };
+    mergedByType[refType] = {
+      passed: (current.passed || 0) + (stats.passed || 0),
+      total: (current.total || 0) + (stats.total || 0),
+    };
+  }
+  main.citationsByType = mergedByType;
+
+  return main;
+}
+
+function mergeOracleErrors(...results) {
+  return results
+    .map((result) => result?.error)
+    .filter(Boolean)
+    .join('\n');
+}
+
+function composeScopedOracleResult(citationResult, bibliographyResult) {
+  const combinedError = mergeOracleErrors(citationResult, bibliographyResult);
+  return {
+    citations: citationResult?.citations || { passed: 0, total: 0, entries: [] },
+    bibliography: bibliographyResult?.bibliography || { passed: 0, total: 0, entries: [] },
+    citationsByType: citationResult?.citationsByType || {},
+    componentSummary: bibliographyResult?.componentSummary || {},
+    oracleSource: bibliographyResult?.oracleSource || citationResult?.oracleSource || 'citeproc-js',
+    error: combinedError || null,
+  };
 }
 
 /**
@@ -980,8 +1389,9 @@ function computeQualityMetrics(styleSpec, oracleResult) {
   };
 }
 
-function buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy, benchmarkSource) {
-  const normalizedBenchmark = normalizeBenchmarkSource(benchmarkSource);
+function buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy) {
+  const citationAuthority = resolveScopeAuthority(stylePolicy, 'citation');
+  const bibliographyAuthority = resolveScopeAuthority(stylePolicy, 'bibliography');
   return {
     cslReach: styleSpec.cslReach,
     dependents: styleSpec.cslReach,
@@ -989,10 +1399,19 @@ function buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy, benc
     originKey: styleSpec.originKey,
     originLabel: styleSpec.originLabel,
     originSortRank: styleSpec.originSortRank,
-    benchmarkSource: normalizedBenchmark,
-    benchmarkLabel: formatAuthorityLabel(normalizedBenchmark),
+    benchmarkSource: normalizeBenchmarkSource(stylePolicy.authority),
+    benchmarkAuthorityId: stylePolicy.authorityId,
+    benchmarkLabel: formatAuthorityLabel(stylePolicy.authority, stylePolicy.authorityId),
+    citationAuthorityLabel: formatAuthorityLabel(citationAuthority.authority, citationAuthority.authorityId),
+    bibliographyAuthorityLabel: formatAuthorityLabel(bibliographyAuthority.authority, bibliographyAuthority.authorityId),
+    hasScopedAuthorities: citationAuthority.authority !== bibliographyAuthority.authority
+      || citationAuthority.authorityId !== bibliographyAuthority.authorityId,
     secondarySources: stylePolicy.secondary,
-    secondarySourceLabels: (stylePolicy.secondary || []).map(formatAuthorityLabel),
+    secondarySourceLabels: (stylePolicy.secondary || []).map((authority) => formatAuthorityLabel(authority)),
+    regressionBaseline: stylePolicy.regressionBaseline,
+    regressionBaselineLabel: stylePolicy.regressionBaseline
+      ? formatAuthorityLabel(stylePolicy.regressionBaseline)
+      : null,
     verificationScopes: stylePolicy.scopes,
     fixtureFamily: sufficiencyPolicy.family,
     defaultReportSufficient: sufficiencyPolicy.defaultReportSufficient,
@@ -1003,66 +1422,68 @@ function buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy, benc
   };
 }
 
-/**
- * Generate compatibility report
- */
-function generateReport(options) {
-  const stylesDir = getStylesDir(options.stylesDir);
-  const coreStyles = discoverCoreStyles();
-  const divergences = loadDivergences();
-  const verificationPolicy = loadVerificationPolicy();
-  const fixtureSufficiency = loadFixtureSufficiency();
-  const generated = getTimestamp();
-  const gitCommit = getGitCommit();
-
-  const styles = [];
-  let citationsTotal = 0;
-  let citationsPassed = 0;
-  let biblioTotal = 0;
-  let biblioPassed = 0;
-  let qualityTotal = 0;
-  let qualityCount = 0;
-  let errorCount = 0;
+function preflightSnapshots(coreStyles, verificationPolicy, stylesDir) {
+  const issues = [];
 
   for (const styleSpec of coreStyles) {
     const stylePolicy = resolveVerificationPolicy(styleSpec.name, verificationPolicy);
-    const sufficiencyPolicy = resolveFixtureSufficiency(stylePolicy.fixtureFamily, fixtureSufficiency);
-    const primaryComparator = selectPrimaryComparator(styleSpec, stylePolicy);
+    const citationAuthority = resolveScopeAuthority(stylePolicy, 'citation');
+    if (citationAuthority.authority !== 'citeproc-js') continue;
 
-    // Styles explicitly pinned to a Citum regression baseline keep that comparator
-    // until the family comparison corpus is sufficient for a safe authority flip.
-    if (primaryComparator === 'citum-baseline') {
-      const oracleResult = runNativeOracle(styleSpec.name);
-      if (oracleResult.error) {
-        errorCount++;
-        process.stderr.write(`Error processing native ${styleSpec.name}: ${oracleResult.error}\n`);
-      }
-      const fidelityScore = computeFidelityScore(oracleResult);
-      const bibliography = oracleResult.bibliography || { passed: 0, total: 0 };
-      biblioPassed += bibliography.passed || 0;
-      biblioTotal += bibliography.total || 0;
-      const nativeCitations = oracleResult.citations || { passed: 0, total: 0 };
-      citationsPassed += nativeCitations.passed || 0;
-      citationsTotal += nativeCitations.total || 0;
-      const qualityMetrics = computeQualityMetrics(styleSpec, oracleResult);
-      const qualityScore = qualityMetrics.score / 100;
-      qualityTotal += qualityScore;
-      qualityCount += 1;
-      let statusTier = 'failing';
-      if (oracleResult.error) {
-        statusTier = 'error';
-      } else if (fidelityScore === 1.0) {
-        statusTier = 'perfect';
-      } else if (fidelityScore > 0) {
-        statusTier = 'partial';
-      }
-      styles.push({
+    const stylePath = path.join(stylesDir, `${styleSpec.sourceName}.csl`);
+    if (!fs.existsSync(stylePath)) continue;
+    const citationsFixture = styleSpec.format === 'note' ? NOTE_CITATIONS_FIXTURE : DEFAULT_CITATIONS_FIXTURE;
+    const snapshotStatus = getCslSnapshotStatus(stylePath, DEFAULT_REFS_FIXTURE, citationsFixture);
+    if (!snapshotStatus.ok) {
+      issues.push({
+        style: styleSpec.name,
+        sourceName: styleSpec.sourceName,
+        status: snapshotStatus.status,
+        message: snapshotStatus.message,
+      });
+    }
+  }
+
+  return issues.sort((left, right) => left.style.localeCompare(right.style));
+}
+
+async function processStyleReport(runtime, styleSpec, context) {
+  const {
+    divergences,
+    stylesDir,
+    verificationPolicy,
+    fixtureSufficiency,
+  } = context;
+  const stylePolicy = resolveVerificationPolicy(styleSpec.name, verificationPolicy);
+  const sufficiencyPolicy = resolveFixtureSufficiency(stylePolicy.fixtureFamily, fixtureSufficiency);
+  const primaryComparator = selectPrimaryComparator(styleSpec, stylePolicy);
+  const citationAuthority = resolveScopeAuthority(stylePolicy, 'citation');
+  const bibliographyAuthority = resolveScopeAuthority(stylePolicy, 'bibliography');
+
+  if (primaryComparator === 'citum-baseline') {
+    const oracleResult = await runNativeOracle(runtime, styleSpec.name);
+    const fidelityScore = computeFidelityScore(oracleResult);
+    const bibliography = oracleResult.bibliography || { passed: 0, total: 0 };
+    const citations = oracleResult.citations || { passed: 0, total: 0 };
+    const qualityMetrics = computeQualityMetrics(styleSpec, oracleResult);
+    const qualityScore = qualityMetrics.score / 100;
+    let statusTier = 'failing';
+    if (oracleResult.error) {
+      statusTier = 'error';
+    } else if (fidelityScore === 1.0) {
+      statusTier = 'perfect';
+    } else if (fidelityScore > 0) {
+      statusTier = 'partial';
+    }
+
+    return {
+      styleRecord: {
         name: styleSpec.name,
         format: styleSpec.format,
         hasBibliography: styleSpec.hasBibliography,
-        ...buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy, primaryComparator),
+        ...buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy),
         fidelityScore: parseFloat(fidelityScore.toFixed(3)),
-        citations: nativeCitations,
+        citations,
         bibliography,
         knownDivergences: divergences[styleSpec.name] || [],
         citationsByType: oracleResult.citationsByType || {},
@@ -1075,18 +1496,24 @@ function generateReport(options) {
         qualityScore: parseFloat(qualityScore.toFixed(3)),
         qualityBreakdown: qualityMetrics,
         oracleSource: 'citum-baseline',
-      });
-      continue;
-    }
+      },
+      errorCount: oracleResult.error ? 1 : 0,
+      citations,
+      bibliography,
+      qualityScore,
+    };
+  }
 
-    const stylePath = path.join(stylesDir, `${styleSpec.sourceName}.csl`);
+  const stylePath = path.join(stylesDir, `${styleSpec.sourceName}.csl`);
+  const styleYamlPath = path.join(PROJECT_ROOT, 'styles', `${styleSpec.name}.yaml`);
 
-    if (!fs.existsSync(stylePath)) {
-      styles.push({
+  if (citationAuthority.authority === 'citeproc-js' && !fs.existsSync(stylePath)) {
+    return {
+      styleRecord: {
         name: styleSpec.name,
         format: styleSpec.format,
         hasBibliography: styleSpec.hasBibliography,
-        ...buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy, primaryComparator),
+        ...buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy),
         fidelityScore: 0,
         citations: { passed: 0, total: 0 },
         bibliography: { passed: 0, total: 0 },
@@ -1096,60 +1523,63 @@ function generateReport(options) {
         oracleDetail: null,
         qualityScore: 0,
         qualityBreakdown: null,
-      });
-      errorCount++;
-      continue;
-    }
+      },
+      errorCount: 1,
+      citations: { passed: 0, total: 0 },
+      bibliography: { passed: 0, total: 0 },
+      qualityScore: 0,
+    };
+  }
 
-    const oracleResult = runOracle(stylePath, styleSpec.name, styleSpec.format);
-    if (oracleResult.error) {
-      errorCount++;
-      process.stderr.write(`Error processing ${styleSpec.name}: ${oracleResult.error}\n`);
-    }
+  let oracleResult;
+  if (citationAuthority.authority === 'citeproc-js' && bibliographyAuthority.authority === 'biblatex') {
+    const [citationResult, bibliographyResult] = await Promise.all([
+      runCiteprocSnapshotOracle(runtime, stylePath, styleSpec.name, styleSpec.format),
+      runBiblatexSnapshotOracle(runtime, styleSpec.name, styleYamlPath, bibliographyAuthority.authorityId),
+    ]);
+    oracleResult = composeScopedOracleResult(citationResult, bibliographyResult);
+  } else if (primaryComparator === 'biblatex') {
+    oracleResult = await runBiblatexSnapshotOracle(runtime, styleSpec.name, styleYamlPath, stylePolicy.authorityId);
+  } else {
+    oracleResult = await runCiteprocSnapshotOracle(runtime, stylePath, styleSpec.name, styleSpec.format);
+  }
 
-    // Run additional oracle passes for family-specific fixture sets
-    const familySets = (sufficiencyPolicy.fixtureSets || [])
-      .filter(s => s !== 'core' && s !== 'note' && FAMILY_REFS_FIXTURES[s]);
+  const familySets = (sufficiencyPolicy.fixtureSets || [])
+    .filter((setName) => setName !== 'core' && setName !== 'note' && FAMILY_REFS_FIXTURES[setName]);
+  if (citationAuthority.authority === 'citeproc-js' && fs.existsSync(stylePath)) {
     for (const setName of familySets) {
-      const extra = runFamilyFixtureOracle(stylePath, styleSpec.name, styleSpec.format, setName);
-      if (extra) mergeOracleResults(oracleResult, extra);
+      const extra = await runFamilyFixtureOracle(runtime, stylePath, styleSpec.name, setName);
+      if (!extra) continue;
+      if (bibliographyAuthority.authority === 'citeproc-js') {
+        mergeOracleResults(oracleResult, extra);
+      } else {
+        mergeCitationResults(oracleResult, extra);
+      }
     }
+  }
 
-    const fidelityScore = computeFidelityScore(oracleResult);
+  const fidelityScore = computeFidelityScore(oracleResult);
+  const citations = oracleResult.citations || { passed: 0, total: 0 };
+  const bibliography = oracleResult.bibliography || { passed: 0, total: 0 };
+  const componentMatchRate = computeComponentMatchRate(oracleResult);
+  const qualityMetrics = computeQualityMetrics(styleSpec, oracleResult);
+  const qualityScore = qualityMetrics.score / 100;
 
-    const citations = oracleResult.citations || { passed: 0, total: 0 };
-    const bibliography = oracleResult.bibliography || { passed: 0, total: 0 };
+  let statusTier = 'failing';
+  if (oracleResult.error) {
+    statusTier = 'error';
+  } else if (fidelityScore === 1.0) {
+    statusTier = 'perfect';
+  } else if (fidelityScore > 0) {
+    statusTier = 'partial';
+  }
 
-    citationsTotal += citations.total || 0;
-    citationsPassed += citations.passed || 0;
-    biblioTotal += bibliography.total || 0;
-    biblioPassed += bibliography.passed || 0;
-
-    const componentMatchRate = computeComponentMatchRate(oracleResult);
-    const qualityMetrics = computeQualityMetrics(styleSpec, oracleResult);
-    const qualityScore = qualityMetrics.score / 100;
-    qualityTotal += qualityScore;
-    qualityCount += 1;
-
-    let statusTier = 'failing';
-    if (oracleResult.error) {
-      statusTier = 'error';
-    } else if (fidelityScore === 1.0) {
-      statusTier = 'perfect';
-    } else if (fidelityScore > 0) {
-      statusTier = 'partial';
-    }
-
-    styles.push({
+  return {
+    styleRecord: {
       name: styleSpec.name,
       format: styleSpec.format,
       hasBibliography: styleSpec.hasBibliography,
-      ...buildPresentationFields(
-        styleSpec,
-        stylePolicy,
-        sufficiencyPolicy,
-        oracleResult.oracleSource || primaryComparator
-      ),
+      ...buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy),
       fidelityScore: parseFloat(fidelityScore.toFixed(3)),
       citations,
       bibliography,
@@ -1163,8 +1593,70 @@ function generateReport(options) {
       oracleDetail: oracleResult.bibliography ? oracleResult.bibliography.entries : null,
       qualityScore: parseFloat(qualityScore.toFixed(3)),
       qualityBreakdown: qualityMetrics,
-      oracleSource: oracleResult.oracleSource || 'citeproc-js',
+      oracleSource: oracleResult.oracleSource || primaryComparator,
+    },
+    errorCount: oracleResult.error ? 1 : 0,
+    citations,
+    bibliography,
+    qualityScore,
+  };
+}
+
+/**
+ * Generate compatibility report
+ */
+async function generateReport(options) {
+  const stylesDir = getStylesDir(options.stylesDir);
+  const provenanceConfig = loadReportProvenance();
+  const coreStyles = discoverCoreStyles(provenanceConfig);
+  const divergences = loadDivergences();
+  const verificationPolicy = loadVerificationPolicy();
+  const fixtureSufficiency = loadFixtureSufficiency();
+  const generated = getTimestamp();
+  const gitCommit = getGitCommit();
+  const runtime = createReportRuntime(options);
+  const preflightIssues = preflightSnapshots(coreStyles, verificationPolicy, stylesDir);
+
+  if (!runtime.allowLiveFallback && preflightIssues.length > 0) {
+    for (const issue of preflightIssues) {
+      process.stderr.write(`[snapshot ${issue.status}] ${issue.style}: ${issue.message}\n`);
+    }
+  }
+
+  const styleJobs = await mapWithConcurrency(coreStyles, options.parallelism || DEFAULT_PARALLELISM, async (styleSpec) => {
+    const result = await processStyleReport(runtime, styleSpec, {
+      divergences,
+      stylesDir,
+      verificationPolicy,
+      fixtureSufficiency,
     });
+    if (result.styleRecord.error) {
+      process.stderr.write(`Error processing ${styleSpec.name}: ${result.styleRecord.error}\n`);
+    }
+    return result;
+  });
+
+  const styles = styleJobs
+    .map((job) => job.styleRecord)
+    .sort((left, right) => left.name.localeCompare(right.name));
+  let citationsTotal = 0;
+  let citationsPassed = 0;
+  let biblioTotal = 0;
+  let biblioPassed = 0;
+  let qualityTotal = 0;
+  let qualityCount = 0;
+  let errorCount = 0;
+
+  for (const job of styleJobs) {
+    const citations = job.citations || { passed: 0, total: 0 };
+    const bibliography = job.bibliography || { passed: 0, total: 0 };
+    citationsTotal += citations.total || 0;
+    citationsPassed += citations.passed || 0;
+    biblioTotal += bibliography.total || 0;
+    biblioPassed += bibliography.passed || 0;
+    qualityTotal += job.qualityScore || 0;
+    qualityCount += 1;
+    errorCount += job.errorCount || 0;
   }
 
   const knownDependents = coreStyles
@@ -1185,6 +1677,13 @@ function generateReport(options) {
         styles: coreStyles.map((style) => style.name),
         generator: 'scripts/report-core.js',
         extraFixtures: ['tests/fixtures/citations-note-expanded.json'],
+        parallelism: options.parallelism || DEFAULT_PARALLELISM,
+        cacheDir: runtime.cacheDir,
+        preflight: {
+          snapshotIssues: preflightIssues,
+          allowLiveFallback: runtime.allowLiveFallback,
+        },
+        ...(options.timings ? { timings: serializeTimingSummary(runtime) } : {}),
       },
       totalImpact: parseFloat(totalImpact),
       totalStyles: coreStyles.length,
@@ -1223,7 +1722,7 @@ function generateHtmlHeader(report) {
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Citum | Style Compatibility Report</title>
     <meta name="description"
-        content="Compatibility metrics for Citum against citeproc-js reference implementation.">
+        content="Compatibility metrics for Citum against declared style authority sources.">
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
     <link
@@ -1425,8 +1924,9 @@ function generateHtmlSqiExplainer() {
                     SQI should never be improved at the cost of fidelity.
                 </p>
                 <p class="text-sm text-slate-600 mb-4">
-                    <strong>Origin</strong> shows whether a style was migrated from CSL or hand-authored from CSL or biblatex sources.
-                    <strong>Benchmark</strong> shows the primary authority used for fidelity checks.
+                    <strong>Lineage</strong> shows the source family a style derives from.
+                    <strong>Authority</strong> shows the declared benchmark used for fidelity checks.
+                    <strong>Regression baseline</strong> is listed separately when Citum snapshots are retained only as an internal guardrail.
                     <strong>CSL Reach</strong> is the count of dependent legacy CSL styles for comparable parents and is blank when there is no meaningful CSL analogue.
                 </p>
                 <a class="text-sm font-medium text-primary hover:underline" href="reference/SQI.md">
@@ -1594,11 +2094,11 @@ ${generateDetailContent(style)}
                             </th>
                             <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
                                 <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('origin')">
-                                    Origin <span class="text-slate-400" id="sort-ind-origin">↕</span>
+                                    Lineage <span class="text-slate-400" id="sort-ind-origin">↕</span>
                                 </button>
                             </th>
                             <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
-                                Benchmark
+                                Authority
                             </th>
                             <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
                                 <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('csl-reach')">
@@ -1666,9 +2166,12 @@ function generateDetailContent(style) {
                             <div class="mb-4 p-3 rounded border border-slate-200 bg-white">
                                 <div class="text-xs font-semibold text-slate-900 mb-2">Verification Context</div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                                    <div><span class="font-semibold text-slate-700">Origin:</span> <span class="font-mono text-slate-600">${escapeHtml(style.originLabel || '—')}</span></div>
-                                    <div><span class="font-semibold text-slate-700">Benchmark:</span> <span class="font-mono text-slate-600">${escapeHtml(style.benchmarkLabel || '—')}</span></div>
+                                    <div><span class="font-semibold text-slate-700">Lineage:</span> <span class="font-mono text-slate-600">${escapeHtml(style.originLabel || '—')}</span></div>
+                                    <div><span class="font-semibold text-slate-700">Authority:</span> <span class="font-mono text-slate-600">${escapeHtml(style.benchmarkLabel || '—')}</span></div>
+                                    ${style.hasScopedAuthorities ? `<div><span class="font-semibold text-slate-700">Citation authority:</span> <span class="font-mono text-slate-600">${escapeHtml(style.citationAuthorityLabel || '—')}</span></div>` : ''}
+                                    ${style.hasScopedAuthorities ? `<div><span class="font-semibold text-slate-700">Bibliography authority:</span> <span class="font-mono text-slate-600">${escapeHtml(style.bibliographyAuthorityLabel || '—')}</span></div>` : ''}
                                     <div><span class="font-semibold text-slate-700">Secondary:</span> <span class="font-mono text-slate-600">${escapeHtml(secondaryLabels)}</span></div>
+                                    ${style.regressionBaselineLabel ? `<div><span class="font-semibold text-slate-700">Regression baseline:</span> <span class="font-mono text-slate-600">${escapeHtml(style.regressionBaselineLabel)}</span></div>` : ''}
                                     <div><span class="font-semibold text-slate-700">CSL Reach:</span> <span class="font-mono text-slate-600">${escapeHtml(cslReachText)}</span></div>
                                 </div>
                                 ${style.verificationNote ? `<div class="mt-3 text-xs text-slate-600"><strong>Note:</strong> ${escapeHtml(style.verificationNote)}</div>` : ''}
@@ -2058,10 +2561,10 @@ function escapeHtml(text) {
 /**
  * Main entry point
  */
-function main() {
+async function main() {
   try {
     const options = parseArgs();
-    const { report, errorCount } = generateReport(options);
+    const { report, errorCount } = await generateReport(options);
 
     // Output JSON to stdout
     console.log(JSON.stringify(report, null, 2));
@@ -2095,12 +2598,17 @@ if (require.main === module) {
 }
 
 module.exports = {
-  classifyStyleOrigin,
+  createReportRuntime,
   discoverCoreStyles,
   formatAuthorityLabel,
+  getCslSnapshotStatus,
   generateHtml,
   generateReport,
   getComparisonEntryTexts,
+  mapWithConcurrency,
   normalizeBenchmarkSource,
+  preflightSnapshots,
+  runCachedJsonJob,
   selectPrimaryComparator,
+  serializeTimingSummary,
 };

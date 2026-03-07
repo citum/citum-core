@@ -18,12 +18,7 @@
       "springer-basic-brackets",
       "springer-socpsych-author-date",
       "springer-vancouver-brackets",
-      "taylor-and-francis-chicago-author-date",
-      "angewandte-chemie",
-      "chem-acs",
-      "chem-biochem",
-      "chem-rsc",
-      "numeric-comp"
+      "taylor-and-francis-chicago-author-date"
     ],
     "generator": "scripts/report-core.js",
     "extraFixtures": [
@@ -96,36 +91,6 @@
       "quality": 89.7,
       "concision": 97.6,
       "presetUsage": 70
-    },
-    "angewandte-chemie": {
-      "fidelityScore": 1,
-      "quality": 63.0,
-      "concision": 98.2,
-      "presetUsage": 90
-    },
-    "chem-acs": {
-      "fidelityScore": 1,
-      "quality": 64.8,
-      "concision": 99.3,
-      "presetUsage": 100
-    },
-    "chem-biochem": {
-      "fidelityScore": 1,
-      "quality": 63.5,
-      "concision": 100.0,
-      "presetUsage": 90
-    },
-    "chem-rsc": {
-      "fidelityScore": 1,
-      "quality": 62.8,
-      "concision": 97.0,
-      "presetUsage": 90
-    },
-    "numeric-comp": {
-      "fidelityScore": 1,
-      "quality": 63.5,
-      "concision": 100.0,
-      "presetUsage": 90
     }
   }
 }

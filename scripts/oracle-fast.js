@@ -249,14 +249,15 @@ function run() {
   }
 
   // 2. Load fixtures for CSLN rendering
+  const refsData = JSON.parse(fs.readFileSync(opts.refsFixture, 'utf8'));
   const testItems = Object.fromEntries(
-    Object.entries(JSON.parse(fs.readFileSync(opts.refsFixture, 'utf8')))
+    Object.entries(refsData)
       .filter(([k]) => k !== 'comment')
   );
   const testCitations = JSON.parse(fs.readFileSync(opts.citationsFixture, 'utf8'));
 
   // 3. Render with Citum
-  const csln = renderWithCslnProcessor(opts.stylePath, testItems, testCitations);
+  const csln = renderWithCslnProcessor(opts.stylePath, refsData, testItems, testCitations);
   if (!csln || csln.error) {
     const reason = csln?.error ?? 'Processor execution error';
     if (opts.jsonOutput) {
