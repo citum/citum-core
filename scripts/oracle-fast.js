@@ -6,7 +6,7 @@
  * tests/snapshots/csl/<style>.json and diffs against the live Citum renderer.
  * Drop-in replacement for oracle.js in report-core.js non-migrate runs.
  *
- * Requires a current snapshot. If missing or stale, exits 2 with instructions.
+ * Requires a current snapshot. Exits 2 if snapshot is missing, 3 if stale.
  * To regenerate: node scripts/oracle-snapshot.js <style.csl>
  *
  * Usage:
@@ -17,7 +17,8 @@
  * Exit codes:
  *   0 — all citations and bibliography match
  *   1 — mismatches found
- *   2 — missing/stale snapshot, or render error
+ *   2 — snapshot file missing
+ *   3 — snapshot stale (fixture or CSL changed)
  */
 
 'use strict';
@@ -79,16 +80,19 @@ function fixtureHash(refsFixture, citationsFixture) {
 // Snapshot loading with staleness guard
 // ---------------------------------------------------------------------------
 
+class SnapshotMissingError extends Error {}
+class SnapshotStaleError extends Error {}
+
 /**
  * Load snapshot for a CSL style, validating the fixture_hash.
- * Returns the parsed snapshot or throws with an actionable message.
+ * Returns the parsed snapshot or throws SnapshotMissingError / SnapshotStaleError.
  */
 function loadSnapshot(stylePath, refsFixture, citationsFixture) {
   const styleName = path.basename(stylePath, '.csl');
   const snapPath = path.join(SNAPSHOT_DIR, `${styleName}.json`);
 
   if (!fs.existsSync(snapPath)) {
-    throw new Error(
+    throw new SnapshotMissingError(
       `Snapshot missing for ${styleName}.\n` +
       `  Run: node scripts/oracle-snapshot.js ${stylePath}`
     );
@@ -98,7 +102,7 @@ function loadSnapshot(stylePath, refsFixture, citationsFixture) {
   const currentHash = fixtureHash(refsFixture, citationsFixture);
 
   if (snap.fixture_hash !== currentHash) {
-    throw new Error(
+    throw new SnapshotStaleError(
       `Snapshot stale for ${styleName} (fixture changed).\n` +
       `  Run: node scripts/oracle-snapshot.js ${stylePath}`
     );
@@ -241,7 +245,7 @@ function run() {
     snapshot = loadSnapshot(opts.stylePath, opts.refsFixture, opts.citationsFixture);
   } catch (err) {
     process.stderr.write(`oracle-fast: ${err.message}\n`);
-    process.exit(2);
+    process.exit(err instanceof SnapshotStaleError ? 3 : 2);
   }
 
   // 2. Load fixtures for CSLN rendering

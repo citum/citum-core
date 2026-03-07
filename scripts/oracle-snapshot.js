@@ -36,7 +36,18 @@ const PROJECT_ROOT = path.resolve(__dirname, '..');
 const SNAPSHOT_DIR = path.join(PROJECT_ROOT, 'tests', 'snapshots', 'csl');
 const DEFAULT_REFS_FIXTURE = path.join(PROJECT_ROOT, 'tests', 'fixtures', 'references-expanded.json');
 const DEFAULT_CITATIONS_FIXTURE = path.join(PROJECT_ROOT, 'tests', 'fixtures', 'citations-expanded.json');
+const NOTE_CITATIONS_FIXTURE = path.join(PROJECT_ROOT, 'tests', 'fixtures', 'citations-note-expanded.json');
 const STYLES_LEGACY_DIR = path.join(PROJECT_ROOT, 'styles-legacy');
+
+/** Return true if the CSL file is a note-class style (class="note" on <style>). */
+function isNoteStyle(stylePath) {
+  try {
+    const xml = fs.readFileSync(stylePath, 'utf8');
+    return /<style[^>]+class=["']note["']/.test(xml);
+  } catch {
+    return false;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Argument parsing
@@ -211,7 +222,7 @@ function generateSnapshot(stylePath, { testItems, testCitations }, fxHash, opts)
 // Batch: process all CSL styles with a concurrency limit
 // ---------------------------------------------------------------------------
 
-async function generateAll(opts, fixtures, fxHash) {
+async function generateAll(opts) {
   if (!fs.existsSync(STYLES_LEGACY_DIR)) {
     process.stderr.write(
       `styles-legacy/ not found at ${STYLES_LEGACY_DIR}\n` +
@@ -224,6 +235,12 @@ async function generateAll(opts, fixtures, fxHash) {
     .filter((f) => f.endsWith('.csl'))
     .map((f) => path.join(STYLES_LEGACY_DIR, f));
 
+  // Pre-compute fixtures for both style classes
+  const stdFixtures = loadFixtures(opts.refsFixture, opts.citationsFixture);
+  const stdHash = fixtureHash(opts.refsFixture, opts.citationsFixture);
+  const noteFixtures = loadFixtures(opts.refsFixture, NOTE_CITATIONS_FIXTURE);
+  const noteHash = fixtureHash(opts.refsFixture, NOTE_CITATIONS_FIXTURE);
+
   let written = 0;
   let skipped = 0;
   let failed = 0;
@@ -235,6 +252,10 @@ async function generateAll(opts, fixtures, fxHash) {
   for (let i = 0; i < allStyles.length; i += concurrency) {
     const chunk = allStyles.slice(i, i + concurrency);
     for (const stylePath of chunk) {
+      // Auto-select note fixture unless caller explicitly overrode --citations-fixture
+      const useNote = opts.citationsFixture === DEFAULT_CITATIONS_FIXTURE && isNoteStyle(stylePath);
+      const fixtures = useNote ? noteFixtures : stdFixtures;
+      const fxHash = useNote ? noteHash : stdHash;
       const result = generateSnapshot(stylePath, fixtures, fxHash, opts);
       processed++;
       if (result === 'written') {
@@ -273,18 +294,22 @@ async function main() {
     process.exit(1);
   }
 
-  const fixtures = loadFixtures(opts.refsFixture, opts.citationsFixture);
-  const fxHash = fixtureHash(opts.refsFixture, opts.citationsFixture);
-
   if (opts.all) {
-    process.exit(await generateAll(opts, fixtures, fxHash));
+    process.exit(await generateAll(opts));
   }
 
-  // Single style
+  // Single style — auto-detect note format unless caller overrode --citations-fixture
   if (!fs.existsSync(opts.stylePath)) {
     process.stderr.write(`Style not found: ${opts.stylePath}\n`);
     process.exit(1);
   }
+
+  if (opts.citationsFixture === DEFAULT_CITATIONS_FIXTURE && isNoteStyle(opts.stylePath)) {
+    opts.citationsFixture = NOTE_CITATIONS_FIXTURE;
+  }
+
+  const fixtures = loadFixtures(opts.refsFixture, opts.citationsFixture);
+  const fxHash = fixtureHash(opts.refsFixture, opts.citationsFixture);
 
   const result = generateSnapshot(opts.stylePath, fixtures, fxHash, opts);
   const styleName = path.basename(opts.stylePath, '.csl');
