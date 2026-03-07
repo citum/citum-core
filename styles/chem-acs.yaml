@@ -48,45 +48,65 @@ bibliography:
       delimiter-precedes-last: always
       sort-separator: ", "
   template:
+    - number: citation-number
+      wrap: parentheses
+      suffix: " "
     - contributor: author
       form: long
       name-order: family-first
     - title: primary
       prefix: " "
+      suffix: "."
     - title: parent-monograph
       emph: true
+      prefix: " In "
     - title: parent-serial
       emph: true
+      prefix: " "
     - contributor: editor
-      form: verb
+      form: long
       name-order: family-first
+      suffix: ", Eds."
+      prefix: ", "
+      overrides:
+        book:
+          prefix: "; "
     - variable: publisher
       prefix: "; "
     - variable: publisher-place
       prefix: ": "
     - date: issued
       form: year
-      prefix: ", "
+      prefix: " "
       overrides:
+        book:
+          prefix: ", "
+        report:
+          prefix: ", "
+        thesis:
+          prefix: ", "
         chapter:
-          suppress: true
+          prefix: ": "
         paper-conference:
-          suppress: true
-        entry-encyclopedia:
-          suppress: true
+          prefix: ", "
     - items:
         - number: volume
         - number: issue
           overrides:
+            article-journal:
+              suppress: true
             article-magazine:
               suppress: true
       prefix: ", "
     - number: pages
       prefix: ", "
-    - variable: doi
       overrides:
-        article-journal:
-          prefix: https://doi.org/
+        chapter:
+          prefix: ", pp "
+        paper-conference:
+          prefix: ", pp "
+    - variable: doi
+      prefix: ", DOI: "
     - variable: url
   type-templates:
     patent:

@@ -43,55 +43,103 @@ bibliography:
       initialize-with: ". "
       delimiter: ", "
       delimiter-precedes-last: always
+      role:
+        omit:
+          - editor
   template:
     - number: citation-number
       wrap: brackets
       suffix: " "
     - contributor: author
       form: long
-      name-order: family-first
+      name-order: given-first
     - title: primary
-      prefix: " "
+      prefix: ", "
       overrides:
         article-journal:
           suppress: true
         article-magazine:
           suppress: true
+        article-newspaper:
+          suppress: true
         dataset:
           suppress: true
         standard:
           suppress: true
+        chapter:
+          suppress: true
+        paper-conference:
+          suppress: true
+        entry-encyclopedia:
+          suppress: true
+        motion_picture:
+          suppress: false
+        broadcast:
+          suppress: false
     - title: parent-serial
-      emph: true
-      prefix: " "
+      prefix: ", "
       overrides:
         book:
           suppress: true
         chapter:
           suppress: true
+        broadcast:
+          suppress: true
+        motion_picture:
+          suppress: true
+        entry-encyclopedia:
+          prefix: " in "
     - title: parent-monograph
-      emph: true
-      prefix: " "
+      prefix: " in "
     - contributor: editor
-      form: short
+      form: long
       name-order: given-first
-      prefix: " ("
+      prefix: ", (Eds.: "
       suffix: ")"
+      overrides:
+        report:
+          suppress: true
     - variable: publisher
       prefix: ", "
+      overrides:
+        article-journal:
+          suppress: true
+        article-magazine:
+          suppress: true
+        article-newspaper:
+          suppress: true
+        report:
+          suppress: true
     - variable: publisher-place
       prefix: ", "
+      overrides:
+        article-journal:
+          suppress: true
+        article-magazine:
+          suppress: true
+        article-newspaper:
+          suppress: true
     - date: issued
       form: year
-      strong: true
-      prefix: " "
+      prefix: ", "
+      overrides:
+        article-journal:
+          prefix: " "
+        article-magazine:
+          prefix: " "
+        article-newspaper:
+          prefix: " "
     - number: volume
-      emph: true
       prefix: ", "
     - number: pages
       prefix: ", "
+      overrides:
+        chapter:
+          prefix: ", pp. "
+        paper-conference:
+          prefix: ", pp. "
     - variable: doi
-      prefix: " DOI "
+      prefix: ", DOI "
   type-templates:
     standard:
       - number: citation-number
@@ -105,7 +153,7 @@ bibliography:
         suffix: " "
       - contributor: author
         form: long
-        name-order: family-first
+        name-order: given-first
       - title: primary
         prefix: " "
       - variable: url
@@ -122,7 +170,7 @@ bibliography:
         suffix: " "
       - contributor: author
         form: long
-        name-order: family-first
+        name-order: given-first
       - title: primary
         emph: true
         prefix: " "

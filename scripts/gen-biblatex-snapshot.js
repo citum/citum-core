@@ -345,6 +345,11 @@ function extractBibliography(rawText) {
 
   return entries
     .map((e) => e.replace(/\s+/g, ' ').trim())
+    // Strip pdftotext fixed-width label-box padding artifact.
+    // biblatex typesets numeric labels in fixed-width boxes for hanging-indent
+    // alignment; pdftotext -layout emits the padding as a literal space, e.g.
+    // "(1 )" or "[ 1]". Normalise to plain "(1)" / "[1]".
+    .map((e) => e.replace(/([(\[])\s*(\d+)\s*([)\]])/g, '$1$2$3'))
     // Remove spaces inside URLs introduced by pdftotext line-wrapping,
     // e.g. "https://stateofjs. com/2023" → "https://stateofjs.com/2023".
     // Repeatedly join (url_prefix) + (space) + (lowercase/digit continuation)
