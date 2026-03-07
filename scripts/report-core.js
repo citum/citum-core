@@ -818,6 +818,9 @@ function generateReport(options) {
       const bibliography = oracleResult.bibliography || { passed: 0, total: 0 };
       biblioPassed += bibliography.passed || 0;
       biblioTotal += bibliography.total || 0;
+      const nativeCitations = oracleResult.citations || { passed: 0, total: 0 };
+      citationsPassed += nativeCitations.passed || 0;
+      citationsTotal += nativeCitations.total || 0;
       const qualityMetrics = computeQualityMetrics(styleSpec, oracleResult);
       const qualityScore = qualityMetrics.score / 100;
       qualityTotal += qualityScore;
@@ -837,10 +840,10 @@ function generateReport(options) {
         hasBibliography: styleSpec.hasBibliography,
         impactPct: null,
         fidelityScore: parseFloat(fidelityScore.toFixed(3)),
-        citations: { passed: 0, total: 0 },
+        citations: nativeCitations,
         bibliography,
         knownDivergences: divergences[styleSpec.name] || [],
-        citationsByType: {},
+        citationsByType: oracleResult.citationsByType || {},
         error: oracleResult.error || null,
         componentMatchRate: null,
         statusTier,
@@ -849,7 +852,7 @@ function generateReport(options) {
         oracleDetail: oracleResult.bibliography ? oracleResult.bibliography.entries : null,
         qualityScore: parseFloat(qualityScore.toFixed(3)),
         qualityBreakdown: qualityMetrics,
-        oracleSource: 'citum-native',
+        oracleSource: 'snapshot',
       });
       continue;
     }

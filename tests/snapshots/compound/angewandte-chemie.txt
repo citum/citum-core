@@ -1,23 +1,38 @@
-
 === angewandte-chemie.yaml ===
 
 CITATIONS (Non-Integral):
   [1a]
   [1b]
-  [2]
+  [2a]
+  [2b]
   [3a]
   [3b]
+  [4a]
+  [4b]
+  [5]
+  [6]
 
 CITATIONS (Integral):
-  Zwart, Veenhuis, Harder [1a]
-  van der Klei, Harder, Veenhuis [1b]
-  Smith [2]
-  Jones [3a]
-  Jones [3b]
+  Chen, Li [1a]
+  Patel, Sharma [1b]
+  Zwart, Veenhuis, Harder [2a]
+  van der Klei, Harder, Veenhuis [2b]
+  Brown, Singh [3a]
+  Novak [3b]
+  Wang, Zhang [4a]
+  Garcia, Liu [4b]
+  International Union of Pure and Applied Chemistry [5]
+  Jones [6]
 
 BIBLIOGRAPHY:
-[1] a) Zwart, K. B., Veenhuis, M., Harder, W. An immunochemical analysis of the biogenesis of peroxisomes in Saccharomyces cerevisiae **1983**., b) van der Klei, I. J., Harder, W., Veenhuis, M. A morphological view on the biogenesis of peroxisomes in intact cells **1991**.
+[1] a) Chen, W., Li, X. _J. Am. Chem. Soc._ **2018**, _140_, 4258–4268 DOI 10.1021/jacs.8b00123., b) Patel, R. V., Sharma, D. K. _Angew. Chem. Int. Ed._ **2021**, _60_, 2311–2320 DOI 10.1002/anie.202011234.
 
-[2] Smith, J. A standalone article not in any compound group **2020**.
+[2] a) Zwart, K. B., Veenhuis, M., Harder, W. An immunochemical analysis of the biogenesis of peroxisomes in Saccharomyces cerevisiae **1983**., b) van der Klei, I. J., Harder, W., Veenhuis, M. A morphological view on the biogenesis of peroxisomes in intact cells **1991**.
 
-[3] a) Jones, A. Catalytic activity of transition metals **2019**., b) Jones, A. Selectivity in heterogeneous catalysis **2019**.
+[3] a) Brown, H. C., Singh, S. Transition metal catalysis in organic synthesis _Advances in Organometallic Chemistry_ (Hill, Fink), Academic Press, London **2015**, 1–85., b) Novak, P. Supramolecular coordination chemistry _Modern Inorganic Chemistry_ (Miessler), Pearson Education, New York **2017**, 210–280.
+
+[4] a) Wang, Y., Zhang, J. Machine learning approaches to drug discovery _Proceedings of the International Conference on Chemical Informatics_, ACS Publications, Washington, DC **2020**, 45–52., b) Garcia, M., Liu, H. Computational prediction of reaction yields _ACS Symposium Series_, American Chemical Society, Washington, DC **2019**, 102–109.
+
+[5] International Union of Pure and Applied Chemistry Nomenclature of Organic Chemistry, Royal Society of Chemistry **2020**.
+
+[6] Jones, A. L. Novel approaches to asymmetric synthesis, MIT **2016**.
