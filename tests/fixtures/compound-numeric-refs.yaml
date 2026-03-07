@@ -1,6 +1,45 @@
 info:
   title: Compound Numeric Fixture
+
 references:
+  # --- Set 1: two journal articles (serial-component:article) ---
+  - id: chen2018
+    class: serial-component
+    type: article
+    title: Asymmetric catalysis in total synthesis
+    author:
+      - family: Chen
+        given: W.
+      - family: Li
+        given: X.
+    issued: "2018"
+    volume: "140"
+    issue: "12"
+    pages: "4258-4268"
+    doi: 10.1021/jacs.8b00123
+    parent:
+      type: academic-journal
+      title: J. Am. Chem. Soc.
+
+  - id: patel2021
+    class: serial-component
+    type: article
+    title: Palladium-catalyzed cross-coupling reactions
+    author:
+      - family: Patel
+        given: R. V.
+      - family: Sharma
+        given: D. K.
+    issued: "2021"
+    volume: "60"
+    issue: "5"
+    pages: "2311-2320"
+    doi: 10.1002/anie.202011234
+    parent:
+      type: academic-journal
+      title: Angew. Chem. Int. Ed.
+
+  # --- Set 2: two books (monograph:book) ---
   - id: zwart1983
     class: monograph
     type: book
@@ -27,37 +66,123 @@ references:
         given: M.
     issued: "1991"
 
-  - id: smith2020
-    class: monograph
-    type: book
-    title: A standalone article not in any compound group
+  # --- Set 3: two book chapters (collection-component:chapter) ---
+  - id: brown2015
+    class: collection-component
+    type: chapter
+    title: Transition metal catalysis in organic synthesis
     author:
-      - family: Smith
-        given: John
+      - family: Brown
+        given: H. C.
+      - family: Singh
+        given: S.
+    issued: "2015"
+    pages: "1-85"
+    parent:
+      type: edited-book
+      title: Advances in Organometallic Chemistry
+      editor:
+        - family: Hill
+          given: A. F.
+        - family: Fink
+          given: M. J.
+      issued: "2015"
+      publisher:
+        name: Academic Press
+        location: London
+
+  - id: novak2017
+    class: collection-component
+    type: chapter
+    title: Supramolecular coordination chemistry
+    author:
+      - family: Novak
+        given: P.
+    issued: "2017"
+    pages: "210-280"
+    parent:
+      type: edited-book
+      title: Modern Inorganic Chemistry
+      editor:
+        - family: Miessler
+          given: G. L.
+      issued: "2017"
+      publisher:
+        name: Pearson Education
+        location: New York
+
+  # --- Set 4: two conference papers (collection-component:document) ---
+  - id: wang2020
+    class: collection-component
+    type: document
+    title: Machine learning approaches to drug discovery
+    author:
+      - family: Wang
+        given: Y.
+      - family: Zhang
+        given: J.
     issued: "2020"
+    pages: "45-52"
+    parent:
+      type: proceedings
+      title: Proceedings of the International Conference on Chemical Informatics
+      issued: "2020"
+      publisher:
+        name: ACS Publications
+        location: Washington, DC
 
-  - id: jones2019a
+  - id: garcia2019
+    class: collection-component
+    type: document
+    title: Computational prediction of reaction yields
+    author:
+      - family: Garcia
+        given: M.
+      - family: Liu
+        given: H.
+    issued: "2019"
+    pages: "102-109"
+    parent:
+      type: proceedings
+      title: ACS Symposium Series
+      issued: "2019"
+      publisher:
+        name: American Chemical Society
+        location: Washington, DC
+
+  # --- Standalone: technical report (monograph:report) ---
+  - id: iupac2020
     class: monograph
-    type: book
-    title: Catalytic activity of transition metals
+    type: report
+    title: Nomenclature of Organic Chemistry
+    author:
+      - name: International Union of Pure and Applied Chemistry
+    issued: "2020"
+    publisher:
+      name: Royal Society of Chemistry
+
+  # --- Standalone: thesis (monograph:thesis) ---
+  - id: jones2016
+    class: monograph
+    type: thesis
+    title: Novel approaches to asymmetric synthesis
     author:
       - family: Jones
-        given: Alice
-    issued: "2019"
-
-  - id: jones2019b
-    class: monograph
-    type: book
-    title: Selectivity in heterogeneous catalysis
-    author:
-      - family: Jones
-        given: Alice
-    issued: "2019"
+        given: A. L.
+    issued: "2016"
+    publisher:
+      name: MIT
 
 sets:
+  catalysis-studies:
+    - chen2018
+    - patel2021
   peroxisome-biogenesis:
     - zwart1983
     - vanderklei1991
-  catalysis-studies:
-    - jones2019a
-    - jones2019b
+  synthesis-methods:
+    - brown2015
+    - novak2017
+  computational-chemistry:
+    - wang2020
+    - garcia2019
