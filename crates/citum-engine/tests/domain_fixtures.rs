@@ -29,6 +29,18 @@ fn single_item_citation(id: &str) -> Citation {
     }
 }
 
+fn single_item_citation_with_locator(id: &str, locator: &str) -> Citation {
+    Citation {
+        items: vec![CitationItem {
+            id: id.to_string(),
+            locator: Some(locator.to_string()),
+            label: Some(citum_schema::citation::LocatorType::Page),
+            ..Default::default()
+        }],
+        ..Default::default()
+    }
+}
+
 /// Tests legal citation fixture rendering with APA style.
 ///
 /// Verifies that legal references (court cases, legislation, treaties) render
@@ -166,5 +178,45 @@ fn test_multilingual_fixture_is_covered_in_processor_tests() {
     assert!(
         rendered_bib.contains("Oxford University Press"),
         "Bibliography should include English publisher names"
+    );
+}
+
+#[test]
+fn test_humanities_note_fixture_preserves_archive_and_interview_fields() {
+    let root = project_root();
+    let style = load_style(&root.join("styles/chicago-notes.yaml"));
+    let bibliography =
+        load_bibliography(&root.join("tests/fixtures/references-humanities-note.json"))
+            .expect("humanities-note fixture should parse");
+
+    let processor = Processor::new(style, bibliography);
+    let manuscript = processor
+        .process_citation(&single_item_citation("dead-sea-scrolls"))
+        .expect("manuscript citation should render");
+    let interview = processor
+        .process_citation(&single_item_citation_with_locator(
+            "foucault-interview",
+            "115",
+        ))
+        .expect("interview citation should render");
+    let letter = processor
+        .process_citation(&single_item_citation("derrida-letter"))
+        .expect("personal communication citation should render");
+
+    assert!(
+        manuscript.contains("Shrine of the Book, Jerusalem")
+            && manuscript.contains("Israel Antiquities Authority"),
+        "manuscript citation should include archive location and archive name"
+    );
+    assert!(
+        interview.contains("interview by Alessandro Fontana")
+            && interview.contains("Power/Knowledge: Selected Interviews and Other Writings")
+            && interview.contains("115"),
+        "interview citation should include interviewer, container title, and locator"
+    );
+    assert!(
+        letter.contains("to Paul de Man")
+            && letter.contains("University of California, Irvine, Critical Theory Archive"),
+        "personal communication citation should include recipient and archive"
     );
 }

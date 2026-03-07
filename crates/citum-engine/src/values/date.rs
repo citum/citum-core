@@ -6,6 +6,7 @@
 use crate::reference::{EdtfString, Reference};
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
 use citum_edtf::Timezone;
+use citum_schema::locale::{GeneralTerm, TermForm};
 use citum_schema::options::dates::TimeFormat;
 use citum_schema::template::{DateForm, DateVariable as TemplateDateVar, TemplateDate};
 
@@ -91,6 +92,21 @@ impl ComponentValues for TemplateDate {
                         return Some(values);
                     }
                 }
+            }
+            // For issued dates, substitute the locale's "no-date" term (e.g. "n.d.")
+            if matches!(self.date, TemplateDateVar::Issued)
+                && let Some(nd) = options
+                    .locale
+                    .general_term(&GeneralTerm::NoDate, TermForm::Short)
+            {
+                return Some(ProcValues {
+                    value: nd.to_string(),
+                    prefix: None,
+                    suffix: None,
+                    url: None,
+                    substituted_key: None,
+                    pre_formatted: false,
+                });
             }
             return None;
         }

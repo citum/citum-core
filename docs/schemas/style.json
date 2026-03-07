@@ -336,6 +336,18 @@
       },
       "additionalProperties": false
     },
+    "CitationCollapse": {
+      "description": "Citation collapse behavior for multi-item citations.",
+      "oneOf": [
+        {
+          "description": "Collapse adjacent citation numbers into a numeric range such as `1–3`.",
+          "type": "string",
+          "enum": [
+            "citation-number"
+          ]
+        }
+      ]
+    },
     "CitationField": {
       "description": "Discipline/field classification for a citation style.\n\nValues correspond to the CSL 1.0 `<category field=\"...\"/>` attribute, `generic-base` is silently ignored during migration.",
       "oneOf": [
@@ -513,6 +525,17 @@
       "description": "Citation specification.",
       "type": "object",
       "properties": {
+        "collapse": {
+          "description": "Optional collapse behavior for adjacent multi-item citations.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CitationCollapse"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "custom": {
           "description": "Custom user-defined fields for extensions.",
           "type": [

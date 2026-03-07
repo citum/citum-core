@@ -227,6 +227,98 @@ impl<'a> Renderer<'a> {
             .is_some_and(|c| c.subentry && c.collapse_subentries)
     }
 
+    fn should_collapse_citation_numbers(
+        &self,
+        spec: &citum_schema::CitationSpec,
+        mode: &citum_schema::citation::CitationMode,
+    ) -> bool {
+        if !matches!(mode, citum_schema::citation::CitationMode::NonIntegral) {
+            return false;
+        }
+
+        let is_numeric = self
+            .config
+            .processing
+            .as_ref()
+            .map(|p| matches!(p, citum_schema::options::Processing::Numeric))
+            .unwrap_or(false);
+
+        is_numeric
+            && matches!(
+                spec.collapse,
+                Some(citum_schema::CitationCollapse::CitationNumber)
+            )
+    }
+
+    fn collapse_numeric_citation_chunks(
+        &self,
+        chunks: Vec<(Vec<String>, String)>,
+    ) -> Vec<(Vec<String>, String)> {
+        let citation_numbers = self.citation_numbers.borrow();
+        let mut collapsed = Vec::new();
+        let mut i = 0;
+
+        while i < chunks.len() {
+            let Some(ref_id) = chunks[i].0.first() else {
+                collapsed.push(chunks[i].clone());
+                i += 1;
+                continue;
+            };
+            if chunks[i].0.len() != 1 {
+                collapsed.push(chunks[i].clone());
+                i += 1;
+                continue;
+            }
+            let Some(&citation_number) = citation_numbers.get(ref_id) else {
+                collapsed.push(chunks[i].clone());
+                i += 1;
+                continue;
+            };
+            if chunks[i].1 != citation_number.to_string() {
+                collapsed.push(chunks[i].clone());
+                i += 1;
+                continue;
+            }
+
+            let mut j = i;
+            let mut block_ids = Vec::new();
+            let mut end_number = citation_number;
+
+            while j < chunks.len() {
+                let Some(candidate_id) = chunks[j].0.first() else {
+                    break;
+                };
+                if chunks[j].0.len() != 1 {
+                    break;
+                }
+                let Some(&candidate_number) = citation_numbers.get(candidate_id) else {
+                    break;
+                };
+                if chunks[j].1 != candidate_number.to_string() {
+                    break;
+                }
+                if !block_ids.is_empty() && candidate_number != end_number + 1 {
+                    break;
+                }
+
+                block_ids.push(candidate_id.clone());
+                end_number = candidate_number;
+                j += 1;
+            }
+
+            if block_ids.len() < 2 {
+                collapsed.push(chunks[i].clone());
+                i += 1;
+                continue;
+            }
+
+            collapsed.push((block_ids, format!("{citation_number}–{end_number}")));
+            i = j;
+        }
+
+        collapsed
+    }
+
     fn collapse_compound_citation_chunks(
         &self,
         chunks: Vec<(Vec<String>, String)>,
@@ -632,6 +724,9 @@ impl<'a> Renderer<'a> {
 
         if self.should_collapse_compound_subentries(mode) {
             chunks = self.collapse_compound_citation_chunks(chunks);
+        }
+        if self.should_collapse_citation_numbers(spec, mode) {
+            chunks = self.collapse_numeric_citation_chunks(chunks);
         }
 
         Ok(chunks

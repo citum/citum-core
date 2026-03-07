@@ -120,6 +120,24 @@ fn make_bibliography() -> Bibliography {
     bib
 }
 
+fn make_numeric_books(ids: &[(&str, &str, i32, &str)]) -> Bibliography {
+    let mut bib = Bibliography::new();
+    for (id, family, year, title) in ids {
+        bib.insert(
+            (*id).to_string(),
+            Reference::from(LegacyReference {
+                id: (*id).to_string(),
+                ref_type: "book".to_string(),
+                author: Some(vec![Name::new(family, "Test")]),
+                title: Some((*title).to_string()),
+                issued: Some(DateVariable::year(*year)),
+                ..Default::default()
+            }),
+        );
+    }
+    bib
+}
+
 /// Tests basic citation processing with author-date format.
 ///
 /// Verifies that a simple citation with one item produces correctly formatted
@@ -1579,6 +1597,123 @@ fn test_numeric_non_integral_citation_number() {
     let result = processor.process_citation(&citation).unwrap();
     // For numeric+non-integral, expect number format: "[1]"
     assert_eq!(result, "[1]");
+}
+
+/// Verifies adjacent numeric citations collapse into ranges when requested by style.
+#[test]
+fn test_numeric_citation_number_collapse_enabled() {
+    use citum_schema::citation::CitationMode;
+    use citum_schema::options::Processing;
+
+    let mut style = make_style();
+    style.options = Some(Config {
+        processing: Some(Processing::Numeric),
+        ..Default::default()
+    });
+    style.citation = Some(citum_schema::CitationSpec {
+        template: Some(vec![TemplateComponent::Number(
+            citum_schema::template::TemplateNumber {
+                number: citum_schema::template::NumberVariable::CitationNumber,
+                ..Default::default()
+            },
+        )]),
+        wrap: Some(WrapPunctuation::Brackets),
+        multi_cite_delimiter: Some(",".to_string()),
+        collapse: Some(citum_schema::CitationCollapse::CitationNumber),
+        ..Default::default()
+    });
+
+    let bib = make_numeric_books(&[
+        ("book-1", "Author A", 2001, "Book One"),
+        ("book-2", "Author B", 2002, "Book Two"),
+        ("book-3", "Author C", 2003, "Book Three"),
+        ("book-4", "Author D", 2005, "Book Four"),
+    ]);
+    let processor = Processor::new(style, bib);
+
+    let citation = Citation {
+        id: Some("c1".to_string()),
+        mode: CitationMode::NonIntegral,
+        items: vec![
+            crate::reference::CitationItem {
+                id: "book-1".to_string(),
+                ..Default::default()
+            },
+            crate::reference::CitationItem {
+                id: "book-2".to_string(),
+                ..Default::default()
+            },
+            crate::reference::CitationItem {
+                id: "book-3".to_string(),
+                ..Default::default()
+            },
+            crate::reference::CitationItem {
+                id: "book-4".to_string(),
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+
+    assert_eq!(processor.process_citation(&citation).unwrap(), "[1–4]");
+}
+
+/// Verifies numeric range collapse does not absorb affixed citations.
+#[test]
+fn test_numeric_citation_number_collapse_skips_affixed_items() {
+    use citum_schema::citation::CitationMode;
+    use citum_schema::options::Processing;
+
+    let mut style = make_style();
+    style.options = Some(Config {
+        processing: Some(Processing::Numeric),
+        ..Default::default()
+    });
+    style.citation = Some(citum_schema::CitationSpec {
+        template: Some(vec![TemplateComponent::Number(
+            citum_schema::template::TemplateNumber {
+                number: citum_schema::template::NumberVariable::CitationNumber,
+                ..Default::default()
+            },
+        )]),
+        wrap: Some(WrapPunctuation::Brackets),
+        multi_cite_delimiter: Some(",".to_string()),
+        collapse: Some(citum_schema::CitationCollapse::CitationNumber),
+        ..Default::default()
+    });
+
+    let bib = make_numeric_books(&[
+        ("book-1", "Author A", 2001, "Book One"),
+        ("book-2", "Author B", 2002, "Book Two"),
+        ("book-3", "Author C", 2003, "Book Three"),
+    ]);
+    let processor = Processor::new(style, bib);
+
+    let citation = Citation {
+        id: Some("c2".to_string()),
+        mode: CitationMode::NonIntegral,
+        items: vec![
+            crate::reference::CitationItem {
+                id: "book-1".to_string(),
+                ..Default::default()
+            },
+            crate::reference::CitationItem {
+                id: "book-2".to_string(),
+                suffix: Some("n. 12".to_string()),
+                ..Default::default()
+            },
+            crate::reference::CitationItem {
+                id: "book-3".to_string(),
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+
+    assert_eq!(
+        processor.process_citation(&citation).unwrap(),
+        "[1,2 n. 12,3]"
+    );
 }
 
 /// Tests the behavior of test_numeric_citation_numbers_follow_bibliography_sort.

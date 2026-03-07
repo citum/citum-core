@@ -199,6 +199,15 @@ fn locale_matches(targets: &[String], language: &str) -> bool {
     })
 }
 
+/// Citation collapse behavior for multi-item citations.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum CitationCollapse {
+    /// Collapse adjacent citation numbers into a numeric range such as `1–3`.
+    CitationNumber,
+}
+
 /// Citation specification.
 #[derive(Debug, Deserialize, Serialize, Clone, Default)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
@@ -235,6 +244,9 @@ pub struct CitationSpec {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "multi-cite-delimiter")]
     pub multi_cite_delimiter: Option<String>,
+    /// Optional collapse behavior for adjacent multi-item citations.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub collapse: Option<CitationCollapse>,
     /// Optional citation sorting specification.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sort: Option<grouping::GroupSortEntry>,
@@ -348,6 +360,9 @@ impl CitationSpec {
                 if spec.multi_cite_delimiter.is_some() {
                     merged.multi_cite_delimiter = spec.multi_cite_delimiter.clone();
                 }
+                if spec.collapse.is_some() {
+                    merged.collapse = spec.collapse.clone();
+                }
                 if spec.sort.is_some() {
                     merged.sort = spec.sort.clone();
                 }
@@ -411,6 +426,9 @@ impl CitationSpec {
                 }
                 if spec.multi_cite_delimiter.is_some() {
                     merged.multi_cite_delimiter = spec.multi_cite_delimiter.clone();
+                }
+                if spec.collapse.is_some() {
+                    merged.collapse = spec.collapse.clone();
                 }
                 if spec.sort.is_some() {
                     merged.sort = spec.sort.clone();

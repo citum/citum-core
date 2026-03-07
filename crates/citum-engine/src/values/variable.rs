@@ -45,6 +45,8 @@ impl ComponentValues for TemplateVariable {
             SimpleVariable::Medium => reference.medium(),
             SimpleVariable::Abstract => reference.abstract_text(),
             SimpleVariable::Note => reference.note(),
+            SimpleVariable::Archive => reference.archive(),
+            SimpleVariable::ArchiveLocation => reference.archive_location(),
             SimpleVariable::Authority => reference.authority(),
             SimpleVariable::Reporter => reference.reporter(),
             SimpleVariable::Page => reference.pages().map(|v| v.to_string()),

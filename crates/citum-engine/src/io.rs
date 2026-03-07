@@ -23,6 +23,13 @@ pub struct LoadedBibliography {
     pub sets: Option<IndexMap<String, Vec<String>>>,
 }
 
+#[derive(Debug, serde::Deserialize)]
+struct LegacyBibliographyWrapper {
+    references: Vec<LegacyReference>,
+    #[serde(default)]
+    sets: Option<IndexMap<String, Vec<String>>>,
+}
+
 /// Controls how annotation text is rendered in an annotated bibliography.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct AnnotationStyle {
@@ -249,6 +256,18 @@ pub fn load_bibliography_with_sets(path: &Path) -> Result<LoadedBibliography, Pr
                 return loaded_from_input_bibliography(input_bib);
             }
 
+            // Try wrapped legacy JSON ({ references: [...], sets: {...} })
+            if let Ok(wrapper) = serde_json::from_slice::<LegacyBibliographyWrapper>(&bytes) {
+                for ref_item in wrapper.references {
+                    bib.insert(ref_item.id.clone(), Reference::from(ref_item));
+                }
+                let sets = validate_compound_sets(wrapper.sets, &bib)?;
+                return Ok(LoadedBibliography {
+                    references: bib,
+                    sets,
+                });
+            }
+
             // Try IndexMap of LegacyReference (preserves insertion order from JSON)
             if let Ok(map) = serde_json::from_slice::<IndexMap<String, serde_json::Value>>(&bytes) {
                 let mut found = false;
@@ -289,6 +308,18 @@ pub fn load_bibliography_with_sets(path: &Path) -> Result<LoadedBibliography, Pr
 
             if let Ok(input_bib) = serde_yaml::from_str::<InputBibliography>(&content) {
                 return loaded_from_input_bibliography(input_bib);
+            }
+
+            // Try wrapped legacy YAML/JSON ({ references: [...], sets: {...} })
+            if let Ok(wrapper) = serde_yaml::from_str::<LegacyBibliographyWrapper>(&content) {
+                for ref_item in wrapper.references {
+                    bib.insert(ref_item.id.clone(), Reference::from(ref_item));
+                }
+                let sets = validate_compound_sets(wrapper.sets, &bib)?;
+                return Ok(LoadedBibliography {
+                    references: bib,
+                    sets,
+                });
             }
 
             // Try parsing as IndexMap<String, serde_yaml::Value> (YAML/JSON, preserves order)

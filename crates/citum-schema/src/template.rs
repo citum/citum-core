@@ -157,9 +157,14 @@ impl TypeSelector {
     /// The special keyword "all" always matches any reference type.
     pub fn matches(&self, ref_type: &str) -> bool {
         let normalized_ref = ref_type.replace('_', "-");
+        let base_ref = normalized_ref
+            .split_once('+')
+            .map(|(base, _)| base)
+            .unwrap_or(&normalized_ref);
         let eq = |s: &str| -> bool {
             s == ref_type
                 || s.replace('_', "-") == normalized_ref
+                || s.replace('_', "-") == base_ref
                 || s == "all"
                 || (s == "default" && ref_type == "default")
         };

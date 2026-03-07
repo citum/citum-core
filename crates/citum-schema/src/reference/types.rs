@@ -121,9 +121,15 @@ pub struct Monograph {
     pub id: Option<RefID>,
     pub r#type: MonographType,
     pub title: Title,
+    /// Parent or container title for monographic interviews and similar sources.
+    pub container_title: Option<Title>,
     pub author: Option<Contributor>,
     pub editor: Option<Contributor>,
     pub translator: Option<Contributor>,
+    /// Recipient for personal communications such as letters or emails.
+    pub recipient: Option<Contributor>,
+    /// Interviewer for interview-style references.
+    pub interviewer: Option<Contributor>,
     pub issued: EdtfString,
     pub publisher: Option<Contributor>,
     #[serde(alias = "URL")]
@@ -144,6 +150,11 @@ pub struct Monograph {
     pub collection_number: Option<String>,
     pub genre: Option<String>,
     pub medium: Option<String>,
+    /// Archive or repository name for unpublished material.
+    pub archive: Option<String>,
+    /// Archive location, shelfmark, or call number for unpublished material.
+    #[serde(alias = "archive_location")]
+    pub archive_location: Option<String>,
     pub keywords: Option<Vec<String>>,
     pub original_date: Option<EdtfString>,
     pub original_title: Option<Title>,
@@ -160,6 +171,10 @@ pub enum MonographType {
     Thesis,
     Webpage,
     Post,
+    /// An interview treated as a standalone monographic source.
+    Interview,
+    /// An unpublished manuscript or archival document.
+    Manuscript,
     PersonalCommunication,
     Document,
 }
