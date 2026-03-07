@@ -274,7 +274,7 @@ function runOracle(stylePath, styleName, styleFormat) {
 
   // Fast path (snapshot)
   const fast = tryRun(fastScript);
-  if (fast.status !== 2) {
+  if (fast.status !== 2 && fast.status !== 3) {
     // 0 = all match, 1 = mismatches found — both have valid JSON
     const raw = fast.stdout?.toString() ?? '';
     if (raw.trim()) {
@@ -287,9 +287,11 @@ function runOracle(stylePath, styleName, styleFormat) {
     }
   }
 
-  // Live fallback (no snapshot yet, or fast oracle parse failure)
+  // Live fallback (snapshot absent or stale)
   if (fast.status === 2) {
     process.stderr.write(`[snapshot missing] ${styleName} — falling back to live oracle\n`);
+  } else if (fast.status === 3) {
+    process.stderr.write(`[snapshot stale] ${styleName} — falling back to live oracle\n`);
   }
   const live = tryRun(liveScript);
   const raw = (live.status === 0 || live.status === 1) ? live.stdout?.toString() ?? '' : '';
