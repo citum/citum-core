@@ -36,6 +36,20 @@ function ensureStringArray(value, label) {
   }
 }
 
+function ensureOptionalString(value, label) {
+  if (value == null) return;
+  assert(typeof value === 'string' && value.trim().length > 0, `${label} must be a non-empty string`);
+}
+
+function validateScopePolicy(scopePolicy, label) {
+  assert(scopePolicy && typeof scopePolicy === 'object' && !Array.isArray(scopePolicy), `${label} must be an object`);
+  if (scopePolicy.authority != null) {
+    ensureAuthority(scopePolicy.authority, `${label}.authority`);
+  }
+  ensureOptionalString(scopePolicy.authority_id, `${label}.authority_id`);
+  ensureOptionalString(scopePolicy.note, `${label}.note`);
+}
+
 function validateVerificationPolicy(policy) {
   assert(policy && typeof policy === 'object' && !Array.isArray(policy), 'verification-policy.yaml must be an object');
   assert(policy.version === 1, 'verification-policy.yaml version must be 1');
@@ -55,6 +69,7 @@ function validateVerificationPolicy(policy) {
     if (stylePolicy.authority != null) {
       ensureAuthority(stylePolicy.authority, `verification-policy.yaml styles.${styleName}.authority`);
     }
+    ensureOptionalString(stylePolicy.authority_id, `verification-policy.yaml styles.${styleName}.authority_id`);
     if (stylePolicy.secondary != null) {
       ensureStringArray(stylePolicy.secondary, `verification-policy.yaml styles.${styleName}.secondary`);
       for (const authority of stylePolicy.secondary) {
@@ -69,6 +84,18 @@ function validateVerificationPolicy(policy) {
     }
     if (stylePolicy.note != null) {
       assert(typeof stylePolicy.note === 'string' && stylePolicy.note.trim().length > 0, `verification-policy.yaml styles.${styleName}.note must be a non-empty string`);
+    }
+    if (stylePolicy.regression_baseline != null) {
+      ensureAuthority(stylePolicy.regression_baseline, `verification-policy.yaml styles.${styleName}.regression_baseline`);
+    }
+    if (stylePolicy.scope_authorities != null) {
+      assert(
+        stylePolicy.scope_authorities && typeof stylePolicy.scope_authorities === 'object' && !Array.isArray(stylePolicy.scope_authorities),
+        `verification-policy.yaml styles.${styleName}.scope_authorities must be an object`
+      );
+      for (const [scopeName, scopePolicy] of Object.entries(stylePolicy.scope_authorities)) {
+        validateScopePolicy(scopePolicy, `verification-policy.yaml styles.${styleName}.scope_authorities.${scopeName}`);
+      }
     }
   }
 
@@ -105,10 +132,26 @@ function resolveVerificationPolicy(styleName, policy) {
   const stylePolicy = policy.styles?.[styleName] || {};
   return {
     authority: stylePolicy.authority || defaults.authority,
+    authorityId: stylePolicy.authority_id || null,
     secondary: stylePolicy.secondary || defaults.secondary || [],
     scopes: stylePolicy.scopes || defaults.scopes || [],
     fixtureFamily: stylePolicy.fixture_family || null,
     note: stylePolicy.note || null,
+    regressionBaseline: stylePolicy.regression_baseline || null,
+    scopeAuthorities: stylePolicy.scope_authorities || {},
+  };
+}
+
+function resolveScopeAuthority(policy, scopeName) {
+  const scopePolicy = policy.scopeAuthorities?.[scopeName] || {};
+  const hasScopeAuthority = Object.prototype.hasOwnProperty.call(scopePolicy, 'authority')
+    || Object.prototype.hasOwnProperty.call(scopePolicy, 'authority_id');
+  return {
+    authority: scopePolicy.authority || policy.authority,
+    authorityId: hasScopeAuthority
+      ? (scopePolicy.authority_id || null)
+      : policy.authorityId,
+    note: scopePolicy.note || policy.note || null,
   };
 }
 
@@ -141,6 +184,7 @@ module.exports = {
   loadVerificationPolicy,
   resolveFixtureSufficiency,
   resolveVerificationPolicy,
+  resolveScopeAuthority,
   validateFixtureSufficiency,
   validateVerificationPolicy,
 };

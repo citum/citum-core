@@ -1,0 +1,22 @@
+version: 1
+defaults:
+  labels:
+    csl-derived: CSL-derived
+    biblatex-derived: biblatex-derived
+    citum-native: Citum-native
+  sort_ranks:
+    csl-derived: 1
+    biblatex-derived: 2
+    citum-native: 3
+
+styles:
+  numeric-comp:
+    lineage: biblatex-derived
+  chem-acs:
+    lineage: biblatex-derived
+  angewandte-chemie:
+    lineage: biblatex-derived
+  chem-rsc:
+    lineage: biblatex-derived
+  chem-biochem:
+    lineage: biblatex-derived

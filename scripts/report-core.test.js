@@ -1,14 +1,23 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 const {
   loadVerificationPolicy,
   resolveVerificationPolicy,
+  resolveScopeAuthority,
 } = require('./lib/verification-policy');
+const { loadReportProvenance } = require('./lib/report-metadata');
 const {
   discoverCoreStyles,
   formatAuthorityLabel,
+  getCslSnapshotStatus,
   getComparisonEntryTexts,
+  mapWithConcurrency,
+  preflightSnapshots,
+  runCachedJsonJob,
   selectPrimaryComparator,
 } = require('./report-core');
 
@@ -18,14 +27,15 @@ function loadStyleMap() {
 
 test('discoverCoreStyles classifies representative style origins and CSL reach', () => {
   const styles = loadStyleMap();
+  const provenance = loadReportProvenance();
 
-  assert.equal(styles.get('apa-7th').originLabel, 'CSL migrated');
+  assert.equal(styles.get('apa-7th').originLabel, provenance.defaults.labels['csl-derived']);
   assert.equal(styles.get('apa-7th').cslReach, 783);
 
-  assert.equal(styles.get('chem-acs').originLabel, 'CSL hand-authored');
+  assert.equal(styles.get('chem-acs').originLabel, provenance.defaults.labels['biblatex-derived']);
   assert.equal(styles.get('chem-acs').cslReach, null);
 
-  assert.equal(styles.get('numeric-comp').originLabel, 'biblatex hand-authored');
+  assert.equal(styles.get('numeric-comp').originLabel, provenance.defaults.labels['biblatex-derived']);
   assert.equal(styles.get('numeric-comp').cslReach, null);
 
   const unknownOrigins = [...styles.values()].filter((style) => style.originLabel === 'Unknown');
@@ -37,17 +47,40 @@ test('report-core exposes expected benchmark labels for representative styles', 
   const policy = loadVerificationPolicy();
 
   const cases = [
-    ['apa-7th', 'citeproc-js'],
-    ['chem-acs', 'Citum baseline'],
-    ['numeric-comp', 'Citum baseline'],
+    ['apa-7th', 'citeproc-js', null],
+    ['chem-acs', 'biblatex: chem-acs', 'chem-acs'],
+    ['numeric-comp', 'biblatex: numeric-comp', 'numeric-comp'],
   ];
 
-  for (const [styleName, expectedLabel] of cases) {
+  for (const [styleName, expectedLabel, authorityId] of cases) {
     const style = styles.get(styleName);
     const stylePolicy = resolveVerificationPolicy(styleName, policy);
     const comparator = selectPrimaryComparator(style, stylePolicy);
-    assert.equal(formatAuthorityLabel(comparator), expectedLabel);
+    assert.equal(formatAuthorityLabel(comparator, authorityId || stylePolicy.authorityId), expectedLabel);
   }
+});
+
+test('verification policy exposes scope-specific authority for chemistry benchmark rows', () => {
+  const policy = loadVerificationPolicy();
+  const stylePolicy = resolveVerificationPolicy('chem-acs', policy);
+
+  assert.equal(stylePolicy.authority, 'biblatex');
+  assert.equal(stylePolicy.authorityId, 'chem-acs');
+  assert.equal(stylePolicy.regressionBaseline, 'citum-baseline');
+
+  const citationAuthority = resolveScopeAuthority(stylePolicy, 'citation');
+  const bibliographyAuthority = resolveScopeAuthority(stylePolicy, 'bibliography');
+
+  assert.deepEqual(citationAuthority, {
+    authority: 'citeproc-js',
+    authorityId: null,
+    note: stylePolicy.note,
+  });
+  assert.deepEqual(bibliographyAuthority, {
+    authority: 'biblatex',
+    authorityId: 'chem-acs',
+    note: stylePolicy.note,
+  });
 });
 
 test('comparison text helper supports both live-oracle and native-snapshot entry shapes', () => {
@@ -59,4 +92,103 @@ test('comparison text helper supports both live-oracle and native-snapshot entry
     getComparisonEntryTexts({ expected: 'snapshot benchmark', actual: 'snapshot citum' }),
     { benchmark: 'snapshot benchmark', citum: 'snapshot citum' }
   );
+});
+
+test('getCslSnapshotStatus reports missing and stale snapshots without invoking live oracle', () => {
+  const projectRoot = path.resolve(__dirname, '..');
+  const refsFixture = path.join(projectRoot, 'tests', 'fixtures', 'references-expanded.json');
+  const citationsFixture = path.join(projectRoot, 'tests', 'fixtures', 'citations-expanded.json');
+  const missing = getCslSnapshotStatus('/tmp/definitely-missing-style.csl', refsFixture, citationsFixture);
+  assert.equal(missing.ok, false);
+  assert.equal(missing.status, 'missing');
+
+  const staleCitationsFixture = path.join(os.tmpdir(), `citations-stale-${process.pid}.json`);
+  fs.writeFileSync(staleCitationsFixture, fs.readFileSync(citationsFixture, 'utf8').replace('"id":', '"fixture-id":'));
+  const stale = getCslSnapshotStatus(
+    path.join(projectRoot, 'styles-legacy', 'apa.csl'),
+    refsFixture,
+    staleCitationsFixture
+  );
+  fs.rmSync(staleCitationsFixture, { force: true });
+  assert.equal(stale.ok, false);
+  assert.equal(stale.status, 'stale');
+});
+
+test('runCachedJsonJob invalidates when cache key changes', async () => {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), 'report-cache-'));
+  const runtime = {
+    cacheDir,
+    timings: new Map(),
+    recordTiming(kind, durationMs, cacheHit = false) {
+      const current = this.timings.get(kind) || { count: 0, totalMs: 0, cacheHits: 0 };
+      current.count += 1;
+      current.totalMs += durationMs;
+      if (cacheHit) current.cacheHits += 1;
+      this.timings.set(kind, current);
+    },
+  };
+  let computes = 0;
+
+  const first = await runCachedJsonJob(runtime, {
+    kind: 'unit',
+    cacheKey: { style: 'apa', fixture: 'core', hash: 'a' },
+    async compute() {
+      computes += 1;
+      return { value: 'first' };
+    },
+  });
+  const second = await runCachedJsonJob(runtime, {
+    kind: 'unit',
+    cacheKey: { style: 'apa', fixture: 'core', hash: 'a' },
+    async compute() {
+      computes += 1;
+      return { value: 'second' };
+    },
+  });
+  const third = await runCachedJsonJob(runtime, {
+    kind: 'unit',
+    cacheKey: { style: 'apa', fixture: 'core', hash: 'b' },
+    async compute() {
+      computes += 1;
+      return { value: 'third' };
+    },
+  });
+
+  fs.rmSync(cacheDir, { recursive: true, force: true });
+  assert.deepEqual(first, { value: 'first' });
+  assert.deepEqual(second, { value: 'first' });
+  assert.deepEqual(third, { value: 'third' });
+  assert.equal(computes, 2);
+});
+
+test('mapWithConcurrency preserves input ordering under parallel execution', async () => {
+  const values = [40, 5, 20, 1];
+  const results = await mapWithConcurrency(values, 2, async (delay, index) => {
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    return `${index}:${delay}`;
+  });
+
+  assert.deepEqual(results, ['0:40', '1:5', '2:20', '3:1']);
+});
+
+test('preflightSnapshots reports missing citeproc snapshots for citeproc-backed styles', () => {
+  const policy = loadVerificationPolicy();
+  const stylesDir = fs.mkdtempSync(path.join(os.tmpdir(), 'report-preflight-'));
+  fs.writeFileSync(path.join(stylesDir, 'definitely-missing-style.csl'), '<style></style>');
+  const issues = preflightSnapshots(
+    [
+      {
+        name: 'missing-style',
+        sourceName: 'definitely-missing-style',
+        format: 'author-date',
+      },
+    ],
+    policy,
+    stylesDir
+  );
+
+  fs.rmSync(stylesDir, { recursive: true, force: true });
+  assert.equal(issues.length, 1);
+  assert.equal(issues[0].status, 'missing');
+  assert.equal(issues[0].style, 'missing-style');
 });
