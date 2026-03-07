@@ -1,0 +1,99 @@
+version: 1
+defaults:
+  authority: citeproc-js
+  secondary: []
+  scopes:
+    - citation
+    - bibliography
+
+styles:
+  numeric-comp:
+    authority: citum-baseline
+    secondary:
+      - biblatex
+    scopes:
+      - citation
+      - bibliography
+    fixture_family: chemistry
+    note: Preserve current high-fidelity compound regression baseline until a
+      fixture-aligned biblatex comparison corpus exists.
+  chem-acs:
+    authority: citum-baseline
+    secondary:
+      - biblatex
+    scopes:
+      - citation
+      - bibliography
+    fixture_family: chemistry
+    note: Preserve current high-fidelity compound regression baseline until a
+      fixture-aligned biblatex comparison corpus exists.
+  angewandte-chemie:
+    authority: citum-baseline
+    secondary:
+      - biblatex
+    scopes:
+      - citation
+      - bibliography
+    fixture_family: chemistry
+    note: Preserve current high-fidelity compound regression baseline until a
+      fixture-aligned biblatex comparison corpus exists.
+  chem-rsc:
+    authority: citum-baseline
+    secondary:
+      - biblatex
+    scopes:
+      - citation
+      - bibliography
+    fixture_family: chemistry
+    note: Preserve current high-fidelity compound regression baseline until a
+      fixture-aligned biblatex comparison corpus exists.
+  chem-biochem:
+    authority: citum-baseline
+    secondary:
+      - biblatex
+    scopes:
+      - citation
+      - bibliography
+    fixture_family: chemistry
+    note: Preserve current high-fidelity compound regression baseline until a
+      fixture-aligned biblatex comparison corpus exists.
+  apa-7th:
+    secondary:
+      - biblatex
+    fixture_family: author-date
+  ieee:
+    secondary:
+      - biblatex
+    fixture_family: physics-numeric
+  nature:
+    secondary:
+      - biblatex
+    fixture_family: physics-numeric
+  modern-language-association:
+    secondary:
+      - biblatex
+    fixture_family: note-humanities
+  chicago-author-date:
+    secondary:
+      - biblatex
+    fixture_family: author-date
+  chicago-notes:
+    secondary:
+      - biblatex
+    fixture_family: note-humanities
+  american-physics-society:
+    secondary:
+      - biblatex
+    fixture_family: physics-numeric
+  american-institute-of-physics:
+    secondary:
+      - biblatex
+    fixture_family: physics-numeric
+  american-chemical-society:
+    secondary:
+      - biblatex
+    fixture_family: chemistry
+  royal-society-of-chemistry:
+    secondary:
+      - biblatex
+    fixture_family: chemistry

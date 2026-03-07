@@ -2,6 +2,10 @@
 
 const fs = require('fs');
 const path = require('path');
+const {
+  loadFixtureSufficiency,
+  loadVerificationPolicy,
+} = require('./lib/verification-policy');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const REQUIRED_DOMAINS = new Set([
@@ -117,10 +121,34 @@ function validateCoreQualityBaseline(projectRoot = PROJECT_ROOT) {
   return baseline;
 }
 
+function validateVerificationPolicyFiles(projectRoot = PROJECT_ROOT) {
+  const policyPath = path.join(projectRoot, 'scripts', 'report-data', 'verification-policy.yaml');
+  const sufficiencyPath = path.join(projectRoot, 'scripts', 'report-data', 'fixture-sufficiency.yaml');
+
+  assert(fs.existsSync(policyPath), `verification policy file not found: ${policyPath}`);
+  assert(fs.existsSync(sufficiencyPath), `fixture sufficiency file not found: ${sufficiencyPath}`);
+
+  const policy = loadVerificationPolicy(policyPath);
+  const sufficiency = loadFixtureSufficiency(sufficiencyPath);
+
+  for (const [styleName, stylePolicy] of Object.entries(policy.styles || {})) {
+    const familyName = stylePolicy.fixture_family;
+    if (familyName) {
+      assert(
+        Object.prototype.hasOwnProperty.call(sufficiency.families, familyName),
+        `verification-policy.yaml style ${styleName} references unknown fixture family: ${familyName}`
+      );
+    }
+  }
+
+  return { policy, sufficiency };
+}
+
 function runChecks(projectRoot = PROJECT_ROOT) {
   validateCoverageManifest(projectRoot);
   validateOracleBaseline(projectRoot);
   validateCoreQualityBaseline(projectRoot);
+  validateVerificationPolicyFiles(projectRoot);
 }
 
 function main() {
@@ -147,4 +175,5 @@ module.exports = {
   validateCoverageManifest,
   validateMetadataFields,
   validateOracleBaseline,
+  validateVerificationPolicyFiles,
 };
