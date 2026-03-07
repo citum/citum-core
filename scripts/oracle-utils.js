@@ -58,7 +58,8 @@ function normalizeText(text) {
     .replace(/\s+([,.;:])/g, '$1')     // Normalize stray spaces before punctuation
     .replace(/\s+/g, ' ')             // Normalize whitespace
     // Strip bibliography numbering prefix after whitespace normalization (allow hidden directional marks).
-    .replace(/^[\u200e\u200f\u202a-\u202e\u2066-\u2069]*\d+\.\s*/, '')
+    // Only strip when the numeric label is followed by actual entry content.
+    .replace(/^[\u200e\u200f\u202a-\u202e\u2066-\u2069]*\d+\.(?=[^\d])\s*/, '')
     .replace(/[.,;:]\s*$/g, '')
     .trim();
 }

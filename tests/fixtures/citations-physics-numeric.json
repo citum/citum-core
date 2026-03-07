@@ -1,0 +1,12 @@
+[
+  { "id": "physics-classic", "items": [{ "id": "einstein1905" }] },
+  { "id": "physics-collaboration", "items": [{ "id": "atlas2024" }] },
+  { "id": "physics-cluster", "items": [{ "id": "einstein1905" }, { "id": "dirac1928" }, { "id": "hawking1974" }] },
+  { "id": "physics-locator", "items": [{ "id": "einstein1905", "locator": "901", "label": "page" }] },
+  { "id": "physics-book-chapter", "items": [{ "id": "weinberg1995" }, { "id": "peskin1995-ch" }] },
+  { "id": "physics-proceedings", "items": [{ "id": "belle2023-conf" }, { "id": "doe2022-report" }] },
+  { "id": "physics-data-software", "items": [{ "id": "daya-bay2023-dataset" }, { "id": "geant4-2023" }] },
+  { "id": "physics-arxiv", "items": [{ "id": "vaswani2017-arxiv" }] },
+  { "id": "physics-long-author", "items": [{ "id": "planck2020" }] },
+  { "id": "physics-web", "items": [{ "id": "pdg2024" }] }
+]

@@ -1,0 +1,18 @@
+[
+  { "id": "hn-auerbach", "items": [{ "id": "auerbach1953" }] },
+  { "id": "hn-ginzburg", "items": [{ "id": "ginzburg1976" }] },
+  { "id": "hn-grafton", "items": [{ "id": "grafton1999-ch" }] },
+  { "id": "hn-darnton-locator", "items": [{ "id": "darnton1984-ch", "locator": "82", "label": "page" }] },
+  { "id": "hn-skinner", "items": [{ "id": "skinner2002" }] },
+  { "id": "hn-gadamer", "items": [{ "id": "gadamer1960" }] },
+  { "id": "hn-eliade", "items": [{ "id": "eliade1959-ency" }] },
+  { "id": "hn-dead-sea-scrolls", "items": [{ "id": "dead-sea-scrolls" }] },
+  { "id": "hn-austen", "items": [{ "id": "austen-ms" }] },
+  { "id": "hn-foucault", "items": [{ "id": "foucault-interview", "locator": "115", "label": "page" }] },
+  { "id": "hn-derrida", "items": [{ "id": "derrida-letter" }] },
+  { "id": "hn-braudel", "items": [{ "id": "braudel1949" }] },
+  { "id": "hn-said", "items": [{ "id": "said1978" }] },
+  { "id": "hn-benjamin", "items": [{ "id": "benjamin1936-ch", "locator": "220", "label": "page" }] },
+  { "id": "hn-gibbon", "items": [{ "id": "gibbon1776", "locator": "145", "label": "page" }] },
+  { "id": "hn-multi-note", "items": [{ "id": "auerbach1953" }, { "id": "grafton1999-ch" }] }
+]

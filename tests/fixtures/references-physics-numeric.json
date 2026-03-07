@@ -1,0 +1,199 @@
+[
+  {
+    "id": "einstein1905",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Zur Elektrodynamik bewegter Korper",
+    "author": [{ "family": "Einstein", "given": "Albert" }],
+    "issued": { "date-parts": [[1905]] },
+    "container-title": "Annalen der Physik",
+    "volume": "322",
+    "issue": "10",
+    "page": "891-921",
+    "DOI": "10.1002/andp.19053221004"
+  },
+  {
+    "id": "atlas2024",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Observation of four-top-quark production in proton-proton collisions at sqrt(s) = 13 TeV",
+    "author": [{ "literal": "ATLAS Collaboration" }],
+    "issued": { "date-parts": [[2024]] },
+    "container-title": "Physical Review Letters",
+    "volume": "132",
+    "page": "181802",
+    "DOI": "10.1103/PhysRevLett.132.181802"
+  },
+  {
+    "id": "weinberg1995",
+    "class": "monograph",
+    "type": "book",
+    "title": "The Quantum Theory of Fields",
+    "author": [{ "family": "Weinberg", "given": "Steven" }],
+    "issued": { "date-parts": [[1995]] },
+    "volume": "1",
+    "publisher": "Cambridge University Press",
+    "publisher-place": "Cambridge"
+  },
+  {
+    "id": "jackson1998",
+    "class": "monograph",
+    "type": "book",
+    "title": "Classical Electrodynamics",
+    "author": [{ "family": "Jackson", "given": "John David" }],
+    "issued": { "date-parts": [[1998]] },
+    "edition": "3rd",
+    "publisher": "Wiley",
+    "publisher-place": "New York"
+  },
+  {
+    "id": "peskin1995-ch",
+    "class": "collection-component",
+    "type": "chapter",
+    "title": "Renormalization of quantum electrodynamics",
+    "author": [
+      { "family": "Peskin", "given": "Michael E." },
+      { "family": "Schroeder", "given": "Daniel V." }
+    ],
+    "issued": { "date-parts": [[1995]] },
+    "container-title": "An Introduction to Quantum Field Theory",
+    "publisher": "Westview Press",
+    "page": "175-210"
+  },
+  {
+    "id": "belle2023-conf",
+    "class": "collection-component",
+    "type": "paper-conference",
+    "title": "Search for lepton-flavor-violating tau decays at Belle II",
+    "author": [{ "literal": "Belle II Collaboration" }],
+    "issued": { "date-parts": [[2023]] },
+    "container-title": "Proceedings of the 41st International Conference on High Energy Physics",
+    "event": "ICHEP 2022",
+    "publisher": "Proceedings of Science",
+    "page": "456"
+  },
+  {
+    "id": "doe2022-report",
+    "class": "monograph",
+    "type": "report",
+    "title": "Basic Research Needs for High Energy Physics Detector Research and Development",
+    "author": [{ "literal": "U.S. Department of Energy" }],
+    "issued": { "date-parts": [[2022]] },
+    "publisher": "Office of Science, U.S. Department of Energy",
+    "publisher-place": "Washington, DC",
+    "genre": "Technical report"
+  },
+  {
+    "id": "pdg2024",
+    "class": "monograph",
+    "type": "webpage",
+    "title": "Review of Particle Physics",
+    "author": [{ "literal": "Particle Data Group" }],
+    "issued": { "date-parts": [[2024]] },
+    "URL": "https://pdg.lbl.gov/",
+    "accessed": { "date-parts": [[2024, 6, 1]] }
+  },
+  {
+    "id": "daya-bay2023-dataset",
+    "class": "dataset",
+    "type": "dataset",
+    "title": "Daya Bay reactor neutrino oscillation data release",
+    "author": [{ "literal": "Daya Bay Collaboration" }],
+    "issued": { "date-parts": [[2023]] },
+    "publisher": "HEPData",
+    "DOI": "10.17182/hepdata.12345",
+    "version": "2.0"
+  },
+  {
+    "id": "geant4-2023",
+    "class": "software",
+    "type": "software",
+    "title": "Geant4: A simulation toolkit",
+    "author": [{ "literal": "Geant4 Collaboration" }],
+    "issued": { "date-parts": [[2023]] },
+    "publisher": "CERN",
+    "version": "11.2.0",
+    "URL": "https://geant4.web.cern.ch/"
+  },
+  {
+    "id": "vaswani2017-arxiv",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Attention is all you need",
+    "author": [
+      { "family": "Vaswani", "given": "Ashish" },
+      { "family": "Shazeer", "given": "Noam" },
+      { "family": "Parmar", "given": "Niki" },
+      { "family": "Uszkoreit", "given": "Jakob" },
+      { "family": "Jones", "given": "Llion" },
+      { "family": "Gomez", "given": "Aidan N." },
+      { "family": "Kaiser", "given": "Lukasz" },
+      { "family": "Polosukhin", "given": "Illia" }
+    ],
+    "issued": { "date-parts": [[2017]] },
+    "container-title": "arXiv",
+    "number": "1706.03762",
+    "DOI": "10.48550/arXiv.1706.03762",
+    "note": "arXiv preprint"
+  },
+  {
+    "id": "planck2020",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Planck 2018 results. VI. Cosmological parameters",
+    "author": [
+      { "literal": "Planck Collaboration" },
+      { "family": "Aghanim", "given": "N." },
+      { "family": "Akrami", "given": "Y." },
+      { "family": "Ashdown", "given": "M." },
+      { "family": "Aumont", "given": "J." },
+      { "family": "Baccigalupi", "given": "C." },
+      { "family": "Ballardini", "given": "M." },
+      { "family": "Banday", "given": "A. J." },
+      { "family": "Barreiro", "given": "R. B." },
+      { "family": "Bartolo", "given": "N." }
+    ],
+    "issued": { "date-parts": [[2020]] },
+    "container-title": "Astronomy and Astrophysics",
+    "volume": "641",
+    "page": "A6",
+    "DOI": "10.1051/0004-6361/201833910"
+  },
+  {
+    "id": "cms2012-higgs",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Observation of a new boson at a mass of 125 GeV with the CMS experiment at the LHC",
+    "author": [{ "literal": "CMS Collaboration" }],
+    "issued": { "date-parts": [[2012]] },
+    "container-title": "Physics Letters B",
+    "volume": "716",
+    "page": "30-61",
+    "DOI": "10.1016/j.physletb.2012.08.021"
+  },
+  {
+    "id": "dirac1928",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "The quantum theory of the electron",
+    "author": [{ "family": "Dirac", "given": "Paul A. M." }],
+    "issued": { "date-parts": [[1928]] },
+    "container-title": "Proceedings of the Royal Society of London. Series A",
+    "volume": "117",
+    "issue": "778",
+    "page": "610-624",
+    "DOI": "10.1098/rspa.1928.0023"
+  },
+  {
+    "id": "hawking1974",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Black hole explosions?",
+    "author": [{ "family": "Hawking", "given": "Stephen W." }],
+    "issued": { "date-parts": [[1974]] },
+    "container-title": "Nature",
+    "volume": "248",
+    "page": "30-31",
+    "DOI": "10.1038/248030a0"
+  }
+]

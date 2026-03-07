@@ -1,0 +1,10 @@
+[
+  { "id": "compound-pair", "items": [{ "id": "zwart1983" }, { "id": "vanderklei1991" }] },
+  { "id": "compound-solo", "items": [{ "id": "smith2020" }] },
+  { "id": "compound-catalysis-pair", "items": [{ "id": "jones2019a" }, { "id": "jones2019b" }] },
+  { "id": "compound-mixed-cluster", "items": [{ "id": "chen2022-journal" }, { "id": "muller2018-chapter" }, { "id": "johnson2021-patent" }] },
+  { "id": "compound-locator", "items": [{ "id": "chen2022-journal", "locator": "101234", "label": "page" }] },
+  { "id": "compound-technical", "items": [{ "id": "who2020-report" }, { "id": "park2017-thesis" }, { "id": "irino2009-dataset" }] },
+  { "id": "compound-standard", "items": [{ "id": "iso17025-2017" }, { "id": "astm-e2881" }] },
+  { "id": "compound-conference", "items": [{ "id": "takahashi2021-conf" }] }
+]

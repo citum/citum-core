@@ -1,0 +1,11 @@
+[
+  { "id": "legal-brown", "items": [{ "id": "brown1954" }] },
+  { "id": "legal-civil-rights", "items": [{ "id": "civilrights1964" }] },
+  { "id": "legal-versailles", "items": [{ "id": "versailles1919" }] },
+  { "id": "legal-obergefell", "items": [{ "id": "obergefell2015" }] },
+  { "id": "legal-donoghue", "items": [{ "id": "donoghue1932" }] },
+  { "id": "legal-regulations", "items": [{ "id": "clean-air-reg" }, { "id": "gdpr-reg" }] },
+  { "id": "legal-bills", "items": [{ "id": "voting-rights-bill" }, { "id": "climate-bill-eu" }] },
+  { "id": "legal-hearings", "items": [{ "id": "senate-hearing-ai" }, { "id": "house-hearing-climate" }] },
+  { "id": "legal-cases-cluster", "items": [{ "id": "brown1954" }, { "id": "obergefell2015" }, { "id": "donoghue1932" }] }
+]
