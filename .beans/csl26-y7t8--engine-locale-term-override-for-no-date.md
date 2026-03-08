@@ -1,11 +1,11 @@
 ---
 # csl26-y7t8
 title: 'engine: locale term override for no-date'
-status: todo
+status: completed
 type: bug
 priority: high
 created_at: 2026-03-08T13:39:54Z
-updated_at: 2026-03-08T13:40:03Z
+updated_at: 2026-03-08T14:09:03Z
 ---
 
 ## Problem
@@ -22,3 +22,12 @@ harvard-cite-them-right renders (Forthcoming., n.d.) but oracle expects (Forthco
 ## Acceptance
 - (Forthcoming, no date) passes oracle for harvard-cite-them-right
 - No regression on styles using n.d.
+
+## Summary of Changes
+
+- Normalized locale `no-date` parsing into form-aware general-term lookup while
+  preserving the legacy short-form fallback.
+- Fixed parsed Harvard grouped author-date citations so they no longer emit
+  stray punctuation around the author chunk.
+- Added regression coverage for Harvard `no date` rendering and for styles that
+  still rely on `n.d.`.
