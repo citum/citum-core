@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-06T22:34:53.907Z",
+  "generated_at": "2026-03-08T18:28:48.982Z",
   "style": "institute-for-operations-research-and-the-management-sciences",
-  "fixture_hash": "4fbe6757fa5180e0",
+  "fixture_hash": "67a756de7032b296",
   "csl_hash": "81686b51a4ef402a",
   "citations": {
     "single-item": "(Kuhn 1962)",

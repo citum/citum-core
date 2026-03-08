@@ -357,13 +357,13 @@ fn test_repro_djot_parsing() {
 
     let parser = DjotParser;
     let content = "Test [+@item1] and [-@item2]";
-    let citations = parser.parse_citations(content);
+    let citations = parser.parse_citations(content, &citum_schema::Locale::en_us());
     assert_eq!(citations.len(), 2);
     assert_eq!(citations[0].2.mode, CitationMode::Integral);
     assert!(citations[1].2.suppress_author);
 
     let content2 = "Test @item1 and +@item2 and -@item3 and !@item4";
-    let citations2 = parser.parse_citations(content2);
+    let citations2 = parser.parse_citations(content2, &citum_schema::Locale::en_us());
     assert_eq!(citations2.len(), 0);
 }
 

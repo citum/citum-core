@@ -14,6 +14,7 @@ mod tests;
 
 use crate::Citation;
 use crate::processor::Processor;
+use citum_schema::locale::Locale;
 use citum_schema::options::{
     NoteConfig as StyleNoteConfig, NoteMarkerOrder, NoteNumberPlacement, NoteQuotePlacement,
 };
@@ -121,12 +122,12 @@ pub struct ParsedDocument {
 /// A trait for document parsers that can identify citations.
 pub trait CitationParser {
     /// Parse the document into citation placements and note metadata.
-    fn parse_document(&self, content: &str) -> ParsedDocument;
+    fn parse_document(&self, content: &str, locale: &Locale) -> ParsedDocument;
 
     /// Find and extract citations from a document string.
     /// Returns a list of (start_index, end_index, citation_model) tuples.
-    fn parse_citations(&self, content: &str) -> Vec<(usize, usize, Citation)> {
-        self.parse_document(content)
+    fn parse_citations(&self, content: &str, locale: &Locale) -> Vec<(usize, usize, Citation)> {
+        self.parse_document(content, locale)
             .citations
             .into_iter()
             .map(|parsed| (parsed.start, parsed.end, parsed.citation))
@@ -182,7 +183,7 @@ impl Processor {
         P: CitationParser,
         F: crate::render::format::OutputFormat<Output = String>,
     {
-        let parsed = parser.parse_document(content);
+        let parsed = parser.parse_document(content, &self.locale);
 
         // Strip any frontmatter from the content passed to rendering.
         let body = &content[parsed.body_start..];
@@ -238,7 +239,7 @@ impl Processor {
             }
 
             // Re-parse on the placeholder content so citation offsets are correct.
-            let parsed_staged = parser.parse_document(&staged);
+            let parsed_staged = parser.parse_document(&staged, &self.locale);
             let rendered = if self.is_note_style() {
                 self.process_note_document::<F>(&staged, parsed_staged)
             } else {

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-06T22:34:50.573Z",
+  "generated_at": "2026-03-08T18:27:11.891Z",
   "style": "association-for-computing-machinery",
-  "fixture_hash": "4fbe6757fa5180e0",
+  "fixture_hash": "67a756de7032b296",
   "csl_hash": "085a33eac864b8a8",
   "citations": {
     "single-item": "[10]",

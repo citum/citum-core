@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-06T22:34:50.322Z",
+  "generated_at": "2026-03-08T18:27:02.329Z",
   "style": "american-society-of-civil-engineers",
-  "fixture_hash": "4fbe6757fa5180e0",
+  "fixture_hash": "67a756de7032b296",
   "csl_hash": "9789bde97128d0b5",
   "citations": {
     "single-item": "(Kuhn 1962)",

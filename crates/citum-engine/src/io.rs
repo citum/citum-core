@@ -397,10 +397,12 @@ mod tests {
 
         assert_eq!(with_locator.items.len(), 1);
         assert_eq!(
-            with_locator.items[0].label,
-            Some(citum_schema::citation::LocatorType::Page)
+            with_locator.items[0].locator,
+            Some(citum_schema::citation::CitationLocator::single(
+                citum_schema::citation::LocatorType::Page,
+                "23",
+            ))
         );
-        assert_eq!(with_locator.items[0].locator.as_deref(), Some("23"));
     }
 
     #[test]

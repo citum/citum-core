@@ -415,15 +415,55 @@ macro_rules! ref_article_authors {
     }};
 }
 
+/// Builds a `CitationLocator` value.
+///
+/// # Examples
+/// ```ignore
+/// let locator = citum_schema::citation_locator!(Page, "42");
+/// let locator = citum_schema::citation_locator!(
+///     Chapter => "3",
+///     Section => "42",
+/// );
+/// ```
+#[macro_export]
+macro_rules! citation_locator {
+    ($label:ident, $value:expr) => {
+        $crate::citation::CitationLocator::single(
+            $crate::citation::LocatorType::$label,
+            $value,
+        )
+    };
+    ($l1:ident => $v1:expr, $l2:ident => $v2:expr $(, $lrest:ident => $vrest:expr)* $(,)?) => {
+        $crate::citation::CitationLocator::compound(vec![
+            $crate::citation::LocatorSegment::new(
+                $crate::citation::LocatorType::$l1,
+                $v1,
+            ),
+            $crate::citation::LocatorSegment::new(
+                $crate::citation::LocatorType::$l2,
+                $v2,
+            ),
+            $(
+                $crate::citation::LocatorSegment::new(
+                    $crate::citation::LocatorType::$lrest,
+                    $vrest,
+                )
+            ),*
+        ]).expect("compound locator macro requires at least two segments")
+    };
+}
+
 /// Builds a `CitationItem` with optional named fields.
 ///
-/// Supported fields: `locator`, `prefix`, `suffix`, `label`.
+/// Supported fields: `locator`, `prefix`, `suffix`.
 ///
 /// # Examples
 /// ```ignore
 /// let item = citum_schema::citation_item!("kuhn1962");
-/// let item = citum_schema::citation_item!("kuhn1962", locator = "42");
-/// let item = citum_schema::citation_item!("kuhn1962", label = citum_schema::citation::LocatorType::Page, locator = "42");
+/// let item = citum_schema::citation_item!(
+///     "kuhn1962",
+///     locator = citum_schema::citation_locator!(Page, "42")
+/// );
 /// let item = citum_schema::citation_item!("smith2020", prefix = "cf. ");
 /// ```
 #[macro_export]
@@ -437,10 +477,9 @@ macro_rules! citation_item {
         $( citation_item!(@set _item, $key, $val); )*
         _item
     }};
-    (@set $item:ident, locator, $val:expr) => { $item.locator = Some($val.to_string()); };
+    (@set $item:ident, locator, $val:expr) => { $item.locator = Some($val); };
     (@set $item:ident, prefix, $val:expr) => { $item.prefix = Some($val.to_string()); };
     (@set $item:ident, suffix, $val:expr) => { $item.suffix = Some($val.to_string()); };
-    (@set $item:ident, label, $val:expr) => { $item.label = Some($val); };
 }
 
 /// Builds a `Citation` from a list of `CitationItem` expressions with optional named fields.
@@ -452,7 +491,10 @@ macro_rules! citation_item {
 /// // Two items, no options
 /// let c = citum_schema::citation!([
 ///     citum_schema::citation_item!("item1"),
-///     citum_schema::citation_item!("item2", locator = "42"),
+///     citum_schema::citation_item!(
+///         "item2",
+///         locator = citum_schema::citation_locator!(Page, "42")
+///     ),
 /// ]);
 ///
 /// // Integral mode

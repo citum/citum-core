@@ -82,7 +82,7 @@ const DEFAULT_PROCESS_TIMEOUT_MS = 120000;
 const CSL_SNAPSHOT_DIR = path.join(PROJECT_ROOT, 'tests', 'snapshots', 'csl');
 const BIBLATEX_SNAPSHOT_DIR = path.join(PROJECT_ROOT, 'tests', 'snapshots', 'biblatex');
 const COMPOUND_SNAPSHOT_DIR = path.join(PROJECT_ROOT, 'tests', 'snapshots', 'compound');
-const REPORT_CACHE_VERSION = 3;
+const REPORT_CACHE_VERSION = 4;
 
 const TOTAL_DEPENDENTS = 7987;
 const CORE_FALLBACK_TYPES = [

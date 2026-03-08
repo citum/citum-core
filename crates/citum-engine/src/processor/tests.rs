@@ -316,8 +316,10 @@ fn test_citation_locator_label_renders_term() {
     let citation = Citation {
         items: vec![crate::reference::CitationItem {
             id: "kuhn1962".to_string(),
-            label: Some(citum_schema::citation::LocatorType::Page),
-            locator: Some("23".to_string()),
+            locator: Some(citum_schema::citation::CitationLocator::single(
+                citum_schema::citation::LocatorType::Page,
+                "23",
+            )),
             ..Default::default()
         }],
         ..Default::default()
@@ -366,8 +368,10 @@ fn test_citation_locator_label_renders_term_with_loaded_locale() {
     let citation = Citation {
         items: vec![crate::reference::CitationItem {
             id: "kuhn1962".to_string(),
-            label: Some(citum_schema::citation::LocatorType::Page),
-            locator: Some("23".to_string()),
+            locator: Some(citum_schema::citation::CitationLocator::single(
+                citum_schema::citation::LocatorType::Page,
+                "23",
+            )),
             ..Default::default()
         }],
         ..Default::default()
@@ -411,8 +415,10 @@ fn test_citation_locator_can_suppress_label() {
     let citation = Citation {
         items: vec![crate::reference::CitationItem {
             id: "kuhn1962".to_string(),
-            label: Some(citum_schema::citation::LocatorType::Page),
-            locator: Some("23".to_string()),
+            locator: Some(citum_schema::citation::CitationLocator::single(
+                citum_schema::citation::LocatorType::Page,
+                "23",
+            )),
             ..Default::default()
         }],
         ..Default::default()
@@ -456,8 +462,10 @@ fn test_citation_locator_can_strip_label_periods() {
     let citation = Citation {
         items: vec![crate::reference::CitationItem {
             id: "kuhn1962".to_string(),
-            label: Some(citum_schema::citation::LocatorType::Page),
-            locator: Some("23".to_string()),
+            locator: Some(citum_schema::citation::CitationLocator::single(
+                citum_schema::citation::LocatorType::Page,
+                "23",
+            )),
             ..Default::default()
         }],
         ..Default::default()
@@ -490,15 +498,21 @@ fn test_springer_locator_label_survives_sorting() {
         .expect("with-locator citation should exist");
 
     assert_eq!(
-        citation.items[0].label,
-        Some(citum_schema::citation::LocatorType::Page)
+        citation.items[0].locator,
+        Some(citum_schema::citation::CitationLocator::single(
+            citum_schema::citation::LocatorType::Page,
+            "23",
+        ))
     );
 
     let spec = style.citation.as_ref().expect("citation spec should exist");
     let sorted = processor.sort_citation_items(citation.items.clone(), spec);
     assert_eq!(
-        sorted[0].label,
-        Some(citum_schema::citation::LocatorType::Page)
+        sorted[0].locator,
+        Some(citum_schema::citation::CitationLocator::single(
+            citum_schema::citation::LocatorType::Page,
+            "23",
+        ))
     );
 
     let rendered_default_locale = processor.process_citation(&citation).unwrap();
@@ -2318,7 +2332,10 @@ fn test_position_detection_ibid_with_locator() {
         Citation {
             items: vec![CitationItem {
                 id: "smith2020".to_string(),
-                locator: Some("42".to_string()),
+                locator: Some(citum_schema::citation::CitationLocator::single(
+                    citum_schema::citation::LocatorType::Page,
+                    "42",
+                )),
                 ..Default::default()
             }],
             ..Default::default()
@@ -2326,7 +2343,10 @@ fn test_position_detection_ibid_with_locator() {
         Citation {
             items: vec![CitationItem {
                 id: "smith2020".to_string(),
-                locator: Some("45".to_string()),
+                locator: Some(citum_schema::citation::CitationLocator::single(
+                    citum_schema::citation::LocatorType::Page,
+                    "45",
+                )),
                 ..Default::default()
             }],
             ..Default::default()
@@ -2466,7 +2486,10 @@ fn test_annotate_positions_ibid_with_locator_via_public_api() {
         Citation {
             items: vec![CitationItem {
                 id: "kuhn1962".to_string(),
-                locator: Some("50".to_string()),
+                locator: Some(citum_schema::citation::CitationLocator::single(
+                    citum_schema::citation::LocatorType::Page,
+                    "50",
+                )),
                 ..Default::default()
             }],
             ..Default::default()
@@ -2474,7 +2497,10 @@ fn test_annotate_positions_ibid_with_locator_via_public_api() {
         Citation {
             items: vec![CitationItem {
                 id: "kuhn1962".to_string(),
-                locator: Some("75".to_string()),
+                locator: Some(citum_schema::citation::CitationLocator::single(
+                    citum_schema::citation::LocatorType::Page,
+                    "75",
+                )),
                 ..Default::default()
             }],
             ..Default::default()

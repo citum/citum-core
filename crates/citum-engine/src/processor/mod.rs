@@ -50,21 +50,12 @@ use std::collections::{HashMap, HashSet};
 
 /// Get a canonical locator string for ibid comparison.
 ///
-/// Accounts for both flat (`label`/`locator`) and compound (`locators`) forms.
+/// Accounts for both single and compound locator forms.
 /// Returns `None` when no locator is present.
 fn effective_locator_string(item: &CitationItem) -> Option<String> {
-    use citum_schema::citation::ResolvedLocator;
-    match item.resolved_locator() {
-        Some(ResolvedLocator::Flat { value, .. }) => Some(value),
-        Some(ResolvedLocator::Compound(segments)) => {
-            let parts: Vec<String> = segments
-                .iter()
-                .map(|s| format!("{:?}:{}", s.label, s.value.value_str()))
-                .collect();
-            Some(parts.join(","))
-        }
-        None => None,
-    }
+    item.locator
+        .as_ref()
+        .map(|locator| locator.canonical_string())
 }
 
 use self::disambiguation::Disambiguator;

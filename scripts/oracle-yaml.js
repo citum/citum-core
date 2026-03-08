@@ -23,6 +23,7 @@ const {
   normalizeText,
   loadLocale,
 } = require('./oracle-utils');
+const { toCiteprocItem } = require('./lib/citeproc-locators');
 const {
   PROJECT_ROOT,
   resolveYamlVerificationPlan,
@@ -278,14 +279,7 @@ function renderWithCiteprocJs(cslPath, refsFixture, citationsFixture) {
   const citations = {};
   for (const citation of testCitations) {
     const suppressAuthor = citation['suppress-author'] === true;
-    const citeprocItems = citation.items.map((item) => ({
-      id: item.id,
-      locator: item.locator,
-      label: item.label,
-      prefix: item.prefix,
-      suffix: item.suffix,
-      'suppress-author': suppressAuthor,
-    }));
+    const citeprocItems = citation.items.map((item) => toCiteprocItem(item, suppressAuthor));
     citations[citation.id] = citeproc.makeCitationCluster(citeprocItems);
   }
 

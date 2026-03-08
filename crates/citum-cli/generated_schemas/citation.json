@@ -86,22 +86,15 @@
           "description": "The reference ID (citekey).",
           "type": "string"
         },
-        "label": {
-          "description": "Locator type (page, chapter, etc.)",
+        "locator": {
+          "description": "Canonical locator value for pinpoint citations.",
           "anyOf": [
             {
-              "$ref": "#/definitions/LocatorType"
+              "$ref": "#/definitions/CitationLocator"
             },
             {
               "type": "null"
             }
-          ]
-        },
-        "locator": {
-          "description": "Locator value (e.g., \"42-45\" for pages)",
-          "type": [
-            "string",
-            "null"
           ]
         },
         "prefix": {
@@ -119,6 +112,27 @@
           ]
         }
       }
+    },
+    "CitationLocator": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/LocatorSegment"
+        },
+        {
+          "type": "object",
+          "required": [
+            "segments"
+          ],
+          "properties": {
+            "segments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/LocatorSegment"
+              }
+            }
+          }
+        }
+      ]
     },
     "CitationMode": {
       "description": "Citation mode for author-date styles.\n\nDetermines how the author name is rendered relative to the citation.",
@@ -139,27 +153,314 @@
         }
       ]
     },
+    "LocatorSegment": {
+      "description": "A single segment of a compound locator.\n\nPairs a locator type with its value, e.g. `{ label: chapter, value: \"3\" }`.",
+      "type": "object",
+      "required": [
+        "label",
+        "value"
+      ],
+      "properties": {
+        "label": {
+          "description": "The locator type for this segment.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/LocatorType"
+            }
+          ]
+        },
+        "value": {
+          "description": "The locator value (e.g., \"3\", \"42-45\").",
+          "allOf": [
+            {
+              "$ref": "#/definitions/LocatorValue"
+            }
+          ]
+        }
+      }
+    },
     "LocatorType": {
       "description": "Locator types for pinpoint citations.",
-      "type": "string",
-      "enum": [
-        "book",
-        "chapter",
-        "column",
-        "figure",
-        "folio",
-        "line",
-        "note",
-        "number",
-        "opus",
-        "page",
-        "paragraph",
-        "part",
-        "section",
-        "sub-verbo",
-        "verse",
-        "volume",
-        "issue"
+      "oneOf": [
+        {
+          "description": "Locator refers to a book within a larger work.",
+          "type": "string",
+          "enum": [
+            "book"
+          ]
+        },
+        {
+          "description": "Locator refers to a chapter.",
+          "type": "string",
+          "enum": [
+            "chapter"
+          ]
+        },
+        {
+          "description": "Locator refers to a clause.",
+          "type": "string",
+          "enum": [
+            "clause"
+          ]
+        },
+        {
+          "description": "Locator refers to a column.",
+          "type": "string",
+          "enum": [
+            "column"
+          ]
+        },
+        {
+          "description": "Locator refers to a corollary.",
+          "type": "string",
+          "enum": [
+            "corollary"
+          ]
+        },
+        {
+          "description": "Locator refers to a definition.",
+          "type": "string",
+          "enum": [
+            "definition"
+          ]
+        },
+        {
+          "description": "Locator refers to a division.",
+          "type": "string",
+          "enum": [
+            "division"
+          ]
+        },
+        {
+          "description": "Locator refers to a figure.",
+          "type": "string",
+          "enum": [
+            "figure"
+          ]
+        },
+        {
+          "description": "Locator refers to a folio.",
+          "type": "string",
+          "enum": [
+            "folio"
+          ]
+        },
+        {
+          "description": "Locator refers to a numbered line.",
+          "type": "string",
+          "enum": [
+            "line"
+          ]
+        },
+        {
+          "description": "Locator refers to a lemma.",
+          "type": "string",
+          "enum": [
+            "lemma"
+          ]
+        },
+        {
+          "description": "Locator refers to a note.",
+          "type": "string",
+          "enum": [
+            "note"
+          ]
+        },
+        {
+          "description": "Locator refers to a numbered unit.",
+          "type": "string",
+          "enum": [
+            "number"
+          ]
+        },
+        {
+          "description": "Locator refers to an opus number.",
+          "type": "string",
+          "enum": [
+            "opus"
+          ]
+        },
+        {
+          "description": "Locator refers to a page.",
+          "type": "string",
+          "enum": [
+            "page"
+          ]
+        },
+        {
+          "description": "Locator refers to a paragraph.",
+          "type": "string",
+          "enum": [
+            "paragraph"
+          ]
+        },
+        {
+          "description": "Locator refers to a sub-paragraph.",
+          "type": "string",
+          "enum": [
+            "subparagraph"
+          ]
+        },
+        {
+          "description": "Locator refers to a sub-clause.",
+          "type": "string",
+          "enum": [
+            "subclause"
+          ]
+        },
+        {
+          "description": "Locator refers to a sub-division.",
+          "type": "string",
+          "enum": [
+            "subdivision"
+          ]
+        },
+        {
+          "description": "Locator refers to a sub-section.",
+          "type": "string",
+          "enum": [
+            "subsection"
+          ]
+        },
+        {
+          "description": "Locator refers to a part or division.",
+          "type": "string",
+          "enum": [
+            "part"
+          ]
+        },
+        {
+          "description": "Locator refers to a problem.",
+          "type": "string",
+          "enum": [
+            "problem"
+          ]
+        },
+        {
+          "description": "Locator refers to a proposition.",
+          "type": "string",
+          "enum": [
+            "proposition"
+          ]
+        },
+        {
+          "description": "Locator refers to a recital.",
+          "type": "string",
+          "enum": [
+            "recital"
+          ]
+        },
+        {
+          "description": "Locator refers to a schedule.",
+          "type": "string",
+          "enum": [
+            "schedule"
+          ]
+        },
+        {
+          "description": "Locator refers to a section.",
+          "type": "string",
+          "enum": [
+            "section"
+          ]
+        },
+        {
+          "description": "Locator refers to a surah.",
+          "type": "string",
+          "enum": [
+            "surah"
+          ]
+        },
+        {
+          "description": "Locator refers to a theorem.",
+          "type": "string",
+          "enum": [
+            "theorem"
+          ]
+        },
+        {
+          "description": "Locator refers to an entry under a headword.",
+          "type": "string",
+          "enum": [
+            "sub-verbo"
+          ]
+        },
+        {
+          "description": "Locator refers to a supplement.",
+          "type": "string",
+          "enum": [
+            "supplement"
+          ]
+        },
+        {
+          "description": "Locator refers to a verse.",
+          "type": "string",
+          "enum": [
+            "verse"
+          ]
+        },
+        {
+          "description": "Locator refers to a volume.",
+          "type": "string",
+          "enum": [
+            "volume"
+          ]
+        },
+        {
+          "description": "Locator refers to a periodical volume.",
+          "type": "string",
+          "enum": [
+            "volume-periodical"
+          ]
+        },
+        {
+          "description": "Locator refers to a monograph volume.",
+          "type": "string",
+          "enum": [
+            "volume-book"
+          ]
+        },
+        {
+          "description": "Locator refers to an issue.",
+          "type": "string",
+          "enum": [
+            "issue"
+          ]
+        },
+        {
+          "description": "Locator refers to an algorithm.",
+          "type": "string",
+          "enum": [
+            "algorithm"
+          ]
+        }
+      ]
+    },
+    "LocatorValue": {
+      "description": "A locator value that supports both plain strings and explicit plurality.\n\nPlain strings use heuristic plural detection (checking for `-`, `–`, `,`, `&`). Use the explicit form to override when the heuristic fails (e.g., \"figure A-3\" should be singular despite containing a hyphen).",
+      "anyOf": [
+        {
+          "description": "Plain string value with heuristic plural detection.",
+          "type": "string"
+        },
+        {
+          "description": "Explicit value with manual plural override.",
+          "type": "object",
+          "required": [
+            "plural",
+            "value"
+          ],
+          "properties": {
+            "plural": {
+              "description": "Whether this locator is plural.",
+              "type": "boolean"
+            },
+            "value": {
+              "description": "The locator value string.",
+              "type": "string"
+            }
+          }
+        }
       ]
     },
     "Position": {

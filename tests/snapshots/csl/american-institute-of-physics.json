@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-06T22:34:49.837Z",
+  "generated_at": "2026-03-08T18:27:00.713Z",
   "style": "american-institute-of-physics",
-  "fixture_hash": "4fbe6757fa5180e0",
+  "fixture_hash": "67a756de7032b296",
   "csl_hash": "673dae8c6c921251",
   "citations": {
     "single-item": "<sup>1</sup>",

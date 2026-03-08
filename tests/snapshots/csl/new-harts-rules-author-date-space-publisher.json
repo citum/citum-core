@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-06T22:34:55.856Z",
+  "generated_at": "2026-03-08T18:29:53.104Z",
   "style": "new-harts-rules-author-date-space-publisher",
-  "fixture_hash": "4fbe6757fa5180e0",
+  "fixture_hash": "67a756de7032b296",
   "csl_hash": "1f3f53bc24319843",
   "citations": {
     "single-item": "(Kuhn 1962)",

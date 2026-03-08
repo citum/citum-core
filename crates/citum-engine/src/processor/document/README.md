@@ -13,11 +13,11 @@ Any new document format must implement the `CitationParser` trait:
 ```rust
 pub trait CitationParser {
     /// Parse the document into citation placements and note metadata.
-    fn parse_document(&self, content: &str) -> ParsedDocument;
+    fn parse_document(&self, content: &str, locale: &Locale) -> ParsedDocument;
 }
 ```
 
-- **Input**: The raw document content as a string.
+- **Input**: The raw document content as a string plus the active locale.
 - **Output**: A `ParsedDocument` containing:
   - parsed citations with byte ranges
   - citation placement (`InlineProse` vs `ManualFootnote`)
@@ -49,7 +49,7 @@ To add support for a new document format (e.g., Markdown):
 
 ## Existing Implementations
 
-- **Djot (`djot.rs`)**: Uses `winnow` to parse citation markers and `jotdown` offsets to track manual footnote references/definitions. It also converts final Djot output to HTML using `jotdown`.
+- **Djot (`djot.rs`)**: Uses `winnow` to parse citation markers, resolves locator labels with locale-aware normalization, tracks manual footnote references/definitions via `jotdown`, and converts final Djot output to HTML using `jotdown`.
 
 ## Workflow
 

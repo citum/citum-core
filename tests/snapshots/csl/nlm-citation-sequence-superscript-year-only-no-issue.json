@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-06T22:34:55.817Z",
+  "generated_at": "2026-03-08T18:30:21.505Z",
   "style": "nlm-citation-sequence-superscript-year-only-no-issue",
-  "fixture_hash": "4fbe6757fa5180e0",
+  "fixture_hash": "67a756de7032b296",
   "csl_hash": "9a07bd159d2ab443",
   "citations": {
     "single-item": "<sup>1</sup>",
