@@ -1,11 +1,11 @@
 ---
 # csl26-33hw
 title: 'Rethink compat.html: dependents column and oracle labeling for compound styles'
-status: todo
+status: completed
 type: task
 priority: normal
 created_at: 2026-03-07T01:22:55Z
-updated_at: 2026-03-07T01:22:55Z
+updated_at: 2026-03-08T02:02:15Z
 ---
 
 User feedback on compat.html report:
