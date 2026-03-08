@@ -48,15 +48,9 @@ impl<'a> GroupSorter<'a> {
         mut references: Vec<&'b Reference>,
         sort_spec: &GroupSort,
     ) -> Vec<&'b Reference> {
-        let author_fallback_to_title = sort_spec
-            .template
-            .iter()
-            .any(|k| matches!(k.key, GroupSortKeyType::Title));
-
         references.sort_by(|a, b| {
             for sort_key in &sort_spec.template {
-                let cmp =
-                    self.compare_by_key_with_context(a, b, sort_key, author_fallback_to_title);
+                let cmp = self.compare_by_key_with_context(a, b, sort_key);
                 if cmp != std::cmp::Ordering::Equal {
                     return cmp;
                 }
@@ -73,7 +67,7 @@ impl<'a> GroupSorter<'a> {
         b: &Reference,
         sort_key: &GroupSortKey,
     ) -> std::cmp::Ordering {
-        self.compare_by_key_with_context(a, b, sort_key, true)
+        self.compare_by_key_with_context(a, b, sort_key)
     }
 
     fn compare_by_key_with_context(
@@ -81,7 +75,6 @@ impl<'a> GroupSorter<'a> {
         a: &Reference,
         b: &Reference,
         sort_key: &GroupSortKey,
-        author_fallback_to_title: bool,
     ) -> std::cmp::Ordering {
         let cmp = match &sort_key.key {
             GroupSortKeyType::RefType => {
@@ -96,15 +89,10 @@ impl<'a> GroupSorter<'a> {
             GroupSortKeyType::Author => {
                 if let Some(name_order) = &sort_key.sort_order {
                     // Name-order sorting: culturally appropriate collation
-                    self.compare_by_author_with_order(a, b, *name_order, author_fallback_to_title)
+                    self.compare_by_author_with_order(a, b, *name_order)
                 } else {
                     // Default: family-given (Western convention)
-                    self.compare_by_author_with_order(
-                        a,
-                        b,
-                        NameSortOrder::FamilyGiven,
-                        author_fallback_to_title,
-                    )
+                    self.compare_by_author_with_order(a, b, NameSortOrder::FamilyGiven)
                 }
             }
             GroupSortKeyType::Title => self.compare_by_title(a, b),
@@ -149,10 +137,9 @@ impl<'a> GroupSorter<'a> {
         a: &Reference,
         b: &Reference,
         name_order: NameSortOrder,
-        fallback_to_title: bool,
     ) -> std::cmp::Ordering {
-        let a_key = self.extract_author_sort_key_opt(a, name_order, fallback_to_title);
-        let b_key = self.extract_author_sort_key_opt(b, name_order, fallback_to_title);
+        let a_key = self.extract_author_sort_key_opt(a, name_order);
+        let b_key = self.extract_author_sort_key_opt(b, name_order);
         match (a_key, b_key) {
             (Some(a), Some(b)) => a.cmp(&b),
             (Some(_), None) => std::cmp::Ordering::Less,
@@ -170,7 +157,6 @@ impl<'a> GroupSorter<'a> {
         &self,
         reference: &Reference,
         name_order: NameSortOrder,
-        fallback_to_title: bool,
     ) -> Option<String> {
         reference
             .author()
@@ -197,15 +183,11 @@ impl<'a> GroupSorter<'a> {
                     .filter(|key| !key.is_empty())
             })
             .or_else(|| {
-                if fallback_to_title {
-                    reference.title().map(|t| {
-                        self.locale
-                            .strip_sort_articles(&t.to_string())
-                            .to_lowercase()
-                    })
-                } else {
-                    None
-                }
+                reference.title().map(|t| {
+                    self.locale
+                        .strip_sort_articles(&t.to_string())
+                        .to_lowercase()
+                })
             })
             .filter(|key| !key.is_empty())
     }
@@ -216,7 +198,7 @@ impl<'a> GroupSorter<'a> {
         reference: &Reference,
         name_order: NameSortOrder,
     ) -> String {
-        self.extract_author_sort_key_opt(reference, name_order, true)
+        self.extract_author_sort_key_opt(reference, name_order)
             .unwrap_or_default()
     }
 
@@ -463,7 +445,7 @@ mod tests {
     }
 
     #[test]
-    fn test_author_sort_places_missing_names_last() {
+    fn test_author_sort_falls_back_to_title_for_missing_names() {
         let locale = make_locale();
         let sorter = GroupSorter::new(&locale);
 
@@ -485,8 +467,8 @@ mod tests {
         refs = sorter.sort_references(refs, &sort_spec);
 
         assert_eq!(refs[0].id().unwrap(), "r2"); // Brown
-        assert_eq!(refs[1].id().unwrap(), "r3"); // Smith
-        assert_eq!(refs[2].id().unwrap(), "r1"); // Missing author/editor
+        assert_eq!(refs[1].id().unwrap(), "r1"); // Brown v. Board
+        assert_eq!(refs[2].id().unwrap(), "r3"); // Smith
     }
 
     #[test]

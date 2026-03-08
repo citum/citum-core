@@ -77,15 +77,15 @@ fn test_apa_7th_sort_anonymous_works_by_title() {
         .find("A Brief Guide")
         .expect("A Brief Guide should be in output");
 
-    // This assertion documents the current behavior. When article-stripping is implemented,
-    // guide_pos should be < chicago_pos.
     assert!(
-        guide_pos < chicago_pos || chicago_pos < guide_pos,
-        "Anonymous works should be sortable (article-stripping incomplete)"
+        guide_pos < chicago_pos,
+        "Anonymous works should file under title with article stripping. Got: {}",
+        result
     );
 }
 
-/// Test numeric style sort: citation order determines numbering.
+/// Test numeric style sort: citation numbers remain stable for the bibliography order in the
+/// fixture used here.
 /// Multiple authors with same surname should maintain consistent alphabetical ordering.
 #[test]
 fn test_numeric_sort_by_citation_order() {
