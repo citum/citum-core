@@ -14,6 +14,7 @@ const {
 
 const projectRoot = path.resolve(__dirname, '..');
 const oracleScript = path.join(__dirname, 'oracle.js');
+const hasLegacyStyles = fs.existsSync(path.join(projectRoot, 'styles-legacy', 'apa.csl'));
 
 function runOracle(stylePath) {
   return new Promise((resolve, reject) => {
@@ -68,7 +69,10 @@ test('oracle temp workspaces are unique and removable', () => {
   assert.equal(fs.existsSync(second.dir), false);
 });
 
-test('parallel oracle invocations do not collide on temp files', { timeout: 240000 }, async () => {
+test('parallel oracle invocations do not collide on temp files', {
+  timeout: 240000,
+  skip: !hasLegacyStyles,
+}, async () => {
   const styles = [
     path.join(projectRoot, 'styles-legacy', 'american-association-for-cancer-research.csl'),
     path.join(projectRoot, 'styles-legacy', 'american-institute-of-physics.csl'),

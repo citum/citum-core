@@ -39,6 +39,7 @@ const {
   loadReportProvenance,
 } = require('./lib/report-metadata');
 const { normalizeText } = require('./oracle-utils');
+const { maybeDatasetErrorForFile } = require('./lib/dataset-guard');
 
 const CUSTOM_TAG_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
   new yaml.Type('!custom', {
@@ -241,9 +242,14 @@ function fixtureHash(refsFixture, citationsFixture) {
 }
 
 function resolveCitumBinary(explicitPath = null) {
+  const cargoTargetDir = process.env.CARGO_TARGET_DIR
+    ? path.resolve(process.env.CARGO_TARGET_DIR)
+    : null;
   const candidates = [
     explicitPath,
     process.env.CITUM_BIN,
+    cargoTargetDir ? path.join(cargoTargetDir, 'debug', 'citum') : null,
+    cargoTargetDir ? path.join(cargoTargetDir, 'release', 'citum') : null,
     path.join(PROJECT_ROOT, 'target', 'debug', 'citum'),
     path.join(PROJECT_ROOT, 'target', 'release', 'citum'),
   ].filter(Boolean);
@@ -260,7 +266,9 @@ function resolveCitumBinary(explicitPath = null) {
     stdio: ['pipe', 'pipe', 'pipe'],
   });
 
-  const builtBinary = path.join(PROJECT_ROOT, 'target', 'debug', 'citum');
+  const builtBinary = cargoTargetDir
+    ? path.join(cargoTargetDir, 'debug', 'citum')
+    : path.join(PROJECT_ROOT, 'target', 'debug', 'citum');
   if (!fs.existsSync(builtBinary)) {
     throw new Error(`Expected Citum binary after build: ${builtBinary}`);
   }
@@ -2627,6 +2635,11 @@ function escapeHtml(text) {
 async function main() {
   try {
     const options = parseArgs();
+    const stylesDir = options.stylesDir || path.join(PROJECT_ROOT, 'styles-legacy');
+    const datasetMessage = maybeDatasetErrorForFile(stylesDir, 'report-core.js');
+    if (datasetMessage) {
+      throw new Error(datasetMessage);
+    }
     const { report, errorCount } = await generateReport(options);
 
     // Output JSON to stdout

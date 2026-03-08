@@ -6,17 +6,15 @@ on:
   pull_request:
     branches: [ "main" ]
 
-env:
-  CARGO_TERM_COLOR: always
-
 jobs:
-  build:
-    name: Build and Test
+  core:
+    name: Core Checks
     runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_TARGET_DIR: /tmp/citum-target
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
       
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
@@ -66,15 +64,3 @@ jobs:
           tmp_dir="$(mktemp -d)"
           cargo run --bin citum --features schema -- schema --out-dir "$tmp_dir"
           diff -ru "$tmp_dir" docs/schemas
-
-      - name: Check core fidelity and SQI drift
-        run: |
-          node scripts/report-core.js > /tmp/core-report.json
-          node scripts/check-core-quality.js \
-            --report /tmp/core-report.json \
-            --baseline scripts/report-data/core-quality-baseline.json
-
-      - name: Check oracle top-10 regression baseline
-        run: |
-          node scripts/check-oracle-regression.js \
-            --baseline scripts/report-data/oracle-top10-baseline.json

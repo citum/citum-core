@@ -24,6 +24,9 @@ const {
   selectPrimaryComparator,
 } = require('./report-core');
 
+const projectRoot = path.resolve(__dirname, '..');
+const hasLegacyStyles = fs.existsSync(path.join(projectRoot, 'styles-legacy', 'apa.csl'));
+
 function loadStyleMap() {
   return new Map(discoverCoreStyles().map((style) => [style.name, style]));
 }
@@ -140,7 +143,6 @@ test('equivalentText tolerates near-match snapshot formatting without masking dr
 });
 
 test('getCslSnapshotStatus reports missing and stale snapshots without invoking live oracle', () => {
-  const projectRoot = path.resolve(__dirname, '..');
   const refsFixture = path.join(projectRoot, 'tests', 'fixtures', 'references-expanded.json');
   const citationsFixture = path.join(projectRoot, 'tests', 'fixtures', 'citations-expanded.json');
   const missing = getCslSnapshotStatus('/tmp/definitely-missing-style.csl', refsFixture, citationsFixture);
@@ -149,14 +151,16 @@ test('getCslSnapshotStatus reports missing and stale snapshots without invoking 
 
   const staleCitationsFixture = path.join(os.tmpdir(), `citations-stale-${process.pid}.json`);
   fs.writeFileSync(staleCitationsFixture, fs.readFileSync(citationsFixture, 'utf8').replace('"id":', '"fixture-id":'));
-  const stale = getCslSnapshotStatus(
-    path.join(projectRoot, 'styles-legacy', 'apa.csl'),
-    refsFixture,
-    staleCitationsFixture
-  );
+  if (hasLegacyStyles) {
+    const stale = getCslSnapshotStatus(
+      path.join(projectRoot, 'styles-legacy', 'apa.csl'),
+      refsFixture,
+      staleCitationsFixture
+    );
+    assert.equal(stale.ok, false);
+    assert.equal(stale.status, 'stale');
+  }
   fs.rmSync(staleCitationsFixture, { force: true });
-  assert.equal(stale.ok, false);
-  assert.equal(stale.status, 'stale');
 });
 
 test('runCachedJsonJob invalidates when cache key changes', async () => {

@@ -14,7 +14,15 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-STYLE_PATH="$1"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+source "${SCRIPT_DIR}/lib/dataset-guard.sh"
+
+if [ $# -lt 1 ]; then
+  echo "Usage: workflow-test.sh <style.csl> [--json] [--verbose] [--top N]"
+  exit 1
+fi
+
+STYLE_PATH="${1:-}"
 BATCH_COUNT="${BATCH_COUNT:-10}"
 JSON_OUTPUT=false
 VERBOSE=false
@@ -49,6 +57,14 @@ if [ -z "$STYLE_PATH" ]; then
 fi
 
 STYLE_NAME=$(basename "$STYLE_PATH" .csl)
+
+if [[ "${STYLE_PATH}" == styles-legacy/* || "${STYLE_PATH}" == "${PROJECT_ROOT}"/styles-legacy/* ]]; then
+  require_dataset_file "${STYLE_PATH}" "legacy CSL styles corpus" "workflow-test.sh"
+elif [ ! -f "${STYLE_PATH}" ]; then
+  echo "Style file not found: ${STYLE_PATH}" >&2
+  exit 2
+fi
+require_dataset_dir "styles-legacy" "legacy CSL styles corpus" "workflow-test.sh"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "CSLN Workflow Test: $STYLE_NAME"

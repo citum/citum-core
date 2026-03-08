@@ -1,11 +1,13 @@
 name: Deploy Documentation
 
 on:
-  push:
-    branches: ["main"]
-    paths:
-      - "docs/**"
   workflow_dispatch:
+    inputs:
+      refresh_compat:
+        description: "Rebuild compat.html from corpora instead of reusing the published copy"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -22,9 +24,50 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_TARGET_DIR: /tmp/citum-target
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Restore published compatibility report
+        if: ${{ !inputs.refresh_compat }}
+        run: |
+          curl -fsSL https://citum.github.io/citum-core/compat.html -o docs/compat.html || {
+            echo "Failed to fetch published compat.html. Re-run this workflow with refresh_compat=true." >&2
+            exit 1
+          }
+
+      - name: Initialize optional corpora
+        if: ${{ inputs.refresh_compat }}
+        run: git submodule update --init --depth 1 styles-legacy tests/csl-test-suite
+
+      - name: Set up Rust
+        if: ${{ inputs.refresh_compat }}
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Set up Node
+        if: ${{ inputs.refresh_compat }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Cache Rust
+        if: ${{ inputs.refresh_compat }}
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install Node dependencies
+        if: ${{ inputs.refresh_compat }}
+        run: npm install --prefix scripts
+
+      - name: Build Rust workspace
+        if: ${{ inputs.refresh_compat }}
+        run: cargo build
+
+      - name: Generate compatibility report
+        if: ${{ inputs.refresh_compat }}
+        run: node scripts/report-core.js --output-html docs/compat.html > /tmp/core-report.json
       
       - name: Setup Pages
         uses: actions/configure-pages@v5

@@ -32,6 +32,7 @@ const {
   findRefDataForEntry,
   loadLocale,
 } = require('./oracle-utils');
+const { maybeDatasetErrorForFile } = require('./lib/dataset-guard');
 
 const DEFAULT_REFS_FIXTURE = path.join(__dirname, '..', 'tests', 'fixtures', 'references-expanded.json');
 const DEFAULT_CITATIONS_FIXTURE = path.join(__dirname, '..', 'tests', 'fixtures', 'citations-expanded.json');
@@ -542,6 +543,17 @@ function runOracle(cliOptions = parseArgs()) {
   const stylePath = cliOptions.stylePath;
   const jsonOutput = cliOptions.jsonOutput;
   const verbose = cliOptions.verbose;
+  const datasetMessage = maybeDatasetErrorForFile(stylePath, 'oracle.js');
+
+  if (datasetMessage) {
+    console.error(datasetMessage);
+    process.exit(2);
+  }
+  if (!fs.existsSync(stylePath)) {
+    console.error(`Style file not found: ${stylePath}`);
+    process.exit(2);
+  }
+
   const { refsData, testItems, testCitations } = loadFixtures(
     cliOptions.refsFixture,
     cliOptions.citationsFixture
