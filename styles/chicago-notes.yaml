@@ -40,7 +40,7 @@ options:
   page-range-format: chicago16
   punctuation-in-quote: true
 citation:
-  delimiter: ", "
+  delimiter: ""
   ibid:
     template:
       - variable: locator
@@ -55,18 +55,6 @@ citation:
         form: short
       - title: primary
         form: short
-        wrap: quotes
-        overrides:
-          book:
-            wrap: none
-          report:
-            wrap: none
-          legal-case:
-            wrap: none
-          patent:
-            wrap: none
-          motion-picture:
-            wrap: none
       - variable: locator
         prefix: ", "
         overrides:
@@ -86,56 +74,54 @@ citation:
         use-first: 3
         and-others: et-al
     - title: primary
-      wrap: quotes
+      prefix: ", "
       overrides:
-        book:
-          wrap: none
-        report:
-          wrap: none
-        legal-case:
-          wrap: none
-        patent:
-          wrap: none
-        motion-picture:
-          wrap: none
+        manuscript:
+          wrap: quotes
     - contributor: translator
       form: long
-      prefix: ", trans. "
       overrides:
         book:
+          prefix: ", trans. "
           suppress: false
         chapter:
+          prefix: ", trans. "
           suppress: false
         article-journal:
+          prefix: ", trans. "
           suppress: false
         default:
           suppress: true
     - variable: genre
-      prefix: ", "
+      prefix: ""
       overrides:
         manuscript:
+          prefix: ", "
           suppress: false
         default:
           suppress: true
     - date: issued
       form: year
-      prefix: ", "
+      prefix: ""
       overrides:
         manuscript:
+          prefix: ", "
           suppress: false
         default:
           suppress: true
     - variable: archive-location
-      prefix: ", "
+      prefix: ""
       overrides:
         manuscript:
+          prefix: ", "
           suppress: false
         default:
           suppress: true
     - variable: archive
-      prefix: ", "
+      prefix: ""
       overrides:
         manuscript:
+          prefix: ", "
           suppress: false
         personal-communication:
           suppress: false
@@ -159,6 +145,7 @@ citation:
           suppress: true
     - items:
         - title: parent-serial
+          prefix: ", "
           overrides:
             book:
               suppress: true
@@ -333,6 +320,9 @@ citation:
             personal-communication:
               suppress: true
       delimiter: ""
+      overrides:
+        book:
+          suppress: true
     - items:
         - title: parent-monograph
           prefix: ", in "
@@ -348,7 +338,7 @@ citation:
               suppress: true
         - contributor: editor
           form: long
-          prefix: ", editors. "
+          prefix: ", ed. "
         - items:
             - variable: publisher
             - date: issued
@@ -649,6 +639,8 @@ citation:
     - variable: doi
       prefix: ", https://doi.org/"
       overrides:
+        article-journal:
+          suppress: true
         book:
           suppress: true
         report:

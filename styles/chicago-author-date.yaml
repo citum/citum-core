@@ -41,6 +41,7 @@ options:
         - key: year
           ascending: true
   contributors:
+    and: text
     shorten:
       min: 7
       use-first: 3
@@ -60,7 +61,7 @@ citation:
     contributors:
       shorten:
         min: 3
-        use-first: 3
+        use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
   template:
@@ -68,11 +69,10 @@ citation:
       form: short
       shorten:
         min: 3
-        use-first: 3
+        use-first: 1
         and-others: et-al
     - date: issued
       form: year
-      prefix: " "
       overrides:
         personal_communication:
           suppress: true
@@ -152,6 +152,23 @@ bibliography:
     - date: issued
       form: year
     - title: primary
+      wrap: quotes
+      overrides:
+        book:
+          wrap: none
+        report:
+          wrap: none
+        thesis:
+          wrap: none
+        legal-case:
+          emph: true
+          wrap: none
+        patent:
+          wrap: none
+        motion-picture:
+          wrap: none
+        broadcast:
+          wrap: none
     - items:
         - contributor: editor
           form: verb
@@ -163,11 +180,23 @@ bibliography:
     - items:
         - number: volume
         - number: issue
+          prefix: " ("
+          suffix: ")"
           overrides:
             article-magazine:
               suppress: true
-    - variable: publisher
     - number: pages
+      prefix: ": "
+      overrides:
+        book:
+          suppress: true
+        report:
+          suppress: true
+        thesis:
+          suppress: true
+        chapter:
+          suppress: true
+    - variable: publisher
     - variable: doi
       overrides:
         article-journal:
