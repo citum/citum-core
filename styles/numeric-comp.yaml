@@ -17,6 +17,9 @@ options:
     delimiter: ", "
     delimiter-precedes-last: never
     demote-non-dropping-particle: sort-only
+    shorten:
+      min: 4
+      use-first: 1
   titles: scientific
   bibliography:
     entry-suffix: .
@@ -70,3 +73,21 @@ bibliography:
     - variable: doi
       prefix: " doi: "
     - variable: url
+  type-templates:
+    patent:
+      - number: citation-number
+        wrap: brackets
+        suffix: " "
+      - contributor: author
+        form: long
+        name-order: given-first
+        and: text
+      - title: primary
+        wrap: quotes
+      - number: number
+      - contributor: author
+        form: long
+        name-order: given-first
+        and: text
+      - date: issued
+        form: year
