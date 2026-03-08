@@ -76,17 +76,14 @@ citation:
       delimiter-precedes-last: never
   template:
     - contributor: author
-      form: long
+      form: short
       name-order: family-first
-      shorten:
-        min: 8
-        use-first: 1
     - date: issued
       form: year
       prefix: ", "
     - variable: locator
       show-label: true
-      prefix: " "
+      prefix: ", "
   wrap: parentheses
   delimiter: ". "
   multi-cite-delimiter: "; "
