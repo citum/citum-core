@@ -111,3 +111,37 @@ fn test_arabic_transliterated_forms() {
         "Citation should handle transliterated Arabic"
     );
 }
+
+#[test]
+fn test_bibliography_locales_switch_full_entry_layouts() {
+    let root = project_root();
+    let style =
+        load_style(&root.join("styles/experimental/locale-specific-bibliography-layouts.yaml"));
+    let bibliography =
+        load_bibliography(&root.join("tests/fixtures/multilingual/multilingual-cjk.json"))
+            .expect("CJK fixture should parse");
+
+    let processor = Processor::new(style, bibliography);
+
+    let japanese_entry = processor
+        .render_selected_bibliography_with_format::<citum_engine::render::plain::PlainText, _>(
+            vec!["CJK-JAPANESE-LANGUAGE-TAGGED".to_string()],
+        );
+    let default_entry = processor
+        .render_selected_bibliography_with_format::<citum_engine::render::plain::PlainText, _>(
+            vec!["CSL-ET-AL-KANJI".to_string()],
+        );
+
+    assert!(
+        japanese_entry.contains("Tokyo Academic Press, 2018. 日本語の書誌"),
+        "Japanese entry should use localized publisher-year-title order: {japanese_entry}"
+    );
+    assert!(
+        !japanese_entry.contains("日本語の書誌. Tokyo Academic Press"),
+        "Japanese entry should not use default title-publisher order: {japanese_entry}"
+    );
+    assert!(
+        default_entry.contains("Test Book. Test Publisher, 2020"),
+        "Default entry should use title-publisher-year order: {default_entry}"
+    );
+}

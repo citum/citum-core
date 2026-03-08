@@ -120,6 +120,22 @@
     "issued": { "date-parts": [[1960]] },
     "publisher": "有斐閣"
   },
+  "CJK-JAPANESE-LANGUAGE-TAGGED": {
+    "id": "CJK-JAPANESE-LANGUAGE-TAGGED",
+    "class": "monograph",
+    "type": "book",
+    "title": "日本語の書誌",
+    "author": [
+      {
+        "family": "佐藤",
+        "given": "花子"
+      }
+    ],
+    "issued": { "date-parts": [[2018]] },
+    "publisher": "Tokyo Academic Press",
+    "publisher-place": "Tokyo",
+    "language": "ja"
+  },
   "CSL-ET-AL-KANJI": {
     "id": "CSL-ET-AL-KANJI",
     "class": "monograph",

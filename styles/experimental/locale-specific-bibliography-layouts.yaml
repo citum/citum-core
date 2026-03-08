@@ -1,0 +1,58 @@
+# yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/style.json
+info:
+  id: locale-specific-bibliography-layouts
+  title: Locale-Specific Bibliography Layouts
+  description: >
+    Demonstrates bibliography.locales[] selecting a different full-entry layout
+    for CJK items than for the default Latin-script branch.
+  default-locale: en-US
+
+options:
+  processing: author-date
+  bibliography:
+    entry-suffix: .
+    separator: ""
+
+citation:
+  template:
+    - contributor: author
+      form: short
+    - date: issued
+      form: year
+      prefix: ", "
+  wrap: parentheses
+
+bibliography:
+  template:
+    - contributor: author
+      form: long
+    - title: primary
+      prefix: ". "
+    - variable: publisher
+      prefix: ". "
+    - date: issued
+      form: year
+      prefix: ", "
+  locales:
+    - locale: [ja, zh, ko]
+      template:
+        - contributor: author
+          form: long
+        - variable: publisher
+          prefix: ". "
+        - date: issued
+          form: year
+          prefix: ", "
+        - title: primary
+          prefix: ". "
+    - default: true
+      template:
+        - contributor: author
+          form: long
+        - title: primary
+          prefix: ". "
+        - variable: publisher
+          prefix: ". "
+        - date: issued
+          form: year
+          prefix: ", "
