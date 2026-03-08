@@ -1,7 +1,7 @@
 ---
 # csl26-8kod
 title: Components column coverage for biblatex-authority styles
-status: draft
+status: todo
 type: task
 created_at: 2026-03-07T19:25:01Z
 updated_at: 2026-03-07T19:25:01Z

@@ -97,9 +97,54 @@ At the end of every task, produce this table:
   in csl26-xxxx").
 - A missing or uncommented-empty table means the task is **incomplete**.
 
+## Authority Hierarchy
+
+Do not assume legacy CSL or citeproc-js behavior is always normatively correct.
+Treat compatibility output as evidence, not law.
+
+When outputs conflict, evaluate sources in this order:
+
+1. Explicit publisher or style-guide rules
+2. Citum design principles and schema intent
+3. Stable bibliographic prior art, preferably `biblatex`
+4. Legacy CSL and citeproc behavior
+5. Local style convenience or migration shortcuts
+
+If citeproc output appears bibliographically wrong, underspecified, or in tension
+with project intent, do not blindly copy it. Classify the mismatch first.
+
+## Normative vs Legacy Check
+
+Before applying a fix for any non-trivial mismatch, explicitly decide which of
+these buckets it belongs to:
+
+- `style-defect` — the Citum style is wrong
+- `migration-artifact` — migration preserved or introduced the wrong behavior
+- `processor-defect` — the engine misrenders a valid style
+- `legacy-limitation` — CSL/citeproc behavior is compatible legacy behavior but
+  not the behavior Citum should preserve
+
+Do this before optimizing for fidelity. If the answer is `legacy-limitation`,
+an intentional divergence is allowed and should be preferred over copying the
+legacy behavior.
+
+## Intentional Divergence Rule
+
+Intentional divergence from legacy CSL/citeproc is allowed when it is justified
+by style-guide intent, bibliographic expectations, or Citum design goals.
+
+When diverging intentionally:
+
+- say explicitly that the divergence is intentional
+- add or update regression coverage for the intended behavior
+- explain verification impact if citeproc-based fidelity will remain lower
+- avoid calling the result a processor defect unless the engine violates Citum's
+  own declared semantics
+
 ## Shared Gates
 
-- Fidelity regression is never allowed.
+- Compatibility fidelity regression is never allowed unless the task explicitly
+  chooses a documented semantic divergence from legacy CSL behavior.
 - SQI is optimization-only after fidelity is stable.
 - All modes must pass `../style-qa/SKILL.md` before completion.
 - If docs or beans are changed: `./scripts/check-docs-beans-hygiene.sh` must pass.
@@ -110,8 +155,12 @@ Every completed task delivers:
 
 1. Fidelity metrics: citations `N/M` and bibliography `N/M`
 2. SQI delta: `+N`, `-N`, or `±0`
-3. Code Opportunities table (mandatory — see above)
-4. QA verdict from `../style-qa/SKILL.md`
+3. Authority basis: which source won (`style guide`, `Citum policy`, `biblatex`,
+   `citeproc`, or mixed) and why
+4. Divergences: `none` or a short statement of any intentional divergence from
+   legacy CSL/citeproc behavior
+5. Code Opportunities table (mandatory — see above)
+6. QA verdict from `../style-qa/SKILL.md`
 
 ## Internal Skills (Pipeline Components)
 
