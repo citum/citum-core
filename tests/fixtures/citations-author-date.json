@@ -2,7 +2,7 @@
   { "id": "ad-smith-a", "items": [{ "id": "smith2020a" }] },
   { "id": "ad-smith-disambiguate", "items": [{ "id": "smith2020a" }, { "id": "smith2020b" }] },
   { "id": "ad-book", "items": [{ "id": "johnson2019" }] },
-  { "id": "ad-chapter-locator", "items": [{ "id": "garcia2021-ch", "locator": "315-316", "label": "page" }] },
+  { "id": "ad-chapter-locator", "items": [{ "id": "garcia2021-ch", "locator": { "label": "page", "value": "315-316" } }] },
   { "id": "ad-report", "items": [{ "id": "unep2023-report" }] },
   { "id": "ad-thesis", "items": [{ "id": "chen2018-thesis" }] },
   { "id": "ad-web-and-corp", "items": [{ "id": "corp-author2022" }, { "id": "noaa2024-web" }] },

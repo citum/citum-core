@@ -33,8 +33,10 @@ fn single_item_citation_with_locator(id: &str, locator: &str) -> Citation {
     Citation {
         items: vec![CitationItem {
             id: id.to_string(),
-            locator: Some(locator.to_string()),
-            label: Some(citum_schema::citation::LocatorType::Page),
+            locator: Some(citum_schema::citation::CitationLocator::single(
+                citum_schema::citation::LocatorType::Page,
+                locator,
+            )),
             ..Default::default()
         }],
         ..Default::default()

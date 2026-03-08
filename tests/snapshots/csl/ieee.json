@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-06T22:34:53.830Z",
+  "generated_at": "2026-03-08T18:28:47.233Z",
   "style": "ieee",
-  "fixture_hash": "4fbe6757fa5180e0",
+  "fixture_hash": "67a756de7032b296",
   "csl_hash": "b4c7619fc16c45a3",
   "citations": {
     "single-item": "[1]",

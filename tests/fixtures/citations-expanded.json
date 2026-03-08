@@ -24,8 +24,7 @@
         "items": [
             {
                 "id": "ITEM-1",
-                "locator": "23",
-                "label": "page"
+                "locator": { "label": "page", "value": "23" }
             }
         ]
     },
@@ -34,13 +33,11 @@
         "items": [
             {
                 "id": "ITEM-1",
-                "locator": "10",
-                "label": "page"
+                "locator": { "label": "page", "value": "10" }
             },
             {
                 "id": "ITEM-3",
-                "locator": "440",
-                "label": "page",
+                "locator": { "label": "page", "value": "440" },
                 "prefix": "see also "
             }
         ]
@@ -59,8 +56,7 @@
         "items": [
             {
                 "id": "ITEM-2",
-                "locator": "12",
-                "label": "section",
+                "locator": { "label": "section", "value": "12" },
                 "suffix": ", esp. discussion"
             }
         ]
@@ -71,8 +67,7 @@
         "items": [
             {
                 "id": "ITEM-1",
-                "locator": "44",
-                "label": "page"
+                "locator": { "label": "page", "value": "44" }
             }
         ]
     },
@@ -81,14 +76,12 @@
         "items": [
             {
                 "id": "ITEM-1",
-                "locator": "44",
-                "label": "page"
+                "locator": { "label": "page", "value": "44" }
             },
             {
                 "id": "ITEM-3",
                 "prefix": "cf. ",
-                "locator": "437",
-                "label": "page"
+                "locator": { "label": "page", "value": "437" }
             }
         ]
     },
@@ -137,8 +130,7 @@
         "items": [
             {
                 "id": "ITEM-30",
-                "locator": "205",
-                "label": "page"
+                "locator": { "label": "page", "value": "205" }
             }
         ]
     },

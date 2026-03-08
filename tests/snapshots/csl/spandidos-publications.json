@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-06T22:34:56.622Z",
+  "generated_at": "2026-03-08T18:31:25.261Z",
   "style": "spandidos-publications",
-  "fixture_hash": "4fbe6757fa5180e0",
+  "fixture_hash": "67a756de7032b296",
   "csl_hash": "e93d494f5b5cfdab",
   "citations": {
     "single-item": "(1)",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-06T22:34:57.556Z",
+  "generated_at": "2026-03-08T18:31:39.294Z",
   "style": "the-institution-of-engineering-and-technology",
-  "fixture_hash": "4fbe6757fa5180e0",
+  "fixture_hash": "67a756de7032b296",
   "csl_hash": "fe2849e18170e71c",
   "citations": {
     "single-item": "[1]",

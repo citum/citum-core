@@ -32,6 +32,7 @@ const {
   findRefDataForEntry,
   loadLocale,
 } = require('./oracle-utils');
+const { toCiteprocItem } = require('./lib/citeproc-locators');
 const { maybeDatasetErrorForFile } = require('./lib/dataset-guard');
 
 const DEFAULT_REFS_FIXTURE = path.join(__dirname, '..', 'tests', 'fixtures', 'references-expanded.json');
@@ -210,14 +211,7 @@ function renderWithCiteprocJs(stylePath, testItems, testCitations) {
   testCitations.forEach(cite => {
     // Convert CSLN citation items to citeproc-js format
     const suppressAuthor = cite['suppress-author'] === true;
-    const citeprocItems = cite.items.map(item => ({
-      id: item.id,
-      locator: item.locator,
-      label: item.label,
-      prefix: item.prefix,
-      suffix: item.suffix,
-      'suppress-author': suppressAuthor
-    }));
+    const citeprocItems = cite.items.map(item => toCiteprocItem(item, suppressAuthor));
 
     // For narrative/integral citations, citeproc-js doesn't have a direct equivalent
     // in makeCitationCluster that matches CSLN's specific split rendering.

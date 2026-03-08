@@ -766,8 +766,10 @@ fn test_chicago_notes_ibid_with_locator() {
     let ibid_with_locator = citum_schema::Citation {
         items: vec![citum_schema::citation::CitationItem {
             id: "smith1995".to_string(),
-            label: Some(citum_schema::citation::LocatorType::Page),
-            locator: Some("45".to_string()),
+            locator: Some(citum_schema::citation::CitationLocator::single(
+                citum_schema::citation::LocatorType::Page,
+                "45",
+            )),
             ..Default::default()
         }],
         position: Some(citum_schema::citation::Position::IbidWithLocator),

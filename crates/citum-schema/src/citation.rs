@@ -9,10 +9,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! to the processor. Citations reference entries in the bibliography and
 //! can include locators, prefixes, suffixes, and mode information.
 
-use indexmap::IndexMap;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 /// A list of citations to process.
 pub type Citations = Vec<Citation>;
@@ -115,7 +115,7 @@ fn is_false(b: &bool) -> bool {
 }
 
 /// Locator types for pinpoint citations.
-#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, Default, Deserialize, Serialize, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum LocatorType {
@@ -268,89 +268,122 @@ pub struct LocatorSegment {
     pub value: LocatorValue,
 }
 
-/// Input form for compound locators, supporting both verbose and compact syntax.
-///
-/// The verbose form uses an explicit list of segments:
-/// ```yaml
-/// locators:
-///   - label: page
-///     value: "23"
-///   - label: line
-///     value: "13"
-/// ```
-///
-/// The compact form uses a map (order preserved via `IndexMap`):
-/// ```yaml
-/// locators:
-///   page: "23"
-///   line: "13"
-/// ```
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
-#[serde(untagged)]
-pub enum LocatorsInput {
-    /// Verbose list of labeled segments.
-    List(Vec<LocatorSegment>),
-    /// Compact map form (locator type → value).
-    Map(IndexMap<LocatorType, LocatorValue>),
+impl LocatorSegment {
+    /// Create a locator segment from a canonical label and value.
+    pub fn new(label: LocatorType, value: impl Into<LocatorValue>) -> Self {
+        Self {
+            label,
+            value: value.into(),
+        }
+    }
 }
 
-impl LocatorsInput {
-    /// Normalize to a list of segments regardless of input form.
-    pub fn segments(&self) -> Vec<LocatorSegment> {
+/// A canonical citation locator.
+///
+/// Simple locators use the single-segment form, while compound locators use
+/// the explicit `segments` wrapper.
+#[derive(Debug, Clone, Serialize, PartialEq)]
+#[serde(untagged)]
+pub enum CitationLocator {
+    /// A single labeled locator.
+    Single(LocatorSegment),
+    /// Multiple ordered locator segments.
+    Compound {
+        /// Ordered locator segments.
+        segments: Vec<LocatorSegment>,
+    },
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+enum CitationLocatorRepr {
+    Single(LocatorSegment),
+    Compound { segments: Vec<LocatorSegment> },
+}
+
+impl<'de> Deserialize<'de> for CitationLocator {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        use serde::de::Error;
+
+        match CitationLocatorRepr::deserialize(deserializer)? {
+            CitationLocatorRepr::Single(segment) => Ok(Self::Single(segment)),
+            CitationLocatorRepr::Compound { segments } => {
+                Self::compound(segments).map_err(D::Error::custom)
+            }
+        }
+    }
+}
+
+impl CitationLocator {
+    /// Create a single-segment locator.
+    pub fn single(label: LocatorType, value: impl Into<LocatorValue>) -> Self {
+        Self::Single(LocatorSegment::new(label, value))
+    }
+
+    /// Create a compound locator with two or more segments.
+    pub fn compound(segments: Vec<LocatorSegment>) -> Result<Self, &'static str> {
+        if segments.len() < 2 {
+            return Err("compound locators must contain at least two segments");
+        }
+        Ok(Self::Compound { segments })
+    }
+
+    /// Returns the ordered locator segments as a slice.
+    pub fn segments(&self) -> &[LocatorSegment] {
         match self {
-            LocatorsInput::List(list) => list.clone(),
-            LocatorsInput::Map(map) => map
-                .iter()
-                .map(|(label, value)| LocatorSegment {
-                    label: label.clone(),
-                    value: value.clone(),
-                })
-                .collect(),
+            Self::Single(segment) => std::slice::from_ref(segment),
+            Self::Compound { segments } => segments.as_slice(),
         }
     }
 
-    /// Returns true if this contains no segments.
-    pub fn is_empty(&self) -> bool {
-        match self {
-            LocatorsInput::List(list) => list.is_empty(),
-            LocatorsInput::Map(map) => map.is_empty(),
-        }
+    /// Returns true if this locator contains multiple segments.
+    pub fn is_compound(&self) -> bool {
+        matches!(self, Self::Compound { .. })
+    }
+
+    /// Returns a stable string form used for locator comparison.
+    pub fn canonical_string(&self) -> String {
+        self.segments()
+            .iter()
+            .map(|segment| format!("{:?}:{}", segment.label, segment.value.value_str()))
+            .collect::<Vec<_>>()
+            .join(",")
     }
 }
 
 #[cfg(feature = "schema")]
-impl JsonSchema for LocatorsInput {
+impl JsonSchema for CitationLocator {
     fn schema_name() -> String {
-        "LocatorsInput".to_string()
+        "CitationLocator".to_string()
     }
 
     fn json_schema(
         schema_generator: &mut schemars::r#gen::SchemaGenerator,
     ) -> schemars::schema::Schema {
-        use schemars::schema::SchemaObject;
+        use schemars::schema::{InstanceType, ObjectValidation, Schema, SchemaObject, SingleOrVec};
 
-        let list_schema = schema_generator.subschema_for::<Vec<LocatorSegment>>();
-        let map_schema =
-            schema_generator.subschema_for::<std::collections::BTreeMap<String, LocatorValue>>();
+        let single_schema = schema_generator.subschema_for::<LocatorSegment>();
+        let compound_item = schema_generator.subschema_for::<Vec<LocatorSegment>>();
+
+        let compound_schema = Schema::Object(SchemaObject {
+            instance_type: Some(SingleOrVec::Single(Box::new(InstanceType::Object))),
+            object: Some(Box::new(ObjectValidation {
+                properties: [("segments".to_string(), compound_item)]
+                    .into_iter()
+                    .collect(),
+                required: ["segments".to_string()].into_iter().collect(),
+                ..Default::default()
+            })),
+            ..Default::default()
+        });
 
         let mut schema = SchemaObject::default();
-        schema.subschemas().one_of = Some(vec![list_schema, map_schema]);
+        schema.subschemas().one_of = Some(vec![single_schema, compound_schema]);
         schema.into()
     }
-}
-
-/// A resolved locator that abstracts over flat and compound forms.
-#[derive(Debug, Clone, PartialEq)]
-pub enum ResolvedLocator {
-    /// A single label + value pair (the traditional flat form).
-    Flat {
-        /// The locator type.
-        label: LocatorType,
-        /// The locator value.
-        value: String,
-    },
-    /// Multiple label + value segments (compound locator).
-    Compound(Vec<LocatorSegment>),
 }
 
 /// A single citation item referencing a bibliography entry.
@@ -360,20 +393,9 @@ pub enum ResolvedLocator {
 pub struct CitationItem {
     /// The reference ID (citekey).
     pub id: String,
-    /// Locator type (page, chapter, etc.)
+    /// Canonical locator value for pinpoint citations.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub label: Option<LocatorType>,
-    /// Locator value (e.g., "42-45" for pages)
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub locator: Option<String>,
-    /// Compound locator segments for multi-part references.
-    ///
-    /// When present, takes priority over `label`/`locator`.
-    /// Supports both verbose list form and compact map form.
-    /// Example list: `[{ label: chapter, value: "3" }, { label: section, value: "42" }]`
-    /// Example map: `{ page: "23", line: "13" }`
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub locators: Option<LocatorsInput>,
+    pub locator: Option<CitationLocator>,
     /// Prefix text before this item
     #[serde(skip_serializing_if = "Option::is_none")]
     pub prefix: Option<String>,
@@ -383,25 +405,223 @@ pub struct CitationItem {
 }
 
 impl CitationItem {
-    /// Resolve the locator, preferring compound `locators` over flat `label`/`locator`.
-    pub fn resolved_locator(&self) -> Option<ResolvedLocator> {
-        if let Some(input) = &self.locators
-            && !input.is_empty()
-        {
-            return Some(ResolvedLocator::Compound(input.segments()));
+    /// Returns the canonical locator segments when present.
+    pub fn locator_segments(&self) -> Option<&[LocatorSegment]> {
+        self.locator.as_ref().map(CitationLocator::segments)
+    }
+}
+
+/// Normalize a textual locator string into the canonical locator model.
+pub fn normalize_locator_text(
+    locator: &str,
+    locale: &crate::locale::Locale,
+) -> Option<CitationLocator> {
+    let locator = locator.trim();
+    if locator.is_empty() {
+        return None;
+    }
+
+    let aliases = locator_aliases(locale);
+    let raw_segments = split_locator_segments(locator, &aliases);
+    let segments: Vec<LocatorSegment> = raw_segments
+        .into_iter()
+        .filter_map(|segment| parse_locator_segment(segment, &aliases))
+        .collect();
+
+    match segments.len() {
+        0 => None,
+        1 => Some(CitationLocator::Single(
+            segments.into_iter().next().unwrap(),
+        )),
+        _ => CitationLocator::compound(segments).ok(),
+    }
+}
+
+fn split_locator_segments<'a>(locator: &'a str, aliases: &[(String, LocatorType)]) -> Vec<&'a str> {
+    let mut parts = Vec::new();
+    let mut start = 0;
+
+    for (idx, ch) in locator.char_indices() {
+        if ch != ',' {
+            continue;
         }
-        match (&self.label, &self.locator) {
-            (Some(label), Some(value)) => Some(ResolvedLocator::Flat {
-                label: label.clone(),
-                value: value.clone(),
-            }),
-            (None, Some(value)) => Some(ResolvedLocator::Flat {
-                label: LocatorType::default(),
-                value: value.clone(),
-            }),
-            _ => None,
+
+        let candidate = locator[idx + ch.len_utf8()..].trim_start();
+        if begins_with_locator_label(candidate, aliases) {
+            parts.push(locator[start..idx].trim());
+            start = idx + ch.len_utf8();
         }
     }
+
+    parts.push(locator[start..].trim());
+    parts
+}
+
+fn parse_locator_segment(
+    segment: &str,
+    aliases: &[(String, LocatorType)],
+) -> Option<LocatorSegment> {
+    let segment = segment.trim();
+    if segment.is_empty() {
+        return None;
+    }
+
+    if let Some((label, rest)) = strip_locator_label(segment, aliases) {
+        let value = rest.trim_start_matches(':').trim();
+        if value.is_empty() {
+            return None;
+        }
+        return Some(LocatorSegment::new(label, value));
+    }
+
+    Some(LocatorSegment::new(LocatorType::Page, segment))
+}
+
+fn begins_with_locator_label(segment: &str, aliases: &[(String, LocatorType)]) -> bool {
+    strip_locator_label(segment, aliases).is_some()
+}
+
+fn strip_locator_label<'a>(
+    segment: &'a str,
+    aliases: &[(String, LocatorType)],
+) -> Option<(LocatorType, &'a str)> {
+    let lower = segment.to_lowercase();
+    let mut best: Option<(LocatorType, usize)> = None;
+
+    for (alias, label) in aliases {
+        if let Some(remainder) = lower.strip_prefix(alias)
+            && alias_boundary(remainder)
+        {
+            let alias_len = alias.len();
+            if best.is_none_or(|(_, best_len)| alias_len > best_len) {
+                best = Some((*label, alias_len));
+            }
+        }
+    }
+
+    best.map(|(label, alias_len)| (label, segment[alias_len..].trim_start()))
+}
+
+fn alias_boundary(remainder: &str) -> bool {
+    remainder.is_empty()
+        || remainder.starts_with(':')
+        || remainder.starts_with('.')
+        || remainder.starts_with(char::is_whitespace)
+}
+
+fn locator_aliases(locale: &crate::locale::Locale) -> Vec<(String, LocatorType)> {
+    let mut aliases = HashMap::<String, LocatorType>::new();
+
+    for (alias, label) in english_locator_aliases() {
+        aliases.insert(alias.to_string(), *label);
+    }
+
+    for (label, term) in &locale.locators {
+        for form in [&term.long, &term.short, &term.symbol]
+            .into_iter()
+            .flatten()
+        {
+            aliases
+                .entry(form.singular.to_lowercase())
+                .or_insert(*label);
+            aliases.entry(form.plural.to_lowercase()).or_insert(*label);
+        }
+    }
+
+    let mut aliases: Vec<(String, LocatorType)> = aliases.into_iter().collect();
+    aliases.sort_by(|a, b| b.0.len().cmp(&a.0.len()).then_with(|| a.0.cmp(&b.0)));
+    aliases
+}
+
+fn english_locator_aliases() -> &'static [(&'static str, LocatorType)] {
+    &[
+        ("algorithm", LocatorType::Algorithm),
+        ("alg.", LocatorType::Algorithm),
+        ("book", LocatorType::Book),
+        ("bk.", LocatorType::Book),
+        ("chapter", LocatorType::Chapter),
+        ("chap.", LocatorType::Chapter),
+        ("ch.", LocatorType::Chapter),
+        ("chapters", LocatorType::Chapter),
+        ("chs.", LocatorType::Chapter),
+        ("clause", LocatorType::Clause),
+        ("cl.", LocatorType::Clause),
+        ("column", LocatorType::Column),
+        ("col.", LocatorType::Column),
+        ("columns", LocatorType::Column),
+        ("cols.", LocatorType::Column),
+        ("corollary", LocatorType::Corollary),
+        ("cor.", LocatorType::Corollary),
+        ("definition", LocatorType::Definition),
+        ("def.", LocatorType::Definition),
+        ("division", LocatorType::Division),
+        ("div.", LocatorType::Division),
+        ("figure", LocatorType::Figure),
+        ("fig.", LocatorType::Figure),
+        ("figures", LocatorType::Figure),
+        ("figs.", LocatorType::Figure),
+        ("folio", LocatorType::Folio),
+        ("fol.", LocatorType::Folio),
+        ("line", LocatorType::Line),
+        ("l.", LocatorType::Line),
+        ("lines", LocatorType::Line),
+        ("ll.", LocatorType::Line),
+        ("lemma", LocatorType::Lemma),
+        ("lem.", LocatorType::Lemma),
+        ("note", LocatorType::Note),
+        ("n.", LocatorType::Note),
+        ("notes", LocatorType::Note),
+        ("nn.", LocatorType::Note),
+        ("number", LocatorType::Number),
+        ("no.", LocatorType::Number),
+        ("numbers", LocatorType::Number),
+        ("nos.", LocatorType::Number),
+        ("opus", LocatorType::Opus),
+        ("op.", LocatorType::Opus),
+        ("page", LocatorType::Page),
+        ("p.", LocatorType::Page),
+        ("pages", LocatorType::Page),
+        ("pp.", LocatorType::Page),
+        ("paragraph", LocatorType::Paragraph),
+        ("para.", LocatorType::Paragraph),
+        ("paragraphs", LocatorType::Paragraph),
+        ("paras.", LocatorType::Paragraph),
+        ("part", LocatorType::Part),
+        ("pt.", LocatorType::Part),
+        ("parts", LocatorType::Part),
+        ("pts.", LocatorType::Part),
+        ("problem", LocatorType::Problem),
+        ("prob.", LocatorType::Problem),
+        ("proposition", LocatorType::Proposition),
+        ("prop.", LocatorType::Proposition),
+        ("recital", LocatorType::Recital),
+        ("rec.", LocatorType::Recital),
+        ("schedule", LocatorType::Schedule),
+        ("sched.", LocatorType::Schedule),
+        ("section", LocatorType::Section),
+        ("sec.", LocatorType::Section),
+        ("sections", LocatorType::Section),
+        ("secs.", LocatorType::Section),
+        ("§", LocatorType::Section),
+        ("§§", LocatorType::Section),
+        ("surah", LocatorType::Surah),
+        ("theorem", LocatorType::Theorem),
+        ("thm.", LocatorType::Theorem),
+        ("sub verbo", LocatorType::SubVerbo),
+        ("s.v.", LocatorType::SubVerbo),
+        ("supplement", LocatorType::Supplement),
+        ("suppl.", LocatorType::Supplement),
+        ("verse", LocatorType::Verse),
+        ("v.", LocatorType::Verse),
+        ("verses", LocatorType::Verse),
+        ("vv.", LocatorType::Verse),
+        ("volume", LocatorType::Volume),
+        ("vol.", LocatorType::Volume),
+        ("volumes", LocatorType::Volume),
+        ("vols.", LocatorType::Volume),
+        ("issue", LocatorType::Issue),
+        ("issues", LocatorType::Issue),
+    ]
 }
 
 #[cfg(test)]
@@ -431,14 +651,18 @@ mod tests {
         let json = r#"
         {
             "id": "kuhn1962",
-            "label": "page",
-            "locator": "42-45"
+            "locator": {
+                "label": "page",
+                "value": "42-45"
+            }
         }
         "#;
         let item: CitationItem = serde_json::from_str(json).unwrap();
         assert_eq!(item.id, "kuhn1962");
-        assert_eq!(item.label, Some(LocatorType::Page));
-        assert_eq!(item.locator, Some("42-45".to_string()));
+        assert_eq!(
+            item.locator,
+            Some(CitationLocator::single(LocatorType::Page, "42-45"))
+        );
     }
 
     #[test]
@@ -446,14 +670,16 @@ mod tests {
         let json = r#"
         {
             "id": "smith2020",
-            "locators": [
-                { "label": "chapter", "value": "3" },
-                { "label": "section", "value": "42" }
-            ]
+            "locator": {
+                "segments": [
+                    { "label": "chapter", "value": "3" },
+                    { "label": "section", "value": "42" }
+                ]
+            }
         }
         "#;
         let item: CitationItem = serde_json::from_str(json).unwrap();
-        let segs = item.locators.as_ref().unwrap().segments();
+        let segs = item.locator.as_ref().unwrap().segments();
         assert_eq!(segs.len(), 2);
         assert_eq!(segs[0].label, LocatorType::Chapter);
         assert_eq!(segs[0].value.value_str(), "3");
@@ -463,77 +689,70 @@ mod tests {
         // Round-trip
         let serialized = serde_json::to_string(&item).unwrap();
         let deserialized: CitationItem = serde_json::from_str(&serialized).unwrap();
-        assert_eq!(deserialized.locators, item.locators);
+        assert_eq!(deserialized.locator, item.locator);
     }
 
     #[test]
-    fn test_resolved_locator_compound_priority() {
+    fn test_compound_locator_rejects_single_segment() {
+        let err = CitationLocator::compound(vec![LocatorSegment::new(LocatorType::Page, "42")])
+            .expect_err("single-segment compound locator must be rejected");
+        assert!(err.contains("at least two"));
+    }
+
+    #[test]
+    fn test_locator_segments_single() {
         let item = CitationItem {
             id: "test".to_string(),
-            label: Some(LocatorType::Page),
-            locator: Some("99".to_string()),
-            locators: Some(LocatorsInput::List(vec![
-                LocatorSegment {
-                    label: LocatorType::Chapter,
-                    value: LocatorValue::from("3"),
-                },
-                LocatorSegment {
-                    label: LocatorType::Section,
-                    value: LocatorValue::from("42"),
-                },
-            ])),
+            locator: Some(CitationLocator::single(LocatorType::Page, "42")),
             ..Default::default()
         };
-        let resolved = item.resolved_locator().unwrap();
-        assert!(matches!(resolved, ResolvedLocator::Compound(_)));
+        let segments = item.locator_segments().unwrap();
+        assert_eq!(segments.len(), 1);
+        assert_eq!(segments[0].label, LocatorType::Page);
     }
 
     #[test]
-    fn test_resolved_locator_flat_fallback() {
-        let item = CitationItem {
-            id: "test".to_string(),
-            label: Some(LocatorType::Page),
-            locator: Some("42".to_string()),
-            ..Default::default()
-        };
-        let resolved = item.resolved_locator().unwrap();
-        assert!(matches!(resolved, ResolvedLocator::Flat { .. }));
-    }
-
-    #[test]
-    fn test_resolved_locator_none() {
+    fn test_locator_segments_none() {
         let item = CitationItem {
             id: "test".to_string(),
             ..Default::default()
         };
-        assert!(item.resolved_locator().is_none());
+        assert!(item.locator_segments().is_none());
     }
 
     #[test]
-    fn test_flat_locator_skips_serializing_locators() {
+    fn test_single_locator_serializes_without_segments_wrapper() {
         let item = CitationItem {
             id: "test".to_string(),
-            label: Some(LocatorType::Page),
-            locator: Some("42".to_string()),
+            locator: Some(CitationLocator::single(LocatorType::Page, "42")),
             ..Default::default()
         };
         let json = serde_json::to_value(&item).unwrap();
-        assert!(!json.as_object().unwrap().contains_key("locators"));
+        let locator = json
+            .as_object()
+            .unwrap()
+            .get("locator")
+            .and_then(serde_json::Value::as_object)
+            .unwrap();
+        assert!(locator.contains_key("label"));
+        assert!(!locator.contains_key("segments"));
     }
 
     #[test]
-    fn test_compact_map_form_deserialization() {
+    fn test_compound_locator_deserialization() {
         let json = r#"
         {
             "id": "smith2020",
-            "locators": {
-                "page": "23",
-                "line": "13"
+            "locator": {
+                "segments": [
+                    { "label": "page", "value": "23" },
+                    { "label": "line", "value": "13" }
+                ]
             }
         }
         "#;
         let item: CitationItem = serde_json::from_str(json).unwrap();
-        let segs = item.locators.as_ref().unwrap().segments();
+        let segs = item.locator.as_ref().unwrap().segments();
         assert_eq!(segs.len(), 2);
         assert_eq!(segs[0].label, LocatorType::Page);
         assert_eq!(segs[0].value.value_str(), "23");
@@ -546,21 +765,61 @@ mod tests {
         let json = r#"
         {
             "id": "test",
-            "locators": [
-                {
-                    "label": "figure",
-                    "value": {
-                        "value": "A-3",
-                        "plural": false
-                    }
+            "locator": {
+                "label": "figure",
+                "value": {
+                    "value": "A-3",
+                    "plural": false
                 }
-            ]
+            }
         }
         "#;
         let item: CitationItem = serde_json::from_str(json).unwrap();
-        let segs = item.locators.as_ref().unwrap().segments();
+        let segs = item.locator.as_ref().unwrap().segments();
         assert_eq!(segs[0].value.value_str(), "A-3");
         assert!(!segs[0].value.is_plural());
+    }
+
+    #[test]
+    fn test_normalize_locator_text_structured_compound() {
+        let locale = crate::locale::Locale::en_us();
+        let locator = normalize_locator_text("chapter: 2, page: 10", &locale).unwrap();
+        assert!(locator.is_compound());
+        let segments = locator.segments();
+        assert_eq!(segments[0].label, LocatorType::Chapter);
+        assert_eq!(segments[1].label, LocatorType::Page);
+    }
+
+    #[test]
+    fn test_normalize_locator_text_bare_page() {
+        let locale = crate::locale::Locale::en_us();
+        let locator = normalize_locator_text("45", &locale).unwrap();
+        assert_eq!(locator, CitationLocator::single(LocatorType::Page, "45"));
+    }
+
+    #[test]
+    fn test_normalize_locator_text_locale_alias() {
+        let mut locale = crate::locale::Locale::en_us();
+        locale.locale = "fr-FR".to_string();
+        locale.locators.insert(
+            LocatorType::Page,
+            crate::locale::LocatorTerm {
+                long: Some(crate::locale::SingularPlural {
+                    singular: "page".to_string(),
+                    plural: "pages".to_string(),
+                }),
+                short: Some(crate::locale::SingularPlural {
+                    singular: "p.".to_string(),
+                    plural: "pp.".to_string(),
+                }),
+                symbol: Some(crate::locale::SingularPlural {
+                    singular: "p".to_string(),
+                    plural: "pp".to_string(),
+                }),
+            },
+        );
+        let locator = normalize_locator_text("pages 10-12", &locale).unwrap();
+        assert_eq!(locator, CitationLocator::single(LocatorType::Page, "10-12"));
     }
 
     #[test]

@@ -9,7 +9,7 @@ use crate::reference::{Bibliography, Reference};
 use crate::render::{ProcTemplate, ProcTemplateComponent};
 use crate::values::range::{ConsecutiveSegment, consecutive_segments};
 use crate::values::{ComponentValues, ProcHints, RenderContext, RenderOptions};
-use citum_schema::citation::{LocatorSegment, LocatorType, ResolvedLocator};
+use citum_schema::citation::{CitationLocator, LocatorSegment, LocatorType};
 use citum_schema::locale::{Locale, TermForm};
 use citum_schema::options::Config;
 use citum_schema::template::ComponentOverride;
@@ -68,7 +68,7 @@ fn collapse_compound_locator(segments: &[LocatorSegment], locale: &Locale) -> St
                 .map(|t| t.to_string())
                 .unwrap_or_else(|| {
                     // Fall back to serde kebab-case name for user-facing output
-                    serde_json::to_value(&seg.label)
+                    serde_json::to_value(seg.label)
                         .ok()
                         .and_then(|v| v.as_str().map(String::from))
                         .unwrap_or_else(|| format!("{:?}", seg.label))
@@ -87,11 +87,14 @@ fn resolve_item_locator(
     item: &citum_schema::citation::CitationItem,
     locale: &Locale,
 ) -> (Option<String>, Option<LocatorType>) {
-    match item.resolved_locator() {
-        Some(ResolvedLocator::Compound(segments)) => {
-            (Some(collapse_compound_locator(&segments, locale)), None)
+    match item.locator.as_ref() {
+        Some(CitationLocator::Single(segment)) => (
+            Some(segment.value.value_str().to_string()),
+            Some(segment.label),
+        ),
+        Some(CitationLocator::Compound { segments }) => {
+            (Some(collapse_compound_locator(segments, locale)), None)
         }
-        Some(ResolvedLocator::Flat { label, value }) => (Some(value), Some(label)),
         None => (None, None),
     }
 }
@@ -1785,7 +1788,7 @@ fn resolve_component_for_ref_type(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use citum_schema::citation::{LocatorValue, LocatorsInput};
+    use citum_schema::citation::{CitationLocator, LocatorValue};
     use citum_schema::template::*;
 
     #[test]
@@ -1938,12 +1941,13 @@ mod tests {
         let locale = Locale::default();
         let item = citum_schema::citation::CitationItem {
             id: "test".to_string(),
-            label: Some(LocatorType::Page),
-            locator: Some("99".to_string()),
-            locators: Some(LocatorsInput::List(vec![LocatorSegment {
-                label: LocatorType::Chapter,
-                value: LocatorValue::from("5"),
-            }])),
+            locator: Some(
+                CitationLocator::compound(vec![
+                    LocatorSegment::new(LocatorType::Chapter, "5"),
+                    LocatorSegment::new(LocatorType::Section, "42"),
+                ])
+                .unwrap(),
+            ),
             ..Default::default()
         };
         let (value, label) = resolve_item_locator(&item, &locale);

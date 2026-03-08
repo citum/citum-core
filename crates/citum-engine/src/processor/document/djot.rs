@@ -9,8 +9,9 @@ use super::{
     CitationParser, CitationPlacement, ManualNoteReference, ParsedCitation, ParsedDocument,
 };
 use crate::{Citation, CitationItem};
-use citum_schema::citation::{CitationMode, LocatorType};
+use citum_schema::citation::{CitationMode, normalize_locator_text};
 use citum_schema::grouping::BibliographyGroup;
+use citum_schema::locale::Locale;
 use jotdown::{Attributes, Container, Event, Parser};
 use std::collections::HashSet;
 use std::ops::Range;
@@ -58,7 +59,7 @@ fn parse_integral_modifier(input: &mut &str) -> winnow::Result<bool, ContextErro
 }
 
 impl CitationParser for DjotParser {
-    fn parse_document(&self, content: &str) -> ParsedDocument {
+    fn parse_document(&self, content: &str, locale: &Locale) -> ParsedDocument {
         // Try to parse frontmatter and get remaining content
         let (frontmatter_groups, remaining_content) = parse_frontmatter(content);
         let body_start = content.len() - remaining_content.len();
@@ -74,7 +75,7 @@ impl CitationParser for DjotParser {
             }
         }
 
-        let citations = find_citations(remaining_content)
+        let citations = find_citations(remaining_content, locale)
             .into_iter()
             .map(|(start, end, citation)| ParsedCitation {
                 start,
@@ -160,7 +161,7 @@ fn citation_placement(
         .unwrap_or(CitationPlacement::InlineProse)
 }
 
-fn find_citations(content: &str) -> Vec<(usize, usize, Citation)> {
+fn find_citations(content: &str, locale: &Locale) -> Vec<(usize, usize, Citation)> {
     let mut results = Vec::new();
     let mut input = content;
     let mut offset = 0;
@@ -175,7 +176,7 @@ fn find_citations(content: &str) -> Vec<(usize, usize, Citation)> {
         let potential = &input[start_pos..];
         let mut p_input = potential;
 
-        if let Ok(citation) = parse_parenthetical_citation(&mut p_input) {
+        if let Ok(citation) = parse_parenthetical_citation(&mut p_input, locale) {
             let consumed = potential.len() - p_input.len();
             let end_pos = start_pos + consumed;
             results.push((offset + start_pos, offset + end_pos, citation));
@@ -194,14 +195,20 @@ fn find_citations(content: &str) -> Vec<(usize, usize, Citation)> {
 }
 
 /// Parse `[content]`
-fn parse_parenthetical_citation(input: &mut &str) -> winnow::Result<Citation, ContextError> {
+fn parse_parenthetical_citation(
+    input: &mut &str,
+    locale: &Locale,
+) -> winnow::Result<Citation, ContextError> {
     let _ = '['.parse_next(input)?;
-    let citation = parse_citation_content.parse_next(input)?;
+    let citation = parse_citation_content(input, locale)?;
     let _ = ']'.parse_next(input)?;
     Ok(citation)
 }
 
-fn parse_citation_content(input: &mut &str) -> winnow::Result<Citation, ContextError> {
+fn parse_citation_content(
+    input: &mut &str,
+    locale: &Locale,
+) -> winnow::Result<Citation, ContextError> {
     let mut citation = Citation::default();
     let mut detected_integral = false;
     let mut suppress_author = false;
@@ -218,7 +225,7 @@ fn parse_citation_content(input: &mut &str) -> winnow::Result<Citation, ContextE
         if suppress {
             suppress_author = true;
         }
-        let item = parse_citation_item_no_integral(input)?;
+        let item = parse_citation_item_no_integral(input, locale)?;
         let _ = opt(';').parse_next(input)?;
         let _ = space0.parse_next(input)?;
         Ok(item)
@@ -234,7 +241,10 @@ fn parse_citation_content(input: &mut &str) -> winnow::Result<Citation, ContextE
     Ok(citation)
 }
 
-fn parse_citation_item_no_integral(input: &mut &str) -> winnow::Result<CitationItem, ContextError> {
+fn parse_citation_item_no_integral(
+    input: &mut &str,
+    locale: &Locale,
+) -> winnow::Result<CitationItem, ContextError> {
     let _ = space0.parse_next(input)?;
     let _: char = '@'.parse_next(input)?;
     let key: &str =
@@ -252,67 +262,12 @@ fn parse_citation_item_no_integral(input: &mut &str) -> winnow::Result<CitationI
 
     if let Some(comma_pos) = after_key.find(',') {
         let locator_part = after_key[comma_pos + 1..].trim();
-        parse_hybrid_locators(&mut item, locator_part);
+        item.locator = normalize_locator_text(locator_part, locale);
     } else {
         *input = checkpoint;
     }
 
     Ok(item)
-}
-
-/// Parse locators in either `p. 23` or `page: 23, section: V` format.
-fn parse_hybrid_locators(item: &mut CitationItem, locator_str: &str) {
-    let lp = locator_str.trim();
-    if lp.is_empty() {
-        return;
-    }
-
-    if let Some(colon_pos) = lp.find(':') {
-        let key = lp[..colon_pos].trim().to_lowercase();
-        let val_with_rest = lp[colon_pos + 1..].trim();
-
-        let val = if let Some(comma_pos) = val_with_rest.find(',') {
-            &val_with_rest[..comma_pos]
-        } else {
-            val_with_rest
-        };
-
-        item.label = map_label_str(&key);
-        item.locator = Some(val.trim().to_string());
-    } else if let Some(space_pos) = lp.find(' ') {
-        let label_str = lp[..space_pos].trim_end_matches('.');
-        let value = &lp[space_pos + 1..];
-
-        if let Some(lt) = map_label_str(label_str) {
-            item.label = Some(lt);
-            item.locator = Some(value.to_string());
-        } else {
-            item.label = Some(LocatorType::Page);
-            item.locator = Some(lp.to_string());
-        }
-    } else {
-        item.label = Some(LocatorType::Page);
-        item.locator = Some(lp.to_string());
-    }
-}
-
-fn map_label_str(s: &str) -> Option<LocatorType> {
-    match s.trim().trim_end_matches('.').to_lowercase().as_str() {
-        "p" | "page" | "pp" => Some(LocatorType::Page),
-        "vol" | "volume" => Some(LocatorType::Volume),
-        "ch" | "chap" | "chapter" => Some(LocatorType::Chapter),
-        "sec" | "section" => Some(LocatorType::Section),
-        "fig" | "figure" => Some(LocatorType::Figure),
-        "line" | "l" => Some(LocatorType::Line),
-        "lemma" | "lem" => Some(LocatorType::Lemma),
-        "note" | "n" => Some(LocatorType::Note),
-        "recital" => Some(LocatorType::Recital),
-        "part" => Some(LocatorType::Part),
-        "surah" => Some(LocatorType::Surah),
-        "theorem" | "thm" => Some(LocatorType::Theorem),
-        "col" | "column" => Some(LocatorType::Column),
-        _ => None,
-    }
 }
 
 /// Parse YAML frontmatter from content.
@@ -416,39 +371,57 @@ pub fn djot_to_html(djot: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use citum_schema::citation::{CitationLocator, LocatorType};
 
     #[test]
     fn test_parse_multi_cite_with_locators() {
         let parser = DjotParser;
         let content = "[@kuhn1962; @watson1953, ch. 2]";
-        let citations = parser.parse_citations(content);
+        let citations = parser.parse_citations(content, &Locale::en_us());
 
         assert_eq!(citations.len(), 1);
         let (_, _, citation) = &citations[0];
         assert_eq!(citation.items.len(), 2);
         assert_eq!(citation.items[0].id, "kuhn1962");
         assert_eq!(citation.items[1].id, "watson1953");
-        assert_eq!(citation.items[1].locator, Some("2".to_string()));
-        assert_eq!(citation.items[1].label, Some(LocatorType::Chapter));
+        assert_eq!(
+            citation.items[1].locator,
+            Some(CitationLocator::single(LocatorType::Chapter, "2"))
+        );
     }
 
     #[test]
     fn test_parse_structured_locator() {
         let parser = DjotParser;
         let content = "[@kuhn1962, section: 5]";
-        let citations = parser.parse_citations(content);
+        let citations = parser.parse_citations(content, &Locale::en_us());
 
         assert_eq!(citations.len(), 1);
         let (_, _, citation) = &citations[0];
-        assert_eq!(citation.items[0].locator, Some("5".to_string()));
-        assert_eq!(citation.items[0].label, Some(LocatorType::Section));
+        assert_eq!(
+            citation.items[0].locator,
+            Some(CitationLocator::single(LocatorType::Section, "5"))
+        );
+    }
+
+    #[test]
+    fn test_parse_compound_locator() {
+        let parser = DjotParser;
+        let content = "[@kuhn1962, chapter: 2, page: 10]";
+        let citations = parser.parse_citations(content, &Locale::en_us());
+
+        let (_, _, citation) = &citations[0];
+        let locator = citation.items[0].locator.as_ref().unwrap();
+        assert!(locator.is_compound());
+        assert_eq!(locator.segments()[0].label, LocatorType::Chapter);
+        assert_eq!(locator.segments()[1].label, LocatorType::Page);
     }
 
     #[test]
     fn test_parse_suppress_author() {
         let parser = DjotParser;
         let content = "[-@kuhn1962]";
-        let citations = parser.parse_citations(content);
+        let citations = parser.parse_citations(content, &Locale::en_us());
 
         assert_eq!(citations.len(), 1);
         let (_, _, citation) = &citations[0];
@@ -460,7 +433,7 @@ mod tests {
     fn test_parse_bracketed_integral_citation() {
         let parser = DjotParser;
         let content = "[+@kuhn1962]";
-        let citations = parser.parse_citations(content);
+        let citations = parser.parse_citations(content, &Locale::en_us());
 
         assert_eq!(citations.len(), 1);
         let (_, _, citation) = &citations[0];
@@ -473,7 +446,7 @@ mod tests {
     fn test_parse_semicolon_without_citation() {
         let parser = DjotParser;
         let content = "[foo; bar]";
-        let citations = parser.parse_citations(content);
+        let citations = parser.parse_citations(content, &Locale::en_us());
 
         assert_eq!(citations.len(), 0);
     }
@@ -482,7 +455,7 @@ mod tests {
     fn test_parse_document_tracks_manual_footnotes() {
         let parser = DjotParser;
         let content = "Text[^m1].\n\n[^m1]: See [@kuhn1962].";
-        let parsed = parser.parse_document(content);
+        let parsed = parser.parse_document(content, &Locale::en_us());
 
         assert_eq!(parsed.manual_note_order, vec!["m1".to_string()]);
         assert_eq!(parsed.manual_note_references.len(), 1);
@@ -499,7 +472,7 @@ mod tests {
     fn test_parse_document_marks_prose_citations_as_inline() {
         let parser = DjotParser;
         let content = "Text [@kuhn1962].";
-        let parsed = parser.parse_document(content);
+        let parsed = parser.parse_document(content, &Locale::en_us());
 
         assert_eq!(parsed.citations.len(), 1);
         assert_eq!(

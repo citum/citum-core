@@ -86,29 +86,11 @@
           "description": "The reference ID (citekey).",
           "type": "string"
         },
-        "label": {
-          "description": "Locator type (page, chapter, etc.)",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/LocatorType"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
         "locator": {
-          "description": "Locator value (e.g., \"42-45\" for pages)",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "locators": {
-          "description": "Compound locator segments for multi-part references.\n\nWhen present, takes priority over `label`/`locator`. Supports both verbose list form and compact map form. Example list: `[{ label: chapter, value: \"3\" }, { label: section, value: \"42\" }]` Example map: `{ page: \"23\", line: \"13\" }`",
+          "description": "Canonical locator value for pinpoint citations.",
           "anyOf": [
             {
-              "$ref": "#/definitions/LocatorsInput"
+              "$ref": "#/definitions/CitationLocator"
             },
             {
               "type": "null"
@@ -130,6 +112,27 @@
           ]
         }
       }
+    },
+    "CitationLocator": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/LocatorSegment"
+        },
+        {
+          "type": "object",
+          "required": [
+            "segments"
+          ],
+          "properties": {
+            "segments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/LocatorSegment"
+              }
+            }
+          }
+        }
+      ]
     },
     "CitationMode": {
       "description": "Citation mode for author-date styles.\n\nDetermines how the author name is rendered relative to the citation.",
@@ -456,22 +459,6 @@
               "description": "The locator value string.",
               "type": "string"
             }
-          }
-        }
-      ]
-    },
-    "LocatorsInput": {
-      "oneOf": [
-        {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/LocatorSegment"
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/LocatorValue"
           }
         }
       ]

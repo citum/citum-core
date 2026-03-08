@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-06T22:34:56.752Z",
+  "generated_at": "2026-03-08T18:31:26.230Z",
   "style": "springer-basic-author-date-no-et-al",
-  "fixture_hash": "4fbe6757fa5180e0",
+  "fixture_hash": "67a756de7032b296",
   "csl_hash": "52db8f4bd54eb4cc",
   "citations": {
     "single-item": "(Kuhn 1962)",

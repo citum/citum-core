@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-06T22:34:57.298Z",
+  "generated_at": "2026-03-08T18:31:34.084Z",
   "style": "taylor-and-francis-national-library-of-medicine",
-  "fixture_hash": "4fbe6757fa5180e0",
+  "fixture_hash": "67a756de7032b296",
   "csl_hash": "89b56076e1557dca",
   "citations": {
     "single-item": "[1]",

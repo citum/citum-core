@@ -46,7 +46,7 @@ Locators follow a comma after the citekey.
 | **Chapter** | `[@key, ch. 5]` | (Smith, 2023, ch. 5) |
 | **Structured**| `[@key, chapter: 2, page: 10]` | (Smith, 2023, chap. 2, p. 10) |
 
-Supported labels: `p`/`page`, `vol`/`volume`, `ch`/`chapter`, `sec`/`section`, `fig`/`figure`, `note`, `part`, `col`.
+Bare locator values default to `page`, but the canonical citation model stores an explicit locator label after parsing. Djot locator parsing recognizes canonical CSL locator labels, common English abbreviations and symbols, and locale-derived locator terms from the active processor locale.
 
 ### Complex Examples
 
