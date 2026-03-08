@@ -157,6 +157,30 @@ That means:
 - template selection is per item
 - title formatting can still vary per field inside that item
 
+Bibliography branches work the same way and can change the full entry layout:
+
+```yaml
+bibliography:
+  template:
+    - contributor: author
+    - title: primary
+      prefix: ". "
+  locales:
+    - locale: [ja, zh, ko]
+      template:
+        - contributor: author
+        - variable: publisher
+          prefix: ". "
+        - date: issued
+          form: year
+          prefix: ", "
+        - title: primary
+          prefix: ". "
+```
+
+See `styles/experimental/locale-specific-bibliography-layouts.yaml` for a
+complete end-to-end example that uses `tests/fixtures/multilingual/multilingual-cjk.json`.
+
 ## Practical Workflow
 
 1. Start from a nearby style in `/styles`.
