@@ -1,7 +1,7 @@
 ---
 # csl26-wggv
 title: 'Complete doc and test coverage: csl-legacy and citum-cli'
-status: done
+status: completed
 type: task
 priority: normal
 created_at: 2026-03-02T16:54:21Z

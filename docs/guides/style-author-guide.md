@@ -6,10 +6,56 @@ This guide is for people who write and maintain Citum styles.
 
 Use two quality signals, with clear priority:
 
-1. Fidelity: output matches the citeproc-js oracle.
+1. Compatibility fidelity: output matches the chosen authority oracle.
 2. SQI: style quality, maintainability, and fallback robustness.
 
-Fidelity is the hard gate. SQI helps choose between equally correct solutions.
+Compatibility fidelity is the default gate. SQI helps choose between equally
+correct solutions.
+
+Do not assume the citeproc-js oracle is always normatively correct. Sometimes
+it captures legacy CSL behavior that Citum should intentionally improve on.
+
+## Authority Hierarchy
+
+When behavior is ambiguous or conflicting, use this order of precedence:
+
+1. Explicit publisher or style-guide rules
+2. Citum design principles and schema intent
+3. Stable bibliographic prior art, preferably `biblatex`
+4. Legacy CSL and citeproc behavior
+5. Existing local style shortcuts
+
+Treat citeproc as a compatibility authority, not as an unquestionable source of
+bibliographic truth.
+
+## Normative vs Legacy Decisions
+
+Before fixing a non-trivial mismatch, decide what kind of mismatch it is:
+
+- `style defect`: the Citum style is wrong
+- `migration artifact`: the migration preserved or introduced the wrong behavior
+- `processor defect`: the engine misrenders a valid style
+- `legacy limitation`: legacy CSL/citeproc behavior is real, but not behavior
+  Citum should preserve
+
+This classification should drive the fix:
+
+- fix the style for `style defect`
+- improve migration logic for `migration artifact`
+- change engine behavior for `processor defect`
+- prefer an intentional divergence for `legacy limitation`
+
+## Intentional Divergence
+
+Intentional divergence from legacy CSL/citeproc is allowed when it better matches
+style-guide intent, bibliographic expectations, or Citum's design goals.
+
+When you choose divergence:
+
+- state that it is intentional
+- explain which authority basis won
+- add regression coverage for the intended behavior
+- record any expected impact on citeproc-based compatibility metrics
 
 ## Core Principles
 
@@ -114,11 +160,13 @@ That means:
 ## Practical Workflow
 
 1. Start from a nearby style in `/styles`.
-2. Implement the target style guide rules in YAML (`options`, `citation`, `bibliography`).
-3. Run oracle checks to confirm rendered output.
-4. Fix fidelity mismatches first.
-5. Improve SQI only when output stays unchanged.
-6. Re-run checks before finishing.
+2. Identify the authority basis for the behavior you are implementing.
+3. Classify major mismatches as style defect, migration artifact, processor defect, or legacy limitation.
+4. Implement the target style-guide or Citum-intended rules in YAML (`options`, `citation`, `bibliography`).
+5. Run oracle checks to confirm rendered output and understand compatibility impact.
+6. Fix compatibility mismatches first unless the task calls for a documented semantic divergence.
+7. Improve SQI only when output semantics stay unchanged.
+8. Re-run checks before finishing.
 
 ## Preset Catalog
 
