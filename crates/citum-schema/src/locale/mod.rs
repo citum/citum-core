@@ -356,7 +356,16 @@ impl Locale {
             GeneralTerm::Accessed => self.terms.accessed.as_deref(),
             GeneralTerm::Ibid => self.terms.ibid.as_deref(),
             GeneralTerm::In => self.terms.in_.as_deref(),
-            GeneralTerm::NoDate => self.terms.no_date.as_deref(),
+            GeneralTerm::NoDate => self
+                .terms
+                .general
+                .get(term)
+                .map(|value| match form {
+                    TermForm::Long => value.long.as_str(),
+                    TermForm::Short => value.short.as_str(),
+                    _ => value.long.as_str(),
+                })
+                .or(self.terms.no_date.as_deref()),
             GeneralTerm::Retrieved => self.terms.retrieved.as_deref(),
             GeneralTerm::At => self.terms.at.as_deref(),
             GeneralTerm::By => self.terms.by.as_deref(),
@@ -583,13 +592,9 @@ impl Locale {
                     }
                 }
                 "no_date" | "no date" => {
-                    if let Some(forms) = Self::get_forms(value) {
-                        if let Some(v) = forms.get("short").and_then(|v| v.as_string()) {
-                            locale.terms.no_date = Some(v.to_string());
-                        } else if let Some(v) = forms.get("long").and_then(|v| v.as_string()) {
-                            locale.terms.no_date = Some(v.to_string());
-                        }
-                    }
+                    let simple = Self::extract_simple_term_from_raw(value);
+                    locale.terms.no_date = Some(simple.short.clone());
+                    locale.terms.general.insert(GeneralTerm::NoDate, simple);
                 }
                 _ => {
                     // Try to parse as GeneralTerm
@@ -875,6 +880,35 @@ mod tests {
     }
 
     #[test]
+    fn test_no_date_term_resolves_long_and_short_forms() {
+        let locale = Locale::en_us();
+
+        assert_eq!(
+            locale.general_term(&GeneralTerm::NoDate, TermForm::Long),
+            Some("no date")
+        );
+        assert_eq!(
+            locale.general_term(&GeneralTerm::NoDate, TermForm::Short),
+            Some("n.d.")
+        );
+    }
+
+    #[test]
+    fn test_no_date_term_falls_back_to_legacy_short_form() {
+        let mut locale = Locale::default();
+        locale.terms.no_date = Some("n.d.".to_string());
+
+        assert_eq!(
+            locale.general_term(&GeneralTerm::NoDate, TermForm::Short),
+            Some("n.d.")
+        );
+        assert_eq!(
+            locale.general_term(&GeneralTerm::NoDate, TermForm::Long),
+            Some("n.d.")
+        );
+    }
+
+    #[test]
     fn test_locale_deserialization() {
         let json = r#"{
             "locale": "en-US",
@@ -951,5 +985,33 @@ terms:
         assert_eq!(locale.et_al(), "u. a.");
         assert_eq!(locale.month_name(1, false), "Januar");
         assert_eq!(locale.month_name(3, false), "März");
+    }
+
+    #[test]
+    fn test_yaml_no_date_term_preserves_long_and_short_forms() {
+        let yaml = r#"
+locale: en-US
+dates:
+  months:
+    long: [January, February, March, April, May, June, July, August, September, October, November, December]
+    short: [Jan., Feb., Mar., Apr., May, June, July, Aug., Sept., Oct., Nov., Dec.]
+  seasons: [Spring, Summer, Autumn, Winter]
+roles: {}
+terms:
+  no date:
+    long: no date
+    short: n.d.
+"#;
+
+        let locale = Locale::from_yaml_str(yaml).unwrap();
+        assert_eq!(
+            locale.general_term(&GeneralTerm::NoDate, TermForm::Long),
+            Some("no date")
+        );
+        assert_eq!(
+            locale.general_term(&GeneralTerm::NoDate, TermForm::Short),
+            Some("n.d.")
+        );
+        assert_eq!(locale.terms.no_date.as_deref(), Some("n.d."));
     }
 }

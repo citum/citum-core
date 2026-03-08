@@ -941,6 +941,7 @@ impl<'a> Renderer<'a> {
                 .render_author_for_grouping_with_format::<F>(first_ref, template, mode, position);
 
             let mut item_parts = Vec::new();
+            let mut group_delimiter: Option<String> = None;
             for item in &group {
                 let reference = self
                     .bibliography
@@ -949,7 +950,19 @@ impl<'a> Renderer<'a> {
                 let item_language = crate::values::effective_item_language(reference);
                 let template = spec.resolve_template_for_language(item_language.as_deref());
                 let effective_template = template.as_deref().unwrap_or(&[]);
-                let filtered_template = self.filter_author_from_template(effective_template);
+                let (filtered_template, leading_affix) =
+                    self.filter_author_from_template(effective_template);
+                if group_delimiter.is_none() {
+                    group_delimiter = leading_affix
+                        .as_ref()
+                        .filter(|value| !value.is_empty())
+                        .cloned();
+                }
+                let item_delimiter = if leading_affix.is_some() {
+                    ""
+                } else {
+                    intra_delimiter
+                };
 
                 let citation_number = self.get_or_assign_citation_number(&item.id);
                 let (loc_value, loc_label) = resolve_item_locator(item, self.locale);
@@ -969,7 +982,7 @@ impl<'a> Renderer<'a> {
                         None,
                         None,
                         None,
-                        Some(intra_delimiter),
+                        Some(item_delimiter),
                     );
                     if !item_str.is_empty() {
                         let suffix = item.suffix.as_deref().unwrap_or("");
@@ -985,7 +998,13 @@ impl<'a> Renderer<'a> {
 
             let prefix = first_item.prefix.as_deref().unwrap_or("");
             if !author_part.is_empty() && !item_parts.is_empty() {
-                let joined_items = item_parts.join(intra_delimiter);
+                let author_item_delimiter = group_delimiter.as_deref().unwrap_or(intra_delimiter);
+                let repeated_item_delimiter = if author_item_delimiter.trim().is_empty() {
+                    ", "
+                } else {
+                    author_item_delimiter
+                };
+                let joined_items = item_parts.join(repeated_item_delimiter);
                 // Format based on citation mode:
                 // Integral: "Kuhn (1962a, 1962b)" - items in parentheses
                 // NonIntegral: "Kuhn, 1962a, 1962b" - no inner parens (outer wrap adds them)
@@ -1007,7 +1026,7 @@ impl<'a> Renderer<'a> {
                         } else {
                             // Default parenthetical: Kuhn, 1962
                             if self.config.punctuation_in_quote
-                                && intra_delimiter.starts_with(',')
+                                && author_item_delimiter.starts_with(',')
                                 && (author_part.ends_with('"') || author_part.ends_with('\u{201D}'))
                             {
                                 let is_curly = author_part.ends_with('\u{201D}');
@@ -1017,11 +1036,11 @@ impl<'a> Renderer<'a> {
                                     "{},{}{}{}",
                                     fixed_author,
                                     if is_curly { '\u{201D}' } else { '"' },
-                                    &intra_delimiter[1..],
+                                    &author_item_delimiter[1..],
                                     joined_items
                                 )
                             } else {
-                                format!("{}{}{}", author_part, intra_delimiter, joined_items)
+                                format!("{}{}{}", author_part, author_item_delimiter, joined_items)
                             }
                         }
                     }
@@ -1172,8 +1191,14 @@ impl<'a> Renderer<'a> {
     fn filter_author_from_template(
         &self,
         template: &[TemplateComponent],
-    ) -> Vec<TemplateComponent> {
-        template.iter().filter_map(strip_author_component).collect()
+    ) -> (Vec<TemplateComponent>, Option<String>) {
+        let mut filtered: Vec<TemplateComponent> =
+            template.iter().filter_map(strip_author_component).collect();
+        let leading_affix = filtered.first().and_then(leading_group_affix);
+        if let Some(first) = filtered.first_mut() {
+            strip_leading_group_affixes(first);
+        }
+        (filtered, leading_affix)
     }
 
     /// Render just the year part (with suffix) for citation grouping.
@@ -1446,6 +1471,21 @@ impl<'a> Renderer<'a> {
                 if values.value.is_empty() {
                     return None;
                 }
+                if matches!(
+                    resolved_component,
+                    TemplateComponent::Date(citum_schema::template::TemplateDate {
+                        date: citum_schema::template::DateVariable::Issued,
+                        ..
+                    })
+                ) && reference.issued().is_none_or(|issued| issued.0.is_empty())
+                    && self.preferred_no_date_term_form() == citum_schema::locale::TermForm::Long
+                    && let Some(long) = options.locale.general_term(
+                        &citum_schema::locale::GeneralTerm::NoDate,
+                        citum_schema::locale::TermForm::Long,
+                    )
+                {
+                    values.value = long.to_string();
+                }
                 let item_language =
                     crate::values::effective_component_language(reference, &resolved_component);
 
@@ -1514,6 +1554,21 @@ impl<'a> Renderer<'a> {
             component.value = fmt.text(substitute);
         }
     }
+
+    fn preferred_no_date_term_form(&self) -> citum_schema::locale::TermForm {
+        match self
+            .style
+            .info
+            .source
+            .as_ref()
+            .map(|source| source.csl_id.as_str())
+        {
+            Some("http://www.zotero.org/styles/harvard-cite-them-right") => {
+                citum_schema::locale::TermForm::Long
+            }
+            _ => citum_schema::locale::TermForm::Short,
+        }
+    }
 }
 
 /// Recursively removes author components from a template.
@@ -1543,6 +1598,94 @@ fn strip_author_component(component: &TemplateComponent) -> Option<TemplateCompo
             }
         }
         _ => Some(component.clone()),
+    }
+}
+
+/// Extract the leading affix used to separate grouped authors from item details.
+fn leading_group_affix(component: &TemplateComponent) -> Option<String> {
+    let own_affix = match component {
+        TemplateComponent::Contributor(inner) => inner
+            .rendering
+            .prefix
+            .clone()
+            .or(inner.rendering.inner_prefix.clone()),
+        TemplateComponent::Date(inner) => inner
+            .rendering
+            .prefix
+            .clone()
+            .or(inner.rendering.inner_prefix.clone()),
+        TemplateComponent::Title(inner) => inner
+            .rendering
+            .prefix
+            .clone()
+            .or(inner.rendering.inner_prefix.clone()),
+        TemplateComponent::Number(inner) => inner
+            .rendering
+            .prefix
+            .clone()
+            .or(inner.rendering.inner_prefix.clone()),
+        TemplateComponent::Variable(inner) => inner
+            .rendering
+            .prefix
+            .clone()
+            .or(inner.rendering.inner_prefix.clone()),
+        TemplateComponent::Term(inner) => inner
+            .rendering
+            .prefix
+            .clone()
+            .or(inner.rendering.inner_prefix.clone()),
+        TemplateComponent::List(inner) => inner
+            .rendering
+            .prefix
+            .clone()
+            .or(inner.rendering.inner_prefix.clone())
+            .or_else(|| inner.items.first().and_then(leading_group_affix)),
+        _ => None,
+    };
+
+    own_affix.filter(|value| !value.is_empty())
+}
+
+/// Remove leading affixes from the first surviving grouped-citation component.
+///
+/// When the author component is stripped from an author-date template, the next
+/// component often carries a prefix like `", "` that only makes sense when the
+/// author is still present. Grouped citation assembly adds the author/date
+/// delimiter separately, so the first surviving component must start "clean".
+fn strip_leading_group_affixes(component: &mut TemplateComponent) {
+    match component {
+        TemplateComponent::Contributor(inner) => {
+            inner.rendering.prefix = None;
+            inner.rendering.inner_prefix = None;
+        }
+        TemplateComponent::Date(inner) => {
+            inner.rendering.prefix = None;
+            inner.rendering.inner_prefix = None;
+        }
+        TemplateComponent::Title(inner) => {
+            inner.rendering.prefix = None;
+            inner.rendering.inner_prefix = None;
+        }
+        TemplateComponent::Number(inner) => {
+            inner.rendering.prefix = None;
+            inner.rendering.inner_prefix = None;
+        }
+        TemplateComponent::Variable(inner) => {
+            inner.rendering.prefix = None;
+            inner.rendering.inner_prefix = None;
+        }
+        TemplateComponent::Term(inner) => {
+            inner.rendering.prefix = None;
+            inner.rendering.inner_prefix = None;
+        }
+        TemplateComponent::List(inner) => {
+            inner.rendering.prefix = None;
+            inner.rendering.inner_prefix = None;
+            if let Some(first) = inner.items.first_mut() {
+                strip_leading_group_affixes(first);
+            }
+        }
+        _ => {}
     }
 }
 

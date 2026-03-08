@@ -521,6 +521,94 @@ fn test_springer_locator_label_survives_sorting() {
     );
 }
 
+/// Tests parsed-style grouped author-date citations using the default locale path.
+#[test]
+fn test_harvard_cite_them_right_grouped_citations_render_cleanly() {
+    use std::{fs, path::Path};
+
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let style_path = root.join("styles/harvard-cite-them-right.yaml");
+    let bib_path = root.join("tests/fixtures/references-expanded.json");
+    let cite_path = root.join("tests/fixtures/citations-expanded.json");
+
+    let style_yaml = fs::read_to_string(&style_path).expect("style should read");
+    let style: Style = serde_yaml::from_str(&style_yaml).expect("style should parse");
+    let bibliography = crate::io::load_bibliography(&bib_path).expect("bib should load");
+    let citations = crate::io::load_citations(&cite_path).expect("citations should load");
+
+    let processor = Processor::new(style, bibliography);
+
+    let single_item = citations
+        .iter()
+        .find(|c| c.id.as_deref() == Some("single-item"))
+        .cloned()
+        .expect("single-item citation should exist");
+    assert_eq!(
+        processor.process_citation(&single_item).unwrap(),
+        "(Kuhn, 1962)"
+    );
+
+    let with_locator = citations
+        .iter()
+        .find(|c| c.id.as_deref() == Some("with-locator"))
+        .cloned()
+        .expect("with-locator citation should exist");
+    assert_eq!(
+        processor.process_citation(&with_locator).unwrap(),
+        "(Kuhn, 1962, p. 23)"
+    );
+
+    let no_date = citations
+        .iter()
+        .find(|c| c.id.as_deref() == Some("no-date-single"))
+        .cloned()
+        .expect("no-date-single citation should exist");
+    assert_eq!(
+        processor.process_citation(&no_date).unwrap(),
+        "(Forthcoming, no date)"
+    );
+}
+
+/// Tests style-specific no-date overrides without regressing n.d.-based styles.
+#[test]
+fn test_parsed_style_no_date_terms_match_expected_variants() {
+    use std::{fs, path::Path};
+
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let bib_path = root.join("tests/fixtures/references-expanded.json");
+    let cite_path = root.join("tests/fixtures/citations-expanded.json");
+    let bibliography = crate::io::load_bibliography(&bib_path).expect("bib should load");
+    let citations = crate::io::load_citations(&cite_path).expect("citations should load");
+    let no_date = citations
+        .iter()
+        .find(|c| c.id.as_deref() == Some("no-date-single"))
+        .cloned()
+        .expect("no-date-single citation should exist");
+
+    let load_style = |name: &str| -> Style {
+        let style_path = root.join("styles").join(format!("{name}.yaml"));
+        let style_yaml = fs::read_to_string(&style_path).expect("style should read");
+        serde_yaml::from_str(&style_yaml).expect("style should parse")
+    };
+
+    let harvard = Processor::new(load_style("harvard-cite-them-right"), bibliography.clone());
+    assert_eq!(
+        harvard.process_citation(&no_date).unwrap(),
+        "(Forthcoming, no date)"
+    );
+
+    let sage = Processor::new(load_style("sage-harvard"), bibliography);
+    let sage_rendered = sage.process_citation(&no_date).unwrap();
+    assert!(
+        sage_rendered.contains("n.d."),
+        "sage-harvard should keep the short no-date term: {sage_rendered}"
+    );
+    assert!(
+        !sage_rendered.contains("no date"),
+        "sage-harvard should not switch to the long no-date term: {sage_rendered}"
+    );
+}
+
 /// Tests the behavior of test_render_bibliography.
 #[test]
 fn test_render_bibliography() {

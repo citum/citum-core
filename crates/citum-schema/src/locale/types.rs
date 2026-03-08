@@ -140,7 +140,11 @@ pub struct Terms {
     pub ibid: Option<String>,
     /// "in" preposition.
     pub in_: Option<String>,
-    /// "no date" term for missing dates.
+    /// Legacy short-form fallback for the "no date" term when no structured term is loaded.
+    ///
+    /// This remains deserializable for backward compatibility, but it is not serialized
+    /// to avoid colliding with the structured `no-date` entry from `general`.
+    #[serde(skip_serializing)]
     pub no_date: Option<String>,
     /// "retrieved" term for access dates.
     pub retrieved: Option<String>,
@@ -174,7 +178,13 @@ impl Terms {
             in_: Some("in".into()),
             no_date: Some("n.d.".into()),
             retrieved: Some("retrieved".into()),
-            general: std::collections::HashMap::new(),
+            general: std::collections::HashMap::from([(
+                GeneralTerm::NoDate,
+                SimpleTerm {
+                    long: "no date".into(),
+                    short: "n.d.".into(),
+                },
+            )]),
         }
     }
 }
@@ -444,6 +454,23 @@ mod tests {
         assert_eq!(terms.anonymous.short, "anon.");
         assert_eq!(terms.circa.long, "circa");
         assert_eq!(terms.circa.short, "c.");
+    }
+
+    /// Test that the legacy no-date fallback does not serialize alongside the structured term.
+    #[test]
+    fn test_terms_en_us_serializes_single_no_date_entry() {
+        let terms = Terms::en_us();
+        let value = serde_json::to_value(&terms).unwrap();
+        let object = value.as_object().unwrap();
+
+        assert_eq!(
+            object.get("no-date"),
+            Some(&serde_json::json!({
+                "long": "no date",
+                "short": "n.d."
+            }))
+        );
+        assert_eq!(object.get("no_date"), None);
     }
 
     /// Test that DateTerms::en_us() provides all month names and seasons.
