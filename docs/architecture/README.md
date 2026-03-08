@@ -19,6 +19,7 @@ current task.
 4. [`design/LEGAL_CITATIONS.md`](./design/LEGAL_CITATIONS.md)
 5. [`CITUM_MODULARIZATION.md`](./CITUM_MODULARIZATION.md)
 6. [`CITUM_FULL_MIGRATION_EXECUTION_PLAN_2026-02-26.md`](./CITUM_FULL_MIGRATION_EXECUTION_PLAN_2026-02-26.md)
+7. [`../adjudication/DIVERGENCE_REGISTER.md`](../adjudication/DIVERGENCE_REGISTER.md) - audit trail of intentional behavioral departures from CSL/citeproc
 
 ## Tier C: Historical Snapshots (Read Only When Needed)
 
