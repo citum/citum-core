@@ -104,6 +104,8 @@ styles:
   chicago-notes:
     secondary:
       - biblatex
+    scopes:
+      - citation
     fixture_family: note-humanities
   american-physics-society:
     secondary:
