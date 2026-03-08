@@ -23,17 +23,55 @@ Run the full fix loop without pausing for approval. Commit automatically when QA
 Only interrupt for `Cargo.toml`/`Cargo.lock` changes or `git push origin main` (per CLAUDE.md).
 
 ## Workflow
-1. Reproduce mismatch with one oracle snapshot.
-2. Apply smallest YAML-first fix.
-3. Recheck oracle metrics.
-4. Run QA gate — if rejected, iterate (max 5 attempts) before surfacing to user.
-5. On QA pass: `git add -A && git commit -m "fix(styles): <name> <change>"` and report results.
+
+Token efficiency matters — diagnose everything before touching any files.
+
+1. **Single oracle call, all failures at once.**
+   Run `node scripts/oracle.js styles-legacy/<name>.csl --verbose` (or the correct
+   oracle per the routing table below). The `--verbose` flag prints every failure with
+   oracle vs. CSLN side-by-side. Read all failures before writing a single line of YAML.
+   Do not use `report-core.js` for upgrade tasks — it's a portfolio tool, not a diff tool.
+
+2. **Classify all failures before fixing any.**
+   For each failure decide: `style-defect`, `migration-artifact`, `processor-defect`, or
+   `legacy-limitation`. This shapes both what you fix and what you escalate (see
+   Co-Evolution below).
+
+3. **Apply all YAML fixes in one pass.**
+
+4. **One confirming oracle run.** Verify fidelity improved, bibliography held.
+
+5. **QA gate → commit.**
+   `git add -A && git commit -m "fix(styles): <name> <change>"` — max 5 iterations
+   before surfacing to user.
 
 ## Fix Ordering
 1. Component overrides and punctuation/wrap controls.
 2. Shared bibliography spine improvements.
 3. `type-templates` only for true structural outliers.
 4. Processor/schema changes only after planner escalation.
+
+## Co-Evolution (Mandatory — not a checkbox)
+
+Style work and engine work evolve together. When you classify a failure, don't stop at
+"deferred." The point of this classification is to drive engine improvements.
+
+**For each `processor-defect` or `missing-feature`:**
+
+1. Use jCodeMunch to locate the relevant engine code — do not load full source files:
+   ```
+   search_symbols("<term or feature name>", repo: "local/citum-core")
+   get_symbol("<SymbolName>", repo: "local/citum-core")
+   ```
+2. Assess tractability: can this be fixed in ~30 lines of Rust? If yes, fix it now.
+3. If not tractable in this session: file a bean with the symbol name, file path, line
+   number, oracle diff, and a concrete description of the fix needed.
+   `beans create "engine: <description>" -t bug -d "..."`
+4. Reference the bean ID in the Code Opportunities table. **"Deferred" without a bean
+   ID is not acceptable** — it means the opportunity will be lost.
+
+The Code Opportunities table is delivered as part of every task output (inherited from
+style-evolve). Every row must be either `implemented` or `deferred: <bean-id>`.
 
 ## Hard Gates
 - Preserve or improve fidelity.

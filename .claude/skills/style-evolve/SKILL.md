@@ -93,9 +93,12 @@ At the end of every task, produce this table:
 **Rules:**
 - Every task must include this table, even when empty (write "no opportunities
   observed this iteration" as the only row).
-- `deferred` requires a rationale (e.g., "only needed in this one style" or "tracked
-  in csl26-xxxx").
-- A missing or uncommented-empty table means the task is **incomplete**.
+- `deferred` requires a **bean ID** — vague rationales like "only one style needs
+  this" are not acceptable. File the bean, get the ID, reference it here.
+- Before deferring a `processor-defect` or `missing-feature`: use jCodeMunch to
+  locate the relevant engine code and assess if a fix is tractable this session.
+  If tractable (~30 lines of Rust), implement it now. If not, file the bean first.
+- A missing or empty table means the task is **incomplete**.
 
 ## Authority Hierarchy
 
