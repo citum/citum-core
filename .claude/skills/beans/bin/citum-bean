@@ -1,234 +1,545 @@
 #!/usr/bin/env bash
 # Beans skill wrapper for Citum.
-# Uses canonical `beans` commands and adds one project helper: `next`.
+# Adds project-level helpers on top of the upstream `beans` CLI.
 
 set -euo pipefail
 
 BEANS_BIN="beans"
 BEANS_PATH=".beans"
 
-# Ensure beans is installed
-if ! command -v "$BEANS_BIN" &> /dev/null; then
-    echo "Error: beans CLI not found. Install via: brew install beans" >&2
-    exit 1
-fi
+require_command() {
+    local cmd=$1
+    local message=$2
 
-# Ensure beans is initialized
-if [[ ! -d "$BEANS_PATH" ]]; then
-    echo "Error: No .beans directory found. Run 'beans init' first." >&2
-    exit 1
-fi
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+        echo "Error: $message" >&2
+        exit 1
+    fi
+}
 
-# Parse command
-CMD="${1:-help}"
-shift || true
+ensure_beans_ready() {
+    require_command "$BEANS_BIN" "beans CLI not found. Install via: brew install beans"
 
-case "$CMD" in
-    next)
-        if ! command -v jq &> /dev/null; then
-            echo "Error: jq is required for '/beans next'." >&2
-            exit 1
-        fi
+    if [[ ! -d "$BEANS_PATH" ]]; then
+        echo "Error: No .beans directory found. Run 'beans init' first." >&2
+        exit 1
+    fi
+}
 
-        LIMIT=3
-        JSON_OUTPUT=0
+require_jq() {
+    require_command "jq" "jq is required for '/beans $CMD'."
+}
 
-        while [[ $# -gt 0 ]]; do
-            case "$1" in
-                --limit|-n)
-                    LIMIT="${2:-}"
-                    shift 2
-                    ;;
-                --json)
-                    JSON_OUTPUT=1
-                    shift
-                    ;;
-                *)
-                    echo "Unknown option for next: $1" >&2
-                    exit 1
-                    ;;
-            esac
-        done
+beans_graphql_json() {
+    "$BEANS_BIN" graphql --json "$1"
+}
 
-        if [[ ! "$LIMIT" =~ ^[1-9][0-9]*$ ]]; then
-            echo "Error: --limit must be a positive integer." >&2
-            exit 1
-        fi
+all_beans_json() {
+    "$BEANS_BIN" list --json
+}
 
-        # Single GraphQL query: fetch all non-terminal beans with relationship
-        # data. Resolving leverage and in-progress state in one round trip avoids
-        # multiple CLI calls and gives us the full dependency picture.
-        ALL_JSON=$(beans query --json '{
-            beans(filter: {
-                excludeStatus: ["completed", "scrapped", "draft", "canceled"]
-            }) {
-                id title status type priority parentId blockingIds blockedByIds
-            }
-        }' | jq '.beans')
+build_audit_json() {
+    local scope=$1
+    local all_json
 
-        # Separate in-progress from ready (unblocked todo beans).
-        IN_PROGRESS=$(printf "%s\n" "$ALL_JSON" | jq '[.[] | select(.status == "in-progress")]')
-        READY=$(printf "%s\n" "$ALL_JSON" | jq '
-            [.[] | select(
-                (.status == "todo") and
-                (.blockedByIds | length == 0)
-            )]
-        ')
+    all_json=$(all_beans_json)
 
-        READY_COUNT=$(printf "%s\n" "$READY" | jq 'length')
-        if [[ "$READY_COUNT" -eq 0 ]]; then
-            if [[ "$JSON_OUTPUT" -eq 1 ]]; then
-                echo "[]"
-            else
-                echo "No ready beans found."
-            fi
-            exit 0
-        fi
-
-        # Build a set of open IDs so leverage counts only beans still in play
-        # (not already completed or scrapped).
-        OPEN_IDS_JSON=$(printf "%s\n" "$ALL_JSON" | jq '[.[].id]')
-
-        # Rank candidates.
-        # Leverage = count of blockingIds whose targets are still open.
-        # Epics and milestones are fallback options shown only when concrete
-        # work (bug/feature/task) is insufficient to fill the limit.
-        # Sort key: priority asc, leverage desc, type rank asc, created_at asc.
-        RANKED_JSON=$(printf "%s\n" "$READY" | jq --argjson limit "$LIMIT" --argjson open_ids "$OPEN_IDS_JSON" '
-            (($open_ids) | map({key: ., value: true}) | from_entries) as $open |
-            map(
-                . + {
-                    leverage: ([.blockingIds[] | select($open[.] == true)] | length),
-                    priority: (.priority // "normal")
+    jq -n --arg scope "$scope" --argjson all "$all_json" '
+        def norm_title:
+            (. // ""
+            | ascii_downcase
+            | gsub("[[:space:]]+"; " ")
+            | sub("^ "; "")
+            | sub(" $"; ""));
+        def is_archived: (.path // "" | startswith("archive/"));
+        def is_terminal: (.status == "completed" or .status == "scrapped");
+        def is_open: (.status == "draft" or .status == "todo" or .status == "in-progress");
+        def is_canonical_status:
+            (.status == "draft"
+            or .status == "todo"
+            or .status == "in-progress"
+            or .status == "completed"
+            or .status == "scrapped");
+        def duplicate_groups:
+            group_by(.title_norm)
+            | map(
+                select((.[0].title_norm | length) > 0 and length > 1)
+                | {
+                    normalized_title: .[0].title_norm,
+                    titles: ([.[].title] | unique),
+                    items: map({
+                        id,
+                        title,
+                        status,
+                        type,
+                        priority,
+                        path
+                    })
                 }
-            ) as $items |
-            def priority_rank:
-                if .priority == "critical" then 0
-                elif .priority == "high" then 1
-                elif .priority == "normal" then 2
-                elif .priority == "low" then 3
-                else 4 end;
-            def type_rank:
-                if .type == "bug" then 0
-                elif .type == "feature" then 1
-                elif .type == "task" then 2
-                elif .type == "milestone" then 3
-                elif .type == "epic" then 4
-                else 5 end;
-            (
-                $items
-                | map(select((.type // "") != "epic" and (.type // "") != "milestone"))
-                | sort_by(priority_rank, (-.leverage), type_rank, .created_at)
-            ) as $concrete |
-            (
-                $items
-                | map(select((.type // "") == "epic" or (.type // "") == "milestone"))
-                | sort_by(priority_rank, (-.leverage), type_rank, .created_at)
-            ) as $meta |
-            ($concrete + $meta)[:$limit]
-        ')
-
-        # Resolve parent titles for ranked candidates.
-        PARENT_IDS=$(printf "%s\n" "$RANKED_JSON" | jq -r '.[].parentId // empty' | sort -u | tr '\n' ' ')
-        PARENT_MAP='{}'
-        if [[ -n "${PARENT_IDS// /}" ]]; then
-            PARENTS_JSON=$(beans show --json $PARENT_IDS)
-            PARENT_MAP=$(printf "%s\n" "$PARENTS_JSON" | jq '
-                (if type == "array" then . else [.] end) |
-                map({key: .id, value: .title}) |
-                from_entries
-            ')
-        fi
-
-        CANDIDATES_JSON=$(jq -n \
-            --argjson items "$RANKED_JSON" \
-            --argjson parents "$PARENT_MAP" '
-            $items | map(
-                . + {
-                    parent_title: (
-                        if (.parentId != null and ($parents[.parentId] != null))
-                        then $parents[.parentId]
-                        else null
-                        end
-                    ),
-                    reason: (
-                        ["priority=" + (.priority // "normal")] +
-                        (if .leverage > 0 then ["unblocks=" + (.leverage | tostring)] else [] end) +
-                        ["type=" + (.type // "task")]
-                    ) | join(", ")
+            );
+        ($all | map(. + {title_norm: (.title | norm_title)})) as $items |
+        (if $scope == "open"
+            then [$items[] | select(is_archived | not)]
+            else $items
+         end) as $scoped |
+        ([ $items[] | select(is_terminal) ]
+            | group_by(.title_norm)
+            | map({
+                key: .[0].title_norm,
+                value: map({
+                    id,
+                    title,
+                    status,
+                    type,
+                    priority,
+                    path
+                })
+            })
+            | from_entries) as $terminal_by_title |
+        {
+            scope: $scope,
+            noncanonical_statuses: [
+                $scoped[]
+                | select(is_canonical_status | not)
+                | { id, title, status, path }
+            ],
+            root_terminal_beans: [
+                $items[]
+                | select((is_archived | not) and is_terminal)
+                | { id, title, status, path }
+            ],
+            duplicate_titles: ($scoped | duplicate_groups),
+            open_title_collisions: [
+                $items[]
+                | select((is_archived | not) and is_open)
+                | select(.title_norm != "" and ($terminal_by_title[.title_norm] != null))
+                | {
+                    normalized_title: .title_norm,
+                    open: {
+                        id,
+                        title,
+                        status,
+                        type,
+                        priority,
+                        path
+                    },
+                    terminal: $terminal_by_title[.title_norm]
                 }
+            ],
+            duplicate_in_progress_migrate: (
+                [
+                    $items[]
+                    | select(
+                        (is_archived | not)
+                        and .status == "in-progress"
+                        and (.title | startswith("Migrate: "))
+                    )
+                ]
+                | group_by(.title_norm)
+                | map(
+                    select(length > 1)
+                    | {
+                        normalized_title: .[0].title_norm,
+                        title: .[0].title,
+                        items: map({ id, status, path })
+                    }
+                )
             )
+        }
+    '
+}
+
+audit_has_findings() {
+    jq -e '
+        (.noncanonical_statuses | length) > 0
+        or (.root_terminal_beans | length) > 0
+        or (.duplicate_titles | length) > 0
+        or (.open_title_collisions | length) > 0
+        or (.duplicate_in_progress_migrate | length) > 0
+    ' >/dev/null
+}
+
+print_audit_text() {
+    jq -r '
+        def render_items(items):
+            items
+            | map("  - \(.id) [\(.status)] \(.title) (\(.path))")
+            | join("\n");
+        def render_duplicate_groups(groups):
+            groups
+            | map(
+                "- \(.titles | join(" / "))\n"
+                + (
+                    .items
+                    | map("    \(.id) [\(.status)] (\(.path))")
+                    | join("\n")
+                )
+            )
+            | join("\n");
+        def render_collision_groups(groups):
+            groups
+            | map(
+                "- \(.open.id) [\(.open.status)] \(.open.title) (\(.open.path))\n"
+                + (
+                    .terminal
+                    | map("    terminal: \(.id) [\(.status)] (\(.path))")
+                    | join("\n")
+                )
+            )
+            | join("\n");
+        def render_migrate_groups(groups):
+            groups
+            | map(
+                "- \(.title)\n"
+                + (
+                    .items
+                    | map("    \(.id) [\(.status)] (\(.path))")
+                    | join("\n")
+                )
+            )
+            | join("\n");
+        if (
+            (.noncanonical_statuses | length) == 0
+            and (.root_terminal_beans | length) == 0
+            and (.duplicate_titles | length) == 0
+            and (.open_title_collisions | length) == 0
+            and (.duplicate_in_progress_migrate | length) == 0
+        ) then
+            "No bean hygiene issues found."
+        else
+            (
+                ["Bean audit scope: \(.scope)"] +
+                (if (.noncanonical_statuses | length) > 0 then
+                    ["", "Noncanonical statuses:", render_items(.noncanonical_statuses)]
+                 else [] end) +
+                (if (.root_terminal_beans | length) > 0 then
+                    ["", "Root-level terminal beans that should be archived:", render_items(.root_terminal_beans)]
+                 else [] end) +
+                (if (.duplicate_titles | length) > 0 then
+                    ["", "Duplicate normalized titles:", render_duplicate_groups(.duplicate_titles)]
+                 else [] end) +
+                (if (.open_title_collisions | length) > 0 then
+                    ["", "Open beans colliding with completed/scrapped titles:", render_collision_groups(.open_title_collisions)]
+                 else [] end) +
+                (if (.duplicate_in_progress_migrate | length) > 0 then
+                    ["", "Duplicate in-progress migrate beans:", render_migrate_groups(.duplicate_in_progress_migrate)]
+                 else [] end)
+            ) | join("\n")
+        end
+    '
+}
+
+run_next() {
+    local limit=3
+    local json_output=0
+    local all_rel_json
+    local meta_json
+    local all_json
+    local ready_json
+    local in_progress_json
+    local ready_count
+    local open_ids_json
+    local ranked_json
+    local parent_ids
+    local parent_map='{}'
+    local candidates_json
+    local first_id
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --limit|-n)
+                limit="${2:-}"
+                shift 2
+                ;;
+            --json)
+                json_output=1
+                shift
+                ;;
+            *)
+                echo "Unknown option for next: $1" >&2
+                exit 1
+                ;;
+        esac
+    done
+
+    if [[ ! "$limit" =~ ^[1-9][0-9]*$ ]]; then
+        echo "Error: --limit must be a positive integer." >&2
+        exit 1
+    fi
+
+    all_rel_json=$(beans_graphql_json '{
+        beans(filter: {
+            excludeStatus: ["completed", "scrapped", "draft"]
+        }) {
+            id title status type priority parentId blockingIds blockedByIds createdAt
+        }
+    }')
+    meta_json=$(all_beans_json)
+
+    all_json=$(jq -n \
+        --argjson rel "$(printf "%s\n" "$all_rel_json" | jq '.beans')" \
+        --argjson meta "$meta_json" '
+        ($meta
+            | map({ key: .id, value: (.created_at // "") })
+            | from_entries) as $created_by_id |
+        $rel
+        | map(
+            . + {
+                created_at: (.createdAt // $created_by_id[.id] // "")
+            }
+        )
+    ')
+
+    in_progress_json=$(printf "%s\n" "$all_json" | jq '[.[] | select(.status == "in-progress")]')
+    ready_json=$(printf "%s\n" "$all_json" | jq '
+        [
+            .[]
+            | select(.status == "todo" and (.blockedByIds | length == 0))
+        ]
+    ')
+    ready_count=$(printf "%s\n" "$ready_json" | jq 'length')
+
+    if [[ "$ready_count" -eq 0 ]]; then
+        if [[ "$json_output" -eq 1 ]]; then
+            echo "[]"
+        else
+            echo "No ready beans found."
+        fi
+        return 0
+    fi
+
+    open_ids_json=$(printf "%s\n" "$all_json" | jq '[.[].id]')
+
+    ranked_json=$(printf "%s\n" "$ready_json" | jq --argjson limit "$limit" --argjson open_ids "$open_ids_json" '
+        ($open_ids | map({ key: ., value: true }) | from_entries) as $open |
+        map(
+            . + {
+                leverage: ([.blockingIds[] | select($open[.] == true)] | length),
+                priority: (.priority // "normal")
+            }
+        ) as $items |
+        def priority_rank:
+            if .priority == "critical" then 0
+            elif .priority == "high" then 1
+            elif .priority == "normal" then 2
+            elif .priority == "low" then 3
+            else 4 end;
+        def type_rank:
+            if .type == "bug" then 0
+            elif .type == "feature" then 1
+            elif .type == "task" then 2
+            elif .type == "milestone" then 3
+            elif .type == "epic" then 4
+            else 5 end;
+        (
+            $items
+            | map(select((.type // "") != "epic" and (.type // "") != "milestone"))
+            | sort_by(priority_rank, (-.leverage), type_rank, .created_at, .title)
+        ) as $concrete |
+        (
+            $items
+            | map(select((.type // "") == "epic" or (.type // "") == "milestone"))
+            | sort_by(priority_rank, (-.leverage), type_rank, .created_at, .title)
+        ) as $meta |
+        ($concrete + $meta)[:$limit]
+    ')
+
+    parent_ids=$(printf "%s\n" "$ranked_json" | jq -r '.[].parentId // empty' | sort -u | tr '\n' ' ')
+    if [[ -n "${parent_ids// /}" ]]; then
+        parent_map=$(beans show --json $parent_ids | jq '
+            (if type == "array" then . else [.] end)
+            | map({ key: .id, value: .title })
+            | from_entries
         ')
+    fi
 
-        if [[ "$JSON_OUTPUT" -eq 1 ]]; then
-            printf "%s\n" "$CANDIDATES_JSON"
-            exit 0
-        fi
+    candidates_json=$(jq -n \
+        --argjson items "$ranked_json" \
+        --argjson parents "$parent_map" '
+        $items
+        | map(
+            . + {
+                parent_title: (
+                    if (.parentId != null and ($parents[.parentId] != null))
+                    then $parents[.parentId]
+                    else null
+                    end
+                ),
+                reason: (
+                    ["priority=" + (.priority // "normal")] +
+                    (if .leverage > 0 then ["unblocks=" + (.leverage | tostring)] else [] end) +
+                    ["type=" + (.type // "task")]
+                ) | join(", ")
+            }
+        )
+    ')
 
-        # Show in-progress context so the user can see what is already running
-        # before deciding what to start next.
-        IN_PROGRESS_COUNT=$(printf "%s\n" "$IN_PROGRESS" | jq 'length')
-        if [[ "$IN_PROGRESS_COUNT" -gt 0 ]]; then
-            echo "In progress:"
-            printf "%s\n" "$IN_PROGRESS" | jq -r '.[] | "  \(.id)  \(.type) · \(.priority // "normal")\n  \(.title)"'
-            echo ""
-        fi
+    if [[ "$json_output" -eq 1 ]]; then
+        printf "%s\n" "$candidates_json"
+        return 0
+    fi
 
-        # Print ranked candidates.
-        printf "%s\n" "$CANDIDATES_JSON" | jq -r '
-            to_entries[] |
-            (.value.leverage // 0) as $lev |
-            "#\(.key + 1)  \(.value.id)  \(.value.type) · \(.value.priority)" +
-            (if $lev > 0 then " · unblocks \($lev)" else "" end) +
-            "\n    \(.value.title)" +
-            (if .value.parent_title then "\n    Parent: \(.value.parent_title)" else "" end)
+    if [[ "$(printf "%s\n" "$in_progress_json" | jq 'length')" -gt 0 ]]; then
+        echo "In progress:"
+        printf "%s\n" "$in_progress_json" | jq -r '
+            .[]
+            | "  \(.id)  \(.type) · \(.priority // "normal")\n  \(.title)"
         '
-        FIRST_ID=$(printf "%s\n" "$CANDIDATES_JSON" | jq -r '.[0].id')
         echo ""
-        echo "Recommendation: start with $FIRST_ID"
-        ;;
+    fi
 
-    list|show|create|update|delete|archive|query|prime)
-        beans "$CMD" "$@"
-        ;;
+    printf "%s\n" "$candidates_json" | jq -r '
+        to_entries[]
+        | (.value.leverage // 0) as $leverage
+        | "#\(.key + 1)  \(.value.id)  \(.value.type) · \(.value.priority)" +
+          (if $leverage > 0 then " · unblocks \($leverage)" else "" end) +
+          "\n    \(.value.title)" +
+          (if .value.parent_title then "\n    Parent: \(.value.parent_title)" else "" end)
+    '
 
-    help|--help|-h)
-        cat << 'EOF'
+    first_id=$(printf "%s\n" "$candidates_json" | jq -r '.[0].id')
+    echo ""
+    echo "Recommendation: start with $first_id"
+}
+
+run_audit() {
+    local scope="open"
+    local json_output=0
+    local audit_json
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --scope)
+                scope="${2:-}"
+                shift 2
+                ;;
+            --json)
+                json_output=1
+                shift
+                ;;
+            *)
+                echo "Unknown option for audit: $1" >&2
+                exit 1
+                ;;
+        esac
+    done
+
+    if [[ "$scope" != "open" && "$scope" != "all" ]]; then
+        echo "Error: --scope must be 'open' or 'all'." >&2
+        exit 1
+    fi
+
+    audit_json=$(build_audit_json "$scope")
+
+    if [[ "$json_output" -eq 1 ]]; then
+        printf "%s\n" "$audit_json"
+    else
+        printf "%s\n" "$audit_json" | print_audit_text
+    fi
+}
+
+run_hygiene() {
+    local scope="open"
+    local json_output=0
+    local audit_json
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --scope)
+                scope="${2:-}"
+                shift 2
+                ;;
+            --json)
+                json_output=1
+                shift
+                ;;
+            *)
+                echo "Unknown option for hygiene: $1" >&2
+                exit 1
+                ;;
+        esac
+    done
+
+    if [[ "$scope" != "open" && "$scope" != "all" ]]; then
+        echo "Error: --scope must be 'open' or 'all'." >&2
+        exit 1
+    fi
+
+    audit_json=$(build_audit_json "$scope")
+
+    if [[ "$json_output" -eq 1 ]]; then
+        printf "%s\n" "$audit_json"
+    else
+        printf "%s\n" "$audit_json" | print_audit_text
+    fi
+
+    if printf "%s\n" "$audit_json" | audit_has_findings; then
+        exit 1
+    fi
+}
+
+usage() {
+    cat <<'EOF'
 Beans Task Management - Citum
 
 USAGE:
     /beans COMMAND [OPTIONS]
 
-COMMANDS:
+PROJECT COMMANDS:
     next [--limit N] [--json]
-        Show top ready bean options ranked by priority, leverage (unblock
-        count), type, and age. Shows in-progress beans as context header.
+        Show top ready bean options ranked by priority, leverage, type, and age.
 
+    audit [--scope open|all] [--json]
+        Report bean lifecycle and duplicate-title hygiene issues.
+
+    hygiene [--scope open|all] [--json]
+        Run the bean hygiene audit and exit nonzero on findings.
+
+UPSTREAM COMMANDS:
     list ...
     show ...
     create ...
     update ...
     delete ...
-    archive
-    query ...
+    archive ...
+    graphql ...
     prime
         Passed directly through to the `beans` CLI.
 
 EXAMPLES:
-    /beans prime
     /beans next
     /beans next --limit 5
-    /beans next --json
-    /beans list --json --ready
+    /beans audit --scope open
+    /beans hygiene
+    /beans graphql --json '{ beans { id title status } }'
     /beans show csl26-abc1
 
 For full CLI documentation, see: beans help
 EOF
-        ;;
+}
 
+ensure_beans_ready
+
+CMD="${1:-help}"
+shift || true
+
+case "$CMD" in
+    next)
+        require_jq
+        run_next "$@"
+        ;;
+    audit)
+        require_jq
+        run_audit "$@"
+        ;;
+    hygiene)
+        require_jq
+        run_hygiene "$@"
+        ;;
+    help|--help|-h)
+        usage
+        ;;
     *)
-        echo "Unknown command: $CMD" >&2
-        echo "Run '/beans help' for usage information" >&2
-        exit 1
+        "$BEANS_BIN" "$CMD" "$@"
         ;;
 esac

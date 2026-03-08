@@ -61,8 +61,9 @@ Style tasks: use **`/style-evolve`** (`upgrade`, `migrate`, `create`). Skills in
 Use `/beans` for local tasks; GitHub Issues for community/long-term.
 
 ```
-/beans list                                      # Show all tasks
-/beans next                                      # Recommend next task
+/beans next                                      # Canonical recommendation for next task
+/beans show BEAN_ID                              # Inspect a task before starting it
+/beans list                                      # Show the full task inventory
 /beans update BEAN_ID --status in-progress
 /beans update BEAN_ID --status completed
 /beans create "Title" --type bug --priority high

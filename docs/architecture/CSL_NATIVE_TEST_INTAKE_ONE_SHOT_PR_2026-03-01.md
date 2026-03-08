@@ -173,7 +173,7 @@ Deferred core-feature candidates:
 
 These are not currently modeled cleanly, but they may justify first-class
 native support later if we decide the semantics belong in Citum. Follow-up is
-tracked in [../../.beans/csl26-cn53--model-deferred-native-citation-semantics-from-csl.md](../../.beans/csl26-cn53--model-deferred-native-citation-semantics-from-csl.md).
+tracked in [../../.beans/archive/csl26-cn53--model-deferred-native-citation-semantics-from-csl.md](../../.beans/archive/csl26-cn53--model-deferred-native-citation-semantics-from-csl.md).
 
 Deferred CSL-specific or out-of-model cases:
 

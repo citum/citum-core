@@ -1,11 +1,11 @@
 ---
 # csl26-rh2u
 title: Preserve macro call order from CSL 1.0 during parsing
-status: canceled
+status: scrapped
 type: bug
 priority: high
 created_at: 2026-02-07T19:52:56Z
-updated_at: 2026-02-27T01:14:33Z
+updated_at: 2026-03-08T15:27:48Z
 blocking:
     - csl26-ifiw
     - csl26-m3lb
@@ -25,9 +25,13 @@ This bean is blocked by implementation of the hybrid migration strategy (csl26-h
 
 ## Status Note (2026-02-27)
 
-This bean remains canceled and is now treated as superseded by subsequent implementation work.
+This bean remains scrapped and is now treated as superseded by subsequent implementation work.
 
 - Current baseline no longer matches the original failure claim:
   - `node scripts/oracle-batch-aggregate.js styles-legacy/ --top 10` reports bibliography 100% for `7/10` styles.
 - Macro-order preservation is now implemented in the template compiler merge path via `source_order` sorting.
 - Remaining bibliography deltas should be tracked under `csl26-ifiw` using concrete style-level failures (e.g., `publisher:extra`) rather than re-opening this broad ordering bean.
+
+## Reasons for Scrapping
+
+Superseded by subsequent hybrid migration and template-compiler work; any remaining bibliography deltas should be tracked under concrete follow-up beans.

@@ -1,11 +1,11 @@
 ---
 # csl26-1csf
 title: 'engine: locale term override for no-date'
-status: todo
+status: scrapped
 type: bug
 priority: high
 created_at: 2026-03-08T13:39:50Z
-updated_at: 2026-03-08T13:39:50Z
+updated_at: 2026-03-08T15:27:48Z
 ---
 
 ## Problem
@@ -34,3 +34,7 @@ expects (Forthcoming, no date). Two processor-defects:
 - (Forthcoming, no date) passes oracle for harvard-cite-them-right
 - No regression on other styles using n.d. term
 - Style YAML mechanism documented
+
+## Reasons for Scrapping
+
+Superseded by `csl26-y7t8`, which already tracks the implemented no-date fix and summary of changes.

@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+BEAN_WRAPPER="$ROOT_DIR/.claude/skills/beans/bin/citum-bean"
+
+cd "$ROOT_DIR"
+
 errors=0
 
 say() {
@@ -44,10 +49,12 @@ check_broken_links() {
             printf '%s -> %s\n' "$file" "$raw_target" >> "$tmp"
           fi
         done
-  done < <(
+  done < <({
     find docs -type f -name '*.md' | sort
-    printf '%s\n' README.md CLAUDE.md
-  )
+    for file in README.md CLAUDE.md; do
+      [ -f "$file" ] && printf '%s\n' "$file"
+    done
+  })
 
   if [ -s "$tmp" ]; then
     fail "broken markdown links found"
@@ -59,42 +66,17 @@ check_broken_links() {
   rm -f "$tmp"
 }
 
-check_bean_statuses() {
-  say "[check] bean status taxonomy"
-  local invalid
-  invalid=$(rg -n '^status: ' .beans/*.md | rg -v 'status: (todo|in-progress|completed|canceled)$' || true)
-  if [ -n "$invalid" ]; then
-    fail "invalid bean statuses found"
-    printf '%s\n' "$invalid"
+check_bean_hygiene() {
+  say "[check] bean hygiene"
+  if "$BEAN_WRAPPER" hygiene; then
+    say "ok: bean hygiene passed"
   else
-    say "ok: all bean statuses valid"
-  fi
-}
-
-check_duplicate_migrate_beans() {
-  say "[check] duplicate in-progress migrate beans"
-  local dupes
-  dupes=$(for f in .beans/*.md; do
-    status=$(sed -n 's/^status: //p' "$f" | head -n1)
-    title=$(sed -n 's/^title: //p' "$f" | head -n1)
-    if [ "$status" = "in-progress" ] && [[ "$title" == "'Migrate: "* ]]; then
-      style=${title#\'Migrate: }
-      style=${style%\'}
-      printf '%s\t%s\n' "$style" "$(basename "$f")"
-    fi
-  done | sort | awk -F '\t' '{c[$1]++; ids[$1]=ids[$1]" "$2} END {for (k in c) if (c[k] > 1) print c[k]"\t"k"\t"ids[k]}' | sort -nr)
-
-  if [ -n "$dupes" ]; then
-    fail "duplicate in-progress migrate beans found"
-    printf '%s\n' "$dupes"
-  else
-    say "ok: no duplicate in-progress migrate beans"
+    fail "bean hygiene failed"
   fi
 }
 
 check_broken_links
-check_bean_statuses
-check_duplicate_migrate_beans
+check_bean_hygiene
 
 if [ "$errors" -ne 0 ]; then
   say "hygiene check failed with $errors error(s)"

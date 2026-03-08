@@ -20,12 +20,14 @@ description: >
 The `beans prime` guide is already injected into every session — no need to
 call it again. Use these project-specific rules on top of it:
 
-- Before starting work: check `beans list --json --ready` and `beans show --json <id>`.
+- Before starting work: search for an existing bean with `beans list --json -S "<terms>"`.
+- When choosing what to start next: run `bash .claude/skills/beans/bin/citum-bean next`, then inspect the candidate with `beans show --json <id>`.
 - Always create beans with an explicit type (`-t bug | feature | task | epic | milestone`).
 - Keep bean checklists current while work is in progress (`- [ ]` → `- [x]`).
 - Mark completed only when all checklist items are checked.
 - When completing, append a `## Summary of Changes` section.
 - When scrapping, append a `## Reasons for Scrapping` section.
+- Use upstream bean lifecycle names consistently: `draft`, `todo`, `in-progress`, `completed`, `scrapped`.
 
 ## Commit Rule
 
@@ -52,7 +54,7 @@ beans update <id> \
 
 **Multiple checkbox updates atomically** (use GraphQL to avoid multiple etag conflicts):
 ```bash
-beans query 'mutation {
+beans graphql 'mutation {
   updateBean(id: "<id>", input: {
     bodyMod: {
       replace: [
@@ -81,11 +83,14 @@ concrete work is insufficient to fill the limit.
 bash .claude/skills/beans/bin/citum-bean next           # top 3
 bash .claude/skills/beans/bin/citum-bean next --limit 5
 bash .claude/skills/beans/bin/citum-bean next --json
+bash .claude/skills/beans/bin/citum-bean audit --scope open
+bash .claude/skills/beans/bin/citum-bean hygiene
 ```
 
-Always run via the wrapper — never call `beans list --json --ready` directly,
-as that skips leverage scoring and the in-progress header. Output the script
-result as plain text with no preamble or commentary.
+Always run via the wrapper for recommendation and hygiene tasks. Do not use
+raw `beans list --json --ready` as the primary selector, because it skips
+leverage scoring, in-progress context, and stale-bean collision checks. Output
+the script result as plain text with no preamble or commentary.
 
 ## Command Policy
 

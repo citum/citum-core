@@ -31,13 +31,13 @@ Benchmarks are **required** for performance-sensitive changes and hot-path refac
 
 ```bash
 # 1. Capture baseline (on main or before changes)
-./scripts/bench-check.sh baseline
+./scripts/bench-check.sh capture baseline
 
 # 2. Make performance changes
 # ... implement optimization ...
 
 # 3. Compare after changes
-./scripts/bench-check.sh baseline after
+./scripts/bench-check.sh compare baseline after
 
 # 4. Include relevant deltas in commit message body
 ```
@@ -47,3 +47,6 @@ Benchmarks are **required** for performance-sensitive changes and hot-path refac
 - `cargo bench --bench formats` - YAML/JSON/CBOR deserialization
 
 Baseline files are stored in `.bench-baselines/` (gitignored, local-only). Use `critcmp` for manual comparisons if needed.
+The legacy positional forms still work for now:
+`./scripts/bench-check.sh baseline` and
+`./scripts/bench-check.sh baseline after`.
