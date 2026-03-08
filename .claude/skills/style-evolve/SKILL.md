@@ -162,9 +162,31 @@ Every completed task delivers:
 5. Code Opportunities table (mandatory — see above)
 6. QA verdict from `../style-qa/SKILL.md`
 
+## Codebase Exploration (Engine / Schema Internals)
+
+When assessing Code Opportunities or checking whether a processor feature exists,
+use **jCodeMunch** instead of loading full source files. It returns symbol-level
+slices at a fraction of the tokens.
+
+```
+# Map citum_engine's public API before assessing what's missing
+get_repo_outline(repo: "local/citum-core")
+
+# Check if a specific type or trait exists
+get_symbol("StyleOptions", repo: "local/citum-core")
+
+# Find all impls of a trait across crates
+search_symbols("Render", repo: "local/citum-core")
+```
+
+Consult `~/.claude/skills/jcodemunch/SKILL.md` for the full tool reference.
+Only fall back to `Read` for files where you need non-symbol content (YAML
+styles, fixture JSON, shell scripts).
+
 ## Internal Skills (Pipeline Components)
 
 - `style-maintain` — targeted fixes to existing Citum styles
 - `style-migrate-enhance` — CSL 1.0 batch migration
 - `style-qa` — QA gate
 - `pr-workflow-fast` — PR packaging
+- `jcodemunch` (`~/.claude/skills/jcodemunch/`) — symbol-level engine/schema lookup
