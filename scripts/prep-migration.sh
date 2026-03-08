@@ -2,7 +2,13 @@
 # scripts/prep-migration.sh
 # Preparation script for @styleauthor migration workflow
 
-STYLE_PATH=$1
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+source "${SCRIPT_DIR}/lib/dataset-guard.sh"
+
+STYLE_PATH="${1:-}"
 AGENT_MODE=false
 
 if [[ "$*" == *"--agent"* ]]; then
@@ -20,6 +26,13 @@ if [ "$STYLE_PATH" == "--help" ] || [ -z "$STYLE_PATH" ]; then
 fi
 
 STYLE_NAME=$(basename "$STYLE_PATH" .csl)
+
+if [[ "${STYLE_PATH}" == styles-legacy/* || "${STYLE_PATH}" == "${PROJECT_ROOT}"/styles-legacy/* ]]; then
+    require_dataset_file "${STYLE_PATH}" "legacy CSL styles corpus" "prep-migration.sh"
+elif [ ! -f "${STYLE_PATH}" ]; then
+    echo "Style file not found: ${STYLE_PATH}" >&2
+    exit 2
+fi
 
 if [ "$AGENT_MODE" = false ]; then
     echo "--- 🚀 MIGRATION PREPARATION FOR: $STYLE_NAME ---"

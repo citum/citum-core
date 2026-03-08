@@ -1,0 +1,65 @@
+name: Fidelity
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "crates/citum-engine/**"
+      - "crates/citum-migrate/**"
+      - "scripts/oracle*.js"
+      - "scripts/report-core.js"
+      - "scripts/check-core-quality.js"
+      - "scripts/check-oracle-regression.js"
+      - "scripts/lib/**"
+      - "styles/**"
+      - "tests/**"
+      - ".github/workflows/fidelity.yml"
+      - ".github/workflows/compat-report.yml"
+  schedule:
+    - cron: "0 5 * * *"
+
+jobs:
+  fidelity:
+    name: Fidelity Checks
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_TARGET_DIR: /tmp/citum-target
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Initialize optional corpora
+        run: git submodule update --init --depth 1 styles-legacy tests/csl-test-suite
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install script dependencies
+        run: npm install --prefix scripts
+
+      - name: Run corpus-aware script tests
+        run: node --test scripts/oracle.test.js scripts/report-core.test.js scripts/oracle-yaml.test.js
+
+      - name: Check core fidelity and SQI drift
+        run: |
+          node scripts/report-core.js > /tmp/core-report.json
+          node scripts/check-core-quality.js \
+            --report /tmp/core-report.json \
+            --baseline scripts/report-data/core-quality-baseline.json
+
+      - name: Check oracle top-10 regression baseline
+        run: |
+          node scripts/check-oracle-regression.js \
+            --baseline scripts/report-data/oracle-top10-baseline.json

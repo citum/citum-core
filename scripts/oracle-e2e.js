@@ -16,6 +16,7 @@ const CSL = require('citeproc');
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const { maybeDatasetErrorForFile } = require('./lib/dataset-guard');
 
 // Load locale from file (same as oracle.js)
 function loadLocale(lang) {
@@ -176,6 +177,16 @@ function similarity(a, b) {
 // Main
 const stylePath = process.argv[2] || path.join(__dirname, '..', 'styles-legacy', 'apa.csl');
 const styleName = path.basename(stylePath, '.csl');
+const datasetMessage = maybeDatasetErrorForFile(stylePath, 'oracle-e2e.js');
+
+if (datasetMessage) {
+  console.error(datasetMessage);
+  process.exit(2);
+}
+if (!fs.existsSync(stylePath)) {
+  console.error(`Style file not found: ${stylePath}`);
+  process.exit(2);
+}
 
 console.log(`\n=== End-to-End Oracle Test: ${styleName} ===\n`);
 

@@ -30,9 +30,16 @@ Do not treat hard-coded README percentages as canonical.
 ```bash
 git clone https://github.com/citum/citum-core
 cd citum-core
-cargo build --workspace
-cargo test --workspace
+./scripts/bootstrap.sh minimal
+./scripts/dev-env.sh cargo build --workspace
+./scripts/dev-env.sh cargo test --workspace
 ```
+
+The default local setup is intentionally lean:
+
+- `./scripts/bootstrap.sh minimal` installs script dependencies without fetching the legacy CSL corpora.
+- `./scripts/dev-env.sh <command>` keeps `CARGO_TARGET_DIR` outside the repo at `${XDG_CACHE_HOME:-$HOME/.cache}/citum-core/target`.
+- Run `./scripts/bootstrap.sh full` only when you need migration, oracle, or compatibility-report workflows that depend on `styles-legacy/` or `tests/csl-test-suite/`.
 
 Render references:
 
@@ -93,12 +100,14 @@ Citum migration combines three approaches:
 Run migration:
 
 ```bash
-cargo run --bin citum-migrate -- styles-legacy/apa.csl
+./scripts/bootstrap.sh full
+./scripts/dev-env.sh cargo run --bin citum-migrate -- styles-legacy/apa.csl
 ```
 
 Prepare high-fidelity authoring context:
 
 ```bash
+./scripts/bootstrap.sh full
 ./scripts/prep-migration.sh styles-legacy/apa.csl
 ```
 
@@ -112,6 +121,7 @@ Detailed migration docs:
 Single-style oracle checks:
 
 ```bash
+./scripts/bootstrap.sh full
 node scripts/oracle.js styles-legacy/apa.csl
 node scripts/oracle-e2e.js styles-legacy/apa.csl
 ```
@@ -119,12 +129,14 @@ node scripts/oracle-e2e.js styles-legacy/apa.csl
 Top-style aggregate:
 
 ```bash
+./scripts/bootstrap.sh full
 node scripts/oracle-batch-aggregate.js styles-legacy/ --top 10
 ```
 
 Core fidelity + SQI gate:
 
 ```bash
+./scripts/bootstrap.sh full
 node scripts/report-core.js > /tmp/core-report.json
 node scripts/check-core-quality.js \
   --report /tmp/core-report.json \
@@ -145,9 +157,10 @@ crates/
 
 docs/
 styles/
-styles-legacy/
+styles-legacy/      # Optional submodule; fetch with ./scripts/bootstrap.sh full
 scripts/
 tests/
+tests/csl-test-suite/  # Optional submodule; fetch with ./scripts/bootstrap.sh full
 ```
 
 ## Documentation Map
@@ -162,6 +175,8 @@ tests/
 - For roadmap/design context, start in [`docs/architecture/`](./docs/architecture/).
 - For rendering issues, follow [`docs/guides/RENDERING_WORKFLOW.md`](./docs/guides/RENDERING_WORKFLOW.md).
 - For local task tracking, see `.beans/` and project workflow docs.
+- Use `./scripts/bootstrap.sh minimal` for default setup and `./scripts/bootstrap.sh full` only for corpus-backed workflows.
+- Use `./scripts/dev-env.sh <command>` for local cargo commands to keep build artifacts out of the repo.
 
 If your change touches Rust code (`.rs`, `Cargo.toml`, `Cargo.lock`), run:
 

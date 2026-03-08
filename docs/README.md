@@ -6,9 +6,11 @@ then drill into strategy and implementation details only as needed.
 ## Start Here (Canonical)
 
 1. [`TIER_STATUS.md`](./TIER_STATUS.md) - current strict oracle style status.
-2. [`compat.html`](./compat.html) - published compatibility snapshot.
+2. [`compat.html`](https://citum.github.io/citum-core/compat.html) - published compatibility snapshot.
 3. [`guides/RENDERING_WORKFLOW.md`](./guides/RENDERING_WORKFLOW.md) - operational rendering and verification workflow.
 4. [`architecture/ROADMAP.md`](./architecture/ROADMAP.md) - strategic direction and phase sequencing.
+
+Generate the compatibility snapshot locally with `node scripts/report-core.js --output-html docs/compat.html`.
 
 ## Active Guides
 

@@ -8,27 +8,37 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: compat-report
-  cancel-in-progress: true
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   report:
-    name: Generate Style Compatibility Report
-    # Skip when the bot itself pushes (prevents loop with deploy_docs.yml)
-    if: github.event_name == 'schedule' || github.actor != 'github-actions[bot]'
+    name: Generate and Deploy Docs
     runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_TARGET_DIR: /tmp/citum-target
     permissions:
-      contents: write
-      actions: write
+      contents: read
+      pages: write
+      id-token: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: recursive
+          fetch-depth: 1
+
+      - name: Initialize optional corpora
+        run: git submodule update --init --depth 1 styles-legacy tests/csl-test-suite
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
@@ -40,44 +50,16 @@ jobs:
         run: cargo build
 
       - name: Generate compatibility report
-        run: node scripts/report-core.js --write-html
+        run: node scripts/report-core.js --output-html docs/compat.html > /tmp/core-report.json
 
-      - name: Commit report if changed
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
 
-          # Avoid metadata-only churn (Generated timestamp / commit marker).
-          cp docs/compat.html /tmp/compat.new.html
-          if git cat-file -e HEAD:docs/compat.html 2>/dev/null; then
-            git show HEAD:docs/compat.html > /tmp/compat.old.html
-          else
-            touch /tmp/compat.old.html
-          fi
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs
 
-          sed -E \
-            -e 's/Generated: .* GMT/Generated: <normalized>/g' \
-            -e 's/Commit: [0-9a-f]{7,40}/Commit: <normalized>/g' \
-            -e 's#<span>[0-9a-f]{7,40}</span>#<span><normalized></span>#g' \
-            /tmp/compat.new.html > /tmp/compat.new.norm.html
-          sed -E \
-            -e 's/Generated: .* GMT/Generated: <normalized>/g' \
-            -e 's/Commit: [0-9a-f]{7,40}/Commit: <normalized>/g' \
-            -e 's#<span>[0-9a-f]{7,40}</span>#<span><normalized></span>#g' \
-            /tmp/compat.old.html > /tmp/compat.old.norm.html
-
-          if diff -q /tmp/compat.old.norm.html /tmp/compat.new.norm.html >/dev/null; then
-            echo "compat report content unchanged (metadata-only diff), skipping commit"
-          else
-            git add docs/compat.html
-            git commit -m "chore(ci): update compat report"
-            git pull --rebase origin main
-            git push
-            echo "REPORT_UPDATED=true" >> "$GITHUB_ENV"
-          fi
-
-      - name: Deploy updated report to Pages
-        if: env.REPORT_UPDATED == 'true'
-        run: gh workflow run deploy_docs.yml --ref main
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,5 +1,6 @@
 .oracle-cache
 target/
+/docs/compat.html
 **/*.rs.bk
 *.swp
 **/*.cbor

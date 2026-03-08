@@ -152,6 +152,7 @@ cargo nextest run                                          # All tests
 cargo nextest run --test citations                        # Citation rendering
 cargo nextest run --test bibliography                     # Bibliography
 cargo nextest run --test i18n                             # Locale logic
+./scripts/bootstrap.sh full                               # Fetch optional corpora for fidelity workflows
 ./scripts/workflow-test.sh styles-legacy/apa.csl         # Oracle + batch impact
 node scripts/oracle.js styles-legacy/apa.csl             # Component-level diff
 node scripts/oracle-batch-aggregate.js styles-legacy/ --top 10
@@ -159,6 +160,7 @@ node scripts/report-core.js > /tmp/core-report.json && \
   node scripts/check-core-quality.js \
   --report /tmp/core-report.json \
   --baseline scripts/report-data/core-quality-baseline.json
+./scripts/dev-env.sh cargo build --workspace             # Local cargo with out-of-repo target dir
 cargo run --bin citum -- render refs -b tests/fixtures/references-expanded.json -s styles/apa-7th.yaml
 cargo run --bin citum -- schema > citum.schema.json
 cargo bench --bench rendering                            # Hot path benchmarks

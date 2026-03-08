@@ -22,6 +22,7 @@ const { execSync, spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { maybeDatasetErrorForFile } = require('./lib/dataset-guard');
 
 const WORKSPACE_ROOT = path.resolve(__dirname, '..');
 const DEFAULT_CITATIONS_FIXTURE = 'tests/fixtures/citations-expanded.json';
@@ -322,6 +323,15 @@ function compareResults(baseline, current) {
 // Parse arguments
 const args = process.argv.slice(2);
 const stylesDir = args.find(a => !a.startsWith('--')) || path.join(__dirname, '..', 'styles-legacy');
+const datasetMessage = maybeDatasetErrorForFile(stylesDir, 'oracle-batch-aggregate.js');
+if (datasetMessage) {
+  console.error(datasetMessage);
+  process.exit(2);
+}
+if (!fs.existsSync(stylesDir)) {
+  console.error(`Styles directory not found: ${stylesDir}`);
+  process.exit(2);
+}
 const jsonOutput = args.includes('--json');
 const runAll = args.includes('--all');
 
