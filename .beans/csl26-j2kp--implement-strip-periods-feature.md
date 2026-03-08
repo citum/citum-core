@@ -8,7 +8,7 @@ created_at: 2026-02-14T12:33:07Z
 updated_at: 2026-02-14T12:44:11Z
 ---
 
-Add strip-periods support at three tiers (global, context, component) following CSLN options architecture. Needed for springer-basic-author-date and 1,600+ CSL styles.
+Add strip-periods support at three tiers (global, context, component) following Citum options architecture. Needed for springer-basic-author-date and 1,600+ CSL styles.
 
 Scope:
 1. Schema: Add to csln_core Config/Rendering

@@ -28,7 +28,7 @@ Phase 1 implementation COMPLETE - 30% token savings achieved
 ### 3. Structured Error Messages
 - ✅ infer-template.js: detailed error with next steps
 - ✅ merge-migration.js: actionable diagnostics
-- ✅ oracle.js: CSLN rendering failure guidance
+- ✅ oracle.js: Citum rendering failure guidance
 
 ### 4. Documentation
 - ✅ SKILL.md: Added beans task update format to Phase 4

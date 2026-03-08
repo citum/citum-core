@@ -11,7 +11,7 @@ updated_at: 2026-02-27T22:47:09Z
 Add support for rendering time components from EDTF datetime values.
 
 ## Context
-EDTF supports full datetimes (e.g., 1985-04-12T23:20:30Z) but CSLN currently ignores the time component. Times are relevant for:
+EDTF supports full datetimes (e.g., 1985-04-12T23:20:30Z) but Citum currently ignores the time component. Times are relevant for:
 - Blog posts, social media (timestamp precision)
 - Dataset versions (ISO 8601 timestamps)
 - Legal documents (filed timestamps)

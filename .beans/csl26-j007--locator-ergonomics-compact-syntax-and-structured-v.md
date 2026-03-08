@@ -21,7 +21,7 @@ locators:
     value: "13"
 ```
 
-Compact map form (CSLN prototype style):
+Compact map form (Citum prototype style):
 ```yaml
 locators:
   page: "23"
@@ -60,7 +60,7 @@ locators:
 ```
 
 ## Prior art
-- CSLN prototype: `enum Locator { KeyValue((LocatorTerm, String)), String(String) }`
+- Citum prototype: `enum Locator { KeyValue((LocatorTerm, String)), String(String) }`
 - dplanner analysis recommended Option 3 (Hybrid) for zero-breakage + deterministic plurality
 
 ## Dependencies

@@ -16,7 +16,7 @@ Add link configuration to styles for hyperlink generation:
 
 ## Hyperlink Configuration Guide
 
-CSLN supports declarative hyperlink generation through the `links` configuration. It can be applied globally in `options` or locally on template components.
+Citum supports declarative hyperlink generation through the `links` configuration. It can be applied globally in `options` or locally on template components.
 
 ### 1. Global Configuration (Automatic Linking)
 

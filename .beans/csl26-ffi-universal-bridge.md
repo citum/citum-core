@@ -8,7 +8,7 @@ created_at: 2026-02-17T12:00:00Z
 updated_at: 2026-02-17T12:00:00Z
 ---
 
-Implement a C-compatible Foreign Function Interface (FFI) to allow CSLN to serve as a high-performance citation engine for multiple languages.
+Implement a C-compatible Foreign Function Interface (FFI) to allow Citum to serve as a high-performance citation engine for multiple languages.
 
 Goals:
 - [x] Create C-compatible lifecycle management (new/free) for Processor

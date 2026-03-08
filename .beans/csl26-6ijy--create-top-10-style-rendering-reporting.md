@@ -13,7 +13,7 @@ updated_at: 2026-02-18T05:26:55Z
 We need an easy and consistent way to instantly see how well the Top 10 styles render.
 
 The standard here is no longer just fidelity to CSL 1.0 via the "Oracle" output, but also to the actual expectations of the style.
-For example, we know CSLN supports mode-dependent conjunctions in citations, but 1.0 does not. 
+For example, we know Citum supports mode-dependent conjunctions in citations, but 1.0 does not. 
 While it may be difficult to determine this generally, feasability should be addressed.
 
 # Proposed Features

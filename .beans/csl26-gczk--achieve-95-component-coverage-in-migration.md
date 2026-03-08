@@ -13,7 +13,7 @@ Track and ensure comprehensive CSL 1.0 element coverage.
 
 Goals:
 - Identify CSL 1.0 elements not yet migrated
-- Add missing CSLN component types where needed
+- Add missing Citum component types where needed
 - Verify no silent data loss during migration
 - Document unsupported elements with workarounds
 

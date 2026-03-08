@@ -21,12 +21,12 @@ parent: csl26-ifiw
 
 1. **Component Ordering Problem:**
    - CSL 1.0 APA bibliography macro order: author → date → title → source
-   - CSLN migrated template order: title → contributor → date → ...
+   - Citum migrated template order: title → contributor → date → ...
    - The template_compiler doesn't preserve macro call order from CSL 1.0
 
 2. **Duplicate Components Problem:**
    - CSL 1.0 has ONE source-serial macro with conditional logic
-   - CSLN generates THREE separate "volume + parent-serial" components
+   - Citum generates THREE separate "volume + parent-serial" components
    - Example in APA: Lines ~68, ~74, ~81 all try to render volume/containerTitle
 
 **Architecture Analysis:**

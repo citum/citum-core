@@ -12,7 +12,7 @@ blocking:
 
 ## Overview
 
-Add Typst as a fourth OutputFormat implementation (alongside Plain, HTML, Djot) to produce beautifully typeset PDFs with advanced interactive features. This positions CSLN as a modern alternative to LaTeX/biblatex for academic document preparation.
+Add Typst as a fourth OutputFormat implementation (alongside Plain, HTML, Djot) to produce beautifully typeset PDFs with advanced interactive features. This positions Citum as a modern alternative to LaTeX/biblatex for academic document preparation.
 
 **Key Innovation:** Accept ANY input format (Djot, Markdown, reStructuredText, etc.) → Convert to Typst markup → Compile to interactive PDF with professional typography.
 
@@ -31,7 +31,7 @@ Add Typst as a fourth OutputFormat implementation (alongside Plain, HTML, Djot) 
 ```
 Input Document (Djot/Markdown/etc.)
     ↓
-CSLN Processor → TypstRenderer (implements Renderer trait)
+Citum Processor → TypstRenderer (implements Renderer trait)
     ↓
 Typst Markup (.typ file)
     ↓
@@ -76,7 +76,7 @@ Any document format can be converted to Typst for PDF output:
 * **AsciiDoc** (technical writing)
 * **Org-mode** (Emacs users)
 
-The renderer accepts CSLN-processed citations/bibliographies and embeds them into the document structure, regardless of input format.
+The renderer accepts Citum-processed citations/bibliographies and embeds them into the document structure, regardless of input format.
 
 ## Dependencies
 

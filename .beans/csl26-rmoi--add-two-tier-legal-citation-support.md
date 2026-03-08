@@ -8,7 +8,7 @@ created_at: 2026-02-14T22:25:08Z
 updated_at: 2026-02-15T00:40:20Z
 ---
 
-Implement legal reference types as first-class CSLN types with two-tier support model:
+Implement legal reference types as first-class Citum types with two-tier support model:
 
 **Tier 1 - Core Legal Types (Zero Burden): ✅ COMPLETED**
 For academics citing legal materials in APA/Chicago/MLA

@@ -12,7 +12,7 @@ Architectural decision triggered by legal citations PR #164.
 
 **DECISION: Option A - Hybrid Model with Type Addition Policy**
 
-**Question:** Should CSLN use structural types (Monograph, SerialComponent),
+**Question:** Should Citum use structural types (Monograph, SerialComponent),
 flat types (JournalArticle, MagazineArticle, LegalCase), or hybrid?
 
 **Answer:** Hybrid approach with documented 4-factor test policy.

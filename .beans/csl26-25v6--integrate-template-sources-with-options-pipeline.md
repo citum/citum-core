@@ -12,7 +12,7 @@ blocking:
     - csl26-o3ek
 ---
 
-Wire up hand-authored and output-inferred templates with the existing XML options pipeline so the migration produces complete CSLN styles.
+Wire up hand-authored and output-inferred templates with the existing XML options pipeline so the migration produces complete Citum styles.
 
 Currently the migration pipeline (csln_migrate) produces:
 - Options: from XML extractor (working, 87-100% citation match)
