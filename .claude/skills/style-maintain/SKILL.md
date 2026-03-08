@@ -40,8 +40,27 @@ Only interrupt for `Cargo.toml`/`Cargo.lock` changes or `git push origin main` (
 - No unnecessary template explosion.
 - Keep fallback behavior for non-explicit types reasonable.
 
+## Oracle Routing (MANDATORY — check before running any oracle)
+
+Read `originKey` from the style's `info.source.adapted-by` field or from `report-core` output.
+
+**`oracle.js` and `oracle-yaml.js` both use citeproc-js as the reference — they are WRONG for biblatex-derived styles.**
+
+| `originKey` | Correct oracle |
+|---|---|
+| `csl-derived` | `node scripts/oracle.js styles-legacy/<name>.csl` |
+| `biblatex-derived` | `node scripts/report-core.js > /tmp/r.json` — failures are in `styles[name].bibliography.entries` where `match === false` |
+| `citum-native` | `node scripts/oracle-yaml.js styles/<name>.yaml` only |
+
+For `biblatex-derived`, the only oracle that uses the correct authority (biblatex snapshot in
+`tests/snapshots/biblatex/<name>.json`) is `report-core.js`. Run it and parse the JSON output
+to see per-entry failures. If the snapshot is missing:
+```bash
+node scripts/gen-biblatex-snapshot.js --style <biblatex-style-name> --citum-style <name>
+```
+
 ## Verification
-- `node scripts/oracle.js <legacy-style> --json`
+- Oracle per routing table above — **not** blindly `oracle.js <csl-path>`
 - `cargo run --bin citum -- render refs -b tests/fixtures/references-expanded.json -s <style-path>`
 - QA handoff to `../style-qa/SKILL.md`
 
