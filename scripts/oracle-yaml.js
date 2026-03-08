@@ -2,64 +2,249 @@
 /**
  * Oracle test for hand-authored CSLN styles.
  *
- * Compares a CSLN YAML style against citeproc-js output from the corresponding CSL file.
- * Useful for verifying hand-authored styles during styleauthor workflow.
+ * Known project styles are compared through the structured oracle path so
+ * fixture-family resolution matches report-core. Arbitrary YAML paths fall
+ * back to a direct citeproc-vs-Citum comparison.
  *
  * Usage:
- *   node oracle-yaml.js styles/elsevier-harvard.yaml styles-legacy/elsevier-harvard.csl
  *   node oracle-yaml.js styles/apa-7th.yaml --json
- *   node oracle-yaml.js styles/chicago.yaml --verbose
+ *   node oracle-yaml.js styles/chicago-notes.yaml --fixture-family note-humanities
+ *   node oracle-yaml.js /tmp/custom-style.yaml --legacy-csl styles-legacy/apa.csl
  */
+
+'use strict';
 
 const CSL = require('citeproc');
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
+const yaml = require('js-yaml');
 const {
   normalizeText,
-  parseComponents,
-  analyzeOrdering,
-  findRefDataForEntry,
-  loadLocale
+  loadLocale,
 } = require('./oracle-utils');
+const {
+  PROJECT_ROOT,
+  resolveYamlVerificationPlan,
+} = require('./lib/style-verification');
 
-// Load test items from JSON fixture
-const fixturesPath = path.join(__dirname, '..', 'tests', 'fixtures', 'references-expanded.json');
-const fixturesData = JSON.parse(fs.readFileSync(fixturesPath, 'utf8'));
-const testItems = Object.fromEntries(
-  Object.entries(fixturesData).filter(([key]) => key !== 'comment')
-);
+const CUSTOM_TAG_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
+  new yaml.Type('!custom', {
+    kind: 'mapping',
+    construct(data) {
+      return data || {};
+    },
+  }),
+]);
 
-/**
- * Render CSLN YAML style with csln render refs.
- * @param {string} yamlPath - Path to CSLN YAML file
- * @returns {{ citations: Object, bibliography: Array }|null}
- */
-function renderWithCslnYaml(yamlPath) {
-  const projectRoot = path.resolve(__dirname, '..');
-  const absYamlPath = path.resolve(yamlPath);
-  const tempCiteFile = path.join(projectRoot, '.oracle-yaml-citations.json');
-  const testCitations = Object.keys(testItems).map(id => ({ id, items: [{ id }] }));
-  fs.writeFileSync(tempCiteFile, JSON.stringify(testCitations, null, 2));
+function parseArgs(argv = process.argv.slice(2)) {
+  const options = {
+    yamlPath: null,
+    legacyCslPath: null,
+    jsonOutput: false,
+    verbose: false,
+    refsFixture: null,
+    citationsFixture: null,
+    fixtureFamily: null,
+  };
 
-  let output;
-  try {
-    output = execSync(
-      `cargo run -q --bin citum -- render refs -b tests/fixtures/references-expanded.json -s "${absYamlPath}" -c .oracle-yaml-citations.json --mode both --show-keys`,
-      { cwd: projectRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
-    );
-  } catch (e) {
-    console.error('Processor failed:', e.stderr || e.message);
-    try { fs.unlinkSync(tempCiteFile); } catch { }
-    return null;
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === '--json') {
+      options.jsonOutput = true;
+    } else if (arg === '--verbose') {
+      options.verbose = true;
+    } else if (arg === '--legacy-csl') {
+      options.legacyCslPath = argv[++i];
+    } else if (arg === '--refs-fixture') {
+      options.refsFixture = argv[++i];
+    } else if (arg === '--citations-fixture') {
+      options.citationsFixture = argv[++i];
+    } else if (arg === '--fixture-family') {
+      options.fixtureFamily = argv[++i];
+    } else if (!arg.startsWith('--') && !options.yamlPath) {
+      options.yamlPath = arg;
+    } else if (!arg.startsWith('--') && !options.legacyCslPath) {
+      options.legacyCslPath = arg;
+    }
   }
-  try { fs.unlinkSync(tempCiteFile); } catch { }
+
+  if (!options.yamlPath) {
+    throw new Error(
+      'Usage: node oracle-yaml.js <yaml-path> [reference.csl] [--json] [--verbose] ' +
+      '[--legacy-csl path] [--fixture-family family] [--refs-fixture path] [--citations-fixture path]'
+    );
+  }
+
+  return options;
+}
+
+function loadStyleData(yamlPath) {
+  return yaml.load(fs.readFileSync(yamlPath, 'utf8'), { schema: CUSTOM_TAG_SCHEMA }) || {};
+}
+
+function inferStyleFormat(styleData) {
+  const processing = styleData?.options?.processing;
+  if (typeof processing === 'string') {
+    return processing;
+  }
+  if (processing && typeof processing === 'object') {
+    if (Object.prototype.hasOwnProperty.call(processing, 'note')) return 'note';
+    if (Object.prototype.hasOwnProperty.call(processing, 'author-date')) return 'author-date';
+    if (
+      Object.prototype.hasOwnProperty.call(processing, 'label') ||
+      Object.prototype.hasOwnProperty.call(processing, 'numeric')
+    ) {
+      return 'numeric';
+    }
+  }
+  return 'unknown';
+}
+
+function hasBibliographyTemplate(styleData) {
+  const bibliography = styleData?.bibliography;
+  if (!bibliography || typeof bibliography !== 'object') {
+    return false;
+  }
+  const hasTemplate = Array.isArray(bibliography.template) && bibliography.template.length > 0;
+  const hasTypeTemplates = Boolean(
+    bibliography['type-templates'] && Object.keys(bibliography['type-templates']).length > 0
+  );
+  return hasTemplate || hasTypeTemplates;
+}
+
+function runOracleScript(cslPath, refsFixture, citationsFixture) {
+  const scriptPath = path.join(__dirname, 'oracle.js');
+  try {
+    const stdout = execFileSync(
+      process.execPath,
+      [
+        scriptPath,
+        cslPath,
+        '--json',
+        '--refs-fixture',
+        refsFixture,
+        '--citations-fixture',
+        citationsFixture,
+      ],
+      {
+        cwd: PROJECT_ROOT,
+        encoding: 'utf8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      }
+    );
+    return JSON.parse(stdout);
+  } catch (error) {
+    if (typeof error.stdout === 'string' && error.stdout.trim()) {
+      return JSON.parse(error.stdout);
+    }
+    throw error;
+  }
+}
+
+function mergeStructuredResults(main, extra) {
+  if (!extra) return main;
+
+  main.citations = {
+    total: (main.citations?.total || 0) + (extra.citations?.total || 0),
+    passed: (main.citations?.passed || 0) + (extra.citations?.passed || 0),
+    failed: (main.citations?.failed || 0) + (extra.citations?.failed || 0),
+    entries: [...(main.citations?.entries || []), ...(extra.citations?.entries || [])],
+  };
+  main.bibliography = {
+    total: (main.bibliography?.total || 0) + (extra.bibliography?.total || 0),
+    passed: (main.bibliography?.passed || 0) + (extra.bibliography?.passed || 0),
+    failed: (main.bibliography?.failed || 0) + (extra.bibliography?.failed || 0),
+    entries: [...(main.bibliography?.entries || []), ...(extra.bibliography?.entries || [])],
+  };
+
+  const mergedTypes = { ...(main.citationsByType || {}) };
+  for (const [typeName, stats] of Object.entries(extra.citationsByType || {})) {
+    const current = mergedTypes[typeName] || { total: 0, passed: 0 };
+    mergedTypes[typeName] = {
+      total: current.total + (stats.total || 0),
+      passed: current.passed + (stats.passed || 0),
+    };
+  }
+  main.citationsByType = mergedTypes;
+  const mergedComponents = { ...(main.componentSummary || {}) };
+  for (const [componentName, count] of Object.entries(extra.componentSummary || {})) {
+    const currentCount = mergedComponents[componentName] || 0;
+    mergedComponents[componentName] = currentCount + (count || 0);
+  }
+  main.componentSummary = mergedComponents;
+  main.orderingIssues = (main.orderingIssues || 0) + (extra.orderingIssues || 0);
+
+  return main;
+}
+
+function shouldUseStructuredOracle(options, stylePlan) {
+  if (!stylePlan.canUseStructuredOracle) {
+    return false;
+  }
+
+  // Explicit CSL overrides should validate the exact YAML path requested, not
+  // whichever YAML would be inferred from the CSL basename inside oracle.js.
+  if (options.legacyCslPath) {
+    return false;
+  }
+
+  return true;
+}
+
+function normalizeFixtureItems(fixturesData) {
+  if (Array.isArray(fixturesData)) {
+    return Object.fromEntries(fixturesData.map((item) => [item.id, item]));
+  }
+  if (fixturesData && Array.isArray(fixturesData.references)) {
+    return Object.fromEntries(fixturesData.references.map((item) => [item.id, item]));
+  }
+  return Object.fromEntries(
+    Object.entries(fixturesData).filter(([key, value]) => key !== 'comment' && value && typeof value === 'object')
+  );
+}
+
+function loadFixtures(refsFixture, citationsFixture) {
+  const refsData = JSON.parse(fs.readFileSync(refsFixture, 'utf8'));
+  const testItems = normalizeFixtureItems(refsData);
+  const testCitations = JSON.parse(fs.readFileSync(citationsFixture, 'utf8'));
+  return { refsData, testItems, testCitations };
+}
+
+function renderWithCslnYaml(yamlPath, refsFixture, citationsFixture) {
+  const absYamlPath = path.resolve(yamlPath);
+  const output = execFileSync(
+    'cargo',
+    [
+      'run',
+      '-q',
+      '--bin',
+      'citum',
+      '--',
+      'render',
+      'refs',
+      '-b',
+      refsFixture,
+      '-s',
+      absYamlPath,
+      '-c',
+      citationsFixture,
+      '--mode',
+      'both',
+      '--show-keys',
+    ],
+    {
+      cwd: PROJECT_ROOT,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    }
+  );
 
   const lines = output.split('\n');
   const citations = {};
   const bibliography = [];
-
   let section = null;
+
   for (const line of lines) {
     if (line.includes('CITATIONS')) {
       section = 'citations';
@@ -72,52 +257,42 @@ function renderWithCslnYaml(yamlPath) {
       }
     } else if (section === 'bibliography' && line.trim() && !line.includes('===')) {
       const match = line.match(/\[([^\]]+)\]\s+(.+)/);
-      if (match) {
-        bibliography.push(match[2].trim());
-      } else {
-        bibliography.push(line.trim());
-      }
+      bibliography.push(match ? match[2].trim() : line.trim());
     }
   }
 
   return { citations, bibliography };
 }
 
-/**
- * Render reference style with citeproc-js for comparison.
- * @param {string} cslPath - Path to CSL file
- * @returns {{ citations: Object, bibliography: Array }|null}
- */
-function renderWithCiteprocJs(cslPath) {
-  if (!fs.existsSync(cslPath)) {
-    console.warn(`Reference CSL not found: ${cslPath}`);
-    return null;
-  }
-
+function renderWithCiteprocJs(cslPath, refsFixture, citationsFixture) {
+  const { testItems, testCitations } = loadFixtures(refsFixture, citationsFixture);
   const styleXml = fs.readFileSync(cslPath, 'utf8');
-
   const sys = {
     retrieveLocale: (lang) => loadLocale(lang),
-    retrieveItem: (id) => testItems[id]
+    retrieveItem: (id) => testItems[id],
   };
 
   const citeproc = new CSL.Engine(sys, styleXml);
   citeproc.updateItems(Object.keys(testItems));
 
   const citations = {};
-  Object.keys(testItems).forEach(id => {
-    citations[id] = citeproc.makeCitationCluster([{ id }]);
-  });
+  for (const citation of testCitations) {
+    const suppressAuthor = citation['suppress-author'] === true;
+    const citeprocItems = citation.items.map((item) => ({
+      id: item.id,
+      locator: item.locator,
+      label: item.label,
+      prefix: item.prefix,
+      suffix: item.suffix,
+      'suppress-author': suppressAuthor,
+    }));
+    citations[citation.id] = citeproc.makeCitationCluster(citeprocItems);
+  }
 
   const bibResult = citeproc.makeBibliography();
-  const bibliography = bibResult ? bibResult[1] : [];
-
-  return { citations, bibliography };
+  return { citations, bibliography: bibResult ? bibResult[1] : [] };
 }
 
-/**
- * Match bibliography entries between oracle and CSLN by finding best matches.
- */
 function matchBibliographyEntries(oracleBib, cslnBib) {
   const pairs = [];
   const usedCsln = new Set();
@@ -129,17 +304,13 @@ function matchBibliographyEntries(oracleBib, cslnBib) {
 
     for (let i = 0; i < cslnBib.length; i++) {
       if (usedCsln.has(i)) continue;
-
       const cslnNorm = normalizeText(cslnBib[i]).toLowerCase();
-
-      // Score based on shared words
-      const oracleWords = new Set(oracleNorm.split(/\s+/).filter(w => w.length > 3));
-      const cslnWords = new Set(cslnNorm.split(/\s+/).filter(w => w.length > 3));
+      const oracleWords = new Set(oracleNorm.split(/\s+/).filter((word) => word.length > 3));
+      const cslnWords = new Set(cslnNorm.split(/\s+/).filter((word) => word.length > 3));
       let score = 0;
       for (const word of oracleWords) {
-        if (cslnWords.has(word)) score++;
+        if (cslnWords.has(word)) score += 1;
       }
-
       if (score > bestScore) {
         bestScore = score;
         bestMatch = i;
@@ -154,7 +325,6 @@ function matchBibliographyEntries(oracleBib, cslnBib) {
     }
   }
 
-  // Add unmatched CSLN entries
   for (let i = 0; i < cslnBib.length; i++) {
     if (!usedCsln.has(i)) {
       pairs.push({ oracle: null, csln: cslnBib[i], score: 0 });
@@ -164,142 +334,172 @@ function matchBibliographyEntries(oracleBib, cslnBib) {
   return pairs;
 }
 
-/**
- * Format output as JSON.
- */
-function jsonOutput(results) {
-  const summary = {
-    style: results.styleName,
-    citations: {
-      total: results.citationResults.length,
-      matches: results.citationResults.filter(r => r.match).length,
-      mismatches: results.citationResults.filter(r => !r.match).length
-    },
-    bibliography: {
-      total: results.bibResults.length,
-      matches: results.bibResults.filter(r => r.match).length,
-      mismatches: results.bibResults.filter(r => !r.match).length
-    },
-    entries: {
-      citations: results.citationResults,
-      bibliography: results.bibResults
-    }
-  };
-  return JSON.stringify(summary, null, 2);
-}
+function runDirectComparison(options, stylePlan) {
+  const { refsFixture, citationsFixture } = stylePlan.baseRun;
+  const cslnResult = renderWithCslnYaml(options.yamlPath, refsFixture, citationsFixture);
+  const citeprocResult = renderWithCiteprocJs(stylePlan.legacyCslPath, refsFixture, citationsFixture);
+  const citationResults = [];
+  const bibResults = [];
 
-/**
- * Format output as human-readable text.
- */
-function textOutput(results, verbose) {
-  let output = `\nOracle Test: ${results.styleName}\n`;
-  output += '='.repeat(50) + '\n\n';
-
-  // Citations
-  const citMatches = results.citationResults.filter(r => r.match).length;
-  const citTotal = results.citationResults.length;
-  output += `CITATIONS: ${citMatches}/${citTotal} match\n`;
-  if (verbose && results.citationResults.length > 0) {
-    for (const result of results.citationResults.slice(0, 3)) {
-      const status = result.match ? '✓' : '✗';
-      output += `  ${status} ${result.itemId}\n`;
-      if (!result.match) {
-        output += `    Expected: ${result.oracle.substring(0, 60)}...\n`;
-        output += `    Got:      ${result.csln.substring(0, 60)}...\n`;
-      }
-    }
+  for (const [citationId, cslnCitation] of Object.entries(cslnResult.citations)) {
+    const oracleCitation = citeprocResult.citations[citationId];
+    if (!oracleCitation) continue;
+    citationResults.push({
+      itemId: citationId,
+      oracle: oracleCitation,
+      csln: cslnCitation,
+      match: normalizeText(oracleCitation) === normalizeText(cslnCitation),
+    });
   }
 
-  // Bibliography
-  output += '\n';
-  const bibMatches = results.bibResults.filter(r => r.match).length;
-  const bibTotal = results.bibResults.length;
-  output += `BIBLIOGRAPHY: ${bibMatches}/${bibTotal} match\n`;
-  if (verbose && results.bibResults.length > 0) {
-    for (const result of results.bibResults.slice(0, 3)) {
-      if (result.oracle) {
-        const status = result.match ? '✓' : '✗';
-        output += `  ${status} Entry\n`;
-        if (!result.match) {
-          output += `    Expected: ${result.oracle.substring(0, 60)}...\n`;
-          output += `    Got:      ${result.csln ? result.csln.substring(0, 60) + '...' : '(missing)'}\n`;
-        }
-      }
-    }
-  }
-
-  output += '\n' + '='.repeat(50) + '\n';
-  return output;
-}
-
-// Main
-const args = process.argv.slice(2);
-const yamlPath = args.find(a => !a.startsWith('--'));
-const jsonMode = args.includes('--json');
-const verbose = args.includes('--verbose');
-
-if (!yamlPath) {
-  console.error('Usage: node oracle-yaml.js <yaml-path> [reference.csl] [--json] [--verbose]');
-  process.exit(1);
-}
-
-const styleName = path.basename(yamlPath, '.yaml');
-
-// Find reference CSL
-let cslPath = args.find((a, i) => !a.startsWith('--') && i !== args.indexOf(yamlPath));
-if (!cslPath) {
-  cslPath = path.join(path.dirname(yamlPath), '..', 'styles-legacy', `${styleName}.csl`);
-}
-
-// Render with CSLN YAML
-const cslnResult = renderWithCslnYaml(yamlPath);
-if (!cslnResult) {
-  console.error('Failed to render CSLN YAML');
-  process.exit(1);
-}
-
-// Render with citeproc-js if reference exists
-const citeprocResult = renderWithCiteprocJs(cslPath);
-
-// Compare
-const citationResults = [];
-const bibResults = [];
-
-if (citeprocResult) {
-  // Compare citations
-  for (const [itemId, cslnCit] of Object.entries(cslnResult.citations)) {
-    const oracleCit = citeprocResult.citations[itemId];
-    if (oracleCit) {
-      const match = normalizeText(oracleCit) === normalizeText(cslnCit);
-      citationResults.push({
-        itemId,
-        oracle: oracleCit,
-        csln: cslnCit,
-        match
-      });
-    }
-  }
-
-  // Compare bibliography
-  const bibPairs = matchBibliographyEntries(citeprocResult.bibliography, cslnResult.bibliography);
-  for (const pair of bibPairs) {
-    const match = pair.oracle && pair.csln && normalizeText(pair.oracle) === normalizeText(pair.csln);
+  for (const pair of matchBibliographyEntries(citeprocResult.bibliography, cslnResult.bibliography)) {
     bibResults.push({
       oracle: pair.oracle,
       csln: pair.csln,
-      match,
-      score: pair.score
+      match: Boolean(pair.oracle && pair.csln && normalizeText(pair.oracle) === normalizeText(pair.csln)),
+      score: pair.score,
     });
   }
-} else {
-  // No reference, just report what we got
-  console.warn('No reference CSL found; comparing CSLN output only.');
+
+  return {
+    style: stylePlan.styleName,
+    citations: {
+      total: citationResults.length,
+      passed: citationResults.filter((entry) => entry.match).length,
+      failed: citationResults.filter((entry) => !entry.match).length,
+      entries: citationResults.map((entry) => ({
+        id: entry.itemId,
+        oracle: entry.oracle,
+        csln: entry.csln,
+        match: entry.match,
+      })),
+    },
+    bibliography: {
+      total: bibResults.length,
+      passed: bibResults.filter((entry) => entry.match).length,
+      failed: bibResults.filter((entry) => !entry.match).length,
+      entries: bibResults,
+    },
+  };
 }
 
-const results = { styleName, citationResults, bibResults };
+function runComparison(options) {
+  const styleData = loadStyleData(options.yamlPath);
+  const stylePlan = resolveYamlVerificationPlan({
+    yamlPath: options.yamlPath,
+    legacyCslPath: options.legacyCslPath,
+    refsFixture: options.refsFixture,
+    citationsFixture: options.citationsFixture,
+    fixtureFamily: options.fixtureFamily,
+    styleData,
+    styleFormat: inferStyleFormat(styleData),
+    hasBibliography: hasBibliographyTemplate(styleData),
+  });
 
-if (jsonMode) {
-  console.log(jsonOutput(results));
-} else {
-  console.log(textOutput(results, verbose));
+  if (shouldUseStructuredOracle(options, stylePlan)) {
+    const result = runOracleScript(
+      stylePlan.legacyCslPath,
+      stylePlan.baseRun.refsFixture,
+      stylePlan.baseRun.citationsFixture
+    );
+    for (const familyRun of stylePlan.familyRuns) {
+      const extra = runOracleScript(
+        stylePlan.legacyCslPath,
+        familyRun.refsFixture,
+        familyRun.citationsFixture
+      );
+      mergeStructuredResults(result, extra);
+    }
+    return result;
+  }
+
+  return runDirectComparison(options, stylePlan);
 }
+
+function summarizeResults(results) {
+  return {
+    style: results.style,
+    citations: {
+      total: results.citations?.total || 0,
+      matches: results.citations?.passed || 0,
+      mismatches: results.citations?.failed || 0,
+    },
+    bibliography: {
+      total: results.bibliography?.total || 0,
+      matches: results.bibliography?.passed || 0,
+      mismatches: results.bibliography?.failed || 0,
+    },
+    entries: {
+      citations: (results.citations?.entries || []).map((entry) => ({
+        itemId: entry.id || entry.itemId,
+        oracle: entry.oracle,
+        csln: entry.csln,
+        match: entry.match,
+      })),
+      bibliography: results.bibliography?.entries || [],
+    },
+  };
+}
+
+function renderText(summary, verbose) {
+  let output = `\nOracle Test: ${summary.style}\n`;
+  output += `${'='.repeat(50)}\n\n`;
+  output += `CITATIONS: ${summary.citations.matches}/${summary.citations.total} match\n`;
+
+  if (verbose) {
+    const failedCitations = summary.entries.citations.filter((entry) => !entry.match).slice(0, 3);
+    for (const entry of failedCitations) {
+      output += `  ✗ ${entry.itemId}\n`;
+      output += `    Expected: ${String(entry.oracle).substring(0, 60)}...\n`;
+      output += `    Got:      ${String(entry.csln).substring(0, 60)}...\n`;
+    }
+  }
+
+  output += '\n';
+  output += `BIBLIOGRAPHY: ${summary.bibliography.matches}/${summary.bibliography.total} match\n`;
+  if (verbose) {
+    const failedBibliography = summary.entries.bibliography.filter((entry) => !entry.match).slice(0, 3);
+    for (const entry of failedBibliography) {
+      output += '  ✗ Entry\n';
+      output += `    Expected: ${String(entry.oracle).substring(0, 60)}...\n`;
+      output += `    Got:      ${entry.csln ? String(entry.csln).substring(0, 60) : '(missing)'}\n`;
+    }
+  }
+
+  output += `\n${'='.repeat(50)}\n`;
+  return output;
+}
+
+function main() {
+  try {
+    const options = parseArgs();
+    const results = runComparison(options);
+    const summary = summarizeResults(results);
+    if (options.jsonOutput) {
+      console.log(JSON.stringify(summary, null, 2));
+    } else {
+      console.log(renderText(summary, options.verbose));
+    }
+
+    const hasFailures = summary.citations.mismatches > 0 || summary.bibliography.mismatches > 0;
+    process.exit(hasFailures ? 1 : 0);
+  } catch (error) {
+    process.stderr.write(`${error.message}\n`);
+    process.exit(2);
+  }
+}
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  hasBibliographyTemplate,
+  inferStyleFormat,
+  mergeStructuredResults,
+  parseArgs,
+  resolveYamlVerificationPlan,
+  runComparison,
+  shouldUseStructuredOracle,
+  summarizeResults,
+};

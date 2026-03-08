@@ -25,6 +25,16 @@ const {
   resolveVerificationPolicy,
 } = require('./lib/verification-policy');
 const {
+  DEFAULT_CITATIONS_FIXTURE,
+  DEFAULT_REFS_FIXTURE,
+  FIXTURE_SET_CITATIONS,
+  FIXTURE_SET_REFS,
+  NOTE_CITATIONS_FIXTURE,
+  getAdditionalFixtureSetNames,
+  getEffectiveVerificationScopes,
+  inferLegacySourceName,
+} = require('./lib/style-verification');
+const {
   getLineagePresentation,
   loadReportProvenance,
 } = require('./lib/report-metadata');
@@ -38,12 +48,6 @@ const CUSTOM_TAG_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
     },
   }),
 ]);
-
-const LEGACY_SOURCE_OVERRIDES = {
-  'apa-7th': 'apa',
-  'din-alphanumeric': 'din-1505-2-alphanumeric',
-  'gost-r-7-0-5-2008-author-date': 'gost-r-7-0-5-2008',
-};
 
 const KNOWN_DEPENDENTS = {
   'apa-7th': 783,
@@ -74,43 +78,10 @@ const PROJECT_ROOT = path.dirname(__dirname);
 const DEFAULT_REPORT_CACHE_DIR = path.join(PROJECT_ROOT, '.oracle-cache', 'report-core');
 const DEFAULT_PARALLELISM = 4;
 const DEFAULT_PROCESS_TIMEOUT_MS = 120000;
-const NOTE_CITATIONS_FIXTURE = path.join(
-  PROJECT_ROOT,
-  'tests',
-  'fixtures',
-  'citations-note-expanded.json'
-);
-const DEFAULT_REFS_FIXTURE = path.join(PROJECT_ROOT, 'tests', 'fixtures', 'references-expanded.json');
-const DEFAULT_CITATIONS_FIXTURE = path.join(PROJECT_ROOT, 'tests', 'fixtures', 'citations-expanded.json');
 const CSL_SNAPSHOT_DIR = path.join(PROJECT_ROOT, 'tests', 'snapshots', 'csl');
 const BIBLATEX_SNAPSHOT_DIR = path.join(PROJECT_ROOT, 'tests', 'snapshots', 'biblatex');
 const COMPOUND_SNAPSHOT_DIR = path.join(PROJECT_ROOT, 'tests', 'snapshots', 'compound');
 const REPORT_CACHE_VERSION = 3;
-
-/**
- * Maps fixture set names (from fixture-sufficiency.yaml) to reference fixture
- * file paths.  'core' is the default set and handled by the main oracle run.
- * Sets listed here provide *additional* reference data exercised via a second
- * oracle pass whose results are merged into the style's fidelity score.
- *
- */
-const FAMILY_REFS_FIXTURES = {
-  'compound-numeric': path.join(__dirname, '..', 'tests', 'fixtures', 'references-compound-numeric-family.json'),
-  'physics-numeric': path.join(__dirname, '..', 'tests', 'fixtures', 'references-physics-numeric.json'),
-  'author-date': path.join(__dirname, '..', 'tests', 'fixtures', 'references-author-date.json'),
-  'humanities-note': path.join(__dirname, '..', 'tests', 'fixtures', 'references-humanities-note.json'),
-  'legal': path.join(__dirname, '..', 'tests', 'fixtures', 'references-legal.json'),
-  'csl-m-adapted': path.join(__dirname, '..', 'tests', 'fixtures', 'references-csl-m-adapted.json'),
-};
-
-const FAMILY_CITATIONS_FIXTURES = {
-  'compound-numeric': path.join(__dirname, '..', 'tests', 'fixtures', 'citations-compound-numeric.json'),
-  'physics-numeric': path.join(__dirname, '..', 'tests', 'fixtures', 'citations-physics-numeric.json'),
-  'author-date': path.join(__dirname, '..', 'tests', 'fixtures', 'citations-author-date.json'),
-  'humanities-note': path.join(__dirname, '..', 'tests', 'fixtures', 'citations-humanities-note.json'),
-  'legal': path.join(__dirname, '..', 'tests', 'fixtures', 'citations-legal.json'),
-  'csl-m-adapted': path.join(__dirname, '..', 'tests', 'fixtures', 'citations-csl-m-adapted.json'),
-};
 
 const TOTAL_DEPENDENTS = 7987;
 const CORE_FALLBACK_TYPES = [
@@ -457,17 +428,6 @@ function computeImpactPct(cslReach) {
   return cslReach != null
     ? (cslReach / TOTAL_DEPENDENTS * 100).toFixed(2)
     : null;
-}
-
-function inferLegacySourceName(name, styleData) {
-  if (LEGACY_SOURCE_OVERRIDES[name]) {
-    return LEGACY_SOURCE_OVERRIDES[name];
-  }
-  const sourceId = styleData?.info?.source?.['csl-id'];
-  const match = typeof sourceId === 'string'
-    ? sourceId.match(/zotero\.org\/styles\/([^/?#]+)/i)
-    : null;
-  return match?.[1] || name;
 }
 
 function discoverCoreStyles(provenanceConfig = loadReportProvenance()) {
@@ -918,8 +878,8 @@ async function runBiblatexSnapshotOracle(runtime, styleName, styleYamlPath, auth
 }
 
 async function runFamilyFixtureOracle(runtime, stylePath, styleName, fixtureSetName) {
-  const refsFixture = FAMILY_REFS_FIXTURES[fixtureSetName];
-  const citationsFixture = FAMILY_CITATIONS_FIXTURES[fixtureSetName];
+  const refsFixture = FIXTURE_SET_REFS[fixtureSetName];
+  const citationsFixture = FIXTURE_SET_CITATIONS[fixtureSetName];
   if (!refsFixture || !citationsFixture) return null;
   if (!fs.existsSync(refsFixture) || !fs.existsSync(citationsFixture)) return null;
 
@@ -1477,6 +1437,8 @@ function computeQualityMetrics(styleSpec, oracleResult) {
 function buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy) {
   const citationAuthority = resolveScopeAuthority(stylePolicy, 'citation');
   const bibliographyAuthority = resolveScopeAuthority(stylePolicy, 'bibliography');
+  const effectiveScopes = getEffectiveVerificationScopes(stylePolicy, styleSpec.hasBibliography);
+  const hasBibliographyScope = effectiveScopes.includes('bibliography');
   return {
     cslReach: styleSpec.cslReach,
     dependents: styleSpec.cslReach,
@@ -1488,16 +1450,20 @@ function buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy) {
     benchmarkAuthorityId: stylePolicy.authorityId,
     benchmarkLabel: formatAuthorityLabel(stylePolicy.authority, stylePolicy.authorityId),
     citationAuthorityLabel: formatAuthorityLabel(citationAuthority.authority, citationAuthority.authorityId),
-    bibliographyAuthorityLabel: formatAuthorityLabel(bibliographyAuthority.authority, bibliographyAuthority.authorityId),
-    hasScopedAuthorities: citationAuthority.authority !== bibliographyAuthority.authority
-      || citationAuthority.authorityId !== bibliographyAuthority.authorityId,
+    bibliographyAuthorityLabel: hasBibliographyScope
+      ? formatAuthorityLabel(bibliographyAuthority.authority, bibliographyAuthority.authorityId)
+      : null,
+    hasScopedAuthorities: hasBibliographyScope && (
+      citationAuthority.authority !== bibliographyAuthority.authority
+      || citationAuthority.authorityId !== bibliographyAuthority.authorityId
+    ),
     secondarySources: stylePolicy.secondary,
     secondarySourceLabels: (stylePolicy.secondary || []).map((authority) => formatAuthorityLabel(authority)),
     regressionBaseline: stylePolicy.regressionBaseline,
     regressionBaselineLabel: stylePolicy.regressionBaseline
       ? formatAuthorityLabel(stylePolicy.regressionBaseline)
       : null,
-    verificationScopes: stylePolicy.scopes,
+    verificationScopes: effectiveScopes,
     fixtureFamily: sufficiencyPolicy.family,
     defaultReportSufficient: sufficiencyPolicy.defaultReportSufficient,
     requiredReferenceTypes: sufficiencyPolicy.requiredReferenceTypes,
@@ -1629,8 +1595,7 @@ async function processStyleReport(runtime, styleSpec, context) {
     oracleResult = await runCiteprocSnapshotOracle(runtime, stylePath, styleSpec.name, styleSpec.format);
   }
 
-  const familySets = (sufficiencyPolicy.fixtureSets || [])
-    .filter((setName) => setName !== 'core' && setName !== 'note' && FAMILY_REFS_FIXTURES[setName]);
+  const familySets = getAdditionalFixtureSetNames(sufficiencyPolicy.fixtureSets || []);
   if (citationAuthority.authority === 'citeproc-js' && fs.existsSync(stylePath)) {
     for (const setName of familySets) {
       const extra = await runFamilyFixtureOracle(runtime, stylePath, styleSpec.name, setName);
@@ -2107,25 +2072,25 @@ function generateHtmlTable(report) {
                     data-quality="${style.qualityScore || 0}"
                     data-sqi-tier-rank="${sqiTierRank}">
                     <td class="px-6 py-4 text-sm font-medium text-slate-900">${style.name}</td>
-                    <td class="px-6 py-4 text-sm text-slate-600">${style.format}</td>
-                    <td class="px-6 py-4 text-sm text-slate-600">${escapeHtml(style.originLabel || '—')}</td>
-                    <td class="px-6 py-4 text-sm text-slate-500 font-mono">${escapeHtml(style.benchmarkLabel || '—')}</td>
-                    <td class="px-6 py-4 text-sm text-slate-600">${style.cslReach ?? '—'}</td>
-                    <td class="px-6 py-4">
+                    <td class="hidden md:table-cell px-6 py-4 text-sm text-slate-600">${style.format}</td>
+                    <td class="hidden md:table-cell px-6 py-4 text-sm text-slate-600">${escapeHtml(style.originLabel || '—')}</td>
+                    <td class="hidden md:table-cell px-6 py-4 text-sm text-slate-500 font-mono">${escapeHtml(style.benchmarkLabel || '—')}</td>
+                    <td class="hidden md:table-cell px-6 py-4 text-sm text-slate-600">${style.cslReach ?? '—'}</td>
+                    <td class="hidden md:table-cell px-6 py-4">
                         <span class="inline-flex items-center px-3 py-1 rounded text-xs font-medium ${citationBadge}">
                             ${style.citations.passed}/${style.citations.total}
                         </span>
                     </td>
-                    <td class="px-6 py-4">
+                    <td class="hidden md:table-cell px-6 py-4">
                         <span class="inline-flex items-center px-3 py-1 rounded text-xs font-medium ${biblioBadge}">
                             ${biblioText}
                         </span>
                     </td>
-                    <td class="px-6 py-4">
+                    <td class="hidden md:table-cell px-6 py-4">
                         ${componentRateHtml}
                     </td>
                     <td class="px-6 py-4 text-sm font-mono text-slate-600">${fidelityPct}%</td>
-                    <td class="px-6 py-4 text-sm font-mono text-slate-600">${qualityPct}%</td>
+                    <td class="hidden md:table-cell px-6 py-4 text-sm font-mono text-slate-600">${qualityPct}%</td>
                     <td class="px-6 py-4">
                         <span class="inline-flex items-center px-3 py-1 rounded text-xs font-medium ${sqiBadgeClass}">
                             ${sqiTier}
@@ -2151,7 +2116,7 @@ ${generateDetailContent(style)}
     <!-- Compatibility Table -->
     <section class="py-12 px-6">
         <div class="max-w-7xl mx-auto">
-            <div class="rounded-xl border border-slate-200 overflow-hidden">
+            <div class="rounded-xl border border-slate-200 overflow-hidden overflow-x-auto">
                 <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
                     <label for="style-search" class="text-xs font-semibold text-slate-700">Search Styles</label>
                     <div class="flex items-center gap-3 w-full sm:w-auto">
@@ -2172,35 +2137,35 @@ ${generateDetailContent(style)}
                                     Style <span class="text-slate-400" id="sort-ind-style-name">↕</span>
                                 </button>
                             </th>
-                            <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                            <th class="hidden md:table-cell text-left px-6 py-4 text-xs font-semibold text-slate-700">
                                 <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('format')">
                                     Format <span class="text-slate-400" id="sort-ind-format">↕</span>
                                 </button>
                             </th>
-                            <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                            <th class="hidden md:table-cell text-left px-6 py-4 text-xs font-semibold text-slate-700">
                                 <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('origin')">
                                     Lineage <span class="text-slate-400" id="sort-ind-origin">↕</span>
                                 </button>
                             </th>
-                            <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                            <th class="hidden md:table-cell text-left px-6 py-4 text-xs font-semibold text-slate-700">
                                 Authority
                             </th>
-                            <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                            <th class="hidden md:table-cell text-left px-6 py-4 text-xs font-semibold text-slate-700">
                                 <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('csl-reach')">
                                     CSL Reach <span class="text-slate-400" id="sort-ind-csl-reach">↕</span>
                                 </button>
                             </th>
-                            <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                            <th class="hidden md:table-cell text-left px-6 py-4 text-xs font-semibold text-slate-700">
                                 <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('citation-rate')">
                                     Citations <span class="text-slate-400" id="sort-ind-citation-rate">↕</span>
                                 </button>
                             </th>
-                            <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                            <th class="hidden md:table-cell text-left px-6 py-4 text-xs font-semibold text-slate-700">
                                 <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('bibliography-rate')">
                                     Bibliography <span class="text-slate-400" id="sort-ind-bibliography-rate">↕</span>
                                 </button>
                             </th>
-                            <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                            <th class="hidden md:table-cell text-left px-6 py-4 text-xs font-semibold text-slate-700">
                                 <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('component-rate')">
                                     Components <span class="text-slate-400" id="sort-ind-component-rate">↕</span>
                                 </button>
@@ -2210,7 +2175,7 @@ ${generateDetailContent(style)}
                                     Fidelity <span class="text-slate-400" id="sort-ind-fidelity">↕</span>
                                 </button>
                             </th>
-                            <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                            <th class="hidden md:table-cell text-left px-6 py-4 text-xs font-semibold text-slate-700">
                                 <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('quality')">
                                     Quality <span class="text-slate-400" id="sort-ind-quality">↕</span>
                                 </button>
@@ -2621,6 +2586,19 @@ function generateHtmlFooter() {
                 filterState.query = String(event.target.value || '').trim().toLowerCase();
                 applyStyleFilter();
             });
+
+            const tbody = document.querySelector('table tbody');
+            if (tbody) {
+                tbody.addEventListener('click', (event) => {
+                    const row = event.target.closest('tr.accordion-toggle');
+                    if (!row) return;
+                    // Don't re-toggle if the expand button itself was clicked (it has its own onclick)
+                    if (event.target.closest('button')) return;
+                    const detailId = row.dataset.detailId;
+                    if (detailId) toggleAccordion(detailId);
+                });
+            }
+
             applyStyleFilter();
         }
 

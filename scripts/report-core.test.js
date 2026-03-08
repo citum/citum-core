@@ -9,6 +9,7 @@ const {
   resolveVerificationPolicy,
   resolveScopeAuthority,
 } = require('./lib/verification-policy');
+const { getEffectiveVerificationScopes } = require('./lib/style-verification');
 const { loadReportProvenance } = require('./lib/report-metadata');
 const {
   discoverCoreStyles,
@@ -83,6 +84,16 @@ test('verification policy exposes scope-specific authority for chemistry benchma
     authorityId: 'chem-acs',
     note: stylePolicy.note,
   });
+});
+
+test('citation-only styles do not advertise bibliography verification scopes', () => {
+  const styles = loadStyleMap();
+  const policy = loadVerificationPolicy();
+  const chicagoNotes = styles.get('chicago-notes');
+  const stylePolicy = resolveVerificationPolicy('chicago-notes', policy);
+
+  assert.equal(chicagoNotes.hasBibliography, false);
+  assert.deepEqual(getEffectiveVerificationScopes(stylePolicy, chicagoNotes.hasBibliography), ['citation']);
 });
 
 test('comparison text helper supports both live-oracle and native-snapshot entry shapes', () => {
