@@ -869,12 +869,20 @@ async function runBiblatexSnapshotOracle(runtime, styleName, styleYamlPath, auth
       }
 
       try {
+        // Build ordered type list from the fixture so we can track per-type pass rates.
+        // The biblatex snapshot entries correspond positionally to fixture entries.
+        const fixtureData = JSON.parse(fs.readFileSync(DEFAULT_REFS_FIXTURE, 'utf8'));
+        const fixtureTypes = Object.entries(fixtureData)
+          .filter(([key]) => key !== 'comment')
+          .map(([, ref]) => (typeof ref === 'object' && ref !== null ? ref.type : null) || 'unknown');
+
         const rendered = await renderCitumJson(runtime, styleYamlPath, DEFAULT_REFS_FIXTURE, 'bib');
         const actualEntries = rendered?.bibliography?.entries?.map((entry) => entry.text) || [];
         const expectedEntries = expandCompoundBibEntries(snapshot.bibliography || []);
         const total = Math.max(expectedEntries.length, actualEntries.length);
         let passed = 0;
         const entries = [];
+        const citationsByType = {};
 
         for (let i = 0; i < total; i++) {
           const expected = expectedEntries[i] ?? '';
@@ -882,11 +890,19 @@ async function runBiblatexSnapshotOracle(runtime, styleName, styleYamlPath, auth
           const match = equivalentText(expected, actual);
           if (match) passed += 1;
           entries.push({ expected, actual, match });
+
+          // Track per-type stats using the fixture entry at this position.
+          const refType = fixtureTypes[i] || 'unknown';
+          const typeStats = citationsByType[refType] || { passed: 0, total: 0 };
+          typeStats.total += 1;
+          if (match) typeStats.passed += 1;
+          citationsByType[refType] = typeStats;
         }
 
         return buildEmptyOracleResult({
           citations: { passed: 0, total: 0, entries: [] },
           bibliography: { passed, total, entries },
+          citationsByType,
           oracleSource: 'biblatex',
           authorityId,
         });
