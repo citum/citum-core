@@ -6,6 +6,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! Document-level citation processing.
 
 pub mod djot;
+pub mod markdown;
 
 pub use djot::BibliographyBlock;
 
@@ -183,6 +184,14 @@ pub struct ParsedDocument {
 pub trait CitationParser {
     /// Parse the document into citation placements and note metadata.
     fn parse_document(&self, content: &str, locale: &Locale) -> ParsedDocument;
+
+    /// Finalize rendered document markup as HTML.
+    ///
+    /// The default implementation treats the rendered markup as Djot-compatible
+    /// content and converts it with the existing Djot HTML renderer.
+    fn finalize_html_output(&self, rendered: &str) -> String {
+        djot::djot_to_html(rendered)
+    }
 
     /// Find and extract citations from a document string.
     /// Returns a list of (start_index, end_index, citation_model) tuples.
@@ -384,7 +393,7 @@ impl Processor {
                 let mut result = rendered;
                 result.push_str(bib_heading);
                 result.push_str(&placeholders.push_block(bib_content));
-                let html = self::djot::djot_to_html(&result);
+                let html = parser.finalize_html_output(&result);
                 return placeholders.apply(html);
             } else if processor.is_note_style() {
                 processor.process_note_document::<F>(body, parsed)
@@ -409,7 +418,7 @@ impl Processor {
             result.push_str(&bib_content);
             let result = rewrite_document_markup_for_typst(result, format);
             return match format {
-                DocumentFormat::Html => self::djot::djot_to_html(&result),
+                DocumentFormat::Html => parser.finalize_html_output(&result),
                 DocumentFormat::Djot
                 | DocumentFormat::Plain
                 | DocumentFormat::Latex
@@ -459,7 +468,7 @@ impl Processor {
                     result = result.replace(&placeholder, &replacement);
                 }
 
-                let html = self::djot::djot_to_html(&result);
+                let html = parser.finalize_html_output(&result);
                 return placeholders.apply(html);
             } else if processor.is_note_style() {
                 processor.process_note_document::<F>(&staged, parsed_staged)
@@ -492,7 +501,7 @@ impl Processor {
 
             let result = rewrite_document_markup_for_typst(result, format);
             return match format {
-                DocumentFormat::Html => self::djot::djot_to_html(&result),
+                DocumentFormat::Html => parser.finalize_html_output(&result),
                 DocumentFormat::Djot
                 | DocumentFormat::Plain
                 | DocumentFormat::Latex
@@ -514,7 +523,7 @@ impl Processor {
             result.push_str(
                 &placeholders.push_block(processor.render_grouped_bibliography_with_format::<F>()),
             );
-            let html = self::djot::djot_to_html(&result);
+            let html = parser.finalize_html_output(&result);
             return placeholders.apply(html);
         } else if processor.is_note_style() {
             processor.process_note_document::<F>(body, parsed)
@@ -533,7 +542,7 @@ impl Processor {
         let result = rewrite_document_markup_for_typst(result, format);
 
         match format {
-            DocumentFormat::Html => self::djot::djot_to_html(&result),
+            DocumentFormat::Html => parser.finalize_html_output(&result),
             DocumentFormat::Djot
             | DocumentFormat::Plain
             | DocumentFormat::Latex

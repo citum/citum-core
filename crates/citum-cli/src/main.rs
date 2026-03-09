@@ -4,7 +4,7 @@ use citum_engine::{
         AnnotationFormat, AnnotationStyle, LoadedBibliography, ParagraphBreak, load_annotations,
         load_bibliography, load_bibliography_with_sets, load_citations, validate_compound_sets,
     },
-    processor::document::djot::DjotParser,
+    processor::document::{djot::DjotParser, markdown::MarkdownParser},
     render::{djot::Djot, html::Html, latex::Latex, plain::PlainText, typst::Typst},
 };
 use citum_schema::locale::RawLocale;
@@ -205,7 +205,7 @@ enum Commands {
     about = "Render documents or references",
     long_about = "Render documents or references using a specified citation style.\n\n\
                   Citum supports two primary rendering modes:\n\
-                  - doc: Process a full document (Djot) with integrated citations.\n\
+                  - doc: Process a full document (Djot or Markdown) with integrated citations.\n\
                   - refs: Direct rendering of a bibliography file for debugging\n\
                     or inspection.\n\n\
                   Run 'citum render <COMMAND> --help' for specific examples."
@@ -221,6 +221,8 @@ enum RenderCommands {
                       EXAMPLES:\n  \
                       Render to HTML:\n    \
                       citum render doc manuscript.djot -b refs.json -s apa-7th -f html\n\n  \
+                      Render Markdown with Pandoc-style citations:\n    \
+                      citum render doc manuscript.md --input-format markdown -b refs.json -s apa-7th\n\n  \
                       Render to PDF (requires 'typst-pdf' feature):\n    \
                       citum render doc manuscript.djot -b refs.json -s apa-7th\n\
                       -f typst -o paper.pdf --pdf"
@@ -740,7 +742,7 @@ fn run_store_remove(name: &str) -> Result<(), Box<dyn Error>> {
 
 /// Execute the `render doc` subcommand.
 ///
-/// Reads a Djot document, resolves citations against the provided bibliography,
+/// Reads a document, resolves citations against the provided bibliography,
 /// and writes the rendered output to stdout or a file.
 fn run_render_doc(args: RenderDocArgs) -> Result<(), Box<dyn Error>> {
     if args.pdf && args.format != OutputFormat::Typst {
@@ -766,11 +768,12 @@ fn run_render_doc(args: RenderDocArgs) -> Result<(), Box<dyn Error>> {
             args.format,
             DocumentInput::Djot,
         )?,
-        InputFormat::Markdown => {
-            return Err(
-                "Input format `markdown` is not implemented yet. Use --input-format djot.".into(),
-            );
-        }
+        InputFormat::Markdown => render_doc_with_output_format(
+            &processor,
+            &doc_content,
+            args.format,
+            DocumentInput::Markdown,
+        )?,
     };
 
     if args.pdf {
@@ -1113,6 +1116,7 @@ fn run_convert(args: ConvertArgs) -> Result<(), Box<dyn Error>> {
 
 enum DocumentInput {
     Djot,
+    Markdown,
 }
 
 /// Render a full document through the processor using the given output format.
@@ -1129,6 +1133,26 @@ fn render_doc_with_output_format(
     match input_format {
         DocumentInput::Djot => {
             let parser = DjotParser;
+            match output_format {
+                OutputFormat::Plain => {
+                    Ok(processor.process_document::<_, PlainText>(content, &parser, doc_format))
+                }
+                OutputFormat::Html => {
+                    Ok(processor.process_document::<_, Html>(content, &parser, doc_format))
+                }
+                OutputFormat::Djot => {
+                    Ok(processor.process_document::<_, Djot>(content, &parser, doc_format))
+                }
+                OutputFormat::Latex => {
+                    Ok(processor.process_document::<_, Latex>(content, &parser, doc_format))
+                }
+                OutputFormat::Typst => {
+                    Ok(processor.process_document::<_, Typst>(content, &parser, doc_format))
+                }
+            }
+        }
+        DocumentInput::Markdown => {
+            let parser = MarkdownParser;
             match output_format {
                 OutputFormat::Plain => {
                     Ok(processor.process_document::<_, PlainText>(content, &parser, doc_format))
