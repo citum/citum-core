@@ -46,4 +46,6 @@ In scope. Explicitly out of scope.
 
 ## Active Specs
 
-*(None yet — add entries here as specs are created.)*
+| File | Feature |
+|------|---------|
+| [`ANNOTATED_BIBLIOGRAPHY.md`](./ANNOTATED_BIBLIOGRAPHY.md) | Document-scoped annotation overlay for bibliography rendering |
