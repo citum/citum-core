@@ -138,7 +138,7 @@ See [docs/TIER_STATUS.md](./docs/TIER_STATUS.md) and [docs/reference/STYLE_PRIOR
 - Style aliasing: [STYLE_ALIASING.md](./docs/architecture/design/STYLE_ALIASING.md)
 - Legal citations: [LEGAL_CITATIONS.md](./docs/architecture/design/LEGAL_CITATIONS.md)
 - Type system: [TYPE_SYSTEM_ARCHITECTURE.md](./docs/architecture/design/TYPE_SYSTEM_ARCHITECTURE.md)
-- Type addition policy: [TYPE_ADDITION_POLICY.md](./docs/architecture/TYPE_ADDITION_POLICY.md) (**active policy**)
+- Type addition policy: [TYPE_ADDITION_POLICY.md](./docs/policies/TYPE_ADDITION_POLICY.md) (**active policy**)
 - SQI plan: [SQI_REFINEMENT_PLAN.md](./docs/architecture/SQI_REFINEMENT_PLAN.md)
 
 ## Issue Handling

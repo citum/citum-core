@@ -8,7 +8,7 @@ current task.
 1. [`ROADMAP.md`](./ROADMAP.md) - strategic direction and phase plan.
 2. [`MIGRATION_STRATEGY_ANALYSIS.md`](./MIGRATION_STRATEGY_ANALYSIS.md) - migration architecture rationale.
 3. [`DESIGN_PRINCIPLES.md`](./DESIGN_PRINCIPLES.md) - project-wide design constraints.
-4. [`TYPE_ADDITION_POLICY.md`](./TYPE_ADDITION_POLICY.md) - active type-system policy.
+4. [`../policies/TYPE_ADDITION_POLICY.md`](../policies/TYPE_ADDITION_POLICY.md) - active type-system policy.
 5. [`SQI_REFINEMENT_PLAN.md`](./SQI_REFINEMENT_PLAN.md) - current SQI refinement direction.
 
 ## Tier B: Active Specialized Design
