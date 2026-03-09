@@ -5,7 +5,7 @@ status: completed
 type: feature
 priority: normal
 created_at: 2026-02-23T00:00:00Z
-updated_at: 2026-03-06T16:10:51Z
+updated_at: 2026-03-09T01:12:27Z
 ---
 
 Add support for rendering annotated bibliographies where each reference entry is followed by a descriptive annotation paragraph.
@@ -34,3 +34,7 @@ Related feature: Similar to CSL-M's secondary note rendering, but specifically f
 ## Summary of Changes
 
 Implemented in commits 9367000 (feat(engine,cli): annotated bibliography support), fda0486 (tests), ec34b75 (non-HTML format fix), 121faf0, and 0329ee9 (djot inline rendering for annotations).
+
+## Spec
+
+Design specification migrated to [docs/specs/ANNOTATED_BIBLIOGRAPHY.md](../docs/specs/ANNOTATED_BIBLIOGRAPHY.md).
