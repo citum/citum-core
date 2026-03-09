@@ -28,6 +28,7 @@ const fs = require('fs');
 const path = require('path');
 const { normalizeText, parseComponents, analyzeOrdering, findRefDataForEntry } = require('./oracle-utils');
 const { renderWithCslnProcessor } = require('./oracle');
+const { attachRegisteredDivergenceAdjustments } = require('./lib/oracle-divergences');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const SNAPSHOT_DIR = path.join(PROJECT_ROOT, 'tests', 'snapshots', 'csl');
@@ -276,7 +277,7 @@ function run() {
   // 4. Diff
   const pairs = matchBibliographyEntries(snapshot.bibliography, csln.bibliography);
 
-  const results = {
+  const rawResults = {
     style: styleName,
     oracleSource: 'citeproc-js',
     snapshotGeneratedBy: snapshot.generated_by,
@@ -291,14 +292,14 @@ function run() {
     const oracleText = normalizeText(snapshot.citations[cite.id] || '');
     const cslnText = normalizeText(csln.citations[cite.id] || '');
     const match = equivalentCitationText(oracleText, cslnText, cite.id);
-    if (match) results.citations.passed++; else results.citations.failed++;
-    results.citations.entries.push({ id: cite.id, oracle: oracleText, csln: cslnText, match });
+    if (match) rawResults.citations.passed++; else rawResults.citations.failed++;
+    rawResults.citations.entries.push({ id: cite.id, oracle: oracleText, csln: cslnText, match });
 
     for (const item of cite.items || []) {
       const type = testItems[item.id]?.type ?? 'unknown';
-      if (!results.citationsByType[type]) results.citationsByType[type] = { total: 0, passed: 0 };
-      results.citationsByType[type].total++;
-      if (match) results.citationsByType[type].passed++;
+      if (!rawResults.citationsByType[type]) rawResults.citationsByType[type] = { total: 0, passed: 0 };
+      rawResults.citationsByType[type].total++;
+      if (match) rawResults.citationsByType[type].passed++;
     }
   }
 
@@ -316,18 +317,18 @@ function run() {
 
     if (!pair.oracle) {
       entryResult.issues.push({ issue: 'extra_entry', detail: 'Entry in CSLN but not oracle' });
-      results.bibliography.failed++;
+      rawResults.bibliography.failed++;
     } else if (!pair.csln) {
       entryResult.issues.push({ issue: 'missing_entry', detail: 'Entry in oracle but not CSLN' });
-      results.bibliography.failed++;
+      rawResults.bibliography.failed++;
     } else {
       const oN = normalizeText(pair.oracle);
       const cN = normalizeText(pair.csln);
       if (equivalentText(oN, cN)) {
         entryResult.match = true;
-        results.bibliography.passed++;
+        rawResults.bibliography.passed++;
       } else {
-        results.bibliography.failed++;
+        rawResults.bibliography.failed++;
         const refData = findRefDataForEntry(pair.oracle, testItems);
         if (refData) {
           const oComp = parseComponents(pair.oracle, refData);
@@ -354,20 +355,28 @@ function run() {
           const cOrder = analyzeOrdering(pair.csln, refData);
           if (JSON.stringify(oOrder) !== JSON.stringify(cOrder)) {
             entryResult.ordering = { oracle: oOrder, csln: cOrder };
-            results.orderingIssues++;
+            rawResults.orderingIssues++;
           }
           entryResult.issues = [...differences];
           for (const [key, count] of Object.entries(
             differences.reduce((acc, d) => { acc[`${d.component}:${d.issue}`] = (acc[`${d.component}:${d.issue}`] || 0) + 1; return acc; }, {})
           )) {
-            results.componentSummary[key] = (results.componentSummary[key] || 0) + count;
+            rawResults.componentSummary[key] = (rawResults.componentSummary[key] || 0) + count;
           }
         }
       }
     }
 
-    results.bibliography.entries.push(entryResult);
+    rawResults.bibliography.entries.push(entryResult);
   }
+
+  const results = attachRegisteredDivergenceAdjustments(
+    rawResults,
+    snapshot.bibliography,
+    csln.bibliographyOrderIds || [],
+    testItems,
+    testCitations
+  );
 
   // 5. Output
   if (opts.jsonOutput) {

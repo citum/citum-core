@@ -41,6 +41,13 @@ function ensureOptionalString(value, label) {
   assert(typeof value === 'string' && value.trim().length > 0, `${label} must be a non-empty string`);
 }
 
+function validateRegisteredDivergence(divergence, label) {
+  assert(divergence && typeof divergence === 'object' && !Array.isArray(divergence), `${label} must be an object`);
+  ensureStringArray(divergence.scopes || [], `${label}.scopes`);
+  ensureStringArray(divergence.tags || [], `${label}.tags`);
+  ensureOptionalString(divergence.note, `${label}.note`);
+}
+
 function validateScopePolicy(scopePolicy, label) {
   assert(scopePolicy && typeof scopePolicy === 'object' && !Array.isArray(scopePolicy), `${label} must be an object`);
   if (scopePolicy.authority != null) {
@@ -63,6 +70,15 @@ function validateVerificationPolicy(policy) {
     ensureAuthority(authority, 'verification-policy.yaml defaults.secondary');
   }
   ensureStringArray(defaults.scopes || [], 'verification-policy.yaml defaults.scopes');
+  if (policy.divergences != null) {
+    assert(
+      policy.divergences && typeof policy.divergences === 'object' && !Array.isArray(policy.divergences),
+      'verification-policy.yaml divergences must be an object'
+    );
+    for (const [divergenceId, divergence] of Object.entries(policy.divergences)) {
+      validateRegisteredDivergence(divergence, `verification-policy.yaml divergences.${divergenceId}`);
+    }
+  }
 
   for (const [styleName, stylePolicy] of Object.entries(policy.styles)) {
     assert(stylePolicy && typeof stylePolicy === 'object' && !Array.isArray(stylePolicy), `verification-policy.yaml styles.${styleName} must be an object`);
@@ -142,6 +158,10 @@ function resolveVerificationPolicy(styleName, policy) {
   };
 }
 
+function resolveRegisteredDivergence(policy, divergenceId) {
+  return policy?.divergences?.[divergenceId] || null;
+}
+
 function resolveScopeAuthority(policy, scopeName) {
   const scopePolicy = policy.scopeAuthorities?.[scopeName] || {};
   const hasScopeAuthority = Object.prototype.hasOwnProperty.call(scopePolicy, 'authority')
@@ -183,6 +203,7 @@ module.exports = {
   loadFixtureSufficiency,
   loadVerificationPolicy,
   resolveFixtureSufficiency,
+  resolveRegisteredDivergence,
   resolveVerificationPolicy,
   resolveScopeAuthority,
   validateFixtureSufficiency,

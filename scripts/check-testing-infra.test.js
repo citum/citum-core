@@ -145,6 +145,15 @@ defaults:
   scopes:
     - citation
     - bibliography
+divergences:
+  div-004:
+    scopes:
+      - citation
+      - bibliography
+    tags:
+      - missing-name-title-sort-order
+      - sort-derived-numeric-citation-label
+    note: Missing-name sort divergence.
 styles:
   apa-7th:
     fixture_family: author-date
@@ -226,10 +235,42 @@ defaults:
   scopes:
     - citation
     - bibliography
+divergences:
+  div-004:
+    scopes:
+      - citation
+      - bibliography
+    tags:
+      - missing-name-title-sort-order
+      - sort-derived-numeric-citation-label
 styles:
   apa-7th:
     fixture_family: missing-family
 `);
 
   assert.throws(() => validateVerificationPolicyFiles(root), /unknown fixture family/);
+});
+
+test('verification policy fails when a registered divergence is malformed', () => {
+  const root = makeTempProject();
+  seedProject(root);
+  writeYaml(path.join(root, 'scripts/report-data/verification-policy.yaml'), `
+version: 1
+defaults:
+  authority: citeproc-js
+  secondary: []
+  scopes:
+    - citation
+    - bibliography
+divergences:
+  div-004:
+    scopes: citation
+    tags:
+      - missing-name-title-sort-order
+styles:
+  apa-7th:
+    fixture_family: author-date
+`);
+
+  assert.throws(() => validateVerificationPolicyFiles(root), /divergences\.div-004\.scopes must be an array/);
 });

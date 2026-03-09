@@ -561,10 +561,28 @@ function buildEmptyOracleResult(overrides = {}) {
   return {
     citations: { passed: 0, total: 0, entries: [] },
     bibliography: { passed: 0, total: 0, entries: [] },
+    adjusted: {
+      citations: { passed: 0, total: 0, entries: [] },
+      bibliography: { passed: 0, total: 0, entries: [] },
+      divergenceSummary: {},
+    },
     citationsByType: {},
     componentSummary: {},
     ...overrides,
   };
+}
+
+function getEffectiveOracleSection(oracleResult, sectionName) {
+  const adjustedSection = oracleResult?.adjusted?.[sectionName];
+  if (adjustedSection) {
+    const adjustedTotal = Number(adjustedSection.total || 0);
+    const adjustedPassed = Number(adjustedSection.passed || 0);
+    const hasDivergences = Object.keys(oracleResult?.adjusted?.divergenceSummary || {}).length > 0;
+    if (adjustedTotal > 0 || adjustedPassed > 0 || hasDivergences) {
+      return adjustedSection;
+    }
+  }
+  return oracleResult?.[sectionName] || { passed: 0, total: 0, entries: [] };
 }
 
 function getCslSnapshotStatus(stylePath, refsFixture, citationsFixture) {
@@ -936,6 +954,10 @@ function mergeOracleResults(main, extra) {
   const eCit = extra.citations || { passed: 0, total: 0 };
   const mBib = main.bibliography || { passed: 0, total: 0 };
   const eBib = extra.bibliography || { passed: 0, total: 0 };
+  const mAdjCit = getEffectiveOracleSection(main, 'citations');
+  const eAdjCit = getEffectiveOracleSection(extra, 'citations');
+  const mAdjBib = getEffectiveOracleSection(main, 'bibliography');
+  const eAdjBib = getEffectiveOracleSection(extra, 'bibliography');
 
   main.citations = {
     passed: (mCit.passed || 0) + (eCit.passed || 0),
@@ -947,6 +969,22 @@ function mergeOracleResults(main, extra) {
     total: (mBib.total || 0) + (eBib.total || 0),
     entries: [...(mBib.entries || []), ...(eBib.entries || [])],
   };
+  main.adjusted = {
+    citations: {
+      passed: (mAdjCit.passed || 0) + (eAdjCit.passed || 0),
+      total: (mAdjCit.total || 0) + (eAdjCit.total || 0),
+      entries: [...(mAdjCit.entries || []), ...(eAdjCit.entries || [])],
+    },
+    bibliography: {
+      passed: (mAdjBib.passed || 0) + (eAdjBib.passed || 0),
+      total: (mAdjBib.total || 0) + (eAdjBib.total || 0),
+      entries: [...(mAdjBib.entries || []), ...(eAdjBib.entries || [])],
+    },
+    divergenceSummary: {
+      ...(main.adjusted?.divergenceSummary || {}),
+      ...(extra.adjusted?.divergenceSummary || {}),
+    },
+  };
 
   return main;
 }
@@ -956,10 +994,24 @@ function mergeCitationResults(main, extra) {
 
   const mainCitations = main.citations || { passed: 0, total: 0, entries: [] };
   const extraCitations = extra.citations || { passed: 0, total: 0, entries: [] };
+  const mainAdjusted = getEffectiveOracleSection(main, 'citations');
+  const extraAdjusted = getEffectiveOracleSection(extra, 'citations');
   main.citations = {
     passed: (mainCitations.passed || 0) + (extraCitations.passed || 0),
     total: (mainCitations.total || 0) + (extraCitations.total || 0),
     entries: [...(mainCitations.entries || []), ...(extraCitations.entries || [])],
+  };
+  main.adjusted = {
+    citations: {
+      passed: (mainAdjusted.passed || 0) + (extraAdjusted.passed || 0),
+      total: (mainAdjusted.total || 0) + (extraAdjusted.total || 0),
+      entries: [...(mainAdjusted.entries || []), ...(extraAdjusted.entries || [])],
+    },
+    bibliography: getEffectiveOracleSection(main, 'bibliography'),
+    divergenceSummary: {
+      ...(main.adjusted?.divergenceSummary || {}),
+      ...(extra.adjusted?.divergenceSummary || {}),
+    },
   };
 
   const mergedByType = { ...(main.citationsByType || {}) };
@@ -987,6 +1039,14 @@ function composeScopedOracleResult(citationResult, bibliographyResult) {
   return {
     citations: citationResult?.citations || { passed: 0, total: 0, entries: [] },
     bibliography: bibliographyResult?.bibliography || { passed: 0, total: 0, entries: [] },
+    adjusted: {
+      citations: getEffectiveOracleSection(citationResult, 'citations'),
+      bibliography: getEffectiveOracleSection(bibliographyResult, 'bibliography'),
+      divergenceSummary: {
+        ...(citationResult?.adjusted?.divergenceSummary || {}),
+        ...(bibliographyResult?.adjusted?.divergenceSummary || {}),
+      },
+    },
     citationsByType: citationResult?.citationsByType || {},
     componentSummary: bibliographyResult?.componentSummary || {},
     oracleSource: bibliographyResult?.oracleSource || citationResult?.oracleSource || 'citeproc-js',
@@ -1002,8 +1062,8 @@ function computeFidelityScore(oracleResult) {
     return 0;
   }
 
-  const citations = oracleResult.citations || {};
-  const bibliography = oracleResult.bibliography || {};
+  const citations = getEffectiveOracleSection(oracleResult, 'citations');
+  const bibliography = getEffectiveOracleSection(oracleResult, 'bibliography');
 
   const citationsPassed = citations.passed || 0;
   const citationsTotal = citations.total || 0;
@@ -1522,8 +1582,10 @@ async function processStyleReport(runtime, styleSpec, context) {
   if (primaryComparator === 'citum-baseline') {
     const oracleResult = await runNativeOracle(runtime, styleSpec.name);
     const fidelityScore = computeFidelityScore(oracleResult);
-    const bibliography = oracleResult.bibliography || { passed: 0, total: 0 };
-    const citations = oracleResult.citations || { passed: 0, total: 0 };
+    const bibliography = getEffectiveOracleSection(oracleResult, 'bibliography');
+    const citations = getEffectiveOracleSection(oracleResult, 'citations');
+    const rawBibliography = oracleResult.bibliography || { passed: 0, total: 0 };
+    const rawCitations = oracleResult.citations || { passed: 0, total: 0 };
     const qualityMetrics = computeQualityMetrics(styleSpec, oracleResult);
     const qualityScore = qualityMetrics.score / 100;
     let statusTier = 'failing';
@@ -1544,7 +1606,10 @@ async function processStyleReport(runtime, styleSpec, context) {
         fidelityScore: parseFloat(fidelityScore.toFixed(3)),
         citations,
         bibliography,
+        rawCitations,
+        rawBibliography,
         knownDivergences: divergences[styleSpec.name] || [],
+        adjustedDivergences: oracleResult.adjusted?.divergenceSummary || {},
         citationsByType: oracleResult.citationsByType || {},
         error: oracleResult.error || null,
         componentMatchRate: null,
@@ -1617,8 +1682,10 @@ async function processStyleReport(runtime, styleSpec, context) {
   }
 
   const fidelityScore = computeFidelityScore(oracleResult);
-  const citations = oracleResult.citations || { passed: 0, total: 0 };
-  const bibliography = oracleResult.bibliography || { passed: 0, total: 0 };
+  const citations = getEffectiveOracleSection(oracleResult, 'citations');
+  const bibliography = getEffectiveOracleSection(oracleResult, 'bibliography');
+  const rawCitations = oracleResult.citations || { passed: 0, total: 0 };
+  const rawBibliography = oracleResult.bibliography || { passed: 0, total: 0 };
   const componentMatchRate = computeComponentMatchRate(oracleResult);
   const qualityMetrics = computeQualityMetrics(styleSpec, oracleResult);
   const qualityScore = qualityMetrics.score / 100;
@@ -1641,7 +1708,10 @@ async function processStyleReport(runtime, styleSpec, context) {
       fidelityScore: parseFloat(fidelityScore.toFixed(3)),
       citations,
       bibliography,
+      rawCitations,
+      rawBibliography,
       knownDivergences: divergences[styleSpec.name] || [],
+      adjustedDivergences: oracleResult.adjusted?.divergenceSummary || {},
       citationsByType: oracleResult.citationsByType || {},
       error: oracleResult.error || null,
       componentMatchRate,
@@ -2674,11 +2744,13 @@ if (require.main === module) {
 }
 
 module.exports = {
+  computeFidelityScore,
   createReportRuntime,
   discoverCoreStyles,
   equivalentText,
   expandCompoundBibEntries,
   formatAuthorityLabel,
+  getEffectiveOracleSection,
   getCslSnapshotStatus,
   generateHtml,
   generateReport,

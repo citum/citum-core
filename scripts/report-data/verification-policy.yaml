@@ -5,6 +5,17 @@ defaults:
   scopes:
     - citation
     - bibliography
+divergences:
+  div-004:
+    scopes:
+      - citation
+      - bibliography
+    tags:
+      - missing-name-title-sort-order
+      - sort-derived-numeric-citation-label
+    note: Missing-name works sort by title under author-based sorting. Adjusted
+      verification excludes mismatches caused solely by this registered
+      divergence while preserving raw citeproc deltas in reports.
 
 styles:
   numeric-comp:

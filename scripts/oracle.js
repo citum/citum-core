@@ -34,6 +34,7 @@ const {
 } = require('./oracle-utils');
 const { toCiteprocItem } = require('./lib/citeproc-locators');
 const { maybeDatasetErrorForFile } = require('./lib/dataset-guard');
+const { attachRegisteredDivergenceAdjustments } = require('./lib/oracle-divergences');
 
 const DEFAULT_REFS_FIXTURE = path.join(__dirname, '..', 'tests', 'fixtures', 'references-expanded.json');
 const DEFAULT_CITATIONS_FIXTURE = path.join(__dirname, '..', 'tests', 'fixtures', 'citations-expanded.json');
@@ -320,6 +321,7 @@ function renderWithCslnProcessor(stylePath, refsData, testItems, testCitations, 
     const lines = output.split('\n');
     const citations = {};
     const bibliography = {};
+    const bibliographyOrderIds = [];
 
     let section = null;
     for (const line of lines) {
@@ -340,6 +342,7 @@ function renderWithCslnProcessor(stylePath, refsData, testItems, testCitations, 
         const match = line.match(/^\s*\[([^\]]+)\]\s+(.+)/);
         if (match) {
           bibliography[match[1]] = match[2].trim();
+          bibliographyOrderIds.push(match[1]);
         }
       }
     }
@@ -352,7 +355,7 @@ function renderWithCslnProcessor(stylePath, refsData, testItems, testCitations, 
       }
     });
 
-    return { citations, bibliography: orderedBibliography };
+    return { citations, bibliography: orderedBibliography, bibliographyOrderIds };
   } finally {
     cleanupOracleTempWorkspace(workspace);
   }
@@ -597,7 +600,7 @@ function runOracle(cliOptions = parseArgs()) {
   // Analyze bibliography
   const pairs = matchBibliographyEntries(oracle.bibliography, csln.bibliography);
 
-  const results = {
+  const rawResults = {
     style: styleName,
     citations: {
       total: testCitations.length,
@@ -623,20 +626,20 @@ function runOracle(cliOptions = parseArgs()) {
     const cslnCit = normalizeText(csln.citations[id] || '');
     const match = equivalentCitationText(oracleCit, cslnCit, id);
     if (match) {
-      results.citations.passed++;
+      rawResults.citations.passed++;
     } else {
-      results.citations.failed++;
+      rawResults.citations.failed++;
     }
-    results.citations.entries.push({ id, oracle: oracleCit, csln: cslnCit, match });
+    rawResults.citations.entries.push({ id, oracle: oracleCit, csln: cslnCit, match });
 
     const citationTypes = collectCitationTypes(cite, testItems);
     for (const type of citationTypes) {
-      if (!results.citationsByType[type]) {
-        results.citationsByType[type] = { total: 0, passed: 0 };
+      if (!rawResults.citationsByType[type]) {
+        rawResults.citationsByType[type] = { total: 0, passed: 0 };
       }
-      results.citationsByType[type].total++;
+      rawResults.citationsByType[type].total++;
       if (match) {
-        results.citationsByType[type].passed++;
+        rawResults.citationsByType[type].passed++;
       }
     }
   }
@@ -656,10 +659,10 @@ function runOracle(cliOptions = parseArgs()) {
 
     if (!pair.oracle) {
       entryResult.issues.push({ issue: 'extra_entry', detail: 'Entry in CSLN but not oracle' });
-      results.bibliography.failed++;
+      rawResults.bibliography.failed++;
     } else if (!pair.csln) {
       entryResult.issues.push({ issue: 'missing_entry', detail: 'Entry in oracle but not CSLN' });
-      results.bibliography.failed++;
+      rawResults.bibliography.failed++;
     } else {
       // Both exist - compare
       const oracleNorm = normalizeText(pair.oracle);
@@ -667,9 +670,9 @@ function runOracle(cliOptions = parseArgs()) {
 
       if (equivalentText(oracleNorm, cslnNorm)) {
         entryResult.match = true;
-        results.bibliography.passed++;
+        rawResults.bibliography.passed++;
       } else {
-        results.bibliography.failed++;
+        rawResults.bibliography.failed++;
 
         // Find reference data for this entry
         const refData = findRefDataForEntry(pair.oracle, testItems);
@@ -690,7 +693,7 @@ function runOracle(cliOptions = parseArgs()) {
 
           if (orderIssues.length > 0) {
             entryResult.ordering = { oracle: oracleOrder, csln: cslnOrder };
-            results.orderingIssues++;
+            rawResults.orderingIssues++;
           }
 
           entryResult.issues = [...differences, ...orderIssues];
@@ -698,7 +701,7 @@ function runOracle(cliOptions = parseArgs()) {
           // Track component issues for summary
           for (const diff of differences) {
             const key = `${diff.component}:${diff.issue}`;
-            results.componentSummary[key] = (results.componentSummary[key] || 0) + 1;
+            rawResults.componentSummary[key] = (rawResults.componentSummary[key] || 0) + 1;
           }
         } else {
           // No reference data found - skip component analysis
@@ -707,8 +710,16 @@ function runOracle(cliOptions = parseArgs()) {
       }
     }
 
-    results.bibliography.entries.push(entryResult);
+    rawResults.bibliography.entries.push(entryResult);
   }
+
+  const results = attachRegisteredDivergenceAdjustments(
+    rawResults,
+    oracle.bibliography,
+    csln.bibliographyOrderIds || [],
+    testItems,
+    testCitations
+  );
 
   // Output
   if (jsonOutput) {
@@ -716,7 +727,7 @@ function runOracle(cliOptions = parseArgs()) {
   } else {
     // Human-readable output
     console.log('\n--- CITATIONS ---');
-    console.log(`  ✅ Passed: ${results.citations.passed}/${results.citations.total}`);
+      console.log(`  ✅ Passed: ${results.citations.passed}/${results.citations.total}`);
     if (results.citations.failed > 0) {
       console.log(`  ❌ Failed: ${results.citations.failed}/${results.citations.total}`);
     }

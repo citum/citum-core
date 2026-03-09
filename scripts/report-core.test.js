@@ -5,6 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 
 const {
+  resolveRegisteredDivergence,
   loadVerificationPolicy,
   resolveVerificationPolicy,
   resolveScopeAuthority,
@@ -13,9 +14,11 @@ const { getEffectiveVerificationScopes } = require('./lib/style-verification');
 const { loadReportProvenance } = require('./lib/report-metadata');
 const {
   discoverCoreStyles,
+  computeFidelityScore,
   equivalentText,
   expandCompoundBibEntries,
   formatAuthorityLabel,
+  getEffectiveOracleSection,
   getCslSnapshotStatus,
   getComparisonEntryTexts,
   mapWithConcurrency,
@@ -89,6 +92,18 @@ test('verification policy exposes scope-specific authority for chemistry benchma
   });
 });
 
+test('verification policy exposes registered divergence metadata for div-004', () => {
+  const policy = loadVerificationPolicy();
+  const divergence = resolveRegisteredDivergence(policy, 'div-004');
+
+  assert.deepEqual(divergence.scopes, ['citation', 'bibliography']);
+  assert.deepEqual(divergence.tags, [
+    'missing-name-title-sort-order',
+    'sort-derived-numeric-citation-label',
+  ]);
+  assert.match(divergence.note, /Missing-name works sort by title/);
+});
+
 test('citation-only styles do not advertise bibliography verification scopes', () => {
   const styles = loadStyleMap();
   const policy = loadVerificationPolicy();
@@ -108,6 +123,23 @@ test('comparison text helper supports both live-oracle and native-snapshot entry
     getComparisonEntryTexts({ expected: 'snapshot benchmark', actual: 'snapshot citum' }),
     { benchmark: 'snapshot benchmark', citum: 'snapshot citum' }
   );
+});
+
+test('effective oracle sections and fidelity prefer adjusted counts when present', () => {
+  const oracleResult = {
+    citations: { passed: 8, total: 10, entries: [] },
+    bibliography: { passed: 9, total: 10, entries: [] },
+    adjusted: {
+      citations: { passed: 10, total: 10, entries: [] },
+      bibliography: { passed: 10, total: 10, entries: [] },
+      divergenceSummary: {
+        'div-004': { adjustedCitations: 2 },
+      },
+    },
+  };
+
+  assert.deepEqual(getEffectiveOracleSection(oracleResult, 'citations'), oracleResult.adjusted.citations);
+  assert.equal(computeFidelityScore(oracleResult), 1);
 });
 
 test('expandCompoundBibEntries splits merged biblatex compound blocks', () => {
