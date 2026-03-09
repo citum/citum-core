@@ -5,7 +5,7 @@ status: todo
 type: feature
 priority: normal
 created_at: 2026-03-09T21:07:35Z
-updated_at: 2026-03-09T21:07:35Z
+updated_at: 2026-03-09T23:22:45Z
 ---
 
 Follow-up to `csl26-suz3`.
@@ -29,3 +29,13 @@ Requirements:
 Non-goals:
 - re-opening the bounded Djot title-markup work already landed in `csl26-suz3`
 - shipping `.nocase` or title-case logic without prior-art review and a spec
+
+Sources:
+
+This thread on the CSL discourse notes that sentence casing is generally
+preferred since it's much easier to reliably convert to other title casing.
+But there are different rules on subtitle sentence-casing, which complicates
+this for CSL. But it's one reason we allow more complex title representation
+in Citum.
+
+https://discourse.citationstyles.org/t/sentence-case-variants/1221
