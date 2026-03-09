@@ -1,11 +1,11 @@
 ---
 # csl26-ufx4
 title: Engine-first co-evolution wave for migrate and engine fidelity
-status: in-progress
+status: completed
 type: feature
 priority: high
 created_at: 2026-03-09T15:53:54Z
-updated_at: 2026-03-09T17:33:00Z
+updated_at: 2026-03-09T20:12:33Z
 ---
 
 Spec: docs/specs/ENGINE_MIGRATE_COEVOLUTION_WAVE.md

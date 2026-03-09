@@ -1,11 +1,11 @@
 ---
 # csl26-paok
 title: Name formatting architecture redesign
-status: in-progress
+status: completed
 type: feature
 priority: high
 created_at: 2026-03-05T13:48:49Z
-updated_at: 2026-03-05T14:22:51Z
+updated_at: 2026-03-09T20:12:33Z
 ---
 
 Remove ModeDependent from AndOptions; add NameForm enum (Full|FamilyOnly|Initials) to ContributorConfig; migrate all affected styles; write architecture doc. Breaking change — implement on a PR branch.

@@ -1,11 +1,11 @@
 ---
 # csl26-ccqg
 title: Define multi-authority style verification model
-status: in-progress
+status: completed
 type: feature
 priority: high
 created_at: 2026-03-07T02:11:51Z
-updated_at: 2026-03-07T13:35:48Z
+updated_at: 2026-03-09T20:12:33Z
 ---
 
 Plan the shift from vague oracle language to an explicit authority-source and
