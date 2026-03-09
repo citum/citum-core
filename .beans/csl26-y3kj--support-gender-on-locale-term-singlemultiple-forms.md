@@ -1,27 +1,27 @@
 ---
 # csl26-y3kj
-title: 'Support gender on locale term single/multiple forms (CSL #460)'
+title: Add MaybeGendered<T> to locale term model
 status: todo
 type: feature
 priority: low
 created_at: 2026-03-09T22:28:26Z
-updated_at: 2026-03-09T22:28:57Z
+updated_at: 2026-03-09T23:06:36Z
 ---
 
 ## Context
 
-CSL schema issue: https://github.com/citation-style-language/schema/issues/460
-CSL locales PR: https://github.com/citation-style-language/locales/pull/421
+Citum's locale model uses plain `String` for all term values (`SimpleTerm.long/short`,
+`SingularPlural.singular/plural`). Inflected languages need an optional gender dimension:
 
-Arabic requires per-form gender because masculine and feminine singular ordinals differ:
-```xml
-<term name="ordinal-01">
-  <single gender="masculine">١٫</single>
-  <single gender="feminine">١.</single>
-</term>
-```
+- Romance languages: French "editor" is "éditeur" (m) or "éditrice" (f)
+- Arabic: ordinals inflect for gender — "الأول" (m) vs "الأولى" (f)
 
-Romance languages also need this for contributor role terms (editor/translator).
+biblatex handles this ad hoc via separate localization keys and macros; there is no systematic
+locale-level gender model. Citum can do better with a typed `MaybeGendered<T>` approach.
+
+**Prior art:** biblatex (separate keys/macros per gender), CSL #460 (XML attribute extension).
+**Citum approach:** replace `String` fields in `SimpleTerm` and `SingularPlural` with
+`MaybeGendered<String>` — an untagged enum that plain-string locales satisfy automatically.
 
 ## Spec
 
@@ -30,10 +30,10 @@ See `docs/specs/GENDERED_LOCALE_TERMS.md`
 ## Todos
 
 - [x] Create spec doc (docs/specs/GENDERED_LOCALE_TERMS.md)
-- [ ] Extend csl-legacy Term model (single/multiple → gender-aware enum)
-- [ ] Extend csl-legacy parser to read gender on child nodes
-- [ ] Add GenderedForms variant to citum-schema RawTermValue
-- [ ] Add GenderedSingularPlural type to citum-schema locale types
-- [ ] Update term lookup APIs to accept optional TermGender param
+- [ ] Add `MaybeGendered<T>` and `TermGender` to citum-schema locale types
+- [ ] Change `SimpleTerm.long/short` to `MaybeGendered<String>`
+- [ ] Change `SingularPlural.singular/plural` to `MaybeGendered<String>`
+- [ ] Add `Gendered` variant to `RawTermValue` for YAML deserialization
+- [ ] Update `Locale::role_term`, `locator_term`, `general_term` to accept `Option<TermGender>`
 - [ ] Pass gender context through engine term rendering
-- [ ] Update docs/schemas/locale.json
+- [ ] Snapshot tests: French gendered editor, Arabic gendered ordinal
