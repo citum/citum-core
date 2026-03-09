@@ -12,6 +12,8 @@ use citum_schema::reference::InputReference;
 use csl_legacy::csl_json::Reference as LegacyReference;
 use indexmap::IndexMap;
 
+use crate::render::format::OutputFormat;
+use crate::render::rich_text::render_djot_inline;
 use crate::{Bibliography, Citation, ProcessorError, Reference};
 
 /// Bibliography data loaded from input, including optional compound sets.
@@ -83,6 +85,23 @@ pub enum AnnotationFormat {
     Plain,
     /// Parse annotation as org-mode markup.
     Org,
+}
+
+/// Render a free-text reference field with djot inline markup.
+///
+/// Applies `render_djot_inline` to the source text, using the provided
+/// OutputFormat to handle emphasis, links, and other inline markup.
+/// This is the render-time hook for processing note, abstract, and other
+/// free-text reference fields that may contain djot markup.
+///
+/// # Arguments
+/// * `src` - Input string with optional djot inline markup
+/// * `fmt` - OutputFormat implementation for rendering
+///
+/// # Returns
+/// Rendered string with markup applied
+pub fn render_rich_text_field<F: OutputFormat<Output = String>>(src: &str, fmt: &F) -> String {
+    render_djot_inline(src, fmt)
 }
 
 /// Load a list of citations from a file.
@@ -383,7 +402,22 @@ pub fn load_bibliography(path: &Path) -> Result<Bibliography, ProcessorError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::render::plain::PlainText;
     use indexmap::IndexMap;
+
+    #[test]
+    fn render_rich_text_field_with_bold() {
+        let fmt = PlainText;
+        let result = render_rich_text_field("This is *bold* text", &fmt);
+        assert_eq!(result, "This is **bold** text");
+    }
+
+    #[test]
+    fn render_rich_text_field_with_link() {
+        let fmt = PlainText;
+        let result = render_rich_text_field("See [this](https://example.com) for details", &fmt);
+        assert_eq!(result, "See this for details");
+    }
 
     #[test]
     fn load_citations_preserves_locator_labels() {

@@ -23,37 +23,23 @@ use jotdown::{Attributes, Container, Event, Parser};
 /// Formatted string with markup applied according to the OutputFormat's methods
 pub fn render_djot_inline<F: OutputFormat<Output = String>>(src: &str, fmt: &F) -> String {
     let parser = Parser::new(src);
-    let mut stack: Vec<Vec<String>> = vec![vec![]];
+    // Each entry is (collected_children, link_url). The root entry starts with no URL.
+    let mut stack: Vec<(Vec<String>, Option<String>)> = vec![(vec![], None)];
     let mut current_attrs: Option<Attributes> = None;
 
     for event in parser {
         match event {
             Event::Start(container, attrs) => {
                 current_attrs = Some(attrs.clone());
-                match container {
-                    // Block-level and structural containers: open a new scope
-                    Container::Heading { .. }
-                    | Container::CodeBlock { .. }
-                    | Container::Paragraph
-                    | Container::Blockquote
-                    | Container::List { .. }
-                    | Container::ListItem => {
-                        stack.push(vec![]);
-                    }
-                    // Inline containers: open a new scope for collecting content
-                    Container::Emphasis => stack.push(vec![]),
-                    Container::Strong => stack.push(vec![]),
-                    Container::Link(_, _) => stack.push(vec![]),
-                    Container::Span => stack.push(vec![]),
-                    Container::Verbatim => stack.push(vec![]),
-                    _ => {
-                        // Other containers: silently open scope
-                        stack.push(vec![]);
-                    }
-                }
+                let url = if let Container::Link(url, _) = &container {
+                    Some(url.to_string())
+                } else {
+                    None
+                };
+                stack.push((vec![], url));
             }
             Event::End(container) => {
-                if let Some(inner) = stack.pop() {
+                if let Some((inner, link_url)) = stack.pop() {
                     let inner_text = inner.join("");
                     let formatted = match container {
                         Container::Emphasis => {
@@ -65,9 +51,12 @@ pub fn render_djot_inline<F: OutputFormat<Output = String>>(src: &str, fmt: &F) 
                             fmt.strong(inner_output)
                         }
                         Container::Link(_, _) => {
-                            // For links, the URL is in the Container variant matched above
-                            // but we don't have access to it in End. For now, render as text.
-                            fmt.text(&inner_text)
+                            if let Some(url) = link_url {
+                                let inner_output = fmt.text(&inner_text);
+                                fmt.link(&url, inner_output)
+                            } else {
+                                fmt.text(&inner_text)
+                            }
                         }
                         Container::Span => {
                             // Check if span has smallcaps class in attributes from Event::Start
@@ -99,21 +88,20 @@ pub fn render_djot_inline<F: OutputFormat<Output = String>>(src: &str, fmt: &F) 
                                 fmt.text(&inner_text)
                             }
                         }
-                        Container::Verbatim => fmt.text(&inner_text),
                         _ => fmt.text(&inner_text),
                     };
-                    if let Some(parent) = stack.last_mut() {
+                    if let Some((parent, _)) = stack.last_mut() {
                         parent.push(formatted);
                     }
                 }
             }
             Event::Str(s) => {
-                if let Some(parent) = stack.last_mut() {
+                if let Some((parent, _)) = stack.last_mut() {
                     parent.push(fmt.text(s.as_ref()));
                 }
             }
             Event::Softbreak | Event::Hardbreak => {
-                if let Some(parent) = stack.last_mut() {
+                if let Some((parent, _)) = stack.last_mut() {
                     parent.push(fmt.text(" "));
                 }
             }
@@ -122,11 +110,11 @@ pub fn render_djot_inline<F: OutputFormat<Output = String>>(src: &str, fmt: &F) 
     }
 
     // Collect root level content
-    if let Some(root) = stack.first() {
-        root.join("")
-    } else {
-        String::new()
-    }
+    stack
+        .into_iter()
+        .next()
+        .map(|(v, _)| v.join(""))
+        .unwrap_or_default()
 }
 
 /// Render org-mode inline markup by walking the orgize event stream.
@@ -233,6 +221,15 @@ mod tests {
         let result = render_djot_inline("_emphasized *bold* text_", &fmt);
         // Emphasis wraps in _..._. Inside that, strong wraps in **...**
         assert_eq!(result, "_emphasized **bold** text_");
+    }
+
+    #[test]
+    fn test_djot_link() {
+        let fmt = PlainText;
+        // In djot, [text](url) is a link
+        let result = render_djot_inline("[click here](https://example.com)", &fmt);
+        // PlainText.link() just renders the link text (ignores URL)
+        assert_eq!(result, "click here");
     }
 
     #[test]
