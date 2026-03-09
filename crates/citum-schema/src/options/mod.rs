@@ -8,6 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 pub mod bibliography;
 pub mod contributors;
 pub mod dates;
+pub mod integral_names;
 pub mod localization;
 pub mod multilingual;
 pub mod processing;
@@ -20,6 +21,10 @@ pub use contributors::{
     ShortenListOptions,
 };
 pub use dates::{DateConfig, DateConfigEntry};
+pub use integral_names::{
+    IntegralNameConfig, IntegralNameContexts, IntegralNameForm, IntegralNameRule,
+    IntegralNameScope, ResolvedIntegralNameConfig,
+};
 pub use localization::{Localize, MonthFormat, Scope};
 pub use multilingual::{MultilingualConfig, MultilingualMode, ScriptConfig};
 pub use processing::{
@@ -107,6 +112,9 @@ pub struct Config {
     /// Document-level note marker placement and punctuation movement rules.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub notes: Option<NoteConfig>,
+    /// Integral citation name-memory behavior.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub integral_names: Option<IntegralNameConfig>,
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
@@ -260,6 +268,7 @@ impl Config {
             semantic_classes,
             strip_periods,
             notes,
+            integral_names,
             custom,
         );
 

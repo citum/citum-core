@@ -28,6 +28,7 @@ fn main() {
             locator: None,
             prefix: None,
             suffix: None,
+            integral_name_state: None,
         }],
     };
 

@@ -33,6 +33,17 @@ pub enum CitationMode {
     NonIntegral,
 }
 
+/// Explicit integral citation name-memory state for one citation item.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum IntegralNameState {
+    /// Render this item as the first integral mention in scope.
+    First,
+    /// Render this item as a subsequent integral mention in scope.
+    Subsequent,
+}
+
 /// Position of a citation in the document flow.
 ///
 /// Indicates where this citation appears relative to previous citations
@@ -402,6 +413,9 @@ pub struct CitationItem {
     /// Suffix text after this item
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suffix: Option<String>,
+    /// Explicit integral name-memory state override for this item.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub integral_name_state: Option<IntegralNameState>,
 }
 
 impl CitationItem {

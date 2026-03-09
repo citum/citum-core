@@ -33,7 +33,9 @@ pub mod embedded;
 /// Declarative macros for AST and configurations.
 pub mod macros;
 
-pub use citation::{Citation, CitationItem, CitationMode, Citations, LocatorType, Position};
+pub use citation::{
+    Citation, CitationItem, CitationMode, Citations, IntegralNameState, LocatorType, Position,
+};
 pub use grouping::{
     BibliographyGroup, CitedStatus, FieldMatcher, GroupHeading, GroupSelector, GroupSort,
     GroupSortEntry, GroupSortKey, NameSortOrder, SortKey, TypeSelector,

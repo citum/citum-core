@@ -6,13 +6,15 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! Djot document parsing and HTML conversion.
 
 use super::{
-    CitationParser, CitationPlacement, ManualNoteReference, ParsedCitation, ParsedDocument,
+    CitationParser, CitationPlacement, CitationStructure, DocumentIntegralNameOverride,
+    ManualNoteReference, ParsedCitation, ParsedDocument,
 };
 use crate::{Citation, CitationItem};
 use citum_schema::citation::{CitationMode, normalize_locator_text};
 use citum_schema::grouping::BibliographyGroup;
 use citum_schema::locale::Locale;
 use jotdown::{Attributes, Container, Event, Parser};
+use serde::Deserialize;
 use std::collections::HashSet;
 use std::ops::Range;
 use winnow::Parser as WinnowParser;
@@ -25,6 +27,27 @@ use winnow::token::{take_until, take_while};
 struct FootnoteDefinitionRange {
     label: String,
     content: Range<usize>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+struct DocumentFrontmatter {
+    bibliography: Option<Vec<BibliographyGroup>>,
+    integral_names: Option<DocumentIntegralNameOverride>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ScopeChange {
+    offset: usize,
+    structure: CitationStructure,
+}
+
+#[derive(Debug, Default)]
+struct ScopeTracker {
+    current_chapter: Option<String>,
+    current_section: Option<String>,
+    chapter_stack: Vec<(Option<String>, Option<String>)>,
+    section_stack: Vec<Option<String>>,
 }
 
 /// A bibliography block parsed from djot source.
@@ -61,7 +84,7 @@ fn parse_integral_modifier(input: &mut &str) -> winnow::Result<bool, ContextErro
 impl CitationParser for DjotParser {
     fn parse_document(&self, content: &str, locale: &Locale) -> ParsedDocument {
         // Try to parse frontmatter and get remaining content
-        let (frontmatter_groups, remaining_content) = parse_frontmatter(content);
+        let (frontmatter, remaining_content) = parse_frontmatter(content);
         let body_start = content.len() - remaining_content.len();
 
         let (manual_note_references, manual_note_labels, footnote_definitions) =
@@ -75,15 +98,17 @@ impl CitationParser for DjotParser {
             }
         }
 
-        let citations = find_citations(remaining_content, locale)
+        let mut citations: Vec<_> = find_citations(remaining_content, locale)
             .into_iter()
             .map(|(start, end, citation)| ParsedCitation {
                 start,
                 end,
                 citation,
                 placement: citation_placement(start, end, &footnote_definitions),
+                structure: CitationStructure::default(),
             })
             .collect();
+        annotate_citation_structures(remaining_content, &mut citations);
 
         // Scan for inline bibliography blocks in remaining content
         let bibliography_blocks = scan_bibliography_blocks(remaining_content);
@@ -94,7 +119,11 @@ impl CitationParser for DjotParser {
             manual_note_references,
             manual_note_labels,
             bibliography_blocks,
-            frontmatter_groups,
+            frontmatter_groups: frontmatter
+                .as_ref()
+                .and_then(|frontmatter| frontmatter.bibliography.clone()),
+            frontmatter_integral_names: frontmatter
+                .and_then(|frontmatter| frontmatter.integral_names),
             body_start,
         }
     }
@@ -159,6 +188,88 @@ fn citation_placement(
             label: definition.label.clone(),
         })
         .unwrap_or(CitationPlacement::InlineProse)
+}
+
+fn annotate_citation_structures(content: &str, citations: &mut [ParsedCitation]) {
+    if citations.is_empty() {
+        return;
+    }
+
+    let changes = collect_scope_changes(content);
+    for citation in citations {
+        citation.structure = scope_for_offset(&changes, citation.start);
+    }
+}
+
+fn collect_scope_changes(content: &str) -> Vec<ScopeChange> {
+    let mut tracker = ScopeTracker::default();
+    let mut changes = vec![ScopeChange {
+        offset: 0,
+        structure: tracker.current_structure(),
+    }];
+
+    for (event, range) in Parser::new(content).into_offset_iter() {
+        match event {
+            Event::Start(Container::Div { class }, _) => {
+                let classes: Vec<&str> = class.split_whitespace().collect();
+                if classes.contains(&"chapter") {
+                    tracker.enter_chapter(format!("chapter-div-{}", range.start));
+                    push_scope_change(&mut changes, range.start, tracker.current_structure());
+                }
+                if classes.contains(&"section") {
+                    tracker.enter_section(format!("section-div-{}", range.start));
+                    push_scope_change(&mut changes, range.start, tracker.current_structure());
+                }
+            }
+            Event::End(Container::Div { class }) => {
+                let classes: Vec<&str> = class.split_whitespace().collect();
+                if classes.contains(&"section") {
+                    tracker.exit_section();
+                    push_scope_change(&mut changes, range.end, tracker.current_structure());
+                }
+                if classes.contains(&"chapter") {
+                    tracker.exit_chapter();
+                    push_scope_change(&mut changes, range.end, tracker.current_structure());
+                }
+            }
+            Event::Start(
+                Container::Heading {
+                    level,
+                    id,
+                    has_section: _,
+                },
+                _,
+            ) => {
+                let scope_id = if id.is_empty() {
+                    format!("heading-{level}-{}", range.start)
+                } else {
+                    id.to_string()
+                };
+                tracker.enter_heading(level, scope_id);
+                push_scope_change(&mut changes, range.start, tracker.current_structure());
+            }
+            _ => {}
+        }
+    }
+
+    changes
+}
+
+fn push_scope_change(changes: &mut Vec<ScopeChange>, offset: usize, structure: CitationStructure) {
+    if changes
+        .last()
+        .is_none_or(|change| change.structure != structure)
+    {
+        changes.push(ScopeChange { offset, structure });
+    }
+}
+
+fn scope_for_offset(changes: &[ScopeChange], offset: usize) -> CitationStructure {
+    let index = changes.partition_point(|change| change.offset <= offset);
+    changes
+        .get(index.saturating_sub(1))
+        .map(|change| change.structure.clone())
+        .unwrap_or_default()
 }
 
 fn find_citations(content: &str, locale: &Locale) -> Vec<(usize, usize, Citation)> {
@@ -270,9 +381,64 @@ fn parse_citation_item_no_integral(
     Ok(item)
 }
 
+impl ScopeTracker {
+    fn current_structure(&self) -> CitationStructure {
+        let chapter_scope = self
+            .current_chapter
+            .clone()
+            .unwrap_or_else(|| "document".to_string());
+        let section_scope = self
+            .current_section
+            .clone()
+            .unwrap_or_else(|| chapter_scope.clone());
+        CitationStructure {
+            chapter_scope,
+            section_scope,
+        }
+    }
+
+    fn enter_chapter(&mut self, scope_id: String) {
+        self.chapter_stack
+            .push((self.current_chapter.clone(), self.current_section.clone()));
+        self.current_chapter = Some(scope_id);
+        self.current_section = None;
+    }
+
+    fn exit_chapter(&mut self) {
+        if let Some((chapter, section)) = self.chapter_stack.pop() {
+            self.current_chapter = chapter;
+            self.current_section = section;
+        }
+    }
+
+    fn enter_section(&mut self, scope_id: String) {
+        self.section_stack.push(self.current_section.clone());
+        self.current_section = Some(scope_id);
+    }
+
+    fn exit_section(&mut self) {
+        if let Some(section) = self.section_stack.pop() {
+            self.current_section = section;
+        }
+    }
+
+    fn enter_heading(&mut self, level: u16, scope_id: String) {
+        if level == 1 {
+            if self.chapter_stack.is_empty() {
+                self.current_chapter = Some(scope_id);
+                self.current_section = None;
+            } else {
+                self.current_section = Some(scope_id);
+            }
+        } else {
+            self.current_section = Some(scope_id);
+        }
+    }
+}
+
 /// Parse YAML frontmatter from content.
-/// Returns (Option<groups>, remaining_content).
-fn parse_frontmatter(content: &str) -> (Option<Vec<BibliographyGroup>>, &str) {
+/// Returns (frontmatter, remaining_content).
+fn parse_frontmatter(content: &str) -> (Option<DocumentFrontmatter>, &str) {
     let trimmed = content.trim_start();
     if !trimmed.starts_with("---") {
         return (None, content);
@@ -283,18 +449,10 @@ fn parse_frontmatter(content: &str) -> (Option<Vec<BibliographyGroup>>, &str) {
         let frontmatter_content = &after_opening[..closing_pos];
         let remaining = &after_opening[closing_pos + 3..].trim_start();
 
-        match serde_yaml::from_str::<serde_yaml::Value>(frontmatter_content) {
-            Ok(value) => {
-                if let Some(bib_value) = value.get("bibliography")
-                    && let Ok(groups) =
-                        serde_yaml::from_value::<Vec<BibliographyGroup>>(bib_value.clone())
-                {
-                    return (Some(groups), remaining);
-                }
-                (None, remaining)
-            }
-            Err(_) => (None, remaining),
-        }
+        (
+            serde_yaml::from_str::<DocumentFrontmatter>(frontmatter_content).ok(),
+            remaining,
+        )
     } else {
         (None, content)
     }

@@ -694,6 +694,7 @@ impl<'a> Renderer<'a> {
                     loc_value.as_deref(),
                     loc_label,
                     position,
+                    item.integral_name_state,
                 ) {
                     let item_str = crate::render::citation::citation_to_string_with_format::<F>(
                         &proc,
@@ -847,6 +848,7 @@ impl<'a> Renderer<'a> {
                     loc_value.as_deref(),
                     loc_label,
                     position,
+                    first_item.integral_name_state,
                 ) {
                     // Use integral-specific delimiter, defaulting to space for narrative
                     let integral_delimiter = spec.delimiter.as_deref().unwrap_or(" ");
@@ -909,6 +911,7 @@ impl<'a> Renderer<'a> {
                         loc_value.as_deref(),
                         loc_label,
                         position,
+                        item.integral_name_state,
                     ) {
                         let item_str = crate::render::citation::citation_to_string_with_format::<F>(
                             &proc,
@@ -940,8 +943,14 @@ impl<'a> Renderer<'a> {
             }
 
             // Fallback to default hardcoded grouping (or if no integral template)
-            let author_part = self
-                .render_author_for_grouping_with_format::<F>(first_ref, template, mode, position);
+            let author_part = self.render_author_for_grouping_with_format::<F>(
+                first_ref,
+                first_item,
+                template,
+                mode,
+                suppress_author,
+                position,
+            );
 
             let mut item_parts = Vec::new();
             let mut group_delimiter: Option<String> = None;
@@ -979,6 +988,7 @@ impl<'a> Renderer<'a> {
                     loc_value.as_deref(),
                     loc_label,
                     position,
+                    item.integral_name_state,
                 ) {
                     let item_str = crate::render::citation::citation_to_string_with_format::<F>(
                         &proc,
@@ -1090,11 +1100,13 @@ impl<'a> Renderer<'a> {
     }
 
     /// Render just the author part for citation grouping.
-    fn render_author_for_grouping_with_format<F>(
+    pub(crate) fn render_author_for_grouping_with_format<F>(
         &self,
         reference: &Reference,
+        item: &crate::reference::CitationItem,
         template: &[TemplateComponent],
         mode: &citum_schema::citation::CitationMode,
+        suppress_author: bool,
         position: Option<&citum_schema::citation::Position>,
     ) -> String
     where
@@ -1105,7 +1117,7 @@ impl<'a> Renderer<'a> {
             locale: self.locale,
             context: RenderContext::Citation,
             mode: mode.clone(),
-            suppress_author: false,
+            suppress_author,
             locator: None,
             locator_label: None,
         };
@@ -1122,6 +1134,7 @@ impl<'a> Renderer<'a> {
             // Inject citation position so subsequent et-al thresholds are applied.
             let hints = ProcHints {
                 position: position.cloned(),
+                integral_name_state: item.integral_name_state,
                 ..base_hints
             };
             if let Some(vals) = comp.values::<F>(reference, &hints, &options)
@@ -1164,6 +1177,74 @@ impl<'a> Renderer<'a> {
             String::new()
         }
     }
+
+    /// Render the prose anchor for an integral citation without any trailing note text.
+    pub(crate) fn render_integral_anchor_with_format<F>(
+        &self,
+        items: &[crate::reference::CitationItem],
+        spec: &citum_schema::CitationSpec,
+        inter_delimiter: &str,
+        suppress_author: bool,
+        position: Option<&citum_schema::citation::Position>,
+    ) -> Result<String, ProcessorError>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        use crate::reference::CitationItem;
+
+        let preserve_individual_citations = items.iter().any(|item| {
+            self.hints
+                .get(&item.id)
+                .is_some_and(|hints| hints.min_names_to_show.is_some() || hints.expand_given_names)
+        });
+
+        let mut groups: Vec<(String, Vec<&CitationItem>)> = Vec::new();
+        for item in items {
+            let reference = self.bibliography.get(&item.id);
+            let author_key = if preserve_individual_citations {
+                item.id.clone()
+            } else {
+                reference
+                    .map(|r| self.get_author_grouping_key(r))
+                    .unwrap_or_default()
+            };
+
+            match groups.last_mut() {
+                Some(group) if !author_key.is_empty() && group.0 == author_key => {
+                    group.1.push(item);
+                }
+                _ => {
+                    groups.push((author_key, vec![item]));
+                }
+            }
+        }
+
+        let mut rendered_groups = Vec::new();
+        let fmt = F::default();
+        for (_author_key, group) in groups {
+            let first_item = group[0];
+            let reference = self
+                .bibliography
+                .get(&first_item.id)
+                .ok_or_else(|| ProcessorError::ReferenceNotFound(first_item.id.clone()))?;
+            let item_language = crate::values::effective_item_language(reference);
+            let template = spec.resolve_template_for_language(item_language.as_deref());
+            let effective_template = template.as_deref().unwrap_or(&[]);
+            let author_part = self.render_author_for_grouping_with_format::<F>(
+                reference,
+                first_item,
+                effective_template,
+                &citum_schema::citation::CitationMode::Integral,
+                suppress_author,
+                position,
+            );
+            if !author_part.is_empty() {
+                rendered_groups.push(author_part);
+            }
+        }
+
+        Ok(fmt.join(rendered_groups, inter_delimiter))
+    }
     #[allow(dead_code)]
     fn render_author_for_grouping(
         &self,
@@ -1172,8 +1253,9 @@ impl<'a> Renderer<'a> {
         mode: &citum_schema::citation::CitationMode,
         position: Option<&citum_schema::citation::Position>,
     ) -> String {
+        let item = crate::reference::CitationItem::default();
         self.render_author_for_grouping_with_format::<crate::render::plain::PlainText>(
-            reference, template, mode, position,
+            reference, &item, template, mode, false, position,
         )
     }
 
@@ -1319,6 +1401,7 @@ impl<'a> Renderer<'a> {
             options,
             entry_number,
             None,
+            None,
         )
     }
 
@@ -1335,6 +1418,7 @@ impl<'a> Renderer<'a> {
         locator: Option<&str>,
         locator_label: Option<citum_schema::citation::LocatorType>,
         position: Option<&citum_schema::citation::Position>,
+        integral_name_state: Option<citum_schema::citation::IntegralNameState>,
     ) -> Option<ProcTemplate> {
         self.process_template_with_number_with_format::<crate::render::plain::PlainText>(
             reference,
@@ -1346,6 +1430,7 @@ impl<'a> Renderer<'a> {
             locator,
             locator_label,
             position,
+            integral_name_state,
         )
     }
 
@@ -1362,6 +1447,7 @@ impl<'a> Renderer<'a> {
         locator: Option<&str>,
         locator_label: Option<citum_schema::citation::LocatorType>,
         position: Option<&citum_schema::citation::Position>,
+        integral_name_state: Option<citum_schema::citation::IntegralNameState>,
     ) -> Option<ProcTemplate>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -1381,6 +1467,7 @@ impl<'a> Renderer<'a> {
             options,
             citation_number,
             position,
+            integral_name_state,
         )
     }
 
@@ -1392,6 +1479,7 @@ impl<'a> Renderer<'a> {
         options: RenderOptions<'_>,
         citation_number: usize,
         position: Option<&citum_schema::citation::Position>,
+        integral_name_state: Option<citum_schema::citation::IntegralNameState>,
     ) -> Option<ProcTemplate> {
         self.process_template_with_number_internal_with_format::<crate::render::plain::PlainText>(
             reference,
@@ -1399,6 +1487,7 @@ impl<'a> Renderer<'a> {
             options,
             citation_number,
             position,
+            integral_name_state,
         )
     }
 
@@ -1409,6 +1498,7 @@ impl<'a> Renderer<'a> {
         options: RenderOptions<'_>,
         citation_number: usize,
         position: Option<&citum_schema::citation::Position>,
+        integral_name_state: Option<citum_schema::citation::IntegralNameState>,
     ) -> Option<ProcTemplate>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -1435,6 +1525,7 @@ impl<'a> Renderer<'a> {
                 None
             },
             position: position.cloned(),
+            integral_name_state,
             ..base_hint.clone()
         };
 

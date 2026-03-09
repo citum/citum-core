@@ -804,6 +804,17 @@
             }
           ]
         },
+        "integral-names": {
+          "description": "Integral citation name-memory behavior.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IntegralNameConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "links": {
           "description": "Hyperlink configuration.",
           "anyOf": [
@@ -2021,6 +2032,133 @@
           ]
         }
       }
+    },
+    "IntegralNameConfig": {
+      "description": "Integral citation name-memory configuration.",
+      "type": "object",
+      "properties": {
+        "contexts": {
+          "description": "Which document contexts participate in name-memory tracking.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IntegralNameContexts"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rule": {
+          "description": "The name-memory rule to apply to integral citations.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IntegralNameRule"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scope": {
+          "description": "Where the first-mention memory resets.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IntegralNameScope"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "subsequent-form": {
+          "description": "The contributor form to use after the first mention in scope.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IntegralNameForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "IntegralNameContexts": {
+      "description": "Which document contexts participate in integral citation name memory.",
+      "oneOf": [
+        {
+          "description": "Only body-text integral citations participate.",
+          "type": "string",
+          "enum": [
+            "body-only"
+          ]
+        },
+        {
+          "description": "Body text and note citations both participate.",
+          "type": "string",
+          "enum": [
+            "body-and-notes"
+          ]
+        }
+      ]
+    },
+    "IntegralNameForm": {
+      "description": "The contributor form used after the first integral mention in scope.",
+      "oneOf": [
+        {
+          "description": "Use the short contributor form for subsequent mentions.",
+          "type": "string",
+          "enum": [
+            "short"
+          ]
+        },
+        {
+          "description": "Use family name only for subsequent mentions.",
+          "type": "string",
+          "enum": [
+            "family-only"
+          ]
+        }
+      ]
+    },
+    "IntegralNameRule": {
+      "description": "The supported integral citation name-memory rule.",
+      "oneOf": [
+        {
+          "description": "Render the first integral mention in scope in full, then shorten later mentions.",
+          "type": "string",
+          "enum": [
+            "full-then-short"
+          ]
+        }
+      ]
+    },
+    "IntegralNameScope": {
+      "description": "The scope where integral citation name-memory resets.",
+      "oneOf": [
+        {
+          "description": "Keep one name-memory scope for the whole document.",
+          "type": "string",
+          "enum": [
+            "document"
+          ]
+        },
+        {
+          "description": "Reset name memory at chapter boundaries.",
+          "type": "string",
+          "enum": [
+            "chapter"
+          ]
+        },
+        {
+          "description": "Reset name memory at section boundaries.",
+          "type": "string",
+          "enum": [
+            "section"
+          ]
+        }
+      ]
     },
     "LabelConfig": {
       "description": "Configuration for label citation mode.",

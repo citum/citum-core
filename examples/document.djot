@@ -1,6 +1,15 @@
-# Testing Citum Document Processing
+---
+integral-names:
+  enabled: true
+  scope: chapter
+  contexts: body-and-notes
+---
+
+# Chapter One
 
 This is a test document using the proposed Djot citation syntax.
+This example overrides the MLA default `document` scope to `chapter`
+so the narrative-name reset is visible in one short sample.
 
 ## Parenthetical Citations
 
@@ -12,13 +21,24 @@ Simple parenthetical: [@watson1953].
 
 ## Integral Citations
 
-Basic integral: [+@kuhn1962] argues ..., [+@watson1953] that ...
+Introductory note[^narrative-note].
+
+First narrative mention: [+@smith2010, p. 10] surveys the broader literature.
+
+Later in the same chapter: [+@smith2010, p. 12] narrows the argument.
 
 Integral with locator: [+@kuhn1962, p. 10] argues...
 
 ## Visibility Modifiers
 
-Suppress author: [-@kuhn1962].
+Suppress author with locator: [-@kuhn1962, p. 10].
+
+[^narrative-note]: Before the prose introduces him, [+@smith2010, p. 3] already appears in a note.
+
+# Chapter Two
+
+The chapter boundary resets the narrative name memory, so [+@smith2010, p. 14]
+appears in full again here.
 
 ## In-Document Bibliography Grouping
 

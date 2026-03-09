@@ -11,6 +11,7 @@ use citum_schema::options::{
     AndOptions, AndOtherOptions, DemoteNonDroppingParticle, DisplayAsSort, EditorLabelFormat,
     ShortenListOptions, SubstituteKey,
 };
+use citum_schema::options::{IntegralNameForm, IntegralNameRule};
 use citum_schema::template::{ContributorForm, ContributorRole, NameOrder, TemplateContributor};
 
 /// Checks if a contributor role label should be omitted for a given reference.
@@ -83,6 +84,31 @@ impl ComponentValues for TemplateContributor {
                     }
                 }
             }
+        }
+
+        if options.context == RenderContext::Citation
+            && matches!(options.mode, citum_schema::citation::CitationMode::Integral)
+            && matches!(component.contributor, ContributorRole::Author)
+            && matches!(
+                hints.integral_name_state,
+                Some(citum_schema::citation::IntegralNameState::Subsequent)
+            )
+            && options
+                .config
+                .integral_names
+                .as_ref()
+                .is_some_and(|cfg| matches!(cfg.resolve().rule, IntegralNameRule::FullThenShort))
+        {
+            let subsequent_form = options
+                .config
+                .integral_names
+                .as_ref()
+                .map(|cfg| cfg.resolve().subsequent_form)
+                .unwrap_or(IntegralNameForm::Short);
+            component.form = match subsequent_form {
+                IntegralNameForm::Short => ContributorForm::Short,
+                IntegralNameForm::FamilyOnly => ContributorForm::FamilyOnly,
+            };
         }
 
         // Respect explicit suppression before any contributor substitution logic.

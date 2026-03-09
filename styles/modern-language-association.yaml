@@ -21,6 +21,11 @@ info:
 options:
   processing: author-date
   substitute: standard
+  integral-names:
+    rule: full-then-short
+    scope: document
+    contexts: body-and-notes
+    subsequent-form: short
   contributors: chicago
   dates: long
   titles: chicago
@@ -53,7 +58,14 @@ citation:
           prefix: ", "
     - variable: locator
       show-label: false
-      prefix: " "
+  integral:
+    template:
+      - contributor: author
+        form: long
+        name-order: given-first
+      - variable: locator
+        show-label: false
+        wrap: parentheses
   wrap: parentheses
   multi-cite-delimiter: "; "
 bibliography:

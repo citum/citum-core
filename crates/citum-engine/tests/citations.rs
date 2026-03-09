@@ -9,11 +9,12 @@ use common::*;
 use citum_engine::Processor;
 use citum_schema::{
     CitationSpec, Style, StyleInfo,
-    citation::{Citation, CitationItem, CitationMode},
+    citation::{Citation, CitationItem, CitationMode, IntegralNameState},
     grouping::{GroupSort, GroupSortEntry, GroupSortKey, SortKey as GroupSortKeyType},
     options::{
-        AndOptions, Config, ContributorConfig, DelimiterPrecedesLast, DisplayAsSort, Processing,
-        ProcessingCustom, ShortenListOptions,
+        AndOptions, Config, ContributorConfig, DelimiterPrecedesLast, DisplayAsSort,
+        IntegralNameConfig, IntegralNameContexts, IntegralNameForm, IntegralNameRule,
+        IntegralNameScope, Processing, ProcessingCustom, ShortenListOptions,
     },
     reference::InputReference,
 };
@@ -63,6 +64,106 @@ fn build_title_year_citation_style(sort: Vec<GroupSortKey>) -> Style {
         }),
         ..Default::default()
     }
+}
+
+fn build_integral_name_style() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Integral Name Memory".to_string()),
+            id: Some("integral-name-memory".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::AuthorDate),
+            integral_names: Some(IntegralNameConfig {
+                rule: Some(IntegralNameRule::FullThenShort),
+                scope: Some(IntegralNameScope::Document),
+                contexts: Some(IntegralNameContexts::BodyAndNotes),
+                subsequent_form: Some(IntegralNameForm::Short),
+            }),
+            ..Default::default()
+        }),
+        citation: Some(CitationSpec {
+            integral: Some(Box::new(CitationSpec {
+                template: Some(vec![citum_schema::tc_contributor!(Author, Long)]),
+                ..Default::default()
+            })),
+            template: Some(vec![
+                citum_schema::tc_contributor!(Author, Short),
+                citum_schema::tc_date!(
+                    Issued,
+                    Year,
+                    wrap = citum_schema::template::WrapPunctuation::Parentheses
+                ),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+#[test]
+fn test_citation_item_explicit_integral_name_state_override() {
+    let mut bibliography = indexmap::IndexMap::new();
+    bibliography.insert(
+        "item1".to_string(),
+        make_book("item1", "Smith", "John", 2020, "Book A"),
+    );
+    let processor = Processor::new(build_integral_name_style(), bibliography);
+
+    let first = Citation {
+        mode: CitationMode::Integral,
+        items: vec![CitationItem {
+            id: "item1".to_string(),
+            integral_name_state: Some(IntegralNameState::First),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let subsequent = Citation {
+        mode: CitationMode::Integral,
+        items: vec![CitationItem {
+            id: "item1".to_string(),
+            integral_name_state: Some(IntegralNameState::Subsequent),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    assert_eq!(
+        processor
+            .process_citation(&first)
+            .expect("first should render"),
+        "John Smith"
+    );
+    assert_eq!(
+        processor
+            .process_citation(&subsequent)
+            .expect("subsequent should render"),
+        "Smith"
+    );
+}
+
+#[test]
+fn test_builtin_mla_enables_integral_name_memory() {
+    let style = citum_schema::embedded::get_embedded_style("mla")
+        .expect("mla style should be embedded")
+        .expect("mla style should parse");
+    let integral_names = style
+        .options
+        .and_then(|options| options.integral_names)
+        .expect("mla should enable integral-names");
+
+    assert_eq!(integral_names.rule, Some(IntegralNameRule::FullThenShort));
+    assert_eq!(integral_names.scope, Some(IntegralNameScope::Document));
+    assert_eq!(
+        integral_names.contexts,
+        Some(IntegralNameContexts::BodyAndNotes)
+    );
+    assert_eq!(
+        integral_names.subsequent_form,
+        Some(IntegralNameForm::Short)
+    );
 }
 
 // --- Disambiguation Tests ---
