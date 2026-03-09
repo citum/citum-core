@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/bib.json
 # Multilingual Bibliography Examples
 # Demonstrates MultilingualString titles and MultilingualName contributors
-# Use with: csln render refs -b examples/multilingual-refs.yaml -s styles/experimental/multilingual-academic.yaml
+# Use with: citum render refs -b examples/multilingual-refs.yaml -s styles/experimental/multilingual-academic.yaml
 
 info:
   description: Multilingual reference examples with complex titles and contributors

@@ -98,7 +98,7 @@
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
                     href="guides/style-author-guide.html">Style Guide</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="compat.html">Compat</a>
+                    href="https://docs.citum.org/compat.html">Compat</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
                     href="https://github.com/citum/citum-core">GitHub</a>
                 <a class="hidden xl:flex bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded font-medium text-sm items-center gap-2 transition-all"
@@ -121,12 +121,12 @@
                 Feature Examples
             </h1>
             <p class="text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed">
-                See how Citum's YAML syntax handles complex citation
-                requirements with elegant, readable configuration.
+                Verified examples drawn from current styles, schemas,
+                and checked-in sample data.
             </p>
             <p class="text-sm text-slate-500 mt-5">
                 For current oracle fidelity and SQI status, see
-                <a class="text-primary hover:underline" href="compat.html">compatibility report</a>
+                <a class="text-primary hover:underline" href="https://docs.citum.org/compat.html">compatibility report</a>
                 and
                 <a class="text-primary hover:underline" href="TIER_STATUS.md">tier status</a>.
             </p>
@@ -222,10 +222,9 @@
                     </h2>
                 </div>
                 <p class="text-slate-600 leading-relaxed mb-6">
-                    Citum can process full documents by extracting citations using a high-performance
-                    <code class="text-xs bg-slate-200 px-1 rounded">winnow</code> parser. It supports
-                    the <strong class="text-slate-900">draft Djot citation syntax</strong>, including multi-cites and
-                    narrative (integral) modes.
+                    Citum processes full documents from checked-in Djot or Markdown inputs. The current
+                    Djot example demonstrates multi-cites, locators, integral citations, visibility modifiers,
+                    footnotes, and in-document bibliography blocks.
                 </p>
             </div>
 
@@ -238,9 +237,10 @@
                         </div>
                         <div class="bg-slate-900 rounded p-3 overflow-x-auto mt-1">
                             <pre class="font-mono text-xs text-slate-300 leading-relaxed">
-According to @kuhn1962[p. 10], revolutions are...
-Multi-cite: [see ;@kuhn1962; @watson1953, chapter: 2].
-Structured: [@kuhn1962, section: 5].</pre>
+Multi-cite with locator: [@kuhn1962; @watson1953, ch. 2].
+Structured locator: [@kuhn1962, section: 5].
+First narrative mention: [+@smith2010, p. 10] surveys the broader literature.
+Suppress author with locator: [-@kuhn1962, p. 10].</pre>
                         </div>
                     </div>
 
@@ -250,8 +250,10 @@ Structured: [@kuhn1962, section: 5].</pre>
                             Rendered Output (Plain Text)
                         </div>
                         <div class="font-mono text-sm text-slate-900 mt-1">
-                            According to Kuhn (1962, p. 10), revolutions are...<br />
-                            Multi-cite: (see Kuhn, 1962; Watson & Crick, 1953, ch. 2).
+                            Multi-cite with locator: (Kuhn; Watson and Crick, ch. 2).<br />
+                            Structured locator: (Kuhn, sec. 5).<br />
+                            First narrative mention: John Smith (10) surveys the broader literature.<br />
+                            Suppress author with locator: (10).
                         </div>
                     </div>
                 </div>
@@ -270,54 +272,39 @@ Structured: [@kuhn1962, section: 5].</pre>
                     </h2>
                 </div>
                 <p class="text-slate-600 leading-relaxed mb-6">
-                    Citum supports sophisticated citation patterns, including
-                    narrative (integral) vs. parenthetical (non-integral)
-                    modes, mid-citation "infix" text, and context-aware
-                    conjunctions (e.g., APA's "and" vs. "&").
+                    Current styles use explicit integral and non-integral branches, per-mode contributor
+                    options, and document-scoped integral-name memory where the style opts in.
                 </p>
             </div>
 
-            <!-- Mode-Dependent Conjunctions -->
+            <!-- Integral vs Non-Integral -->
             <div class="border-b border-slate-200">
                 <div class="px-8 py-4 bg-slate-100">
                     <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-                        Mode-Dependent Conjunctions (APA Style)
-                    </h3>
-                </div>
-                <div class="bg-slate-900 p-6 overflow-x-auto">
-                    <pre class="font-mono text-sm text-slate-300 leading-relaxed">
-<span class="text-indigo-400">options</span>:
-  <span class="text-primary">contributors</span>:
-    <span class="text-primary">and</span>: <span class="text-emerald-400">!mode-dependent</span>
-      <span class="text-primary">integral</span>: <span class="text-emerald-400">text</span>      <span class="text-slate-500"># "Smith and Jones (2024)"</span>
-      <span class="text-primary">non-integral</span>: <span class="text-emerald-400">symbol</span>  <span class="text-slate-500"># "(Smith & Jones, 2024)"</span></pre>
-                </div>
-            </div>
-
-            <div class="border-b border-slate-200">
-                <div class="px-8 py-4 bg-slate-100">
-                    <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-                        Template Contexts & Infix Support
+                        Integral vs Non-Integral (APA 7th)
                     </h3>
                 </div>
                 <div class="bg-slate-900 p-6 overflow-x-auto">
                     <pre class="font-mono text-sm text-slate-300 leading-relaxed">
 <span class="text-indigo-400">citation</span>:
-  <span class="text-primary">integral</span>:
+  <span class="text-primary">non-integral</span>:
+    <span class="text-primary">wrap</span>: <span class="text-emerald-400">parentheses</span>
     <span class="text-primary">template</span>:
       - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
-      - <span class="text-primary">variable</span>: <span class="text-emerald-400">infix</span>        <span class="text-slate-500"># Renders @smith(argues) as "Smith argues..."</span>
-        <span class="text-primary">prefix</span>: <span class="text-emerald-400">" "</span>
+        <span class="text-primary">form</span>: <span class="text-emerald-400">short</span>
       - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
-        <span class="text-primary">wrap</span>: <span class="text-emerald-400">parentheses</span>
-        <span class="text-primary">prefix</span>: <span class="text-emerald-400">" "</span></pre>
+        <span class="text-primary">form</span>: <span class="text-emerald-400">year</span>
+  <span class="text-primary">integral</span>:
+    <span class="text-primary">options</span>:
+      <span class="text-primary">contributors</span>:
+        <span class="text-primary">and</span>: <span class="text-emerald-400">text</span></pre>
                 </div>
             </div>
 
             <div class="border-b border-slate-200">
                 <div class="px-8 py-4 bg-slate-100">
                     <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-                        Integral Name Memory (MLA Author-Page)
+                        Integral Name Memory (MLA Default)
                     </h3>
                 </div>
                 <div class="bg-slate-900 p-6 overflow-x-auto">
@@ -340,43 +327,61 @@ Structured: [@kuhn1962, section: 5].</pre>
                 </div>
             </div>
 
+            <div class="border-b border-slate-200">
+                <div class="px-8 py-4 bg-slate-100">
+                    <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                        Document Override from Front Matter
+                    </h3>
+                </div>
+                <div class="bg-slate-900 p-6 overflow-x-auto">
+                    <pre class="font-mono text-sm text-slate-300 leading-relaxed">
+---
+<span class="text-primary">integral-names</span>:
+  <span class="text-primary">enabled</span>: <span class="text-emerald-400">true</span>
+  <span class="text-primary">scope</span>: <span class="text-emerald-400">chapter</span>
+  <span class="text-primary">contexts</span>: <span class="text-emerald-400">body-and-notes</span>
+---
+
+<span class="text-slate-500"># Later in the document</span>
+First narrative mention: <span class="text-emerald-400">[+@smith2010, p. 10]</span>
+Later in same chapter: <span class="text-emerald-400">[+@smith2010, p. 12]</span>
+New chapter reset: <span class="text-emerald-400">[+@smith2010, p. 14]</span></pre>
+                </div>
+            </div>
+
             <!-- Visual Output -->
             <div>
                 <div class="px-8 py-4 bg-slate-100">
                     <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-                        Rendered Examples (Draft Djot Syntax)
+                        Rendered Examples (Current Djot Input)
                     </h3>
                 </div>
                 <div class="p-6 bg-white">
                     <div class="grid gap-4">
                         <div class="border-l-4 border-primary pl-4">
-                            <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Narrative with Infix</div>
-                            <div class="font-mono text-xs text-slate-400 mb-1">Source: @kuhn1962(notes that)[p. 10]
-                            </div>
-                            <div class="font-mono text-sm text-slate-900">Kuhn notes that (1962, p. 10)</div>
+                            <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Multi-Cite with Locator</div>
+                            <div class="font-mono text-xs text-slate-400 mb-1">Source: [@kuhn1962; @watson1953, ch. 2]</div>
+                            <div class="font-mono text-sm text-slate-900">(Kuhn; Watson and Crick, ch. 2)</div>
                         </div>
                         <div class="border-l-4 border-emerald-500 pl-4">
-                            <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Narrative (Multiple
-                                Authors)</div>
-                            <div class="font-mono text-xs text-slate-400 mb-1">Source: @weinberg1971</div>
-                            <div class="font-mono text-sm text-slate-900">Weinberg and Freedman (1971)</div>
+                            <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Structured Locator</div>
+                            <div class="font-mono text-xs text-slate-400 mb-1">Source: [@kuhn1962, section: 5]</div>
+                            <div class="font-mono text-sm text-slate-900">(Kuhn, sec. 5)</div>
                         </div>
                         <div class="border-l-4 border-amber-500 pl-4">
                             <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Narrative Name Memory</div>
-                            <div class="font-mono text-xs text-slate-400 mb-1">MLA default: document scope.<br />Example override: Chapter 1 [+@smith2010, p. 10] ... later [+@smith2010, p. 12] ...<br />Chapter 2: [+@smith2010, p. 14] ...</div>
+                            <div class="font-mono text-xs text-slate-400 mb-1">Source: [+@smith2010, p. 10] ... later [+@smith2010, p. 12] ... then in Chapter 2 [+@smith2010, p. 14]</div>
                             <div class="font-mono text-sm text-slate-900">John Smith (10) ... later Smith (12) ... then John Smith (14) again</div>
                         </div>
                         <div class="border-l-4 border-indigo-500 pl-4">
-                            <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Parenthetical (APA
-                                Conjunction)</div>
-                            <div class="font-mono text-xs text-slate-400 mb-1">Source: [@weinberg1971]</div>
-                            <div class="font-mono text-sm text-slate-900">(Weinberg & Freedman, 1971)</div>
+                            <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Integral Citation</div>
+                            <div class="font-mono text-xs text-slate-400 mb-1">Source: [+@kuhn1962, p. 10]</div>
+                            <div class="font-mono text-sm text-slate-900">Thomas S. Kuhn (10)</div>
                         </div>
                         <div class="border-l-4 border-rose-500 pl-4">
-                            <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Multi-cite (Parenthetical)
-                            </div>
-                            <div class="font-mono text-xs text-slate-400 mb-1">Source: [@kuhn1962; @weinberg1971]</div>
-                            <div class="font-mono text-sm text-slate-900">(Kuhn, 1962; Weinberg & Freedman, 1971)</div>
+                            <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Visibility Modifier</div>
+                            <div class="font-mono text-xs text-slate-400 mb-1">Source: [-@kuhn1962, p. 10]</div>
+                            <div class="font-mono text-sm text-slate-900">(10)</div>
                         </div>
                     </div>
                 </div>
@@ -436,7 +441,10 @@ Structured: [@kuhn1962, section: 5].</pre>
                                 class="font-mono text-xs text-slate-300 leading-relaxed"><span class="text-indigo-400">bibliography</span>:
   <span class="text-primary">groups</span>:
     - <span class="text-primary">id</span>: <span class="text-emerald-400">vietnamese</span>
-      <span class="text-primary">heading</span>: <span class="text-emerald-400">"Tài liệu tiếng Việt"</span>
+      <span class="text-primary">heading</span>:
+        <span class="text-primary">localized</span>:
+          <span class="text-primary">vi</span>: <span class="text-emerald-400">"Tài liệu tiếng Việt"</span>
+          <span class="text-primary">en-US</span>: <span class="text-emerald-400">"Vietnamese Sources"</span>
       <span class="text-primary">selector</span>:
         <span class="text-primary">field</span>:
           <span class="text-primary">language</span>: <span class="text-emerald-400">vi</span>
@@ -444,9 +452,13 @@ Structured: [@kuhn1962, section: 5].</pre>
         <span class="text-primary">template</span>:
           - <span class="text-primary">key</span>: <span class="text-emerald-400">author</span>
             <span class="text-primary">sort-order</span>: <span class="text-emerald-400">given-family</span>  <span class="text-slate-500"># Vietnamese convention</span>
+          - <span class="text-primary">key</span>: <span class="text-emerald-400">issued</span>
+            <span class="text-primary">ascending</span>: <span class="text-emerald-400">false</span>
+      <span class="text-primary">disambiguate</span>: <span class="text-emerald-400">locally</span>
 
     - <span class="text-primary">id</span>: <span class="text-emerald-400">western</span>
-      <span class="text-primary">heading</span>: <span class="text-emerald-400">"Western Sources"</span>
+      <span class="text-primary">heading</span>:
+        <span class="text-primary">literal</span>: <span class="text-emerald-400">"Western Sources"</span>
       <span class="text-primary">selector</span>:
         <span class="text-primary">not</span>:
           <span class="text-primary">field</span>:
@@ -454,7 +466,10 @@ Structured: [@kuhn1962, section: 5].</pre>
       <span class="text-primary">sort</span>:
         <span class="text-primary">template</span>:
           - <span class="text-primary">key</span>: <span class="text-emerald-400">author</span>
-            <span class="text-primary">sort-order</span>: <span class="text-emerald-400">family-given</span>  <span class="text-slate-500"># Western convention</span></pre>
+            <span class="text-primary">sort-order</span>: <span class="text-emerald-400">family-given</span>  <span class="text-slate-500"># Western convention</span>
+          - <span class="text-primary">key</span>: <span class="text-emerald-400">issued</span>
+            <span class="text-primary">ascending</span>: <span class="text-emerald-400">false</span>
+      <span class="text-primary">disambiguate</span>: <span class="text-emerald-400">locally</span></pre>
                         </div>
                         <p class="text-xs text-slate-500 mt-2">
                             Vietnamese names use given-family ordering, Western names use family-given ordering.
@@ -530,37 +545,36 @@ Structured: [@kuhn1962, section: 5].</pre>
                     <div class="bg-slate-50 border border-slate-200 rounded p-3 mt-2 text-xs font-mono text-slate-700 overflow-x-auto">
                         <pre># Primary Sources
 
-Darwin, Charles. 1859. On the Origin of Species. London: John Murray.
+Darwin, Charles. 1859. _On the Origin of Species_. John Murray.
 
-Freud, Sigmund. 1900. Die Traumdeutung. Leipzig: Franz Deuticke.
+Freud, Sigmund. 1900. _Die Traumdeutung_. Franz Deuticke.
 
 # Archival Sources
 
-Darwin, Charles. 1876. Letter to T.H. Huxley, 14 September 1876.
+Darwin, Charles. 1876. “Letter to T.H. Huxley, 14 September 1876.”
 
 # Secondary Sources
 
-Browne, Janet. 2002. Charles Darwin: The Power of Place. New York: Alfred A. Knopf.
+Browne, Janet. 2002. _Charles Darwin: The Power of Place_. Alfred A. Knopf.
 
-Gay, Peter. 1988. Freud: A Life for Our Time. New York: W.W. Norton.
+Gay, Peter. 1988. _Freud: A Life for Our Time_. W.W. Norton.
 
-Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the American Philosophical Society 135 (4): 317–330.</pre>
+Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of the American Philosophical Society_. 135, (4): 317–30.</pre>
                     </div>
                 </div>
 
                 <!-- German Grouping Example -->
                 <div class="border-l-4 border-emerald-500 pl-4">
                     <p class="text-xs text-slate-600 mb-2">
-                        Switch to German headings by setting <code class="text-slate-600 bg-slate-100 px-1 rounded">default-locale: de-DE</code> in the style:
+                        Render the multilingual grouping example shipped in the repo:
                     </p>
                     <div class="bg-slate-900 rounded p-3 overflow-x-auto">
                         <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">citum</span> render refs \
-  -b examples/bib-grouping-refs.yaml \
-  -s styles/chicago-author-date.yaml \
-  --default-locale de-DE</pre>
+  -b examples/multilingual-refs.yaml \
+  -s styles/experimental/multilingual-academic.yaml</pre>
                     </div>
                     <p class="text-xs text-slate-500 mt-2">
-                        Expected output with German headings (Primärquellen, Sekundärquellen, Archivalische Quellen).
+                        This style groups Vietnamese and non-Vietnamese records separately and applies per-group sort behavior.
                     </p>
                 </div>
             </div>
@@ -658,11 +672,8 @@ Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the Ameri
                     </h2>
                 </div>
                 <p class="text-slate-600 leading-relaxed mb-6">
-                    Citum handles multilingual metadata with BCP 47 language
-                    tags, supporting original scripts, transliterations
-                    (Pinyin, Hepburn, ALA-LC), and translations. Styles
-                    declaratively specify rendering preferences with
-                    automatic fallback.
+                    Current bibliography data can carry original text, transliterations, and translations.
+                    Styles then declare how titles and contributor names should render for a given workflow.
                 </p>
             </div>
 
@@ -677,9 +688,9 @@ Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the Ameri
                     <pre class="font-mono text-sm text-slate-300 leading-relaxed">
 <span class="text-indigo-400">options</span>:
   <span class="text-primary">multilingual</span>:
-    <span class="text-primary">title-mode</span>: <span class="text-emerald-400">transliterated</span>  <span class="text-slate-500"># primary | transliterated | translated | combined</span>
-    <span class="text-primary">name-mode</span>: <span class="text-emerald-400">transliterated</span>
-    <span class="text-primary">preferred-script</span>: <span class="text-emerald-400">Latn</span>       <span class="text-slate-500"># Latin script for romanization</span></pre>
+    <span class="text-primary">title-mode</span>: <span class="text-emerald-400">combined</span>
+    <span class="text-primary">name-mode</span>: <span class="text-emerald-400">primary</span>
+    <span class="text-primary">preferred-script</span>: <span class="text-emerald-400">Latn</span></pre>
                 </div>
             </div>
 
@@ -692,24 +703,28 @@ Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the Ameri
                 </div>
                 <div class="bg-slate-900 p-6 overflow-x-auto">
                     <pre class="font-mono text-sm text-slate-300 leading-relaxed">
-<span class="text-indigo-400">id</span>: war-peace-zh
+<span class="text-indigo-400">id</span>: genji_tale
+<span class="text-indigo-400">class</span>: monograph
 <span class="text-indigo-400">type</span>: book
 <span class="text-indigo-400">title</span>:
-  <span class="text-primary">original</span>: <span class="text-emerald-400">"战争与和平"</span>
-  <span class="text-primary">lang</span>: <span class="text-emerald-400">"zh"</span>
+  <span class="text-primary">original</span>: <span class="text-emerald-400">"源氏物語"</span>
+  <span class="text-primary">lang</span>: <span class="text-emerald-400">"ja"</span>
   <span class="text-primary">transliterations</span>:
-    <span class="text-primary">zh-Latn-pinyin</span>: <span class="text-emerald-400">"Zhànzhēng yǔ Hépíng"</span>
+    <span class="text-primary">ja-Latn-hepburn</span>: <span class="text-emerald-400">"Genji Monogatari"</span>
   <span class="text-primary">translations</span>:
-    <span class="text-primary">en</span>: <span class="text-emerald-400">"War and Peace"</span>
+    <span class="text-primary">en</span>: <span class="text-emerald-400">"The Tale of Genji"</span>
 <span class="text-indigo-400">author</span>:
-  <span class="text-primary">original</span>:
-    <span class="text-primary">family</span>: <span class="text-emerald-400">"Толстой"</span>
-    <span class="text-primary">given</span>: <span class="text-emerald-400">"Лев"</span>
-  <span class="text-primary">lang</span>: <span class="text-emerald-400">"ru"</span>
-  <span class="text-primary">transliterations</span>:
-    <span class="text-primary">Latn</span>:
-      <span class="text-primary">family</span>: <span class="text-emerald-400">"Tolstoy"</span>
-      <span class="text-primary">given</span>: <span class="text-emerald-400">"Leo"</span></pre>
+  - <span class="text-primary">original</span>:
+      <span class="text-primary">family</span>: <span class="text-emerald-400">"紫式部"</span>
+      <span class="text-primary">given</span>: <span class="text-emerald-400">""</span>
+    <span class="text-primary">lang</span>: <span class="text-emerald-400">"ja"</span>
+    <span class="text-primary">transliterations</span>:
+      <span class="text-primary">ja-Latn-hepburn</span>:
+        <span class="text-primary">family</span>: <span class="text-emerald-400">"Murasaki"</span>
+        <span class="text-primary">given</span>: <span class="text-emerald-400">"Shikibu"</span>
+<span class="text-indigo-400">issued</span>: <span class="text-emerald-400">"1010"</span>
+<span class="text-indigo-400">publisher</span>:
+  <span class="text-primary">name</span>: <span class="text-emerald-400">"古典文学之友"</span></pre>
                 </div>
             </div>
 
@@ -717,76 +732,55 @@ Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the Ameri
             <div>
                 <div class="px-8 py-4 bg-slate-100">
                     <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-                        Rendered Output by Mode
+                        Rendered with MLA
                     </h3>
                 </div>
                 <div class="p-6 bg-white">
                     <div class="grid gap-4">
                         <div class="border-l-4 border-primary pl-4">
                             <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
-                                Primary Mode
+                                Non-Integral Citation
                             </div>
                             <div class="font-mono text-sm text-slate-900">
-                                战争与和平. Лев Толстой (1869)
+                                (紫式部)
                             </div>
                             <div class="text-xs text-slate-500 mt-1">
-                                Original scripts preserved
+                                Current MLA rendering for the checked-in multilingual record
                             </div>
                         </div>
                         <div class="border-l-4 border-emerald-500 pl-4">
                             <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
-                                Transliterated Mode
+                                Integral Citation
                             </div>
                             <div class="font-mono text-sm text-slate-900">
-                                Zhànzhēng yǔ Hépíng. Leo Tolstoy (1869)
+                                紫式部
                             </div>
                             <div class="text-xs text-slate-500 mt-1">
-                                Romanized for Western readers
+                                Integral rendering uses the same checked-in data
                             </div>
                         </div>
                         <div class="border-l-4 border-indigo-500 pl-4">
                             <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
-                                Translated Mode
+                                Bibliography Entry
                             </div>
                             <div class="font-mono text-sm text-slate-900">
-                                War and Peace. Leo Tolstoy (1869)
+                                紫式部. _Genji Monogatari_. 古典文学之友, 1010.
                             </div>
                             <div class="text-xs text-slate-500 mt-1">
-                                English translation when available
+                                Verified with <code class="text-xs bg-slate-100 px-1 rounded">citum render refs -b examples/multilingual-refs.yaml -s mla -k genji_tale</code>
                             </div>
                         </div>
                         <div class="border-l-4 border-amber-500 pl-4">
                             <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
-                                Combined Mode
+                                Mixed Corpus
                             </div>
                             <div class="font-mono text-sm text-slate-900">
-                                Zhànzhēng yǔ Hépíng [War and Peace]. Leo
-                                Tolstoy (1869)
+                                Anderson, Elizabeth. _Contemporary Approaches to Citation_. Oxford University Press, 2020.
                             </div>
                             <div class="text-xs text-slate-500 mt-1">
-                                Both romanization and translation
+                                Plain English records and multilingual records can coexist in the same bibliography input
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- BCP 47 Matching -->
-            <div class="bg-slate-50 p-6 border-t border-slate-200">
-                <div class="flex items-start gap-3">
-                    <div
-                        class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 mt-1">
-                        <span class="material-icons text-sm">info</span>
-                    </div>
-                    <div class="text-sm text-slate-600 leading-relaxed">
-                        <strong class="text-slate-900">BCP 47 Fallback Strategy:</strong><br />
-                        1. Exact tag match (<code
-                            class="text-xs bg-slate-200 px-1 rounded">"ja-Latn-hepburn"</code>)<br />
-                        2. Substring match (<code class="text-xs bg-slate-200 px-1 rounded">"Latn"</code>
-                        matches any Latin script)<br />
-                        3. Fallback to
-                        <code class="text-xs bg-slate-200 px-1 rounded">original</code>
-                        field
                     </div>
                 </div>
             </div>
@@ -801,17 +795,16 @@ Mayr, Ernst. 1991. "Darwin's Impact on Modern Thought." Proceedings of the Ameri
                 </div>
                 <div class="border-l-4 border-emerald-500 pl-4 mb-3">
                     <p class="text-xs text-slate-600 mb-2">
-                        Render multilingual references with configurable title and name modes:
+                        Render the checked-in multilingual bibliography with a builtin style:
                     </p>
                     <div class="bg-slate-900 rounded p-3 overflow-x-auto">
                         <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">citum</span> render refs \
   -b examples/multilingual-refs.yaml \
-  -s styles/experimental/multilingual-academic.yaml</pre>
+  -s mla</pre>
                     </div>
                     <p class="text-xs text-slate-500 mt-2">
-                        Try adjusting the style's <code class="text-xs bg-slate-200 px-1 rounded">title-mode</code> option
-                        (primary, transliterated, translated, combined) to see how rendered output changes without modifying
-                        reference data.
+                        For style-authoring work, compare this data with a style that sets different
+                        <code class="text-xs bg-slate-200 px-1 rounded">options.multilingual</code> values.
                     </p>
                 </div>
             </div>
@@ -1181,7 +1174,7 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                 <div class="p-8 bg-white">
                     <div class="grid md:grid-cols-2 gap-6 text-sm text-slate-600 leading-relaxed">
                         <div class="rounded-lg border border-slate-200 bg-slate-50 p-5">
-                            <h4 class="font-bold text-slate-900 mb-2">Citum stays authoritative</h4>
+                            <h4 class="font-bold text-slate-900 mb-2">Citum remains the citation formatter</h4>
                             Citum still handles citation formatting, bibliography grouping, note behavior, and link
                             resolution. Typst is the markup and PDF backend, not the bibliography engine.
                         </div>
@@ -1323,7 +1316,7 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                         </h4>
                         <div class="bg-slate-900 rounded-lg p-4 font-mono text-xs text-slate-300">
                             <span class="text-primary">$</span> citum convert
-                            styles/apa-7th.yaml --output /tmp/apa-7th.cbor
+                            styles/apa-7th.yaml -o /tmp/apa-7th.cbor
                         </div>
                         <p class="text-xs text-slate-500 mt-2 italic">
                             Binary formats can reduce parse overhead for
@@ -1495,9 +1488,9 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Render with Annotations</div>
                 <div class="bg-slate-900 rounded p-3 overflow-x-auto mb-6">
                     <pre class="font-mono text-xs text-emerald-400">citum render refs \
-  -b references.json \
+  -b examples/annotated-bibliography/references.yaml \
   -s apa-7th \
-  --annotations annotations.yaml</pre>
+  --annotations examples/annotated-bibliography/annotations.yaml</pre>
                 </div>
 
                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Sample Output</div>
@@ -1541,10 +1534,6 @@ jones2021: >
                             <div class="flex items-center gap-2">
                                 <code class="bg-slate-100 px-2 py-1 rounded text-xs">--annotation-italic</code>
                                 <span>Render annotations in italics</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <code class="bg-slate-100 px-2 py-1 rounded text-xs">--no-annotation-indent</code>
-                                <span>Disable indentation</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <code class="bg-slate-100 px-2 py-1 rounded text-xs">--annotation-break</code>
@@ -1601,7 +1590,7 @@ jones2021: >
                     <a class="hover:text-primary transition-colors" href="https://github.com/citum/citum-core">GitHub</a>
                     <a class="hover:text-primary transition-colors" href="index.html#roadmap">Status</a>
                     <a class="hover:text-primary transition-colors" href="examples.html">Examples</a>
-                    <a class="hover:text-primary transition-colors" href="compat.html">Compat</a>
+                    <a class="hover:text-primary transition-colors" href="https://docs.citum.org/compat.html">Compat</a>
                 </div>
                 <div class="text-sm text-slate-400">
                     © 2026 Citum Project. MPL-2.0.

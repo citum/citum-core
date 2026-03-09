@@ -4,9 +4,9 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Citum | The Next Generation of Citation Styling</title>
+    <title>Citum | Rust Citation Formatting for Modern Workflows</title>
     <meta name="description"
-        content="A robust, Rust-powered evolution of CSL designed for modern publishing workflows using YAML.">
+        content="A Rust citation engine and YAML style system for modern publishing workflows.">
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
     <link
@@ -111,7 +111,7 @@
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
                     href="guides/style-author-guide.html">Style Guide</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="compat.html">Compat</a>
+                    href="https://docs.citum.org/compat.html">Compat</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
                     href="https://github.com/citum/citum-core">GitHub</a>
                 <a class="hidden xl:flex bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded font-medium text-sm items-center gap-2 transition-all"
@@ -139,8 +139,9 @@
                 Citum
             </h1>
             <p class="text-xl md:text-2xl text-slate-500 mb-10 max-w-2xl mx-auto font-display leading-relaxed">
-                Harnessing YAML's expressive power for defining citation styles.
-                A robust, Rust-powered evolution designed for modern publishing workflows.
+                A Rust citation engine and YAML style system for
+                rendering documents, styling references, and validating
+                bibliographic data.
             </p>
 
             <!-- Getting Started Command -->
@@ -186,16 +187,18 @@
             </div>
             <div class="p-8 overflow-x-auto bg-[#fafafa]">
                 <pre class="font-mono text-sm leading-relaxed"><span class="text-indigo-600">info</span>:
-  <span class="text-primary">title</span>: <span class="text-emerald-600">"APA 7th Edition (Citum)"</span>
-  <span class="text-primary">id</span>: <span class="text-emerald-600">"https://www.zotero.org/styles/apa-7th-citum"</span>
-  <span class="text-primary">link</span>: <span class="text-emerald-600">"https://apastyle.apa.org/"</span>
+  <span class="text-primary">title</span>: <span class="text-emerald-600">"APA 7th Edition"</span>
 <span class="text-indigo-600">options</span>:
   <span class="text-primary">processing</span>: <span class="text-emerald-600">author-date</span>
   <span class="text-primary">contributors</span>:
     <span class="text-primary">initialize-with</span>: <span class="text-emerald-600">". "</span>
-    <span class="text-primary">and</span>: <span class="text-emerald-600">!mode-dependent</span>
-      <span class="text-primary">integral</span>: <span class="text-emerald-600">text</span>
-      <span class="text-primary">non-integral</span>: <span class="text-emerald-600">symbol</span></pre>
+    <span class="text-primary">and</span>: <span class="text-emerald-600">symbol</span>
+  <span class="text-primary">dates</span>: <span class="text-emerald-600">long</span>
+<span class="text-indigo-600">citation</span>:
+  <span class="text-primary">integral</span>:
+    <span class="text-primary">options</span>:
+      <span class="text-primary">contributors</span>:
+        <span class="text-primary">and</span>: <span class="text-emerald-600">text</span></pre>
             </div>
         </div>
     </section>
@@ -204,8 +207,8 @@
     <section class="py-24 px-6" id="features">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Reimagined for the Web</h2>
-                <p class="text-slate-500">Significant evolution over CSL 1.0, targeting modern scholarly needs.</p>
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Built for Current Citation Workflows</h2>
+                <p class="text-slate-500">Style authoring, document rendering, validation, and compatibility reporting in one toolchain.</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -218,8 +221,7 @@
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Document Processing</h3>
                     <p class="text-slate-500 leading-relaxed text-sm">
-                        Process full documents with native draft Djot syntax support. Scan markers and replace them with
-                        formatted citations and bibliographies.
+                        Render full Djot or Markdown documents with inline citations, bibliography blocks, and current CLI output targets.
                     </p>
                 </a>
 
@@ -232,8 +234,7 @@
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Advanced Citations</h3>
                     <p class="text-slate-500 leading-relaxed text-sm">
-                        Sophisticated support for narrative citations, mid-citation "infix" text, and context-aware
-                        conjunctions (and vs &).
+                        Integral and parenthetical citation modes, multi-cites, locators, and style-specific name handling.
                     </p>
                 </a>
 
@@ -302,8 +303,7 @@
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Smart Presets</h3>
                     <p class="text-slate-500 leading-relaxed text-sm">
-                        Evolution of macros into reusable "presets" for common configuration patterns like APA or
-                        Chicago.
+                        Reusable presets for contributors, dates, titles, and numeric citation patterns without verbose boilerplate.
                     </p>
                 </a>
 
@@ -344,8 +344,7 @@
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Pluggable Output</h3>
                     <p class="text-slate-500 leading-relaxed text-sm">
-                        Generate semantic output in Plain Text, HTML, Djot, LaTeX, or Typst. Build high-fidelity PDF
-                        workflows through either native Typst compilation or LaTeX integration.
+                        Generate plain text, HTML, Djot, LaTeX, or Typst output and move into PDF workflows from the same CLI.
                     </p>
                 </a>
 
@@ -356,11 +355,9 @@
                         class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons">settings_input_component</span>
                     </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Universal C-FFI</h3>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">LuaLaTeX via FFI</h3>
                     <p class="text-slate-500 leading-relaxed text-sm">
-                        Seamlessly integrate the Rust core into Python, Node.js, or Lua. A LuaLaTeX
-                        proof-of-concept lets you use <code class="text-xs">\cite{key}</code> backed
-                        by the Citum engine — no Biber required.
+                        A LuaLaTeX proof-of-concept lets TeX documents call the Citum engine directly for citations and bibliography rendering.
                     </p>
                 </a>
 
@@ -373,8 +370,7 @@
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Performance</h3>
                     <p class="text-slate-500 leading-relaxed text-sm">
-                        Rust 2024 edition engine with binary CBOR support for near-instant loading of massive
-                        bibliographies. Zero-overhead processing with lazy iterator pipelines.
+                        Convert styles and bibliographies to CBOR for faster load paths in larger rendering workflows.
                     </p>
                 </a>
 
@@ -388,9 +384,7 @@
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">JSON-RPC Server</h3>
                     <p class="text-slate-500 leading-relaxed text-sm">
-                        Long-running server process for real-time citation formatting. Reads newline-delimited
-                        JSON-RPC from stdin/stdout (compatible with Zotero and Pandoc plugins) or runs an optional
-                        HTTP mode via axum for web app integrations.
+                        Long-running RPC and HTTP entrypoints for editor integrations, plugins, and web applications that need live formatting.
                     </p>
                 </a>
 
@@ -433,11 +427,9 @@
 
                 <!-- Why Text -->
                 <div>
-                    <h2 class="text-4xl font-bold text-slate-900 mb-6">CLI First Workflow.</h2>
+                    <h2 class="text-4xl font-bold text-slate-900 mb-6">CLI Workflow</h2>
                     <p class="text-lg text-slate-500 mb-8 leading-relaxed">
-                        Designed for developers and automation. Generate citations directly from your terminal or
-                        integrate into your build pipeline. Typst is now the native Rust path to finished PDFs, while
-                        LuaLaTeX remains available for TeX-first workflows.
+                        Use the same binary to render references, process documents, inspect styles, and generate output for downstream publishing tools.
                     </p>
 
                     <div class="space-y-6">
@@ -603,12 +595,12 @@
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16">
                 <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Current Status</h2>
-                <p class="text-slate-500">Generated compatibility metrics are the source of truth for progress.</p>
+                <p class="text-slate-500">Compatibility and quality reports are published from CI so current progress stays visible.</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
                 <!-- Compatibility Report -->
-                <a href="compat.html" class="p-6 rounded-xl border border-slate-100 bg-white block hover:border-primary/40 transition-colors">
+                <a href="https://docs.citum.org/compat.html" class="p-6 rounded-xl border border-slate-100 bg-white block hover:border-primary/40 transition-colors">
                     <div class="flex items-center gap-3 mb-4">
                         <span
                             class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
@@ -617,7 +609,7 @@
                         <h3 class="font-bold text-slate-900">Compatibility Dashboard</h3>
                     </div>
                     <p class="text-sm text-slate-500 mb-4">
-                        CI-generated per-style fidelity and SQI metrics for the core production style set.
+                        Per-style fidelity and SQI metrics for the core production style set.
                     </p>
                     <p class="text-[10px] font-mono text-slate-400">Source: scripts/report-core.js -> docs/compat.html</p>
                 </a>
@@ -632,7 +624,7 @@
                         <h3 class="font-bold text-slate-900">Tier Status</h3>
                     </div>
                     <p class="text-sm text-slate-500 mb-4">
-                        Live tracking for top parent styles, strict citation scenarios, and current migration priorities.
+                        Current tracking for top parent styles, strict citation scenarios, and migration priorities.
                     </p>
                     <p class="text-[10px] font-mono text-slate-400">Source: docs/TIER_STATUS.md</p>
                 </a>
@@ -648,7 +640,7 @@
                         <h3 class="font-bold text-slate-900">Fidelity + SQI Gates</h3>
                     </div>
                     <p class="text-sm text-slate-500 mb-4">
-                        Fidelity is the release gate; SQI is a secondary quality metric used for style robustness.
+                        Fidelity remains the release gate, while SQI helps track maintainability and style quality.
                     </p>
                     <p class="text-[10px] font-mono text-slate-400">Policy: no SQI gain may regress fidelity</p>
                 </a>
@@ -663,8 +655,7 @@
                         <h3 class="font-bold text-slate-900">User Style Store <span class="text-xs font-normal text-emerald-600 ml-1">new</span></h3>
                     </div>
                     <p class="text-sm text-slate-500 mb-4">
-                        Install and manage your own styles and locales locally — the pain point of CSL 1.0's
-                        file-scattering problem, solved. Supports YAML, JSON, and CBOR formats.
+                        Install and manage your own styles and locales locally in YAML, JSON, or CBOR formats.
                         <code class="text-xs bg-white px-1 rounded border border-slate-200">citum store install</code>
                         <code class="text-xs bg-white px-1 rounded border border-slate-200">citum store list</code>
                     </p>
@@ -722,8 +713,8 @@
                     <p class="text-xs text-slate-500">Terms and date patterns.</p>
                 </a>
                 <!-- Citations Schema -->
-                <a href="schemas/citations.json"
-                    class="feature-card p-6 rounded-xl border border-slate-200 transition-all group block">
+                    <a href="schemas/citation.json"
+                        class="feature-card p-6 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons text-sm">format_quote</span>
@@ -745,10 +736,10 @@
                 </p>
                 <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
                     <code class="font-mono text-xs text-slate-300">
-                        <span class="text-slate-500"># yaml-language-server: $schema=https://citum.github.io/citum-core/schemas/style.json</span>
+                        <span class="text-slate-500"># yaml-language-server: $schema=https://docs.citum.org/schemas/style.json</span>
                     </code>
                     <button class="text-slate-500 hover:text-white transition-colors"
-                        onclick="navigator.clipboard.writeText('# yaml-language-server: $schema=https://citum.github.io/citum-core/schemas/style.json')"
+                        onclick="navigator.clipboard.writeText('# yaml-language-server: $schema=https://docs.citum.org/schemas/style.json')"
                         title="Copy to clipboard">
                         <span class="material-icons text-base">content_copy</span>
                     </button>
@@ -757,7 +748,7 @@
                     Note: Replace <code class="text-slate-600 px-0.5 rounded">style.json</code> with 
                     <code class="text-slate-600 px-0.5 rounded">bib.json</code>, 
                     <code class="text-slate-600 px-0.5 rounded">locale.json</code>, or 
-                    <code class="text-slate-600 px-0.5 rounded">citations.json</code> depending on the file type.
+                    <code class="text-slate-600 px-0.5 rounded">citation.json</code> depending on the file type.
                 </p>
             </div>
         </div>
@@ -766,23 +757,19 @@
     <!-- Project Origins -->
     <section class="py-24 px-6 border-t border-slate-100 bg-slate-50/50">
         <div class="max-w-3xl mx-auto text-center">
-            <h2 class="text-2xl font-bold text-slate-900 mb-6 font-mono">Origins & Vision</h2>
+            <h2 class="text-2xl font-bold text-slate-900 mb-6 font-mono">Origins & Direction</h2>
             <div class="space-y-4 text-slate-600 leading-relaxed">
                 <p>
-                    Citum is a mission-driven project led by Bruce D'Arcus, who created the initial CSL prototype
-                    in 2005. While that vision successfully evolved into the CSL 1.0 standard through a
-                    significant community effort, Citum represents a "full-circle" return to the project's roots.
+                    Citum is led by Bruce D'Arcus, who created the initial CSL prototype in 2005. It grows out of that
+                    work while focusing on current needs: clearer style definitions, stronger validation, and a faster Rust implementation.
                 </p>
                 <p>
-                    After two decades of observing the ecosystem, Citum was built to address the fundamental
-                    complexity of modern scholarly communication. By moving from procedural XML to declarative,
-                    type-safe YAML, we aim to make style authoring accessible to a new generation of researchers
-                    while providing the performance and precision required for the next 20 years of publishing.
+                    The project replaces procedural XML with declarative, type-safe YAML so style authors can express behavior more directly and tool builders can rely on explicit schemas and reproducible rendering.
                 </p>
                 <div class="pt-4">
                     <a href="https://github.com/citum/citum-core"
                         class="text-primary font-medium hover:underline inline-flex items-center gap-1">
-                        Join the evolution on GitHub
+                        Follow development on GitHub
                         <span class="material-icons text-xs">open_in_new</span>
                     </a>
                 </div>
@@ -806,7 +793,7 @@
                     <a class="hover:text-primary transition-colors" href="https://github.com/citum/citum-core">GitHub</a>
                     <a class="hover:text-primary transition-colors" href="#roadmap">Status</a>
                     <a class="hover:text-primary transition-colors" href="examples.html">Examples</a>
-                    <a class="hover:text-primary transition-colors" href="compat.html">Compat</a>
+                    <a class="hover:text-primary transition-colors" href="https://docs.citum.org/compat.html">Compat</a>
                 </div>
                 <div class="text-sm text-slate-400">
                     © 2026 Citum Project. MPL-2.0.
