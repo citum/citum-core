@@ -8,6 +8,7 @@ use citum_engine::{
     render::{djot::Djot, html::Html, latex::Latex, plain::PlainText, typst::Typst},
 };
 use citum_schema::locale::RawLocale;
+use citum_schema::options::Processing;
 use citum_schema::reference::InputReference;
 use citum_schema::{InputBibliography, Locale, Style};
 use citum_store::{StoreConfig, StoreResolver, platform_data_dir};
@@ -1565,28 +1566,20 @@ where
     if show_cite {
         if let Some(cite_list) = citations {
             let _ = writeln!(output, "CITATIONS (From file):");
-            for (i, citation) in cite_list.iter().enumerate() {
-                match processor.process_citation_with_format::<F>(citation) {
-                    Ok(text) => {
-                        if show_keys {
-                            let _ = writeln!(
-                                output,
-                                "  [{}] {}",
-                                citation.id.as_deref().unwrap_or(&format!("{}", i)),
-                                text
-                            );
-                        } else {
-                            let _ = writeln!(output, "  {}", text);
-                        }
-                    }
-                    Err(e) => {
-                        let _ = writeln!(
-                            output,
-                            "  [{}] ERROR: {}",
-                            citation.id.as_deref().unwrap_or(&format!("{}", i)),
-                            e
-                        );
-                    }
+            for (i, (citation, text)) in cite_list
+                .iter()
+                .zip(render_citation_file_entries::<F>(processor, &cite_list))
+                .enumerate()
+            {
+                if show_keys {
+                    let _ = writeln!(
+                        output,
+                        "  [{}] {}",
+                        citation.id.as_deref().unwrap_or(&format!("{}", i)),
+                        text
+                    );
+                } else {
+                    let _ = writeln!(output, "  {}", text);
                 }
             }
         } else {
@@ -1712,6 +1705,45 @@ where
     output
 }
 
+/// Render citation-file inputs in batch mode, falling back to per-citation rendering on error.
+fn render_citation_file_entries<F>(processor: &Processor, citations: &[Citation]) -> Vec<String>
+where
+    F: citum_engine::render::format::OutputFormat<Output = String>,
+{
+    let is_numeric = processor
+        .style
+        .options
+        .as_ref()
+        .and_then(|config| config.processing.as_ref())
+        .is_some_and(|processing| matches!(processing, Processing::Numeric));
+
+    if is_numeric {
+        processor
+            .process_citations_with_format::<F>(citations)
+            .unwrap_or_else(|_| render_citation_file_entries_one_by_one::<F>(processor, citations))
+    } else {
+        render_citation_file_entries_one_by_one::<F>(processor, citations)
+    }
+}
+
+/// Render citation-file inputs independently to avoid cross-citation context.
+fn render_citation_file_entries_one_by_one<F>(
+    processor: &Processor,
+    citations: &[Citation],
+) -> Vec<String>
+where
+    F: citum_engine::render::format::OutputFormat<Output = String>,
+{
+    citations
+        .iter()
+        .map(|citation| {
+            processor
+                .process_citation_with_format::<F>(citation)
+                .unwrap_or_else(|error| error.to_string())
+        })
+        .collect()
+}
+
 /// Core JSON renderer for references and citations.
 ///
 /// Returns a pretty-printed JSON object with `style`, `items`, and optionally
@@ -1741,12 +1773,11 @@ where
         if let Some(cite_list) = citations {
             let rendered: Vec<_> = cite_list
                 .iter()
-                .map(|c| {
+                .zip(render_citation_file_entries::<F>(processor, &cite_list))
+                .map(|(citation, text)| {
                     json!({
-                        "id": c.id,
-                        "text": processor
-                            .process_citation_with_format::<F>(c)
-                            .unwrap_or_else(|e| e.to_string())
+                        "id": citation.id,
+                        "text": text
                     })
                 })
                 .collect();
@@ -1834,6 +1865,12 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use citum_schema::citation::CitationMode;
+    use citum_schema::grouping::{GroupSort, GroupSortEntry, GroupSortKey, SortKey};
+    use citum_schema::options::{Config, Processing};
+    use citum_schema::template::{
+        NumberVariable, TemplateComponent, TemplateNumber, WrapPunctuation,
+    };
     use std::time::{SystemTime, UNIX_EPOCH};
 
     // ------------------------------------------------------------------
@@ -1970,6 +2007,99 @@ sets:
 
         let _ = std::fs::remove_file(bib_a);
         let _ = std::fs::remove_file(bib_b);
+        let _ = std::fs::remove_dir(base);
+    }
+
+    #[test]
+    fn test_print_json_batches_numeric_citation_files() {
+        let style = Style {
+            citation: Some(citum_schema::CitationSpec {
+                template: Some(vec![TemplateComponent::Number(TemplateNumber {
+                    number: NumberVariable::CitationNumber,
+                    ..Default::default()
+                })]),
+                wrap: Some(WrapPunctuation::Brackets),
+                ..Default::default()
+            }),
+            bibliography: Some(citum_schema::BibliographySpec {
+                sort: Some(GroupSortEntry::Explicit(GroupSort {
+                    template: vec![GroupSortKey {
+                        key: SortKey::Author,
+                        ascending: true,
+                        order: None,
+                        sort_order: None,
+                    }],
+                })),
+                ..Default::default()
+            }),
+            options: Some(Config {
+                processing: Some(Processing::Numeric),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock should be after epoch")
+            .as_nanos();
+        let base = std::env::temp_dir().join(format!("citum-batch-citations-{now}"));
+        std::fs::create_dir_all(&base).expect("temp dir should be created");
+        let bib_path = base.join("refs.yaml");
+        std::fs::write(
+            &bib_path,
+            r#"
+references:
+  - class: monograph
+    id: smith2020
+    type: book
+    title: Smith Book
+    author:
+      - family: Smith
+        given: Jane
+    issued: "2020"
+  - class: monograph
+    id: adams2021
+    type: book
+    title: Adams Book
+    author:
+      - family: Adams
+        given: Amy
+    issued: "2021"
+"#,
+        )
+        .expect("fixture should write");
+
+        let loaded = load_merged_bibliography(std::slice::from_ref(&bib_path))
+            .expect("bibliography should load");
+        let processor = Processor::new(style, loaded.references);
+        let citations = vec![Citation {
+            id: Some("c1".to_string()),
+            items: vec![CitationItem {
+                id: "smith2020".to_string(),
+                ..Default::default()
+            }],
+            mode: CitationMode::NonIntegral,
+            ..Default::default()
+        }];
+
+        let output = print_json_with_format::<PlainText>(
+            &processor,
+            "numeric-test",
+            true,
+            false,
+            &["smith2020".to_string(), "adams2021".to_string()],
+            Some(citations),
+            None,
+            &AnnotationStyle::default(),
+        )
+        .expect("json rendering should succeed");
+        let parsed: serde_json::Value =
+            serde_json::from_str(&output).expect("output should be valid JSON");
+
+        assert_eq!(parsed["citations"][0]["text"], "[2]");
+
+        let _ = std::fs::remove_file(bib_path);
         let _ = std::fs::remove_dir(base);
     }
 }
