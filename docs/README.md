@@ -24,6 +24,11 @@ Generate the compatibility snapshot locally with `node scripts/report-core.js --
 Use [`architecture/README.md`](./architecture/README.md) to navigate active
 architecture/design docs versus historical snapshots.
 
+## Specifications & Policies
+
+- [`specs/`](./specs/) — Feature/design specifications (create before implementing non-trivial features)
+- [`policies/`](./policies/) — Active behavioral rules for agents and contributors
+
 ## Historical Snapshot Policy
 
 Date-stamped architecture docs (for example `*_2026-02-21.md`) are snapshots of
