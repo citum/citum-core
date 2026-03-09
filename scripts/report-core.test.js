@@ -22,6 +22,7 @@ const {
   getCslSnapshotStatus,
   getComparisonEntryTexts,
   mapWithConcurrency,
+  mergeDivergenceSummaries,
   preflightSnapshots,
   runCachedJsonJob,
   selectPrimaryComparator,
@@ -140,6 +141,36 @@ test('effective oracle sections and fidelity prefer adjusted counts when present
 
   assert.deepEqual(getEffectiveOracleSection(oracleResult, 'citations'), oracleResult.adjusted.citations);
   assert.equal(computeFidelityScore(oracleResult), 1);
+});
+
+test('mergeDivergenceSummaries preserves counts and unions arrays', () => {
+  const merged = mergeDivergenceSummaries(
+    {
+      'div-004': {
+        adjustedCitations: 1,
+        bibliographyOrderDifference: true,
+        anonymousIds: ['ITEM-20'],
+        tags: ['missing-name-title-sort'],
+      },
+    },
+    {
+      'div-004': {
+        adjustedCitations: 2,
+        bibliographyOrderDifference: false,
+        anonymousIds: ['ITEM-21'],
+        tags: ['sort-derived-numeric-citation-label'],
+      },
+    }
+  );
+
+  assert.deepEqual(merged, {
+    'div-004': {
+      adjustedCitations: 3,
+      bibliographyOrderDifference: true,
+      anonymousIds: ['ITEM-20', 'ITEM-21'],
+      tags: ['missing-name-title-sort', 'sort-derived-numeric-citation-label'],
+    },
+  });
 });
 
 test('expandCompoundBibEntries splits merged biblatex compound blocks', () => {
