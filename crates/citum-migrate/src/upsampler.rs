@@ -91,6 +91,7 @@ impl Upsampler {
                             &t.prefix,
                             &t.suffix,
                             t.quotes,
+                            t.strip_periods,
                         ),
                         overrides: HashMap::new(),
                         source_order: t.macro_call_order,
@@ -106,6 +107,7 @@ impl Upsampler {
                                 &t.prefix,
                                 &t.suffix,
                                 t.quotes,
+                                t.strip_periods,
                             ),
                             source_order: t.macro_call_order,
                         }));
@@ -127,7 +129,7 @@ impl Upsampler {
             LNode::Group(g) => Some(csln::CslnNode::Group(csln::GroupBlock {
                 children: self.upsample_nodes(&g.children),
                 delimiter: g.delimiter.clone(),
-                formatting: self.map_formatting(&g.formatting, &g.prefix, &g.suffix, None),
+                formatting: self.map_formatting(&g.formatting, &g.prefix, &g.suffix, None, None),
                 source_order: g.macro_call_order,
             })),
             LNode::Date(d) => self.map_date(d),
@@ -232,6 +234,7 @@ impl Upsampler {
                             &label.prefix,
                             &label.suffix,
                             None,
+                            label.strip_periods,
                         ),
                     });
                 }
@@ -284,7 +287,7 @@ impl Upsampler {
         Some(csln::CslnNode::Variable(csln::VariableBlock {
             variable,
             label: None,
-            formatting: self.map_formatting(&n.formatting, &n.prefix, &n.suffix, None),
+            formatting: self.map_formatting(&n.formatting, &n.prefix, &n.suffix, None, None),
             overrides: HashMap::new(),
             source_order: n.macro_call_order,
         }))
@@ -300,7 +303,13 @@ impl Upsampler {
                     variable: var,
                     form: self.map_label_form(&l.form),
                     pluralize: true,
-                    formatting: self.map_formatting(&l.formatting, &l.prefix, &l.suffix, None),
+                    formatting: self.map_formatting(
+                        &l.formatting,
+                        &l.prefix,
+                        &l.suffix,
+                        None,
+                        l.strip_periods,
+                    ),
                 }),
                 formatting: FormattingOptions::default(),
                 overrides: HashMap::new(),
@@ -521,7 +530,7 @@ impl Upsampler {
                 month_form,
                 day_form,
             },
-            formatting: self.map_formatting(&d.formatting, &d.prefix, &d.suffix, None),
+            formatting: self.map_formatting(&d.formatting, &d.prefix, &d.suffix, None, None),
             source_order: d.macro_call_order,
         }))
     }
@@ -553,9 +562,21 @@ impl Upsampler {
                         variable: var,
                         form: self.map_label_form(&l.form),
                         pluralize: true,
-                        formatting: self.map_formatting(&l.formatting, &l.prefix, &l.suffix, None),
+                        formatting: self.map_formatting(
+                            &l.formatting,
+                            &l.prefix,
+                            &l.suffix,
+                            None,
+                            l.strip_periods,
+                        ),
                     }),
-                    formatting: self.map_formatting(&t.formatting, &t.prefix, &t.suffix, t.quotes),
+                    formatting: self.map_formatting(
+                        &t.formatting,
+                        &t.prefix,
+                        &t.suffix,
+                        t.quotes,
+                        t.strip_periods,
+                    ),
                     overrides: HashMap::new(),
                     source_order: t.macro_call_order,
                 }));
@@ -673,6 +694,7 @@ impl Upsampler {
         prefix: &Option<String>,
         suffix: &Option<String>,
         quotes: Option<bool>,
+        strip_periods: Option<bool>,
     ) -> FormattingOptions {
         FormattingOptions {
             font_style: f.font_style.as_ref().map(|s| match s.as_str() {
@@ -701,7 +723,7 @@ impl Upsampler {
             quotes,
             prefix: prefix.clone(),
             suffix: suffix.clone(),
-            strip_periods: None,
+            strip_periods,
         }
     }
     fn map_term_form(&self, form: Option<&str>) -> csln::locale::TermForm {

@@ -1,10 +1,10 @@
 ---
 # csl26-bpuw
 title: Chicago Notes humanities-note fixture recovery
-status: todo
+status: completed
 type: task
 created_at: 2026-03-07T13:49:55Z
-updated_at: 2026-03-07T13:49:55Z
+updated_at: 2026-03-09T15:30:00Z
 ---
 
 5 failures remain after expanding humanities-note family fixtures (44/49 = 0.898):
@@ -24,3 +24,12 @@ Fix: Add `SimpleVariable::Archive => reference.archive()` and `SimpleVariable::A
 - All 5 failures pass (49/49)
 - Chicago Notes baseline restored to 1.0
 - No regressions in core fixture (37/37 still passing)
+
+## Summary of Changes
+
+- Confirmed the archive/archive-location and humanities-note recovery work was
+  already landed on `main`; no new Chicago Notes code was needed in this PR.
+- Verified the focused regression coverage still passes on the branch:
+  - `cargo test -p citum-engine test_humanities_note_fixture_preserves_archive_and_interview_fields -- --exact --nocapture`
+  - `cargo test -p citum-engine chicago_notes -- --nocapture`
+- Archived this bean and resolved the duplicate follow-on as `csl26-6i1c`.

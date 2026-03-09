@@ -1,11 +1,11 @@
 ---
 # csl26-9a89
 title: Refine bibliography rendering for delimiter and formatting edge cases
-status: in-progress
+status: completed
 type: task
 priority: high
 created_at: 2026-02-08T12:48:04Z
-updated_at: 2026-02-08T14:00:00Z
+updated_at: 2026-03-09T15:30:00Z
 ---
 
 The template resolver and per-component delimiter detection are working.
@@ -61,3 +61,12 @@ The template resolver and per-component delimiter detection are working.
 1. Address issue number leaking for styles that suppress issue
 2. Clean up period delimiters in APA (e.g. fix "). " artifacts from inference)
 3. Expand `/style-evolve migrate` coverage to top-5 parent styles
+
+## Summary of Changes
+
+- Closed this bean as stale-open after confirming its concrete rendering fixes
+  already landed on `main`, including entry suffix support, delimiter detection
+  improvements, and issue-suppression infrastructure.
+- Moved the remaining broad fidelity and migrate portfolio work under
+  `docs/specs/ENGINE_MIGRATE_COEVOLUTION_WAVE.md` rather than reviving this
+  older bean as a catch-all tracker.
