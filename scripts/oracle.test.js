@@ -230,3 +230,39 @@ test('registered divergence adjustments convert sort-derived numeric label drift
     'div-004'
   );
 });
+
+test('registered divergence adjustments skip order inspection without failures', () => {
+  const rawResults = {
+    citations: {
+      total: 1,
+      passed: 1,
+      failed: 0,
+      entries: [{ id: 'cite-1', oracle: '[1]', csln: '[1]', match: true }],
+    },
+    bibliography: {
+      total: 1,
+      passed: 1,
+      failed: 0,
+      entries: [{ oracle: 'Alpha.', csln: 'Alpha.', match: true }],
+    },
+  };
+
+  const adjusted = attachRegisteredDivergenceAdjustments(
+    rawResults,
+    ['Alpha.'],
+    ['ITEM-1'],
+    {
+      'ITEM-1': {
+        id: 'ITEM-1',
+        type: 'book',
+        title: 'Alpha',
+        author: [{ family: 'Able' }],
+      },
+    },
+    [{ id: 'cite-1', items: [{ id: 'ITEM-1' }] }]
+  );
+
+  assert.equal(adjusted.bibliographyOrder, null);
+  assert.equal(adjusted.adjusted.citations.passed, 1);
+  assert.deepEqual(adjusted.adjusted.divergenceSummary, {});
+});

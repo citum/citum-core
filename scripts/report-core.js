@@ -585,6 +585,44 @@ function getEffectiveOracleSection(oracleResult, sectionName) {
   return oracleResult?.[sectionName] || { passed: 0, total: 0, entries: [] };
 }
 
+function mergeDivergenceDetails(base = {}, extra = {}) {
+  const merged = { ...base };
+
+  for (const [key, value] of Object.entries(extra)) {
+    if (Array.isArray(value)) {
+      const current = Array.isArray(merged[key]) ? merged[key] : [];
+      merged[key] = [...new Set([...current, ...value])];
+      continue;
+    }
+
+    if (typeof value === 'number') {
+      merged[key] = (typeof merged[key] === 'number' ? merged[key] : 0) + value;
+      continue;
+    }
+
+    if (typeof value === 'boolean') {
+      merged[key] = Boolean(merged[key]) || value;
+      continue;
+    }
+
+    merged[key] = value;
+  }
+
+  return merged;
+}
+
+function mergeDivergenceSummaries(...summaries) {
+  const merged = {};
+
+  for (const summary of summaries) {
+    for (const [divergenceId, details] of Object.entries(summary || {})) {
+      merged[divergenceId] = mergeDivergenceDetails(merged[divergenceId], details);
+    }
+  }
+
+  return merged;
+}
+
 function getCslSnapshotStatus(stylePath, refsFixture, citationsFixture) {
   const styleName = path.basename(stylePath, '.csl');
   const snapshotPath = path.join(CSL_SNAPSHOT_DIR, `${styleName}.json`);
@@ -980,10 +1018,10 @@ function mergeOracleResults(main, extra) {
       total: (mAdjBib.total || 0) + (eAdjBib.total || 0),
       entries: [...(mAdjBib.entries || []), ...(eAdjBib.entries || [])],
     },
-    divergenceSummary: {
-      ...(main.adjusted?.divergenceSummary || {}),
-      ...(extra.adjusted?.divergenceSummary || {}),
-    },
+    divergenceSummary: mergeDivergenceSummaries(
+      main.adjusted?.divergenceSummary,
+      extra.adjusted?.divergenceSummary
+    ),
   };
 
   return main;
@@ -1008,10 +1046,10 @@ function mergeCitationResults(main, extra) {
       entries: [...(mainAdjusted.entries || []), ...(extraAdjusted.entries || [])],
     },
     bibliography: getEffectiveOracleSection(main, 'bibliography'),
-    divergenceSummary: {
-      ...(main.adjusted?.divergenceSummary || {}),
-      ...(extra.adjusted?.divergenceSummary || {}),
-    },
+    divergenceSummary: mergeDivergenceSummaries(
+      main.adjusted?.divergenceSummary,
+      extra.adjusted?.divergenceSummary
+    ),
   };
 
   const mergedByType = { ...(main.citationsByType || {}) };
@@ -1042,10 +1080,10 @@ function composeScopedOracleResult(citationResult, bibliographyResult) {
     adjusted: {
       citations: getEffectiveOracleSection(citationResult, 'citations'),
       bibliography: getEffectiveOracleSection(bibliographyResult, 'bibliography'),
-      divergenceSummary: {
-        ...(citationResult?.adjusted?.divergenceSummary || {}),
-        ...(bibliographyResult?.adjusted?.divergenceSummary || {}),
-      },
+      divergenceSummary: mergeDivergenceSummaries(
+        citationResult?.adjusted?.divergenceSummary,
+        bibliographyResult?.adjusted?.divergenceSummary
+      ),
     },
     citationsByType: citationResult?.citationsByType || {},
     componentSummary: bibliographyResult?.componentSummary || {},
@@ -2762,4 +2800,5 @@ module.exports = {
   selectPrimaryComparator,
   serializeTimingSummary,
   textSimilarity,
+  mergeDivergenceSummaries,
 };

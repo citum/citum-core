@@ -174,6 +174,20 @@ function buildAdjustedOracleResult(rawResults, testCitations, divergenceInfo) {
 }
 
 function attachRegisteredDivergenceAdjustments(rawResults, oracleBibliography, cslnOrderIds, testItems, testCitations) {
+  const hasCitationFailures = (rawResults?.citations?.failed || 0) > 0;
+  const hasBibliographyFailures = (rawResults?.bibliography?.failed || 0) > 0;
+  const shouldInspectOrderDifference = (
+    hasCitationFailures || hasBibliographyFailures
+  ) && Array.isArray(cslnOrderIds) && cslnOrderIds.length > 0;
+
+  if (!shouldInspectOrderDifference) {
+    return {
+      ...rawResults,
+      bibliographyOrder: null,
+      adjusted: buildAdjustedOracleResult(rawResults, testCitations, null),
+    };
+  }
+
   const policy = loadVerificationPolicy();
   const divergenceRule = resolveRegisteredDivergence(policy, DIV_004_ID);
   const divergenceInfo = detectDiv004OrderDifference(
