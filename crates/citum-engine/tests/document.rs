@@ -150,6 +150,130 @@ fn test_document_djot_output_unmodified() {
     );
 }
 
+#[test]
+fn test_document_html_output_renders_raw_markup() {
+    let style = load_style("styles/modern-language-association.yaml");
+    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
+        .expect("example bibliography should parse");
+
+    let processor = Processor::new(style, bibliography);
+    let parser = DjotParser;
+    let document = fs::read_to_string(project_root().join("examples/document.djot"))
+        .expect("example document should be readable");
+
+    let html_output = processor.process_document::<_, citum_engine::render::html::Html>(
+        &document,
+        &parser,
+        DocumentFormat::Html,
+    );
+
+    assert!(
+        html_output.contains(r#"<span class="csln-citation" data-ref="smith2010">"#),
+        "citation markup should be real HTML: {html_output}"
+    );
+    assert!(
+        html_output.contains(r#"<div class="csln-bibliography">"#),
+        "bibliography markup should be real HTML: {html_output}"
+    );
+    assert!(
+        !html_output.contains("&lt;span class="),
+        "citation markup should not be escaped: {html_output}"
+    );
+    assert!(
+        !html_output.contains("&lt;div class="),
+        "bibliography markup should not be escaped: {html_output}"
+    );
+}
+
+#[test]
+fn test_example_document_renders_integral_name_memory() {
+    let style = load_style("styles/modern-language-association.yaml");
+    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
+        .expect("example bibliography should parse");
+
+    let processor = Processor::new(style, bibliography);
+    let parser = DjotParser;
+    let document = fs::read_to_string(project_root().join("examples/document.djot"))
+        .expect("example document should be readable");
+
+    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
+        &document,
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    assert!(output.contains("First narrative mention: John Smith (10)"));
+    assert!(output.contains("Later in the same chapter: Smith (12) narrows"));
+    assert!(output.contains("Integral with locator: Thomas S. Kuhn (10) argues"));
+    assert!(output.contains(
+        "[^narrative-note]: Before the prose introduces him, John Smith (3) already appears in a note."
+    ));
+    assert!(output.contains("Suppress author with locator: (10)."));
+    assert!(output.contains("# Chapter Two"));
+    assert!(output.contains("so John Smith (14)"));
+}
+
+#[test]
+fn test_example_document_renders_author_date_integral_citations() {
+    let style = load_style("styles/apa-7th.yaml");
+    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
+        .expect("example bibliography should parse");
+
+    let processor = Processor::new(style, bibliography);
+    let parser = DjotParser;
+    let document = fs::read_to_string(project_root().join("examples/document.djot"))
+        .expect("example document should be readable");
+
+    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
+        &document,
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    assert!(output.contains("First narrative mention: Smith (2010, p. 10)"));
+    assert!(output.contains("Later in the same chapter: Smith (2010, p. 12)"));
+    assert!(output.contains("Integral with locator: Kuhn (1962, p. 10) argues"));
+    assert!(output.contains(
+        "[^narrative-note]: Before the prose introduces him, Smith (2010, p. 3) already appears in a note."
+    ));
+    assert!(output.contains("Suppress author with locator: (1962, p. 10)."));
+}
+
+#[test]
+fn test_example_document_renders_note_style_integral_anchor_and_notes() {
+    let style = load_style("styles/chicago-shortened-notes-bibliography.yaml");
+    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
+        .expect("example bibliography should parse");
+
+    let processor = Processor::new(style, bibliography);
+    let parser = DjotParser;
+    let document = fs::read_to_string(project_root().join("examples/document.djot"))
+        .expect("example document should be readable");
+
+    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
+        &document,
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    assert!(output.contains("First narrative mention: Smith[^citum-auto-5] surveys"));
+    assert!(output.contains("Later in the same chapter: Smith[^citum-auto-6] narrows"));
+    assert!(output.contains("Integral with locator: Kuhn[^citum-auto-7] argues"));
+    assert!(
+        output.contains("[^narrative-note]: Before the prose introduces him, Smith (_A Great Book_) already appears in a note."),
+        "manual note should render once with the citation resolved: {output}"
+    );
+    assert_eq!(
+        output.matches("[^narrative-note]:").count(),
+        1,
+        "manual note should not be duplicated: {output}"
+    );
+    assert!(
+        !output.contains("[+@smith2010]"),
+        "raw citation leaked: {output}"
+    );
+}
+
 fn project_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }

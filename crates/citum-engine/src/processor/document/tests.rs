@@ -4,7 +4,9 @@ use crate::reference::{Bibliography, Reference};
 use crate::render::plain::PlainText;
 use crate::render::typst::Typst;
 use citum_schema::options::{
-    Config, NoteConfig, NoteMarkerOrder, NoteNumberPlacement, NoteQuotePlacement, Processing,
+    Config, IntegralNameConfig, IntegralNameContexts, IntegralNameForm, IntegralNameRule,
+    IntegralNameScope, NoteConfig, NoteMarkerOrder, NoteNumberPlacement, NoteQuotePlacement,
+    Processing,
 };
 use citum_schema::template::{
     ContributorForm, ContributorRole, DateForm, DateVariable, Rendering, TemplateComponent,
@@ -156,6 +158,67 @@ fn make_note_style_with_rules(notes: NoteConfig) -> Style {
     style
 }
 
+fn make_integral_name_style(scope: IntegralNameScope, contexts: IntegralNameContexts) -> Style {
+    Style {
+        options: Some(Config {
+            processing: Some(Processing::AuthorDate),
+            integral_names: Some(IntegralNameConfig {
+                rule: Some(IntegralNameRule::FullThenShort),
+                scope: Some(scope),
+                contexts: Some(contexts),
+                subsequent_form: Some(IntegralNameForm::Short),
+            }),
+            ..Default::default()
+        }),
+        citation: Some(CitationSpec {
+            template: Some(vec![
+                TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Author,
+                    form: ContributorForm::Short,
+                    ..Default::default()
+                }),
+                TemplateComponent::Date(TemplateDate {
+                    date: DateVariable::Issued,
+                    form: DateForm::Year,
+                    rendering: Rendering::default(),
+                    ..Default::default()
+                }),
+            ]),
+            integral: Some(Box::new(CitationSpec {
+                template: Some(vec![TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Author,
+                    form: ContributorForm::Long,
+                    ..Default::default()
+                })]),
+                ..Default::default()
+            })),
+            wrap: Some(WrapPunctuation::Parentheses),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Author,
+                    form: ContributorForm::Long,
+                    ..Default::default()
+                }),
+                TemplateComponent::Date(TemplateDate {
+                    date: DateVariable::Issued,
+                    form: DateForm::Year,
+                    rendering: Rendering {
+                        prefix: Some(" (".to_string()),
+                        suffix: Some(")".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
 #[test]
 fn test_author_date_documents_still_render_inline() {
     let bib = make_test_bib();
@@ -201,6 +264,27 @@ fn test_manual_footnote_citations_render_in_place() {
     assert!(result.contains("[^m1]: See"));
     assert!(result.contains("Book One"));
     assert!(!result.contains("citum-auto-"));
+}
+
+#[test]
+fn test_manual_footnote_definition_is_not_duplicated() {
+    let bib = make_test_bib();
+    let processor = Processor::new(make_note_style(), bib);
+    let parser = DjotParser;
+
+    let content = "Text[^m1].\n\n[^m1]: See [@item1].";
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    assert_eq!(
+        result.matches("[^m1]:").count(),
+        1,
+        "manual note duplicated: {result}"
+    );
+    assert!(
+        !result.contains("[@item1]"),
+        "raw citation leaked: {result}"
+    );
 }
 
 #[test]
@@ -349,6 +433,25 @@ fn test_note_style_html_output_contains_footnotes() {
 
     assert!(result.contains("role=\"doc-noteref\""));
     assert!(result.contains("role=\"doc-endnotes\""));
+}
+
+#[test]
+fn test_note_style_integral_citation_keeps_prose_anchor() {
+    let style: Style = serde_yaml::from_str(include_str!(
+        "../../../../../styles/chicago-shortened-notes-bibliography.yaml"
+    ))
+    .unwrap();
+    let bib = make_test_bib();
+    let processor = Processor::new(style, bib);
+    let parser = DjotParser;
+
+    let content = "Narrative [+@item1] continues.";
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    assert!(result.contains("Narrative Doe[^citum-auto-1] continues."));
+    assert!(result.contains("[^citum-auto-1]: Doe,"));
+    assert!(result.contains("Book One"));
 }
 
 #[test]
@@ -548,4 +651,214 @@ Some text [@item1]."#;
     assert!(result.contains("== Primary Sources"));
     assert!(result.contains("== Secondary Sources"));
     assert!(!result.contains("## Primary Sources"));
+}
+
+#[test]
+fn test_integral_name_memory_full_then_short_in_one_document() {
+    let bib = make_test_bib();
+    let processor = Processor::new(
+        make_integral_name_style(
+            IntegralNameScope::Document,
+            IntegralNameContexts::BodyAndNotes,
+        ),
+        bib,
+    );
+    let parser = DjotParser;
+
+    let content = "First [+@item1]. Later [+@item1].";
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    assert!(result.contains("First John Doe. Later Doe."));
+}
+
+#[test]
+fn test_integral_name_memory_chapter_reset_uses_full_name_again() {
+    let bib = make_test_bib();
+    let processor = Processor::new(
+        make_integral_name_style(
+            IntegralNameScope::Chapter,
+            IntegralNameContexts::BodyAndNotes,
+        ),
+        bib,
+    );
+    let parser = DjotParser;
+
+    let content = "# One\n\n[+@item1]. [+@item1].\n\n# Two\n\n[+@item1].";
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    assert!(result.contains("John Doe. Doe."));
+    assert!(result.contains("# Two\n\nJohn Doe."));
+}
+
+#[test]
+fn test_integral_name_memory_section_reset_uses_full_name_again() {
+    let bib = make_test_bib();
+    let processor = Processor::new(
+        make_integral_name_style(
+            IntegralNameScope::Section,
+            IntegralNameContexts::BodyAndNotes,
+        ),
+        bib,
+    );
+    let parser = DjotParser;
+
+    let content = "## One\n\n[+@item1]. [+@item1].\n\n## Two\n\n[+@item1].";
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    assert!(result.contains("John Doe. Doe."));
+    assert!(result.contains("## Two\n\nJohn Doe."));
+}
+
+#[test]
+fn test_integral_name_memory_body_only_ignores_note_mentions() {
+    let bib = make_test_bib();
+    let processor = Processor::new(
+        make_integral_name_style(IntegralNameScope::Document, IntegralNameContexts::BodyOnly),
+        bib,
+    );
+    let parser = DjotParser;
+
+    let content =
+        "Lead[^n1]. First body [+@item1]. Later body [+@item1].\n\n[^n1]: Note [+@item1].";
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    assert!(result.contains("[^n1]: Note John Doe."));
+    assert!(result.contains("First body John Doe. Later body Doe."));
+}
+
+#[test]
+fn test_integral_name_memory_body_and_notes_keeps_body_first_after_note_first() {
+    let bib = make_test_bib();
+    let processor = Processor::new(
+        make_integral_name_style(
+            IntegralNameScope::Document,
+            IntegralNameContexts::BodyAndNotes,
+        ),
+        bib,
+    );
+    let parser = DjotParser;
+
+    let content = "Lead[^n1]. First body [+@item1].\n\n[^n1]: First note [+@item1].";
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    assert!(result.contains("[^n1]: First note John Doe."));
+    assert!(result.contains("First body John Doe."));
+}
+
+#[test]
+fn test_integral_name_memory_repeated_note_then_body_transitions_correctly() {
+    let bib = make_test_bib();
+    let processor = Processor::new(
+        make_integral_name_style(
+            IntegralNameScope::Document,
+            IntegralNameContexts::BodyAndNotes,
+        ),
+        bib,
+    );
+    let parser = DjotParser;
+
+    let content = "Lead[^n1] and again[^n2]. First body [+@item1]. Later[^n3].\n\n[^n1]: One [+@item1].\n\n[^n2]: Two [+@item1].\n\n[^n3]: Three [+@item1].";
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    assert!(result.contains("[^n1]: One John Doe."));
+    assert!(result.contains("[^n2]: Two Doe."));
+    assert!(result.contains("First body John Doe."));
+    assert!(result.contains("[^n3]: Three Doe."));
+}
+
+#[test]
+fn test_document_frontmatter_can_disable_integral_name_memory() {
+    let bib = make_test_bib();
+    let processor = Processor::new(
+        make_integral_name_style(
+            IntegralNameScope::Document,
+            IntegralNameContexts::BodyAndNotes,
+        ),
+        bib,
+    );
+    let parser = DjotParser;
+
+    let content = r#"---
+integral-names:
+  enabled: false
+---
+
+First [+@item1]. Later [+@item1]."#;
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    assert!(result.contains("First John Doe. Later John Doe."));
+}
+
+#[test]
+fn test_document_frontmatter_can_override_integral_name_scope_for_typst() {
+    let bib = make_test_bib();
+    let processor = Processor::new(
+        make_integral_name_style(
+            IntegralNameScope::Document,
+            IntegralNameContexts::BodyAndNotes,
+        ),
+        bib,
+    );
+    let parser = DjotParser;
+
+    let content = r#"---
+integral-names:
+  enabled: true
+  scope: chapter
+---
+
+# One
+
+[+@item1]. [+@item1].
+
+# Two
+
+[+@item1]."#;
+    let result = processor.process_document::<_, Typst>(content, &parser, DocumentFormat::Typst);
+
+    assert!(result.contains("#link(<ref-item1>)[John Doe]. #link(<ref-item1>)[Doe]."));
+    assert!(result.contains("= Two\n\n#link(<ref-item1>)[John Doe]."));
+}
+
+#[test]
+fn test_document_frontmatter_ignores_unknown_keys() {
+    let bib = make_test_bib();
+    let processor = Processor::new(
+        make_integral_name_style(
+            IntegralNameScope::Document,
+            IntegralNameContexts::BodyAndNotes,
+        ),
+        bib,
+    );
+    let parser = DjotParser;
+
+    let content = r#"---
+title: Sample Essay
+author: Example Author
+bibliography:
+  - id: cited
+    heading:
+      literal: "Cited Works"
+    selector:
+      cited: visible
+integral-names:
+  enabled: true
+  scope: document
+  contexts: body-and-notes
+---
+
+First [+@item1]. Later [+@item1]."#;
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    assert!(result.contains("First John Doe. Later Doe."));
+    assert!(result.contains("# Bibliography"));
+    assert!(result.contains("Cited Works"));
 }

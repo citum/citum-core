@@ -484,6 +484,8 @@ pub struct ProcHints {
     pub citation_sub_label: Option<String>,
     /// Citation position (first, subsequent, ibid, etc.).
     pub position: Option<citum_schema::citation::Position>,
+    /// Explicit integral citation name-memory state for this rendered item.
+    pub integral_name_state: Option<citum_schema::citation::IntegralNameState>,
 }
 
 /// Context for rendering (citation vs bibliography).

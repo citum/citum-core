@@ -71,7 +71,7 @@
     },
     "version": {
       "description": "Style schema version.",
-      "default": "1.0",
+      "default": "0.8.0",
       "type": "string"
     }
   },
@@ -100,41 +100,6 @@
           "enum": [
             "none"
           ]
-        },
-        {
-          "description": "Context-sensitive conjunction based on the citation mode.\n\nThis allows styles like APA 7th to use \"and\" in narrative (integral) citations but \"&\" in parenthetical (non-integral) ones.",
-          "type": "object",
-          "required": [
-            "mode-dependent"
-          ],
-          "properties": {
-            "mode-dependent": {
-              "type": "object",
-              "required": [
-                "integral",
-                "non-integral"
-              ],
-              "properties": {
-                "integral": {
-                  "description": "The option to use for integral/narrative citations (e.g., \"Smith and Jones\").",
-                  "allOf": [
-                    {
-                      "$ref": "#/definitions/AndOptions"
-                    }
-                  ]
-                },
-                "non-integral": {
-                  "description": "The option to use for non-integral/parenthetical citations (e.g., \"(Smith & Jones)\"). Also typically serves as the default for bibliographies.",
-                  "allOf": [
-                    {
-                      "$ref": "#/definitions/AndOptions"
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "additionalProperties": false
         }
       ]
     },
@@ -150,6 +115,17 @@
       "description": "Bibliography-specific configuration.",
       "type": "object",
       "properties": {
+        "compound-numeric": {
+          "description": "Configuration for compound numeric bibliography entries. When present, enables grouping of references by input bibliography `sets`.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CompoundNumericConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "custom": {
           "description": "Custom user-defined fields for extensions.",
           "type": [
@@ -292,6 +268,7 @@
           }
         },
         "locales": {
+          "description": "Locale-specific template overrides checked before the default template.",
           "type": [
             "array",
             "null"
@@ -301,6 +278,7 @@
           }
         },
         "options": {
+          "description": "Bibliography-specific option overrides merged over the style config.",
           "anyOf": [
             {
               "$ref": "#/definitions/Config"
@@ -322,7 +300,7 @@
           ]
         },
         "template": {
-          "description": "The default template for bibliography entries.",
+          "description": "The default template for bibliography entries. Default template for entries when no localized override is selected.",
           "type": [
             "array",
             "null"
@@ -358,40 +336,206 @@
       },
       "additionalProperties": false
     },
+    "CitationCollapse": {
+      "description": "Citation collapse behavior for multi-item citations.",
+      "oneOf": [
+        {
+          "description": "Collapse adjacent citation numbers into a numeric range such as `1–3`.",
+          "type": "string",
+          "enum": [
+            "citation-number"
+          ]
+        }
+      ]
+    },
     "CitationField": {
       "description": "Discipline/field classification for a citation style.\n\nValues correspond to the CSL 1.0 `<category field=\"...\"/>` attribute, `generic-base` is silently ignored during migration.",
-      "type": "string",
-      "enum": [
-        "anthropology",
-        "biology",
-        "botany",
-        "chemistry",
-        "communications",
-        "engineering",
-        "geography",
-        "geology",
-        "history",
-        "humanities",
-        "law",
-        "linguistics",
-        "literature",
-        "math",
-        "medicine",
-        "philosophy",
-        "physics",
-        "political-science",
-        "psychology",
-        "science",
-        "social-science",
-        "sociology",
-        "theology",
-        "zoology"
+      "oneOf": [
+        {
+          "description": "Anthropology styles.",
+          "type": "string",
+          "enum": [
+            "anthropology"
+          ]
+        },
+        {
+          "description": "Biology styles.",
+          "type": "string",
+          "enum": [
+            "biology"
+          ]
+        },
+        {
+          "description": "Botany styles.",
+          "type": "string",
+          "enum": [
+            "botany"
+          ]
+        },
+        {
+          "description": "Chemistry styles.",
+          "type": "string",
+          "enum": [
+            "chemistry"
+          ]
+        },
+        {
+          "description": "Communications studies styles.",
+          "type": "string",
+          "enum": [
+            "communications"
+          ]
+        },
+        {
+          "description": "Engineering styles.",
+          "type": "string",
+          "enum": [
+            "engineering"
+          ]
+        },
+        {
+          "description": "Geography styles.",
+          "type": "string",
+          "enum": [
+            "geography"
+          ]
+        },
+        {
+          "description": "Geology styles.",
+          "type": "string",
+          "enum": [
+            "geology"
+          ]
+        },
+        {
+          "description": "History styles.",
+          "type": "string",
+          "enum": [
+            "history"
+          ]
+        },
+        {
+          "description": "Humanities styles.",
+          "type": "string",
+          "enum": [
+            "humanities"
+          ]
+        },
+        {
+          "description": "Law styles.",
+          "type": "string",
+          "enum": [
+            "law"
+          ]
+        },
+        {
+          "description": "Linguistics styles.",
+          "type": "string",
+          "enum": [
+            "linguistics"
+          ]
+        },
+        {
+          "description": "Literature styles.",
+          "type": "string",
+          "enum": [
+            "literature"
+          ]
+        },
+        {
+          "description": "Mathematics styles.",
+          "type": "string",
+          "enum": [
+            "math"
+          ]
+        },
+        {
+          "description": "Medicine styles.",
+          "type": "string",
+          "enum": [
+            "medicine"
+          ]
+        },
+        {
+          "description": "Philosophy styles.",
+          "type": "string",
+          "enum": [
+            "philosophy"
+          ]
+        },
+        {
+          "description": "Physics styles.",
+          "type": "string",
+          "enum": [
+            "physics"
+          ]
+        },
+        {
+          "description": "Political science styles.",
+          "type": "string",
+          "enum": [
+            "political-science"
+          ]
+        },
+        {
+          "description": "Psychology styles.",
+          "type": "string",
+          "enum": [
+            "psychology"
+          ]
+        },
+        {
+          "description": "General science styles.",
+          "type": "string",
+          "enum": [
+            "science"
+          ]
+        },
+        {
+          "description": "Social science styles.",
+          "type": "string",
+          "enum": [
+            "social-science"
+          ]
+        },
+        {
+          "description": "Sociology styles.",
+          "type": "string",
+          "enum": [
+            "sociology"
+          ]
+        },
+        {
+          "description": "Theology styles.",
+          "type": "string",
+          "enum": [
+            "theology"
+          ]
+        },
+        {
+          "description": "Zoology styles.",
+          "type": "string",
+          "enum": [
+            "zoology"
+          ]
+        }
       ]
     },
     "CitationSpec": {
       "description": "Citation specification.",
       "type": "object",
       "properties": {
+        "collapse": {
+          "description": "Optional collapse behavior for adjacent multi-item citations.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CitationCollapse"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "custom": {
           "description": "Custom user-defined fields for extensions.",
           "type": [
@@ -430,6 +574,7 @@
           ]
         },
         "locales": {
+          "description": "Locale-specific template overrides checked before the default template.",
           "type": [
             "array",
             "null"
@@ -457,6 +602,7 @@
           ]
         },
         "options": {
+          "description": "Citation-specific option overrides merged over the style config.",
           "anyOf": [
             {
               "$ref": "#/definitions/Config"
@@ -503,6 +649,7 @@
           ]
         },
         "template": {
+          "description": "Default template when no localized override is selected.",
           "type": [
             "array",
             "null"
@@ -576,6 +723,42 @@
         }
       ]
     },
+    "CompoundNumericConfig": {
+      "description": "Configuration for compound numeric bibliography entries.\n\nGroups multiple references under a single citation number with sub-labels. Used in chemistry journals (e.g., Angewandte Chemie).",
+      "type": "object",
+      "properties": {
+        "collapse-subentries": {
+          "description": "Whether adjacent grouped sub-entries collapse in citations.\n\nWhen true, adjacent members from the same group may render as `1a,b` or `1a-c` instead of `1a,1b` or `1a,1b,1c`.",
+          "default": false,
+          "type": "boolean"
+        },
+        "sub-delimiter": {
+          "description": "Delimiter between sub-items (default: \", \").",
+          "default": ", ",
+          "type": "string"
+        },
+        "sub-label": {
+          "description": "Sub-label style: alphabetic (a, b, c) or numeric (1, 2, 3).",
+          "default": "alphabetic",
+          "allOf": [
+            {
+              "$ref": "#/definitions/SubLabelStyle"
+            }
+          ]
+        },
+        "sub-label-suffix": {
+          "description": "Suffix after sub-label (e.g., \")\" → \"a)\", \".\" → \"a.\").",
+          "default": ")",
+          "type": "string"
+        },
+        "subentry": {
+          "description": "Whether grouped item citations render sub-entry labels (`1a`, `1b`).\n\nWhen false, grouped item citations render the whole-group number (`1`).",
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
     "Config": {
       "description": "Top-level style configuration.",
       "type": "object",
@@ -615,6 +798,17 @@
           "anyOf": [
             {
               "$ref": "#/definitions/DateConfigEntry"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "integral-names": {
+          "description": "Integral citation name-memory behavior.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IntegralNameConfig"
             },
             {
               "type": "null"
@@ -841,6 +1035,17 @@
             "null"
           ]
         },
+        "name-form": {
+          "description": "How to render given names. See `NameForm` for variants. Per-scope overrides (per-mode, per-position) are expressed by setting this field in the appropriate scope's contributor config block.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NameForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "role": {
           "description": "When and how to display contributor roles.",
           "anyOf": [
@@ -1024,25 +1229,133 @@
     },
     "ContributorRole": {
       "description": "Contributor roles.",
-      "type": "string",
-      "enum": [
-        "author",
-        "editor",
-        "translator",
-        "director",
-        "publisher",
-        "recipient",
-        "interviewer",
-        "interviewee",
-        "inventor",
-        "counsel",
-        "composer",
-        "collection-editor",
-        "container-author",
-        "editorial-director",
-        "illustrator",
-        "original-author",
-        "reviewed-author"
+      "oneOf": [
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "author"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "editor"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "translator"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "director"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "publisher"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "recipient"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "interviewer"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "interviewee"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "inventor"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "counsel"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "composer"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "collection-editor"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "container-author"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "editorial-director"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "textual-editor"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "illustrator"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "original-author"
+          ]
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "enum": [
+            "reviewed-author"
+          ]
+        }
       ]
     },
     "DateConfig": {
@@ -1213,7 +1526,7 @@
       ]
     },
     "Disambiguation": {
-      "description": "Disambiguation settings.",
+      "description": "Disambiguation settings.\n\nControls how ambiguous citations are disambiguated in the output.",
       "type": "object",
       "required": [
         "names",
@@ -1221,13 +1534,16 @@
       ],
       "properties": {
         "add-givenname": {
+          "description": "Whether to add given names to disambiguate similarly-named authors.",
           "default": false,
           "type": "boolean"
         },
         "names": {
+          "description": "Whether to attempt disambiguation by expanding author names.",
           "type": "boolean"
         },
         "year-suffix": {
+          "description": "Whether to append year suffixes (a, b, c, ...) for multiple works from the same author-year.",
           "type": "boolean"
         }
       }
@@ -1303,44 +1619,222 @@
       ]
     },
     "GeneralTerm": {
-      "description": "A list of general terms for citation formatting.",
-      "type": "string",
-      "enum": [
-        "in",
-        "accessed",
-        "retrieved",
-        "at",
-        "from",
-        "by",
-        "no-date",
-        "anonymous",
-        "circa",
-        "available-at",
-        "ibid",
-        "and",
-        "et-al",
-        "and-others",
-        "forthcoming",
-        "online",
-        "review-of",
-        "original-work-published",
-        "patent",
-        "volume",
-        "issue",
-        "page",
-        "chapter",
-        "edition",
-        "section"
+      "description": "A list of general terms for citation formatting.\n\nThese are the standard terms that appear in bibliographies and citations, including prepositions (in, at, from, by), punctuation terms (and, et al), date-related terms (accessed, no-date, circa), locator terms (page, chapter, volume), and special phrases (ibid, forthcoming, available-at).",
+      "oneOf": [
+        {
+          "description": "The preposition \"in\" (e.g., \"in Smith, 2020\").",
+          "type": "string",
+          "enum": [
+            "in"
+          ]
+        },
+        {
+          "description": "The term used for access dates (e.g., \"accessed May 1\").",
+          "type": "string",
+          "enum": [
+            "accessed"
+          ]
+        },
+        {
+          "description": "The term used for retrieval statements (e.g., \"retrieved from URL\").",
+          "type": "string",
+          "enum": [
+            "retrieved"
+          ]
+        },
+        {
+          "description": "The preposition \"at\" (e.g., \"at the conference\").",
+          "type": "string",
+          "enum": [
+            "at"
+          ]
+        },
+        {
+          "description": "The preposition \"from\" (e.g., \"from the publisher\").",
+          "type": "string",
+          "enum": [
+            "from"
+          ]
+        },
+        {
+          "description": "The preposition \"of\" (e.g., \"special issue of\").",
+          "type": "string",
+          "enum": [
+            "of"
+          ]
+        },
+        {
+          "description": "The preposition \"to\" (e.g., \"from x to y\").",
+          "type": "string",
+          "enum": [
+            "to"
+          ]
+        },
+        {
+          "description": "The preposition \"by\" (e.g., \"by John Smith\").",
+          "type": "string",
+          "enum": [
+            "by"
+          ]
+        },
+        {
+          "description": "The term used when no date is available (e.g., \"n.d.\").",
+          "type": "string",
+          "enum": [
+            "no-date"
+          ]
+        },
+        {
+          "description": "The term used for anonymous authorship (e.g., \"anonymous\").",
+          "type": "string",
+          "enum": [
+            "anonymous"
+          ]
+        },
+        {
+          "description": "The term used for approximate dates (e.g., \"circa\").",
+          "type": "string",
+          "enum": [
+            "circa"
+          ]
+        },
+        {
+          "description": "The phrase used for availability statements (e.g., \"available at URL\").",
+          "type": "string",
+          "enum": [
+            "available-at"
+          ]
+        },
+        {
+          "description": "The term used for immediately repeated citations (e.g., \"ibid.\").",
+          "type": "string",
+          "enum": [
+            "ibid"
+          ]
+        },
+        {
+          "description": "The conjunction \"and\" (e.g., \"Smith and Jones\").",
+          "type": "string",
+          "enum": [
+            "and"
+          ]
+        },
+        {
+          "description": "The abbreviation for omitted additional names (e.g., \"et al.\").",
+          "type": "string",
+          "enum": [
+            "et-al"
+          ]
+        },
+        {
+          "description": "The phrase \"and others\" (generic use).",
+          "type": "string",
+          "enum": [
+            "and-others"
+          ]
+        },
+        {
+          "description": "The term used for forthcoming works (e.g., \"forthcoming\").",
+          "type": "string",
+          "enum": [
+            "forthcoming"
+          ]
+        },
+        {
+          "description": "The term used for online resources (e.g., \"online\").",
+          "type": "string",
+          "enum": [
+            "online"
+          ]
+        },
+        {
+          "description": "The adverb \"here\".",
+          "type": "string",
+          "enum": [
+            "here"
+          ]
+        },
+        {
+          "description": "The term used for deposited materials.",
+          "type": "string",
+          "enum": [
+            "deposited"
+          ]
+        },
+        {
+          "description": "The phrase used to introduce reviewed works (e.g., \"review of\").",
+          "type": "string",
+          "enum": [
+            "review-of"
+          ]
+        },
+        {
+          "description": "The phrase used for original publication references (e.g., \"originally published\").",
+          "type": "string",
+          "enum": [
+            "original-work-published"
+          ]
+        },
+        {
+          "description": "The term used for patents (e.g., \"patent\").",
+          "type": "string",
+          "enum": [
+            "patent"
+          ]
+        },
+        {
+          "description": "The general term for volume locators (e.g., \"volume\", \"vol.\").",
+          "type": "string",
+          "enum": [
+            "volume"
+          ]
+        },
+        {
+          "description": "The general term for issue locators (e.g., \"issue\", \"no.\").",
+          "type": "string",
+          "enum": [
+            "issue"
+          ]
+        },
+        {
+          "description": "The general term for page locators (e.g., \"page\", \"p.\", \"pp.\").",
+          "type": "string",
+          "enum": [
+            "page"
+          ]
+        },
+        {
+          "description": "The general term for chapter locators (e.g., \"chapter\", \"ch.\").",
+          "type": "string",
+          "enum": [
+            "chapter"
+          ]
+        },
+        {
+          "description": "The general term for editions (e.g., \"edition\", \"ed.\").",
+          "type": "string",
+          "enum": [
+            "edition"
+          ]
+        },
+        {
+          "description": "The general term for section locators (e.g., \"section\", \"§\").",
+          "type": "string",
+          "enum": [
+            "section"
+          ]
+        }
       ]
     },
     "Group": {
-      "description": "Grouping configuration for bibliography.",
+      "description": "Grouping configuration for bibliography.\n\nSpecifies how bibliography entries should be grouped in the output.",
       "type": "object",
       "required": [
         "template"
       ],
       "properties": {
         "template": {
+          "description": "Sort keys used to define group boundaries (e.g., [Author, Year]).",
           "type": "array",
           "items": {
             "$ref": "#/definitions/SortKey"
@@ -1538,6 +2032,133 @@
           ]
         }
       }
+    },
+    "IntegralNameConfig": {
+      "description": "Integral citation name-memory configuration.",
+      "type": "object",
+      "properties": {
+        "contexts": {
+          "description": "Which document contexts participate in name-memory tracking.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IntegralNameContexts"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rule": {
+          "description": "The name-memory rule to apply to integral citations.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IntegralNameRule"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scope": {
+          "description": "Where the first-mention memory resets.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IntegralNameScope"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "subsequent-form": {
+          "description": "The contributor form to use after the first mention in scope.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IntegralNameForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "IntegralNameContexts": {
+      "description": "Which document contexts participate in integral citation name memory.",
+      "oneOf": [
+        {
+          "description": "Only body-text integral citations participate.",
+          "type": "string",
+          "enum": [
+            "body-only"
+          ]
+        },
+        {
+          "description": "Body text and note citations both participate.",
+          "type": "string",
+          "enum": [
+            "body-and-notes"
+          ]
+        }
+      ]
+    },
+    "IntegralNameForm": {
+      "description": "The contributor form used after the first integral mention in scope.",
+      "oneOf": [
+        {
+          "description": "Use the short contributor form for subsequent mentions.",
+          "type": "string",
+          "enum": [
+            "short"
+          ]
+        },
+        {
+          "description": "Use family name only for subsequent mentions.",
+          "type": "string",
+          "enum": [
+            "family-only"
+          ]
+        }
+      ]
+    },
+    "IntegralNameRule": {
+      "description": "The supported integral citation name-memory rule.",
+      "oneOf": [
+        {
+          "description": "Render the first integral mention in scope in full, then shorten later mentions.",
+          "type": "string",
+          "enum": [
+            "full-then-short"
+          ]
+        }
+      ]
+    },
+    "IntegralNameScope": {
+      "description": "The scope where integral citation name-memory resets.",
+      "oneOf": [
+        {
+          "description": "Keep one name-memory scope for the whole document.",
+          "type": "string",
+          "enum": [
+            "document"
+          ]
+        },
+        {
+          "description": "Reset name memory at chapter boundaries.",
+          "type": "string",
+          "enum": [
+            "chapter"
+          ]
+        },
+        {
+          "description": "Reset name memory at section boundaries.",
+          "type": "string",
+          "enum": [
+            "section"
+          ]
+        }
+      ]
     },
     "LabelConfig": {
       "description": "Configuration for label citation mode.",
@@ -1755,18 +2376,21 @@
       }
     },
     "LocalizedTemplateSpec": {
+      "description": "Locale-scoped template override with optional fallback behavior.",
       "type": "object",
       "required": [
         "template"
       ],
       "properties": {
         "default": {
+          "description": "Whether this override is the fallback when no locale matches.",
           "type": [
             "boolean",
             "null"
           ]
         },
         "locale": {
+          "description": "Language tags that should select this template override.",
           "type": [
             "array",
             "null"
@@ -1776,6 +2400,7 @@
           }
         },
         "template": {
+          "description": "Template used when this localized override is selected.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/TemplateComponent"
@@ -1874,6 +2499,32 @@
           "type": "string",
           "enum": [
             "combined"
+          ]
+        }
+      ]
+    },
+    "NameForm": {
+      "description": "How to render the given-name component of a contributor name.\n\nControls whether full given names, family name only, or initialized given names are rendered. Used to express first/subsequent mention differences (Chicago) and integral/non-integral differences.\n\nInitialization formatting details (`initialize_with`, `initialize_with_hyphen`) are separate fields and only take effect when `NameForm::Initials` is active.",
+      "oneOf": [
+        {
+          "description": "Render full given names: \"John D. Smith\".",
+          "type": "string",
+          "enum": [
+            "full"
+          ]
+        },
+        {
+          "description": "Render family name only, suppressing given names: \"Smith\". Used for subsequent mentions in Chicago/Turabian note styles.",
+          "type": "string",
+          "enum": [
+            "family-only"
+          ]
+        },
+        {
+          "description": "Render initialized given names using `initialize_with` separator. If `initialize_with` is None, defaults to \". \" (e.g., \"J. Smith\"). Empty string gives compact initials: \"JD Smith\".",
+          "type": "string",
+          "enum": [
+            "initials"
           ]
         }
       ]
@@ -2051,7 +2702,10 @@
         "docket-number",
         "patent-number",
         "standard-number",
-        "report-number"
+        "report-number",
+        "part-number",
+        "supplement-number",
+        "printing-number"
       ]
     },
     "PageRangeFormat": {
@@ -2095,31 +2749,31 @@
       ]
     },
     "Processing": {
-      "description": "Processing mode for citation/bibliography generation.\n\nCan be specified as: - A string: \"author-date\", \"numeric\", \"note\", or \"label\" - A label config map: { label: { preset: din } } - A custom config map: { sort: ..., group: ..., disambiguate: ... }",
+      "description": "Processing mode for citation/bibliography generation.\n\nDetermines how citations and bibliographies are sorted, grouped, and disambiguated. Can be specified as a simple string or with complex configuration maps: - A string: `\"author-date\"`, `\"numeric\"`, `\"note\"`, or `\"label\"` - A label config map: `{ label: { preset: din } }` - A custom config map: `{ sort: ..., group: ..., disambiguate: ... }`",
       "oneOf": [
         {
-          "description": "Author-date styles default bibliography ordering to author, year, title.",
+          "description": "Author-date styles (e.g., APA, Chicago). Default bibliography ordering: author, year, title.",
           "type": "string",
           "enum": [
             "author-date"
           ]
         },
         {
-          "description": "Numeric styles do not imply a bibliography sort.",
+          "description": "Numeric styles (e.g., IEEE, Nature). Do not imply a bibliography sort; citations are numbered in order of appearance.",
           "type": "string",
           "enum": [
             "numeric"
           ]
         },
         {
-          "description": "Note styles with a bibliography default to author, title, year ordering.",
+          "description": "Note styles (e.g., Chicago Notes-Bibliography). With a bibliography default to author, title, year ordering.",
           "type": "string",
           "enum": [
             "note"
           ]
         },
         {
-          "description": "Label styles default bibliography ordering to author, year, title.",
+          "description": "Label styles (e.g., Alpha, DIN 1505-2). Default bibliography ordering: author, year, title.",
           "type": "object",
           "required": [
             "label"
@@ -2132,7 +2786,7 @@
           "additionalProperties": false
         },
         {
-          "description": "Fully custom processing behavior; explicit `sort` remains authoritative.",
+          "description": "Fully custom processing behavior. Explicit `sort` configuration remains authoritative.",
           "type": "object",
           "required": [
             "custom"
@@ -2147,10 +2801,11 @@
       ]
     },
     "ProcessingCustom": {
-      "description": "Custom processing configuration.",
+      "description": "Custom processing configuration.\n\nAllows explicit specification of sorting, grouping, and disambiguation rules without relying on preset defaults.",
       "type": "object",
       "properties": {
         "disambiguate": {
+          "description": "Disambiguation settings (optional).",
           "anyOf": [
             {
               "$ref": "#/definitions/Disambiguation"
@@ -2161,6 +2816,7 @@
           ]
         },
         "group": {
+          "description": "Bibliography grouping configuration (optional).",
           "anyOf": [
             {
               "$ref": "#/definitions/Group"
@@ -2171,6 +2827,7 @@
           ]
         },
         "sort": {
+          "description": "Bibliography sorting configuration (optional).",
           "anyOf": [
             {
               "$ref": "#/definitions/SortEntry"
@@ -2464,6 +3121,24 @@
           "format": "uint8",
           "minimum": 0.0
         },
+        "subsequent-min": {
+          "description": "Minimum number of names to trigger shortening on subsequent cites. Defaults to `min` if not set.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "subsequent-use-first": {
+          "description": "Number of names to show when shortened on subsequent cites. Defaults to `use_first` if not set.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint8",
+          "minimum": 0.0
+        },
         "use-first": {
           "description": "Number of names to show when shortened.",
           "type": "integer",
@@ -2517,28 +3192,29 @@
         "docket-number",
         "patent-number",
         "standard-number",
-        "report-number"
+        "report-number",
+        "ads-bibcode"
       ]
     },
     "Sort": {
-      "description": "Sorting configuration.",
+      "description": "Sorting configuration.\n\nSpecifies how bibliography entries are ordered.",
       "type": "object",
       "required": [
         "template"
       ],
       "properties": {
         "render-substitutions": {
-          "description": "Use same substitutions for sorting as for rendering.",
+          "description": "Whether to apply the same name substitutions during sorting as during rendering.",
           "default": false,
           "type": "boolean"
         },
         "shorten-names": {
-          "description": "Shorten name lists for sorting the same as for display.",
+          "description": "Whether to shorten name lists for sorting the same as for display.",
           "default": false,
           "type": "boolean"
         },
         "template": {
-          "description": "Sort keys in order.",
+          "description": "Sort keys in order of application.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/SortSpec"
@@ -2547,10 +3223,10 @@
       }
     },
     "SortEntry": {
-      "description": "Sort configuration: either a preset name or explicit configuration.",
+      "description": "Sort configuration: either a preset name or explicit configuration.\n\nCan be a preset name like `author-date-title` or a full `Sort` struct with explicit settings.",
       "anyOf": [
         {
-          "description": "A named sort preset (e.g., \"author-date-title\").",
+          "description": "A named sort preset (e.g., `author-date-title`, `author-title-date`).",
           "allOf": [
             {
               "$ref": "#/definitions/SortPreset"
@@ -2558,7 +3234,7 @@
           ]
         },
         {
-          "description": "Explicit sort configuration.",
+          "description": "Explicit sort configuration with custom keys and order.",
           "allOf": [
             {
               "$ref": "#/definitions/Sort"
@@ -2568,18 +3244,31 @@
       ]
     },
     "SortKey": {
-      "description": "Available sort keys.",
+      "description": "Available sort keys.\n\nSpecifies what field to sort bibliography entries by.",
       "oneOf": [
         {
+          "description": "Sort by the work's author(s).",
           "type": "string",
           "enum": [
-            "author",
-            "year",
+            "author"
+          ]
+        },
+        {
+          "description": "Sort by publication year.",
+          "type": "string",
+          "enum": [
+            "year"
+          ]
+        },
+        {
+          "description": "Sort by the work's title.",
+          "type": "string",
+          "enum": [
             "title"
           ]
         },
         {
-          "description": "Sort by citation order (for numeric styles).",
+          "description": "Sort by citation order (typically used for numeric styles).",
           "type": "string",
           "enum": [
             "citation-number"
@@ -2660,18 +3349,24 @@
       ]
     },
     "SortSpec": {
-      "description": "A single sort specification.",
+      "description": "A single sort specification.\n\nDefines one sort dimension with its key and direction.",
       "type": "object",
       "required": [
         "key"
       ],
       "properties": {
         "ascending": {
+          "description": "Whether to sort in ascending order (default: true).",
           "default": true,
           "type": "boolean"
         },
         "key": {
-          "$ref": "#/definitions/SortKey"
+          "description": "The field to sort by.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/SortKey"
+            }
+          ]
         }
       }
     },
@@ -2687,6 +3382,7 @@
           ]
         },
         "description": {
+          "description": "Short summary of the style's intended use or provenance.",
           "type": [
             "string",
             "null"
@@ -2700,6 +3396,7 @@
           }
         },
         "id": {
+          "description": "Stable identifier for the style, usually a URI or slug.",
           "type": [
             "string",
             "null"
@@ -2717,6 +3414,7 @@
           ]
         },
         "title": {
+          "description": "Human-readable title of the style.",
           "type": [
             "string",
             "null"
@@ -2732,9 +3430,11 @@
       ],
       "properties": {
         "href": {
+          "description": "Link target for related style metadata.",
           "type": "string"
         },
         "rel": {
+          "description": "Relationship type for the link, such as `self` or `documentation`.",
           "type": [
             "string",
             "null"
@@ -2747,18 +3447,21 @@
       "type": "object",
       "properties": {
         "email": {
+          "description": "Contact email for the credited person.",
           "type": [
             "string",
             "null"
           ]
         },
         "name": {
+          "description": "Display name for the credited person.",
           "type": [
             "string",
             "null"
           ]
         },
         "uri": {
+          "description": "URI identifying the credited person.",
           "type": [
             "string",
             "null"
@@ -2806,6 +3509,25 @@
           }
         }
       }
+    },
+    "SubLabelStyle": {
+      "description": "Sub-label style for compound numeric bibliography entries.",
+      "oneOf": [
+        {
+          "description": "Alphabetic sub-labels: a, b, c, ...",
+          "type": "string",
+          "enum": [
+            "alphabetic"
+          ]
+        },
+        {
+          "description": "Numeric sub-labels: 1, 2, 3, ...",
+          "type": "string",
+          "enum": [
+            "numeric"
+          ]
+        }
+      ]
     },
     "SubsequentAuthorSubstituteRule": {
       "description": "Rules for subsequent author substitution.",
@@ -4112,14 +4834,43 @@
       "additionalProperties": false
     },
     "TermForm": {
-      "description": "Form for term lookup.",
-      "type": "string",
-      "enum": [
-        "long",
-        "short",
-        "verb",
-        "verb-short",
-        "symbol"
+      "description": "Form for term lookup.\n\nSpecifies which form variant of a term should be used in citation output.",
+      "oneOf": [
+        {
+          "description": "Long form of a term (e.g., \"page\" vs \"p.\").",
+          "type": "string",
+          "enum": [
+            "long"
+          ]
+        },
+        {
+          "description": "Short form of a term (e.g., \"p.\" vs \"page\").",
+          "type": "string",
+          "enum": [
+            "short"
+          ]
+        },
+        {
+          "description": "Verb form of a term (e.g., \"edited by\").",
+          "type": "string",
+          "enum": [
+            "verb"
+          ]
+        },
+        {
+          "description": "Short verb form of a term (e.g., \"ed.\" vs \"edited by\").",
+          "type": "string",
+          "enum": [
+            "verb-short"
+          ]
+        },
+        {
+          "description": "Symbol form of a term (e.g., \"§\" for section).",
+          "type": "string",
+          "enum": [
+            "symbol"
+          ]
+        }
       ]
     },
     "TimeFormat": {

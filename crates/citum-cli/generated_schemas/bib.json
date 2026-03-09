@@ -32,6 +32,19 @@
       "items": {
         "$ref": "#/definitions/InputReference"
       }
+    },
+    "sets": {
+      "description": "Optional compound entry sets keyed by set id.\n\nEach set id maps to an ordered list of reference ids that should be treated as one compound numeric group when `compound-numeric` is enabled by style.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
     }
   },
   "definitions": {
@@ -203,12 +216,14 @@
       "type": "object",
       "properties": {
         "author": {
+          "description": "Creator or maintainer of the bibliography dataset.",
           "type": [
             "string",
             "null"
           ]
         },
         "title": {
+          "description": "Human-readable title for the bibliography dataset.",
           "type": [
             "string",
             "null"
@@ -239,6 +254,27 @@
                 }
               ]
             },
+            "ads-bibcode": {
+              "description": "ADS bibcode identifier.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "archive": {
+              "description": "Archive or repository name for unpublished material.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "archive-location": {
+              "description": "Archive location, shelfmark, or call number for unpublished material.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "author": {
               "anyOf": [
                 {
@@ -259,6 +295,17 @@
               "type": [
                 "string",
                 "null"
+              ]
+            },
+            "container-title": {
+              "description": "Parent or container title for monographic interviews and similar sources.",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Title"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "doi": {
@@ -299,6 +346,17 @@
               "type": [
                 "string",
                 "null"
+              ]
+            },
+            "interviewer": {
+              "description": "Interviewer for interview-style references.",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "isbn": {
@@ -358,6 +416,17 @@
               ]
             },
             "publisher": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "recipient": {
+              "description": "Recipient for personal communications such as letters or emails.",
               "anyOf": [
                 {
                   "$ref": "#/definitions/Contributor"
@@ -551,6 +620,13 @@
                 {
                   "type": "null"
                 }
+              ]
+            },
+            "ads-bibcode": {
+              "description": "ADS bibcode identifier.",
+              "type": [
+                "string",
+                "null"
               ]
             },
             "author": {
@@ -2161,19 +2237,38 @@
       ]
     },
     "MonographType": {
-      "type": "string",
-      "enum": [
-        "book",
-        "report",
-        "thesis",
-        "webpage",
-        "post",
-        "personal-communication",
-        "document"
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "book",
+            "manual",
+            "report",
+            "thesis",
+            "webpage",
+            "post",
+            "personal-communication",
+            "document"
+          ]
+        },
+        {
+          "description": "An interview treated as a standalone monographic source.",
+          "type": "string",
+          "enum": [
+            "interview"
+          ]
+        },
+        {
+          "description": "An unpublished manuscript or archival document.",
+          "type": "string",
+          "enum": [
+            "manuscript"
+          ]
+        }
       ]
     },
     "MultilingualComplex": {
-      "description": "Complex multilingual representation with original, transliterations, and translations.",
+      "description": "Complex multilingual representation with original, transliterations, and translations.\n\nAllows capturing the original text in its native script, along with transliterations (phonetic representations in different scripts) and translations (semantic equivalents in different languages). This is essential for accurately rendering bibliographies in multilingual and non-Latin-script contexts.",
       "type": "object",
       "required": [
         "original"
@@ -2187,18 +2282,18 @@
           ]
         },
         "original": {
-          "description": "The text in its original script.",
+          "description": "The text in its original script and language.",
           "type": "string"
         },
         "translations": {
-          "description": "Translations of the text into other languages. Keys are ISO 639/BCP 47 language codes.",
+          "description": "Translations of the text into other languages.\n\nKeys are ISO 639/BCP 47 language codes (e.g., \"en\" for English, \"fr\" for French). Values are the translated text.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "transliterations": {
-          "description": "Transliterations/Transcriptions of the original text. Keys are script codes or full BCP 47 tags.",
+          "description": "Transliterations/Transcriptions of the original text into other scripts.\n\nKeys are typically script codes (e.g., \"Latn\" for Latin) or full BCP 47 tags. Values are the transliterated or transcribed text.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
@@ -2245,26 +2340,32 @@
       }
     },
     "MultilingualString": {
-      "description": "A string that can be represented in multiple languages and scripts.",
+      "description": "A string that can be represented in multiple languages and scripts.\n\nThis is an enum that supports both simple strings and complex multilingual representations. Use `Simple` for basic strings and `Complex` when you need to track original language, transliterations, and translations.",
       "anyOf": [
         {
+          "description": "A simple string in a single language.",
           "type": "string"
         },
         {
-          "$ref": "#/definitions/MultilingualComplex"
+          "description": "A complex multilingual string with original, transliterations, and translations.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/MultilingualComplex"
+            }
+          ]
         }
       ]
     },
     "NumOrStr": {
-      "description": "A value that could be either a number or a string.",
+      "description": "A value that could be either a number or a string.\n\nUsed for fields that may contain numeric or string values, such as issue numbers, volume numbers, or similar identifiers that can be formatted as either type. The `Display` implementation shows the value in its appropriate form.",
       "anyOf": [
         {
-          "description": "It's a number!",
+          "description": "A numeric value.",
           "type": "integer",
           "format": "int64"
         },
         {
-          "description": "It's a string!",
+          "description": "A string value.",
           "type": "string"
         }
       ]

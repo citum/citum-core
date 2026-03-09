@@ -1,5 +1,7 @@
-use citum_schema::InputBibliography;
+use citum_schema::citation::{CitationItem, IntegralNameState};
+use citum_schema::options::{IntegralNameContexts, IntegralNameRule, IntegralNameScope};
 use citum_schema::reference::{InputReference, Monograph};
+use citum_schema::{InputBibliography, Style};
 
 #[test]
 fn test_monograph_doi_alias() {
@@ -83,4 +85,61 @@ fn test_input_bibliography_sets_round_trip() {
     let reparsed: InputBibliography =
         serde_json::from_str(&serialized).expect("round-trip parse should work");
     assert_eq!(reparsed.sets, bibliography.sets);
+}
+
+#[test]
+fn test_style_integral_names_round_trip() {
+    let json = r#"{
+        "version": "0.8.0",
+        "info": { "title": "Test Style" },
+        "options": {
+            "integral-names": {
+                "rule": "full-then-short",
+                "scope": "chapter",
+                "contexts": "body-and-notes",
+                "subsequent-form": "short"
+            }
+        }
+    }"#;
+
+    let style: Style = serde_json::from_str(json).expect("style should parse");
+    let config = style
+        .options
+        .as_ref()
+        .and_then(|options| options.integral_names.as_ref())
+        .expect("integral-names should exist");
+    assert_eq!(config.rule, Some(IntegralNameRule::FullThenShort));
+    assert_eq!(config.scope, Some(IntegralNameScope::Chapter));
+    assert_eq!(config.contexts, Some(IntegralNameContexts::BodyAndNotes));
+
+    let serialized = serde_json::to_string(&style).expect("style should serialize");
+    let reparsed: Style = serde_json::from_str(&serialized).expect("style should round-trip");
+    assert!(
+        reparsed
+            .options
+            .and_then(|options| options.integral_names)
+            .is_some()
+    );
+}
+
+#[test]
+fn test_citation_item_integral_name_state_round_trip() {
+    let json = r#"{
+        "id": "item1",
+        "integral-name-state": "subsequent"
+    }"#;
+
+    let item: CitationItem = serde_json::from_str(json).expect("citation item should parse");
+    assert_eq!(
+        item.integral_name_state,
+        Some(IntegralNameState::Subsequent)
+    );
+
+    let serialized = serde_json::to_string(&item).expect("citation item should serialize");
+    let reparsed: CitationItem =
+        serde_json::from_str(&serialized).expect("citation item should round-trip");
+    assert_eq!(
+        reparsed.integral_name_state,
+        Some(IntegralNameState::Subsequent)
+    );
 }

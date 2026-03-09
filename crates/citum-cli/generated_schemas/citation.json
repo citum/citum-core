@@ -86,6 +86,17 @@
           "description": "The reference ID (citekey).",
           "type": "string"
         },
+        "integral-name-state": {
+          "description": "Explicit integral name-memory state override for this item.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IntegralNameState"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "locator": {
           "description": "Canonical locator value for pinpoint citations.",
           "anyOf": [
@@ -149,6 +160,25 @@
           "type": "string",
           "enum": [
             "non-integral"
+          ]
+        }
+      ]
+    },
+    "IntegralNameState": {
+      "description": "Explicit integral citation name-memory state for one citation item.",
+      "oneOf": [
+        {
+          "description": "Render this item as the first integral mention in scope.",
+          "type": "string",
+          "enum": [
+            "first"
+          ]
+        },
+        {
+          "description": "Render this item as a subsequent integral mention in scope.",
+          "type": "string",
+          "enum": [
+            "subsequent"
           ]
         }
       ]
