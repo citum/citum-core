@@ -55,6 +55,6 @@ node scripts/check-core-quality.js \
 
 ## Related
 
-- [SQI refinement plan](../architecture/SQI_REFINEMENT_PLAN.md)
+- [SQI refinement plan](../policies/SQI_REFINEMENT_PLAN.md)
 - [Rendering workflow](../guides/RENDERING_WORKFLOW.md)
 - [Style author guide](../guides/style-author-guide.md)

@@ -1,11 +1,11 @@
 ---
 # csl26-loca
 title: Expand locator parsing and normalization
-status: todo
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-14T00:00:00Z
-updated_at: 2026-02-26T13:45:00Z
+updated_at: 2026-03-09T14:21:49Z
 parent: csl26-q8zt
 ---
 
@@ -20,3 +20,11 @@ Next steps:
 
 Impact: Essential for scholarly citation fidelity.
 Effort: 1 week
+
+
+
+## Summary of Changes
+
+- Unified the citation locator model in the schema and processor.
+- Landed Djot locator parsing and rendering updates on `main` via `feat(citation): unify locator model`.
+- Updated citation fixtures, oracle helpers, and snapshots for the new locator representation.

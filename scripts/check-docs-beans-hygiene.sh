@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-BEAN_WRAPPER="$ROOT_DIR/.claude/skills/beans/bin/citum-bean"
+BEAN_WRAPPER="${BEAN_WRAPPER:-$ROOT_DIR/.claude/skills/beans/bin/citum-bean}"
 
 cd "$ROOT_DIR"
 

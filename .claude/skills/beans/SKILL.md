@@ -28,6 +28,10 @@ call it again. Use these project-specific rules on top of it:
 - When completing, append a `## Summary of Changes` section.
 - When scrapping, append a `## Reasons for Scrapping` section.
 - Use upstream bean lifecycle names consistently: `draft`, `todo`, `in-progress`, `completed`, `scrapped`.
+- When work lands on `main`, complete the bean in the same change series or immediate follow-up.
+- Archive terminal beans promptly so `completed` and `scrapped` beans do not remain at `.beans/` root.
+- When bean state changes, run `bash .claude/skills/beans/bin/citum-bean hygiene` before push.
+- If hygiene reports a stale bean, fix the bean metadata first, then rerun hygiene.
 
 ## Commit Rule
 

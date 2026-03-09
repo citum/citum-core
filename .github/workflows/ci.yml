@@ -15,6 +15,14 @@ jobs:
       CARGO_TARGET_DIR: /tmp/citum-target
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install beans CLI
+        run: |
+          curl -fsSL \
+            https://github.com/hmans/beans/releases/download/v0.4.0/beans_Linux_x86_64.tar.gz \
+            -o /tmp/beans.tar.gz
+          tar -xzf /tmp/beans.tar.gz -C /tmp
+          sudo install -m 0755 /tmp/beans /usr/local/bin/beans
       
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
@@ -31,6 +39,12 @@ jobs:
 
       - name: Install script dependencies
         run: npm install --prefix scripts
+
+      - name: Run bean hygiene regression tests
+        run: ./scripts/test-beans-hygiene.sh
+
+      - name: Check docs and bean hygiene
+        run: ./scripts/check-docs-beans-hygiene.sh
 
       - name: Validate production styles
         run: ./scripts/validate-production-styles.sh

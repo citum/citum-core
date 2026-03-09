@@ -368,6 +368,6 @@ A style update is complete when:
 ## Related Reading
 
 - [Rendering Workflow](./RENDERING_WORKFLOW.md)
-- [SQI Refinement Plan](../architecture/SQI_REFINEMENT_PLAN.md)
-- [Type Addition Policy](../architecture/TYPE_ADDITION_POLICY.md)
+- [SQI Refinement Plan](../policies/SQI_REFINEMENT_PLAN.md)
+- [Type Addition Policy](../policies/TYPE_ADDITION_POLICY.md)
 - [Citum Personas](../architecture/PERSONAS.md)

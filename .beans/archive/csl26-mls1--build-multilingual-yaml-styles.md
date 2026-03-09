@@ -1,11 +1,11 @@
 ---
 # csl26-mls1
 title: Build multilingual YAML styles for ISO-690, GOST, APA, and JM-Turabian
-status: in-progress
+status: completed
 type: feature
 priority: high
 created_at: 2026-02-22T00:00:00Z
-updated_at: 2026-02-27T16:25:40Z
+updated_at: 2026-03-09T14:26:57Z
 ---
 
 Build concrete YAML style files and test fixtures for the priority multilingual style families.

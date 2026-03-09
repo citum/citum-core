@@ -418,7 +418,7 @@ Whichever option is chosen should be evaluated on:
 
 **Rationale:**
 
-After deep analysis (see [TYPE_ADDITION_POLICY.md](../TYPE_ADDITION_POLICY.md)), the hybrid model best balances Citum's design principles:
+After deep analysis (see [TYPE_ADDITION_POLICY.md](../../policies/TYPE_ADDITION_POLICY.md)), the hybrid model best balances Citum's design principles:
 
 1. **Data efficiency** - Parent-child relationships for academic references reduce duplication
 2. **Style clarity** - Flat types for legal/domain-specific references enable explicit overrides
@@ -434,11 +434,11 @@ After deep analysis (see [TYPE_ADDITION_POLICY.md](../TYPE_ADDITION_POLICY.md)),
 **Pass all 4 factors → Add flat type**
 **Fail factors 3-4 → Use structural type** (efficiency > template complexity)
 
-See full decision criteria, flowchart, and examples in [TYPE_ADDITION_POLICY.md](../TYPE_ADDITION_POLICY.md).
+See full decision criteria, flowchart, and examples in [TYPE_ADDITION_POLICY.md](../../policies/TYPE_ADDITION_POLICY.md).
 
 ## Implementation
 
-**Type Addition Policy:** [../TYPE_ADDITION_POLICY.md](../TYPE_ADDITION_POLICY.md)
+**Type Addition Policy:** [../../policies/TYPE_ADDITION_POLICY.md](../../policies/TYPE_ADDITION_POLICY.md)
 
 **Current Type Audit:**
 - ✅ SerialComponent types conform to policy (parent-child efficiency)
