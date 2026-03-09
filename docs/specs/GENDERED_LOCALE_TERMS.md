@@ -1,295 +1,217 @@
-# Gendered Locale Term Forms Specification
+# Gendered Locale Term Forms
 
 **Status:** Draft
 **Version:** 1.0
 **Date:** 2026-03-09
-**Author:** citum team
-**Related:** [CSL schema #460](https://github.com/citation-style-language/schema/issues/460), [CSL locales PR #421](https://github.com/citation-style-language/locales/pull/421), bean `csl26-y3kj`
+**Bean:** `csl26-y3kj`
 
-## Purpose
+## Problem
 
-CSL locale terms currently support gender only at the `<term>` element level. Arabic ordinals and Romance-language contributor role terms require gender to be specifiable on individual `<single>` and `<multiple>` child forms within the same term. This spec extends the locale data model and APIs to support per-form gender while maintaining backward compatibility with existing styles.
+Citum's locale model represents every term string as a plain `String`. This works for English
+and most uninflected languages, but breaks for inflected languages where the same semantic term
+takes different surface forms depending on grammatical gender.
 
-## Scope
+Two concrete cases:
 
-**In scope:**
-- New `TermGender` enum (`Masculine | Feminine | Neuter | Common`)
-- Extended csl-legacy model to parse gender on `<single>` and `<multiple>` elements
-- New `GenderedForms` and `GenderedSingularPlural` types in citum-schema
-- Updated term lookup APIs to accept optional gender context
-- Engine support for passing gender hints through rendering pipeline
-- YAML deserialization support in citum-schema locales
+**Contributor role terms (Romance languages).** French "editor" is "éditeur" (masculine) or
+"éditrice" (feminine). A locale file author currently has no way to encode both forms; they
+must pick one and accept incorrect output for the other.
 
-**Out of scope:**
-- Automatic gender inference from reference data (requires linguistic models, separate feature)
-- Template attribute syntax for gender selection (deferred to implementation refinement)
-- Exhaustive coverage of all inflected languages (start with Arabic + Romance families)
+**Ordinals (Arabic, Romance languages).** Arabic ordinals inflect for gender: the masculine
+first ordinal is "الأول" while the feminine is "الأولى". No single string can represent both.
+
+## Prior Art
+
+**biblatex** handles gender ad hoc: separate localization keys per gendered variant (e.g.
+`idemsm`, `idempf` for the *idem* family), and separate ordinal macros (`\mkbibmascord`,
+`\mkbibfemord`, `\mkbibneutord`) that each language module implements independently. There is
+no systematic gender dimension on the term data model — style authors must know which keys to
+call and manage gender-selection logic themselves. Explicit, but tedious and fragile.
+
+**CSL 1.0** puts a `gender` attribute on the `<term>` element. An open issue (schema #460)
+proposes extending this to `<single>` and `<multiple>` child elements, allowing different
+genders per number form. The approach works within CSL's XML constraints, but gender remains
+an attribute-level annotation rather than a first-class type.
+
+Citum can improve on both: a typed `MaybeGendered<T>` approach makes gender an optional,
+orthogonal dimension on any term string, with no separate keys or explicit dispatch logic.
 
 ## Design
 
-### 1. New TermGender Enumeration
+### Core type: `MaybeGendered<T>`
 
 ```rust
-/// Gender marker for inflected locale terms.
+/// A value that is either uniform across grammatical genders, or gender-specific.
+///
+/// `Plain` covers the common case (most English and uninflected language terms).
+/// `Gendered` is used only where a language requires it; only the applicable
+/// variants need to be populated.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum MaybeGendered<T> {
+    /// The same value regardless of grammatical gender.
+    Plain(T),
+    /// Separate values per grammatical gender.
+    Gendered {
+        masculine: Option<T>,
+        feminine: Option<T>,
+        neuter: Option<T>,
+        /// Used when gender is unknown, inapplicable, or unmarked.
+        common: Option<T>,
+    },
+}
+```
+
+`serde(untagged)` means existing plain-string locale files deserialize without any changes:
+`"editor"` becomes `Plain("editor")`, and `{ masculine: "éditeur", feminine: "éditrice" }`
+becomes the `Gendered` variant. A `resolve(gender: Option<TermGender>) -> Option<&T>` method
+handles the fallback chain: requested gender → `common` → first available variant.
+
+### `TermGender` enum
+
+```rust
+/// Grammatical gender for term resolution.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
 pub enum TermGender {
     Masculine,
     Feminine,
     Neuter,
-    Common,  // Used when gender is not applicable or unmarked
+    /// Gender-unmarked or inapplicable.
+    Common,
 }
 ```
 
-### 2. CSL Legacy Model Extension
+### Changes to existing types
 
-**File:** `crates/csl-legacy/src/model.rs`
+`SimpleTerm` in `crates/citum-schema/src/locale/types.rs` becomes:
 
-Current structure (simplified):
 ```rust
-pub struct Term {
-    pub name: String,
-    pub gender: Option<String>,
-    pub single: Option<String>,
-    pub multiple: Option<String>,
+pub struct SimpleTerm {
+    pub long:  MaybeGendered<String>,
+    pub short: MaybeGendered<String>,
 }
 ```
 
-New structure:
+`SingularPlural` becomes:
+
 ```rust
-pub struct Term {
-    pub name: String,
-    pub gender: Option<String>,
-    pub single: Option<TermForm>,        // Either plain string or gendered map
-    pub multiple: Option<TermForm>,
-}
-
-/// A term form can be a single ungendered string or a gender-keyed mapping.
-#[derive(Clone, Debug, Deserialize)]
-#[serde(untagged)]
-pub enum TermForm {
-    Plain(String),
-    Gendered {
-        #[serde(default)]
-        masculine: Option<String>,
-        #[serde(default)]
-        feminine: Option<String>,
-        #[serde(default)]
-        neuter: Option<String>,
-        #[serde(default)]
-        common: Option<String>,
-    },
-}
-
-impl TermForm {
-    /// Resolve to a single string given optional gender context.
-    pub fn resolve(&self, gender: Option<TermGender>) -> Option<String> {
-        match self {
-            TermForm::Plain(s) => Some(s.clone()),
-            TermForm::Gendered { masculine, feminine, neuter, common } => {
-                match gender {
-                    Some(TermGender::Masculine) => masculine.clone(),
-                    Some(TermGender::Feminine) => feminine.clone(),
-                    Some(TermGender::Neuter) => neuter.clone(),
-                    Some(TermGender::Common) | None => common.clone().or_else(|| masculine.clone()),
-                }
-            }
-        }
-    }
+pub struct SingularPlural {
+    pub singular: MaybeGendered<String>,
+    pub plural:   MaybeGendered<String>,
 }
 ```
 
-XML parsing example (CSL format):
-```xml
-<term name="ordinal-01">
-  <single gender="masculine">١٫</single>
-  <single gender="feminine">١.</single>
-</term>
-```
+`ContributorTerm`, `LocatorTerm`, and `DateTerms` are unchanged — they compose the above
+types and gain gender support transitively.
 
-Deserialized as:
-```rust
-Term {
-    name: "ordinal-01".into(),
-    gender: None,
-    single: Some(TermForm::Gendered {
-        masculine: Some("١٫".into()),
-        feminine: Some("١.".into()),
-        neuter: None,
-        common: None,
-    }),
-    multiple: None,
-}
-```
+### YAML representation
 
-### 3. Citum Schema Locale Types
+Existing locales require no changes:
 
-**File:** `crates/citum-schema/src/locale/raw.rs`
-
-Extend `RawTermValue` enum:
-```rust
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum RawTermValue {
-    Simple(String),
-    SingularPlural(SingularPlural),
-    GenderedForms(GenderedForms),     // NEW
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct GenderedForms {
-    pub masculine: Option<String>,
-    pub feminine: Option<String>,
-    pub neuter: Option<String>,
-    pub common: Option<String>,
-}
-```
-
-**File:** `crates/citum-schema/src/locale/types.rs`
-
-New type for template consumption:
-```rust
-/// Locale term form with optional gender variants.
-#[derive(Clone, Debug)]
-pub struct GenderedSingularPlural {
-    pub singular: Option<String>,  // Can be gendered
-    pub plural: Option<String>,    // Can be gendered
-}
-
-impl GenderedSingularPlural {
-    /// Resolve singular form for given gender context.
-    pub fn singular(&self, gender: Option<TermGender>) -> Option<String> {
-        self.singular.clone()  // For v1, deferred to implementation
-    }
-
-    /// Resolve plural form for given gender context.
-    pub fn plural(&self, gender: Option<TermGender>) -> Option<String> {
-        self.plural.clone()
-    }
-}
-```
-
-### 4. Locale API Changes
-
-**File:** `crates/citum-schema/src/locale/mod.rs`
-
-Extend the public API:
-```rust
-impl Locale {
-    /// Get a general term (e.g., "page", "no date") with optional gender.
-    pub fn general_term(
-        &self,
-        name: &str,
-        gender: Option<TermGender>,
-    ) -> Option<String> {
-        // Implementation deferred; basic version ignores gender in v1
-        self.general_term(name)
-    }
-
-    /// Get a locator term (e.g., "book", "section") with optional gender.
-    pub fn locator_term(
-        &self,
-        name: &str,
-        gender: Option<TermGender>,
-    ) -> Option<String> {
-        self.locator_term(name)
-    }
-
-    /// Get a contributor role term (e.g., "editor", "translator") with optional gender.
-    pub fn role_term(
-        &self,
-        name: &str,
-        gender: Option<TermGender>,
-    ) -> Option<String> {
-        self.role_term(name)
-    }
-}
-```
-
-### 5. Engine Term Rendering
-
-**File:** `crates/citum-engine/src/values/term.rs`
-
-Pass gender context through render options:
-```rust
-pub struct TermRenderContext {
-    pub gender: Option<TermGender>,
-    pub form: Option<TermForm>,  // singular, long, etc.
-}
-
-impl TermValue {
-    pub fn render(
-        &self,
-        locale: &Locale,
-        context: &TermRenderContext,
-    ) -> String {
-        // Resolve gender-aware term lookup
-        let term_name = self.name;
-        locale
-            .general_term(term_name, context.gender)
-            .unwrap_or_else(|| term_name.to_string())
-    }
-}
-```
-
-Optionally extend `RenderOptions` (v1.1 deferral):
-```rust
-pub struct RenderOptions {
-    // ... existing fields
-    pub term_gender_hint: Option<TermGender>,  // Global default; overridden by context
-}
-```
-
-### 6. YAML Locale Serialization
-
-Citum locale YAML with gendered ordinals (future example):
 ```yaml
-info:
-  id: apa-7th-arabic
-  title: APA 7th Edition (Arabic)
-  default-locale: ar
-
-terms:
-  ordinal:
-    ordinal-01:
-      masculine: "١٫"
-      feminine: "١."
-  roles:
-    editor:
-      singular:
-        masculine: "محرر"
-        feminine: "محررة"
-      plural:
-        masculine: "محررون"
-        feminine: "محررات"
+roles:
+  editor:
+    long:
+      singular: "editor"
+      plural: "editors"
 ```
 
-## Implementation Notes
+A French locale adds gender variants only where the language requires them:
 
-1. **Parser Migration:** The csl-legacy parser must handle both old format (single `<term gender="m">` wrapper) and new format (`<single gender="m">`) simultaneously.
+```yaml
+roles:
+  editor:
+    long:
+      singular:
+        masculine: "éditeur"
+        feminine:  "éditrice"
+      plural:
+        masculine: "éditeurs"
+        feminine:  "éditrices"
+```
 
-2. **Backward Compatibility:** Existing YAML locales without gender continue to work; the gender parameter defaults to `None`, which falls back to plain form resolution.
+An Arabic locale for ordinals (once ordinal term support lands):
 
-3. **Gender Resolution Fallback:** When a specific gender is requested but not available, fall back to `common` or the first available form.
+```yaml
+terms:
+  ordinal-01:
+    singular:
+      masculine: "الأول"
+      feminine:  "الأولى"
+```
 
-4. **Template Author Guidance:** Open question — how should template authors specify gender context? Options:
-   - Hardcoded in template logic (e.g., for ordinals, always use Arabic context rules)
-   - Reference data attribute (e.g., `contributor.gender` field)
-   - Explicit template variable binding
+### Engine changes
 
-5. **Testing:** Add snapshot tests in `tests/snapshots/locale/` for Arabic ordinals and Romance role terms.
+`Locale::role_term`, `locator_term`, and `general_term` gain an optional
+`gender: Option<TermGender>` parameter. Callers that do not need gendered output pass `None`
+and receive existing behavior: `Plain` values resolve unconditionally; `Gendered` values fall
+back to `common` or the first populated variant.
 
-## Acceptance Criteria
+Three sources supply gender, resolved in precedence order:
 
-- [ ] `TermGender` enum defined in `crates/citum-schema/src/locale/mod.rs`
-- [ ] `TermForm` and `GenderedForms` types added to csl-legacy and citum-schema
-- [ ] CSL XML parser updated to handle gender on `<single>`/`<multiple>` elements
-- [ ] YAML deserialization supports gendered term forms
-- [ ] `Locale::general_term`, `locator_term`, `role_term` accept `Option<TermGender>`
-- [ ] Engine term rendering pipeline passes gender context
-- [ ] All pre-commit checks pass (cargo fmt, clippy, tests)
-- [ ] Snapshot tests for Arabic ordinals and Romance role terms
-- [ ] Status updated to `Active` in same commit as first implementation
+**1. Template-level override** — explicit `gender` attribute on any template component that
+renders a term or number. Highest precedence; beats everything else.
 
-## Changelog
+```yaml
+- number: volume
+  form: ordinal
+  gender: masculine        # explicit; overrides locale lookup
+```
 
-- v1.0 (2026-03-09): Initial specification for CSL #460 gendered locale forms.
+**2. Reference data** — a `gender` field on a contributor in the input reference. Used when
+rendering contributor role labels (e.g. "éditeur" vs "éditrice"); the engine reads the gender
+of the first (or only) contributor in scope.
+
+```yaml
+editor:
+  - family: "Dupont"
+    given: "Marie"
+    gender: feminine
+```
+
+**3. Locale term gender** — a `gender` property on the term entry itself, declaring the
+grammatical gender of that noun. Used for ordinals that must agree with a noun (e.g. "1re
+édition" because "édition" is feminine).
+
+```yaml
+# In locale/fr-FR.yaml
+terms:
+  edition:
+    singular: "édition"
+    plural: "éditions"
+    gender: feminine
+```
+
+When a template says `number: edition, form: ordinal`, the engine looks up the gender of the
+"edition" term automatically — no per-use annotation needed.
+
+If none of the three sources resolves, the engine falls back to `common` or the first populated
+variant in the `MaybeGendered` value.
+
+The implementation details of this resolution chain (how `gender` is threaded through render
+context, where `gender` lives in the template schema) are left to the implementation phase.
+
+## Out of scope
+
+- Automatic gender inference from reference data.
+- Grammatical case or full declension tables.
+- Specific language locale files — the type change is the deliverable; individual locales ship
+  separately.
+
+## Backwards compatibility
+
+The YAML data model change is additive: a new untagged enum variant that existing plain-string
+values satisfy. The Rust API change (new `Option<TermGender>` parameter on term lookup methods)
+is breaking, acceptable before 1.0.
+
+## Acceptance criteria
+
+- [ ] `MaybeGendered<T>` and `TermGender` defined in `crates/citum-schema/src/locale/types.rs`
+- [ ] `SimpleTerm.long` / `.short` changed to `MaybeGendered<String>`
+- [ ] `SingularPlural.singular` / `.plural` changed to `MaybeGendered<String>`
+- [ ] `Locale::role_term`, `locator_term`, `general_term` accept `Option<TermGender>`
+- [ ] All existing locale tests pass (plain-string values round-trip correctly)
+- [ ] New snapshot tests: French gendered editor term, Arabic gendered ordinal
+- [ ] `RawTermValue` extended with a `Gendered` variant for YAML deserialization
+- [ ] Status set to `Active` in the same commit as the first implementation
