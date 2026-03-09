@@ -1726,6 +1726,10 @@ where
     }
 }
 
+fn format_citation_file_render_error(error: impl std::fmt::Display) -> String {
+    format!("ERROR: {error}")
+}
+
 /// Render citation-file inputs independently to avoid cross-citation context.
 fn render_citation_file_entries_one_by_one<F>(
     processor: &Processor,
@@ -1739,7 +1743,7 @@ where
         .map(|citation| {
             processor
                 .process_citation_with_format::<F>(citation)
-                .unwrap_or_else(|error| error.to_string())
+                .unwrap_or_else(format_citation_file_render_error)
         })
         .collect()
 }
@@ -1954,6 +1958,11 @@ mod tests {
     fn test_infer_data_type_style_stem() {
         assert!(matches!(infer_data_type("apa-7th"), DataType::Style));
         assert!(matches!(infer_data_type("my-style"), DataType::Style));
+    }
+
+    #[test]
+    fn test_format_citation_file_render_error_prefixes_message() {
+        assert_eq!(format_citation_file_render_error("boom"), "ERROR: boom");
     }
 
     #[test]
