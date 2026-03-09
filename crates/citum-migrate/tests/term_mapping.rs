@@ -129,7 +129,7 @@ fn test_upsample_label_preserves_strip_periods() {
 }
 
 #[test]
-fn test_upsample_strip_periods_defaults_when_absent_or_false() {
+fn test_upsample_strip_periods_preserves_none_and_false() {
     let upsampler = Upsampler::new();
 
     let term_nodes = upsampler.upsample_nodes(&[CslNode::Text(Text {
