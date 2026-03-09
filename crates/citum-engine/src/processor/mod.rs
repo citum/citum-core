@@ -173,6 +173,14 @@ impl Processor {
             .is_some_and(|p| matches!(p, citum_schema::options::Processing::Note))
     }
 
+    /// Check whether the style uses numeric citation rendering.
+    fn is_numeric_style(&self) -> bool {
+        self.get_config()
+            .processing
+            .as_ref()
+            .is_some_and(|p| matches!(p, citum_schema::options::Processing::Numeric))
+    }
+
     fn resolved_bibliography_sort(&self) -> Option<citum_schema::grouping::GroupSort> {
         if let Some(sort_spec) = self
             .style
@@ -324,17 +332,11 @@ impl Processor {
     /// processing family provides a bibliography default, citation numbers
     /// must follow that resolved bibliography order.
     fn initialize_numeric_citation_numbers(&self) {
-        let is_numeric = self
-            .get_config()
-            .processing
-            .as_ref()
-            .is_some_and(|p| matches!(p, citum_schema::options::Processing::Numeric));
-        if !is_numeric {
+        if !self.is_numeric_style() {
             return;
         }
 
-        let mut numbers = self.citation_numbers.borrow_mut();
-        if !numbers.is_empty() {
+        if !self.citation_numbers.borrow().is_empty() {
             return;
         }
 
@@ -348,6 +350,16 @@ impl Processor {
         } else {
             self.bibliography.keys().cloned().collect()
         };
+
+        self.initialize_numeric_citation_numbers_from_ordered_ids(ordered_ids);
+    }
+
+    /// Assign numeric citation numbers from a pre-resolved reference order.
+    fn initialize_numeric_citation_numbers_from_ordered_ids(&self, ordered_ids: Vec<String>) {
+        let mut numbers = self.citation_numbers.borrow_mut();
+        if !numbers.is_empty() {
+            return;
+        }
 
         let compound_config = self
             .get_config()
