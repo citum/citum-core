@@ -118,6 +118,14 @@ with project intent, do not blindly copy it. Classify the mismatch first.
 
 ## Normative vs Legacy Check
 
+Before applying this check to any mismatch, read
+`docs/adjudication/DIVERGENCE_REGISTER.md`.
+
+If a mismatch is already covered there, classify it under the recorded
+divergence first. Do not reopen it as a style defect, migration artifact, or
+processor defect unless Citum is violating the divergence's own declared
+behavior.
+
 Before applying a fix for any non-trivial mismatch, explicitly decide which of
 these buckets it belongs to:
 
@@ -130,6 +138,12 @@ these buckets it belongs to:
 Do this before optimizing for fidelity. If the answer is `legacy-limitation`,
 an intentional divergence is allowed and should be preferred over copying the
 legacy behavior.
+
+Every style task must explicitly record one of:
+
+- `applied divergence: div-XXX`
+- `no applicable divergence found`
+- `new adjudication required`
 
 ## Intentional Divergence Rule
 

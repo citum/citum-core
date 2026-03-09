@@ -17,6 +17,8 @@ model: haiku
 1. Fidelity summary:
    - citations passed/total
    - bibliography passed/total
+   - confirm whether any remaining mismatches are covered by
+     `docs/adjudication/DIVERGENCE_REGISTER.md`
 2. SQI drift summary (secondary metric only).
 3. Formatting audit:
    - double spaces
@@ -31,6 +33,7 @@ model: haiku
 
 ## Decision Rules
 - Reject when fidelity regresses.
+- Reject when a registered divergence is reported as an unexplained defect.
 - Reject when formatting defects are introduced.
 - Approve when fidelity is preserved or improved and formatting is clean.
 

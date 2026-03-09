@@ -26,6 +26,11 @@ Only interrupt for `Cargo.toml`/`Cargo.lock` changes or `git push origin main` (
 
 Token efficiency matters — diagnose everything before touching any files.
 
+0. **Divergence preflight.**
+   Read `docs/adjudication/DIVERGENCE_REGISTER.md` before the first oracle run.
+   If any mismatch is already covered there, classify it under the registered
+   divergence instead of treating it as a fresh defect.
+
 1. **Single oracle call, all failures at once.**
    Run `node scripts/oracle.js styles-legacy/<name>.csl --verbose` (or the correct
    oracle per the routing table below). The `--verbose` flag prints every failure with
@@ -34,8 +39,9 @@ Token efficiency matters — diagnose everything before touching any files.
 
 2. **Classify all failures before fixing any.**
    For each failure decide: `style-defect`, `migration-artifact`, `processor-defect`, or
-   `legacy-limitation`. This shapes both what you fix and what you escalate (see
-   Co-Evolution below).
+   `legacy-limitation`. First check whether the case is already adjudicated in the
+   divergence register; if so, record the matching `div-XXX`. This shapes both what
+   you fix and what you escalate (see Co-Evolution below).
 
 3. **Apply all YAML fixes in one pass.**
 

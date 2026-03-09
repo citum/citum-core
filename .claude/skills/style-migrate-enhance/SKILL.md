@@ -37,6 +37,9 @@ git add -A && git commit -m "feat(styles): migrate <style-name>"
 ```
 
 ## Workflow
+0. Read `docs/adjudication/DIVERGENCE_REGISTER.md` before baseline capture or
+   oracle review. Do not spend migration-wave time trying to erase a registered
+   intentional divergence.
 1. Select next priority wave.
 2. Seed with migration baseline (`scripts/prep-migration.sh` or `citum-migrate`).
 3. Capture baseline metrics (`node scripts/report-core.js`, `node scripts/oracle.js ... --json`).
@@ -46,6 +49,8 @@ git add -A && git commit -m "feat(styles): migrate <style-name>"
 
 ## Hard Gates
 - Never accept a fidelity regression.
+- Never classify a registered divergence as a migration or engine bug without
+  first updating adjudication.
 - SQI is tie-breaker and optimization only.
 - If iteration 1 bibliography is below 50%: log it, attempt up to 3 more fix passes before
   flagging in the final summary — do not stop mid-wave and wait for user input.
