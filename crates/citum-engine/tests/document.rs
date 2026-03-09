@@ -11,7 +11,7 @@ use std::{fs, path::PathBuf};
 use citum_engine::{
     Processor,
     io::load_bibliography,
-    processor::document::{DocumentFormat, djot::DjotParser},
+    processor::document::{DocumentFormat, djot::DjotParser, markdown::MarkdownParser},
 };
 use citum_schema::{
     BibliographySpec, Locale, Style, StyleInfo,
@@ -271,6 +271,69 @@ fn test_example_document_renders_note_style_integral_anchor_and_notes() {
     assert!(
         !output.contains("[+@smith2010]"),
         "raw citation leaked: {output}"
+    );
+}
+
+#[test]
+fn test_markdown_document_renders_pandoc_author_date_citations() {
+    let style = load_style("styles/apa-7th.yaml");
+    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
+        .expect("example bibliography should parse");
+
+    let processor = Processor::new(style, bibliography);
+    let parser = MarkdownParser;
+    let document = concat!(
+        "Kuhn argued that @kuhn1962 [p. 10] changed science.\n\n",
+        "Later work supports this [see @smith2010, p. 12; @kuhn1962, ch. 3].",
+    );
+
+    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
+        document,
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    assert!(
+        output.contains("Kuhn (1962, p. 10) changed science."),
+        "integral markdown citation did not render: {output}"
+    );
+    assert!(
+        output.contains("Later work supports this ("),
+        "bracketed markdown cite cluster did not render: {output}"
+    );
+    assert!(
+        output.contains("Kuhn, 1962, ch. 3"),
+        "markdown locator cite missing from cluster: {output}"
+    );
+    assert!(
+        output.contains("see Smith, 2010, p. 12"),
+        "markdown prefix cite missing from cluster: {output}"
+    );
+}
+
+#[test]
+fn test_markdown_document_generates_notes_for_note_styles() {
+    let style = load_style("styles/chicago-shortened-notes-bibliography.yaml");
+    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
+        .expect("example bibliography should parse");
+
+    let processor = Processor::new(style, bibliography);
+    let parser = MarkdownParser;
+    let document = "Narrative mention @smith2010 introduces the argument.";
+
+    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
+        document,
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    assert!(
+        output.contains("Narrative mention Smith[^citum-auto-1] introduces the argument."),
+        "note-style markdown integral citation did not anchor correctly: {output}"
+    );
+    assert!(
+        output.contains("[^citum-auto-1]: Smith, _A Great Book_."),
+        "generated note missing for markdown citation: {output}"
     );
 }
 
