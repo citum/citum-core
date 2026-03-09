@@ -28,6 +28,7 @@ architecture/design docs versus historical snapshots.
 
 - [`specs/`](./specs/) — Feature/design specifications (create before implementing non-trivial features)
 - [`policies/`](./policies/) — Active behavioral rules for agents and contributors
+- [`guides/DOCUMENT_CLASSIFICATION.md`](./guides/DOCUMENT_CLASSIFICATION.md) — how to decide whether an existing doc belongs in specs, architecture, or policies
 
 ## Historical Snapshot Policy
 

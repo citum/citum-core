@@ -6,6 +6,7 @@ set -euo pipefail
 
 BEANS_BIN="beans"
 BEANS_PATH=".beans"
+BEAN_CACHE_VERSION="v1"
 
 require_command() {
     local cmd=$1
@@ -38,7 +39,39 @@ all_beans_json() {
     "$BEANS_BIN" list --json
 }
 
+progress() {
+    if [[ "${BEAN_PROGRESS:-0}" == "1" ]]; then
+        printf '%s\n' "$*" >&2
+    fi
+}
+
+bean_cache_dir() {
+    local git_dir
+
+    git_dir=$(git rev-parse --git-dir 2>/dev/null || true)
+    if [[ -z "$git_dir" ]]; then
+        return 1
+    fi
+
+    printf '%s/beans-cache\n' "$git_dir"
+}
+
+bean_cache_key() {
+    local since=${1:-}
+    local main_sha
+
+    main_sha=$(git rev-parse main 2>/dev/null || true)
+    printf '%s|%s|%s' "$BEAN_CACHE_VERSION" "$main_sha" "$since" \
+        | shasum -a 256 \
+        | awk '{print $1}'
+}
+
 main_commit_evidence_json() {
+    local since=${1:-}
+    local cache_dir=""
+    local cache_key=""
+    local cache_file=""
+    local cache_tmp=""
     local first=1
     local token
     local current_header=""
@@ -52,6 +85,24 @@ main_commit_evidence_json() {
     if ! git rev-parse --verify main >/dev/null 2>&1; then
         echo "[]"
         return 0
+    fi
+
+    cache_dir=$(bean_cache_dir || true)
+    if [[ -n "$cache_dir" ]]; then
+        mkdir -p "$cache_dir"
+        cache_key=$(bean_cache_key "$since")
+        cache_file="$cache_dir/main-commit-evidence-$cache_key.json"
+        if [[ -f "$cache_file" ]]; then
+            progress "  reusing cached main commit evidence"
+            cat "$cache_file"
+            return 0
+        fi
+    fi
+
+    if [[ -n "$since" ]]; then
+        progress "  scanning main commit history since $since"
+    else
+        progress "  scanning main commit history"
     fi
 
     emit_record() {
@@ -79,32 +130,82 @@ main_commit_evidence_json() {
             '{sha: $sha, date: $date, subject: $subject, body: $body, files: $files}'
     }
 
-    printf '['
-    while IFS= read -r -d '' token; do
-        if [[ "$token" == *$'\x1f'* ]]; then
+    if [[ -n "$cache_file" ]]; then
+        cache_tmp="$cache_file.$$"
+        {
+            printf '['
+            while IFS= read -r -d '' token; do
+                if [[ "$token" == *$'\x1f'* ]]; then
+                    if [[ -n "$current_header" ]]; then
+                        emit_record
+                    fi
+                    current_header="$token"
+                    current_files=()
+                elif [[ -n "$current_header" ]]; then
+                    current_files+=("$token")
+                fi
+            done < <(
+                if [[ -n "$since" ]]; then
+                    git log main --since="$since" -z --format='%H%x1f%cI%x1f%s%x1f%b%x1f' --name-only
+                else
+                    git log main -z --format='%H%x1f%cI%x1f%s%x1f%b%x1f' --name-only
+                fi
+            )
+
             if [[ -n "$current_header" ]]; then
                 emit_record
             fi
-            current_header="$token"
-            current_files=()
-        elif [[ -n "$current_header" ]]; then
-            current_files+=("$token")
-        fi
-    done < <(git log main -z --format='%H%x1f%cI%x1f%s%x1f%b%x1f' --name-only)
+            printf ']'
+        } | tee "$cache_tmp"
+        mv "$cache_tmp" "$cache_file"
+    else
+        printf '['
+        while IFS= read -r -d '' token; do
+            if [[ "$token" == *$'\x1f'* ]]; then
+                if [[ -n "$current_header" ]]; then
+                    emit_record
+                fi
+                current_header="$token"
+                current_files=()
+            elif [[ -n "$current_header" ]]; then
+                current_files+=("$token")
+            fi
+        done < <(
+            if [[ -n "$since" ]]; then
+                git log main --since="$since" -z --format='%H%x1f%cI%x1f%s%x1f%b%x1f' --name-only
+            else
+                git log main -z --format='%H%x1f%cI%x1f%s%x1f%b%x1f' --name-only
+            fi
+        )
 
-    if [[ -n "$current_header" ]]; then
-        emit_record
+        if [[ -n "$current_header" ]]; then
+            emit_record
+        fi
+        printf ']'
     fi
-    printf ']'
 }
 
 build_audit_json() {
     local scope=$1
     local all_json
     local main_commits_json
+    local stale_since
 
+    progress "  loading bean metadata"
     all_json=$(all_beans_json)
-    main_commits_json=$(main_commit_evidence_json)
+    stale_since=$(printf '%s\n' "$all_json" | jq -r '
+        [
+            .[]
+            | select(.status == "draft" or .status == "todo" or .status == "in-progress")
+            | (.updated_at // .created_at // empty)
+            | select(length > 0)
+        ]
+        | sort
+        | .[0] // ""
+    ')
+    progress "  deriving stale-bean evidence"
+    main_commits_json=$(main_commit_evidence_json "$stale_since")
+    progress "  matching open beans against landed work"
 
     jq -n \
         --arg scope "$scope" \
@@ -619,7 +720,11 @@ run_audit() {
         exit 1
     fi
 
-    audit_json=$(build_audit_json "$scope")
+    if [[ "$json_output" -eq 1 ]]; then
+        audit_json=$(BEAN_PROGRESS=0 build_audit_json "$scope")
+    else
+        audit_json=$(BEAN_PROGRESS=1 build_audit_json "$scope")
+    fi
 
     if [[ "$json_output" -eq 1 ]]; then
         printf "%s\n" "$audit_json"
@@ -655,7 +760,11 @@ run_hygiene() {
         exit 1
     fi
 
-    audit_json=$(build_audit_json "$scope")
+    if [[ "$json_output" -eq 1 ]]; then
+        audit_json=$(BEAN_PROGRESS=0 build_audit_json "$scope")
+    else
+        audit_json=$(BEAN_PROGRESS=1 build_audit_json "$scope")
+    fi
 
     if [[ "$json_output" -eq 1 ]]; then
         printf "%s\n" "$audit_json"
