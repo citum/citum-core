@@ -32,6 +32,9 @@ jobs:
       - name: Install script dependencies
         run: npm install --prefix scripts
 
+      - name: Validate production styles
+        run: ./scripts/validate-production-styles.sh
+
       - name: Check testing infrastructure contracts
         run: node scripts/check-testing-infra.js
 

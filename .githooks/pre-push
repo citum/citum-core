@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+EMPTY_TREE="4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+
+declare -a changed_styles=()
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [[ -z "${local_ref:-}" || -z "${local_sha:-}" ]]; then
+    continue
+  fi
+
+  if [[ "$local_sha" =~ ^0+$ ]]; then
+    continue
+  fi
+
+  if [[ "$remote_sha" =~ ^0+$ ]]; then
+    remote_sha="$EMPTY_TREE"
+  fi
+
+  while IFS= read -r path; do
+    if [[ "$path" =~ ^styles/[^/]+\.yaml$ ]]; then
+      changed_styles+=("$path")
+    fi
+  done < <(git -C "$ROOT_DIR" diff --name-only --diff-filter=ACMR "$remote_sha" "$local_sha")
+done
+
+if (( ${#changed_styles[@]} == 0 )); then
+  printf '[INFO] No production style changes in push.\n'
+  exit 0
+fi
+
+deduped_styles=()
+while IFS= read -r path; do
+  [[ -n "$path" ]] && deduped_styles+=("$path")
+done < <(printf '%s\n' "${changed_styles[@]}" | LC_ALL=C sort -u)
+
+printf '[INFO] Validating changed production styles before push.\n'
+"$ROOT_DIR/scripts/validate-production-styles.sh" "${deduped_styles[@]}"

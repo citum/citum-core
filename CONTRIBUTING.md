@@ -69,6 +69,20 @@ Enable the repository commit hook to enforce this automatically:
 git config core.hooksPath .githooks
 ```
 
+With `core.hooksPath` enabled, the repository `pre-push` hook validates any
+changed production styles in `styles/*.yaml` before the push is sent. Use
+`./scripts/validate-production-styles.sh` for the full production-style gate.
+
+For repository validation, prefer the workspace-backed commands:
+
+```bash
+cargo run --bin citum -- check -s styles/apa-7th.yaml
+./scripts/validate-production-styles.sh
+```
+
+A globally installed `citum` binary may be older than the workspace and can
+produce stale validation failures until it is rebuilt or reinstalled.
+
 Example:
 ```
 fix(processor): handle empty contributor list

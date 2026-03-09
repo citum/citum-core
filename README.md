@@ -68,6 +68,12 @@ cargo run --bin citum -- check \
   -c tests/fixtures/citations-expanded.json
 ```
 
+Validate all production styles with the workspace binary:
+
+```bash
+./scripts/validate-production-styles.sh
+```
+
 Convert formats:
 
 ```bash
@@ -142,6 +148,17 @@ node scripts/check-core-quality.js \
   --report /tmp/core-report.json \
   --baseline scripts/report-data/core-quality-baseline.json
 ```
+
+Production style validity gate:
+
+```bash
+./scripts/validate-production-styles.sh
+```
+
+During development, use `cargo run --bin citum -- ...` or
+`./scripts/validate-production-styles.sh` as the authoritative validation path.
+A globally installed `citum` binary may lag the current workspace build and can
+report stale style failures until it is rebuilt or reinstalled.
 
 ## Repository Layout
 

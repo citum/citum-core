@@ -53,8 +53,19 @@ validation.
 
 ```bash
 # Validate production styles only
-./scripts/validate-schema.sh
+./scripts/validate-production-styles.sh
 ```
+
+Use the workspace-backed commands for repository validation:
+
+```bash
+cargo run --bin citum -- check -s styles/apa-7th.yaml
+./scripts/validate-production-styles.sh
+```
+
+Avoid relying on a globally installed `citum` binary for repo checks unless you
+have just rebuilt or reinstalled it; a stale install can report outdated style
+validation failures.
 
 ## Hybrid Migration Strategy
 
