@@ -139,7 +139,7 @@ See [docs/TIER_STATUS.md](./docs/TIER_STATUS.md) and [docs/reference/STYLE_PRIOR
 - Legal citations: [LEGAL_CITATIONS.md](./docs/architecture/design/LEGAL_CITATIONS.md)
 - Type system: [TYPE_SYSTEM_ARCHITECTURE.md](./docs/architecture/design/TYPE_SYSTEM_ARCHITECTURE.md)
 - Type addition policy: [TYPE_ADDITION_POLICY.md](./docs/policies/TYPE_ADDITION_POLICY.md) (**active policy**)
-- SQI plan: [SQI_REFINEMENT_PLAN.md](./docs/architecture/SQI_REFINEMENT_PLAN.md)
+- SQI plan: [SQI_REFINEMENT_PLAN.md](./docs/policies/SQI_REFINEMENT_PLAN.md)
 
 ## Issue Handling
 

@@ -9,7 +9,7 @@ current task.
 2. [`MIGRATION_STRATEGY_ANALYSIS.md`](./MIGRATION_STRATEGY_ANALYSIS.md) - migration architecture rationale.
 3. [`DESIGN_PRINCIPLES.md`](./DESIGN_PRINCIPLES.md) - project-wide design constraints.
 4. [`../policies/TYPE_ADDITION_POLICY.md`](../policies/TYPE_ADDITION_POLICY.md) - active type-system policy.
-5. [`SQI_REFINEMENT_PLAN.md`](./SQI_REFINEMENT_PLAN.md) - current SQI refinement direction.
+5. [`../policies/SQI_REFINEMENT_PLAN.md`](../policies/SQI_REFINEMENT_PLAN.md) - current SQI refinement direction.
 
 ## Tier B: Active Specialized Design
 
