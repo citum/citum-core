@@ -38,6 +38,6 @@ When the rule may be bypassed, and the approval process.
 
 | File | Rule summary |
 |------|-------------|
-| [`BEAN_LIFECYCLE_POLICY.md`](./BEAN_LIFECYCLE_POLICY.md) | Keep bean lifecycle state aligned with landed work on `main` |
+| [`BEAN_LIFECYCLE_POLICY.md`](./BEAN_LIFECYCLE_POLICY.md) | Keep bean lifecycle state aligned with landed work on `main`, and make duplicate/superseded tracking explicit |
 | [`TYPE_ADDITION_POLICY.md`](./TYPE_ADDITION_POLICY.md) | How to add new reference types to the schema |
 | [`SQI_REFINEMENT_PLAN.md`](./SQI_REFINEMENT_PLAN.md) | Current SQI scoring refinement direction |
