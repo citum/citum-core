@@ -3,10 +3,166 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-//! Djot and org-mode inline markup rendering for annotation text.
+//! Djot and org-mode inline markup rendering for free-text fields.
 
 use super::format::OutputFormat;
 use jotdown::{Attributes, Container, Event, Parser};
+
+#[derive(Default)]
+struct DjotFrame {
+    children: Vec<String>,
+    classes: Vec<String>,
+    link_url: Option<String>,
+    has_explicit_link: bool,
+    last_char: Option<char>,
+}
+
+impl DjotFrame {
+    fn push_rendered(&mut self, rendered: String, logical_last_char: Option<char>) {
+        self.children.push(rendered);
+        if let Some(ch) = logical_last_char {
+            self.last_char = Some(ch);
+        }
+    }
+
+    fn prev_opens_quote(&self) -> bool {
+        self.last_char
+            .is_none_or(|c| c.is_whitespace() || "([{\u{2018}\u{201C}'\"".contains(c))
+    }
+}
+
+fn span_classes(attrs: Option<&Attributes>) -> Vec<String> {
+    attrs
+        .into_iter()
+        .flat_map(|attrs| attrs.iter())
+        .filter_map(|(kind, val)| {
+            use jotdown::AttributeKind;
+            if matches!(kind, AttributeKind::Class) {
+                Some(val.to_string())
+            } else {
+                None
+            }
+        })
+        .flat_map(|classes| {
+            classes
+                .split_whitespace()
+                .map(|class| class.to_string())
+                .collect::<Vec<_>>()
+        })
+        .collect()
+}
+
+fn render_djot_inline_internal<F, G>(src: &str, fmt: &F, mut transform_text: G) -> (String, bool)
+where
+    F: OutputFormat<Output = String>,
+    G: FnMut(&str) -> String,
+{
+    let parser = Parser::new(src);
+    let mut stack = vec![DjotFrame::default()];
+
+    for event in parser {
+        match event {
+            Event::Start(container, attrs) => {
+                let link_url = if let Container::Link(url, _) = &container {
+                    Some(url.to_string())
+                } else {
+                    None
+                };
+                stack.push(DjotFrame {
+                    classes: span_classes(Some(&attrs)),
+                    has_explicit_link: link_url.is_some(),
+                    link_url,
+                    ..Default::default()
+                });
+            }
+            Event::End(container) => {
+                if let Some(frame) = stack.pop() {
+                    let inner_text = frame.children.join("");
+                    let formatted = match container {
+                        Container::Emphasis => fmt.emph(inner_text),
+                        Container::Strong => fmt.strong(inner_text),
+                        Container::Link(_, _) => {
+                            if let Some(url) = frame.link_url.as_deref() {
+                                fmt.link(url, inner_text)
+                            } else {
+                                inner_text
+                            }
+                        }
+                        Container::Span => {
+                            if frame
+                                .classes
+                                .iter()
+                                .any(|class| class == "smallcaps" || class == "small-caps")
+                            {
+                                fmt.small_caps(inner_text)
+                            } else {
+                                inner_text
+                            }
+                        }
+                        _ => inner_text,
+                    };
+                    if let Some(parent) = stack.last_mut() {
+                        parent.push_rendered(formatted, frame.last_char);
+                        parent.has_explicit_link |= frame.has_explicit_link;
+                    }
+                }
+            }
+            Event::Str(s) => {
+                if let Some(frame) = stack.last_mut() {
+                    let transformed = transform_text(s.as_ref());
+                    frame.push_rendered(fmt.text(&transformed), transformed.chars().last());
+                }
+            }
+            Event::Symbol(sym) => {
+                if let Some(frame) = stack.last_mut() {
+                    frame.push_rendered(fmt.text(sym.as_ref()), sym.chars().last());
+                }
+            }
+            Event::LeftSingleQuote => {
+                if let Some(frame) = stack.last_mut() {
+                    frame.push_rendered(fmt.text("\u{2018}"), Some('\u{2018}'));
+                }
+            }
+            Event::RightSingleQuote => {
+                if let Some(frame) = stack.last_mut() {
+                    let quote = if frame.prev_opens_quote() {
+                        '\u{2018}'
+                    } else {
+                        '\u{2019}'
+                    };
+                    frame.push_rendered(fmt.text(&quote.to_string()), Some(quote));
+                }
+            }
+            Event::LeftDoubleQuote => {
+                if let Some(frame) = stack.last_mut() {
+                    frame.push_rendered(fmt.text("\u{201C}"), Some('\u{201C}'));
+                }
+            }
+            Event::RightDoubleQuote => {
+                if let Some(frame) = stack.last_mut() {
+                    let quote = if frame.prev_opens_quote() {
+                        '\u{201C}'
+                    } else {
+                        '\u{201D}'
+                    };
+                    frame.push_rendered(fmt.text(&quote.to_string()), Some(quote));
+                }
+            }
+            Event::Softbreak | Event::Hardbreak => {
+                if let Some(frame) = stack.last_mut() {
+                    frame.push_rendered(fmt.text(" "), Some(' '));
+                }
+            }
+            _ => {}
+        }
+    }
+
+    stack
+        .into_iter()
+        .next()
+        .map(|frame| (frame.children.join(""), frame.has_explicit_link))
+        .unwrap_or_default()
+}
 
 /// Render djot inline markup and map events to OutputFormat methods.
 ///
@@ -22,99 +178,20 @@ use jotdown::{Attributes, Container, Event, Parser};
 /// # Returns
 /// Formatted string with markup applied according to the OutputFormat's methods
 pub fn render_djot_inline<F: OutputFormat<Output = String>>(src: &str, fmt: &F) -> String {
-    let parser = Parser::new(src);
-    // Each entry is (collected_children, link_url). The root entry starts with no URL.
-    let mut stack: Vec<(Vec<String>, Option<String>)> = vec![(vec![], None)];
-    let mut current_attrs: Option<Attributes> = None;
+    render_djot_inline_internal(src, fmt, str::to_string).0
+}
 
-    for event in parser {
-        match event {
-            Event::Start(container, attrs) => {
-                current_attrs = Some(attrs.clone());
-                let url = if let Container::Link(url, _) = &container {
-                    Some(url.to_string())
-                } else {
-                    None
-                };
-                stack.push((vec![], url));
-            }
-            Event::End(container) => {
-                if let Some((inner, link_url)) = stack.pop() {
-                    let inner_text = inner.join("");
-                    let formatted = match container {
-                        Container::Emphasis => {
-                            let inner_output = fmt.text(&inner_text);
-                            fmt.emph(inner_output)
-                        }
-                        Container::Strong => {
-                            let inner_output = fmt.text(&inner_text);
-                            fmt.strong(inner_output)
-                        }
-                        Container::Link(_, _) => {
-                            if let Some(url) = link_url {
-                                let inner_output = fmt.text(&inner_text);
-                                fmt.link(&url, inner_output)
-                            } else {
-                                fmt.text(&inner_text)
-                            }
-                        }
-                        Container::Span => {
-                            // Check if span has smallcaps class in attributes from Event::Start
-                            if let Some(attrs) = &current_attrs {
-                                let classes: Vec<String> = attrs
-                                    .iter()
-                                    .filter_map(|(kind, val)| {
-                                        use jotdown::AttributeKind;
-                                        if matches!(kind, AttributeKind::Class) {
-                                            Some(val.to_string())
-                                        } else {
-                                            None
-                                        }
-                                    })
-                                    .flat_map(|classes| {
-                                        classes
-                                            .split_whitespace()
-                                            .map(|s| s.to_string())
-                                            .collect::<Vec<_>>()
-                                    })
-                                    .collect();
-                                if classes.contains(&"smallcaps".to_string()) {
-                                    let inner_output = fmt.text(&inner_text);
-                                    fmt.small_caps(inner_output)
-                                } else {
-                                    fmt.text(&inner_text)
-                                }
-                            } else {
-                                fmt.text(&inner_text)
-                            }
-                        }
-                        _ => fmt.text(&inner_text),
-                    };
-                    if let Some((parent, _)) = stack.last_mut() {
-                        parent.push(formatted);
-                    }
-                }
-            }
-            Event::Str(s) => {
-                if let Some((parent, _)) = stack.last_mut() {
-                    parent.push(fmt.text(s.as_ref()));
-                }
-            }
-            Event::Softbreak | Event::Hardbreak => {
-                if let Some((parent, _)) = stack.last_mut() {
-                    parent.push(fmt.text(" "));
-                }
-            }
-            _ => {} // Ignore other events like Blankline, symbols, etc
-        }
-    }
-
-    // Collect root level content
-    stack
-        .into_iter()
-        .next()
-        .map(|(v, _)| v.join(""))
-        .unwrap_or_default()
+/// Render djot inline markup while transforming text leaves and returning link metadata.
+pub(crate) fn render_djot_inline_with_transform<F, G>(
+    src: &str,
+    fmt: &F,
+    transform_text: G,
+) -> (String, bool)
+where
+    F: OutputFormat<Output = String>,
+    G: FnMut(&str) -> String,
+{
+    render_djot_inline_internal(src, fmt, transform_text)
 }
 
 /// Render org-mode inline markup by walking the orgize event stream.
@@ -181,7 +258,9 @@ pub fn render_org_inline<F: OutputFormat<Output = String>>(src: &str, fmt: &F) -
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::render::html::Html;
     use crate::render::plain::PlainText;
+    use crate::render::typst::Typst;
 
     #[test]
     fn test_djot_emphasis_plain() {
@@ -230,6 +309,30 @@ mod tests {
         let result = render_djot_inline("[click here](https://example.com)", &fmt);
         // PlainText.link() just renders the link text (ignores URL)
         assert_eq!(result, "click here");
+    }
+
+    #[test]
+    fn test_djot_nested_formatting_preserves_typst_markup() {
+        let fmt = Typst;
+        let result = render_djot_inline("_emphasized *bold* text_", &fmt);
+        assert_eq!(result, "_emphasized *bold* text_");
+    }
+
+    #[test]
+    fn test_djot_nested_link_preserves_inner_markup_html() {
+        let fmt = Html;
+        let result = render_djot_inline("[_linked emphasis_](https://example.com)", &fmt);
+        assert_eq!(
+            result,
+            r#"<a href="https://example.com"><i>linked emphasis</i></a>"#
+        );
+    }
+
+    #[test]
+    fn test_djot_quotes_inside_emphasis_open_correctly() {
+        let fmt = PlainText;
+        let result = render_djot_inline("_\"Parmenides\" dialogue_", &fmt);
+        assert_eq!(result, "_“Parmenides” dialogue_");
     }
 
     #[test]

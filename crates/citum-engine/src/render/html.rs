@@ -12,6 +12,27 @@ use citum_schema::template::WrapPunctuation;
 /// Renders processed citations and bibliography entries as HTML fragments.
 pub struct Html;
 
+impl Html {
+    fn sanitize_href(value: &str) -> String {
+        let mut escaped = String::with_capacity(value.len());
+        for ch in value.chars() {
+            if ch.is_ascii_control()
+                || ch.is_whitespace()
+                || matches!(ch, '"' | '\'' | '<' | '>' | '&')
+            {
+                let mut buf = [0u8; 4];
+                for byte in ch.encode_utf8(&mut buf).as_bytes() {
+                    escaped.push('%');
+                    escaped.push_str(&format!("{byte:02X}"));
+                }
+            } else {
+                escaped.push(ch);
+            }
+        }
+        escaped
+    }
+}
+
 impl OutputFormat for Html {
     type Output = String;
 
@@ -98,7 +119,7 @@ impl OutputFormat for Html {
         if content.is_empty() {
             return content;
         }
-        format!(r#"<a href="{}">{}</a>"#, url, content)
+        format!(r#"<a href="{}">{}</a>"#, Self::sanitize_href(url), content)
     }
 
     fn format_id(&self, id: &str) -> String {

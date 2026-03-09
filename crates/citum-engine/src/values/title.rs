@@ -6,45 +6,74 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! Rendering logic for title fields with smartening and form selection.
 //!
 //! This module handles title component rendering, including main titles,
-//! container titles, and proper smart apostrophe handling.
+//! container titles, and smart quote handling.
 
 use crate::reference::Reference;
+use crate::render::rich_text::render_djot_inline_with_transform;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
 use citum_schema::reference::{Parent, types::Title};
 use citum_schema::template::{TemplateTitle, TitleForm, TitleType};
 
-/// Converts straight apostrophes to smart apostrophes or quotes based on context.
+/// Converts straight apostrophes and double quotes to curly quotes when the
+/// surrounding context is unambiguous.
 ///
-/// Distinguishes between contractions/possessives (right single quotation mark)
-/// and opening quotes (left single quotation mark), preserving straight apostrophes
-/// in ambiguous contexts.
-fn smarten_apostrophes(input: &str) -> String {
+/// Ambiguous characters are preserved as straight quotes so titles containing
+/// measurements or other non-quotation uses do not get rewritten arbitrarily.
+fn smarten_title_quotes(input: &str) -> String {
     let mut out = String::with_capacity(input.len());
     let mut it = input.char_indices().peekable();
     let mut prev: Option<char> = None;
-    while let Some((_, ch)) = it.next() {
-        if ch == '\'' {
-            let next = it.peek().map(|(_, c)| *c);
-            let prev_is_alpha = prev.is_some_and(|c| c.is_alphabetic());
-            let next_is_alpha = next.is_some_and(|c| c.is_alphabetic());
-            let next_is_digit = next.is_some_and(|c| c.is_ascii_digit());
-            let prev_opens_quote =
-                prev.is_none_or(|c| c.is_whitespace() || "([{\u{201C}\"".contains(c));
-            let next_closes_quote =
-                next.is_none_or(|c| c.is_whitespace() || ".,;:!?)]}\u{201D}\"".contains(c));
+    let mut open_single_quotes = 0usize;
+    let mut open_double_quotes = 0usize;
 
-            if prev_is_alpha && next_is_alpha {
-                out.push('\u{2019}');
-            } else if prev_opens_quote && next_is_alpha {
-                out.push('\u{2018}');
-            } else if (prev_opens_quote && next_is_digit) || (prev_is_alpha && next_closes_quote) {
-                out.push('\u{2019}');
-            } else {
-                out.push('\'');
+    while let Some((_, ch)) = it.next() {
+        let next = it.peek().map(|(_, c)| *c);
+        let prev_is_alpha = prev.is_some_and(|c| c.is_alphabetic());
+        let prev_is_digit = prev.is_some_and(|c| c.is_ascii_digit());
+        let prev_can_close_double_quote = prev.is_some_and(|c| {
+            c.is_alphanumeric() || matches!(c, '\'' | '"' | '\u{2019}' | '\u{201D}')
+        });
+        let next_is_alpha = next.is_some_and(|c| c.is_alphabetic());
+        let next_is_digit = next.is_some_and(|c| c.is_ascii_digit());
+        let next_is_alnum = next.is_some_and(|c| c.is_alphanumeric());
+        let prev_opens_quote =
+            prev.is_none_or(|c| c.is_whitespace() || "([{\u{2018}\u{201C}'\"".contains(c));
+        let next_closes_quote =
+            next.is_none_or(|c| c.is_whitespace() || ".,;:!?)]}\u{2019}\u{201D}'\"".contains(c));
+
+        match ch {
+            '\'' => {
+                if (prev_is_alpha && next_is_alpha) || (prev_opens_quote && next_is_digit) {
+                    out.push('\u{2019}');
+                } else if prev_opens_quote && next_is_alnum {
+                    out.push('\u{2018}');
+                    open_single_quotes += 1;
+                } else if (open_single_quotes > 0 || prev_is_alpha || prev_is_digit)
+                    && next_closes_quote
+                {
+                    out.push('\u{2019}');
+                    open_single_quotes = open_single_quotes.saturating_sub(1);
+                } else {
+                    out.push('\'');
+                }
             }
-        } else {
-            out.push(ch);
+            '"' => {
+                if prev_opens_quote && next_is_alnum {
+                    out.push('\u{201C}');
+                    open_double_quotes += 1;
+                } else if open_double_quotes > 0 && prev_can_close_double_quote && next_closes_quote
+                {
+                    out.push('\u{201D}');
+                    open_double_quotes -= 1;
+                } else if prev_is_alpha && next_closes_quote {
+                    out.push('\u{201D}');
+                } else {
+                    out.push('"');
+                }
+            }
+            _ => out.push(ch),
         }
+
         prev = Some(ch);
     }
     out
@@ -85,6 +114,21 @@ fn parent_short_title(reference: &Reference, title_type: &TitleType) -> Option<S
     }
 }
 
+fn render_title_inline<F: crate::render::format::OutputFormat<Output = String>>(
+    value: &str,
+    fmt: &F,
+) -> (String, bool) {
+    render_djot_inline_with_transform(value, fmt, smarten_title_quotes)
+}
+
+fn looks_like_djot_markup(value: &str) -> bool {
+    value.contains('_')
+        || value.contains('*')
+        || value.contains("](")
+        || value.contains("{.")
+        || value.contains('`')
+}
+
 impl ComponentValues for TemplateTitle {
     fn values<F: crate::render::format::OutputFormat<Output = String>>(
         &self,
@@ -104,13 +148,19 @@ impl ComponentValues for TemplateTitle {
             && let Some(short_title) = parent_short_title(reference, &self.title)
             && !short_title.is_empty()
         {
+            let (value, pre_formatted) = if looks_like_djot_markup(&short_title) {
+                let (value, _) = render_title_inline(&short_title, &F::default());
+                (value, true)
+            } else {
+                (smarten_title_quotes(&short_title), false)
+            };
             return Some(ProcValues {
-                value: smarten_apostrophes(&short_title),
+                value,
                 prefix: None,
                 suffix: None,
                 url: None,
                 substituted_key: None,
-                pre_formatted: false,
+                pre_formatted,
             });
         }
 
@@ -177,13 +227,20 @@ impl ComponentValues for TemplateTitle {
                 reference,
                 LinkAnchor::Title,
             );
+            let (value, has_explicit_link, pre_formatted) = if looks_like_djot_markup(&value) {
+                let fmt = F::default();
+                let (value, has_explicit_link) = render_title_inline(&value, &fmt);
+                (value, has_explicit_link, true)
+            } else {
+                (smarten_title_quotes(&value), false, false)
+            };
             ProcValues {
-                value: smarten_apostrophes(&value),
+                value,
                 prefix: None,
                 suffix: None,
-                url,
+                url: if has_explicit_link { None } else { url },
                 substituted_key: None,
-                pre_formatted: false,
+                pre_formatted,
             }
         })
     }
