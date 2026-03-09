@@ -22,7 +22,21 @@ Docs/styles (`.md`, `.yaml` in `styles/`) skip checks entirely.
 
 **All new or modified public Rust items must have `///` doc comments.** This applies to structs, enums, traits, functions, and public fields. One clear sentence minimum — describe *what* it is/does. Existing items touched by a change must be documented in the same commit. Doc-only commits skip build checks.
 
-**Planning Documents:** Place all plans in `docs/architecture/`. Never in project root.
+**Documentation Placement:**
+- Execution plans / snapshots → `docs/architecture/` (date-stamp filename)
+- Feature/design specifications → `docs/specs/` (use spec template)
+- Active behavioral rules → `docs/policies/` (use policy template)
+- Operational how-tos → `docs/guides/`
+- Reference lookups → `docs/reference/`
+
+### Feature Design Workflow
+
+Before implementing a non-trivial feature (schema, engine behavior, type
+system), create a spec first:
+1. Create `docs/specs/FEATURE_NAME.md` using the spec template in `docs/specs/README.md`.
+2. Status: `Draft`. Get it committed before writing implementation code.
+3. Set Status to `Active` in the same commit as the first implementation.
+4. Reference the spec path in the bean description.
 
 **Commit Messages:** Conventional Commits `type(scope): subject`, lowercase, 50/72 rule, no `--amend`, no `Co-Authored-By`.
 
