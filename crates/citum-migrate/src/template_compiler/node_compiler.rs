@@ -84,6 +84,11 @@ impl TemplateCompiler {
             }
         });
 
+        let mut rendering = self.convert_formatting(&names.formatting);
+        if let Some(label) = &names.options.label {
+            rendering.strip_periods = label.formatting.strip_periods.or(rendering.strip_periods);
+        }
+
         Some(TemplateComponent::Contributor(TemplateContributor {
             contributor: role,
             form,
@@ -92,7 +97,7 @@ impl TemplateCompiler {
             sort_separator: names.options.sort_separator.clone(),
             shorten,
             and,
-            rendering: self.convert_formatting(&names.formatting),
+            rendering,
             ..Default::default()
         }))
     }
@@ -216,6 +221,12 @@ impl TemplateCompiler {
 
         // Check if it's a number
         if let Some(num_var) = self.map_variable_to_number(&var.variable) {
+            let mut rendering = self.convert_formatting(&var.formatting);
+            if let Some(label) = &var.label {
+                rendering.strip_periods =
+                    label.formatting.strip_periods.or(rendering.strip_periods);
+            }
+
             // Convert overrides from FormattingOptions to Rendering
             let overrides = if var.overrides.is_empty() {
                 None
@@ -241,7 +252,7 @@ impl TemplateCompiler {
                 number: num_var,
                 form: None,
                 label_form,
-                rendering: self.convert_formatting(&var.formatting),
+                rendering,
                 overrides,
                 ..Default::default()
             }));
@@ -249,6 +260,20 @@ impl TemplateCompiler {
 
         // Check if it's a simple variable
         if let Some(simple_var) = self.map_variable_to_simple(&var.variable) {
+            let mut rendering = self.convert_formatting(&var.formatting);
+            let mut show_label = None;
+            let mut strip_label_periods = None;
+
+            if let Some(label) = &var.label {
+                if matches!(simple_var, SimpleVariable::Locator) {
+                    show_label = Some(true);
+                    strip_label_periods = label.formatting.strip_periods;
+                } else {
+                    rendering.strip_periods =
+                        label.formatting.strip_periods.or(rendering.strip_periods);
+                }
+            }
+
             // Convert overrides from FormattingOptions to Rendering
             let overrides = if var.overrides.is_empty() {
                 None
@@ -268,7 +293,9 @@ impl TemplateCompiler {
             };
             return Some(TemplateComponent::Variable(TemplateVariable {
                 variable: simple_var,
-                rendering: self.convert_formatting(&var.formatting),
+                show_label,
+                strip_label_periods,
+                rendering,
                 overrides,
                 ..Default::default()
             }));
