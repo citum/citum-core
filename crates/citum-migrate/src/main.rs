@@ -439,7 +439,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             &mut citation_wrap,
         );
     } else if legacy_style.class == "in-text" {
-        ensure_author_date_locator_citation_component(
+        normalize_author_date_locator_citation_component(
             &legacy_style.citation.layout,
             &legacy_style.macros,
             &mut new_cit,
@@ -1734,18 +1734,25 @@ fn apply_wrapped_locator_formatting(
     changed
 }
 
-fn ensure_author_date_locator_citation_component(
+fn normalize_author_date_locator_citation_component(
     layout: &Layout,
     macros: &[csl_legacy::model::Macro],
     template: &mut Vec<TemplateComponent>,
 ) {
-    if !layout_uses_citation_locator(layout) || citation_template_has_locator(template) {
+    if !layout_uses_citation_locator(layout) {
         return;
     }
 
-    let mut visited = HashSet::new();
-    let locator_prefix = infer_locator_prefix_from_nodes(&layout.children, macros, &mut visited)
+    let locator_prefix = infer_locator_group_delimiter(layout)
+        .or_else(|| {
+            let mut visited = HashSet::new();
+            infer_locator_prefix_from_nodes(&layout.children, macros, &mut visited)
+        })
         .unwrap_or(" ".to_string());
+
+    if apply_author_date_locator_formatting(template, &locator_prefix) {
+        return;
+    }
 
     template.push(TemplateComponent::Variable(TemplateVariable {
         variable: SimpleVariable::Locator,
@@ -1756,6 +1763,109 @@ fn ensure_author_date_locator_citation_component(
         },
         ..Default::default()
     }));
+}
+
+fn infer_locator_group_delimiter(layout: &Layout) -> Option<String> {
+    if let Some(delimiter) = layout.delimiter.as_ref()
+        && layout
+            .children
+            .iter()
+            .position(node_uses_citation_locator)
+            .is_some_and(|index| index > 0)
+        && !delimiter.is_empty()
+    {
+        return Some(delimiter.clone());
+    }
+
+    infer_locator_group_delimiter_from_nodes(&layout.children)
+}
+
+fn infer_locator_group_delimiter_from_nodes(nodes: &[CslNode]) -> Option<String> {
+    for node in nodes {
+        match node {
+            CslNode::Group(group) => {
+                if let Some(delimiter) = group.delimiter.as_ref()
+                    && group
+                        .children
+                        .iter()
+                        .position(node_uses_citation_locator)
+                        .is_some_and(|index| index > 0)
+                    && !delimiter.is_empty()
+                {
+                    return Some(delimiter.clone());
+                }
+
+                if let Some(delimiter) = infer_locator_group_delimiter_from_nodes(&group.children) {
+                    return Some(delimiter);
+                }
+            }
+            CslNode::Choose(choose) => {
+                if let Some(delimiter) =
+                    infer_locator_group_delimiter_from_nodes(&choose.if_branch.children)
+                {
+                    return Some(delimiter);
+                }
+                for branch in &choose.else_if_branches {
+                    if let Some(delimiter) =
+                        infer_locator_group_delimiter_from_nodes(&branch.children)
+                    {
+                        return Some(delimiter);
+                    }
+                }
+                if let Some(else_branch) = choose.else_branch.as_ref()
+                    && let Some(delimiter) = infer_locator_group_delimiter_from_nodes(else_branch)
+                {
+                    return Some(delimiter);
+                }
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+fn apply_author_date_locator_formatting(
+    template: &mut [TemplateComponent],
+    locator_prefix: &str,
+) -> bool {
+    let mut found_locator = false;
+    for component in template {
+        match component {
+            TemplateComponent::Variable(variable)
+                if variable.variable == SimpleVariable::Locator =>
+            {
+                found_locator = true;
+                if variable.show_label != Some(true) {
+                    variable.show_label = Some(true);
+                }
+                if should_replace_author_date_locator_prefix(
+                    variable.rendering.prefix.as_deref(),
+                    locator_prefix,
+                ) {
+                    variable.rendering.prefix = Some(locator_prefix.to_string());
+                }
+            }
+            TemplateComponent::List(list) => {
+                if apply_author_date_locator_formatting(&mut list.items, locator_prefix) {
+                    found_locator = true;
+                }
+            }
+            _ => {}
+        }
+    }
+    found_locator
+}
+
+fn should_replace_author_date_locator_prefix(
+    existing_prefix: Option<&str>,
+    preferred_prefix: &str,
+) -> bool {
+    match existing_prefix {
+        None => true,
+        Some("") => true,
+        Some(prefix) if prefix == preferred_prefix => false,
+        Some(prefix) => prefix.trim().is_empty() && preferred_prefix != prefix,
+    }
 }
 
 fn infer_locator_prefix_from_nodes(
@@ -2414,7 +2524,9 @@ impl TypeSelectorNames for TypeSelector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use csl_legacy::model::{Sort as LegacySort, SortKey as LegacySortKey};
+    use csl_legacy::model::{
+        CslNode, Formatting, Group, Sort as LegacySort, SortKey as LegacySortKey, Text,
+    };
 
     fn legacy_sort(keys: &[&str]) -> LegacySort {
         LegacySort {
@@ -2493,5 +2605,111 @@ mod tests {
         );
 
         assert!(sort.is_some());
+    }
+
+    #[test]
+    fn author_date_locator_prefers_group_delimiter() {
+        let layout = Layout {
+            prefix: None,
+            suffix: None,
+            delimiter: None,
+            children: vec![CslNode::Group(Group {
+                delimiter: Some(", ".to_string()),
+                prefix: None,
+                suffix: None,
+                children: vec![
+                    CslNode::Text(Text {
+                        value: None,
+                        variable: None,
+                        macro_name: Some("author-short".to_string()),
+                        term: None,
+                        form: None,
+                        prefix: None,
+                        suffix: None,
+                        quotes: None,
+                        text_case: None,
+                        strip_periods: None,
+                        plural: None,
+                        macro_call_order: None,
+                        formatting: Formatting::default(),
+                    }),
+                    CslNode::Text(Text {
+                        value: None,
+                        variable: None,
+                        macro_name: Some("issued-year".to_string()),
+                        term: None,
+                        form: None,
+                        prefix: None,
+                        suffix: None,
+                        quotes: None,
+                        text_case: None,
+                        strip_periods: None,
+                        plural: None,
+                        macro_call_order: None,
+                        formatting: Formatting::default(),
+                    }),
+                    CslNode::Text(Text {
+                        value: None,
+                        variable: None,
+                        macro_name: Some("citation-locator".to_string()),
+                        term: None,
+                        form: None,
+                        prefix: None,
+                        suffix: None,
+                        quotes: None,
+                        text_case: None,
+                        strip_periods: None,
+                        plural: None,
+                        macro_call_order: None,
+                        formatting: Formatting::default(),
+                    }),
+                ],
+                macro_call_order: None,
+                formatting: Formatting::default(),
+            })],
+        };
+        let mut template = vec![
+            TemplateComponent::Contributor(citum_schema::template::TemplateContributor {
+                contributor: citum_schema::template::ContributorRole::Author,
+                form: citum_schema::template::ContributorForm::Short,
+                name_order: Some(citum_schema::template::NameOrder::FamilyFirst),
+                ..Default::default()
+            }),
+            TemplateComponent::Date(citum_schema::template::TemplateDate {
+                date: DateVariable::Issued,
+                form: citum_schema::template::DateForm::Year,
+                rendering: Rendering {
+                    prefix: Some(", ".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+            TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::Locator,
+                show_label: Some(true),
+                rendering: Rendering {
+                    prefix: Some(" ".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        ];
+
+        normalize_author_date_locator_citation_component(&layout, &[], &mut template);
+
+        let locator = template
+            .iter()
+            .find_map(|component| match component {
+                TemplateComponent::Variable(variable)
+                    if variable.variable == SimpleVariable::Locator =>
+                {
+                    Some(variable)
+                }
+                _ => None,
+            })
+            .expect("locator component should exist");
+
+        assert_eq!(locator.rendering.prefix.as_deref(), Some(", "));
+        assert_eq!(locator.show_label, Some(true));
     }
 }
