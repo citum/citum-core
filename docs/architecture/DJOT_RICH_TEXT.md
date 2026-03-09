@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented (Phase 1) — bean `csl26-suz3`, branch `feat/djot-rich-text`, commit `df059ae`.
+Partially implemented (Phases 1 and 3) — bean `csl26-suz3`.
 
 ## Summary
 
@@ -34,15 +34,25 @@ annotation:
   paragraph_break: blank_line
 ```
 
-### Scope B — `note` and `abstract` fields (Phase 2)
+### Scope B — `note` and `abstract` fields (Phase 2, still open)
 
 Reference fields `note` and `abstract` are plain `Option<String>` today. A new `RichText` wrapper type will be introduced in `citum-schema` that serialises transparently from YAML strings but carries a format tag. At render time in the engine, field values pass through `render_djot_inline` before entering template rendering.
 
 `abstract` and `note` are safe to migrate first because neither undergoes case transformation. See the title section below.
 
-### Scope C — `title` and other case-transformed fields (future)
+### Scope C — `title` fields under the current rendering model (Phase 3)
 
-**Deferred.** `title` has a custom `Title` type and is subject to sentence-case and title-case transformation in the engine. Djot parsing must happen *after* case transformation is applied to leaf text nodes — not the raw string, where markers like `_foo_` would be uppercased. This requires making the case-transformation code AST-aware, which is a separate architectural change. See the title markup section below.
+Implemented for the current engine model. Resolved title strings are parsed as
+Djot inline, smart apostrophes are applied to `Event::Str` leaf text, and the
+result is returned as `pre_formatted` so outer title rendering can still apply
+quotes, italics, and affixes around the already-rendered inline markup.
+
+If an authored title contains an explicit inline Djot link, that link takes
+precedence over whole-title auto-linking.
+
+This does **not** implement general title-case or sentence-case semantics.
+`.nocase` and the broader text-case question remain deferred to follow-up bean
+`csl26-wv5o`.
 
 ## Title Markup: Known Cases
 
@@ -86,20 +96,21 @@ Implemented in `crates/citum-engine/src/render/rich_text.rs`:
 pub fn render_djot_inline<F: OutputFormat<Output = String>>(src: &str, fmt: &F) -> String
 ```
 
-Uses a stack-based approach over `jotdown::Parser::new(src)`. Each `Event::Start` pushes a new scope; `Event::End` pops the scope, applies the format method, and pushes the result to the parent scope.
+Uses a stack-based approach over `jotdown::Parser::new(src)`. Each frame stores
+its collected child output, any explicit link target, and frame-local span
+classes so nested markup can be rendered without escaping already-formatted
+children.
 
 | jotdown event | OutputFormat method |
 |---|---|
 | `Container::Emphasis` | `fmt.emph(…)` |
 | `Container::Strong` | `fmt.strong(…)` |
-| `Container::Link(…)` | `fmt.text(…)` (link URL not available at End; degrades to text — known limitation) |
+| `Container::Link(…)` | `fmt.link(…)` |
 | `Container::Verbatim` | `fmt.text(…)` (preserve as-is) |
-| `Container::Span` with class `smallcaps` | `fmt.small_caps(…)` |
+| `Container::Span` with class `smallcaps` / `small-caps` | `fmt.small_caps(…)` |
 | Block-level containers (`Heading`, `Paragraph`, `CodeBlock`, etc.) | Text content collected, block structure dropped |
-| `Event::Str(s)` | `fmt.text(s)` |
+| `Event::Str(s)` | `fmt.text(s)` or transformed text for title rendering |
 | `Event::Softbreak` / `Hardbreak` | `fmt.text(" ")` |
-
-**Known limitation:** Link URL is only accessible at `Event::Start(Container::Link(url, …))` but the formatted inner content is only available at `Event::End`. The current implementation degrades links to plain text. Fix requires stashing the URL on the stack alongside the content buffer.
 
 ### `AnnotationFormat` enum
 
@@ -130,9 +141,20 @@ Unit tests in `rich_text.rs`:
 - `test_djot_unicode_math` — `H₂O` passes through unchanged
 - `test_djot_plain_no_markup` — plain string passes through unchanged
 - `test_djot_combined_formatting` — nested emphasis + strong renders correctly
+- `test_djot_nested_formatting_preserves_typst_markup` — nested Djot markup is
+  not re-escaped when rendered to Typst
+- `test_djot_nested_link_preserves_inner_markup_html` — explicit links preserve
+  formatted child content in HTML output
+
+Title regressions in `values/tests.rs` and `processor/tests.rs` cover:
+
+- pre-formatted Djot title values
+- smart apostrophes applied to Djot title leaf text
+- inline title links suppressing whole-title auto-links
+- title preset wrapping around inner Djot markup
 
 ## Non-Goals
 
 - LaTeX or MathML interpretation
 - Full djot block-level rendering for field values
-- AST-level title markup (deferred to a follow-up)
+- General title/text-case semantics such as `.nocase`

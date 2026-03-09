@@ -1040,6 +1040,290 @@ fn test_title_values_smarten_french_apostrophes() {
     );
 }
 
+/// Tests straight double quotes being smartened in plain title values.
+#[test]
+fn test_title_values_smarten_double_quotes() {
+    let config = make_config();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        locale: &locale,
+        context: RenderContext::Citation,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator: None,
+        locator_label: None,
+    };
+    let hints = ProcHints::default();
+
+    let reference = Reference::from(LegacyReference {
+        id: "quoted-title".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("The \"Parmenides\" dialogue".to_string()),
+        ..Default::default()
+    });
+
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("title value should render");
+    assert_eq!(values.value, "The “Parmenides” dialogue");
+}
+
+/// Tests the behavior of mixed outer single and inner double title quotes.
+#[test]
+fn test_title_values_flip_flop_outer_single_inner_double_quotes() {
+    let config = make_config();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        locale: &locale,
+        context: RenderContext::Citation,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator: None,
+        locator_label: None,
+    };
+    let hints = ProcHints::default();
+
+    let reference = Reference::from(LegacyReference {
+        id: "flip-flop-single-double".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("'Some Title \"with something\"'".to_string()),
+        ..Default::default()
+    });
+
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("title value should render");
+    assert_eq!(values.value, "‘Some Title “with something”’");
+}
+
+/// Tests the behavior of mixed outer double and inner single title quotes.
+#[test]
+fn test_title_values_flip_flop_outer_double_inner_single_quotes() {
+    let config = make_config();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        locale: &locale,
+        context: RenderContext::Citation,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator: None,
+        locator_label: None,
+    };
+    let hints = ProcHints::default();
+
+    let reference = Reference::from(LegacyReference {
+        id: "flip-flop-double-single".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("\"Some title 'with something'\"".to_string()),
+        ..Default::default()
+    });
+
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("title value should render");
+    assert_eq!(values.value, "“Some title ‘with something’”");
+}
+
+/// Tests the behavior of preserving ambiguous double quotes in title values.
+#[test]
+fn test_title_values_preserve_ambiguous_double_quotes() {
+    let config = make_config();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        locale: &locale,
+        context: RenderContext::Citation,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator: None,
+        locator_label: None,
+    };
+    let hints = ProcHints::default();
+
+    let reference = Reference::from(LegacyReference {
+        id: "record-title".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("The 12\" record".to_string()),
+        ..Default::default()
+    });
+
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("title value should render");
+    assert_eq!(values.value, "The 12\" record");
+}
+
+/// Tests the behavior of djot-marked title values.
+#[test]
+fn test_title_values_render_djot_markup_as_preformatted() {
+    let config = make_config();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        locale: &locale,
+        context: RenderContext::Citation,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator: None,
+        locator_label: None,
+    };
+    let hints = ProcHints::default();
+
+    let reference = Reference::from(LegacyReference {
+        id: "djot-title".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("_Homo sapiens_ and *modern* world".to_string()),
+        ..Default::default()
+    });
+
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("title value should render");
+    assert_eq!(values.value, "_Homo sapiens_ and **modern** world");
+    assert!(values.pre_formatted);
+}
+
+/// Tests the behavior of djot-marked title smart apostrophes.
+#[test]
+fn test_title_values_smarten_djot_text_leaves() {
+    let config = make_config();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        locale: &locale,
+        context: RenderContext::Citation,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator: None,
+        locator_label: None,
+    };
+    let hints = ProcHints::default();
+
+    let reference = Reference::from(LegacyReference {
+        id: "djot-apostrophe".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("_Plato's dialogue_".to_string()),
+        ..Default::default()
+    });
+
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("title value should render");
+    assert_eq!(values.value, "_Plato’s dialogue_");
+    assert!(values.pre_formatted);
+}
+
+/// Tests the behavior of djot-marked title smart double quotes.
+#[test]
+fn test_title_values_smarten_djot_double_quotes() {
+    let config = make_config();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        locale: &locale,
+        context: RenderContext::Citation,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator: None,
+        locator_label: None,
+    };
+    let hints = ProcHints::default();
+
+    let reference = Reference::from(LegacyReference {
+        id: "djot-double-quotes".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("_\"Parmenides\" dialogue_".to_string()),
+        ..Default::default()
+    });
+
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("title value should render");
+    assert_eq!(values.value, "_“Parmenides” dialogue_");
+    assert!(values.pre_formatted);
+}
+
+/// Tests the behavior of inline title links suppressing whole-title autolinks.
+#[test]
+fn test_title_values_inline_link_suppresses_outer_title_link() {
+    let config = make_config();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator: None,
+        locator_label: None,
+    };
+    let hints = ProcHints::default();
+
+    let reference = Reference::from(LegacyReference {
+        id: "djot-link".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("[Linked title](https://example.com)".to_string()),
+        doi: Some("10.1001/test".to_string()),
+        ..Default::default()
+    });
+
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        links: Some(LinksConfig {
+            doi: Some(true),
+            target: Some(LinkTarget::Doi),
+            anchor: Some(LinkAnchor::Title),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("title value should render");
+    assert_eq!(values.value, "Linked title");
+    assert!(values.pre_formatted);
+    assert_eq!(values.url, None);
+}
+
 /// Tests the behavior of test_variable_hyperlink.
 #[test]
 fn test_variable_hyperlink() {

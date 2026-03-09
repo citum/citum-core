@@ -20,58 +20,52 @@ Phase 1 (annotations) complete — commit `df059ae` on `feat/djot-rich-text`.
 - [x] Annotation render path in `bibliography.rs` uses djot
 - [x] CLI default updated
 - [x] Architecture doc at `docs/architecture/DJOT_RICH_TEXT.md`
-- [x] Fix link rendering (URL lost at End event — degrade to text currently)
-- [x] Phase 2: `RichText` type for `note`/`abstract` fields
-- [ ] Phase 3: `title` field (requires AST-aware case transformation)
+- [x] Fix link rendering (URL preserved through Djot inline rendering)
+- [ ] Phase 2: `RichText` type for `note`/`abstract` fields
+- [x] Phase 3: `title` field under the current rendering model
 
-## Phase 3 — Title Markup (AST-aware case transformation)
+2026-03-09 residual gap: this bean remains open only for `note`/`abstract`
+rich-text support. Broader title/text-case semantics were split out to
+`csl26-wv5o`.
 
-**Goal:** Allow djot inline markup in title fields so authors can protect spans from
-title-casing (e.g. `*Homo sapiens*` stays italicised and is not upper-cased by
-an APA/Chicago title-case pass).
+## Phase 3 — Title Markup (Current Rendering Model)
 
-**Current rendering pipeline** (`crates/citum-engine/src/values/title.rs`):
-1. `TemplateTitle::values()` calls `title_text()` — returns a plain `String`.
-2. `smarten_apostrophes()` is applied to that string.
-3. Result stored in `ProcValues { value, pre_formatted: false, ... }`.
-4. Downstream, the engine applies title-case / sentence-case to `value` based on
-   `TitleRendering` config.
+**Goal:** Allow djot inline markup in title fields without introducing a new
+title/sentence-case subsystem.
 
-**Problem:** Because casing is applied to the raw string, djot markup syntax
-would either survive into output verbatim or be cased incorrectly.
+**Implemented behavior:**
 
-**Required changes:**
-
-1. AST-split approach in `title_text` / `TemplateTitle::values`:
-   - Parse title string with jotdown into an inline event stream.
-   - Walk the AST; apply title-case / sentence-case only to `Event::Str` leaf
-     nodes (aware of first-word, after-colon, stop-word rules).
-   - Re-emit the event stream using `render_djot_inline` with the
-     case-transformed leaf strings.
-   - Return result with `pre_formatted: true` to skip the second casing pass.
-
-2. Case transformation helper needed:
-   - An `apply_title_case_to_word(word, position: WordPosition) -> String`
-     that knows about stop-words, first/last-word rules, etc.
-   - Currently casing lives outside the values layer; needs to be threaded in
-     or exposed as a shared helper.
-
-3. `rich_text.rs` extension:
-   - May need a `render_djot_inline_with_case_fn` variant that accepts a
-     `Fn(&str) -> String` applied to each `Str` leaf event.
-
-4. Casing bypass:
-   - Wherever the casing pass currently runs, it must skip when
-     `pre_formatted: true`.
+1. `TemplateTitle::values()` now routes resolved title strings through Djot
+   inline rendering before returning them to the component renderer.
+2. Smart apostrophe handling is applied to Djot `Event::Str` leaf text, so
+   inner markup remains intact.
+3. Title values are returned with `pre_formatted: true`, allowing outer title
+   rendering (quotes, italics, prefixes, suffixes) to wrap already-rendered
+   inline markup.
+4. Explicit inline Djot links inside titles suppress whole-title auto-linking,
+   so the authored inline link wins.
+5. This phase does **not** implement `.nocase`, sentence-case, title-case, or
+   other general text-case semantics.
 
 **Key files:**
 - `crates/citum-engine/src/values/title.rs` — main logic insertion point
-- `crates/citum-engine/src/render/rich_text.rs` — case-aware djot renderer
-- Wherever `TextCase` / `apply_text_case` runs in citum-engine/src/render/
+- `crates/citum-engine/src/render/rich_text.rs` — Djot inline renderer with
+  leaf-text transforms and explicit-link metadata
+- `crates/citum-engine/src/processor/tests.rs` — preset and autolink regressions
 
 **Definition of done:**
-- Fixture reference with `title: "Homo sapiens and the modern world"` (italics
-  on Homo sapiens via djot markup).
-- APA title-case config renders: "Homo sapiens and the Modern World"
-  (italicised span intact; stop-word "and" stays lower; first word capitalised).
-- All existing title oracle tests pass.
+- Djot inline markup in title strings survives through bibliography rendering.
+- Outer title rendering from presets/config still applies around inner Djot
+  markup.
+- Explicit inline title links take precedence over whole-title auto-linking.
+- General title/text-case semantics are tracked separately in `csl26-wv5o`.
+
+## Summary of Changes
+
+- refactored Djot inline rendering to preserve nested formatted child output and
+  use frame-local span metadata
+- added title-path Djot rendering with leaf-level smart apostrophe handling
+- suppressed outer title autolinks when the title already contains an explicit
+  inline link
+- added regressions for title value pre-formatting, inline-link precedence, and
+  title preset wrapping around Djot markup

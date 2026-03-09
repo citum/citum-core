@@ -1570,6 +1570,96 @@ fn test_global_title_linking_html() {
     assert!(result.contains("Linked Title"));
 }
 
+/// Tests that inline Djot title links take precedence over whole-title autolinks.
+#[test]
+fn test_inline_title_link_takes_precedence_over_global_title_link_html() {
+    use crate::render::html::Html;
+    use citum_schema::options::{LinkAnchor, LinkTarget, LinksConfig};
+
+    let style = Style {
+        options: Some(Config {
+            links: Some(LinksConfig {
+                target: Some(LinkTarget::Doi),
+                anchor: Some(LinkAnchor::Title),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            })]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let mut bib = Bibliography::new();
+    bib.insert(
+        "doi-inline".to_string(),
+        Reference::from(LegacyReference {
+            id: "doi-inline".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("[Linked title](https://example.com)".to_string()),
+            doi: Some("10.1001/test".to_string()),
+            issued: Some(DateVariable::year(2023)),
+            ..Default::default()
+        }),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography_with_format::<Html>();
+
+    assert!(result.contains(r#"<a href="https://example.com">Linked title</a>"#));
+    assert!(!result.contains("https://doi.org/10.1001/test"));
+}
+
+/// Tests that title preset rendering still wraps Djot-marked title content correctly.
+#[test]
+fn test_chicago_title_preset_preserves_djot_markup_html() {
+    use crate::render::html::Html;
+    use citum_schema::TitlePreset;
+
+    let style = Style {
+        options: Some(Config {
+            titles: Some(TitlePreset::Chicago.config()),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            })]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let mut bib = Bibliography::new();
+    bib.insert(
+        "art1".to_string(),
+        Reference::from(LegacyReference {
+            id: "art1".to_string(),
+            ref_type: "article-journal".to_string(),
+            title: Some("_Homo sapiens_ and *modern* world".to_string()),
+            issued: Some(DateVariable::year(2023)),
+            ..Default::default()
+        }),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography_with_format::<Html>();
+
+    assert!(
+        result.contains(
+            r#"<span class="csln-title">“<i>Homo sapiens</i> and <b>modern</b> world”</span>"#
+        ),
+        "Result: {}",
+        result
+    );
+}
+
 /// Tests the behavior of test_whole_entry_linking_typst.
 #[test]
 fn test_whole_entry_linking_typst() {

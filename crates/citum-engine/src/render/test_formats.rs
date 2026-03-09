@@ -79,6 +79,22 @@ mod tests {
     }
 
     #[test]
+    fn test_html_link_percent_encodes_href_breakout_chars() {
+        let component = ProcTemplateComponent {
+            template_component: tc_variable!(Url),
+            value: "label".to_string(),
+            url: Some(r#"" onmouseover="alert(1)"#.to_string()),
+            ..Default::default()
+        };
+
+        let result = render_component_with_format::<Html>(&component);
+        assert_eq!(
+            result,
+            r#"<span class="csln-url"><a href="%22%20onmouseover=%22alert(1)">label</a></span>"#
+        );
+    }
+
+    #[test]
     fn test_html_title_link_doi() {
         use citum_schema::{
             options::{LinkAnchor, LinkTarget, LinksConfig},
