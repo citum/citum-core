@@ -11,6 +11,11 @@ const {
   normalizeFixtureItems,
   refsDataForProcessor,
 } = require('./oracle');
+const {
+  attachRegisteredDivergenceAdjustments,
+  detectDiv004OrderDifference,
+} = require('./lib/oracle-divergences');
+const { loadVerificationPolicy, resolveRegisteredDivergence } = require('./lib/verification-policy');
 
 const projectRoot = path.resolve(__dirname, '..');
 const oracleScript = path.join(__dirname, 'oracle.js');
@@ -141,4 +146,87 @@ test('refsDataForProcessor preserves wrapped fixture sets', () => {
     'catalysis-studies',
     'peroxisome-biogenesis',
   ]);
+});
+
+test('div-004 detection recognizes missing-name order drift without treating named order as changed', () => {
+  const refsData = JSON.parse(
+    fs.readFileSync(path.join(projectRoot, 'tests', 'fixtures', 'references-expanded.json'), 'utf8')
+  );
+  const testItems = Object.fromEntries(
+    Object.entries(refsData).filter(([key]) => key !== 'comment')
+  );
+  const policy = loadVerificationPolicy();
+  const divergenceRule = resolveRegisteredDivergence(policy, 'div-004');
+
+  const divergence = detectDiv004OrderDifference(
+    [
+      'Kuhn, Thomas S. The Structure of Scientific Revolutions. 1962.',
+      'Brown v. Board of Education.',
+    ],
+    ['ITEM-20', 'ITEM-1'],
+    {
+      'ITEM-1': testItems['ITEM-1'],
+      'ITEM-20': testItems['ITEM-20'],
+    },
+    divergenceRule
+  );
+
+  assert.equal(divergence?.divergenceId, 'div-004');
+  assert.deepEqual(divergence?.anonymousIds, ['ITEM-20']);
+});
+
+test('registered divergence adjustments convert sort-derived numeric label drift into adjusted passes', () => {
+  const rawResults = {
+    style: 'association-for-computing-machinery',
+    citations: {
+      total: 1,
+      passed: 0,
+      failed: 1,
+      entries: [{ id: 'cite-1', oracle: '[1]', csln: '[2]', match: false }],
+    },
+    bibliography: {
+      total: 2,
+      passed: 2,
+      failed: 0,
+      entries: [],
+    },
+    citationsByType: {},
+    componentSummary: {},
+    orderingIssues: 0,
+  };
+
+  const adjusted = attachRegisteredDivergenceAdjustments(
+    rawResults,
+    [
+      'Kuhn, Thomas S. The Structure of Scientific Revolutions. 1962.',
+      'Brown v. Board of Education.',
+    ],
+    ['ITEM-20', 'ITEM-1'],
+    {
+      'ITEM-1': {
+        id: 'ITEM-1',
+        type: 'book',
+        title: 'The Structure of Scientific Revolutions',
+        author: [{ family: 'Kuhn', given: 'Thomas S.' }],
+      },
+      'ITEM-20': {
+        id: 'ITEM-20',
+        type: 'legal_case',
+        title: 'Brown v. Board of Education',
+      },
+    },
+    [
+      {
+        id: 'cite-1',
+        items: [{ id: 'ITEM-1' }],
+      },
+    ]
+  );
+
+  assert.equal(adjusted.adjusted.citations.passed, 1);
+  assert.equal(adjusted.adjusted.citations.failed, 0);
+  assert.equal(
+    adjusted.adjusted.citations.entries[0].appliedDivergence?.divergenceId,
+    'div-004'
+  );
 });

@@ -74,9 +74,15 @@ function normalizeText(text) {
  *
  * @param {string} entry - The bibliography entry text
  * @param {Object} testItems - Map of item IDs to reference data
- * @returns {Object|null} The best-matching reference, or null
+ * @returns {{ id: string, ref: Object }|null} The best-matching reference and id, or null
  */
-function findRefDataForEntry(entry, testItems) {
+function hasPrimaryNames(ref) {
+  return ['author', 'editor', 'translator'].some(
+    (role) => Array.isArray(ref?.[role]) && ref[role].length > 0
+  );
+}
+
+function findRefMatchForEntry(entry, testItems) {
   const entryLower = normalizeText(entry).toLowerCase();
   const candidates = [];
 
@@ -104,7 +110,20 @@ function findRefDataForEntry(entry, testItems) {
       }
     }
 
-    if (!nameMatch) continue;
+    if (!nameMatch) {
+      if (!hasPrimaryNames(ref) && ref.title) {
+        const titleLower = normalizeText(ref.title).toLowerCase();
+        if (entryLower.includes(titleLower)) {
+          score += 4;
+        } else {
+          const prefix = titleLower.substring(0, Math.min(40, titleLower.length));
+          if (prefix.length >= 10 && entryLower.includes(prefix)) {
+            score += 2;
+          }
+        }
+      }
+      if (score === 0) continue;
+    }
 
     // Year match (strongly discriminating)
     if (ref.issued && ref.issued['date-parts'] && ref.issued['date-parts'][0]) {
@@ -135,7 +154,11 @@ function findRefDataForEntry(entry, testItems) {
 
   // Return highest-scoring candidate
   candidates.sort((a, b) => b.score - a.score);
-  return candidates[0].ref;
+  return candidates[0];
+}
+
+function findRefDataForEntry(entry, testItems) {
+  return findRefMatchForEntry(entry, testItems)?.ref || null;
 }
 
 // -- Position helpers --
@@ -436,6 +459,8 @@ module.exports = {
   normalizeText,
   parseComponents,
   analyzeOrdering,
+  findRefMatchForEntry,
+  hasPrimaryNames,
   findRefDataForEntry,
   loadLocale,
   findFieldPosition,

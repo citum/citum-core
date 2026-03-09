@@ -187,17 +187,20 @@ function aggregateResults(results) {
       continue;
     }
     
+    const effectiveCitations = result.adjusted?.citations || result.citations;
+    const effectiveBibliography = result.adjusted?.bibliography || result.bibliography;
+
     // Track citation success
-    if (result.citations.passed === result.citations.total) {
+    if (effectiveCitations.passed === effectiveCitations.total) {
       summary.citationsPerfect++;
-    } else if (result.citations.passed > 0) {
+    } else if (effectiveCitations.passed > 0) {
       summary.citationsPartial++;
     }
     
     // Track bibliography success
-    if (result.bibliography.passed === result.bibliography.total) {
+    if (effectiveBibliography.passed === effectiveBibliography.total) {
       summary.bibliographyPerfect++;
-    } else if (result.bibliography.passed > 0) {
+    } else if (effectiveBibliography.passed > 0) {
       summary.bibliographyPartial++;
     }
     
@@ -216,10 +219,13 @@ function aggregateResults(results) {
     // Style breakdown
     summary.styleBreakdown.push({
       style: result.style,
-      citations: `${result.citations.passed}/${result.citations.total}`,
-      bibliography: `${result.bibliography.passed}/${result.bibliography.total}`,
-      citationsPct: Math.round((result.citations.passed / result.citations.total) * 100),
-      bibliographyPct: Math.round((result.bibliography.passed / result.bibliography.total) * 100),
+      citations: `${effectiveCitations.passed}/${effectiveCitations.total}`,
+      bibliography: `${effectiveBibliography.passed}/${effectiveBibliography.total}`,
+      rawCitations: `${result.citations.passed}/${result.citations.total}`,
+      rawBibliography: `${result.bibliography.passed}/${result.bibliography.total}`,
+      citationsPct: Math.round((effectiveCitations.passed / effectiveCitations.total) * 100),
+      bibliographyPct: Math.round((effectiveBibliography.passed / effectiveBibliography.total) * 100),
+      adjustedDivergences: result.adjusted?.divergenceSummary || {},
       templateSource: detectTemplateSource(result.style),
     });
   }
