@@ -1,8 +1,13 @@
 # Citum Ecosystem: Modularization and Rebranding Plan
 
-**Status:** Approved for phased implementation
-**Last updated:** 2026-02-22
+**Status:** Implemented as a completed phased migration plan
+**Last updated:** 2026-03-09
 **Execution runbook:** [CITUM_FULL_MIGRATION_EXECUTION_PLAN_2026-02-26.md](./CITUM_FULL_MIGRATION_EXECUTION_PLAN_2026-02-26.md)
+
+Implementation status:
+- Phase 0 dependency-boundary fixes landed on `main`.
+- Phase 1 repo/crate rename work landed on `main`.
+- Phase 2 bindings API and `citum-labs` follow-on work landed on `main`.
 
 ## Overview
 

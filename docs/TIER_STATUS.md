@@ -1,9 +1,9 @@
 # Citum Style Tier Status
 
 > **Living document** — updated after each significant batch oracle run.
-> Last updated: 2026-02-28
+> Last updated: 2026-03-09
 >
-> **Oracle scoring:** Strict 12-scenario citation set (`tests/fixtures/citations-expanded.json`).
+> **Oracle scoring:** Strict 18-scenario citation set (`tests/fixtures/citations-expanded.json`).
 > Hard-fails on processor/style errors. Includes suppress-author, mixed locator/prefix/suffix
 > edge cases. Run `node scripts/oracle-batch-aggregate.js styles-legacy/ --top 10` to refresh.
 > Testing contract and fixture governance are defined in
@@ -14,19 +14,24 @@
 
 | Style | Dependents | Citations | Bibliography | Notes |
 |-------|-----------|-----------|--------------|-------|
-| apa | 783 | 12/12 | 31/31 ✅ | 100% fidelity |
-| elsevier-with-titles | 672 | 12/12 | 32/32 ✅ | 100% fidelity |
-| elsevier-harvard | 665 | 12/12 | 32/32 ✅ | 100% fidelity |
-| elsevier-vancouver | 502 | 12/12 | 32/32 ✅ | 100% fidelity |
-| springer-vancouver-brackets | 472 | 12/12 | 32/32 ✅ | 100% fidelity |
-| springer-basic-author-date | 460 | 12/12 | 32/32 ✅ | 100% fidelity |
-| springer-basic-brackets | 352 | 12/12 | 32/32 ✅ | 100% fidelity |
-| springer-socpsych-author-date | 317 | 12/12 | 32/32 ✅ | 100% fidelity |
-| american-medical-association | 293 | 12/12 | 32/32 ✅ | 100% fidelity |
-| chicago-author-date | — | 13/13 | 31/31 ✅ | 100% fidelity in the explicit 2026-02-28 cohort |
+| apa | 783 | 18/18 | 32/32 ✅ | 100% fidelity |
+| elsevier-harvard | 665 | 18/18 | 33/33 ✅ | 100% fidelity |
+| elsevier-with-titles | 672 | 18/18 | 33/33 ✅ | 100% fidelity |
+| springer-basic-author-date | 460 | 18/18 | 33/33 ✅ | 100% fidelity |
+| ieee | 176 | 18/18 | 33/33 ✅ | 100% fidelity |
+| elsevier-vancouver | 502 | 18/18 | 33/33 ✅ | 100% fidelity |
+| american-medical-association | 293 | 18/18 | 33/33 ✅ | 100% fidelity |
+| nature | 182 | 18/18 | 33/33 ✅ | 100% fidelity |
+| cell | 95 | 18/18 | 33/33 ✅ | 100% fidelity |
+| chicago-author-date | — | 18/18 | 32/32 ✅ | 100% fidelity |
 
 **Strict 100% citation match (top 10):** 10/10 styles
 **Strict 100% bibliography match (top 10):** 10/10 styles
+
+Current maintained portfolio status:
+- `node scripts/report-core.js` reports `146` styles at fidelity `1.0`.
+- `node scripts/check-core-quality.js` passes against
+  `scripts/report-data/core-quality-baseline.json` with `warnings=0`.
 
 ## Style Family Breakdown
 
@@ -206,7 +211,7 @@ node scripts/oracle-batch-aggregate.js styles-legacy/ \
 
 ## Related
 
-- **beans:** `csl26-heqm` (top 10 at 100% fidelity), `csl26-gidg` (90% corpus match), `csl26-l2hg` (numeric triage)
-- **docs:** `docs/architecture/SQI_REFINEMENT_PLAN.md`, `docs/reference/STYLE_PRIORITY.md`, `docs/architecture/CSL26_R6FN_TESTING_INFRASTRUCTURE_CONSOLIDATION_PLAN_2026-02-27.md`
+- **beans:** `csl26-heqm` (top 10 at 100% fidelity), `csl26-gidg` (90% corpus match), `csl26-l2hg` (numeric triage), `csl26-iexw` (compound-numeric follow-on fidelity work)
+- **docs:** `docs/policies/SQI_REFINEMENT_PLAN.md`, `docs/reference/STYLE_PRIORITY.md`, `docs/architecture/CSL26_R6FN_TESTING_INFRASTRUCTURE_CONSOLIDATION_PLAN_2026-02-27.md`
 - **fixtures:** `tests/fixtures/coverage-manifest.json`
 - **CI:** `.github/workflows/ci.yml` — testing contract gate (`check-testing-infra.js`) + core fidelity gate (`check-core-quality.js`) + oracle regression gate (`check-oracle-regression.js`)

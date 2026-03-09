@@ -66,10 +66,11 @@ These are well-understood open scope items, not architectural problems:
 - Queued (OSCOLA, Bluebook)
 
 ### 6. Output format pluggability
-- Current: plain text, HTML, Djot
-- Missing: RTF, LaTeX, Typst
-- `Renderer` trait is proposed but not fully pluggable across formats
-- Tracked under `csl26-ismq`
+- Current: plain text, HTML, Djot, LaTeX, Typst
+- Still missing: RTF
+- `Renderer` trait is implemented and pluggable across the current formats
+- Completed under archived bean `csl26-ismq`; follow-on rendering edge cases
+  continue in narrower beans
 
 ### 7. Interactive/incremental mode
 - Architecture is batch-first

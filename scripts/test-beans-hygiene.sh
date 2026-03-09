@@ -161,6 +161,48 @@ soft_output=$(run_wrapper "$repo" "$TMP_ROOT/soft-stale.json" hygiene)
 assert_contains "$soft_output" "Open beans with advisory title-only matches on main:"
 assert_contains "$soft_output" "[unique-title-match]"
 
+cat >"$TMP_ROOT/umbrella-stale.json" <<'EOF'
+[
+  {
+    "id": "csl26-epic",
+    "title": "Rendering epic",
+    "status": "in-progress",
+    "type": "epic",
+    "priority": "high",
+    "path": "csl26-epic--rendering-epic.md"
+  },
+  {
+    "id": "csl26-a",
+    "title": "Renderer foundation",
+    "status": "completed",
+    "type": "task",
+    "priority": "normal",
+    "path": "archive/csl26-a--renderer-foundation.md",
+    "blocking": ["csl26-epic"]
+  },
+  {
+    "id": "csl26-b",
+    "title": "Renderer output modes",
+    "status": "completed",
+    "type": "task",
+    "priority": "normal",
+    "path": "archive/csl26-b--renderer-output-modes.md",
+    "parent": "csl26-epic"
+  }
+]
+EOF
+
+repo=$(new_repo umbrella-stale)
+commit_file "$repo" README.md "baseline" "chore: initial commit"
+set +e
+umbrella_output=$(run_wrapper "$repo" "$TMP_ROOT/umbrella-stale.json" hygiene 2>&1)
+umbrella_status=$?
+set -e
+[[ "$umbrella_status" -eq 1 ]] || fail "expected umbrella stale hygiene to fail"
+assert_contains "$umbrella_output" "Open umbrella beans whose linked child work is all terminal (hard failure):"
+assert_contains "$umbrella_output" "linked-terminal: csl26-a [completed]"
+assert_contains "$umbrella_output" "linked-terminal: csl26-b [completed]"
+
 cat >"$TMP_ROOT/root-terminal.json" <<'EOF'
 [
   {

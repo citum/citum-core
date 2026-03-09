@@ -352,6 +352,48 @@ build_audit_json() {
                     evidence: $matches
                 }
             ],
+            stale_open_umbrella_beans_hard: [
+                $items[]
+                | select(
+                    (is_archived | not)
+                    and is_open
+                    and (.type == "epic" or .type == "milestone")
+                )
+                | . as $bean
+                | [
+                    $items[]
+                    | select(
+                        .id != $bean.id
+                        and (
+                            (.parent // "") == $bean.id
+                            or (((.blocking // []) | index($bean.id)) != null)
+                        )
+                    )
+                    | {
+                        id,
+                        title,
+                        status,
+                        type,
+                        priority,
+                        path
+                    }
+                ] as $linked
+                | select(
+                    ($linked | length) > 0
+                    and ($linked | all(.status == "completed" or .status == "scrapped"))
+                )
+                | {
+                    bean: {
+                        id: $bean.id,
+                        title: $bean.title,
+                        status: $bean.status,
+                        type: $bean.type,
+                        priority: $bean.priority,
+                        path: $bean.path
+                    },
+                    linked_terminal_beans: $linked
+                }
+            ],
             stale_open_beans_soft: [
                 $items[]
                 | select((is_archived | not) and is_open)
@@ -421,6 +463,7 @@ audit_has_findings() {
         or (.open_title_collisions | length) > 0
         or (.duplicate_in_progress_migrate | length) > 0
         or (.stale_open_beans_hard | length) > 0
+        or (.stale_open_umbrella_beans_hard | length) > 0
     ' >/dev/null
 }
 
@@ -474,6 +517,17 @@ print_audit_text() {
                 + render_commit_evidence(.evidence)
             )
             | join("\n");
+        def render_terminal_linked_groups(groups):
+            groups
+            | map(
+                "- \(.bean.id) [\(.bean.status)] \(.bean.title) (\(.bean.path))\n"
+                + (
+                    .linked_terminal_beans
+                    | map("    linked-terminal: \(.id) [\(.status)] (\(.path))")
+                    | join("\n")
+                )
+            )
+            | join("\n");
         def render_soft_stale_groups(groups):
             groups
             | map(
@@ -488,6 +542,7 @@ print_audit_text() {
             and (.open_title_collisions | length) == 0
             and (.duplicate_in_progress_migrate | length) == 0
             and (.stale_open_beans_hard | length) == 0
+            and (.stale_open_umbrella_beans_hard | length) == 0
             and (.stale_open_beans_soft | length) == 0
         ) then
             "No bean hygiene issues found."
@@ -511,6 +566,9 @@ print_audit_text() {
                  else [] end) +
                 (if (.stale_open_beans_hard | length) > 0 then
                     ["", "Open beans with landed work on main (hard failure):", render_stale_groups(.stale_open_beans_hard)]
+                 else [] end) +
+                (if (.stale_open_umbrella_beans_hard | length) > 0 then
+                    ["", "Open umbrella beans whose linked child work is all terminal (hard failure):", render_terminal_linked_groups(.stale_open_umbrella_beans_hard)]
                  else [] end) +
                 (if (.stale_open_beans_soft | length) > 0 then
                     ["", "Open beans with advisory title-only matches on main:", render_soft_stale_groups(.stale_open_beans_soft)]
