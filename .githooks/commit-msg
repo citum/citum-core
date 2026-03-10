@@ -35,6 +35,7 @@ if (( line_count > 1 )); then
   fi
 fi
 
+body_has_content=0
 line_no=0
 while IFS= read -r line || [[ -n "$line" ]]; do
   line_no=$((line_no + 1))
@@ -44,7 +45,12 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     continue
   fi
 
-  # Skip empty lines and URL lines.
+  # Track whether any body content exists after the required blank separator.
+  if (( line_no >= 3 )) && [[ -n "$line" ]]; then
+    body_has_content=1
+  fi
+
+  # Skip empty lines and URL lines for width checks.
   if [[ -z "$line" || "$line" =~ ^https?:// ]]; then
     continue
   fi
@@ -55,3 +61,7 @@ while IFS= read -r line || [[ -n "$line" ]]; do
   fi
 done < "$msg_file"
 
+if (( body_has_content == 0 )); then
+  echo "Commit body is required after a blank second line." >&2
+  exit 1
+fi
