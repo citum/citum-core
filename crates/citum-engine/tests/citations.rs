@@ -933,3 +933,84 @@ fn test_chicago_notes_subsequent_renders_short() {
         "Subsequent citation should contain shortened title"
     );
 }
+
+#[test]
+fn test_ibid_positions_fall_back_to_subsequent_when_no_ibid_override_exists() {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Note Subsequent Fallback".to_string()),
+            id: Some("note-subsequent-fallback".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::Note),
+            ..Default::default()
+        }),
+        citation: Some(CitationSpec {
+            template: Some(vec![citum_schema::tc_contributor!(Author, Long)]),
+            subsequent: Some(Box::new(CitationSpec {
+                template: Some(vec![citum_schema::tc_contributor!(Author, Short)]),
+                ..Default::default()
+            })),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let bib = citum_schema::bib_map![
+        "smith1995" => make_book("smith1995", "Smith", "John", 1995, "A Great Book"),
+    ];
+    let processor = Processor::new(style, bib);
+
+    let subsequent = Citation {
+        items: vec![CitationItem {
+            id: "smith1995".to_string(),
+            ..Default::default()
+        }],
+        position: Some(citum_schema::citation::Position::Subsequent),
+        ..Default::default()
+    };
+    let ibid = Citation {
+        items: vec![CitationItem {
+            id: "smith1995".to_string(),
+            ..Default::default()
+        }],
+        position: Some(citum_schema::citation::Position::Ibid),
+        ..Default::default()
+    };
+    let ibid_with_locator = Citation {
+        items: vec![CitationItem {
+            id: "smith1995".to_string(),
+            locator: Some(citum_schema::citation::CitationLocator::single(
+                citum_schema::citation::LocatorType::Page,
+                "45",
+            )),
+            ..Default::default()
+        }],
+        position: Some(citum_schema::citation::Position::IbidWithLocator),
+        ..Default::default()
+    };
+
+    let subsequent_rendered = processor
+        .process_citation(&subsequent)
+        .expect("subsequent should render");
+    let ibid_rendered = processor
+        .process_citation(&ibid)
+        .expect("ibid should render");
+    let ibid_with_locator_rendered = processor
+        .process_citation(&ibid_with_locator)
+        .expect("ibid-with-locator should render");
+
+    assert_eq!(
+        ibid_rendered, subsequent_rendered,
+        "Ibid should fall back to subsequent form when `citation.ibid` is absent"
+    );
+    assert_eq!(
+        ibid_with_locator_rendered, subsequent_rendered,
+        "IbidWithLocator should fall back to subsequent form when `citation.ibid` is absent"
+    );
+    assert!(
+        !ibid_rendered.contains("Ibid"),
+        "fallback should not force lexical ibid output"
+    );
+}

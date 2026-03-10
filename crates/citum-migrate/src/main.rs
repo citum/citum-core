@@ -305,7 +305,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let merged_type_templates = if inferred_bib {
                 xml_fallback
                     .as_ref()
-                    .and_then(|(_, type_templates, _)| type_templates.clone())
+                    .and_then(|(_, type_templates, _, _)| type_templates.clone())
                     .map(|type_templates| {
                         type_templates
                             .into_iter()
@@ -331,7 +331,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 inferred_bib,
             )
         } else {
-            let (new_bib, type_templates, _) = xml_fallback
+            let (new_bib, type_templates, _, _) = xml_fallback
                 .as_ref()
                 .expect("XML fallback must exist when bibliography is unresolved");
             (new_bib.clone(), type_templates.clone(), false)
@@ -358,12 +358,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ensure_inferred_patent_type_template(&legacy_style, &mut type_templates, &new_bib);
     }
 
+    let mut citation_subsequent_override: Option<Vec<TemplateComponent>> = None;
+    let mut citation_ibid_override: Option<Vec<TemplateComponent>> = None;
     let mut new_cit = if let Some(ref resolved_cit) = resolved.citation {
         resolved_cit.template.clone()
     } else {
-        let (_, _, new_cit) = xml_fallback
+        let (_, _, new_cit, citation_overrides) = xml_fallback
             .as_ref()
             .expect("XML fallback must exist when citation is unresolved");
+        citation_subsequent_override = citation_overrides.subsequent.clone();
+        citation_ibid_override = citation_overrides.ibid.clone();
         new_cit.clone()
     };
 
@@ -489,6 +493,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 suffix: citation_suffix,
                 delimiter: citation_delimiter,
                 multi_cite_delimiter: legacy_style.citation.layout.delimiter.clone(),
+                subsequent: citation_subsequent_override.map(|template| {
+                    Box::new(CitationSpec {
+                        template: Some(template),
+                        ..Default::default()
+                    })
+                }),
+                ibid: citation_ibid_override.map(|template| {
+                    Box::new(CitationSpec {
+                        template: Some(template),
+                        ..Default::default()
+                    })
+                }),
                 ..Default::default()
             }
         }),
@@ -560,6 +576,27 @@ fn bibliography_sort_matches_processing_default(
         .is_some_and(|preset| preset.group_sort() == *sort)
 }
 
+#[derive(Debug, Clone, Default)]
+struct CitationPositionOverrides {
+    subsequent: Option<Vec<TemplateComponent>>,
+    ibid: Option<Vec<TemplateComponent>>,
+}
+
+fn compile_citation_position_override(
+    compiler: &TemplateCompiler,
+    compressor: &Compressor,
+    nodes: Option<Vec<citum_schema::CslnNode>>,
+) -> Option<Vec<TemplateComponent>> {
+    let nodes = nodes?;
+    let compressed = compressor.compress_nodes(nodes);
+    let compiled = compiler.compile_citation(&compressed);
+    if compiled.is_empty() {
+        None
+    } else {
+        Some(compiled)
+    }
+}
+
 /// Run the full XML compilation pipeline for bibliography and citation templates.
 /// This is the fallback when no hand-authored or inferred template is available.
 #[allow(clippy::type_complexity)]
@@ -572,6 +609,7 @@ fn compile_from_xml(
     Vec<TemplateComponent>,
     Option<std::collections::HashMap<citum_schema::template::TypeSelector, Vec<TemplateComponent>>>,
     Vec<TemplateComponent>,
+    CitationPositionOverrides,
 ) {
     // Extract author suffix before macro inlining (will be lost during inlining)
     let author_suffix = if let Some(ref bib) = legacy_style.bibliography {
@@ -604,7 +642,17 @@ fn compile_from_xml(
     // Set citation-specific thresholds for citation upsampling
     upsampler.et_al_min = legacy_style.citation.et_al_min;
     upsampler.et_al_use_first = legacy_style.citation.et_al_use_first;
-    let raw_cit = upsampler.upsample_nodes(&flattened_cit);
+    let citation_position_nodes = upsampler.extract_citation_position_templates(&flattened_cit);
+    if citation_position_nodes.unsupported_mixed_conditions {
+        eprintln!(
+            "Warning: citation position branches could not be migrated cleanly for style {}. Falling back to base citation template only.",
+            legacy_style.info.id
+        );
+    }
+    let raw_cit = citation_position_nodes
+        .first
+        .clone()
+        .unwrap_or_else(|| upsampler.upsample_nodes(&flattened_cit));
 
     // Set bibliography-specific thresholds for bibliography upsampling
     if let Some(ref bib) = legacy_style.bibliography {
@@ -630,6 +678,18 @@ fn compile_from_xml(
     let (mut new_bib, type_templates) =
         template_compiler.compile_bibliography_with_types(&csln_bib, is_numeric);
     let new_cit = template_compiler.compile_citation(&csln_cit);
+    let citation_position_overrides = CitationPositionOverrides {
+        subsequent: compile_citation_position_override(
+            &template_compiler,
+            &compressor,
+            citation_position_nodes.subsequent,
+        ),
+        ibid: compile_citation_position_override(
+            &template_compiler,
+            &compressor,
+            citation_position_nodes.ibid,
+        ),
+    };
 
     // Record template placements if provenance tracking is enabled
     if enable_provenance {
@@ -787,7 +847,12 @@ fn compile_from_xml(
         Some(type_templates)
     };
 
-    (new_bib, type_templates_opt, new_cit)
+    (
+        new_bib,
+        type_templates_opt,
+        new_cit,
+        citation_position_overrides,
+    )
 }
 
 fn apply_type_overrides(
@@ -2711,5 +2776,115 @@ mod tests {
 
         assert_eq!(locator.rendering.prefix.as_deref(), Some(", "));
         assert_eq!(locator.show_label, Some(true));
+    }
+
+    fn parse_legacy_style(xml: &str) -> csl_legacy::model::Style {
+        let doc = Document::parse(xml).expect("test style XML should parse");
+        parse_style(doc.root_element()).expect("legacy style parsing should succeed")
+    }
+
+    #[test]
+    fn compile_from_xml_maps_position_choose_into_citation_overrides() {
+        let legacy_style = parse_legacy_style(
+            r#"
+<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="note">
+  <info>
+    <title>position-test</title>
+    <id>https://example.org/position-test</id>
+  </info>
+  <citation>
+    <layout>
+      <choose>
+        <if position="subsequent">
+          <text variable="author"/>
+        </if>
+        <else-if position="ibid ibid-with-locator">
+          <text variable="locator"/>
+        </else-if>
+        <else>
+          <text variable="title"/>
+        </else>
+      </choose>
+    </layout>
+  </citation>
+</style>
+"#,
+        );
+
+        let mut options = citum_schema::options::Config::default();
+        let tracker = ProvenanceTracker::new(false);
+        let (_, _, citation_template, citation_overrides) =
+            compile_from_xml(&legacy_style, &mut options, false, &tracker);
+
+        assert!(
+            citation_template
+                .iter()
+                .any(|component| matches!(component, TemplateComponent::Title(_))),
+            "first/else position branch should become base citation template"
+        );
+
+        let subsequent_template = citation_overrides
+            .subsequent
+            .expect("subsequent branch should be migrated");
+        assert!(
+            subsequent_template
+                .iter()
+                .any(|component| matches!(component, TemplateComponent::Contributor(_))),
+            "subsequent override should preserve author short-form branch"
+        );
+
+        let ibid_template = citation_overrides
+            .ibid
+            .expect("ibid branch should be migrated");
+        assert!(
+            ibid_template.iter().any(|component| matches!(
+                component,
+                TemplateComponent::Variable(variable) if variable.variable == SimpleVariable::Locator
+            )),
+            "ibid override should preserve locator-oriented branch"
+        );
+    }
+
+    #[test]
+    fn compile_from_xml_unsupported_mixed_position_tree_falls_back_without_overrides() {
+        let legacy_style = parse_legacy_style(
+            r#"
+<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="note">
+  <info>
+    <title>mixed-position-test</title>
+    <id>https://example.org/mixed-position-test</id>
+  </info>
+  <citation>
+    <layout>
+      <choose>
+        <if position="subsequent" variable="title">
+          <text variable="author"/>
+        </if>
+        <else-if position="ibid">
+          <text variable="locator"/>
+        </else-if>
+        <else>
+          <text variable="title"/>
+        </else>
+      </choose>
+    </layout>
+  </citation>
+</style>
+"#,
+        );
+
+        let mut options = citum_schema::options::Config::default();
+        let tracker = ProvenanceTracker::new(false);
+        let (_, _, citation_template, citation_overrides) =
+            compile_from_xml(&legacy_style, &mut options, false, &tracker);
+
+        assert!(
+            !citation_template.is_empty(),
+            "unsupported trees must still compile a base citation template"
+        );
+        assert!(
+            citation_overrides.subsequent.is_none() && citation_overrides.ibid.is_none(),
+            "unsupported trees should not emit partial position overrides"
+        );
     }
 }
