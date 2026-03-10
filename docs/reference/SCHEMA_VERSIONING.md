@@ -9,7 +9,7 @@ Citum uses **independent versioning** for code and schema to maintain clarity an
 | Track | What | Version Source | Automation |
 |-------|------|----------------|------------|
 | **Code** | Rust crates (processor, core library, CLI) | `Cargo.toml` workspace version | Fully automated via release-plz |
-| **Schema** | Style YAML format specification | `Style.version` default in `citum_schema/src/lib.rs` | Semi-automated (manual bump + validation) |
+| **Schema** | Style YAML format specification | `citum_schema::SCHEMA_VERSION` (backed by `citum-schema-style`) | Semi-automated (manual bump + validation) |
 
 ### Why Two Tracks?
 
@@ -81,15 +81,16 @@ Tracks reach 1.0 independently based on their own stability criteria:
 
 ### Current Schema Version
 
-Check the default schema version in `../crates/citum-schema/src/lib.rs`:
+Check the public schema version constant in `../crates/citum-schema/src/lib.rs`:
 
 ```rust
-fn default_version() -> String {
-    "0.8.0".to_string()  // Current schema version
-}
+pub const SCHEMA_VERSION: &str = citum_schema_style::STYLE_SCHEMA_VERSION;
 ```
 
-All style files inherit this default unless explicitly overridden in YAML.
+This constant is the public source of truth and currently resolves to
+`STYLE_SCHEMA_VERSION` in `../crates/citum-schema-style/src/lib.rs`.
+
+All style files inherit this version as the `Style.version` default unless explicitly overridden in YAML.
 
 ### When to Bump Schema Version
 
@@ -123,14 +124,14 @@ Use the `../scripts/bump.sh` script to update the schema version:
 ../scripts/bump.sh schema minor --dry-run
 
 # What it does:
-# 1. Updates default_version() in citum_schema/src/lib.rs
+# 1. Updates STYLE_SCHEMA_VERSION in crates/citum-schema-style/src/lib.rs
 # 2. Updates ./SCHEMA_VERSIONING.md with a schema changelog entry
 # 3. Validates with `cargo test --quiet --lib`
 # 4. Creates a schema-vX.Y.Z git tag
 ```
 
 **Manual process:**
-1. Update `default_version()` in `../crates/citum-schema/src/lib.rs`
+1. Update `STYLE_SCHEMA_VERSION` in `../crates/citum-schema-style/src/lib.rs`
 2. Run `cargo test --quiet --lib`
 3. Update this file with a schema changelog entry
 4. Commit the schema bump

@@ -96,6 +96,9 @@ pub struct InputBibliographyInfo {
 /// A named template (reusable sequence of components).
 pub type Template = Vec<TemplateComponent>;
 
+/// Canonical Citum style schema version used when `Style.version` is omitted.
+pub const STYLE_SCHEMA_VERSION: &str = "0.8.0";
+
 /// The new CSLN Style model.
 ///
 /// This is the target schema for CSLN, featuring declarative options
@@ -127,7 +130,7 @@ pub struct Style {
 }
 
 fn default_version() -> String {
-    "0.8.0".to_string()
+    STYLE_SCHEMA_VERSION.to_string()
 }
 
 /// Available embedded template presets.
