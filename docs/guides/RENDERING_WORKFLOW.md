@@ -26,7 +26,7 @@ citum render refs -b references.json -s styles/apa-7th.yaml
 citum render refs -b references.json -s styles/apa-7th.yaml --show-keys
 
 # Convert a YAML style to binary CBOR for performance
-citum convert styles/apa-7th.yaml --output styles/apa-7th.cbor
+citum convert style styles/apa-7th.yaml --output styles/apa-7th.cbor
 
 # Generate semantic HTML
 citum render refs -b references.json -s styles/apa-7th.yaml -f html
@@ -43,6 +43,10 @@ node ../scripts/oracle.js styles-legacy/apa.csl
 # Validate fixture ownership and committed baseline metadata contracts
 node ../scripts/check-testing-infra.js
 ```
+
+`convert refs` supports `citum-yaml`, `citum-json`, `citum-cbor`, `csl-json`, `biblatex`, and `ris`.
+RIS continuation lines are appended to the previous field value, and CSL `issued` conversion preserves
+non-year values via `literal` when a four-digit year is not parseable.
 
 ## Style Catalog Scope
 

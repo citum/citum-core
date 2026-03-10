@@ -69,10 +69,8 @@ impl Renderer {
 
     /// Render a term block by looking up the term and applying formatting.
     fn render_term(&self, block: &TermBlock) -> String {
-        self.apply_formatting(
-            &format!("{:?}", block.term).to_lowercase(),
-            &block.formatting,
-        )
+        let text = render_legacy_term(block.term, block.form);
+        self.apply_formatting(&text, &block.formatting)
     }
 
     /// Render a variable block by looking up the variable value and applying optional label and formatting.
@@ -245,6 +243,96 @@ impl Renderer {
     }
 }
 
+/// Render a legacy general term using an explicit term/form mapping.
+fn render_legacy_term(term: crate::locale::GeneralTerm, form: crate::locale::TermForm) -> String {
+    use crate::locale::GeneralTerm as T;
+    use crate::locale::TermForm as F;
+
+    match (term, form) {
+        (T::Page, F::Long) => "page".to_string(),
+        (T::Page, F::Short) => "p.".to_string(),
+        (T::Page, F::Symbol) => "p.".to_string(),
+        (T::Chapter, F::Long) => "chapter".to_string(),
+        (T::Chapter, F::Short) => "ch.".to_string(),
+        (T::Chapter, F::Symbol) => "ch.".to_string(),
+        (T::Section, F::Long) => "section".to_string(),
+        (T::Section, F::Short) => "sec.".to_string(),
+        (T::Section, F::Symbol) => "§".to_string(),
+        (T::Volume, F::Long) => "volume".to_string(),
+        (T::Volume, F::Short) => "vol.".to_string(),
+        (T::Volume, F::Symbol) => "vol.".to_string(),
+        (T::Issue, F::Long) => "issue".to_string(),
+        (T::Issue, F::Short) => "no.".to_string(),
+        (T::Issue, F::Symbol) => "no.".to_string(),
+        (T::Edition, F::Long) => "edition".to_string(),
+        (T::Edition, F::Short) => "ed.".to_string(),
+        (T::Edition, F::Symbol) => "ed.".to_string(),
+        (T::NoDate, F::Long) => "no date".to_string(),
+        (T::NoDate, F::Short) => "n.d.".to_string(),
+        (T::And, F::Symbol) => "&".to_string(),
+        (T::And, F::Long | F::Short) => "and".to_string(),
+        (T::By, F::Verb) => "by".to_string(),
+        (T::By, F::VerbShort) => "by".to_string(),
+        (T::Accessed, F::Verb) => "accessed".to_string(),
+        (T::Accessed, F::VerbShort) => "acc.".to_string(),
+        (T::Retrieved, F::Verb) => "retrieved".to_string(),
+        (T::Retrieved, F::VerbShort) => "retr.".to_string(),
+        (T::EtAl, F::Long | F::Short | F::Verb | F::VerbShort | F::Symbol) => "et al.".to_string(),
+        (T::Ibid, F::Long | F::Short | F::Verb | F::VerbShort | F::Symbol) => "ibid.".to_string(),
+        (T::In, _) => "in".to_string(),
+        (T::Accessed, _) => "accessed".to_string(),
+        (T::Retrieved, _) => "retrieved".to_string(),
+        (T::At, _) => "at".to_string(),
+        (T::From, _) => "from".to_string(),
+        (T::Of, _) => "of".to_string(),
+        (T::To, _) => "to".to_string(),
+        (T::By, _) => "by".to_string(),
+        (T::Anonymous, _) => "anonymous".to_string(),
+        (T::Circa, F::Short) => "c.".to_string(),
+        (T::Circa, _) => "circa".to_string(),
+        (T::AvailableAt, _) => "available at".to_string(),
+        (T::AndOthers, _) => "and others".to_string(),
+        (T::Forthcoming, _) => "forthcoming".to_string(),
+        (T::Online, _) => "online".to_string(),
+        (T::Here, _) => "here".to_string(),
+        (T::Deposited, _) => "deposited".to_string(),
+        (T::ReviewOf, _) => "review of".to_string(),
+        (T::OriginalWorkPublished, _) => "originally published".to_string(),
+        (T::Patent, _) => "patent".to_string(),
+        (term, _) => match term {
+            T::NoDate => "no date".to_string(),
+            T::Page => "page".to_string(),
+            T::Chapter => "chapter".to_string(),
+            T::Section => "section".to_string(),
+            T::Volume => "volume".to_string(),
+            T::Issue => "issue".to_string(),
+            T::Edition => "edition".to_string(),
+            T::In => "in".to_string(),
+            T::Accessed => "accessed".to_string(),
+            T::Retrieved => "retrieved".to_string(),
+            T::At => "at".to_string(),
+            T::From => "from".to_string(),
+            T::Of => "of".to_string(),
+            T::To => "to".to_string(),
+            T::By => "by".to_string(),
+            T::Anonymous => "anonymous".to_string(),
+            T::Circa => "circa".to_string(),
+            T::AvailableAt => "available at".to_string(),
+            T::Ibid => "ibid.".to_string(),
+            T::And => "and".to_string(),
+            T::EtAl => "et al.".to_string(),
+            T::AndOthers => "and others".to_string(),
+            T::Forthcoming => "forthcoming".to_string(),
+            T::Online => "online".to_string(),
+            T::Here => "here".to_string(),
+            T::Deposited => "deposited".to_string(),
+            T::ReviewOf => "review of".to_string(),
+            T::OriginalWorkPublished => "originally published".to_string(),
+            T::Patent => "patent".to_string(),
+        },
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -350,5 +438,35 @@ mod tests {
 
         let output = renderer.render_citation(&nodes, &item);
         assert_eq!(output, "BeforeAfter");
+    }
+
+    /// Test that term rendering honors the requested form variant.
+    #[test]
+    fn test_render_term_uses_form_variant() {
+        let renderer = Renderer;
+        let nodes = vec![
+            CslnNode::Term(TermBlock {
+                term: crate::locale::GeneralTerm::Page,
+                form: crate::locale::TermForm::Short,
+                formatting: crate::FormattingOptions::default(),
+                source_order: None,
+            }),
+            CslnNode::Text {
+                value: " ".to_string(),
+            },
+            CslnNode::Term(TermBlock {
+                term: crate::locale::GeneralTerm::Section,
+                form: crate::locale::TermForm::Symbol,
+                formatting: crate::FormattingOptions::default(),
+                source_order: None,
+            }),
+        ];
+        let item = RenderItem {
+            item_type: ItemType::Book,
+            variables: HashMap::new(),
+        };
+
+        let output = renderer.render_citation(&nodes, &item);
+        assert_eq!(output, "p. §");
     }
 }
