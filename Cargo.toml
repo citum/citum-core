@@ -1,6 +1,8 @@
 [workspace]
 members = [
     "crates/csl-legacy",
+    "crates/citum-schema-data",
+    "crates/citum-schema-style",
     "crates/citum-schema",
     "crates/citum-migrate",
     "crates/citum-engine",

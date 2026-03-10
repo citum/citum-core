@@ -1,0 +1,16 @@
+[package]
+name = "citum-schema-data"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+citum_schema_style = { package = "citum-schema-style", path = "../citum-schema-style", default-features = false }
+
+[features]
+default = []
+legacy-convert = ["citum_schema_style/legacy-convert"]
+schema = ["citum_schema_style/schema"]
+
+[lints]
+workspace = true

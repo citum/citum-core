@@ -1,0 +1,28 @@
+[package]
+name = "citum-schema-style"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
+ciborium = "0.2"
+schemars = { version = "0.8", features = ["derive", "url"], optional = true }
+citum_edtf = { package = "citum-edtf", path = "../citum-edtf", features = ["serde"] }
+url = { version = "2.5", features = ["serde"] }
+csl_legacy = { package = "csl-legacy", path = "../csl-legacy", optional = true }
+indexmap = { version = "2", features = ["serde"] }
+
+[features]
+default = []
+legacy-convert = ["dep:csl_legacy"]
+schema = ["dep:schemars"]
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "formats"
+harness = false
