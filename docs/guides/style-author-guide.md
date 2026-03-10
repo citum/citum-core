@@ -313,6 +313,80 @@ citation:
   wrap: brackets
 ```
 
+## Repeated Note Citation Recipes
+
+Use citation position overrides when note styles need distinct rendering for:
+
+- first cite (`citation.template`)
+- non-immediate repeat (`citation.subsequent.template`)
+- immediate repeat (`citation.ibid.template`)
+
+Position resolution order is:
+
+1. `citation.ibid` for `Ibid` and `IbidWithLocator`
+2. `citation.subsequent` when `citation.ibid` is absent
+3. base `citation.template`
+
+### Chicago or Turabian short repeats (no lexical ibid)
+
+Define only `citation.subsequent` and omit `citation.ibid`.
+Immediate repeats then reuse the same short form through fallback.
+
+```yaml
+citation:
+  template:
+    - contributor: author
+      form: long
+    - title: primary
+      prefix: ", "
+  subsequent:
+    template:
+      - contributor: author
+        form: short
+      - title: primary
+        form: short
+        prefix: ", "
+```
+
+### OSCOLA or MHRA ibid patterns
+
+Define `citation.ibid` explicitly and include locator rendering in that template.
+
+```yaml
+citation:
+  template:
+    - contributor: author
+      form: long
+    - title: primary
+      prefix: ", "
+  subsequent:
+    template:
+      - contributor: author
+        form: short
+      - title: primary
+        form: short
+        prefix: ", "
+  ibid:
+    template:
+      - term: ibid
+      - variable: locator
+        prefix: ", "
+```
+
+### Bluebook-style immediate repeat (`Id.`)
+
+Use locale term data (or a term override) for the lexical token, then keep the
+same `citation.ibid` structure.
+
+```yaml
+citation:
+  ibid:
+    template:
+      - term: ibid
+      - variable: locator
+        prefix: " at "
+```
+
 ## Verification Commands
 
 Run from repository root:

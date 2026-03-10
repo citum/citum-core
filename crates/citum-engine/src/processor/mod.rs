@@ -204,7 +204,7 @@ impl Processor {
     /// has been cited before:
     /// - First: Item not cited before
     /// - Subsequent: Item cited before but not immediately preceding
-    /// - Ibid: Same single item as immediately preceding citation, no locators
+    /// - Ibid: Same single item as immediately preceding citation with same locator context
     /// - IbidWithLocator: Same single item as preceding, different locators
     ///
     /// Multi-item citations are never marked as Ibid (only First or Subsequent).
@@ -244,14 +244,13 @@ impl Processor {
                 {
                     // Same item as immediately preceding
                     let prev_locator = &prev_items[0].1;
-                    if prev_locator.is_none() && current_locator.is_none() {
-                        // No locators on either: plain ibid
+                    if *prev_locator == current_locator {
+                        // Same locator context as immediately preceding cite: plain ibid.
                         citation.position = Some(Position::Ibid);
-                    } else if *prev_locator != current_locator {
-                        // Different locators: ibid with locator
+                    } else {
+                        // Same item, but locator context changed: ibid with locator.
                         citation.position = Some(Position::IbidWithLocator);
                     }
-                    // else: same locator, treat as subsequent
                 }
 
                 // If not ibid, check if item was ever cited before

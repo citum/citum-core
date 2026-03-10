@@ -1121,6 +1121,7 @@ impl<'a> Renderer<'a> {
                 Some(citum_schema::citation::Position::Ibid)
                     | Some(citum_schema::citation::Position::IbidWithLocator)
             )
+            && !template.iter().any(has_contributor_component)
         {
             return String::new();
         }
@@ -1805,6 +1806,14 @@ fn find_grouping_component(component: &TemplateComponent) -> Option<&TemplateCom
         TemplateComponent::Contributor(_) | TemplateComponent::Title(_) => Some(component),
         TemplateComponent::List(list) => list.items.iter().find_map(find_grouping_component),
         _ => None,
+    }
+}
+
+fn has_contributor_component(component: &TemplateComponent) -> bool {
+    match component {
+        TemplateComponent::Contributor(_) => true,
+        TemplateComponent::List(list) => list.items.iter().any(has_contributor_component),
+        _ => false,
     }
 }
 

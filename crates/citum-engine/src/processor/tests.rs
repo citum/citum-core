@@ -2411,6 +2411,44 @@ fn test_position_detection_ibid() {
     assert_eq!(citations[1].position, Some(citum_schema::Position::Ibid));
 }
 
+/// Tests the behavior of immediate repeats with identical explicit locators.
+#[test]
+fn test_position_detection_ibid_same_locator() {
+    use crate::reference::CitationItem;
+    use citum_schema::Citation;
+
+    let processor = Processor::new(make_style(), make_bibliography());
+    let mut citations = vec![
+        Citation {
+            items: vec![CitationItem {
+                id: "smith2020".to_string(),
+                locator: Some(citum_schema::citation::CitationLocator::single(
+                    citum_schema::citation::LocatorType::Page,
+                    "42",
+                )),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+        Citation {
+            items: vec![CitationItem {
+                id: "smith2020".to_string(),
+                locator: Some(citum_schema::citation::CitationLocator::single(
+                    citum_schema::citation::LocatorType::Page,
+                    "42",
+                )),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+    ];
+
+    processor.annotate_positions(&mut citations);
+
+    assert_eq!(citations[0].position, Some(citum_schema::Position::First));
+    assert_eq!(citations[1].position, Some(citum_schema::Position::Ibid));
+}
+
 /// Tests the behavior of test_position_detection_ibid_with_locator.
 #[test]
 fn test_position_detection_ibid_with_locator() {

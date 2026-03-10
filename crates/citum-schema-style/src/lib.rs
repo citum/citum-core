@@ -392,7 +392,9 @@ impl CitationSpec {
         use crate::citation::Position;
 
         let position_spec = match position {
-            Some(Position::Ibid) | Some(Position::IbidWithLocator) => self.ibid.as_ref(),
+            Some(Position::Ibid) | Some(Position::IbidWithLocator) => {
+                self.ibid.as_ref().or(self.subsequent.as_ref())
+            }
             Some(Position::Subsequent) => self.subsequent.as_ref(),
             Some(Position::First) | None => None,
         };
@@ -707,6 +709,54 @@ options:
         let style: Style = serde_yaml::from_str(yaml).unwrap();
         let options = style.options.unwrap();
         assert_eq!(options.processing, Some(options::Processing::AuthorDate));
+    }
+
+    #[test]
+    fn test_resolve_for_position_ibid_falls_back_to_subsequent() {
+        let citation = CitationSpec {
+            suffix: Some("base".to_string()),
+            subsequent: Some(Box::new(CitationSpec {
+                suffix: Some("subseq".to_string()),
+                ..Default::default()
+            })),
+            ..Default::default()
+        };
+
+        let resolved = citation
+            .resolve_for_position(Some(&crate::citation::Position::Ibid))
+            .into_owned();
+        assert_eq!(resolved.suffix, Some("subseq".to_string()));
+
+        let resolved_with_locator = citation
+            .resolve_for_position(Some(&crate::citation::Position::IbidWithLocator))
+            .into_owned();
+        assert_eq!(resolved_with_locator.suffix, Some("subseq".to_string()));
+    }
+
+    #[test]
+    fn test_resolve_for_position_ibid_precedes_subsequent() {
+        let citation = CitationSpec {
+            suffix: Some("base".to_string()),
+            subsequent: Some(Box::new(CitationSpec {
+                suffix: Some("subseq".to_string()),
+                ..Default::default()
+            })),
+            ibid: Some(Box::new(CitationSpec {
+                suffix: Some("ibid".to_string()),
+                ..Default::default()
+            })),
+            ..Default::default()
+        };
+
+        let resolved = citation
+            .resolve_for_position(Some(&crate::citation::Position::Ibid))
+            .into_owned();
+        assert_eq!(resolved.suffix, Some("ibid".to_string()));
+
+        let resolved_subsequent = citation
+            .resolve_for_position(Some(&crate::citation::Position::Subsequent))
+            .into_owned();
+        assert_eq!(resolved_subsequent.suffix, Some("subseq".to_string()));
     }
 
     #[test]
