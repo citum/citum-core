@@ -466,10 +466,17 @@ fn input_reference_to_csl_json(reference: &InputReference) -> csl_legacy::csl_js
     r.language = reference.language();
     r.note = reference.note();
     r.doi = reference.doi();
-    r.issued = reference.issued().and_then(|d| {
+    r.issued = reference.issued().map(|d| {
         let s = d.0;
-        let year = s.get(0..4)?.parse::<i32>().ok()?;
-        Some(DateVariable::year(year))
+        if let Some(year_str) = s.get(0..4)
+            && let Ok(year) = year_str.parse::<i32>()
+        {
+            return DateVariable::year(year);
+        }
+        DateVariable {
+            literal: Some(s),
+            ..Default::default()
+        }
     });
     r.author = reference.author().map(contributor_to_csl_names);
     r.editor = reference.editor().map(contributor_to_csl_names);
@@ -611,24 +618,47 @@ fn contributor_to_name_strings(contributor: citum_schema::reference::Contributor
 fn parse_ris(input: &str) -> Result<InputBibliography, Box<dyn Error>> {
     let mut references = Vec::<InputReference>::new();
     let mut current = Vec::<(String, String)>::new();
+    let mut last_index: Option<usize> = None;
 
     for line in input.lines() {
         if line.trim().is_empty() {
             continue;
         }
         if line.len() < 6 {
+            if let Some(i) = last_index
+                && let Some((_, value)) = current.get_mut(i)
+            {
+                if !value.is_empty() {
+                    value.push(' ');
+                }
+                value.push_str(line.trim());
+            }
             continue;
         }
         let tag = line[0..2].to_string();
+        let separator = &line[2..6];
+        if separator != "  - " {
+            if let Some(i) = last_index
+                && let Some((_, value)) = current.get_mut(i)
+            {
+                if !value.is_empty() {
+                    value.push(' ');
+                }
+                value.push_str(line.trim());
+            }
+            continue;
+        }
         let value = line[6..].trim().to_string();
         if tag == "ER" {
             if !current.is_empty() {
                 references.push(ris_record_to_reference(&current));
             }
             current.clear();
+            last_index = None;
             continue;
         }
         current.push((tag, value));
+        last_index = Some(current.len() - 1);
     }
 
     if !current.is_empty() {
@@ -880,6 +910,7 @@ fn render_ris(input: &InputBibliography) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use citum_schema::reference::{Monograph, MonographType, Title};
     use std::path::Path;
 
     #[test]
@@ -904,5 +935,64 @@ mod tests {
             infer_refs_output_format(Path::new("refs.ris")),
             RefsFormat::Ris
         ));
+    }
+
+    #[test]
+    fn test_parse_ris_continuation_lines_append_to_previous_field() {
+        let src = "\
+TY  - JOUR
+ID  - smith2020
+TI  - First line of title
+continued line of title
+AU  - Smith, John
+ER  -
+";
+
+        let parsed = parse_ris(src).expect("RIS should parse");
+        assert_eq!(parsed.references.len(), 1);
+        assert_eq!(
+            parsed.references[0].title().map(|t| t.to_string()),
+            Some("First line of title continued line of title".to_string())
+        );
+    }
+
+    #[test]
+    fn test_input_reference_to_csl_json_preserves_non_year_issued_as_literal() {
+        let reference = InputReference::Monograph(Box::new(Monograph {
+            id: Some("item-1".to_string()),
+            r#type: MonographType::Book,
+            title: Title::Single("Example".to_string()),
+            container_title: None,
+            author: None,
+            editor: None,
+            translator: None,
+            recipient: None,
+            interviewer: None,
+            issued: EdtfString("undated".to_string()),
+            publisher: None,
+            url: None,
+            accessed: None,
+            language: None,
+            field_languages: Default::default(),
+            note: None,
+            isbn: None,
+            doi: None,
+            ads_bibcode: None,
+            edition: None,
+            report_number: None,
+            collection_number: None,
+            genre: None,
+            medium: None,
+            archive: None,
+            archive_location: None,
+            keywords: None,
+            original_date: None,
+            original_title: None,
+        }));
+
+        let csl = input_reference_to_csl_json(&reference);
+        let issued = csl.issued.expect("issued should be present");
+        assert_eq!(issued.date_parts, None);
+        assert_eq!(issued.literal, Some("undated".to_string()));
     }
 }

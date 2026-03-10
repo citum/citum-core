@@ -78,7 +78,13 @@ Convert formats:
 
 ```bash
 cargo run --bin citum -- convert style styles/apa-7th.yaml --output /tmp/apa-7th.cbor
+cargo run --bin citum -- convert refs tests/fixtures/references-expanded.json --output /tmp/refs.ris
+cargo run --bin citum -- convert refs /tmp/refs.ris --output /tmp/refs.json --to citum-json
 ```
+
+`convert refs` supports `citum-yaml`, `citum-json`, `citum-cbor`, `csl-json`, `biblatex`, and `ris`.
+RIS multiline field continuations are preserved during parsing, and CSL `issued` dates are emitted as year
+when parseable or `literal` otherwise to avoid dropping date semantics.
 
 ## CLI Surface
 
