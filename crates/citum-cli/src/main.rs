@@ -50,7 +50,7 @@ const CLAP_STYLES: Styles = Styles::styled()
                   Check style and bibliography:\n    \
                   citum check -s apa-7th -b refs.json\n\n  \
                   Convert a style to binary CBOR:\n    \
-                  citum convert style.yaml -o style.cbor\n\n  \
+                  citum convert style style.yaml -o style.cbor\n\n  \
                   List all builtin styles:\n    \
                   citum styles list\n\n\
                   Run 'citum <COMMAND> --help' for more detailed examples and options.",
@@ -128,22 +128,23 @@ enum Commands {
     )]
     Check(CheckArgs),
 
-    /// Convert between CSLN formats (YAML, JSON, CBOR)
+    /// Convert styles, references, locales, and citations
     #[command(
-        about = "Convert between CSLN formats (YAML, JSON, CBOR)",
-        long_about = "Convert between CSLN formats (YAML, JSON, CBOR).\n\n\
-                      The tool automatically detects the data type (style, bib, locale,\n\
-                      or citations) based on file stems and extensions, but this can\n\
-                      be explicitly overridden with the --type flag.\n\n\
+        about = "Convert styles, references, locales, and citations",
+        long_about = "Convert between native Citum formats and legacy bibliography formats.\n\n\
+                      Use subcommands to make conversion intent explicit.\n\n\
                       EXAMPLES:\n  \
+                      Convert references from BibLaTeX to native YAML:\n    \
+                      citum convert refs refs.bib -o refs.yaml\n\n  \
+                      Convert references from native YAML to RIS:\n    \
+                      citum convert refs refs.yaml -o refs.ris\n\n  \
                       Convert a style from YAML to binary CBOR:\n    \
-                      citum convert style.yaml -o style.cbor\n\n  \
-                      Convert a bibliography from JSON to YAML:\n    \
-                      citum convert refs.json -o refs.yaml\n\n  \
-                      Convert citations with explicit type override:\n    \
-                      citum convert input.data -o citations.json -t citations"
+                      citum convert style style.yaml -o style.cbor"
     )]
-    Convert(ConvertArgs),
+    Convert {
+        #[command(subcommand)]
+        command: ConvertCommands,
+    },
 
     /// List and inspect embedded (builtin) citation styles
     #[command(
@@ -246,6 +247,34 @@ enum RenderCommands {
                       citum render refs -b refs.json -s apa-7th --json"
     )]
     Refs(RenderRefsArgs),
+}
+
+#[derive(Subcommand)]
+enum ConvertCommands {
+    /// Convert bibliography/reference files
+    Refs(ConvertRefsArgs),
+    /// Convert style files between YAML/JSON/CBOR
+    Style(ConvertTypedArgs),
+    /// Convert citations files between YAML/JSON/CBOR
+    Citations(ConvertTypedArgs),
+    /// Convert locale files between YAML/JSON/CBOR
+    Locale(ConvertTypedArgs),
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
+enum RefsFormat {
+    #[value(name = "citum-yaml")]
+    CitumYaml,
+    #[value(name = "citum-json")]
+    CitumJson,
+    #[value(name = "citum-cbor")]
+    CitumCbor,
+    #[value(name = "csl-json")]
+    CslJson,
+    #[value(name = "biblatex")]
+    Biblatex,
+    #[value(name = "ris")]
+    Ris,
 }
 
 #[derive(Subcommand)]
@@ -445,7 +474,7 @@ struct SchemaArgs {
 }
 
 #[derive(Args, Debug)]
-struct ConvertArgs {
+struct ConvertTypedArgs {
     /// Path to input file
     #[arg(index = 1)]
     input: PathBuf,
@@ -453,10 +482,25 @@ struct ConvertArgs {
     /// Path to output file
     #[arg(short = 'o', long)]
     output: PathBuf,
+}
 
-    /// Data type (style, bib, locale, citations)
-    #[arg(short = 't', long = "type", value_enum)]
-    r#type: Option<DataType>,
+#[derive(Args, Debug)]
+struct ConvertRefsArgs {
+    /// Path to input bibliography file
+    #[arg(index = 1)]
+    input: PathBuf,
+
+    /// Path to output bibliography file
+    #[arg(short = 'o', long)]
+    output: PathBuf,
+
+    /// Input format override
+    #[arg(long, value_enum)]
+    from: Option<RefsFormat>,
+
+    /// Output format override
+    #[arg(long, value_enum)]
+    to: Option<RefsFormat>,
 }
 
 #[derive(Args, Debug)]
@@ -509,7 +553,12 @@ fn run() -> Result<(), Box<dyn Error>> {
             RenderCommands::Refs(args) => run_render_refs(args),
         },
         Commands::Check(args) => run_check(args),
-        Commands::Convert(args) => run_convert(args),
+        Commands::Convert { command } => match command {
+            ConvertCommands::Refs(args) => run_convert_refs(args),
+            ConvertCommands::Style(args) => run_convert_typed(args, DataType::Style),
+            ConvertCommands::Citations(args) => run_convert_typed(args, DataType::Citations),
+            ConvertCommands::Locale(args) => run_convert_typed(args, DataType::Locale),
+        },
         Commands::Styles { command } => match command.unwrap_or(StylesCommands::List) {
             StylesCommands::List => run_styles_list(),
         },
@@ -1042,13 +1091,8 @@ fn run_check(args: CheckArgs) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-/// Execute the `convert` subcommand.
-///
-/// Deserialises the input file (YAML, JSON, or CBOR), then re-serialises it
-/// to the output format inferred from the output file extension.  The data type
-/// (style, bib, locale, citations) is auto-detected from the filename stem
-/// unless overridden with `--type`.
-fn run_convert(args: ConvertArgs) -> Result<(), Box<dyn Error>> {
+/// Execute typed conversion subcommands (`style`, `locale`, `citations`).
+fn run_convert_typed(args: ConvertTypedArgs, data_type: DataType) -> Result<(), Box<dyn Error>> {
     let input_bytes = fs::read(&args.input)?;
     let input_ext = args
         .input
@@ -1061,37 +1105,10 @@ fn run_convert(args: ConvertArgs) -> Result<(), Box<dyn Error>> {
         .and_then(|e| e.to_str())
         .unwrap_or("yaml");
 
-    let data_type = args.r#type.unwrap_or_else(|| {
-        let stem = args
-            .input
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or("");
-        if stem.contains("bib") || stem.contains("ref") {
-            DataType::Bib
-        } else if stem.contains("cite") || stem.contains("citation") {
-            DataType::Citations
-        } else if stem.len() == 5 && stem.contains('-') {
-            DataType::Locale
-        } else {
-            DataType::Style
-        }
-    });
-
     match data_type {
         DataType::Style => {
             let style: Style = deserialize_any(&input_bytes, input_ext)?;
             let out_bytes = serialize_any(&style, output_ext)?;
-            fs::write(&args.output, out_bytes)?;
-        }
-        DataType::Bib => {
-            let bib_obj = load_bibliography(&args.input)?;
-            let references: Vec<InputReference> = bib_obj.into_iter().map(|(_, r)| r).collect();
-            let input_bib = InputBibliography {
-                references,
-                ..Default::default()
-            };
-            let out_bytes = serialize_any(&input_bib, output_ext)?;
             fs::write(&args.output, out_bytes)?;
         }
         DataType::Locale => {
@@ -1105,6 +1122,9 @@ fn run_convert(args: ConvertArgs) -> Result<(), Box<dyn Error>> {
             let out_bytes = serialize_any(&citations, output_ext)?;
             fs::write(&args.output, out_bytes)?;
         }
+        DataType::Bib => {
+            return Err("`convert bib` was replaced by `convert refs`.".into());
+        }
     }
 
     println!(
@@ -1113,6 +1133,511 @@ fn run_convert(args: ConvertArgs) -> Result<(), Box<dyn Error>> {
         args.output.display()
     );
     Ok(())
+}
+
+/// Execute `convert refs` for native and legacy bibliography formats.
+fn run_convert_refs(args: ConvertRefsArgs) -> Result<(), Box<dyn Error>> {
+    let input_format = if let Some(f) = args.from {
+        f
+    } else {
+        infer_refs_input_format(&args.input)?
+    };
+    let output_format = args
+        .to
+        .unwrap_or_else(|| infer_refs_output_format(&args.output));
+
+    let bibliography = load_input_bibliography(&args.input, input_format)?;
+    write_output_bibliography(&bibliography, &args.output, output_format)?;
+
+    println!(
+        "Converted {} ({:?}) to {} ({:?})",
+        args.input.display(),
+        input_format,
+        args.output.display(),
+        output_format
+    );
+    Ok(())
+}
+
+fn infer_refs_input_format(path: &Path) -> Result<RefsFormat, Box<dyn Error>> {
+    let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
+    let fmt = match ext.to_ascii_lowercase().as_str() {
+        "yaml" | "yml" => RefsFormat::CitumYaml,
+        "cbor" => RefsFormat::CitumCbor,
+        "bib" => RefsFormat::Biblatex,
+        "ris" => RefsFormat::Ris,
+        "json" => detect_json_refs_format(path)?,
+        _ => RefsFormat::CitumYaml,
+    };
+    Ok(fmt)
+}
+
+fn infer_refs_output_format(path: &Path) -> RefsFormat {
+    let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
+    match ext.to_ascii_lowercase().as_str() {
+        "yaml" | "yml" => RefsFormat::CitumYaml,
+        "cbor" => RefsFormat::CitumCbor,
+        "bib" => RefsFormat::Biblatex,
+        "ris" => RefsFormat::Ris,
+        "json" => RefsFormat::CitumJson,
+        _ => RefsFormat::CitumYaml,
+    }
+}
+
+fn detect_json_refs_format(path: &Path) -> Result<RefsFormat, Box<dyn Error>> {
+    let bytes = fs::read(path)?;
+    let value: serde_json::Value = serde_json::from_slice(&bytes)?;
+    let is_csl_array = value.as_array().is_some_and(|items| {
+        items.iter().any(|v| {
+            v.get("id").is_some()
+                && v.get("type").is_some()
+                && (v.get("title").is_some() || v.get("author").is_some())
+        })
+    });
+    let is_citum_object = value.get("references").is_some();
+    if is_csl_array && !is_citum_object {
+        Ok(RefsFormat::CslJson)
+    } else {
+        Ok(RefsFormat::CitumJson)
+    }
+}
+
+fn load_input_bibliography(
+    path: &Path,
+    format: RefsFormat,
+) -> Result<InputBibliography, Box<dyn Error>> {
+    match format {
+        RefsFormat::CitumYaml => {
+            let bytes = fs::read(path)?;
+            deserialize_any(&bytes, "yaml")
+        }
+        RefsFormat::CitumJson => {
+            let bytes = fs::read(path)?;
+            deserialize_any(&bytes, "json")
+        }
+        RefsFormat::CitumCbor => {
+            let bytes = fs::read(path)?;
+            deserialize_any(&bytes, "cbor")
+        }
+        RefsFormat::CslJson => load_csl_json_bibliography(path),
+        RefsFormat::Biblatex => load_biblatex_bibliography(path),
+        RefsFormat::Ris => load_ris_bibliography(path),
+    }
+}
+
+fn write_output_bibliography(
+    input: &InputBibliography,
+    path: &Path,
+    format: RefsFormat,
+) -> Result<(), Box<dyn Error>> {
+    match format {
+        RefsFormat::CitumYaml => fs::write(path, serialize_any(input, "yaml")?)?,
+        RefsFormat::CitumJson => fs::write(path, serialize_any(input, "json")?)?,
+        RefsFormat::CitumCbor => fs::write(path, serialize_any(input, "cbor")?)?,
+        RefsFormat::CslJson => {
+            let refs: Vec<csl_legacy::csl_json::Reference> = input
+                .references
+                .iter()
+                .map(input_reference_to_csl_json)
+                .collect();
+            fs::write(path, serde_json::to_string_pretty(&refs)?)?;
+        }
+        RefsFormat::Biblatex => {
+            fs::write(path, render_biblatex(input))?;
+        }
+        RefsFormat::Ris => {
+            fs::write(path, render_ris(input))?;
+        }
+    }
+    Ok(())
+}
+
+fn load_csl_json_bibliography(path: &Path) -> Result<InputBibliography, Box<dyn Error>> {
+    let bytes = fs::read(path)?;
+    let refs: Vec<csl_legacy::csl_json::Reference> = serde_json::from_slice(&bytes)?;
+    let references = refs.into_iter().map(InputReference::from).collect();
+    Ok(InputBibliography {
+        references,
+        ..Default::default()
+    })
+}
+
+fn load_biblatex_bibliography(path: &Path) -> Result<InputBibliography, Box<dyn Error>> {
+    let src = fs::read_to_string(path)?;
+    let bibliography =
+        biblatex::Bibliography::parse(&src).map_err(|e| format!("BibLaTeX parse error: {e}"))?;
+    let references = bibliography
+        .iter()
+        .map(|entry| InputReference::from(input_reference_from_biblatex(entry)))
+        .collect();
+    Ok(InputBibliography {
+        references,
+        ..Default::default()
+    })
+}
+
+fn load_ris_bibliography(path: &Path) -> Result<InputBibliography, Box<dyn Error>> {
+    let src = fs::read_to_string(path)?;
+    parse_ris(&src)
+}
+
+fn input_reference_from_biblatex(entry: &biblatex::Entry) -> csl_legacy::csl_json::Reference {
+    use csl_legacy::csl_json::{DateVariable, Name, Reference, StringOrNumber};
+
+    let field_str = |key: &str| {
+        entry.fields.get(key).map(|f| {
+            f.iter()
+                .map(|c| match &c.v {
+                    biblatex::Chunk::Normal(s) | biblatex::Chunk::Verbatim(s) => s.as_str(),
+                    _ => "",
+                })
+                .collect::<String>()
+        })
+    };
+    let parse_names = |raw: Option<String>| -> Option<Vec<Name>> {
+        raw.map(|s| {
+            s.split(" and ")
+                .map(|name| {
+                    let parts: Vec<_> = name.split(',').map(str::trim).collect();
+                    if parts.len() >= 2 {
+                        Name::new(parts[0], parts[1])
+                    } else {
+                        Name::literal(parts.first().copied().unwrap_or(""))
+                    }
+                })
+                .collect::<Vec<_>>()
+        })
+    };
+
+    let mut r = Reference {
+        id: entry.key.clone(),
+        ref_type: "book".to_string(),
+        ..Default::default()
+    };
+
+    let ty = entry.entry_type.to_string().to_lowercase();
+    r.ref_type = if ty.contains("article") {
+        "article-journal".to_string()
+    } else if ty.contains("incollection") || ty.contains("inbook") {
+        "chapter".to_string()
+    } else {
+        "book".to_string()
+    };
+    r.author = parse_names(field_str("author"));
+    r.editor = parse_names(field_str("editor"));
+    r.title = field_str("title");
+    r.container_title = field_str("journaltitle").or_else(|| field_str("booktitle"));
+    r.publisher = field_str("publisher");
+    r.publisher_place = field_str("location");
+    r.doi = field_str("doi");
+    r.url = field_str("url");
+    r.note = field_str("note");
+    r.language = field_str("langid").or_else(|| field_str("language"));
+    r.isbn = field_str("isbn");
+    r.page = field_str("pages");
+    r.volume = field_str("volume").map(StringOrNumber::String);
+    r.issue = field_str("number").map(StringOrNumber::String);
+    r.edition = field_str("edition").map(StringOrNumber::String);
+    r.issued = field_str("date")
+        .or_else(|| field_str("year"))
+        .and_then(|date| {
+            let year = date.get(0..4)?.parse::<i32>().ok()?;
+            Some(DateVariable::year(year))
+        });
+    r
+}
+
+fn input_reference_to_csl_json(reference: &InputReference) -> csl_legacy::csl_json::Reference {
+    use csl_legacy::csl_json::{DateVariable, Reference, StringOrNumber};
+
+    let id = reference.id().unwrap_or_else(|| "item".to_string());
+    let mut r = Reference {
+        id,
+        ..Default::default()
+    };
+
+    r.title = reference.title().map(|t| t.to_string());
+    r.language = reference.language();
+    r.note = reference.note();
+    r.doi = reference.doi();
+    r.issued = reference.issued().and_then(|d| {
+        let s = d.0;
+        let year = s.get(0..4)?.parse::<i32>().ok()?;
+        Some(DateVariable::year(year))
+    });
+    r.author = reference.author().map(contributor_to_csl_names);
+    r.editor = reference.editor().map(contributor_to_csl_names);
+    r.translator = reference.translator().map(contributor_to_csl_names);
+    r.publisher = reference.publisher().and_then(|c| c.name());
+
+    match reference {
+        InputReference::Monograph(m) => {
+            r.ref_type = "book".to_string();
+            r.isbn = m.isbn.clone();
+            r.url = m.url.as_ref().map(|u| u.to_string());
+            r.edition = m.edition.clone().map(StringOrNumber::String);
+        }
+        InputReference::SerialComponent(s) => {
+            r.ref_type = "article-journal".to_string();
+            r.container_title = match &s.parent {
+                citum_schema::reference::Parent::Embedded(parent) => Some(parent.title.to_string()),
+                citum_schema::reference::Parent::Id(_) => None,
+            };
+            r.page = s.pages.as_ref().map(|p| p.to_string());
+            r.volume = s
+                .volume
+                .as_ref()
+                .map(|v| StringOrNumber::String(v.to_string()));
+            r.issue = s
+                .issue
+                .as_ref()
+                .map(|v| StringOrNumber::String(v.to_string()));
+            r.url = s.url.as_ref().map(|u| u.to_string());
+        }
+        InputReference::CollectionComponent(c) => {
+            r.ref_type = "chapter".to_string();
+            r.container_title = match &c.parent {
+                citum_schema::reference::Parent::Embedded(parent) => {
+                    parent.title.as_ref().map(ToString::to_string)
+                }
+                citum_schema::reference::Parent::Id(_) => None,
+            };
+            r.page = c.pages.as_ref().map(|p| p.to_string());
+        }
+        _ => {
+            r.ref_type = "book".to_string();
+        }
+    }
+
+    r
+}
+
+fn contributor_to_csl_names(
+    contributor: citum_schema::reference::Contributor,
+) -> Vec<csl_legacy::csl_json::Name> {
+    let mut names = Vec::new();
+    match contributor {
+        citum_schema::reference::Contributor::SimpleName(n) => {
+            names.push(csl_legacy::csl_json::Name::literal(&n.name.to_string()));
+        }
+        citum_schema::reference::Contributor::StructuredName(n) => {
+            names.push(csl_legacy::csl_json::Name {
+                family: Some(n.family.to_string()),
+                given: Some(n.given.to_string()),
+                suffix: n.suffix,
+                dropping_particle: n.dropping_particle,
+                non_dropping_particle: n.non_dropping_particle,
+                literal: None,
+            });
+        }
+        citum_schema::reference::Contributor::Multilingual(n) => {
+            names.push(csl_legacy::csl_json::Name {
+                family: Some(n.original.family.to_string()),
+                given: Some(n.original.given.to_string()),
+                suffix: n.original.suffix,
+                dropping_particle: n.original.dropping_particle,
+                non_dropping_particle: n.original.non_dropping_particle,
+                literal: None,
+            });
+        }
+        citum_schema::reference::Contributor::ContributorList(list) => {
+            for member in list.0 {
+                names.extend(contributor_to_csl_names(member));
+            }
+        }
+    }
+    names
+}
+
+fn render_biblatex(input: &InputBibliography) -> String {
+    let mut out = String::new();
+    for reference in &input.references {
+        let id = reference.id().unwrap_or_else(|| "item".to_string());
+        let entry_type = match reference {
+            InputReference::SerialComponent(_) => "article",
+            InputReference::CollectionComponent(_) => "incollection",
+            _ => "book",
+        };
+        let _ = writeln!(&mut out, "@{}{{{},", entry_type, id);
+        if let Some(title) = reference.title() {
+            let _ = writeln!(&mut out, "  title = {{{}}},", title);
+        }
+        if let Some(contributor) = reference.author() {
+            let names: Vec<String> = contributor_to_biblatex_names(contributor);
+            if !names.is_empty() {
+                let _ = writeln!(&mut out, "  author = {{{}}},", names.join(" and "));
+            }
+        }
+        if let Some(issued) = reference.issued()
+            && let Some(year) = issued.0.get(0..4)
+        {
+            let _ = writeln!(&mut out, "  year = {{{}}},", year);
+        }
+        if let Some(doi) = reference.doi() {
+            let _ = writeln!(&mut out, "  doi = {{{}}},", doi);
+        }
+        let _ = writeln!(&mut out, "}}\n");
+    }
+    out
+}
+
+fn contributor_to_biblatex_names(contributor: citum_schema::reference::Contributor) -> Vec<String> {
+    match contributor {
+        citum_schema::reference::Contributor::SimpleName(n) => vec![n.name.to_string()],
+        citum_schema::reference::Contributor::StructuredName(n) => {
+            vec![format!("{}, {}", n.family, n.given)]
+        }
+        citum_schema::reference::Contributor::Multilingual(n) => {
+            vec![format!("{}, {}", n.original.family, n.original.given)]
+        }
+        citum_schema::reference::Contributor::ContributorList(list) => list
+            .0
+            .into_iter()
+            .flat_map(contributor_to_biblatex_names)
+            .collect(),
+    }
+}
+
+fn parse_ris(input: &str) -> Result<InputBibliography, Box<dyn Error>> {
+    let mut references = Vec::<InputReference>::new();
+    let mut current = Vec::<(String, String)>::new();
+
+    for line in input.lines() {
+        if line.trim().is_empty() {
+            continue;
+        }
+        if line.len() < 6 {
+            continue;
+        }
+        let tag = line[0..2].to_string();
+        let value = line[6..].trim().to_string();
+        if tag == "ER" {
+            if !current.is_empty() {
+                references.push(InputReference::from(ris_record_to_reference(&current)));
+            }
+            current.clear();
+            continue;
+        }
+        current.push((tag, value));
+    }
+
+    if !current.is_empty() {
+        references.push(InputReference::from(ris_record_to_reference(&current)));
+    }
+
+    Ok(InputBibliography {
+        references,
+        ..Default::default()
+    })
+}
+
+fn ris_record_to_reference(fields: &[(String, String)]) -> csl_legacy::csl_json::Reference {
+    use csl_legacy::csl_json::{DateVariable, Name, Reference, StringOrNumber};
+
+    let get = |tag: &str| -> Option<String> {
+        fields
+            .iter()
+            .find_map(|(k, v)| (k == tag).then(|| v.clone()))
+    };
+    let get_all = |tag: &str| -> Vec<String> {
+        fields
+            .iter()
+            .filter(|(k, _)| k == tag)
+            .map(|(_, v)| v.clone())
+            .collect()
+    };
+
+    let id = get("ID")
+        .or_else(|| get("L1"))
+        .or_else(|| get("M1"))
+        .unwrap_or_else(|| "item".to_string());
+    let title = get("TI").or_else(|| get("T1"));
+    let ty = get("TY").unwrap_or_else(|| "BOOK".to_string());
+    let author = {
+        let authors = get_all("AU")
+            .into_iter()
+            .map(|n| {
+                let parts: Vec<_> = n.split(',').map(str::trim).collect();
+                if parts.len() >= 2 {
+                    Name::new(parts[0], parts[1])
+                } else {
+                    Name::literal(parts.first().copied().unwrap_or(""))
+                }
+            })
+            .collect::<Vec<_>>();
+        (!authors.is_empty()).then_some(authors)
+    };
+    let issued = get("PY").or_else(|| get("Y1")).and_then(|s| {
+        let year = s.chars().take(4).collect::<String>().parse::<i32>().ok()?;
+        Some(DateVariable::year(year))
+    });
+    let doi = get("DO");
+    let note = get("N1");
+    let page = match (get("SP"), get("EP")) {
+        (Some(sp), Some(ep)) => Some(format!("{sp}-{ep}")),
+        (Some(sp), None) => Some(sp),
+        _ => None,
+    };
+    let ref_type = if ty == "JOUR" || ty == "JFULL" {
+        "article-journal".to_string()
+    } else if ty == "CHAP" {
+        "chapter".to_string()
+    } else {
+        "book".to_string()
+    };
+
+    Reference {
+        id,
+        ref_type,
+        author,
+        title,
+        container_title: get("JO").or_else(|| get("JF")),
+        issued,
+        volume: get("VL").map(StringOrNumber::String),
+        issue: get("IS").map(StringOrNumber::String),
+        page,
+        doi,
+        url: get("UR"),
+        isbn: get("SN"),
+        publisher: get("PB"),
+        publisher_place: get("CY"),
+        language: get("LA"),
+        note,
+        ..Default::default()
+    }
+}
+
+fn render_ris(input: &InputBibliography) -> String {
+    let mut out = String::new();
+    for reference in &input.references {
+        let ty = match reference {
+            InputReference::SerialComponent(_) => "JOUR",
+            InputReference::CollectionComponent(_) => "CHAP",
+            _ => "BOOK",
+        };
+        let _ = writeln!(&mut out, "TY  - {ty}");
+        if let Some(id) = reference.id() {
+            let _ = writeln!(&mut out, "ID  - {id}");
+        }
+        if let Some(title) = reference.title() {
+            let _ = writeln!(&mut out, "TI  - {title}");
+        }
+        if let Some(contributor) = reference.author() {
+            for name in contributor_to_biblatex_names(contributor) {
+                let _ = writeln!(&mut out, "AU  - {name}");
+            }
+        }
+        if let Some(issued) = reference.issued()
+            && let Some(year) = issued.0.get(0..4)
+        {
+            let _ = writeln!(&mut out, "PY  - {year}");
+        }
+        if let Some(doi) = reference.doi() {
+            let _ = writeln!(&mut out, "DO  - {doi}");
+        }
+        let _ = writeln!(&mut out, "ER  -\n");
+    }
+    out
 }
 
 enum DocumentInput {
@@ -1917,47 +2442,31 @@ mod tests {
     }
 
     // ------------------------------------------------------------------
-    // run_convert data-type inference (via stem heuristic)
-    // The heuristic lives inline in run_convert; we replicate it here so
-    // we can test it without spawning a process.
+    // convert refs format inference
     // ------------------------------------------------------------------
 
-    fn infer_data_type(stem: &str) -> DataType {
-        if stem.contains("bib") || stem.contains("ref") {
-            DataType::Bib
-        } else if stem.contains("cite") || stem.contains("citation") {
-            DataType::Citations
-        } else if stem.len() == 5 && stem.contains('-') {
-            DataType::Locale
-        } else {
-            DataType::Style
-        }
+    #[test]
+    fn test_infer_refs_output_format_yaml() {
+        assert!(matches!(
+            infer_refs_output_format(Path::new("refs.yaml")),
+            RefsFormat::CitumYaml
+        ));
     }
 
     #[test]
-    fn test_infer_data_type_bib_stem() {
-        assert!(matches!(infer_data_type("bibliography"), DataType::Bib));
-        assert!(matches!(infer_data_type("refs"), DataType::Bib));
-        assert!(matches!(infer_data_type("my-bib"), DataType::Bib));
+    fn test_infer_refs_output_format_bib() {
+        assert!(matches!(
+            infer_refs_output_format(Path::new("refs.bib")),
+            RefsFormat::Biblatex
+        ));
     }
 
     #[test]
-    fn test_infer_data_type_citations_stem() {
-        assert!(matches!(infer_data_type("citations"), DataType::Citations));
-        assert!(matches!(infer_data_type("cite-list"), DataType::Citations));
-    }
-
-    #[test]
-    fn test_infer_data_type_locale_stem() {
-        // Locale stems are exactly 5 chars and contain a hyphen (e.g. "en-US")
-        assert!(matches!(infer_data_type("en-US"), DataType::Locale));
-        assert!(matches!(infer_data_type("de-DE"), DataType::Locale));
-    }
-
-    #[test]
-    fn test_infer_data_type_style_stem() {
-        assert!(matches!(infer_data_type("apa-7th"), DataType::Style));
-        assert!(matches!(infer_data_type("my-style"), DataType::Style));
+    fn test_infer_refs_output_format_ris() {
+        assert!(matches!(
+            infer_refs_output_format(Path::new("refs.ris")),
+            RefsFormat::Ris
+        ));
     }
 
     #[test]

@@ -1,5 +1,5 @@
-use citum_schema::renderer::RenderItem;
-use citum_schema::{CslnStyle, ItemType, Renderer, Variable};
+use citum_schema_style::renderer::RenderItem;
+use citum_schema_style::{CslnStyle, ItemType, Renderer, Variable};
 use std::collections::HashMap;
 use std::fs;
 

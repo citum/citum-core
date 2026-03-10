@@ -1,6 +1,6 @@
 # Schema Split and Convert Namespace Specification
 
-**Status:** Draft
+**Status:** Active
 **Version:** 1.0
 **Date:** 2026-03-10
 **Supersedes:** None
@@ -53,3 +53,4 @@ When these criteria are not met, fields remain in `custom`.
 
 ## Changelog
 - v1.0 (2026-03-10): Initial draft.
+- v1.1 (2026-03-10): Activated with first implementation commit.

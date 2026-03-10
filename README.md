@@ -77,7 +77,7 @@ Validate all production styles with the workspace binary:
 Convert formats:
 
 ```bash
-cargo run --bin citum -- convert styles/apa-7th.yaml --output /tmp/apa-7th.cbor
+cargo run --bin citum -- convert style styles/apa-7th.yaml --output /tmp/apa-7th.cbor
 ```
 
 ## CLI Surface
@@ -87,6 +87,7 @@ cargo run --bin citum -- convert styles/apa-7th.yaml --output /tmp/apa-7th.cbor
 - `render` (subcommands: `doc`, `refs`)
 - `check`
 - `convert`
+  - subcommands: `refs`, `style`, `citations`, `locale`
 
 Schema generation is available with the feature-enabled build:
 
@@ -165,6 +166,8 @@ report stale style failures until it is rebuilt or reinstalled.
 ```text
 crates/
   csl-legacy/
+  citum-schema-data/
+  citum-schema-style/
   citum-cli/
   citum-analyze/
   citum-schema/
