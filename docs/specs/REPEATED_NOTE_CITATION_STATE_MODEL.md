@@ -1,7 +1,7 @@
 # Repeated Note Citation State Model Specification
 
 **Status:** Active
-**Version:** 1.0
+**Version:** 1.1
 **Date:** 2026-03-10
 **Supersedes:** N/A
 **Related:** `docs/specs/NOTE_STYLE_DOCUMENT_NOTE_CONTEXT.md`, `crates/citum-engine/src/processor/mod.rs`, `crates/citum-migrate/src/upsampler.rs`
@@ -34,7 +34,8 @@ Out of scope:
    - `position="subsequent"` => `citation.subsequent.template`
    - `position="ibid"` or `position="ibid-with-locator"` => `citation.ibid.template`
    - `position="first"` or `<else>` => base `citation.template`
-6. If CSL position conditions are mixed with unsupported conditional attributes in the same decision tree, migration preserves existing fallback behavior and emits an explicit warning.
+6. Supported migration shapes include nested/non-root position chooses and multiple independent position chooses inside one citation layout; sibling content is preserved in every variant.
+7. If CSL position conditions are mixed with unsupported conditional attributes in the same decision tree, migration preserves existing fallback behavior and emits an explicit warning.
 
 ## Implementation Notes
 - Authored-footnote integral `ibid` composition remains unchanged; it consumes improved position classification and spec fallback behavior.
@@ -45,9 +46,10 @@ Out of scope:
 - [ ] Same source cited consecutively with changed locator resolves to `IbidWithLocator`.
 - [ ] `resolve_for_position` falls back from missing `ibid` to `subsequent` for `Ibid` / `IbidWithLocator`.
 - [ ] Note-style citations with only `subsequent` templates render immediate repeats without lexical `ibid`.
-- [ ] CSL citation `position` branches are preserved into `citation.subsequent` and `citation.ibid` templates when the tree is supported.
+- [ ] CSL citation `position` branches are preserved into `citation.subsequent` and `citation.ibid` templates when the tree is supported, including nested and multi-choose layouts.
 - [ ] Unsupported mixed CSL position trees keep existing fallback behavior and warn without panicking.
 - [ ] Existing authored-footnote integral `ibid` composition tests continue to pass.
 
 ## Changelog
+- v1.1 (2026-03-10): Clarified nested and multi-choose position-tree migration support while keeping mixed-condition trees on the warning path.
 - v1.0 (2026-03-10): Initial draft, then activated with engine, schema fallback, and migration position-branch implementation.

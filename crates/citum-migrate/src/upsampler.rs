@@ -17,31 +17,53 @@ fn migrate_debug_enabled() -> bool {
     })
 }
 
-fn collect_position_choose_nodes<'a>(nodes: &'a [LNode], output: &mut Vec<&'a legacy::Choose>) {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum CitationPositionTarget {
+    First,
+    Subsequent,
+    IbidAny,
+}
+
+impl CitationPositionTarget {
+    fn matches_token(self, token: &str) -> bool {
+        match self {
+            Self::First => token == "first",
+            Self::Subsequent => token == "subsequent",
+            Self::IbidAny => matches!(token, "ibid" | "ibid-with-locator"),
+        }
+    }
+}
+
+#[derive(Debug, Default)]
+struct CitationPositionAnalysis {
+    has_position_chooses: bool,
+    explicit_subsequent: bool,
+    explicit_ibid: bool,
+    explicit_ibid_with_locator: bool,
+    unsupported_mixed_conditions: bool,
+}
+
+fn analyze_position_choose_nodes(nodes: &[LNode], analysis: &mut CitationPositionAnalysis) {
     for node in nodes {
         match node {
             LNode::Choose(choose) => {
-                let has_position = choose.if_branch.position.is_some()
-                    || choose
-                        .else_if_branches
-                        .iter()
-                        .any(|branch| branch.position.is_some());
-                if has_position {
-                    output.push(choose);
+                if choose_has_position_condition(choose) {
+                    analysis.has_position_chooses = true;
+                    analyze_position_choose(choose, analysis);
                 }
 
-                collect_position_choose_nodes(&choose.if_branch.children, output);
+                analyze_position_choose_nodes(&choose.if_branch.children, analysis);
                 for branch in &choose.else_if_branches {
-                    collect_position_choose_nodes(&branch.children, output);
+                    analyze_position_choose_nodes(&branch.children, analysis);
                 }
                 if let Some(else_branch) = &choose.else_branch {
-                    collect_position_choose_nodes(else_branch, output);
+                    analyze_position_choose_nodes(else_branch, analysis);
                 }
             }
-            LNode::Group(group) => collect_position_choose_nodes(&group.children, output),
-            LNode::Names(names) => collect_position_choose_nodes(&names.children, output),
+            LNode::Group(group) => analyze_position_choose_nodes(&group.children, analysis),
+            LNode::Names(names) => analyze_position_choose_nodes(&names.children, analysis),
             LNode::Substitute(substitute) => {
-                collect_position_choose_nodes(&substitute.children, output)
+                analyze_position_choose_nodes(&substitute.children, analysis)
             }
             _ => {}
         }
@@ -56,26 +78,138 @@ fn choose_has_position_condition(choose: &legacy::Choose) -> bool {
             .any(|branch| branch.position.is_some())
 }
 
+fn branch_has_non_position_conditions(branch: &legacy::ChooseBranch) -> bool {
+    branch.type_.is_some()
+        || branch.variable.is_some()
+        || branch.is_numeric.is_some()
+        || branch.is_uncertain_date.is_some()
+        || branch.locator.is_some()
+}
+
 fn branch_is_position_only(branch: &legacy::ChooseBranch) -> bool {
     // `position` may be the only semantic condition in this branch. Any other
     // condition indicates a mixed tree that this migration pass does not map.
-    branch.type_.is_none()
-        && branch.variable.is_none()
-        && branch.is_numeric.is_none()
-        && branch.is_uncertain_date.is_none()
-        && branch.locator.is_none()
+    branch.position.is_some()
+        && !branch_has_non_position_conditions(branch)
+        && matches!(
+            branch.match_mode.as_deref(),
+            None | Some("all") | Some("any")
+        )
+}
+
+fn branch_is_unconditional(branch: &legacy::ChooseBranch) -> bool {
+    branch.position.is_none()
+        && !branch_has_non_position_conditions(branch)
         && branch.match_mode.is_none()
 }
 
-fn assign_position_branch(
-    slot: &mut Option<Vec<csln::CslnNode>>,
-    candidate: Vec<csln::CslnNode>,
+/// Per-choose accumulated state for `analyze_position_choose`.
+#[derive(Default)]
+struct BranchSeen {
+    first: bool,
+    subsequent: bool,
+    ibid: bool,
+    ibid_with_locator: bool,
+    default_branch: bool,
+}
+
+/// Validates one branch of a position-choose and updates `seen`.
+///
+/// Returns `false` if the branch is unsupported (mixed conditions or duplicate token).
+fn analyze_one_branch(
+    branch: &legacy::ChooseBranch,
+    seen: &mut BranchSeen,
+    branch_label: &str,
 ) -> bool {
-    if slot.is_none() {
-        *slot = Some(candidate);
-        true
+    if let Some(position) = &branch.position {
+        if !branch_is_position_only(branch) {
+            return false;
+        }
+        let mut matched_any = false;
+        for token in position.split_whitespace() {
+            let saw: &mut bool = match token {
+                "first" => &mut seen.first,
+                "subsequent" => &mut seen.subsequent,
+                "ibid" => &mut seen.ibid,
+                "ibid-with-locator" => &mut seen.ibid_with_locator,
+                _ => return false,
+            };
+            if *saw {
+                if migrate_debug_enabled() {
+                    eprintln!(
+                        "Upsampler: conflicting {token}-position branches at {branch_label}."
+                    );
+                }
+                return false;
+            }
+            *saw = true;
+            matched_any = true;
+        }
+        matched_any
     } else {
-        false
+        if !branch_is_unconditional(branch) || seen.default_branch {
+            return false;
+        }
+        seen.default_branch = true;
+        true
+    }
+}
+
+fn analyze_position_choose(choose: &legacy::Choose, analysis: &mut CitationPositionAnalysis) {
+    let mut seen = BranchSeen::default();
+
+    if !analyze_one_branch(&choose.if_branch, &mut seen, "if") {
+        analysis.unsupported_mixed_conditions = true;
+        return;
+    }
+
+    for (index, branch) in choose.else_if_branches.iter().enumerate() {
+        let label = format!("else-if[{index}]");
+        if !analyze_one_branch(branch, &mut seen, &label) {
+            analysis.unsupported_mixed_conditions = true;
+            return;
+        }
+    }
+
+    if choose.else_branch.is_some() && seen.default_branch {
+        analysis.unsupported_mixed_conditions = true;
+        return;
+    }
+
+    analysis.explicit_subsequent |= seen.subsequent;
+    analysis.explicit_ibid |= seen.ibid;
+    analysis.explicit_ibid_with_locator |= seen.ibid_with_locator;
+}
+
+fn branch_has_position_token(branch: &legacy::ChooseBranch, token: &str) -> bool {
+    branch
+        .position
+        .as_deref()
+        .is_some_and(|position| position.split_whitespace().any(|value| value == token))
+}
+
+fn node_contains_ibid_term(node: &LNode) -> bool {
+    match node {
+        LNode::Text(text) => text.term.as_deref() == Some("ibid"),
+        LNode::Group(group) => group.children.iter().any(node_contains_ibid_term),
+        LNode::Names(names) => names.children.iter().any(node_contains_ibid_term),
+        LNode::Substitute(substitute) => substitute.children.iter().any(node_contains_ibid_term),
+        LNode::Choose(choose) => {
+            choose
+                .if_branch
+                .children
+                .iter()
+                .any(node_contains_ibid_term)
+                || choose
+                    .else_if_branches
+                    .iter()
+                    .any(|branch| branch.children.iter().any(node_contains_ibid_term))
+                || choose
+                    .else_branch
+                    .as_ref()
+                    .is_some_and(|branch| branch.iter().any(node_contains_ibid_term))
+        }
+        _ => false,
     }
 }
 
@@ -163,146 +297,155 @@ impl Upsampler {
         &self,
         legacy_nodes: &[LNode],
     ) -> CitationPositionTemplates {
-        let mut position_chooses = Vec::new();
-        collect_position_choose_nodes(legacy_nodes, &mut position_chooses);
+        let mut analysis = CitationPositionAnalysis::default();
+        analyze_position_choose_nodes(legacy_nodes, &mut analysis);
 
-        if position_chooses.is_empty() {
+        if !analysis.has_position_chooses {
             return CitationPositionTemplates::default();
         }
 
-        // Support only the citation-layout shape where a single top-level choose
-        // drives first/subsequent/ibid branches. More complex trees are left to
-        // fallback migration with an explicit warning.
-        let top_level_position_chooses: Vec<&legacy::Choose> = legacy_nodes
-            .iter()
-            .filter_map(|node| match node {
-                LNode::Choose(choose) if choose_has_position_condition(choose) => Some(choose),
-                _ => None,
-            })
-            .collect();
-
-        if legacy_nodes.len() != 1
-            || top_level_position_chooses.len() != 1
-            || position_chooses.len() != 1
-        {
+        if analysis.unsupported_mixed_conditions {
             return CitationPositionTemplates {
                 unsupported_mixed_conditions: true,
                 ..Default::default()
             };
         }
 
-        self.extract_position_templates_from_choose(top_level_position_chooses[0])
+        CitationPositionTemplates {
+            first: self.upsample_position_variant(legacy_nodes, CitationPositionTarget::First),
+            subsequent: analysis
+                .explicit_subsequent
+                .then(|| {
+                    self.upsample_position_variant(legacy_nodes, CitationPositionTarget::Subsequent)
+                })
+                .flatten(),
+            ibid: if analysis.explicit_ibid_with_locator || analysis.explicit_ibid {
+                self.upsample_position_variant(legacy_nodes, CitationPositionTarget::IbidAny)
+            } else {
+                None
+            },
+            unsupported_mixed_conditions: false,
+        }
     }
 
-    fn extract_position_templates_from_choose(
+    fn upsample_position_variant(
         &self,
-        choose: &legacy::Choose,
-    ) -> CitationPositionTemplates {
-        let mut extracted = CitationPositionTemplates::default();
-        let mut fallback_first: Option<Vec<csln::CslnNode>> = None;
-
-        if !branch_is_position_only(&choose.if_branch) {
-            extracted.unsupported_mixed_conditions = true;
-            return extracted;
-        }
-
-        if !self.map_position_branch(&choose.if_branch, &mut extracted, &mut fallback_first, "if") {
-            extracted.unsupported_mixed_conditions = true;
-            return extracted;
-        }
-
-        for (index, branch) in choose.else_if_branches.iter().enumerate() {
-            if !branch_is_position_only(branch) {
-                extracted.unsupported_mixed_conditions = true;
-                return extracted;
-            }
-
-            let label = format!("else-if[{index}]");
-            if !self.map_position_branch(branch, &mut extracted, &mut fallback_first, &label) {
-                extracted.unsupported_mixed_conditions = true;
-                return extracted;
-            }
-        }
-
-        if extracted.first.is_none() {
-            if let Some(else_children) = &choose.else_branch {
-                extracted.first = Some(self.upsample_nodes(else_children));
-            } else if let Some(default_branch) = fallback_first {
-                extracted.first = Some(default_branch);
-            }
-        }
-
-        extracted
-    }
-
-    fn map_position_branch(
-        &self,
-        branch: &legacy::ChooseBranch,
-        extracted: &mut CitationPositionTemplates,
-        fallback_first: &mut Option<Vec<csln::CslnNode>>,
-        branch_label: &str,
-    ) -> bool {
-        let branch_nodes = self.upsample_nodes(&branch.children);
-        if let Some(position) = &branch.position {
-            let mut matched_any = false;
-            let mut first_position = false;
-            let mut subsequent_position = false;
-            let mut ibid_position = false;
-            for token in position.split_whitespace() {
-                match token {
-                    "first" => {
-                        matched_any = true;
-                        first_position = true;
-                    }
-                    "subsequent" => {
-                        matched_any = true;
-                        subsequent_position = true;
-                    }
-                    "ibid" | "ibid-with-locator" => {
-                        matched_any = true;
-                        ibid_position = true;
-                    }
-                    _ => return false,
-                }
-            }
-            if first_position && !assign_position_branch(&mut extracted.first, branch_nodes.clone())
-            {
-                if migrate_debug_enabled() {
-                    eprintln!(
-                        "Upsampler: conflicting first-position branches at {}.",
-                        branch_label
-                    );
-                }
-                return false;
-            }
-            if subsequent_position
-                && !assign_position_branch(&mut extracted.subsequent, branch_nodes.clone())
-            {
-                if migrate_debug_enabled() {
-                    eprintln!(
-                        "Upsampler: conflicting subsequent-position branches at {}.",
-                        branch_label
-                    );
-                }
-                return false;
-            }
-            if ibid_position && !assign_position_branch(&mut extracted.ibid, branch_nodes) {
-                if migrate_debug_enabled() {
-                    eprintln!(
-                        "Upsampler: conflicting ibid-position branches at {}.",
-                        branch_label
-                    );
-                }
-                return false;
-            }
-            matched_any
+        legacy_nodes: &[LNode],
+        target: CitationPositionTarget,
+    ) -> Option<Vec<csln::CslnNode>> {
+        let rewritten = self.rewrite_nodes_for_position(legacy_nodes, target);
+        let upsampled = self.upsample_nodes(&rewritten);
+        if upsampled.is_empty() {
+            None
         } else {
-            // Branches without position act as the first/default form fallback.
-            if fallback_first.is_none() {
-                *fallback_first = Some(branch_nodes);
-            }
-            true
+            Some(upsampled)
         }
+    }
+
+    fn rewrite_nodes_for_position(
+        &self,
+        legacy_nodes: &[LNode],
+        target: CitationPositionTarget,
+    ) -> Vec<LNode> {
+        let mut rewritten = Vec::new();
+
+        for node in legacy_nodes {
+            match node {
+                LNode::Group(group) => {
+                    let mut rewritten_group = group.clone();
+                    rewritten_group.children =
+                        self.rewrite_nodes_for_position(&group.children, target);
+                    rewritten.push(LNode::Group(rewritten_group));
+                }
+                LNode::Names(names) => {
+                    let mut rewritten_names = names.clone();
+                    rewritten_names.children =
+                        self.rewrite_nodes_for_position(&names.children, target);
+                    rewritten.push(LNode::Names(rewritten_names));
+                }
+                LNode::Substitute(substitute) => {
+                    let mut rewritten_substitute = substitute.clone();
+                    rewritten_substitute.children =
+                        self.rewrite_nodes_for_position(&substitute.children, target);
+                    rewritten.push(LNode::Substitute(rewritten_substitute));
+                }
+                LNode::Choose(choose) if choose_has_position_condition(choose) => {
+                    let selected = self.select_position_branch_children(choose, target);
+                    rewritten.extend(self.rewrite_nodes_for_position(selected, target));
+                }
+                LNode::Choose(choose) => {
+                    let mut rewritten_choose = choose.clone();
+                    rewritten_choose.if_branch.children =
+                        self.rewrite_nodes_for_position(&choose.if_branch.children, target);
+                    rewritten_choose.else_if_branches = choose
+                        .else_if_branches
+                        .iter()
+                        .cloned()
+                        .map(|mut branch| {
+                            branch.children =
+                                self.rewrite_nodes_for_position(&branch.children, target);
+                            branch
+                        })
+                        .collect();
+                    rewritten_choose.else_branch = choose
+                        .else_branch
+                        .as_ref()
+                        .map(|branch| self.rewrite_nodes_for_position(branch, target));
+                    rewritten.push(LNode::Choose(rewritten_choose));
+                }
+                _ => rewritten.push(node.clone()),
+            }
+        }
+
+        rewritten
+    }
+
+    fn select_position_branch_children<'a>(
+        &self,
+        choose: &'a legacy::Choose,
+        target: CitationPositionTarget,
+    ) -> &'a [LNode] {
+        let mut fallback_branch: Option<&'a [LNode]> = None;
+        let mut ibid_branch: Option<&'a [LNode]> = None;
+        let mut ibid_with_locator_branch: Option<&'a [LNode]> = None;
+
+        for branch in std::iter::once(&choose.if_branch).chain(choose.else_if_branches.iter()) {
+            if target == CitationPositionTarget::IbidAny {
+                if branch_has_position_token(branch, "ibid") {
+                    ibid_branch = Some(&branch.children);
+                }
+                if branch_has_position_token(branch, "ibid-with-locator") {
+                    ibid_with_locator_branch = Some(&branch.children);
+                }
+            } else if let Some(position) = &branch.position {
+                if position
+                    .split_whitespace()
+                    .any(|token| target.matches_token(token))
+                {
+                    return &branch.children;
+                }
+            } else if fallback_branch.is_none() {
+                fallback_branch = Some(&branch.children);
+            }
+        }
+
+        if target == CitationPositionTarget::IbidAny {
+            if let Some(children) = ibid_with_locator_branch
+                && (children.iter().any(node_contains_ibid_term) || ibid_branch.is_none())
+            {
+                return children;
+            }
+            if let Some(children) = ibid_branch {
+                return children;
+            }
+            if let Some(children) = ibid_with_locator_branch {
+                return children;
+            }
+        }
+
+        fallback_branch
+            .or(choose.else_branch.as_deref())
+            .unwrap_or(&[])
     }
 
     fn map_node(&self, node: &LNode) -> Option<csln::CslnNode> {
@@ -978,7 +1121,7 @@ impl Upsampler {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use csl_legacy::model::{Choose, ChooseBranch, CslNode, Formatting, Text};
+    use csl_legacy::model::{Choose, ChooseBranch, CslNode, Formatting, Group, Text};
 
     fn literal_text(value: &str) -> CslNode {
         CslNode::Text(Text {
@@ -1011,21 +1154,187 @@ mod tests {
         }
     }
 
-    fn node_text(nodes: &[csln::CslnNode]) -> Option<&str> {
-        match nodes {
-            [csln::CslnNode::Text { value }] => Some(value.as_str()),
-            _ => None,
+    fn group(children: Vec<CslNode>) -> CslNode {
+        CslNode::Group(Group {
+            delimiter: None,
+            prefix: None,
+            suffix: None,
+            children,
+            macro_call_order: None,
+            formatting: Formatting::default(),
+        })
+    }
+
+    fn collect_text_values<'a>(nodes: &'a [csln::CslnNode], output: &mut Vec<&'a str>) {
+        for node in nodes {
+            match node {
+                csln::CslnNode::Text { value } => output.push(value.as_str()),
+                csln::CslnNode::Group(group) => collect_text_values(&group.children, output),
+                csln::CslnNode::Condition(condition) => {
+                    collect_text_values(&condition.then_branch, output);
+                    for branch in &condition.else_if_branches {
+                        collect_text_values(&branch.children, output);
+                    }
+                    if let Some(else_branch) = &condition.else_branch {
+                        collect_text_values(else_branch, output);
+                    }
+                }
+                _ => {}
+            }
         }
     }
 
+    fn text_values(nodes: &[csln::CslnNode]) -> Vec<&str> {
+        let mut values = Vec::new();
+        collect_text_values(nodes, &mut values);
+        values
+    }
+
     #[test]
-    fn extract_position_templates_maps_single_root_choose() {
+    fn extract_position_templates_preserves_nested_choose_siblings() {
+        let choose = Choose {
+            if_branch: choose_branch(Some("subsequent"), vec![literal_text("SHORT")]),
+            else_if_branches: vec![],
+            else_branch: Some(vec![literal_text("FULL")]),
+        };
+        let legacy_nodes = vec![group(vec![
+            literal_text("PREFIX"),
+            CslNode::Choose(choose),
+            literal_text("SUFFIX"),
+        ])];
+
+        let extracted = Upsampler::new().extract_citation_position_templates(&legacy_nodes);
+
+        assert!(!extracted.unsupported_mixed_conditions);
+        assert_eq!(
+            text_values(
+                extracted
+                    .first
+                    .as_deref()
+                    .expect("first variant should exist")
+            ),
+            vec!["PREFIX", "FULL", "SUFFIX"]
+        );
+        assert_eq!(
+            text_values(
+                extracted
+                    .subsequent
+                    .as_deref()
+                    .expect("subsequent variant should exist")
+            ),
+            vec!["PREFIX", "SHORT", "SUFFIX"]
+        );
+    }
+
+    #[test]
+    fn extract_position_templates_merges_multiple_position_chooses() {
         let choose = Choose {
             if_branch: choose_branch(Some("subsequent"), vec![literal_text("SHORT")]),
             else_if_branches: vec![choose_branch(
-                Some("ibid ibid-with-locator"),
-                vec![literal_text("IBID")],
+                Some("first"),
+                vec![literal_text("FIRST-ONLY")],
             )],
+            else_branch: Some(vec![literal_text("FULL")]),
+        };
+        let locator_choose = Choose {
+            if_branch: choose_branch(Some("ibid-with-locator"), vec![literal_text("LOC")]),
+            else_if_branches: vec![choose_branch(Some("ibid"), vec![literal_text("IBID")])],
+            else_branch: Some(vec![literal_text("DATE")]),
+        };
+        let legacy_nodes = vec![
+            literal_text("A"),
+            CslNode::Choose(choose),
+            literal_text("MID"),
+            CslNode::Choose(locator_choose),
+            literal_text("Z"),
+        ];
+
+        let extracted = Upsampler::new().extract_citation_position_templates(&legacy_nodes);
+
+        assert!(!extracted.unsupported_mixed_conditions);
+        assert_eq!(
+            text_values(
+                extracted
+                    .first
+                    .as_deref()
+                    .expect("first variant should exist")
+            ),
+            vec!["A", "FIRST-ONLY", "MID", "DATE", "Z"],
+        );
+        assert_eq!(
+            text_values(
+                extracted
+                    .subsequent
+                    .as_deref()
+                    .expect("subsequent variant should exist")
+            ),
+            vec!["A", "SHORT", "MID", "DATE", "Z"]
+        );
+        assert_eq!(
+            text_values(
+                extracted
+                    .ibid
+                    .as_deref()
+                    .expect("ibid variant should exist")
+            ),
+            vec!["A", "FULL", "MID", "IBID", "Z"]
+        );
+    }
+
+    #[test]
+    fn extract_position_templates_selects_ibid_per_choose() {
+        let ibid_only_choose = Choose {
+            if_branch: choose_branch(Some("ibid"), vec![literal_text("IBID-ONLY")]),
+            else_if_branches: vec![],
+            else_branch: Some(vec![literal_text("DEFAULT-A")]),
+        };
+        let ibid_with_locator_choose = Choose {
+            if_branch: choose_branch(
+                Some("ibid-with-locator"),
+                vec![literal_text("IBID-WITH-LOC")],
+            ),
+            else_if_branches: vec![],
+            else_branch: Some(vec![literal_text("DEFAULT-B")]),
+        };
+        let legacy_nodes = vec![
+            CslNode::Choose(ibid_only_choose),
+            literal_text("MID"),
+            CslNode::Choose(ibid_with_locator_choose),
+        ];
+
+        let extracted = Upsampler::new().extract_citation_position_templates(&legacy_nodes);
+
+        assert!(!extracted.unsupported_mixed_conditions);
+        assert_eq!(
+            text_values(
+                extracted
+                    .ibid
+                    .as_deref()
+                    .expect("ibid variant should exist")
+            ),
+            vec!["IBID-ONLY", "MID", "IBID-WITH-LOC"]
+        );
+    }
+
+    #[test]
+    fn extract_position_templates_preserves_nested_non_position_choose() {
+        let nested_choose = Choose {
+            if_branch: ChooseBranch {
+                match_mode: None,
+                type_: None,
+                variable: Some("title".to_string()),
+                is_numeric: None,
+                is_uncertain_date: None,
+                locator: None,
+                position: None,
+                children: vec![literal_text("LEGAL")],
+            },
+            else_if_branches: vec![],
+            else_branch: Some(vec![literal_text("GENERAL")]),
+        };
+        let choose = Choose {
+            if_branch: choose_branch(Some("subsequent"), vec![CslNode::Choose(nested_choose)]),
+            else_if_branches: vec![],
             else_branch: Some(vec![literal_text("FULL")]),
         };
         let legacy_nodes = vec![CslNode::Choose(choose)];
@@ -1033,16 +1342,10 @@ mod tests {
         let extracted = Upsampler::new().extract_citation_position_templates(&legacy_nodes);
 
         assert!(!extracted.unsupported_mixed_conditions);
-        assert_eq!(
-            extracted.first.as_deref().and_then(node_text),
-            Some("FULL"),
-            "else branch should map to first/base template"
-        );
-        assert_eq!(
-            extracted.subsequent.as_deref().and_then(node_text),
-            Some("SHORT")
-        );
-        assert_eq!(extracted.ibid.as_deref().and_then(node_text), Some("IBID"));
+        assert!(matches!(
+            extracted.subsequent.as_deref(),
+            Some([csln::CslnNode::Condition(_)])
+        ));
     }
 
     #[test]
@@ -1064,13 +1367,16 @@ mod tests {
     }
 
     #[test]
-    fn extract_position_templates_marks_non_root_position_choose_as_unsupported() {
+    fn extract_position_templates_marks_duplicate_position_branches_as_unsupported() {
         let choose = Choose {
             if_branch: choose_branch(Some("subsequent"), vec![literal_text("SHORT")]),
-            else_if_branches: vec![],
+            else_if_branches: vec![choose_branch(
+                Some("subsequent"),
+                vec![literal_text("AGAIN")],
+            )],
             else_branch: Some(vec![literal_text("FULL")]),
         };
-        let legacy_nodes = vec![literal_text("PREFIX"), CslNode::Choose(choose)];
+        let legacy_nodes = vec![CslNode::Choose(choose)];
 
         let extracted = Upsampler::new().extract_citation_position_templates(&legacy_nodes);
 
