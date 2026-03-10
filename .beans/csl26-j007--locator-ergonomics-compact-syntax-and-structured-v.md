@@ -5,7 +5,7 @@ status: todo
 type: feature
 priority: normal
 created_at: 2026-03-05T16:42:31Z
-updated_at: 2026-03-09T20:12:33Z
+updated_at: 2026-03-10T21:40:10Z
 ---
 
 Two related improvements to compound locator input ergonomics, building on csl26-z4t6.
@@ -68,3 +68,6 @@ locators:
 - Orthogonal to csl26-zafv (numeric compound citations)
 
 Needs /dplan session to finalize exact serde strategy and test plan.
+
+## 2026-03-10
+- crates/citum-engine/src/processor/rendering.rs: simplified repeated citation affix/template rendering paths with an internal request struct and added focused grouped/integral regression tests.
