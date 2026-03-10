@@ -66,5 +66,35 @@ citation:
   suffix: .
   delimiter: " "
   multi-cite-delimiter: "; "
+  subsequent:
+    template:
+      - contributor: author
+        form: short
+        name-order: family-first
+      - title: primary
+        form: short
+        prefix: ", "
+        wrap: quotes
+        overrides:
+          book:
+            emph: true
+            quote: false
+          legislation:
+            emph: true
+            quote: false
+          manuscript:
+            emph: true
+            quote: false
+          motion-picture:
+            emph: true
+            quote: false
+          thesis:
+            emph: true
+            quote: false
+          webpage:
+            emph: true
+            quote: false
+      - variable: locator
+        prefix: " at "
 bibliography:
   template: []

@@ -85,6 +85,36 @@ citation:
   suffix: .
   delimiter: " "
   multi-cite-delimiter: "; "
+  subsequent:
+    options:
+      contributors:
+        initialize-with: ""
+        shorten:
+          min: 4
+          use-first: 1
+          and-others: et-al
+          delimiter-precedes-last: never
+    template:
+      - contributor: author
+        form: short
+        name-order: given-first
+      - title: primary
+        form: short
+        wrap: quotes
+        prefix: ", "
+      - variable: locator
+        prefix: " "
+        show-label: true
+        strip-label-periods: true
+  ibid:
+    delimiter: " "
+    template:
+      - term: ibid
+        form: long
+        strip-periods: true
+      - variable: locator
+        show-label: true
+        strip-label-periods: true
 bibliography:
   options:
     contributors:

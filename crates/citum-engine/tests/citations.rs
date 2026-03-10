@@ -1014,3 +1014,211 @@ fn test_ibid_positions_fall_back_to_subsequent_when_no_ibid_override_exists() {
         "fallback should not force lexical ibid output"
     );
 }
+
+#[test]
+fn test_oscola_ibid_and_subsequent_render_position_overrides() {
+    use std::path::PathBuf;
+
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("styles/oscola.yaml");
+
+    let yaml = std::fs::read_to_string(&path).expect("Failed to read oscola.yaml");
+    let style: citum_schema::Style =
+        serde_yaml::from_str(&yaml).expect("Failed to parse oscola.yaml");
+
+    let bib = citum_schema::bib_map![
+        "smith1995" => make_book("smith1995", "Smith", "John", 1995, "A Great Book"),
+    ];
+
+    let processor = Processor::new(style, bib);
+
+    let first = Citation {
+        items: vec![CitationItem {
+            id: "smith1995".to_string(),
+            ..Default::default()
+        }],
+        position: Some(citum_schema::citation::Position::First),
+        ..Default::default()
+    };
+    let subsequent = Citation {
+        items: vec![CitationItem {
+            id: "smith1995".to_string(),
+            ..Default::default()
+        }],
+        position: Some(citum_schema::citation::Position::Subsequent),
+        ..Default::default()
+    };
+    let ibid = Citation {
+        items: vec![CitationItem {
+            id: "smith1995".to_string(),
+            ..Default::default()
+        }],
+        position: Some(citum_schema::citation::Position::Ibid),
+        ..Default::default()
+    };
+    let ibid_with_locator = Citation {
+        items: vec![CitationItem {
+            id: "smith1995".to_string(),
+            locator: Some(citum_schema::citation::CitationLocator::single(
+                citum_schema::citation::LocatorType::Page,
+                "45",
+            )),
+            ..Default::default()
+        }],
+        position: Some(citum_schema::citation::Position::IbidWithLocator),
+        ..Default::default()
+    };
+
+    let first_rendered = processor
+        .process_citation(&first)
+        .expect("first cite should render");
+    let subsequent_rendered = processor
+        .process_citation(&subsequent)
+        .expect("subsequent cite should render");
+    let ibid_rendered = processor
+        .process_citation(&ibid)
+        .expect("ibid cite should render");
+    let ibid_with_locator_rendered = processor
+        .process_citation(&ibid_with_locator)
+        .expect("ibid-with-locator cite should render");
+
+    assert!(
+        first_rendered.contains("1995"),
+        "first OSCOLA citation should keep the full-form year: {first_rendered}"
+    );
+    assert!(
+        !subsequent_rendered.contains("1995"),
+        "subsequent OSCOLA citation should use the short repeated-note form: {subsequent_rendered}"
+    );
+    assert!(
+        ibid_rendered.to_lowercase().contains("ibid"),
+        "OSCOLA ibid citation should render lexical ibid: {ibid_rendered}"
+    );
+    assert!(
+        ibid_with_locator_rendered.contains("45"),
+        "OSCOLA ibid-with-locator citation should keep the locator: {ibid_with_locator_rendered}"
+    );
+}
+
+#[test]
+fn test_oscola_no_ibid_reuses_subsequent_form_for_immediate_repeats() {
+    use std::path::PathBuf;
+
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("styles/oscola-no-ibid.yaml");
+
+    let yaml = std::fs::read_to_string(&path).expect("Failed to read oscola-no-ibid.yaml");
+    let style: citum_schema::Style =
+        serde_yaml::from_str(&yaml).expect("Failed to parse oscola-no-ibid.yaml");
+
+    let bib = citum_schema::bib_map![
+        "smith1995" => make_book("smith1995", "Smith", "John", 1995, "A Great Book"),
+    ];
+
+    let processor = Processor::new(style, bib);
+
+    let subsequent = Citation {
+        items: vec![CitationItem {
+            id: "smith1995".to_string(),
+            ..Default::default()
+        }],
+        position: Some(citum_schema::citation::Position::Subsequent),
+        ..Default::default()
+    };
+    let ibid = Citation {
+        items: vec![CitationItem {
+            id: "smith1995".to_string(),
+            ..Default::default()
+        }],
+        position: Some(citum_schema::citation::Position::Ibid),
+        ..Default::default()
+    };
+
+    let subsequent_rendered = processor
+        .process_citation(&subsequent)
+        .expect("subsequent cite should render");
+    let ibid_rendered = processor
+        .process_citation(&ibid)
+        .expect("ibid cite should render");
+
+    assert_eq!(
+        ibid_rendered, subsequent_rendered,
+        "OSCOLA no-ibid should fall back to the subsequent form for immediate repeats"
+    );
+    assert!(
+        !ibid_rendered.to_lowercase().contains("ibid"),
+        "OSCOLA no-ibid should never render lexical ibid: {ibid_rendered}"
+    );
+}
+
+#[test]
+fn test_thomson_reuters_subsequent_renders_locator_short_form() {
+    use std::path::PathBuf;
+
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("styles/thomson-reuters-legal-tax-and-accounting-australia.yaml");
+
+    let yaml = std::fs::read_to_string(&path)
+        .expect("Failed to read thomson-reuters-legal-tax-and-accounting-australia.yaml");
+    let style: citum_schema::Style = serde_yaml::from_str(&yaml)
+        .expect("Failed to parse thomson-reuters-legal-tax-and-accounting-australia.yaml");
+
+    let bib = citum_schema::bib_map![
+        "smith1995" => make_book("smith1995", "Smith", "John", 1995, "A Great Book"),
+    ];
+
+    let processor = Processor::new(style, bib);
+
+    let first = Citation {
+        items: vec![CitationItem {
+            id: "smith1995".to_string(),
+            ..Default::default()
+        }],
+        position: Some(citum_schema::citation::Position::First),
+        ..Default::default()
+    };
+    let subsequent = Citation {
+        items: vec![CitationItem {
+            id: "smith1995".to_string(),
+            locator: Some(citum_schema::citation::CitationLocator::single(
+                citum_schema::citation::LocatorType::Page,
+                "23",
+            )),
+            ..Default::default()
+        }],
+        position: Some(citum_schema::citation::Position::Subsequent),
+        ..Default::default()
+    };
+
+    let first_rendered = processor
+        .process_citation(&first)
+        .expect("first cite should render");
+    let subsequent_rendered = processor
+        .process_citation(&subsequent)
+        .expect("subsequent cite should render");
+
+    assert!(
+        first_rendered.contains("1995"),
+        "first Thomson Reuters citation should keep the full-form year: {first_rendered}"
+    );
+    assert!(
+        subsequent_rendered.contains("23"),
+        "subsequent Thomson Reuters citation should render the locator: {subsequent_rendered}"
+    );
+    assert!(
+        !subsequent_rendered.contains("1995"),
+        "subsequent Thomson Reuters citation should use the shortened repeated-note form: {subsequent_rendered}"
+    );
+}
