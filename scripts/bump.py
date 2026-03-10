@@ -15,7 +15,7 @@ from typing import Sequence
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SCHEMA_LIB = REPO_ROOT / "crates/citum-schema/src/lib.rs"
+SCHEMA_STYLE_LIB = REPO_ROOT / "crates/citum-schema-style/src/lib.rs"
 SCHEMA_DOC = REPO_ROOT / "docs/reference/SCHEMA_VERSIONING.md"
 RELEASE_PLZ_WORKFLOW = REPO_ROOT / ".github/workflows/release-plz.yml"
 TRACK_CHOICES = ("schema", "code", "engine", "all")
@@ -89,13 +89,13 @@ def run_git(args: Sequence[str], check: bool = True) -> subprocess.CompletedProc
 
 
 def read_schema_version() -> str:
-    """Read the default schema version from citum-schema."""
+    """Read the canonical schema version from citum-schema-style."""
 
-    content = SCHEMA_LIB.read_text(encoding="utf-8")
-    match = re.search(r'fn default_version\(\) -> String \{\s*"([^"]+)"\.to_string\(\)\s*\}', content)
+    content = SCHEMA_STYLE_LIB.read_text(encoding="utf-8")
+    match = re.search(r'pub const STYLE_SCHEMA_VERSION: &str = "([^"]+)";', content)
     if match is None:
         raise BumpError(
-            "Could not find a string-returning default_version() in crates/citum-schema/src/lib.rs"
+            "Could not find STYLE_SCHEMA_VERSION in crates/citum-schema-style/src/lib.rs"
         )
     return match.group(1)
 
@@ -138,7 +138,7 @@ def resolve_plan(track: str, bump_type: str, release_name: str) -> ReleasePlan:
     new_version = bump_version(old_version, bump_type)
 
     if track == "schema":
-        files_to_modify = [SCHEMA_LIB, SCHEMA_DOC]
+        files_to_modify = [SCHEMA_STYLE_LIB, SCHEMA_DOC]
         tags_to_create = (f"schema-v{new_version}",)
         changelog_tag_prefix = "schema-v"
     else:
@@ -218,7 +218,10 @@ def print_preview(plan: ReleasePlan) -> None:
         header(f"Schema release bump: {plan.old_version} -> {plan.new_version}")
         print("  Scope        : bump the default style schema version without changing code release versions")
         print(f"  Bump type    : {plan.bump_type}")
-        print(f"  Schema lib   : update default_version() in {SCHEMA_LIB.relative_to(REPO_ROOT)}")
+        print(
+            "  Schema lib   : update STYLE_SCHEMA_VERSION in "
+            f"{SCHEMA_STYLE_LIB.relative_to(REPO_ROOT)}"
+        )
         print(f"  Schema tag   : {plan.tags_to_create[0]}")
         print(f"  Schema doc   : add changelog entry in {SCHEMA_DOC.relative_to(REPO_ROOT)}")
     else:
@@ -243,14 +246,14 @@ def confirm_prompt() -> bool:
 
 
 def update_schema_version(plan: ReleasePlan) -> None:
-    """Replace the default schema version in citum-schema."""
+    """Replace STYLE_SCHEMA_VERSION in citum-schema-style."""
 
-    content = SCHEMA_LIB.read_text(encoding="utf-8")
-    pattern = r'(fn default_version\(\) -> String \{\s*")([^"]+)("\.to_string\(\)\s*\})'
+    content = SCHEMA_STYLE_LIB.read_text(encoding="utf-8")
+    pattern = r'(pub const STYLE_SCHEMA_VERSION: &str = ")([^"]+)(";)'
     updated, count = re.subn(pattern, rf"\g<1>{plan.new_version}\g<3>", content, count=1)
     if count != 1:
-        raise BumpError("Failed to update default_version() in crates/citum-schema/src/lib.rs")
-    SCHEMA_LIB.write_text(updated, encoding="utf-8")
+        raise BumpError("Failed to update STYLE_SCHEMA_VERSION in crates/citum-schema-style/src/lib.rs")
+    SCHEMA_STYLE_LIB.write_text(updated, encoding="utf-8")
 
 
 def update_schema_doc(plan: ReleasePlan) -> None:
