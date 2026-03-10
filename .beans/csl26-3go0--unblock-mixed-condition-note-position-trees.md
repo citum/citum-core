@@ -18,6 +18,10 @@ Problem:
 XML-mode migration still falls back to the base citation template when note
 styles mix position tests with other conditions in the same choose tree.
 
+References:
+- qfa3 classification: `.beans/archive/csl26-qfa3--upgrade-note-styles-for-repeated-position-override.md`
+- prior migration investigation: `.beans/archive/csl26-494i--extend-migration-for-complex-citation-position-cho.md`
+
 In scope:
 - chicago-notes
 - chicago-notes-bibliography-17th-edition
@@ -35,3 +39,15 @@ Deliverables:
 - re-run the note/legal batch from csl26-qfa3 after the migrate fix lands
 - only open style-local cleanup follow-ons if specific styles still diverge
   after the shared migrate fix
+
+Acceptance:
+- `citum-migrate --template-source xml` emits distinct repeated-position
+  sections for the blocked note families when the legacy CSL encodes position
+  tests alongside sibling locator or variable conditions in one choose tree
+- migrate preserves non-position sibling content instead of collapsing the
+  entire branch to the base citation template
+- regenerated YAML for the blocked families improves or preserves oracle
+  fidelity before any style-local hand cleanup is considered
+- any remaining divergences after the migrate fix are documented per style and
+  split into narrow cleanup follow-ons only if shared migration logic is no
+  longer the bottleneck
