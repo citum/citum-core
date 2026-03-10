@@ -166,6 +166,17 @@ When diverging intentionally:
 - All modes must pass `../style-qa/SKILL.md` before completion.
 - If docs or beans are changed: `./scripts/check-docs-beans-hygiene.sh` must pass.
 
+## Note-Style Upgrade Check
+
+When upgrading a note style after migrate changes, inspect `citation.template`,
+`citation.subsequent`, and `citation.ibid` before rewriting templates manually.
+
+- If migrate already surfaced repeated-position overrides, prefer refining the
+  YAML over re-authoring the note citation structure from scratch.
+- If the style still warns because CSL mixes `position` with other conditions,
+  classify that as a migrate limitation / bean handoff first, not as a style
+  defect by default.
+
 ## Output Contract
 
 Every completed task delivers:

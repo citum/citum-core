@@ -2784,7 +2784,7 @@ mod tests {
     }
 
     #[test]
-    fn compile_from_xml_maps_position_choose_into_citation_overrides() {
+    fn compile_from_xml_maps_nested_position_chooses_into_citation_overrides() {
         let legacy_style = parse_legacy_style(
             r#"
 <style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="note">
@@ -2794,17 +2794,39 @@ mod tests {
   </info>
   <citation>
     <layout>
-      <choose>
-        <if position="subsequent">
-          <text variable="author"/>
-        </if>
-        <else-if position="ibid ibid-with-locator">
-          <text variable="locator"/>
-        </else-if>
-        <else>
-          <text variable="title"/>
-        </else>
-      </choose>
+      <group delimiter=" ">
+        <text value="prefix"/>
+        <choose>
+          <if position="subsequent">
+            <text variable="author"/>
+          </if>
+          <else-if position="first">
+            <text variable="title"/>
+          </else-if>
+          <else>
+            <date variable="issued">
+              <date-part name="year"/>
+            </date>
+          </else>
+        </choose>
+        <choose>
+          <if position="ibid-with-locator">
+            <group delimiter=" ">
+              <text term="ibid"/>
+              <text variable="locator"/>
+            </group>
+          </if>
+          <else-if position="ibid">
+            <text term="ibid"/>
+          </else-if>
+          <else>
+            <date variable="issued">
+              <date-part name="year"/>
+            </date>
+          </else>
+        </choose>
+        <text value="suffix"/>
+      </group>
     </layout>
   </citation>
 </style>
@@ -2820,7 +2842,13 @@ mod tests {
             citation_template
                 .iter()
                 .any(|component| matches!(component, TemplateComponent::Title(_))),
-            "first/else position branch should become base citation template"
+            "explicit first-position branch should become part of the base citation template"
+        );
+        assert!(
+            citation_template
+                .iter()
+                .any(|component| matches!(component, TemplateComponent::Date(_))),
+            "fallback content from sibling chooses should remain in the base citation template"
         );
 
         let subsequent_template = citation_overrides
@@ -2832,6 +2860,12 @@ mod tests {
                 .any(|component| matches!(component, TemplateComponent::Contributor(_))),
             "subsequent override should preserve author short-form branch"
         );
+        assert!(
+            subsequent_template
+                .iter()
+                .any(|component| matches!(component, TemplateComponent::Date(_))),
+            "sibling choose fallback content should remain in the subsequent override"
+        );
 
         let ibid_template = citation_overrides
             .ibid
@@ -2841,7 +2875,15 @@ mod tests {
                 component,
                 TemplateComponent::Variable(variable) if variable.variable == SimpleVariable::Locator
             )),
-            "ibid override should preserve locator-oriented branch"
+            "merged ibid override should preserve locator-aware content"
+        );
+        assert!(
+            ibid_template.iter().any(|component| matches!(
+                component,
+                TemplateComponent::Term(term)
+                    if term.term == citum_schema::locale::GeneralTerm::Ibid
+            )),
+            "merged ibid override should still contain the ibid term"
         );
     }
 
