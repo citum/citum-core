@@ -1112,6 +1112,19 @@ impl<'a> Renderer<'a> {
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
+        let is_note_processing = self.config.processing.as_ref().is_some_and(|processing| {
+            matches!(processing, citum_schema::options::Processing::Note)
+        });
+        if is_note_processing
+            && matches!(
+                position,
+                Some(citum_schema::citation::Position::Ibid)
+                    | Some(citum_schema::citation::Position::IbidWithLocator)
+            )
+        {
+            return String::new();
+        }
+
         let options = RenderOptions {
             config: self.config,
             locale: self.locale,

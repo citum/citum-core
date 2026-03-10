@@ -275,6 +275,98 @@ fn test_example_document_renders_note_style_integral_anchor_and_notes() {
 }
 
 #[test]
+fn test_chicago_notes_document_renders_ibid_without_author_concatenation() {
+    let style = load_style("styles/chicago-notes.yaml");
+    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
+        .expect("example bibliography should parse");
+
+    let processor = Processor::new(style, bibliography);
+    let parser = DjotParser;
+    let document = fs::read_to_string(project_root().join("examples/document-citation-flow.djot"))
+        .expect("citation flow example should be readable");
+
+    let output = processor.process_document::<_, citum_engine::render::djot::Djot>(
+        &document,
+        &parser,
+        DocumentFormat::Djot,
+    );
+
+    assert!(
+        output.contains("Ibid"),
+        "note style should render ibid in this scenario: {output}"
+    );
+    assert!(
+        !output.contains("KuhnIbid"),
+        "ibid should not concatenate with author token: {output}"
+    );
+    assert!(
+        !output.contains("SmithIbid"),
+        "ibid should not concatenate with author token: {output}"
+    );
+}
+
+#[test]
+fn test_chicago_notes_document_omits_empty_bibliography_heading() {
+    let style = load_style("styles/chicago-notes.yaml");
+    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
+        .expect("example bibliography should parse");
+
+    let processor = Processor::new(style, bibliography);
+    let parser = DjotParser;
+    let document = fs::read_to_string(project_root().join("examples/document-citation-flow.djot"))
+        .expect("citation flow example should be readable");
+
+    let output = processor.process_document::<_, citum_engine::render::djot::Djot>(
+        &document,
+        &parser,
+        DocumentFormat::Djot,
+    );
+
+    assert!(
+        !output.contains("# Bibliography"),
+        "empty bibliography should not emit heading: {output}"
+    );
+
+    let html_output = processor.process_document::<_, citum_engine::render::html::Html>(
+        &document,
+        &parser,
+        DocumentFormat::Html,
+    );
+    assert!(
+        !html_output.contains("<h1>Bibliography</h1>"),
+        "empty bibliography should not emit HTML heading: {html_output}"
+    );
+}
+
+#[test]
+fn test_document_citation_flow_non_note_styles_do_not_render_ibid() {
+    let parser = DjotParser;
+    let document = fs::read_to_string(project_root().join("examples/document-citation-flow.djot"))
+        .expect("citation flow example should be readable");
+
+    for style_path in [
+        "styles/apa-7th.yaml",
+        "styles/ieee.yaml",
+        "styles/alpha.yaml",
+    ] {
+        let style = load_style(style_path);
+        let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
+            .expect("example bibliography should parse");
+        let processor = Processor::new(style, bibliography);
+
+        let output = processor.process_document::<_, citum_engine::render::djot::Djot>(
+            &document,
+            &parser,
+            DocumentFormat::Djot,
+        );
+        assert!(
+            !output.contains("Ibid"),
+            "non-note style unexpectedly rendered ibid for {style_path}: {output}"
+        );
+    }
+}
+
+#[test]
 fn test_markdown_document_renders_pandoc_author_date_citations() {
     let style = load_style("styles/apa-7th.yaml");
     let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))

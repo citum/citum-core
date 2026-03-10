@@ -1,0 +1,30 @@
+Some citations in the main text flow:
+
+- Normal citation.[^c1]
+- Author suppression.[^c2]
+- Integral: [+@kuhn1962] argues that...
+
+Some text.[^note]
+
+Some more citations in the main text flow, but without explicit notes:
+
+- Normal citation.[@smith2010]
+- Author suppression.[-@smith2010]
+- Integral: [+@smith2010] argues that...
+
+Some other text.[^note2]
+
+[^c1]: [@kuhn1962].
+
+[^c2]: [-@kuhn1962].
+
+[^note]: Some citations in a note...
+
+   - [@kuhn1962].
+   - [-@kuhn1962].
+   - [+@kuhn1962] argues that...
+
+[^note2]: Some more citations in a note...
+
+   - [+@brown1954] argues that...
+   - [+@brown1954] also argues that...
