@@ -84,7 +84,7 @@ pub enum TermGender {
 
 ### Changes to existing types
 
-`SimpleTerm` in `crates/citum-schema/src/locale/types.rs` becomes:
+`SimpleTerm` in `crates/citum-schema-style/src/locale/types.rs` becomes:
 
 ```rust
 pub struct SimpleTerm {
@@ -207,7 +207,7 @@ is breaking, acceptable before 1.0.
 
 ## Acceptance criteria
 
-- [ ] `MaybeGendered<T>` and `TermGender` defined in `crates/citum-schema/src/locale/types.rs`
+- [ ] `MaybeGendered<T>` and `TermGender` defined in `crates/citum-schema-style/src/locale/types.rs`
 - [ ] `SimpleTerm.long` / `.short` changed to `MaybeGendered<String>`
 - [ ] `SingularPlural.singular` / `.plural` changed to `MaybeGendered<String>`
 - [ ] `Locale::role_term`, `locator_term`, `general_term` accept `Option<TermGender>`

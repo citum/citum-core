@@ -96,7 +96,7 @@ During bibliography loading:
 ## Files Updated By This Design
 
 - `crates/citum-schema/src/lib.rs`
-- `crates/citum-schema/src/reference/*`
+- `crates/citum-schema-style/src/reference/*`
 - `crates/citum-engine/src/io.rs`
 - `crates/citum-engine/src/processor/*`
 - `crates/citum-engine/src/values/*`

@@ -52,6 +52,9 @@ jobs:
       - name: Check testing infrastructure contracts
         run: node scripts/check-testing-infra.js
 
+      - name: Check facade crate boundaries
+        run: ./scripts/check-facade-crate.sh
+
       - name: Run script regression tests
         run: node --test scripts/*.test.js
 

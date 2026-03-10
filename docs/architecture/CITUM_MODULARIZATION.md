@@ -29,9 +29,9 @@ modularization.
 
 ### 1. `citum_schema` → `csl-legacy` (boundary violation)
 
-`citum_schema` is the intended schema source-of-truth crate. It should have no
+`citum_schema_style` is the implementation source-of-truth crate. It should have no
 dependency on `csl-legacy` (a legacy XML parser). However,
-`citum_schema/src/reference/conversion.rs` implements:
+`citum-schema-style/src/reference/conversion.rs` implements:
 
 ```rust
 impl From<csl-legacy::csl_json::Reference> for InputReference { ... }
@@ -39,7 +39,7 @@ impl From<csl-legacy::csl_json::DateVariable> for EdtfString { ... }
 impl From<Vec<csl-legacy::csl_json::Name>> for Contributor { ... }
 ```
 
-These `From` impls belong in `citum_migrate`, not `citum_schema`. The schema
+These `From` impls belong in `citum_migrate`, not `citum_schema_style`. The schema
 crate should define types; the migration crate should define conversions
 from legacy formats into those types.
 

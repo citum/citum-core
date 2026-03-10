@@ -97,7 +97,7 @@ GET  /examples/:field       # Field-specific references
 - [Issue #28: MakeCSL Vision](https://github.com/bdarcus/csln/issues/28)
 - [Style Editor Repository](https://github.com/bdarcus/style-editor) - The web platform companion to this repository
 - [PERSONAS.md](../PERSONAS.md) - stakeholder alignment
-- [options module](../../../crates/citum-schema/src/options/mod.rs) - configuration model
+- [options module](../../../crates/citum-schema-style/src/options/mod.rs) - configuration model
 
 ---
 

@@ -117,8 +117,8 @@ pub enum CitationSortPolicy {
 
 ## Key Files
 
-- `crates/citum-schema/src/options/processing.rs`
-- `crates/citum-schema/src/options/mod.rs`
+- `crates/citum-schema-style/src/options/processing.rs`
+- `crates/citum-schema-style/src/options/mod.rs`
 - `crates/citum-engine/src/processor/mod.rs`
 - `docs/guides/style-author-guide.md`
 

@@ -661,6 +661,41 @@ mod tests {
     }
 
     #[test]
+    fn test_citation_simple_constructor_defaults() {
+        let citation = Citation::simple("kuhn1962");
+
+        assert_eq!(citation.items.len(), 1);
+        assert_eq!(citation.items[0].id, "kuhn1962");
+        assert_eq!(citation.mode, CitationMode::NonIntegral);
+        assert_eq!(citation.position, None);
+        assert!(!citation.suppress_author);
+        assert_eq!(citation.note_number, None);
+        assert_eq!(citation.prefix, None);
+        assert_eq!(citation.suffix, None);
+    }
+
+    #[test]
+    fn test_citation_default_fields_are_omitted_in_serialization() {
+        let citation = Citation::simple("kuhn1962");
+        let json = serde_json::to_value(&citation).unwrap();
+        let object = json.as_object().unwrap();
+
+        assert!(!object.contains_key("mode"));
+        assert!(!object.contains_key("suppress-author"));
+
+        let explicit = Citation {
+            mode: CitationMode::Integral,
+            suppress_author: true,
+            ..citation
+        };
+        let explicit_json = serde_json::to_value(&explicit).unwrap();
+        let explicit_object = explicit_json.as_object().unwrap();
+
+        assert_eq!(explicit_object.get("mode").unwrap(), "integral");
+        assert_eq!(explicit_object.get("suppress-author").unwrap(), true);
+    }
+
+    #[test]
     fn test_citation_item_with_locator() {
         let json = r#"
         {
@@ -711,6 +746,17 @@ mod tests {
         let err = CitationLocator::compound(vec![LocatorSegment::new(LocatorType::Page, "42")])
             .expect_err("single-segment compound locator must be rejected");
         assert!(err.contains("at least two"));
+    }
+
+    #[test]
+    fn test_citation_locator_canonical_string_is_stable() {
+        let locator = CitationLocator::compound(vec![
+            LocatorSegment::new(LocatorType::Page, "23"),
+            LocatorSegment::new(LocatorType::Line, "13"),
+        ])
+        .unwrap();
+
+        assert_eq!(locator.canonical_string(), "Page:23,Line:13");
     }
 
     #[test]
@@ -809,6 +855,50 @@ mod tests {
         let locale = crate::locale::Locale::en_us();
         let locator = normalize_locator_text("45", &locale).unwrap();
         assert_eq!(locator, CitationLocator::single(LocatorType::Page, "45"));
+    }
+
+    #[test]
+    fn test_normalize_locator_text_empty_returns_none() {
+        let locale = crate::locale::Locale::en_us();
+
+        assert_eq!(normalize_locator_text("", &locale), None);
+        assert_eq!(normalize_locator_text("   ", &locale), None);
+    }
+
+    #[test]
+    fn test_normalize_locator_text_label_without_value_returns_none() {
+        let locale = crate::locale::Locale::en_us();
+
+        assert_eq!(normalize_locator_text("chapter:", &locale), None);
+        assert_eq!(normalize_locator_text("section", &locale), None);
+    }
+
+    #[test]
+    fn test_normalize_locator_text_preserves_page_list_as_single_segment() {
+        let locale = crate::locale::Locale::en_us();
+        let locator = normalize_locator_text("12, 14", &locale).unwrap();
+
+        assert_eq!(
+            locator,
+            CitationLocator::single(LocatorType::Page, "12, 14")
+        );
+        assert!(!locator.is_compound());
+    }
+
+    #[test]
+    fn test_normalize_locator_text_symbol_alias_boundary() {
+        let locale = crate::locale::Locale::en_us();
+        let locator = normalize_locator_text("§ 4", &locale).unwrap();
+
+        assert_eq!(locator, CitationLocator::single(LocatorType::Section, "4"));
+    }
+
+    #[test]
+    fn test_normalize_locator_text_abbreviated_alias_boundary() {
+        let locale = crate::locale::Locale::en_us();
+        let locator = normalize_locator_text("pp. 10-12", &locale).unwrap();
+
+        assert_eq!(locator, CitationLocator::single(LocatorType::Page, "10-12"));
     }
 
     #[test]

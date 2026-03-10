@@ -39,7 +39,7 @@ motivations:
 - All unsafe operations inside `unsafe fn` bodies wrapped in explicit `unsafe {}` blocks:
   `CStr::from_ptr()`, `&*processor` raw pointer derefs, `Box::from_raw()`, `CString::from_raw()`.
 
-### `citum_schema/src/template.rs`
+### `citum-schema-style/src/template.rs`
 
 - `schemars::gen::SchemaGenerator` -> `schemars::r#gen::SchemaGenerator` because `gen` is now a
   reserved keyword in edition 2024. The `r#` prefix escapes it as a raw identifier.

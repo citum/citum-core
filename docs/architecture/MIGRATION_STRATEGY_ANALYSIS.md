@@ -206,7 +206,7 @@ The same output-driven approach could power a visual style editor where users pr
 - `../../crates/citum-migrate/src/lib.rs` - MacroInliner with macro expansion logic
 - `../../crates/citum-migrate/src/upsampler.rs` - CslNode to CslnNode conversion (works well)
 - `../../crates/citum-migrate/src/options_extractor/` - Options pipeline (works well, keep)
-- `../../crates/citum-schema/src/template.rs` - Citum template model (target schema)
+- `../../crates/citum-schema-style/src/template.rs` - Citum template model (target schema)
 - `../../scripts/oracle.js` - Oracle comparison test
 - `../../scripts/lib/component-parser.js` - Hardened component parser with field-aware matching
 - `../../scripts/lib/template-inferrer.js` - Output-driven template inference engine

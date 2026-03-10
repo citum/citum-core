@@ -363,8 +363,8 @@ csl26-group (COMPLETED)
 - `/Users/brucedarcus/Code/csl26/docs/architecture/MULTILINGUAL.md`
 - `/Users/brucedarcus/Code/csl26/docs/architecture/design/BIBLIOGRAPHY_GROUPING.md`
 - `/Users/brucedarcus/Code/csl26/docs/architecture/DISAMBIGUATION_MULTILINGUAL_GROUPING.md`
-- `/Users/brucedarcus/Code/csl26/crates/citum-schema/src/options/multilingual.rs`
-- `/Users/brucedarcus/Code/csl26/crates/citum-schema/src/grouping.rs`
+- `/Users/brucedarcus/Code/csl26/crates/citum-schema-style/src/options/multilingual.rs`
+- `/Users/brucedarcus/Code/csl26/crates/citum-schema-style/src/grouping.rs`
 - `/Users/brucedarcus/Code/csl26/crates/citum-engine/src/grouping/selector.rs`
 - `/Users/brucedarcus/Code/csl26/crates/citum-engine/src/grouping/sorting.rs`
 - biblatex-iso690 documentation ([PDF](http://mirrors.ibiblio.org/CTAN/macros/latex/contrib/biblatex-contrib/biblatex-iso690/biblatex-iso690.pdf))

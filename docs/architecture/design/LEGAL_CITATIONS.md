@@ -178,7 +178,7 @@ Obergefell v. Hodges, 135 S. Ct. 2584, 2604, 192 L. Ed. 2d 609 (2015).
 **Priority:** Medium (Feature Roadmap)
 **Effort:** 2-3 weeks
 
-1. **Add legal reference types to `citum_schema/src/reference/types.rs`:**
+1. **Add legal reference types to `citum-schema-style/src/reference/types.rs`:**
    ```rust
    pub enum ReferenceType {
        Article(Article),
@@ -239,7 +239,7 @@ Obergefell v. Hodges, 135 S. Ct. 2584, 2604, 192 L. Ed. 2d 609 (2015).
 **Priority:** Low (after Phase 1 validated)
 **Effort:** 3-4 weeks
 
-1. **Create jurisdiction hierarchy system** (`citum_schema/src/legal/jurisdiction.rs`):
+1. **Create jurisdiction hierarchy system** (`citum-schema-style/src/legal/jurisdiction.rs`):
    ```rust
    pub struct Jurisdiction {
        raw: String,  // "us:federal:scotus"
@@ -260,7 +260,7 @@ Obergefell v. Hodges, 135 S. Ct. 2584, 2604, 192 L. Ed. 2d 609 (2015).
    }
    ```
 
-2. **Add court classification enum** (`citum_schema/src/legal/mod.rs`):
+2. **Add court classification enum** (`citum-schema-style/src/legal/mod.rs`):
    ```rust
    #[derive(Debug, Deserialize, Serialize, Clone, JsonSchema, PartialEq)]
    #[serde(rename_all = "kebab-case")]
@@ -272,7 +272,7 @@ Obergefell v. Hodges, 135 S. Ct. 2584, 2604, 192 L. Ed. 2d 609 (2015).
    }
    ```
 
-3. **Extend position tracking** (`citum_schema/src/citation.rs`):
+3. **Extend position tracking** (`citum-schema-style/src/citation.rs`):
    ```rust
    #[derive(Debug, Clone, PartialEq)]
    pub enum Position {
@@ -285,7 +285,7 @@ Obergefell v. Hodges, 135 S. Ct. 2584, 2604, 192 L. Ed. 2d 609 (2015).
    }
    ```
 
-4. **Add `LegalCite` template component** (`citum_schema/src/template.rs`):
+4. **Add `LegalCite` template component** (`citum-schema-style/src/template.rs`):
    ```rust
    pub struct LegalCite {
        pub style: LegalCiteStyle,
