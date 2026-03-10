@@ -903,7 +903,7 @@ impl Processor {
             let _ = label;
             for index in indices {
                 let rendered = self
-                    .process_citation_with_format::<F>(&parsed.citations[index].citation)
+                    .render_manual_note_citation_with_format::<F>(&parsed.citations[index].citation)
                     .unwrap_or_else(|_| {
                         content[parsed.citations[index].start..parsed.citations[index].end]
                             .to_string()
@@ -947,7 +947,7 @@ impl Processor {
         for indices in manual_citations.values() {
             for index in indices {
                 let rendered = self
-                    .process_citation_with_format::<crate::render::html::Html>(
+                    .render_manual_note_citation_with_format::<crate::render::html::Html>(
                         &parsed.citations[*index].citation,
                     )
                     .unwrap_or_else(|_| {
@@ -1039,6 +1039,133 @@ impl Processor {
 }
 
 impl Processor {
+    fn render_manual_note_citation_with_format<F>(
+        &self,
+        citation: &Citation,
+    ) -> Result<String, crate::error::ProcessorError>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        if self.should_compose_integral_ibid_in_manual_notes(citation) {
+            return self
+                .render_manual_note_integral_ibid_with_format::<F>(citation)
+                .or_else(|_| self.process_citation_with_format::<F>(citation));
+        }
+        self.process_citation_with_format::<F>(citation)
+    }
+
+    fn should_compose_integral_ibid_in_manual_notes(&self, citation: &Citation) -> bool {
+        if !matches!(
+            citation.mode,
+            citum_schema::citation::CitationMode::Integral
+        ) {
+            return false;
+        }
+
+        if !matches!(
+            citation.position,
+            Some(citum_schema::citation::Position::Ibid)
+                | Some(citum_schema::citation::Position::IbidWithLocator)
+        ) {
+            return false;
+        }
+
+        !self.has_explicit_position_integral_template(citation.position.as_ref())
+    }
+
+    fn has_explicit_position_integral_template(
+        &self,
+        position: Option<&citum_schema::citation::Position>,
+    ) -> bool {
+        let Some(citation_spec) = self.style.citation.as_ref() else {
+            return false;
+        };
+
+        let position_spec = match position {
+            Some(citum_schema::citation::Position::Ibid)
+            | Some(citum_schema::citation::Position::IbidWithLocator) => {
+                citation_spec.ibid.as_ref()
+            }
+            Some(citum_schema::citation::Position::Subsequent) => citation_spec.subsequent.as_ref(),
+            _ => None,
+        };
+
+        position_spec
+            .and_then(|spec| spec.integral.as_ref())
+            .is_some_and(|spec| spec.template.is_some() || spec.locales.is_some())
+    }
+
+    fn render_manual_note_integral_ibid_with_format<F>(
+        &self,
+        citation: &Citation,
+    ) -> Result<String, crate::error::ProcessorError>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let anchor = self
+            .render_note_integral_anchor_with_format::<F>(citation)
+            .unwrap_or_default();
+        let reduced = self.render_default_note_ibid_text_with_format::<F>(citation)?;
+        if anchor.trim().is_empty() {
+            return Ok(reduced);
+        }
+        if reduced.trim().is_empty() {
+            return Ok(anchor);
+        }
+        Ok(format!("{anchor} ({reduced})"))
+    }
+
+    fn render_default_note_ibid_text_with_format<F>(
+        &self,
+        citation: &Citation,
+    ) -> Result<String, crate::error::ProcessorError>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let ibid_term = self
+            .style
+            .citation
+            .as_ref()
+            .and_then(|spec| spec.ibid.as_ref())
+            .and_then(|ibid| ibid.suffix.clone())
+            .filter(|suffix| !suffix.trim().is_empty())
+            .or_else(|| {
+                self.locale
+                    .general_term(
+                        &citum_schema::locale::GeneralTerm::Ibid,
+                        citum_schema::locale::TermForm::Long,
+                    )
+                    .map(|term| term.to_string())
+            })
+            .unwrap_or_else(|| "ibid.".to_string());
+
+        if matches!(
+            citation.position,
+            Some(citum_schema::citation::Position::IbidWithLocator)
+        ) {
+            let locator = citation
+                .items
+                .first()
+                .and_then(|item| item.locator.as_ref())
+                .map(|locator| {
+                    locator
+                        .segments()
+                        .iter()
+                        .map(|segment| segment.value.value_str())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                })
+                .filter(|value| !value.trim().is_empty());
+
+            if let Some(locator) = locator {
+                let fmt = F::default();
+                return Ok(fmt.join(vec![ibid_term.trim().to_string(), locator], ", "));
+            }
+        }
+
+        Ok(ibid_term)
+    }
+
     fn note_render_citation_for_generated(&self, citation: &Citation) -> Citation {
         let mut note_citation = citation.clone();
         if matches!(

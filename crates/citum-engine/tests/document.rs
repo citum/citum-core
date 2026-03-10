@@ -303,6 +303,139 @@ fn test_chicago_notes_document_renders_ibid_without_author_concatenation() {
         !output.contains("SmithIbid"),
         "ibid should not concatenate with author token: {output}"
     );
+    assert!(
+        output.contains("Brown (Ibid.) also argues that..."),
+        "integral ibid inside authored note should preserve anchor with parenthetical ibid: {output}"
+    );
+    assert!(
+        !output.contains("Ibid also argues that..."),
+        "integral ibid should not replace the narrative anchor in authored notes: {output}"
+    );
+}
+
+#[test]
+fn test_chicago_notes_document_integral_ibid_with_locator_keeps_anchor_and_locator() {
+    let style = load_style("styles/chicago-notes.yaml");
+    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
+        .expect("example bibliography should parse");
+
+    let processor = Processor::new(style, bibliography);
+    let parser = DjotParser;
+    let document = concat!(
+        "Text.[^n1]\n\n",
+        "[^n1]:\n\n",
+        "  - [+@brown1954, p. 10] argues that...\n",
+        "  - [+@brown1954, p. 12] also argues that...\n",
+    );
+
+    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
+        document,
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    assert!(
+        output.contains("Brown (Ibid., 12) also argues that..."),
+        "integral ibid-with-locator should preserve anchor and locator in parenthetical reduced citation: {output}"
+    );
+}
+
+#[test]
+fn test_chicago_notes_document_integral_ibid_uses_locale_term_without_period() {
+    let mut style = load_style("styles/chicago-notes.yaml");
+    if let Some(citation) = style.citation.as_mut() {
+        citation.suffix = Some(".".to_string());
+        citation.ibid = None;
+    }
+
+    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
+        .expect("example bibliography should parse");
+
+    let mut locale = Locale::en_us();
+    locale.terms.ibid = Some("ibid".to_string());
+
+    let processor = Processor::with_locale(style, bibliography, locale);
+    let parser = DjotParser;
+    let document = fs::read_to_string(project_root().join("examples/document-citation-flow.djot"))
+        .expect("citation flow example should be readable");
+
+    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
+        &document,
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    assert!(
+        output.contains("Brown (ibid) also argues that..."),
+        "ibid term should come from locale data and preserve locale punctuation: {output}"
+    );
+    assert!(
+        !output.contains("Brown (.) also argues that..."),
+        "ibid fallback must not use base citation suffix: {output}"
+    );
+}
+
+#[test]
+fn test_chicago_notes_document_integral_ibid_style_suffix_overrides_locale_term() {
+    let mut style = load_style("styles/chicago-notes.yaml");
+    if let Some(citation) = style.citation.as_mut()
+        && let Some(ibid) = citation.ibid.as_mut()
+    {
+        ibid.suffix = Some("IBIDX".to_string());
+    }
+
+    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
+        .expect("example bibliography should parse");
+
+    let mut locale = Locale::en_us();
+    locale.terms.ibid = Some("ibid".to_string());
+
+    let processor = Processor::with_locale(style, bibliography, locale);
+    let parser = DjotParser;
+    let document = fs::read_to_string(project_root().join("examples/document-citation-flow.djot"))
+        .expect("citation flow example should be readable");
+
+    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
+        &document,
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    assert!(
+        output.contains("Brown (IBIDX) also argues that..."),
+        "explicit style ibid suffix should override locale ibid term: {output}"
+    );
+}
+
+#[test]
+fn test_chicago_notes_document_integral_ibid_anchor_failure_falls_back_to_reduced_only() {
+    let style = load_style("styles/chicago-notes.yaml");
+    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
+        .expect("example bibliography should parse");
+
+    let processor = Processor::new(style, bibliography);
+    let parser = DjotParser;
+    let document = concat!(
+        "Text.[^n1]\n\n",
+        "[^n1]:\n\n",
+        "  - [+@missingref, p. 10] argues that...\n",
+        "  - [+@missingref, p. 12] also argues that...\n",
+    );
+
+    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
+        document,
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    assert!(
+        output.contains("Ibid"),
+        "when anchor cannot render, integral ibid should still render reduced citation text: {output}"
+    );
+    assert!(
+        !output.contains("missingrefIbid"),
+        "anchor failure path must not concatenate fallback and ibid text: {output}"
+    );
 }
 
 #[test]
