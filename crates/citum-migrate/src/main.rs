@@ -2888,25 +2888,89 @@ mod tests {
     }
 
     #[test]
-    fn compile_from_xml_unsupported_mixed_position_tree_falls_back_without_overrides() {
+    fn compile_from_xml_maps_mixed_note_position_tree_into_citation_overrides() {
         let legacy_style = parse_legacy_style(
             r#"
 <style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="note">
   <info>
-    <title>mixed-position-test</title>
-    <id>https://example.org/mixed-position-test</id>
+    <title>mixed-note-position-test</title>
+    <id>https://example.org/mixed-note-position-test</id>
   </info>
   <citation>
     <layout>
       <choose>
-        <if position="subsequent" variable="title">
-          <text variable="author"/>
+        <if position="subsequent">
+          <group delimiter=", ">
+            <text variable="author"/>
+            <choose>
+              <if match="any" variable="archive archive-place container-title DOI number publisher references URL"/>
+              <else-if position="first" type="interview">
+                <date variable="issued">
+                  <date-part name="year"/>
+                </date>
+              </else-if>
+              <else-if position="first" type="personal_communication">
+                <text variable="publisher"/>
+              </else-if>
+            </choose>
+          </group>
         </if>
-        <else-if position="ibid">
-          <text variable="locator"/>
-        </else-if>
         <else>
           <text variable="title"/>
+        </else>
+      </choose>
+    </layout>
+  </citation>
+</style>
+"#,
+        );
+
+        let mut options = citum_schema::options::Config::default();
+        let tracker = ProvenanceTracker::new(false);
+        let (_, _, citation_template, citation_overrides) =
+            compile_from_xml(&legacy_style, &mut options, false, &tracker);
+
+        assert!(
+            citation_template
+                .iter()
+                .any(|component| matches!(component, TemplateComponent::Title(_))),
+            "base citation template should still contain the first-citation title"
+        );
+        assert!(
+            citation_overrides.subsequent.is_some(),
+            "mixed note trees should now emit a subsequent override"
+        );
+        assert!(
+            citation_overrides
+                .subsequent
+                .as_ref()
+                .is_some_and(|template| template
+                    .iter()
+                    .any(|component| matches!(component, TemplateComponent::Contributor(_)))),
+            "subsequent override should preserve the shortened-note contributor content"
+        );
+    }
+
+    #[test]
+    fn compile_from_xml_truly_unsupported_mixed_position_tree_falls_back_without_overrides() {
+        let legacy_style = parse_legacy_style(
+            r#"
+<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="note">
+  <info>
+    <title>unsupported-mixed-position-test</title>
+    <id>https://example.org/unsupported-mixed-position-test</id>
+  </info>
+  <citation>
+    <layout>
+      <choose>
+        <if variable="title">
+          <text variable="title"/>
+        </if>
+        <else-if position="subsequent">
+          <text variable="author"/>
+        </else-if>
+        <else>
+          <text variable="publisher"/>
         </else>
       </choose>
     </layout>
