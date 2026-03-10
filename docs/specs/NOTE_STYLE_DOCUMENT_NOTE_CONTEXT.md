@@ -1,6 +1,6 @@
 # Document Note Stream Specification
 
-**Status:** Draft
+**Status:** Active
 **Version:** 1.0
 **Date:** 2026-03-10
 **Supersedes:** N/A
@@ -30,6 +30,14 @@ Out of scope:
 6. A footnote definition is one note slot in the shared stream even when it contains multiple citations and non-citation content.
 7. Position-aware rendering uses the shared stream and the style’s position templates (`first`, `subsequent`, `ibid`).
 
+## Note Ordering and Position Rules
+1. The note sequence is linear and derived from document order, not page layout.
+2. Generated note references and authored footnote references share this same linear sequence.
+3. Position resolution (`first`, `subsequent`, `ibid`) is computed against that shared sequence.
+4. `Ibid` eligibility is determined by the immediately preceding note context in that sequence.
+5. `Ibid` applies only when the immediately preceding note context resolves to a single source.
+6. When a footnote contains multiple citations, they share one note slot while still resolving per-citation position in source order within that slot.
+
 ## Implementation Notes
 - Citation position logic for document rendering must remain independent of page
   layout or pagination.
@@ -44,4 +52,4 @@ Out of scope:
 - [ ] Manual and generated note sequencing is page-agnostic.
 
 ## Changelog
-- v1.0 (2026-03-10): Initial version.
+- v1.0 (2026-03-10): Initial active version.

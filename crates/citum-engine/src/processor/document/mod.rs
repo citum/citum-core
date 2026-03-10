@@ -389,10 +389,12 @@ impl Processor {
                     ),
                     format,
                 );
-                let bib_heading = "\n\n# Bibliography\n\n";
                 let mut result = rendered;
-                result.push_str(bib_heading);
-                result.push_str(&placeholders.push_block(bib_content));
+                if !bib_content.trim().is_empty() {
+                    let bib_heading = "\n\n# Bibliography\n\n";
+                    result.push_str(bib_heading);
+                    result.push_str(&placeholders.push_block(bib_content));
+                }
                 let html = parser.finalize_html_output(&result);
                 return placeholders.apply(html);
             } else if processor.is_note_style() {
@@ -408,14 +410,16 @@ impl Processor {
                 ),
                 format,
             );
-            let bib_heading = match format {
-                DocumentFormat::Latex => "\n\n\\section*{Bibliography}\n\n",
-                DocumentFormat::Typst => "\n\n= Bibliography\n\n",
-                _ => "\n\n# Bibliography\n\n",
-            };
             let mut result = rendered;
-            result.push_str(bib_heading);
-            result.push_str(&bib_content);
+            if !bib_content.trim().is_empty() {
+                let bib_heading = match format {
+                    DocumentFormat::Latex => "\n\n\\section*{Bibliography}\n\n",
+                    DocumentFormat::Typst => "\n\n= Bibliography\n\n",
+                    _ => "\n\n# Bibliography\n\n",
+                };
+                result.push_str(bib_heading);
+                result.push_str(&bib_content);
+            }
             let result = rewrite_document_markup_for_typst(result, format);
             return match format {
                 DocumentFormat::Html => parser.finalize_html_output(&result),
@@ -518,11 +522,12 @@ impl Processor {
                 processor.process_inline_document_html(body, parsed, &mut placeholders)
             };
 
+            let bib_content = processor.render_grouped_bibliography_with_format::<F>();
             let mut result = rendered;
-            result.push_str("\n\n# Bibliography\n\n");
-            result.push_str(
-                &placeholders.push_block(processor.render_grouped_bibliography_with_format::<F>()),
-            );
+            if !bib_content.trim().is_empty() {
+                result.push_str("\n\n# Bibliography\n\n");
+                result.push_str(&placeholders.push_block(bib_content));
+            }
             let html = parser.finalize_html_output(&result);
             return placeholders.apply(html);
         } else if processor.is_note_style() {
@@ -531,14 +536,17 @@ impl Processor {
             processor.process_inline_document::<F>(body, parsed)
         };
 
-        let bib_heading = match format {
-            DocumentFormat::Latex => "\n\n\\section*{Bibliography}\n\n",
-            DocumentFormat::Typst => "\n\n= Bibliography\n\n",
-            _ => "\n\n# Bibliography\n\n",
-        };
+        let bib_content = processor.render_grouped_bibliography_with_format::<F>();
         let mut result = rendered;
-        result.push_str(bib_heading);
-        result.push_str(&processor.render_grouped_bibliography_with_format::<F>());
+        if !bib_content.trim().is_empty() {
+            let bib_heading = match format {
+                DocumentFormat::Latex => "\n\n\\section*{Bibliography}\n\n",
+                DocumentFormat::Typst => "\n\n= Bibliography\n\n",
+                _ => "\n\n# Bibliography\n\n",
+            };
+            result.push_str(bib_heading);
+            result.push_str(&bib_content);
+        }
         let result = rewrite_document_markup_for_typst(result, format);
 
         match format {
@@ -1082,13 +1090,18 @@ impl Processor {
                 sets: &self.compound_sets,
             },
         );
+        let anchor_position = match citation.position.as_ref() {
+            Some(citum_schema::citation::Position::Ibid)
+            | Some(citum_schema::citation::Position::IbidWithLocator) => None,
+            other => other,
+        };
 
         renderer.render_integral_anchor_with_format::<F>(
             &sorted_items,
             &effective_spec,
             inter_delimiter,
             citation.suppress_author,
-            citation.position.as_ref(),
+            anchor_position,
         )
     }
 

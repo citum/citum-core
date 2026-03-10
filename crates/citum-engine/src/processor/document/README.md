@@ -64,5 +64,5 @@ The `Processor::process_document` method follows these steps:
 2.  For non-note styles, render each parsed citation inline.
 3.  For note styles, assign note numbers from body note-reference order, annotate citation positions in that note order, replace prose citations with generated footnote references, and render citations inside manual footnotes in place.
 4.  Emit any generated footnote definitions.
-5.  Append the bibliography.
+5.  Append the bibliography only when rendered bibliography content is non-empty.
 6.  Optionally finalize the rendered markup as HTML.
