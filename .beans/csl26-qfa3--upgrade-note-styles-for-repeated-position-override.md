@@ -1,14 +1,14 @@
 ---
 # csl26-qfa3
 title: Upgrade note styles for repeated-position overrides and refresh compat snapshot
-status: todo
+status: completed
 type: task
 priority: normal
 tags:
     - styles
     - compatibility
 created_at: 2026-03-10T18:31:26Z
-updated_at: 2026-03-10T22:11:33Z
+updated_at: 2026-03-10T22:20:52Z
 ---
 
 Follow-up after repeated-note semantics engine/migration work:
@@ -32,3 +32,7 @@ Follow-up after repeated-note semantics engine/migration work:
 - Added engine tests covering OSCOLA ibid/subsequent, OSCOLA no-ibid fallback, and Thomson Reuters subsequent locator rendering.
 - Verification: cargo clippy --all-targets --all-features -- -D warnings; cargo nextest run; node scripts/oracle-batch-aggregate.js note/legal cluster; node scripts/report-core.js > /tmp/core-report.json && node scripts/check-core-quality.js --report /tmp/core-report.json --baseline scripts/report-data/core-quality-baseline.json.
 - compat.html not refreshed because core report gate stayed at 146 styles with fidelity 1.0 and no baseline-facing portfolio change was required.
+
+
+- Follow-on migrate work split into csl26-3go0 for the mixed-condition note position trees that still fall back to base citation templates.
+- qfa3 is complete with classification, safe YAML-only overrides for migration-sufficient styles, and verification.
