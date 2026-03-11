@@ -234,6 +234,71 @@ capabilities are required, even if the final YAML or Rust surface differs:
 The future implementation spec may refine concrete enum names and YAML keys,
 but it must preserve these semantics.
 
+### Authoring Shape
+
+The authored YAML surface should stay lightweight. Most users should not have
+to write semantic span trees by hand.
+
+Normative rules:
+
+- Structured titles should be authored primarily as `main` plus one or more
+  subtitle parts.
+- Rich-text markup should remain inline and sparse, used only where protection
+  or formatting is actually needed.
+- Semantic span roles are primarily an internal model and import target. They
+  should surface in authored YAML only when a real style or migration need
+  justifies them.
+
+Reasonable authored examples:
+
+```yaml
+title:
+  structured:
+    main: "understanding citation systems"
+    sub:
+      - "history and practice"
+      - "a comparative view"
+```
+
+```yaml
+title:
+  structured:
+    main: "the dna of empire"
+    sub:
+      - "race and {.nocase}[mRNA] in modern science"
+```
+
+```yaml
+title:
+  multi-structured:
+    - lang: en
+      main: "the dna of empire"
+      sub:
+        - "race and {.nocase}[mRNA] in modern science"
+    - lang: de
+      main: "die Geschichte der Molekularbiologie"
+      sub:
+        - "eine Einführung"
+```
+
+Style-side complexity should carry most of the rule variation:
+
+```yaml
+title-casing:
+  fields:
+    title:
+      output: sentence-apa
+    container-title:
+      output: title
+  language-rules:
+    en:
+      mode: transform
+    de:
+      mode: as-is
+    fr:
+      mode: as-is
+```
+
 ### Open Questions
 
 The source memos agree on the non-destructive, rich-text, language-aware
@@ -243,10 +308,12 @@ direction. The remaining disagreements or unresolved choices are:
    The research supports light heuristics for obvious acronyms and formulas, but
    the acceptable heuristic scope is still unsettled.
 
-2. **How far to go beyond English**
-   The memos agree that non-English behavior cannot safely reuse English rules,
-   but they do not settle which non-English bibliographic casing systems should
-   be first-class in the initial implementation.
+2. **Which non-English casing systems get first-class transform support first**
+   Citum already has a multilingual schema and engine. The unresolved question
+   is narrower: which non-English bibliographic casing rules should receive
+   explicit transform support in the first implementation, beyond the baseline
+   multilingual model of language-tagged structured titles plus `as-is`
+   fallback.
 
 3. **How much behavior semantic spans should unlock**
    This spec separates generic protection from semantic span roles, but the
