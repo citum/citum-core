@@ -361,6 +361,16 @@ function evaluateConformanceLayer(styleName, style, rendered, expectationConfig)
     kind: 'rendering-gap',
     message: issue.message,
   }));
+
+  if (issues.length > 0) {
+    return {
+      status: 'gap',
+      issues,
+      family: styleExpectation.conformance_family,
+      unresolved: family.unresolved,
+    };
+  }
+
   const citationConfig = style.citation || {};
   const first = rendered['note-first'];
   const ibid = rendered['note-ibid'];

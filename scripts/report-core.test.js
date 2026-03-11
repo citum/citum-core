@@ -189,6 +189,49 @@ test('generateHtml renders repeated-note regression and conformance layers separ
   assert.match(html, /Unresolved: note-start, prose-integral/);
 });
 
+test('generateHtml does not misreport missing conformance data as a pass', () => {
+  const html = generateHtml({
+    generated: '2026-03-11T00:00:00.000Z',
+    commit: 'deadbee',
+    metadata: {},
+    totalImpact: 0,
+    totalStyles: 1,
+    citationsOverall: { passed: 1, total: 1 },
+    bibliographyOverall: { passed: 0, total: 0 },
+    qualityOverall: { score: 1 },
+    styles: [
+      {
+        name: 'legacy-note-style',
+        sourceName: 'legacy-note-style',
+        format: 'note',
+        hasBibliography: false,
+        originLabel: 'Test',
+        authorityLabel: 'citeproc-js',
+        fidelityScore: 1,
+        citations: { passed: 1, total: 1 },
+        bibliography: { passed: 0, total: 0 },
+        qualityScore: 1,
+        qualityBreakdown: {
+          subscores: {
+            typeCoverage: { score: 100 },
+            fallbackRobustness: { score: 100 },
+            concision: { score: 100 },
+            presetUsage: { score: 100 },
+          },
+        },
+        notePositionAudit: {
+          status: 'pass',
+          issues: [],
+          profile: 'ibid-and-subsequent',
+        },
+      },
+    ],
+  });
+
+  assert.match(html, /not-evaluated/);
+  assert.match(html, /Normative conformance was not evaluated/);
+});
+
 test('effective oracle sections and fidelity prefer adjusted counts when present', () => {
   const oracleResult = {
     citations: { passed: 8, total: 10, entries: [] },
