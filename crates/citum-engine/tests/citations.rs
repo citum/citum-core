@@ -1091,12 +1091,16 @@ fn test_oscola_ibid_and_subsequent_render_position_overrides() {
         "subsequent OSCOLA citation should use the short repeated-note form: {subsequent_rendered}"
     );
     assert!(
-        ibid_rendered.to_lowercase().contains("ibid"),
-        "OSCOLA ibid citation should render lexical ibid: {ibid_rendered}"
+        ibid_rendered.starts_with("ibid"),
+        "OSCOLA ibid citation should keep the note-start marker lowercase: {ibid_rendered}"
     );
     assert!(
         ibid_with_locator_rendered.contains("45"),
         "OSCOLA ibid-with-locator citation should keep the locator: {ibid_with_locator_rendered}"
+    );
+    assert!(
+        ibid_with_locator_rendered.starts_with("ibid"),
+        "OSCOLA ibid-with-locator citation should keep the note-start marker lowercase: {ibid_with_locator_rendered}"
     );
 }
 

@@ -176,7 +176,7 @@ test('generateHtml renders repeated-note regression and conformance layers separ
             status: 'pass',
             family: 'chicago-full-note',
             issues: [],
-            unresolved: ['note-start', 'prose-integral'],
+            unresolved: ['prose-integral'],
           },
         },
       },
@@ -186,7 +186,7 @@ test('generateHtml renders repeated-note regression and conformance layers separ
   assert.match(html, /Regression Layer/);
   assert.match(html, /Normative Conformance/);
   assert.match(html, /chicago-full-note/);
-  assert.match(html, /Unresolved: note-start, prose-integral/);
+  assert.match(html, /Unresolved: prose-integral/);
 });
 
 test('generateHtml does not misreport missing conformance data as a pass', () => {

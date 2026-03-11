@@ -213,6 +213,17 @@ pub enum CitationCollapse {
     CitationNumber,
 }
 
+/// Text-case transform applied when a citation renders at note start.
+#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum NoteStartTextCase {
+    /// Uppercase the first character of the rendered citation.
+    CapitalizeFirst,
+    /// Lowercase the rendered citation text.
+    Lowercase,
+}
+
 /// Citation specification.
 #[derive(Debug, Deserialize, Serialize, Clone, Default)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
@@ -275,6 +286,12 @@ pub struct CitationSpec {
     /// Allows compact rendering like "ibid." or "ibid., p. 45".
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ibid: Option<Box<CitationSpec>>,
+    /// Optional text-case transform for standalone note-start citation output.
+    ///
+    /// This is a style-owned rendering dimension layered on top of the
+    /// existing repeated-note state, not a new citation `Position`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub note_start_text_case: Option<NoteStartTextCase>,
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
@@ -371,6 +388,9 @@ impl CitationSpec {
                 if spec.sort.is_some() {
                     merged.sort = spec.sort.clone();
                 }
+                if spec.note_start_text_case.is_some() {
+                    merged.note_start_text_case = spec.note_start_text_case;
+                }
 
                 std::borrow::Cow::Owned(merged)
             }
@@ -439,6 +459,9 @@ impl CitationSpec {
                 }
                 if spec.sort.is_some() {
                     merged.sort = spec.sort.clone();
+                }
+                if spec.note_start_text_case.is_some() {
+                    merged.note_start_text_case = spec.note_start_text_case;
                 }
 
                 std::borrow::Cow::Owned(merged)
@@ -757,6 +780,32 @@ options:
             .resolve_for_position(Some(&crate::citation::Position::Subsequent))
             .into_owned();
         assert_eq!(resolved_subsequent.suffix, Some("subseq".to_string()));
+    }
+
+    #[test]
+    fn test_resolve_for_position_merges_note_start_text_case() {
+        let citation = CitationSpec {
+            note_start_text_case: Some(NoteStartTextCase::Lowercase),
+            ibid: Some(Box::new(CitationSpec {
+                note_start_text_case: Some(NoteStartTextCase::CapitalizeFirst),
+                ..Default::default()
+            })),
+            ..Default::default()
+        };
+
+        let resolved = citation
+            .resolve_for_position(Some(&crate::citation::Position::Ibid))
+            .into_owned();
+        assert_eq!(
+            resolved.note_start_text_case,
+            Some(NoteStartTextCase::CapitalizeFirst)
+        );
+
+        let unresolved = citation.resolve_for_position(None).into_owned();
+        assert_eq!(
+            unresolved.note_start_text_case,
+            Some(NoteStartTextCase::Lowercase)
+        );
     }
 
     #[test]

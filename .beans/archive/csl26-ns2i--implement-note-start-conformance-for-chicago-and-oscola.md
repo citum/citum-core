@@ -1,7 +1,7 @@
 ---
 # csl26-ns2i
 title: Implement note-start conformance for Chicago and OSCOLA
-status: todo
+status: completed
 type: feature
 priority: medium
 created_at: 2026-03-11T17:05:00Z

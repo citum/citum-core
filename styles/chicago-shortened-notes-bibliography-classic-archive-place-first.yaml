@@ -67,6 +67,7 @@ citation:
     substitute:
       template: []
   ibid:
+    note-start-text-case: capitalize-first
     suffix: ""
     delimiter: ", "
     template:

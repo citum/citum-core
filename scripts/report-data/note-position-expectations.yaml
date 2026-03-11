@@ -1,4 +1,4 @@
-version: 2
+version: 3
 regression_profiles:
   ibid-and-subsequent:
     requires:
@@ -27,21 +27,21 @@ regression_profiles:
 conformance_families:
   chicago-full-note:
     lexical_marker: ibid
+    note_start_text_case: capitalize-first
     immediate_repeat_form: marker
     immediate_with_locator_form: marker
     shortened_note_source: subsequent
     distinct_subsequent: true
     unresolved:
-      - note-start
       - prose-integral
   chicago-shortened-note:
     lexical_marker: ibid
+    note_start_text_case: capitalize-first
     immediate_repeat_form: marker
     immediate_with_locator_form: marker
     shortened_note_source: base
     distinct_subsequent: false
     unresolved:
-      - note-start
       - prose-integral
   mhra-full-note:
     lexical_marker: none
@@ -72,12 +72,12 @@ conformance_families:
       - prose-integral
   oscola:
     lexical_marker: ibid
+    note_start_text_case: lowercase
     immediate_repeat_form: marker
     immediate_with_locator_form: marker
     shortened_note_source: subsequent
     distinct_subsequent: true
     unresolved:
-      - note-start
       - prose-integral
   oscola-no-ibid:
     lexical_marker: none

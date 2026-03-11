@@ -601,6 +601,17 @@
             }
           ]
         },
+        "note-start-text-case": {
+          "description": "Optional text-case transform for standalone note-start citation output.\n\nThis is a style-owned rendering dimension layered on top of the existing repeated-note state, not a new citation `Position`.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NoteStartTextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "options": {
           "description": "Citation-specific option overrides merged over the style config.",
           "anyOf": [
@@ -2671,6 +2682,25 @@
           "type": "string",
           "enum": [
             "adaptive"
+          ]
+        }
+      ]
+    },
+    "NoteStartTextCase": {
+      "description": "Text-case transform applied when a citation renders at note start.",
+      "oneOf": [
+        {
+          "description": "Uppercase the first character of the rendered citation.",
+          "type": "string",
+          "enum": [
+            "capitalize-first"
+          ]
+        },
+        {
+          "description": "Lowercase the rendered citation text.",
+          "type": "string",
+          "enum": [
+            "lowercase"
           ]
         }
       ]

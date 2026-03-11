@@ -13,7 +13,7 @@ use citum_schema::template::{
     TemplateContributor, TemplateDate, TemplateList, TemplateTerm, TemplateTitle, TitleType,
     WrapPunctuation,
 };
-use citum_schema::{BibliographySpec, CitationSpec, Style};
+use citum_schema::{BibliographySpec, CitationSpec, NoteStartTextCase, Style};
 use csl_legacy::csl_json::{
     DateVariable as LegacyDateVariable, Name, Reference as LegacyReference,
 };
@@ -114,6 +114,7 @@ fn make_note_style() -> Style {
                 ..Default::default()
             })),
             ibid: Some(Box::new(CitationSpec {
+                note_start_text_case: Some(NoteStartTextCase::CapitalizeFirst),
                 template: Some(vec![TemplateComponent::Term(TemplateTerm {
                     term: citum_schema::locale::GeneralTerm::Ibid,
                     form: None,
