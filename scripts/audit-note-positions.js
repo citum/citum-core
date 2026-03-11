@@ -30,17 +30,27 @@ function parseArgs(argv = process.argv.slice(2)) {
 function printHuman(result) {
   console.log('=== Note Position Audit ===');
   console.log(`Styles: ${result.summary.total}`);
-  console.log(`Pass: ${result.summary.pass}`);
-  console.log(`Configuration gaps: ${result.summary.configurationGap}`);
-  console.log(`Rendering gaps: ${result.summary.renderingGap}`);
+  console.log(`Regression pass: ${result.summary.regression.pass}`);
+  console.log(`Regression configuration gaps: ${result.summary.regression.configurationGap}`);
+  console.log(`Regression rendering gaps: ${result.summary.regression.renderingGap}`);
+  console.log(`Conformance pass: ${result.summary.conformance.pass}`);
+  console.log(`Conformance gaps: ${result.summary.conformance.gap}`);
+  console.log(`Conformance unresolved: ${result.summary.conformance.unresolved}`);
   console.log(`Missing expectations: ${result.summary.missingExpectations}`);
   console.log(`Extra expectations: ${result.summary.extraExpectations}`);
   console.log('');
   for (const entry of result.results) {
-    const issueSummary = entry.issues.length === 0
+    const regressionSummary = entry.regression.issues.length === 0
       ? 'ok'
-      : entry.issues.map((issue) => issue.message).join(' | ');
-    console.log(`${entry.style}\t${entry.status}\t${entry.profile}\t${issueSummary}`);
+      : entry.regression.issues.map((issue) => issue.message).join(' | ');
+    const conformanceSummary = entry.conformance.issues.length === 0
+      ? (entry.conformance.unresolved.length === 0 ? 'ok' : `unresolved: ${entry.conformance.unresolved.join(', ')}`)
+      : entry.conformance.issues.map((issue) => issue.message).join(' | ');
+    console.log(
+      `${entry.style}\tregression=${entry.regression.status}(${entry.regression.profile})\t`
+      + `conformance=${entry.conformance.status}(${entry.conformance.family})\t`
+      + `regression:${regressionSummary}\tconformance:${conformanceSummary}`
+    );
   }
 }
 
@@ -55,7 +65,7 @@ function main() {
   }
 
   const hasCoverageIssue = result.coverage.missing.length > 0 || result.coverage.extra.length > 0;
-  const hasFailures = result.results.some((entry) => entry.status !== 'pass');
+  const hasFailures = result.results.some((entry) => entry.regression.status !== 'pass');
   process.exit(hasCoverageIssue || hasFailures ? 1 : 0);
 }
 

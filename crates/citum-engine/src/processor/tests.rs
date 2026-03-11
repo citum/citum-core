@@ -2769,6 +2769,75 @@ fn test_annotate_positions_multi_item_via_public_api() {
     );
 }
 
+/// Tests annotate_positions when the previous note contains multiple sources.
+///
+/// Verifies that a multi-source previous note invalidates lexical relative
+/// markers, so the next single-source repeat becomes `Subsequent`, not `Ibid`.
+#[test]
+fn test_annotate_positions_multi_source_previous_note_invalidates_ibid() {
+    use crate::reference::CitationItem;
+    use citum_schema::Citation;
+
+    let mut bib = make_bibliography();
+    bib.insert(
+        "smith2020".to_string(),
+        Reference::from(LegacyReference {
+            id: "smith2020".to_string(),
+            ref_type: "book".to_string(),
+            author: Some(vec![Name::new("Smith", "John")]),
+            issued: Some(DateVariable::year(2020)),
+            ..Default::default()
+        }),
+    );
+
+    let processor = Processor::new(make_style(), bib);
+    let citations = vec![
+        Citation {
+            items: vec![CitationItem {
+                id: "kuhn1962".to_string(),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+        Citation {
+            items: vec![
+                CitationItem {
+                    id: "kuhn1962".to_string(),
+                    ..Default::default()
+                },
+                CitationItem {
+                    id: "smith2020".to_string(),
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        },
+        Citation {
+            items: vec![CitationItem {
+                id: "kuhn1962".to_string(),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+    ];
+
+    let mut citations_mut = citations;
+    processor.annotate_positions(&mut citations_mut);
+
+    assert_eq!(
+        citations_mut[0].position,
+        Some(citum_schema::Position::First)
+    );
+    assert_eq!(
+        citations_mut[1].position,
+        Some(citum_schema::Position::First)
+    );
+    assert_eq!(
+        citations_mut[2].position,
+        Some(citum_schema::Position::Subsequent)
+    );
+}
+
 /// Tests that compound numeric mode assigns the same citation number to grouped refs.
 #[test]
 fn test_compound_numeric_number_assignment() {

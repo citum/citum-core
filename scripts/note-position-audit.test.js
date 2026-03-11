@@ -2,7 +2,9 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const {
+  evaluateConformanceLayer,
   evaluateNotePositionRender,
+  evaluateRegressionLayer,
   normalizeFixtureLocators,
   parseRenderedCitations,
   summarizeAuditResults,
@@ -11,8 +13,8 @@ const {
 } = require('./lib/note-position-audit');
 
 const EXPECTATIONS = validateExpectations({
-  version: 1,
-  profiles: {
+  version: 2,
+  regression_profiles: {
     'ibid-and-subsequent': {
       requires: { ibid: true, subsequent: true },
       checks: {
@@ -30,9 +32,33 @@ const EXPECTATIONS = validateExpectations({
       },
     },
   },
+  conformance_families: {
+    'chicago-full-note': {
+      lexical_marker: 'ibid',
+      immediate_repeat_form: 'marker',
+      immediate_with_locator_form: 'marker',
+      shortened_note_source: 'subsequent',
+      distinct_subsequent: true,
+      unresolved: ['note-start', 'prose-integral'],
+    },
+    'mhra-full-note': {
+      lexical_marker: 'none',
+      immediate_repeat_form: 'shortened-note',
+      immediate_with_locator_form: 'shortened-note',
+      shortened_note_source: 'subsequent',
+      distinct_subsequent: true,
+      unresolved: ['note-start', 'prose-integral'],
+    },
+  },
   styles: {
-    'example-ibid': { profile: 'ibid-and-subsequent' },
-    'example-fallback': { profile: 'subsequent-fallback' },
+    'example-ibid': {
+      regression_profile: 'ibid-and-subsequent',
+      conformance_family: 'chicago-full-note',
+    },
+    'example-fallback': {
+      regression_profile: 'subsequent-fallback',
+      conformance_family: 'mhra-full-note',
+    },
   },
 });
 
@@ -52,8 +78,8 @@ CITATIONS (From file):
   });
 });
 
-test('evaluateNotePositionRender passes for lexical ibid and distinct subsequent', () => {
-  const result = evaluateNotePositionRender(
+test('evaluateRegressionLayer passes for lexical ibid and distinct subsequent', () => {
+  const result = evaluateRegressionLayer(
     'example-ibid',
     { citation: { ibid: {}, subsequent: {} } },
     {
@@ -71,8 +97,8 @@ test('evaluateNotePositionRender passes for lexical ibid and distinct subsequent
   assert.deepEqual(result.issues, []);
 });
 
-test('evaluateNotePositionRender reports configuration gaps for missing subsequent override', () => {
-  const result = evaluateNotePositionRender(
+test('evaluateRegressionLayer reports configuration gaps for missing subsequent override', () => {
+  const result = evaluateRegressionLayer(
     'example-fallback',
     { citation: {} },
     {
@@ -88,6 +114,47 @@ test('evaluateNotePositionRender reports configuration gaps for missing subseque
 
   assert.equal(result.status, 'configuration-gap');
   assert.match(result.issues[0].message, /citation\.subsequent/);
+});
+
+test('evaluateConformanceLayer reports unresolved dimensions without failing a settled match', () => {
+  const result = evaluateConformanceLayer(
+    'example-ibid',
+    { citation: { ibid: {}, subsequent: {} } },
+    {
+      'note-first': 'John Smith, Full Cite',
+      'note-ibid': 'Ibid.',
+      'note-ibid-with-locator': 'Ibid., 105',
+      'note-intervening': 'Other Author, Other Cite',
+      'note-subsequent': 'Smith, Short Cite',
+      'note-subsequent-with-locator': 'Smith, Short Cite, 205',
+    },
+    EXPECTATIONS
+  );
+
+  assert.equal(result.status, 'pass');
+  assert.deepEqual(result.issues, []);
+  assert.deepEqual(result.unresolved, ['note-start', 'prose-integral']);
+});
+
+test('evaluateNotePositionRender preserves regression aliases while exposing layered results', () => {
+  const result = evaluateNotePositionRender(
+    'example-fallback',
+    { citation: { subsequent: {} } },
+    {
+      'note-first': 'John Smith, Full Cite',
+      'note-ibid': 'Smith, Short Cite',
+      'note-ibid-with-locator': 'Smith, Short Cite, 105',
+      'note-intervening': 'Other Author, Other Cite',
+      'note-subsequent': 'Smith, Short Cite',
+      'note-subsequent-with-locator': 'Smith, Short Cite, 205',
+    },
+    EXPECTATIONS
+  );
+
+  assert.equal(result.status, 'pass');
+  assert.equal(result.profile, 'subsequent-fallback');
+  assert.equal(result.regression.status, 'pass');
+  assert.equal(result.conformance.status, 'pass');
 });
 
 test('normalizeFixtureLocators ignores fixture-specific page numbers', () => {
@@ -109,21 +176,37 @@ test('validateExpectationCoverage finds missing and extra style declarations', (
   });
 });
 
-test('summarizeAuditResults counts each gap class', () => {
+test('summarizeAuditResults counts each layer separately', () => {
   const summary = summarizeAuditResults(
     [
-      { status: 'pass' },
-      { status: 'configuration-gap' },
-      { status: 'rendering-gap' },
+      {
+        regression: { status: 'pass' },
+        conformance: { status: 'pass', unresolved: ['note-start'] },
+      },
+      {
+        regression: { status: 'configuration-gap' },
+        conformance: { status: 'gap', unresolved: [] },
+      },
+      {
+        regression: { status: 'rendering-gap' },
+        conformance: { status: 'pass', unresolved: [] },
+      },
     ],
     { missing: ['style-a'], extra: [] }
   );
 
   assert.deepEqual(summary, {
     total: 3,
-    pass: 1,
-    configurationGap: 1,
-    renderingGap: 1,
+    regression: {
+      pass: 1,
+      configurationGap: 1,
+      renderingGap: 1,
+    },
+    conformance: {
+      pass: 2,
+      gap: 1,
+      unresolved: 1,
+    },
     missingExpectations: 1,
     extraExpectations: 0,
   });

@@ -42,29 +42,55 @@ function validateExpectations(config) {
   if (!config || typeof config !== 'object' || Array.isArray(config)) {
     throw new Error('note-position-expectations.yaml must be an object');
   }
-  if (config.version !== 1) {
-    throw new Error('note-position-expectations.yaml version must be 1');
+  if (config.version !== 2) {
+    throw new Error('note-position-expectations.yaml version must be 2');
   }
-  if (!config.profiles || typeof config.profiles !== 'object' || Array.isArray(config.profiles)) {
-    throw new Error('note-position-expectations.yaml must define profiles');
+  if (!config.regression_profiles || typeof config.regression_profiles !== 'object' || Array.isArray(config.regression_profiles)) {
+    throw new Error('note-position-expectations.yaml must define regression_profiles');
+  }
+  if (!config.conformance_families || typeof config.conformance_families !== 'object' || Array.isArray(config.conformance_families)) {
+    throw new Error('note-position-expectations.yaml must define conformance_families');
   }
   if (!config.styles || typeof config.styles !== 'object' || Array.isArray(config.styles)) {
     throw new Error('note-position-expectations.yaml must define styles');
   }
 
-  for (const [profileName, profile] of Object.entries(config.profiles)) {
+  for (const [profileName, profile] of Object.entries(config.regression_profiles)) {
     if (!profile || typeof profile !== 'object' || Array.isArray(profile)) {
-      throw new Error(`note-position-expectations.yaml profiles.${profileName} must be an object`);
+      throw new Error(`note-position-expectations.yaml regression_profiles.${profileName} must be an object`);
     }
     for (const key of ['ibid', 'subsequent']) {
       if (typeof profile.requires?.[key] !== 'boolean') {
-        throw new Error(`note-position-expectations.yaml profiles.${profileName}.requires.${key} must be a boolean`);
+        throw new Error(`note-position-expectations.yaml regression_profiles.${profileName}.requires.${key} must be a boolean`);
       }
     }
     for (const key of ['lexical_ibid', 'immediate_falls_back_to_subsequent', 'distinct_subsequent']) {
       if (typeof profile.checks?.[key] !== 'boolean') {
-        throw new Error(`note-position-expectations.yaml profiles.${profileName}.checks.${key} must be a boolean`);
+        throw new Error(`note-position-expectations.yaml regression_profiles.${profileName}.checks.${key} must be a boolean`);
       }
+    }
+  }
+
+  for (const [familyName, family] of Object.entries(config.conformance_families)) {
+    if (!family || typeof family !== 'object' || Array.isArray(family)) {
+      throw new Error(`note-position-expectations.yaml conformance_families.${familyName} must be an object`);
+    }
+    if (!['ibid', 'none'].includes(family.lexical_marker)) {
+      throw new Error(`note-position-expectations.yaml conformance_families.${familyName}.lexical_marker must be "ibid" or "none"`);
+    }
+    for (const key of ['immediate_repeat_form', 'immediate_with_locator_form']) {
+      if (!['marker', 'shortened-note'].includes(family[key])) {
+        throw new Error(`note-position-expectations.yaml conformance_families.${familyName}.${key} must be "marker" or "shortened-note"`);
+      }
+    }
+    if (!['base', 'subsequent'].includes(family.shortened_note_source)) {
+      throw new Error(`note-position-expectations.yaml conformance_families.${familyName}.shortened_note_source must be "base" or "subsequent"`);
+    }
+    if (typeof family.distinct_subsequent !== 'boolean') {
+      throw new Error(`note-position-expectations.yaml conformance_families.${familyName}.distinct_subsequent must be a boolean`);
+    }
+    if (!Array.isArray(family.unresolved)) {
+      throw new Error(`note-position-expectations.yaml conformance_families.${familyName}.unresolved must be an array`);
     }
   }
 
@@ -72,8 +98,17 @@ function validateExpectations(config) {
     if (!styleEntry || typeof styleEntry !== 'object' || Array.isArray(styleEntry)) {
       throw new Error(`note-position-expectations.yaml styles.${styleName} must be an object`);
     }
-    if (typeof styleEntry.profile !== 'string' || !config.profiles[styleEntry.profile]) {
-      throw new Error(`note-position-expectations.yaml styles.${styleName}.profile must reference a known profile`);
+    if (
+      typeof styleEntry.regression_profile !== 'string'
+      || !config.regression_profiles[styleEntry.regression_profile]
+    ) {
+      throw new Error(`note-position-expectations.yaml styles.${styleName}.regression_profile must reference a known regression profile`);
+    }
+    if (
+      typeof styleEntry.conformance_family !== 'string'
+      || !config.conformance_families[styleEntry.conformance_family]
+    ) {
+      throw new Error(`note-position-expectations.yaml styles.${styleName}.conformance_family must reference a known conformance family`);
     }
   }
 
@@ -215,32 +250,18 @@ function normalizeAuditOptions(expectationOrOptions) {
   if (!expectationOrOptions) {
     return { expectationConfig: loadNotePositionExpectations() };
   }
-  if (expectationOrOptions.version === 1 && expectationOrOptions.profiles && expectationOrOptions.styles) {
+  if (
+    expectationOrOptions.version === 2
+    && expectationOrOptions.regression_profiles
+    && expectationOrOptions.conformance_families
+    && expectationOrOptions.styles
+  ) {
     return { expectationConfig: expectationOrOptions };
   }
   return {
     expectationConfig: expectationOrOptions.expectationConfig || loadNotePositionExpectations(),
     citumBin: expectationOrOptions.citumBin || null,
     timeoutMs: expectationOrOptions.timeoutMs || DEFAULT_TIMEOUT_MS,
-  };
-}
-
-function auditNoteStyle(styleRecord, expectationOrOptions = null) {
-  const options = normalizeAuditOptions(expectationOrOptions);
-  const rendered = renderFixtureForStyleWithOptions(
-    styleRecord.path,
-    REFS_FIXTURE,
-    CITATIONS_FIXTURE,
-    options
-  );
-  return {
-    style: styleRecord.name,
-    ...evaluateNotePositionRender(
-      styleRecord.name,
-      styleRecord.style,
-      rendered,
-      options.expectationConfig
-    ),
   };
 }
 
@@ -252,19 +273,28 @@ function normalizeFixtureLocators(text) {
   return normalizeText(text).replace(/\b(105|205)\b/g, '__LOCATOR__');
 }
 
-function evaluateNotePositionRender(styleName, style, rendered, expectationConfig) {
-  const styleExpectation = expectationConfig.styles[styleName];
-  const profile = expectationConfig.profiles[styleExpectation.profile];
-  const issues = [];
-  const citationConfig = style.citation || {};
+function compareRenderedForms(left, right) {
+  return normalizeFixtureLocators(left) === normalizeFixtureLocators(right);
+}
 
+function ensureRequiredFixtureIds(rendered) {
+  const issues = [];
   for (const id of REQUIRED_IDS) {
     if (!rendered[id]) {
       issues.push({ kind: 'rendering-gap', message: `Missing rendered citation for fixture id: ${id}` });
     }
   }
+  return issues;
+}
+
+function evaluateRegressionLayer(styleName, style, rendered, expectationConfig) {
+  const styleExpectation = expectationConfig.styles[styleName];
+  const profile = expectationConfig.regression_profiles[styleExpectation.regression_profile];
+  const issues = ensureRequiredFixtureIds(rendered);
+  const citationConfig = style.citation || {};
+
   if (issues.length > 0) {
-    return { status: 'rendering-gap', issues, profile: styleExpectation.profile };
+    return { status: 'rendering-gap', issues, profile: styleExpectation.regression_profile };
   }
 
   if (profile.requires.ibid && !citationConfig.ibid) {
@@ -292,10 +322,10 @@ function evaluateNotePositionRender(styleName, style, rendered, expectationConfi
   }
 
   if (profile.checks.immediate_falls_back_to_subsequent) {
-    if (ibid !== subsequent) {
+    if (!compareRenderedForms(ibid, subsequent)) {
       issues.push({ kind: 'rendering-gap', message: 'Immediate repeat should fall back to the same rendering as subsequent repeat.' });
     }
-    if (normalizeFixtureLocators(ibidWithLocator) !== normalizeFixtureLocators(subsequentWithLocator)) {
+    if (!compareRenderedForms(ibidWithLocator, subsequentWithLocator)) {
       issues.push({ kind: 'rendering-gap', message: 'Immediate repeat with locator should fall back to the same rendering as subsequent repeat with locator.' });
     }
   }
@@ -320,8 +350,85 @@ function evaluateNotePositionRender(styleName, style, rendered, expectationConfi
   return {
     status,
     issues,
-    profile: styleExpectation.profile,
+    profile: styleExpectation.regression_profile,
+  };
+}
+
+function evaluateConformanceLayer(styleName, style, rendered, expectationConfig) {
+  const styleExpectation = expectationConfig.styles[styleName];
+  const family = expectationConfig.conformance_families[styleExpectation.conformance_family];
+  const issues = ensureRequiredFixtureIds(rendered).map((issue) => ({
+    kind: 'rendering-gap',
+    message: issue.message,
+  }));
+  const citationConfig = style.citation || {};
+  const first = rendered['note-first'];
+  const ibid = rendered['note-ibid'];
+  const ibidWithLocator = rendered['note-ibid-with-locator'];
+  const subsequent = rendered['note-subsequent'];
+  const subsequentWithLocator = rendered['note-subsequent-with-locator'];
+
+  if (family.lexical_marker === 'ibid') {
+    if (!citationConfig.ibid) {
+      issues.push({ kind: 'style-gap', message: 'Conformance family expects a lexical ibid override in style YAML.' });
+    }
+    if (!hasLexicalIbid(ibid) || !hasLexicalIbid(ibidWithLocator)) {
+      issues.push({ kind: 'rendering-gap', message: 'Conformance family expects lexical ibid output for immediate repeats.' });
+    }
+  } else if (hasLexicalIbid(ibid) || hasLexicalIbid(ibidWithLocator)) {
+    issues.push({ kind: 'rendering-gap', message: 'Conformance family does not allow lexical ibid for immediate repeats.' });
+  }
+
+  if (family.immediate_repeat_form === 'shortened-note' && !compareRenderedForms(ibid, subsequent)) {
+    issues.push({ kind: 'rendering-gap', message: 'Conformance family expects immediate repeats to reuse the shortened-note form.' });
+  }
+
+  if (family.immediate_with_locator_form === 'shortened-note' && !compareRenderedForms(ibidWithLocator, subsequentWithLocator)) {
+    issues.push({ kind: 'rendering-gap', message: 'Conformance family expects immediate repeats with locator to reuse the shortened-note form.' });
+  }
+
+  if (family.shortened_note_source === 'subsequent' && !citationConfig.subsequent) {
+    issues.push({ kind: 'style-gap', message: 'Conformance family expects shortened-note behavior in citation.subsequent.' });
+  }
+
+  if (family.shortened_note_source === 'base' && citationConfig.subsequent) {
+    issues.push({ kind: 'style-gap', message: 'Conformance family expects the base citation to already be the shortened-note form.' });
+  }
+
+  if (family.distinct_subsequent) {
+    if (subsequent === first) {
+      issues.push({ kind: 'rendering-gap', message: 'Conformance family expects later repeats to differ from the first full note.' });
+    }
+  } else if (!compareRenderedForms(subsequent, first)) {
+    issues.push({ kind: 'rendering-gap', message: 'Conformance family expects later repeats to reuse the base shortened-note form.' });
+  }
+
+  if (!subsequentWithLocator.includes('205')) {
+    issues.push({ kind: 'rendering-gap', message: 'Conformance family expects locator-preserving subsequent short notes.' });
+  }
+  if (family.lexical_marker === 'ibid' && family.immediate_with_locator_form === 'marker' && !ibidWithLocator.includes('105')) {
+    issues.push({ kind: 'rendering-gap', message: 'Conformance family expects locator-preserving lexical ibid output.' });
+  }
+
+  return {
+    status: issues.length > 0 ? 'gap' : 'pass',
+    issues,
+    family: styleExpectation.conformance_family,
+    unresolved: family.unresolved,
+  };
+}
+
+function evaluateNotePositionRender(styleName, style, rendered, expectationConfig) {
+  const regression = evaluateRegressionLayer(styleName, style, rendered, expectationConfig);
+  const conformance = evaluateConformanceLayer(styleName, style, rendered, expectationConfig);
+
+  return {
+    status: regression.status,
+    issues: regression.issues,
+    profile: regression.profile,
     rendered,
+    regression,
+    conformance,
   };
 }
 
@@ -347,17 +454,32 @@ function auditNoteStyle(styleRecord, expectationOrOptions = null) {
 function summarizeAuditResults(results, coverage = { missing: [], extra: [] }) {
   const summary = {
     total: results.length,
-    pass: 0,
-    configurationGap: 0,
-    renderingGap: 0,
+    regression: {
+      pass: 0,
+      configurationGap: 0,
+      renderingGap: 0,
+    },
+    conformance: {
+      pass: 0,
+      gap: 0,
+      unresolved: 0,
+    },
     missingExpectations: coverage.missing.length,
     extraExpectations: coverage.extra.length,
   };
+
   for (const result of results) {
-    if (result.status === 'pass') summary.pass += 1;
-    if (result.status === 'configuration-gap') summary.configurationGap += 1;
-    if (result.status === 'rendering-gap') summary.renderingGap += 1;
+    if (result.regression.status === 'pass') summary.regression.pass += 1;
+    if (result.regression.status === 'configuration-gap') summary.regression.configurationGap += 1;
+    if (result.regression.status === 'rendering-gap') summary.regression.renderingGap += 1;
+
+    if (result.conformance.status === 'pass') summary.conformance.pass += 1;
+    if (result.conformance.status === 'gap') summary.conformance.gap += 1;
+    if (Array.isArray(result.conformance.unresolved) && result.conformance.unresolved.length > 0) {
+      summary.conformance.unresolved += 1;
+    }
   }
+
   return summary;
 }
 
@@ -395,13 +517,17 @@ module.exports = {
   STYLES_DIR,
   auditAllNoteStyles,
   auditNoteStyle,
+  compareRenderedForms,
   discoverNoteStyles,
+  evaluateConformanceLayer,
   evaluateNotePositionRender,
+  evaluateRegressionLayer,
   hasLexicalIbid,
   loadNotePositionExpectations,
   normalizeText,
   normalizeFixtureLocators,
   parseRenderedCitations,
+  renderFixtureForStyle,
   renderFixtureForStyleWithOptions,
   resolveCitumBinary,
   summarizeAuditResults,

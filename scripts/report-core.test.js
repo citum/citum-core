@@ -22,6 +22,7 @@ const {
   getEffectiveOracleSection,
   getCslSnapshotStatus,
   getComparisonEntryTexts,
+  generateHtml,
   mapWithConcurrency,
   mergeDivergenceSummaries,
   preflightSnapshots,
@@ -133,6 +134,59 @@ test('comparison text helper supports both live-oracle and native-snapshot entry
     getComparisonEntryTexts({ expected: 'snapshot benchmark', actual: 'snapshot citum' }),
     { benchmark: 'snapshot benchmark', citum: 'snapshot citum' }
   );
+});
+
+test('generateHtml renders repeated-note regression and conformance layers separately', () => {
+  const html = generateHtml({
+    generated: '2026-03-11T00:00:00.000Z',
+    commit: 'deadbee',
+    metadata: {},
+    totalImpact: 0,
+    totalStyles: 1,
+    citationsOverall: { passed: 1, total: 1 },
+    bibliographyOverall: { passed: 0, total: 0 },
+    qualityOverall: { score: 1 },
+    styles: [
+      {
+        name: 'chicago-notes',
+        sourceName: 'chicago-notes',
+        format: 'note',
+        hasBibliography: false,
+        originLabel: 'Test',
+        authorityLabel: 'citeproc-js',
+        fidelityScore: 1,
+        citations: { passed: 1, total: 1 },
+        bibliography: { passed: 0, total: 0 },
+        qualityScore: 1,
+        qualityBreakdown: {
+          subscores: {
+            typeCoverage: { score: 100 },
+            fallbackRobustness: { score: 100 },
+            concision: { score: 100 },
+            presetUsage: { score: 100 },
+          },
+        },
+        notePositionAudit: {
+          regression: {
+            status: 'pass',
+            profile: 'ibid-and-subsequent',
+            issues: [],
+          },
+          conformance: {
+            status: 'pass',
+            family: 'chicago-full-note',
+            issues: [],
+            unresolved: ['note-start', 'prose-integral'],
+          },
+        },
+      },
+    ],
+  });
+
+  assert.match(html, /Regression Layer/);
+  assert.match(html, /Normative Conformance/);
+  assert.match(html, /chicago-full-note/);
+  assert.match(html, /Unresolved: note-start, prose-integral/);
 });
 
 test('effective oracle sections and fidelity prefer adjusted counts when present', () => {
