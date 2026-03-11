@@ -1,7 +1,7 @@
 ---
 name: style-qa
 type: agent-invocable
-description: Standardized QA gate for style work. Verifies fidelity (citations + bibliography), SQI drift, formatting defects, and regression surface. Produces approve/reject verdict with numbered findings.
+description: "Standardized QA gate for style work. Verifies fidelity (citations + bibliography), SQI drift, formatting defects, and regression surface. Produces approve/reject verdict with numbered findings."
 model: haiku
 ---
 

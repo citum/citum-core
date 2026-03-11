@@ -18,6 +18,18 @@ Fallback if nextest missing: `cargo test`. **DO NOT commit if any check fails.**
 
 Docs/styles (`.md`, `.yaml` in `styles/`) skip checks entirely.
 
+### Manifest Frontmatter Preflight
+
+Before relying on local skills/commands in Claude, Codex, or Copilot, run:
+```bash
+./scripts/validate-frontmatter.sh --copilot-strict
+```
+
+For CI/PR parity (repo-local manifests only), run:
+```bash
+./scripts/validate-frontmatter.sh --repo-only --copilot-strict
+```
+
 ### Documentation Rule
 
 **All new or modified public Rust items must have `///` doc comments.** This applies to structs, enums, traits, functions, and public fields. One clear sentence minimum — describe *what* it is/does. Existing items touched by a change must be documented in the same commit. Doc-only commits skip build checks.

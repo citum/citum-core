@@ -1,3 +1,10 @@
+---
+name: pr-workflow-fast
+description: >
+  Fast, consistent branch/PR workflow with explicit change-type quality gates
+  and concise evidence-first PR descriptions.
+---
+
 # PR Workflow Fast
 
 **Type:** User-Invocable, Agent-Invocable

@@ -1,7 +1,7 @@
 ---
 name: style-maintain
 type: agent-invocable
-description: Fast targeted maintenance for an existing Citum style. Use for punctuation/layout bugs, missing type overrides, or syntax modernization. Not for migrations or batch waves.
+description: "Fast targeted maintenance for an existing Citum style. Use for punctuation/layout bugs, missing type overrides, or syntax modernization. Not for migrations or batch waves."
 model: haiku
 ---
 
