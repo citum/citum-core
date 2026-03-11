@@ -2401,7 +2401,8 @@ function generateDetailContent(style) {
   if (style.notePositionAudit) {
     const audit = style.notePositionAudit;
     const regression = audit.regression || { status: audit.status, issues: audit.issues || [], profile: audit.profile };
-    const conformance = audit.conformance || { status: 'pass', issues: [], family: 'unknown', unresolved: [] };
+    const hasConformance = Boolean(audit.conformance);
+    const conformance = audit.conformance || { status: 'not-evaluated', issues: [], family: 'n/a', unresolved: [] };
     const regressionBadgeClass = regression.status === 'pass'
       ? 'bg-emerald-100 text-emerald-700'
       : regression.status === 'configuration-gap'
@@ -2409,18 +2410,24 @@ function generateDetailContent(style) {
         : 'bg-red-100 text-red-700';
     const conformanceBadgeClass = conformance.status === 'pass'
       ? 'bg-sky-100 text-sky-700'
+      : conformance.status === 'not-evaluated'
+        ? 'bg-slate-100 text-slate-700'
       : 'bg-amber-100 text-amber-700';
     const regressionIssueText = regression.issues.length === 0
       ? '<span class="text-xs text-slate-500">No repeated-note issues detected.</span>'
       : regression.issues
         .map((issue) => `<div class="text-xs font-mono text-slate-600">${escapeHtml(issue.kind)}: ${escapeHtml(issue.message)}</div>`)
         .join('');
-    const conformanceIssueText = conformance.issues.length === 0
+    const conformanceIssueText = !hasConformance
+      ? '<span class="text-xs text-slate-500">Normative conformance was not evaluated for this report artifact.</span>'
+      : conformance.issues.length === 0
       ? '<span class="text-xs text-slate-500">No settled conformance gaps detected.</span>'
       : conformance.issues
         .map((issue) => `<div class="text-xs font-mono text-slate-600">${escapeHtml(issue.kind)}: ${escapeHtml(issue.message)}</div>`)
         .join('');
-    const unresolvedText = Array.isArray(conformance.unresolved) && conformance.unresolved.length > 0
+    const unresolvedText = !hasConformance
+      ? '<span class="text-xs text-slate-500">No conformance metadata available.</span>'
+      : Array.isArray(conformance.unresolved) && conformance.unresolved.length > 0
       ? `<div class="text-xs text-slate-500">Unresolved: ${escapeHtml(conformance.unresolved.join(', '))}</div>`
       : '<span class="text-xs text-slate-500">No unresolved conformance dimensions recorded.</span>';
     html += `
