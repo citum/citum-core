@@ -253,30 +253,27 @@ Reasonable authored examples:
 
 ```yaml
 title:
-  structured:
-    main: "understanding citation systems"
-    sub:
-      - "history and practice"
-      - "a comparative view"
+  main: "understanding citation systems"
+  sub:
+    - "history and practice"
+    - "a comparative view"
 ```
 
 ```yaml
 title:
-  structured:
-    main: "the dna of empire"
-    sub:
-      - "race and {.nocase}[mRNA] in modern science"
+  main: "the dna of empire"
+  sub:
+    - "race and {.nocase}[mRNA] in modern science"
 ```
 
 ```yaml
 title:
-  multi-structured:
-    - lang: en
-      main: "the dna of empire"
+  - - en
+    - main: "the dna of empire"
       sub:
         - "race and {.nocase}[mRNA] in modern science"
-    - lang: de
-      main: "die Geschichte der Molekularbiologie"
+  - - de
+    - main: "die Geschichte der Molekularbiologie"
       sub:
         - "eine Einführung"
 ```
