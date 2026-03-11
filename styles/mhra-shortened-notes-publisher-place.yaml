@@ -38,6 +38,12 @@ options:
     hanging-indent: true
     separator: ": "
 citation:
+  ibid:
+    delimiter: ", "
+    template:
+      - term: ibid
+        strip-periods: true
+      - variable: locator
   template:
     - contributor: author
       form: short
@@ -49,6 +55,9 @@ citation:
     - title: primary
       prefix: ", "
       wrap: quotes
+    - variable: locator
+      prefix: ", "
+      show-label: true
   suffix: .
   delimiter: ". "
   multi-cite-delimiter: "; "

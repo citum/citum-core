@@ -1,0 +1,65 @@
+version: 1
+profiles:
+  ibid-and-subsequent:
+    requires:
+      ibid: true
+      subsequent: true
+    checks:
+      lexical_ibid: true
+      immediate_falls_back_to_subsequent: false
+      distinct_subsequent: true
+  ibid-only:
+    requires:
+      ibid: true
+      subsequent: false
+    checks:
+      lexical_ibid: true
+      immediate_falls_back_to_subsequent: false
+      distinct_subsequent: false
+  subsequent-fallback:
+    requires:
+      ibid: false
+      subsequent: true
+    checks:
+      lexical_ibid: false
+      immediate_falls_back_to_subsequent: true
+      distinct_subsequent: true
+styles:
+  chicago-notes:
+    profile: ibid-and-subsequent
+  chicago-notes-bibliography-17th-edition:
+    profile: ibid-and-subsequent
+  chicago-notes-bibliography-classic-archive-place-first-no-url:
+    profile: ibid-and-subsequent
+  chicago-notes-classic:
+    profile: ibid-and-subsequent
+  chicago-notes-classic-archive-place-first:
+    profile: ibid-and-subsequent
+  chicago-notes-classic-no-url:
+    profile: ibid-and-subsequent
+  chicago-notes-publisher-place-archive-place-first-no-url:
+    profile: ibid-and-subsequent
+  chicago-shortened-notes-bibliography:
+    profile: ibid-only
+  chicago-shortened-notes-bibliography-classic-archive-place-first:
+    profile: ibid-only
+  mhra-notes:
+    profile: subsequent-fallback
+  mhra-notes-publisher-place:
+    profile: subsequent-fallback
+  mhra-notes-publisher-place-no-url:
+    profile: subsequent-fallback
+  mhra-shortened-notes-publisher-place:
+    profile: ibid-only
+  new-harts-rules-notes:
+    profile: subsequent-fallback
+  new-harts-rules-notes-label-page:
+    profile: subsequent-fallback
+  new-harts-rules-notes-label-page-no-url:
+    profile: subsequent-fallback
+  oscola:
+    profile: ibid-and-subsequent
+  oscola-no-ibid:
+    profile: subsequent-fallback
+  thomson-reuters-legal-tax-and-accounting-australia:
+    profile: subsequent-fallback

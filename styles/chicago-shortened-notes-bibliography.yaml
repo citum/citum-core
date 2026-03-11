@@ -53,6 +53,13 @@ citation:
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
+  ibid:
+    suffix: ""
+    delimiter: ", "
+    template:
+      - term: ibid
+      - variable: locator
+        suffix: .
   template:
     - contributor: author
       form: short
@@ -61,6 +68,8 @@ citation:
         min: 3
         use-first: 1
     - title: primary
+      prefix: ", "
+    - variable: locator
       prefix: ", "
   suffix: .
   delimiter: ". "

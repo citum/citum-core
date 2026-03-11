@@ -38,6 +38,10 @@ const {
   getLineagePresentation,
   loadReportProvenance,
 } = require('./lib/report-metadata');
+const {
+  auditNoteStyle,
+  discoverNoteStyles,
+} = require('./lib/note-position-audit');
 const { normalizeText } = require('./oracle-utils');
 const { maybeDatasetErrorForFile } = require('./lib/dataset-guard');
 
@@ -484,6 +488,10 @@ function discoverCoreStyles(provenanceConfig = loadReportProvenance()) {
       originSortRank: origin.sortRank,
     };
   });
+}
+
+function buildNoteStyleLookup() {
+  return new Map(discoverNoteStyles().map((style) => [style.name, style]));
 }
 
 function selectPrimaryComparator(styleSpec, verificationPolicy) {
@@ -1610,6 +1618,7 @@ async function processStyleReport(runtime, styleSpec, context) {
     stylesDir,
     verificationPolicy,
     fixtureSufficiency,
+    noteStyles,
   } = context;
   const stylePolicy = resolveVerificationPolicy(styleSpec.name, verificationPolicy);
   const sufficiencyPolicy = resolveFixtureSufficiency(stylePolicy.fixtureFamily, fixtureSufficiency);
@@ -1635,6 +1644,10 @@ async function processStyleReport(runtime, styleSpec, context) {
       statusTier = 'partial';
     }
 
+    const notePositionAudit = styleSpec.format === 'note' && noteStyles.has(styleSpec.name)
+      ? auditNoteStyle(noteStyles.get(styleSpec.name), { citumBin: runtime.citumBin })
+      : null;
+
     return {
       styleRecord: {
         name: styleSpec.name,
@@ -1658,6 +1671,7 @@ async function processStyleReport(runtime, styleSpec, context) {
         qualityScore: parseFloat(qualityScore.toFixed(3)),
         qualityBreakdown: qualityMetrics,
         oracleSource: 'citum-baseline',
+        notePositionAudit,
       },
       errorCount: oracleResult.error ? 1 : 0,
       citations,
@@ -1737,6 +1751,10 @@ async function processStyleReport(runtime, styleSpec, context) {
     statusTier = 'partial';
   }
 
+  const notePositionAudit = styleSpec.format === 'note' && noteStyles.has(styleSpec.name)
+    ? auditNoteStyle(noteStyles.get(styleSpec.name), { citumBin: runtime.citumBin })
+    : null;
+
   return {
     styleRecord: {
       name: styleSpec.name,
@@ -1760,6 +1778,7 @@ async function processStyleReport(runtime, styleSpec, context) {
       qualityScore: parseFloat(qualityScore.toFixed(3)),
       qualityBreakdown: qualityMetrics,
       oracleSource: oracleResult.oracleSource || primaryComparator,
+      notePositionAudit,
     },
     errorCount: oracleResult.error ? 1 : 0,
     citations,
@@ -1782,6 +1801,7 @@ async function generateReport(options) {
   const gitCommit = getGitCommit();
   const runtime = createReportRuntime(options);
   const preflightIssues = preflightSnapshots(coreStyles, verificationPolicy, stylesDir);
+  const noteStyles = buildNoteStyleLookup();
 
   if (!runtime.allowLiveFallback && preflightIssues.length > 0) {
     for (const issue of preflightIssues) {
@@ -1795,6 +1815,7 @@ async function generateReport(options) {
       stylesDir,
       verificationPolicy,
       fixtureSufficiency,
+      noteStyles,
     });
     if (result.styleRecord.error) {
       process.stderr.write(`Error processing ${styleSpec.name}: ${result.styleRecord.error}\n`);
@@ -1842,7 +1863,11 @@ async function generateReport(options) {
         styleSelector: 'core-styles',
         styles: coreStyles.map((style) => style.name),
         generator: 'scripts/report-core.js',
-        extraFixtures: ['tests/fixtures/citations-note-expanded.json'],
+        extraFixtures: [
+          'tests/fixtures/citations-note-expanded.json',
+          'tests/fixtures/references-note-positions.json',
+          'tests/fixtures/citations-note-positions.json',
+        ],
         parallelism: options.parallelism || DEFAULT_PARALLELISM,
         cacheDir: runtime.cacheDir,
         preflight: {
@@ -2373,6 +2398,35 @@ function generateDetailContent(style) {
 `;
   }
 
+  if (style.notePositionAudit) {
+    const audit = style.notePositionAudit;
+    const badgeClass = audit.status === 'pass'
+      ? 'bg-emerald-100 text-emerald-700'
+      : audit.status === 'configuration-gap'
+        ? 'bg-amber-100 text-amber-700'
+        : 'bg-red-100 text-red-700';
+    const issueText = audit.issues.length === 0
+      ? '<span class="text-xs text-slate-500">No repeated-note issues detected.</span>'
+      : audit.issues
+        .map((issue) => `<div class="text-xs font-mono text-slate-600">${escapeHtml(issue.kind)}: ${escapeHtml(issue.message)}</div>`)
+        .join('');
+    html += `
+                            <div class="mb-4 p-3 rounded border border-slate-200 bg-white">
+                                <div class="flex items-center justify-between gap-3 mb-2">
+                                    <div class="text-xs font-semibold text-slate-900">Repeated-Note Audit</div>
+                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium ${badgeClass}">
+                                        ${escapeHtml(audit.status)}
+                                    </span>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs mb-2">
+                                    <div><span class="font-semibold text-slate-700">Profile:</span> <span class="font-mono text-slate-600">${escapeHtml(audit.profile || '—')}</span></div>
+                                    <div><span class="font-semibold text-slate-700">Issues:</span> <span class="font-mono text-slate-600">${audit.issues.length}</span></div>
+                                </div>
+                                ${issueText}
+                            </div>
+`;
+  }
+
   if (style.componentSummary && Object.keys(style.componentSummary).length > 0) {
     const issues = Object.entries(style.componentSummary)
       .sort((a, b) => b[1] - a[1])
@@ -2782,6 +2836,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  buildNoteStyleLookup,
   computeFidelityScore,
   createReportRuntime,
   discoverCoreStyles,

@@ -80,6 +80,7 @@ families:
       - personal_communication
     required_scenarios:
       - note shortening
+      - repeated-note position flow
       - repeated-author handling
       - translator and editor containers
       - archive and manuscript references
@@ -88,6 +89,7 @@ families:
     fixture_sets:
       - note
       - humanities-note
+      - note-positions
   legal:
     default_report_sufficient: false
     required_reference_types:

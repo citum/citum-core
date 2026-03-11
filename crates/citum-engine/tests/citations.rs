@@ -831,7 +831,7 @@ fn test_chicago_notes_ibid_renders_compact() {
         .expect("Failed to process ibid citation");
     assert!(
         ibid_result.contains("Ibid."),
-        "Ibid citation should contain 'Ibid.': got {}",
+        "Ibid citation should contain lexical ibid: got {}",
         ibid_result
     );
     // The ibid position is being respected - the citation should be shorter
@@ -881,12 +881,8 @@ fn test_chicago_notes_ibid_with_locator() {
         .process_citation(&ibid_with_locator)
         .expect("Failed to process ibid with locator citation");
     assert!(
-        result.contains("Ibid."),
-        "IbidWithLocator should contain 'Ibid.'"
-    );
-    assert!(
-        result.contains("45"),
-        "IbidWithLocator should contain locator value"
+        result.contains("Ibid., 45"),
+        "IbidWithLocator should contain lexical ibid: {result}"
     );
 }
 

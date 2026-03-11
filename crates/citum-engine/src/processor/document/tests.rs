@@ -301,7 +301,7 @@ fn test_mixed_manual_and_auto_notes_share_sequence() {
     assert!(result.contains("[^m1]: First"));
     assert!(result.contains("[^m2]: Second"));
     assert!(result.contains("[^citum-auto-2]:"));
-    assert!(result.contains("ibid"));
+    assert!(result.contains("Ibid"));
 }
 
 #[test]
@@ -415,7 +415,7 @@ fn test_note_order_uses_manual_reference_order_not_definition_order() {
 
     assert!(result.contains("[^m1]: See"));
     assert!(result.contains("[^citum-auto-2]:"));
-    assert!(result.contains("ibid"));
+    assert!(result.contains("Ibid"));
 }
 
 #[test]
