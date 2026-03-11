@@ -23,8 +23,9 @@ In scope:
 Out of scope:
 - changing note-style output solely to match this spec
 - committing copyrighted quotations or local research excerpts
-- settling note-start, prose, or authored/integral repeated-cite distinctions
-  without strong repo-backed evidence
+- settling prose or authored/integral repeated-cite distinctions without strong
+  repo-backed evidence; narrow note-start settlement is tracked separately in
+  `docs/specs/NOTE_START_REPEATED_NOTE_POLICY.md`
 
 ## Design
 ### Processor Invariants
@@ -105,11 +106,14 @@ The following are settled enough for normative checks:
 - whether locator-sensitive immediate repeats preserve locator content
 - whether shortened-note behavior is distinct from the first full note or is
   already encoded in the base citation form
+- the narrow note-start distinction for Chicago and OSCOLA families, tracked in
+  `docs/specs/NOTE_START_REPEATED_NOTE_POLICY.md`
 
 The following remain unresolved and must not be turned into exact-output
 assertions in this wave:
 
-- note-start versus prose repeated-cite distinctions
+- note-start outside the settled Chicago/OSCOLA families, plus prose repeated-
+  cite distinctions
 - authored/integral repeated-cite wording beyond narrow invariants
 - family-specific prose handling not already supported by settled repo behavior
 
