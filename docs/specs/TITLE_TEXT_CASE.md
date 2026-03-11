@@ -37,8 +37,8 @@ Djot title-markup work already landed in `csl26-suz3`.
 ### Core Principles
 
 1. Title casing must be non-destructive by default.
-2. The engine must not assume that stored title data has already been
-   normalized to sentence case or title case.
+2. Sentence case is the safest canonical storage assumption for portable
+   bibliographic data, following CSL experience.
 3. Style-specific casing rules belong primarily in authored presets, not in
    hard-coded engine branches.
 4. Casing transforms must operate on structured rich text, not flat strings.
@@ -47,13 +47,26 @@ Djot title-markup work already landed in `csl26-suz3`.
 
 ### Title-Like Field Model
 
-Citum should treat title-like fields as structured content with:
+Citum should treat title-like fields as structured content with explicit title
+parts and explicit rich-text spans.
+
+Normative rules:
+
+- Rendering must use Citum's structured title model, not parse full title
+  strings to recover main-title or subtitle boundaries.
+- Multiple subtitles are first-class data, not an edge case.
+- Parsing punctuation such as `:` or em dash is acceptable only for legacy
+  import, migration, or fallback display of unstructured external data. It is
+  not the normative rendering model.
+
+Structured title content includes:
 
 - field-level language metadata
+- explicit main-title and subtitle structure
 - optional span-level language overrides
-- case-protection metadata on spans
+- generic case-protection metadata on spans
 - optional semantic roles for spans, such as embedded title, acronym, formula,
-  or translation
+  translation, or quoted title
 
 The existing rich-text direction from `csl26-suz3` is the correct foundation.
 Case transforms must run over the rich-text tree so they can skip protected
@@ -95,7 +108,9 @@ Subtitle behavior is style-sensitive and must not be collapsed into one generic
 sentence-case rule.
 
 For rendering purposes, Citum must support subtitle-boundary-aware casing rules.
-The engine must be able to distinguish at least these punctuation boundaries:
+When the title is structured, these rules apply across explicit subtitle parts,
+not across a reparsed flat string. For legacy fallback only, the engine may
+recognize at least these punctuation boundaries:
 
 - `:`
 - em dash
@@ -103,10 +118,6 @@ The engine must be able to distinguish at least these punctuation boundaries:
 - exclamation point
 
 Semicolon does not create a subtitle boundary by default.
-
-If structured title/subtitle data is available, Citum must prefer that over
-punctuation heuristics. If only a flat title string is available, punctuation
-may be used as a fallback boundary signal under the style preset.
 
 ### Case Protection
 
@@ -116,6 +127,16 @@ respect. This internal concept must be able to ingest:
 - Djot-authored protected spans
 - CSL `.nocase` spans
 - BibTeX or biblatex brace protection
+
+Case protection and semantic annotation are distinct concerns:
+
+- **Generic protected spans** answer "do not recase this content."
+- **Semantic spans** answer "what kind of content is this."
+
+Every semantic span may imply protection, but the two concepts must not be
+collapsed into one flag. For example, an embedded title span may carry semantic
+meaning even when it is not fully locked, while a plain protected acronym may
+need no richer semantic classification.
 
 Protected spans are mandatory for preserving content whose lettercase carries
 semantic meaning, including:
@@ -127,7 +148,9 @@ semantic meaning, including:
 - embedded titles or quoted material that should not be recased by the outer
   transform
 
-Transforms must never modify a protected span.
+Transforms must never modify a protected span. Semantic span roles may inform
+future behavior, but generic protection is the minimum contract every casing
+algorithm must honor.
 
 ### Automatic Protection Heuristics
 
@@ -161,16 +184,19 @@ English-focused variants above.
 
 ### Input Casing and Normalization
 
-Citum must preserve authored input by default.
+Citum should assume sentence-case-oriented source data for portable bibliographic
+workflows, while still preserving explicit authored capitals and protected spans.
 
 Normative rules:
 
-- Rendering must not implicitly normalize raw title data toward sentence case.
-- Rendering must not assume title-case input.
-- If input casing is unknown, Citum must prefer preservation over destructive
-  downcasing.
-- Any database-wide or field-level normalization workflow must be explicit and
-  opt-in.
+- Rendering may assume that unprotected title-like data is intended to behave as
+  sentence-case-oriented source text unless a style or field explicitly says
+  otherwise.
+- Rendering must not destroy explicit authored capitals that survive within that
+  sentence-case-oriented model.
+- Title-case input is not the default portability assumption.
+- Any database-wide or field-level normalization workflow must still be explicit
+  and opt-in.
 
 Normalization, if implemented later, belongs in a dedicated migration or data
 cleanup tool, not in the default rendering path.
@@ -198,9 +224,12 @@ capabilities are required, even if the final YAML or Rust surface differs:
 
 - a style-level way to select case pattern and variant per field or field class
 - a way to carry field language and optional span language
-- a way to mark spans as case-protected
-- a way to preserve or explicitly model title/subtitle boundaries when known
-- a way to declare whether input case is trusted, known, or unknown
+- a way to mark spans as case-protected independently of semantic span role
+- a way to carry semantic span roles where they are useful
+- a way to model explicit main-title and subtitle structure, including multiple
+  subtitles
+- a way to declare when a field intentionally deviates from the sentence-case
+  default assumption
 
 The future implementation spec may refine concrete enum names and YAML keys,
 but it must preserve these semantics.
@@ -210,25 +239,19 @@ but it must preserve these semantics.
 The source memos agree on the non-destructive, rich-text, language-aware
 direction. The remaining disagreements or unresolved choices are:
 
-1. **Normalization posture**
-   One memo treats sentence-case storage as the preferred long-term canonical
-   strategy; the other is more cautious and argues for preserving authored case
-   plus explicit `input_case` metadata. This spec resolves the runtime behavior
-   in favor of preservation, but leaves long-term storage conventions open.
-
-2. **How much automatic protection to infer**
+1. **How much automatic protection to infer**
    The research supports light heuristics for obvious acronyms and formulas, but
    the acceptable heuristic scope is still unsettled.
 
-3. **How explicit subtitle structure should be in schema**
-   The evidence supports structured title/subtitle data when available, but the
-   tradeoff between explicit schema fields and punctuation-derived boundaries
-   remains open.
-
-4. **How far to go beyond English**
+2. **How far to go beyond English**
    The memos agree that non-English behavior cannot safely reuse English rules,
    but they do not settle which non-English bibliographic casing systems should
    be first-class in the initial implementation.
+
+3. **How much behavior semantic spans should unlock**
+   This spec separates generic protection from semantic span roles, but the
+   first implementation still needs to decide which semantic roles have active
+   rendering consequences beyond simple case protection.
 
 ## Implementation Notes
 
@@ -240,7 +263,8 @@ direction. The remaining disagreements or unresolved choices are:
   only a possible low-level primitive for character conversion.
 - Any follow-up implementation spec should define a conformance matrix covering:
   APA-like sentence case, NLM-like sentence case, title-case skip-word rules,
-  protected scientific tokens, mixed-language spans, and title/subtitle
+  protected scientific tokens, mixed-language spans, semantic vs generic
+  protection, and title/subtitle
   boundaries.
 
 ## Acceptance Criteria
@@ -251,8 +275,12 @@ direction. The remaining disagreements or unresolved choices are:
       `sentence-nlm` as separate semantic variants
 - [ ] The specification requires an internal case-protection mechanism
       compatible with Djot spans, CSL `.nocase`, and BibTeX-style protection
-- [ ] The specification states that rendering must not implicitly normalize raw
-      title data
+- [ ] The specification states that structured title parts, including multiple
+      subtitles, are the normative rendering model
+- [ ] The specification distinguishes generic protected spans from richer
+      semantic span roles
+- [ ] The specification adopts sentence case as the default portability
+      assumption for title-like source data
 - [ ] The specification requires field-level language awareness and span-level
       overrides for mixed-language titles
 - [ ] The specification records unresolved choices in an explicit open-questions
