@@ -1,11 +1,11 @@
 ---
 # csl26-wv5o
 title: Investigate title text-case semantics and prior art
-status: todo
+status: completed
 type: feature
 priority: normal
 created_at: 2026-03-09T21:07:35Z
-updated_at: 2026-03-09T23:22:45Z
+updated_at: 2026-03-11T18:41:34Z
 ---
 
 Follow-up to `csl26-suz3`.
@@ -29,6 +29,18 @@ Requirements:
 Non-goals:
 - re-opening the bounded Djot title-markup work already landed in `csl26-suz3`
 - shipping `.nocase` or title-case logic without prior-art review and a spec
+
+## Spec
+
+See `docs/specs/TITLE_TEXT_CASE.md`
+
+## Outcome
+
+Prior-art research from `perplexity.md` and `gem.md` has been synthesized into
+a draft spec. The spec settles the architectural direction around
+non-destructive, rich-text-aware, style-owned title text-case behavior and
+captures remaining disagreements as explicit open questions for follow-up
+implementation work.
 
 Sources:
 
