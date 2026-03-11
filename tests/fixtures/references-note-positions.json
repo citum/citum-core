@@ -1,0 +1,74 @@
+{
+  "RP-ITEM-1": {
+    "id": "RP-ITEM-1",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Adaptive Climate Risk Modeling in Coastal Cities",
+    "author": [
+      {
+        "family": "Smith",
+        "given": "John"
+      },
+      {
+        "family": "Lee",
+        "given": "Alice"
+      },
+      {
+        "family": "Kumar",
+        "given": "Priya"
+      },
+      {
+        "family": "Zhou",
+        "given": "Ming"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2021
+        ]
+      ]
+    },
+    "container-title": "Journal of Climate Analytics",
+    "volume": "12",
+    "issue": "2",
+    "page": "101-119",
+    "DOI": "10.5555/jca.2021.12.2.101"
+  },
+  "RP-ITEM-2": {
+    "id": "RP-ITEM-2",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Adaptive Climate Risk Modeling for Inland Regions",
+    "author": [
+      {
+        "family": "Smith",
+        "given": "John"
+      },
+      {
+        "family": "Lee",
+        "given": "Alice"
+      },
+      {
+        "family": "Nguyen",
+        "given": "Bao"
+      },
+      {
+        "family": "Patel",
+        "given": "Ravi"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2021
+        ]
+      ]
+    },
+    "container-title": "Journal of Climate Analytics",
+    "volume": "12",
+    "issue": "3",
+    "page": "201-219",
+    "DOI": "10.5555/jca.2021.12.3.201"
+  }
+}

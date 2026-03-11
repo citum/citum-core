@@ -133,13 +133,14 @@ Preset extraction across the 58-style wave:
 
 ### Note Styles (Tier 3 — Partial)
 
-Note styles (footnote-based) are ~19% of corpus. One is now production-quality;
-full ibid/subsequent support requires `position` condition (not yet implemented).
+Note styles (footnote-based) are ~19% of corpus. Mixed-condition repeated-note
+position extraction is now implemented; remaining work in this family is
+style-local fidelity cleanup rather than missing `position` support.
 
 | Style | Status | Notes |
 |-------|--------|-------|
 | chicago-shortened-notes-bibliography | ✅ Production | 13/13 citations, 31/31 bibliography |
-| chicago-notes | ⏳ Queued | Requires `position` condition support |
+| chicago-notes | 🔄 In Progress | Repeated-position overrides ship; remaining work is style-local fidelity cleanup |
 | oscola | ✅ Production | 13/13 citations, 32/32 bibliography |
 | oscola-no-ibid | ✅ Production | 13/13 citations, 32/32 bibliography |
 

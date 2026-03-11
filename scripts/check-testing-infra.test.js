@@ -56,6 +56,28 @@ function baseManifest() {
         notes: 'note',
       },
       {
+        fixture: 'tests/fixtures/references-note-positions.json',
+        domain: 'note',
+        kind: 'references',
+        reference_types: ['article-journal'],
+        citation_scenarios: [],
+        rendering_risks: ['repeated-note rendering'],
+        used_by: ['scripts/audit-note-positions.js'],
+        ci_status: 'required',
+        notes: 'note positions refs',
+      },
+      {
+        fixture: 'tests/fixtures/citations-note-positions.json',
+        domain: 'note',
+        kind: 'citations',
+        reference_types: ['article-journal'],
+        citation_scenarios: ['first', 'ibid', 'subsequent'],
+        rendering_risks: ['repeated-note rendering'],
+        used_by: ['scripts/audit-note-positions.js'],
+        ci_status: 'required',
+        notes: 'note positions cites',
+      },
+      {
         fixture: 'tests/fixtures/references-legal.json',
         domain: 'legal',
         kind: 'references',
@@ -118,11 +140,14 @@ function seedProject(root) {
   writeJson(path.join(root, 'tests/fixtures/coverage-manifest.json'), baseManifest());
   writeJson(path.join(root, 'tests/fixtures/references-expanded.json'), { ITEM: { type: 'book' } });
   writeJson(path.join(root, 'tests/fixtures/citations-note-expanded.json'), []);
+  writeJson(path.join(root, 'tests/fixtures/references-note-positions.json'), { ITEM: { type: 'article-journal' } });
+  writeJson(path.join(root, 'tests/fixtures/citations-note-positions.json'), []);
   writeJson(path.join(root, 'tests/fixtures/references-legal.json'), {});
   writeJson(path.join(root, 'tests/fixtures/references-scientific.json'), {});
   writeFile(path.join(root, 'tests/fixtures/references-multilingual.yaml'), '[]\n');
   writeJson(path.join(root, 'tests/fixtures/grouping/primary-secondary.json'), []);
   writeFile(path.join(root, 'scripts/oracle.js'), '#!/usr/bin/env node\n');
+  writeFile(path.join(root, 'scripts/audit-note-positions.js'), '#!/usr/bin/env node\n');
   writeJson(path.join(root, 'scripts/report-data/oracle-top10-baseline.json'), {
     styleBreakdown: [{ style: 'apa', citations: '1/1', bibliography: '1/1' }],
     metadata: {

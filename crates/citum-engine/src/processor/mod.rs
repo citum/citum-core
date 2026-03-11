@@ -58,6 +58,14 @@ fn effective_locator_string(item: &CitationItem) -> Option<String> {
         .map(|locator| locator.canonical_string())
 }
 
+fn capitalize_first(value: &str) -> String {
+    let mut chars = value.chars();
+    match chars.next() {
+        Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+        None => String::new(),
+    }
+}
+
 use self::disambiguation::Disambiguator;
 use self::matching::Matcher;
 use self::rendering::{CompoundRenderData, Renderer};
@@ -1172,7 +1180,22 @@ impl Processor {
             output
         };
 
-        Ok(fmt.finish(wrapped))
+        let mut rendered = fmt.finish(wrapped);
+        if matches!(
+            citation.position,
+            Some(citum_schema::citation::Position::Ibid)
+                | Some(citum_schema::citation::Position::IbidWithLocator)
+        ) && matches!(
+            citation.mode,
+            citum_schema::citation::CitationMode::NonIntegral
+        ) && citation.prefix.as_deref().unwrap_or("").is_empty()
+            && spec_prefix.is_empty()
+            && rendered.starts_with("ibid")
+        {
+            rendered = capitalize_first(&rendered);
+        }
+
+        Ok(rendered)
     }
 
     /// Render multiple citations in document order.

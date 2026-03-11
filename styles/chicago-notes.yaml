@@ -42,10 +42,12 @@ options:
 citation:
   delimiter: ""
   ibid:
+    suffix: ""
+    delimiter: ", "
     template:
+      - term: ibid
       - variable: locator
-        prefix: ", "
-    suffix: "Ibid."
+        suffix: .
   subsequent:
     options:
       contributors:
@@ -55,6 +57,7 @@ citation:
         form: short
       - title: primary
         form: short
+        prefix: ", "
       - variable: locator
         prefix: ", "
         overrides:

@@ -13,6 +13,7 @@ const {
 const { getEffectiveVerificationScopes } = require('./lib/style-verification');
 const { loadReportProvenance } = require('./lib/report-metadata');
 const {
+  buildNoteStyleLookup,
   discoverCoreStyles,
   computeFidelityScore,
   equivalentText,
@@ -50,6 +51,14 @@ test('discoverCoreStyles classifies representative style origins and CSL reach',
 
   const unknownOrigins = [...styles.values()].filter((style) => style.originLabel === 'Unknown');
   assert.deepEqual(unknownOrigins, []);
+});
+
+test('buildNoteStyleLookup indexes shipped note styles', () => {
+  const noteStyles = buildNoteStyleLookup();
+
+  assert.equal(noteStyles.has('chicago-notes'), true);
+  assert.equal(noteStyles.get('chicago-notes').style.options.processing, 'note');
+  assert.equal(noteStyles.has('apa-7th'), false);
 });
 
 test('report-core exposes expected benchmark labels for representative styles', () => {

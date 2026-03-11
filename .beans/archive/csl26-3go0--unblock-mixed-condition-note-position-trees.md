@@ -1,7 +1,7 @@
 ---
 # csl26-3go0
 title: Unblock mixed-condition note position trees
-status: in-progress
+status: completed
 type: task
 priority: normal
 tags:
@@ -9,7 +9,7 @@ tags:
     - styles
     - citations
 created_at: 2026-03-10T22:20:45Z
-updated_at: 2026-03-10T22:54:30Z
+updated_at: 2026-03-11T11:29:52Z
 ---
 
 Follow-on from csl26-qfa3 and archive bean csl26-494i.
@@ -54,3 +54,11 @@ Deliverables:
   regenerated version only if it improves or preserves fidelity. If a specific
   style still needs manual cleanup after the shared migrate fix, split that into
   a narrow follow-on bean rather than widening this shared migration task.
+
+## Summary of Changes
+
+- Confirmed the mixed-condition migrate fix is already landed and treated this bean as a style rollout / repo-truth task rather than new Rust work.
+- Re-ran baseline and fresh XML-mode migrate comparisons for the eight scoped note parents; raw full-file re-migration still regressed fidelity, so shipped styles were updated selectively instead of replaced wholesale.
+- Added explicit repeated-position overrides to the shipped note styles that were still missing them: `chicago-notes-bibliography-17th-edition`, `mhra-notes`, `mhra-notes-publisher-place`, `mhra-notes-publisher-place-no-url`, `new-harts-rules-notes`, `new-harts-rules-notes-label-page`, and `new-harts-rules-notes-label-page-no-url`. `chicago-notes` remained the control case because it already shipped note-position overrides.
+- Verification: per-style oracle checks for all eight scoped parents, note/legal batch rerun via `oracle-batch-aggregate`, core-quality gate pass, and repo-truth doc update for the stale note-style status text.
+- Rendering lint still reports long-standing formatting defects in these note families, but the repeated-position rollout did not change the shipped oracle baselines or widen the scope into unrelated cleanup work.

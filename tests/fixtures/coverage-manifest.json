@@ -110,6 +110,53 @@
       "notes": "Specialized citation fixture used for note-style fidelity in the core compatibility report."
     },
     {
+      "fixture": "tests/fixtures/references-note-positions.json",
+      "domain": "note",
+      "kind": "references",
+      "reference_types": [
+        "article-journal"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "repeated-note short form detection",
+        "ibid vs subsequent classification",
+        "locator preservation in note overrides"
+      ],
+      "used_by": [
+        "scripts/audit-note-positions.js",
+        "scripts/report-core.js"
+      ],
+      "ci_status": "required",
+      "notes": "Dedicated reference fixture for repeated-note audits across shipped note styles."
+    },
+    {
+      "fixture": "tests/fixtures/citations-note-positions.json",
+      "domain": "note",
+      "kind": "citations",
+      "reference_types": [
+        "article-journal"
+      ],
+      "citation_scenarios": [
+        "first citation",
+        "immediate repeat without locator",
+        "immediate repeat with locator",
+        "intervening citation",
+        "subsequent citation without locator",
+        "subsequent citation with locator"
+      ],
+      "rendering_risks": [
+        "repeated-note state transitions",
+        "ibid fallback behavior",
+        "locator preservation in repeated notes"
+      ],
+      "used_by": [
+        "scripts/audit-note-positions.js",
+        "scripts/report-core.js"
+      ],
+      "ci_status": "required",
+      "notes": "Dedicated citation sequence for first, ibid, and subsequent note-position audits."
+    },
+    {
       "fixture": "tests/fixtures/compound-numeric-refs.json",
       "domain": "core",
       "kind": "references",

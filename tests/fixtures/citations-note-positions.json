@@ -1,0 +1,64 @@
+[
+  {
+    "id": "note-first",
+    "position": "first",
+    "items": [
+      {
+        "id": "RP-ITEM-1"
+      }
+    ]
+  },
+  {
+    "id": "note-ibid",
+    "position": "ibid",
+    "items": [
+      {
+        "id": "RP-ITEM-1"
+      }
+    ]
+  },
+  {
+    "id": "note-ibid-with-locator",
+    "position": "ibid-with-locator",
+    "items": [
+      {
+        "id": "RP-ITEM-1",
+        "locator": {
+          "label": "page",
+          "value": "105"
+        }
+      }
+    ]
+  },
+  {
+    "id": "note-intervening",
+    "position": "first",
+    "items": [
+      {
+        "id": "RP-ITEM-2"
+      }
+    ]
+  },
+  {
+    "id": "note-subsequent",
+    "position": "subsequent",
+    "items": [
+      {
+        "id": "RP-ITEM-1"
+      }
+    ]
+  },
+  {
+    "id": "note-subsequent-with-locator",
+    "position": "subsequent",
+    "items": [
+      {
+        "id": "RP-ITEM-1",
+        "locator": {
+          "label": "page",
+          "value": "205"
+        }
+      }
+    ]
+  }
+]

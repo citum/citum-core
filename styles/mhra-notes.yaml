@@ -50,6 +50,19 @@ citation:
   options:
     contributors:
       delimiter-precedes-last: contextual
+  subsequent:
+    options:
+      contributors:
+        name-form: family-only
+    template:
+      - contributor: author
+        form: short
+      - title: primary
+        form: short
+        wrap: quotes
+      - variable: locator
+        prefix: ", "
+        show-label: true
   template:
     - contributor: author
       form: long

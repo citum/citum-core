@@ -28,6 +28,7 @@ const FIXTURE_SET_REFS = {
   'physics-numeric': path.join(FIXTURES_DIR, 'references-physics-numeric.json'),
   'author-date': path.join(FIXTURES_DIR, 'references-author-date.json'),
   'humanities-note': path.join(FIXTURES_DIR, 'references-humanities-note.json'),
+  'note-positions': path.join(FIXTURES_DIR, 'references-note-positions.json'),
   'legal': path.join(FIXTURES_DIR, 'references-legal.json'),
   'csl-m-adapted': path.join(FIXTURES_DIR, 'references-csl-m-adapted.json'),
 };
@@ -37,6 +38,7 @@ const FIXTURE_SET_CITATIONS = {
   'physics-numeric': path.join(FIXTURES_DIR, 'citations-physics-numeric.json'),
   'author-date': path.join(FIXTURES_DIR, 'citations-author-date.json'),
   'humanities-note': path.join(FIXTURES_DIR, 'citations-humanities-note.json'),
+  'note-positions': path.join(FIXTURES_DIR, 'citations-note-positions.json'),
   'legal': path.join(FIXTURES_DIR, 'citations-legal.json'),
   'csl-m-adapted': path.join(FIXTURES_DIR, 'citations-csl-m-adapted.json'),
 };
@@ -59,7 +61,13 @@ function resolveDefaultCitationFixture(styleFormat) {
 }
 
 function getAdditionalFixtureSetNames(fixtureSets = []) {
-  return fixtureSets.filter((setName) => setName !== 'core' && setName !== 'note' && FIXTURE_SET_REFS[setName]);
+  return fixtureSets.filter(
+    (setName) =>
+      setName !== 'core'
+      && setName !== 'note'
+      && setName !== 'note-positions'
+      && FIXTURE_SET_REFS[setName]
+  );
 }
 
 function getFixtureFiles(setName) {

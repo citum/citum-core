@@ -64,6 +64,34 @@ citation:
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
+  ibid:
+    suffix: ""
+    delimiter: ", "
+    template:
+      - term: ibid
+      - variable: locator
+        suffix: .
+  subsequent:
+    options:
+      contributors:
+        name-form: family-only
+    template:
+      - contributor: author
+        form: short
+      - title: primary
+        form: short
+        prefix: ", "
+      - variable: locator
+        prefix: ", "
+        overrides:
+          book:
+            suppress: false
+          chapter:
+            suppress: false
+          article-journal:
+            suppress: false
+          default:
+            suppress: true
   template:
     - contributor: author
       form: long
