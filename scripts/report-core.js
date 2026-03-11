@@ -2400,29 +2400,61 @@ function generateDetailContent(style) {
 
   if (style.notePositionAudit) {
     const audit = style.notePositionAudit;
-    const badgeClass = audit.status === 'pass'
+    const regression = audit.regression || { status: audit.status, issues: audit.issues || [], profile: audit.profile };
+    const conformance = audit.conformance || { status: 'pass', issues: [], family: 'unknown', unresolved: [] };
+    const regressionBadgeClass = regression.status === 'pass'
       ? 'bg-emerald-100 text-emerald-700'
-      : audit.status === 'configuration-gap'
+      : regression.status === 'configuration-gap'
         ? 'bg-amber-100 text-amber-700'
         : 'bg-red-100 text-red-700';
-    const issueText = audit.issues.length === 0
+    const conformanceBadgeClass = conformance.status === 'pass'
+      ? 'bg-sky-100 text-sky-700'
+      : 'bg-amber-100 text-amber-700';
+    const regressionIssueText = regression.issues.length === 0
       ? '<span class="text-xs text-slate-500">No repeated-note issues detected.</span>'
-      : audit.issues
+      : regression.issues
         .map((issue) => `<div class="text-xs font-mono text-slate-600">${escapeHtml(issue.kind)}: ${escapeHtml(issue.message)}</div>`)
         .join('');
+    const conformanceIssueText = conformance.issues.length === 0
+      ? '<span class="text-xs text-slate-500">No settled conformance gaps detected.</span>'
+      : conformance.issues
+        .map((issue) => `<div class="text-xs font-mono text-slate-600">${escapeHtml(issue.kind)}: ${escapeHtml(issue.message)}</div>`)
+        .join('');
+    const unresolvedText = Array.isArray(conformance.unresolved) && conformance.unresolved.length > 0
+      ? `<div class="text-xs text-slate-500">Unresolved: ${escapeHtml(conformance.unresolved.join(', '))}</div>`
+      : '<span class="text-xs text-slate-500">No unresolved conformance dimensions recorded.</span>';
     html += `
                             <div class="mb-4 p-3 rounded border border-slate-200 bg-white">
-                                <div class="flex items-center justify-between gap-3 mb-2">
-                                    <div class="text-xs font-semibold text-slate-900">Repeated-Note Audit</div>
-                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium ${badgeClass}">
-                                        ${escapeHtml(audit.status)}
-                                    </span>
+                                <div class="text-xs font-semibold text-slate-900 mb-3">Repeated-Note Audit</div>
+                                <div class="mb-3">
+                                    <div class="flex items-center justify-between gap-3 mb-2">
+                                        <div class="text-xs font-semibold text-slate-700">Regression Layer</div>
+                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium ${regressionBadgeClass}">
+                                            ${escapeHtml(regression.status)}
+                                        </span>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs mb-2">
+                                        <div><span class="font-semibold text-slate-700">Profile:</span> <span class="font-mono text-slate-600">${escapeHtml(regression.profile || '—')}</span></div>
+                                        <div><span class="font-semibold text-slate-700">Issues:</span> <span class="font-mono text-slate-600">${regression.issues.length}</span></div>
+                                    </div>
+                                    ${regressionIssueText}
                                 </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs mb-2">
-                                    <div><span class="font-semibold text-slate-700">Profile:</span> <span class="font-mono text-slate-600">${escapeHtml(audit.profile || '—')}</span></div>
-                                    <div><span class="font-semibold text-slate-700">Issues:</span> <span class="font-mono text-slate-600">${audit.issues.length}</span></div>
+                                <div>
+                                    <div class="flex items-center justify-between gap-3 mb-2">
+                                        <div class="text-xs font-semibold text-slate-700">Normative Conformance</div>
+                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium ${conformanceBadgeClass}">
+                                            ${escapeHtml(conformance.status)}
+                                        </span>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs mb-2">
+                                        <div><span class="font-semibold text-slate-700">Family:</span> <span class="font-mono text-slate-600">${escapeHtml(conformance.family || '—')}</span></div>
+                                        <div><span class="font-semibold text-slate-700">Issues:</span> <span class="font-mono text-slate-600">${conformance.issues.length}</span></div>
+                                    </div>
+                                    ${conformanceIssueText}
+                                    <div class="mt-2">
+                                        ${unresolvedText}
+                                    </div>
                                 </div>
-                                ${issueText}
                             </div>
 `;
   }
