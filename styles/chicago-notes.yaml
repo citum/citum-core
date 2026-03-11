@@ -42,6 +42,7 @@ options:
 citation:
   delimiter: ""
   ibid:
+    note-start-text-case: capitalize-first
     suffix: ""
     delimiter: ", "
     template:

@@ -42,8 +42,8 @@ function validateExpectations(config) {
   if (!config || typeof config !== 'object' || Array.isArray(config)) {
     throw new Error('note-position-expectations.yaml must be an object');
   }
-  if (config.version !== 2) {
-    throw new Error('note-position-expectations.yaml version must be 2');
+  if (config.version !== 3) {
+    throw new Error('note-position-expectations.yaml version must be 3');
   }
   if (!config.regression_profiles || typeof config.regression_profiles !== 'object' || Array.isArray(config.regression_profiles)) {
     throw new Error('note-position-expectations.yaml must define regression_profiles');
@@ -88,6 +88,14 @@ function validateExpectations(config) {
     }
     if (typeof family.distinct_subsequent !== 'boolean') {
       throw new Error(`note-position-expectations.yaml conformance_families.${familyName}.distinct_subsequent must be a boolean`);
+    }
+    if (
+      family.note_start_text_case !== undefined
+      && !['capitalize-first', 'lowercase'].includes(family.note_start_text_case)
+    ) {
+      throw new Error(
+        `note-position-expectations.yaml conformance_families.${familyName}.note_start_text_case must be "capitalize-first" or "lowercase"`
+      );
     }
     if (!Array.isArray(family.unresolved)) {
       throw new Error(`note-position-expectations.yaml conformance_families.${familyName}.unresolved must be an array`);
@@ -251,7 +259,7 @@ function normalizeAuditOptions(expectationOrOptions) {
     return { expectationConfig: loadNotePositionExpectations() };
   }
   if (
-    expectationOrOptions.version === 2
+    expectationOrOptions.version === 3
     && expectationOrOptions.regression_profiles
     && expectationOrOptions.conformance_families
     && expectationOrOptions.styles
@@ -267,6 +275,29 @@ function normalizeAuditOptions(expectationOrOptions) {
 
 function hasLexicalIbid(text) {
   return /\bibid\b/i.test(text || '');
+}
+
+function matchesLeadingTextCase(text, expectedCase) {
+  const normalized = normalizeText(text);
+  const match = normalized.match(/\p{L}/u);
+  if (!match) {
+    return false;
+  }
+  const first = match[0];
+  if (expectedCase === 'capitalize-first') {
+    return first === first.toUpperCase() && first !== first.toLowerCase();
+  }
+  if (expectedCase === 'lowercase') {
+    return first === first.toLowerCase() && first !== first.toUpperCase();
+  }
+  return false;
+}
+
+function styleNoteStartTextCase(citationSpec) {
+  if (!citationSpec || typeof citationSpec !== 'object') {
+    return null;
+  }
+  return citationSpec.note_start_text_case || citationSpec['note-start-text-case'] || null;
 }
 
 function normalizeFixtureLocators(text) {
@@ -384,6 +415,26 @@ function evaluateConformanceLayer(styleName, style, rendered, expectationConfig)
     }
     if (!hasLexicalIbid(ibid) || !hasLexicalIbid(ibidWithLocator)) {
       issues.push({ kind: 'rendering-gap', message: 'Conformance family expects lexical ibid output for immediate repeats.' });
+    }
+    if (family.note_start_text_case) {
+      if (styleNoteStartTextCase(citationConfig.ibid) !== family.note_start_text_case) {
+        issues.push({
+          kind: 'style-gap',
+          message: `Conformance family expects citation.ibid.note_start_text_case=${family.note_start_text_case}.`,
+        });
+      }
+      if (!matchesLeadingTextCase(ibid, family.note_start_text_case)) {
+        issues.push({
+          kind: 'rendering-gap',
+          message: `Conformance family expects note-start ibid output with ${family.note_start_text_case} case.`,
+        });
+      }
+      if (!matchesLeadingTextCase(ibidWithLocator, family.note_start_text_case)) {
+        issues.push({
+          kind: 'rendering-gap',
+          message: `Conformance family expects note-start ibid-with-locator output with ${family.note_start_text_case} case.`,
+        });
+      }
     }
   } else if (hasLexicalIbid(ibid) || hasLexicalIbid(ibidWithLocator)) {
     issues.push({ kind: 'rendering-gap', message: 'Conformance family does not allow lexical ibid for immediate repeats.' });
@@ -537,8 +588,10 @@ module.exports = {
   normalizeText,
   normalizeFixtureLocators,
   parseRenderedCitations,
+  matchesLeadingTextCase,
   renderFixtureForStyle,
   renderFixtureForStyleWithOptions,
+  styleNoteStartTextCase,
   resolveCitumBinary,
   summarizeAuditResults,
   validateExpectationCoverage,

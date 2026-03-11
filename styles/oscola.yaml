@@ -107,6 +107,7 @@ citation:
         show-label: true
         strip-label-periods: true
   ibid:
+    note-start-text-case: lowercase
     delimiter: " "
     template:
       - term: ibid

@@ -54,6 +54,7 @@ citation:
         and-others: et-al
         delimiter-precedes-last: contextual
   ibid:
+    note-start-text-case: capitalize-first
     suffix: ""
     delimiter: ", "
     template:

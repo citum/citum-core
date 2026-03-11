@@ -94,6 +94,32 @@ fn make_style() -> Style {
     }
 }
 
+#[test]
+fn test_apply_note_start_text_case_to_leading_text_node_plain_text() {
+    assert_eq!(
+        super::apply_note_start_text_case_to_leading_text_node(
+            "Ibid., 105",
+            citum_schema::NoteStartTextCase::Lowercase
+        ),
+        "ibid., 105"
+    );
+}
+
+#[test]
+fn test_apply_note_start_text_case_to_leading_text_node_preserves_html_markup() {
+    let rendered = "<span class=\"csln-citation\" data-ref=\"ITEM-1\">Ibid.</span>";
+    let transformed = super::apply_note_start_text_case_to_leading_text_node(
+        rendered,
+        citum_schema::NoteStartTextCase::Lowercase,
+    );
+
+    assert_eq!(
+        transformed,
+        "<span class=\"csln-citation\" data-ref=\"ITEM-1\">ibid.</span>"
+    );
+    assert!(transformed.contains("data-ref=\"ITEM-1\""));
+}
+
 fn make_note_style() -> Style {
     let mut style = make_style();
     style.options = Some(Config {

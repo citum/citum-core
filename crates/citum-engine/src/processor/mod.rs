@@ -39,6 +39,7 @@ use crate::reference::{Bibliography, Citation, CitationItem, Reference};
 use crate::render::bibliography::render_entry_body_with_format;
 use crate::render::{ProcEntry, ProcTemplate};
 use crate::values::ProcHints;
+use citum_schema::NoteStartTextCase;
 use citum_schema::Style;
 use citum_schema::citation::Position;
 use citum_schema::locale::Locale;
@@ -64,6 +65,51 @@ fn capitalize_first(value: &str) -> String {
         Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
         None => String::new(),
     }
+}
+
+fn apply_note_start_text_case(value: &str, text_case: NoteStartTextCase) -> String {
+    match text_case {
+        NoteStartTextCase::CapitalizeFirst => capitalize_first(value),
+        NoteStartTextCase::Lowercase => value.to_lowercase(),
+    }
+}
+
+fn apply_note_start_text_case_to_leading_text_node(
+    rendered: &str,
+    text_case: NoteStartTextCase,
+) -> String {
+    let mut in_tag = false;
+    let mut text_start = None;
+
+    for (index, ch) in rendered.char_indices() {
+        match ch {
+            '<' if !in_tag => in_tag = true,
+            '>' if in_tag => in_tag = false,
+            _ if !in_tag && !ch.is_whitespace() => {
+                text_start = Some(index);
+                break;
+            }
+            _ => {}
+        }
+    }
+
+    let Some(text_start) = text_start else {
+        return rendered.to_string();
+    };
+
+    let text_end = rendered[text_start..]
+        .find('<')
+        .map(|offset| text_start + offset)
+        .unwrap_or(rendered.len());
+
+    let mut result = String::with_capacity(rendered.len());
+    result.push_str(&rendered[..text_start]);
+    result.push_str(&apply_note_start_text_case(
+        &rendered[text_start..text_end],
+        text_case,
+    ));
+    result.push_str(&rendered[text_end..]);
+    result
 }
 
 use self::disambiguation::Disambiguator;
@@ -1181,18 +1227,26 @@ impl Processor {
         };
 
         let mut rendered = fmt.finish(wrapped);
-        if matches!(
-            citation.position,
-            Some(citum_schema::citation::Position::Ibid)
-                | Some(citum_schema::citation::Position::IbidWithLocator)
-        ) && matches!(
-            citation.mode,
-            citum_schema::citation::CitationMode::NonIntegral
-        ) && citation.prefix.as_deref().unwrap_or("").is_empty()
+        if self
+            .style
+            .options
+            .as_ref()
+            .and_then(|options| options.processing.as_ref())
+            .is_some_and(|processing| matches!(processing, citum_schema::options::Processing::Note))
+            && matches!(
+                citation.position,
+                Some(citum_schema::citation::Position::Ibid)
+                    | Some(citum_schema::citation::Position::IbidWithLocator)
+            )
+            && matches!(
+                citation.mode,
+                citum_schema::citation::CitationMode::NonIntegral
+            )
+            && citation.prefix.as_deref().unwrap_or("").is_empty()
             && spec_prefix.is_empty()
-            && rendered.starts_with("ibid")
+            && let Some(text_case) = effective_spec.note_start_text_case
         {
-            rendered = capitalize_first(&rendered);
+            rendered = apply_note_start_text_case_to_leading_text_node(&rendered, text_case);
         }
 
         Ok(rendered)
