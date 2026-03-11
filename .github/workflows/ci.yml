@@ -34,6 +34,11 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
 
@@ -45,6 +50,9 @@ jobs:
 
       - name: Check docs and bean hygiene
         run: ./scripts/check-docs-beans-hygiene.sh
+
+      - name: Validate repo frontmatter manifests
+        run: ./scripts/validate-frontmatter.sh --repo-only --copilot-strict
 
       - name: Validate production styles
         run: ./scripts/validate-production-styles.sh

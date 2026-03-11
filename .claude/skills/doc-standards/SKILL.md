@@ -1,3 +1,11 @@
+---
+name: doc-standards
+description: >
+  Documentation standards workflow for Citum specs, policies, architecture
+  snapshots, guides, and references. Use this skill when creating or updating
+  project documentation and choosing the correct docs directory/template.
+---
+
 # doc-standards Skill
 
 **Trigger phrases:** "create a spec", "write a design doc", "add a policy",
