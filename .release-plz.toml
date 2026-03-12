@@ -11,12 +11,62 @@ publish = false
 # Allow dirty working directory (CI artifact handling)
 allow_dirty = true
 
+# Treat feature work on 0.x as a minor release, matching repo policy.
+features_always_increment_minor = true
+
 # Disable per-package releases - we want a single workspace release
 git_release_enable = false
 
-# Only create release for the main binary
+# Track all workspace crates in one synchronized release group so
+# dependency-crate features still trigger the top-level citum release PR.
+[[package]]
+name = "csl-legacy"
+version_group = "workspace"
+
+[[package]]
+name = "citum-schema-data"
+version_group = "workspace"
+
+[[package]]
+name = "citum-schema-style"
+version_group = "workspace"
+
+[[package]]
+name = "citum-schema"
+version_group = "workspace"
+
+[[package]]
+name = "citum-migrate"
+version_group = "workspace"
+
+[[package]]
+name = "citum-engine"
+version_group = "workspace"
+
+[[package]]
+name = "citum-analyze"
+version_group = "workspace"
+
+[[package]]
+name = "citum-server"
+version_group = "workspace"
+
+[[package]]
+name = "citum-edtf"
+version_group = "workspace"
+
+[[package]]
+name = "citum_store"
+version_group = "workspace"
+
+[[package]]
+name = "citum-bindings"
+version_group = "workspace"
+
+# Create the root changelog and release tag from the main CLI package.
 [[package]]
 name = "citum"
+version_group = "workspace"
 changelog_update = true
 changelog_path = "../../CHANGELOG.md"
 git_release_enable = true
