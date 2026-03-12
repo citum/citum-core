@@ -181,24 +181,56 @@ pub fn detect_title_preset(config: &TitlesConfig) -> Option<TitlePreset> {
         .as_ref()
         .and_then(|c| c.quote)
         .unwrap_or(false);
+    let component_case = config.component.as_ref().and_then(|c| c.text_case);
     let monograph_emph = config
         .monograph
         .as_ref()
         .and_then(|m| m.emph)
         .unwrap_or(false);
+    let monograph_case = config.monograph.as_ref().and_then(|m| m.text_case);
     let periodical_emph = config
         .periodical
         .as_ref()
         .and_then(|p| p.emph)
         .unwrap_or(false);
+    let periodical_case = config.periodical.as_ref().and_then(|p| p.text_case);
+    let serial_emph = config.serial.as_ref().and_then(|s| s.emph).unwrap_or(false);
 
-    // Scientific: all plain (no formatting)
-    if !component_quoted && !monograph_emph && !periodical_emph {
+    // Scientific: sentence-case titles without default emphasis.
+    if !component_quoted
+        && matches!(
+            component_case,
+            Some(citum_schema::options::TextCase::Sentence)
+                | Some(citum_schema::options::TextCase::SentenceNlm)
+        )
+        && matches!(
+            monograph_case,
+            Some(citum_schema::options::TextCase::Sentence)
+                | Some(citum_schema::options::TextCase::SentenceNlm)
+        )
+        && !monograph_emph
+        && !periodical_emph
+        && periodical_case.is_none()
+    {
         return Some(TitlePreset::Scientific);
     }
 
-    // APA-family: component plain, monograph/periodical italic
-    if !component_quoted && monograph_emph && periodical_emph {
+    // APA-family: sentence-case article/book titles, italic monographs/journals.
+    if !component_quoted
+        && matches!(
+            component_case,
+            Some(citum_schema::options::TextCase::Sentence)
+                | Some(citum_schema::options::TextCase::SentenceApa)
+        )
+        && matches!(
+            monograph_case,
+            Some(citum_schema::options::TextCase::Sentence)
+                | Some(citum_schema::options::TextCase::SentenceApa)
+        )
+        && monograph_emph
+        && periodical_emph
+        && periodical_case.is_none()
+    {
         return Some(TitlePreset::Apa);
     }
 
@@ -206,6 +238,14 @@ pub fn detect_title_preset(config: &TitlesConfig) -> Option<TitlePreset> {
     if component_quoted && monograph_emph && periodical_emph {
         // Both Chicago and IEEE follow this pattern - default to Chicago
         return Some(TitlePreset::Chicago);
+    }
+
+    if !component_quoted && !monograph_emph && periodical_emph && serial_emph {
+        return Some(TitlePreset::JournalEmphasis);
+    }
+
+    if !component_quoted && monograph_emph && periodical_emph && serial_emph {
+        return Some(TitlePreset::Humanities);
     }
 
     None
@@ -376,10 +416,14 @@ mod tests {
 
     #[test]
     fn test_detect_apa_title() {
-        // APA: component plain, monograph/periodical italic
+        // APA: sentence-case article/book titles, italic monographs/journals.
         let config = TitlesConfig {
-            component: Some(TitleRendering::default()),
+            component: Some(TitleRendering {
+                text_case: Some(citum_schema::options::TextCase::Sentence),
+                ..Default::default()
+            }),
             monograph: Some(TitleRendering {
+                text_case: Some(citum_schema::options::TextCase::Sentence),
                 emph: Some(true),
                 ..Default::default()
             }),
@@ -415,14 +459,61 @@ mod tests {
 
     #[test]
     fn test_detect_scientific_title() {
-        // Scientific: all plain
+        // Scientific: sentence-case titles with plain monographs/journals.
         let config = TitlesConfig {
-            component: Some(TitleRendering::default()),
-            monograph: Some(TitleRendering::default()),
+            component: Some(TitleRendering {
+                text_case: Some(citum_schema::options::TextCase::Sentence),
+                ..Default::default()
+            }),
+            monograph: Some(TitleRendering {
+                text_case: Some(citum_schema::options::TextCase::Sentence),
+                ..Default::default()
+            }),
             periodical: Some(TitleRendering::default()),
             ..Default::default()
         };
         assert_eq!(detect_title_preset(&config), Some(TitlePreset::Scientific));
+    }
+
+    #[test]
+    fn test_detect_humanities_title() {
+        let config = TitlesConfig {
+            component: Some(TitleRendering::default()),
+            monograph: Some(TitleRendering {
+                emph: Some(true),
+                ..Default::default()
+            }),
+            periodical: Some(TitleRendering {
+                emph: Some(true),
+                ..Default::default()
+            }),
+            serial: Some(TitleRendering {
+                emph: Some(true),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        assert_eq!(detect_title_preset(&config), Some(TitlePreset::Humanities));
+    }
+
+    #[test]
+    fn test_detect_journal_emphasis_title() {
+        let config = TitlesConfig {
+            component: Some(TitleRendering::default()),
+            periodical: Some(TitleRendering {
+                emph: Some(true),
+                ..Default::default()
+            }),
+            serial: Some(TitleRendering {
+                emph: Some(true),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        assert_eq!(
+            detect_title_preset(&config),
+            Some(TitlePreset::JournalEmphasis)
+        );
     }
 
     #[test]

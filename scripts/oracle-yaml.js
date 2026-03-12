@@ -20,6 +20,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const yaml = require('js-yaml');
 const {
+  compareText,
   normalizeText,
   loadLocale,
 } = require('./oracle-utils');
@@ -44,6 +45,7 @@ function parseArgs(argv = process.argv.slice(2)) {
     legacyCslPath: null,
     jsonOutput: false,
     verbose: false,
+    caseSensitive: true,
     refsFixture: null,
     citationsFixture: null,
     fixtureFamily: null,
@@ -55,6 +57,10 @@ function parseArgs(argv = process.argv.slice(2)) {
       options.jsonOutput = true;
     } else if (arg === '--verbose') {
       options.verbose = true;
+    } else if (arg === '--case-sensitive') {
+      options.caseSensitive = true;
+    } else if (arg === '--case-insensitive') {
+      options.caseSensitive = false;
     } else if (arg === '--legacy-csl') {
       options.legacyCslPath = argv[++i];
     } else if (arg === '--refs-fixture') {
@@ -114,7 +120,7 @@ function hasBibliographyTemplate(styleData) {
   return hasTemplate || hasTypeTemplates;
 }
 
-function runOracleScript(cslPath, refsFixture, citationsFixture) {
+function runOracleScript(cslPath, refsFixture, citationsFixture, options = {}) {
   const scriptPath = path.join(__dirname, 'oracle.js');
   try {
     const stdout = execFileSync(
@@ -127,6 +133,7 @@ function runOracleScript(cslPath, refsFixture, citationsFixture) {
         refsFixture,
         '--citations-fixture',
         citationsFixture,
+        ...(options.caseSensitive === false ? ['--case-insensitive'] : ['--case-sensitive']),
       ],
       {
         cwd: PROJECT_ROOT,
@@ -338,19 +345,27 @@ function runDirectComparison(options, stylePlan) {
   for (const [citationId, cslnCitation] of Object.entries(cslnResult.citations)) {
     const oracleCitation = citeprocResult.citations[citationId];
     if (!oracleCitation) continue;
+    const comparison = compareText(oracleCitation, cslnCitation, {
+      caseSensitive: options.caseSensitive,
+    });
     citationResults.push({
       itemId: citationId,
-      oracle: oracleCitation,
-      csln: cslnCitation,
-      match: normalizeText(oracleCitation) === normalizeText(cslnCitation),
+      oracle: comparison.expected,
+      csln: comparison.actual,
+      match: comparison.match,
+      caseMismatch: comparison.caseMismatch,
     });
   }
 
   for (const pair of matchBibliographyEntries(citeprocResult.bibliography, cslnResult.bibliography)) {
+    const comparison = pair.oracle && pair.csln
+      ? compareText(pair.oracle, pair.csln, { caseSensitive: options.caseSensitive })
+      : null;
     bibResults.push({
-      oracle: pair.oracle,
-      csln: pair.csln,
-      match: Boolean(pair.oracle && pair.csln && normalizeText(pair.oracle) === normalizeText(pair.csln)),
+      oracle: comparison ? comparison.expected : pair.oracle,
+      csln: comparison ? comparison.actual : pair.csln,
+      match: Boolean(comparison?.match),
+      caseMismatch: Boolean(comparison?.caseMismatch),
       score: pair.score,
     });
   }
@@ -394,13 +409,15 @@ function runComparison(options) {
     const result = runOracleScript(
       stylePlan.legacyCslPath,
       stylePlan.baseRun.refsFixture,
-      stylePlan.baseRun.citationsFixture
+      stylePlan.baseRun.citationsFixture,
+      options
     );
     for (const familyRun of stylePlan.familyRuns) {
       const extra = runOracleScript(
         stylePlan.legacyCslPath,
         familyRun.refsFixture,
-        familyRun.citationsFixture
+        familyRun.citationsFixture,
+        options
       );
       mergeStructuredResults(result, extra);
     }
@@ -476,10 +493,10 @@ function main() {
     }
 
     const hasFailures = summary.citations.mismatches > 0 || summary.bibliography.mismatches > 0;
-    process.exit(hasFailures ? 1 : 0);
+    process.exitCode = hasFailures ? 1 : 0;
   } catch (error) {
     process.stderr.write(`${error.message}\n`);
-    process.exit(2);
+    process.exitCode = 2;
   }
 }
 

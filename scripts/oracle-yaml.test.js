@@ -37,6 +37,15 @@ test('oracle-yaml parses family-aware CLI flags', () => {
   assert.equal(options.refsFixture, 'tests/fixtures/references-humanities-note.json');
   assert.equal(options.citationsFixture, 'tests/fixtures/citations-humanities-note.json');
   assert.equal(options.jsonOutput, true);
+  assert.equal(options.caseSensitive, true);
+});
+
+test('oracle-yaml parses case-sensitivity override flags', () => {
+  const insensitive = parseArgs(['styles/apa-7th.yaml', '--case-insensitive']);
+  const sensitive = parseArgs(['styles/apa-7th.yaml', '--case-sensitive']);
+
+  assert.equal(insensitive.caseSensitive, false);
+  assert.equal(sensitive.caseSensitive, true);
 });
 
 test('oracle-yaml resolves apa-7th to apa.csl and author-date fixtures', () => {

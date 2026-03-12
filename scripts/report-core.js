@@ -42,7 +42,11 @@ const {
   auditNoteStyle,
   discoverNoteStyles,
 } = require('./lib/note-position-audit');
-const { normalizeText } = require('./oracle-utils');
+const {
+  compareText,
+  normalizeText,
+  textSimilarity,
+} = require('./oracle-utils');
 const { maybeDatasetErrorForFile } = require('./lib/dataset-guard');
 
 const CUSTOM_TAG_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
@@ -120,6 +124,7 @@ function parseArgs() {
     timings: false,
     cacheDir: DEFAULT_REPORT_CACHE_DIR,
     citumBin: process.env.CITUM_BIN || null,
+    caseSensitive: true,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -140,6 +145,10 @@ function parseArgs() {
       options.cacheDir = path.resolve(args[++i]);
     } else if (args[i] === '--citum-bin') {
       options.citumBin = path.resolve(args[++i]);
+    } else if (args[i] === '--case-sensitive') {
+      options.caseSensitive = true;
+    } else if (args[i] === '--case-insensitive') {
+      options.caseSensitive = false;
     }
   }
 
@@ -194,48 +203,8 @@ function hashFile(filePath) {
   return hashContent(fs.readFileSync(filePath));
 }
 
-function tokenizeForSimilarity(text) {
-  return normalizeText(text || '')
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
-    .split(/\s+/)
-    .filter(Boolean)
-    .filter((token) => token.length > 1);
-}
-
-function textSimilarity(a, b) {
-  const left = tokenizeForSimilarity(a);
-  const right = tokenizeForSimilarity(b);
-  if (left.length === 0 && right.length === 0) return 1;
-  if (left.length === 0 || right.length === 0) return 0;
-
-  const leftCounts = new Map();
-  const rightCounts = new Map();
-  for (const token of left) {
-    leftCounts.set(token, (leftCounts.get(token) || 0) + 1);
-  }
-  for (const token of right) {
-    rightCounts.set(token, (rightCounts.get(token) || 0) + 1);
-  }
-
-  let intersect = 0;
-  let union = 0;
-  const keys = new Set([...leftCounts.keys(), ...rightCounts.keys()]);
-  for (const key of keys) {
-    const l = leftCounts.get(key) || 0;
-    const r = rightCounts.get(key) || 0;
-    intersect += Math.min(l, r);
-    union += Math.max(l, r);
-  }
-
-  return union > 0 ? intersect / union : 0;
-}
-
-function equivalentText(expected, actual) {
-  const expectedNorm = normalizeText(expected);
-  const actualNorm = normalizeText(actual);
-  if (expectedNorm === actualNorm) return true;
-  return textSimilarity(expectedNorm, actualNorm) >= 0.60;
+function equivalentText(expected, actual, options = {}) {
+  return compareText(expected, actual, options).match;
 }
 
 function fixtureHash(refsFixture, citationsFixture) {
@@ -290,6 +259,7 @@ function createReportRuntime(options = {}) {
   return {
     allowLiveFallback: Boolean(options.allowLiveFallback),
     cacheDir,
+    caseSensitive: options.caseSensitive !== false,
     timings: new Map(),
     stylesDir: options.stylesDir ? path.resolve(options.stylesDir) : null,
     citumBin: resolveCitumBinary(options.citumBin),
@@ -593,6 +563,22 @@ function getEffectiveOracleSection(oracleResult, sectionName) {
   return oracleResult?.[sectionName] || { passed: 0, total: 0, entries: [] };
 }
 
+function countCaseMismatches(section) {
+  return (section?.entries || []).filter((entry) => entry?.caseMismatch === true).length;
+}
+
+function collectCaseMismatchSummary(oracleResult) {
+  const citations = getEffectiveOracleSection(oracleResult, 'citations');
+  const bibliography = getEffectiveOracleSection(oracleResult, 'bibliography');
+  const citationCount = countCaseMismatches(citations);
+  const bibliographyCount = countCaseMismatches(bibliography);
+  return {
+    citations: citationCount,
+    bibliography: bibliographyCount,
+    total: citationCount + bibliographyCount,
+  };
+}
+
 function mergeDivergenceDetails(base = {}, extra = {}) {
   const merged = { ...base };
 
@@ -691,13 +677,22 @@ async function runCiteprocSnapshotOracle(runtime, stylePath, styleName, styleFor
     snapshotStatus: snapshotStatus.status,
     snapshotHash: snapshotStatus.ok ? hashFile(snapshotStatus.snapshotPath) : null,
     allowLiveFallback: runtime.allowLiveFallback,
+    caseSensitive: runtime.caseSensitive,
   };
 
   return runCachedJsonJob(runtime, {
     kind: 'citeprocSnapshot',
     cacheKey,
     async compute() {
-      const fastArgs = [stylePath, '--json', '--refs-fixture', refsFixture, '--citations-fixture', resolvedCitationsFixture];
+      const fastArgs = [
+        stylePath,
+        '--json',
+        '--refs-fixture',
+        refsFixture,
+        '--citations-fixture',
+        resolvedCitationsFixture,
+        runtime.caseSensitive ? '--case-sensitive' : '--case-insensitive',
+      ];
 
       if (snapshotStatus.ok) {
         const fast = await runNodeOracleScript(fastScript, fastArgs);
@@ -887,6 +882,7 @@ async function runBiblatexSnapshotOracle(runtime, styleName, styleYamlPath, auth
       styleHash: hashFile(styleYamlPath),
       refsHash: hashFile(DEFAULT_REFS_FIXTURE),
       snapshotHash: hashFile(snapshotPath),
+      caseSensitive: runtime.caseSensitive,
     },
     async compute() {
       let snapshot;
@@ -919,9 +915,17 @@ async function runBiblatexSnapshotOracle(runtime, styleName, styleYamlPath, auth
         for (let i = 0; i < total; i++) {
           const expected = expectedEntries[i] ?? '';
           const actual = actualEntries[i] ?? '';
-          const match = equivalentText(expected, actual);
+          const comparison = compareText(expected, actual, {
+            caseSensitive: runtime.caseSensitive,
+          });
+          const match = comparison.match;
           if (match) passed += 1;
-          entries.push({ expected, actual, match });
+          entries.push({
+            expected: comparison.expected,
+            actual: comparison.actual,
+            match,
+            caseMismatch: comparison.caseMismatch,
+          });
 
           // Track per-type stats using the fixture entry at this position.
           const refType = fixtureTypes[i] || 'unknown';
@@ -967,6 +971,7 @@ async function runFamilyFixtureOracle(runtime, stylePath, styleName, fixtureSetN
       styleHash: hashFile(stylePath),
       refsHash: hashFile(refsFixture),
       citationsHash: hashFile(citationsFixture),
+      caseSensitive: runtime.caseSensitive,
     },
     async compute() {
       const result = await runNodeOracleScript(liveScript, [
@@ -974,6 +979,7 @@ async function runFamilyFixtureOracle(runtime, stylePath, styleName, fixtureSetN
         '--json',
         '--refs-fixture', refsFixture,
         '--citations-fixture', citationsFixture,
+        runtime.caseSensitive ? '--case-sensitive' : '--case-insensitive',
       ]);
       if ((result.code === 0 || result.code === 1) && result.stdout.trim()) {
         try {
@@ -1629,6 +1635,7 @@ async function processStyleReport(runtime, styleSpec, context) {
   if (primaryComparator === 'citum-baseline') {
     const oracleResult = await runNativeOracle(runtime, styleSpec.name);
     const fidelityScore = computeFidelityScore(oracleResult);
+    const caseMismatches = collectCaseMismatchSummary(oracleResult);
     const bibliography = getEffectiveOracleSection(oracleResult, 'bibliography');
     const citations = getEffectiveOracleSection(oracleResult, 'citations');
     const rawBibliography = oracleResult.bibliography || { passed: 0, total: 0 };
@@ -1661,6 +1668,7 @@ async function processStyleReport(runtime, styleSpec, context) {
         rawBibliography,
         knownDivergences: divergences[styleSpec.name] || [],
         adjustedDivergences: oracleResult.adjusted?.divergenceSummary || {},
+        caseMismatches,
         citationsByType: oracleResult.citationsByType || {},
         error: oracleResult.error || null,
         componentMatchRate: null,
@@ -1734,6 +1742,7 @@ async function processStyleReport(runtime, styleSpec, context) {
   }
 
   const fidelityScore = computeFidelityScore(oracleResult);
+  const caseMismatches = collectCaseMismatchSummary(oracleResult);
   const citations = getEffectiveOracleSection(oracleResult, 'citations');
   const bibliography = getEffectiveOracleSection(oracleResult, 'bibliography');
   const rawCitations = oracleResult.citations || { passed: 0, total: 0 };
@@ -1768,6 +1777,7 @@ async function processStyleReport(runtime, styleSpec, context) {
       rawBibliography,
       knownDivergences: divergences[styleSpec.name] || [],
       adjustedDivergences: oracleResult.adjusted?.divergenceSummary || {},
+      caseMismatches,
       citationsByType: oracleResult.citationsByType || {},
       error: oracleResult.error || null,
       componentMatchRate,
@@ -1830,6 +1840,8 @@ async function generateReport(options) {
   let citationsPassed = 0;
   let biblioTotal = 0;
   let biblioPassed = 0;
+  let citationCaseMismatchTotal = 0;
+  let bibliographyCaseMismatchTotal = 0;
   let qualityTotal = 0;
   let qualityCount = 0;
   let errorCount = 0;
@@ -1841,6 +1853,8 @@ async function generateReport(options) {
     citationsPassed += citations.passed || 0;
     biblioTotal += bibliography.total || 0;
     biblioPassed += bibliography.passed || 0;
+    citationCaseMismatchTotal += job.styleRecord.caseMismatches?.citations || 0;
+    bibliographyCaseMismatchTotal += job.styleRecord.caseMismatches?.bibliography || 0;
     qualityTotal += job.qualityScore || 0;
     qualityCount += 1;
     errorCount += job.errorCount || 0;
@@ -1874,12 +1888,20 @@ async function generateReport(options) {
           snapshotIssues: preflightIssues,
           allowLiveFallback: runtime.allowLiveFallback,
         },
+        oracleComparison: {
+          caseSensitive: runtime.caseSensitive,
+        },
         ...(options.timings ? { timings: serializeTimingSummary(runtime) } : {}),
       },
       totalImpact: parseFloat(totalImpact),
       totalStyles: coreStyles.length,
       citationsOverall: { passed: citationsPassed, total: citationsTotal },
       bibliographyOverall: { passed: biblioPassed, total: biblioTotal },
+      caseMismatchesOverall: {
+        citations: citationCaseMismatchTotal,
+        bibliography: bibliographyCaseMismatchTotal,
+        total: citationCaseMismatchTotal + bibliographyCaseMismatchTotal,
+      },
       qualityOverall: {
         score: qualityCount > 0 ? parseFloat((qualityTotal / qualityCount).toFixed(3)) : 0,
       },

@@ -136,6 +136,11 @@ test('comparison text helper supports both live-oracle and native-snapshot entry
   );
 });
 
+test('equivalentText treats case-only differences as failures by default', () => {
+  assert.equal(equivalentText('DNA repair', 'Dna repair'), false);
+  assert.equal(equivalentText('DNA repair', 'Dna repair', { caseSensitive: false }), true);
+});
+
 test('generateHtml renders repeated-note regression and conformance layers separately', () => {
   const html = generateHtml({
     generated: '2026-03-11T00:00:00.000Z',

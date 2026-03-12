@@ -64,6 +64,105 @@ function normalizeText(text) {
     .trim();
 }
 
+/**
+ * Tokenize normalized text for order/punctuation-tolerant similarity checks.
+ *
+ * Similarity intentionally remains case-insensitive so punctuation/order
+ * regressions can still be matched after exact case-aware equality fails.
+ *
+ * @param {string} text
+ * @returns {string[]}
+ */
+function tokenizeForSimilarity(text) {
+  return normalizeText(text || '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter((token) => token.length > 1);
+}
+
+/**
+ * Compute bag-of-words similarity for normalized text.
+ *
+ * @param {string} leftText
+ * @param {string} rightText
+ * @returns {number}
+ */
+function textSimilarity(leftText, rightText) {
+  const left = tokenizeForSimilarity(leftText);
+  const right = tokenizeForSimilarity(rightText);
+  if (left.length === 0 && right.length === 0) return 1;
+  if (left.length === 0 || right.length === 0) return 0;
+
+  const leftCounts = new Map();
+  const rightCounts = new Map();
+  for (const token of left) {
+    leftCounts.set(token, (leftCounts.get(token) || 0) + 1);
+  }
+  for (const token of right) {
+    rightCounts.set(token, (rightCounts.get(token) || 0) + 1);
+  }
+
+  let intersect = 0;
+  let union = 0;
+  const keys = new Set([...leftCounts.keys(), ...rightCounts.keys()]);
+  for (const key of keys) {
+    const leftCount = leftCounts.get(key) || 0;
+    const rightCount = rightCounts.get(key) || 0;
+    intersect += Math.min(leftCount, rightCount);
+    union += Math.max(leftCount, rightCount);
+  }
+
+  return union > 0 ? intersect / union : 0;
+}
+
+/**
+ * Return true when texts differ only by letter case after normalization.
+ *
+ * @param {string} leftText
+ * @param {string} rightText
+ * @returns {boolean}
+ */
+function isCaseOnlyMismatch(leftText, rightText) {
+  const left = normalizeText(leftText);
+  const right = normalizeText(rightText);
+  return left !== right && left.toLowerCase() === right.toLowerCase();
+}
+
+/**
+ * Compare texts with exact case-aware equality first, then similarity fallback.
+ *
+ * @param {string} expectedText
+ * @param {string} actualText
+ * @param {{ caseSensitive?: boolean, similarityThreshold?: number }} [options]
+ * @returns {{ expected: string, actual: string, match: boolean, caseMismatch: boolean, similarity: number }}
+ */
+function compareText(expectedText, actualText, options = {}) {
+  const caseSensitive = options.caseSensitive !== false;
+  const similarityThreshold = options.similarityThreshold ?? 0.60;
+  const expected = normalizeText(expectedText);
+  const actual = normalizeText(actualText);
+
+  if (expected === actual) {
+    return { expected, actual, match: true, caseMismatch: false, similarity: 1 };
+  }
+
+  const caseMismatch = expected.toLowerCase() === actual.toLowerCase();
+  if (caseSensitive && caseMismatch) {
+    return { expected, actual, match: false, caseMismatch: true, similarity: 1 };
+  }
+
+  const similarity = textSimilarity(expected, actual);
+  return {
+    expected,
+    actual,
+    match: similarity >= similarityThreshold,
+    caseMismatch,
+    similarity,
+  };
+}
+
 // -- Reference data lookup --
 
 /**
@@ -456,7 +555,9 @@ function loadLocale(lang) {
 }
 
 module.exports = {
+  compareText,
   normalizeText,
+  isCaseOnlyMismatch,
   parseComponents,
   analyzeOrdering,
   findRefMatchForEntry,
@@ -466,5 +567,7 @@ module.exports = {
   findFieldPosition,
   findNumericFieldPosition,
   expandNamePosition,
-  escapeRegex
+  escapeRegex,
+  textSimilarity,
+  tokenizeForSimilarity,
 };
