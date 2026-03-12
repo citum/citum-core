@@ -196,7 +196,7 @@ pub enum PageRangeFormat {
 
 pub mod titles;
 
-pub use titles::{TitleRendering, TitlesConfig, TitlesConfigEntry};
+pub use titles::{TextCase, TitleRendering, TitlesConfig, TitlesConfigEntry};
 
 /// Structured link options.
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]

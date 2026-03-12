@@ -512,7 +512,9 @@ fn test_multilingual_rendering_numeric_integral_translated() {
             citum_schema::reference::Monograph {
                 id: Some("item1".to_string()),
                 r#type: citum_schema::reference::MonographType::Book,
-                title: citum_schema::reference::Title::Single("War and Peace".to_string()),
+                title: Some(citum_schema::reference::Title::Single(
+                    "War and Peace".to_string(),
+                )),
                 container_title: None,
                 author: Some(Contributor::Multilingual(MultilingualName {
                     original: StructuredName {
@@ -569,12 +571,12 @@ fn test_effective_field_language_prefers_field_languages() {
     let reference = InputReference::Monograph(Box::new(Monograph {
         id: Some("item1".to_string()),
         r#type: MonographType::Book,
-        title: Title::Multilingual(MultilingualComplex {
+        title: Some(Title::Multilingual(MultilingualComplex {
             original: "Titel".to_string(),
             lang: Some("de".to_string()),
             transliterations: HashMap::new(),
             translations: HashMap::new(),
-        }),
+        })),
         container_title: None,
         author: None,
         editor: None,
@@ -614,12 +616,12 @@ fn test_effective_item_language_falls_back_to_multilingual_title_lang() {
     let reference = InputReference::Monograph(Box::new(Monograph {
         id: Some("item1".to_string()),
         r#type: MonographType::Book,
-        title: Title::Multilingual(MultilingualComplex {
+        title: Some(Title::Multilingual(MultilingualComplex {
             original: "東京".to_string(),
             lang: Some("ja".to_string()),
             transliterations: HashMap::new(),
             translations: HashMap::new(),
-        }),
+        })),
         container_title: None,
         author: None,
         editor: None,
@@ -683,7 +685,7 @@ fn test_citation_localized_template_selection_uses_item_language() {
         InputReference::Monograph(Box::new(Monograph {
             id: Some("de-item".to_string()),
             r#type: MonographType::Book,
-            title: Title::Single("Titel".to_string()),
+            title: Some(Title::Single("Titel".to_string())),
             container_title: None,
             author: None,
             editor: None,
@@ -722,7 +724,7 @@ fn test_citation_localized_template_selection_uses_item_language() {
         InputReference::Monograph(Box::new(Monograph {
             id: Some("fr-item".to_string()),
             r#type: MonographType::Book,
-            title: Title::Single("Titre".to_string()),
+            title: Some(Title::Single("Titre".to_string())),
             container_title: None,
             author: None,
             editor: None,
@@ -804,12 +806,12 @@ fn test_bibliography_localized_template_selection_uses_multilingual_title_lang()
         InputReference::Monograph(Box::new(Monograph {
             id: Some("item1".to_string()),
             r#type: MonographType::Book,
-            title: Title::Multilingual(MultilingualComplex {
+            title: Some(Title::Multilingual(MultilingualComplex {
                 original: "東京".to_string(),
                 lang: Some("ja".to_string()),
                 transliterations: HashMap::new(),
                 translations: HashMap::new(),
-            }),
+            })),
             container_title: None,
             author: None,
             editor: None,

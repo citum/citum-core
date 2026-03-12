@@ -120,7 +120,7 @@ impl Default for MultilingualString {
 pub struct Monograph {
     pub id: Option<RefID>,
     pub r#type: MonographType,
-    pub title: Title,
+    pub title: Option<Title>,
     /// Parent or container title for monographic interviews and similar sources.
     pub container_title: Option<Title>,
     pub author: Option<Contributor>,
@@ -307,7 +307,7 @@ pub enum SerialComponentType {
 #[serde(rename_all = "kebab-case")]
 pub struct Serial {
     pub r#type: SerialType,
-    pub title: Title,
+    pub title: Option<Title>,
     /// Optional short form of the parent title for style-directed rendering.
     pub short_title: Option<String>,
     pub editor: Option<Contributor>,
@@ -422,7 +422,7 @@ pub enum RefDate {
 pub struct LegalCase {
     pub id: Option<RefID>,
     /// Case name (e.g., "Brown v. Board of Education")
-    pub title: Title,
+    pub title: Option<Title>,
     /// Court or authority (e.g., "U.S. Supreme Court")
     pub authority: String,
     /// Reporter volume
@@ -453,7 +453,7 @@ pub struct LegalCase {
 pub struct Statute {
     pub id: Option<RefID>,
     /// Statute name (e.g., "Civil Rights Act of 1964")
-    pub title: Title,
+    pub title: Option<Title>,
     /// Legislative body (e.g., "U.S. Congress")
     pub authority: Option<String>,
     /// Code volume
@@ -482,7 +482,7 @@ pub struct Statute {
 pub struct Treaty {
     pub id: Option<RefID>,
     /// Treaty name (e.g., "Treaty of Versailles")
-    pub title: Title,
+    pub title: Option<Title>,
     /// Parties to the treaty
     pub author: Option<Contributor>,
     /// Treaty series volume
@@ -511,7 +511,7 @@ pub struct Treaty {
 pub struct Hearing {
     pub id: Option<RefID>,
     /// Hearing title
-    pub title: Title,
+    pub title: Option<Title>,
     /// Legislative body conducting the hearing (e.g., "U.S. Senate Committee on Finance")
     pub authority: Option<String>,
     /// Session or congress number
@@ -536,7 +536,7 @@ pub struct Hearing {
 pub struct Regulation {
     pub id: Option<RefID>,
     /// Regulation title
-    pub title: Title,
+    pub title: Option<Title>,
     /// Regulatory authority (e.g., "EPA", "Federal Register")
     pub authority: Option<String>,
     /// Code volume
@@ -565,7 +565,7 @@ pub struct Regulation {
 pub struct Brief {
     pub id: Option<RefID>,
     /// Brief title or case name
-    pub title: Title,
+    pub title: Option<Title>,
     /// Court (e.g., "U.S. Supreme Court")
     pub authority: Option<String>,
     /// Author/filer of the brief
@@ -592,7 +592,7 @@ pub struct Brief {
 pub struct Classic {
     pub id: Option<RefID>,
     /// Work title (e.g., "Nicomachean Ethics")
-    pub title: Title,
+    pub title: Option<Title>,
     /// Author (e.g., "Aristotle")
     pub author: Option<Contributor>,
     /// Editor or translator
@@ -623,7 +623,7 @@ pub struct Classic {
 pub struct Patent {
     pub id: Option<RefID>,
     /// Patent title
-    pub title: Title,
+    pub title: Option<Title>,
     /// Inventor(s)
     pub author: Option<Contributor>,
     /// Assignee (patent holder)
@@ -658,7 +658,7 @@ pub struct Patent {
 pub struct Dataset {
     pub id: Option<RefID>,
     /// Dataset title
-    pub title: Title,
+    pub title: Option<Title>,
     /// Dataset author(s)/creator(s)
     pub author: Option<Contributor>,
     /// Publication/release date
@@ -693,7 +693,7 @@ pub struct Dataset {
 pub struct Standard {
     pub id: Option<RefID>,
     /// Standard title
-    pub title: Title,
+    pub title: Option<Title>,
     /// Standards organization (e.g., "ISO", "ANSI", "IEEE")
     pub authority: Option<String>,
     /// Standard number (e.g., "ISO 8601", "IEEE 754-2008")
@@ -722,7 +722,7 @@ pub struct Standard {
 pub struct Software {
     pub id: Option<RefID>,
     /// Software title
-    pub title: Title,
+    pub title: Option<Title>,
     /// Author(s)/developer(s)
     pub author: Option<Contributor>,
     /// Release date

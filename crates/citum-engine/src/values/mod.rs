@@ -20,6 +20,8 @@ pub mod number;
 pub mod range;
 /// Locale term resolution helpers.
 pub mod term;
+/// Title text-case transform functions.
+pub mod text_case;
 /// Title extraction and title-formatting helpers.
 pub mod title;
 /// Generic variable extraction helpers.
@@ -204,9 +206,7 @@ pub fn effective_component_language(
                 },
                 TitleType::ParentSerial => match reference {
                     Reference::SerialComponent(component) => match &component.parent {
-                        citum_schema::reference::Parent::Embedded(parent) => {
-                            Some(parent.title.clone())
-                        }
+                        citum_schema::reference::Parent::Embedded(parent) => parent.title.clone(),
                         citum_schema::reference::Parent::Id(_) => None,
                     },
                     _ => None,

@@ -51,10 +51,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
         let legacy_journal_abbreviation = short_title_from_legacy(&legacy, "journalAbbreviation");
         let id = Some(legacy.id);
         let language = legacy.language;
-        let title = legacy
-            .title
-            .map(Title::Single)
-            .unwrap_or(Title::Single(String::new()));
+        let title = legacy.title.map(Title::Single);
         let issued = legacy
             .issued
             .map(EdtfString::from)
@@ -172,10 +169,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                 }))
             }
             "chapter" | "paper-conference" | "entry-dictionary" => {
-                let parent_title = legacy
-                    .container_title
-                    .map(Title::Single)
-                    .unwrap_or(Title::Single(String::new()));
+                let parent_title = legacy.container_title.map(Title::Single);
                 InputReference::CollectionComponent(Box::new(CollectionComponent {
                     id,
                     r#type: if legacy.ref_type == "paper-conference" {
@@ -183,14 +177,14 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                     } else {
                         MonographComponentType::Chapter
                     },
-                    title: Some(title),
+                    title,
                     author: legacy.author.map(Contributor::from),
                     translator: legacy.translator.map(Contributor::from),
                     issued,
                     parent: Parent::Embedded(Collection {
                         id: None,
                         r#type: CollectionType::EditedBook,
-                        title: Some(parent_title),
+                        title: parent_title,
                         short_title: legacy_container_title_short,
                         editor: legacy.editor.map(Contributor::from),
                         translator: None,
@@ -241,14 +235,11 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                     "broadcast" | "motion_picture" => SerialType::BroadcastProgram,
                     _ => SerialType::AcademicJournal,
                 };
-                let parent_title = legacy
-                    .container_title
-                    .map(Title::Single)
-                    .unwrap_or(Title::Single(String::new()));
+                let parent_title = legacy.container_title.map(Title::Single);
                 InputReference::SerialComponent(Box::new(SerialComponent {
                     id,
                     r#type: SerialComponentType::Article,
-                    title: Some(title),
+                    title,
                     author: legacy.author.map(Contributor::from),
                     translator: legacy.translator.map(Contributor::from),
                     issued,

@@ -1380,7 +1380,9 @@ fn input_reference_to_csl_json(reference: &InputReference) -> csl_legacy::csl_js
         InputReference::SerialComponent(s) => {
             r.ref_type = "article-journal".to_string();
             r.container_title = match &s.parent {
-                citum_schema::reference::Parent::Embedded(parent) => Some(parent.title.to_string()),
+                citum_schema::reference::Parent::Embedded(parent) => {
+                    parent.title.as_ref().map(|t| t.to_string())
+                }
                 citum_schema::reference::Parent::Id(_) => None,
             };
             r.page = s.pages.as_ref().map(|p| p.to_string());

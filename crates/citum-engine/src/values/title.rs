@@ -3,14 +3,15 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-//! Rendering logic for title fields with smartening and form selection.
-//!
-//! This module handles title component rendering, including main titles,
-//! container titles, and smart quote handling.
+//! Rendering logic for title fields with smartening, form selection,
+//! and text-case transforms.
 
 use crate::reference::Reference;
 use crate::render::rich_text::render_djot_inline_with_transform;
+use crate::values::text_case::{self, apply_text_case, capitalize_first_word};
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
+use citum_schema::options::titles::TextCase;
+use citum_schema::reference::types::{StructuredTitle, Subtitle};
 use citum_schema::reference::{Parent, types::Title};
 use citum_schema::template::{TemplateTitle, TitleForm, TitleType};
 
@@ -114,19 +115,126 @@ fn parent_short_title(reference: &Reference, title_type: &TitleType) -> Option<S
     }
 }
 
-fn render_title_inline<F: crate::render::format::OutputFormat<Output = String>>(
-    value: &str,
-    fmt: &F,
-) -> (String, bool) {
-    render_djot_inline_with_transform(value, fmt, smarten_title_quotes)
-}
-
 fn looks_like_djot_markup(value: &str) -> bool {
     value.contains('_')
         || value.contains('*')
         || value.contains("](")
         || value.contains("{.")
         || value.contains('`')
+}
+
+/// Build a text-transform closure that applies case transform then smart quotes.
+///
+/// The closure is used as the Djot text-leaf transform, so `.nocase` spans
+/// bypass it automatically via the rich-text renderer.
+fn make_case_transform(case: TextCase) -> impl FnMut(&str) -> String {
+    let mut seen_alpha = false;
+    move |text: &str| {
+        let cased = match case {
+            TextCase::Sentence | TextCase::SentenceApa | TextCase::SentenceNlm => {
+                let lowered = text.to_lowercase();
+                if !seen_alpha {
+                    // Capitalize the first alphabetic character we encounter
+                    let result = capitalize_first_word(&lowered);
+                    if result.chars().any(|c: char| c.is_alphabetic()) {
+                        seen_alpha = true;
+                    }
+                    result
+                } else {
+                    lowered
+                }
+            }
+            _ => apply_text_case(text, case),
+        };
+        smarten_title_quotes(&cased)
+    }
+}
+
+/// Render a single title part through Djot with case transform + smart quotes.
+/// Returns (rendered_value, has_explicit_link).
+fn render_part_with_case<F: crate::render::format::OutputFormat<Output = String>>(
+    value: &str,
+    fmt: &F,
+    case: Option<TextCase>,
+) -> (String, bool) {
+    if looks_like_djot_markup(value) {
+        match case {
+            Some(tc) => render_djot_inline_with_transform(value, fmt, make_case_transform(tc)),
+            None => render_djot_inline_with_transform(value, fmt, smarten_title_quotes),
+        }
+    } else {
+        let result = match case {
+            Some(tc) => smarten_title_quotes(&apply_text_case(value, tc)),
+            None => smarten_title_quotes(value),
+        };
+        (result, false)
+    }
+}
+
+/// Render a structured title with per-part case transforms.
+///
+/// For `SentenceApa`, each subtitle gets sentence-case (first word capitalized).
+/// For `SentenceNlm`, subtitles are lowercased (no first-word capitalization).
+fn render_structured_title<F: crate::render::format::OutputFormat<Output = String>>(
+    st: &StructuredTitle,
+    fmt: &F,
+    case: Option<TextCase>,
+) -> (String, bool) {
+    let subtitle_case = case.map(|c| match c {
+        TextCase::SentenceNlm => TextCase::Lowercase,
+        other => other,
+    });
+
+    let (main_rendered, mut has_link) = render_part_with_case(&st.main, fmt, case);
+    let mut parts = vec![main_rendered];
+
+    let subs: Vec<&str> = match &st.sub {
+        Subtitle::String(s) => vec![s.as_str()],
+        Subtitle::Vector(v) => v.iter().map(|s| s.as_str()).collect(),
+    };
+
+    for sub in subs {
+        let (sub_rendered, sub_link) = render_part_with_case(sub, fmt, subtitle_case);
+        has_link |= sub_link;
+        parts.push(sub_rendered);
+    }
+
+    (parts.join(": "), has_link)
+}
+
+/// Resolve the effective text-case for this title component.
+fn resolve_effective_text_case(
+    template: &TemplateTitle,
+    reference: &Reference,
+    options: &RenderOptions<'_>,
+) -> Option<TextCase> {
+    // 1. Template-level override takes precedence
+    if let Some(tc) = template.rendering.text_case {
+        return Some(apply_language_fallback(tc, reference));
+    }
+
+    // 2. Global title-category config
+    let ref_type = reference.ref_type();
+    let lang = reference.language();
+    let lang_str = lang.as_deref();
+
+    if let Some(rendering) = crate::render::component::get_title_category_rendering(
+        &template.title,
+        Some(&ref_type),
+        lang_str,
+        options.config,
+    ) && let Some(tc) = rendering.text_case
+    {
+        return Some(apply_language_fallback(tc, reference));
+    }
+
+    None
+}
+
+/// Apply language-aware fallback: non-English → as-is for English-specific transforms.
+fn apply_language_fallback(case: TextCase, reference: &Reference) -> TextCase {
+    let lang = reference.language();
+    text_case::resolve_text_case(case, lang.as_deref())
 }
 
 impl ComponentValues for TemplateTitle {
@@ -136,10 +244,6 @@ impl ComponentValues for TemplateTitle {
         hints: &ProcHints,
         options: &RenderOptions<'_>,
     ) -> Option<ProcValues<F::Output>> {
-        // Suppress title when disambiguate_only is set and only one work by
-        // this author appears in the document (no disambiguation needed).
-        // Used by author-class styles like MLA where the title in citations
-        // exists solely to resolve same-author ambiguity.
         if self.disambiguate_only == Some(true) && hints.group_length <= 1 {
             return None;
         }
@@ -149,7 +253,11 @@ impl ComponentValues for TemplateTitle {
             && !short_title.is_empty()
         {
             let (value, pre_formatted) = if looks_like_djot_markup(&short_title) {
-                let (value, _) = render_title_inline(&short_title, &F::default());
+                let (value, _) = render_djot_inline_with_transform(
+                    &short_title,
+                    &F::default(),
+                    smarten_title_quotes,
+                );
                 (value, true)
             } else {
                 (smarten_title_quotes(&short_title), false)
@@ -164,12 +272,11 @@ impl ComponentValues for TemplateTitle {
             });
         }
 
-        // Get the raw title based on type and template requirement
         let raw_title = match self.title {
             TitleType::Primary => reference.title(),
             TitleType::ParentSerial => match reference {
                 Reference::SerialComponent(r) => match &r.parent {
-                    Parent::Embedded(p) => Some(&p.title),
+                    Parent::Embedded(p) => p.title.as_ref(),
                     _ => None,
                 },
                 _ => None,
@@ -186,8 +293,17 @@ impl ComponentValues for TemplateTitle {
             _ => None,
         };
 
-        // Resolve multilingual title if configured
-        let value: Option<String> = raw_title.map(|title| match title {
+        let effective_case = resolve_effective_text_case(self, reference, options);
+        let fmt = F::default();
+
+        // Render title with structured-title-aware case transforms
+        let rendered: Option<(String, bool, bool)> = raw_title.map(|title| match &title {
+            Title::Structured(st) => {
+                let raw_text = title_text(&title, self.form.as_ref());
+                let (value, has_link) = render_structured_title(st, &fmt, effective_case);
+                let pre_formatted = looks_like_djot_markup(&raw_text);
+                (value, has_link, pre_formatted)
+            }
             Title::Multilingual(m) => {
                 let mode = options
                     .config
@@ -208,40 +324,43 @@ impl ComponentValues for TemplateTitle {
 
                 let complex =
                     citum_schema::reference::types::MultilingualString::Complex(m.clone());
-                crate::values::resolve_multilingual_string(
+                let value = crate::values::resolve_multilingual_string(
                     &complex,
                     mode,
                     preferred_transliteration,
                     preferred_script,
                     locale_str,
-                )
+                );
+                let (rendered, has_link) = render_part_with_case(&value, &fmt, effective_case);
+                let pre_formatted = looks_like_djot_markup(&value);
+                (rendered, has_link, pre_formatted)
             }
-            _ => title_text(&title, self.form.as_ref()),
+            _ => {
+                let value = title_text(&title, self.form.as_ref());
+                let (rendered, has_link) = render_part_with_case(&value, &fmt, effective_case);
+                let pre_formatted = looks_like_djot_markup(&value);
+                (rendered, has_link, pre_formatted)
+            }
         });
 
-        value.filter(|s: &String| !s.is_empty()).map(|value| {
-            use citum_schema::options::LinkAnchor;
-            let url = crate::values::resolve_effective_url(
-                self.links.as_ref(),
-                options.config.links.as_ref(),
-                reference,
-                LinkAnchor::Title,
-            );
-            let (value, has_explicit_link, pre_formatted) = if looks_like_djot_markup(&value) {
-                let fmt = F::default();
-                let (value, has_explicit_link) = render_title_inline(&value, &fmt);
-                (value, has_explicit_link, true)
-            } else {
-                (smarten_title_quotes(&value), false, false)
-            };
-            ProcValues {
-                value,
-                prefix: None,
-                suffix: None,
-                url: if has_explicit_link { None } else { url },
-                substituted_key: None,
-                pre_formatted,
-            }
-        })
+        rendered.filter(|(v, _, _)| !v.is_empty()).map(
+            |(value, has_explicit_link, pre_formatted)| {
+                use citum_schema::options::LinkAnchor;
+                let url = crate::values::resolve_effective_url(
+                    self.links.as_ref(),
+                    options.config.links.as_ref(),
+                    reference,
+                    LinkAnchor::Title,
+                );
+                ProcValues {
+                    value,
+                    prefix: None,
+                    suffix: None,
+                    url: if has_explicit_link { None } else { url },
+                    substituted_key: None,
+                    pre_formatted,
+                }
+            },
+        )
     }
 }

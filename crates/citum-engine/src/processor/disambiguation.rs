@@ -545,7 +545,7 @@ mod tests {
         Reference::Monograph(Box::new(Monograph {
             id: Some(id.to_string()),
             r#type: MonographType::Book,
-            title: Title::Single(title.to_string()),
+            title: Some(Title::Single(title.to_string())),
             container_title: None,
             author: Some(Contributor::StructuredName(StructuredName {
                 family: MultilingualString::Simple(family.to_string()),

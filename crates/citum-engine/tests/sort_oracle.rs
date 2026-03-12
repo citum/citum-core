@@ -38,15 +38,16 @@ fn test_apa_7th_sort_same_author_year_by_title() {
     let result = processor.render_bibliography();
 
     // All three Adams 2020 items should appear in title order: Academic, Digital, Ethics
+    // APA preset applies sentence-apa case transform to component titles.
     let academic_pos = result
-        .find("Academic Enterprise")
-        .expect("Academic Enterprise should be in output");
+        .find("academic enterprise")
+        .expect("academic enterprise should be in output");
     let digital_pos = result
-        .find("Digital Transformation")
-        .expect("Digital Transformation should be in output");
+        .find("Digital transformation")
+        .expect("Digital transformation should be in output");
     let ethics_pos = result
-        .find("Ethics in Research")
-        .expect("Ethics in Research should be in output");
+        .find("Ethics in research")
+        .expect("Ethics in research should be in output");
 
     assert!(
         academic_pos < digital_pos,

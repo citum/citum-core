@@ -46,7 +46,7 @@ pub fn make_book_multi_author(
     Reference::Monograph(Box::new(Monograph {
         id: Some(id.to_string()),
         r#type: MonographType::Book,
-        title: Title::Single(title.to_string()),
+        title: Some(Title::Single(title.to_string())),
         container_title: None,
         author: Some(Contributor::ContributorList(ContributorList(author_list))),
         editor: None,
@@ -110,7 +110,7 @@ pub fn make_article_multi_author(
         issued: EdtfString(year.to_string()),
         parent: Parent::Embedded(Serial {
             r#type: SerialType::AcademicJournal,
-            title: Title::Single(String::new()),
+            title: Some(Title::Single(String::new())),
             short_title: None,
             editor: None,
             publisher: None,
@@ -162,7 +162,7 @@ pub fn make_multilingual_book(
     Reference::Monograph(Box::new(Monograph {
         id: Some(id.to_string()),
         r#type: MonographType::Book,
-        title: Title::Single(title.to_string()),
+        title: Some(Title::Single(title.to_string())),
         container_title: None,
         author: Some(Contributor::Multilingual(MultilingualName {
             original: StructuredName {

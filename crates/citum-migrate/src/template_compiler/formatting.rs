@@ -36,6 +36,7 @@ impl TemplateCompiler {
         };
 
         Rendering {
+            text_case: None,
             emph: fmt
                 .font_style
                 .as_ref()

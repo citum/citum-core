@@ -175,21 +175,21 @@ impl InputReference {
     /// Return the title.
     pub fn title(&self) -> Option<Title> {
         match self {
-            InputReference::Monograph(r) => Some(r.title.clone()),
+            InputReference::Monograph(r) => r.title.clone(),
             InputReference::CollectionComponent(r) => r.title.clone(),
             InputReference::SerialComponent(r) => r.title.clone(),
             InputReference::Collection(r) => r.title.clone(),
-            InputReference::LegalCase(r) => Some(r.title.clone()),
-            InputReference::Statute(r) => Some(r.title.clone()),
-            InputReference::Treaty(r) => Some(r.title.clone()),
-            InputReference::Hearing(r) => Some(r.title.clone()),
-            InputReference::Regulation(r) => Some(r.title.clone()),
-            InputReference::Brief(r) => Some(r.title.clone()),
-            InputReference::Classic(r) => Some(r.title.clone()),
-            InputReference::Patent(r) => Some(r.title.clone()),
-            InputReference::Dataset(r) => Some(r.title.clone()),
-            InputReference::Standard(r) => Some(r.title.clone()),
-            InputReference::Software(r) => Some(r.title.clone()),
+            InputReference::LegalCase(r) => r.title.clone(),
+            InputReference::Statute(r) => r.title.clone(),
+            InputReference::Treaty(r) => r.title.clone(),
+            InputReference::Hearing(r) => r.title.clone(),
+            InputReference::Regulation(r) => r.title.clone(),
+            InputReference::Brief(r) => r.title.clone(),
+            InputReference::Classic(r) => r.title.clone(),
+            InputReference::Patent(r) => r.title.clone(),
+            InputReference::Dataset(r) => r.title.clone(),
+            InputReference::Standard(r) => r.title.clone(),
+            InputReference::Software(r) => r.title.clone(),
         }
     }
 
@@ -376,7 +376,7 @@ impl InputReference {
             InputReference::SerialComponent(r) => {
                 let r = r.as_ref();
                 match &r.parent {
-                    Parent::Embedded(p) => Some(p.title.clone()),
+                    Parent::Embedded(p) => p.title.clone(),
                     Parent::Id(_) => None,
                 }
             }
@@ -673,7 +673,8 @@ impl InputReference {
                     SerialType::AcademicJournal => {
                         if r.genre.as_deref() == Some("entry-encyclopedia") {
                             "entry-encyclopedia".to_string()
-                        } else if matches!(s.title, Title::Single(ref title) if title == "arXiv") {
+                        } else if matches!(&s.title, Some(Title::Single(title)) if title == "arXiv")
+                        {
                             "article-journal+arxiv".to_string()
                         } else {
                             "article-journal".to_string()

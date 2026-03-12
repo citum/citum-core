@@ -62,7 +62,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! let reference = Reference::Monograph(Box::new(Monograph {
 //!     id: Some("kuhn1962".to_string()),
 //!     r#type: MonographType::Book,
-//!     title: Title::Single("The Structure of Scientific Revolutions".to_string()),
+//!     title: Some(Title::Single("The Structure of Scientific Revolutions".to_string())),
 //!     container_title: None,
 //!     author: Some(Contributor::ContributorList(ContributorList(vec![
 //!         Contributor::StructuredName(StructuredName {
