@@ -392,14 +392,22 @@ pub enum TitlePreset {
 impl TitlePreset {
     /// Convert this preset to a concrete `TitlesConfig`.
     pub fn config(&self) -> TitlesConfig {
+        use crate::options::titles::TextCase;
         let emph_rendering = TitleRendering {
             emph: Some(true),
             ..Default::default()
         };
         match self {
             TitlePreset::Apa => TitlesConfig {
-                component: Some(TitleRendering::default()),
-                monograph: Some(emph_rendering.clone()),
+                component: Some(TitleRendering {
+                    text_case: Some(TextCase::SentenceApa),
+                    ..Default::default()
+                }),
+                monograph: Some(TitleRendering {
+                    text_case: Some(TextCase::SentenceApa),
+                    emph: Some(true),
+                    ..Default::default()
+                }),
                 periodical: Some(emph_rendering),
                 ..Default::default()
             },
@@ -426,8 +434,14 @@ impl TitlePreset {
                 ..Default::default()
             },
             TitlePreset::Scientific => TitlesConfig {
-                component: Some(TitleRendering::default()),
-                monograph: Some(TitleRendering::default()),
+                component: Some(TitleRendering {
+                    text_case: Some(TextCase::SentenceNlm),
+                    ..Default::default()
+                }),
+                monograph: Some(TitleRendering {
+                    text_case: Some(TextCase::SentenceNlm),
+                    ..Default::default()
+                }),
                 periodical: Some(TitleRendering::default()),
                 ..Default::default()
             },

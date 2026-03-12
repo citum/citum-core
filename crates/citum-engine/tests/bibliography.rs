@@ -222,7 +222,7 @@ fn make_particle_book(
     InputReference::Monograph(Box::new(Monograph {
         id: Some(id.to_string()),
         r#type: MonographType::Book,
-        title: Title::Single(format!("Title {id}")),
+        title: Some(Title::Single(format!("Title {id}"))),
         container_title: None,
         author: Some(Contributor::StructuredName(StructuredName {
             family: family.into(),

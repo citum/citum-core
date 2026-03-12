@@ -263,9 +263,7 @@ fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
     };
     use url::Url;
 
-    let title = field_str("title")
-        .map(Title::Single)
-        .unwrap_or(Title::Single(String::new()));
+    let title = field_str("title").map(Title::Single);
     let issued = field_str("date")
         .map(EdtfString)
         .unwrap_or(EdtfString(String::new()));
@@ -344,20 +342,18 @@ fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
             }))
         }
         "inbook" | "incollection" | "inproceedings" => {
-            let parent_title = field_str("booktitle")
-                .map(Title::Single)
-                .unwrap_or(Title::Single(String::new()));
+            let parent_title = field_str("booktitle").map(Title::Single);
             InputReference::CollectionComponent(Box::new(CollectionComponent {
                 id,
                 r#type: MonographComponentType::Chapter,
-                title: Some(title),
+                title,
                 author,
                 translator: None,
                 issued,
                 parent: Parent::Embedded(Collection {
                     id: None,
                     r#type: CollectionType::EditedBook,
-                    title: Some(parent_title),
+                    title: parent_title,
                     short_title: None,
                     editor,
                     translator: None,
@@ -387,12 +383,11 @@ fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
         "article" => {
             let parent_title = field_str("journaltitle")
                 .or_else(|| field_str("journal"))
-                .map(Title::Single)
-                .unwrap_or(Title::Single(String::new()));
+                .map(Title::Single);
             InputReference::SerialComponent(Box::new(SerialComponent {
                 id,
                 r#type: SerialComponentType::Article,
-                title: Some(title),
+                title,
                 author,
                 translator: None,
                 issued,

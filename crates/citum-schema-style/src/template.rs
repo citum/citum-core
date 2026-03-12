@@ -52,6 +52,9 @@ use std::collections::HashMap;
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case", default, deny_unknown_fields)]
 pub struct Rendering {
+    /// Text-case transform to apply to the rendered value.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text_case: Option<crate::options::titles::TextCase>,
     /// Render in italics/emphasis.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub emph: Option<bool>,
@@ -99,6 +102,7 @@ impl Rendering {
         crate::merge_options!(
             self,
             other,
+            text_case,
             emph,
             quote,
             strong,

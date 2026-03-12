@@ -15,6 +15,8 @@ struct DjotFrame {
     link_url: Option<String>,
     has_explicit_link: bool,
     last_char: Option<char>,
+    /// True when this frame (or an ancestor) carries `.nocase` protection.
+    case_protected: bool,
 }
 
 impl DjotFrame {
@@ -68,10 +70,14 @@ where
                 } else {
                     None
                 };
+                let classes = span_classes(Some(&attrs));
+                let parent_protected = stack.last().is_some_and(|f| f.case_protected);
+                let is_nocase = classes.iter().any(|c| c == "nocase");
                 stack.push(DjotFrame {
-                    classes: span_classes(Some(&attrs)),
+                    case_protected: parent_protected || is_nocase,
                     has_explicit_link: link_url.is_some(),
                     link_url,
+                    classes,
                     ..Default::default()
                 });
             }
@@ -109,8 +115,15 @@ where
             }
             Event::Str(s) => {
                 if let Some(frame) = stack.last_mut() {
+                    // Always call transform_text so stateful transforms (e.g., sentence-case)
+                    // can update their internal state, even for .nocase-protected spans.
                     let transformed = transform_text(s.as_ref());
-                    frame.push_rendered(fmt.text(&transformed), transformed.chars().last());
+                    let render_text = if frame.case_protected {
+                        s.to_string()
+                    } else {
+                        transformed
+                    };
+                    frame.push_rendered(fmt.text(&render_text), render_text.chars().last());
                 }
             }
             Event::Symbol(sym) => {

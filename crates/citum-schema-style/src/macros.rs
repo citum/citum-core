@@ -210,7 +210,7 @@ macro_rules! ref_book {
             $crate::reference::Monograph {
                 id: Some($id.to_string()),
                 r#type: $crate::reference::MonographType::Book,
-                title: $crate::reference::Title::Single($title.to_string()),
+                title: Some($crate::reference::Title::Single($title.to_string())),
                 container_title: None,
                 author: Some($crate::reference::Contributor::StructuredName(
                     $crate::reference::StructuredName {
@@ -274,7 +274,7 @@ macro_rules! ref_book_authors {
             $crate::reference::Monograph {
                 id: Some($id.to_string()),
                 r#type: $crate::reference::MonographType::Book,
-                title: $crate::reference::Title::Single($title.to_string()),
+                title: Some($crate::reference::Title::Single($title.to_string())),
                 container_title: None,
                 author: Some($crate::reference::Contributor::ContributorList(
                     $crate::reference::ContributorList(_authors),
@@ -333,7 +333,7 @@ macro_rules! ref_article {
                 issued: $crate::reference::EdtfString($year.to_string()),
                 parent: $crate::reference::Parent::Embedded($crate::reference::Serial {
                     r#type: $crate::reference::SerialType::AcademicJournal,
-                    title: $crate::reference::Title::Single(String::new()),
+                    title: Some($crate::reference::Title::Single(String::new())),
                     short_title: None,
                     editor: None,
                     publisher: None,
@@ -391,7 +391,7 @@ macro_rules! ref_article_authors {
                 issued: $crate::reference::EdtfString($year.to_string()),
                 parent: $crate::reference::Parent::Embedded($crate::reference::Serial {
                     r#type: $crate::reference::SerialType::AcademicJournal,
-                    title: $crate::reference::Title::Single(String::new()),
+                    title: Some($crate::reference::Title::Single(String::new())),
                     short_title: None,
                     editor: None,
                     publisher: None,

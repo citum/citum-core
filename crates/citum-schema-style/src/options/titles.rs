@@ -8,6 +8,34 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+/// Text-case transform applied to title-like fields.
+///
+/// Styles select which transform applies to which field category.
+/// The engine provides the generic primitives; styles own the selection.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum TextCase {
+    /// English headline-style title case (capitalize principal words).
+    Title,
+    /// Generic sentence case (capitalize first word only).
+    Sentence,
+    /// APA-style sentence case: capitalize first word of main title
+    /// and first word after each subtitle boundary.
+    SentenceApa,
+    /// NLM-style sentence case: capitalize first word of main title only;
+    /// subtitles preserve only explicit/protected capitals.
+    SentenceNlm,
+    /// Capitalize the first letter of the value.
+    CapitalizeFirst,
+    /// Transform the entire value to lowercase.
+    Lowercase,
+    /// Transform the entire value to uppercase.
+    Uppercase,
+    /// No transformation; render the value exactly as stored.
+    AsIs,
+}
+
 /// Title config: either a preset name or explicit configuration.
 ///
 /// Allows styles to write `titles: apa` as shorthand, or provide
@@ -76,6 +104,9 @@ pub struct TitlesConfig {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct TitleRendering {
+    /// Text-case transform to apply to this title category.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text_case: Option<TextCase>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub emph: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -95,6 +126,7 @@ pub struct TitleRendering {
 impl TitleRendering {
     pub fn to_rendering(&self) -> crate::template::Rendering {
         crate::template::Rendering {
+            text_case: self.text_case,
             emph: self.emph,
             quote: self.quote,
             strong: self.strong,

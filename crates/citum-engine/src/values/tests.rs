@@ -1944,3 +1944,359 @@ fn test_locator_label_selection_comprehensive() {
         &LocatorType::Page
     ));
 }
+
+// ── Title text-case tests ──────────────────────────────────────────────
+
+fn make_config_with_titles(titles: citum_schema::options::TitlesConfig) -> Config {
+    Config {
+        titles: Some(titles),
+        ..Default::default()
+    }
+}
+
+fn title_value_with_config(title_str: &str, ref_type: &str, config: &Config) -> String {
+    let locale = make_locale();
+    let options = RenderOptions {
+        config,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator: None,
+        locator_label: None,
+    };
+    let hints = ProcHints::default();
+    let reference = Reference::from(LegacyReference {
+        id: "tc".to_string(),
+        ref_type: ref_type.to_string(),
+        title: Some(title_str.to_string()),
+        ..Default::default()
+    });
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        ..Default::default()
+    };
+    component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap()
+        .value
+}
+
+#[test]
+fn test_text_case_sentence_apa_basic() {
+    use citum_schema::options::titles::{TextCase, TitleRendering, TitlesConfig};
+    let config = make_config_with_titles(TitlesConfig {
+        monograph: Some(TitleRendering {
+            text_case: Some(TextCase::SentenceApa),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    let result =
+        title_value_with_config("The Structure of Scientific Revolutions", "book", &config);
+    assert_eq!(result, "The structure of scientific revolutions");
+}
+
+#[test]
+fn test_text_case_sentence_nlm_basic() {
+    use citum_schema::options::titles::{TextCase, TitleRendering, TitlesConfig};
+    let config = make_config_with_titles(TitlesConfig {
+        monograph: Some(TitleRendering {
+            text_case: Some(TextCase::SentenceNlm),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    let result =
+        title_value_with_config("The Structure of Scientific Revolutions", "book", &config);
+    assert_eq!(result, "The structure of scientific revolutions");
+}
+
+#[test]
+fn test_text_case_title_case() {
+    use citum_schema::options::titles::{TextCase, TitleRendering, TitlesConfig};
+    let config = make_config_with_titles(TitlesConfig {
+        monograph: Some(TitleRendering {
+            text_case: Some(TextCase::Title),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    let result = title_value_with_config("the quick brown fox", "book", &config);
+    assert_eq!(result, "The Quick Brown Fox");
+}
+
+#[test]
+fn test_text_case_as_is() {
+    use citum_schema::options::titles::{TextCase, TitleRendering, TitlesConfig};
+    let config = make_config_with_titles(TitlesConfig {
+        monograph: Some(TitleRendering {
+            text_case: Some(TextCase::AsIs),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    let result =
+        title_value_with_config("The Structure of Scientific Revolutions", "book", &config);
+    assert_eq!(result, "The Structure of Scientific Revolutions");
+}
+
+#[test]
+fn test_text_case_nocase_protection_in_djot() {
+    use citum_schema::options::titles::{TextCase, TitleRendering, TitlesConfig};
+    let config = make_config_with_titles(TitlesConfig {
+        monograph: Some(TitleRendering {
+            text_case: Some(TextCase::SentenceApa),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    // [mRNA]{.nocase} should be preserved even under sentence case
+    let result = title_value_with_config(
+        "The Role of [mRNA]{.nocase} in Modern Science",
+        "book",
+        &config,
+    );
+    assert_eq!(result, "The role of mRNA in modern science");
+}
+
+#[test]
+fn test_text_case_nocase_nested_in_emphasis() {
+    use citum_schema::options::titles::{TextCase, TitleRendering, TitlesConfig};
+    let config = make_config_with_titles(TitlesConfig {
+        monograph: Some(TitleRendering {
+            text_case: Some(TextCase::SentenceApa),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    let result = title_value_with_config(
+        "_Homo Sapiens_ and [DNA]{.nocase} Replication",
+        "book",
+        &config,
+    );
+    // Emphasis content gets sentence case (first word capitalized), DNA preserved
+    assert_eq!(result, "_Homo sapiens_ and DNA replication");
+}
+
+#[test]
+fn test_text_case_leading_nocase_advances_state() {
+    use citum_schema::options::titles::{TextCase, TitleRendering, TitlesConfig};
+    let config = make_config_with_titles(TitlesConfig {
+        monograph: Some(TitleRendering {
+            text_case: Some(TextCase::SentenceApa),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    // Leading .nocase span: the first-word state should still advance,
+    // so "replication" after the span is NOT capitalized.
+    let result = title_value_with_config(
+        "[DNA]{.nocase} Replication in Modern Science",
+        "book",
+        &config,
+    );
+    assert_eq!(result, "DNA replication in modern science");
+}
+
+#[test]
+fn test_text_case_structured_title_sentence_apa() {
+    use citum_schema::options::titles::{TextCase, TitleRendering, TitlesConfig};
+    use citum_schema::reference::types::{StructuredTitle, Subtitle, Title};
+
+    let config = make_config_with_titles(TitlesConfig {
+        monograph: Some(TitleRendering {
+            text_case: Some(TextCase::SentenceApa),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator: None,
+        locator_label: None,
+    };
+    let hints = ProcHints::default();
+
+    // Build a native Citum structured title reference
+    let mut reference = Reference::from(LegacyReference {
+        id: "structured".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("placeholder".to_string()),
+        ..Default::default()
+    });
+    // Replace with structured title
+    if let Reference::Monograph(ref mut m) = reference {
+        m.title = Some(Title::Structured(StructuredTitle {
+            full: None,
+            main: "Understanding Citation Systems".to_string(),
+            sub: Subtitle::Vector(vec![
+                "History and Practice".to_string(),
+                "A Comparative View".to_string(),
+            ]),
+        }));
+    }
+
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        ..Default::default()
+    };
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+    // APA: first word of main + each subtitle capitalized
+    assert_eq!(
+        values.value,
+        "Understanding citation systems: History and practice: A comparative view"
+    );
+}
+
+#[test]
+fn test_text_case_structured_title_sentence_nlm() {
+    use citum_schema::options::titles::{TextCase, TitleRendering, TitlesConfig};
+    use citum_schema::reference::types::{StructuredTitle, Subtitle, Title};
+
+    let config = make_config_with_titles(TitlesConfig {
+        monograph: Some(TitleRendering {
+            text_case: Some(TextCase::SentenceNlm),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator: None,
+        locator_label: None,
+    };
+    let hints = ProcHints::default();
+
+    let mut reference = Reference::from(LegacyReference {
+        id: "structured".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("placeholder".to_string()),
+        ..Default::default()
+    });
+    if let Reference::Monograph(ref mut m) = reference {
+        m.title = Some(Title::Structured(StructuredTitle {
+            full: None,
+            main: "Understanding Citation Systems".to_string(),
+            sub: Subtitle::String("History and Practice".to_string()),
+        }));
+    }
+
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        ..Default::default()
+    };
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+    // NLM: main sentence-cased, subtitle lowercased only
+    assert_eq!(
+        values.value,
+        "Understanding citation systems: history and practice"
+    );
+}
+
+#[test]
+fn test_text_case_non_english_falls_back_to_as_is() {
+    use citum_schema::options::titles::{TextCase, TitleRendering, TitlesConfig};
+
+    let config = make_config_with_titles(TitlesConfig {
+        monograph: Some(TitleRendering {
+            text_case: Some(TextCase::SentenceApa),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator: None,
+        locator_label: None,
+    };
+    let hints = ProcHints::default();
+
+    let reference = Reference::from(LegacyReference {
+        id: "german".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("Die Geschichte der Molekularbiologie".to_string()),
+        language: Some("de".to_string()),
+        ..Default::default()
+    });
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        ..Default::default()
+    };
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+    // German: should be as-is (no English sentence case applied)
+    assert_eq!(values.value, "Die Geschichte der Molekularbiologie");
+}
+
+#[test]
+fn test_text_case_template_level_override() {
+    use citum_schema::options::titles::{TextCase, TitleRendering, TitlesConfig};
+
+    // Global config says as-is
+    let config = make_config_with_titles(TitlesConfig {
+        monograph: Some(TitleRendering {
+            text_case: Some(TextCase::AsIs),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator: None,
+        locator_label: None,
+    };
+    let hints = ProcHints::default();
+    let reference = Reference::from(LegacyReference {
+        id: "override".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("The Quick Brown Fox".to_string()),
+        ..Default::default()
+    });
+    // Template-level rendering overrides to lowercase
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        rendering: Rendering {
+            text_case: Some(TextCase::Lowercase),
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+    assert_eq!(values.value, "the quick brown fox");
+}
+
+#[test]
+fn test_text_case_no_config_means_no_transform() {
+    let config = Config::default();
+    let result = title_value_with_config("The Quick Brown Fox", "book", &config);
+    // No text-case configured: title rendered as-is (just smart quotes)
+    assert_eq!(result, "The Quick Brown Fox");
+}

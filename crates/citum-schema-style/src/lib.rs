@@ -49,6 +49,7 @@ pub use legacy::{
 };
 pub use locale::Locale;
 pub use options::Config;
+pub use options::TextCase;
 pub use presets::{ContributorPreset, DatePreset, SortPreset, SubstitutePreset, TitlePreset};
 pub use template::{
     Rendering, TemplateComponent, TemplateContributor, TemplateDate, TemplateList, TemplateNumber,

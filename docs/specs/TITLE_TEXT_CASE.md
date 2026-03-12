@@ -354,3 +354,21 @@ direction. The remaining disagreements or unresolved choices are:
 
 - v1.0 (2026-03-11): Initial draft synthesized from `perplexity.md` and
   `gem.md`.
+- v1.1 (2026-03-12): Implementation notes added.
+
+## Deferred Behavior
+
+The following are acknowledged in the spec but deferred from the initial
+implementation:
+
+- **Non-English sentence case**: Currently, non-English titles fall back to
+  `as-is` (no transform). Full language-specific casing rules (e.g., German
+  noun capitalization, French article casing) require per-language rulesets
+  and are tracked separately.
+- **`titlecase` crate evaluation**: The Rust `titlecase` crate was evaluated
+  but not adopted. Its CMOS-style rules don't match APA/Chicago variants
+  needed here. The built-in `to_title_case` uses a simple stop-word list
+  sufficient for the current scope.
+- **Semantic span roles**: `.nocase` is the only protected span class
+  recognized. Richer semantic spans (e.g., `.taxonomic`, `.chemical`) are
+  a future extension.

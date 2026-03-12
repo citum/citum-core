@@ -2950,6 +2950,17 @@
             "null"
           ]
         },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "wrap": {
           "description": "Punctuation to wrap the value in (e.g., parentheses).",
           "anyOf": [
@@ -3950,6 +3961,17 @@
             "null"
           ]
         },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "wrap": {
           "description": "Punctuation to wrap the value in (e.g., parentheses).",
           "anyOf": [
@@ -4094,6 +4116,17 @@
             "null"
           ]
         },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "wrap": {
           "description": "Punctuation to wrap the value in (e.g., parentheses).",
           "anyOf": [
@@ -4224,6 +4257,17 @@
           "type": [
             "boolean",
             "null"
+          ]
+        },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TextCase"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "wrap": {
@@ -4374,6 +4418,17 @@
           "type": [
             "boolean",
             "null"
+          ]
+        },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TextCase"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "wrap": {
@@ -4558,6 +4613,17 @@
             }
           ]
         },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "wrap": {
           "description": "Punctuation to wrap the value in (e.g., parentheses).",
           "anyOf": [
@@ -4700,6 +4766,17 @@
           "type": [
             "boolean",
             "null"
+          ]
+        },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TextCase"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "title": {
@@ -4846,6 +4923,17 @@
             "null"
           ]
         },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "variable": {
           "$ref": "#/definitions/SimpleVariable"
         },
@@ -4899,6 +4987,67 @@
           "type": "string",
           "enum": [
             "symbol"
+          ]
+        }
+      ]
+    },
+    "TextCase": {
+      "description": "Text-case transform applied to title-like fields.\n\nStyles select which transform applies to which field category. The engine provides the generic primitives; styles own the selection.",
+      "oneOf": [
+        {
+          "description": "English headline-style title case (capitalize principal words).",
+          "type": "string",
+          "enum": [
+            "title"
+          ]
+        },
+        {
+          "description": "Generic sentence case (capitalize first word only).",
+          "type": "string",
+          "enum": [
+            "sentence"
+          ]
+        },
+        {
+          "description": "APA-style sentence case: capitalize first word of main title and first word after each subtitle boundary.",
+          "type": "string",
+          "enum": [
+            "sentence-apa"
+          ]
+        },
+        {
+          "description": "NLM-style sentence case: capitalize first word of main title only; subtitles preserve only explicit/protected capitals.",
+          "type": "string",
+          "enum": [
+            "sentence-nlm"
+          ]
+        },
+        {
+          "description": "Capitalize the first letter of the value.",
+          "type": "string",
+          "enum": [
+            "capitalize-first"
+          ]
+        },
+        {
+          "description": "Transform the entire value to lowercase.",
+          "type": "string",
+          "enum": [
+            "lowercase"
+          ]
+        },
+        {
+          "description": "Transform the entire value to uppercase.",
+          "type": "string",
+          "enum": [
+            "uppercase"
+          ]
+        },
+        {
+          "description": "No transformation; render the value exactly as stored.",
+          "type": "string",
+          "enum": [
+            "as-is"
           ]
         }
       ]
@@ -5024,6 +5173,17 @@
           "type": [
             "string",
             "null"
+          ]
+        },
+        "text-case": {
+          "description": "Text-case transform to apply to this title category.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TextCase"
+            },
+            {
+              "type": "null"
+            }
           ]
         }
       },
