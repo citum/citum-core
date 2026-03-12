@@ -6,8 +6,6 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 mod common;
 use common::*;
 
-use std::{fs, path::PathBuf};
-
 use citum_engine::{
     Processor,
     io::load_bibliography,
@@ -18,8 +16,10 @@ use citum_schema::{
     options::{BibliographyConfig, Config, Disambiguation, Processing, ProcessingCustom},
 };
 
-#[test]
-fn test_document_html_output_contains_heading() {
+// --- Document Rendering Scenarios ---
+
+fn given_simple_author_date_document_when_rendered_as_html_then_a_bibliography_heading_is_appended()
+{
     // Create a simple style
     let style = Style {
         info: StyleInfo {
@@ -92,8 +92,7 @@ fn test_document_html_output_contains_heading() {
     );
 }
 
-#[test]
-fn test_document_djot_output_unmodified() {
+fn given_simple_author_date_document_when_rendered_as_djot_then_html_tags_are_not_emitted() {
     // Create a simple style
     let style = Style {
         info: StyleInfo {
@@ -150,16 +149,10 @@ fn test_document_djot_output_unmodified() {
     );
 }
 
-#[test]
-fn test_document_html_output_renders_raw_markup() {
-    let style = load_style("styles/modern-language-association.yaml");
-    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
-        .expect("example bibliography should parse");
-
-    let processor = Processor::new(style, bibliography);
+fn given_example_mla_document_when_rendered_as_html_then_citation_markup_is_not_escaped() {
+    let processor = example_document_processor("styles/modern-language-association.yaml");
     let parser = DjotParser;
-    let document = fs::read_to_string(project_root().join("examples/document.djot"))
-        .expect("example document should be readable");
+    let document = load_example_document("examples/document.djot");
 
     let html_output = processor.process_document::<_, citum_engine::render::html::Html>(
         &document,
@@ -185,16 +178,10 @@ fn test_document_html_output_renders_raw_markup() {
     );
 }
 
-#[test]
-fn test_example_document_renders_integral_name_memory() {
-    let style = load_style("styles/modern-language-association.yaml");
-    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
-        .expect("example bibliography should parse");
-
-    let processor = Processor::new(style, bibliography);
+fn given_example_mla_document_when_rendered_as_plain_text_then_integral_name_memory_is_visible() {
+    let processor = example_document_processor("styles/modern-language-association.yaml");
     let parser = DjotParser;
-    let document = fs::read_to_string(project_root().join("examples/document.djot"))
-        .expect("example document should be readable");
+    let document = load_example_document("examples/document.djot");
 
     let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
         &document,
@@ -213,16 +200,11 @@ fn test_example_document_renders_integral_name_memory() {
     assert!(output.contains("so John Smith (14)"));
 }
 
-#[test]
-fn test_example_document_renders_author_date_integral_citations() {
-    let style = load_style("styles/apa-7th.yaml");
-    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
-        .expect("example bibliography should parse");
-
-    let processor = Processor::new(style, bibliography);
+fn given_example_apa_document_when_rendered_as_plain_text_then_integral_citations_include_locators()
+{
+    let processor = example_document_processor("styles/apa-7th.yaml");
     let parser = DjotParser;
-    let document = fs::read_to_string(project_root().join("examples/document.djot"))
-        .expect("example document should be readable");
+    let document = load_example_document("examples/document.djot");
 
     let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
         &document,
@@ -239,16 +221,11 @@ fn test_example_document_renders_author_date_integral_citations() {
     assert!(output.contains("Suppress author with locator: (1962, p. 10)."));
 }
 
-#[test]
-fn test_example_document_renders_note_style_integral_anchor_and_notes() {
-    let style = load_style("styles/chicago-shortened-notes-bibliography.yaml");
-    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
-        .expect("example bibliography should parse");
-
-    let processor = Processor::new(style, bibliography);
+fn given_example_chicago_note_document_when_rendered_as_plain_text_then_integral_mentions_keep_their_note_anchor()
+ {
+    let processor = example_document_processor("styles/chicago-shortened-notes-bibliography.yaml");
     let parser = DjotParser;
-    let document = fs::read_to_string(project_root().join("examples/document.djot"))
-        .expect("example document should be readable");
+    let document = load_example_document("examples/document.djot");
 
     let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
         &document,
@@ -278,16 +255,13 @@ fn test_example_document_renders_note_style_integral_anchor_and_notes() {
     );
 }
 
-#[test]
-fn test_chicago_notes_document_renders_ibid_without_author_concatenation() {
-    let style = load_style("styles/chicago-notes.yaml");
-    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
-        .expect("example bibliography should parse");
+// --- Note Flow Scenarios ---
 
-    let processor = Processor::new(style, bibliography);
+fn given_chicago_note_flow_document_when_ibid_is_rendered_then_it_does_not_concatenate_with_the_narrative_anchor()
+ {
+    let processor = example_document_processor("styles/chicago-notes.yaml");
     let parser = DjotParser;
-    let document = fs::read_to_string(project_root().join("examples/document-citation-flow.djot"))
-        .expect("citation flow example should be readable");
+    let document = load_example_document("examples/document-citation-flow.djot");
 
     let output = processor.process_document::<_, citum_engine::render::djot::Djot>(
         &document,
@@ -325,13 +299,9 @@ fn test_chicago_notes_document_renders_ibid_without_author_concatenation() {
     );
 }
 
-#[test]
-fn test_chicago_notes_document_integral_ibid_with_locator_keeps_anchor_and_locator() {
-    let style = load_style("styles/chicago-notes.yaml");
-    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
-        .expect("example bibliography should parse");
-
-    let processor = Processor::new(style, bibliography);
+fn given_chicago_note_locator_repeat_when_integral_ibid_is_rendered_then_anchor_and_locator_are_preserved()
+ {
+    let processor = example_document_processor("styles/chicago-notes.yaml");
     let parser = DjotParser;
     let document = concat!(
         "Text.[^n1]\n\n",
@@ -360,24 +330,20 @@ fn test_chicago_notes_document_integral_ibid_with_locator_keeps_anchor_and_locat
     );
 }
 
-#[test]
-fn test_chicago_notes_document_integral_ibid_uses_locale_term_without_period() {
+fn given_locale_specific_ibid_term_when_the_style_has_no_ibid_override_then_the_locale_term_is_used_without_base_suffix_punctuation()
+ {
     let mut style = load_style("styles/chicago-notes.yaml");
     if let Some(citation) = style.citation.as_mut() {
         citation.suffix = Some(".".to_string());
         citation.ibid = None;
     }
 
-    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
-        .expect("example bibliography should parse");
-
     let mut locale = Locale::en_us();
     locale.terms.ibid = Some("ibid".to_string());
 
-    let processor = Processor::with_locale(style, bibliography, locale);
+    let processor = Processor::with_locale(style, load_example_bibliography(), locale);
     let parser = DjotParser;
-    let document = fs::read_to_string(project_root().join("examples/document-citation-flow.djot"))
-        .expect("citation flow example should be readable");
+    let document = load_example_document("examples/document-citation-flow.djot");
 
     let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
         &document,
@@ -395,8 +361,7 @@ fn test_chicago_notes_document_integral_ibid_uses_locale_term_without_period() {
     );
 }
 
-#[test]
-fn test_chicago_notes_document_integral_ibid_style_suffix_overrides_locale_term() {
+fn given_explicit_style_ibid_suffix_when_locale_also_defines_ibid_then_the_style_suffix_wins() {
     let mut style = load_style("styles/chicago-notes.yaml");
     if let Some(citation) = style.citation.as_mut()
         && let Some(ibid) = citation.ibid.as_mut()
@@ -404,16 +369,12 @@ fn test_chicago_notes_document_integral_ibid_style_suffix_overrides_locale_term(
         ibid.suffix = Some("IBIDX".to_string());
     }
 
-    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
-        .expect("example bibliography should parse");
-
     let mut locale = Locale::en_us();
     locale.terms.ibid = Some("ibid".to_string());
 
-    let processor = Processor::with_locale(style, bibliography, locale);
+    let processor = Processor::with_locale(style, load_example_bibliography(), locale);
     let parser = DjotParser;
-    let document = fs::read_to_string(project_root().join("examples/document-citation-flow.djot"))
-        .expect("citation flow example should be readable");
+    let document = load_example_document("examples/document-citation-flow.djot");
 
     let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
         &document,
@@ -427,13 +388,9 @@ fn test_chicago_notes_document_integral_ibid_style_suffix_overrides_locale_term(
     );
 }
 
-#[test]
-fn test_chicago_notes_document_integral_ibid_anchor_failure_falls_back_to_reduced_only() {
-    let style = load_style("styles/chicago-notes.yaml");
-    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
-        .expect("example bibliography should parse");
-
-    let processor = Processor::new(style, bibliography);
+fn given_missing_note_anchor_when_integral_ibid_is_rendered_then_the_reduced_citation_still_appears_without_concatenation()
+ {
+    let processor = example_document_processor("styles/chicago-notes.yaml");
     let parser = DjotParser;
     let document = concat!(
         "Text.[^n1]\n\n",
@@ -458,16 +415,11 @@ fn test_chicago_notes_document_integral_ibid_anchor_failure_falls_back_to_reduce
     );
 }
 
-#[test]
-fn test_chicago_notes_document_omits_empty_bibliography_heading() {
-    let style = load_style("styles/chicago-notes.yaml");
-    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
-        .expect("example bibliography should parse");
-
-    let processor = Processor::new(style, bibliography);
+fn given_chicago_note_flow_document_when_no_bibliography_entries_are_needed_then_no_heading_is_emitted()
+ {
+    let processor = example_document_processor("styles/chicago-notes.yaml");
     let parser = DjotParser;
-    let document = fs::read_to_string(project_root().join("examples/document-citation-flow.djot"))
-        .expect("citation flow example should be readable");
+    let document = load_example_document("examples/document-citation-flow.djot");
 
     let output = processor.process_document::<_, citum_engine::render::djot::Djot>(
         &document,
@@ -491,11 +443,9 @@ fn test_chicago_notes_document_omits_empty_bibliography_heading() {
     );
 }
 
-#[test]
-fn test_document_citation_flow_non_note_styles_do_not_render_ibid() {
+fn given_non_note_styles_when_rendering_the_note_flow_example_then_ibid_is_never_emitted() {
     let parser = DjotParser;
-    let document = fs::read_to_string(project_root().join("examples/document-citation-flow.djot"))
-        .expect("citation flow example should be readable");
+    let document = load_example_document("examples/document-citation-flow.djot");
 
     for style_path in [
         "styles/apa-7th.yaml",
@@ -503,9 +453,7 @@ fn test_document_citation_flow_non_note_styles_do_not_render_ibid() {
         "styles/alpha.yaml",
     ] {
         let style = load_style(style_path);
-        let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
-            .expect("example bibliography should parse");
-        let processor = Processor::new(style, bibliography);
+        let processor = Processor::new(style, load_example_bibliography());
 
         let output = processor.process_document::<_, citum_engine::render::djot::Djot>(
             &document,
@@ -519,13 +467,9 @@ fn test_document_citation_flow_non_note_styles_do_not_render_ibid() {
     }
 }
 
-#[test]
-fn test_markdown_document_renders_pandoc_author_date_citations() {
-    let style = load_style("styles/apa-7th.yaml");
-    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
-        .expect("example bibliography should parse");
-
-    let processor = Processor::new(style, bibliography);
+fn given_pandoc_markdown_author_date_syntax_when_rendered_then_integral_and_cluster_citations_are_preserved()
+ {
+    let processor = example_document_processor("styles/apa-7th.yaml");
     let parser = MarkdownParser;
     let document = concat!(
         "Kuhn argued that @kuhn1962 [p. 10] changed science.\n\n",
@@ -556,13 +500,9 @@ fn test_markdown_document_renders_pandoc_author_date_citations() {
     );
 }
 
-#[test]
-fn test_markdown_document_generates_notes_for_note_styles() {
-    let style = load_style("styles/chicago-shortened-notes-bibliography.yaml");
-    let bibliography = load_bibliography(&project_root().join("examples/document-refs.json"))
-        .expect("example bibliography should parse");
-
-    let processor = Processor::new(style, bibliography);
+fn given_markdown_integral_note_citation_when_rendered_with_a_note_style_then_a_generated_note_is_emitted()
+ {
+    let processor = example_document_processor("styles/chicago-shortened-notes-bibliography.yaml");
     let parser = MarkdownParser;
     let document = "Narrative mention @smith2010 introduces the argument.";
 
@@ -582,18 +522,10 @@ fn test_markdown_document_generates_notes_for_note_styles() {
     );
 }
 
-fn project_root() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
-}
+// --- Grouped Bibliography Scenarios ---
 
-fn load_style(path: &str) -> Style {
-    let style_path = project_root().join(path);
-    let bytes = fs::read(&style_path).expect("style fixture should be readable");
-    serde_yaml::from_slice(&bytes).expect("style fixture should parse")
-}
-
-#[test]
-fn test_process_document_renders_chicago_primary_secondary_groups() {
+fn given_grouped_primary_and_secondary_sources_when_rendered_then_both_group_headings_and_entries_appear()
+ {
     let style = load_style("styles/chicago-author-date.yaml");
     let bibliography =
         load_bibliography(&project_root().join("tests/fixtures/grouping/primary-secondary.json"))
@@ -625,8 +557,8 @@ fn test_process_document_renders_chicago_primary_secondary_groups() {
     );
 }
 
-#[test]
-fn test_process_document_restarts_year_suffixes_per_group() {
+fn given_group_local_disambiguation_when_rendering_multilingual_groups_then_year_suffixes_restart_within_each_group()
+ {
     let mut style = load_style("styles/experimental/multilingual-academic.yaml");
     style
         .options
@@ -670,8 +602,7 @@ fn test_process_document_restarts_year_suffixes_per_group() {
     assert_eq!(count_2020a, 2, "expected 2020a in both groups: {output}");
 }
 
-#[test]
-fn test_process_document_renders_jm_legal_group_hierarchy() {
+fn given_juris_m_legal_grouping_when_rendered_then_headings_follow_the_expected_legal_hierarchy() {
     let style = load_style("styles/experimental/jm-chicago-legal.yaml");
     let bibliography =
         load_bibliography(&project_root().join("tests/fixtures/grouping/legal-hierarchy.json"))
@@ -709,8 +640,8 @@ fn test_process_document_renders_jm_legal_group_hierarchy() {
     );
 }
 
-#[test]
-fn test_process_document_group_heading_localization_falls_back_to_language_tag() {
+fn given_an_english_locale_variant_when_group_headings_are_localized_then_the_language_tag_fallback_is_used()
+ {
     let style = load_style("styles/chicago-author-date.yaml");
     let bibliography =
         load_bibliography(&project_root().join("tests/fixtures/grouping/primary-secondary.json"))
@@ -737,4 +668,177 @@ fn test_process_document_group_heading_localization_falls_back_to_language_tag()
         output.contains("# Secondary Sources"),
         "missing secondary heading: {output}"
     );
+}
+
+mod rendering_formats {
+    use super::announce_behavior;
+
+    #[test]
+    fn simple_author_date_html_appends_a_bibliography_heading() {
+        announce_behavior(
+            "Rendering a simple author-date document as HTML should append a Bibliography heading and preserve the prose.",
+        );
+        super::given_simple_author_date_document_when_rendered_as_html_then_a_bibliography_heading_is_appended();
+    }
+
+    #[test]
+    fn simple_author_date_djot_does_not_emit_html_tags() {
+        announce_behavior(
+            "Rendering the same document as Djot should produce markdown headings rather than HTML tags.",
+        );
+        super::given_simple_author_date_document_when_rendered_as_djot_then_html_tags_are_not_emitted();
+    }
+}
+
+mod example_documents {
+    use super::announce_behavior;
+
+    #[test]
+    fn mla_html_keeps_citation_markup_unescaped() {
+        announce_behavior(
+            "The MLA example document should emit real citation and bibliography HTML instead of escaped markup.",
+        );
+        super::given_example_mla_document_when_rendered_as_html_then_citation_markup_is_not_escaped(
+        );
+    }
+
+    #[test]
+    fn mla_plain_text_shows_integral_name_memory() {
+        announce_behavior(
+            "The MLA plain-text example should shorten repeated narrative citations after the first integral mention.",
+        );
+        super::given_example_mla_document_when_rendered_as_plain_text_then_integral_name_memory_is_visible();
+    }
+
+    #[test]
+    fn apa_plain_text_integral_citations_keep_locators() {
+        announce_behavior(
+            "The APA plain-text example should keep locators inside integral citations throughout the document.",
+        );
+        super::given_example_apa_document_when_rendered_as_plain_text_then_integral_citations_include_locators();
+    }
+
+    #[test]
+    fn chicago_note_plain_text_keeps_integral_note_anchors() {
+        announce_behavior(
+            "The Chicago note example should preserve narrative note anchors and keep manual-note content intact.",
+        );
+        super::given_example_chicago_note_document_when_rendered_as_plain_text_then_integral_mentions_keep_their_note_anchor();
+    }
+}
+
+mod note_flow {
+    use super::announce_behavior;
+
+    #[test]
+    fn chicago_note_flow_does_not_concatenate_ibid_with_the_narrative_anchor() {
+        announce_behavior(
+            "A Chicago note-flow narrative mention should not concatenate the generated ibid text onto the prose anchor.",
+        );
+        super::given_chicago_note_flow_document_when_ibid_is_rendered_then_it_does_not_concatenate_with_the_narrative_anchor();
+    }
+
+    #[test]
+    fn locator_repeats_keep_the_anchor_and_locator() {
+        announce_behavior(
+            "A repeated note citation with a locator should keep both the narrative anchor and the locator.",
+        );
+        super::given_chicago_note_locator_repeat_when_integral_ibid_is_rendered_then_anchor_and_locator_are_preserved();
+    }
+
+    #[test]
+    fn locale_ibid_term_is_used_when_the_style_has_no_override() {
+        announce_behavior(
+            "If a note style does not override ibid, the localized term should be used without extra base punctuation.",
+        );
+        super::given_locale_specific_ibid_term_when_the_style_has_no_ibid_override_then_the_locale_term_is_used_without_base_suffix_punctuation();
+    }
+
+    #[test]
+    fn explicit_style_ibid_suffix_overrides_the_locale_term() {
+        announce_behavior(
+            "If the style defines its own ibid suffix, that style-specific suffix should override the locale term.",
+        );
+        super::given_explicit_style_ibid_suffix_when_locale_also_defines_ibid_then_the_style_suffix_wins();
+    }
+
+    #[test]
+    fn missing_note_anchor_falls_back_to_reduced_citation_text() {
+        announce_behavior(
+            "If a repeated note cite has no reusable anchor, the reduced citation text should still appear cleanly.",
+        );
+        super::given_missing_note_anchor_when_integral_ibid_is_rendered_then_the_reduced_citation_still_appears_without_concatenation();
+    }
+
+    #[test]
+    fn empty_note_flow_does_not_emit_a_bibliography_heading() {
+        announce_behavior(
+            "A note-flow document with no bibliography entries should not emit an empty bibliography heading.",
+        );
+        super::given_chicago_note_flow_document_when_no_bibliography_entries_are_needed_then_no_heading_is_emitted();
+    }
+
+    #[test]
+    fn non_note_styles_never_emit_ibid_in_the_note_flow_example() {
+        announce_behavior(
+            "Running the note-flow example under non-note styles should never emit ibid.",
+        );
+        super::given_non_note_styles_when_rendering_the_note_flow_example_then_ibid_is_never_emitted();
+    }
+}
+
+mod markdown_documents {
+    use super::announce_behavior;
+
+    #[test]
+    fn pandoc_author_date_syntax_preserves_integral_and_cluster_citations() {
+        announce_behavior(
+            "Pandoc markdown citations should preserve both integral citations and citation clusters through rendering.",
+        );
+        super::given_pandoc_markdown_author_date_syntax_when_rendered_then_integral_and_cluster_citations_are_preserved();
+    }
+
+    #[test]
+    fn note_style_markdown_integral_citations_emit_generated_notes() {
+        announce_behavior(
+            "Markdown integral citations rendered with a note style should generate note content instead of inline prose cites.",
+        );
+        super::given_markdown_integral_note_citation_when_rendered_with_a_note_style_then_a_generated_note_is_emitted();
+    }
+}
+
+mod grouped_bibliography {
+    use super::announce_behavior;
+
+    #[test]
+    fn primary_and_secondary_sources_render_both_headings_and_entries() {
+        announce_behavior(
+            "A grouped bibliography should render both primary and secondary headings along with their entries.",
+        );
+        super::given_grouped_primary_and_secondary_sources_when_rendered_then_both_group_headings_and_entries_appear();
+    }
+
+    #[test]
+    fn group_local_disambiguation_restarts_year_suffixes_per_group() {
+        announce_behavior(
+            "Group-local disambiguation should restart year suffixes inside each bibliography group.",
+        );
+        super::given_group_local_disambiguation_when_rendering_multilingual_groups_then_year_suffixes_restart_within_each_group();
+    }
+
+    #[test]
+    fn juris_m_legal_grouping_follows_the_expected_hierarchy() {
+        announce_behavior(
+            "Juris-M legal bibliography grouping should follow the expected legal hierarchy and headings.",
+        );
+        super::given_juris_m_legal_grouping_when_rendered_then_headings_follow_the_expected_legal_hierarchy();
+    }
+
+    #[test]
+    fn english_locale_variants_fall_back_to_the_language_tag_for_group_headings() {
+        announce_behavior(
+            "English locale variants should fall back to their language tag when no localized group heading term exists.",
+        );
+        super::given_an_english_locale_variant_when_group_headings_are_localized_then_the_language_tag_fallback_is_used();
+    }
 }

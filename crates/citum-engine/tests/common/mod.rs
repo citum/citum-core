@@ -5,7 +5,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 #![allow(dead_code)]
 
+use std::{fs, path::PathBuf};
+
 use citum_engine::Processor;
+use citum_engine::io::load_bibliography;
 use citum_schema::{
     CitationSpec, Style, StyleInfo,
     citation::{Citation, CitationItem, CitationMode},
@@ -308,6 +311,42 @@ pub fn run_test_case_native_with_options(
             "Bibliography output mismatch"
         );
     }
+}
+
+/// Return the repository root for integration-test fixtures and example files.
+pub fn project_root() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
+}
+
+/// Load a YAML style relative to the repository root.
+pub fn load_style(path: &str) -> Style {
+    let style_path = project_root().join(path);
+    let yaml = fs::read_to_string(&style_path)
+        .unwrap_or_else(|err| panic!("failed to read style {}: {err}", style_path.display()));
+    serde_yaml::from_str(&yaml)
+        .unwrap_or_else(|err| panic!("failed to parse style {}: {err}", style_path.display()))
+}
+
+/// Load the shared example bibliography used by document behavior tests.
+pub fn load_example_bibliography() -> indexmap::IndexMap<String, Reference> {
+    load_bibliography(&project_root().join("examples/document-refs.json"))
+        .expect("example bibliography should parse")
+}
+
+/// Load an example document relative to the repository root.
+pub fn load_example_document(path: &str) -> String {
+    fs::read_to_string(project_root().join(path))
+        .unwrap_or_else(|err| panic!("failed to read example document {path}: {err}"))
+}
+
+/// Build a processor from a repo-relative style path and the shared example bibliography.
+pub fn example_document_processor(style_path: &str) -> Processor {
+    Processor::new(load_style(style_path), load_example_bibliography())
+}
+
+/// Emit a short behavior summary for narrative integration tests.
+pub fn announce_behavior(summary: &str) {
+    println!("behavior: {summary}");
 }
 
 /// Build an author-date style with customizable disambiguation options.

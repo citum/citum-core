@@ -44,8 +44,12 @@ jobs:
         run: git submodule update --init --depth 1 styles-legacy tests/csl-test-suite
 
       - name: Set up Rust
-        if: ${{ inputs.refresh_compat }}
         uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
 
       - name: Set up Node
         if: ${{ inputs.refresh_compat }}
@@ -54,7 +58,6 @@ jobs:
           node-version: "20"
 
       - name: Cache Rust
-        if: ${{ inputs.refresh_compat }}
         uses: Swatinem/rust-cache@v2
 
       - name: Install Node dependencies
@@ -68,6 +71,11 @@ jobs:
       - name: Generate compatibility report
         if: ${{ inputs.refresh_compat }}
         run: node scripts/report-core.js --output-html docs/compat.html > /tmp/core-report.json
+
+      - name: Generate behavior coverage report
+        run: |
+          ./scripts/test-report.sh
+          cp target/test-report.html docs/behavior-report.html
       
       - name: Setup Pages
         uses: actions/configure-pages@v5

@@ -34,6 +34,7 @@ ffi = []
 criterion = { version = "0.5", features = ["html_reports"] }
 citum_migrate = { package = "citum-migrate", path = "../citum-migrate" }
 roxmltree = "0.20"
+rstest = "0.25"
 
 [[bench]]
 name = "rendering"

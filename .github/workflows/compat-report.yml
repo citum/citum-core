@@ -35,6 +35,11 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
@@ -51,6 +56,11 @@ jobs:
 
       - name: Generate compatibility report
         run: node scripts/report-core.js --output-html docs/compat.html > /tmp/core-report.json
+
+      - name: Generate behavior coverage report
+        run: |
+          ./scripts/test-report.sh
+          cp target/test-report.html docs/behavior-report.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
