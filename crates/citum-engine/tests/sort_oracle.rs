@@ -3,6 +3,9 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
+mod common;
+use common::announce_behavior;
+
 use citum_engine::Processor;
 use citum_engine::io::load_bibliography;
 use citum_schema::Style;
@@ -31,6 +34,9 @@ fn load_sort_oracle_bibliography()
 /// Adams has 3 works in 2020 — should sort alphabetically by title.
 #[test]
 fn test_apa_7th_sort_same_author_year_by_title() {
+    announce_behavior(
+        "Works by the same author in the same year are sorted alphabetically by title.",
+    );
     let root = project_root();
     let style = load_style(&root.join("styles/apa-7th.yaml"));
     let bib = load_sort_oracle_bibliography();
@@ -64,6 +70,7 @@ fn test_apa_7th_sort_same_author_year_by_title() {
 /// Anonymous works should sort by title when no author is present.
 #[test]
 fn test_apa_7th_sort_anonymous_works_by_title() {
+    announce_behavior("Anonymous works sort by title with leading articles stripped.");
     let root = project_root();
     let style = load_style(&root.join("styles/apa-7th.yaml"));
     let bib = load_sort_oracle_bibliography();
@@ -91,6 +98,9 @@ fn test_apa_7th_sort_anonymous_works_by_title() {
 /// Multiple authors with same surname should maintain consistent alphabetical ordering.
 #[test]
 fn test_numeric_sort_by_citation_order() {
+    announce_behavior(
+        "Numeric style assigns citation numbers by fixture insertion order, not by author or title.",
+    );
     // Build a simple numeric style for testing
     let style = {
         use citum_schema::options::Processing;
@@ -166,6 +176,7 @@ fn test_numeric_sort_by_citation_order() {
 /// SMITH and WILLIAMS surnames should sort correctly in author-date and numeric styles.
 #[test]
 fn test_uppercase_surname_sort_order() {
+    announce_behavior("All-caps surnames sort in the same order as normally-cased surnames.");
     let root = project_root();
     let style = load_style(&root.join("styles/apa-7th.yaml"));
     let bib = load_sort_oracle_bibliography();
@@ -186,6 +197,9 @@ fn test_uppercase_surname_sort_order() {
 /// Test multi-author books and articles in same year sorted by first author.
 #[test]
 fn test_multiauthor_same_year_sort() {
+    announce_behavior(
+        "Multi-author works with the same year appear together in author-date sort order.",
+    );
     let root = project_root();
     let style = load_style(&root.join("styles/apa-7th.yaml"));
     let bib = load_sort_oracle_bibliography();
@@ -205,6 +219,9 @@ fn test_multiauthor_same_year_sort() {
 /// Numeric styles should sort by citation order, not by volume/issue.
 #[test]
 fn test_numeric_style_volume_issue_independence() {
+    announce_behavior(
+        "Numeric style numbering is determined by citation order, not by volume or issue.",
+    );
     // Build a simple numeric style for testing
     let style = {
         use citum_schema::options::Processing;

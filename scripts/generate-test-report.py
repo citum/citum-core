@@ -26,6 +26,9 @@ PILOT_SOURCES = {
     "citations": Path("crates/citum-engine/tests/citations.rs"),
     "document": Path("crates/citum-engine/tests/document.rs"),
     "i18n": Path("crates/citum-engine/tests/i18n.rs"),
+    "metadata": Path("crates/citum-engine/tests/metadata.rs"),
+    "multilingual": Path("crates/citum-engine/tests/multilingual.rs"),
+    "sort_oracle": Path("crates/citum-engine/tests/sort_oracle.rs"),
 }
 
 
