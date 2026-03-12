@@ -180,6 +180,13 @@ def summarize_status_counts(counts: dict[str, int]) -> str:
     return ", ".join(parts)
 
 
+def slugify_heading(value: str) -> str:
+    slug = value.strip().lower()
+    slug = re.sub(r"[^\w\s-]", "", slug)
+    slug = re.sub(r"[-\s]+", "-", slug)
+    return slug.strip("-") or "section"
+
+
 def parse_status(testcase: ET.Element) -> str:
     child_tags = {strip_tag(child.tag) for child in testcase}
     if "failure" in child_tags or "error" in child_tags:
@@ -355,36 +362,13 @@ def build_markdown_report(
         f"- **Scenario summaries**: {authored} authored behavior summaries, {derived} derived from test names."
     )
 
-    for family in sorted(families):
-        entries = families[family]
-        family_domains = sorted(
-            domain.split(" - ", 1)[1]
-            for domain in domains
-            if domain.startswith(f"{family} - ")
-        )
-        domain_text = ""
-        if family_domains:
-            if len(family_domains) == 1:
-                domain_text = f" across {family_domains[0]}"
-            else:
-                domain_text = (
-                    " across "
-                    + ", ".join(family_domains[:-1])
-                    + f", and {family_domains[-1]}"
-                )
-        scenario_label = "scenario" if len(entries) == 1 else "scenarios"
-        family_authored = sum(1 for entry in entries if not entry.derived_from_name)
-        family_derived = len(entries) - family_authored
-        family_status = summarize_status_counts(compute_status_counts(entries))
-        summary = f"- **{family}**: {len(entries)} {scenario_label}{domain_text}; {family_status}"
-        if family_derived:
-            summary += f"; {family_authored} authored, {family_derived} derived"
-        else:
-            summary += "; all authored"
-        summary += "."
-        lines.append(summary)
-
     failures = [scenario for scenario in scenarios if scenario.status == "failed"]
+    lines.append("- **Sections**:")
+    if failures:
+        lines.append(f"  - [Failures](#{slugify_heading('Failures')})")
+    for domain in sorted(domains):
+        lines.append(f"  - [{domain}](#{slugify_heading(domain)})")
+
     if failures:
         lines.append("")
         lines.append("## Failures")
@@ -449,41 +433,6 @@ def build_html_report(
         f"{authored} authored behavior summaries, {derived} derived from test names."
         "</li>"
     )
-    for family in sorted(families):
-        entries = families[family]
-        family_domains = sorted(
-            domain.split(" - ", 1)[1]
-            for domain in domains
-            if domain.startswith(f"{family} - ")
-        )
-        domain_text = ""
-        if family_domains:
-            if len(family_domains) == 1:
-                domain_text = f" across {family_domains[0]}"
-            else:
-                domain_text = (
-                    " across "
-                    + ", ".join(family_domains[:-1])
-                    + f", and {family_domains[-1]}"
-                )
-        scenario_label = "scenario" if len(entries) == 1 else "scenarios"
-        family_authored = sum(1 for entry in entries if not entry.derived_from_name)
-        family_derived = len(entries) - family_authored
-        family_status = summarize_status_counts(compute_status_counts(entries))
-        summary = (
-            f"<li><strong>{html.escape(family)}</strong>: {len(entries)} {scenario_label}"
-            f"{html.escape(domain_text)}; {html.escape(family_status)}"
-        )
-        if family_derived:
-            summary += (
-                f"; {family_authored} authored, {family_derived} derived"
-            )
-        else:
-            summary += "; all authored"
-        summary += ".</li>"
-        overview_items.append(
-            summary
-        )
 
     section_html: list[str] = []
     for domain in sorted(domains):
@@ -533,7 +482,7 @@ def build_html_report(
 
         section_html.append(
             f"""
-            <section class="domain-section">
+            <section class="domain-section" id="{html.escape(slugify_heading(domain))}">
               <h2>{html.escape(domain)}</h2>
               <p class="section-summary">{html.escape(summarize_counts(entries))}</p>
               {notes}
@@ -546,6 +495,18 @@ def build_html_report(
 
     failures_html = ""
     failures = [scenario for scenario in scenarios if scenario.status == "failed"]
+    toc_items: list[str] = []
+    if failures:
+        toc_items.append('<li><a href="#failures">Failures</a></li>')
+    for domain in sorted(domains):
+        toc_items.append(
+            f'<li><a href="#{html.escape(slugify_heading(domain))}">{html.escape(domain)}</a></li>'
+        )
+    overview_items.append(
+        '<li><strong>Sections</strong><ul class="overview-toc">'
+        + "".join(toc_items)
+        + "</ul></li>"
+    )
     if failures:
         items = []
         for scenario in sorted(failures, key=lambda item: (item.domain, item.scenario.lower())):
@@ -556,7 +517,7 @@ def build_html_report(
                 "</li>"
             )
         failures_html = (
-            '<section class="failure-section"><h2>Failures</h2><ul class="scenario-list">'
+            '<section class="failure-section" id="failures"><h2>Failures</h2><ul class="scenario-list">'
             + "".join(items)
             + "</ul></section>"
         )
@@ -626,6 +587,20 @@ def build_html_report(
     .overview ul, .scenario-list {{
       margin: 0;
       padding-left: 1.2rem;
+    }}
+    .overview-toc {{
+      margin-top: 0.6rem;
+      padding-left: 1.2rem;
+    }}
+    .overview-toc li + li {{
+      margin-top: 0.35rem;
+    }}
+    .overview-toc a {{
+      color: var(--accent);
+      text-decoration: none;
+    }}
+    .overview-toc a:hover {{
+      text-decoration: underline;
     }}
     .scenario-list li + li {{
       margin-top: 0.5rem;
