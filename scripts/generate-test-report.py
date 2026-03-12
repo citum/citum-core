@@ -164,6 +164,22 @@ def summarize_counts(entries: list[Scenario]) -> str:
     return ", ".join(parts) + "."
 
 
+def compute_status_counts(scenarios: list[Scenario]) -> dict[str, int]:
+    counts = {"passed": 0, "failed": 0, "skipped": 0}
+    for scenario in scenarios:
+        counts[scenario.status] += 1
+    return counts
+
+
+def summarize_status_counts(counts: dict[str, int]) -> str:
+    parts = [f"{counts['passed']} passed"]
+    if counts["failed"]:
+        parts.append(f"{counts['failed']} failed")
+    if counts["skipped"]:
+        parts.append(f"{counts['skipped']} skipped")
+    return ", ".join(parts)
+
+
 def parse_status(testcase: ET.Element) -> str:
     child_tags = {strip_tag(child.tag) for child in testcase}
     if "failure" in child_tags or "error" in child_tags:
@@ -320,6 +336,9 @@ def build_markdown_report(
     for scenario in scenarios:
         domains[scenario.domain].append(scenario)
         families[scenario.family].append(scenario)
+    status_counts = compute_status_counts(scenarios)
+    derived = sum(1 for scenario in scenarios if scenario.derived_from_name)
+    authored = len(scenarios) - derived
 
     lines: list[str] = []
     lines.append(f"# {report_title}")
@@ -330,6 +349,11 @@ def build_markdown_report(
     lines.append("")
     lines.append("## Overview")
     lines.append("")
+    lines.append(f"- **Total coverage**: {len(scenarios)} scenarios across {len(families)} suites.")
+    lines.append(f"- **Status**: {summarize_status_counts(status_counts)}.")
+    lines.append(
+        f"- **Scenario summaries**: {authored} authored behavior summaries, {derived} derived from test names."
+    )
 
     for family in sorted(families):
         entries = families[family]
@@ -349,7 +373,16 @@ def build_markdown_report(
                     + f", and {family_domains[-1]}"
                 )
         scenario_label = "scenario" if len(entries) == 1 else "scenarios"
-        lines.append(f"- **{family}**: {len(entries)} {scenario_label}{domain_text}.")
+        family_authored = sum(1 for entry in entries if not entry.derived_from_name)
+        family_derived = len(entries) - family_authored
+        family_status = summarize_status_counts(compute_status_counts(entries))
+        summary = f"- **{family}**: {len(entries)} {scenario_label}{domain_text}; {family_status}"
+        if family_derived:
+            summary += f"; {family_authored} authored, {family_derived} derived"
+        else:
+            summary += "; all authored"
+        summary += "."
+        lines.append(summary)
 
     failures = [scenario for scenario in scenarios if scenario.status == "failed"]
     if failures:
@@ -371,8 +404,14 @@ def build_markdown_report(
         lines.append(f"## {domain}")
         lines.append("")
         lines.append(summarize_counts(entries))
+        if all_passed:
+            lines.append("All scenarios in this section are passing.")
         if derived:
-            lines.append(f"{derived} scenario summaries were derived from test names.")
+            lines.append(
+                f"Scenario summaries in this section: {len(entries) - derived} authored, {derived} derived from test names."
+            )
+        else:
+            lines.append("Scenario summaries in this section are fully authored for reviewer-facing migration coverage.")
         lines.append("")
 
         for scenario in entries:
@@ -398,8 +437,22 @@ def build_html_report(
     for scenario in scenarios:
         domains[scenario.domain].append(scenario)
         families[scenario.family].append(scenario)
+    status_counts = compute_status_counts(scenarios)
+    derived = sum(1 for scenario in scenarios if scenario.derived_from_name)
+    authored = len(scenarios) - derived
 
     overview_items: list[str] = []
+    overview_items.append(
+        f"<li><strong>Total coverage</strong>: {len(scenarios)} scenarios across {len(families)} suites.</li>"
+    )
+    overview_items.append(
+        f"<li><strong>Status</strong>: {html.escape(summarize_status_counts(status_counts))}.</li>"
+    )
+    overview_items.append(
+        "<li><strong>Scenario summaries</strong>: "
+        f"{authored} authored behavior summaries, {derived} derived from test names."
+        "</li>"
+    )
     for family in sorted(families):
         entries = families[family]
         family_domains = sorted(
@@ -418,8 +471,22 @@ def build_html_report(
                     + f", and {family_domains[-1]}"
                 )
         scenario_label = "scenario" if len(entries) == 1 else "scenarios"
+        family_authored = sum(1 for entry in entries if not entry.derived_from_name)
+        family_derived = len(entries) - family_authored
+        family_status = summarize_status_counts(compute_status_counts(entries))
+        summary = (
+            f"<li><strong>{html.escape(family)}</strong>: {len(entries)} {scenario_label}"
+            f"{html.escape(domain_text)}; {html.escape(family_status)}"
+        )
+        if family_derived:
+            summary += (
+                f"; {family_authored} authored, {family_derived} derived"
+            )
+        else:
+            summary += "; all authored"
+        summary += ".</li>"
         overview_items.append(
-            f"<li><strong>{html.escape(family)}</strong>: {len(entries)} {scenario_label}{html.escape(domain_text)}.</li>"
+            summary
         )
 
     section_html: list[str] = []
@@ -458,9 +525,20 @@ def build_html_report(
                 )
 
         notes = ""
+        section_notes: list[str] = []
+        if all_passed:
+            section_notes.append("All scenarios in this section are passing.")
         if derived:
-            notes = (
-                f'<p class="section-note">{derived} scenario summaries were derived from test names.</p>'
+            section_notes.append(
+                f"Scenario summaries in this section: {len(entries) - derived} authored, {derived} derived from test names."
+            )
+        else:
+            section_notes.append(
+                "Scenario summaries in this section are fully authored for reviewer-facing migration coverage."
+            )
+        if section_notes:
+            notes = "".join(
+                f'<p class="section-note">{html.escape(note)}</p>' for note in section_notes
             )
 
         section_html.append(

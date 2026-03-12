@@ -11,8 +11,15 @@ use citum_schema::template::{
     TemplateContributor, TemplateDate, TemplateList, TemplateVariable, TypeSelector,
 };
 
+fn announce_behavior(summary: &str) {
+    println!("behavior: {summary}");
+}
+
 #[test]
 fn test_contributor_cross_list_duplicate_suppressed() {
+    announce_behavior(
+        "When two migrated sibling lists both render author, the later author branch is suppressed so CSL variable-once behavior is preserved.",
+    );
     // Setup: Create two sibling lists where 'author' appears in both.
     // After deduplication, the second list should have 'author' suppressed.
     let mut components = vec![
@@ -77,6 +84,9 @@ fn test_contributor_cross_list_duplicate_suppressed() {
 
 #[test]
 fn test_date_cross_list_duplicate_suppressed() {
+    announce_behavior(
+        "When two migrated sibling lists both render issued dates, the later date branch is suppressed to preserve CSL variable-once behavior.",
+    );
     // Setup: Create two sibling lists where 'issued' appears in both.
     // After deduplication, the second list should have 'issued' suppressed.
     let mut components = vec![
@@ -141,6 +151,9 @@ fn test_date_cross_list_duplicate_suppressed() {
 
 #[test]
 fn test_variable_cross_list_duplicate_suppressed() {
+    announce_behavior(
+        "When a migrated top-level variable and sibling list both render publisher, the later list rendering is suppressed to avoid duplicate output.",
+    );
     // Setup: Create a top-level variable and a sibling list with the same variable.
     // After deduplication, the list variable should be suppressed.
     let mut components = vec![
@@ -199,6 +212,9 @@ fn test_variable_cross_list_duplicate_suppressed() {
 
 #[test]
 fn test_nested_list_variable_once_per_branch() {
+    announce_behavior(
+        "Nested migrated lists track variable-once suppression per branch so inner duplicates are handled without leaking outer-list state.",
+    );
     // Setup: Create nested lists where a variable appears at different nesting levels.
     // Each nesting level should track its own scope across all sibling components.
     let mut components = vec![

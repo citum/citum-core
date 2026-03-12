@@ -7,7 +7,11 @@ REPORT_PATH="${ROOT_DIR}/target/migration-behavior-report.md"
 REPORT_HTML_PATH="${ROOT_DIR}/target/migration-behavior-report.html"
 
 if [[ $# -eq 0 ]]; then
-  set -- --test date_inference --test substitute_extraction
+  set -- \
+    --test date_inference \
+    --test substitute_extraction \
+    --test term_mapping \
+    --test variable_once
 fi
 
 mkdir -p "$(dirname "${JUNIT_PATH}")" "$(dirname "${REPORT_PATH}")"
@@ -24,10 +28,12 @@ python3 "${ROOT_DIR}/scripts/generate-test-report.py" \
   --output "${REPORT_PATH}" \
   --output-html "${REPORT_HTML_PATH}" \
   --source-root "${ROOT_DIR}" \
-  --report-title "Migration Behavior Coverage" \
-  --report-lede "This page is generated from reviewer-facing citum-migrate suites that exercise user-visible migration behavior." \
+  --report-title "CSL-to-Citum Migration Behavior Coverage" \
+  --report-lede "This page is generated from reviewer-facing citum-migrate suites that exercise user-visible behavior in the migration from CSL styles to Citum styles." \
   --source-map "date_inference=crates/citum-migrate/tests/date_inference.rs" \
   --source-map "substitute_extraction=crates/citum-migrate/tests/substitute_extraction.rs" \
+  --source-map "term_mapping=crates/citum-migrate/tests/term_mapping.rs" \
+  --source-map "variable_once=crates/citum-migrate/tests/variable_once.rs" \
   || report_status=$?
 
 if [[ ${test_status} -ne 0 ]]; then
