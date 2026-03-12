@@ -3,6 +3,9 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
+mod common;
+use common::announce_behavior;
+
 use citum_engine::Processor;
 use citum_engine::io::load_bibliography;
 use citum_schema::Style;
@@ -34,6 +37,7 @@ fn single_item_citation(id: &str) -> Citation {
 
 #[test]
 fn test_cjk_name_rendering_asian_glyphs() {
+    announce_behavior("CJK author names are preserved and rendered with native glyphs.");
     let root = project_root();
     let style = load_style(&root.join("styles/apa-7th.yaml"));
     let bibliography =
@@ -54,6 +58,7 @@ fn test_cjk_name_rendering_asian_glyphs() {
 
 #[test]
 fn test_cjk_et_al_rendering() {
+    announce_behavior("CJK name lists are truncated with et al. for APA-style citations.");
     let root = project_root();
     let style = load_style(&root.join("styles/apa-7th.yaml"));
     let bibliography =
@@ -74,6 +79,7 @@ fn test_cjk_et_al_rendering() {
 
 #[test]
 fn test_arabic_short_forms_with_diacritics() {
+    announce_behavior("Arabic author names are rendered with diacritical marks intact.");
     let root = project_root();
     let style = load_style(&root.join("styles/apa-7th.yaml"));
     let bibliography =
@@ -94,6 +100,7 @@ fn test_arabic_short_forms_with_diacritics() {
 
 #[test]
 fn test_arabic_transliterated_forms() {
+    announce_behavior("Transliterated Arabic names are accepted and rendered correctly.");
     let root = project_root();
     let style = load_style(&root.join("styles/apa-7th.yaml"));
     let bibliography =
@@ -114,6 +121,9 @@ fn test_arabic_transliterated_forms() {
 
 #[test]
 fn test_bibliography_locales_switch_full_entry_layouts() {
+    announce_behavior(
+        "Bibliography entries switch to a locale-specific layout when the reference language matches.",
+    );
     let root = project_root();
     let style =
         load_style(&root.join("styles/experimental/locale-specific-bibliography-layouts.yaml"));

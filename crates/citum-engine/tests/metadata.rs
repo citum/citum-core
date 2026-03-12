@@ -74,10 +74,11 @@ fn build_date_style(form: DateForm) -> Style {
     }
 }
 
-// --- Name Rendering Tests ---
+// --- Behavior Announcements ---
 
 #[test]
 fn test_name_rendering_basic() {
+    announce_behavior("Long name form renders given-name then family name.");
     let style = build_name_style(ContributorForm::Long, None);
 
     let bib = citum_schema::bib_map!["item1" => make_book("item1", "Smith", "John", 2020, "Title")];
@@ -92,6 +93,7 @@ fn test_name_rendering_basic() {
 
 #[test]
 fn test_name_rendering_short() {
+    announce_behavior("Short name form renders family name only.");
     let style = build_name_style(ContributorForm::Short, None);
 
     let bib = citum_schema::bib_map!["item1" => make_book("item1", "Smith", "John", 2020, "Title")];
@@ -106,6 +108,7 @@ fn test_name_rendering_short() {
 
 #[test]
 fn test_name_rendering_family_only() {
+    announce_behavior("Family-only form renders surname without given name or particles.");
     let style = build_name_style(ContributorForm::FamilyOnly, None);
 
     let mut bib = indexmap::IndexMap::new();
@@ -128,6 +131,7 @@ fn test_name_rendering_family_only() {
 
 #[test]
 fn test_name_rendering_et_al() {
+    announce_behavior("Name list is truncated with et al. when it exceeds the configured minimum.");
     let style = build_name_style(
         ContributorForm::Short,
         Some(ShortenListOptions {
@@ -159,6 +163,7 @@ fn test_name_rendering_et_al() {
 
 #[test]
 fn test_name_rendering_particles() {
+    announce_behavior("Non-dropping particles are included when rendering the long name form.");
     let style = build_name_style(ContributorForm::Long, None);
 
     let mut bib = indexmap::IndexMap::new();
@@ -181,6 +186,7 @@ fn test_name_rendering_particles() {
 
 #[test]
 fn test_name_rendering_corporate() {
+    announce_behavior("Corporate names are rendered verbatim without inversion.");
     let style = build_name_style(ContributorForm::Long, None);
 
     let mut bib = indexmap::IndexMap::new();
@@ -206,10 +212,9 @@ fn test_name_rendering_corporate() {
     );
 }
 
-// --- Date Rendering Tests ---
-
 #[test]
 fn test_date_rendering_year() {
+    announce_behavior("Year-only date form renders just the year.");
     let style = build_date_style(DateForm::Year);
 
     let bib = citum_schema::bib_map!["item1" => make_book("item1", "Smith", "J", 2020, "Title")];
@@ -224,6 +229,7 @@ fn test_date_rendering_year() {
 
 #[test]
 fn test_date_rendering_full() {
+    announce_behavior("Full date form renders month, day, and year in locale order.");
     let style = build_date_style(DateForm::Full);
 
     let mut bib = indexmap::IndexMap::new();
@@ -246,6 +252,7 @@ fn test_date_rendering_full() {
 
 #[test]
 fn test_date_rendering_day_month_abbr_year() {
+    announce_behavior("Day-month-abbreviated-year form renders in day-month-year order.");
     let style = build_date_style(DateForm::DayMonthAbbrYear);
 
     let mut bib = indexmap::IndexMap::new();
@@ -269,6 +276,7 @@ fn test_date_rendering_day_month_abbr_year() {
 
 #[test]
 fn test_date_rendering_range() {
+    announce_behavior("A date range renders with an en dash between start and end years.");
     let style = build_date_style(DateForm::Year);
 
     let mut bib = indexmap::IndexMap::new();
@@ -291,6 +299,9 @@ fn test_date_rendering_range() {
 
 #[test]
 fn test_date_rendering_open_range() {
+    announce_behavior(
+        "An open date range renders with an en dash followed by a locale present term.",
+    );
     let style = build_date_style(DateForm::Year);
 
     let mut bib = indexmap::IndexMap::new();
@@ -313,6 +324,7 @@ fn test_date_rendering_open_range() {
 
 #[test]
 fn test_date_rendering_fallback() {
+    announce_behavior("A missing date falls back to the configured no-date term.");
     let style = build_date_style(DateForm::Year);
 
     let mut bib = indexmap::IndexMap::new();
