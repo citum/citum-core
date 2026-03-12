@@ -404,14 +404,10 @@ def build_markdown_report(
         lines.append(f"## {domain}")
         lines.append("")
         lines.append(summarize_counts(entries))
-        if all_passed:
-            lines.append("All scenarios in this section are passing.")
         if derived:
             lines.append(
                 f"Scenario summaries in this section: {len(entries) - derived} authored, {derived} derived from test names."
             )
-        else:
-            lines.append("Scenario summaries in this section are fully authored for reviewer-facing migration coverage.")
         lines.append("")
 
         for scenario in entries:
@@ -526,15 +522,9 @@ def build_html_report(
 
         notes = ""
         section_notes: list[str] = []
-        if all_passed:
-            section_notes.append("All scenarios in this section are passing.")
         if derived:
             section_notes.append(
                 f"Scenario summaries in this section: {len(entries) - derived} authored, {derived} derived from test names."
-            )
-        else:
-            section_notes.append(
-                "Scenario summaries in this section are fully authored for reviewer-facing migration coverage."
             )
         if section_notes:
             notes = "".join(
