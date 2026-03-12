@@ -1,11 +1,11 @@
 ---
 # csl26-qyrq
 title: Make oracle scoring case-aware and roll out text-case to all styles
-status: todo
+status: completed
 type: feature
 priority: high
 created_at: 2025-07-14T12:00:00Z
-updated_at: 2025-07-14T12:00:00Z
+updated_at: 2026-03-12T07:47:12Z
 ---
 
 Follow-up to `csl26-zc4m` (title text-case semantics implementation).
@@ -49,10 +49,10 @@ of missing `text_case` configuration in style YAML files.
 
 ## Todos
 
-- [ ] Add `--case-sensitive` flag to oracle scripts
-- [ ] Add case-mismatch metric to `report-core`
-- [ ] Wire `text-case` extraction in `upsampler.rs`
-- [ ] Audit 157 styles for expected text-case
-- [ ] Batch-update style YAML configs with `text_case`
-- [ ] Regenerate baselines case-sensitively
-- [ ] Document verification-policy divergences
+- [x] Add `--case-sensitive` flag to oracle scripts
+- [x] Add case-mismatch metric to `report-core`
+- [x] Wire `text-case` extraction in `upsampler.rs`
+- [x] Audit 157 styles for expected text-case
+- [x] Batch-update style YAML configs with `text_case`
+- [x] Regenerate baselines case-sensitively
+- [x] Document verification-policy divergences

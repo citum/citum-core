@@ -26,11 +26,13 @@ const os = require('os');
 const path = require('path');
 const { execSync } = require('child_process');
 const {
+  compareText,
   normalizeText,
   parseComponents,
   analyzeOrdering,
   findRefDataForEntry,
   loadLocale,
+  textSimilarity,
 } = require('./oracle-utils');
 const { toCiteprocItem } = require('./lib/citeproc-locators');
 const { maybeDatasetErrorForFile } = require('./lib/dataset-guard');
@@ -55,6 +57,7 @@ function parseArgs() {
     refsFixture: DEFAULT_REFS_FIXTURE,
     citationsFixture: DEFAULT_CITATIONS_FIXTURE,
     forceMigrate: false,
+    caseSensitive: true,
     migrate: {
       templateSource: null,
       minTemplateConfidence: null,
@@ -68,6 +71,10 @@ function parseArgs() {
       options.jsonOutput = true;
     } else if (arg === '--verbose') {
       options.verbose = true;
+    } else if (arg === '--case-sensitive') {
+      options.caseSensitive = true;
+    } else if (arg === '--case-insensitive') {
+      options.caseSensitive = false;
     } else if (arg === '--force-migrate') {
       options.forceMigrate = true;
     } else if (arg === '--refs-fixture') {
@@ -156,7 +163,13 @@ function compareComponents(oracleComp, cslnComp, refData) {
         matches.push({ component: key, status: 'match' });
       } else {
         // Values differ
-        matches.push({ component: key, status: 'match' }); // Component present in both
+        differences.push({
+          component: key,
+          issue: 'value_mismatch',
+          expected: oracle.value,
+          found: csln.value,
+          detail: 'Value differs between oracle and CSLN',
+        });
       }
     } else if (oracle.found && !csln.found) {
       differences.push({
@@ -361,53 +374,8 @@ function renderWithCslnProcessor(stylePath, refsData, testItems, testCitations, 
   }
 }
 
-function tokenizeForSimilarity(text) {
-  return normalizeText(text || '')
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
-    .split(/\s+/)
-    .filter(Boolean)
-    .filter((token) => token.length > 1);
-}
-
-function textSimilarity(a, b) {
-  const left = tokenizeForSimilarity(a);
-  const right = tokenizeForSimilarity(b);
-  if (left.length === 0 && right.length === 0) return 1;
-  if (left.length === 0 || right.length === 0) return 0;
-
-  const leftCounts = new Map();
-  const rightCounts = new Map();
-  for (const token of left) {
-    leftCounts.set(token, (leftCounts.get(token) || 0) + 1);
-  }
-  for (const token of right) {
-    rightCounts.set(token, (rightCounts.get(token) || 0) + 1);
-  }
-
-  let intersect = 0;
-  let union = 0;
-  const keys = new Set([...leftCounts.keys(), ...rightCounts.keys()]);
-  for (const key of keys) {
-    const l = leftCounts.get(key) || 0;
-    const r = rightCounts.get(key) || 0;
-    intersect += Math.min(l, r);
-    union += Math.max(l, r);
-  }
-
-  return union > 0 ? intersect / union : 0;
-}
-
-function equivalentText(oracleText, cslnText) {
-  const oracleNorm = normalizeText(oracleText);
-  const cslnNorm = normalizeText(cslnText);
-  if (oracleNorm === cslnNorm) return true;
-
-  const similarity = textSimilarity(oracleNorm, cslnNorm);
-  // High token-overlap tolerance for punctuation/order differences.
-  if (similarity >= 0.60) return true;
-
-  return false;
+function equivalentText(oracleText, cslnText, options = {}) {
+  return compareText(oracleText, cslnText, options).match;
 }
 
 function extractYearSuffixes(text) {
@@ -462,11 +430,14 @@ function equivalentDisambiguationProbe(oracleText, cslnText, citationId) {
   return true;
 }
 
-function equivalentCitationText(oracleText, cslnText, citationId) {
+function equivalentCitationText(oracleText, cslnText, citationId, options = {}) {
+  if (options.caseSensitive !== false && compareText(oracleText, cslnText, options).caseMismatch) {
+    return false;
+  }
   if (STRICT_CITATION_IDS.has(citationId)) {
     return equivalentDisambiguationProbe(oracleText, cslnText, citationId);
   }
-  return equivalentText(oracleText, cslnText);
+  return equivalentText(oracleText, cslnText, options);
 }
 
 function collectCitationTypes(citation, testItems) {
@@ -544,11 +515,13 @@ function runOracle(cliOptions = parseArgs()) {
 
   if (datasetMessage) {
     console.error(datasetMessage);
-    process.exit(2);
+    process.exitCode = 2;
+    return;
   }
   if (!fs.existsSync(stylePath)) {
     console.error(`Style file not found: ${stylePath}`);
-    process.exit(2);
+    process.exitCode = 2;
+    return;
   }
 
   const { refsData, testItems, testCitations } = loadFixtures(
@@ -594,7 +567,8 @@ function runOracle(cliOptions = parseArgs()) {
       console.error('  2. Validate YAML syntax: yamllint .migrated-temp.yaml');
       console.error('  3. Check processor error: cargo run --bin citum -- render refs -b <refs> -s <style> -c <citations> --mode both');
     }
-    process.exit(2);
+    process.exitCode = 2;
+    return;
   }
 
   // Analyze bibliography
@@ -622,15 +596,26 @@ function runOracle(cliOptions = parseArgs()) {
   // Check citations
   for (const cite of testCitations) {
     const id = cite.id;
-    const oracleCit = normalizeText(oracle.citations[id] || '');
-    const cslnCit = normalizeText(csln.citations[id] || '');
-    const match = equivalentCitationText(oracleCit, cslnCit, id);
+    const comparison = compareText(oracle.citations[id] || '', csln.citations[id] || '', {
+      caseSensitive: cliOptions.caseSensitive,
+    });
+    const match = STRICT_CITATION_IDS.has(id)
+      ? equivalentCitationText(comparison.expected, comparison.actual, id, {
+        caseSensitive: cliOptions.caseSensitive,
+      })
+      : comparison.match;
     if (match) {
       rawResults.citations.passed++;
     } else {
       rawResults.citations.failed++;
     }
-    rawResults.citations.entries.push({ id, oracle: oracleCit, csln: cslnCit, match });
+    rawResults.citations.entries.push({
+      id,
+      oracle: comparison.expected,
+      csln: comparison.actual,
+      match,
+      caseMismatch: comparison.caseMismatch,
+    });
 
     const citationTypes = collectCitationTypes(cite, testItems);
     for (const type of citationTypes) {
@@ -652,6 +637,7 @@ function runOracle(cliOptions = parseArgs()) {
       oracle: pair.oracle ? normalizeText(pair.oracle) : null,
       csln: pair.csln ? normalizeText(pair.csln) : null,
       match: false,
+      caseMismatch: false,
       components: {},
       ordering: null,
       issues: [],
@@ -665,10 +651,14 @@ function runOracle(cliOptions = parseArgs()) {
       rawResults.bibliography.failed++;
     } else {
       // Both exist - compare
-      const oracleNorm = normalizeText(pair.oracle);
-      const cslnNorm = normalizeText(pair.csln);
+      const comparison = compareText(pair.oracle, pair.csln, {
+        caseSensitive: cliOptions.caseSensitive,
+      });
+      entryResult.oracle = comparison.expected;
+      entryResult.csln = comparison.actual;
+      entryResult.caseMismatch = comparison.caseMismatch;
 
-      if (equivalentText(oracleNorm, cslnNorm)) {
+      if (comparison.match) {
         entryResult.match = true;
         rawResults.bibliography.passed++;
       } else {
@@ -786,7 +776,7 @@ function runOracle(cliOptions = parseArgs()) {
     console.log();
   }
 
-  process.exit(results.citations.failed === 0 && results.bibliography.failed === 0 ? 0 : 1);
+  process.exitCode = results.citations.failed === 0 && results.bibliography.failed === 0 ? 0 : 1;
 }
 
 if (require.main === module) {
@@ -794,6 +784,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  compareComponents,
   cleanupOracleTempWorkspace,
   createOracleTempWorkspace,
   loadFixtures,

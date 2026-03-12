@@ -1,7 +1,7 @@
 # Citum Style Tier Status
 
 > **Living document** — updated after each significant batch oracle run.
-> Last updated: 2026-03-09
+> Last updated: 2026-03-12
 >
 > **Oracle scoring:** Strict 18-scenario citation set (`tests/fixtures/citations-expanded.json`).
 > Hard-fails on processor/style errors. Includes suppress-author, mixed locator/prefix/suffix
@@ -30,6 +30,11 @@
 
 Current maintained portfolio status:
 - `node scripts/report-core.js` reports `146` styles at fidelity `1.0`.
+- Case-aware scoring is now the default oracle mode.
+- `report-core` exposes `caseMismatchesOverall` and per-style `caseMismatches`.
+- Title/text-case regressions across shipped core styles are reduced to `0`.
+- One remaining case-only mismatch (`american-mathematical-society-label`) is a
+  citation-label acronym issue, not a title-rendering delta.
 - `node scripts/check-core-quality.js` passes against
   `scripts/report-data/core-quality-baseline.json` with `warnings=0`.
 

@@ -5,6 +5,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 const {
+  compareComponents,
   cleanupOracleTempWorkspace,
   createOracleTempWorkspace,
   loadFixtures,
@@ -265,4 +266,45 @@ test('registered divergence adjustments skip order inspection without failures',
   assert.equal(adjusted.bibliographyOrder, null);
   assert.equal(adjusted.adjusted.citations.passed, 1);
   assert.deepEqual(adjusted.adjusted.divergenceSummary, {});
+});
+
+test('compareComponents reports differing component values as mismatches', () => {
+  const { differences, matches } = compareComponents(
+    {
+      title: { found: true, value: 'Alpha' },
+      contributors: { found: false },
+      year: { found: false },
+      containerTitle: { found: false },
+      volume: { found: false },
+      issue: { found: false },
+      pages: { found: false },
+      publisher: { found: false },
+      doi: { found: false },
+      edition: { found: false },
+      editors: { found: false },
+    },
+    {
+      title: { found: true, value: 'Beta' },
+      contributors: { found: false },
+      year: { found: false },
+      containerTitle: { found: false },
+      volume: { found: false },
+      issue: { found: false },
+      pages: { found: false },
+      publisher: { found: false },
+      doi: { found: false },
+      edition: { found: false },
+      editors: { found: false },
+    },
+    {}
+  );
+
+  assert.deepEqual(matches, []);
+  assert.deepEqual(differences, [{
+    component: 'title',
+    issue: 'value_mismatch',
+    expected: 'Alpha',
+    found: 'Beta',
+    detail: 'Value differs between oracle and CSLN',
+  }]);
 });

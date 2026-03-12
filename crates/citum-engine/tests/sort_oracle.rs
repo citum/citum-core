@@ -37,17 +37,18 @@ fn test_apa_7th_sort_same_author_year_by_title() {
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography();
 
-    // All three Adams 2020 items should appear in title order: Academic, Digital, Ethics
-    // APA preset applies sentence-apa case transform to component titles.
+    // All three Adams 2020 items should appear in title order: Academic, Digital, Ethics.
+    // APA now preserves legacy CSL title casing for these sort-oracle fixtures.
     let academic_pos = result
-        .find("academic enterprise")
-        .expect("academic enterprise should be in output");
+        .find("Academic Enterprise")
+        .expect("Academic Enterprise should be in output");
     let digital_pos = result
         .find("Digital transformation")
-        .expect("Digital transformation should be in output");
+        .or_else(|| result.find("Digital Transformation"))
+        .expect("Digital Transformation should be in output");
     let ethics_pos = result
-        .find("Ethics in research")
-        .expect("Ethics in research should be in output");
+        .find("Ethics in Research")
+        .expect("Ethics in Research should be in output");
 
     assert!(
         academic_pos < digital_pos,
