@@ -81,32 +81,32 @@ fn bench_disambiguation(c: &mut Criterion) {
         ..Default::default()
     };
 
-    let mut group = c.benchmark_group("Disambiguator::calculate_hints");
-    group.bench_function("No collisions", |b| {
+    let mut bench_group = c.benchmark_group("Disambiguator::calculate_hints");
+    bench_group.bench_function("No collisions", |b| {
         let disambiguator = Disambiguator::new(&no_collision_bib, &no_collision_config, &locale);
         b.iter(|| {
             black_box(disambiguator.calculate_hints());
         });
     });
-    group.bench_function("Given-name collisions", |b| {
+    bench_group.bench_function("Given-name collisions", |b| {
         let disambiguator = Disambiguator::new(&givenname_bib, &givenname_config, &locale);
         b.iter(|| {
             black_box(disambiguator.calculate_hints());
         });
     });
-    group.bench_function("Name partition with suffix fallback", |b| {
+    bench_group.bench_function("Name partition with suffix fallback", |b| {
         let disambiguator = Disambiguator::new(&partition_bib, &partition_config, &locale);
         b.iter(|| {
             black_box(disambiguator.calculate_hints());
         });
     });
-    group.bench_function("Label-mode suffix collisions", |b| {
+    bench_group.bench_function("Label-mode suffix collisions", |b| {
         let disambiguator = Disambiguator::new(&label_bib, &label_config, &locale);
         b.iter(|| {
             black_box(disambiguator.calculate_hints());
         });
     });
-    group.finish();
+    bench_group.finish();
 }
 
 fn make_custom_config(names: bool, add_givenname: bool, year_suffix: bool) -> Config {
