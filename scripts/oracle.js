@@ -163,7 +163,13 @@ function compareComponents(oracleComp, cslnComp, refData) {
         matches.push({ component: key, status: 'match' });
       } else {
         // Values differ
-        matches.push({ component: key, status: 'match' }); // Component present in both
+        differences.push({
+          component: key,
+          issue: 'value_mismatch',
+          expected: oracle.value,
+          found: csln.value,
+          detail: `Value differs between oracle and CSLN`,
+        });
       }
     } else if (oracle.found && !csln.found) {
       differences.push({
