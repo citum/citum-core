@@ -52,6 +52,14 @@ pub struct Disambiguator<'a> {
     group_sort: Option<&'a GroupSort>,
 }
 
+#[derive(Clone, Copy)]
+struct DisambiguationFlags {
+    add_names: bool,
+    add_givenname: bool,
+    year_suffix: bool,
+    is_label_mode: bool,
+}
+
 impl<'a> Disambiguator<'a> {
     /// Creates a disambiguator that uses the default title-based fallback order.
     pub fn new(bibliography: &'a Bibliography, config: &'a Config, locale: &'a Locale) -> Self {
@@ -113,217 +121,221 @@ impl<'a> Disambiguator<'a> {
     /// - "item-3": { group_key: "brown:2020" } (no collision)
     pub fn calculate_hints(&self) -> HashMap<String, ProcHints> {
         let mut hints = HashMap::new();
-
         let refs: Vec<&Reference> = self.bibliography.values().collect();
-        // Group by base citation key (e.g. "smith:2020")
-        let grouped = self.group_references(refs.clone());
-
-        // Pre-calculate total works by each author key for `group_length`
-        let mut author_group_lengths = HashMap::new();
-        for reference in &refs {
-            let author_key = self.make_author_key(reference);
-            if !author_key.is_empty() {
-                *author_group_lengths.entry(author_key).or_insert(0) += 1;
-            }
-        }
+        let grouped = self.group_references(&refs);
+        let author_group_lengths = self.author_group_lengths(&refs);
+        let flags = self.disambiguation_flags();
 
         for (key, group) in grouped {
-            let group_len = group.len();
-
-            if group_len > 1 {
-                // Different references colliding in their base citation form
-                let disamb_config = self
-                    .config
-                    .processing
-                    .clone()
-                    .unwrap_or_default()
-                    .config()
-                    .disambiguate;
-
-                let add_names = disamb_config.as_ref().map(|d| d.names).unwrap_or(false);
-                let add_givenname = disamb_config
-                    .as_ref()
-                    .map(|d| d.add_givenname)
-                    .unwrap_or(false);
-                let year_suffix = disamb_config
-                    .as_ref()
-                    .map(|d| d.year_suffix)
-                    .unwrap_or(false);
-
-                let is_label_mode = self
-                    .config
-                    .processing
-                    .as_ref()
-                    .is_some_and(|p| matches!(p, citum_schema::options::Processing::Label(_)));
-
-                let mut resolved = false;
-
-                // For label mode, skip name strategies and go straight to year-suffix
-                if is_label_mode && year_suffix {
-                    self.apply_year_suffix(
-                        &mut hints,
-                        &group,
-                        key,
-                        group_len,
-                        false,
-                        &author_group_lengths,
-                        None,
-                    );
-                } else {
-                    // 1. Try expanding names (et-al expansion). Partial separation is useful:
-                    // if some items split into distinct subgroups, keep that expansion and
-                    // apply year-suffix only within the remaining identical subgroups.
-                    if add_names
-                        && let Some((n, partitions)) = self.partition_by_name_expansion(&group)
-                    {
-                        for subgroup in partitions.values() {
-                            if subgroup.len() == 1 {
-                                let reference = subgroup[0];
-                                let author_key = self.make_author_key(reference);
-                                let global_author_length =
-                                    author_group_lengths.get(&author_key).copied().unwrap_or(1);
-                                hints.insert(
-                                    reference.id().unwrap_or_default(),
-                                    ProcHints {
-                                        disamb_condition: false,
-                                        group_index: 1,
-                                        group_length: global_author_length,
-                                        group_key: key.clone(),
-                                        expand_given_names: false,
-                                        min_names_to_show: Some(n),
-                                        ..Default::default()
-                                    },
-                                );
-                            } else if add_givenname
-                                && self.check_givenname_resolution(subgroup, Some(n))
-                            {
-                                for (idx, reference) in subgroup.iter().enumerate() {
-                                    let author_key = self.make_author_key(reference);
-                                    let global_author_length =
-                                        author_group_lengths.get(&author_key).copied().unwrap_or(1);
-                                    hints.insert(
-                                        reference.id().unwrap_or_default(),
-                                        ProcHints {
-                                            disamb_condition: false,
-                                            group_index: idx + 1,
-                                            group_length: global_author_length,
-                                            group_key: key.clone(),
-                                            expand_given_names: true,
-                                            min_names_to_show: Some(n),
-                                            ..Default::default()
-                                        },
-                                    );
-                                }
-                            } else {
-                                self.apply_year_suffix(
-                                    &mut hints,
-                                    subgroup,
-                                    key.clone(),
-                                    subgroup.len(),
-                                    false,
-                                    &author_group_lengths,
-                                    Some(n),
-                                );
-                            }
-                        }
-                        resolved = true;
-                    }
-
-                    // 2. Try expanding given names for the base name list
-                    if !resolved && add_givenname && self.check_givenname_resolution(&group, None) {
-                        for (i, reference) in group.iter().enumerate() {
-                            let author_key = self.make_author_key(reference);
-                            let global_author_length =
-                                author_group_lengths.get(&author_key).copied().unwrap_or(1);
-                            hints.insert(
-                                reference.id().unwrap_or_default(),
-                                ProcHints {
-                                    disamb_condition: false,
-                                    group_index: i + 1,
-                                    group_length: global_author_length,
-                                    group_key: key.clone(),
-                                    expand_given_names: true,
-                                    min_names_to_show: None,
-                                    ..Default::default()
-                                },
-                            );
-                        }
-                        resolved = true;
-                    }
-
-                    // 3. Try combined expansion: multiple names + given names
-                    if !resolved && add_names && add_givenname {
-                        // Find if there's an N such that expanding both names and given names works
-                        let max_authors = group
-                            .iter()
-                            .map(|r| r.author().map(|a| a.to_names_vec().len()).unwrap_or(0))
-                            .max()
-                            .unwrap_or(0);
-
-                        for n in 2..=max_authors {
-                            if self.check_givenname_resolution(&group, Some(n)) {
-                                for (idx, reference) in group.iter().enumerate() {
-                                    let author_key = self.make_author_key(reference);
-                                    let global_author_length =
-                                        author_group_lengths.get(&author_key).copied().unwrap_or(1);
-                                    hints.insert(
-                                        reference.id().unwrap_or_default(),
-                                        ProcHints {
-                                            disamb_condition: false,
-                                            group_index: idx + 1,
-                                            group_length: global_author_length,
-                                            group_key: key.clone(),
-                                            expand_given_names: true,
-                                            min_names_to_show: Some(n),
-                                            ..Default::default()
-                                        },
-                                    );
-                                }
-                                resolved = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    // 4. Fallback to year-suffix
-                    if !resolved {
-                        self.apply_year_suffix(
-                            &mut hints,
-                            &group,
-                            key,
-                            group_len,
-                            false,
-                            &author_group_lengths,
-                            None,
-                        );
-                    }
-                }
-            } else {
-                // No collision
-                let author_key = self.make_author_key(group[0]);
-                let global_author_length =
-                    author_group_lengths.get(&author_key).copied().unwrap_or(1);
-                hints.insert(
-                    group[0].id().unwrap_or_default(),
-                    ProcHints {
-                        group_length: global_author_length,
-                        ..Default::default()
-                    },
-                );
-            }
+            self.apply_group_hints(&mut hints, &key, &group, flags, &author_group_lengths);
         }
 
         hints
     }
 
-    #[allow(clippy::too_many_arguments)]
+    fn disambiguation_flags(&self) -> DisambiguationFlags {
+        let disamb_config = self
+            .config
+            .processing
+            .clone()
+            .unwrap_or_default()
+            .config()
+            .disambiguate;
+
+        DisambiguationFlags {
+            add_names: disamb_config.as_ref().map(|d| d.names).unwrap_or(false),
+            add_givenname: disamb_config
+                .as_ref()
+                .map(|d| d.add_givenname)
+                .unwrap_or(false),
+            year_suffix: disamb_config
+                .as_ref()
+                .map(|d| d.year_suffix)
+                .unwrap_or(false),
+            is_label_mode: self
+                .config
+                .processing
+                .as_ref()
+                .is_some_and(|p| matches!(p, citum_schema::options::Processing::Label(_))),
+        }
+    }
+
+    fn author_group_lengths(&self, refs: &[&Reference]) -> HashMap<String, usize> {
+        let mut author_group_lengths = HashMap::new();
+        for reference in refs {
+            let author_key = self.make_author_key(reference);
+            if !author_key.is_empty() {
+                *author_group_lengths.entry(author_key).or_insert(0) += 1;
+            }
+        }
+        author_group_lengths
+    }
+
+    fn apply_group_hints(
+        &self,
+        hints: &mut HashMap<String, ProcHints>,
+        key: &str,
+        group: &[&Reference],
+        flags: DisambiguationFlags,
+        author_group_lengths: &HashMap<String, usize>,
+    ) {
+        if group.len() == 1 {
+            self.insert_hint(hints, group[0], author_group_lengths, ProcHints::default());
+            return;
+        }
+
+        if flags.is_label_mode && flags.year_suffix {
+            self.apply_year_suffix(hints, group, key, false, author_group_lengths, None);
+            return;
+        }
+
+        if self.try_apply_name_partitions(hints, key, group, flags, author_group_lengths) {
+            return;
+        }
+
+        if flags.add_givenname && self.check_givenname_resolution(group, None) {
+            self.apply_resolution(hints, group, key, author_group_lengths, true, None);
+            return;
+        }
+
+        if flags.add_names
+            && flags.add_givenname
+            && let Some(min_names_to_show) = self.find_combined_resolution(group)
+        {
+            self.apply_resolution(
+                hints,
+                group,
+                key,
+                author_group_lengths,
+                true,
+                Some(min_names_to_show),
+            );
+            return;
+        }
+
+        self.apply_year_suffix(hints, group, key, false, author_group_lengths, None);
+    }
+
+    fn try_apply_name_partitions(
+        &self,
+        hints: &mut HashMap<String, ProcHints>,
+        key: &str,
+        group: &[&Reference],
+        flags: DisambiguationFlags,
+        author_group_lengths: &HashMap<String, usize>,
+    ) -> bool {
+        if !flags.add_names {
+            return false;
+        }
+
+        let Some((min_names_to_show, partitions)) = self.partition_by_name_expansion(group) else {
+            return false;
+        };
+
+        for subgroup in partitions.values() {
+            if subgroup.len() == 1 {
+                self.apply_resolution(
+                    hints,
+                    subgroup,
+                    key,
+                    author_group_lengths,
+                    false,
+                    Some(min_names_to_show),
+                );
+                continue;
+            }
+
+            if flags.add_givenname
+                && self.check_givenname_resolution(subgroup, Some(min_names_to_show))
+            {
+                self.apply_resolution(
+                    hints,
+                    subgroup,
+                    key,
+                    author_group_lengths,
+                    true,
+                    Some(min_names_to_show),
+                );
+                continue;
+            }
+
+            self.apply_year_suffix(
+                hints,
+                subgroup,
+                key,
+                false,
+                author_group_lengths,
+                Some(min_names_to_show),
+            );
+        }
+
+        true
+    }
+
+    fn find_combined_resolution(&self, group: &[&Reference]) -> Option<usize> {
+        let max_authors = group
+            .iter()
+            .map(|r| r.author().map(|a| a.to_names_vec().len()).unwrap_or(0))
+            .max()
+            .unwrap_or(0);
+
+        (2..=max_authors).find(|&n| self.check_givenname_resolution(group, Some(n)))
+    }
+
+    fn apply_resolution(
+        &self,
+        hints: &mut HashMap<String, ProcHints>,
+        group: &[&Reference],
+        key: &str,
+        author_group_lengths: &HashMap<String, usize>,
+        expand_given_names: bool,
+        min_names_to_show: Option<usize>,
+    ) {
+        for (idx, reference) in group.iter().enumerate() {
+            self.insert_hint(
+                hints,
+                reference,
+                author_group_lengths,
+                ProcHints {
+                    disamb_condition: false,
+                    group_index: idx + 1,
+                    group_key: key.to_string(),
+                    expand_given_names,
+                    min_names_to_show,
+                    ..Default::default()
+                },
+            );
+        }
+    }
+
+    fn insert_hint(
+        &self,
+        hints: &mut HashMap<String, ProcHints>,
+        reference: &Reference,
+        author_group_lengths: &HashMap<String, usize>,
+        mut hint: ProcHints,
+    ) {
+        hint.group_length = self
+            .author_group_length(reference, author_group_lengths)
+            .unwrap_or(1);
+        hints.insert(reference.id().unwrap_or_default(), hint);
+    }
+
+    fn author_group_length(
+        &self,
+        reference: &Reference,
+        author_group_lengths: &HashMap<String, usize>,
+    ) -> Option<usize> {
+        let author_key = self.make_author_key(reference);
+        author_group_lengths.get(&author_key).copied()
+    }
+
     fn apply_year_suffix(
         &self,
         hints: &mut HashMap<String, ProcHints>,
         group: &[&Reference],
-        key: String,
-        _len: usize,
-        expand_names: bool,
+        key: &str,
+        expand_given_names: bool,
         author_group_lengths: &HashMap<String, usize>,
         min_names_to_show: Option<usize>,
     ) {
@@ -351,16 +363,15 @@ impl<'a> Disambiguator<'a> {
         };
 
         for (i, reference) in sorted_group.iter().enumerate() {
-            let author_key = self.make_author_key(reference);
-            let global_author_length = author_group_lengths.get(&author_key).copied().unwrap_or(1);
-            hints.insert(
-                reference.id().unwrap_or_default(),
+            self.insert_hint(
+                hints,
+                reference,
+                author_group_lengths,
                 ProcHints {
                     disamb_condition: true,
                     group_index: i + 1,
-                    group_length: global_author_length,
-                    group_key: key.clone(),
-                    expand_given_names: expand_names,
+                    group_key: key.to_string(),
+                    expand_given_names,
                     min_names_to_show,
                     ..Default::default()
                 },
@@ -453,13 +464,13 @@ impl<'a> Disambiguator<'a> {
     /// Group references by their base collision key for disambiguation.
     fn group_references<'b>(
         &self,
-        references: Vec<&'b Reference>,
+        references: &[&'b Reference],
     ) -> HashMap<String, Vec<&'b Reference>> {
         let mut groups: HashMap<String, Vec<&'b Reference>> = HashMap::new();
 
         for reference in references {
             let key = self.make_group_key(reference);
-            groups.entry(key).or_default().push(reference);
+            groups.entry(key).or_default().push(*reference);
         }
 
         groups
@@ -554,6 +565,56 @@ mod tests {
                 dropping_particle: None,
                 non_dropping_particle: None,
             })),
+            editor: None,
+            translator: None,
+            recipient: None,
+            interviewer: None,
+            issued: EdtfString(year.to_string()),
+            publisher: None,
+            url: None,
+            accessed: None,
+            language: None,
+            field_languages: Default::default(),
+            note: None,
+            isbn: None,
+            doi: None,
+            edition: None,
+            report_number: None,
+            collection_number: None,
+            genre: None,
+            medium: None,
+            archive: None,
+            archive_location: None,
+            keywords: None,
+            original_date: None,
+            original_title: None,
+            ads_bibcode: None,
+        }))
+    }
+
+    fn make_multi_author_ref(id: &str, authors: &[(&str, &str)], year: i32) -> Reference {
+        let title = format!("Title {}", id);
+        Reference::Monograph(Box::new(Monograph {
+            id: Some(id.to_string()),
+            r#type: MonographType::Book,
+            title: Some(Title::Single(title)),
+            container_title: None,
+            author: Some(Contributor::ContributorList(
+                citum_schema::reference::ContributorList(
+                    authors
+                        .iter()
+                        .map(|(family, given)| {
+                            Contributor::StructuredName(StructuredName {
+                                family: MultilingualString::Simple((*family).to_string()),
+                                given: MultilingualString::Simple((*given).to_string()),
+                                suffix: None,
+                                dropping_particle: None,
+                                non_dropping_particle: None,
+                            })
+                        })
+                        .collect(),
+                ),
+            )),
             editor: None,
             translator: None,
             recipient: None,
@@ -755,5 +816,97 @@ mod tests {
             rendered_r2.contains("A. Smith"),
             "expected expanded given name for r2: {rendered_r2}"
         );
+    }
+
+    #[test]
+    fn test_partitioned_name_expansion_keeps_unique_items_and_suffixes_remainders() {
+        use citum_schema::options::{
+            ContributorConfig, Disambiguation, Processing, ProcessingCustom, ShortenListOptions,
+        };
+
+        let mut bib = Bibliography::new();
+        bib.insert(
+            "r1".to_string(),
+            make_multi_author_ref("r1", &[("Smith", "John"), ("Jones", "Peter")], 2020),
+        );
+        bib.insert(
+            "r2".to_string(),
+            make_multi_author_ref("r2", &[("Smith", "John"), ("Brown", "Alice")], 2020),
+        );
+        bib.insert(
+            "r3".to_string(),
+            make_multi_author_ref("r3", &[("Smith", "John"), ("Brown", "Adam")], 2020),
+        );
+
+        let config = Config {
+            processing: Some(Processing::Custom(ProcessingCustom {
+                disambiguate: Some(Disambiguation {
+                    names: true,
+                    add_givenname: false,
+                    year_suffix: true,
+                }),
+                ..Default::default()
+            })),
+            contributors: Some(ContributorConfig {
+                shorten: Some(ShortenListOptions {
+                    min: 2,
+                    use_first: 1,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let locale = Locale::en_us();
+
+        let hints = Disambiguator::new(&bib, &config, &locale).calculate_hints();
+
+        let unique = hints.get("r1").unwrap();
+        assert!(!unique.disamb_condition);
+        assert_eq!(unique.group_index, 1);
+        assert_eq!(unique.min_names_to_show, Some(2));
+        assert_eq!(unique.group_length, 3);
+
+        let remaining_a = hints.get("r2").unwrap();
+        let remaining_b = hints.get("r3").unwrap();
+        assert!(remaining_a.disamb_condition);
+        assert!(remaining_b.disamb_condition);
+        assert_eq!(remaining_a.min_names_to_show, Some(2));
+        assert_eq!(remaining_b.min_names_to_show, Some(2));
+        assert_eq!(remaining_a.group_length, 3);
+        assert_eq!(remaining_b.group_length, 3);
+        assert_ne!(remaining_a.group_index, remaining_b.group_index);
+    }
+
+    #[test]
+    fn test_label_mode_skips_name_strategies_and_suffixes_by_label_group() {
+        use citum_schema::options::{LabelConfig, LabelPreset, Processing};
+
+        let mut bib = Bibliography::new();
+        bib.insert("r1".to_string(), make_ref("r1", "Kuhn", "Thomas", 1962));
+        bib.insert("r2".to_string(), make_ref("r2", "Kuhn", "Thomas", 1962));
+
+        let config = Config {
+            processing: Some(Processing::Label(LabelConfig {
+                preset: LabelPreset::Din,
+                ..Default::default()
+            })),
+            ..Default::default()
+        };
+        let locale = Locale::en_us();
+
+        let hints = Disambiguator::new(&bib, &config, &locale).calculate_hints();
+        let first = hints.get("r1").unwrap();
+        let second = hints.get("r2").unwrap();
+
+        assert!(first.disamb_condition);
+        assert!(second.disamb_condition);
+        assert!(!first.expand_given_names);
+        assert!(!second.expand_given_names);
+        assert_eq!(first.min_names_to_show, None);
+        assert_eq!(second.min_names_to_show, None);
+        assert_eq!(first.group_key, second.group_key);
+        assert!(!first.group_key.contains(':'));
+        assert_ne!(first.group_index, second.group_index);
     }
 }
