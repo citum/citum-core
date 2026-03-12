@@ -39,7 +39,19 @@ options:
       use-first: 19
       use-last: 1
   dates: long
-  titles: apa
+  titles:
+    component:
+      text-case: as-is
+    monograph:
+      text-case: as-is
+      emph: true
+    container-monograph:
+      text-case: as-is
+      emph: true
+    periodical:
+      emph: true
+    serial:
+      text-case: as-is
   multilingual:
     title-mode: combined
     name-mode: primary

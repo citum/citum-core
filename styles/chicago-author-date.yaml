@@ -49,7 +49,18 @@ options:
       delimiter-precedes-last: contextual
     demote-non-dropping-particle: display-and-sort
   dates: long
-  titles: humanities
+  titles:
+    component: {}
+    monograph:
+      text-case: title
+      emph: true
+    container-monograph:
+      text-case: title
+      emph: true
+    periodical:
+      emph: true
+    serial:
+      emph: true
   page-range-format: chicago16
   bibliography:
     hanging-indent: true

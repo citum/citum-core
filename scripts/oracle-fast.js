@@ -26,7 +26,14 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const { normalizeText, parseComponents, analyzeOrdering, findRefDataForEntry } = require('./oracle-utils');
+const {
+  compareText,
+  normalizeText,
+  parseComponents,
+  analyzeOrdering,
+  findRefDataForEntry,
+  textSimilarity,
+} = require('./oracle-utils');
 const { renderWithCslnProcessor } = require('./oracle');
 const { attachRegisteredDivergenceAdjustments } = require('./lib/oracle-divergences');
 
@@ -52,6 +59,7 @@ function parseArgs() {
     stylePath: null,
     jsonOutput: false,
     verbose: false,
+    caseSensitive: true,
     refsFixture: DEFAULT_REFS_FIXTURE,
     citationsFixture: DEFAULT_CITATIONS_FIXTURE,
   };
@@ -59,6 +67,8 @@ function parseArgs() {
     const a = args[i];
     if (a === '--json') opts.jsonOutput = true;
     else if (a === '--verbose') opts.verbose = true;
+    else if (a === '--case-sensitive') opts.caseSensitive = true;
+    else if (a === '--case-insensitive') opts.caseSensitive = false;
     else if (a === '--refs-fixture') opts.refsFixture = path.resolve(args[++i]);
     else if (a === '--citations-fixture') opts.citationsFixture = path.resolve(args[++i]);
     else if (!a.startsWith('--') && !opts.stylePath) opts.stylePath = path.resolve(a);
@@ -116,40 +126,8 @@ function loadSnapshot(stylePath, refsFixture, citationsFixture) {
 // Comparison logic (mirrors oracle.js)
 // ---------------------------------------------------------------------------
 
-function tokenizeForSimilarity(text) {
-  return normalizeText(text || '')
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
-    .split(/\s+/)
-    .filter(Boolean)
-    .filter((t) => t.length > 1);
-}
-
-function textSimilarity(a, b) {
-  const left = tokenizeForSimilarity(a);
-  const right = tokenizeForSimilarity(b);
-  if (left.length === 0 && right.length === 0) return 1;
-  if (left.length === 0 || right.length === 0) return 0;
-  const lc = new Map();
-  const rc = new Map();
-  for (const t of left) lc.set(t, (lc.get(t) || 0) + 1);
-  for (const t of right) rc.set(t, (rc.get(t) || 0) + 1);
-  let intersect = 0;
-  let union = 0;
-  for (const k of new Set([...lc.keys(), ...rc.keys()])) {
-    const l = lc.get(k) || 0;
-    const r = rc.get(k) || 0;
-    intersect += Math.min(l, r);
-    union += Math.max(l, r);
-  }
-  return union > 0 ? intersect / union : 0;
-}
-
-function equivalentText(a, b) {
-  const an = normalizeText(a);
-  const bn = normalizeText(b);
-  if (an === bn) return true;
-  return textSimilarity(an, bn) >= 0.60;
+function equivalentText(a, b, options = {}) {
+  return compareText(a, b, options).match;
 }
 
 function extractYearSuffixes(text) {
@@ -171,8 +149,11 @@ function extractLocatorNumber(text) {
   return m ? m[1] : null;
 }
 
-function equivalentCitationText(oracleText, cslnText, citationId) {
-  if (!STRICT_CITATION_IDS.has(citationId)) return equivalentText(oracleText, cslnText);
+function equivalentCitationText(oracleText, cslnText, citationId, options = {}) {
+  if (options.caseSensitive !== false && compareText(oracleText, cslnText, options).caseMismatch) {
+    return false;
+  }
+  if (!STRICT_CITATION_IDS.has(citationId)) return equivalentText(oracleText, cslnText, options);
 
   const oN = normalizeText(oracleText);
   const cN = normalizeText(cslnText);
@@ -232,12 +213,14 @@ function run() {
 
   if (!opts.stylePath) {
     process.stderr.write('Usage: oracle-fast.js <style.csl> [--json] [--verbose]\n');
-    process.exit(2);
+    process.exitCode = 2;
+    return;
   }
 
   if (!fs.existsSync(opts.stylePath)) {
     process.stderr.write(`Style not found: ${opts.stylePath}\n`);
-    process.exit(2);
+    process.exitCode = 2;
+    return;
   }
 
   // 1. Load and validate snapshot
@@ -246,7 +229,8 @@ function run() {
     snapshot = loadSnapshot(opts.stylePath, opts.refsFixture, opts.citationsFixture);
   } catch (err) {
     process.stderr.write(`oracle-fast: ${err.message}\n`);
-    process.exit(err instanceof SnapshotStaleError ? 3 : 2);
+    process.exitCode = err instanceof SnapshotStaleError ? 3 : 2;
+    return;
   }
 
   // 2. Load fixtures for CSLN rendering
@@ -269,7 +253,8 @@ function run() {
     } else {
       process.stderr.write(`CSLN rendering failed: ${reason}\n`);
     }
-    process.exit(2);
+    process.exitCode = 2;
+    return;
   }
 
   const styleName = path.basename(opts.stylePath, '.csl');
@@ -289,11 +274,20 @@ function run() {
   };
 
   for (const cite of testCitations) {
-    const oracleText = normalizeText(snapshot.citations[cite.id] || '');
-    const cslnText = normalizeText(csln.citations[cite.id] || '');
-    const match = equivalentCitationText(oracleText, cslnText, cite.id);
+    const comparison = compareText(snapshot.citations[cite.id] || '', csln.citations[cite.id] || '', {
+      caseSensitive: opts.caseSensitive,
+    });
+    const match = equivalentCitationText(comparison.expected, comparison.actual, cite.id, {
+      caseSensitive: opts.caseSensitive,
+    });
     if (match) rawResults.citations.passed++; else rawResults.citations.failed++;
-    rawResults.citations.entries.push({ id: cite.id, oracle: oracleText, csln: cslnText, match });
+    rawResults.citations.entries.push({
+      id: cite.id,
+      oracle: comparison.expected,
+      csln: comparison.actual,
+      match,
+      caseMismatch: comparison.caseMismatch,
+    });
 
     for (const item of cite.items || []) {
       const type = testItems[item.id]?.type ?? 'unknown';
@@ -310,6 +304,7 @@ function run() {
       oracle: pair.oracle ? normalizeText(pair.oracle) : null,
       csln: pair.csln ? normalizeText(pair.csln) : null,
       match: false,
+      caseMismatch: false,
       components: {},
       ordering: null,
       issues: [],
@@ -322,9 +317,13 @@ function run() {
       entryResult.issues.push({ issue: 'missing_entry', detail: 'Entry in oracle but not CSLN' });
       rawResults.bibliography.failed++;
     } else {
-      const oN = normalizeText(pair.oracle);
-      const cN = normalizeText(pair.csln);
-      if (equivalentText(oN, cN)) {
+      const comparison = compareText(pair.oracle, pair.csln, {
+        caseSensitive: opts.caseSensitive,
+      });
+      entryResult.oracle = comparison.expected;
+      entryResult.csln = comparison.actual;
+      entryResult.caseMismatch = comparison.caseMismatch;
+      if (comparison.match) {
         entryResult.match = true;
         rawResults.bibliography.passed++;
       } else {
@@ -392,7 +391,7 @@ function run() {
     }
   }
 
-  process.exit(results.citations.failed === 0 && results.bibliography.failed === 0 ? 0 : 1);
+  process.exitCode = results.citations.failed === 0 && results.bibliography.failed === 0 ? 0 : 1;
 }
 
 run();

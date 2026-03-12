@@ -25,7 +25,16 @@ options:
   processing: numeric
   contributors: numeric-given-dot
   dates: long
-  titles: scientific
+  titles:
+    component:
+      text-case: as-is
+    monograph:
+      text-case: as-is
+    container-monograph:
+      text-case: as-is
+    periodical: {}
+    serial:
+      text-case: as-is
   bibliography:
     entry-suffix: .
     separator: ""
