@@ -134,13 +134,14 @@ impl<'a> Disambiguator<'a> {
     }
 
     fn disambiguation_flags(&self) -> DisambiguationFlags {
-        let disamb_config = self
-            .config
-            .processing
-            .clone()
-            .unwrap_or_default()
-            .config()
-            .disambiguate;
+        let disamb_config = match self.config.processing.as_ref() {
+            Some(processing) => processing.config().disambiguate,
+            None => {
+                citum_schema::options::Processing::AuthorDate
+                    .config()
+                    .disambiguate
+            }
+        };
 
         DisambiguationFlags {
             add_names: disamb_config.as_ref().map(|d| d.names).unwrap_or(false),
@@ -179,13 +180,11 @@ impl<'a> Disambiguator<'a> {
         flags: DisambiguationFlags,
         author_group_lengths: &HashMap<String, usize>,
     ) {
-        if group.len() == 1 {
-            self.insert_hint(hints, group[0], author_group_lengths, ProcHints::default());
+        if self.try_apply_singleton_hint(hints, group, author_group_lengths) {
             return;
         }
 
-        if flags.is_label_mode && flags.year_suffix {
-            self.apply_year_suffix(hints, group, key, false, author_group_lengths, None);
+        if self.try_apply_label_mode_year_suffix(hints, key, group, flags, author_group_lengths) {
             return;
         }
 
@@ -193,27 +192,45 @@ impl<'a> Disambiguator<'a> {
             return;
         }
 
-        if flags.add_givenname && self.check_givenname_resolution(group, None) {
-            self.apply_resolution(hints, group, key, author_group_lengths, true, None);
+        if self.try_apply_givenname_resolution(hints, key, group, flags, author_group_lengths) {
             return;
         }
 
-        if flags.add_names
-            && flags.add_givenname
-            && let Some(min_names_to_show) = self.find_combined_resolution(group)
-        {
-            self.apply_resolution(
-                hints,
-                group,
-                key,
-                author_group_lengths,
-                true,
-                Some(min_names_to_show),
-            );
+        if self.try_apply_combined_resolution(hints, key, group, flags, author_group_lengths) {
             return;
         }
 
         self.apply_year_suffix(hints, group, key, false, author_group_lengths, None);
+    }
+
+    fn try_apply_singleton_hint(
+        &self,
+        hints: &mut HashMap<String, ProcHints>,
+        group: &[&Reference],
+        author_group_lengths: &HashMap<String, usize>,
+    ) -> bool {
+        if group.len() != 1 {
+            return false;
+        }
+
+        self.insert_hint(hints, group[0], author_group_lengths, ProcHints::default());
+        true
+    }
+
+    fn try_apply_label_mode_year_suffix(
+        &self,
+        hints: &mut HashMap<String, ProcHints>,
+        key: &str,
+        group: &[&Reference],
+        flags: DisambiguationFlags,
+        author_group_lengths: &HashMap<String, usize>,
+    ) -> bool {
+        if !(flags.is_label_mode && flags.year_suffix) {
+            return false;
+        }
+
+        self.apply_year_suffix(hints, group, key, false, author_group_lengths, None);
+        true
     }
 
     fn try_apply_name_partitions(
@@ -269,6 +286,49 @@ impl<'a> Disambiguator<'a> {
             );
         }
 
+        true
+    }
+
+    fn try_apply_givenname_resolution(
+        &self,
+        hints: &mut HashMap<String, ProcHints>,
+        key: &str,
+        group: &[&Reference],
+        flags: DisambiguationFlags,
+        author_group_lengths: &HashMap<String, usize>,
+    ) -> bool {
+        if !(flags.add_givenname && self.check_givenname_resolution(group, None)) {
+            return false;
+        }
+
+        self.apply_resolution(hints, group, key, author_group_lengths, true, None);
+        true
+    }
+
+    fn try_apply_combined_resolution(
+        &self,
+        hints: &mut HashMap<String, ProcHints>,
+        key: &str,
+        group: &[&Reference],
+        flags: DisambiguationFlags,
+        author_group_lengths: &HashMap<String, usize>,
+    ) -> bool {
+        if !flags.add_names || !flags.add_givenname {
+            return false;
+        }
+
+        let Some(min_names_to_show) = self.find_combined_resolution(group) else {
+            return false;
+        };
+
+        self.apply_resolution(
+            hints,
+            group,
+            key,
+            author_group_lengths,
+            true,
+            Some(min_names_to_show),
+        );
         true
     }
 
