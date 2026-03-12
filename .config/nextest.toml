@@ -1,9 +1,5 @@
 # Default profile for local development
 [profile.default]
-# Enable JUnit XML output for CI integration
-junit.path = "target/junit.xml"
-junit.store-success-output = false
-
 # Default parallel execution (auto-detect CPU count)
 test-threads = "num-cpus"
 
@@ -26,9 +22,11 @@ success-output = "immediate"
 failure-output = "immediate"
 # Fail fast on first error
 fail-fast = true
-junit.path = "target/junit.xml"
-junit.store-success-output = false
 test-threads = "num-cpus"
+
+[profile.ci.junit]
+path = "junit.xml"
+store-success-output = false
 
 # For rapid local development
 [profile.quick]
@@ -38,3 +36,17 @@ test-threads = 2
 status-level = "fail"
 success-output = "never"
 failure-output = "immediate"
+
+# Dedicated profile for behavior-report generation.
+[profile.report]
+test-threads = "num-cpus"
+retries = 0
+slow-timeout = { period = "30s", terminate-after = 10 }
+status-level = "pass"
+success-output = "never"
+failure-output = "immediate"
+
+[profile.report.junit]
+path = "junit.xml"
+store-success-output = true
+store-failure-output = true

@@ -102,8 +102,7 @@ fn build_integral_name_style() -> Style {
     }
 }
 
-#[test]
-fn test_citation_item_explicit_integral_name_state_override() {
+fn integral_name_state_overrides_processor_memory() {
     let mut bibliography = indexmap::IndexMap::new();
     bibliography.insert(
         "item1".to_string(),
@@ -144,8 +143,7 @@ fn test_citation_item_explicit_integral_name_state_override() {
     );
 }
 
-#[test]
-fn test_builtin_mla_enables_integral_name_memory() {
+fn embedded_mla_enables_integral_name_memory() {
     let style = citum_schema::embedded::get_embedded_style("mla")
         .expect("mla style should be embedded")
         .expect("mla style should parse");
@@ -166,11 +164,10 @@ fn test_builtin_mla_enables_integral_name_memory() {
     );
 }
 
-// --- Disambiguation Tests ---
+// --- Disambiguation Scenarios ---
 
 /// Test year suffix disambiguation with alphabetical title sorting.
-#[test]
-fn test_disambiguate_yearsuffixandsort() {
+fn disambiguation_same_author_same_year_titles_follow_title_order() {
     let input = vec![
         make_book("item1", "Smith", "John", 2020, "Alpha"),
         make_book("item2", "Smith", "John", 2020, "Beta"),
@@ -182,8 +179,7 @@ fn test_disambiguate_yearsuffixandsort() {
 }
 
 /// Test the upstream YearSuffixAtTwoLevels disambiguation cascade.
-#[test]
-fn test_disambiguate_yearsuffixattwolevels() {
+fn disambiguation_two_level_author_collisions_get_distinct_suffixes() {
     let input = vec![
         make_book_multi_author(
             "ITEM-1",
@@ -304,8 +300,7 @@ fn test_disambiguate_yearsuffixattwolevels() {
 }
 
 /// Test year suffix disambiguation with multiple identical references.
-#[test]
-fn test_disambiguate_yearsuffixmixeddates() {
+fn disambiguation_same_year_articles_increment_suffixes() {
     let input = vec![
         make_article("22", "Ylinen", "A", 1995, "Article A"),
         make_article("21", "Ylinen", "A", 1995, "Article B"),
@@ -318,8 +313,7 @@ fn test_disambiguate_yearsuffixmixeddates() {
 }
 
 /// Test given name expansion for authors with duplicate family names.
-#[test]
-fn test_disambiguate_bycitetwoauthorssamefamilyname() {
+fn disambiguation_duplicate_family_names_expand_given_names_only_where_needed() {
     let input = vec![
         make_book_multi_author(
             "ITEM-1",
@@ -348,8 +342,7 @@ fn test_disambiguate_bycitetwoauthorssamefamilyname() {
 }
 
 /// Test et-al expansion success: Name expansion disambiguates conflicting references.
-#[test]
-fn test_disambiguate_addnamessuccess() {
+fn disambiguation_et_al_conflicts_expand_names_when_that_resolves_them() {
     let input = vec![
         make_book_multi_author(
             "ITEM-1",
@@ -385,8 +378,7 @@ fn test_disambiguate_addnamessuccess() {
 }
 
 /// Test et-al expansion failure: Cascade to year suffix when name expansion fails.
-#[test]
-fn test_disambiguate_addnamesfailure() {
+fn disambiguation_et_al_conflicts_fall_back_to_year_suffixes() {
     let input = vec![
         make_book_multi_author(
             "ITEM-1",
@@ -418,8 +410,7 @@ fn test_disambiguate_addnamesfailure() {
 }
 
 /// Test given name expansion with initial form (initialize_with).
-#[test]
-fn test_disambiguate_bycitegivennameshortforminitializewith() {
+fn disambiguation_initials_are_used_when_short_form_family_names_collide() {
     let input = vec![
         make_book("ITEM-1", "Roe", "Jane", 2000, "Book A"),
         make_book("ITEM-2", "Doe", "John", 2000, "Book B"),
@@ -450,8 +441,7 @@ T Smith, (2000); T Smith, (2000)";
 }
 
 /// Test subsequent et-al: first cite shows full list; repeat cite applies subsequent_min/use_first.
-#[test]
-fn test_subsequent_etal_position_aware() {
+fn subsequent_et_al_thresholds_shorten_the_repeat_citation() {
     use citum_schema::options::{Disambiguation, Processing, ProcessingCustom, ShortenListOptions};
 
     let authors = vec![("Doe", "John"), ("Smith", "Jane"), ("Jones", "Alice")];
@@ -555,8 +545,7 @@ fn test_subsequent_etal_position_aware() {
 }
 
 /// Test year suffix + et-al with varying author list lengths.
-#[test]
-fn test_disambiguate_basedonetalsubsequent() {
+fn subsequent_et_al_configuration_uses_the_subsequent_form_on_repeat() {
     let input = vec![
         make_article_multi_author(
             "ITEM-1",
@@ -599,8 +588,7 @@ fn test_disambiguate_basedonetalsubsequent() {
 }
 
 /// Test conditional disambiguation with identical author-year pairs.
-#[test]
-fn test_disambiguate_bycitedisambiguatecondition() {
+fn disambiguation_conditions_expand_only_the_marked_items() {
     let input = vec![
         make_book_multi_author(
             "ITEM-1",
@@ -622,8 +610,7 @@ fn test_disambiguate_bycitedisambiguatecondition() {
 }
 
 /// Test year suffix with 30 entries (base-26 suffix wrapping).
-#[test]
-fn test_disambiguate_yearsuffixfiftytwoentries() {
+fn disambiguation_suffixes_continue_past_z() {
     let mut input = Vec::new();
     let mut citation_ids = Vec::new();
 
@@ -644,10 +631,9 @@ fn test_disambiguate_yearsuffixfiftytwoentries() {
     run_test_case_native(&input, &citation_items, expected, "citation");
 }
 
-// --- Numeric Citation Tests ---
+// --- Numeric Citation Scenarios ---
 
-#[test]
-fn test_numeric_citation() {
+fn numeric_style_single_reference_renders_bracketed_number() {
     let style = build_numeric_style();
 
     let bib = citum_schema::bib_map![
@@ -669,11 +655,10 @@ fn test_numeric_citation() {
     );
 }
 
-// --- Sorting and Grouping Tests ---
+// --- Citation Sorting And Grouping Scenarios ---
 
 /// Test basic multi-item citation sorting by author.
-#[test]
-fn test_citation_sorting_by_author() {
+fn author_date_sorting_orders_cluster_by_author_then_year() {
     let input = vec![
         make_book("item1", "Kuhn", "Thomas", 1962, "Title A"),
         make_book("item2", "Hawking", "Stephen", 1988, "Title B"),
@@ -686,8 +671,7 @@ fn test_citation_sorting_by_author() {
 }
 
 /// Test grouped citation sorting by year.
-#[test]
-fn test_grouped_citation_sorting_by_year() {
+fn group_sorting_orders_cluster_by_year_within_an_author_group() {
     let input = vec![
         make_book("item1", "Kuhn", "Thomas", 1970, "Title A"),
         make_book("item2", "Kuhn", "Thomas", 1962, "Title B"),
@@ -699,8 +683,7 @@ fn test_grouped_citation_sorting_by_year() {
     run_test_case_native(&input, &citation_items, expected, "citation");
 }
 
-#[test]
-fn test_sorting_empty_dates_citation() {
+fn sorting_empty_dates_pushes_undated_items_to_the_end() {
     // Upstream provenance: CSL fixture `date_SortEmptyDatesCitation`.
     fn make_undated_book(id: &str, title: &str) -> InputReference {
         let mut reference = make_book(id, "Smith", "Jane", 2000, title);
@@ -775,10 +758,9 @@ fn test_sorting_empty_dates_citation() {
     );
 }
 
-// --- Position-Based Citation Tests (Note Styles) ---
+// --- Note Style Position Scenarios ---
 
-#[test]
-fn test_chicago_notes_ibid_renders_compact() {
+fn chicago_notes_immediate_repeat_renders_compact_ibid() {
     use std::path::PathBuf;
 
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -842,8 +824,7 @@ fn test_chicago_notes_ibid_renders_compact() {
     );
 }
 
-#[test]
-fn test_chicago_notes_ibid_with_locator() {
+fn chicago_notes_immediate_repeat_with_locator_keeps_the_locator() {
     use std::path::PathBuf;
 
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -886,8 +867,7 @@ fn test_chicago_notes_ibid_with_locator() {
     );
 }
 
-#[test]
-fn test_chicago_notes_subsequent_renders_short() {
+fn chicago_notes_non_immediate_repeat_uses_the_subsequent_short_form() {
     use std::path::PathBuf;
 
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -930,8 +910,7 @@ fn test_chicago_notes_subsequent_renders_short() {
     );
 }
 
-#[test]
-fn test_ibid_positions_fall_back_to_subsequent_when_no_ibid_override_exists() {
+fn note_styles_without_ibid_overrides_fall_back_to_subsequent() {
     let style = Style {
         info: StyleInfo {
             title: Some("Note Subsequent Fallback".to_string()),
@@ -1011,8 +990,7 @@ fn test_ibid_positions_fall_back_to_subsequent_when_no_ibid_override_exists() {
     );
 }
 
-#[test]
-fn test_oscola_ibid_and_subsequent_render_position_overrides() {
+fn oscola_position_overrides_control_ibid_and_subsequent_forms() {
     use std::path::PathBuf;
 
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -1104,8 +1082,7 @@ fn test_oscola_ibid_and_subsequent_render_position_overrides() {
     );
 }
 
-#[test]
-fn test_oscola_no_ibid_reuses_subsequent_form_for_immediate_repeats() {
+fn oscola_without_ibid_reuses_the_subsequent_form_for_immediate_repeats() {
     use std::path::PathBuf;
 
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -1159,8 +1136,7 @@ fn test_oscola_no_ibid_reuses_subsequent_form_for_immediate_repeats() {
     );
 }
 
-#[test]
-fn test_thomson_reuters_subsequent_renders_locator_short_form() {
+fn thomson_reuters_subsequent_short_form_keeps_the_locator() {
     use std::path::PathBuf;
 
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -1221,4 +1197,214 @@ fn test_thomson_reuters_subsequent_renders_locator_short_form() {
         !subsequent_rendered.contains("1995"),
         "subsequent Thomson Reuters citation should use the shortened repeated-note form: {subsequent_rendered}"
     );
+}
+
+mod integral_name_memory {
+    use super::announce_behavior;
+
+    #[test]
+    fn explicit_integral_name_state_overrides_processor_memory() {
+        announce_behavior(
+            "An explicit integral-name state should force full-form on first cite and short-form on repeat.",
+        );
+        super::integral_name_state_overrides_processor_memory();
+    }
+
+    #[test]
+    fn embedded_mla_enables_integral_name_memory() {
+        announce_behavior(
+            "The embedded MLA style should enable document-scoped integral-name memory with full-then-short behavior.",
+        );
+        super::embedded_mla_enables_integral_name_memory();
+    }
+}
+
+mod disambiguation {
+    use super::announce_behavior;
+
+    #[test]
+    fn same_author_same_year_titles_follow_title_order() {
+        announce_behavior(
+            "Two same-author, same-year works should receive year suffixes in title order.",
+        );
+        super::disambiguation_same_author_same_year_titles_follow_title_order();
+    }
+
+    #[test]
+    fn two_level_author_collisions_get_distinct_suffixes() {
+        announce_behavior(
+            "Colliding author lists at multiple truncation levels should still end up with distinct year suffixes.",
+        );
+        super::disambiguation_two_level_author_collisions_get_distinct_suffixes();
+    }
+
+    #[test]
+    fn same_year_articles_increment_suffixes() {
+        announce_behavior(
+            "Same-year articles should increment year suffixes a, b, c in citation order.",
+        );
+        super::disambiguation_same_year_articles_increment_suffixes();
+    }
+
+    #[test]
+    fn duplicate_family_names_expand_given_names_only_where_needed() {
+        announce_behavior(
+            "Family-name collisions should expand given names only for the ambiguous items.",
+        );
+        super::disambiguation_duplicate_family_names_expand_given_names_only_where_needed();
+    }
+
+    #[test]
+    fn et_al_conflicts_expand_names_when_that_resolves_them() {
+        announce_behavior(
+            "When et al. creates a collision, name expansion should win if it can resolve the ambiguity.",
+        );
+        super::disambiguation_et_al_conflicts_expand_names_when_that_resolves_them();
+    }
+
+    #[test]
+    fn et_al_conflicts_fall_back_to_year_suffixes() {
+        announce_behavior(
+            "When et al. collisions cannot be resolved by names alone, year suffixes should disambiguate the cites.",
+        );
+        super::disambiguation_et_al_conflicts_fall_back_to_year_suffixes();
+    }
+
+    #[test]
+    fn initials_are_used_when_short_form_family_names_collide() {
+        announce_behavior(
+            "Short-form family-name collisions should expand to initials when that is the configured fallback.",
+        );
+        super::disambiguation_initials_are_used_when_short_form_family_names_collide();
+    }
+
+    #[test]
+    fn subsequent_et_al_thresholds_shorten_the_repeat_citation() {
+        announce_behavior(
+            "Subsequent-citation et al. thresholds should shorten a repeat citation more aggressively than the first cite.",
+        );
+        super::subsequent_et_al_thresholds_shorten_the_repeat_citation();
+    }
+
+    #[test]
+    fn subsequent_et_al_configuration_uses_the_subsequent_form_on_repeat() {
+        announce_behavior(
+            "Repeat citations should honor the subsequent et al. configuration instead of reusing first-citation name expansion.",
+        );
+        super::subsequent_et_al_configuration_uses_the_subsequent_form_on_repeat();
+    }
+
+    #[test]
+    fn conditions_expand_only_the_marked_items() {
+        announce_behavior(
+            "Conditional disambiguation should expand only the specifically marked citation items.",
+        );
+        super::disambiguation_conditions_expand_only_the_marked_items();
+    }
+
+    #[test]
+    fn suffixes_continue_past_z() {
+        announce_behavior(
+            "Year suffix generation should continue past z without resetting or truncating.",
+        );
+        super::disambiguation_suffixes_continue_past_z();
+    }
+}
+
+mod numeric_style {
+    use super::announce_behavior;
+
+    #[test]
+    fn single_reference_renders_bracketed_number() {
+        announce_behavior(
+            "A numeric citation style should render a single reference number in brackets.",
+        );
+        super::numeric_style_single_reference_renders_bracketed_number();
+    }
+}
+
+mod sorting_and_grouping {
+    use super::announce_behavior;
+
+    #[test]
+    fn author_date_sorting_orders_cluster_by_author_then_year() {
+        announce_behavior(
+            "Author-date citation clusters should sort entries by author and then by year.",
+        );
+        super::author_date_sorting_orders_cluster_by_author_then_year();
+    }
+
+    #[test]
+    fn group_sorting_orders_cluster_by_year_within_an_author_group() {
+        announce_behavior(
+            "Grouped citation sorting should keep works together by author and then sort years within that group.",
+        );
+        super::group_sorting_orders_cluster_by_year_within_an_author_group();
+    }
+
+    #[test]
+    fn empty_dates_push_undated_items_to_the_end() {
+        announce_behavior(
+            "Undated items should sort after dated items rather than interleaving with them.",
+        );
+        super::sorting_empty_dates_pushes_undated_items_to_the_end();
+    }
+}
+
+mod note_style_positions {
+    use super::announce_behavior;
+
+    #[test]
+    fn chicago_notes_immediate_repeat_renders_compact_ibid() {
+        announce_behavior("An immediate Chicago note repeat should collapse to a compact ibid.");
+        super::chicago_notes_immediate_repeat_renders_compact_ibid();
+    }
+
+    #[test]
+    fn chicago_notes_immediate_repeat_with_locator_keeps_the_locator() {
+        announce_behavior(
+            "An immediate Chicago note repeat with a locator should keep the locator in the ibid form.",
+        );
+        super::chicago_notes_immediate_repeat_with_locator_keeps_the_locator();
+    }
+
+    #[test]
+    fn chicago_notes_non_immediate_repeat_uses_the_subsequent_short_form() {
+        announce_behavior(
+            "A non-immediate Chicago note repeat should use the shortened subsequent-note form instead of ibid.",
+        );
+        super::chicago_notes_non_immediate_repeat_uses_the_subsequent_short_form();
+    }
+
+    #[test]
+    fn note_styles_without_ibid_overrides_fall_back_to_subsequent() {
+        announce_behavior(
+            "Note styles without ibid overrides should fall back to their normal subsequent-note form.",
+        );
+        super::note_styles_without_ibid_overrides_fall_back_to_subsequent();
+    }
+
+    #[test]
+    fn oscola_position_overrides_control_ibid_and_subsequent_forms() {
+        announce_behavior(
+            "OSCOLA note-position overrides should decide when to emit ibid versus a subsequent short form.",
+        );
+        super::oscola_position_overrides_control_ibid_and_subsequent_forms();
+    }
+
+    #[test]
+    fn oscola_without_ibid_reuses_the_subsequent_form_for_immediate_repeats() {
+        announce_behavior(
+            "When OSCOLA disables ibid, even immediate repeats should reuse the subsequent short form.",
+        );
+        super::oscola_without_ibid_reuses_the_subsequent_form_for_immediate_repeats();
+    }
+
+    #[test]
+    fn thomson_reuters_subsequent_short_form_keeps_the_locator() {
+        announce_behavior(
+            "Thomson Reuters repeated notes should shorten the cite while preserving the locator.",
+        );
+        super::thomson_reuters_subsequent_short_form_keeps_the_locator();
+    }
 }

@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+JUNIT_PATH="${ROOT_DIR}/target/nextest/report/junit.xml"
+REPORT_PATH="${ROOT_DIR}/target/test-report.md"
+REPORT_HTML_PATH="${ROOT_DIR}/target/test-report.html"
+
+if [[ $# -eq 0 ]]; then
+  set -- --test citations --test document --test i18n
+fi
+
+mkdir -p "$(dirname "${JUNIT_PATH}")" "$(dirname "${REPORT_PATH}")"
+rm -f "${JUNIT_PATH}" "${REPORT_PATH}" "${REPORT_HTML_PATH}"
+
+set +e
+cargo nextest run --profile report "$@"
+test_status=$?
+set -e
+
+report_status=0
+python3 "${ROOT_DIR}/scripts/generate-test-report.py" \
+  --junit "${JUNIT_PATH}" \
+  --output "${REPORT_PATH}" \
+  --output-html "${REPORT_HTML_PATH}" \
+  --source-root "${ROOT_DIR}" || report_status=$?
+
+if [[ ${test_status} -ne 0 ]]; then
+  exit "${test_status}"
+fi
+
+exit "${report_status}"
