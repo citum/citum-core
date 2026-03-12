@@ -22,6 +22,7 @@ TITLE_OVERRIDES = {
 }
 LOWERCASE_TITLE_WORDS = {"a", "an", "and", "for", "of", "or", "the", "to"}
 PILOT_SOURCES = {
+    "bibliography": Path("crates/citum-engine/tests/bibliography.rs"),
     "citations": Path("crates/citum-engine/tests/citations.rs"),
     "document": Path("crates/citum-engine/tests/document.rs"),
     "i18n": Path("crates/citum-engine/tests/i18n.rs"),
@@ -556,9 +557,9 @@ def build_html_report(scenarios: list[Scenario]) -> str:
     <header>
       <h1>Engine Behavior Coverage</h1>
       <p class="lede">
-        This page is generated from the engine behavior suites in <code>citations</code>,
-        <code>document</code>, and <code>i18n</code>. It is meant for human review, not for detailed
-        CI diagnostics.
+        This page is generated from the engine behavior suites in <code>bibliography</code>,
+        <code>citations</code>, <code>document</code>, and <code>i18n</code>. It is meant for
+        human review, not for detailed CI diagnostics.
       </p>
       <p class="timestamp">Generated at {html.escape(generated_at)}.</p>
       <nav>

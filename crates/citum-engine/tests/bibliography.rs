@@ -294,8 +294,7 @@ fn make_name_particle_style(display_as_sort: DisplayAsSort) -> Style {
 
 // --- Sorting Tests ---
 
-#[test]
-fn test_sorting_by_author() {
+fn sorting_by_author_orders_entries_alphabetically() {
     let style = build_sorted_style(vec![SortSpec {
         key: SortKey::Author,
         ascending: true,
@@ -315,8 +314,7 @@ fn test_sorting_by_author() {
     assert!(result.find("Adam").unwrap() < result.find("Zoe").unwrap());
 }
 
-#[test]
-fn test_sorting_by_year() {
+fn sorting_by_year_places_earlier_years_first() {
     let style = build_sorted_style(vec![SortSpec {
         key: SortKey::Year,
         ascending: true,
@@ -339,8 +337,7 @@ fn test_sorting_by_year() {
     assert!(result.find("2020").unwrap() < result.find("2022").unwrap());
 }
 
-#[test]
-fn test_sorting_empty_dates_bibliography() {
+fn sorting_empty_dates_pushes_undated_items_after_dated_ones() {
     // Upstream provenance: CSL fixture `date_SortEmptyDatesBibliography`.
     let style = build_title_year_sorted_style(vec![
         SortSpec {
@@ -383,8 +380,7 @@ fn test_sorting_empty_dates_bibliography() {
     assert!(result.find("BookC").unwrap() < result.find("BookE").unwrap());
 }
 
-#[test]
-fn test_container_title_short_from_journal_abbreviation() {
+fn container_title_short_uses_journal_abbreviation_when_present() {
     // Upstream provenance: CSL fixtures `bugreports_ContainerTitleShort` and
     // `variables_ContainerTitleShort`.
     let style = build_container_title_short_style(TitleType::ParentSerial);
@@ -408,8 +404,7 @@ fn test_container_title_short_from_journal_abbreviation() {
     );
 }
 
-#[test]
-fn test_container_title_short_from_container_title_short_field() {
+fn container_title_short_prefers_explicit_short_field() {
     // Upstream provenance: CSL fixtures `bugreports_ContainerTitleShort` and
     // `variables_ContainerTitleShort`.
     let style = build_container_title_short_style(TitleType::ParentMonograph);
@@ -433,8 +428,7 @@ fn test_container_title_short_from_container_title_short_field() {
     );
 }
 
-#[test]
-fn test_sorting_multiple_keys() {
+fn sorting_multiple_keys_applies_secondary_ordering_within_author_groups() {
     let style = build_sorted_style(vec![
         SortSpec {
             key: SortKey::Author,
@@ -470,8 +464,7 @@ fn test_sorting_multiple_keys() {
     assert!(result.find("Smith, J 2022").unwrap() < result.find("Smith, J 2020").unwrap());
 }
 
-#[test]
-fn test_author_date_processing_defaults_bibliography_to_author_date_title() {
+fn author_date_processing_defaults_bibliography_to_author_date_title_order() {
     let style = build_processing_style(Processing::AuthorDate);
 
     let mut bib = indexmap::IndexMap::new();
@@ -490,8 +483,7 @@ fn test_author_date_processing_defaults_bibliography_to_author_date_title() {
     assert!(result.find("Alpha Work").unwrap() < result.find("Zeta Work").unwrap());
 }
 
-#[test]
-fn test_note_processing_defaults_bibliography_to_author_title_date() {
+fn note_processing_defaults_bibliography_to_author_title_date_order() {
     let style = build_processing_style(Processing::Note);
 
     let mut bib = indexmap::IndexMap::new();
@@ -512,8 +504,7 @@ fn test_note_processing_defaults_bibliography_to_author_title_date() {
 
 // --- Substitution Tests ---
 
-#[test]
-fn test_subsequent_author_substitute() {
+fn subsequent_author_substitute_replaces_repeated_author_lines() {
     let style = make_style_with_substitute(Some("———".to_string()));
 
     let bib = citum_schema::bib_map![
@@ -529,8 +520,7 @@ fn test_subsequent_author_substitute() {
     assert_eq!(result, expected);
 }
 
-#[test]
-fn test_magic_subsequentauthorsubstitute() {
+fn magic_subsequent_author_substitute_reuses_the_full_author_group() {
     // Upstream provenance: CSL fixture `magic_SubsequentAuthorSubstitute`.
     let style = Style {
         info: StyleInfo {
@@ -576,8 +566,7 @@ fn test_magic_subsequentauthorsubstitute() {
     );
 }
 
-#[test]
-fn test_no_substitute_if_different() {
+fn subsequent_author_substitute_does_not_apply_to_different_authors() {
     let style = make_style_with_substitute(Some("———".to_string()));
 
     let bib = citum_schema::bib_map![
@@ -593,8 +582,7 @@ fn test_no_substitute_if_different() {
     assert_eq!(result, expected);
 }
 
-#[test]
-fn test_name_hyphenatednondroppingparticle1() {
+fn hyphenated_non_dropping_particles_sort_correctly_in_sort_order() {
     // Upstream provenance: CSL fixture `name_HyphenatedNonDroppingParticle1`.
     let style = make_name_particle_style(DisplayAsSort::All);
 
@@ -609,8 +597,7 @@ fn test_name_hyphenatednondroppingparticle1() {
     assert_eq!(result, "Marple, Mary\n\nOne, Alan al-\n\nParticiple, Paul");
 }
 
-#[test]
-fn test_name_hyphenatednondroppingparticle2() {
+fn hyphenated_non_dropping_particles_render_correctly_in_display_order() {
     // Upstream provenance: CSL fixture `name_HyphenatedNonDroppingParticle2`.
     let style = make_name_particle_style(DisplayAsSort::None);
 
@@ -627,8 +614,7 @@ fn test_name_hyphenatednondroppingparticle2() {
 
 // --- Numeric Bibliography Tests ---
 
-#[test]
-fn test_numeric_bibliography() {
+fn numeric_bibliography_uses_assigned_citation_numbers() {
     let style = build_numeric_style();
 
     let bib =
@@ -643,8 +629,7 @@ fn test_numeric_bibliography() {
     assert_eq!(result, "1. John Smith (2020)");
 }
 
-#[test]
-fn test_anonymous_works_sort_by_title_without_article() {
+fn anonymous_works_sort_by_title_ignoring_leading_articles() {
     let style = build_title_year_sorted_style(vec![
         SortSpec {
             key: SortKey::Author,
@@ -675,8 +660,7 @@ fn test_anonymous_works_sort_by_title_without_article() {
     assert!(result.find("The Chicago").unwrap() < result.find("A Guide").unwrap());
 }
 
-#[test]
-fn test_anonymous_same_year_tiebreak() {
+fn anonymous_works_with_the_same_year_still_sort_by_year_first() {
     let style = build_sorted_style(vec![
         SortSpec {
             key: SortKey::Author,
@@ -707,4 +691,152 @@ fn test_anonymous_same_year_tiebreak() {
 
     // 2019 entry should come before 2020 entries
     assert!(result.find("2019").unwrap() < result.find("2020").unwrap());
+}
+
+mod sorting {
+    use super::announce_behavior;
+
+    #[test]
+    fn author_sorting_orders_entries_alphabetically() {
+        announce_behavior(
+            "A bibliography sorted by author should place entries in alphabetical family-name order.",
+        );
+        super::sorting_by_author_orders_entries_alphabetically();
+    }
+
+    #[test]
+    fn year_sorting_places_earlier_years_first() {
+        announce_behavior(
+            "A bibliography sorted by year should place earlier years before later years.",
+        );
+        super::sorting_by_year_places_earlier_years_first();
+    }
+
+    #[test]
+    fn empty_dates_move_undated_entries_after_dated_ones() {
+        announce_behavior(
+            "When sorting by year, undated bibliography entries should fall after the dated entries.",
+        );
+        super::sorting_empty_dates_pushes_undated_items_after_dated_ones();
+    }
+
+    #[test]
+    fn multiple_sort_keys_apply_secondary_ordering_inside_author_groups() {
+        announce_behavior(
+            "Multiple bibliography sort keys should apply the secondary key within an author group.",
+        );
+        super::sorting_multiple_keys_applies_secondary_ordering_within_author_groups();
+    }
+
+    #[test]
+    fn author_date_processing_uses_author_date_title_as_the_default_bibliography_sort() {
+        announce_behavior(
+            "Author-date processing should default bibliography ordering to author, then date, then title.",
+        );
+        super::author_date_processing_defaults_bibliography_to_author_date_title_order();
+    }
+
+    #[test]
+    fn note_processing_uses_author_title_date_as_the_default_bibliography_sort() {
+        announce_behavior(
+            "Note-style processing should default bibliography ordering to author, then title, then date.",
+        );
+        super::note_processing_defaults_bibliography_to_author_title_date_order();
+    }
+
+    #[test]
+    fn anonymous_titles_ignore_leading_articles_during_sorting() {
+        announce_behavior(
+            "Anonymous bibliography entries should ignore leading articles like The or A when sorting by title.",
+        );
+        super::anonymous_works_sort_by_title_ignoring_leading_articles();
+    }
+
+    #[test]
+    fn anonymous_same_year_entries_keep_years_in_order_before_tiebreaks() {
+        announce_behavior(
+            "Anonymous entries should still respect year ordering before applying same-year tiebreakers.",
+        );
+        super::anonymous_works_with_the_same_year_still_sort_by_year_first();
+    }
+}
+
+mod title_short_resolution {
+    use super::announce_behavior;
+
+    #[test]
+    fn journal_abbreviations_populate_container_title_short() {
+        announce_behavior(
+            "A journal abbreviation should populate container-title-short in bibliography rendering.",
+        );
+        super::container_title_short_uses_journal_abbreviation_when_present();
+    }
+
+    #[test]
+    fn explicit_container_title_short_fields_take_precedence() {
+        announce_behavior(
+            "An explicit container-title-short field should take precedence over the long container title.",
+        );
+        super::container_title_short_prefers_explicit_short_field();
+    }
+}
+
+mod substitution {
+    use super::announce_behavior;
+
+    #[test]
+    fn repeated_authors_can_be_replaced_with_the_substitute_marker() {
+        announce_behavior(
+            "Repeated bibliography authors should be replaced by the configured subsequent-author substitute marker.",
+        );
+        super::subsequent_author_substitute_replaces_repeated_author_lines();
+    }
+
+    #[test]
+    fn repeated_multi_author_groups_can_reuse_the_substitute_marker() {
+        announce_behavior(
+            "Repeated multi-author bibliography entries should reuse the substitute marker for the full repeated author group.",
+        );
+        super::magic_subsequent_author_substitute_reuses_the_full_author_group();
+    }
+
+    #[test]
+    fn different_authors_do_not_trigger_the_substitute_marker() {
+        announce_behavior(
+            "Different bibliography authors should never trigger the subsequent-author substitute marker.",
+        );
+        super::subsequent_author_substitute_does_not_apply_to_different_authors();
+    }
+}
+
+mod contributor_particles {
+    use super::announce_behavior;
+
+    #[test]
+    fn hyphenated_particles_sort_correctly_in_sort_order() {
+        announce_behavior(
+            "Hyphenated non-dropping particles should sort correctly when contributor names are rendered in sort order.",
+        );
+        super::hyphenated_non_dropping_particles_sort_correctly_in_sort_order();
+    }
+
+    #[test]
+    fn hyphenated_particles_render_correctly_in_display_order() {
+        announce_behavior(
+            "Hyphenated non-dropping particles should stay attached correctly when contributor names are rendered in display order.",
+        );
+        super::hyphenated_non_dropping_particles_render_correctly_in_display_order();
+    }
+}
+
+mod numeric_styles {
+    use super::announce_behavior;
+
+    #[test]
+    fn numeric_bibliographies_use_the_assigned_citation_number() {
+        announce_behavior(
+            "A numeric bibliography should reuse the citation number assigned during citation rendering.",
+        );
+        super::numeric_bibliography_uses_assigned_citation_numbers();
+    }
 }
