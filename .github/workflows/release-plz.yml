@@ -39,6 +39,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Prepare released manifest snapshot
+        id: released_manifest
+        shell: bash
+        run: |
+          latest_tag=$(git tag --sort=version:refname -l 'v*' | tail -n 1)
+          if [[ -z "${latest_tag}" ]]; then
+            echo "::error::No root release tag matching v* was found."
+            exit 1
+          fi
+
+          snapshot_dir="${RUNNER_TEMP}/release-plz-registry-manifest"
+          git worktree add --detach "${snapshot_dir}" "${latest_tag}"
+          echo "tag=${latest_tag}" >> "${GITHUB_OUTPUT}"
+          echo "manifest_path=${snapshot_dir}/Cargo.toml" >> "${GITHUB_OUTPUT}"
+          echo "Using released manifest from ${latest_tag}"
+
       - name: Run release-plz release-pr
         id: release_pr
         shell: bash
@@ -50,6 +66,7 @@ jobs:
             --git-token "${GITHUB_TOKEN}" \
             --repo-url "https://github.com/${GITHUB_REPOSITORY}" \
             --config .release-plz.toml \
+            --registry-manifest-path "${{ steps.released_manifest.outputs.manifest_path }}" \
             --forge github \
             -v \
             -o json 2>"${stderr_file}"); then
@@ -79,7 +96,14 @@ jobs:
           release_output=$(release-plz release \
             --git-token "${GITHUB_TOKEN}" \
             --config .release-plz.toml \
+            --registry-manifest-path "${{ steps.released_manifest.outputs.manifest_path }}" \
             --forge github \
             -v \
             -o json)
           echo "release_output: ${release_output}"
+
+      - name: Clean up released manifest snapshot
+        if: always()
+        shell: bash
+        run: |
+          git worktree remove --force "${RUNNER_TEMP}/release-plz-registry-manifest"
