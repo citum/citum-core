@@ -7,7 +7,7 @@ then drill into strategy and implementation details only as needed.
 
 1. [`TIER_STATUS.md`](./TIER_STATUS.md) - current strict oracle style status.
 2. [`compat.html`](https://citum.github.io/citum-core/compat.html) - published compatibility snapshot.
-3. `behavior-report.html` - published engine behavior coverage page generated in CI, with source locations for the pilot suites.
+3. `behavior-report.html` - published engine behavior coverage page generated in CI, with source locations for the bibliography, citation, document, and i18n suites.
 4. [`guides/RENDERING_WORKFLOW.md`](./guides/RENDERING_WORKFLOW.md) - operational rendering and verification workflow.
 5. [`architecture/ROADMAP.md`](./architecture/ROADMAP.md) - strategic direction and phase sequencing.
 

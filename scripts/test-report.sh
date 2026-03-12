@@ -7,7 +7,7 @@ REPORT_PATH="${ROOT_DIR}/target/test-report.md"
 REPORT_HTML_PATH="${ROOT_DIR}/target/test-report.html"
 
 if [[ $# -eq 0 ]]; then
-  set -- --test citations --test document --test i18n
+  set -- --test bibliography --test citations --test document --test i18n
 fi
 
 mkdir -p "$(dirname "${JUNIT_PATH}")" "$(dirname "${REPORT_PATH}")"
