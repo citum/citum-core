@@ -4,8 +4,15 @@ use citum_schema::locale::{GeneralTerm, TermForm};
 use citum_schema::template::{NumberVariable, SimpleVariable, TemplateComponent};
 use csl_legacy::model::{CslNode, Formatting, Label, Names, Text};
 
+fn announce_behavior(summary: &str) {
+    println!("behavior: {summary}");
+}
+
 #[test]
 fn test_upsample_term() {
+    announce_behavior(
+        "A CSL text term migrates to a Citum term node with the matching normalized term and default long form.",
+    );
     let legacy_node = CslNode::Text(Text {
         term: Some("in".to_string()),
         formatting: Formatting::default(),
@@ -37,6 +44,9 @@ fn test_upsample_term() {
 
 #[test]
 fn test_upsample_term_with_form() {
+    announce_behavior(
+        "An unknown CSL term value stays literal during migration instead of being coerced into an unsupported Citum term.",
+    );
     let legacy_node = CslNode::Text(Text {
         term: Some("editor".to_string()),
         form: Some("short".to_string()),
@@ -70,6 +80,9 @@ fn test_upsample_term_with_form() {
 
 #[test]
 fn test_upsample_term_preserves_strip_periods() {
+    announce_behavior(
+        "A CSL term with strip-periods keeps that formatting flag when migrated into a Citum term node.",
+    );
     let legacy_node = CslNode::Text(Text {
         term: Some("in".to_string()),
         formatting: Formatting::default(),
@@ -100,6 +113,9 @@ fn test_upsample_term_preserves_strip_periods() {
 
 #[test]
 fn test_upsample_label_preserves_strip_periods() {
+    announce_behavior(
+        "A CSL label keeps strip-periods metadata when migration lifts it into Citum variable label settings.",
+    );
     let legacy_node = CslNode::Label(Label {
         variable: Some("page".to_string()),
         form: Some("short".to_string()),
@@ -130,6 +146,9 @@ fn test_upsample_label_preserves_strip_periods() {
 
 #[test]
 fn test_upsample_strip_periods_preserves_none_and_false() {
+    announce_behavior(
+        "Migration preserves both omitted and explicit false strip-periods settings instead of normalizing them away.",
+    );
     let upsampler = Upsampler::new();
 
     let term_nodes = upsampler.upsample_nodes(&[CslNode::Text(Text {
@@ -177,6 +196,9 @@ fn test_upsample_strip_periods_preserves_none_and_false() {
 
 #[test]
 fn test_template_compiler_preserves_strip_periods_through_compilation() {
+    announce_behavior(
+        "Strip-periods formatting survives the full CSL-to-Citum migration pipeline through template compilation for terms, labels, and contributors.",
+    );
     let upsampler = Upsampler::new();
     let compiler = TemplateCompiler;
     let legacy_nodes = vec![

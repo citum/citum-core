@@ -8,13 +8,13 @@ then drill into strategy and implementation details only as needed.
 1. [`TIER_STATUS.md`](./TIER_STATUS.md) - current strict oracle style status.
 2. [`compat.html`](https://citum.github.io/citum-core/compat.html) - published compatibility snapshot.
 3. `behavior-report.html` - published engine behavior coverage page generated in CI, with source locations for the selected engine behavior suites.
-4. `migration-behavior-report.html` - published migration behavior coverage page generated in CI, with source locations for reviewer-facing `citum-migrate` suites.
+4. `migration-behavior-report.html` - published CSL-to-Citum migration behavior coverage page generated in CI, with source locations for reviewer-facing `citum-migrate` suites.
 5. [`guides/RENDERING_WORKFLOW.md`](./guides/RENDERING_WORKFLOW.md) - operational rendering and verification workflow.
 6. [`architecture/ROADMAP.md`](./architecture/ROADMAP.md) - strategic direction and phase sequencing.
 
 Generate the compatibility snapshot locally with `node scripts/report-core.js --output-html docs/compat.html`.
 Generate the local behavior report with `./scripts/test-report.sh`.
-Generate the local migration behavior report with `./scripts/migration-test-report.sh`.
+Generate the local CSL-to-Citum migration behavior report with `./scripts/migration-test-report.sh`.
 
 ## Active Guides
 
