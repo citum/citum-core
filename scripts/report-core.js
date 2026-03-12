@@ -2078,6 +2078,7 @@ function generateHtmlHeader(report) {
             <div class="mt-5 flex flex-wrap gap-3 text-sm font-medium">
                 <a class="text-primary hover:underline" href="compat.html">Compatibility</a>
                 <a class="text-slate-600 hover:text-primary transition-colors" href="behavior-report.html">Engine Behavior Coverage</a>
+                <a class="text-slate-600 hover:text-primary transition-colors" href="migration-behavior-report.html">Migration Behavior Coverage</a>
             </div>
         </div>
     </header>

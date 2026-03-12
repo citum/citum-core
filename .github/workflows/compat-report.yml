@@ -61,6 +61,8 @@ jobs:
         run: |
           ./scripts/test-report.sh
           cp target/test-report.html docs/behavior-report.html
+          ./scripts/migration-test-report.sh
+          cp target/migration-behavior-report.html docs/migration-behavior-report.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

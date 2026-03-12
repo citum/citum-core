@@ -14,6 +14,8 @@ description: >
 **LLM Access:** Yes
 **Purpose:** Keep engine behavior tests readable to humans and keep the generated behavior report aligned with those tests.
 
+This skill is intentionally engine-specific. Use `migration-behavior-reporting` for `citum-migrate`.
+
 ## Use This Skill When
 - You are converting another `crates/citum-engine/tests/*.rs` integration suite into behavior-oriented scenarios.
 - You are adding another engine suite to the generated behavior report.

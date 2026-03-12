@@ -5,8 +5,15 @@ use csl_legacy::model::{
     Text,
 };
 
+fn announce_behavior(summary: &str) {
+    println!("behavior: {summary}");
+}
+
 #[test]
 fn test_extract_type_conditional_substitute() {
+    announce_behavior(
+        "Type-conditional substitute branches keep the shared fallback template while preserving the type-specific override.",
+    );
     // 1. Setup CSL with type-conditional substitute
     // <names variable="author">
     //   <substitute>
