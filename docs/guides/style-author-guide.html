@@ -95,13 +95,13 @@
                 <div class="hidden md:flex items-center gap-8">
                     <a
                         class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                        href="../index.html#features"
-                        >Features</a
+                        href="https://citum.org"
+                        >Home</a
                     >
                     <a
                         class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                        href="../index.html#roadmap"
-                        >Status</a
+                        href="../index.html"
+                        >Docs</a
                     >
                     <a
                         class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
@@ -120,8 +120,8 @@
                     >
                     <a
                         class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                        href="../compat.html"
-                        >Compat</a
+                        href="../reports.html"
+                        >Reports</a
                     >
                     <a
                         class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
@@ -143,6 +143,30 @@
                         </svg>
                         Source
                     </a>
+                </div>
+                <button
+                    type="button"
+                    class="md:hidden inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-slate-700"
+                    data-nav-toggle
+                    aria-expanded="false"
+                    aria-controls="mobile-nav"
+                >
+                    <span class="material-icons text-[20px]">menu</span>
+                </button>
+            </div>
+            <div
+                id="mobile-nav"
+                class="md:hidden hidden border-t border-slate-200 bg-background-light/95 px-6 py-4"
+                data-mobile-menu
+            >
+                <div class="flex flex-col gap-3 text-sm font-medium text-slate-700">
+                    <a class="hover:text-primary transition-colors" href="https://citum.org">Home</a>
+                    <a class="hover:text-primary transition-colors" href="../index.html">Docs</a>
+                    <a class="hover:text-primary transition-colors" href="../interactive-demo.html">Demo</a>
+                    <a class="hover:text-primary transition-colors" href="../examples.html">Examples</a>
+                    <a class="text-primary font-semibold" href="style-author-guide.html">Style Guide</a>
+                    <a class="hover:text-primary transition-colors" href="../reports.html">Reports</a>
+                    <a class="hover:text-primary transition-colors" href="https://github.com/citum/citum-core">GitHub</a>
                 </div>
             </div>
         </nav>
@@ -1511,8 +1535,8 @@
                         >
                         <a
                             class="hover:text-primary transition-colors"
-                            href="https://github.com/bdarcus/style-hub"
-                            >Styles Registry</a
+                            href="../reports.html"
+                            >Reports</a
                         >
                     </div>
                     <div class="text-sm text-slate-400">
@@ -1521,5 +1545,18 @@
                 </div>
             </div>
         </footer>
+
+        <script>
+            const navToggle = document.querySelector("[data-nav-toggle]");
+            const mobileMenu = document.querySelector("[data-mobile-menu]");
+
+            if (navToggle && mobileMenu) {
+                navToggle.addEventListener("click", () => {
+                    const expanded = navToggle.getAttribute("aria-expanded") === "true";
+                    navToggle.setAttribute("aria-expanded", String(!expanded));
+                    mobileMenu.classList.toggle("hidden", expanded);
+                });
+            }
+        </script>
     </body>
 </html>

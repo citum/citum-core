@@ -563,6 +563,7 @@ def build_html_report(scenarios: list[Scenario]) -> str:
       <p class="timestamp">Generated at {html.escape(generated_at)}.</p>
       <nav>
         <a href="index.html">Docs home</a>
+        <a href="reports.html">Reports</a>
         <a href="compat.html">Compatibility dashboard</a>
       </nav>
     </header>

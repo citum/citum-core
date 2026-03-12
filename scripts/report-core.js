@@ -2026,15 +2026,7 @@ function generateHtmlHeader(report) {
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
                     href="https://citum.org">Home</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="https://docs.citum.org">Docs</a>
-                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="https://hub.citum.org">Hub</a>
-                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="https://labs.citum.org">Labs</a>
-                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="index.html#features">Features</a>
-                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="index.html#roadmap">Status</a>
+                    href="index.html">Docs</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
                     href="interactive-demo.html">Demo</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
@@ -2042,9 +2034,25 @@ function generateHtmlHeader(report) {
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
                     href="guides/style-author-guide.html">Style Guide</a>
                 <a class="text-sm font-medium text-primary font-semibold"
-                    href="compat.html">Compat</a>
+                    href="reports.html">Reports</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
                     href="https://github.com/citum/citum-core">GitHub</a>
+            </div>
+            <button type="button"
+                class="md:hidden inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-slate-700"
+                data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+                <span class="material-icons text-[20px]">menu</span>
+            </button>
+        </div>
+        <div id="mobile-nav" class="md:hidden hidden border-t border-slate-200 bg-background-light/95 px-6 py-4" data-mobile-menu>
+            <div class="flex flex-col gap-3 text-sm font-medium text-slate-700">
+                <a class="hover:text-primary transition-colors" href="https://citum.org">Home</a>
+                <a class="hover:text-primary transition-colors" href="index.html">Docs</a>
+                <a class="hover:text-primary transition-colors" href="interactive-demo.html">Demo</a>
+                <a class="hover:text-primary transition-colors" href="examples.html">Examples</a>
+                <a class="hover:text-primary transition-colors" href="guides/style-author-guide.html">Style Guide</a>
+                <a class="text-primary font-semibold" href="reports.html">Reports</a>
+                <a class="hover:text-primary transition-colors" href="https://github.com/citum/citum-core">GitHub</a>
             </div>
         </div>
     </nav>
@@ -2066,6 +2074,10 @@ function generateHtmlHeader(report) {
                     <span class="material-icons text-sm">code</span>
                     <span>${escapeHtml(report.commit)}</span>
                 </div>
+            </div>
+            <div class="mt-5 flex flex-wrap gap-3 text-sm font-medium">
+                <a class="text-primary hover:underline" href="compat.html">Compatibility</a>
+                <a class="text-slate-600 hover:text-primary transition-colors" href="behavior-report.html">Engine Behavior Coverage</a>
             </div>
         </div>
     </header>
@@ -2680,9 +2692,9 @@ function generateHtmlFooter() {
                 </div>
                 <div class="flex gap-8 text-sm font-medium text-slate-500">
                     <a class="hover:text-primary transition-colors" href="https://github.com/citum/citum-core">GitHub</a>
-                    <a class="hover:text-primary transition-colors" href="index.html#roadmap">Status</a>
+                    <a class="hover:text-primary transition-colors" href="index.html">Docs</a>
                     <a class="hover:text-primary transition-colors" href="examples.html">Examples</a>
-                    <a class="hover:text-primary transition-colors" href="compat.html">Compat</a>
+                    <a class="hover:text-primary transition-colors" href="reports.html">Reports</a>
                 </div>
                 <div class="text-sm text-slate-400">
                     © 2026 Citum Project. MIT Licensed.
@@ -2692,6 +2704,16 @@ function generateHtmlFooter() {
     </footer>
 
     <script>
+        const navToggle = document.querySelector("[data-nav-toggle]");
+        const mobileMenu = document.querySelector("[data-mobile-menu]");
+        if (navToggle && mobileMenu) {
+            navToggle.addEventListener("click", () => {
+                const expanded = navToggle.getAttribute("aria-expanded") === "true";
+                navToggle.setAttribute("aria-expanded", String(!expanded));
+                mobileMenu.classList.toggle("hidden", expanded);
+            });
+        }
+
         const sortState = { key: null, direction: 1 };
         const filterState = { query: '' };
 
