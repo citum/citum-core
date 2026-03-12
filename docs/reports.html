@@ -104,13 +104,13 @@
         <div class="max-w-5xl mx-auto">
             <h1 class="text-4xl md:text-5xl font-mono font-bold tracking-tight text-slate-900 mb-6">Reports</h1>
             <p class="text-xl text-slate-500 max-w-3xl leading-relaxed">
-                Current generated reports for compatibility, engine behavior coverage, and release-facing verification snapshots.
+                Current generated reports for compatibility, engine behavior coverage, migration behavior coverage, and release-facing verification snapshots.
             </p>
         </div>
     </header>
 
     <main class="px-6 py-16">
-        <div class="max-w-5xl mx-auto grid gap-8 md:grid-cols-2">
+        <div class="max-w-5xl mx-auto grid gap-8 md:grid-cols-2 xl:grid-cols-3">
             <a href="compat.html" class="report-card block rounded-2xl border border-slate-200 p-8">
                 <div class="flex items-center gap-3 mb-5">
                     <span class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
@@ -132,9 +132,22 @@
                     <h2 class="text-2xl font-bold text-slate-900">Engine Behavior Coverage</h2>
                 </div>
                 <p class="text-slate-500 leading-relaxed">
-                    Human-readable behavior coverage for the engine bibliography, citation, document, and i18n suites, with source file and line references.
+                    Human-readable behavior coverage for selected engine suites, with source file and line references.
                 </p>
                 <p class="mt-5 text-xs font-mono text-slate-400">Generated from `scripts/test-report.sh`.</p>
+            </a>
+
+            <a href="migration-behavior-report.html" class="report-card block rounded-2xl border border-slate-200 p-8">
+                <div class="flex items-center gap-3 mb-5">
+                    <span class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                        <span class="material-icons text-sm">swap_horiz</span>
+                    </span>
+                    <h2 class="text-2xl font-bold text-slate-900">Migration Behavior Coverage</h2>
+                </div>
+                <p class="text-slate-500 leading-relaxed">
+                    Reviewer-facing migration scenarios for selected `citum-migrate` suites, with source file and line references.
+                </p>
+                <p class="mt-5 text-xs font-mono text-slate-400">Generated from `scripts/migration-test-report.sh`.</p>
             </a>
         </div>
     </main>

@@ -21,6 +21,11 @@ TITLE_OVERRIDES = {
     "i18n": "I18n",
 }
 LOWERCASE_TITLE_WORDS = {"a", "an", "and", "for", "of", "or", "the", "to"}
+DEFAULT_REPORT_TITLE = "Engine Behavior Coverage"
+DEFAULT_REPORT_LEDE = (
+    "This page is generated from selected engine behavior suites. "
+    "It is meant for human review, not for detailed CI diagnostics."
+)
 PILOT_SOURCES = {
     "bibliography": Path("crates/citum-engine/tests/bibliography.rs"),
     "citations": Path("crates/citum-engine/tests/citations.rs"),
@@ -72,6 +77,23 @@ def parse_args() -> argparse.Namespace:
         default=".",
         help="Repository root used to resolve source file paths.",
     )
+    parser.add_argument(
+        "--report-title",
+        default=DEFAULT_REPORT_TITLE,
+        help="Human-facing title for the report.",
+    )
+    parser.add_argument(
+        "--report-lede",
+        default=DEFAULT_REPORT_LEDE,
+        help="Introductory sentence shown near the top of the report.",
+    )
+    parser.add_argument(
+        "--source-map",
+        action="append",
+        default=[],
+        metavar="BINARY=PATH",
+        help="Additional binary-to-source mapping for source references.",
+    )
     return parser.parse_args()
 
 
@@ -82,7 +104,7 @@ def strip_tag(tag: str) -> str:
 def titleize(segment: str) -> str:
     if segment in TITLE_OVERRIDES:
         return TITLE_OVERRIDES[segment]
-    words = segment.split("_")
+    words = [word for word in re.split(r"[_-]+", segment) if word]
     titled: list[str] = []
     for index, word in enumerate(words):
         if index > 0 and word in LOWERCASE_TITLE_WORDS:
@@ -112,6 +134,8 @@ def derive_domain(binary_name: str, test_name: str) -> str:
     test_parts = [part for part in test_name.split("::") if part]
     base = titleize(binary_name) if binary_name else "Tests"
     raw_module_parts = test_parts[:-1]
+    if raw_module_parts == ["tests"]:
+        return base
     if len(raw_module_parts) == 1 and (
         raw_module_parts[0].startswith(("given_", "when_", "then_"))
         or "_when_" in raw_module_parts[0]
@@ -127,11 +151,12 @@ def derive_domain(binary_name: str, test_name: str) -> str:
 def summarize_counts(entries: list[Scenario]) -> str:
     failed = sum(1 for entry in entries if entry.status == "failed")
     skipped = sum(1 for entry in entries if entry.status == "skipped")
+    scenario_label = "scenario" if len(entries) == 1 else "scenarios"
 
     if failed == 0 and skipped == 0:
-        return f"{len(entries)} scenarios."
+        return f"{len(entries)} {scenario_label}."
 
-    parts = [f"{len(entries)} scenarios"]
+    parts = [f"{len(entries)} {scenario_label}"]
     if failed:
         parts.append(f"{failed} failed")
     if skipped:
@@ -229,7 +254,19 @@ def format_source_reference(scenario: Scenario) -> str | None:
     return f"{scenario.source_file}:{scenario.source_start_line}"
 
 
-def collect_scenarios(junit_path: Path, source_root: Path) -> list[Scenario]:
+def parse_source_maps(entries: list[str]) -> dict[str, Path]:
+    source_map = dict(PILOT_SOURCES)
+    for entry in entries:
+        if "=" not in entry:
+            raise ValueError(f"invalid --source-map value: {entry!r}")
+        binary_name, path = entry.split("=", 1)
+        source_map[binary_name.strip()] = Path(path.strip())
+    return source_map
+
+
+def collect_scenarios(
+    junit_path: Path, source_root: Path, source_map: dict[str, Path]
+) -> list[Scenario]:
     tree = ET.parse(junit_path)
     root = tree.getroot()
     scenarios: list[Scenario] = []
@@ -263,7 +300,7 @@ def collect_scenarios(junit_path: Path, source_root: Path) -> list[Scenario]:
                 scenario=scenario,
                 status=parse_status(testcase),
                 derived_from_name=derived_from_name,
-                source_file=PILOT_SOURCES.get(binary_name),
+                source_file=source_map.get(binary_name),
                 source_function=derive_source_function(test_name),
                 source_start_line=None,
                 source_end_line=None,
@@ -274,7 +311,9 @@ def collect_scenarios(junit_path: Path, source_root: Path) -> list[Scenario]:
     return scenarios
 
 
-def build_markdown_report(scenarios: list[Scenario]) -> str:
+def build_markdown_report(
+    scenarios: list[Scenario], report_title: str, report_lede: str
+) -> str:
     generated_at = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat()
     domains: dict[str, list[Scenario]] = defaultdict(list)
     families: dict[str, list[Scenario]] = defaultdict(list)
@@ -283,7 +322,9 @@ def build_markdown_report(scenarios: list[Scenario]) -> str:
         families[scenario.family].append(scenario)
 
     lines: list[str] = []
-    lines.append("# Test Behavior Report")
+    lines.append(f"# {report_title}")
+    lines.append("")
+    lines.append(report_lede)
     lines.append("")
     lines.append(f"Generated at `{generated_at}`.")
     lines.append("")
@@ -307,7 +348,8 @@ def build_markdown_report(scenarios: list[Scenario]) -> str:
                     + ", ".join(family_domains[:-1])
                     + f", and {family_domains[-1]}"
                 )
-        lines.append(f"- **{family}**: {len(entries)} scenarios{domain_text}.")
+        scenario_label = "scenario" if len(entries) == 1 else "scenarios"
+        lines.append(f"- **{family}**: {len(entries)} {scenario_label}{domain_text}.")
 
     failures = [scenario for scenario in scenarios if scenario.status == "failed"]
     if failures:
@@ -347,7 +389,9 @@ def build_markdown_report(scenarios: list[Scenario]) -> str:
     return "\n".join(lines)
 
 
-def build_html_report(scenarios: list[Scenario]) -> str:
+def build_html_report(
+    scenarios: list[Scenario], report_title: str, report_lede: str
+) -> str:
     generated_at = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat()
     domains: dict[str, list[Scenario]] = defaultdict(list)
     families: dict[str, list[Scenario]] = defaultdict(list)
@@ -373,8 +417,9 @@ def build_html_report(scenarios: list[Scenario]) -> str:
                     + ", ".join(family_domains[:-1])
                     + f", and {family_domains[-1]}"
                 )
+        scenario_label = "scenario" if len(entries) == 1 else "scenarios"
         overview_items.append(
-            f"<li><strong>{html.escape(family)}</strong>: {len(entries)} scenarios{html.escape(domain_text)}.</li>"
+            f"<li><strong>{html.escape(family)}</strong>: {len(entries)} {scenario_label}{html.escape(domain_text)}.</li>"
         )
 
     section_html: list[str] = []
@@ -453,7 +498,7 @@ def build_html_report(scenarios: list[Scenario]) -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Engine Behavior Coverage</title>
+  <title>{html.escape(report_title)}</title>
   <style>
     :root {{
       --bg: #f8fafc;
@@ -558,11 +603,9 @@ def build_html_report(scenarios: list[Scenario]) -> str:
 <body>
   <main>
     <header>
-      <h1>Engine Behavior Coverage</h1>
+      <h1>{html.escape(report_title)}</h1>
       <p class="lede">
-        This page is generated from the engine behavior suites in <code>bibliography</code>,
-        <code>citations</code>, <code>document</code>, and <code>i18n</code>. It is meant for
-        human review, not for detailed CI diagnostics.
+        {html.escape(report_lede)}
       </p>
       <p class="timestamp">Generated at {html.escape(generated_at)}.</p>
       <nav>
@@ -593,23 +636,35 @@ def main() -> int:
     output_path = Path(args.output)
     html_output_path = Path(args.output_html) if args.output_html else None
     source_root = Path(args.source_root).resolve()
+    report_title = args.report_title
+    report_lede = args.report_lede
 
     if not junit_path.exists():
         print(f"missing JUnit XML: {junit_path}", file=sys.stderr)
         return 1
 
-    scenarios = collect_scenarios(junit_path, source_root)
+    try:
+        source_map = parse_source_maps(args.source_map)
+    except ValueError as error:
+        print(error, file=sys.stderr)
+        return 1
+
+    scenarios = collect_scenarios(junit_path, source_root, source_map)
     if not scenarios:
         print(f"no testcases found in JUnit XML: {junit_path}", file=sys.stderr)
         return 1
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(build_markdown_report(scenarios), encoding="utf-8")
+    output_path.write_text(
+        build_markdown_report(scenarios, report_title, report_lede), encoding="utf-8"
+    )
     print(f"wrote {output_path}")
 
     if html_output_path:
         html_output_path.parent.mkdir(parents=True, exist_ok=True)
-        html_output_path.write_text(build_html_report(scenarios), encoding="utf-8")
+        html_output_path.write_text(
+            build_html_report(scenarios, report_title, report_lede), encoding="utf-8"
+        )
         print(f"wrote {html_output_path}")
 
     return 0

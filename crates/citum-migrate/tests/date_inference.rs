@@ -2,6 +2,10 @@ use citum_migrate::options_extractor::OptionsExtractor;
 use citum_schema::options::MonthFormat;
 use csl_legacy::model::{Citation, CslNode, Date, DatePart, Formatting, Info, Layout, Style};
 
+fn announce_behavior(summary: &str) {
+    println!("behavior: {summary}");
+}
+
 fn make_style_with_date(form: Option<String>) -> Style {
     let date_part = DatePart {
         name: "month".to_string(),
@@ -61,6 +65,7 @@ fn make_style_with_date(form: Option<String>) -> Style {
 
 #[test]
 fn test_infer_short_month() {
+    announce_behavior("A CSL short month form migrates to the short month format option.");
     let style = make_style_with_date(Some("short".to_string()));
     let config = OptionsExtractor::extract(&style);
 
@@ -70,6 +75,7 @@ fn test_infer_short_month() {
 
 #[test]
 fn test_infer_long_month() {
+    announce_behavior("A CSL long month form migrates to the long month format option.");
     let style = make_style_with_date(Some("long".to_string()));
     let config = OptionsExtractor::extract(&style);
 
@@ -79,6 +85,7 @@ fn test_infer_long_month() {
 
 #[test]
 fn test_infer_numeric_month() {
+    announce_behavior("A CSL numeric month form migrates to the numeric month format option.");
     let style = make_style_with_date(Some("numeric".to_string()));
     let config = OptionsExtractor::extract(&style);
 
@@ -88,6 +95,9 @@ fn test_infer_numeric_month() {
 
 #[test]
 fn test_infer_default_month() {
+    announce_behavior(
+        "A missing month form falls back to the long month format option during migration.",
+    );
     let style = make_style_with_date(None); // Default is usually long
     let config = OptionsExtractor::extract(&style);
 
