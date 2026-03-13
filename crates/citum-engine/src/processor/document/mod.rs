@@ -383,10 +383,7 @@ impl Processor {
                     processor.process_inline_document_html(body, parsed, &mut placeholders)
                 };
                 let bib_content = rewrite_group_headings_for_document(
-                    processor.render_with_custom_groups::<F>(
-                        &processor.process_references().bibliography,
-                        &groups,
-                    ),
+                    processor.render_document_bibliography_groups::<F>(&groups),
                     format,
                 );
                 let mut result = rendered;
@@ -404,10 +401,7 @@ impl Processor {
             };
 
             let bib_content = rewrite_group_headings_for_document(
-                processor.render_with_custom_groups::<F>(
-                    &processor.process_references().bibliography,
-                    &groups,
-                ),
+                processor.render_document_bibliography_groups::<F>(&groups),
                 format,
             );
             let mut result = rendered;
@@ -459,12 +453,10 @@ impl Processor {
                 let mut result = rendered;
                 for (i, block) in blocks.iter().enumerate() {
                     let placeholder = format!("\x00BIBBLOCK{i}\x00");
-                    let mut headingless = block.group.clone();
-                    let heading = headingless.heading.take();
-                    let bib_content = processor.render_bibliography_for_group::<F>(&headingless);
-                    let bib_token = placeholders.push_block(bib_content);
-                    let replacement = if let Some(h) = heading {
-                        let heading_text = processor.resolve_group_heading(&h).unwrap_or_default();
+                    let rendered_group =
+                        processor.render_document_bibliography_block::<F>(&block.group);
+                    let bib_token = placeholders.push_block(rendered_group.body);
+                    let replacement = if let Some(heading_text) = rendered_group.heading {
                         format!("## {heading_text}\n\n{bib_token}\n")
                     } else {
                         format!("{bib_token}\n")
@@ -484,21 +476,17 @@ impl Processor {
             let mut result = rendered;
             for (i, block) in blocks.iter().enumerate() {
                 let placeholder = format!("\x00BIBBLOCK{i}\x00");
-                // Render without heading so render_with_custom_groups doesn't emit one;
-                // we emit the heading ourselves at the correct document level (##).
-                let mut headingless = block.group.clone();
-                let heading = headingless.heading.take();
-                let bib_content = processor.render_bibliography_for_group::<F>(&headingless);
-                let replacement = if let Some(h) = heading {
-                    let heading_text = processor.resolve_group_heading(&h).unwrap_or_default();
+                let rendered_group =
+                    processor.render_document_bibliography_block::<F>(&block.group);
+                let replacement = if let Some(heading_text) = rendered_group.heading {
                     let prefix = match format {
                         DocumentFormat::Latex => format!("\\subsection*{{{heading_text}}}\n\n"),
                         DocumentFormat::Typst => format!("== {heading_text}\n\n"),
                         _ => format!("## {heading_text}\n\n"),
                     };
-                    format!("{prefix}{bib_content}\n")
+                    format!("{prefix}{}\n", rendered_group.body)
                 } else {
-                    format!("{bib_content}\n")
+                    format!("{}\n", rendered_group.body)
                 };
                 result = result.replace(&placeholder, &replacement);
             }

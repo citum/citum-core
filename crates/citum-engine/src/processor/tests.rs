@@ -1,4 +1,5 @@
 use super::*;
+use crate::{Citation, CitationItem, Reference};
 use citum_schema::options::{
     AndOptions, ContributorConfig, DisplayAsSort, LabelConfig, LabelPreset, Processing,
     ShortenListOptions,
@@ -95,9 +96,9 @@ fn make_style() -> Style {
 }
 
 #[test]
-fn test_apply_note_start_text_case_to_leading_text_node_plain_text() {
+fn given_plain_text_ibid_when_note_start_case_is_lowercase_then_the_leading_text_is_lowercased() {
     assert_eq!(
-        super::apply_note_start_text_case_to_leading_text_node(
+        super::citation::apply_note_start_text_case_to_leading_text_node(
             "Ibid., 105",
             citum_schema::NoteStartTextCase::Lowercase
         ),
@@ -106,9 +107,9 @@ fn test_apply_note_start_text_case_to_leading_text_node_plain_text() {
 }
 
 #[test]
-fn test_apply_note_start_text_case_to_leading_text_node_preserves_html_markup() {
+fn given_html_wrapped_ibid_when_note_start_case_is_lowercase_then_the_markup_is_preserved() {
     let rendered = "<span class=\"csln-citation\" data-ref=\"ITEM-1\">Ibid.</span>";
-    let transformed = super::apply_note_start_text_case_to_leading_text_node(
+    let transformed = super::citation::apply_note_start_text_case_to_leading_text_node(
         rendered,
         citum_schema::NoteStartTextCase::Lowercase,
     );
@@ -3676,7 +3677,7 @@ fn test_compound_numeric_citation_subentry_collapse_enabled() {
 
 /// Verifies checked constructors reject duplicate membership across sets.
 #[test]
-fn test_try_with_compound_sets_rejects_invalid_membership() {
+fn given_duplicate_compound_membership_when_using_checked_constructors_then_an_error_is_returned() {
     let style = Style::default();
     let mut bib = Bibliography::new();
     bib.insert(
@@ -3694,6 +3695,48 @@ fn test_try_with_compound_sets_rejects_invalid_membership() {
     sets.insert("group-2".to_string(), vec!["ref-a".to_string()]);
 
     let err = Processor::try_with_compound_sets(style, bib, sets).expect_err("must reject sets");
+    assert!(
+        err.to_string()
+            .contains("appears in both compound sets 'group-1' and 'group-2'"),
+        "unexpected error: {err}"
+    );
+}
+
+/// Verifies forgiving constructors drop invalid compound sets while checked ones error.
+#[test]
+fn given_invalid_compound_sets_when_using_forgiving_constructors_then_they_fall_back_to_empty_sets()
+{
+    let style = Style::default();
+    let mut bib = Bibliography::new();
+    bib.insert(
+        "ref-a".to_string(),
+        Reference::from(LegacyReference {
+            id: "ref-a".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("Book A".to_string()),
+            ..Default::default()
+        }),
+    );
+
+    let mut sets = IndexMap::new();
+    sets.insert("group-1".to_string(), vec!["ref-a".to_string()]);
+    sets.insert("group-2".to_string(), vec!["ref-a".to_string()]);
+
+    let forgiving = Processor::with_compound_sets(style.clone(), bib.clone(), sets.clone());
+    assert!(forgiving.compound_sets.is_empty());
+    assert!(forgiving.compound_set_by_ref.is_empty());
+
+    let forgiving_with_locale = Processor::with_locale_and_compound_sets(
+        style.clone(),
+        bib.clone(),
+        Locale::en_us(),
+        sets.clone(),
+    );
+    assert!(forgiving_with_locale.compound_sets.is_empty());
+    assert!(forgiving_with_locale.compound_set_by_ref.is_empty());
+
+    let err = Processor::try_with_locale_and_compound_sets(style, bib, Locale::en_us(), sets)
+        .expect_err("checked constructor must reject invalid sets");
     assert!(
         err.to_string()
             .contains("appears in both compound sets 'group-1' and 'group-2'"),
