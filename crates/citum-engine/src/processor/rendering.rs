@@ -226,25 +226,13 @@ impl<'a> Renderer<'a> {
             && !self.has_explicit_integral_template()
     }
 
-    /// Determines if the processor should render author text for a label style
-    /// when in "integral" (narrative) citation mode.
-    fn should_render_author_for_label_integral(
-        &self,
-        mode: &citum_schema::citation::CitationMode,
-    ) -> bool {
-        matches!(mode, citum_schema::citation::CitationMode::Integral)
-            && self.config.processing.as_ref().is_some_and(|processing| {
-                matches!(processing, citum_schema::options::Processing::Label(_))
-            })
-            && !self.has_explicit_integral_template()
-    }
-
     /// Whether the style provides an explicit integral (narrative) template.
     fn has_explicit_integral_template(&self) -> bool {
-        self.style
-            .citation
-            .as_ref()
-            .is_some_and(|citation| citation.integral.is_some())
+        self.style.citation.as_ref().is_some_and(|c| {
+            c.integral.as_ref().is_some_and(|i| {
+                i.template.is_some() || i.use_preset.is_some() || i.locales.is_some()
+            })
+        })
     }
 
     fn should_collapse_compound_subentries(
@@ -629,42 +617,6 @@ impl<'a> Renderer<'a> {
         }
     }
 
-    /// Render author-only text for label integral citations.
-    ///
-    /// Used as a default for label-based styles in narrative mode (e.g., "Smith [Smi20]").
-    fn render_author_for_label_integral_with_format<F>(
-        &self,
-        reference: &Reference,
-        item: &crate::reference::CitationItem,
-    ) -> String
-    where
-        F: crate::render::format::OutputFormat<Output = String>,
-    {
-        let fmt = F::default();
-        let (loc_value, loc_label) = resolve_item_locator(item, self.locale);
-        let options = self.citation_render_options(
-            citum_schema::citation::CitationMode::Integral,
-            false,
-            loc_value.as_deref(),
-            loc_label,
-        );
-
-        if let Some(contributor) = reference.author().or_else(|| reference.editor()) {
-            let names_vec = self.resolve_contributor_names(&contributor);
-            let author_part = fmt.text(&crate::values::format_contributors_short(
-                &names_vec, &options,
-            ));
-            if !author_part.is_empty() {
-                return author_part;
-            }
-        }
-
-        reference
-            .title()
-            .map(|title| fmt.text(&title.to_string()))
-            .unwrap_or_default()
-    }
-
     /// Render citation items without grouping, using plain text format.
     pub fn render_ungrouped_citation(
         &self,
@@ -706,8 +658,6 @@ impl<'a> Renderer<'a> {
 
         // For numeric styles with integral mode, render author + citation number instead.
         let use_author_number = self.should_render_author_number_for_numeric_integral(mode);
-        // For label styles with integral mode, render narrative contributor text.
-        let use_label_author = self.should_render_author_for_label_integral(mode);
 
         for item in items {
             let reference = self
@@ -723,18 +673,6 @@ impl<'a> Renderer<'a> {
                     item,
                     citation_number,
                 );
-                if let Some(chunk) = self.build_citation_chunk(
-                    &fmt,
-                    vec![item.id.clone()],
-                    item_str,
-                    item.prefix.as_deref(),
-                    item.suffix.as_deref(),
-                ) {
-                    chunks.push(chunk);
-                }
-            } else if use_label_author {
-                let item_str =
-                    self.render_author_for_label_integral_with_format::<F>(reference, item);
                 if let Some(chunk) = self.build_citation_chunk(
                     &fmt,
                     vec![item.id.clone()],
@@ -842,38 +780,50 @@ impl<'a> Renderer<'a> {
             let first_language = crate::values::effective_item_language(first_ref);
             let first_template = spec.resolve_template_for_language(first_language.as_deref());
             let template = first_template.as_deref().unwrap_or(&[]);
-            let has_explicit_integral_template = self
-                .style
-                .citation
-                .as_ref()
-                .and_then(|citation| citation.integral.as_ref())
-                .is_some_and(|integral| integral.template.is_some() || integral.locales.is_some());
-
             // If we have an explicit integral template and we're in integral mode,
             // we should try to use it.
             if matches!(mode, citum_schema::citation::CitationMode::Integral)
-                && has_explicit_integral_template
-                && !template.is_empty()
+                && self.has_explicit_integral_template()
             {
-                // Narrative mode with explicit template (e.g., APA 7th)
-                let integral_delimiter = spec.delimiter.as_deref().unwrap_or(" ");
-                let request = self.citation_render_request(
-                    first_item,
-                    template,
-                    mode,
-                    suppress_author,
-                    position,
-                );
-                if let Some(item_str) = self.render_item_from_template_with_format::<F>(
-                    first_ref,
-                    request,
-                    integral_delimiter,
-                ) {
-                    let ids: Vec<String> = group.iter().map(|item| item.id.clone()).collect();
+                // Narrative mode with explicit integral template (e.g., APA 7th)
+                // Render each item in the group with the integral template
+                let component_delimiter = spec.delimiter.as_deref().unwrap_or(" ");
+                let item_join_delim = spec.multi_cite_delimiter.as_deref().unwrap_or("; ");
+                let mut group_items_str = Vec::new();
+                let mut all_ids = Vec::new();
+
+                for item in &group {
+                    let reference = self
+                        .bibliography
+                        .get(&item.id)
+                        .ok_or_else(|| ProcessorError::ReferenceNotFound(item.id.clone()))?;
+                    let item_language = crate::values::effective_item_language(reference);
+                    let item_template =
+                        spec.resolve_template_for_language(item_language.as_deref());
+                    let effective_integral_template = item_template.as_deref().unwrap_or(&[]);
+                    let request = self.citation_render_request(
+                        item,
+                        effective_integral_template,
+                        mode,
+                        suppress_author,
+                        position,
+                    );
+                    if let Some(item_str) = self.render_item_from_template_with_format::<F>(
+                        reference,
+                        request,
+                        component_delimiter,
+                    ) {
+                        group_items_str.push(item_str);
+                        all_ids.push(item.id.clone());
+                    }
+                }
+
+                if !group_items_str.is_empty() {
+                    let combined_str = group_items_str.join(item_join_delim);
                     if let Some((ids, content)) = self.build_citation_chunk(
                         &fmt,
-                        ids,
-                        item_str,
+                        all_ids,
+                        combined_str,
                         first_item.prefix.as_deref(),
                         first_item.suffix.as_deref(),
                     ) {

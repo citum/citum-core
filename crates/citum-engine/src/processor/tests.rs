@@ -2103,13 +2103,23 @@ fn test_label_integral_citation_uses_author_text() {
         })),
         ..Default::default()
     });
+    // Citation template now includes both author and label
     style.citation = Some(citum_schema::CitationSpec {
-        template: Some(vec![TemplateComponent::Number(
-            citum_schema::template::TemplateNumber {
-                number: citum_schema::template::NumberVariable::CitationLabel,
+        template: Some(vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                form: ContributorForm::Short,
+                name_order: None,
+                delimiter: None,
+                rendering: Rendering::default(),
                 ..Default::default()
-            },
-        )]),
+            }),
+            TemplateComponent::Number(TemplateNumber {
+                number: citum_schema::template::NumberVariable::CitationLabel,
+                rendering: Rendering::default(),
+                ..Default::default()
+            }),
+        ]),
         wrap: Some(WrapPunctuation::Brackets),
         ..Default::default()
     });
@@ -2128,7 +2138,18 @@ fn test_label_integral_citation_uses_author_text() {
     };
 
     let result = processor.process_citation(&citation).unwrap();
-    assert_eq!(result, "Kuhn");
+    // After the fix, label-integral now renders the full template with both author and label,
+    // instead of just returning the author name
+    assert!(
+        result.contains("Kuhn"),
+        "should contain author, got: {}",
+        result
+    );
+    assert!(
+        result.contains("62") && result.len() > "Kuhn".len(),
+        "should contain label, got: {}",
+        result
+    );
 }
 
 /// Tests the behavior of test_citation_visibility_modifiers.
@@ -3677,5 +3698,159 @@ fn test_try_with_compound_sets_rejects_invalid_membership() {
         err.to_string()
             .contains("appears in both compound sets 'group-1' and 'group-2'"),
         "unexpected error: {err}"
+    );
+}
+
+/// Tests that grouped integral citations with an explicit integral template
+/// render ALL items in the group, not just the first one.
+#[test]
+fn test_grouped_integral_citation_renders_all_items() {
+    use citum_schema::citation::CitationMode;
+
+    let mut style = make_style();
+    // Add an explicit integral template for author-date styles
+    style.citation = Some(CitationSpec {
+        template: Some(vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                form: ContributorForm::Short,
+                name_order: None,
+                delimiter: None,
+                rendering: Rendering::default(),
+                ..Default::default()
+            }),
+            TemplateComponent::Date(TemplateDate {
+                date: TDateVar::Issued,
+                form: DateForm::Year,
+                rendering: Rendering::default(),
+                ..Default::default()
+            }),
+        ]),
+        wrap: Some(WrapPunctuation::Parentheses),
+        // Explicit integral template (should be used for grouped cites in integral mode)
+        integral: Some(Box::new(CitationSpec {
+            template: Some(vec![
+                TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Author,
+                    form: ContributorForm::Short,
+                    name_order: None,
+                    delimiter: None,
+                    rendering: Rendering::default(),
+                    ..Default::default()
+                }),
+                TemplateComponent::Date(TemplateDate {
+                    date: TDateVar::Issued,
+                    form: DateForm::Year,
+                    rendering: Rendering::default(),
+                    ..Default::default()
+                }),
+            ]),
+            ..Default::default()
+        })),
+        ..Default::default()
+    });
+
+    let mut bib = make_bibliography();
+    // Add a second Kuhn reference so both items share the same author and land in one group
+    bib.insert(
+        "kuhn1970".to_string(),
+        Reference::from(LegacyReference {
+            id: "kuhn1970".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("The Structure of Scientific Revolutions, 2nd ed.".to_string()),
+            author: Some(vec![Name::new("Kuhn", "Thomas S.")]),
+            issued: Some(DateVariable::year(1970)),
+            ..Default::default()
+        }),
+    );
+
+    let processor = Processor::new(style, bib);
+
+    // Integral citation with TWO Kuhn items — same author, so they group together
+    let cit = Citation {
+        mode: CitationMode::Integral,
+        items: vec![
+            crate::reference::CitationItem {
+                id: "kuhn1962".to_string(),
+                ..Default::default()
+            },
+            crate::reference::CitationItem {
+                id: "kuhn1970".to_string(),
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+
+    let result = processor.process_citation(&cit).unwrap();
+    // Both years must appear — verifies multi-item single-group rendering
+    assert!(
+        result.contains("1962") && result.contains("1970"),
+        "integral grouped citation should render all items in group, got: {}",
+        result
+    );
+}
+
+/// Tests that label-integral citations include the citation label in the output,
+/// not just the author name.
+#[test]
+fn test_label_integral_citation_includes_label() {
+    use citum_schema::options::Processing;
+
+    let mut style = make_style();
+    // Label processing mode
+    style.options = Some(Config {
+        processing: Some(Processing::Label(LabelConfig {
+            preset: LabelPreset::Din,
+            ..Default::default()
+        })),
+        ..Default::default()
+    });
+    // Citation template with citation label
+    style.citation = Some(CitationSpec {
+        template: Some(vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                form: ContributorForm::Short,
+                name_order: None,
+                delimiter: None,
+                rendering: Rendering::default(),
+                ..Default::default()
+            }),
+            TemplateComponent::Number(TemplateNumber {
+                number: NumberVariable::CitationLabel,
+                rendering: Rendering::default(),
+                ..Default::default()
+            }),
+        ]),
+        wrap: Some(WrapPunctuation::Brackets),
+        ..Default::default()
+    });
+
+    let bib = make_bibliography();
+    let processor = Processor::new(style, bib);
+
+    // Integral citation with label mode
+    let cit = Citation {
+        id: Some("c1".to_string()),
+        mode: citum_schema::citation::CitationMode::Integral,
+        items: vec![crate::reference::CitationItem {
+            id: "kuhn1962".to_string(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let result = processor.process_citation(&cit).unwrap();
+    // Should include both author and citation label (e.g., "Kuhn [Kuh62]" or similar)
+    assert!(
+        result.contains("Kuhn"),
+        "label-integral should include author, got: {}",
+        result
+    );
+    assert!(
+        result.contains("62") && result.len() > "Kuhn".len(),
+        "label-integral should include citation label, got: {}",
+        result
     );
 }
