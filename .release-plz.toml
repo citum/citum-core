@@ -14,6 +14,9 @@ allow_dirty = true
 # Treat feature work on 0.x as a minor release, matching repo policy.
 features_always_increment_minor = true
 
+# During high-churn development, only feature commits should open release PRs.
+release_commits = "^feat[(:]"
+
 # Disable per-package releases - we want a single workspace release
 git_release_enable = false
 
