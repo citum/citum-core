@@ -936,51 +936,15 @@ impl<'a> Renderer<'a> {
                 position,
             );
 
-            let mut item_parts = Vec::new();
-            let mut group_delimiter: Option<String> = None;
-            for item in &group {
-                let reference = self
-                    .bibliography
-                    .get(&item.id)
-                    .ok_or_else(|| ProcessorError::ReferenceNotFound(item.id.clone()))?;
-                let item_language = crate::values::effective_item_language(reference);
-                let template = spec.resolve_template_for_language(item_language.as_deref());
-                let effective_template = template.as_deref().unwrap_or(&[]);
-                let (filtered_template, leading_affix) =
-                    self.filter_author_from_template(effective_template);
-                if group_delimiter.is_none() {
-                    group_delimiter = leading_affix
-                        .as_ref()
-                        .filter(|value| !value.is_empty())
-                        .cloned();
-                }
-                let item_delimiter = if leading_affix.is_some() {
-                    ""
-                } else {
-                    intra_delimiter
-                };
-                let request = self.citation_render_request(
-                    item,
-                    &filtered_template,
-                    mode,
-                    suppress_author,
-                    position,
-                );
-                if let Some(item_str) = self.render_item_from_template_with_format::<F>(
-                    reference,
-                    request,
-                    item_delimiter,
-                ) && !item_str.is_empty()
-                {
-                    let suffix = item.suffix.as_deref().unwrap_or("");
-                    if !suffix.is_empty() {
-                        let spaced_suffix = Self::ensure_suffix_spacing(suffix);
-                        item_parts.push(fmt.affix("", item_str, &spaced_suffix));
-                    } else {
-                        item_parts.push(item_str);
-                    }
-                }
-            }
+            let (item_parts, group_delimiter) = self.render_group_item_parts_with_format::<F>(
+                &fmt,
+                &group,
+                spec,
+                mode,
+                suppress_author,
+                position,
+                intra_delimiter,
+            )?;
 
             let group_ids: Vec<String> = group.iter().map(|item| item.id.clone()).collect();
             let prefix = first_item.prefix.as_deref().unwrap_or("");
@@ -1374,14 +1338,6 @@ impl<'a> Renderer<'a> {
         // variants (for example "title:Primary" should suppress title with suffixes).
         let mut substituted_bases: HashSet<String> = HashSet::new();
 
-        let key_base = |key: &str| -> String {
-            let mut parts = key.splitn(3, ':');
-            match (parts.next(), parts.next()) {
-                (Some(kind), Some(var)) => format!("{kind}:{var}"),
-                _ => key.to_string(),
-            }
-        };
-
         let components: Vec<ProcTemplateComponent> = template
             .iter()
             .filter_map(|component| {
@@ -1500,6 +1456,78 @@ impl<'a> Renderer<'a> {
             }
             _ => citum_schema::locale::TermForm::Short,
         }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn render_group_item_parts_with_format<F>(
+        &self,
+        fmt: &F,
+        group: &[&crate::reference::CitationItem],
+        spec: &citum_schema::CitationSpec,
+        mode: &citum_schema::citation::CitationMode,
+        suppress_author: bool,
+        position: Option<&citum_schema::citation::Position>,
+        intra_delimiter: &str,
+    ) -> Result<(Vec<String>, Option<String>), ProcessorError>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let mut item_parts = Vec::new();
+        let mut group_delimiter: Option<String> = None;
+        for item in group {
+            let reference = self
+                .bibliography
+                .get(&item.id)
+                .ok_or_else(|| ProcessorError::ReferenceNotFound(item.id.clone()))?;
+            let item_language = crate::values::effective_item_language(reference);
+            let template = spec.resolve_template_for_language(item_language.as_deref());
+            let effective_template = template.as_deref().unwrap_or(&[]);
+            let (filtered_template, leading_affix) =
+                self.filter_author_from_template(effective_template);
+            if group_delimiter.is_none() {
+                group_delimiter = leading_affix
+                    .as_ref()
+                    .filter(|value| !value.is_empty())
+                    .cloned();
+            }
+            let item_delimiter = if leading_affix.is_some() {
+                ""
+            } else {
+                intra_delimiter
+            };
+            let request = self.citation_render_request(
+                item,
+                &filtered_template,
+                mode,
+                suppress_author,
+                position,
+            );
+            if let Some(item_str) =
+                self.render_item_from_template_with_format::<F>(reference, request, item_delimiter)
+                && !item_str.is_empty()
+            {
+                let suffix = item.suffix.as_deref().unwrap_or("");
+                if !suffix.is_empty() {
+                    let spaced_suffix = Self::ensure_suffix_spacing(suffix);
+                    item_parts.push(fmt.affix("", item_str, &spaced_suffix));
+                } else {
+                    item_parts.push(item_str);
+                }
+            }
+        }
+        Ok((item_parts, group_delimiter))
+    }
+}
+
+/// Extracts the base key from a variable key (kind:variable format).
+///
+/// Strips context suffixes to enable grouped variable deduplication.
+/// Example: "contributor:Author:Primary" -> "contributor:Author".
+fn key_base(key: &str) -> String {
+    let mut parts = key.splitn(3, ':');
+    match (parts.next(), parts.next()) {
+        (Some(kind), Some(var)) => format!("{kind}:{var}"),
+        _ => key.to_string(),
     }
 }
 
@@ -1640,29 +1668,28 @@ fn resolve_component_for_ref_type(
         return component.clone();
     };
 
-    let mut replacement: Option<TemplateComponent> = None;
-    let mut matched = false;
+    let mut specific: Option<TemplateComponent> = None;
+    let mut default_fallback: Option<TemplateComponent> = None;
+    let mut type_matched = false;
 
     for (selector, ov) in overrides {
         if selector.matches(ref_type) {
-            matched = true;
+            type_matched = true;
             if let ComponentOverride::Component(c) = ov {
-                replacement = Some((**c).clone());
+                specific = Some((**c).clone());
             }
+        } else if selector.matches("default")
+            && let ComponentOverride::Component(c) = ov
+        {
+            default_fallback = Some((**c).clone());
         }
     }
 
-    if !matched {
-        for (selector, ov) in overrides {
-            if selector.matches("default")
-                && let ComponentOverride::Component(c) = ov
-            {
-                replacement = Some((**c).clone());
-            }
-        }
+    if type_matched {
+        specific.unwrap_or_else(|| component.clone())
+    } else {
+        default_fallback.unwrap_or_else(|| component.clone())
     }
-
-    replacement.unwrap_or_else(|| component.clone())
 }
 
 #[cfg(test)]
