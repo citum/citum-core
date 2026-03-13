@@ -210,6 +210,14 @@ impl TemplateComponent {
         crate::dispatch_component!(self, |inner| &inner.rendering)
     }
 
+    /// Return the mutable rendering options for this component.
+    ///
+    /// Provides mutable access to rendering fields (prefix, suffix, etc.)
+    /// that are present on all template component variants.
+    pub fn rendering_mut(&mut self) -> &mut Rendering {
+        crate::dispatch_component!(self, |inner| &mut inner.rendering)
+    }
+
     /// Return the type-specific rendering overrides for this component.
     ///
     /// Type overrides allow different formatting based on the reference type
