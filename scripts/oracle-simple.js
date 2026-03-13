@@ -2,7 +2,7 @@
 /**
  * Simple Oracle Comparison (LEGACY)
  *
- * Basic string comparison between citeproc-js and CSLN outputs.
+ * Basic string comparison between citeproc-js and Citum outputs.
  * This is the old default behavior, kept for compatibility.
  *
  * For component-level diff analysis, use oracle.js (structured) instead.

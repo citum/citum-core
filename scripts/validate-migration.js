@@ -2,7 +2,7 @@
 /**
  * scripts/validate-migration.js
  *
- * Cross-tier validation for CSLN migration output (OPT-2.1).
+ * Cross-tier validation for Citum migration output (OPT-2.1).
  *
  * Checks for consistency between:
  *   - Tier 1: Global options (from citum-migrate)
@@ -73,7 +73,7 @@ try {
 
         if (longFormContributors.length > 0) {
             // This is expected — the combination of long form + initialize-with
-            // is how CSLN handles "Family, G." format. Flag only if
+            // is how Citum handles "Family, G." format. Flag only if
             // initialize-with is set but a context-level override disables it.
             const bibOptions = bibliography.options || {};
             const bibContribs = bibOptions.contributors || {};

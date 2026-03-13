@@ -105,7 +105,7 @@ pub fn render_rich_text_field<F: OutputFormat<Output = String>>(src: &str, fmt: 
 }
 
 /// Load a list of citations from a file.
-/// Supports CSLN YAML/JSON.
+/// Supports Citum YAML/JSON.
 pub fn load_citations(path: &Path) -> Result<Vec<Citation>, ProcessorError> {
     let bytes = fs::read(path)?;
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
@@ -237,14 +237,14 @@ fn loaded_from_input_bibliography(
 }
 
 /// Load bibliography data from a file path, including optional compound sets.
-/// Supports CSLN YAML/JSON/CBOR and CSL-JSON.
+/// Supports Citum YAML/JSON/CBOR and CSL-JSON.
 pub fn load_bibliography_with_sets(path: &Path) -> Result<LoadedBibliography, ProcessorError> {
     let bytes = fs::read(path)?;
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
 
     let mut bib = IndexMap::new();
 
-    // Try parsing as CSLN formats
+    // Try parsing as Citum formats
     match ext {
         "cbor" => {
             match ciborium::de::from_reader::<InputBibliography, _>(std::io::Cursor::new(&bytes)) {
@@ -270,7 +270,7 @@ pub fn load_bibliography_with_sets(path: &Path) -> Result<LoadedBibliography, Pr
                     sets: None,
                 });
             }
-            // Try CSLN JSON (InputBibliography)
+            // Try Citum JSON (InputBibliography)
             if let Ok(input_bib) = serde_json::from_slice::<InputBibliography>(&bytes) {
                 return loaded_from_input_bibliography(input_bib);
             }
@@ -308,7 +308,7 @@ pub fn load_bibliography_with_sets(path: &Path) -> Result<LoadedBibliography, Pr
                 }
             }
 
-            // If all failed, return the error from the most likely format (CSLN JSON)
+            // If all failed, return the error from the most likely format (Citum JSON)
             match serde_json::from_slice::<InputBibliography>(&bytes) {
                 Ok(_) => unreachable!(),
                 Err(e) => Err(ProcessorError::ParseError(
@@ -381,7 +381,7 @@ pub fn load_bibliography_with_sets(path: &Path) -> Result<LoadedBibliography, Pr
                 });
             }
 
-            // If all failed, return error from CSLN YAML
+            // If all failed, return error from Citum YAML
             match serde_yaml::from_str::<InputBibliography>(&content) {
                 Ok(_) => unreachable!(),
                 Err(e) => Err(ProcessorError::ParseError(
@@ -394,7 +394,7 @@ pub fn load_bibliography_with_sets(path: &Path) -> Result<LoadedBibliography, Pr
 }
 
 /// Load a bibliography from a file given its path.
-/// Supports CSLN YAML/JSON/CBOR and CSL-JSON.
+/// Supports Citum YAML/JSON/CBOR and CSL-JSON.
 pub fn load_bibliography(path: &Path) -> Result<Bibliography, ProcessorError> {
     Ok(load_bibliography_with_sets(path)?.references)
 }

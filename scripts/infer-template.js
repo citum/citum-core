@@ -2,7 +2,7 @@
 /**
  * CLI wrapper for the template inferrer module.
  *
- * Generates CSLN templates from CSL 1.0 styles using output-driven inference.
+ * Generates Citum templates from CSL 1.0 styles using output-driven inference.
  *
  * Usage:
  *   node scripts/infer-template.js <style-path>

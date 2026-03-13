@@ -305,6 +305,6 @@ test('compareComponents reports differing component values as mismatches', () =>
     issue: 'value_mismatch',
     expected: 'Alpha',
     found: 'Beta',
-    detail: 'Value differs between oracle and CSLN',
+    detail: 'Value differs between oracle and Citum',
   }]);
 });

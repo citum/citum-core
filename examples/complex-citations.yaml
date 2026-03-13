@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/citations.json
-# Complex Citation Scenarios for CSLN
+# Complex Citation Scenarios for Citum
 # Test these with: csln process examples/comprehensive.yaml styles/apa-7th.yaml -c examples/complex-citations.yaml
 
 # 1. Standard Parenthetical Multi-cite

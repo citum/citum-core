@@ -20,7 +20,7 @@ if [ "$STYLE_PATH" == "--help" ] || [ -z "$STYLE_PATH" ]; then
     echo ""
     echo "Prepares for @styleauthor migration by generating:"
     echo "1. Target rendering (citeproc-js)"
-    echo "2. Baseline CSLN config (citum-migrate)"
+    echo "2. Baseline Citum config (citum-migrate)"
     echo "3. Agent-ready prompt (or JSON with --agent)"
     exit 0
 fi
@@ -115,7 +115,7 @@ if ! node scripts/infer-template.js "$STYLE_PATH" --section=bibliography --fragm
     exit 2
 fi
 
-if [ "$AGENT_MODE" = false ]; then echo "-> Merging into CSLN style..."; fi
+if [ "$AGENT_MODE" = false ]; then echo "-> Merging into Citum style..."; fi
 node scripts/merge-migration.js "$STYLE_NAME" "$BASE_YAML" "$CITE_JSON" "$BIB_JSON" > /dev/null
 
 # Phase 2: Coverage & Validation
@@ -171,7 +171,7 @@ EOF
 else
     echo "=== 📝 PHASE 2: AGENT PROMPT ==="
     cat <<EOF
-I have auto-generated the CSLN style file "styles/$STYLE_NAME.yaml" using the new output-driven migration workflow.
+I have auto-generated the Citum style file "styles/$STYLE_NAME.yaml" using the new output-driven migration workflow.
 
 TASK:
 1. Review the generated file "styles/$STYLE_NAME.yaml".
@@ -180,7 +180,7 @@ TASK:
 
 2. Verify the output:
    - Run: \`node scripts/oracle.js "$STYLE_PATH" --json\`
-   - Compare the CSLN output against the Oracle output.
+   - Compare the Citum output against the Oracle output.
 
 3. Iterate & Fix:
    - If match rate is < 100%, analyze the mismatches.

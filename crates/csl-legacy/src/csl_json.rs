@@ -9,7 +9,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! existing bibliographic data in the legacy CSL-JSON format.
 //!
 //! Note: This is a legacy format with known limitations. The preferred format
-//! for new data is the CSLN InputReference model in citum_schema.
+//! for new data is the Citum InputReference model in citum_schema.
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

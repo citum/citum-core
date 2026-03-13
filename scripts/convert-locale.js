@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Convert CSL XML locale files to CSLN YAML format.
+ * Convert CSL XML locale files to Citum YAML format.
  * 
  * Usage:
  *   node convert-locale.js locales-en-US.xml > ../locales/en-US.yaml
@@ -13,7 +13,7 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * Parse a CSL XML locale file and convert to CSLN YAML format.
+ * Parse a CSL XML locale file and convert to Citum YAML format.
  */
 function parseLocaleXML(xmlContent) {
     // Extract locale lang

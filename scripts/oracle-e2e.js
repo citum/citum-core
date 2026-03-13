@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * End-to-end oracle test for CSLN migration.
+ * End-to-end oracle test for Citum migration.
  * 
  * This script:
  * 1. Takes a CSL 1.0 file
  * 2. Renders citations/bibliography with citeproc-js (the oracle)
- * 3. Migrates the CSL file to CSLN format
+ * 3. Migrates the CSL file to Citum format
  * 4. Renders with citum_engine
  * 5. Compares the outputs
  * 
@@ -66,7 +66,7 @@ function renderWithCslnProcessor(stylePath) {
   const projectRoot = path.resolve(__dirname, '..');
   const absStylePath = path.resolve(stylePath);
 
-  // Migrate CSL to CSLN
+  // Migrate CSL to Citum
   let migratedYaml;
   try {
     migratedYaml = execSync(
@@ -142,7 +142,7 @@ function compare(oracle, csln, label) {
     return false;
   }
   if (!csln) {
-    console.log(`  ⚠️  ${label} - CSLN returned undefined`);
+    console.log(`  ⚠️  ${label} - Citum returned undefined`);
     return false;
   }
 
@@ -155,7 +155,7 @@ function compare(oracle, csln, label) {
   } else {
     console.log(`  ❌ ${label}`);
     console.log(`     Oracle: ${oracleNorm}`);
-    console.log(`     CSLN:   ${cslnNorm}`);
+    console.log(`     Citum:   ${cslnNorm}`);
     return false;
   }
 }
@@ -193,11 +193,11 @@ console.log(`\n=== End-to-End Oracle Test: ${styleName} ===\n`);
 console.log('Rendering with citeproc-js (oracle)...');
 const oracle = renderWithCiteprocJs(stylePath);
 
-console.log('Migrating and rendering with CSLN...');
+console.log('Migrating and rendering with Citum...');
 const csln = renderWithCslnProcessor(stylePath);
 
 if (!csln) {
-  console.log('\n❌ CSLN rendering failed\n');
+  console.log('\n❌ Citum rendering failed\n');
   process.exit(1);
 }
 
@@ -217,7 +217,7 @@ const oracleBibNorm = oracle.bibliography.filter(b => b).map(b => normalizeText(
 const cslnBibNorm = csln.bibliography.filter(b => b).map(b => normalizeText(b));
 
 // Match entries by best similarity rather than positional comparison.
-// When CSLN produces fewer entries (unsupported reference types), positional
+// When Citum produces fewer entries (unsupported reference types), positional
 // comparison after sorting mismatches unrelated entries against each other.
 const usedOracle = new Set();
 const matched = [];

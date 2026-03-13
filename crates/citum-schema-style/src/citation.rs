@@ -3,7 +3,7 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-//! Citation input model for the CSLN processor.
+//! Citation input model for the Citum processor.
 //!
 //! This module defines the structures for representing citations as input
 //! to the processor. Citations reference entries in the bibliography and

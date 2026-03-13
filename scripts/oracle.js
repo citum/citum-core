@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Structured Diff Oracle for CSLN Migration (DEFAULT)
+ * Structured Diff Oracle for Citum Migration (DEFAULT)
  *
- * Compares citeproc-js and CSLN outputs at the component level,
+ * Compares citeproc-js and Citum outputs at the component level,
  * identifying which specific parts of a bibliography entry differ.
  *
  * This is now the default oracle script. For simple string comparison,
@@ -17,7 +17,7 @@
  * Exit codes:
  *   0 - Success (all citations and bibliography entries match)
  *   1 - Failed validation (some entries don't match)
- *   2 - Fatal error (file not found, parse error, CSLN rendering failed)
+ *   2 - Fatal error (file not found, parse error, Citum rendering failed)
  */
 
 const CSL = require('citeproc');
@@ -168,7 +168,7 @@ function compareComponents(oracleComp, cslnComp, refData) {
           issue: 'value_mismatch',
           expected: oracle.value,
           found: csln.value,
-          detail: 'Value differs between oracle and CSLN',
+          detail: 'Value differs between oracle and Citum',
         });
       }
     } else if (oracle.found && !csln.found) {
@@ -176,14 +176,14 @@ function compareComponents(oracleComp, cslnComp, refData) {
         component: key,
         issue: 'missing',
         expected: oracle.value,
-        detail: `Missing in CSLN output`
+        detail: `Missing in Citum output`
       });
     } else if (!oracle.found && csln.found) {
       differences.push({
         component: key,
         issue: 'extra',
         found: csln.value,
-        detail: `Extra in CSLN output (not in oracle)`
+        detail: `Extra in Citum output (not in oracle)`
       });
     }
   }
@@ -192,7 +192,7 @@ function compareComponents(oracleComp, cslnComp, refData) {
 }
 
 /**
- * Compare component ordering between oracle and CSLN.
+ * Compare component ordering between oracle and Citum.
  */
 function compareOrdering(oracleOrder, cslnOrder) {
   const issues = [];
@@ -223,12 +223,12 @@ function renderWithCiteprocJs(stylePath, testItems, testCitations) {
 
   const citations = {};
   testCitations.forEach(cite => {
-    // Convert CSLN citation items to citeproc-js format
+    // Convert Citum citation items to citeproc-js format
     const suppressAuthor = cite['suppress-author'] === true;
     const citeprocItems = cite.items.map(item => toCiteprocItem(item, suppressAuthor));
 
     // For narrative/integral citations, citeproc-js doesn't have a direct equivalent
-    // in makeCitationCluster that matches CSLN's specific split rendering.
+    // in makeCitationCluster that matches Citum's specific split rendering.
     // However, if we just want to test clustered rendering, we can use the cluster.
     // For now, we compare non-integral clusters.
     try {
@@ -454,7 +454,7 @@ function collectCitationTypes(citation, testItems) {
 }
 
 /**
- * Match bibliography entries between oracle and CSLN by finding best matches.
+ * Match bibliography entries between oracle and Citum by finding best matches.
  * Uses contributor names and titles to pair entries.
  */
 function matchBibliographyEntries(oracleBib, cslnBib) {
@@ -497,7 +497,7 @@ function matchBibliographyEntries(oracleBib, cslnBib) {
     }
   }
 
-  // Add unmatched CSLN entries.
+  // Add unmatched Citum entries.
   for (let ci = 0; ci < cslnBib.length; ci++) {
     if (!usedCsln.has(ci)) {
       pairs.push({ oracle: null, csln: cslnBib[ci], score: 0 });
@@ -538,7 +538,7 @@ function runOracle(cliOptions = parseArgs()) {
   const oracle = renderWithCiteprocJs(stylePath, testItems, testCitations);
 
   if (!jsonOutput) {
-    console.log('Migrating and rendering with CSLN...');
+    console.log('Migrating and rendering with Citum...');
   }
 
   const csln = renderWithCslnProcessor(stylePath, refsData, testItems, testCitations, cliOptions);
@@ -546,12 +546,12 @@ function runOracle(cliOptions = parseArgs()) {
   if (!csln || csln.error) {
     if (jsonOutput) {
       console.log(JSON.stringify({
-        error: 'CSLN rendering failed',
+        error: 'Citum rendering failed',
         reason: csln && csln.error ? csln.error : 'Processor execution error or migration output invalid',
         style: styleName
       }));
     } else {
-      console.error('❌ CSLN Rendering Failed\n');
+      console.error('❌ Citum Rendering Failed\n');
       console.error(`Style: ${styleName}`);
       if (csln && csln.error) {
         console.error(`Reason: ${csln.error}\n`);
@@ -644,10 +644,10 @@ function runOracle(cliOptions = parseArgs()) {
     };
 
     if (!pair.oracle) {
-      entryResult.issues.push({ issue: 'extra_entry', detail: 'Entry in CSLN but not oracle' });
+      entryResult.issues.push({ issue: 'extra_entry', detail: 'Entry in Citum but not oracle' });
       rawResults.bibliography.failed++;
     } else if (!pair.csln) {
-      entryResult.issues.push({ issue: 'missing_entry', detail: 'Entry in oracle but not CSLN' });
+      entryResult.issues.push({ issue: 'missing_entry', detail: 'Entry in oracle but not Citum' });
       rawResults.bibliography.failed++;
     } else {
       // Both exist - compare
@@ -749,7 +749,7 @@ function runOracle(cliOptions = parseArgs()) {
         for (const entry of failedCitations) {
           console.log(`  [${entry.id}]`);
           console.log(`    Oracle: ${entry.oracle}`);
-          console.log(`    CSLN:   ${entry.csln}`);
+          console.log(`    Citum:   ${entry.csln}`);
         }
       }
 
@@ -758,10 +758,10 @@ function runOracle(cliOptions = parseArgs()) {
         if (!entry.match && entry.oracle && entry.csln) {
           console.log(`\nEntry ${entry.index}:`);
           console.log(`  Oracle: ${entry.oracle}`);
-          console.log(`  CSLN:   ${entry.csln}`);
+          console.log(`  Citum:   ${entry.csln}`);
           if (entry.ordering) {
             console.log(`  Order Oracle: ${entry.ordering.oracle.join(' → ')}`);
-            console.log(`  Order CSLN:   ${entry.ordering.csln.join(' → ')}`);
+            console.log(`  Order Citum:   ${entry.ordering.csln.join(' → ')}`);
           }
           for (const issue of entry.issues) {
             console.log(`  Issue: ${issue.component || issue.issue}: ${issue.detail || ''}`);

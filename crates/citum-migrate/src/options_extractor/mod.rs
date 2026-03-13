@@ -3,7 +3,7 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-//! Extracts global style options from CSL 1.0 structures into CSLN Config.
+//! Extracts global style options from CSL 1.0 structures into Citum Config.
 
 pub mod bibliography;
 pub mod contributors;

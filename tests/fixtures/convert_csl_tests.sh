@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Convert CSL Test Suite disambiguation tests to CSLN format
+# Convert CSL Test Suite disambiguation tests to Citum format
 #
 # Usage: ./convert_csl_tests.sh [test_category]
 #
@@ -17,7 +17,7 @@ OUTPUT_DIR="../disambiguation"
 # TODO: Parse CSL YAML test files
 # TODO: Extract input items (bibliography entries)
 # TODO: Extract expected output
-# TODO: Convert to CSLN test format (JSON fixtures + assertions)
+# TODO: Convert to Citum test format (JSON fixtures + assertions)
 # TODO: Write to disambiguation/*.rs test files
 
 echo "CSL test converter scaffold created"

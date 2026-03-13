@@ -3,7 +3,7 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-//! The CSLN processor for rendering citations and bibliographies.
+//! The Citum processor for rendering citations and bibliographies.
 //!
 //! ## Architecture
 //!
@@ -56,7 +56,7 @@ use indexmap::IndexMap;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 
-/// The CSLN processor facade.
+/// The Citum processor facade.
 ///
 /// Takes a style, bibliography, and locale context, then delegates citation
 /// and bibliography work to the processor submodules.

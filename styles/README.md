@@ -3,7 +3,7 @@
 `docs/compat.html` now reports two complementary metrics:
 
 - `Fidelity`: output match rate against citeproc-js oracle.
-- `Quality (SQI)`: structural quality of the CSLN style implementation.
+- `Quality (SQI)`: structural quality of the Citum style implementation.
 
 ## SQI (Style Quality Index)
 

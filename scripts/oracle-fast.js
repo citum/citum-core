@@ -233,7 +233,7 @@ function run() {
     return;
   }
 
-  // 2. Load fixtures for CSLN rendering
+  // 2. Load fixtures for Citum rendering
   const refsData = JSON.parse(fs.readFileSync(opts.refsFixture, 'utf8'));
   const testItems = Object.fromEntries(
     Object.entries(refsData)
@@ -247,11 +247,11 @@ function run() {
     const reason = csln?.error ?? 'Processor execution error';
     if (opts.jsonOutput) {
       process.stdout.write(JSON.stringify({
-        error: 'CSLN rendering failed', reason,
+        error: 'Citum rendering failed', reason,
         style: path.basename(opts.stylePath, '.csl'),
       }) + '\n');
     } else {
-      process.stderr.write(`CSLN rendering failed: ${reason}\n`);
+      process.stderr.write(`Citum rendering failed: ${reason}\n`);
     }
     process.exitCode = 2;
     return;
@@ -311,10 +311,10 @@ function run() {
     };
 
     if (!pair.oracle) {
-      entryResult.issues.push({ issue: 'extra_entry', detail: 'Entry in CSLN but not oracle' });
+      entryResult.issues.push({ issue: 'extra_entry', detail: 'Entry in Citum but not oracle' });
       rawResults.bibliography.failed++;
     } else if (!pair.csln) {
-      entryResult.issues.push({ issue: 'missing_entry', detail: 'Entry in oracle but not CSLN' });
+      entryResult.issues.push({ issue: 'missing_entry', detail: 'Entry in oracle but not Citum' });
       rawResults.bibliography.failed++;
     } else {
       const comparison = compareText(pair.oracle, pair.csln, {
@@ -343,9 +343,9 @@ function run() {
             if (ov.found && cv.found) {
               matches.push({ component: key, status: 'match' });
             } else if (ov.found && !cv.found) {
-              differences.push({ component: key, issue: 'missing', expected: ov.value, detail: 'Missing in CSLN output' });
+              differences.push({ component: key, issue: 'missing', expected: ov.value, detail: 'Missing in Citum output' });
             } else {
-              differences.push({ component: key, issue: 'extra', found: cv.value, detail: 'Extra in CSLN output' });
+              differences.push({ component: key, issue: 'extra', found: cv.value, detail: 'Extra in Citum output' });
             }
           }
           entryResult.components = { differences, matches };

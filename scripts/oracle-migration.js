@@ -12,7 +12,7 @@
  * Exit codes:
  *   0 - Success (meets quality threshold ≥5/7 items)
  *   1 - Failed validation (below threshold)
- *   2 - Fatal error (file not found, parse error, CSLN rendering failed)
+ *   2 - Fatal error (file not found, parse error, Citum rendering failed)
  */
 
 const CSL = require('citeproc');
@@ -185,8 +185,8 @@ function renderWithCsln(stylePath) {
     }
 
     if (!cslnStylePath) {
-        console.error(`❌ CSLN style not found for legacy style: ${styleName}`);
-        console.error('\nRun prep-migration.sh first to generate the CSLN style.');
+        console.error(`❌ Citum style not found for legacy style: ${styleName}`);
+        console.error('\nRun prep-migration.sh first to generate the Citum style.');
         process.exit(2);
     }
 
@@ -248,7 +248,7 @@ function compareOutputs(oracle, csln) {
     let bibliographyMatches = 0;
     const mismatches = [];
 
-    // Build maps for CSLN outputs (indexed by ID)
+    // Build maps for Citum outputs (indexed by ID)
     const cslnCiteMap = new Map();
     csln.citations.forEach(cite => {
         cslnCiteMap.set(cite.id, normalizeText(cite.text));
@@ -319,7 +319,7 @@ console.error('\n=== Migration Oracle (7-item focused test) ===\n');
 console.error('Rendering with citeproc-js...');
 const oracle = renderWithCiteprocJs(stylePath);
 
-console.error('Rendering with CSLN...');
+console.error('Rendering with Citum...');
 const csln = renderWithCsln(stylePath);
 
 console.error('Comparing outputs...\n');
@@ -355,7 +355,7 @@ if (jsonOutput) {
 
             console.log(`├─────────┼────────────────────────────────────────────────────┤`);
 
-            console.log(`│ CSLN    │ ${cslnLines[0].padEnd(50)} │`);
+            console.log(`│ Citum    │ ${cslnLines[0].padEnd(50)} │`);
             for (let i = 1; i < cslnLines.length; i++) console.log(`│         │ ${cslnLines[i].padEnd(50)} │`);
 
             console.log(`└─────────┴────────────────────────────────────────────────────┘\n`);

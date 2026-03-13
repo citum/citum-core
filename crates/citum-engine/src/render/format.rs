@@ -47,7 +47,7 @@ pub trait OutputFormat: Default + Clone {
 
     /// Apply outer prefix and suffix strings to the content.
     ///
-    /// These are typically the "prefix" and "suffix" fields from the CSLN style.
+    /// These are typically the "prefix" and "suffix" fields from the Citum style.
     fn affix(&self, prefix: &str, content: Self::Output, suffix: &str) -> Self::Output;
 
     /// Apply inner prefix and suffix strings to the content.

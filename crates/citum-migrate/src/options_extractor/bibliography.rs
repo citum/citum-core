@@ -291,7 +291,7 @@ pub fn extract_sort_from_bibliography(sort: &LegacySort) -> Option<Sort> {
     }
 }
 
-/// Extract bibliography sort into the top-level CSLN bibliography.sort shape.
+/// Extract bibliography sort into the top-level Citum bibliography.sort shape.
 ///
 /// This mapping is used by processor numeric citation-number assignment, where
 /// citation numbers follow bibliography order when a sort spec is present.

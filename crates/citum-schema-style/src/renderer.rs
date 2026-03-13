@@ -1,4 +1,4 @@
-//! Minimal renderer for the legacy CSLN (CSL Node) AST.
+//! Minimal renderer for the legacy Citum (CSL Node) AST.
 //!
 //! This module provides a basic AST renderer used internally for schema tests and migration workflows.
 //! It is not the production rendering engine (see `citum_engine` for that). The renderer handles
@@ -22,9 +22,9 @@ pub struct RenderItem {
     pub variables: HashMap<Variable, String>,
 }
 
-/// Minimal renderer for the legacy CSLN AST used in schema tests and migration.
+/// Minimal renderer for the legacy Citum AST used in schema tests and migration.
 ///
-/// This renderer walks a CSLN AST and produces a string output by concatenating rendered nodes.
+/// This renderer walks a Citum AST and produces a string output by concatenating rendered nodes.
 /// It handles text nodes, variables with optional labels, dates, names, groups, conditions,
 /// and term lookups. Formatting (italic, bold, underline, superscript) and prefix/suffix options
 /// are applied to text output.
@@ -33,12 +33,12 @@ pub struct Renderer;
 impl Renderer {
     /// Render a citation by concatenating the rendered output of each AST node.
     ///
-    /// Takes a sequence of CSLN AST nodes and a reference item, walks the tree, and produces
+    /// Takes a sequence of Citum AST nodes and a reference item, walks the tree, and produces
     /// a single string by joining all rendered node outputs.
     ///
     /// # Arguments
     ///
-    /// * `nodes` - A slice of CSLN AST nodes to render.
+    /// * `nodes` - A slice of Citum AST nodes to render.
     /// * `item` - The reference item providing variables and type information.
     ///
     /// # Returns
@@ -52,7 +52,7 @@ impl Renderer {
         output
     }
 
-    /// Render a single CSLN AST node.
+    /// Render a single Citum AST node.
     ///
     /// Dispatches on the node variant and calls the appropriate rendering method.
     fn render_node(&self, node: &CslnNode, item: &RenderItem) -> String {

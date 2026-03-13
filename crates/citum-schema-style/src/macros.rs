@@ -3,7 +3,7 @@ SPDX-License-Identifier: MPL-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-//! Declarative macros for the CSLN ecosystem.
+//! Declarative macros for the Citum ecosystem.
 
 /// Generates a string-backed enum and its `as_str` method.
 /// Preserves any doc comments and derive macros on the enum and its variants.
@@ -195,7 +195,7 @@ macro_rules! tc_list {
 }
 
 // Reference builder macros for tests and fixtures.
-// These construct native CSLN InputReference values without verbose struct literals.
+// These construct native Citum InputReference values without verbose struct literals.
 
 /// Builds an `InputReference::Monograph` (book) with a single structured-name author.
 ///

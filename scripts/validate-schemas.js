@@ -35,7 +35,7 @@ const CustomType = new yaml.Type('!custom', {
   }
 });
 
-const CSLN_SCHEMA = yaml.DEFAULT_SCHEMA.extend([ModeDependentType, CustomType]);
+const Citum_SCHEMA = yaml.DEFAULT_SCHEMA.extend([ModeDependentType, CustomType]);
 
 function normalizeForSchema(value) {
   if (Array.isArray(value)) {
@@ -89,7 +89,7 @@ function validate(filePath, schemaKey) {
   const content = fs.readFileSync(filePath, 'utf8');
   let data;
   if (filePath.endsWith('.yaml') || filePath.endsWith('.yml')) {
-    data = yaml.load(content, { schema: CSLN_SCHEMA });
+    data = yaml.load(content, { schema: Citum_SCHEMA });
   } else if (filePath.endsWith('.json')) {
     data = JSON.parse(content);
   } else {

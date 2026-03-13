@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Oracle test for hand-authored CSLN styles.
+ * Oracle test for hand-authored Citum styles.
  *
  * Known project styles are compared through the structured oracle path so
  * fixture-family resolution matches report-core. Arbitrary YAML paths fall

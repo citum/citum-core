@@ -9,7 +9,7 @@
  * 4. Builds consensus component ordering across all types
  * 5. Infers delimiters between adjacent components
  * 6. Detects type-specific suppress overrides
- * 7. Generates CSLN YAML template array
+ * 7. Generates Citum YAML template array
  *
  * Main export: inferTemplate(stylePath, section) → { template, yaml, meta }
  */
@@ -586,7 +586,7 @@ function detectNameOrderPatterns(parserName, role, entries, refByEntry) {
   return { globalWinner, overrides };
 }
 
-// -- CSLN component mapping --
+// -- Citum component mapping --
 
 function mapComponentToYaml(componentName, entry, refData) {
   const comps = parseComponents(entry, refData);

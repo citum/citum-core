@@ -1,6 +1,6 @@
 #!/bin/bash
 # scripts/lint-rendering.sh
-# Flag common CSLN rendering errors (double spaces, punctuation glitches)
+# Flag common Citum rendering errors (double spaces, punctuation glitches)
 
 STYLE_FILE=$1
 if [ -z "$STYLE_FILE" ]; then

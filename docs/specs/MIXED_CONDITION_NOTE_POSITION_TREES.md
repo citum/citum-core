@@ -15,7 +15,7 @@ In scope: XML-template migration in `citum-migrate` for note-style citation tree
 ## Design
 `Upsampler::extract_citation_position_templates` must keep the existing fast path for pure position-only trees. For mixed trees, the migrator must rewrite each requested position variant by cloning the legacy `choose`, removing branches whose `position` does not match the target, stripping `position` from matching branches, recursively rewriting retained children, and preserving all non-position predicates and sibling branches that never referenced `position`.
 
-The rewrite may collapse only trivial results. A rewritten tree with no surviving content emits nothing. A tree that reduces to exactly one surviving unconditional branch and no remaining `else` or fallback branches emits that branch's children inline. Otherwise the tree remains a `choose` so non-position logic is preserved in the compiled CSLN condition block.
+The rewrite may collapse only trivial results. A rewritten tree with no surviving content emits nothing. A tree that reduces to exactly one surviving unconditional branch and no remaining `else` or fallback branches emits that branch's children inline. Otherwise the tree remains a `choose` so non-position logic is preserved in the compiled Citum condition block.
 
 Unsupported cases remain fallback-only. Unknown `position` tokens, ambiguous duplicate pure position-only branches, or rewritten trees that cannot be normalized to a single fallback path must mark the position extraction unsupported and leave XML compilation on the base citation template only. This includes rewritten trees that retain both an unconditional branch and an `else` branch, or any other shape that would leave multiple fallback paths after specialization.
 

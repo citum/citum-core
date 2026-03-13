@@ -369,7 +369,7 @@ pub enum Title {
     Shorthand(String, String),
 }
 
-/// Where title parts are meaningful, use this struct; CSLN processors will not parse title strings.
+/// Where title parts are meaningful, use this struct; Citum processors will not parse title strings.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]

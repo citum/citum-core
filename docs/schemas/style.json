@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Style",
-  "description": "The new CSLN Style model.\n\nThis is the target schema for CSLN, featuring declarative options and simple template components instead of procedural conditionals.",
+  "description": "The new Citum Style model.\n\nThis is the target schema for Citum, featuring declarative options and simple template components instead of procedural conditionals.",
   "type": "object",
   "required": [
     "info"

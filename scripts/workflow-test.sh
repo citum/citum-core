@@ -67,7 +67,7 @@ fi
 require_dataset_dir "styles-legacy" "legacy CSL styles corpus" "workflow-test.sh"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "CSLN Workflow Test: $STYLE_NAME"
+echo "Citum Workflow Test: $STYLE_NAME"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo
 

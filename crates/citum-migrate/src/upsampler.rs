@@ -271,7 +271,7 @@ fn node_contains_ibid_term(node: &LNode) -> bool {
 }
 
 #[derive(Default)]
-/// Convert flattened legacy CSL nodes into CSLN nodes and citation position variants.
+/// Convert flattened legacy CSL nodes into Citum nodes and citation position variants.
 pub struct Upsampler {
     provenance: Option<crate::ProvenanceTracker>,
     pub et_al_min: Option<usize>,
@@ -322,7 +322,7 @@ impl Upsampler {
         }
     }
 
-    /// The entry point for converting a flattened legacy tree into CSLN nodes.
+    /// The entry point for converting a flattened legacy tree into Citum nodes.
     pub fn upsample_nodes(&self, legacy_nodes: &[LNode]) -> Vec<csln::CslnNode> {
         let mut csln_nodes = Vec::new();
         let mut i = 0;

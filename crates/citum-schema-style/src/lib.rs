@@ -100,9 +100,9 @@ pub type Template = Vec<TemplateComponent>;
 /// Canonical Citum style schema version used when `Style.version` is omitted.
 pub const STYLE_SCHEMA_VERSION: &str = "0.8.0";
 
-/// The new CSLN Style model.
+/// The new Citum Style model.
 ///
-/// This is the target schema for CSLN, featuring declarative options
+/// This is the target schema for Citum, featuring declarative options
 /// and simple template components instead of procedural conditionals.
 #[derive(Debug, Default, Deserialize, Serialize, Clone)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]

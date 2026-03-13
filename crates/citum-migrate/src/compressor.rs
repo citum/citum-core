@@ -105,7 +105,7 @@ impl Compressor {
         } else {
             // Handle "Then vs Nothing" (e.g. only print Volume if Book)
             // This maps to "overrides" logic ONLY if we assume the default is "Hidden".
-            // But CSLN VariableBlock implies "Show".
+            // But Citum VariableBlock implies "Show".
             // So we can't easily merge "Show vs Hide" into "Show with options" unless we have a "Hidden" formatting state.
             // For now, ignore.
         }

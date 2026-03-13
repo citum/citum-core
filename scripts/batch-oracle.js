@@ -133,7 +133,7 @@ function renderWithCiteprocJs(stylePath) {
 function renderWithCslnProcessor(stylePath) {
   const absStylePath = path.resolve(stylePath);
   
-  // Migrate CSL to CSLN
+  // Migrate CSL to Citum
   let migratedYaml;
   try {
     migratedYaml = execSync(
@@ -203,7 +203,7 @@ function testStyle(stylePath) {
     };
   }
   
-  // Render with CSLN
+  // Render with Citum
   const csln = renderWithCslnProcessor(stylePath);
   
   if (csln.error) {
@@ -370,7 +370,7 @@ if (mismatches.length > 0) {
       const s = m.samples.citations[0];
       console.log(`  Citation ${s.id}:`);
       console.log(`    Oracle: ${s.oracle}`);
-      console.log(`    CSLN:   ${s.csln}`);
+      console.log(`    Citum:   ${s.csln}`);
     }
   }
 }

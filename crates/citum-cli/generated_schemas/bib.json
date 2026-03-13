@@ -2517,7 +2517,7 @@
       }
     },
     "StructuredTitle": {
-      "description": "Where title parts are meaningful, use this struct; CSLN processors will not parse title strings.",
+      "description": "Where title parts are meaningful, use this struct; Citum processors will not parse title strings.",
       "type": "object",
       "required": [
         "main",

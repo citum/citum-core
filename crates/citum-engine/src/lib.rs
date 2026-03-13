@@ -5,10 +5,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 #![deny(missing_docs)]
 
-//! CSLN Processor
+//! Citum Processor
 //!
 //! This crate provides the core citation and bibliography processing functionality
-//! for the Citation Style Language Next (CSLN) project. It takes style definitions,
+//! for the Citation Style Language Next (Citum) project. It takes style definitions,
 //! bibliographic data, and citation information and produces formatted output.
 //!
 //! The processor is designed to be pluggable with different renderers and supports
