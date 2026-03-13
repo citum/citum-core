@@ -5,7 +5,7 @@ status: todo
 type: feature
 priority: normal
 created_at: 2026-03-11T21:30:00Z
-updated_at: 2026-03-11T21:30:00Z
+updated_at: 2026-03-13T00:51:50Z
 ---
 
 Follow-up to archived research bean `csl26-wv5o`.
@@ -63,3 +63,6 @@ First implementation slice only:
 - [ ] Document any intentionally deferred non-English transform behavior
 - [ ] Evaluate whether the Rust `titlecase` crate is useful as a helper without
       making it the architectural center of the feature
+
+## 2026-03-13
+- crates/citum-engine/src/processor/rendering.rs: DRY (3× multilingual extraction → helper), concision (3 dead methods removed, leading_group_affix via rendering()), idioms (is_some_and, match over unwrap), perf (avoid clone in punctuation_in_quote). 2364→2208 lines.
