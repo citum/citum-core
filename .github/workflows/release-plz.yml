@@ -189,7 +189,6 @@ jobs:
           release_output=$(release-plz release \
             --git-token "${GITHUB_TOKEN}" \
             --config .release-plz.toml \
-            --registry-manifest-path "${{ steps.released_manifest.outputs.manifest_path }}" \
             --forge github \
             -v \
             -o json)
