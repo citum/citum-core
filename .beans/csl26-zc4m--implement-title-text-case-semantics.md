@@ -5,7 +5,7 @@ status: todo
 type: feature
 priority: normal
 created_at: 2026-03-11T21:30:00Z
-updated_at: 2026-03-13T00:51:50Z
+updated_at: 2026-03-13T16:24:22Z
 ---
 
 Follow-up to archived research bean `csl26-wv5o`.
@@ -66,3 +66,6 @@ First implementation slice only:
 
 ## 2026-03-13
 - crates/citum-engine/src/processor/rendering.rs: DRY (3× multilingual extraction → helper), concision (3 dead methods removed, leading_group_affix via rendering()), idioms (is_some_and, match over unwrap), perf (avoid clone in punctuation_in_quote). 2364→2208 lines.
+
+## 2026-03-13
+- crates/citum-engine/src/processor/rendering.rs: extracted render_integral_explicit_group and render_special_type_items from 306-line render_grouped_citation_with_format; hoisted duplicate group_ids binding; applied then_some idiom
