@@ -746,6 +746,119 @@ impl<'a> Renderer<'a> {
 
     /// Render a grouped citation into one formatted string per citation item.
     ///
+    /// Render a group of items that must not be author-collapsed (legal cases,
+    /// personal communications). Returns the rendered citation strings.
+    fn render_special_type_items<F>(
+        &self,
+        group: &[&crate::reference::CitationItem],
+        spec: &citum_schema::CitationSpec,
+        mode: &citum_schema::citation::CitationMode,
+        suppress_author: bool,
+        position: Option<&citum_schema::citation::Position>,
+        intra_delimiter: &str,
+        fmt: &F,
+    ) -> Result<Vec<String>, ProcessorError>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let mut items = Vec::new();
+        for item in group {
+            let reference = self
+                .bibliography
+                .get(&item.id)
+                .ok_or_else(|| ProcessorError::ReferenceNotFound(item.id.clone()))?;
+            let item_language = crate::values::effective_item_language(reference);
+            let template = spec.resolve_template_for_language(item_language.as_deref());
+            let effective_template = template.as_deref().unwrap_or(&[]);
+            let request = self.citation_render_request(
+                item,
+                effective_template,
+                mode,
+                suppress_author,
+                position,
+            );
+            if let Some(item_str) = self.render_item_from_template_with_format::<F>(
+                reference,
+                request,
+                intra_delimiter,
+            ) && let Some((ids, content)) = self.build_citation_chunk(
+                fmt,
+                vec![item.id.clone()],
+                item_str,
+                item.prefix.as_deref(),
+                item.suffix.as_deref(),
+            ) {
+                items.push(fmt.citation(ids, content));
+            }
+        }
+        Ok(items)
+    }
+
+    /// Render one citation group using the explicit integral template.
+    ///
+    /// Returns `Ok(true)` if the group was rendered (caller should `continue`),
+    /// `Ok(false)` if `group_items_str` was empty (caller should fall through).
+    fn render_integral_explicit_group<F>(
+        &self,
+        group: &[&crate::reference::CitationItem],
+        spec: &citum_schema::CitationSpec,
+        mode: &citum_schema::citation::CitationMode,
+        suppress_author: bool,
+        position: Option<&citum_schema::citation::Position>,
+        fmt: &F,
+        first_item: &crate::reference::CitationItem,
+        rendered_groups: &mut Vec<String>,
+    ) -> Result<bool, ProcessorError>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let component_delimiter = spec.delimiter.as_deref().unwrap_or(" ");
+        let item_join_delim = spec.multi_cite_delimiter.as_deref().unwrap_or("; ");
+        let mut group_items_str = Vec::new();
+        let mut all_ids = Vec::new();
+
+        for item in group {
+            let reference = self
+                .bibliography
+                .get(&item.id)
+                .ok_or_else(|| ProcessorError::ReferenceNotFound(item.id.clone()))?;
+            let item_language = crate::values::effective_item_language(reference);
+            let item_template = spec.resolve_template_for_language(item_language.as_deref());
+            let effective_integral_template = item_template.as_deref().unwrap_or(&[]);
+            let request = self.citation_render_request(
+                item,
+                effective_integral_template,
+                mode,
+                suppress_author,
+                position,
+            );
+            if let Some(item_str) = self.render_item_from_template_with_format::<F>(
+                reference,
+                request,
+                component_delimiter,
+            ) {
+                group_items_str.push(item_str);
+                all_ids.push(item.id.clone());
+            }
+        }
+
+        if group_items_str.is_empty() {
+            return Ok(false);
+        }
+
+        let combined_str = group_items_str.join(item_join_delim);
+        if let Some((ids, content)) = self.build_citation_chunk(
+            fmt,
+            all_ids,
+            combined_str,
+            first_item.prefix.as_deref(),
+            first_item.suffix.as_deref(),
+        ) {
+            rendered_groups.push(fmt.citation(ids, content));
+        }
+        Ok(true)
+    }
+
     /// This preserves per-item output when grouping rules require items to stay
     /// separate, and otherwise applies the requested renderer format to the
     /// grouped citation output.
@@ -787,48 +900,16 @@ impl<'a> Renderer<'a> {
             {
                 // Narrative mode with explicit integral template (e.g., APA 7th)
                 // Render each item in the group with the integral template
-                let component_delimiter = spec.delimiter.as_deref().unwrap_or(" ");
-                let item_join_delim = spec.multi_cite_delimiter.as_deref().unwrap_or("; ");
-                let mut group_items_str = Vec::new();
-                let mut all_ids = Vec::new();
-
-                for item in &group {
-                    let reference = self
-                        .bibliography
-                        .get(&item.id)
-                        .ok_or_else(|| ProcessorError::ReferenceNotFound(item.id.clone()))?;
-                    let item_language = crate::values::effective_item_language(reference);
-                    let item_template =
-                        spec.resolve_template_for_language(item_language.as_deref());
-                    let effective_integral_template = item_template.as_deref().unwrap_or(&[]);
-                    let request = self.citation_render_request(
-                        item,
-                        effective_integral_template,
-                        mode,
-                        suppress_author,
-                        position,
-                    );
-                    if let Some(item_str) = self.render_item_from_template_with_format::<F>(
-                        reference,
-                        request,
-                        component_delimiter,
-                    ) {
-                        group_items_str.push(item_str);
-                        all_ids.push(item.id.clone());
-                    }
-                }
-
-                if !group_items_str.is_empty() {
-                    let combined_str = group_items_str.join(item_join_delim);
-                    if let Some((ids, content)) = self.build_citation_chunk(
-                        &fmt,
-                        all_ids,
-                        combined_str,
-                        first_item.prefix.as_deref(),
-                        first_item.suffix.as_deref(),
-                    ) {
-                        rendered_groups.push(fmt.citation(ids, content));
-                    }
+                if self.render_integral_explicit_group::<F>(
+                    &group,
+                    spec,
+                    mode,
+                    suppress_author,
+                    position,
+                    &fmt,
+                    first_item,
+                    &mut rendered_groups,
+                )? {
                     continue;
                 }
             }
@@ -841,35 +922,17 @@ impl<'a> Renderer<'a> {
                     "legal-case" | "personal-communication"
                 )
             {
-                for item in &group {
-                    let reference = self
-                        .bibliography
-                        .get(&item.id)
-                        .ok_or_else(|| ProcessorError::ReferenceNotFound(item.id.clone()))?;
-                    let item_language = crate::values::effective_item_language(reference);
-                    let template = spec.resolve_template_for_language(item_language.as_deref());
-                    let effective_template = template.as_deref().unwrap_or(&[]);
-                    let request = self.citation_render_request(
-                        item,
-                        effective_template,
+                rendered_groups.extend(
+                    self.render_special_type_items::<F>(
+                        &group,
+                        spec,
                         mode,
                         suppress_author,
                         position,
-                    );
-                    if let Some(item_str) = self.render_item_from_template_with_format::<F>(
-                        reference,
-                        request,
                         intra_delimiter,
-                    ) && let Some((ids, content)) = self.build_citation_chunk(
                         &fmt,
-                        vec![item.id.clone()],
-                        item_str,
-                        item.prefix.as_deref(),
-                        item.suffix.as_deref(),
-                    ) {
-                        rendered_groups.push(fmt.citation(ids, content));
-                    }
-                }
+                    )?,
+                );
                 continue;
             }
 
@@ -929,6 +992,7 @@ impl<'a> Renderer<'a> {
                 }
             }
 
+            let group_ids: Vec<String> = group.iter().map(|item| item.id.clone()).collect();
             let prefix = first_item.prefix.as_deref().unwrap_or("");
             if !author_part.is_empty() && !item_parts.is_empty() {
                 let author_item_delimiter = group_delimiter.as_deref().unwrap_or(intra_delimiter);
@@ -979,11 +1043,11 @@ impl<'a> Renderer<'a> {
                         }
                     }
                 };
-                let ids: Vec<String> = group.iter().map(|item| item.id.clone()).collect();
+                let ids = group_ids.clone();
                 let content = self.affix_content(&fmt, content, Some(prefix), None);
                 rendered_groups.push(fmt.citation(ids, content));
             } else if !author_part.is_empty() {
-                let ids: Vec<String> = group.iter().map(|item| item.id.clone()).collect();
+                let ids = group_ids.clone();
                 rendered_groups.push(fmt.citation(
                     ids,
                     self.affix_content(&fmt, author_part, Some(prefix), None),
@@ -991,9 +1055,8 @@ impl<'a> Renderer<'a> {
             } else if !item_parts.is_empty() {
                 // Item-only case (SuppressAuthor)
                 let content = item_parts.join(intra_delimiter);
-                let ids: Vec<String> = group.iter().map(|item| item.id.clone()).collect();
                 rendered_groups
-                    .push(fmt.citation(ids, self.affix_content(&fmt, content, Some(prefix), None)));
+                    .push(fmt.citation(group_ids, self.affix_content(&fmt, content, Some(prefix), None)));
             }
         }
 
@@ -1298,11 +1361,7 @@ impl<'a> Renderer<'a> {
 
         // Create a hint with citation number and position
         let hint = ProcHints {
-            citation_number: if citation_number > 0 {
-                Some(citation_number)
-            } else {
-                None
-            },
+            citation_number: (citation_number > 0).then_some(citation_number),
             citation_sub_label: if options.context == RenderContext::Citation {
                 reference
                     .id()
