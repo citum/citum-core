@@ -99,6 +99,40 @@ fn resolve_item_locator(
     }
 }
 
+fn group_citation_items_by_author<'a>(
+    renderer: &Renderer<'_>,
+    items: &'a [crate::reference::CitationItem],
+) -> Vec<(String, Vec<&'a crate::reference::CitationItem>)> {
+    let preserve_individual_citations = items.iter().any(|item| {
+        renderer
+            .hints
+            .get(&item.id)
+            .is_some_and(|hints| hints.min_names_to_show.is_some() || hints.expand_given_names)
+    });
+
+    let mut groups: Vec<(String, Vec<&'a crate::reference::CitationItem>)> = Vec::new();
+
+    for item in items {
+        let reference = renderer.bibliography.get(&item.id);
+        let author_key = if preserve_individual_citations {
+            item.id.clone()
+        } else {
+            reference
+                .map(|reference| renderer.get_author_grouping_key(reference))
+                .unwrap_or_default()
+        };
+
+        match groups.last_mut() {
+            Some(group) if !author_key.is_empty() && group.0 == author_key => {
+                group.1.push(item);
+            }
+            _ => groups.push((author_key, vec![item])),
+        }
+    }
+
+    groups
+}
+
 /// Internal render request used to keep template-processing call sites compact.
 struct TemplateRenderRequest<'a> {
     template: &'a [TemplateComponent],
@@ -185,21 +219,11 @@ impl<'a> Renderer<'a> {
         &self,
         mode: &citum_schema::citation::CitationMode,
     ) -> bool {
-        if !matches!(mode, citum_schema::citation::CitationMode::Integral) {
-            return false;
-        }
-
-        let is_numeric = self
-            .config
-            .processing
-            .as_ref()
-            .is_some_and(|p| matches!(p, citum_schema::options::Processing::Numeric));
-
-        if !is_numeric {
-            return false;
-        }
-
-        !self.has_explicit_integral_template()
+        matches!(mode, citum_schema::citation::CitationMode::Integral)
+            && self.config.processing.as_ref().is_some_and(|processing| {
+                matches!(processing, citum_schema::options::Processing::Numeric)
+            })
+            && !self.has_explicit_integral_template()
     }
 
     /// Determines if the processor should render author text for a label style
@@ -208,21 +232,11 @@ impl<'a> Renderer<'a> {
         &self,
         mode: &citum_schema::citation::CitationMode,
     ) -> bool {
-        if !matches!(mode, citum_schema::citation::CitationMode::Integral) {
-            return false;
-        }
-
-        let is_label = self
-            .config
-            .processing
-            .as_ref()
-            .is_some_and(|p| matches!(p, citum_schema::options::Processing::Label(_)));
-
-        if !is_label {
-            return false;
-        }
-
-        !self.has_explicit_integral_template()
+        matches!(mode, citum_schema::citation::CitationMode::Integral)
+            && self.config.processing.as_ref().is_some_and(|processing| {
+                matches!(processing, citum_schema::options::Processing::Label(_))
+            })
+            && !self.has_explicit_integral_template()
     }
 
     /// Whether the style provides an explicit integral (narrative) template.
@@ -230,7 +244,7 @@ impl<'a> Renderer<'a> {
         self.style
             .citation
             .as_ref()
-            .is_some_and(|cs| cs.integral.is_some())
+            .is_some_and(|citation| citation.integral.is_some())
     }
 
     fn should_collapse_compound_subentries(
@@ -552,6 +566,24 @@ impl<'a> Renderer<'a> {
             })
     }
 
+    fn citation_render_options<'b>(
+        &'b self,
+        mode: citum_schema::citation::CitationMode,
+        suppress_author: bool,
+        locator: Option<&'b str>,
+        locator_label: Option<LocatorType>,
+    ) -> RenderOptions<'b> {
+        RenderOptions {
+            config: self.config,
+            locale: self.locale,
+            context: RenderContext::Citation,
+            mode,
+            suppress_author,
+            locator,
+            locator_label,
+        }
+    }
+
     /// Render author + citation number for numeric integral citations.
     ///
     /// This is used as a default for numeric styles in narrative mode (e.g., "Smith [1]").
@@ -567,15 +599,12 @@ impl<'a> Renderer<'a> {
     {
         let fmt = F::default();
         let (loc_value, loc_label) = resolve_item_locator(item, self.locale);
-        let options = RenderOptions {
-            config: self.config,
-            locale: self.locale,
-            context: RenderContext::Citation,
-            mode: citum_schema::citation::CitationMode::Integral,
-            suppress_author: false,
-            locator: loc_value.as_deref(),
-            locator_label: loc_label,
-        };
+        let options = self.citation_render_options(
+            citum_schema::citation::CitationMode::Integral,
+            false,
+            loc_value.as_deref(),
+            loc_label,
+        );
 
         // Render author in short form
         let author_part = if let Some(authors) = reference.author() {
@@ -613,15 +642,12 @@ impl<'a> Renderer<'a> {
     {
         let fmt = F::default();
         let (loc_value, loc_label) = resolve_item_locator(item, self.locale);
-        let options = RenderOptions {
-            config: self.config,
-            locale: self.locale,
-            context: RenderContext::Citation,
-            mode: citum_schema::citation::CitationMode::Integral,
-            suppress_author: false,
-            locator: loc_value.as_deref(),
-            locator_label: loc_label,
-        };
+        let options = self.citation_render_options(
+            citum_schema::citation::CitationMode::Integral,
+            false,
+            loc_value.as_deref(),
+            loc_label,
+        );
 
         if let Some(contributor) = reference.author().or_else(|| reference.editor()) {
             let names_vec = self.resolve_contributor_names(&contributor);
@@ -799,37 +825,10 @@ impl<'a> Renderer<'a> {
     {
         use crate::reference::CitationItem;
 
-        let preserve_individual_citations = items.iter().any(|item| {
-            self.hints
-                .get(&item.id)
-                .is_some_and(|hints| hints.min_names_to_show.is_some() || hints.expand_given_names)
-        });
-
         // Group adjacent items by author key (respecting substitution). When a cite
         // already depends on name expansion for disambiguation, keep each item
         // separate instead of collapsing by author.
-        let mut groups: Vec<(String, Vec<&CitationItem>)> = Vec::new();
-
-        for item in items {
-            let reference = self.bibliography.get(&item.id);
-            let author_key = if preserve_individual_citations {
-                item.id.clone()
-            } else {
-                reference
-                    .map(|r| self.get_author_grouping_key(r))
-                    .unwrap_or_default()
-            };
-
-            // Check if this item has the same author as the previous group
-            match groups.last_mut() {
-                Some(group) if !author_key.is_empty() && group.0 == author_key => {
-                    group.1.push(item);
-                }
-                _ => {
-                    groups.push((author_key, vec![item]));
-                }
-            }
-        }
+        let groups: Vec<(String, Vec<&CitationItem>)> = group_citation_items_by_author(self, items);
 
         let mut rendered_groups = Vec::new();
         let fmt = F::default();
@@ -1078,15 +1077,7 @@ impl<'a> Renderer<'a> {
             return String::new();
         }
 
-        let options = RenderOptions {
-            config: self.config,
-            locale: self.locale,
-            context: RenderContext::Citation,
-            mode: mode.clone(),
-            suppress_author,
-            locator: None,
-            locator_label: None,
-        };
+        let options = self.citation_render_options(mode.clone(), suppress_author, None, None);
 
         // Try to use the first semantically relevant component (including nested lists)
         // so disambiguation hints and component-specific formatting are preserved.
@@ -1135,32 +1126,7 @@ impl<'a> Renderer<'a> {
     {
         use crate::reference::CitationItem;
 
-        let preserve_individual_citations = items.iter().any(|item| {
-            self.hints
-                .get(&item.id)
-                .is_some_and(|hints| hints.min_names_to_show.is_some() || hints.expand_given_names)
-        });
-
-        let mut groups: Vec<(String, Vec<&CitationItem>)> = Vec::new();
-        for item in items {
-            let reference = self.bibliography.get(&item.id);
-            let author_key = if preserve_individual_citations {
-                item.id.clone()
-            } else {
-                reference
-                    .map(|r| self.get_author_grouping_key(r))
-                    .unwrap_or_default()
-            };
-
-            match groups.last_mut() {
-                Some(group) if !author_key.is_empty() && group.0 == author_key => {
-                    group.1.push(item);
-                }
-                _ => {
-                    groups.push((author_key, vec![item]));
-                }
-            }
-        }
+        let groups: Vec<(String, Vec<&CitationItem>)> = group_citation_items_by_author(self, items);
 
         let mut rendered_groups = Vec::new();
         let fmt = F::default();
@@ -1728,8 +1694,10 @@ fn resolve_component_for_ref_type(
 mod tests {
     use super::*;
     use crate::Processor;
-    use citum_schema::citation::{Citation, CitationItem, CitationMode, IntegralNameState};
-    use citum_schema::citation::{CitationLocator, LocatorValue};
+    use citum_schema::citation::{
+        Citation, CitationItem, CitationLocator, CitationMode, IntegralNameState, LocatorType,
+        LocatorValue,
+    };
     use citum_schema::options::{
         Config, IntegralNameConfig, IntegralNameContexts, IntegralNameForm, IntegralNameRule,
         IntegralNameScope, Processing,
@@ -2116,6 +2084,94 @@ mod tests {
                 .process_citation(&citation)
                 .expect("grouped citation should render"),
             "(Kuhn, 1962, 1963)"
+        );
+    }
+
+    #[test]
+    fn grouping_helper_matches_citation_wide_preserve_behavior() {
+        let style = grouped_author_date_style();
+        let config = style.options.clone().unwrap_or_default();
+        let locale = Locale::default();
+        let mut bibliography = Bibliography::new();
+        bibliography.insert(
+            "item1".to_string(),
+            make_reference("item1", "book", Some(("Kuhn", "Thomas")), 1962, "Book A"),
+        );
+        bibliography.insert(
+            "item2".to_string(),
+            make_reference("item2", "book", Some(("Kuhn", "Thomas")), 1963, "Book B"),
+        );
+        bibliography.insert(
+            "item3".to_string(),
+            make_reference("item3", "book", Some(("Smith", "John")), 2020, "Book C"),
+        );
+
+        let mut hints = HashMap::new();
+        hints.insert(
+            "item3".to_string(),
+            ProcHints {
+                min_names_to_show: Some(2),
+                ..Default::default()
+            },
+        );
+        let citation_numbers = RefCell::new(HashMap::new());
+        let compound_set_by_ref = HashMap::new();
+        let compound_member_index = HashMap::new();
+        let compound_sets = IndexMap::new();
+        let renderer = Renderer::new(
+            &style,
+            &bibliography,
+            &locale,
+            &config,
+            &hints,
+            &citation_numbers,
+            CompoundRenderData {
+                set_by_ref: &compound_set_by_ref,
+                member_index: &compound_member_index,
+                sets: &compound_sets,
+            },
+        );
+        let items = vec![
+            CitationItem {
+                id: "item1".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "item2".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "item3".to_string(),
+                ..Default::default()
+            },
+        ];
+
+        let groups = group_citation_items_by_author(&renderer, &items);
+
+        assert_eq!(groups.len(), 3);
+        assert_eq!(
+            groups[0]
+                .1
+                .iter()
+                .map(|item| item.id.as_str())
+                .collect::<Vec<_>>(),
+            vec!["item1"]
+        );
+        assert_eq!(
+            groups[1]
+                .1
+                .iter()
+                .map(|item| item.id.as_str())
+                .collect::<Vec<_>>(),
+            vec!["item2"]
+        );
+        assert_eq!(
+            groups[2]
+                .1
+                .iter()
+                .map(|item| item.id.as_str())
+                .collect::<Vec<_>>(),
+            vec!["item3"]
         );
     }
 
