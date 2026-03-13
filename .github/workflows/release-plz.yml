@@ -88,6 +88,99 @@ jobs:
             echo "::warning::release-plz created no release PRs for this push."
           fi
 
+      - name: Rewrite release PR bodies for code-track wording
+        if: ${{ steps.release_pr.outputs.prs != '' && steps.release_pr.outputs.prs != '[]' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRS_JSON: ${{ steps.release_pr.outputs.prs }}
+          PREVIOUS_TAG: ${{ steps.released_manifest.outputs.tag }}
+        run: |
+          schema_version=$(python3 - <<'PY'
+          import pathlib
+          import re
+
+          content = pathlib.Path("crates/citum-schema-style/src/lib.rs").read_text(encoding="utf-8")
+          match = re.search(r'pub const STYLE_SCHEMA_VERSION: &str = "([^"]+)";', content)
+          if match is None:
+              raise SystemExit("Could not determine STYLE_SCHEMA_VERSION")
+          print(match.group(1))
+          PY
+          )
+
+          while IFS= read -r pr_json; do
+            [[ -z "${pr_json}" ]] && continue
+
+            pr_number=$(echo "${pr_json}" | jq -r '.number')
+            current_body=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${pr_number}" --jq '.body')
+
+            payload_file=$(mktemp)
+            PR_JSON="${pr_json}" \
+            CURRENT_BODY="${current_body}" \
+            PREVIOUS_TAG="${PREVIOUS_TAG}" \
+            SCHEMA_VERSION="${schema_version}" \
+            python3 - "${payload_file}" <<'PY'
+          import json
+          import os
+          import pathlib
+          import sys
+
+          pr = json.loads(os.environ["PR_JSON"])
+          current_body = os.environ["CURRENT_BODY"]
+          previous_tag = os.environ["PREVIOUS_TAG"]
+          schema_version = os.environ["SCHEMA_VERSION"]
+
+          releases = pr.get("releases", [])
+          if not releases:
+              raise SystemExit("release-plz returned a PR without releases")
+
+          previous_version = previous_tag[1:] if previous_tag.startswith("v") else previous_tag
+          target_versions = sorted({release["version"] for release in releases})
+          if len(target_versions) == 1:
+              heading = f"## Code release: workspace crates {previous_version} -> {target_versions[0]}"
+          else:
+              heading = "## Code release: workspace crate updates"
+
+          details_index = current_body.find("<details>")
+          tail = current_body[details_index:].strip() if details_index != -1 else ""
+          if not tail:
+              tail = (
+                  "---\n"
+                  "This PR was generated with "
+                  "[release-plz](https://github.com/release-plz/release-plz/)."
+              )
+
+          package_names = ", ".join(f"`{release['package_name']}`" for release in releases)
+          body = "\n\n".join(
+              [
+                  heading,
+                  (
+                      "This PR bumps the Rust workspace package version for the code-release "
+                      "track. All synchronized workspace crates move together, including "
+                      "implementation crates whose names begin with `citum-schema`."
+                  ),
+                  (
+                      "Schema format version remains unchanged unless "
+                      "`citum_schema::SCHEMA_VERSION` / `STYLE_SCHEMA_VERSION` changes. "
+                      f"The current schema format version is `{schema_version}`."
+                  ),
+                  (
+                      "Affected workspace crates: "
+                      f"{package_names}."
+                  ),
+                  tail,
+              ]
+          ).strip()
+
+          pathlib.Path(sys.argv[1]).write_text(json.dumps({"body": body}), encoding="utf-8")
+          PY
+
+            gh api "repos/${GITHUB_REPOSITORY}/pulls/${pr_number}" \
+              --method PATCH \
+              --input "${payload_file}" >/dev/null
+            rm -f "${payload_file}"
+          done < <(echo "${PRS_JSON}" | jq -c '.[]')
+
       - name: Run release-plz release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
