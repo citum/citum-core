@@ -136,6 +136,21 @@ impl<'a> Renderer<'a> {
         }
     }
 
+    /// Resolve multilingual contributor names using the style's config.
+    fn resolve_contributor_names(
+        &self,
+        contributor: &citum_schema::reference::contributor::Contributor,
+    ) -> Vec<crate::reference::FlatName> {
+        let ml = self.config.multilingual.as_ref();
+        crate::values::resolve_multilingual_name(
+            contributor,
+            ml.and_then(|m| m.name_mode.as_ref()),
+            ml.and_then(|m| m.preferred_transliteration.as_deref()),
+            ml.and_then(|m| m.preferred_script.as_ref()),
+            &self.locale.locale,
+        )
+    }
+
     fn citation_sub_label_for_ref(&self, ref_id: &str) -> Option<String> {
         let compound = self
             .config
@@ -178,22 +193,13 @@ impl<'a> Renderer<'a> {
             .config
             .processing
             .as_ref()
-            .map(|p| matches!(p, citum_schema::options::Processing::Numeric))
-            .unwrap_or(false);
+            .is_some_and(|p| matches!(p, citum_schema::options::Processing::Numeric));
 
         if !is_numeric {
             return false;
         }
 
-        // If the style provides an explicit integral template, use it instead of the hardcoded default.
-        let has_explicit_integral = self
-            .style
-            .citation
-            .as_ref()
-            .map(|cs| cs.integral.is_some())
-            .unwrap_or(false);
-
-        !has_explicit_integral
+        !self.has_explicit_integral_template()
     }
 
     /// Determines if the processor should render author text for a label style
@@ -210,22 +216,21 @@ impl<'a> Renderer<'a> {
             .config
             .processing
             .as_ref()
-            .map(|p| matches!(p, citum_schema::options::Processing::Label(_)))
-            .unwrap_or(false);
+            .is_some_and(|p| matches!(p, citum_schema::options::Processing::Label(_)));
 
         if !is_label {
             return false;
         }
 
-        // If the style provides an explicit integral template, use it instead of the hardcoded default.
-        let has_explicit_integral = self
-            .style
+        !self.has_explicit_integral_template()
+    }
+
+    /// Whether the style provides an explicit integral (narrative) template.
+    fn has_explicit_integral_template(&self) -> bool {
+        self.style
             .citation
             .as_ref()
-            .map(|cs| cs.integral.is_some())
-            .unwrap_or(false);
-
-        !has_explicit_integral
+            .is_some_and(|cs| cs.integral.is_some())
     }
 
     fn should_collapse_compound_subentries(
@@ -256,8 +261,7 @@ impl<'a> Renderer<'a> {
             .config
             .processing
             .as_ref()
-            .map(|p| matches!(p, citum_schema::options::Processing::Numeric))
-            .unwrap_or(false);
+            .is_some_and(|p| matches!(p, citum_schema::options::Processing::Numeric));
 
         is_numeric
             && matches!(
@@ -575,30 +579,7 @@ impl<'a> Renderer<'a> {
 
         // Render author in short form
         let author_part = if let Some(authors) = reference.author() {
-            let mode = self
-                .config
-                .multilingual
-                .as_ref()
-                .and_then(|m| m.name_mode.as_ref());
-            let preferred_transliteration = self
-                .config
-                .multilingual
-                .as_ref()
-                .and_then(|m| m.preferred_transliteration.as_deref());
-            let preferred_script = self
-                .config
-                .multilingual
-                .as_ref()
-                .and_then(|m| m.preferred_script.as_ref());
-            let locale_str = &self.locale.locale;
-
-            let names_vec = crate::values::resolve_multilingual_name(
-                &authors,
-                mode,
-                preferred_transliteration,
-                preferred_script,
-                locale_str,
-            );
+            let names_vec = self.resolve_contributor_names(&authors);
             fmt.text(&crate::values::format_contributors_short(
                 &names_vec, &options,
             ))
@@ -643,30 +624,7 @@ impl<'a> Renderer<'a> {
         };
 
         if let Some(contributor) = reference.author().or_else(|| reference.editor()) {
-            let mode = self
-                .config
-                .multilingual
-                .as_ref()
-                .and_then(|m| m.name_mode.as_ref());
-            let preferred_transliteration = self
-                .config
-                .multilingual
-                .as_ref()
-                .and_then(|m| m.preferred_transliteration.as_deref());
-            let preferred_script = self
-                .config
-                .multilingual
-                .as_ref()
-                .and_then(|m| m.preferred_script.as_ref());
-            let locale_str = &self.locale.locale;
-
-            let names_vec = crate::values::resolve_multilingual_name(
-                &contributor,
-                mode,
-                preferred_transliteration,
-                preferred_script,
-                locale_str,
-            );
+            let names_vec = self.resolve_contributor_names(&contributor);
             let author_part = fmt.text(&crate::values::format_contributors_short(
                 &names_vec, &options,
             ));
@@ -863,13 +821,13 @@ impl<'a> Renderer<'a> {
             };
 
             // Check if this item has the same author as the previous group
-            if !groups.is_empty()
-                && groups.last().unwrap().0 == author_key
-                && !author_key.is_empty()
-            {
-                groups.last_mut().unwrap().1.push(item);
-            } else {
-                groups.push((author_key, vec![item]));
+            match groups.last_mut() {
+                Some(group) if !author_key.is_empty() && group.0 == author_key => {
+                    group.1.push(item);
+                }
+                _ => {
+                    groups.push((author_key, vec![item]));
+                }
             }
         }
 
@@ -1056,12 +1014,13 @@ impl<'a> Renderer<'a> {
                                 && (author_part.ends_with('"') || author_part.ends_with('\u{201D}'))
                             {
                                 let is_curly = author_part.ends_with('\u{201D}');
-                                let mut fixed_author = author_part.clone();
-                                fixed_author.pop();
+                                let quote_char = if is_curly { '\u{201D}' } else { '"' };
+                                let trimmed =
+                                    &author_part[..author_part.len() - quote_char.len_utf8()];
                                 format!(
                                     "{},{}{}{}",
-                                    fixed_author,
-                                    if is_curly { '\u{201D}' } else { '"' },
+                                    trimmed,
+                                    quote_char,
                                     &author_item_delimiter[1..],
                                     joined_items
                                 )
@@ -1153,30 +1112,7 @@ impl<'a> Renderer<'a> {
 
         // Fallback for cases where first component isn't suitable or returned empty
         if let Some(authors) = reference.author() {
-            let mode = self
-                .config
-                .multilingual
-                .as_ref()
-                .and_then(|m| m.name_mode.as_ref());
-            let preferred_transliteration = self
-                .config
-                .multilingual
-                .as_ref()
-                .and_then(|m| m.preferred_transliteration.as_deref());
-            let preferred_script = self
-                .config
-                .multilingual
-                .as_ref()
-                .and_then(|m| m.preferred_script.as_ref());
-            let locale_str = &self.locale.locale;
-
-            let names_vec = crate::values::resolve_multilingual_name(
-                &authors,
-                mode,
-                preferred_transliteration,
-                preferred_script,
-                locale_str,
-            );
+            let names_vec = self.resolve_contributor_names(&authors);
             F::default().text(&crate::values::format_contributors_short(
                 &names_vec, &options,
             ))
@@ -1252,19 +1188,6 @@ impl<'a> Renderer<'a> {
 
         Ok(fmt.join(rendered_groups, inter_delimiter))
     }
-    #[allow(dead_code)]
-    fn render_author_for_grouping(
-        &self,
-        reference: &Reference,
-        template: &[TemplateComponent],
-        mode: &citum_schema::citation::CitationMode,
-        position: Option<&citum_schema::citation::Position>,
-    ) -> String {
-        let item = crate::reference::CitationItem::default();
-        self.render_author_for_grouping_with_format::<crate::render::plain::PlainText>(
-            reference, &item, template, mode, false, position,
-        )
-    }
 
     /// Get a unique key for grouping citations by author.
     fn get_author_grouping_key(&self, reference: &Reference) -> String {
@@ -1291,54 +1214,6 @@ impl<'a> Renderer<'a> {
             strip_leading_group_affixes(first);
         }
         (filtered, leading_affix)
-    }
-
-    /// Render just the year part (with suffix) for citation grouping.
-    fn render_year_for_grouping_with_format<F>(&self, reference: &Reference) -> String
-    where
-        F: crate::render::format::OutputFormat<Output = String>,
-    {
-        let fmt = F::default();
-        let hints = self
-            .hints
-            .get(&reference.id().unwrap_or_default())
-            .cloned()
-            .unwrap_or_default();
-
-        // Format year with disambiguation suffix
-        if let Some(issued) = reference.issued() {
-            let year = issued.year();
-            let suffix = if hints.disamb_condition && hints.group_index > 0 {
-                // Check if year suffix is enabled. Fall back to AuthorDate default
-                // (year_suffix: true) when processing is not explicitly set, matching
-                // the behavior in disambiguation.rs which uses unwrap_or_default().
-                let use_suffix = self
-                    .config
-                    .processing
-                    .as_ref()
-                    .unwrap_or(&citum_schema::options::Processing::AuthorDate)
-                    .config()
-                    .disambiguate
-                    .as_ref()
-                    .map(|d| d.year_suffix)
-                    .unwrap_or(false);
-
-                if use_suffix {
-                    crate::values::int_to_letter(hints.group_index as u32).unwrap_or_default()
-                } else {
-                    String::new()
-                }
-            } else {
-                String::new()
-            };
-            return fmt.text(&format!("{}{}", year, suffix));
-        }
-        String::new()
-    }
-
-    #[allow(dead_code)]
-    fn render_year_for_grouping(&self, reference: &Reference) -> String {
-        self.render_year_for_grouping_with_format::<crate::render::plain::PlainText>(reference)
     }
 
     /// Get the citation number for a reference, assigning one if not yet cited.
@@ -1693,45 +1568,14 @@ fn strip_author_component(component: &TemplateComponent) -> Option<TemplateCompo
 
 /// Extract the leading affix used to separate grouped authors from item details.
 fn leading_group_affix(component: &TemplateComponent) -> Option<String> {
-    let own_affix = match component {
-        TemplateComponent::Contributor(inner) => inner
-            .rendering
-            .prefix
-            .clone()
-            .or(inner.rendering.inner_prefix.clone()),
-        TemplateComponent::Date(inner) => inner
-            .rendering
-            .prefix
-            .clone()
-            .or(inner.rendering.inner_prefix.clone()),
-        TemplateComponent::Title(inner) => inner
-            .rendering
-            .prefix
-            .clone()
-            .or(inner.rendering.inner_prefix.clone()),
-        TemplateComponent::Number(inner) => inner
-            .rendering
-            .prefix
-            .clone()
-            .or(inner.rendering.inner_prefix.clone()),
-        TemplateComponent::Variable(inner) => inner
-            .rendering
-            .prefix
-            .clone()
-            .or(inner.rendering.inner_prefix.clone()),
-        TemplateComponent::Term(inner) => inner
-            .rendering
-            .prefix
-            .clone()
-            .or(inner.rendering.inner_prefix.clone()),
-        TemplateComponent::List(inner) => inner
-            .rendering
-            .prefix
-            .clone()
-            .or(inner.rendering.inner_prefix.clone())
-            .or_else(|| inner.items.first().and_then(leading_group_affix)),
-        _ => None,
-    };
+    let r = component.rendering();
+    let own_affix = r.prefix.clone().or(r.inner_prefix.clone()).or_else(|| {
+        if let TemplateComponent::List(inner) = component {
+            inner.items.first().and_then(leading_group_affix)
+        } else {
+            None
+        }
+    });
 
     own_affix.filter(|value| !value.is_empty())
 }
