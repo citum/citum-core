@@ -744,8 +744,6 @@ impl<'a> Renderer<'a> {
         )
     }
 
-    /// Render a grouped citation into one formatted string per citation item.
-    ///
     /// Render a group of items that must not be author-collapsed (legal cases,
     /// personal communications). Returns the rendered citation strings.
     fn render_special_type_items<F>(
@@ -756,11 +754,11 @@ impl<'a> Renderer<'a> {
         suppress_author: bool,
         position: Option<&citum_schema::citation::Position>,
         intra_delimiter: &str,
-        fmt: &F,
     ) -> Result<Vec<String>, ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
+        let fmt = F::default();
         let mut items = Vec::new();
         for item in group {
             let reference = self
@@ -777,17 +775,16 @@ impl<'a> Renderer<'a> {
                 suppress_author,
                 position,
             );
-            if let Some(item_str) = self.render_item_from_template_with_format::<F>(
-                reference,
-                request,
-                intra_delimiter,
-            ) && let Some((ids, content)) = self.build_citation_chunk(
-                fmt,
-                vec![item.id.clone()],
-                item_str,
-                item.prefix.as_deref(),
-                item.suffix.as_deref(),
-            ) {
+            if let Some(item_str) =
+                self.render_item_from_template_with_format::<F>(reference, request, intra_delimiter)
+                && let Some((ids, content)) = self.build_citation_chunk(
+                    &fmt,
+                    vec![item.id.clone()],
+                    item_str,
+                    item.prefix.as_deref(),
+                    item.suffix.as_deref(),
+                )
+            {
                 items.push(fmt.citation(ids, content));
             }
         }
@@ -796,8 +793,8 @@ impl<'a> Renderer<'a> {
 
     /// Render one citation group using the explicit integral template.
     ///
-    /// Returns `Ok(true)` if the group was rendered (caller should `continue`),
-    /// `Ok(false)` if `group_items_str` was empty (caller should fall through).
+    /// Returns `Ok(Some(citation))` if the group rendered (caller should push and `continue`),
+    /// or `Ok(None)` if no items produced output (caller should fall through to other branches).
     fn render_integral_explicit_group<F>(
         &self,
         group: &[&crate::reference::CitationItem],
@@ -805,13 +802,12 @@ impl<'a> Renderer<'a> {
         mode: &citum_schema::citation::CitationMode,
         suppress_author: bool,
         position: Option<&citum_schema::citation::Position>,
-        fmt: &F,
-        first_item: &crate::reference::CitationItem,
-        rendered_groups: &mut Vec<String>,
-    ) -> Result<bool, ProcessorError>
+    ) -> Result<Option<String>, ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
+        let fmt = F::default();
+        let first_item = group[0];
         let component_delimiter = spec.delimiter.as_deref().unwrap_or(" ");
         let item_join_delim = spec.multi_cite_delimiter.as_deref().unwrap_or("; ");
         let mut group_items_str = Vec::new();
@@ -843,20 +839,19 @@ impl<'a> Renderer<'a> {
         }
 
         if group_items_str.is_empty() {
-            return Ok(false);
+            return Ok(None);
         }
 
         let combined_str = group_items_str.join(item_join_delim);
-        if let Some((ids, content)) = self.build_citation_chunk(
-            fmt,
-            all_ids,
-            combined_str,
-            first_item.prefix.as_deref(),
-            first_item.suffix.as_deref(),
-        ) {
-            rendered_groups.push(fmt.citation(ids, content));
-        }
-        Ok(true)
+        Ok(self
+            .build_citation_chunk(
+                &fmt,
+                all_ids,
+                combined_str,
+                first_item.prefix.as_deref(),
+                first_item.suffix.as_deref(),
+            )
+            .map(|(ids, content)| fmt.citation(ids, content)))
     }
 
     /// This preserves per-item output when grouping rules require items to stay
@@ -900,16 +895,14 @@ impl<'a> Renderer<'a> {
             {
                 // Narrative mode with explicit integral template (e.g., APA 7th)
                 // Render each item in the group with the integral template
-                if self.render_integral_explicit_group::<F>(
+                if let Some(citation) = self.render_integral_explicit_group::<F>(
                     &group,
                     spec,
                     mode,
                     suppress_author,
                     position,
-                    &fmt,
-                    first_item,
-                    &mut rendered_groups,
                 )? {
+                    rendered_groups.push(citation);
                     continue;
                 }
             }
@@ -922,17 +915,14 @@ impl<'a> Renderer<'a> {
                     "legal-case" | "personal-communication"
                 )
             {
-                rendered_groups.extend(
-                    self.render_special_type_items::<F>(
-                        &group,
-                        spec,
-                        mode,
-                        suppress_author,
-                        position,
-                        intra_delimiter,
-                        &fmt,
-                    )?,
-                );
+                rendered_groups.extend(self.render_special_type_items::<F>(
+                    &group,
+                    spec,
+                    mode,
+                    suppress_author,
+                    position,
+                    intra_delimiter,
+                )?);
                 continue;
             }
 
@@ -1055,8 +1045,10 @@ impl<'a> Renderer<'a> {
             } else if !item_parts.is_empty() {
                 // Item-only case (SuppressAuthor)
                 let content = item_parts.join(intra_delimiter);
-                rendered_groups
-                    .push(fmt.citation(group_ids, self.affix_content(&fmt, content, Some(prefix), None)));
+                rendered_groups.push(fmt.citation(
+                    group_ids,
+                    self.affix_content(&fmt, content, Some(prefix), None),
+                ));
             }
         }
 
@@ -1562,39 +1554,13 @@ fn leading_group_affix(component: &TemplateComponent) -> Option<String> {
 /// author is still present. Grouped citation assembly adds the author/date
 /// delimiter separately, so the first surviving component must start "clean".
 fn strip_leading_group_affixes(component: &mut TemplateComponent) {
-    match component {
-        TemplateComponent::Contributor(inner) => {
-            inner.rendering.prefix = None;
-            inner.rendering.inner_prefix = None;
-        }
-        TemplateComponent::Date(inner) => {
-            inner.rendering.prefix = None;
-            inner.rendering.inner_prefix = None;
-        }
-        TemplateComponent::Title(inner) => {
-            inner.rendering.prefix = None;
-            inner.rendering.inner_prefix = None;
-        }
-        TemplateComponent::Number(inner) => {
-            inner.rendering.prefix = None;
-            inner.rendering.inner_prefix = None;
-        }
-        TemplateComponent::Variable(inner) => {
-            inner.rendering.prefix = None;
-            inner.rendering.inner_prefix = None;
-        }
-        TemplateComponent::Term(inner) => {
-            inner.rendering.prefix = None;
-            inner.rendering.inner_prefix = None;
-        }
-        TemplateComponent::List(inner) => {
-            inner.rendering.prefix = None;
-            inner.rendering.inner_prefix = None;
-            if let Some(first) = inner.items.first_mut() {
-                strip_leading_group_affixes(first);
-            }
-        }
-        _ => {}
+    let r = component.rendering_mut();
+    r.prefix = None;
+    r.inner_prefix = None;
+    if let TemplateComponent::List(inner) = component
+        && let Some(first) = inner.items.first_mut()
+    {
+        strip_leading_group_affixes(first);
     }
 }
 
