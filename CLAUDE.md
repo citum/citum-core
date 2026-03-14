@@ -12,9 +12,10 @@ You are a **Lead Systems Architect and Principal Rust Engineer** for the Citum i
 
 Before committing `.rs`, `Cargo.toml`, or `Cargo.lock` changes, run:
 ```bash
-cargo fmt && cargo clippy --all-targets --all-features -- -D warnings && cargo nextest run
+cargo fmt --check && cargo clippy --all-targets --all-features -- -D warnings && cargo nextest run
 ```
 Fallback if nextest missing: `cargo test`. **DO NOT commit if any check fails.**
+Run `cargo fmt` first to fix formatting, then re-run `cargo fmt --check` to confirm clean.
 
 Docs/styles (`.md`, `.yaml` in `styles/`) skip checks entirely.
 
@@ -50,7 +51,7 @@ system), create a spec first:
 3. Set Status to `Active` in the same commit as the first implementation.
 4. Reference the spec path in the bean description.
 
-**Commit Messages:** Conventional Commits `type(scope): subject`, lowercase, 50/72 rule, no `--amend`, no `Co-Authored-By`.
+**Commit Messages:** Conventional Commits `type(scope): subject`, lowercase, 50/72 rule, no `Co-Authored-By`. `--amend` is allowed **only on unpushed commits** (to absorb pre-push gate fixes). Forbidden once a commit is on the remote.
 
 ### Post-Push CI Check (PR branches)
 
