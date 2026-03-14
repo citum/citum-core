@@ -22,7 +22,7 @@ See CLAUDE.md for active behavioral policy. This document captures the full desi
 **Strategy: Strict Typing with Explicit Extensions**
 1. **Explicit Versioning**: Styles include a `version` field for unambiguous schema identification.
 2. **Strict Validation**: Style and locale types use `deny_unknown_fields` to catch typos at parse time. `InputReference` variants are an exception: serde's internally-tagged enum dispatch replays the tag field into the inner struct's deserializer, making `deny_unknown_fields` incompatible. Unknown fields on reference types silently produce `None` and surface as missing data at render time rather than a parse error. This is an accepted trade-off for deterministic class-based dispatch.
-3. **Explicit Extension Points**: Styles use explicit `custom: Option<HashMap<String, serde_json::Value>>` fields for user-defined metadata and extensions.
+3. **Explicit Extension Points**: Styles use explicit `custom: Option<HashMap<String, serde_json::Value>>` fields for user-defined metadata and extensions. See [EXTENSIBILITY_STRATEGY_2026-03-14.md](./EXTENSIBILITY_STRATEGY_2026-03-14.md) for the portability-first extension ladder and limits on executable extensions.
 4. **Extension via Defaults**: All new features must be `Option<T>` with `#[serde(default)]`.
 
 **Graceful Degradation for Multilingual Data**
