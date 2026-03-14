@@ -2,31 +2,30 @@
 
 use citum_migrate::{
     Compressor, MacroInliner, OptionsExtractor, TemplateCompiler, Upsampler, analysis,
-    debug_output::DebugOutputFormatter, fixups::{
+    debug_output::DebugOutputFormatter,
+    fixups::{
         citation_template_has_citation_number, citation_template_is_author_year_only,
         ensure_inferred_media_type_templates, ensure_inferred_patent_type_template,
         ensure_numeric_locator_citation_component, ensure_personal_communication_omitted,
         move_group_wrap_to_citation_items, normalize_author_date_inferred_contributors,
         normalize_author_date_locator_citation_component, normalize_contributor_form_to_short,
         normalize_legal_case_type_template, normalize_wrapped_numeric_locator_citation_component,
-        note_citation_template_is_underfit,
-        scrub_inferred_literal_artifacts, selector_matches_any, should_merge_inferred_type_template,
-    }, passes, preset_detector, provenance::ProvenanceTracker,
+        note_citation_template_is_underfit, scrub_inferred_literal_artifacts, selector_matches_any,
+        should_merge_inferred_type_template,
+    },
+    passes, preset_detector,
+    provenance::ProvenanceTracker,
     template_resolver,
 };
 use citum_schema::{
     BibliographySpec, CitationSpec, Style, StyleInfo,
     template::{
-        DateVariable, DelimiterPunctuation, Rendering, SimpleVariable, TemplateComponent,
-        TemplateList, TemplateVariable, TitleType, TypeSelector, WrapPunctuation,
+        ComponentOverride, DateVariable, DelimiterPunctuation, NumberVariable, Rendering,
+        SimpleVariable, TemplateComponent, TitleType, TypeSelector,
     },
 };
-use csl_legacy::{
-    model::{CslNode, Layout},
-    parser::parse_style,
-};
+use csl_legacy::parser::parse_style;
 use roxmltree::Document;
-use std::collections::HashSet;
 use std::fs;
 use std::path::PathBuf;
 
@@ -787,7 +786,7 @@ fn compile_from_xml(
         let volume_list_has_space_prefix = new_bib.iter().any(|c| {
             if let TemplateComponent::List(list) = c {
                 let has_volume = list.items.iter().any(|item| {
-                    matches!(item, TemplateComponent::Number(n) if n.number == citum_schema::template::NumberVariable::Volume)
+                    matches!(item, TemplateComponent::Number(n) if n.number == NumberVariable::Volume)
                 });
                 if has_volume {
                     // Check if the List has a space-only prefix
@@ -868,20 +867,20 @@ fn compile_from_xml(
 
 fn apply_type_overrides(
     component: &mut TemplateComponent,
-    volume_pages_delimiter: Option<citum_schema::template::DelimiterPunctuation>,
+    volume_pages_delimiter: Option<DelimiterPunctuation>,
     volume_list_has_space_prefix: bool,
     style_preset: Option<preset_detector::StylePreset>,
 ) {
     use preset_detector::StylePreset;
     match component {
         // Primary title: style-specific suffix for articles
-        TemplateComponent::Title(t) if t.title == citum_schema::template::TitleType::Primary => {
+        TemplateComponent::Title(t) if t.title == TitleType::Primary => {
             if matches!(style_preset, Some(StylePreset::Apa)) {
                 let overrides = t.overrides.get_or_insert_with(Default::default);
                 merge_type_rendering(
                     overrides,
                     "article-journal",
-                    citum_schema::template::Rendering {
+                    Rendering {
                         suffix: Some(". ".to_string()),
                         ..Default::default()
                     },
@@ -889,15 +888,13 @@ fn apply_type_overrides(
             }
         }
         // Container-title (parent-monograph): style-specific unsuppression
-        TemplateComponent::Title(t)
-            if t.title == citum_schema::template::TitleType::ParentMonograph =>
-        {
+        TemplateComponent::Title(t) if t.title == TitleType::ParentMonograph => {
             if matches!(style_preset, Some(StylePreset::Apa)) {
                 let overrides = t.overrides.get_or_insert_with(Default::default);
                 merge_type_rendering(
                     overrides,
                     "paper-conference",
-                    citum_schema::template::Rendering {
+                    Rendering {
                         suppress: Some(true),
                         ..Default::default()
                     },
@@ -908,9 +905,7 @@ fn apply_type_overrides(
         // - APA: comma suffix, no prefix
         // - Chicago: space suffix (prevents default period separator)
         // - Elsevier: space prefix (handled by List), no suffix needed
-        TemplateComponent::Title(t)
-            if t.title == citum_schema::template::TitleType::ParentSerial =>
-        {
+        TemplateComponent::Title(t) if t.title == TitleType::ParentSerial => {
             let is_chicago = matches!(style_preset, Some(StylePreset::Chicago));
 
             // Always unsuppress article-journal (journal title must show)
@@ -928,7 +923,7 @@ fn apply_type_overrides(
             merge_type_rendering(
                 overrides,
                 "article-journal",
-                citum_schema::template::Rendering {
+                Rendering {
                     suffix,
                     suppress: Some(false),
                     ..Default::default()
@@ -938,7 +933,7 @@ fn apply_type_overrides(
             merge_type_rendering(
                 overrides,
                 "paper-conference",
-                citum_schema::template::Rendering {
+                Rendering {
                     suffix: Some(",".to_string()),
                     suppress: Some(false),
                     ..Default::default()
@@ -946,47 +941,41 @@ fn apply_type_overrides(
             );
         }
         // Publisher: suppress for journal articles (journals don't have publishers in bib)
-        TemplateComponent::Variable(v)
-            if v.variable == citum_schema::template::SimpleVariable::Publisher =>
-        {
+        TemplateComponent::Variable(v) if v.variable == SimpleVariable::Publisher => {
             let overrides = v.overrides.get_or_insert_with(Default::default);
             merge_type_rendering(
                 overrides,
                 "article-journal",
-                citum_schema::template::Rendering {
+                Rendering {
                     suppress: Some(true),
                     ..Default::default()
                 },
             );
         }
         // Publisher-place: suppress for journal articles
-        TemplateComponent::Variable(v)
-            if v.variable == citum_schema::template::SimpleVariable::PublisherPlace =>
-        {
+        TemplateComponent::Variable(v) if v.variable == SimpleVariable::PublisherPlace => {
             let overrides = v.overrides.get_or_insert_with(Default::default);
             merge_type_rendering(
                 overrides,
                 "article-journal",
-                citum_schema::template::Rendering {
+                Rendering {
                     suppress: Some(true),
                     ..Default::default()
                 },
             );
         }
         // Pages: apply volume-pages delimiter for journal articles
-        TemplateComponent::Number(n)
-            if n.number == citum_schema::template::NumberVariable::Pages =>
-        {
+        TemplateComponent::Number(n) if n.number == NumberVariable::Pages => {
             if let Some(delim) = volume_pages_delimiter {
                 let overrides = n.overrides.get_or_insert_with(Default::default);
                 merge_type_rendering(
                     overrides,
                     "article-journal",
-                    citum_schema::template::Rendering {
+                    Rendering {
                         prefix: Some(match delim {
-                            citum_schema::template::DelimiterPunctuation::Comma => ", ".to_string(),
-                            citum_schema::template::DelimiterPunctuation::Colon => ":".to_string(),
-                            citum_schema::template::DelimiterPunctuation::Space => " ".to_string(),
+                            DelimiterPunctuation::Comma => ", ".to_string(),
+                            DelimiterPunctuation::Colon => ":".to_string(),
+                            DelimiterPunctuation::Space => " ".to_string(),
                             _ => "".to_string(),
                         }),
                         ..Default::default()
@@ -1031,8 +1020,7 @@ fn relax_inferred_bibliography_date_suppression(template: &mut [TemplateComponen
                         ) {
                             continue;
                         }
-                        if let citum_schema::template::ComponentOverride::Rendering(rendering) =
-                            override_value
+                        if let ComponentOverride::Rendering(rendering) = override_value
                             && rendering.suppress == Some(true)
                         {
                             rendering.suppress = Some(false);
@@ -1050,16 +1038,12 @@ fn relax_inferred_bibliography_date_suppression(template: &mut [TemplateComponen
 
 /// Insert a single `Rendering` override keyed by `type_name` into an overrides map.
 fn merge_type_rendering(
-    overrides: &mut std::collections::HashMap<
-        citum_schema::template::TypeSelector,
-        citum_schema::template::ComponentOverride,
-    >,
+    overrides: &mut std::collections::HashMap<TypeSelector, ComponentOverride>,
     type_name: &str,
-    rendering: citum_schema::template::Rendering,
+    rendering: Rendering,
 ) {
-    use citum_schema::template::ComponentOverride;
     overrides.insert(
-        citum_schema::template::TypeSelector::Single(type_name.to_string()),
+        TypeSelector::Single(type_name.to_string()),
         ComponentOverride::Rendering(rendering),
     );
 }
@@ -1100,8 +1084,9 @@ impl TypeSelectorNames for TypeSelector {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use citum_schema::template::{Rendering, SimpleVariable, TemplateVariable};
     use csl_legacy::model::{
-        CslNode, Formatting, Group, Sort as LegacySort, SortKey as LegacySortKey, Text,
+        CslNode, Formatting, Group, Layout, Sort as LegacySort, SortKey as LegacySortKey, Text,
     };
 
     fn legacy_sort(keys: &[&str]) -> LegacySort {

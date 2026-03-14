@@ -1,13 +1,11 @@
 #![allow(missing_docs)]
 
+use citum_schema::template::{
+    DateVariable, DelimiterPunctuation, Rendering, SimpleVariable, TemplateComponent, TemplateList,
+    TemplateVariable, TitleType, TypeSelector, WrapPunctuation,
+};
 use csl_legacy::model::{CslNode, Layout};
 use std::collections::HashSet;
-use citum_schema::template::{
-    DateVariable, DelimiterPunctuation,
-    Rendering, SimpleVariable, TemplateComponent,
-    TemplateList, TemplateVariable, TitleType,
-    TypeSelector, WrapPunctuation,
-};
 
 pub fn selector_matches_any(selector: &TypeSelector, candidates: &[&str]) -> bool {
     candidates
@@ -508,7 +506,10 @@ pub fn ensure_inferred_patent_type_template(
     }
 }
 
-pub fn ensure_numeric_locator_citation_component(layout: &Layout, template: &mut [TemplateComponent]) {
+pub fn ensure_numeric_locator_citation_component(
+    layout: &Layout,
+    template: &mut [TemplateComponent],
+) {
     if !layout_uses_citation_locator(layout) || citation_template_has_locator(template) {
         return;
     }
@@ -566,7 +567,9 @@ pub fn normalize_wrapped_numeric_locator_citation_component(
     }
 }
 
-pub fn find_wrapped_locator_group_format(nodes: &[CslNode]) -> Option<(WrapPunctuation, bool, bool)> {
+pub fn find_wrapped_locator_group_format(
+    nodes: &[CslNode],
+) -> Option<(WrapPunctuation, bool, bool)> {
     for node in nodes {
         match node {
             CslNode::Group(group) => {
@@ -968,7 +971,11 @@ pub fn layout_has_group_wrap_for_citation_number(layout: &Layout, wrap: &WrapPun
     nodes_have_wrapped_citation_number_group(&layout.children, prefix, suffix)
 }
 
-pub fn nodes_have_wrapped_citation_number_group(nodes: &[CslNode], prefix: &str, suffix: &str) -> bool {
+pub fn nodes_have_wrapped_citation_number_group(
+    nodes: &[CslNode],
+    prefix: &str,
+    suffix: &str,
+) -> bool {
     nodes
         .iter()
         .any(|node| node_has_wrapped_citation_number_group(node, prefix, suffix))
