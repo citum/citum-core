@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 /// Integration tests for citum-bindings.
 ///
 /// These tests verify the public API using minimal inline fixtures that match

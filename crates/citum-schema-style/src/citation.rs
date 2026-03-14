@@ -335,6 +335,10 @@ impl CitationLocator {
     }
 
     /// Create a compound locator with two or more segments.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when fewer than two locator segments are supplied.
     pub fn compound(segments: Vec<LocatorSegment>) -> Result<Self, &'static str> {
         if segments.len() < 2 {
             return Err("compound locators must contain at least two segments");
@@ -426,6 +430,11 @@ impl CitationItem {
 }
 
 /// Normalize a textual locator string into the canonical locator model.
+///
+/// # Panics
+///
+/// This function does not panic under normal use; the internal `unwrap` is
+/// guarded by the preceding segment-count match.
 pub fn normalize_locator_text(
     locator: &str,
     locale: &crate::locale::Locale,

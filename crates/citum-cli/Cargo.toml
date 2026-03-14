@@ -32,3 +32,6 @@ typst-kit = { version = "0.13.1", optional = true, default-features = false, fea
 default = []
 schema = ["dep:schemars", "citum_schema/schema"]
 typst-pdf = ["dep:typst", "dep:typst-pdf", "dep:typst-kit"]
+
+[lints]
+workspace = true

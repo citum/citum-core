@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use citum_schema::{InputBibliography, Style};
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use std::fs;

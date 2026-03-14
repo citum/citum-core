@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use citum_migrate::options_extractor::OptionsExtractor;
 use citum_schema::options::SubstituteKey;
 use csl_legacy::model::{

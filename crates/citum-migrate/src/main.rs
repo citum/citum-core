@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use citum_migrate::{
     Compressor, MacroInliner, OptionsExtractor, TemplateCompiler, Upsampler, analysis,
     debug_output::DebugOutputFormatter, passes, preset_detector, provenance::ProvenanceTracker,

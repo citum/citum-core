@@ -99,6 +99,11 @@ pub fn render_bibliography(style_yaml: &str, refs_json: &str) -> Result<String, 
 /// Checks that the style parses correctly against the Citum schema. Returns
 /// `Ok(())` when valid, or `Err` with a list of error messages when not.
 ///
+/// # Errors
+///
+/// Returns an error string when the YAML cannot be parsed into a valid Citum
+/// style.
+///
 /// # Example (JS/WASM)
 ///
 /// ```js

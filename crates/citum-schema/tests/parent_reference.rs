@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use citum_schema::reference::{
     CollectionComponent, EdtfString, MonographComponentType, Parent, SerialComponent,
     SerialComponentType, Title,

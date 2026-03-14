@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use citum_engine::{
     Bibliography, Citation, CitationItem, DocumentFormat, Processor,
     io::{

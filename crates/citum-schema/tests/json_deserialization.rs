@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use citum_schema::citation::{CitationItem, IntegralNameState};
 use citum_schema::options::{IntegralNameContexts, IntegralNameRule, IntegralNameScope};
 use citum_schema::reference::{InputReference, Monograph};

@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use citum_migrate::{MacroInliner, Upsampler};
 use csl_legacy::parser::parse_style;
 use roxmltree::Document;

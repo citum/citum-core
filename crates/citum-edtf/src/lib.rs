@@ -1,8 +1,6 @@
 //! citum_edtf - A modern EDTF (Extended Date/Time Format) parser
 //!
 //! This crate implements ISO 8601-2:2019 (EDTF) Level 0 and Level 1.
-#![deny(missing_docs)]
-
 use winnow::ascii::dec_int;
 use winnow::combinator::{alt, opt};
 use winnow::error::{ContextError, ErrMode};
@@ -425,6 +423,11 @@ fn parse_time(input: &mut &str) -> Result<Time, ErrMode<ContextError>> {
 ///
 /// This parser consumes only the recognized prefix and leaves any remaining
 /// input in `input`, following `winnow` parser conventions.
+///
+/// # Errors
+///
+/// Returns an error when the input does not begin with a valid EDTF date or
+/// datetime production.
 pub fn parse_date(input: &mut &str) -> Result<Date, ErrMode<ContextError>> {
     let year = parse_year.parse_next(input)?;
     let year_quality = parse_quality.parse_next(input)?;
@@ -485,6 +488,11 @@ pub fn parse_date(input: &mut &str) -> Result<Date, ErrMode<ContextError>> {
 ///
 /// This parser accepts a single date, a closed interval, or an open-ended
 /// interval and leaves any unconsumed suffix in `input`.
+///
+/// # Errors
+///
+/// Returns an error when the input does not begin with a valid EDTF date or
+/// interval production.
 pub fn parse(input: &mut &str) -> Result<Edtf, ErrMode<ContextError>> {
     if input.starts_with("../") {
         let _ = "../".parse_next(input)?;

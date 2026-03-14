@@ -644,6 +644,11 @@ impl<'a> Renderer<'a> {
     }
 
     /// Render citation items without grouping, using plain text format.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when a referenced item is missing or item rendering
+    /// fails.
     pub fn render_ungrouped_citation(
         &self,
         items: &[crate::reference::CitationItem],
@@ -667,6 +672,11 @@ impl<'a> Renderer<'a> {
     ///
     /// This is the core logic for iterating over citation items, looking up references,
     /// and applying the appropriate template or fallback logic.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when a referenced item is missing or item rendering
+    /// fails.
     pub fn render_ungrouped_citation_with_format<F>(
         &self,
         items: &[crate::reference::CitationItem],
@@ -751,6 +761,11 @@ impl<'a> Renderer<'a> {
     }
 
     /// Render citation items with author grouping for author-date styles.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when a referenced item is missing or grouped rendering
+    /// fails.
     pub fn render_grouped_citation(
         &self,
         items: &[crate::reference::CitationItem],
@@ -883,6 +898,11 @@ impl<'a> Renderer<'a> {
     /// This preserves per-item output when grouping rules require items to stay
     /// separate, and otherwise applies the requested renderer format to the
     /// grouped citation output.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when a referenced item is missing or grouped rendering
+    /// fails.
     pub fn render_grouped_citation_with_format<F>(
         &self,
         items: &[crate::reference::CitationItem],

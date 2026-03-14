@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use citum_migrate::{TemplateCompiler, Upsampler};
 use citum_schema::CslnNode;
 use citum_schema::locale::{GeneralTerm, TermForm};

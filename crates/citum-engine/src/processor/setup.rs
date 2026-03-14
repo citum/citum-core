@@ -229,6 +229,11 @@ impl Processor {
     }
 
     /// Create a new processor with explicit compound sets, returning an error for invalid sets.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when any compound set references unknown bibliography
+    /// entries or reuses the same member more than once.
     pub fn try_with_compound_sets(
         style: Style,
         bibliography: Bibliography,
@@ -259,6 +264,11 @@ impl Processor {
 
     /// Create a new processor with explicit locale and compound sets, returning
     /// an error for invalid sets.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when any compound set references unknown bibliography
+    /// entries or reuses the same member more than once.
     pub fn try_with_locale_and_compound_sets(
         style: Style,
         bibliography: Bibliography,
