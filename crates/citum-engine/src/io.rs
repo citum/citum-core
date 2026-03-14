@@ -251,6 +251,150 @@ fn loaded_from_input_bibliography(
     Ok(LoadedBibliography { references, sets })
 }
 
+/// Parse JSON bibliography bytes into a LoadedBibliography.
+///
+/// Supports CSL-JSON, Citum JSON, wrapped legacy format, and IndexMap variants.
+fn parse_json_bibliography(bytes: &[u8]) -> Result<LoadedBibliography, ProcessorError> {
+    // Check for syntax errors first
+    let _: serde_json::Value = serde_json::from_slice(bytes)
+        .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
+
+    let mut bib = IndexMap::new();
+
+    // Try CSL-JSON (Vec<LegacyReference>)
+    if let Ok(legacy_bib) = serde_json::from_slice::<Vec<LegacyReference>>(bytes) {
+        for ref_item in legacy_bib {
+            bib.insert(ref_item.id.clone(), Reference::from(ref_item));
+        }
+        return Ok(LoadedBibliography {
+            references: bib,
+            sets: None,
+        });
+    }
+    // Try Citum JSON (InputBibliography)
+    if let Ok(input_bib) = serde_json::from_slice::<InputBibliography>(bytes) {
+        return loaded_from_input_bibliography(input_bib);
+    }
+
+    // Try wrapped legacy JSON ({ references: [...], sets: {...} })
+    if let Ok(wrapper) = serde_json::from_slice::<LegacyBibliographyWrapper>(bytes) {
+        for ref_item in wrapper.references {
+            bib.insert(ref_item.id.clone(), Reference::from(ref_item));
+        }
+        let sets = validate_compound_sets(wrapper.sets, &bib)?;
+        return Ok(LoadedBibliography {
+            references: bib,
+            sets,
+        });
+    }
+
+    // Try IndexMap of LegacyReference (preserves insertion order from JSON)
+    if let Ok(map) = serde_json::from_slice::<IndexMap<String, serde_json::Value>>(bytes) {
+        let mut found = false;
+        for (id, val) in map {
+            if let Ok(ref_item) = serde_json::from_value::<LegacyReference>(val) {
+                let mut r = Reference::from(ref_item);
+                if r.id().is_none() {
+                    r.set_id(id.clone());
+                }
+                bib.insert(id, r);
+                found = true;
+            }
+        }
+        if found {
+            return Ok(LoadedBibliography {
+                references: bib,
+                sets: None,
+            });
+        }
+    }
+
+    // If all failed, return the error from the most likely format (Citum JSON)
+    match serde_json::from_slice::<InputBibliography>(bytes) {
+        Ok(_) => unreachable!(),
+        Err(e) => Err(ProcessorError::ParseError(
+            "JSON".to_string(),
+            e.to_string(),
+        )),
+    }
+}
+
+/// Parse YAML bibliography string into a LoadedBibliography.
+///
+/// Supports Citum YAML, wrapped legacy format, IndexMap, and Vec variants.
+fn parse_yaml_bibliography(content: &str) -> Result<LoadedBibliography, ProcessorError> {
+    // Check for syntax errors first
+    let _: serde_yaml::Value = serde_yaml::from_str(content)
+        .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string()))?;
+
+    let mut bib = IndexMap::new();
+
+    if let Ok(input_bib) = serde_yaml::from_str::<InputBibliography>(content) {
+        return loaded_from_input_bibliography(input_bib);
+    }
+
+    // Try wrapped legacy YAML/JSON ({ references: [...], sets: {...} })
+    if let Ok(wrapper) = serde_yaml::from_str::<LegacyBibliographyWrapper>(content) {
+        for ref_item in wrapper.references {
+            bib.insert(ref_item.id.clone(), Reference::from(ref_item));
+        }
+        let sets = validate_compound_sets(wrapper.sets, &bib)?;
+        return Ok(LoadedBibliography {
+            references: bib,
+            sets,
+        });
+    }
+
+    // Try parsing as IndexMap<String, serde_yaml::Value> (YAML/JSON, preserves order)
+    if let Ok(map) = serde_yaml::from_str::<IndexMap<String, serde_yaml::Value>>(content) {
+        let mut found = false;
+        for (key, val) in map {
+            if let Ok(mut r) = serde_yaml::from_value::<InputReference>(val.clone()) {
+                if r.id().is_none() {
+                    r.set_id(key.clone());
+                }
+                bib.insert(key, r);
+                found = true;
+            } else if let Ok(ref_item) = serde_yaml::from_value::<LegacyReference>(val) {
+                let mut r = Reference::from(ref_item);
+                if r.id().is_none() {
+                    r.set_id(key.clone());
+                }
+                bib.insert(key, r);
+                found = true;
+            }
+        }
+        if found {
+            return Ok(LoadedBibliography {
+                references: bib,
+                sets: None,
+            });
+        }
+    }
+
+    // Try parsing as Vec<InputReference> (YAML/JSON)
+    if let Ok(refs) = serde_yaml::from_str::<Vec<InputReference>>(content) {
+        for r in refs {
+            if let Some(id) = r.id() {
+                bib.insert(id.to_string(), r);
+            }
+        }
+        return Ok(LoadedBibliography {
+            references: bib,
+            sets: None,
+        });
+    }
+
+    // If all failed, return error from Citum YAML
+    match serde_yaml::from_str::<InputBibliography>(content) {
+        Ok(_) => unreachable!(),
+        Err(e) => Err(ProcessorError::ParseError(
+            "YAML".to_string(),
+            e.to_string(),
+        )),
+    }
+}
+
 /// Load bibliography data from a file path, including optional compound sets.
 /// Supports Citum YAML/JSON/CBOR and CSL-JSON.
 ///
@@ -261,8 +405,6 @@ fn loaded_from_input_bibliography(
 pub fn load_bibliography_with_sets(path: &Path) -> Result<LoadedBibliography, ProcessorError> {
     let bytes = fs::read(path)?;
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
-
-    let mut bib = IndexMap::new();
 
     // Try parsing as Citum formats
     match ext {
@@ -275,140 +417,11 @@ pub fn load_bibliography_with_sets(path: &Path) -> Result<LoadedBibliography, Pr
                 )),
             }
         }
-        "json" => {
-            // Check for syntax errors first
-            let _: serde_json::Value = serde_json::from_slice(&bytes)
-                .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
-
-            // Try CSL-JSON (Vec<LegacyReference>)
-            if let Ok(legacy_bib) = serde_json::from_slice::<Vec<LegacyReference>>(&bytes) {
-                for ref_item in legacy_bib {
-                    bib.insert(ref_item.id.clone(), Reference::from(ref_item));
-                }
-                return Ok(LoadedBibliography {
-                    references: bib,
-                    sets: None,
-                });
-            }
-            // Try Citum JSON (InputBibliography)
-            if let Ok(input_bib) = serde_json::from_slice::<InputBibliography>(&bytes) {
-                return loaded_from_input_bibliography(input_bib);
-            }
-
-            // Try wrapped legacy JSON ({ references: [...], sets: {...} })
-            if let Ok(wrapper) = serde_json::from_slice::<LegacyBibliographyWrapper>(&bytes) {
-                for ref_item in wrapper.references {
-                    bib.insert(ref_item.id.clone(), Reference::from(ref_item));
-                }
-                let sets = validate_compound_sets(wrapper.sets, &bib)?;
-                return Ok(LoadedBibliography {
-                    references: bib,
-                    sets,
-                });
-            }
-
-            // Try IndexMap of LegacyReference (preserves insertion order from JSON)
-            if let Ok(map) = serde_json::from_slice::<IndexMap<String, serde_json::Value>>(&bytes) {
-                let mut found = false;
-                for (id, val) in map {
-                    if let Ok(ref_item) = serde_json::from_value::<LegacyReference>(val) {
-                        let mut r = Reference::from(ref_item);
-                        if r.id().is_none() {
-                            r.set_id(id.clone());
-                        }
-                        bib.insert(id, r);
-                        found = true;
-                    }
-                }
-                if found {
-                    return Ok(LoadedBibliography {
-                        references: bib,
-                        sets: None,
-                    });
-                }
-            }
-
-            // If all failed, return the error from the most likely format (Citum JSON)
-            match serde_json::from_slice::<InputBibliography>(&bytes) {
-                Ok(_) => unreachable!(),
-                Err(e) => Err(ProcessorError::ParseError(
-                    "JSON".to_string(),
-                    e.to_string(),
-                )),
-            }
-        }
+        "json" => parse_json_bibliography(&bytes),
         _ => {
             // YAML/Fallback
             let content = String::from_utf8_lossy(&bytes);
-
-            // Check for syntax errors first
-            let _: serde_yaml::Value = serde_yaml::from_str(&content)
-                .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string()))?;
-
-            if let Ok(input_bib) = serde_yaml::from_str::<InputBibliography>(&content) {
-                return loaded_from_input_bibliography(input_bib);
-            }
-
-            // Try wrapped legacy YAML/JSON ({ references: [...], sets: {...} })
-            if let Ok(wrapper) = serde_yaml::from_str::<LegacyBibliographyWrapper>(&content) {
-                for ref_item in wrapper.references {
-                    bib.insert(ref_item.id.clone(), Reference::from(ref_item));
-                }
-                let sets = validate_compound_sets(wrapper.sets, &bib)?;
-                return Ok(LoadedBibliography {
-                    references: bib,
-                    sets,
-                });
-            }
-
-            // Try parsing as IndexMap<String, serde_yaml::Value> (YAML/JSON, preserves order)
-            if let Ok(map) = serde_yaml::from_str::<IndexMap<String, serde_yaml::Value>>(&content) {
-                let mut found = false;
-                for (key, val) in map {
-                    if let Ok(mut r) = serde_yaml::from_value::<InputReference>(val.clone()) {
-                        if r.id().is_none() {
-                            r.set_id(key.clone());
-                        }
-                        bib.insert(key, r);
-                        found = true;
-                    } else if let Ok(ref_item) = serde_yaml::from_value::<LegacyReference>(val) {
-                        let mut r = Reference::from(ref_item);
-                        if r.id().is_none() {
-                            r.set_id(key.clone());
-                        }
-                        bib.insert(key, r);
-                        found = true;
-                    }
-                }
-                if found {
-                    return Ok(LoadedBibliography {
-                        references: bib,
-                        sets: None,
-                    });
-                }
-            }
-
-            // Try parsing as Vec<InputReference> (YAML/JSON)
-            if let Ok(refs) = serde_yaml::from_str::<Vec<InputReference>>(&content) {
-                for r in refs {
-                    if let Some(id) = r.id() {
-                        bib.insert(id.to_string(), r);
-                    }
-                }
-                return Ok(LoadedBibliography {
-                    references: bib,
-                    sets: None,
-                });
-            }
-
-            // If all failed, return error from Citum YAML
-            match serde_yaml::from_str::<InputBibliography>(&content) {
-                Ok(_) => unreachable!(),
-                Err(e) => Err(ProcessorError::ParseError(
-                    "YAML".to_string(),
-                    e.to_string(),
-                )),
-            }
+            parse_yaml_bibliography(&content)
         }
     }
 }
@@ -582,5 +595,152 @@ issued: "2020"
         let sets = loaded.sets.expect("sets should be present");
         assert!(sets.contains_key("empty"));
         assert_eq!(sets.get("single"), Some(&vec!["ref-a".to_string()]));
+    }
+
+    #[test]
+    /// Parse a JSON array of CSL-JSON objects directly into LoadedBibliography.
+    fn parse_json_csl_vec() {
+        let json = r#"[
+  {"id": "smith-2020", "type": "book", "title": "Test Book"},
+  {"id": "doe-2021", "type": "journal-article", "title": "Test Article"}
+]"#;
+        let result = parse_json_bibliography(json.as_bytes()).expect("should parse CSL-JSON vec");
+        assert_eq!(result.references.len(), 2);
+        assert!(result.references.contains_key("smith-2020"));
+        assert!(result.references.contains_key("doe-2021"));
+        assert!(result.sets.is_none());
+    }
+
+    #[test]
+    /// Parse a Citum InputBibliography from JSON with references and sets.
+    fn parse_json_citum_input_bibliography() {
+        let json = r#"{
+  "references": [
+    {
+      "class": "monograph",
+      "id": "ref-x",
+      "type": "book",
+      "title": "Citum Book",
+      "issued": "2020"
+    }
+  ],
+  "sets": {
+    "group-a": ["ref-x"]
+  }
+}"#;
+        let result =
+            parse_json_bibliography(json.as_bytes()).expect("should parse Citum InputBibliography");
+        assert_eq!(result.references.len(), 1);
+        assert!(result.references.contains_key("ref-x"));
+        let sets = result.sets.expect("sets should be present");
+        assert_eq!(sets.get("group-a"), Some(&vec!["ref-x".to_string()]));
+    }
+
+    #[test]
+    /// Parse a wrapped legacy JSON object with references and optional sets.
+    fn parse_json_wrapped_legacy() {
+        let json = r#"{
+  "references": [
+    {"id": "legacy-1", "type": "book", "title": "Legacy Book"}
+  ],
+  "sets": null
+}"#;
+        let result =
+            parse_json_bibliography(json.as_bytes()).expect("should parse wrapped legacy format");
+        assert_eq!(result.references.len(), 1);
+        assert!(result.references.contains_key("legacy-1"));
+        assert!(result.sets.is_none());
+    }
+
+    #[test]
+    /// Parse an IndexMap of CSL-JSON objects keyed by id from JSON.
+    fn parse_json_indexmap() {
+        // IndexMap format: object with entries having no "references" key,
+        // where each value can be parsed as a LegacyReference.
+        let json = r#"{
+  "book-1": {"type": "book", "title": "First Book", "id": "book-1"},
+  "article-2": {"type": "journal-article", "title": "First Article", "id": "article-2"}
+}"#;
+        let result =
+            parse_json_bibliography(json.as_bytes()).expect("should parse IndexMap format");
+        assert_eq!(result.references.len(), 2);
+        assert!(result.references.contains_key("book-1"));
+        assert!(result.references.contains_key("article-2"));
+    }
+
+    #[test]
+    /// Parse a Citum YAML InputBibliography with references.
+    fn parse_yaml_citum_input_bibliography() {
+        let yaml = r#"
+references:
+  - class: monograph
+    id: yaml-ref-1
+    type: book
+    title: YAML Book
+    issued: "2021"
+"#;
+        let result = parse_yaml_bibliography(yaml).expect("should parse Citum YAML bibliography");
+        assert_eq!(result.references.len(), 1);
+        assert!(result.references.contains_key("yaml-ref-1"));
+    }
+
+    #[test]
+    /// Parse a wrapped legacy YAML object with references and optional sets.
+    fn parse_yaml_wrapped_legacy() {
+        let yaml = r#"
+references:
+  - id: yaml-legacy-1
+    type: book
+    title: YAML Legacy Book
+sets: null
+"#;
+        let result = parse_yaml_bibliography(yaml).expect("should parse wrapped legacy YAML");
+        assert_eq!(result.references.len(), 1);
+        assert!(result.references.contains_key("yaml-legacy-1"));
+        assert!(result.sets.is_none());
+    }
+
+    #[test]
+    /// Parse an IndexMap of legacy references keyed by id from YAML.
+    fn parse_yaml_indexmap() {
+        // IndexMap format: plain object with reference-id keys mapping to legacy ref objects.
+        // Structure: { id1: {type, title}, id2: {type, title} }
+        // Must use legacy CSL-JSON field names (not InputReference class tags)
+        // to avoid matching InputBibliography or Vec<InputReference>.
+        let yaml = r#"ref-yaml-1:
+  id: ref-yaml-1
+  type: book
+  title: First Book
+ref-yaml-2:
+  id: ref-yaml-2
+  type: journal-article
+  title: Second Article
+"#;
+        let result = parse_yaml_bibliography(yaml).expect("should parse YAML IndexMap format");
+        assert_eq!(result.references.len(), 2);
+        assert!(result.references.contains_key("ref-yaml-1"));
+        assert!(result.references.contains_key("ref-yaml-2"));
+    }
+
+    #[test]
+    /// Parse a YAML sequence of InputReference objects.
+    fn parse_yaml_vec_input_references() {
+        let yaml = r#"
+- class: monograph
+  id: seq-ref-1
+  type: book
+  title: Sequential Book
+  issued: "2024"
+- class: monograph
+  id: seq-ref-2
+  type: book
+  title: Another Sequential Book
+  issued: "2025"
+"#;
+        let result =
+            parse_yaml_bibliography(yaml).expect("should parse YAML sequence of references");
+        assert_eq!(result.references.len(), 2);
+        assert!(result.references.contains_key("seq-ref-1"));
+        assert!(result.references.contains_key("seq-ref-2"));
     }
 }

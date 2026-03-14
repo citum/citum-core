@@ -31,6 +31,90 @@ fn is_role_label_omitted(options: &RenderOptions<'_>, role: &ContributorRole) ->
         })
 }
 
+/// Resolve contributor overrides and return both effective component and rendering.
+///
+/// Handles ComponentOverride variants (both Rendering and Component) with type-specific
+/// and default fallback logic.
+fn resolve_contributor_overrides(
+    base_component: &TemplateContributor,
+    overrides: Option<
+        &std::collections::HashMap<
+            citum_schema::template::TypeSelector,
+            citum_schema::template::ComponentOverride,
+        >,
+    >,
+    ref_type: &str,
+) -> (TemplateContributor, citum_schema::template::Rendering) {
+    use citum_schema::template::{ComponentOverride, TemplateComponent};
+
+    let mut component = base_component.clone();
+    let mut effective_rendering = component.rendering.clone();
+
+    if let Some(ovs) = overrides {
+        let mut match_found = false;
+
+        // Try specific type match
+        for (selector, ov) in ovs.iter() {
+            if selector.matches(ref_type) {
+                match ov {
+                    ComponentOverride::Rendering(r) => {
+                        effective_rendering.merge(r);
+                        match_found = true;
+                    }
+                    ComponentOverride::Component(c) => {
+                        if let TemplateComponent::Contributor(tc) = c.as_ref() {
+                            component = tc.clone();
+                            effective_rendering = component.rendering.clone();
+                            match_found = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Fall back to default if no specific match
+        if !match_found {
+            for (selector, ov) in ovs.iter() {
+                if selector.matches("default") {
+                    match ov {
+                        ComponentOverride::Rendering(r) => {
+                            effective_rendering.merge(r);
+                        }
+                        ComponentOverride::Component(c) => {
+                            if let TemplateComponent::Contributor(tc) = c.as_ref() {
+                                component = tc.clone();
+                                effective_rendering = component.rendering.clone();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    (component, effective_rendering)
+}
+
+/// Format a role term with period stripping if configured.
+///
+/// Handles the repeated pattern of checking should_strip_periods and formatting
+/// the result with a given prefix and suffix pattern.
+fn format_role_term<F: crate::render::format::OutputFormat<Output = String>>(
+    term: &str,
+    fmt: &F,
+    effective_rendering: &citum_schema::template::Rendering,
+    options: &RenderOptions<'_>,
+    prefix: &str,
+    suffix: &str,
+) -> String {
+    let term_str = if crate::values::should_strip_periods(effective_rendering, options) {
+        crate::values::strip_trailing_periods(term)
+    } else {
+        term.to_string()
+    };
+    fmt.text(&format!("{}{}{}", prefix, term_str, suffix))
+}
+
 impl ComponentValues for TemplateContributor {
     fn values<F: crate::render::format::OutputFormat<Output = String>>(
         &self,
@@ -39,52 +123,10 @@ impl ComponentValues for TemplateContributor {
         options: &RenderOptions<'_>,
     ) -> Option<ProcValues<F::Output>> {
         let fmt = F::default();
-        let mut component = self.clone();
-        // Resolve effective rendering options (base merged with type-specific override)
-        let mut effective_rendering = component.rendering.clone();
-        if let Some(overrides) = &self.overrides {
-            use citum_schema::template::{ComponentOverride, TemplateComponent};
 
-            // Apply specific type override
-            let ref_type = reference.ref_type();
-            let mut match_found = false;
-            for (selector, ov) in overrides {
-                if selector.matches(&ref_type) {
-                    match ov {
-                        ComponentOverride::Rendering(r) => {
-                            effective_rendering.merge(r);
-                            match_found = true;
-                        }
-                        ComponentOverride::Component(c) => {
-                            if let TemplateComponent::Contributor(tc) = c.as_ref() {
-                                component = tc.clone();
-                                effective_rendering = component.rendering.clone();
-                                match_found = true;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Fallback to default if no specific match
-            if !match_found {
-                for (selector, ov) in overrides {
-                    if selector.matches("default") {
-                        match ov {
-                            ComponentOverride::Rendering(r) => {
-                                effective_rendering.merge(r);
-                            }
-                            ComponentOverride::Component(c) => {
-                                if let TemplateComponent::Contributor(tc) = c.as_ref() {
-                                    component = tc.clone();
-                                    effective_rendering = component.rendering.clone();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        // Resolve effective rendering options and component
+        let (mut component, mut effective_rendering) =
+            resolve_contributor_overrides(self, self.overrides.as_ref(), &reference.ref_type());
 
         if options.context == RenderContext::Citation
             && matches!(options.mode, citum_schema::citation::CitationMode::Integral)
@@ -271,19 +313,14 @@ impl ComponentValues for TemplateContributor {
                                                     term_form,
                                                 )
                                                 .map(|term| {
-                                                    let term_str =
-                                                        if crate::values::should_strip_periods(
-                                                            &effective_rendering,
-                                                            options,
-                                                        ) {
-                                                            crate::values::strip_trailing_periods(
-                                                                term,
-                                                            )
-                                                        } else {
-                                                            term.to_string()
-                                                        };
-                                                    // Escaping needed here because we are building a complex string
-                                                    fmt.text(&format!(" ({})", term_str))
+                                                    format_role_term::<F>(
+                                                        term,
+                                                        &fmt,
+                                                        &effective_rendering,
+                                                        options,
+                                                        " (",
+                                                        ")",
+                                                    )
                                                 })
                                         })
                                     }
@@ -489,15 +526,14 @@ impl ComponentValues for TemplateContributor {
                             );
                             (
                                 term.map(|t| {
-                                    let term_str = if crate::values::should_strip_periods(
+                                    format_role_term::<F>(
+                                        t,
+                                        &fmt,
                                         &effective_rendering,
                                         options,
-                                    ) {
-                                        crate::values::strip_trailing_periods(t)
-                                    } else {
-                                        t.to_string()
-                                    };
-                                    fmt.text(&format!("{} ", term_str))
+                                        "",
+                                        " ",
+                                    )
                                 }),
                                 None,
                             )
@@ -511,15 +547,14 @@ impl ComponentValues for TemplateContributor {
                             (
                                 None,
                                 term.map(|t| {
-                                    let term_str = if crate::values::should_strip_periods(
+                                    format_role_term::<F>(
+                                        t,
+                                        &fmt,
                                         &effective_rendering,
                                         options,
-                                    ) {
-                                        crate::values::strip_trailing_periods(t)
-                                    } else {
-                                        t.to_string()
-                                    };
-                                    fmt.text(&format!(" ({})", term_str))
+                                        " (",
+                                        ")",
+                                    )
                                 }),
                             )
                         }
@@ -532,15 +567,14 @@ impl ComponentValues for TemplateContributor {
                             (
                                 None,
                                 term.map(|t| {
-                                    let term_str = if crate::values::should_strip_periods(
+                                    format_role_term::<F>(
+                                        t,
+                                        &fmt,
                                         &effective_rendering,
                                         options,
-                                    ) {
-                                        crate::values::strip_trailing_periods(t)
-                                    } else {
-                                        t.to_string()
-                                    };
-                                    fmt.text(&format!(", {}", term_str))
+                                        ", ",
+                                        "",
+                                    )
                                 }),
                             )
                         }
@@ -559,15 +593,14 @@ impl ComponentValues for TemplateContributor {
                         let term = options.locale.role_term(role, plural, term_form);
                         (
                             term.map(|t| {
-                                let term_str = if crate::values::should_strip_periods(
+                                format_role_term::<F>(
+                                    t,
+                                    &fmt,
                                     &effective_rendering,
                                     options,
-                                ) {
-                                    crate::values::strip_trailing_periods(t)
-                                } else {
-                                    t.to_string()
-                                };
-                                fmt.text(&format!("{} ", term_str))
+                                    "",
+                                    " ",
+                                )
                             }),
                             None,
                         )
@@ -585,15 +618,14 @@ impl ComponentValues for TemplateContributor {
                         (
                             None,
                             term.map(|t| {
-                                let term_str = if crate::values::should_strip_periods(
+                                format_role_term::<F>(
+                                    t,
+                                    &fmt,
                                     &effective_rendering,
                                     options,
-                                ) {
-                                    crate::values::strip_trailing_periods(t)
-                                } else {
-                                    t.to_string()
-                                };
-                                fmt.text(&format!(" ({})", term_str))
+                                    " (",
+                                    ")",
+                                )
                             }),
                         )
                     }

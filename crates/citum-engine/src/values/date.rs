@@ -123,31 +123,6 @@ impl ComponentValues for TemplateDate {
             self.form.clone()
         };
 
-        // Resolve effective rendering options (base merged with type-specific override)
-        let mut effective_rendering = self.rendering.clone();
-        if let Some(overrides) = &self.overrides {
-            use citum_schema::template::ComponentOverride;
-            let ref_type = reference.ref_type();
-            let mut match_found = false;
-            for (selector, ov) in overrides {
-                if selector.matches(&ref_type)
-                    && let ComponentOverride::Rendering(r) = ov
-                {
-                    effective_rendering.merge(r);
-                    match_found = true;
-                }
-            }
-            if !match_found {
-                for (selector, ov) in overrides {
-                    if selector.matches("default")
-                        && let ComponentOverride::Rendering(r) = ov
-                    {
-                        effective_rendering.merge(r);
-                    }
-                }
-            }
-        }
-
         let formatted = if date.is_range() {
             // Handle date ranges
             let start = match effective_form {

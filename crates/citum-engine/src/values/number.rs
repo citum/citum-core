@@ -88,29 +88,11 @@ impl ComponentValues for TemplateNumber {
 
         value.filter(|s| !s.is_empty()).map(|value| {
             // Resolve effective rendering options
-            let mut effective_rendering = self.rendering.clone();
-            if let Some(overrides) = &self.overrides {
-                use citum_schema::template::ComponentOverride;
-                let ref_type = reference.ref_type();
-                let mut match_found = false;
-                for (selector, ov) in overrides {
-                    if selector.matches(&ref_type)
-                        && let ComponentOverride::Rendering(r) = ov
-                    {
-                        effective_rendering.merge(r);
-                        match_found = true;
-                    }
-                }
-                if !match_found {
-                    for (selector, ov) in overrides {
-                        if selector.matches("default")
-                            && let ComponentOverride::Rendering(r) = ov
-                        {
-                            effective_rendering.merge(r);
-                        }
-                    }
-                }
-            }
+            let effective_rendering = crate::values::resolve_rendering_overrides(
+                &self.rendering,
+                self.overrides.as_ref(),
+                &reference.ref_type(),
+            );
 
             // Handle label if label_form is specified
             let prefix = if let Some(label_form) = &self.label_form {
