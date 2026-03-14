@@ -100,23 +100,33 @@ work, not something this ADR settles.
 This is the highest rung that could plausibly become part of the portable style
 format. If it is ever pursued, it needs a separate spec in `docs/specs/`.
 
-### 4. Do not put embedded Lisp or Steel in the portable style format now
+### 4. Do not make Steel or other runtime-loaded scripting part of the portable style format now
 
-Embedded Lisp remains an interesting idea, and Steel is a credible example of a
-Rust-hosted Lisp runtime with attractive embedding ergonomics. But that is not
-the right first extension surface for Citum styles.
+Runtime-loaded Lisp or Scheme remains an interesting idea, and Steel is a
+credible example of a Rust-hosted runtime with attractive embedding
+ergonomics. The important distinction is that this does not have to mean
+embedding Lisp inside shared style YAML. It could instead mean host-loaded code
+that extends processing at runtime, possibly using additional local data.
+
+That is a more plausible direction than putting code directly in styles, but it
+is still not the right first extension surface for the portable shared-style
+format.
 
 Reasons:
-- it would create a second authoring language beside YAML
-- style portability would become environment-dependent
-- schema validation would stop being the full contract
+- shared-style portability would become environment-dependent whenever correct
+  results depended on runtime-loaded code
+- schema validation would stop being the full contract for interoperable rendering
 - oracle testing would have to account for runtime code paths, not just style data
-- debugging and long-term maintenance would shift from style design to runtime behavior
+- debugging and long-term maintenance would shift from style design to host
+  extension behavior
+- extension deployment, versioning, and trust boundaries would become part of
+  the processing model
 
-Steel is therefore worth keeping in view as a future local engine or plugin
-mechanism, but it is explicitly rejected as the first portable extension layer.
-The promising use cases are local institutional transforms, legal-citation
-experiments, renderer-side postprocessing, and research prototypes.
+Steel is therefore worth keeping in view as a future host-side extension or
+plugin mechanism, but it is explicitly rejected as the first portable extension
+layer. The promising use cases are local institutional transforms,
+legal-citation experiments, renderer-side postprocessing, and research
+prototypes.
 
 ### 5. Reserve full runtime scripting for non-portable local adapters
 
@@ -132,7 +142,8 @@ published for general reuse should not require arbitrary embedded code. Local
 hooks are allowed only outside the portable style contract and must not be
 required for correct interpretation of a shared style file. If such hooks ever
 exist, they belong in host configuration or host code rather than ordinary
-shared style YAML.
+shared style YAML. Runtime-loaded extension code using local or institution-
+specific data belongs here as well.
 
 ---
 
