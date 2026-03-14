@@ -82,6 +82,10 @@ fn is_supported_position_token(token: &str) -> bool {
     matches!(token, "first" | "subsequent" | "ibid" | "ibid-with-locator")
 }
 
+fn uses_default_match_mode(match_mode: Option<&str>) -> bool {
+    matches!(match_mode, None | Some("all") | Some("any"))
+}
+
 fn branch_has_non_position_conditions(branch: &legacy::ChooseBranch) -> bool {
     branch.type_.is_some()
         || branch.variable.is_some()
@@ -94,19 +98,13 @@ fn branch_is_position_only(branch: &legacy::ChooseBranch) -> bool {
     // `position` may be the only semantic condition in this branch.
     branch.position.is_some()
         && !branch_has_non_position_conditions(branch)
-        && matches!(
-            branch.match_mode.as_deref(),
-            None | Some("all") | Some("any")
-        )
+        && uses_default_match_mode(branch.match_mode.as_deref())
 }
 
 fn branch_is_effectively_unconditional(branch: &legacy::ChooseBranch) -> bool {
     branch.position.is_none()
         && !branch_has_non_position_conditions(branch)
-        && matches!(
-            branch.match_mode.as_deref(),
-            None | Some("all") | Some("any")
-        )
+        && uses_default_match_mode(branch.match_mode.as_deref())
 }
 
 /// Per-choose accumulated state for pure fast-path position chooses.
@@ -117,6 +115,38 @@ struct BranchSeen {
     ibid: bool,
     ibid_with_locator: bool,
     default_branch: bool,
+}
+
+fn seen_slot<'a>(seen: &'a mut BranchSeen, token: &str) -> Result<&'a mut bool, ()> {
+    match token {
+        "first" => Ok(&mut seen.first),
+        "subsequent" => Ok(&mut seen.subsequent),
+        "ibid" => Ok(&mut seen.ibid),
+        "ibid-with-locator" => Ok(&mut seen.ibid_with_locator),
+        _ => Err(()),
+    }
+}
+
+fn record_explicit_position(
+    analysis: &mut CitationPositionAnalysis,
+    token: &str,
+) -> Result<(), ()> {
+    match token {
+        "first" => Ok(()),
+        "subsequent" => {
+            analysis.explicit_subsequent = true;
+            Ok(())
+        }
+        "ibid" => {
+            analysis.explicit_ibid = true;
+            Ok(())
+        }
+        "ibid-with-locator" => {
+            analysis.explicit_ibid_with_locator = true;
+            Ok(())
+        }
+        _ => Err(()),
+    }
 }
 
 /// Validates one branch for the pure position-only fast path and updates `seen`.
@@ -133,12 +163,8 @@ fn analyze_fast_path_branch(
         }
         let mut matched_any = false;
         for token in position.split_whitespace() {
-            let saw: &mut bool = match token {
-                "first" => &mut seen.first,
-                "subsequent" => &mut seen.subsequent,
-                "ibid" => &mut seen.ibid,
-                "ibid-with-locator" => &mut seen.ibid_with_locator,
-                _ => return false,
+            let Ok(saw) = seen_slot(seen, token) else {
+                return false;
             };
             if *saw {
                 if migrate_debug_enabled() {
@@ -197,24 +223,13 @@ fn analyze_position_choose(choose: &legacy::Choose, analysis: &mut CitationPosit
         let pure_position_branch = branch_is_position_only(branch);
         let mut matched_any = false;
         for token in position.split_whitespace() {
-            let saw: &mut bool = match token {
-                "first" => &mut seen_pure.first,
-                "subsequent" => {
-                    analysis.explicit_subsequent = true;
-                    &mut seen_pure.subsequent
-                }
-                "ibid" => {
-                    analysis.explicit_ibid = true;
-                    &mut seen_pure.ibid
-                }
-                "ibid-with-locator" => {
-                    analysis.explicit_ibid_with_locator = true;
-                    &mut seen_pure.ibid_with_locator
-                }
-                _ => {
-                    analysis.unsupported_mixed_conditions = true;
-                    return;
-                }
+            if record_explicit_position(analysis, token).is_err() {
+                analysis.unsupported_mixed_conditions = true;
+                return;
+            }
+            let Ok(saw) = seen_slot(&mut seen_pure, token) else {
+                analysis.unsupported_mixed_conditions = true;
+                return;
             };
             if pure_position_branch && *saw {
                 if migrate_debug_enabled() {
@@ -296,6 +311,17 @@ pub struct CitationPositionTemplates {
     pub unsupported_mixed_conditions: bool,
 }
 
+fn unsupported_position_templates() -> CitationPositionTemplates {
+    CitationPositionTemplates {
+        unsupported_mixed_conditions: true,
+        ..Default::default()
+    }
+}
+
+fn unsupported_position_result<T>(result: Result<T, ()>) -> Result<T, CitationPositionTemplates> {
+    result.map_err(|()| unsupported_position_templates())
+}
+
 impl CitationPositionTemplates {
     /// Returns true when at least one position-specific override is available.
     pub fn has_overrides(&self) -> bool {
@@ -365,49 +391,29 @@ impl Upsampler {
         }
 
         if analysis.unsupported_mixed_conditions {
-            return CitationPositionTemplates {
-                unsupported_mixed_conditions: true,
-                ..Default::default()
-            };
+            return unsupported_position_templates();
         }
 
-        let first =
-            match self.upsample_position_variant(legacy_nodes, CitationPositionTarget::First) {
-                Ok(first) => first,
-                Err(()) => {
-                    return CitationPositionTemplates {
-                        unsupported_mixed_conditions: true,
-                        ..Default::default()
-                    };
-                }
-            };
-
-        let subsequent = if analysis.explicit_subsequent {
-            match self.upsample_position_variant(legacy_nodes, CitationPositionTarget::Subsequent) {
-                Ok(subsequent) => subsequent,
-                Err(()) => {
-                    return CitationPositionTemplates {
-                        unsupported_mixed_conditions: true,
-                        ..Default::default()
-                    };
-                }
-            }
-        } else {
-            None
+        let Ok(first) =
+            self.extract_position_variant_if(legacy_nodes, true, CitationPositionTarget::First)
+        else {
+            return unsupported_position_templates();
         };
 
-        let ibid = if analysis.explicit_ibid_with_locator || analysis.explicit_ibid {
-            match self.upsample_position_variant(legacy_nodes, CitationPositionTarget::IbidAny) {
-                Ok(ibid) => ibid,
-                Err(()) => {
-                    return CitationPositionTemplates {
-                        unsupported_mixed_conditions: true,
-                        ..Default::default()
-                    };
-                }
-            }
-        } else {
-            None
+        let Ok(subsequent) = self.extract_position_variant_if(
+            legacy_nodes,
+            analysis.explicit_subsequent,
+            CitationPositionTarget::Subsequent,
+        ) else {
+            return unsupported_position_templates();
+        };
+
+        let Ok(ibid) = self.extract_position_variant_if(
+            legacy_nodes,
+            analysis.explicit_ibid_with_locator || analysis.explicit_ibid,
+            CitationPositionTarget::IbidAny,
+        ) else {
+            return unsupported_position_templates();
         };
 
         CitationPositionTemplates {
@@ -432,6 +438,19 @@ impl Upsampler {
         }
     }
 
+    fn extract_position_variant_if(
+        &self,
+        legacy_nodes: &[LNode],
+        should_extract: bool,
+        target: CitationPositionTarget,
+    ) -> Result<Option<Vec<csln::CslnNode>>, CitationPositionTemplates> {
+        if !should_extract {
+            return Ok(None);
+        }
+
+        unsupported_position_result(self.upsample_position_variant(legacy_nodes, target))
+    }
+
     fn rewrite_nodes_for_position(
         &self,
         legacy_nodes: &[LNode],
@@ -440,25 +459,12 @@ impl Upsampler {
         let mut rewritten = Vec::new();
 
         for node in legacy_nodes {
+            if let Some(rewritten_container) = self.rewrite_child_container(node, target)? {
+                rewritten.push(rewritten_container);
+                continue;
+            }
+
             match node {
-                LNode::Group(group) => {
-                    let mut rewritten_group = group.clone();
-                    rewritten_group.children =
-                        self.rewrite_nodes_for_position(&group.children, target)?;
-                    rewritten.push(LNode::Group(rewritten_group));
-                }
-                LNode::Names(names) => {
-                    let mut rewritten_names = names.clone();
-                    rewritten_names.children =
-                        self.rewrite_nodes_for_position(&names.children, target)?;
-                    rewritten.push(LNode::Names(rewritten_names));
-                }
-                LNode::Substitute(substitute) => {
-                    let mut rewritten_substitute = substitute.clone();
-                    rewritten_substitute.children =
-                        self.rewrite_nodes_for_position(&substitute.children, target)?;
-                    rewritten.push(LNode::Substitute(rewritten_substitute));
-                }
                 LNode::Choose(choose) if choose_has_position_condition(choose) => {
                     if choose_uses_position_fast_path(choose) {
                         let selected = self.select_position_branch_children(choose, target);
@@ -468,25 +474,7 @@ impl Upsampler {
                     }
                 }
                 LNode::Choose(choose) => {
-                    let mut rewritten_choose = choose.clone();
-                    rewritten_choose.if_branch.children =
-                        self.rewrite_nodes_for_position(&choose.if_branch.children, target)?;
-                    rewritten_choose.else_if_branches = choose
-                        .else_if_branches
-                        .iter()
-                        .cloned()
-                        .map(|mut branch| {
-                            branch.children =
-                                self.rewrite_nodes_for_position(&branch.children, target)?;
-                            Ok::<legacy::ChooseBranch, ()>(branch)
-                        })
-                        .collect::<Result<Vec<_>, _>>()?;
-                    rewritten_choose.else_branch = choose
-                        .else_branch
-                        .as_ref()
-                        .map(|branch| self.rewrite_nodes_for_position(branch, target))
-                        .transpose()?;
-                    rewritten.push(LNode::Choose(rewritten_choose));
+                    rewritten.push(self.rewrite_non_position_choose(choose, target)?);
                 }
                 _ => rewritten.push(node.clone()),
             }
@@ -495,45 +483,102 @@ impl Upsampler {
         Ok(rewritten)
     }
 
-    fn rewrite_mixed_position_choose(
+    fn rewrite_child_container(
+        &self,
+        node: &LNode,
+        target: CitationPositionTarget,
+    ) -> Result<Option<LNode>, ()> {
+        let rewritten = match node {
+            LNode::Group(group) => {
+                let mut rewritten_group = group.clone();
+                rewritten_group.children =
+                    self.rewrite_nodes_for_position(&group.children, target)?;
+                Some(LNode::Group(rewritten_group))
+            }
+            LNode::Names(names) => {
+                let mut rewritten_names = names.clone();
+                rewritten_names.children =
+                    self.rewrite_nodes_for_position(&names.children, target)?;
+                Some(LNode::Names(rewritten_names))
+            }
+            LNode::Substitute(substitute) => {
+                let mut rewritten_substitute = substitute.clone();
+                rewritten_substitute.children =
+                    self.rewrite_nodes_for_position(&substitute.children, target)?;
+                Some(LNode::Substitute(rewritten_substitute))
+            }
+            _ => None,
+        };
+
+        Ok(rewritten)
+    }
+
+    fn rewrite_choose_branch_children(
+        &self,
+        branch: &legacy::ChooseBranch,
+        target: CitationPositionTarget,
+    ) -> Result<legacy::ChooseBranch, ()> {
+        let mut rewritten_branch = branch.clone();
+        rewritten_branch.children = self.rewrite_nodes_for_position(&branch.children, target)?;
+        Ok(rewritten_branch)
+    }
+
+    fn rewrite_non_position_choose(
         &self,
         choose: &legacy::Choose,
         target: CitationPositionTarget,
-    ) -> Result<Vec<LNode>, ()> {
-        let mut rewritten_branches = Vec::new();
-
-        for branch in std::iter::once(&choose.if_branch).chain(choose.else_if_branches.iter()) {
-            let Some(position) = &branch.position else {
-                let mut rewritten_branch = branch.clone();
-                rewritten_branch.children =
-                    self.rewrite_nodes_for_position(&branch.children, target)?;
-                rewritten_branches.push(rewritten_branch);
-                continue;
-            };
-
-            let mut matched_target = false;
-            for token in position.split_whitespace() {
-                if !is_supported_position_token(token) {
-                    return Err(());
-                }
-                matched_target |= target.matches_token(token);
-            }
-
-            if matched_target {
-                let mut rewritten_branch = branch.clone();
-                rewritten_branch.position = None;
-                rewritten_branch.children =
-                    self.rewrite_nodes_for_position(&branch.children, target)?;
-                rewritten_branches.push(rewritten_branch);
-            }
-        }
-
-        let rewritten_else = choose
+    ) -> Result<LNode, ()> {
+        let mut rewritten_choose = choose.clone();
+        rewritten_choose.if_branch =
+            self.rewrite_choose_branch_children(&choose.if_branch, target)?;
+        rewritten_choose.else_if_branches = choose
+            .else_if_branches
+            .iter()
+            .map(|branch| self.rewrite_choose_branch_children(branch, target))
+            .collect::<Result<Vec<_>, _>>()?;
+        rewritten_choose.else_branch = choose
             .else_branch
             .as_ref()
             .map(|branch| self.rewrite_nodes_for_position(branch, target))
             .transpose()?;
+        Ok(LNode::Choose(rewritten_choose))
+    }
 
+    fn rewrite_mixed_position_branch(
+        &self,
+        branch: &legacy::ChooseBranch,
+        target: CitationPositionTarget,
+    ) -> Result<Option<legacy::ChooseBranch>, ()> {
+        let Some(position) = &branch.position else {
+            return self
+                .rewrite_choose_branch_children(branch, target)
+                .map(Some);
+        };
+
+        let matched_target =
+            position
+                .split_whitespace()
+                .try_fold(false, |matched_target, token| {
+                    if !is_supported_position_token(token) {
+                        return Err(());
+                    }
+                    Ok(matched_target || target.matches_token(token))
+                })?;
+
+        if !matched_target {
+            return Ok(None);
+        }
+
+        let mut rewritten_branch = self.rewrite_choose_branch_children(branch, target)?;
+        rewritten_branch.position = None;
+        Ok(Some(rewritten_branch))
+    }
+
+    fn assemble_rewritten_position_choose(
+        &self,
+        mut rewritten_branches: Vec<legacy::ChooseBranch>,
+        rewritten_else: Option<Vec<LNode>>,
+    ) -> Result<Vec<LNode>, ()> {
         let unconditional_positions = rewritten_branches
             .iter()
             .enumerate()
@@ -578,6 +623,27 @@ impl Upsampler {
             else_if_branches: branches.collect(),
             else_branch: rewritten_else,
         })])
+    }
+
+    fn rewrite_mixed_position_choose(
+        &self,
+        choose: &legacy::Choose,
+        target: CitationPositionTarget,
+    ) -> Result<Vec<LNode>, ()> {
+        let mut rewritten_branches = Vec::new();
+
+        for branch in std::iter::once(&choose.if_branch).chain(choose.else_if_branches.iter()) {
+            if let Some(rewritten_branch) = self.rewrite_mixed_position_branch(branch, target)? {
+                rewritten_branches.push(rewritten_branch);
+            }
+        }
+
+        let rewritten_else = choose
+            .else_branch
+            .as_ref()
+            .map(|branch| self.rewrite_nodes_for_position(branch, target))
+            .transpose()?;
+        self.assemble_rewritten_position_choose(rewritten_branches, rewritten_else)
     }
 
     fn select_position_branch_children<'a>(
@@ -880,38 +946,112 @@ impl Upsampler {
         None
     }
 
+    fn upsample_first_node(&self, nodes: &[LNode]) -> Option<csln::CslnNode> {
+        self.upsample_nodes(nodes).into_iter().next()
+    }
+
+    fn map_uncertain_date_choose(&self, choose: &legacy::Choose) -> Option<csln::CslnNode> {
+        choose.if_branch.is_uncertain_date.as_ref()?;
+
+        choose
+            .else_branch
+            .as_deref()
+            .and_then(|else_children| self.upsample_first_node(else_children))
+            .or_else(|| {
+                choose
+                    .else_if_branches
+                    .first()
+                    .and_then(|branch| self.upsample_first_node(&branch.children))
+            })
+    }
+
+    fn map_position_choose_fallback(&self, choose: &legacy::Choose) -> Option<csln::CslnNode> {
+        if !choose_has_position_condition(choose) {
+            return None;
+        }
+
+        choose
+            .else_branch
+            .as_deref()
+            .and_then(|else_children| self.upsample_first_node(else_children))
+            .or_else(|| {
+                choose
+                    .else_if_branches
+                    .iter()
+                    .find(|branch| branch.position.is_none())
+                    .and_then(|branch| self.upsample_first_node(&branch.children))
+            })
+    }
+
+    fn map_branch_item_types(&self, type_names: Option<&str>) -> Vec<ItemType> {
+        type_names
+            .into_iter()
+            .flat_map(|types| types.split_whitespace())
+            .filter_map(|item_type| self.map_item_type(item_type))
+            .collect()
+    }
+
+    fn map_branch_variables(&self, variable_names: Option<&str>) -> Vec<Variable> {
+        variable_names
+            .into_iter()
+            .flat_map(|variables| variables.split_whitespace())
+            .filter_map(|variable| self.map_variable(variable))
+            .collect()
+    }
+
+    fn map_negated_else_if_fallback(
+        &self,
+        branch: &legacy::ChooseBranch,
+    ) -> Option<Vec<csln::CslnNode>> {
+        (branch.match_mode.as_deref() == Some("none") && branch.type_.is_some())
+            .then(|| self.upsample_nodes(&branch.children))
+    }
+
+    fn map_else_if_branch(&self, branch: &legacy::ChooseBranch) -> csln::ElseIfBranch {
+        csln::ElseIfBranch {
+            if_item_type: self.map_branch_item_types(branch.type_.as_deref()),
+            if_variables: self.map_branch_variables(branch.variable.as_deref()),
+            children: self.upsample_nodes(&branch.children),
+        }
+    }
+
+    fn resolve_condition_else_branch(
+        &self,
+        choose: &legacy::Choose,
+        negated_else_nodes: Option<Vec<csln::CslnNode>>,
+    ) -> Option<Vec<csln::CslnNode>> {
+        choose
+            .else_branch
+            .as_ref()
+            .map(|branch| self.upsample_nodes(branch))
+            .or(negated_else_nodes)
+    }
+
+    fn resolve_condition_branches(
+        &self,
+        choose: &legacy::Choose,
+        if_match_none: bool,
+        else_branch: Option<Vec<csln::CslnNode>>,
+    ) -> (Vec<csln::CslnNode>, Option<Vec<csln::CslnNode>>) {
+        if if_match_none {
+            let if_nodes = self.upsample_nodes(&choose.if_branch.children);
+            (Vec::new(), else_branch.or(Some(if_nodes)))
+        } else {
+            (self.upsample_nodes(&choose.if_branch.children), else_branch)
+        }
+    }
+
     fn map_choose(&self, c: &legacy::Choose) -> Option<csln::CslnNode> {
         // Handle is-uncertain-date condition specially: prefer else branch since most dates
         // aren't uncertain. Full EDTF support would handle this dynamically at render time.
-        if c.if_branch.is_uncertain_date.is_some() {
-            // Use else branch (non-uncertain formatting) as default
-            if let Some(else_children) = &c.else_branch {
-                let nodes = self.upsample_nodes(else_children);
-                return nodes.into_iter().next();
-            } else if !c.else_if_branches.is_empty() {
-                let nodes = self.upsample_nodes(&c.else_if_branches[0].children);
-                return nodes.into_iter().next();
-            }
-            // Fall through to if-branch if no else exists
+        if let Some(node) = self.map_uncertain_date_choose(c) {
+            return Some(node);
         }
 
         // Handle position conditions (ibid, subsequent, etc.) by preferring else branch.
         // Position conditions are for repeated citations - else branch has full first-citation.
-        let has_position_condition = c.if_branch.position.is_some()
-            || c.else_if_branches.iter().any(|b| b.position.is_some());
-        if has_position_condition {
-            if let Some(else_children) = &c.else_branch {
-                let nodes = self.upsample_nodes(else_children);
-                return nodes.into_iter().next();
-            }
-            // If no else, try to find a branch without position (the "first" case)
-            for branch in &c.else_if_branches {
-                if branch.position.is_none() {
-                    let nodes = self.upsample_nodes(&branch.children);
-                    return nodes.into_iter().next();
-                }
-            }
-            // Fall through if all branches have position conditions
+        if let Some(node) = self.map_position_choose_fallback(c) {
+            return Some(node);
         }
 
         // Determine if the if-branch uses match="none" (negated type test).
@@ -919,23 +1059,12 @@ impl Upsampler {
         // behaves like a default/else branch rather than a type-specific branch.
         let if_match_none = c.if_branch.match_mode.as_deref() == Some("none");
 
-        let mut if_item_type = Vec::new();
-        if !if_match_none && let Some(types) = &c.if_branch.type_ {
-            for t in types.split_whitespace() {
-                if let Some(it) = self.map_item_type(t) {
-                    if_item_type.push(it);
-                }
-            }
-        }
-
-        let mut if_variables = Vec::new();
-        if let Some(vars) = &c.if_branch.variable {
-            for v in vars.split_whitespace() {
-                if let Some(var) = self.map_variable(v) {
-                    if_variables.push(var);
-                }
-            }
-        }
+        let if_item_type = if !if_match_none {
+            self.map_branch_item_types(c.if_branch.type_.as_deref())
+        } else {
+            Vec::new()
+        };
+        let if_variables = self.map_branch_variables(c.if_branch.variable.as_deref());
 
         // Map all else-if branches. For branches with match="none" (negated type
         // condition), clear the type list — they act as broad defaults, not as
@@ -945,60 +1074,27 @@ impl Upsampler {
         let mut negated_else_nodes: Option<Vec<csln::CslnNode>> = None;
 
         for branch in &c.else_if_branches {
-            let is_match_none = branch.match_mode.as_deref() == Some("none");
-
-            if is_match_none && branch.type_.is_some() {
+            if let Some(fallback_nodes) = self.map_negated_else_if_fallback(branch) {
                 // Treat this as a fallback else branch, since it fires for all
                 // types NOT in its type list (i.e., the "default" case).
                 // Only adopt the first such branch to avoid duplicates.
                 if negated_else_nodes.is_none() {
-                    negated_else_nodes = Some(self.upsample_nodes(&branch.children));
+                    negated_else_nodes = Some(fallback_nodes);
                 }
                 continue;
             }
 
-            let mut branch_item_types = Vec::new();
-            if let Some(types) = &branch.type_ {
-                for t in types.split_whitespace() {
-                    if let Some(it) = self.map_item_type(t) {
-                        branch_item_types.push(it);
-                    }
-                }
-            }
-            let mut branch_variables = Vec::new();
-            if let Some(vars) = &branch.variable {
-                for v in vars.split_whitespace() {
-                    if let Some(var) = self.map_variable(v) {
-                        branch_variables.push(var);
-                    }
-                }
-            }
-            else_if_branches.push(csln::ElseIfBranch {
-                if_item_type: branch_item_types,
-                if_variables: branch_variables,
-                children: self.upsample_nodes(&branch.children),
-            });
+            else_if_branches.push(self.map_else_if_branch(branch));
         }
 
         // Determine the effective else_branch: prefer the existing else branch,
         // then fall back to the negated else-if content if present.
-        let else_branch = c
-            .else_branch
-            .as_ref()
-            .map(|e| self.upsample_nodes(e))
-            .or(negated_else_nodes);
+        let else_branch = self.resolve_condition_else_branch(c, negated_else_nodes);
 
         // Handle the if-branch match="none" case: push the if-branch content as
         // the else fallback, since it fires for all non-listed types.
-        let (then_branch, else_branch) = if if_match_none {
-            let if_nodes = self.upsample_nodes(&c.if_branch.children);
-            // The existing else_branch takes priority; if_nodes become the else
-            // only when there isn't already one.
-            let effective_else = else_branch.or(Some(if_nodes));
-            (Vec::new(), effective_else)
-        } else {
-            (self.upsample_nodes(&c.if_branch.children), else_branch)
-        };
+        let (then_branch, else_branch) =
+            self.resolve_condition_branches(c, if_match_none, else_branch);
 
         Some(csln::CslnNode::Condition(csln::ConditionBlock {
             if_item_type,
@@ -1743,5 +1839,145 @@ mod tests {
         let extracted = Upsampler::new().extract_citation_position_templates(&legacy_nodes);
 
         assert!(extracted.unsupported_mixed_conditions);
+    }
+
+    #[test]
+    fn map_choose_prefers_else_branch_for_uncertain_dates() {
+        let choose = Choose {
+            if_branch: ChooseBranch {
+                match_mode: None,
+                type_: None,
+                variable: None,
+                is_numeric: None,
+                is_uncertain_date: Some("issued".to_string()),
+                locator: None,
+                position: None,
+                children: vec![literal_text("UNCERTAIN")],
+            },
+            else_if_branches: vec![],
+            else_branch: Some(vec![literal_text("CERTAIN")]),
+        };
+
+        let mapped = Upsampler::new()
+            .map_choose(&choose)
+            .expect("uncertain-date choose should map");
+
+        assert_eq!(text_values(std::slice::from_ref(&mapped)), vec!["CERTAIN"]);
+    }
+
+    #[test]
+    fn map_choose_prefers_first_citation_content_for_position_fallbacks() {
+        let choose = Choose {
+            if_branch: choose_branch(Some("subsequent"), vec![literal_text("SHORT")]),
+            else_if_branches: vec![],
+            else_branch: Some(vec![literal_text("FULL")]),
+        };
+
+        let mapped = Upsampler::new()
+            .map_choose(&choose)
+            .expect("position choose should map");
+
+        assert_eq!(text_values(std::slice::from_ref(&mapped)), vec!["FULL"]);
+    }
+
+    #[test]
+    fn map_choose_uses_negated_else_if_as_effective_fallback() {
+        let choose = Choose {
+            if_branch: choose_branch_with_conditions(
+                None,
+                Some("book"),
+                None,
+                None,
+                vec![literal_text("BOOK")],
+            ),
+            else_if_branches: vec![ChooseBranch {
+                match_mode: Some("none".to_string()),
+                type_: Some("book".to_string()),
+                variable: None,
+                is_numeric: None,
+                is_uncertain_date: None,
+                locator: None,
+                position: None,
+                children: vec![literal_text("NOT-BOOK")],
+            }],
+            else_branch: None,
+        };
+
+        let mapped = Upsampler::new()
+            .map_choose(&choose)
+            .expect("choose should map");
+
+        match mapped {
+            csln::CslnNode::Condition(condition) => {
+                assert!(condition.else_if_branches.is_empty());
+                assert_eq!(text_values(&condition.then_branch), vec!["BOOK"]);
+                assert_eq!(
+                    text_values(
+                        condition
+                            .else_branch
+                            .as_deref()
+                            .expect("negated else-if should become else branch")
+                    ),
+                    vec!["NOT-BOOK"]
+                );
+            }
+            other => panic!("expected condition node, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn map_choose_preserves_existing_else_over_negated_if_fallback() {
+        let choose = Choose {
+            if_branch: ChooseBranch {
+                match_mode: Some("none".to_string()),
+                type_: Some("book".to_string()),
+                variable: None,
+                is_numeric: None,
+                is_uncertain_date: None,
+                locator: None,
+                position: None,
+                children: vec![literal_text("NOT-BOOK")],
+            },
+            else_if_branches: vec![choose_branch_with_conditions(
+                None,
+                Some("article-journal"),
+                None,
+                None,
+                vec![literal_text("ARTICLE")],
+            )],
+            else_branch: Some(vec![literal_text("EXISTING-ELSE")]),
+        };
+
+        let mapped = Upsampler::new()
+            .map_choose(&choose)
+            .expect("choose should map");
+
+        match mapped {
+            csln::CslnNode::Condition(condition) => {
+                assert!(condition.then_branch.is_empty());
+                assert_eq!(
+                    text_values(
+                        condition
+                            .else_branch
+                            .as_deref()
+                            .expect("existing else should remain in place")
+                    ),
+                    vec!["EXISTING-ELSE"]
+                );
+                let mut all_text = text_values(
+                    condition
+                        .else_branch
+                        .as_deref()
+                        .expect("existing else should remain in place"),
+                );
+                all_text.extend(text_values(&condition.then_branch));
+                for branch in &condition.else_if_branches {
+                    all_text.extend(text_values(&branch.children));
+                }
+                assert!(!all_text.contains(&"NOT-BOOK"));
+                assert!(all_text.contains(&"ARTICLE"));
+            }
+            other => panic!("expected condition node, got {other:?}"),
+        }
     }
 }
