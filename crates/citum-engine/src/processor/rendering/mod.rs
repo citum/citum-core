@@ -752,7 +752,7 @@ fn key_base(key: &str) -> String {
 /// to render multiple times if it appears in semantically different contexts.
 /// This enables styles like Chicago that require year after author AND after publisher.
 pub fn get_variable_key(component: &TemplateComponent) -> Option<String> {
-    use citum_schema::template::*;
+    use citum_schema::template::Rendering;
 
     // Helper to create context suffix from rendering options
     let context_suffix = |rendering: &Rendering| -> String {
