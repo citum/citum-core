@@ -1,11 +1,11 @@
 ---
 # csl26-rsw1
 title: Clean up clippy warning hotspots with rust-simplify
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-03-13T22:44:40Z
-updated_at: 2026-03-13T22:44:40Z
+updated_at: 2026-03-14T15:05:00Z
 ---
 
 Follow-up to archived bean `csl26-xtt0` and PR
@@ -61,12 +61,12 @@ Secondary cleanup targets once the engine warnings are materially reduced:
 
 ## Checklist
 
-- [ ] Simplify `crates/citum-engine/src/processor/document/mod.rs`
-  - [ ] reduce `process_document`
-  - [ ] reduce `prepare_note_citation_state`
-- [ ] Simplify `crates/citum-engine/src/processor/rendering.rs`
-  - [ ] reduce `render_grouped_citation_with_format`
-  - [ ] reduce `process_template_request_with_format`
+- [x] Simplify `crates/citum-engine/src/processor/document/mod.rs`
+  - [x] reduce `process_document`
+  - [x] reduce `prepare_note_citation_state`
+- [x] Simplify `crates/citum-engine/src/processor/rendering.rs`
+  - [x] reduce `render_grouped_citation_with_format`
+  - [x] reduce `process_template_request_with_format`
 - [ ] Simplify `crates/citum-engine/src/values/contributor.rs`
   - [ ] reduce `values`
   - [ ] reduce `format_names`
@@ -81,9 +81,9 @@ Secondary cleanup targets once the engine warnings are materially reduced:
   - [ ] reduce `values`
 - [ ] Simplify `crates/citum-engine/src/io.rs`
   - [ ] reduce `load_bibliography_with_sets`
-- [ ] Re-run `cargo clippy --all-targets --all-features -- -D warnings` once the
+- [x] Re-run `cargo clippy --all-targets --all-features -- -D warnings` once the
       current target slice is complete
-- [ ] Archive or update this bean when the warning cleanup frontier changes
+- [x] Archive or update this bean when the warning cleanup frontier changes
 
 ## Rust-Simplify Direction
 
@@ -117,3 +117,10 @@ Secondary cleanup targets once the engine warnings are materially reduced:
 - `processor/tests.rs` may continue migrating toward the crate's BDD naming
   style, but only for behavior-contract tests; low-level unit coverage does not
   need to be renamed wholesale.
+
+## Progress
+
+- 2026-03-14: completed the first processor-focused slice by extracting
+  document bibliography orchestration, note-state preparation helpers, grouped
+  citation assembly helpers, and template-render component helpers; the
+  remaining frontier is `values/*`, `io.rs`, and secondary non-engine targets.

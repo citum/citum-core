@@ -269,6 +269,12 @@ impl HtmlPlaceholderRegistry {
     }
 }
 
+#[derive(Debug)]
+struct RenderedDocumentBody {
+    content: String,
+    placeholders: Option<HtmlPlaceholderRegistry>,
+}
+
 #[derive(Debug, Clone)]
 enum NoteOccurrence {
     Manual { label: String, start: usize },
@@ -364,185 +370,179 @@ impl Processor {
             parsed.frontmatter_integral_names.as_ref(),
         );
         let processor = owned_processor.as_ref().unwrap_or(self);
-
-        // Strip any frontmatter from the content passed to rendering.
         let body = &content[parsed.body_start..];
+        if let Some(groups) = parsed.frontmatter_groups.clone() {
+            return processor.process_document_with_frontmatter_groups::<P, F>(
+                body, parsed, groups, parser, format,
+            );
+        }
 
-        // Check what mode we're in before consuming parsed
-        let has_frontmatter = parsed.frontmatter_groups.is_some();
-        let has_blocks = !parsed.bibliography_blocks.is_empty();
+        if !parsed.bibliography_blocks.is_empty() {
+            return processor
+                .process_document_with_bibliography_blocks::<P, F>(body, parsed, parser, format);
+        }
 
-        // Handle frontmatter groups if present (check before inline blocks)
-        if has_frontmatter {
-            let groups = parsed.frontmatter_groups.as_ref().unwrap().clone();
-            let rendered = if matches!(format, DocumentFormat::Html) {
-                let mut placeholders = HtmlPlaceholderRegistry::default();
-                let rendered = if processor.is_note_style() {
-                    processor.process_note_document_html(body, parsed, &mut placeholders)
-                } else {
-                    processor.process_inline_document_html(body, parsed, &mut placeholders)
-                };
-                let bib_content = rewrite_group_headings_for_document(
+        processor.process_document_with_default_bibliography::<P, F>(body, parsed, parser, format)
+    }
+
+    fn process_document_with_frontmatter_groups<P, F>(
+        &self,
+        body: &str,
+        parsed: ParsedDocument,
+        groups: Vec<citum_schema::grouping::BibliographyGroup>,
+        parser: &P,
+        format: DocumentFormat,
+    ) -> String
+    where
+        P: CitationParser,
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        self.render_document_with_trailing_bibliography::<P, F, _>(
+            body,
+            parsed,
+            parser,
+            format,
+            |processor| {
+                rewrite_group_headings_for_document(
                     processor.render_document_bibliography_groups::<F>(&groups),
                     format,
-                );
-                let mut result = rendered;
-                if !bib_content.trim().is_empty() {
-                    let bib_heading = "\n\n# Bibliography\n\n";
-                    result.push_str(bib_heading);
-                    result.push_str(&placeholders.push_block(bib_content));
-                }
-                let html = parser.finalize_html_output(&result);
-                return placeholders.apply(html);
-            } else if processor.is_note_style() {
-                processor.process_note_document::<F>(body, parsed)
-            } else {
-                processor.process_inline_document::<F>(body, parsed)
-            };
+                )
+            },
+        )
+    }
 
-            let bib_content = rewrite_group_headings_for_document(
-                processor.render_document_bibliography_groups::<F>(&groups),
-                format,
-            );
-            let mut result = rendered;
-            if !bib_content.trim().is_empty() {
-                let bib_heading = match format {
-                    DocumentFormat::Latex => "\n\n\\section*{Bibliography}\n\n",
-                    DocumentFormat::Typst => "\n\n= Bibliography\n\n",
-                    _ => "\n\n# Bibliography\n\n",
-                };
-                result.push_str(bib_heading);
-                result.push_str(&bib_content);
-            }
-            let result = rewrite_document_markup_for_typst(result, format);
-            return match format {
-                DocumentFormat::Html => parser.finalize_html_output(&result),
-                DocumentFormat::Djot
-                | DocumentFormat::Plain
-                | DocumentFormat::Latex
-                | DocumentFormat::Typst => result,
-            };
-        }
+    fn process_document_with_bibliography_blocks<P, F>(
+        &self,
+        body: &str,
+        parsed: ParsedDocument,
+        parser: &P,
+        format: DocumentFormat,
+    ) -> String
+    where
+        P: CitationParser,
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let blocks = parsed.bibliography_blocks.clone();
+        let staged = stage_document_bibliography_blocks(body, &blocks);
+        let parsed_staged = parser.parse_document(&staged, &self.locale);
+        let mut rendered = self.render_document_body::<F>(&staged, parsed_staged, format);
+        self.replace_document_bibliography_blocks::<F>(&mut rendered, &blocks, format);
+        self.finalize_document_output(parser, format, rendered)
+    }
 
-        // Handle inline bibliography blocks
-        if has_blocks {
-            let blocks = parsed.bibliography_blocks.clone();
+    fn process_document_with_default_bibliography<P, F>(
+        &self,
+        body: &str,
+        parsed: ParsedDocument,
+        parser: &P,
+        format: DocumentFormat,
+    ) -> String
+    where
+        P: CitationParser,
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        self.render_document_with_trailing_bibliography::<P, F, _>(
+            body,
+            parsed,
+            parser,
+            format,
+            |processor| processor.render_grouped_bibliography_with_format::<F>(),
+        )
+    }
 
-            // Replace each block with a stable placeholder before citation rendering so
-            // that citation-text length changes don't corrupt the block byte offsets.
-            let mut staged = body.to_string();
-            for (i, block) in blocks.iter().enumerate().rev() {
-                let placeholder = format!("\x00BIBBLOCK{i}\x00");
-                staged.replace_range(block.start..block.end, &placeholder);
-            }
+    fn render_document_with_trailing_bibliography<P, F, B>(
+        &self,
+        body: &str,
+        parsed: ParsedDocument,
+        parser: &P,
+        format: DocumentFormat,
+        render_bibliography: B,
+    ) -> String
+    where
+        P: CitationParser,
+        F: crate::render::format::OutputFormat<Output = String>,
+        B: FnOnce(&Self) -> String,
+    {
+        let mut rendered = self.render_document_body::<F>(body, parsed, format);
+        let bibliography = render_bibliography(self);
+        append_document_bibliography(&mut rendered, format, bibliography);
+        self.finalize_document_output(parser, format, rendered)
+    }
 
-            // Re-parse on the placeholder content so citation offsets are correct.
-            let parsed_staged = parser.parse_document(&staged, &self.locale);
-            let rendered = if matches!(format, DocumentFormat::Html) {
-                let mut placeholders = HtmlPlaceholderRegistry::default();
-                let rendered = if processor.is_note_style() {
-                    processor.process_note_document_html(&staged, parsed_staged, &mut placeholders)
-                } else {
-                    processor.process_inline_document_html(
-                        &staged,
-                        parsed_staged,
-                        &mut placeholders,
-                    )
-                };
-
-                let mut result = rendered;
-                for (i, block) in blocks.iter().enumerate() {
-                    let placeholder = format!("\x00BIBBLOCK{i}\x00");
-                    let rendered_group =
-                        processor.render_document_bibliography_block::<F>(&block.group);
-                    let bib_token = placeholders.push_block(rendered_group.body);
-                    let replacement = if let Some(heading_text) = rendered_group.heading {
-                        format!("## {heading_text}\n\n{bib_token}\n")
-                    } else {
-                        format!("{bib_token}\n")
-                    };
-                    result = result.replace(&placeholder, &replacement);
-                }
-
-                let html = parser.finalize_html_output(&result);
-                return placeholders.apply(html);
-            } else if processor.is_note_style() {
-                processor.process_note_document::<F>(&staged, parsed_staged)
-            } else {
-                processor.process_inline_document::<F>(&staged, parsed_staged)
-            };
-
-            // Swap placeholders for rendered bibliographies.
-            let mut result = rendered;
-            for (i, block) in blocks.iter().enumerate() {
-                let placeholder = format!("\x00BIBBLOCK{i}\x00");
-                let rendered_group =
-                    processor.render_document_bibliography_block::<F>(&block.group);
-                let replacement = if let Some(heading_text) = rendered_group.heading {
-                    let prefix = match format {
-                        DocumentFormat::Latex => format!("\\subsection*{{{heading_text}}}\n\n"),
-                        DocumentFormat::Typst => format!("== {heading_text}\n\n"),
-                        _ => format!("## {heading_text}\n\n"),
-                    };
-                    format!("{prefix}{}\n", rendered_group.body)
-                } else {
-                    format!("{}\n", rendered_group.body)
-                };
-                result = result.replace(&placeholder, &replacement);
-            }
-
-            let result = rewrite_document_markup_for_typst(result, format);
-            return match format {
-                DocumentFormat::Html => parser.finalize_html_output(&result),
-                DocumentFormat::Djot
-                | DocumentFormat::Plain
-                | DocumentFormat::Latex
-                | DocumentFormat::Typst => result,
-            };
-        }
-
-        // Default behavior: append bibliography with heading
-        let rendered = if matches!(format, DocumentFormat::Html) {
+    fn render_document_body<F>(
+        &self,
+        content: &str,
+        parsed: ParsedDocument,
+        format: DocumentFormat,
+    ) -> RenderedDocumentBody
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        if matches!(format, DocumentFormat::Html) {
             let mut placeholders = HtmlPlaceholderRegistry::default();
-            let rendered = if processor.is_note_style() {
-                processor.process_note_document_html(body, parsed, &mut placeholders)
+            let content = if self.is_note_style() {
+                self.process_note_document_html(content, parsed, &mut placeholders)
             } else {
-                processor.process_inline_document_html(body, parsed, &mut placeholders)
+                self.process_inline_document_html(content, parsed, &mut placeholders)
             };
+            return RenderedDocumentBody {
+                content,
+                placeholders: Some(placeholders),
+            };
+        }
 
-            let bib_content = processor.render_grouped_bibliography_with_format::<F>();
-            let mut result = rendered;
-            if !bib_content.trim().is_empty() {
-                result.push_str("\n\n# Bibliography\n\n");
-                result.push_str(&placeholders.push_block(bib_content));
-            }
-            let html = parser.finalize_html_output(&result);
-            return placeholders.apply(html);
-        } else if processor.is_note_style() {
-            processor.process_note_document::<F>(body, parsed)
+        let content = if self.is_note_style() {
+            self.process_note_document::<F>(content, parsed)
         } else {
-            processor.process_inline_document::<F>(body, parsed)
+            self.process_inline_document::<F>(content, parsed)
         };
 
-        let bib_content = processor.render_grouped_bibliography_with_format::<F>();
-        let mut result = rendered;
-        if !bib_content.trim().is_empty() {
-            let bib_heading = match format {
-                DocumentFormat::Latex => "\n\n\\section*{Bibliography}\n\n",
-                DocumentFormat::Typst => "\n\n= Bibliography\n\n",
-                _ => "\n\n# Bibliography\n\n",
-            };
-            result.push_str(bib_heading);
-            result.push_str(&bib_content);
+        RenderedDocumentBody {
+            content,
+            placeholders: None,
         }
-        let result = rewrite_document_markup_for_typst(result, format);
+    }
 
-        match format {
-            DocumentFormat::Html => parser.finalize_html_output(&result),
-            DocumentFormat::Djot
-            | DocumentFormat::Plain
-            | DocumentFormat::Latex
-            | DocumentFormat::Typst => result,
+    fn replace_document_bibliography_blocks<F>(
+        &self,
+        rendered: &mut RenderedDocumentBody,
+        blocks: &[djot::BibliographyBlock],
+        format: DocumentFormat,
+    ) where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        for (index, block) in blocks.iter().enumerate() {
+            let placeholder = bibliography_block_placeholder(index);
+            let rendered_group = self.render_document_bibliography_block::<F>(&block.group);
+            let replacement = render_document_bibliography_block_replacement(
+                rendered.placeholders.as_mut(),
+                format,
+                rendered_group.heading,
+                rendered_group.body,
+            );
+            rendered.content = rendered.content.replace(&placeholder, &replacement);
+        }
+    }
+
+    fn finalize_document_output<P>(
+        &self,
+        parser: &P,
+        format: DocumentFormat,
+        rendered: RenderedDocumentBody,
+    ) -> String
+    where
+        P: CitationParser,
+    {
+        let result = rewrite_document_markup_for_typst(rendered.content, format);
+        match rendered.placeholders {
+            Some(placeholders) => placeholders.apply(parser.finalize_html_output(&result)),
+            None => match format {
+                DocumentFormat::Html => parser.finalize_html_output(&result),
+                DocumentFormat::Djot
+                | DocumentFormat::Plain
+                | DocumentFormat::Latex
+                | DocumentFormat::Typst => result,
+            },
         }
     }
 
@@ -747,119 +747,28 @@ impl Processor {
         &self,
         parsed: &mut ParsedDocument,
     ) -> (Vec<GeneratedNote>, HashMap<String, Vec<usize>>) {
-        let mut used_labels = parsed.manual_note_labels.clone();
-        let mut manual_numbers: HashMap<String, u32> = HashMap::new();
-        let mut manual_citations: HashMap<String, Vec<usize>> = HashMap::new();
-        let mut note_occurrences: Vec<NoteOccurrence> = parsed
-            .manual_note_references
-            .iter()
-            .map(|note| NoteOccurrence::Manual {
-                label: note.label.clone(),
-                start: note.start,
-            })
-            .collect();
+        let (note_occurrences, manual_citations) = collect_note_occurrences(parsed);
+        let generated_notes = assign_note_numbers(parsed, &note_occurrences, &manual_citations);
+        self.apply_note_citation_annotations(parsed, &note_occurrences, &manual_citations);
+        (generated_notes, manual_citations)
+    }
 
-        for (index, parsed_citation) in parsed.citations.iter().enumerate() {
-            match &parsed_citation.placement {
-                CitationPlacement::InlineProse => {
-                    note_occurrences.push(NoteOccurrence::Generated {
-                        citation_index: index,
-                        start: parsed_citation.start,
-                    })
-                }
-                CitationPlacement::ManualFootnote { label } => {
-                    manual_citations
-                        .entry(label.clone())
-                        .or_default()
-                        .push(index);
-                }
-            }
-        }
-
-        for indices in manual_citations.values_mut() {
-            indices.sort_by_key(|index| parsed.citations[*index].start);
-        }
-
-        note_occurrences.sort_by_key(NoteOccurrence::start);
-
-        let mut next_note = 1_u32;
-        let mut generated_notes = Vec::new();
-        for occurrence in &note_occurrences {
-            match occurrence {
-                NoteOccurrence::Manual { label, .. } => {
-                    manual_numbers.entry(label.clone()).or_insert_with(|| {
-                        let current = next_note;
-                        next_note = next_note.saturating_add(1);
-                        current
-                    });
-                }
-                NoteOccurrence::Generated { citation_index, .. } => {
-                    let note_number = next_note;
-                    next_note = next_note.saturating_add(1);
-                    parsed.citations[*citation_index].citation.note_number = Some(note_number);
-                    generated_notes.push(GeneratedNote {
-                        citation_index: *citation_index,
-                        label: next_generated_note_label(&mut used_labels, note_number),
-                        note_number,
-                    });
-                }
-            }
-        }
-
-        // Definitions without a matching in-body reference still need stable note context.
-        let mut orphan_labels: Vec<_> = manual_citations
-            .keys()
-            .filter(|label| !manual_numbers.contains_key(*label))
-            .cloned()
-            .collect();
-        orphan_labels.sort_by_key(|label| {
-            manual_citations
-                .get(label)
-                .and_then(|indices| indices.first())
-                .map(|index| parsed.citations[*index].start)
-                .unwrap_or(usize::MAX)
-        });
-        for label in orphan_labels {
-            manual_numbers.insert(label, {
-                let current = next_note;
-                next_note = next_note.saturating_add(1);
-                current
-            });
-        }
-
-        for (label, indices) in &manual_citations {
-            if let Some(note_number) = manual_numbers.get(label).copied() {
-                for index in indices {
-                    parsed.citations[*index].citation.note_number = Some(note_number);
-                }
-            }
-        }
-
-        let ordered_indices = build_note_order_indices(&note_occurrences, &manual_citations);
-        let mut ordered_citations: Vec<Citation> = ordered_indices
-            .iter()
-            .map(|index| parsed.citations[*index].citation.clone())
-            .collect();
-        let ordered_contexts: Vec<_> = ordered_indices
-            .iter()
-            .map(|index| IntegralNameContext {
-                placement: parsed.citations[*index].placement.clone(),
-                structure: parsed.citations[*index].structure.clone(),
-            })
-            .collect();
+    fn apply_note_citation_annotations(
+        &self,
+        parsed: &mut ParsedDocument,
+        note_occurrences: &[NoteOccurrence],
+        manual_citations: &HashMap<String, Vec<usize>>,
+    ) {
+        let ordered_indices = build_note_order_indices(note_occurrences, manual_citations);
+        let (mut ordered_citations, ordered_contexts) =
+            ordered_note_citations_and_contexts(parsed, &ordered_indices);
         self.annotate_integral_name_states(&mut ordered_citations, &ordered_contexts);
         ordered_citations = self.normalize_note_context(&ordered_citations);
         self.annotate_positions(&mut ordered_citations);
 
-        for (ordered, index) in ordered_citations
-            .into_iter()
-            .zip(ordered_indices.into_iter())
-        {
-            parsed.citations[index].citation = ordered;
+        for (citation, index) in ordered_citations.into_iter().zip(ordered_indices) {
+            parsed.citations[index].citation = citation;
         }
-
-        generated_notes.sort_by_key(|note| note.note_number);
-        (generated_notes, manual_citations)
     }
 
     fn prepare_note_citations<F>(
@@ -1254,6 +1163,238 @@ impl Processor {
             },
         }
     }
+}
+
+fn stage_document_bibliography_blocks(body: &str, blocks: &[djot::BibliographyBlock]) -> String {
+    let mut staged = body.to_string();
+    for (index, block) in blocks.iter().enumerate().rev() {
+        staged.replace_range(
+            block.start..block.end,
+            &bibliography_block_placeholder(index),
+        );
+    }
+    staged
+}
+
+fn bibliography_block_placeholder(index: usize) -> String {
+    format!("\x00BIBBLOCK{index}\x00")
+}
+
+fn append_document_bibliography(
+    rendered: &mut RenderedDocumentBody,
+    format: DocumentFormat,
+    bibliography: String,
+) {
+    if bibliography.trim().is_empty() {
+        return;
+    }
+
+    rendered
+        .content
+        .push_str(document_bibliography_heading(format));
+    if let Some(placeholders) = rendered.placeholders.as_mut() {
+        rendered
+            .content
+            .push_str(&placeholders.push_block(bibliography));
+    } else {
+        rendered.content.push_str(&bibliography);
+    }
+}
+
+fn document_bibliography_heading(format: DocumentFormat) -> &'static str {
+    match format {
+        DocumentFormat::Latex => "\n\n\\section*{Bibliography}\n\n",
+        DocumentFormat::Typst => "\n\n= Bibliography\n\n",
+        DocumentFormat::Plain | DocumentFormat::Djot | DocumentFormat::Html => {
+            "\n\n# Bibliography\n\n"
+        }
+    }
+}
+
+fn render_document_bibliography_block_replacement(
+    placeholders: Option<&mut HtmlPlaceholderRegistry>,
+    format: DocumentFormat,
+    heading: Option<String>,
+    body: String,
+) -> String {
+    if let Some(placeholders) = placeholders {
+        let token = placeholders.push_block(body);
+        return match heading {
+            Some(heading) => format!("## {heading}\n\n{token}\n"),
+            None => format!("{token}\n"),
+        };
+    }
+
+    match heading {
+        Some(heading) => {
+            let prefix = match format {
+                DocumentFormat::Latex => format!("\\subsection*{{{heading}}}\n\n"),
+                DocumentFormat::Typst => format!("== {heading}\n\n"),
+                DocumentFormat::Plain | DocumentFormat::Djot | DocumentFormat::Html => {
+                    format!("## {heading}\n\n")
+                }
+            };
+            format!("{prefix}{body}\n")
+        }
+        None => format!("{body}\n"),
+    }
+}
+
+fn collect_note_occurrences(
+    parsed: &ParsedDocument,
+) -> (Vec<NoteOccurrence>, HashMap<String, Vec<usize>>) {
+    let mut note_occurrences: Vec<NoteOccurrence> = parsed
+        .manual_note_references
+        .iter()
+        .map(|note| NoteOccurrence::Manual {
+            label: note.label.clone(),
+            start: note.start,
+        })
+        .collect();
+    let mut manual_citations: HashMap<String, Vec<usize>> = HashMap::new();
+
+    for (index, parsed_citation) in parsed.citations.iter().enumerate() {
+        match &parsed_citation.placement {
+            CitationPlacement::InlineProse => {
+                note_occurrences.push(NoteOccurrence::Generated {
+                    citation_index: index,
+                    start: parsed_citation.start,
+                });
+            }
+            CitationPlacement::ManualFootnote { label } => {
+                manual_citations
+                    .entry(label.clone())
+                    .or_default()
+                    .push(index);
+            }
+        }
+    }
+
+    for indices in manual_citations.values_mut() {
+        indices.sort_by_key(|index| parsed.citations[*index].start);
+    }
+    note_occurrences.sort_by_key(NoteOccurrence::start);
+
+    (note_occurrences, manual_citations)
+}
+
+fn assign_note_numbers(
+    parsed: &mut ParsedDocument,
+    note_occurrences: &[NoteOccurrence],
+    manual_citations: &HashMap<String, Vec<usize>>,
+) -> Vec<GeneratedNote> {
+    let mut used_labels = parsed.manual_note_labels.clone();
+    let mut manual_numbers: HashMap<String, u32> = HashMap::new();
+    let mut next_note = 1_u32;
+    let mut generated_notes = assign_note_occurrence_numbers(
+        parsed,
+        note_occurrences,
+        &mut used_labels,
+        &mut manual_numbers,
+        &mut next_note,
+    );
+    assign_orphan_manual_note_numbers(
+        parsed,
+        manual_citations,
+        &mut manual_numbers,
+        &mut next_note,
+    );
+    apply_manual_note_numbers(parsed, manual_citations, &manual_numbers);
+    generated_notes.sort_by_key(|note| note.note_number);
+    generated_notes
+}
+
+fn assign_note_occurrence_numbers(
+    parsed: &mut ParsedDocument,
+    note_occurrences: &[NoteOccurrence],
+    used_labels: &mut HashSet<String>,
+    manual_numbers: &mut HashMap<String, u32>,
+    next_note: &mut u32,
+) -> Vec<GeneratedNote> {
+    let mut generated_notes = Vec::new();
+
+    for occurrence in note_occurrences {
+        match occurrence {
+            NoteOccurrence::Manual { label, .. } => {
+                manual_numbers
+                    .entry(label.clone())
+                    .or_insert_with(|| take_next_note_number(next_note));
+            }
+            NoteOccurrence::Generated { citation_index, .. } => {
+                let note_number = take_next_note_number(next_note);
+                parsed.citations[*citation_index].citation.note_number = Some(note_number);
+                generated_notes.push(GeneratedNote {
+                    citation_index: *citation_index,
+                    label: next_generated_note_label(used_labels, note_number),
+                    note_number,
+                });
+            }
+        }
+    }
+
+    generated_notes
+}
+
+fn assign_orphan_manual_note_numbers(
+    parsed: &ParsedDocument,
+    manual_citations: &HashMap<String, Vec<usize>>,
+    manual_numbers: &mut HashMap<String, u32>,
+    next_note: &mut u32,
+) {
+    let mut orphan_labels: Vec<_> = manual_citations
+        .keys()
+        .filter(|label| !manual_numbers.contains_key(*label))
+        .cloned()
+        .collect();
+    orphan_labels.sort_by_key(|label| {
+        manual_citations
+            .get(label)
+            .and_then(|indices| indices.first())
+            .map(|index| parsed.citations[*index].start)
+            .unwrap_or(usize::MAX)
+    });
+
+    for label in orphan_labels {
+        manual_numbers.insert(label, take_next_note_number(next_note));
+    }
+}
+
+fn apply_manual_note_numbers(
+    parsed: &mut ParsedDocument,
+    manual_citations: &HashMap<String, Vec<usize>>,
+    manual_numbers: &HashMap<String, u32>,
+) {
+    for (label, indices) in manual_citations {
+        if let Some(note_number) = manual_numbers.get(label).copied() {
+            for index in indices {
+                parsed.citations[*index].citation.note_number = Some(note_number);
+            }
+        }
+    }
+}
+
+fn ordered_note_citations_and_contexts(
+    parsed: &ParsedDocument,
+    ordered_indices: &[usize],
+) -> (Vec<Citation>, Vec<IntegralNameContext>) {
+    let citations = ordered_indices
+        .iter()
+        .map(|index| parsed.citations[*index].citation.clone())
+        .collect();
+    let contexts = ordered_indices
+        .iter()
+        .map(|index| IntegralNameContext {
+            placement: parsed.citations[*index].placement.clone(),
+            structure: parsed.citations[*index].structure.clone(),
+        })
+        .collect();
+    (citations, contexts)
+}
+
+fn take_next_note_number(next_note: &mut u32) -> u32 {
+    let current = *next_note;
+    *next_note = (*next_note).saturating_add(1);
+    current
 }
 
 fn merge_note_rule(default: NoteRule, config: &StyleNoteConfig) -> NoteRule {

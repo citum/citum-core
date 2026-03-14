@@ -146,6 +146,32 @@ struct TemplateRenderRequest<'a> {
     integral_name_state: Option<citum_schema::citation::IntegralNameState>,
 }
 
+#[derive(Default)]
+struct TemplateComponentTracker {
+    rendered_vars: HashSet<String>,
+    substituted_bases: HashSet<String>,
+}
+
+impl TemplateComponentTracker {
+    fn should_skip(&self, var_key: Option<&str>) -> bool {
+        let Some(var_key) = var_key else {
+            return false;
+        };
+        let base = key_base(var_key);
+        self.rendered_vars.contains(var_key) || self.substituted_bases.contains(&base)
+    }
+
+    fn mark_rendered(&mut self, var_key: Option<String>, substituted_key: Option<&str>) {
+        if let Some(var_key) = var_key {
+            self.rendered_vars.insert(var_key);
+        }
+        if let Some(substituted_key) = substituted_key {
+            self.rendered_vars.insert(substituted_key.to_string());
+            self.substituted_bases.insert(key_base(substituted_key));
+        }
+    }
+}
+
 impl<'a> Renderer<'a> {
     /// Creates a new `Renderer` instance.
     pub fn new(
@@ -877,7 +903,6 @@ impl<'a> Renderer<'a> {
         let groups: Vec<(String, Vec<&CitationItem>)> = group_citation_items_by_author(self, items);
 
         let mut rendered_groups = Vec::new();
-        let fmt = F::default();
 
         for (_author_key, group) in groups {
             let first_item = group[0];
@@ -926,93 +951,18 @@ impl<'a> Renderer<'a> {
                 continue;
             }
 
-            // Fallback to default hardcoded grouping (or if no integral template)
-            let author_part = self.render_author_for_grouping_with_format::<F>(
+            if let Some(citation) = self.render_fallback_grouped_citation_with_format::<F>(
+                &group,
                 first_ref,
                 first_item,
                 template,
-                mode,
-                suppress_author,
-                position,
-            );
-
-            let (item_parts, group_delimiter) = self.render_group_item_parts_with_format::<F>(
-                &fmt,
-                &group,
                 spec,
                 mode,
+                intra_delimiter,
                 suppress_author,
                 position,
-                intra_delimiter,
-            )?;
-
-            let group_ids: Vec<String> = group.iter().map(|item| item.id.clone()).collect();
-            let prefix = first_item.prefix.as_deref().unwrap_or("");
-            if !author_part.is_empty() && !item_parts.is_empty() {
-                let author_item_delimiter = group_delimiter.as_deref().unwrap_or(intra_delimiter);
-                let repeated_item_delimiter = if author_item_delimiter.trim().is_empty() {
-                    ", "
-                } else {
-                    author_item_delimiter
-                };
-                let joined_items = item_parts.join(repeated_item_delimiter);
-                // Format based on citation mode:
-                // Integral: "Kuhn (1962a, 1962b)" - items in parentheses
-                // NonIntegral: "Kuhn, 1962a, 1962b" - no inner parens (outer wrap adds them)
-                let content = match mode {
-                    citum_schema::citation::CitationMode::Integral => {
-                        // Check for visibility overrides
-                        if suppress_author {
-                            // Should theoretically not happen in narrative mode, but handle gracefully
-                            format!("({})", joined_items)
-                        } else {
-                            // Default narrative: Kuhn (1962)
-                            format!("{} ({})", author_part, joined_items)
-                        }
-                    }
-                    citum_schema::citation::CitationMode::NonIntegral => {
-                        if suppress_author {
-                            // Parenthetical SuppressAuthor: 1962
-                            joined_items
-                        } else {
-                            // Default parenthetical: Kuhn, 1962
-                            if self.config.punctuation_in_quote
-                                && author_item_delimiter.starts_with(',')
-                                && (author_part.ends_with('"') || author_part.ends_with('\u{201D}'))
-                            {
-                                let is_curly = author_part.ends_with('\u{201D}');
-                                let quote_char = if is_curly { '\u{201D}' } else { '"' };
-                                let trimmed =
-                                    &author_part[..author_part.len() - quote_char.len_utf8()];
-                                format!(
-                                    "{},{}{}{}",
-                                    trimmed,
-                                    quote_char,
-                                    &author_item_delimiter[1..],
-                                    joined_items
-                                )
-                            } else {
-                                format!("{}{}{}", author_part, author_item_delimiter, joined_items)
-                            }
-                        }
-                    }
-                };
-                let ids = group_ids.clone();
-                let content = self.affix_content(&fmt, content, Some(prefix), None);
-                rendered_groups.push(fmt.citation(ids, content));
-            } else if !author_part.is_empty() {
-                let ids = group_ids.clone();
-                rendered_groups.push(fmt.citation(
-                    ids,
-                    self.affix_content(&fmt, author_part, Some(prefix), None),
-                ));
-            } else if !item_parts.is_empty() {
-                // Item-only case (SuppressAuthor)
-                let content = item_parts.join(intra_delimiter);
-                rendered_groups.push(fmt.citation(
-                    group_ids,
-                    self.affix_content(&fmt, content, Some(prefix), None),
-                ));
+            )? {
+                rendered_groups.push(citation);
             }
         }
 
@@ -1309,16 +1259,201 @@ impl<'a> Renderer<'a> {
             locator: locator.as_deref(),
             locator_label,
         };
+        let hint = self.build_template_render_hint(
+            reference,
+            options.context,
+            citation_number,
+            position,
+            integral_name_state,
+        );
+        let ref_type = reference.ref_type().to_string();
+        let mut tracker = TemplateComponentTracker::default();
+        let components: Vec<ProcTemplateComponent> = template
+            .iter()
+            .filter_map(|component| {
+                self.render_template_component_with_format::<F>(
+                    reference,
+                    &ref_type,
+                    &options,
+                    &hint,
+                    component,
+                    &mut tracker,
+                )
+            })
+            .collect();
+
+        if components.is_empty() {
+            None
+        } else {
+            Some(components)
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn render_fallback_grouped_citation_with_format<F>(
+        &self,
+        group: &[&crate::reference::CitationItem],
+        first_ref: &Reference,
+        first_item: &crate::reference::CitationItem,
+        template: &[TemplateComponent],
+        spec: &citum_schema::CitationSpec,
+        mode: &citum_schema::citation::CitationMode,
+        intra_delimiter: &str,
+        suppress_author: bool,
+        position: Option<&citum_schema::citation::Position>,
+    ) -> Result<Option<String>, ProcessorError>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let fmt = F::default();
+        let author_part = self.render_author_for_grouping_with_format::<F>(
+            first_ref,
+            first_item,
+            template,
+            mode,
+            suppress_author,
+            position,
+        );
+        let (item_parts, group_delimiter) = self.render_group_item_parts_with_format::<F>(
+            &fmt,
+            group,
+            spec,
+            mode,
+            suppress_author,
+            position,
+            intra_delimiter,
+        )?;
+        let Some(content) = self.build_grouped_citation_content(
+            &author_part,
+            &item_parts,
+            mode,
+            intra_delimiter,
+            group_delimiter.as_deref(),
+            suppress_author,
+        ) else {
+            return Ok(None);
+        };
+        let group_ids = group.iter().map(|item| item.id.clone()).collect();
+        let prefix = first_item.prefix.as_deref().unwrap_or("");
+
+        Ok(Some(fmt.citation(
+            group_ids,
+            self.affix_content(&fmt, content, Some(prefix), None),
+        )))
+    }
+
+    fn build_grouped_citation_content(
+        &self,
+        author_part: &str,
+        item_parts: &[String],
+        mode: &citum_schema::citation::CitationMode,
+        intra_delimiter: &str,
+        group_delimiter: Option<&str>,
+        suppress_author: bool,
+    ) -> Option<String> {
+        if !author_part.is_empty() && !item_parts.is_empty() {
+            let author_item_delimiter = group_delimiter.unwrap_or(intra_delimiter);
+            let repeated_item_delimiter = if author_item_delimiter.trim().is_empty() {
+                ", "
+            } else {
+                author_item_delimiter
+            };
+            let joined_items = item_parts.join(repeated_item_delimiter);
+            return Some(match mode {
+                citum_schema::citation::CitationMode::Integral => {
+                    self.format_integral_grouped_items(author_part, &joined_items, suppress_author)
+                }
+                citum_schema::citation::CitationMode::NonIntegral => self
+                    .format_non_integral_grouped_items(
+                        author_part,
+                        author_item_delimiter,
+                        &joined_items,
+                        suppress_author,
+                    ),
+            });
+        }
+
+        if !author_part.is_empty() {
+            return Some(author_part.to_string());
+        }
+
+        if !item_parts.is_empty() {
+            return Some(item_parts.join(intra_delimiter));
+        }
+
+        None
+    }
+
+    fn format_integral_grouped_items(
+        &self,
+        author_part: &str,
+        joined_items: &str,
+        suppress_author: bool,
+    ) -> String {
+        if suppress_author {
+            format!("({joined_items})")
+        } else {
+            format!("{author_part} ({joined_items})")
+        }
+    }
+
+    fn format_non_integral_grouped_items(
+        &self,
+        author_part: &str,
+        author_item_delimiter: &str,
+        joined_items: &str,
+        suppress_author: bool,
+    ) -> String {
+        if suppress_author {
+            return joined_items.to_string();
+        }
+
+        if let Some(adjusted) =
+            self.adjust_grouped_author_quote_punctuation(author_part, author_item_delimiter)
+        {
+            return format!("{adjusted}{joined_items}");
+        }
+
+        format!("{author_part}{author_item_delimiter}{joined_items}")
+    }
+
+    fn adjust_grouped_author_quote_punctuation(
+        &self,
+        author_part: &str,
+        author_item_delimiter: &str,
+    ) -> Option<String> {
+        if !self.config.punctuation_in_quote
+            || !author_item_delimiter.starts_with(',')
+            || !(author_part.ends_with('"') || author_part.ends_with('\u{201D}'))
+        {
+            return None;
+        }
+
+        let is_curly = author_part.ends_with('\u{201D}');
+        let quote_char = if is_curly { '\u{201D}' } else { '"' };
+        let trimmed = &author_part[..author_part.len() - quote_char.len_utf8()];
+        Some(format!(
+            "{trimmed},{quote_char}{}",
+            &author_item_delimiter[1..]
+        ))
+    }
+
+    fn build_template_render_hint(
+        &self,
+        reference: &Reference,
+        context: RenderContext,
+        citation_number: usize,
+        position: Option<citum_schema::citation::Position>,
+        integral_name_state: Option<citum_schema::citation::IntegralNameState>,
+    ) -> ProcHints {
         let default_hint = ProcHints::default();
         let base_hint = self
             .hints
             .get(&reference.id().unwrap_or_default())
             .unwrap_or(&default_hint);
-
-        // Create a hint with citation number and position
-        let hint = ProcHints {
+        ProcHints {
             citation_number: (citation_number > 0).then_some(citation_number),
-            citation_sub_label: if options.context == RenderContext::Citation {
+            citation_sub_label: if context == RenderContext::Citation {
                 reference
                     .id()
                     .as_deref()
@@ -1329,93 +1464,94 @@ impl<'a> Renderer<'a> {
             position,
             integral_name_state,
             ..base_hint.clone()
-        };
+        }
+    }
 
-        // Track rendered variables to prevent duplicates (CSL 1.0 spec:
-        // "Substituted variables are suppressed in the rest of the output")
-        let mut rendered_vars: HashSet<String> = HashSet::new();
-        // Track base keys of substituted variables so they suppress all contextual
-        // variants (for example "title:Primary" should suppress title with suffixes).
-        let mut substituted_bases: HashSet<String> = HashSet::new();
+    fn render_template_component_with_format<F>(
+        &self,
+        reference: &Reference,
+        ref_type: &str,
+        options: &RenderOptions<'_>,
+        hint: &ProcHints,
+        component: &TemplateComponent,
+        tracker: &mut TemplateComponentTracker,
+    ) -> Option<ProcTemplateComponent>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let resolved_component = resolve_component_for_ref_type(component, ref_type);
+        let var_key = get_variable_key(&resolved_component);
+        if tracker.should_skip(var_key.as_deref()) {
+            return None;
+        }
 
-        let components: Vec<ProcTemplateComponent> = template
-            .iter()
-            .filter_map(|component| {
-                let ref_type = reference.ref_type().to_string();
-                let resolved_component = resolve_component_for_ref_type(component, &ref_type);
-                // Get unique key for this variable (e.g., "contributor:Author")
-                let var_key = get_variable_key(&resolved_component);
+        let mut values = resolved_component.values::<F>(reference, hint, options)?;
+        if values.value.is_empty() {
+            return None;
+        }
+        self.apply_issued_no_date_fallback(reference, options, &resolved_component, &mut values);
+        self.apply_entry_link_fallback(reference, options, &mut values);
 
-                // Skip if this variable was already rendered
-                if let Some(ref key) = var_key {
-                    let base = key_base(key);
-                    if rendered_vars.contains(key) || substituted_bases.contains(&base) {
-                        return None;
-                    }
-                }
+        let item_language =
+            crate::values::effective_component_language(reference, &resolved_component);
+        tracker.mark_rendered(var_key, values.substituted_key.as_deref());
 
-                // Extract value from reference using the requested format
-                let mut values = resolved_component.values::<F>(reference, &hint, &options)?;
-                if values.value.is_empty() {
-                    return None;
-                }
-                if matches!(
-                    resolved_component,
-                    TemplateComponent::Date(citum_schema::template::TemplateDate {
-                        date: citum_schema::template::DateVariable::Issued,
-                        ..
-                    })
-                ) && reference.issued().is_none_or(|issued| issued.0.is_empty())
-                    && self.preferred_no_date_term_form() == citum_schema::locale::TermForm::Long
-                    && let Some(long) = options.locale.general_term(
-                        &citum_schema::locale::GeneralTerm::NoDate,
-                        citum_schema::locale::TermForm::Long,
-                    )
-                {
-                    values.value = long.to_string();
-                }
-                let item_language =
-                    crate::values::effective_component_language(reference, &resolved_component);
+        Some(ProcTemplateComponent {
+            template_component: resolved_component,
+            value: values.value,
+            prefix: values.prefix,
+            suffix: values.suffix,
+            url: values.url,
+            ref_type: Some(ref_type.to_string()),
+            config: Some(options.config.clone()),
+            item_language,
+            pre_formatted: values.pre_formatted,
+        })
+    }
 
-                // If whole-entry linking is enabled and this component doesn't have a URL,
-                // try to resolve it from global config.
-                if values.url.is_none()
-                    && let Some(links) = &options.config.links
-                {
-                    use citum_schema::options::LinkAnchor;
-                    if matches!(links.anchor, Some(LinkAnchor::Entry)) {
-                        values.url = crate::values::resolve_url(links, reference);
-                    }
-                }
-
-                // Mark variable as rendered for deduplication
-                if let Some(key) = var_key {
-                    rendered_vars.insert(key);
-                }
-                // Also mark substituted variable (e.g., title when it replaces author)
-                if let Some(sub_key) = &values.substituted_key {
-                    rendered_vars.insert(sub_key.clone());
-                    substituted_bases.insert(key_base(sub_key));
-                }
-
-                Some(ProcTemplateComponent {
-                    template_component: resolved_component,
-                    value: values.value,
-                    prefix: values.prefix,
-                    suffix: values.suffix,
-                    url: values.url,
-                    ref_type: Some(ref_type),
-                    config: Some(options.config.clone()),
-                    item_language,
-                    pre_formatted: values.pre_formatted,
-                })
+    fn apply_issued_no_date_fallback(
+        &self,
+        reference: &Reference,
+        options: &RenderOptions<'_>,
+        component: &TemplateComponent,
+        values: &mut crate::values::ProcValues<String>,
+    ) {
+        if !matches!(
+            component,
+            TemplateComponent::Date(citum_schema::template::TemplateDate {
+                date: citum_schema::template::DateVariable::Issued,
+                ..
             })
-            .collect();
+        ) || !reference.issued().is_none_or(|issued| issued.0.is_empty())
+            || self.preferred_no_date_term_form() != citum_schema::locale::TermForm::Long
+        {
+            return;
+        }
 
-        if components.is_empty() {
-            None
-        } else {
-            Some(components)
+        if let Some(long) = options.locale.general_term(
+            &citum_schema::locale::GeneralTerm::NoDate,
+            citum_schema::locale::TermForm::Long,
+        ) {
+            values.value = long.to_string();
+        }
+    }
+
+    fn apply_entry_link_fallback(
+        &self,
+        reference: &Reference,
+        options: &RenderOptions<'_>,
+        values: &mut crate::values::ProcValues<String>,
+    ) {
+        if values.url.is_some() {
+            return;
+        }
+
+        let Some(links) = &options.config.links else {
+            return;
+        };
+        use citum_schema::options::LinkAnchor;
+        if matches!(links.anchor, Some(LinkAnchor::Entry)) {
+            values.url = crate::values::resolve_url(links, reference);
         }
     }
 
