@@ -29,7 +29,7 @@ impl<'a> SelectorEvaluator<'a> {
     /// # Arguments
     ///
     /// * `cited_ids` - Set of reference IDs cited visibly
-    pub fn new(cited_ids: &'a HashSet<String>) -> Self {
+    pub const fn new(cited_ids: &'a HashSet<String>) -> Self {
         Self { cited_ids }
     }
 
@@ -43,35 +43,27 @@ impl<'a> SelectorEvaluator<'a> {
     /// * `reference` - The reference to test
     /// * `selector` - The selector predicate
     pub fn matches(&self, reference: &Reference, selector: &GroupSelector) -> bool {
-        let mut result = true;
-
-        // Type filtering
-        if let Some(type_sel) = &selector.ref_type {
-            result &= self.matches_type(reference, type_sel);
-        }
-
-        // Citation status filtering
-        if let Some(cited) = &selector.cited {
-            result &= self.matches_cited_status(reference, cited);
-        }
-
-        // Field filtering
-        if let Some(fields) = &selector.field {
-            for (field_name, matcher) in fields {
-                result &= self.matches_field(reference, field_name, matcher);
-            }
-        }
-
-        // Negation
-        if let Some(not_sel) = &selector.not {
-            result &= !self.matches(reference, not_sel);
-        }
-
-        result
+        selector
+            .ref_type
+            .as_ref()
+            .is_none_or(|type_sel| Self::matches_type(reference, type_sel))
+            && selector
+                .cited
+                .as_ref()
+                .is_none_or(|cited| self.matches_cited_status(reference, *cited))
+            && selector.field.as_ref().is_none_or(|fields| {
+                fields.iter().all(|(field_name, matcher)| {
+                    Self::matches_field(reference, field_name, matcher)
+                })
+            })
+            && selector
+                .not
+                .as_ref()
+                .is_none_or(|not_sel| !self.matches(reference, not_sel))
     }
 
     /// Match reference type.
-    fn matches_type(&self, reference: &Reference, type_sel: &TypeSelector) -> bool {
+    fn matches_type(reference: &Reference, type_sel: &TypeSelector) -> bool {
         let ref_type = reference.ref_type();
         match type_sel {
             TypeSelector::Single(t) => ref_type == t.as_str(),
@@ -80,7 +72,7 @@ impl<'a> SelectorEvaluator<'a> {
     }
 
     /// Match citation status.
-    fn matches_cited_status(&self, reference: &Reference, cited: &CitedStatus) -> bool {
+    fn matches_cited_status(&self, reference: &Reference, cited: CitedStatus) -> bool {
         let id = reference.id().unwrap_or_default();
         match cited {
             CitedStatus::Visible => self.cited_ids.contains(&id),
@@ -92,20 +84,15 @@ impl<'a> SelectorEvaluator<'a> {
     ///
     /// Currently supports matching against the `language` field.
     /// Future: extend to support arbitrary custom metadata fields.
-    fn matches_field(
-        &self,
-        reference: &Reference,
-        field_name: &str,
-        matcher: &FieldMatcher,
-    ) -> bool {
+    fn matches_field(reference: &Reference, field_name: &str, matcher: &FieldMatcher) -> bool {
         match field_name {
             "language" => {
                 let lang = reference.language().unwrap_or_default();
-                self.matches_field_value(&lang, matcher)
+                Self::matches_field_value(&lang, matcher)
             }
             "note" => {
                 let note = reference.note().unwrap_or_default();
-                self.matches_field_value(&note, matcher)
+                Self::matches_field_value(&note, matcher)
             }
             // Future: support for keywords, custom metadata
             _ => false,
@@ -113,7 +100,7 @@ impl<'a> SelectorEvaluator<'a> {
     }
 
     /// Match a field value against a matcher.
-    fn matches_field_value(&self, value: &str, matcher: &FieldMatcher) -> bool {
+    fn matches_field_value(value: &str, matcher: &FieldMatcher) -> bool {
         match matcher {
             FieldMatcher::Exact(expected) => value == expected,
             FieldMatcher::Multiple(values) => values.iter().any(|v| value == v),

@@ -31,7 +31,7 @@ pub struct GroupSorter<'a> {
 
 impl<'a> GroupSorter<'a> {
     /// Create a sorter that uses `locale` for locale-sensitive comparisons.
-    pub fn new(locale: &'a Locale) -> Self {
+    pub const fn new(locale: &'a Locale) -> Self {
         Self { locale }
     }
 
@@ -77,27 +77,17 @@ impl<'a> GroupSorter<'a> {
         sort_key: &GroupSortKey,
     ) -> std::cmp::Ordering {
         let cmp = match &sort_key.key {
-            GroupSortKeyType::RefType => {
-                if let Some(order) = &sort_key.order {
-                    // Type-order sorting: explicit sequence
-                    self.compare_by_type_order(a, b, order)
-                } else {
-                    // Alphabetical type comparison
-                    a.ref_type().cmp(&b.ref_type())
-                }
-            }
-            GroupSortKeyType::Author => {
-                if let Some(name_order) = &sort_key.sort_order {
-                    // Name-order sorting: culturally appropriate collation
-                    self.compare_by_author_with_order(a, b, *name_order)
-                } else {
-                    // Default: family-given (Western convention)
-                    self.compare_by_author_with_order(a, b, NameSortOrder::FamilyGiven)
-                }
-            }
+            GroupSortKeyType::RefType => sort_key.order.as_ref().map_or_else(
+                || a.ref_type().cmp(&b.ref_type()),
+                |order| Self::compare_by_type_order(a, b, order),
+            ),
+            GroupSortKeyType::Author => sort_key.sort_order.as_ref().map_or_else(
+                || self.compare_by_author_with_order(a, b, NameSortOrder::FamilyGiven),
+                |name_order| self.compare_by_author_with_order(a, b, *name_order),
+            ),
             GroupSortKeyType::Title => self.compare_by_title(a, b),
-            GroupSortKeyType::Issued => self.compare_by_issued(a, b),
-            GroupSortKeyType::Field(field_name) => self.compare_by_field(a, b, field_name),
+            GroupSortKeyType::Issued => Self::compare_by_issued(a, b),
+            GroupSortKeyType::Field(field_name) => Self::compare_by_field(a, b, field_name),
         };
 
         if sort_key.ascending {
@@ -111,12 +101,7 @@ impl<'a> GroupSorter<'a> {
     ///
     /// Types appear in the order specified, regardless of alphabetical content.
     /// Types not in the order list sort after those in the list, alphabetically.
-    fn compare_by_type_order(
-        &self,
-        a: &Reference,
-        b: &Reference,
-        order: &[String],
-    ) -> std::cmp::Ordering {
+    fn compare_by_type_order(a: &Reference, b: &Reference, order: &[String]) -> std::cmp::Ordering {
         let a_type = a.ref_type();
         let b_type = b.ref_type();
 
@@ -216,7 +201,7 @@ impl<'a> GroupSorter<'a> {
     }
 
     /// Compare by issued date.
-    fn compare_by_issued(&self, a: &Reference, b: &Reference) -> std::cmp::Ordering {
+    fn compare_by_issued(a: &Reference, b: &Reference) -> std::cmp::Ordering {
         let a_year = a
             .issued()
             .and_then(|d| d.year().parse::<i32>().ok())
@@ -229,12 +214,7 @@ impl<'a> GroupSorter<'a> {
     }
 
     /// Compare by custom field.
-    fn compare_by_field(
-        &self,
-        a: &Reference,
-        b: &Reference,
-        field_name: &str,
-    ) -> std::cmp::Ordering {
+    fn compare_by_field(a: &Reference, b: &Reference, field_name: &str) -> std::cmp::Ordering {
         match field_name {
             "language" => {
                 let a_lang = a.language().unwrap_or_default();

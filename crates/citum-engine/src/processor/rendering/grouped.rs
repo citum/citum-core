@@ -18,9 +18,7 @@ pub(super) fn group_citation_items_by_author<'a>(
         let author_key = if preserve_individual_citations {
             item.id.clone()
         } else {
-            reference
-                .map(|reference| renderer.get_author_grouping_key(reference))
-                .unwrap_or_default()
+            reference.map(author_grouping_key).unwrap_or_default()
         };
 
         match groups.last_mut() {
@@ -189,12 +187,10 @@ impl<'a> Renderer<'a> {
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
-        use crate::reference::CitationItem;
-
         // Group adjacent items by author key (respecting substitution). When a cite
         // already depends on name expansion for disambiguation, keep each item
         // separate instead of collapsing by author.
-        let groups: Vec<(String, Vec<&CitationItem>)> = group_citation_items_by_author(self, items);
+        let groups = group_citation_items_by_author(self, items);
 
         let mut rendered_groups = Vec::new();
 
@@ -282,8 +278,10 @@ impl<'a> Renderer<'a> {
         if is_note_processing
             && matches!(
                 position,
-                Some(citum_schema::citation::Position::Ibid)
-                    | Some(citum_schema::citation::Position::IbidWithLocator)
+                Some(
+                    citum_schema::citation::Position::Ibid
+                        | citum_schema::citation::Position::IbidWithLocator
+                )
             )
             && !template.iter().any(has_contributor_component)
         {
@@ -337,9 +335,7 @@ impl<'a> Renderer<'a> {
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
-        use crate::reference::CitationItem;
-
-        let groups: Vec<(String, Vec<&CitationItem>)> = group_citation_items_by_author(self, items);
+        let groups = group_citation_items_by_author(self, items);
 
         let mut rendered_groups = Vec::new();
         let fmt = F::default();
@@ -366,33 +362,6 @@ impl<'a> Renderer<'a> {
         }
 
         Ok(fmt.join(rendered_groups, inter_delimiter))
-    }
-
-    /// Get a unique key for grouping citations by author.
-    fn get_author_grouping_key(&self, reference: &Reference) -> String {
-        if let Some(author) = reference.author() {
-            author.to_string().to_lowercase()
-        } else if let Some(editor) = reference.editor() {
-            editor.to_string().to_lowercase()
-        } else if let Some(title) = reference.title() {
-            title.to_string().to_lowercase()
-        } else {
-            String::new()
-        }
-    }
-
-    /// Filter out author components from a template.
-    fn filter_author_from_template(
-        &self,
-        template: &[TemplateComponent],
-    ) -> (Vec<TemplateComponent>, Option<String>) {
-        let mut filtered: Vec<TemplateComponent> =
-            template.iter().filter_map(strip_author_component).collect();
-        let leading_affix = filtered.first().and_then(leading_group_affix);
-        if let Some(first) = filtered.first_mut() {
-            strip_leading_group_affixes(first);
-        }
-        (filtered, leading_affix)
     }
 
     /// Get the citation number for a reference, assigning one if not yet cited.
@@ -913,7 +882,7 @@ impl<'a> Renderer<'a> {
             let template = spec.resolve_template_for_language(item_language.as_deref());
             let effective_template = template.as_deref().unwrap_or(&[]);
             let (filtered_template, leading_affix) =
-                self.filter_author_from_template(effective_template);
+                filter_author_from_template(effective_template);
             if group_delimiter.is_none() {
                 group_delimiter = leading_affix
                     .as_ref()
@@ -947,4 +916,35 @@ impl<'a> Renderer<'a> {
         }
         Ok((item_parts, group_delimiter))
     }
+}
+
+fn author_grouping_key(reference: &Reference) -> String {
+    reference
+        .author()
+        .map_or_else(
+            || {
+                reference.editor().map_or_else(
+                    || {
+                        reference
+                            .title()
+                            .map_or_else(String::new, |title| title.to_string())
+                    },
+                    |editor| editor.to_string(),
+                )
+            },
+            |author| author.to_string(),
+        )
+        .to_lowercase()
+}
+
+fn filter_author_from_template(
+    template: &[TemplateComponent],
+) -> (Vec<TemplateComponent>, Option<String>) {
+    let mut filtered: Vec<TemplateComponent> =
+        template.iter().filter_map(strip_author_component).collect();
+    let leading_affix = filtered.first().and_then(leading_group_affix);
+    if let Some(first) = filtered.first_mut() {
+        strip_leading_group_affixes(first);
+    }
+    (filtered, leading_affix)
 }
