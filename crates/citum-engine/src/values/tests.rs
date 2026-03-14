@@ -2,6 +2,7 @@ use super::*;
 use crate::reference::Reference;
 use crate::render::plain::PlainText;
 use citum_schema::locale::{GeneralTerm, Locale, TermForm};
+use citum_schema::options::contributors::NameForm;
 use citum_schema::options::*;
 use citum_schema::reference::FlatName;
 use citum_schema::template::DateVariable as TemplateDateVar;
@@ -39,6 +40,27 @@ fn make_reference() -> Reference {
         publisher: Some("University of Chicago Press".to_string()),
         ..Default::default()
     })
+}
+
+/// Helper to create NameFormatContext for tests.
+fn make_name_format_context<'a>(
+    display_as_sort: Option<DisplayAsSort>,
+    name_order: Option<&'a NameOrder>,
+    initialize_with: Option<&'a String>,
+    initialize_with_hyphen: Option<bool>,
+    name_form: Option<NameForm>,
+    demote_ndp: Option<&'a DemoteNonDroppingParticle>,
+    sort_separator: Option<&'a String>,
+) -> super::contributor::NameFormatContext<'a> {
+    super::contributor::NameFormatContext {
+        display_as_sort,
+        name_order,
+        initialize_with,
+        initialize_with_hyphen,
+        name_form,
+        demote_ndp,
+        sort_separator,
+    }
 }
 
 /// Tests the behavior of test_contributor_values.
@@ -237,7 +259,7 @@ fn test_format_page_range_no_format() {
 /// Tests the behavior of shared consecutive sequence collapsing.
 #[test]
 fn test_consecutive_segments() {
-    use crate::values::range::{ConsecutiveSegment, consecutive_segments};
+    use crate::values::range::{consecutive_segments, ConsecutiveSegment};
 
     assert_eq!(consecutive_segments(&[]), Vec::<ConsecutiveSegment>::new());
     assert_eq!(
@@ -388,70 +410,60 @@ fn test_demote_non_dropping_particle() {
 
     // Case 1: Never demote (default CSL behavior for display)
     // Inverted: "van Beethoven, Ludwig"
-    let res_never = contributor::format_single_name(
-        &name,
-        &ContributorForm::Long,
-        0,
-        &Some(DisplayAsSort::All), // Force inverted
+    let ctx = make_name_format_context(
+        Some(DisplayAsSort::All),
         None,
         None,
-        None, // initialize_with_hyphen
-        None, // name_form
+        None,
+        None,
         Some(&DemoteNonDroppingParticle::Never),
-        None, // sort_separator
-        false,
+        None,
     );
+    let res_never = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(res_never, "van Beethoven, Ludwig");
 
     // Case 2: Display-and-sort (demote)
     // Inverted: "Beethoven, Ludwig van"
-    let res_demote = contributor::format_single_name(
-        &name,
-        &ContributorForm::Long,
-        0,
-        &Some(DisplayAsSort::All), // Force inverted
+    let ctx = make_name_format_context(
+        Some(DisplayAsSort::All),
         None,
         None,
-        None, // initialize_with_hyphen
-        None, // name_form
+        None,
+        None,
         Some(&DemoteNonDroppingParticle::DisplayAndSort),
-        None, // sort_separator
-        false,
+        None,
     );
+    let res_demote = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(res_demote, "Beethoven, Ludwig van");
 
     // Case 3: Sort-only (same as Never for display)
     // Inverted: "van Beethoven, Ludwig"
-    let res_sort_only = contributor::format_single_name(
-        &name,
-        &ContributorForm::Long,
-        0,
-        &Some(DisplayAsSort::All), // Force inverted
+    let ctx = make_name_format_context(
+        Some(DisplayAsSort::All),
         None,
         None,
-        None, // initialize_with_hyphen
-        None, // name_form
+        None,
+        None,
         Some(&DemoteNonDroppingParticle::SortOnly),
-        None, // sort_separator
-        false,
+        None,
     );
+    let res_sort_only =
+        contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(res_sort_only, "van Beethoven, Ludwig");
 
     // Case 4: Not inverted (should be same for all)
     // "Ludwig van Beethoven"
-    let res_straight = contributor::format_single_name(
-        &name,
-        &ContributorForm::Long,
-        0,
-        &Some(DisplayAsSort::None), // Not inverted
+    let ctx = make_name_format_context(
+        Some(DisplayAsSort::None),
         None,
         None,
-        None, // initialize_with_hyphen
-        None, // name_form
+        None,
+        None,
         Some(&DemoteNonDroppingParticle::DisplayAndSort),
-        None, // sort_separator
-        false,
+        None,
     );
+    let res_straight =
+        contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(res_straight, "Ludwig van Beethoven");
 }
 
@@ -465,67 +477,55 @@ fn test_initialize_with_variants_for_multi_part_given_names() {
     };
 
     let init_compact = String::new();
-    let compact = contributor::format_single_name(
-        &name,
-        &ContributorForm::Long,
-        0,
-        &Some(DisplayAsSort::All),
+    let ctx = make_name_format_context(
+        Some(DisplayAsSort::All),
         None,
         Some(&init_compact),
         None,
-        None, // name_form
         None,
         None,
-        false,
+        None,
     );
+    let compact = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(compact, "Kuhn, TS");
 
     let init_space = " ".to_string();
-    let space = contributor::format_single_name(
-        &name,
-        &ContributorForm::Long,
-        0,
-        &Some(DisplayAsSort::All),
+    let ctx = make_name_format_context(
+        Some(DisplayAsSort::All),
         None,
         Some(&init_space),
         None,
-        None, // name_form
         None,
         None,
-        false,
+        None,
     );
+    let space = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(space, "Kuhn, T S");
 
     let init_dot = ".".to_string();
-    let dot = contributor::format_single_name(
-        &name,
-        &ContributorForm::Long,
-        0,
-        &Some(DisplayAsSort::All),
+    let ctx = make_name_format_context(
+        Some(DisplayAsSort::All),
         None,
         Some(&init_dot),
         None,
-        None, // name_form
         None,
         None,
-        false,
+        None,
     );
+    let dot = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(dot, "Kuhn, T.S.");
 
     let init_dot_space = ". ".to_string();
-    let dot_space = contributor::format_single_name(
-        &name,
-        &ContributorForm::Long,
-        0,
-        &Some(DisplayAsSort::All),
+    let ctx = make_name_format_context(
+        Some(DisplayAsSort::All),
         None,
         Some(&init_dot_space),
         None,
-        None, // name_form
         None,
         None,
-        false,
+        None,
     );
+    let dot_space = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(dot_space, "Kuhn, T. S.");
 }
 
@@ -539,34 +539,30 @@ fn test_initialize_with_hyphen_guard() {
     };
     let init_dot = ".".to_string();
 
-    let hyphen_default = contributor::format_single_name(
-        &name,
-        &ContributorForm::Long,
-        0,
-        &Some(DisplayAsSort::All),
+    let ctx = make_name_format_context(
+        Some(DisplayAsSort::All),
         None,
         Some(&init_dot),
         None,
-        None, // name_form
         None,
         None,
-        false,
+        None,
     );
+    let hyphen_default =
+        contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(hyphen_default, "Kuhn, J.-P.");
 
-    let hyphen_disabled = contributor::format_single_name(
-        &name,
-        &ContributorForm::Long,
-        0,
-        &Some(DisplayAsSort::All),
+    let ctx = make_name_format_context(
+        Some(DisplayAsSort::All),
         None,
         Some(&init_dot),
         Some(false),
-        None, // name_form
         None,
         None,
-        false,
+        None,
     );
+    let hyphen_disabled =
+        contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(hyphen_disabled, "Kuhn, J.");
 }
 
@@ -582,84 +578,48 @@ fn test_name_form_variants() {
     };
 
     // Full: render complete given names
-    let full = contributor::format_single_name(
-        &name,
-        &ContributorForm::Long,
-        0,
-        &None,
-        None,
-        None,
-        None,
-        Some(NameForm::Full),
-        None,
-        None,
-        false,
-    );
+    let ctx = make_name_format_context(None, None, None, None, Some(NameForm::Full), None, None);
+    let full = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(full, "John David Smith");
 
     // FamilyOnly: suppress given names entirely
-    let family_only = contributor::format_single_name(
-        &name,
-        &ContributorForm::Long,
-        0,
-        &None,
+    let ctx = make_name_format_context(
+        None,
         None,
         None,
         None,
         Some(NameForm::FamilyOnly),
         None,
         None,
-        false,
     );
+    let family_only =
+        contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(family_only, "Smith");
 
     // Initials with explicit initialize_with
     let init_str = ". ".to_string();
-    let initials = contributor::format_single_name(
-        &name,
-        &ContributorForm::Long,
-        0,
-        &None,
+    let ctx = make_name_format_context(
+        None,
         None,
         Some(&init_str),
         None,
         Some(NameForm::Initials),
         None,
         None,
-        false,
     );
+    let initials = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(initials, "J. D. Smith");
 
     // Initials with defaulted initialize_with (None → ". ")
-    let initials_default = contributor::format_single_name(
-        &name,
-        &ContributorForm::Long,
-        0,
-        &None,
-        None,
-        None,
-        None,
-        Some(NameForm::Initials),
-        None,
-        None,
-        false,
-    );
+    let ctx =
+        make_name_format_context(None, None, None, None, Some(NameForm::Initials), None, None);
+    let initials_default =
+        contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(initials_default, "J. D. Smith");
 
     // Backward compat: name_form=None + initialize_with=Some → treated as Initials
-    let compat = contributor::format_single_name(
-        &name,
-        &ContributorForm::Long,
-        0,
-        &None,
-        None,
-        Some(&init_str),
-        None,
-        None, // name_form absent
-        None,
-        None,
-        false,
-    );
+    let ctx = make_name_format_context(None, None, Some(&init_str), None, None, None, None);
+    let compat = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(compat, "J. D. Smith");
 }
 
@@ -675,19 +635,9 @@ fn test_name_form_initials_hyphen_default_separator() {
     };
 
     // Default separator ". " should produce "J.-P." not "J. -P."
-    let result = contributor::format_single_name(
-        &name,
-        &ContributorForm::Long,
-        0,
-        &None,
-        None,
-        None, // initialize_with=None → defaults to ". "
-        None,
-        Some(NameForm::Initials),
-        None,
-        None,
-        false,
-    );
+    let ctx =
+        make_name_format_context(None, None, None, None, Some(NameForm::Initials), None, None);
+    let result = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(result, "J.-P. Sartre");
 }
 
@@ -1763,35 +1713,33 @@ fn test_sort_separator_space() {
     };
 
     // Test with space separator: should produce "Smith J" (no comma)
-    let result_space = contributor::format_single_name(
-        &name,
-        &ContributorForm::Long,
-        0,
-        &Some(DisplayAsSort::All), // Force inverted (family-first)
+    let sep_space = " ".to_string();
+    let init_empty = "".to_string();
+    let ctx = make_name_format_context(
+        Some(DisplayAsSort::All),
         None,
-        Some(&"".to_string()),  // initialize_with (no separator after initials)
-        None,                   // initialize_with_hyphen
-        None,                   // name_form
-        None,                   // demote_ndp
-        Some(&" ".to_string()), // sort_separator - space instead of comma
-        false,                  // expand_given_names
+        Some(&init_empty),
+        None,
+        None,
+        None,
+        Some(&sep_space),
     );
+    let result_space =
+        contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(result_space, "Smith J");
 
     // Test with default (no sort_separator set): should produce "Smith, J" (with comma)
-    let result_default = contributor::format_single_name(
-        &name,
-        &ContributorForm::Long,
-        0,
-        &Some(DisplayAsSort::All), // Force inverted (family-first)
+    let ctx = make_name_format_context(
+        Some(DisplayAsSort::All),
         None,
-        Some(&"".to_string()), // initialize_with (no separator after initials)
-        None,                  // initialize_with_hyphen
-        None,                  // name_form
-        None,                  // demote_ndp
-        None,                  // sort_separator - default to ", "
-        false,                 // expand_given_names
+        Some(&init_empty),
+        None,
+        None,
+        None,
+        None,
     );
+    let result_default =
+        contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(result_default, "Smith, J");
 }
 

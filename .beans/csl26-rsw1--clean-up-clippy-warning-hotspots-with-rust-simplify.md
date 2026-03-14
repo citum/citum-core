@@ -1,11 +1,11 @@
 ---
 # csl26-rsw1
 title: Clean up clippy warning hotspots with rust-simplify
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-03-13T22:44:40Z
-updated_at: 2026-03-14T15:05:00Z
+updated_at: 2026-03-14T15:15:00Z
 ---
 
 Follow-up to archived bean `csl26-xtt0` and PR
@@ -69,8 +69,8 @@ Secondary cleanup targets once the engine warnings are materially reduced:
   - [x] reduce `process_template_request_with_format`
 - [x] Simplify `crates/citum-engine/src/values/contributor.rs`
   - [x] reduce `values`
-  - [ ] reduce `format_names`
-  - [ ] reduce `format_single_name`
+  - [x] reduce `format_names`
+  - [x] reduce `format_single_name`
 - [x] Simplify `crates/citum-engine/src/values/date.rs`
   - [x] reduce `values`
 - [x] Simplify `crates/citum-engine/src/values/number.rs`
@@ -133,3 +133,38 @@ Secondary cleanup targets once the engine warnings are materially reduced:
   consolidating three consecutive `.and_then` calls into a single reusable
   `resolve_multilingual_title_config` function. Remaining: `format_names`,
   `format_single_name`.
+- 2026-03-14: completed `format_names` and `format_single_name` refactoring by extracting
+  `NameFormatContext` struct, `partition_et_al` helper, and `initialize_given_name` helper.
+  Removed both `#[allow(clippy::too_many_arguments)]` suppressions entirely. All tests pass,
+  no clippy warnings remain in this slice.
+
+## Summary of Changes
+
+### `partition_et_al` helper
+- Extracted et-al partitioning logic from `format_names` into a private helper function.
+- Determines which names to show before et-al, whether to use et-al, and which last names to show.
+- Encapsulates complex conditional logic for min threshold, effective min, and use_last calculations.
+
+### `NameFormatContext` struct
+- Created private `pub(crate)` struct to bundle 7 formatting configuration fields.
+- Fields: `display_as_sort`, `name_order`, `initialize_with`, `initialize_with_hyphen`, `name_form`, `demote_ndp`, `sort_separator`.
+- Replaced 11 individual parameters in `format_single_name` calls with a single context reference.
+
+### `initialize_given_name` helper
+- Extracted given name initialization logic from the `Initials` match arm.
+- Handles word separation and initial extraction with proper hyphen preservation.
+- Simplifies the code flow and makes the initialization logic reusable and testable.
+
+### Function signature updates
+- `format_names`: Now builds `NameFormatContext` once and uses `partition_et_al` helper.
+- `format_single_name`: Changed from `pub` to `pub(crate)` (internal-only API); now accepts `&NameFormatContext` instead of 7 loose arguments.
+
+### Test updates
+- Added `make_name_format_context` helper for tests to construct contexts easily.
+- Updated all 18 `format_single_name` call sites in tests to use the new signature.
+- Added explicit `NameForm` import to test module.
+
+### Verification
+- All tests pass (no failures, no ignored tests related to this change).
+- No clippy warnings in `citum-engine`.
+- Code is more readable with clearer parameter grouping and reduced cognitive complexity.

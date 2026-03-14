@@ -658,8 +658,75 @@ impl ComponentValues for TemplateContributor {
     }
 }
 
+/// Configuration for formatting a single name.
+pub(crate) struct NameFormatContext<'a> {
+    pub(crate) display_as_sort: Option<DisplayAsSort>,
+    pub(crate) name_order: Option<&'a citum_schema::template::NameOrder>,
+    pub(crate) initialize_with: Option<&'a String>,
+    pub(crate) initialize_with_hyphen: Option<bool>,
+    pub(crate) name_form: Option<NameForm>,
+    pub(crate) demote_ndp: Option<&'a DemoteNonDroppingParticle>,
+    pub(crate) sort_separator: Option<&'a String>,
+}
+
+/// Partition names into (first_names, use_et_al, last_names) based on et-al options.
+fn partition_et_al<'a>(
+    names: &'a [crate::reference::FlatName],
+    shorten: Option<&'a ShortenListOptions>,
+    hints: &'a ProcHints,
+) -> (Vec<&'a crate::reference::FlatName>, bool, Vec<&'a crate::reference::FlatName>) {
+    if let Some(opts) = shorten {
+        // Determine effective min/use_first based on citation position.
+        let is_subsequent = matches!(
+            hints.position,
+            Some(citum_schema::citation::Position::Subsequent)
+                | Some(citum_schema::citation::Position::Ibid)
+                | Some(citum_schema::citation::Position::IbidWithLocator)
+        );
+        let effective_min_threshold = if is_subsequent {
+            opts.subsequent_min.unwrap_or(opts.min) as usize
+        } else {
+            opts.min as usize
+        };
+        let effective_use_first = if is_subsequent {
+            opts.subsequent_use_first.unwrap_or(opts.use_first) as usize
+        } else {
+            opts.use_first as usize
+        };
+
+        // When min_names_to_show is set (name expansion disambiguation),
+        // determine effective threshold for et-al application.
+        let effective_min = if let Some(expanded) = hints.min_names_to_show {
+            expanded.max(effective_use_first)
+        } else {
+            effective_use_first
+        };
+
+        // Apply et-al only if the list exceeds the minimum threshold
+        if names.len() >= effective_min_threshold {
+            if effective_min >= names.len() {
+                (names.iter().collect::<Vec<_>>(), false, Vec::new())
+            } else {
+                let first: Vec<&crate::reference::FlatName> =
+                    names.iter().take(effective_min).collect();
+                let last: Vec<&crate::reference::FlatName> = if let Some(ul) = opts.use_last {
+                    let take_last = ul as usize;
+                    let skip = std::cmp::max(effective_min, names.len().saturating_sub(take_last));
+                    names.iter().skip(skip).collect()
+                } else {
+                    Vec::new()
+                };
+                (first, true, last)
+            }
+        } else {
+            (names.iter().collect::<Vec<_>>(), false, Vec::new())
+        }
+    } else {
+        (names.iter().collect::<Vec<_>>(), false, Vec::new())
+    }
+}
+
 /// Format a list of names according to style options.
-#[allow(clippy::too_many_arguments)]
 ///
 /// # Panics
 ///
@@ -693,95 +760,25 @@ pub fn format_names(
         .map(|opts| opts.and_others)
         .unwrap_or(AndOtherOptions::EtAl);
 
-    let (first_names, use_et_al, last_names) = if let Some(opts) = shorten {
-        // Determine effective min/use_first based on citation position.
-        // For subsequent cites (not first), use subsequent-specific settings if available.
-        let is_subsequent = matches!(
-            hints.position,
-            Some(citum_schema::citation::Position::Subsequent)
-                | Some(citum_schema::citation::Position::Ibid)
-                | Some(citum_schema::citation::Position::IbidWithLocator)
-        );
-        let effective_min_threshold = if is_subsequent {
-            opts.subsequent_min.unwrap_or(opts.min) as usize
-        } else {
-            opts.min as usize
-        };
-        let effective_use_first = if is_subsequent {
-            opts.subsequent_use_first.unwrap_or(opts.use_first) as usize
-        } else {
-            opts.use_first as usize
-        };
+    let (first_names, use_et_al, last_names) = partition_et_al(names, shorten, hints);
 
-        // Phase 3: Et-al Disambiguation Logic
-        // When min_names_to_show is set (name expansion disambiguation),
-        // determine effective threshold for et-al application.
-        let effective_min = if let Some(expanded) = hints.min_names_to_show {
-            // Name expansion disambiguation: show at least 'expanded' names.
-            // If normal et-al threshold is met, apply et-al but show 'expanded' names.
-            expanded.max(effective_use_first)
-        } else {
-            // Normal mode: use standard et-al threshold
-            effective_use_first
-        };
-
-        // Apply et-al only if the list exceeds the minimum threshold
-        if names.len() >= effective_min_threshold {
-            if effective_min >= names.len() {
-                // Show all names (no et-al)
-                (names.iter().collect::<Vec<_>>(), false, Vec::new())
-            } else {
-                // Apply et-al with effective minimum shown
-                let first: Vec<&crate::reference::FlatName> =
-                    names.iter().take(effective_min).collect();
-                let last: Vec<&crate::reference::FlatName> = if let Some(ul) = opts.use_last {
-                    // Show ul last names. Ensure no overlap with first names.
-                    let take_last = ul as usize;
-                    let skip = std::cmp::max(effective_min, names.len().saturating_sub(take_last));
-                    names.iter().skip(skip).collect()
-                } else {
-                    Vec::new()
-                };
-                (first, true, last)
-            }
-        } else {
-            // Below et-al threshold: show all names
-            (names.iter().collect::<Vec<_>>(), false, Vec::new())
-        }
-    } else {
-        (names.iter().collect::<Vec<_>>(), false, Vec::new())
+    // Build format context once
+    let ctx = NameFormatContext {
+        display_as_sort: config.and_then(|c| c.display_as_sort),
+        name_order,
+        initialize_with: initialize_with_override.or_else(|| config.and_then(|c| c.initialize_with.as_ref())),
+        initialize_with_hyphen: config.and_then(|c| c.initialize_with_hyphen),
+        name_form: config.and_then(|c| c.name_form),
+        demote_ndp: config.and_then(|c| c.demote_non_dropping_particle.as_ref()),
+        sort_separator: sort_separator_override.or_else(|| config.and_then(|c| c.sort_separator.as_ref())),
     };
 
-    // Format each name
-    // Use explicit name_order if provided, otherwise use global display_as_sort
-    let display_as_sort = config.and_then(|c| c.display_as_sort);
-    let initialize_with =
-        initialize_with_override.or_else(|| config.and_then(|c| c.initialize_with.as_ref()));
-    let initialize_with_hyphen = config.and_then(|c| c.initialize_with_hyphen);
-    let name_form = config.and_then(|c| c.name_form);
-    let demote_ndp = config.and_then(|c| c.demote_non_dropping_particle.as_ref());
-    let sort_separator =
-        sort_separator_override.or_else(|| config.and_then(|c| c.sort_separator.as_ref()));
     let delimiter = config.and_then(|c| c.delimiter.as_deref()).unwrap_or(", ");
 
     let formatted_first: Vec<String> = first_names
         .iter()
         .enumerate()
-        .map(|(i, name)| {
-            format_single_name(
-                name,
-                form,
-                i,
-                &display_as_sort,
-                name_order,
-                initialize_with,
-                initialize_with_hyphen,
-                name_form,
-                demote_ndp,
-                sort_separator,
-                hints.expand_given_names,
-            )
-        })
+        .map(|(i, name)| format_single_name(name, form, i, &ctx, hints.expand_given_names))
         .collect();
 
     let formatted_last: Vec<String> = last_names
@@ -789,19 +786,7 @@ pub fn format_names(
         .enumerate()
         .map(|(i, name)| {
             let original_idx = names.len() - last_names.len() + i;
-            format_single_name(
-                name,
-                form,
-                original_idx,
-                &display_as_sort,
-                name_order,
-                initialize_with,
-                initialize_with_hyphen,
-                name_form,
-                demote_ndp,
-                sort_separator,
-                hints.expand_given_names,
-            )
+            format_single_name(name, form, original_idx, &ctx, hints.expand_given_names)
         })
         .collect();
 
@@ -844,7 +829,7 @@ pub fn format_names(
                 Some(DelimiterPrecedesLast::Always) => true,
                 Some(DelimiterPrecedesLast::Never) => false,
                 Some(DelimiterPrecedesLast::Contextual) | None => true, // Default: use comma in bibliography
-                Some(DelimiterPrecedesLast::AfterInvertedName) => display_as_sort
+                Some(DelimiterPrecedesLast::AfterInvertedName) => ctx.display_as_sort
                     .as_ref()
                     .is_some_and(|das| matches!(das, DisplayAsSort::All | DisplayAsSort::First)),
             }
@@ -874,7 +859,7 @@ pub fn format_names(
             Some(DelimiterPrecedesLast::Never) => false,
             Some(DelimiterPrecedesLast::Contextual) | None => true, // Default: comma for 3+ names
             Some(DelimiterPrecedesLast::AfterInvertedName) => {
-                display_as_sort.as_ref().is_some_and(|das| {
+                ctx.display_as_sort.as_ref().is_some_and(|das| {
                     matches!(das, DisplayAsSort::All)
                         || (matches!(das, DisplayAsSort::First) && first_names.len() == 1)
                 })
@@ -901,7 +886,7 @@ pub fn format_names(
                 Some(DelimiterPrecedesLast::Never) => false,
                 Some(DelimiterPrecedesLast::AfterInvertedName) => {
                     // Use delimiter if last displayed name was inverted (family-first)
-                    display_as_sort.as_ref().is_some_and(|das| {
+                    ctx.display_as_sort.as_ref().is_some_and(|das| {
                         matches!(das, DisplayAsSort::All)
                             || (matches!(das, DisplayAsSort::First) && first_names.len() == 1)
                     })
@@ -928,19 +913,60 @@ pub fn format_names(
     }
 }
 
+/// Initialize a given name by extracting initials.
+///
+/// Splits the given name on word separators (space, hyphen, non-breaking space),
+/// and converts each part to its first character followed by the initialize suffix.
+fn initialize_given_name(
+    given: &str,
+    initialize_with: Option<&String>,
+    initialize_with_hyphen: Option<bool>,
+) -> String {
+    let init = initialize_with.map(|s| s.as_str()).unwrap_or(". ");
+    let separators = if initialize_with_hyphen == Some(false) {
+        vec![' ', '\u{00A0}'] // Non-breaking space too
+    } else {
+        vec![' ', '-', '\u{00A0}']
+    };
+
+    let mut result = String::new();
+    let mut current_part = String::new();
+
+    for c in given.chars() {
+        if separators.contains(&c) {
+            if !current_part.is_empty() {
+                if let Some(first) = current_part.chars().next() {
+                    result.push(first);
+                    result.push_str(init);
+                }
+                current_part.clear();
+            }
+            // Preserve only non-whitespace separators (e.g., hyphen for J.-P.).
+            // Strip any trailing separator space before the hyphen so we get
+            // "J.-P." rather than "J. -P." when init contains a trailing space.
+            if !c.is_whitespace() {
+                let trimmed_len = result.trim_end().len();
+                result.truncate(trimmed_len);
+                result.push(c);
+            }
+        } else {
+            current_part.push(c);
+        }
+    }
+
+    if !current_part.is_empty() && let Some(first) = current_part.chars().next() {
+        result.push(first);
+        result.push_str(init);
+    }
+    result.trim().to_string()
+}
+
 /// Format a single name.
-#[allow(clippy::too_many_arguments)]
-pub fn format_single_name(
+pub(crate) fn format_single_name(
     name: &crate::reference::FlatName,
     form: &ContributorForm,
     index: usize,
-    display_as_sort: &Option<DisplayAsSort>,
-    name_order: Option<&citum_schema::template::NameOrder>,
-    initialize_with: Option<&String>,
-    initialize_with_hyphen: Option<bool>,
-    name_form: Option<NameForm>,
-    demote_ndp: Option<&DemoteNonDroppingParticle>,
-    sort_separator: Option<&String>,
+    ctx: &NameFormatContext,
     expand_given_names: bool,
 ) -> String {
     use citum_schema::template::NameOrder;
@@ -965,10 +991,10 @@ pub fn format_single_name(
     let suffix = name.suffix.as_deref().unwrap_or("");
 
     // Determine if we should invert (Family, Given)
-    let inverted = match name_order {
+    let inverted = match ctx.name_order {
         Some(NameOrder::GivenFirst) => false,
         Some(NameOrder::FamilyFirst) => true,
-        None => match display_as_sort {
+        None => match ctx.display_as_sort {
             Some(DisplayAsSort::All) => true,
             Some(DisplayAsSort::First) => index == 0,
             _ => false,
@@ -1001,7 +1027,7 @@ pub fn format_single_name(
         }
         ContributorForm::Long | ContributorForm::Verb | ContributorForm::VerbShort => {
             // Determine parts based on demotion
-            let demote = matches!(demote_ndp, Some(DemoteNonDroppingParticle::DisplayAndSort));
+            let demote = matches!(ctx.demote_ndp, Some(DemoteNonDroppingParticle::DisplayAndSort));
 
             let family_part = if !ndp.is_empty() && !demote {
                 join_particle_family(ndp, family)
@@ -1011,56 +1037,15 @@ pub fn format_single_name(
 
             // Determine how to render the given name based on NameForm.
             // If name_form is None and initialize_with is present, treat as Initials for backward compat.
-            let effective_name_form = match name_form {
+            let effective_name_form = match ctx.name_form {
                 Some(f) => f,
-                None if initialize_with.is_some() => NameForm::Initials,
+                None if ctx.initialize_with.is_some() => NameForm::Initials,
                 _ => NameForm::Full,
             };
 
             let given_part = match effective_name_form {
                 NameForm::FamilyOnly => String::new(),
-                NameForm::Initials => {
-                    // Use initialize_with if provided, else default to ". "
-                    let init = initialize_with.map(|s| s.as_str()).unwrap_or(". ");
-                    let separators = if initialize_with_hyphen == Some(false) {
-                        vec![' ', '\u{00A0}'] // Non-breaking space too
-                    } else {
-                        vec![' ', '-', '\u{00A0}']
-                    };
-
-                    let mut result = String::new();
-                    let mut current_part = String::new();
-
-                    for c in given.chars() {
-                        if separators.contains(&c) {
-                            if !current_part.is_empty() {
-                                if let Some(first) = current_part.chars().next() {
-                                    result.push(first);
-                                    result.push_str(init);
-                                }
-                                current_part.clear();
-                            }
-                            // Preserve only non-whitespace separators (e.g., hyphen for J.-P.).
-                            // Strip any trailing separator space before the hyphen so we get
-                            // "J.-P." rather than "J. -P." when init contains a trailing space.
-                            if !c.is_whitespace() {
-                                let trimmed_len = result.trim_end().len();
-                                result.truncate(trimmed_len);
-                                result.push(c);
-                            }
-                        } else {
-                            current_part.push(c);
-                        }
-                    }
-
-                    if !current_part.is_empty()
-                        && let Some(first) = current_part.chars().next()
-                    {
-                        result.push(first);
-                        result.push_str(init);
-                    }
-                    result.trim().to_string()
-                }
+                NameForm::Initials => initialize_given_name(given, ctx.initialize_with, ctx.initialize_with_hyphen),
                 NameForm::Full => given.to_string(),
             };
 
@@ -1079,7 +1064,7 @@ pub fn format_single_name(
             if inverted {
                 // "Family, Given" format
                 // Family Part + sort_separator + Given Part + Particle Part + Suffix
-                let sep = sort_separator.map(|s| s.as_str()).unwrap_or(", ");
+                let sep = ctx.sort_separator.map(|s| s.as_str()).unwrap_or(", ");
                 let mut suffix_part = String::new();
                 if !given_part.is_empty() {
                     suffix_part.push_str(&given_part);
