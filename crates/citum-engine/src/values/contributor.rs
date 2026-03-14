@@ -674,7 +674,11 @@ fn partition_et_al<'a>(
     names: &'a [crate::reference::FlatName],
     shorten: Option<&'a ShortenListOptions>,
     hints: &'a ProcHints,
-) -> (Vec<&'a crate::reference::FlatName>, bool, Vec<&'a crate::reference::FlatName>) {
+) -> (
+    Vec<&'a crate::reference::FlatName>,
+    bool,
+    Vec<&'a crate::reference::FlatName>,
+) {
     if let Some(opts) = shorten {
         // Determine effective min/use_first based on citation position.
         let is_subsequent = matches!(
@@ -733,6 +737,7 @@ fn partition_et_al<'a>(
 /// This function assumes the non-empty input check at the top remains in place;
 /// violating that invariant can trigger indexing or `unwrap()` panics in later
 /// formatting branches.
+#[allow(clippy::too_many_arguments)]
 pub fn format_names(
     names: &[crate::reference::FlatName],
     form: &ContributorForm,
@@ -766,11 +771,13 @@ pub fn format_names(
     let ctx = NameFormatContext {
         display_as_sort: config.and_then(|c| c.display_as_sort),
         name_order,
-        initialize_with: initialize_with_override.or_else(|| config.and_then(|c| c.initialize_with.as_ref())),
+        initialize_with: initialize_with_override
+            .or_else(|| config.and_then(|c| c.initialize_with.as_ref())),
         initialize_with_hyphen: config.and_then(|c| c.initialize_with_hyphen),
         name_form: config.and_then(|c| c.name_form),
         demote_ndp: config.and_then(|c| c.demote_non_dropping_particle.as_ref()),
-        sort_separator: sort_separator_override.or_else(|| config.and_then(|c| c.sort_separator.as_ref())),
+        sort_separator: sort_separator_override
+            .or_else(|| config.and_then(|c| c.sort_separator.as_ref())),
     };
 
     let delimiter = config.and_then(|c| c.delimiter.as_deref()).unwrap_or(", ");
@@ -829,7 +836,8 @@ pub fn format_names(
                 Some(DelimiterPrecedesLast::Always) => true,
                 Some(DelimiterPrecedesLast::Never) => false,
                 Some(DelimiterPrecedesLast::Contextual) | None => true, // Default: use comma in bibliography
-                Some(DelimiterPrecedesLast::AfterInvertedName) => ctx.display_as_sort
+                Some(DelimiterPrecedesLast::AfterInvertedName) => ctx
+                    .display_as_sort
                     .as_ref()
                     .is_some_and(|das| matches!(das, DisplayAsSort::All | DisplayAsSort::First)),
             }
@@ -954,7 +962,9 @@ fn initialize_given_name(
         }
     }
 
-    if !current_part.is_empty() && let Some(first) = current_part.chars().next() {
+    if !current_part.is_empty()
+        && let Some(first) = current_part.chars().next()
+    {
         result.push(first);
         result.push_str(init);
     }
@@ -1027,7 +1037,10 @@ pub(crate) fn format_single_name(
         }
         ContributorForm::Long | ContributorForm::Verb | ContributorForm::VerbShort => {
             // Determine parts based on demotion
-            let demote = matches!(ctx.demote_ndp, Some(DemoteNonDroppingParticle::DisplayAndSort));
+            let demote = matches!(
+                ctx.demote_ndp,
+                Some(DemoteNonDroppingParticle::DisplayAndSort)
+            );
 
             let family_part = if !ndp.is_empty() && !demote {
                 join_particle_family(ndp, family)
@@ -1045,7 +1058,9 @@ pub(crate) fn format_single_name(
 
             let given_part = match effective_name_form {
                 NameForm::FamilyOnly => String::new(),
-                NameForm::Initials => initialize_given_name(given, ctx.initialize_with, ctx.initialize_with_hyphen),
+                NameForm::Initials => {
+                    initialize_given_name(given, ctx.initialize_with, ctx.initialize_with_hyphen)
+                }
                 NameForm::Full => given.to_string(),
             };
 

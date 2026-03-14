@@ -9,6 +9,8 @@ pub mod analysis;
 pub mod compressor;
 /// Debug output formatting.
 pub mod debug_output;
+/// Post-migration template fixup helpers.
+pub mod fixups;
 /// Style metadata extraction.
 pub mod info_extractor;
 /// Options extraction from CSL 1.0.
