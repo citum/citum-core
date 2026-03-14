@@ -737,6 +737,7 @@ fn partition_et_al<'a>(
 /// This function assumes the non-empty input check at the top remains in place;
 /// violating that invariant can trigger indexing or `unwrap()` panics in later
 /// formatting branches.
+#[allow(clippy::too_many_arguments)]
 pub fn format_names(
     names: &[crate::reference::FlatName],
     form: &ContributorForm,
