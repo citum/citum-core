@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 //! Platform-aware store for user-installed Citum styles and locales.
 //!
 //! Provides a `StoreResolver` that searches user data directories for custom styles

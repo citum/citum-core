@@ -106,6 +106,11 @@ pub fn render_rich_text_field<F: OutputFormat<Output = String>>(src: &str, fmt: 
 
 /// Load a list of citations from a file.
 /// Supports Citum YAML/JSON.
+///
+/// # Errors
+///
+/// Returns an error when the file cannot be read or when its contents are not
+/// valid citation data in a supported format.
 pub fn load_citations(path: &Path) -> Result<Vec<Citation>, ProcessorError> {
     let bytes = fs::read(path)?;
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
@@ -149,6 +154,11 @@ pub fn load_citations(path: &Path) -> Result<Vec<Citation>, ProcessorError> {
 
 /// Load annotations from a file (YAML or JSON).
 /// Returns a mapping from reference ID to annotation text.
+///
+/// # Errors
+///
+/// Returns an error when the file cannot be read or when its contents are not
+/// valid annotation data in a supported format.
 pub fn load_annotations(path: &Path) -> Result<HashMap<String, String>, ProcessorError> {
     let bytes = fs::read(path)?;
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
@@ -178,6 +188,11 @@ pub fn load_annotations(path: &Path) -> Result<HashMap<String, String>, Processo
 /// - Every member ID must exist in `bibliography`.
 /// - A member ID must not appear more than once in a single set.
 /// - A member ID must not appear across multiple sets.
+///
+/// # Errors
+///
+/// Returns an error when a compound set references an unknown ID or reuses the
+/// same member within or across sets.
 pub fn validate_compound_sets(
     sets: Option<IndexMap<String, Vec<String>>>,
     bibliography: &Bibliography,
@@ -238,6 +253,11 @@ fn loaded_from_input_bibliography(
 
 /// Load bibliography data from a file path, including optional compound sets.
 /// Supports Citum YAML/JSON/CBOR and CSL-JSON.
+///
+/// # Errors
+///
+/// Returns an error when the file cannot be read, when its contents do not
+/// match a supported bibliography format, or when compound sets are invalid.
 pub fn load_bibliography_with_sets(path: &Path) -> Result<LoadedBibliography, ProcessorError> {
     let bytes = fs::read(path)?;
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
@@ -395,6 +415,11 @@ pub fn load_bibliography_with_sets(path: &Path) -> Result<LoadedBibliography, Pr
 
 /// Load a bibliography from a file given its path.
 /// Supports Citum YAML/JSON/CBOR and CSL-JSON.
+///
+/// # Errors
+///
+/// Returns an error when the file cannot be read, its contents cannot be
+/// parsed, or embedded compound-set metadata is invalid.
 pub fn load_bibliography(path: &Path) -> Result<Bibliography, ProcessorError> {
     Ok(load_bibliography_with_sets(path)?.references)
 }

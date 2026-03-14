@@ -60,6 +60,11 @@ struct BibliographyResult {
 /// On success, this returns a JSON object containing the original request ID
 /// and a method-specific `result` payload. On failure, it returns the request
 /// ID when available plus a human-readable error string.
+///
+/// # Errors
+///
+/// Returns an error for unknown methods or when request-specific rendering or
+/// validation steps fail.
 pub fn dispatch(req: RpcRequest) -> Result<Value, (Option<Value>, String)> {
     let id = req.id.clone();
 
@@ -226,6 +231,11 @@ fn load_style(style_path: &str) -> Result<Style, ServerError> {
 
 /// Run the JSON-RPC server on stdin/stdout.
 /// Reads newline-delimited JSON requests and writes newline-delimited JSON responses.
+///
+/// # Errors
+///
+/// Returns an error when reading from stdin, writing to stdout, or flushing the
+/// output stream fails.
 pub fn run_stdio() -> io::Result<()> {
     let stdin = io::stdin();
     let mut stdout = io::stdout();

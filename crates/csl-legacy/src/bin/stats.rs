@@ -1,3 +1,7 @@
+#![allow(missing_docs)]
+
+//! Utility binary for scanning a style directory and summarizing parse failures.
+
 use csl_legacy::parser::parse_style;
 use roxmltree::Document;
 use std::fs;

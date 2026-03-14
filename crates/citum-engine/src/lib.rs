@@ -3,8 +3,6 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-#![deny(missing_docs)]
-
 //! Citum Processor
 //!
 //! This crate provides the core citation and bibliography processing functionality

@@ -439,6 +439,10 @@ impl Locale {
 
 impl Locale {
     /// Load a locale from a YAML string.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the YAML cannot be parsed into a locale.
     pub fn from_yaml_str(yaml: &str) -> Result<Self, String> {
         let raw: raw::RawLocale = serde_yaml::from_str(yaml)
             .map_err(|e| format!("Failed to parse locale YAML: {}", e))?;
@@ -491,6 +495,11 @@ impl Locale {
     }
 
     /// Load locale from a file path directly (detects format).
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the file cannot be read or its contents cannot be
+    /// parsed as a supported locale format.
     pub fn from_file(path: &std::path::Path) -> Result<Self, String> {
         let bytes =
             std::fs::read(path).map_err(|e| format!("Failed to read locale file: {}", e))?;

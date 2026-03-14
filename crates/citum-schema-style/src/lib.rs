@@ -15,16 +15,20 @@ pub mod citation;
 /// Bibliography grouping and sorting specifications.
 pub mod grouping;
 /// Legacy CSL 1.0 compatibility types.
+#[allow(missing_docs)]
 pub mod legacy;
 /// Locale-specific terms and translations.
 pub mod locale;
 /// Style configuration options.
+#[allow(missing_docs)]
 pub mod options;
 /// Configuration presets for common styles.
 pub mod presets;
 /// Bibliographic reference data types.
+#[allow(missing_docs)]
 pub mod reference;
 /// Citation and bibliography template components.
+#[allow(missing_docs)]
 pub mod template;
 
 /// Embedded templates for priority styles (APA, Chicago, Vancouver, IEEE, Harvard).

@@ -1,3 +1,7 @@
+#![allow(missing_docs)]
+
+//! Example binary for parsing a legacy CSL style and printing the JSON form.
+
 use csl_legacy::parser::parse_style;
 use roxmltree::Document;
 use serde_json::to_string_pretty;

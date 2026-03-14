@@ -40,16 +40,28 @@ impl StoreResolver {
     /// Resolve a style by name from the store.
     ///
     /// Searches for `data_dir/styles/<name>.{yaml,json,cbor}` and deserializes it.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the style cannot be found, read, or deserialized.
     pub fn resolve_style(&self, name: &str) -> Result<Style, ResolverError> {
         self.resolve_item("styles", name)
     }
 
     /// List all installed style names (stems, no extension).
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the styles directory cannot be read.
     pub fn list_styles(&self) -> Result<Vec<String>, ResolverError> {
         self.list_items("styles")
     }
 
     /// List all installed locale names (stems, no extension).
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the locales directory cannot be read.
     pub fn list_locales(&self) -> Result<Vec<String>, ResolverError> {
         self.list_items("locales")
     }
@@ -58,11 +70,20 @@ impl StoreResolver {
     ///
     /// Copies the file into `data_dir/styles/` using its stem as the name.
     /// Returns the installed style name.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the source cannot be read or the destination
+    /// cannot be created or written.
     pub fn install_style(&self, source: &Path) -> Result<String, ResolverError> {
         self.install_item(source, "styles")
     }
 
     /// Remove an installed style by name.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the installed style cannot be removed.
     pub fn remove_style(&self, name: &str) -> Result<(), ResolverError> {
         self.remove_item(name, "styles")
     }
@@ -71,11 +92,20 @@ impl StoreResolver {
     ///
     /// Copies the file into `data_dir/locales/` using its stem as the name.
     /// Returns the installed locale name.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the source cannot be read or the destination
+    /// cannot be created or written.
     pub fn install_locale(&self, source: &Path) -> Result<String, ResolverError> {
         self.install_item(source, "locales")
     }
 
     /// Remove an installed locale by name.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the installed locale cannot be removed.
     pub fn remove_locale(&self, name: &str) -> Result<(), ResolverError> {
         self.remove_item(name, "locales")
     }

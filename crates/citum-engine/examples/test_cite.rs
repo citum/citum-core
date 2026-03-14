@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use citum_engine::processor::Processor;
 use citum_engine::render::latex::Latex;
 use citum_schema::{

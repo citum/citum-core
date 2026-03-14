@@ -146,7 +146,9 @@ pub struct Reference {
 /// A name (person or organization).
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct Name {
+    /// Family name for a structured personal name.
     pub family: Option<String>,
+    /// Given name for a structured personal name.
     pub given: Option<String>,
     /// Literal name (for organizations or single-field names)
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -267,7 +269,9 @@ impl DateVariable {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum StringOrNumber {
+    /// A string value preserved as written in the source data.
     String(String),
+    /// A numeric value preserved as an integer.
     Number(i64),
 }
 

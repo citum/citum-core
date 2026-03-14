@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use citum_engine::processor::disambiguation::Disambiguator;
 use citum_engine::{
     Bibliography, Citation, CitationItem, Contributor, EdtfString, Locale, Monograph,

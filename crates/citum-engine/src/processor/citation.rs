@@ -281,6 +281,10 @@ impl Processor {
     /// 4. Applying the style's citation template.
     ///
     /// Returns the formatted citation string or an error if processing fails.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when referenced items are missing or rendering fails.
     pub fn process_citation(&self, citation: &Citation) -> Result<String, ProcessorError> {
         self.process_citation_with_format::<crate::render::plain::PlainText>(citation)
     }
@@ -290,6 +294,10 @@ impl Processor {
     /// This resolves the effective citation spec for the citation's mode and
     /// position, renders the citation body, applies input and style affixes,
     /// and finally applies note-style casing when required.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when referenced items are missing or rendering fails.
     pub fn process_citation_with_format<F>(
         &self,
         citation: &Citation,
@@ -318,11 +326,19 @@ impl Processor {
     /// Render multiple citations in document order.
     ///
     /// For note-based styles, normalizes context and assigns citation positions.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when any citation in the sequence fails to render.
     pub fn process_citations(&self, citations: &[Citation]) -> Result<Vec<String>, ProcessorError> {
         self.process_citations_with_format::<crate::render::plain::PlainText>(citations)
     }
 
     /// Render multiple citations with a custom output format.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when any citation in the sequence fails to render.
     pub fn process_citations_with_format<F>(
         &self,
         citations: &[Citation],

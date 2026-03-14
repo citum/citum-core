@@ -9,6 +9,9 @@
 //! - [`parser`] – XML → model parser built on top of [`roxmltree`].
 //! - [`csl_json`] – companion CSL-JSON reference model (legacy input format).
 
+/// CSL-JSON reference types used alongside legacy CSL style processing.
 pub mod csl_json;
+/// Rust data structures that mirror the CSL 1.0 XML schema.
 pub mod model;
+/// XML parsing entry points for reading legacy CSL styles into the model.
 pub mod parser;

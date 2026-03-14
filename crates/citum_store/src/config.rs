@@ -44,7 +44,12 @@ impl Default for StoreConfig {
 impl StoreConfig {
     /// Load configuration from `~/.config/citum/config.toml`.
     ///
-    /// Returns default config if file does not exist or cannot be read.
+    /// Returns the default config if the file does not exist.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the config file exists but cannot be read or
+    /// parsed as TOML.
     pub fn load() -> Result<Self, ConfigError> {
         if let Some(config_dir) = dirs::config_dir() {
             let config_path = config_dir.join("citum").join("config.toml");

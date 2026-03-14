@@ -29,6 +29,11 @@ pub fn app() -> Router {
 }
 
 /// Start the HTTP server on the given port.
+///
+/// # Errors
+///
+/// Returns an error when the socket cannot be bound or the HTTP server exits
+/// with a transport-level failure.
 pub async fn run_http(port: u16) -> Result<(), Box<dyn std::error::Error>> {
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     let listener = tokio::net::TcpListener::bind(addr).await?;

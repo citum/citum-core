@@ -628,6 +628,12 @@ impl ComponentValues for TemplateContributor {
 
 /// Format a list of names according to style options.
 #[allow(clippy::too_many_arguments)]
+///
+/// # Panics
+///
+/// This function assumes the non-empty input check at the top remains in place;
+/// violating that invariant can trigger indexing or `unwrap()` panics in later
+/// formatting branches.
 pub fn format_names(
     names: &[crate::reference::FlatName],
     form: &ContributorForm,

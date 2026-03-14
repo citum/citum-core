@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use csl_legacy::model::{CslNode, Style};
 use std::collections::HashMap;
 

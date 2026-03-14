@@ -1,8 +1,8 @@
+#![allow(missing_docs)]
 /*
 SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
-
 #![allow(dead_code)]
 
 use std::{fs, path::PathBuf};
