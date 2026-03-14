@@ -305,21 +305,8 @@ impl ComponentValues for TemplateTitle {
                 (value, has_link, pre_formatted)
             }
             Title::Multilingual(m) => {
-                let mode = options
-                    .config
-                    .multilingual
-                    .as_ref()
-                    .and_then(|ml| ml.title_mode.as_ref());
-                let preferred_transliteration = options
-                    .config
-                    .multilingual
-                    .as_ref()
-                    .and_then(|ml| ml.preferred_transliteration.as_deref());
-                let preferred_script = options
-                    .config
-                    .multilingual
-                    .as_ref()
-                    .and_then(|ml| ml.preferred_script.as_ref());
+                let (mode, preferred_transliteration, preferred_script) =
+                    resolve_multilingual_title_config(options);
                 let locale_str = options.locale.locale.as_str();
 
                 let complex =
@@ -363,4 +350,30 @@ impl ComponentValues for TemplateTitle {
             },
         )
     }
+}
+
+/// Resolve multilingual title config (mode, transliteration, script) from render options.
+fn resolve_multilingual_title_config<'a>(
+    options: &'a RenderOptions<'a>,
+) -> (
+    Option<&'a citum_schema::options::MultilingualMode>,
+    Option<&'a [String]>,
+    Option<&'a String>,
+) {
+    let mode = options
+        .config
+        .multilingual
+        .as_ref()
+        .and_then(|ml| ml.title_mode.as_ref());
+    let preferred_transliteration = options
+        .config
+        .multilingual
+        .as_ref()
+        .and_then(|ml| ml.preferred_transliteration.as_deref());
+    let preferred_script = options
+        .config
+        .multilingual
+        .as_ref()
+        .and_then(|ml| ml.preferred_script.as_ref());
+    (mode, preferred_transliteration, preferred_script)
 }
