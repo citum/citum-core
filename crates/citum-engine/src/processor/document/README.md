@@ -6,6 +6,17 @@ This module provides the infrastructure for document-level citation processing. 
 
 The system is designed around the `CitationParser` trait, allowing format-specific parsing logic while sharing the core processing workflow.
 
+The module is split into a small facade plus focused internal helpers:
+
+- `mod.rs`: public facade, re-exports, and parser module wiring
+- `types.rs`: parser-facing types such as `ParsedDocument`, `ParsedCitation`, and `DocumentFormat`
+- `pipeline.rs`: `Processor::process_document()` orchestration and bibliography strategy selection
+- `integral_names.rs`: document-scoped integral-name memory ordering and overrides
+- `notes.rs`: note-style rendering paths and manual-note citation rendering
+- `note_support.rs`: note numbering, punctuation rules, and helper functions shared by note rendering
+- `output.rs`: HTML placeholder staging plus bibliography-block and Typst rewrite helpers
+- `djot.rs` and `markdown.rs`: format-specific parsers
+
 ### Core Trait: `CitationParser`
 
 Any new document format must implement the `CitationParser` trait:
@@ -49,7 +60,7 @@ To add support for a new document format (e.g., Markdown):
 1.  **Create a new file**: `src/processor/document/markdown.rs`.
 2.  **Implement the parser**: Use a parsing library to identify citation markers, note references, and note definitions.
 3.  **Register the module**: Add `pub mod markdown;` to `src/processor/document/mod.rs`.
-4.  **Update `DocumentFormat`**: Add your format to the `DocumentFormat` enum in `mod.rs`.
+4.  **Update `DocumentFormat`**: Add your format to the `DocumentFormat` enum in `types.rs` and re-export it from `mod.rs`.
 5.  **Override `finalize_html_output()` if needed**: Formats that require custom HTML post-processing can override the default Djot-compatible conversion hook.
 
 ## Existing Implementations
