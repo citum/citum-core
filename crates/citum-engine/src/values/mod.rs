@@ -571,3 +571,48 @@ pub fn should_strip_periods(
 pub fn strip_trailing_periods(s: &str) -> String {
     s.trim_end_matches('.').to_string()
 }
+
+/// Resolve effective rendering options from overrides based on reference type.
+///
+/// Applies type-specific overrides (with fallback to "default" override) to merge
+/// rendering options, returning the merged result.
+pub(crate) fn resolve_rendering_overrides(
+    base_rendering: &citum_schema::template::Rendering,
+    overrides: Option<
+        &std::collections::HashMap<
+            citum_schema::template::TypeSelector,
+            citum_schema::template::ComponentOverride,
+        >,
+    >,
+    ref_type: &str,
+) -> citum_schema::template::Rendering {
+    let mut effective_rendering = base_rendering.clone();
+
+    if let Some(ovs) = overrides {
+        use citum_schema::template::ComponentOverride;
+        let mut match_found = false;
+
+        // Try specific type match
+        for (selector, ov) in ovs.iter() {
+            if selector.matches(ref_type)
+                && let ComponentOverride::Rendering(r) = ov
+            {
+                effective_rendering.merge(r);
+                match_found = true;
+            }
+        }
+
+        // Fall back to default if no specific match
+        if !match_found {
+            for (selector, ov) in ovs.iter() {
+                if selector.matches("default")
+                    && let ComponentOverride::Rendering(r) = ov
+                {
+                    effective_rendering.merge(r);
+                }
+            }
+        }
+    }
+
+    effective_rendering
+}

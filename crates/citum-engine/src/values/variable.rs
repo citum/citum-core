@@ -119,31 +119,6 @@ impl ComponentValues for TemplateVariable {
         };
 
         value.filter(|s: &String| !s.is_empty()).map(|value| {
-            // Resolve effective rendering options
-            let mut effective_rendering = self.rendering.clone();
-            if let Some(overrides) = &self.overrides {
-                use citum_schema::template::ComponentOverride;
-                let ref_type = reference.ref_type();
-                let mut match_found = false;
-                for (selector, ov) in overrides {
-                    if selector.matches(&ref_type)
-                        && let ComponentOverride::Rendering(r) = ov
-                    {
-                        effective_rendering.merge(r);
-                        match_found = true;
-                    }
-                }
-                if !match_found {
-                    for (selector, ov) in overrides {
-                        if selector.matches("default")
-                            && let ComponentOverride::Rendering(r) = ov
-                        {
-                            effective_rendering.merge(r);
-                        }
-                    }
-                }
-            }
-
             use citum_schema::options::{LinkAnchor, LinkTarget};
             let component_anchor = match self.variable {
                 SimpleVariable::Url => LinkAnchor::Url,
