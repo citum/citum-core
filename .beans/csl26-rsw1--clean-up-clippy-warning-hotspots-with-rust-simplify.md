@@ -67,20 +67,20 @@ Secondary cleanup targets once the engine warnings are materially reduced:
 - [x] Simplify `crates/citum-engine/src/processor/rendering.rs`
   - [x] reduce `render_grouped_citation_with_format`
   - [x] reduce `process_template_request_with_format`
-- [ ] Simplify `crates/citum-engine/src/values/contributor.rs`
-  - [ ] reduce `values`
+- [x] Simplify `crates/citum-engine/src/values/contributor.rs`
+  - [x] reduce `values`
   - [ ] reduce `format_names`
   - [ ] reduce `format_single_name`
-- [ ] Simplify `crates/citum-engine/src/values/date.rs`
-  - [ ] reduce `values`
-- [ ] Simplify `crates/citum-engine/src/values/number.rs`
-  - [ ] reduce `values`
-- [ ] Simplify `crates/citum-engine/src/values/title.rs`
-  - [ ] reduce `values`
-- [ ] Simplify `crates/citum-engine/src/values/variable.rs`
-  - [ ] reduce `values`
-- [ ] Simplify `crates/citum-engine/src/io.rs`
-  - [ ] reduce `load_bibliography_with_sets`
+- [x] Simplify `crates/citum-engine/src/values/date.rs`
+  - [x] reduce `values`
+- [x] Simplify `crates/citum-engine/src/values/number.rs`
+  - [x] reduce `values`
+- [x] Simplify `crates/citum-engine/src/values/title.rs`
+  - [x] reduce `values`
+- [x] Simplify `crates/citum-engine/src/values/variable.rs`
+  - [x] reduce `values`
+- [x] Simplify `crates/citum-engine/src/io.rs`
+  - [x] reduce `load_bibliography_with_sets`
 - [x] Re-run `cargo clippy --all-targets --all-features -- -D warnings` once the
       current target slice is complete
 - [x] Archive or update this bean when the warning cleanup frontier changes
@@ -124,3 +124,12 @@ Secondary cleanup targets once the engine warnings are materially reduced:
   document bibliography orchestration, note-state preparation helpers, grouped
   citation assembly helpers, and template-render component helpers; the
   remaining frontier is `values/*`, `io.rs`, and secondary non-engine targets.
+- 2026-03-14: completed the values/* simplification by extracting
+  `resolve_rendering_overrides`, `resolve_contributor_overrides`,
+  `format_role_term`, and io parse helpers; reduced cognitive complexity
+  and line count without lint suppressions. Remaining tasks: `values/title.rs`,
+  `format_names`, `format_single_name`.
+- 2026-03-14: extracted multilingual title config helper from title.rs::values,
+  consolidating three consecutive `.and_then` calls into a single reusable
+  `resolve_multilingual_title_config` function. Remaining: `format_names`,
+  `format_single_name`.
