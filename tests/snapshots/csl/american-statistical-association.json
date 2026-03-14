@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-08T18:27:02.444Z",
+  "generated_at": "2026-03-14T00:06:51.398Z",
   "style": "american-statistical-association",
-  "fixture_hash": "67a756de7032b296",
+  "fixture_hash": "566bd9d8e110a046",
   "csl_hash": "75e47ec73f026cc1",
   "citations": {
     "single-item": "(Kuhn 1962)",

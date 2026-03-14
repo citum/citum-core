@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-08T18:29:12.246Z",
+  "generated_at": "2026-03-14T00:08:41.005Z",
   "style": "landes-bioscience-journals",
-  "fixture_hash": "67a756de7032b296",
+  "fixture_hash": "566bd9d8e110a046",
   "csl_hash": "8da0e8512d8171d1",
   "citations": {
     "single-item": "<sup>1</sup>",

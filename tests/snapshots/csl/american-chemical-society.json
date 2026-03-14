@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-08T18:27:00.494Z",
+  "generated_at": "2026-03-14T00:06:49.570Z",
   "style": "american-chemical-society",
-  "fixture_hash": "67a756de7032b296",
+  "fixture_hash": "566bd9d8e110a046",
   "csl_hash": "b82e7a9613a00a18",
   "citations": {
     "single-item": "<sup>1</sup>",

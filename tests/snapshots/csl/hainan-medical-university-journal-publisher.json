@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-08T18:28:41.240Z",
+  "generated_at": "2026-03-14T00:08:17.804Z",
   "style": "hainan-medical-university-journal-publisher",
-  "fixture_hash": "67a756de7032b296",
+  "fixture_hash": "566bd9d8e110a046",
   "csl_hash": "b172c5eeb744a0ea",
   "citations": {
     "single-item": "<span style=\"baseline\">[1]</span>",

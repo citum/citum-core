@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-08T18:27:01.673Z",
+  "generated_at": "2026-03-14T00:06:50.614Z",
   "style": "american-medical-association-no-et-al",
-  "fixture_hash": "67a756de7032b296",
+  "fixture_hash": "566bd9d8e110a046",
   "csl_hash": "72519e1384f3f8b0",
   "citations": {
     "single-item": "<sup>1</sup>",

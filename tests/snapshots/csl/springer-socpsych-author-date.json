@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-08T18:31:27.808Z",
+  "generated_at": "2026-03-14T00:09:30.306Z",
   "style": "springer-socpsych-author-date",
-  "fixture_hash": "67a756de7032b296",
+  "fixture_hash": "566bd9d8e110a046",
   "csl_hash": "4e0ee6c1b90f2010",
   "citations": {
     "single-item": "(Kuhn 1962)",

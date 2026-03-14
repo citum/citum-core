@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-08T18:28:27.462Z",
+  "generated_at": "2026-03-14T00:08:08.389Z",
   "style": "elsevier-vancouver",
-  "fixture_hash": "67a756de7032b296",
+  "fixture_hash": "566bd9d8e110a046",
   "csl_hash": "005e915c3419eb2b",
   "citations": {
     "single-item": "[1]",

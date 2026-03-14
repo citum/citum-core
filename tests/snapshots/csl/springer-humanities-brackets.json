@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-08T18:31:26.946Z",
+  "generated_at": "2026-03-14T00:09:29.646Z",
   "style": "springer-humanities-brackets",
-  "fixture_hash": "67a756de7032b296",
+  "fixture_hash": "566bd9d8e110a046",
   "csl_hash": "d6d821e0cf1c4268",
   "citations": {
     "single-item": "[1]",

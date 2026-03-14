@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-08T18:28:25.091Z",
+  "generated_at": "2026-03-14T00:08:06.077Z",
   "style": "din-1505-2-alphanumeric",
-  "fixture_hash": "67a756de7032b296",
+  "fixture_hash": "566bd9d8e110a046",
   "csl_hash": "4e44b0461eb3be7e",
   "citations": {
     "single-item": "[Kuhn62]",

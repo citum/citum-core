@@ -320,15 +320,23 @@ async function runCachedJsonJob(runtime, config) {
   const cacheFile = path.join(runtime.cacheDir, `${hashContent(keyJson)}.json`);
   if (fs.existsSync(cacheFile)) {
     const started = Date.now();
-    const cached = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
-    runtime.recordTiming(config.kind, Date.now() - started, true);
-    return cached;
+    try {
+      const cached = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
+      runtime.recordTiming(config.kind, Date.now() - started, true);
+      return cached;
+    } catch {
+      // Parallel report runs can observe partially written cache files.
+      // Remove the corrupt cache entry and recompute it below.
+      fs.rmSync(cacheFile, { force: true });
+    }
   }
 
   const started = Date.now();
   const result = await config.compute();
   runtime.recordTiming(config.kind, Date.now() - started, false);
-  fs.writeFileSync(cacheFile, JSON.stringify(result));
+  const tempCacheFile = `${cacheFile}.${process.pid}.${Date.now()}.tmp`;
+  fs.writeFileSync(tempCacheFile, JSON.stringify(result));
+  fs.renameSync(tempCacheFile, cacheFile);
   return result;
 }
 

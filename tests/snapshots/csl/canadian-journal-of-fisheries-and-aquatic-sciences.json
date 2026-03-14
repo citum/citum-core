@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-08T18:27:18.536Z",
+  "generated_at": "2026-03-14T00:07:06.591Z",
   "style": "canadian-journal-of-fisheries-and-aquatic-sciences",
-  "fixture_hash": "67a756de7032b296",
+  "fixture_hash": "566bd9d8e110a046",
   "csl_hash": "d91604daf544ffb5",
   "citations": {
     "single-item": "(Kuhn 1962)",

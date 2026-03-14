@@ -218,4 +218,4 @@ cargo fmt && cargo clippy --all-targets --all-features -- -D warnings && cargo t
 
 ## License
 
-MPL-2.0.
+MIT or Apache 2.0

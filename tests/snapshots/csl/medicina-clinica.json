@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-08T18:29:22.758Z",
+  "generated_at": "2026-03-14T00:08:44.000Z",
   "style": "medicina-clinica",
-  "fixture_hash": "67a756de7032b296",
+  "fixture_hash": "566bd9d8e110a046",
   "csl_hash": "c1c48e4c0a958f2e",
   "citations": {
     "single-item": "<sup><sup>1</sup></sup>",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-08T18:28:06.664Z",
+  "generated_at": "2026-03-14T00:07:48.390Z",
   "style": "chicago-shortened-notes-bibliography-classic-archive-place-first",
-  "fixture_hash": "a5e3c39ddb3e0066",
+  "fixture_hash": "e5392bac496aebb8",
   "csl_hash": "a842a5fc8a031de1",
   "citations": {
     "single-item-1": "Kuhn, “The Structure of Scientific Revolutions.”",
