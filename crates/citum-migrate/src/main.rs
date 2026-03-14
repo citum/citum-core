@@ -868,25 +868,15 @@ fn apply_type_overrides(
         // Primary title: style-specific suffix for articles
         TemplateComponent::Title(t) if t.title == citum_schema::template::TitleType::Primary => {
             if matches!(style_preset, Some(StylePreset::Apa)) {
-                let mut new_ovr = std::collections::HashMap::new();
-                new_ovr.insert(
-                    "article-journal".to_string(),
+                let overrides = t.overrides.get_or_insert_with(Default::default);
+                merge_type_rendering(
+                    overrides,
+                    "article-journal",
                     citum_schema::template::Rendering {
                         suffix: Some(". ".to_string()),
                         ..Default::default()
                     },
                 );
-                // Merge instead of overwrite
-                let overrides = t
-                    .overrides
-                    .get_or_insert_with(std::collections::HashMap::new);
-                use citum_schema::template::ComponentOverride;
-                for (k, v) in new_ovr {
-                    overrides.insert(
-                        citum_schema::template::TypeSelector::Single(k),
-                        ComponentOverride::Rendering(v),
-                    );
-                }
             }
         }
         // Container-title (parent-monograph): style-specific unsuppression
@@ -894,25 +884,15 @@ fn apply_type_overrides(
             if t.title == citum_schema::template::TitleType::ParentMonograph =>
         {
             if matches!(style_preset, Some(StylePreset::Apa)) {
-                let mut new_ovr = std::collections::HashMap::new();
-                new_ovr.insert(
-                    "paper-conference".to_string(),
+                let overrides = t.overrides.get_or_insert_with(Default::default);
+                merge_type_rendering(
+                    overrides,
+                    "paper-conference",
                     citum_schema::template::Rendering {
                         suppress: Some(true),
                         ..Default::default()
                     },
                 );
-                // Merge instead of overwrite
-                let overrides = t
-                    .overrides
-                    .get_or_insert_with(std::collections::HashMap::new);
-                use citum_schema::template::ComponentOverride;
-                for (k, v) in new_ovr {
-                    overrides.insert(
-                        citum_schema::template::TypeSelector::Single(k),
-                        ComponentOverride::Rendering(v),
-                    );
-                }
             }
         }
         // Container-title (parent-serial): style-specific suffix and unsuppression
@@ -923,7 +903,6 @@ fn apply_type_overrides(
             if t.title == citum_schema::template::TitleType::ParentSerial =>
         {
             let is_chicago = matches!(style_preset, Some(StylePreset::Chicago));
-            let mut new_ovr = std::collections::HashMap::new();
 
             // Always unsuppress article-journal (journal title must show)
             let suffix = if volume_list_has_space_prefix {
@@ -936,93 +915,64 @@ fn apply_type_overrides(
                 Some(",".to_string())
             };
 
-            new_ovr.insert(
-                "article-journal".to_string(),
+            let overrides = t.overrides.get_or_insert_with(Default::default);
+            merge_type_rendering(
+                overrides,
+                "article-journal",
                 citum_schema::template::Rendering {
                     suffix,
                     suppress: Some(false),
                     ..Default::default()
                 },
             );
-
             // Ensure paper-conference shows container title (proceedings name)
-            new_ovr.insert(
-                "paper-conference".to_string(),
+            merge_type_rendering(
+                overrides,
+                "paper-conference",
                 citum_schema::template::Rendering {
                     suffix: Some(",".to_string()),
                     suppress: Some(false),
                     ..Default::default()
                 },
             );
-
-            // Merge instead of overwrite
-            let overrides = t
-                .overrides
-                .get_or_insert_with(std::collections::HashMap::new);
-            use citum_schema::template::ComponentOverride;
-            for (k, v) in new_ovr {
-                overrides.insert(
-                    citum_schema::template::TypeSelector::Single(k),
-                    ComponentOverride::Rendering(v),
-                );
-            }
         }
         // Publisher: suppress for journal articles (journals don't have publishers in bib)
         TemplateComponent::Variable(v)
             if v.variable == citum_schema::template::SimpleVariable::Publisher =>
         {
-            let mut new_ovr = std::collections::HashMap::new();
-            new_ovr.insert(
-                "article-journal".to_string(),
+            let overrides = v.overrides.get_or_insert_with(Default::default);
+            merge_type_rendering(
+                overrides,
+                "article-journal",
                 citum_schema::template::Rendering {
                     suppress: Some(true),
                     ..Default::default()
                 },
             );
-            // Merge instead of overwrite
-            let overrides = v
-                .overrides
-                .get_or_insert_with(std::collections::HashMap::new);
-            use citum_schema::template::ComponentOverride;
-            for (k, v) in new_ovr {
-                overrides.insert(
-                    citum_schema::template::TypeSelector::Single(k),
-                    ComponentOverride::Rendering(v),
-                );
-            }
         }
         // Publisher-place: suppress for journal articles
         TemplateComponent::Variable(v)
             if v.variable == citum_schema::template::SimpleVariable::PublisherPlace =>
         {
-            let mut new_ovr = std::collections::HashMap::new();
-            new_ovr.insert(
-                "article-journal".to_string(),
+            let overrides = v.overrides.get_or_insert_with(Default::default);
+            merge_type_rendering(
+                overrides,
+                "article-journal",
                 citum_schema::template::Rendering {
                     suppress: Some(true),
                     ..Default::default()
                 },
             );
-            // Merge instead of overwrite
-            let overrides = v
-                .overrides
-                .get_or_insert_with(std::collections::HashMap::new);
-            use citum_schema::template::ComponentOverride;
-            for (k, v) in new_ovr {
-                overrides.insert(
-                    citum_schema::template::TypeSelector::Single(k),
-                    ComponentOverride::Rendering(v),
-                );
-            }
         }
         // Pages: apply volume-pages delimiter for journal articles
         TemplateComponent::Number(n)
             if n.number == citum_schema::template::NumberVariable::Pages =>
         {
             if let Some(delim) = volume_pages_delimiter {
-                let mut new_ovr = std::collections::HashMap::new();
-                new_ovr.insert(
-                    "article-journal".to_string(),
+                let overrides = n.overrides.get_or_insert_with(Default::default);
+                merge_type_rendering(
+                    overrides,
+                    "article-journal",
                     citum_schema::template::Rendering {
                         prefix: Some(match delim {
                             citum_schema::template::DelimiterPunctuation::Comma => ", ".to_string(),
@@ -1033,17 +983,6 @@ fn apply_type_overrides(
                         ..Default::default()
                     },
                 );
-                // Merge instead of overwrite
-                let overrides = n
-                    .overrides
-                    .get_or_insert_with(std::collections::HashMap::new);
-                use citum_schema::template::ComponentOverride;
-                for (k, v) in new_ovr {
-                    overrides.insert(
-                        citum_schema::template::TypeSelector::Single(k),
-                        ComponentOverride::Rendering(v),
-                    );
-                }
             }
         }
         TemplateComponent::List(list) => {
@@ -1581,40 +1520,7 @@ fn ensure_inferred_patent_type_template(
         return;
     }
 
-    let mut patent_template = Vec::new();
-
-    if let Some(author_component) = bibliography_template.iter().find_map(|component| {
-        if let TemplateComponent::Contributor(contributor) = component
-            && contributor.contributor == citum_schema::template::ContributorRole::Author
-        {
-            return Some(component.clone());
-        }
-        None
-    }) {
-        patent_template.push(author_component);
-    }
-
-    if let Some(issued_component) = bibliography_template.iter().find_map(|component| {
-        if let TemplateComponent::Date(date_component) = component
-            && date_component.date == DateVariable::Issued
-        {
-            return Some(component.clone());
-        }
-        None
-    }) {
-        patent_template.push(issued_component);
-    }
-
-    if let Some(primary_title_component) = bibliography_template.iter().find_map(|component| {
-        if let TemplateComponent::Title(title_component) = component
-            && title_component.title == TitleType::Primary
-        {
-            return Some(component.clone());
-        }
-        None
-    }) {
-        patent_template.push(primary_title_component);
-    }
+    let mut patent_template = base_media_template_from_bibliography(bibliography_template);
 
     let style_id = legacy_style.info.id.to_lowercase();
     let suppress_patent_number_for_style = style_id.contains("springer-socpsych-author-date");
@@ -2303,11 +2209,7 @@ fn scrub_inferred_literal_artifacts(component: &mut TemplateComponent) {
             {
                 title.rendering.prefix = Some(cleaned);
             }
-            if let Some(overrides) = title.overrides.as_mut() {
-                for override_value in overrides.values_mut() {
-                    scrub_component_override_literals(override_value);
-                }
-            }
+            scrub_overrides_map(title.overrides.as_mut());
         }
         TemplateComponent::Number(number) => {
             if number.number == citum_schema::template::NumberVariable::Pages
@@ -2316,49 +2218,25 @@ fn scrub_inferred_literal_artifacts(component: &mut TemplateComponent) {
             {
                 number.rendering.prefix = Some(cleaned);
             }
-            if let Some(overrides) = number.overrides.as_mut() {
-                for override_value in overrides.values_mut() {
-                    scrub_component_override_literals(override_value);
-                }
-            }
+            scrub_overrides_map(number.overrides.as_mut());
         }
         TemplateComponent::List(list) => {
             for item in &mut list.items {
                 scrub_inferred_literal_artifacts(item);
             }
-            if let Some(overrides) = list.overrides.as_mut() {
-                for override_value in overrides.values_mut() {
-                    scrub_component_override_literals(override_value);
-                }
-            }
+            scrub_overrides_map(list.overrides.as_mut());
         }
         TemplateComponent::Contributor(contributor) => {
-            if let Some(overrides) = contributor.overrides.as_mut() {
-                for override_value in overrides.values_mut() {
-                    scrub_component_override_literals(override_value);
-                }
-            }
+            scrub_overrides_map(contributor.overrides.as_mut());
         }
         TemplateComponent::Date(date) => {
-            if let Some(overrides) = date.overrides.as_mut() {
-                for override_value in overrides.values_mut() {
-                    scrub_component_override_literals(override_value);
-                }
-            }
+            scrub_overrides_map(date.overrides.as_mut());
         }
         TemplateComponent::Variable(variable) => {
-            if let Some(overrides) = variable.overrides.as_mut() {
-                for override_value in overrides.values_mut() {
-                    scrub_component_override_literals(override_value);
-                }
-            }
+            scrub_overrides_map(variable.overrides.as_mut());
         }
         TemplateComponent::Term(term) => {
-            if let Some(overrides) = term.overrides.as_mut() {
-                for override_value in overrides.values_mut() {
-                    scrub_component_override_literals(override_value);
-                }
-            }
+            scrub_overrides_map(term.overrides.as_mut());
         }
         _ => {}
     }
@@ -2397,21 +2275,19 @@ fn scrub_year_only_prefix(prefix: &str) -> Option<String> {
 }
 
 fn scrub_pages_year_literal_prefix(prefix: &str) -> Option<String> {
-    if let Some(inner) = prefix
+    if prefix
         .strip_prefix("; ")
         .and_then(|s| s.strip_suffix("; "))
-        .filter(|s| is_four_digit_year(s.trim()))
+        .is_some_and(|s| is_four_digit_year(s.trim()))
     {
-        let _ = inner;
         return Some("; ".to_string());
     }
 
-    if let Some(inner) = prefix
+    if prefix
         .strip_prefix(". ")
         .and_then(|s| s.strip_suffix(": "))
-        .filter(|s| is_four_digit_year(s.trim()))
+        .is_some_and(|s| is_four_digit_year(s.trim()))
     {
-        let _ = inner;
         return Some(": ".to_string());
     }
 
@@ -2572,6 +2448,37 @@ fn component_has_volume(component: &TemplateComponent) -> bool {
         TemplateComponent::Number(n) => n.number == citum_schema::template::NumberVariable::Volume,
         TemplateComponent::List(list) => list.items.iter().any(component_has_volume),
         _ => false,
+    }
+}
+
+/// Insert a single `Rendering` override keyed by `type_name` into an overrides map.
+fn merge_type_rendering(
+    overrides: &mut std::collections::HashMap<
+        citum_schema::template::TypeSelector,
+        citum_schema::template::ComponentOverride,
+    >,
+    type_name: &str,
+    rendering: citum_schema::template::Rendering,
+) {
+    use citum_schema::template::ComponentOverride;
+    overrides.insert(
+        citum_schema::template::TypeSelector::Single(type_name.to_string()),
+        ComponentOverride::Rendering(rendering),
+    );
+}
+
+/// Scrub literal artifacts from every value in a component overrides map.
+fn scrub_overrides_map(
+    overrides: Option<
+        &mut std::collections::HashMap<
+            citum_schema::template::TypeSelector,
+            citum_schema::template::ComponentOverride,
+        >,
+    >,
+) {
+    let Some(map) = overrides else { return };
+    for val in map.values_mut() {
+        scrub_component_override_literals(val);
     }
 }
 
