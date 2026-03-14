@@ -25,11 +25,21 @@ description: >
 1. Docs/styles only (`.md`, `styles/*.yaml`):
    - syntax sanity + targeted rendering/oracle checks
 2. Rust-touching (`.rs`, `Cargo.toml`, `Cargo.lock`):
-   - `cargo fmt`
+   - `cargo fmt --check` ← use `--check`, never bare `cargo fmt` (fmt is a fix, not a gate)
    - `cargo clippy --all-targets --all-features -- -D warnings`
    - `cargo nextest run` (fallback: `cargo test`)
+   - **Gate must pass before the first push.** If gate fails after builder work,
+     fix + amend the unpushed commit (amend is allowed on unpushed commits),
+     re-verify, then push. Never push a failing commit and follow up with a
+     cleanup commit.
+   - Every commit on the branch must individually be gate-clean.
 3. Hot path/perf claims:
    - benchmark baseline/after via `./scripts/bench-check.sh`
+
+### If Gate Fails After Push
+If you discover a gate failure after pushing, squash + force-push
+(`git push --force-with-lease`) rather than adding a cleanup commit.
+Requires CONFIRM (critical action).
 
 ## PR Body Template
 - Summary: what changed and why.
