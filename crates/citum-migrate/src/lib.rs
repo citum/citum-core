@@ -25,6 +25,8 @@ pub mod template_compiler;
 pub mod template_resolver;
 /// Upsampler for style enhancement.
 pub mod upsampler;
+/// Post-migration template fixup helpers.
+pub mod fixups;
 
 pub use compressor::Compressor;
 pub use debug_output::DebugOutputFormatter;
