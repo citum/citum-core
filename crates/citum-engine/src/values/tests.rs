@@ -259,7 +259,7 @@ fn test_format_page_range_no_format() {
 /// Tests the behavior of shared consecutive sequence collapsing.
 #[test]
 fn test_consecutive_segments() {
-    use crate::values::range::{consecutive_segments, ConsecutiveSegment};
+    use crate::values::range::{ConsecutiveSegment, consecutive_segments};
 
     assert_eq!(consecutive_segments(&[]), Vec::<ConsecutiveSegment>::new());
     assert_eq!(
