@@ -6,12 +6,10 @@
 
 use crate::error::ProcessorError;
 use crate::reference::{Bibliography, Reference};
-use crate::render::ProcTemplateComponent;
-use crate::values::{ComponentValues, ProcHints, RenderContext, RenderOptions};
+use crate::values::{ProcHints, RenderContext, RenderOptions};
 use citum_schema::citation::{CitationLocator, LocatorSegment, LocatorType};
 use citum_schema::locale::{Locale, TermForm};
 use citum_schema::options::Config;
-use citum_schema::template::ComponentOverride;
 use citum_schema::template::TemplateComponent;
 use indexmap::IndexMap;
 use std::cell::RefCell;
@@ -113,16 +111,25 @@ pub(super) use helpers::{
 };
 
 /// Internal render request used to keep template-processing call sites compact.
-struct TemplateRenderRequest<'a> {
-    template: &'a [TemplateComponent],
-    context: RenderContext,
-    mode: citum_schema::citation::CitationMode,
-    suppress_author: bool,
-    locator: Option<String>,
-    locator_label: Option<LocatorType>,
-    citation_number: usize,
-    position: Option<citum_schema::citation::Position>,
-    integral_name_state: Option<citum_schema::citation::IntegralNameState>,
+pub struct TemplateRenderRequest<'a> {
+    /// The template to render.
+    pub template: &'a [TemplateComponent],
+    /// The rendering context (Citation or Bibliography).
+    pub context: RenderContext,
+    /// The citation mode (Integral or NonIntegral).
+    pub mode: citum_schema::citation::CitationMode,
+    /// Whether to suppress the author in output.
+    pub suppress_author: bool,
+    /// The locator value if present.
+    pub locator: Option<String>,
+    /// The locator label if present.
+    pub locator_label: Option<LocatorType>,
+    /// The citation number for numeric styles.
+    pub citation_number: usize,
+    /// The citation position (e.g., Ibid).
+    pub position: Option<citum_schema::citation::Position>,
+    /// Integral name state for name formatting.
+    pub integral_name_state: Option<citum_schema::citation::IntegralNameState>,
 }
 
 #[derive(Default)]
@@ -609,41 +616,5 @@ pub fn get_variable_key(component: &TemplateComponent) -> Option<String> {
         TemplateComponent::Number(n) => make_key("number", &n.number, context_suffix(&n.rendering)),
         TemplateComponent::List(_) => None,
         _ => None,
-    }
-}
-
-/// Resolves a template component by applying type-specific overrides.
-///
-/// Checks the component's overrides for the given reference type and returns
-/// either the override (if matched) or the original component.
-fn resolve_component_for_ref_type(
-    component: &TemplateComponent,
-    ref_type: &str,
-) -> TemplateComponent {
-    let Some(overrides) = component.overrides() else {
-        return component.clone();
-    };
-
-    let mut specific: Option<TemplateComponent> = None;
-    let mut default_fallback: Option<TemplateComponent> = None;
-    let mut type_matched = false;
-
-    for (selector, ov) in overrides {
-        if selector.matches(ref_type) {
-            type_matched = true;
-            if let ComponentOverride::Component(c) = ov {
-                specific = Some((**c).clone());
-            }
-        } else if selector.matches("default")
-            && let ComponentOverride::Component(c) = ov
-        {
-            default_fallback = Some((**c).clone());
-        }
-    }
-
-    if type_matched {
-        specific.unwrap_or_else(|| component.clone())
-    } else {
-        default_fallback.unwrap_or_else(|| component.clone())
     }
 }
