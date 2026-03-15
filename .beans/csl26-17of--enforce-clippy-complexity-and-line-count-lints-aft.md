@@ -11,7 +11,8 @@ tags:
 created_at: 2026-03-14T16:02:50Z
 updated_at: 2026-03-14T16:02:50Z
 blocked_by:
-    - csl26-rsw1
+    - csl26-ey6s
+    - csl26-5zzb
 ---
 
 Track enabling explicit enforcement for `clippy::too_many_lines` and `clippy::cognitive_complexity` once the current simplify frontier across engine and migrate code is complete.
@@ -26,7 +27,18 @@ When this lands, enforce these lints both locally and in CI so developers hit th
 
 ## Gating Rule
 
-Do not turn these lints into local default `cargo clippy` failures or CI errors while the active engine/migrate simplify frontier is still open. Start with `csl26-rsw1` and any follow-on hotspot beans needed to finish engine and migrate cleanup.
+Do not turn these lints into local default `cargo clippy` failures or CI
+errors while the active engine/migrate simplify frontier is still open. The
+remaining frontier is represented by the follow-on hotspot beans below.
+
+## Current Follow-on Frontier
+
+The remaining hotspot frontier is tracked in:
+- `csl26-ey6s` — grouped citation rendering frontier
+- `csl26-5zzb` — Djot adapter and shared document pipeline seams
+
+Close those follow-on beans before enabling repo-default complexity and
+line-count lint enforcement.
 
 ## Checklist
 
