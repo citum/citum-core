@@ -1,6 +1,40 @@
 use super::*;
 
 impl TemplateCompiler {
+    /// Attempt to merge a Text node with the next component.
+    /// If next node compiles to a component, prepend text to its prefix.
+    /// Apply inherited wrap to Date components if applicable.
+    /// Returns (component, source_order).
+    fn merge_text_lookahead(
+        &self,
+        text_value: &str,
+        next_node: &CslnNode,
+        inherited_wrap: &(
+            Option<citum_schema::template::WrapPunctuation>,
+            Option<String>,
+            Option<String>,
+        ),
+    ) -> Option<(TemplateComponent, Option<usize>)> {
+        let mut next_comp = self.compile_node(next_node)?;
+
+        // Merge text into prefix
+        let mut rendering = self.get_component_rendering(&next_comp);
+        let mut new_prefix = text_value.to_string();
+        if let Some(p) = rendering.prefix {
+            new_prefix.push_str(&p);
+        }
+        rendering.prefix = Some(new_prefix);
+        self.set_component_rendering(&mut next_comp, rendering);
+
+        // Apply inherited wrap if applicable
+        if inherited_wrap.0.is_some() && matches!(&next_comp, TemplateComponent::Date(_)) {
+            self.apply_wrap_to_component(&mut next_comp, inherited_wrap);
+        }
+
+        let source_order = self.extract_source_order(next_node);
+        Some((next_comp, source_order))
+    }
+
     pub(super) fn collect_occurrences(
         &self,
         nodes: &[CslnNode],
@@ -20,26 +54,11 @@ impl TemplateCompiler {
             // Lookahead merge for Text nodes
             if let CslnNode::Text { value } = node
                 && i + 1 < nodes.len()
-                && let Some(mut next_comp) = self.compile_node(&nodes[i + 1])
+                && let Some((component, source_order)) =
+                    self.merge_text_lookahead(value, &nodes[i + 1], inherited_wrap)
             {
-                // Merge text into prefix
-                let mut rendering = self.get_component_rendering(&next_comp);
-                let mut new_prefix = value.clone();
-                if let Some(p) = rendering.prefix {
-                    new_prefix.push_str(&p);
-                }
-                rendering.prefix = Some(new_prefix);
-                self.set_component_rendering(&mut next_comp, rendering);
-
-                // Apply inherited wrap if applicable
-                if inherited_wrap.0.is_some() && matches!(&next_comp, TemplateComponent::Date(_)) {
-                    self.apply_wrap_to_component(&mut next_comp, inherited_wrap);
-                }
-
-                // Extract source_order from the next node
-                let source_order = self.extract_source_order(&nodes[i + 1]);
                 occurrences.push(ComponentOccurrence {
-                    component: next_comp,
+                    component,
                     context: context.clone(),
                     source_order,
                 });
@@ -300,222 +319,5 @@ impl TemplateCompiler {
 
         // Extract just the components (drop the ordering metadata)
         result.into_iter().map(|(comp, _)| comp).collect()
-    }
-
-    // Old compilation method kept for citation compilation (compile_simple)
-    #[allow(dead_code)]
-    pub(super) fn compile_with_wrap(
-        &self,
-        nodes: &[CslnNode],
-        inherited_wrap: &(
-            Option<citum_schema::template::WrapPunctuation>,
-            Option<String>,
-            Option<String>,
-        ),
-        current_types: &[ItemType],
-    ) -> Vec<TemplateComponent> {
-        let mut components = Vec::new();
-        let mut i = 0;
-
-        while i < nodes.len() {
-            let node = &nodes[i];
-
-            // Lookahead merge for Text nodes
-            if let CslnNode::Text { value } = node
-                && i + 1 < nodes.len()
-            {
-                // Try to compile next node
-                if let Some(mut next_comp) = self.compile_node(&nodes[i + 1]) {
-                    // Merge text into prefix
-                    let mut rendering = self.get_component_rendering(&next_comp);
-                    let mut new_prefix = value.clone();
-                    if let Some(p) = rendering.prefix {
-                        new_prefix.push_str(&p);
-                    }
-                    rendering.prefix = Some(new_prefix);
-                    self.set_component_rendering(&mut next_comp, rendering);
-
-                    // Apply inherited wrap if applicable
-                    if inherited_wrap.0.is_some()
-                        && matches!(&next_comp, TemplateComponent::Date(_))
-                    {
-                        self.apply_wrap_to_component(&mut next_comp, inherited_wrap);
-                    }
-
-                    self.add_or_upgrade_component(&mut components, next_comp, current_types);
-                    i += 2;
-                    continue;
-                }
-            }
-
-            if let Some(mut component) = self.compile_node(node) {
-                // Apply inherited wrap to date components
-                if inherited_wrap.0.is_some() && matches!(&component, TemplateComponent::Date(_)) {
-                    self.apply_wrap_to_component(&mut component, inherited_wrap);
-                }
-                // Add or replace with better-formatted version
-                self.add_or_upgrade_component(&mut components, component, current_types);
-            } else {
-                match node {
-                    CslnNode::Group(g) => {
-                        // Check if this group has its own wrap
-                        let group_wrap = Self::infer_wrap_from_affixes(
-                            &g.formatting.prefix,
-                            &g.formatting.suffix,
-                        );
-                        // Use group's wrap if it has one, otherwise inherit from parent
-                        let effective_wrap = if group_wrap.0.is_some() {
-                            group_wrap.clone()
-                        } else {
-                            inherited_wrap.clone()
-                        };
-                        let group_components =
-                            self.compile_with_wrap(&g.children, &effective_wrap, current_types);
-
-                        // Only create a List for meaningful structural groups:
-                        // - Groups with explicit non-default delimiters (not period/comma)
-                        // - AND containing 2-3 components that form a logical unit
-                        // Most groups should just be flattened.
-                        let meaningful_delimiter = g.delimiter.as_ref().is_some_and(|d| {
-                            // Keep lists for special delimiters like none (volume+issue)
-                            // or colon (title: subtitle)
-                            matches!(d.as_str(), "" | "none" | ": " | " " | ", ")
-                        });
-                        let is_small_structural_group =
-                            group_components.len() >= 2 && group_components.len() <= 3;
-                        let should_be_list = meaningful_delimiter
-                            && is_small_structural_group
-                            && group_wrap.0.is_none();
-
-                        if should_be_list && !group_components.is_empty() {
-                            let list = TemplateComponent::List(TemplateList {
-                                items: group_components,
-                                delimiter: self.map_delimiter(&g.delimiter),
-                                rendering: self.convert_formatting(&g.formatting),
-                                ..Default::default()
-                            });
-                            self.add_or_upgrade_component(&mut components, list, current_types);
-                        } else {
-                            for gc in group_components {
-                                self.add_or_upgrade_component(&mut components, gc, current_types);
-                            }
-                        }
-                    }
-                    CslnNode::Condition(c) => {
-                        // Concatenate current types with if_item_type
-                        let mut then_types = current_types.to_vec();
-                        then_types.extend(c.if_item_type.clone());
-
-                        // Pass wrap through conditions
-                        let then_components =
-                            self.compile_with_wrap(&c.then_branch, inherited_wrap, &then_types);
-                        for tc in then_components {
-                            self.add_or_upgrade_component(&mut components, tc, &then_types);
-                        }
-
-                        for else_if in &c.else_if_branches {
-                            let mut else_if_types = current_types.to_vec();
-                            else_if_types.extend(else_if.if_item_type.clone());
-
-                            let branch_components = self.compile_with_wrap(
-                                &else_if.children,
-                                inherited_wrap,
-                                &else_if_types,
-                            );
-                            for bc in branch_components {
-                                self.add_or_upgrade_component(&mut components, bc, &else_if_types);
-                            }
-                        }
-
-                        if let Some(ref else_nodes) = c.else_branch {
-                            let else_components =
-                                self.compile_with_wrap(else_nodes, inherited_wrap, current_types);
-                            for ec in else_components {
-                                self.add_or_upgrade_component(&mut components, ec, current_types);
-                            }
-                        }
-                    }
-                    _ => {}
-                }
-            }
-            i += 1;
-        }
-
-        components
-    }
-
-    #[allow(dead_code)]
-    pub(super) fn add_or_upgrade_component(
-        &self,
-        components: &mut Vec<TemplateComponent>,
-        new_component: TemplateComponent,
-        current_types: &[ItemType],
-    ) {
-        // Recursive search for existing variable
-        let mut existing_idx = None;
-
-        for (i, c) in components.iter_mut().enumerate() {
-            if self.same_variable(c, &new_component) {
-                existing_idx = Some(i);
-                break;
-            }
-            // Also check inside Lists
-            if let TemplateComponent::List(list) = c
-                && self.has_variable_recursive(&list.items, &new_component)
-            {
-                // Variable exists but is nested. We can't easily merge top-level into nested
-                // without knowing the structure. For now, mark as "found" so we can add overrides.
-                // Actually, let's just use a recursive mutation helper.
-                self.add_overrides_recursive(c, &new_component, current_types);
-                return;
-            }
-        }
-
-        if let Some(idx) = existing_idx {
-            if current_types.is_empty() {
-                // ... same global logic ...
-                let mut rendering = self.get_component_rendering(&components[idx]);
-                if rendering.suppress == Some(true) {
-                    rendering.suppress = Some(false);
-                    self.set_component_rendering(&mut components[idx], rendering);
-                }
-
-                if let (TemplateComponent::Date(existing), TemplateComponent::Date(new)) =
-                    (&components[idx], &new_component)
-                    && existing.rendering.wrap.is_none()
-                    && new.rendering.wrap.is_some()
-                {
-                    components[idx] = new_component.clone();
-                }
-            } else {
-                // Add overrides to existing top-level component
-                self.add_overrides_to_existing(&mut components[idx], &new_component, current_types);
-            }
-        } else {
-            // ... same NEW component logic ...
-            let mut component_to_add = new_component;
-            if !current_types.is_empty() {
-                if let TemplateComponent::List(ref mut list) = component_to_add {
-                    // For Lists, propagate type-specific overrides to each item
-                    self.add_type_overrides_to_list_items(&mut list.items, current_types);
-                } else {
-                    let mut base = self.get_component_rendering(&component_to_add);
-                    base.suppress = Some(true);
-                    self.set_component_rendering(&mut component_to_add, base.clone());
-
-                    for item_type in current_types {
-                        let type_str = self.item_type_to_string(item_type);
-                        let mut unsuppressed = base.clone();
-                        unsuppressed.suppress = Some(false);
-                        self.add_override_to_component(
-                            &mut component_to_add,
-                            type_str,
-                            unsuppressed,
-                        );
-                    }
-                }
-            }
-            components.push(component_to_add);
-        }
     }
 }
