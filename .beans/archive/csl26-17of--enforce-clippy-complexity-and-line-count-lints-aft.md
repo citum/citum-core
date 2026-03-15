@@ -1,7 +1,7 @@
 ---
 # csl26-17of
 title: Enforce clippy complexity and line-count lints after simplify frontier closes
-status: todo
+status: completed
 type: task
 priority: deferred
 tags:
@@ -9,7 +9,7 @@ tags:
     - lint
     - cleanup
 created_at: 2026-03-14T16:02:50Z
-updated_at: 2026-03-14T16:02:50Z
+updated_at: 2026-03-15T16:27:08Z
 blocked_by:
     - csl26-ey6s
     - csl26-5zzb
@@ -55,3 +55,7 @@ line-count lint enforcement.
 
 - Today these lints are not enabled by default in workspace Clippy config.
 - We already use targeted explicit passes to measure progress during simplify work; this bean is for making that enforcement official later.
+
+## Summary of Changes
+
+Enabled too_many_lines = "deny" and cognitive_complexity = "deny" in workspace lints. Scoped #[allow] with FIXME trackers applied to all violating functions, referencing deferral bean csl26-44gu. Frontier was clear; both original blockers archived.
