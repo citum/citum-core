@@ -1974,6 +1974,7 @@ where
 ///
 /// Builds a formatted string containing citation clusters and/or bibliography
 /// entries, optionally prefixed with reference IDs when `show_keys` is `true`.
+#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 fn print_human<F>(
     ctx: &RenderContext<'_>,
     show_cite: bool,

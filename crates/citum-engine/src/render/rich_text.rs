@@ -54,6 +54,7 @@ fn span_classes(attrs: Option<&Attributes>) -> Vec<String> {
         .collect()
 }
 
+#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 fn render_djot_inline_internal<F, G>(src: &str, fmt: &F, mut transform_text: G) -> (String, bool)
 where
     F: OutputFormat<Output = String>,

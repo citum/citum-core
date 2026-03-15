@@ -56,6 +56,7 @@ pub struct Locale {
 
 impl Locale {
     /// Create a new English (US) locale with default terms.
+    #[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
     pub fn en_us() -> Self {
         let mut roles = HashMap::new();
 

@@ -768,6 +768,7 @@ impl Upsampler {
         }
     }
 
+    #[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
     fn map_names(&self, n: &legacy::Names) -> Option<csln::CslnNode> {
         let vars: Vec<&str> = n.variable.split_whitespace().collect();
         if vars.is_empty() {

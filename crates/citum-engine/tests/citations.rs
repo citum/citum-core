@@ -181,6 +181,7 @@ fn disambiguation_same_author_same_year_titles_follow_title_order() {
 }
 
 /// Test the upstream YearSuffixAtTwoLevels disambiguation cascade.
+#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 fn disambiguation_two_level_author_collisions_get_distinct_suffixes() {
     let input = vec![
         make_book_multi_author(

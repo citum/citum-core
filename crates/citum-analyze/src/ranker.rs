@@ -42,6 +42,7 @@ pub struct ParentRanking {
     pub fields: Vec<String>,
 }
 
+#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 pub fn run_parent_ranker(styles_dir: &str, json_output: bool, format_filter: Option<&str>) {
     let mut stats = ParentRankerStats {
         format_filter: format_filter.map(|s| s.to_string()),

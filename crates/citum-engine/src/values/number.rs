@@ -9,6 +9,7 @@ use citum_schema::locale::TermForm;
 use citum_schema::template::{NumberVariable, TemplateNumber};
 
 impl ComponentValues for TemplateNumber {
+    #[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
     fn values<F: crate::render::format::OutputFormat<Output = String>>(
         &self,
         reference: &Reference,

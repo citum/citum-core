@@ -45,6 +45,7 @@ pub(super) fn resolve_multilingual_for_contrib(
 ///
 /// Returns `Some(ProcValues)` if a substitute was found, `None` if the chain
 /// is exhausted with no result (caller should then return `None` from `values()`).
+#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
     component: &TemplateContributor,
     hints: &ProcHints,

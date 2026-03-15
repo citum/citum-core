@@ -59,6 +59,7 @@ pub fn render_component_with_format<F: OutputFormat<Output = String>>(
 }
 
 /// Render a single component using a specific output format and an existing renderer instance.
+#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String>>(
     component: &ProcTemplateComponent,
     fmt: &F,

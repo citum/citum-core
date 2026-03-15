@@ -10,6 +10,7 @@ pub(super) fn selector_matches_any(selector: &TypeSelector, candidates: &[&str])
         .any(|candidate| selector.matches(candidate))
 }
 
+#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 pub(super) fn normalize_legal_case_type_template(
     legacy_style: &csl_legacy::model::Style,
     type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,

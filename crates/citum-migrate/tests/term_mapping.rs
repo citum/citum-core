@@ -196,6 +196,7 @@ fn test_upsample_strip_periods_preserves_none_and_false() {
     }
 }
 
+#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 #[test]
 fn test_template_compiler_preserves_strip_periods_through_compilation() {
     announce_behavior(

@@ -238,6 +238,7 @@ pub fn effective_component_language(
 /// * `preferred_transliteration` - Optional ordered list of BCP 47 transliteration tags
 /// * `preferred_script` - Optional preferred script (e.g., "Latn")
 /// * `style_locale` - The style's locale for translation matching
+#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 pub fn resolve_multilingual_name(
     contributor: &citum_schema::reference::contributor::Contributor,
     mode: Option<&citum_schema::options::MultilingualMode>,

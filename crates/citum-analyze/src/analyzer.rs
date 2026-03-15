@@ -174,6 +174,7 @@ fn analyze_style_attrs(node: &roxmltree::Node, stats: &mut StyleStats) {
     }
 }
 
+#[allow(clippy::too_many_lines, clippy::cognitive_complexity)] // FIXME: csl26-44gu
 fn analyze_nodes(node: &roxmltree::Node, stats: &mut StyleStats) {
     let tag = node.tag_name().name();
 
@@ -339,6 +340,7 @@ fn analyze_nodes(node: &roxmltree::Node, stats: &mut StyleStats) {
     }
 }
 
+#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 fn print_stats(stats: &StyleStats) {
     println!(
         "=== CSL Style Analysis ===

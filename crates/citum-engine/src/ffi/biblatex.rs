@@ -18,6 +18,7 @@ use url::Url;
 /// Maps biblatex entry types (book, article, inproceedings, etc.) to
 /// appropriate Citum reference types. Extracts all relevant fields
 /// including contributors, dates, and metadata.
+#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 pub(super) fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
     let id = Some(entry.key.clone());
     let field_str = |key: &str| {

@@ -145,6 +145,7 @@ fn node_contains_date(node: &CslNode) -> bool {
 /// Finds the delimiter between author and date in a citation layout.
 /// Uses depth-first search to find the DEEPEST group that contains both
 /// author and date, handling nested groups, Choose blocks, and macro expansion.
+#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 pub fn extract_citation_delimiter(layout: &Layout, macros: &[Macro]) -> Option<String> {
     fn is_author_macro(node: &CslNode) -> bool {
         match node {

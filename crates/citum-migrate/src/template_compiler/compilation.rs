@@ -35,6 +35,7 @@ impl TemplateCompiler {
         Some((next_comp, source_order))
     }
 
+    #[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
     pub(super) fn collect_occurrences(
         &self,
         nodes: &[CslnNode],

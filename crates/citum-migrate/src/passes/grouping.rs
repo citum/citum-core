@@ -3,6 +3,7 @@ use citum_schema::template::{
     TemplateNumber, WrapPunctuation,
 };
 
+#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 pub fn group_volume_and_issue(
     components: &mut Vec<TemplateComponent>,
     options: &citum_schema::options::Config,

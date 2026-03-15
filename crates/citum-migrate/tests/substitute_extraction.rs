@@ -11,6 +11,7 @@ fn announce_behavior(summary: &str) {
     println!("behavior: {summary}");
 }
 
+#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 #[test]
 fn test_extract_type_conditional_substitute() {
     announce_behavior(

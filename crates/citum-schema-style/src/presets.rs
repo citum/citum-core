@@ -118,6 +118,7 @@ pub enum ContributorPreset {
 
 impl ContributorPreset {
     /// Convert this preset to a concrete `ContributorConfig`.
+    #[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
     pub fn config(&self) -> ContributorConfig {
         match self {
             ContributorPreset::Apa => ContributorConfig {

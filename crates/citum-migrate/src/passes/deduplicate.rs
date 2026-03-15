@@ -226,6 +226,7 @@ pub fn deduplicate_variables_cross_lists(components: &mut [TemplateComponent]) {
     deduplicate_variables_in_sibling_lists(components, &mut seen_vars);
 }
 
+#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 fn deduplicate_variables_in_sibling_lists(
     items: &mut [TemplateComponent],
     seen_vars: &mut HashSet<String>,

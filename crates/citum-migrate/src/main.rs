@@ -29,6 +29,7 @@ use roxmltree::Document;
 use std::fs;
 use std::path::PathBuf;
 
+#[allow(clippy::too_many_lines, clippy::cognitive_complexity)] // FIXME: csl26-44gu
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = std::env::args().collect();
     let program_name = args
@@ -610,6 +611,7 @@ fn compile_citation_position_override(
 /// Run the full XML compilation pipeline for bibliography and citation templates.
 /// This is the fallback when no hand-authored or inferred template is available.
 #[allow(clippy::type_complexity)]
+#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 fn compile_from_xml(
     legacy_style: &csl_legacy::model::Style,
     options: &mut citum_schema::options::Config,
@@ -865,6 +867,7 @@ fn compile_from_xml(
     )
 }
 
+#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 fn apply_type_overrides(
     component: &mut TemplateComponent,
     volume_pages_delimiter: Option<DelimiterPunctuation>,

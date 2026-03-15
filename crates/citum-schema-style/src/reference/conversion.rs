@@ -45,6 +45,7 @@ fn format_interviewer_note(names: &[csl_legacy::csl_json::Name]) -> Option<Strin
 }
 
 impl From<csl_legacy::csl_json::Reference> for InputReference {
+    #[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
     fn from(legacy: csl_legacy::csl_json::Reference) -> Self {
         let legacy_container_title_short =
             short_title_from_legacy(&legacy, "container-title-short");

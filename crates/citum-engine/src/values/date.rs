@@ -71,6 +71,7 @@ fn format_time(
 }
 
 impl ComponentValues for TemplateDate {
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)] // FIXME: csl26-44gu
     fn values<F: crate::render::format::OutputFormat<Output = String>>(
         &self,
         reference: &Reference,

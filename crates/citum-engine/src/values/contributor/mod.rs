@@ -118,6 +118,7 @@ pub(super) fn format_role_term<F: crate::render::format::OutputFormat<Output = S
 }
 
 impl ComponentValues for TemplateContributor {
+    #[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
     fn values<F: crate::render::format::OutputFormat<Output = String>>(
         &self,
         reference: &Reference,

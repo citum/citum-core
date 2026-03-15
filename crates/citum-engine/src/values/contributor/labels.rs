@@ -10,6 +10,7 @@ use citum_schema::template::{ContributorForm, ContributorRole, Rendering, Templa
 ///
 /// Returns `(prefix, suffix)` strings to wrap the formatted name list.
 /// Precedence: explicit `label` config > global `editor_label_format` > form-based defaults.
+#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
     component: &TemplateContributor,
     names_count: usize,
