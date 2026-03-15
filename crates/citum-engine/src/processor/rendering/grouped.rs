@@ -1,3 +1,4 @@
+use super::GroupRenderParams;
 use super::*;
 use crate::render::ProcTemplate;
 
@@ -253,14 +254,201 @@ impl<'a> Renderer<'a> {
                 state.first_ref,
                 state.first_item,
                 &state.template,
-                spec,
-                mode,
-                intra_delimiter,
-                suppress_author,
-                position,
+                &GroupRenderParams {
+                    spec,
+                    mode,
+                    intra_delimiter,
+                    suppress_author,
+                    position,
+                },
             )?
             .into_iter()
             .collect())
+    }
+
+    fn render_fallback_grouped_citation_with_format<F>(
+        &self,
+        group: &[&crate::reference::CitationItem],
+        first_ref: &Reference,
+        first_item: &crate::reference::CitationItem,
+        template: &[TemplateComponent],
+        params: &GroupRenderParams<'_>,
+    ) -> Result<Option<String>, ProcessorError>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let fmt = F::default();
+        let author_part = self.render_author_for_grouping_with_format::<F>(
+            first_ref,
+            first_item,
+            template,
+            params.mode,
+            params.suppress_author,
+            params.position,
+        );
+        let (item_parts, group_delimiter) =
+            self.render_group_item_parts_with_format::<F>(&fmt, group, params)?;
+        let Some(content) = self.build_grouped_citation_content(
+            &author_part,
+            &item_parts,
+            params,
+            group_delimiter.as_deref(),
+        ) else {
+            return Ok(None);
+        };
+        let group_ids = group.iter().map(|item| item.id.clone()).collect();
+        let prefix = first_item.prefix.as_deref().unwrap_or("");
+
+        Ok(Some(fmt.citation(
+            group_ids,
+            self.affix_content(&fmt, content, Some(prefix), None),
+        )))
+    }
+
+    fn build_grouped_citation_content(
+        &self,
+        author_part: &str,
+        item_parts: &[String],
+        params: &GroupRenderParams<'_>,
+        group_delimiter: Option<&str>,
+    ) -> Option<String> {
+        if !author_part.is_empty() && !item_parts.is_empty() {
+            let author_item_delimiter = group_delimiter.unwrap_or(params.intra_delimiter);
+            let repeated_item_delimiter = if author_item_delimiter.trim().is_empty() {
+                ", "
+            } else {
+                author_item_delimiter
+            };
+            let joined_items = item_parts.join(repeated_item_delimiter);
+            return Some(match params.mode {
+                citum_schema::citation::CitationMode::Integral => self
+                    .format_integral_grouped_items(
+                        author_part,
+                        &joined_items,
+                        params.suppress_author,
+                    ),
+                citum_schema::citation::CitationMode::NonIntegral => self
+                    .format_non_integral_grouped_items(
+                        author_part,
+                        author_item_delimiter,
+                        &joined_items,
+                        params.suppress_author,
+                    ),
+            });
+        }
+
+        if !author_part.is_empty() {
+            return Some(author_part.to_string());
+        }
+
+        if !item_parts.is_empty() {
+            return Some(item_parts.join(params.intra_delimiter));
+        }
+
+        None
+    }
+
+    fn format_integral_grouped_items(
+        &self,
+        author_part: &str,
+        joined_items: &str,
+        suppress_author: bool,
+    ) -> String {
+        if suppress_author {
+            format!("({joined_items})")
+        } else {
+            format!("{author_part} ({joined_items})")
+        }
+    }
+
+    fn format_non_integral_grouped_items(
+        &self,
+        author_part: &str,
+        author_item_delimiter: &str,
+        joined_items: &str,
+        suppress_author: bool,
+    ) -> String {
+        if suppress_author {
+            return joined_items.to_string();
+        }
+
+        if let Some(adjusted) =
+            self.adjust_grouped_author_quote_punctuation(author_part, author_item_delimiter)
+        {
+            return format!("{adjusted}{joined_items}");
+        }
+
+        format!("{author_part}{author_item_delimiter}{joined_items}")
+    }
+
+    fn adjust_grouped_author_quote_punctuation(
+        &self,
+        author_part: &str,
+        author_item_delimiter: &str,
+    ) -> Option<String> {
+        if !self.config.punctuation_in_quote
+            || !author_item_delimiter.starts_with(',')
+            || !(author_part.ends_with('"') || author_part.ends_with('\u{201D}'))
+        {
+            return None;
+        }
+
+        let is_curly = author_part.ends_with('\u{201D}');
+        let quote_char = if is_curly { '\u{201D}' } else { '"' };
+        let trimmed = &author_part[..author_part.len() - quote_char.len_utf8()];
+        Some(format!(
+            "{trimmed},{quote_char}{}",
+            &author_item_delimiter[1..]
+        ))
+    }
+
+    fn render_group_item_parts_with_format<F>(
+        &self,
+        fmt: &F,
+        group: &[&crate::reference::CitationItem],
+        params: &GroupRenderParams<'_>,
+    ) -> Result<(Vec<String>, Option<String>), ProcessorError>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let mut item_parts = Vec::new();
+        let mut group_delimiter: Option<String> = None;
+        for item in group {
+            let state = self.resolve_item_render_state(item, params.spec)?;
+            let (filtered_template, leading_affix) = filter_author_from_template(&state.template);
+            if group_delimiter.is_none() {
+                group_delimiter = leading_affix
+                    .as_ref()
+                    .filter(|value| !value.is_empty())
+                    .cloned();
+            }
+            let item_delimiter = if leading_affix.is_some() {
+                ""
+            } else {
+                params.intra_delimiter
+            };
+            if let Some(item_str) = self.render_group_item_from_template_with_format::<F>(
+                state.reference,
+                GroupItemRenderRequest {
+                    item: state.item,
+                    template: &filtered_template,
+                    mode: params.mode,
+                    suppress_author: params.suppress_author,
+                    position: params.position,
+                    delimiter: item_delimiter,
+                },
+            ) && !item_str.is_empty()
+            {
+                let suffix = item.suffix.as_deref().unwrap_or("");
+                if !suffix.is_empty() {
+                    let spaced_suffix = Self::ensure_suffix_spacing(suffix);
+                    item_parts.push(fmt.affix("", item_str, &spaced_suffix));
+                } else {
+                    item_parts.push(item_str);
+                }
+            }
+        }
+        Ok((item_parts, group_delimiter))
     }
 
     fn resolve_group_render_state<'b>(
@@ -627,155 +815,6 @@ impl<'a> Renderer<'a> {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
-    fn render_fallback_grouped_citation_with_format<F>(
-        &self,
-        group: &[&crate::reference::CitationItem],
-        first_ref: &Reference,
-        first_item: &crate::reference::CitationItem,
-        template: &[TemplateComponent],
-        spec: &citum_schema::CitationSpec,
-        mode: &citum_schema::citation::CitationMode,
-        intra_delimiter: &str,
-        suppress_author: bool,
-        position: Option<&citum_schema::citation::Position>,
-    ) -> Result<Option<String>, ProcessorError>
-    where
-        F: crate::render::format::OutputFormat<Output = String>,
-    {
-        let fmt = F::default();
-        let author_part = self.render_author_for_grouping_with_format::<F>(
-            first_ref,
-            first_item,
-            template,
-            mode,
-            suppress_author,
-            position,
-        );
-        let (item_parts, group_delimiter) = self.render_group_item_parts_with_format::<F>(
-            &fmt,
-            group,
-            spec,
-            mode,
-            suppress_author,
-            position,
-            intra_delimiter,
-        )?;
-        let Some(content) = self.build_grouped_citation_content(
-            &author_part,
-            &item_parts,
-            mode,
-            intra_delimiter,
-            group_delimiter.as_deref(),
-            suppress_author,
-        ) else {
-            return Ok(None);
-        };
-        let group_ids = group.iter().map(|item| item.id.clone()).collect();
-        let prefix = first_item.prefix.as_deref().unwrap_or("");
-
-        Ok(Some(fmt.citation(
-            group_ids,
-            self.affix_content(&fmt, content, Some(prefix), None),
-        )))
-    }
-
-    fn build_grouped_citation_content(
-        &self,
-        author_part: &str,
-        item_parts: &[String],
-        mode: &citum_schema::citation::CitationMode,
-        intra_delimiter: &str,
-        group_delimiter: Option<&str>,
-        suppress_author: bool,
-    ) -> Option<String> {
-        if !author_part.is_empty() && !item_parts.is_empty() {
-            let author_item_delimiter = group_delimiter.unwrap_or(intra_delimiter);
-            let repeated_item_delimiter = if author_item_delimiter.trim().is_empty() {
-                ", "
-            } else {
-                author_item_delimiter
-            };
-            let joined_items = item_parts.join(repeated_item_delimiter);
-            return Some(match mode {
-                citum_schema::citation::CitationMode::Integral => {
-                    self.format_integral_grouped_items(author_part, &joined_items, suppress_author)
-                }
-                citum_schema::citation::CitationMode::NonIntegral => self
-                    .format_non_integral_grouped_items(
-                        author_part,
-                        author_item_delimiter,
-                        &joined_items,
-                        suppress_author,
-                    ),
-            });
-        }
-
-        if !author_part.is_empty() {
-            return Some(author_part.to_string());
-        }
-
-        if !item_parts.is_empty() {
-            return Some(item_parts.join(intra_delimiter));
-        }
-
-        None
-    }
-
-    fn format_integral_grouped_items(
-        &self,
-        author_part: &str,
-        joined_items: &str,
-        suppress_author: bool,
-    ) -> String {
-        if suppress_author {
-            format!("({joined_items})")
-        } else {
-            format!("{author_part} ({joined_items})")
-        }
-    }
-
-    fn format_non_integral_grouped_items(
-        &self,
-        author_part: &str,
-        author_item_delimiter: &str,
-        joined_items: &str,
-        suppress_author: bool,
-    ) -> String {
-        if suppress_author {
-            return joined_items.to_string();
-        }
-
-        if let Some(adjusted) =
-            self.adjust_grouped_author_quote_punctuation(author_part, author_item_delimiter)
-        {
-            return format!("{adjusted}{joined_items}");
-        }
-
-        format!("{author_part}{author_item_delimiter}{joined_items}")
-    }
-
-    fn adjust_grouped_author_quote_punctuation(
-        &self,
-        author_part: &str,
-        author_item_delimiter: &str,
-    ) -> Option<String> {
-        if !self.config.punctuation_in_quote
-            || !author_item_delimiter.starts_with(',')
-            || !(author_part.ends_with('"') || author_part.ends_with('\u{201D}'))
-        {
-            return None;
-        }
-
-        let is_curly = author_part.ends_with('\u{201D}');
-        let quote_char = if is_curly { '\u{201D}' } else { '"' };
-        let trimmed = &author_part[..author_part.len() - quote_char.len_utf8()];
-        Some(format!(
-            "{trimmed},{quote_char}{}",
-            &author_item_delimiter[1..]
-        ))
-    }
-
     fn build_template_render_hint(
         &self,
         reference: &Reference,
@@ -932,60 +971,6 @@ impl<'a> Renderer<'a> {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
-    fn render_group_item_parts_with_format<F>(
-        &self,
-        fmt: &F,
-        group: &[&crate::reference::CitationItem],
-        spec: &citum_schema::CitationSpec,
-        mode: &citum_schema::citation::CitationMode,
-        suppress_author: bool,
-        position: Option<&citum_schema::citation::Position>,
-        intra_delimiter: &str,
-    ) -> Result<(Vec<String>, Option<String>), ProcessorError>
-    where
-        F: crate::render::format::OutputFormat<Output = String>,
-    {
-        let mut item_parts = Vec::new();
-        let mut group_delimiter: Option<String> = None;
-        for item in group {
-            let state = self.resolve_item_render_state(item, spec)?;
-            let (filtered_template, leading_affix) = filter_author_from_template(&state.template);
-            if group_delimiter.is_none() {
-                group_delimiter = leading_affix
-                    .as_ref()
-                    .filter(|value| !value.is_empty())
-                    .cloned();
-            }
-            let item_delimiter = if leading_affix.is_some() {
-                ""
-            } else {
-                intra_delimiter
-            };
-            if let Some(item_str) = self.render_group_item_from_template_with_format::<F>(
-                state.reference,
-                GroupItemRenderRequest {
-                    item: state.item,
-                    template: &filtered_template,
-                    mode,
-                    suppress_author,
-                    position,
-                    delimiter: item_delimiter,
-                },
-            ) && !item_str.is_empty()
-            {
-                let suffix = item.suffix.as_deref().unwrap_or("");
-                if !suffix.is_empty() {
-                    let spaced_suffix = Self::ensure_suffix_spacing(suffix);
-                    item_parts.push(fmt.affix("", item_str, &spaced_suffix));
-                } else {
-                    item_parts.push(item_str);
-                }
-            }
-        }
-        Ok((item_parts, group_delimiter))
-    }
-
     fn render_group_item_from_template_with_format<F>(
         &self,
         reference: &Reference,
@@ -1024,7 +1009,7 @@ fn author_grouping_key(reference: &Reference) -> String {
         .to_lowercase()
 }
 
-fn filter_author_from_template(
+pub(super) fn filter_author_from_template(
     template: &[TemplateComponent],
 ) -> (Vec<TemplateComponent>, Option<String>) {
     let mut filtered: Vec<TemplateComponent> =

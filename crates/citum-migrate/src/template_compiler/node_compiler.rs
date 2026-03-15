@@ -169,6 +169,37 @@ impl TemplateCompiler {
         ))
     }
 
+    /// Build type overrides from FormattingOptions.
+    fn build_type_overrides(
+        &self,
+        overrides: &std::collections::HashMap<
+            citum_schema::ItemType,
+            citum_schema::FormattingOptions,
+        >,
+    ) -> Option<
+        std::collections::HashMap<
+            citum_schema::template::TypeSelector,
+            citum_schema::template::ComponentOverride,
+        >,
+    > {
+        if overrides.is_empty() {
+            None
+        } else {
+            Some(
+                overrides
+                    .iter()
+                    .map(|(t, fmt)| {
+                        use citum_schema::template::{ComponentOverride, TypeSelector};
+                        (
+                            TypeSelector::Single(self.item_type_to_string(t)),
+                            ComponentOverride::Rendering(self.convert_formatting(fmt)),
+                        )
+                    })
+                    .collect(),
+            )
+        }
+    }
+
     /// Compile a Variable block into the appropriate component.
     pub(super) fn compile_variable(
         &self,
@@ -189,27 +220,12 @@ impl TemplateCompiler {
         // Check if it's a title
         if let Some(title_type) = self.map_variable_to_title(&var.variable) {
             // Convert overrides from FormattingOptions to Rendering
-            let overrides = if var.overrides.is_empty() {
-                None
-            } else {
-                if super::migrate_debug_enabled() {
-                    for (t, fmt) in &var.overrides {
-                        eprintln!("  {:?} -> {:?}", t, fmt);
-                    }
+            if super::migrate_debug_enabled() {
+                for (t, fmt) in &var.overrides {
+                    eprintln!("  {:?} -> {:?}", t, fmt);
                 }
-                Some(
-                    var.overrides
-                        .iter()
-                        .map(|(t, fmt)| {
-                            use citum_schema::template::{ComponentOverride, TypeSelector};
-                            (
-                                TypeSelector::Single(self.item_type_to_string(t)),
-                                ComponentOverride::Rendering(self.convert_formatting(fmt)),
-                            )
-                        })
-                        .collect(),
-                )
-            };
+            }
+            let overrides = self.build_type_overrides(&var.overrides);
             return Some(TemplateComponent::Title(TemplateTitle {
                 title: title_type,
                 form: None,
@@ -228,22 +244,7 @@ impl TemplateCompiler {
             }
 
             // Convert overrides from FormattingOptions to Rendering
-            let overrides = if var.overrides.is_empty() {
-                None
-            } else {
-                Some(
-                    var.overrides
-                        .iter()
-                        .map(|(t, fmt)| {
-                            use citum_schema::template::{ComponentOverride, TypeSelector};
-                            (
-                                TypeSelector::Single(self.item_type_to_string(t)),
-                                ComponentOverride::Rendering(self.convert_formatting(fmt)),
-                            )
-                        })
-                        .collect(),
-                )
-            };
+            let overrides = self.build_type_overrides(&var.overrides);
 
             // Extract label form if present
             let label_form = var.label.as_ref().map(|l| self.map_label_form(&l.form));
@@ -275,22 +276,7 @@ impl TemplateCompiler {
             }
 
             // Convert overrides from FormattingOptions to Rendering
-            let overrides = if var.overrides.is_empty() {
-                None
-            } else {
-                Some(
-                    var.overrides
-                        .iter()
-                        .map(|(t, fmt)| {
-                            use citum_schema::template::{ComponentOverride, TypeSelector};
-                            (
-                                TypeSelector::Single(self.item_type_to_string(t)),
-                                ComponentOverride::Rendering(self.convert_formatting(fmt)),
-                            )
-                        })
-                        .collect(),
-                )
-            };
+            let overrides = self.build_type_overrides(&var.overrides);
             return Some(TemplateComponent::Variable(TemplateVariable {
                 variable: simple_var,
                 show_label,
