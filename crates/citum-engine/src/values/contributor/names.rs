@@ -18,6 +18,24 @@ pub(crate) struct NameFormatContext<'a> {
     pub(crate) sort_separator: Option<&'a String>,
 }
 
+/// Per-call template overrides passed to [`format_names`].
+///
+/// Bundles the five optional override parameters that come from a
+/// `TemplateContributor` so that call sites do not need to spell out each
+/// one individually.
+pub struct NamesOverrides<'a> {
+    /// Override for name display order (given-first vs family-first).
+    pub name_order: Option<&'a NameOrder>,
+    /// Override for the sort separator (e.g. `","` or `" "`).
+    pub sort_separator: Option<&'a String>,
+    /// Override for et-al shortening options.
+    pub shorten: Option<&'a ShortenListOptions>,
+    /// Override for the "and" conjunction between names.
+    pub and: Option<&'a AndOptions>,
+    /// Override for the `initialize-with` string used to form initials.
+    pub initialize_with: Option<&'a String>,
+}
+
 /// Partition names into (first_names, use_et_al, last_names) based on et-al options.
 fn partition_et_al<'a>(
     names: &'a [crate::reference::FlatName],
@@ -86,16 +104,11 @@ fn partition_et_al<'a>(
 /// This function assumes the non-empty input check at the top remains in place;
 /// violating that invariant can trigger indexing or `unwrap()` panics in later
 /// formatting branches.
-#[allow(clippy::too_many_arguments)]
 pub fn format_names(
     names: &[crate::reference::FlatName],
     form: &ContributorForm,
     options: &RenderOptions<'_>,
-    name_order: Option<&citum_schema::template::NameOrder>,
-    sort_separator_override: Option<&String>,
-    shorten_override: Option<&ShortenListOptions>,
-    and_override: Option<&AndOptions>,
-    initialize_with_override: Option<&String>,
+    overrides: &NamesOverrides<'_>,
     hints: &ProcHints,
 ) -> String {
     if names.is_empty() {
@@ -108,7 +121,9 @@ pub fn format_names(
     // Determine shortening options:
     // 1. Use explicit override from template (e.g. bibliography et-al)
     // 2. Else use global config
-    let shorten = shorten_override.or_else(|| config.and_then(|c| c.shorten.as_ref()));
+    let shorten = overrides
+        .shorten
+        .or_else(|| config.and_then(|c| c.shorten.as_ref()));
 
     let and_others = shorten
         .map(|opts| opts.and_others)
@@ -119,13 +134,15 @@ pub fn format_names(
     // Build format context once
     let ctx = NameFormatContext {
         display_as_sort: config.and_then(|c| c.display_as_sort),
-        name_order,
-        initialize_with: initialize_with_override
+        name_order: overrides.name_order,
+        initialize_with: overrides
+            .initialize_with
             .or_else(|| config.and_then(|c| c.initialize_with.as_ref())),
         initialize_with_hyphen: config.and_then(|c| c.initialize_with_hyphen),
         name_form: config.and_then(|c| c.name_form),
         demote_ndp: config.and_then(|c| c.demote_non_dropping_particle.as_ref()),
-        sort_separator: sort_separator_override
+        sort_separator: overrides
+            .sort_separator
             .or_else(|| config.and_then(|c| c.sort_separator.as_ref())),
     };
 
@@ -147,7 +164,9 @@ pub fn format_names(
         .collect();
 
     // Determine "and" setting: use override if provided, else global config
-    let and_option = and_override.or_else(|| config.and_then(|c| c.and.as_ref()));
+    let and_option = overrides
+        .and
+        .or_else(|| config.and_then(|c| c.and.as_ref()));
 
     // Determine conjunction between last two names
     // Default (None or no config) means no conjunction, matching CSL behavior
@@ -487,11 +506,13 @@ pub fn format_contributors_short(
         names,
         &ContributorForm::Short,
         options,
-        None,
-        None,
-        None,
-        None,
-        None,
+        &NamesOverrides {
+            name_order: None,
+            sort_separator: None,
+            shorten: None,
+            and: None,
+            initialize_with: None,
+        },
         &ProcHints::default(),
     )
 }

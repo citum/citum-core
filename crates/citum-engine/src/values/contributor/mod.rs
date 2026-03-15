@@ -14,7 +14,7 @@ use citum_schema::template::{ContributorForm, ContributorRole, NameOrder, Templa
 
 #[cfg(test)]
 pub(crate) use names::{NameFormatContext, format_single_name};
-pub use names::{format_contributors_short, format_names};
+pub use names::{NamesOverrides, format_contributors_short, format_names};
 
 /// Checks if a contributor role label should be omitted for a given reference.
 ///
@@ -233,17 +233,15 @@ impl ComponentValues for TemplateContributor {
                 .as_ref()
         });
 
-        let formatted = names::format_names(
-            &names_vec,
-            &component.form,
-            options,
-            effective_name_order,
-            component.sort_separator.as_ref(),
-            component.shorten.as_ref(),
-            component.and.as_ref(),
-            effective_rendering.initialize_with.as_ref(),
-            hints,
-        );
+        let name_overrides = names::NamesOverrides {
+            name_order: effective_name_order,
+            sort_separator: component.sort_separator.as_ref(),
+            shorten: component.shorten.as_ref(),
+            and: component.and.as_ref(),
+            initialize_with: effective_rendering.initialize_with.as_ref(),
+        };
+        let formatted =
+            names::format_names(&names_vec, &component.form, options, &name_overrides, hints);
 
         let role_omitted = is_role_label_omitted(options, &component.contributor);
         let (role_prefix, role_suffix) = labels::resolve_role_labels::<F>(
