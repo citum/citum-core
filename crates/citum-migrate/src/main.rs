@@ -29,9 +29,15 @@ use roxmltree::Document;
 use std::fs;
 use std::path::PathBuf;
 
-#[allow(clippy::too_many_lines, clippy::cognitive_complexity)] // FIXME: csl26-44gu
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let args: Vec<String> = std::env::args().collect();
+struct CliArgs {
+    path: String,
+    debug_variable: Option<String>,
+    template_mode: template_resolver::TemplateMode,
+    template_dir: Option<PathBuf>,
+    min_template_confidence: f64,
+}
+
+fn parse_cli_args(args: &[String]) -> CliArgs {
     let program_name = args
         .first()
         .and_then(|arg| std::path::Path::new(arg).file_name())
@@ -40,11 +46,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     if args.iter().any(|arg| arg == "-h" || arg == "--help") {
         print_help(program_name);
-        return Ok(());
+        std::process::exit(0);
     }
 
-    // Parse command-line arguments
-    let mut path = "styles-legacy/apa.csl";
+    let mut path = "styles-legacy/apa.csl".to_string();
     let mut debug_variable: Option<String> = None;
     let mut template_mode = template_resolver::TemplateMode::Auto;
     let mut template_dir: Option<PathBuf> = None;
@@ -108,7 +113,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             arg if !arg.starts_with('-') => {
-                path = &args[i];
+                path = args[i].clone();
                 i += 1;
             }
             _ => {
@@ -120,8 +125,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    CliArgs {
+        path,
+        debug_variable,
+        template_mode,
+        template_dir,
+        min_template_confidence,
+    }
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let args: Vec<String> = std::env::args().collect();
+    let cli = parse_cli_args(&args);
+    let path = &cli.path;
+
     // Initialize provenance tracking if debug variable is specified
-    let enable_provenance = debug_variable.is_some();
+    let enable_provenance = cli.debug_variable.is_some();
     let tracker = ProvenanceTracker::new(enable_provenance);
 
     eprintln!("Migrating {} to Citum...", path);
@@ -173,101 +192,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut resolved = template_resolver::resolve_templates(
         path,
         style_name,
-        template_dir.as_deref(),
+        cli.template_dir.as_deref(),
         &workspace_root,
-        template_mode,
-        min_template_confidence,
+        cli.template_mode,
+        cli.min_template_confidence,
     );
 
-    // Guardrails for inferred citation templates:
-    // - Empty citation templates regress fidelity heavily.
-    // - Numeric styles require citation-number in citation templates.
-    let mut reject_inferred_citation_reason: Option<&str> = None;
-    if let Some(resolved_cit) = resolved.citation.as_ref() {
-        let is_inferred_source = matches!(
-            resolved_cit.source,
-            template_resolver::TemplateSource::InferredCached(_)
-                | template_resolver::TemplateSource::InferredLive
-        );
-        if is_inferred_source {
-            if resolved_cit.template.is_empty() {
-                reject_inferred_citation_reason = Some("empty citation template");
-            } else if matches!(
-                options.processing,
-                Some(citum_schema::options::Processing::Numeric)
-            ) && !citation_template_has_citation_number(&resolved_cit.template)
-            {
-                reject_inferred_citation_reason =
-                    Some("numeric style citation template missing citation-number");
-            } else if legacy_style.class == "note"
-                && note_citation_template_is_underfit(&resolved_cit.template)
-            {
-                reject_inferred_citation_reason =
-                    Some("note style citation template is contributor-only underfit");
-            }
-        }
-    }
-    if let Some(reason) = reject_inferred_citation_reason {
-        eprintln!(
-            "Rejecting inferred citation template for {}: {}. Falling back to XML citation template.",
-            style_name, reason
-        );
-        resolved.citation = None;
-    }
-
-    // Heuristic normalization for note styles:
-    // If inferred citation template is a simple author-year shape, prefer short
-    // contributor form to align with typical note citation behavior.
-    let should_normalize_author_year_citations = legacy_style.class == "note"
-        || matches!(
-            options.processing,
-            Some(citum_schema::options::Processing::AuthorDate)
-        );
-
-    if should_normalize_author_year_citations && let Some(resolved_cit) = resolved.citation.as_mut()
-    {
-        let is_inferred_source = matches!(
-            resolved_cit.source,
-            template_resolver::TemplateSource::InferredCached(_)
-                | template_resolver::TemplateSource::InferredLive
-        );
-        if is_inferred_source
-            && citation_template_is_author_year_only(&resolved_cit.template)
-            && normalize_contributor_form_to_short(&mut resolved_cit.template)
-        {
-            eprintln!(
-                "Normalized citation contributor form to short for {} (author-year inferred citation template).",
-                style_name
-            );
-        }
-    }
-
-    // For inferred in-text author-year citations, normalize contributor rendering
-    // toward family-only short forms and defer et-al thresholds to citation-scope
-    // options when present. Some styles are extracted as `processing: custom`
-    // despite using author-year in-text behavior, so detect by template shape.
-    let is_in_text_class = legacy_style.class == "in-text";
-    if is_in_text_class && let Some(resolved_cit) = resolved.citation.as_mut() {
-        let is_inferred_source = matches!(
-            resolved_cit.source,
-            template_resolver::TemplateSource::InferredCached(_)
-                | template_resolver::TemplateSource::InferredLive
-        );
-        let is_author_year_shape = citation_template_is_author_year_only(&resolved_cit.template)
-            && !citation_template_has_citation_number(&resolved_cit.template);
-        if is_inferred_source
-            && is_author_year_shape
-            && normalize_author_date_inferred_contributors(
-                &mut resolved_cit.template,
-                citation_has_scope_shorten,
-            )
-        {
-            eprintln!(
-                "Normalized inferred author-date citation contributors for {} (family-short + scoped shorten).",
-                style_name
-            );
-        }
-    }
+    validate_and_normalize_inferred_citations(
+        &mut resolved,
+        &options,
+        &legacy_style,
+        style_name,
+        citation_has_scope_shorten,
+    );
 
     let xml_fallback = Some(compile_from_xml(
         &legacy_style,
@@ -276,269 +213,111 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &tracker,
     ));
 
-    if let Some(ref resolved_bib) = resolved.bibliography {
-        eprintln!("Using {} bibliography template", resolved_bib.source);
-        if let Some(conf) = resolved_bib.confidence {
-            eprintln!("  bibliography confidence: {:.0}%", conf * 100.0);
-        }
-    } else {
-        eprintln!(
-            "Using {} bibliography template",
-            template_resolver::TemplateSource::XmlCompiled
-        );
-    }
-
-    if let Some(ref resolved_cit) = resolved.citation {
-        eprintln!("Using {} citation template", resolved_cit.source);
-        if let Some(conf) = resolved_cit.confidence {
-            eprintln!("  citation confidence: {:.0}%", conf * 100.0);
-        }
-    } else {
-        eprintln!(
-            "Using {} citation template",
-            template_resolver::TemplateSource::XmlCompiled
-        );
-    }
+    log_template_sources(&resolved);
 
     let (mut new_bib, mut type_templates, inferred_bib_source) =
-        if let Some(ref resolved_bib) = resolved.bibliography {
-            let inferred_bib = matches!(
-                resolved_bib.source,
-                template_resolver::TemplateSource::InferredCached(_)
-                    | template_resolver::TemplateSource::InferredLive
-            );
+        select_and_process_bibliography_template(&resolved, &xml_fallback, &legacy_style);
 
-            // When bibliography comes from inferred output, merge selective
-            // branch-derived type templates from the XML fallback path. This keeps
-            // inferred global ordering while restoring high-value type branches
-            // (e.g., patent/webpage/entry-encyclopedia/legal-case) that frequently
-            // need full template specialization.
-            let merged_type_templates = if inferred_bib {
-                xml_fallback
-                    .as_ref()
-                    .and_then(|(_, type_templates, _, _)| type_templates.clone())
-                    .map(|type_templates| {
-                        type_templates
-                            .into_iter()
-                            .filter(|(selector, type_template)| {
-                                selector.type_names().iter().any(|type_name| {
-                                    should_merge_inferred_type_template(
-                                        type_name,
-                                        &resolved_bib.template,
-                                        type_template,
-                                    )
-                                })
-                            })
-                            .collect::<std::collections::HashMap<_, _>>()
-                    })
-                    .filter(|m| !m.is_empty())
-            } else {
-                None
-            };
-
-            (
-                resolved_bib.template.clone(),
-                merged_type_templates,
-                inferred_bib,
-            )
-        } else {
-            let (new_bib, type_templates, _, _) = xml_fallback
-                .as_ref()
-                .expect("XML fallback must exist when bibliography is unresolved");
-            (new_bib.clone(), type_templates.clone(), false)
-        };
-
-    if inferred_bib_source {
-        // Output-driven inference can leak literal sample years into prefixes
-        // (e.g., " 2023 " in titles, "; 2006; " in page prefixes).
-        // Strip those artifacts while keeping component structure intact.
-        for component in &mut new_bib {
-            scrub_inferred_literal_artifacts(component);
-        }
-        relax_inferred_bibliography_date_suppression(&mut new_bib);
-        if let Some(type_templates) = type_templates.as_mut() {
-            for template in type_templates.values_mut() {
-                for component in template.iter_mut() {
-                    scrub_inferred_literal_artifacts(component);
-                }
-                relax_inferred_bibliography_date_suppression(template);
-            }
-        }
-        normalize_legal_case_type_template(&legacy_style, &mut type_templates);
-        ensure_inferred_media_type_templates(&legacy_style, &mut type_templates, &new_bib);
-        ensure_inferred_patent_type_template(&legacy_style, &mut type_templates, &new_bib);
-    }
-
-    let mut citation_subsequent_override: Option<Vec<TemplateComponent>> = None;
-    let mut citation_ibid_override: Option<Vec<TemplateComponent>> = None;
-    let mut new_cit = if let Some(ref resolved_cit) = resolved.citation {
-        resolved_cit.template.clone()
-    } else {
-        let (_, _, new_cit, citation_overrides) = xml_fallback
-            .as_ref()
-            .expect("XML fallback must exist when citation is unresolved");
-        citation_subsequent_override = citation_overrides.subsequent.clone();
-        citation_ibid_override = citation_overrides.ibid.clone();
-        new_cit.clone()
-    };
-
-    if inferred_bib_source {
-        ensure_personal_communication_omitted(&legacy_style, &new_cit, &mut type_templates);
-    }
-
-    // Override bibliography options with inferred values when available.
-    // The XML options extractor often gets the wrong delimiter because it reads group
-    // delimiters rather than rendered output.
-    if let Some(ref resolved_bib) = resolved.bibliography {
-        let is_inferred_source = matches!(
-            resolved_bib.source,
-            template_resolver::TemplateSource::InferredCached(_)
-                | template_resolver::TemplateSource::InferredLive
+    let (mut new_cit, citation_subsequent_override, citation_ibid_override) =
+        select_citation_template(
+            &resolved,
+            &xml_fallback,
+            inferred_bib_source,
+            &legacy_style,
+            &mut type_templates,
         );
-        let allow_bib_punctuation_override = !(legacy_style.class == "note" && is_inferred_source);
 
-        if allow_bib_punctuation_override {
-            if let Some(ref delim) = resolved_bib.delimiter {
-                eprintln!("  Overriding bibliography separator: {:?}", delim);
-                let bib_cfg = options.bibliography.get_or_insert_with(Default::default);
-                bib_cfg.separator = Some(delim.clone());
-            }
+    override_bibliography_options_if_inferred(&resolved, &legacy_style, &mut options);
 
-            if let Some(ref suffix) = resolved_bib.entry_suffix {
-                eprintln!("  Overriding bibliography entry suffix: {:?}", suffix);
-                let bib_cfg = options.bibliography.get_or_insert_with(Default::default);
-                bib_cfg.entry_suffix = Some(suffix.clone());
-            }
-        } else {
-            eprintln!(
-                "  Skipping inferred bibliography separator/entry-suffix override for note style."
-            );
-        }
-    }
-
-    let (mut citation_wrap, mut citation_prefix, mut citation_suffix) =
-        analysis::citation::infer_citation_wrapping(&legacy_style.citation.layout);
-    let mut citation_delimiter = analysis::citation::extract_citation_delimiter(
-        &legacy_style.citation.layout,
-        &legacy_style.macros,
-    );
-
-    // Output-driven citation metadata is higher fidelity than XML analysis when available.
-    if let Some(ref resolved_cit) = resolved.citation {
-        if let Some(ref wrap) = resolved_cit.wrap {
-            citation_wrap = Some(wrap.clone());
-            citation_prefix = None;
-            citation_suffix = None;
-        }
-        if let Some(ref delim) = resolved_cit.delimiter {
-            citation_delimiter = Some(delim.clone());
-        }
-    }
-
-    // Numeric citation fixups informed by migration quality runs:
-    // - Keep locator labels when legacy style has a citation-locator macro.
-    // - Preserve per-item wrapping for grouped numeric layouts (e.g., IEEE).
-    if matches!(
-        options.processing,
-        Some(citum_schema::options::Processing::Numeric)
-    ) {
-        ensure_numeric_locator_citation_component(&legacy_style.citation.layout, &mut new_cit);
-        normalize_wrapped_numeric_locator_citation_component(
-            &legacy_style.citation.layout,
-            &mut new_cit,
-            &mut citation_delimiter,
-        );
-        move_group_wrap_to_citation_items(
-            &legacy_style.citation.layout,
-            &mut new_cit,
-            &mut citation_wrap,
-        );
-    } else if legacy_style.class == "in-text" {
-        normalize_author_date_locator_citation_component(
-            &legacy_style.citation.layout,
-            &legacy_style.macros,
-            &mut new_cit,
-        );
-    }
+    let (citation_wrap, citation_prefix, citation_suffix, citation_delimiter) =
+        resolve_citation_metadata(&resolved, &legacy_style, &options, &mut new_cit);
 
     // 5. Build Style in correct format for citum_engine
-    let citation_scope_options =
-        citation_contributor_overrides.map(|contributors| citum_schema::options::Config {
-            contributors: Some(contributors),
-            ..Default::default()
-        });
-
-    let bibliography_scope_options =
-        bibliography_contributor_overrides.map(|contributors| citum_schema::options::Config {
-            contributors: Some(contributors),
-            ..Default::default()
-        });
-
-    // Preserve legacy bibliography sort semantics at the Citum bibliography spec level.
-    // This is required for numeric alphabetical variants where citation numbers
-    // follow bibliography order rather than reference registry order.
-    let bibliography_sort = resolve_migrated_bibliography_sort(
-        options.processing.as_ref(),
-        legacy_style
-            .bibliography
-            .as_ref()
-            .and_then(|bib| bib.sort.as_ref()),
-    );
-
-    let style = Style {
-        info: StyleInfo {
-            title: Some(legacy_style.info.title.clone()),
-            id: Some(legacy_style.info.id.clone()),
-            default_locale: legacy_style.default_locale.clone(),
-            ..Default::default()
-        },
-        templates: None,
-        options: Some(options.clone()),
-        citation: Some({
-            CitationSpec {
-                options: citation_scope_options,
-                use_preset: None,
-                template: Some(new_cit),
-                wrap: citation_wrap,
-                prefix: citation_prefix,
-                suffix: citation_suffix,
-                delimiter: citation_delimiter,
-                multi_cite_delimiter: legacy_style.citation.layout.delimiter.clone(),
-                subsequent: citation_subsequent_override.map(|template| {
-                    Box::new(CitationSpec {
-                        template: Some(template),
-                        ..Default::default()
-                    })
-                }),
-                ibid: citation_ibid_override.map(|template| {
-                    Box::new(CitationSpec {
-                        template: Some(template),
-                        ..Default::default()
-                    })
-                }),
+    let style = {
+        let citation_scope_options =
+            citation_contributor_overrides.map(|contributors| citum_schema::options::Config {
+                contributors: Some(contributors),
                 ..Default::default()
-            }
-        }),
-        bibliography: Some(BibliographySpec {
-            options: bibliography_scope_options,
-            use_preset: None,
-            template: Some(new_bib),
-            type_templates,
-            sort: bibliography_sort,
+            });
+
+        let bibliography_scope_options =
+            bibliography_contributor_overrides.map(|contributors| citum_schema::options::Config {
+                contributors: Some(contributors),
+                ..Default::default()
+            });
+
+        let bibliography_sort = resolve_migrated_bibliography_sort(
+            options.processing.as_ref(),
+            legacy_style
+                .bibliography
+                .as_ref()
+                .and_then(|bib| bib.sort.as_ref()),
+        );
+
+        Style {
+            info: StyleInfo {
+                title: Some(legacy_style.info.title.clone()),
+                id: Some(legacy_style.info.id.clone()),
+                default_locale: legacy_style.default_locale.clone(),
+                ..Default::default()
+            },
+            templates: None,
+            options: Some(options),
+            citation: Some({
+                CitationSpec {
+                    options: citation_scope_options,
+                    use_preset: None,
+                    template: Some(new_cit),
+                    wrap: citation_wrap,
+                    prefix: citation_prefix,
+                    suffix: citation_suffix,
+                    delimiter: citation_delimiter,
+                    multi_cite_delimiter: legacy_style.citation.layout.delimiter.clone(),
+                    subsequent: citation_subsequent_override.map(|template| {
+                        Box::new(CitationSpec {
+                            template: Some(template),
+                            ..Default::default()
+                        })
+                    }),
+                    ibid: citation_ibid_override.map(|template| {
+                        Box::new(CitationSpec {
+                            template: Some(template),
+                            ..Default::default()
+                        })
+                    }),
+                    ..Default::default()
+                }
+            }),
+            bibliography: Some(BibliographySpec {
+                options: bibliography_scope_options,
+                use_preset: None,
+                template: Some(new_bib),
+                type_templates,
+                sort: bibliography_sort,
+                ..Default::default()
+            }),
             ..Default::default()
-        }),
-        ..Default::default()
+        }
     };
 
+    output_style_and_debug(&style, cli.debug_variable.as_deref(), &tracker)?;
+    Ok(())
+}
+
+fn output_style_and_debug(
+    style: &Style,
+    debug_variable: Option<&str>,
+    tracker: &ProvenanceTracker,
+) -> Result<(), Box<dyn std::error::Error>> {
     // Output YAML to stdout
-    let yaml = serde_yaml::to_string(&style)?;
+    let yaml = serde_yaml::to_string(style)?;
     println!("{}", yaml);
 
     // Output debug information if requested
     if let Some(var_name) = debug_variable {
         eprintln!("\n");
         eprintln!("=== PROVENANCE DEBUG ===\n");
-        let debug_output = DebugOutputFormatter::format_variable(&tracker, &var_name);
+        let debug_output = DebugOutputFormatter::format_variable(tracker, var_name);
         eprint!("{}", debug_output);
     }
 
@@ -608,10 +387,357 @@ fn compile_citation_position_override(
     }
 }
 
+fn record_template_placements_if_enabled(
+    new_bib: &[TemplateComponent],
+    enable_provenance: bool,
+    tracker: &ProvenanceTracker,
+) {
+    if !enable_provenance {
+        return;
+    }
+    for (index, component) in new_bib.iter().enumerate() {
+        match component {
+            TemplateComponent::Variable(v) => {
+                let var_name = format!("{:?}", v.variable).to_lowercase();
+                tracker.record_template_placement(
+                    &var_name,
+                    index,
+                    "bibliography.template",
+                    "Variable",
+                );
+            }
+            TemplateComponent::Number(n) => {
+                let var_name = format!("{:?}", n.number).to_lowercase();
+                tracker.record_template_placement(
+                    &var_name,
+                    index,
+                    "bibliography.template",
+                    "Number",
+                );
+            }
+            TemplateComponent::Date(d) => {
+                let var_name = format!("{:?}", d.date).to_lowercase();
+                tracker.record_template_placement(
+                    &var_name,
+                    index,
+                    "bibliography.template",
+                    "Date",
+                );
+            }
+            TemplateComponent::Title(t) => {
+                let var_name = format!("{:?}", t.title).to_lowercase();
+                tracker.record_template_placement(
+                    &var_name,
+                    index,
+                    "bibliography.template",
+                    "Title",
+                );
+            }
+            TemplateComponent::Contributor(_) => {
+                tracker.record_template_placement(
+                    "contributor",
+                    index,
+                    "bibliography.template",
+                    "Contributor",
+                );
+            }
+            _ => {}
+        }
+    }
+}
+
+fn override_bibliography_options_if_inferred(
+    resolved: &template_resolver::ResolvedTemplates,
+    legacy_style: &csl_legacy::model::Style,
+    options: &mut citum_schema::options::Config,
+) {
+    // Override bibliography options with inferred values when available.
+    // The XML options extractor often gets the wrong delimiter because it reads group
+    // delimiters rather than rendered output.
+    if let Some(ref resolved_bib) = resolved.bibliography {
+        let is_inferred_source = matches!(
+            resolved_bib.source,
+            template_resolver::TemplateSource::InferredCached(_)
+                | template_resolver::TemplateSource::InferredLive
+        );
+        let allow_bib_punctuation_override = !(legacy_style.class == "note" && is_inferred_source);
+
+        if allow_bib_punctuation_override {
+            if let Some(ref delim) = resolved_bib.delimiter {
+                eprintln!("  Overriding bibliography separator: {:?}", delim);
+                let bib_cfg = options.bibliography.get_or_insert_with(Default::default);
+                bib_cfg.separator = Some(delim.clone());
+            }
+
+            if let Some(ref suffix) = resolved_bib.entry_suffix {
+                eprintln!("  Overriding bibliography entry suffix: {:?}", suffix);
+                let bib_cfg = options.bibliography.get_or_insert_with(Default::default);
+                bib_cfg.entry_suffix = Some(suffix.clone());
+            }
+        } else {
+            eprintln!(
+                "  Skipping inferred bibliography separator/entry-suffix override for note style."
+            );
+        }
+    }
+}
+
+fn resolve_citation_metadata(
+    resolved: &template_resolver::ResolvedTemplates,
+    legacy_style: &csl_legacy::model::Style,
+    options: &citum_schema::options::Config,
+    new_cit: &mut Vec<TemplateComponent>,
+) -> (
+    Option<citum_schema::template::WrapPunctuation>,
+    Option<String>,
+    Option<String>,
+    Option<String>,
+) {
+    let (mut citation_wrap, mut citation_prefix, mut citation_suffix) =
+        analysis::citation::infer_citation_wrapping(&legacy_style.citation.layout);
+    let mut citation_delimiter = analysis::citation::extract_citation_delimiter(
+        &legacy_style.citation.layout,
+        &legacy_style.macros,
+    );
+
+    // Output-driven citation metadata is higher fidelity than XML analysis when available.
+    if let Some(ref resolved_cit) = resolved.citation {
+        if let Some(ref wrap) = resolved_cit.wrap {
+            citation_wrap = Some(wrap.clone());
+            citation_prefix = None;
+            citation_suffix = None;
+        }
+        if let Some(ref delim) = resolved_cit.delimiter {
+            citation_delimiter = Some(delim.clone());
+        }
+    }
+
+    // Numeric citation fixups informed by migration quality runs:
+    // - Keep locator labels when legacy style has a citation-locator macro.
+    // - Preserve per-item wrapping for grouped numeric layouts (e.g., IEEE).
+    if matches!(
+        options.processing,
+        Some(citum_schema::options::Processing::Numeric)
+    ) {
+        ensure_numeric_locator_citation_component(&legacy_style.citation.layout, new_cit);
+        normalize_wrapped_numeric_locator_citation_component(
+            &legacy_style.citation.layout,
+            new_cit,
+            &mut citation_delimiter,
+        );
+        move_group_wrap_to_citation_items(
+            &legacy_style.citation.layout,
+            new_cit,
+            &mut citation_wrap,
+        );
+    } else if legacy_style.class == "in-text" {
+        normalize_author_date_locator_citation_component(
+            &legacy_style.citation.layout,
+            &legacy_style.macros,
+            new_cit,
+        );
+    }
+
+    (
+        citation_wrap,
+        citation_prefix,
+        citation_suffix,
+        citation_delimiter,
+    )
+}
+
+fn postprocess_inferred_bibliography(
+    new_bib: &mut Vec<TemplateComponent>,
+    type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+    legacy_style: &csl_legacy::model::Style,
+) {
+    // Output-driven inference can leak literal sample years into prefixes
+    // (e.g., " 2023 " in titles, "; 2006; " in page prefixes).
+    // Strip those artifacts while keeping component structure intact.
+    for component in &mut *new_bib {
+        scrub_inferred_literal_artifacts(component);
+    }
+    relax_inferred_bibliography_date_suppression(new_bib);
+    if let Some(type_templates) = type_templates.as_mut() {
+        for template in type_templates.values_mut() {
+            for component in template.iter_mut() {
+                scrub_inferred_literal_artifacts(component);
+            }
+            relax_inferred_bibliography_date_suppression(template);
+        }
+    }
+    normalize_legal_case_type_template(legacy_style, type_templates);
+    ensure_inferred_media_type_templates(legacy_style, type_templates, new_bib);
+    ensure_inferred_patent_type_template(legacy_style, type_templates, new_bib);
+}
+
+fn validate_and_normalize_inferred_citations(
+    resolved: &mut template_resolver::ResolvedTemplates,
+    options: &citum_schema::options::Config,
+    legacy_style: &csl_legacy::model::Style,
+    style_name: &str,
+    citation_has_scope_shorten: bool,
+) {
+    // Validate inferred citation templates
+    if let Some(resolved_cit) = resolved.citation.as_ref() {
+        let is_inferred_source = matches!(
+            resolved_cit.source,
+            template_resolver::TemplateSource::InferredCached(_)
+                | template_resolver::TemplateSource::InferredLive
+        );
+        if is_inferred_source {
+            let reject_reason = if resolved_cit.template.is_empty() {
+                Some("empty citation template")
+            } else if matches!(
+                options.processing,
+                Some(citum_schema::options::Processing::Numeric)
+            ) && !citation_template_has_citation_number(&resolved_cit.template)
+            {
+                Some("numeric style citation template missing citation-number")
+            } else if legacy_style.class == "note"
+                && note_citation_template_is_underfit(&resolved_cit.template)
+            {
+                Some("note style citation template is contributor-only underfit")
+            } else {
+                None
+            };
+            if let Some(reason) = reject_reason {
+                eprintln!(
+                    "Rejecting inferred citation template for {}: {}. Falling back to XML citation template.",
+                    style_name, reason
+                );
+                resolved.citation = None;
+            }
+        }
+    }
+
+    // Normalize author-year citations
+    let should_normalize = legacy_style.class == "note"
+        || matches!(
+            options.processing,
+            Some(citum_schema::options::Processing::AuthorDate)
+        );
+
+    if should_normalize && let Some(resolved_cit) = resolved.citation.as_mut() {
+        let is_inferred_source = matches!(
+            resolved_cit.source,
+            template_resolver::TemplateSource::InferredCached(_)
+                | template_resolver::TemplateSource::InferredLive
+        );
+        if is_inferred_source
+            && citation_template_is_author_year_only(&resolved_cit.template)
+            && normalize_contributor_form_to_short(&mut resolved_cit.template)
+        {
+            eprintln!(
+                "Normalized citation contributor form to short for {} (author-year inferred citation template).",
+                style_name
+            );
+        }
+    }
+
+    // Normalize in-text author-date citations
+    if legacy_style.class == "in-text"
+        && let Some(resolved_cit) = resolved.citation.as_mut()
+    {
+        let is_inferred_source = matches!(
+            resolved_cit.source,
+            template_resolver::TemplateSource::InferredCached(_)
+                | template_resolver::TemplateSource::InferredLive
+        );
+        let is_author_year_shape = citation_template_is_author_year_only(&resolved_cit.template)
+            && !citation_template_has_citation_number(&resolved_cit.template);
+        if is_inferred_source
+            && is_author_year_shape
+            && normalize_author_date_inferred_contributors(
+                &mut resolved_cit.template,
+                citation_has_scope_shorten,
+            )
+        {
+            eprintln!(
+                "Normalized inferred author-date citation contributors for {} (family-short + scoped shorten).",
+                style_name
+            );
+        }
+    }
+}
+
+fn apply_author_date_bibliography_passes(
+    new_bib: &mut Vec<TemplateComponent>,
+    options: &mut citum_schema::options::Config,
+    style_preset: Option<preset_detector::StylePreset>,
+) {
+    // Detect if the style uses space prefix for volume (Elsevier pattern)
+    let volume_list_has_space_prefix = new_bib.iter().any(|c| {
+        if let TemplateComponent::List(list) = c {
+            let has_volume = list.items.iter().any(|item| {
+                matches!(item, TemplateComponent::Number(n) if n.number == NumberVariable::Volume)
+            });
+            if has_volume {
+                // Check if the List has a space-only prefix
+                return list.rendering.prefix.as_deref() == Some(" ");
+            }
+        }
+        false
+    });
+
+    // Add type-specific overrides (recursively to handle nested Lists)
+    // Pass the extracted volume-pages delimiter for journal article pages
+    let vol_pages_delim = options.volume_pages_delimiter.clone();
+    for component in &mut *new_bib {
+        apply_type_overrides(
+            component,
+            vol_pages_delim.clone(),
+            volume_list_has_space_prefix,
+            style_preset,
+        );
+    }
+
+    // Move DOI/URL to the end of the bibliography template.
+    passes::reorder::move_access_components_to_end(new_bib);
+
+    // Ensure publisher and publisher-place are unsuppressed for chapters
+    passes::reorder::unsuppress_for_type(new_bib, "chapter");
+    passes::reorder::unsuppress_for_type(new_bib, "paper-conference");
+    passes::reorder::unsuppress_for_type(new_bib, "thesis");
+    passes::reorder::unsuppress_for_type(new_bib, "document");
+
+    // Remove duplicate titles from Lists that already appear at top level.
+    passes::deduplicate::deduplicate_titles_in_lists(new_bib);
+
+    // Suppress variables that appear in multiple sibling lists (enforce variable-once rule).
+    passes::deduplicate::deduplicate_variables_cross_lists(new_bib);
+
+    // Propagate type-specific overrides within Lists.
+    passes::reorder::propagate_list_overrides(new_bib);
+
+    // Remove duplicate nested Lists that have identical contents.
+    passes::deduplicate::deduplicate_nested_lists(new_bib);
+
+    // Reorder serial components: container-title before volume.
+    passes::reorder::reorder_serial_components(new_bib);
+
+    // Combine volume and issue into a grouped structure: volume(issue)
+    passes::grouping::group_volume_and_issue(new_bib, options, style_preset);
+
+    // Move pages to after the container-title/volume List for serial types.
+    passes::reorder::reorder_pages_for_serials(new_bib);
+
+    // Reorder publisher-place for Chicago journal articles.
+    passes::reorder::reorder_publisher_place_for_chicago(new_bib, style_preset);
+
+    // Reorder chapters for APA: "In " prefix + editors before book title
+    passes::reorder::reorder_chapters_for_apa(new_bib, style_preset);
+
+    // Reorder chapters for Chicago: "In" prefix + book title before editors
+    passes::reorder::reorder_chapters_for_chicago(new_bib, style_preset);
+
+    // Fix Chicago issue placement
+    passes::deduplicate::suppress_duplicate_issue_for_journals(new_bib, style_preset);
+}
+
 /// Run the full XML compilation pipeline for bibliography and citation templates.
 /// This is the fallback when no hand-authored or inferred template is available.
 #[allow(clippy::type_complexity)]
-#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 fn compile_from_xml(
     legacy_style: &csl_legacy::model::Style,
     options: &mut citum_schema::options::Config,
@@ -703,58 +829,7 @@ fn compile_from_xml(
         ),
     };
 
-    // Record template placements if provenance tracking is enabled
-    if enable_provenance {
-        for (index, component) in new_bib.iter().enumerate() {
-            match component {
-                TemplateComponent::Variable(v) => {
-                    let var_name = format!("{:?}", v.variable).to_lowercase();
-                    tracker.record_template_placement(
-                        &var_name,
-                        index,
-                        "bibliography.template",
-                        "Variable",
-                    );
-                }
-                TemplateComponent::Number(n) => {
-                    let var_name = format!("{:?}", n.number).to_lowercase();
-                    tracker.record_template_placement(
-                        &var_name,
-                        index,
-                        "bibliography.template",
-                        "Number",
-                    );
-                }
-                TemplateComponent::Date(d) => {
-                    let var_name = format!("{:?}", d.date).to_lowercase();
-                    tracker.record_template_placement(
-                        &var_name,
-                        index,
-                        "bibliography.template",
-                        "Date",
-                    );
-                }
-                TemplateComponent::Title(t) => {
-                    let var_name = format!("{:?}", t.title).to_lowercase();
-                    tracker.record_template_placement(
-                        &var_name,
-                        index,
-                        "bibliography.template",
-                        "Title",
-                    );
-                }
-                TemplateComponent::Contributor(_) => {
-                    tracker.record_template_placement(
-                        "contributor",
-                        index,
-                        "bibliography.template",
-                        "Contributor",
-                    );
-                }
-                _ => {}
-            }
-        }
-    }
+    record_template_placements_if_enabled(&new_bib, enable_provenance, tracker);
 
     // Apply author suffix extracted from original CSL (lost during macro inlining)
     analysis::bibliography::apply_author_suffix(&mut new_bib, author_suffix);
@@ -784,73 +859,7 @@ fn compile_from_xml(
     }
 
     if is_in_text_class && is_author_date_processing {
-        // Detect if the style uses space prefix for volume (Elsevier pattern)
-        let volume_list_has_space_prefix = new_bib.iter().any(|c| {
-            if let TemplateComponent::List(list) = c {
-                let has_volume = list.items.iter().any(|item| {
-                    matches!(item, TemplateComponent::Number(n) if n.number == NumberVariable::Volume)
-                });
-                if has_volume {
-                    // Check if the List has a space-only prefix
-                    return list.rendering.prefix.as_deref() == Some(" ");
-                }
-            }
-            false
-        });
-
-        // Add type-specific overrides (recursively to handle nested Lists)
-        // Pass the extracted volume-pages delimiter for journal article pages
-        let vol_pages_delim = options.volume_pages_delimiter.clone();
-        for component in &mut new_bib {
-            apply_type_overrides(
-                component,
-                vol_pages_delim.clone(),
-                volume_list_has_space_prefix,
-                style_preset,
-            );
-        }
-
-        // Move DOI/URL to the end of the bibliography template.
-        passes::reorder::move_access_components_to_end(&mut new_bib);
-
-        // Ensure publisher and publisher-place are unsuppressed for chapters
-        passes::reorder::unsuppress_for_type(&mut new_bib, "chapter");
-        passes::reorder::unsuppress_for_type(&mut new_bib, "paper-conference");
-        passes::reorder::unsuppress_for_type(&mut new_bib, "thesis");
-        passes::reorder::unsuppress_for_type(&mut new_bib, "document");
-
-        // Remove duplicate titles from Lists that already appear at top level.
-        passes::deduplicate::deduplicate_titles_in_lists(&mut new_bib);
-
-        // Suppress variables that appear in multiple sibling lists (enforce variable-once rule).
-        passes::deduplicate::deduplicate_variables_cross_lists(&mut new_bib);
-
-        // Propagate type-specific overrides within Lists.
-        passes::reorder::propagate_list_overrides(&mut new_bib);
-
-        // Remove duplicate nested Lists that have identical contents.
-        passes::deduplicate::deduplicate_nested_lists(&mut new_bib);
-
-        // Reorder serial components: container-title before volume.
-        passes::reorder::reorder_serial_components(&mut new_bib);
-
-        // Combine volume and issue into a grouped structure: volume(issue)
-        passes::grouping::group_volume_and_issue(&mut new_bib, options, style_preset);
-
-        // Move pages to after the container-title/volume List for serial types.
-        passes::reorder::reorder_pages_for_serials(&mut new_bib);
-
-        // Reorder publisher-place for Chicago journal articles.
-        passes::reorder::reorder_publisher_place_for_chicago(&mut new_bib, style_preset);
-
-        // Reorder chapters for APA: "In " prefix + editors before book title
-        passes::reorder::reorder_chapters_for_apa(&mut new_bib, style_preset);
-
-        // Reorder chapters for Chicago: "In" prefix + book title before editors
-        passes::reorder::reorder_chapters_for_chicago(&mut new_bib, style_preset);
-
-        // Fix Chicago issue placement
-        passes::deduplicate::suppress_duplicate_issue_for_journals(&mut new_bib, style_preset);
+        apply_author_date_bibliography_passes(&mut new_bib, options, style_preset);
     }
 
     let type_templates_opt = if type_templates.is_empty() {
@@ -867,19 +876,151 @@ fn compile_from_xml(
     )
 }
 
-#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
-fn apply_type_overrides(
-    component: &mut TemplateComponent,
-    volume_pages_delimiter: Option<DelimiterPunctuation>,
+fn log_template_sources(resolved: &template_resolver::ResolvedTemplates) {
+    if let Some(ref resolved_bib) = resolved.bibliography {
+        eprintln!("Using {} bibliography template", resolved_bib.source);
+        if let Some(conf) = resolved_bib.confidence {
+            eprintln!("  bibliography confidence: {:.0}%", conf * 100.0);
+        }
+    } else {
+        eprintln!(
+            "Using {} bibliography template",
+            template_resolver::TemplateSource::XmlCompiled
+        );
+    }
+
+    if let Some(ref resolved_cit) = resolved.citation {
+        eprintln!("Using {} citation template", resolved_cit.source);
+        if let Some(conf) = resolved_cit.confidence {
+            eprintln!("  citation confidence: {:.0}%", conf * 100.0);
+        }
+    } else {
+        eprintln!(
+            "Using {} citation template",
+            template_resolver::TemplateSource::XmlCompiled
+        );
+    }
+}
+
+#[allow(clippy::type_complexity)]
+fn select_and_process_bibliography_template(
+    resolved: &template_resolver::ResolvedTemplates,
+    xml_fallback: &Option<(
+        Vec<TemplateComponent>,
+        Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+        Vec<TemplateComponent>,
+        CitationPositionOverrides,
+    )>,
+    legacy_style: &csl_legacy::model::Style,
+) -> (
+    Vec<TemplateComponent>,
+    Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+    bool,
+) {
+    let (mut new_bib, mut type_templates, inferred_bib_source) =
+        if let Some(ref resolved_bib) = resolved.bibliography {
+            let inferred_bib = matches!(
+                resolved_bib.source,
+                template_resolver::TemplateSource::InferredCached(_)
+                    | template_resolver::TemplateSource::InferredLive
+            );
+
+            let merged_type_templates = if inferred_bib {
+                xml_fallback
+                    .as_ref()
+                    .and_then(|(_, type_templates, _, _)| type_templates.clone())
+                    .map(|type_templates| {
+                        type_templates
+                            .into_iter()
+                            .filter(|(selector, type_template)| {
+                                selector.type_names().iter().any(|type_name| {
+                                    should_merge_inferred_type_template(
+                                        type_name,
+                                        &resolved_bib.template,
+                                        type_template,
+                                    )
+                                })
+                            })
+                            .collect::<std::collections::HashMap<_, _>>()
+                    })
+                    .filter(|m| !m.is_empty())
+            } else {
+                None
+            };
+
+            (
+                resolved_bib.template.clone(),
+                merged_type_templates,
+                inferred_bib,
+            )
+        } else {
+            let (new_bib, type_templates, _, _) = xml_fallback
+                .as_ref()
+                .expect("XML fallback must exist when bibliography is unresolved");
+            (new_bib.clone(), type_templates.clone(), false)
+        };
+
+    if inferred_bib_source {
+        postprocess_inferred_bibliography(&mut new_bib, &mut type_templates, legacy_style);
+    }
+
+    (new_bib, type_templates, inferred_bib_source)
+}
+
+#[allow(clippy::type_complexity)]
+fn select_citation_template(
+    resolved: &template_resolver::ResolvedTemplates,
+    xml_fallback: &Option<(
+        Vec<TemplateComponent>,
+        Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+        Vec<TemplateComponent>,
+        CitationPositionOverrides,
+    )>,
+    inferred_bib_source: bool,
+    legacy_style: &csl_legacy::model::Style,
+    type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+) -> (
+    Vec<TemplateComponent>,
+    Option<Vec<TemplateComponent>>,
+    Option<Vec<TemplateComponent>>,
+) {
+    let mut citation_subsequent_override: Option<Vec<TemplateComponent>> = None;
+    let mut citation_ibid_override: Option<Vec<TemplateComponent>> = None;
+    let new_cit = if let Some(ref resolved_cit) = resolved.citation {
+        resolved_cit.template.clone()
+    } else {
+        let (_, _, new_cit, citation_overrides) = xml_fallback
+            .as_ref()
+            .expect("XML fallback must exist when citation is unresolved");
+        citation_subsequent_override = citation_overrides.subsequent.clone();
+        citation_ibid_override = citation_overrides.ibid.clone();
+        new_cit.clone()
+    };
+
+    if inferred_bib_source {
+        ensure_personal_communication_omitted(legacy_style, &new_cit, type_templates);
+    }
+
+    (
+        new_cit,
+        citation_subsequent_override,
+        citation_ibid_override,
+    )
+}
+
+fn apply_title_type_overrides(
+    t: &mut TemplateComponent,
     volume_list_has_space_prefix: bool,
     style_preset: Option<preset_detector::StylePreset>,
 ) {
+    let TemplateComponent::Title(title) = t else {
+        return;
+    };
     use preset_detector::StylePreset;
-    match component {
-        // Primary title: style-specific suffix for articles
-        TemplateComponent::Title(t) if t.title == TitleType::Primary => {
+    match title.title {
+        TitleType::Primary => {
             if matches!(style_preset, Some(StylePreset::Apa)) {
-                let overrides = t.overrides.get_or_insert_with(Default::default);
+                let overrides = title.overrides.get_or_insert_with(Default::default);
                 merge_type_rendering(
                     overrides,
                     "article-journal",
@@ -890,10 +1031,9 @@ fn apply_type_overrides(
                 );
             }
         }
-        // Container-title (parent-monograph): style-specific unsuppression
-        TemplateComponent::Title(t) if t.title == TitleType::ParentMonograph => {
+        TitleType::ParentMonograph => {
             if matches!(style_preset, Some(StylePreset::Apa)) {
-                let overrides = t.overrides.get_or_insert_with(Default::default);
+                let overrides = title.overrides.get_or_insert_with(Default::default);
                 merge_type_rendering(
                     overrides,
                     "paper-conference",
@@ -904,25 +1044,16 @@ fn apply_type_overrides(
                 );
             }
         }
-        // Container-title (parent-serial): style-specific suffix and unsuppression
-        // - APA: comma suffix, no prefix
-        // - Chicago: space suffix (prevents default period separator)
-        // - Elsevier: space prefix (handled by List), no suffix needed
-        TemplateComponent::Title(t) if t.title == TitleType::ParentSerial => {
+        TitleType::ParentSerial => {
             let is_chicago = matches!(style_preset, Some(StylePreset::Chicago));
-
-            // Always unsuppress article-journal (journal title must show)
             let suffix = if volume_list_has_space_prefix {
-                // Elsevier: no suffix, spacing handled by List prefix
                 None
             } else if is_chicago {
                 Some(" ".to_string())
             } else {
-                // APA: comma suffix
                 Some(",".to_string())
             };
-
-            let overrides = t.overrides.get_or_insert_with(Default::default);
+            let overrides = title.overrides.get_or_insert_with(Default::default);
             merge_type_rendering(
                 overrides,
                 "article-journal",
@@ -932,7 +1063,6 @@ fn apply_type_overrides(
                     ..Default::default()
                 },
             );
-            // Ensure paper-conference shows container title (proceedings name)
             merge_type_rendering(
                 overrides,
                 "paper-conference",
@@ -942,6 +1072,20 @@ fn apply_type_overrides(
                     ..Default::default()
                 },
             );
+        }
+        _ => {}
+    }
+}
+
+fn apply_type_overrides(
+    component: &mut TemplateComponent,
+    volume_pages_delimiter: Option<DelimiterPunctuation>,
+    volume_list_has_space_prefix: bool,
+    style_preset: Option<preset_detector::StylePreset>,
+) {
+    match component {
+        TemplateComponent::Title(_) => {
+            apply_title_type_overrides(component, volume_list_has_space_prefix, style_preset);
         }
         // Publisher: suppress for journal articles (journals don't have publishers in bib)
         TemplateComponent::Variable(v) if v.variable == SimpleVariable::Publisher => {
