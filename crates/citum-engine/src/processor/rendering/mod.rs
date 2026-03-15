@@ -6,8 +6,7 @@
 
 use crate::error::ProcessorError;
 use crate::reference::{Bibliography, Reference};
-use crate::render::{ProcTemplate, ProcTemplateComponent};
-use crate::values::range::{ConsecutiveSegment, consecutive_segments};
+use crate::render::ProcTemplateComponent;
 use crate::values::{ComponentValues, ProcHints, RenderContext, RenderOptions};
 use citum_schema::citation::{CitationLocator, LocatorSegment, LocatorType};
 use citum_schema::locale::{Locale, TermForm};
@@ -67,7 +66,6 @@ fn collapse_compound_locator(segments: &[LocatorSegment], locale: &Locale) -> St
                 .or_else(|| locale.locator_term(&seg.label, plural, TermForm::Symbol))
                 .map(|t| t.to_string())
                 .unwrap_or_else(|| {
-                    // Fall back to serde kebab-case name for user-facing output
                     serde_json::to_value(seg.label)
                         .ok()
                         .and_then(|v| v.as_str().map(String::from))
@@ -99,6 +97,7 @@ fn resolve_item_locator(
     }
 }
 
+mod collapse;
 mod grouped;
 mod helpers;
 
@@ -281,178 +280,6 @@ impl<'a> Renderer<'a> {
         } else {
             prefix.to_string()
         }
-    }
-
-    fn collapse_numeric_citation_chunks(
-        &self,
-        chunks: Vec<(Vec<String>, String)>,
-    ) -> Vec<(Vec<String>, String)> {
-        let citation_numbers = self.citation_numbers.borrow();
-        let mut collapsed = Vec::new();
-        let mut i = 0;
-
-        while i < chunks.len() {
-            let Some(ref_id) = chunks[i].0.first() else {
-                collapsed.push(chunks[i].clone());
-                i += 1;
-                continue;
-            };
-            if chunks[i].0.len() != 1 {
-                collapsed.push(chunks[i].clone());
-                i += 1;
-                continue;
-            }
-            let Some(&citation_number) = citation_numbers.get(ref_id) else {
-                collapsed.push(chunks[i].clone());
-                i += 1;
-                continue;
-            };
-            if chunks[i].1 != citation_number.to_string() {
-                collapsed.push(chunks[i].clone());
-                i += 1;
-                continue;
-            }
-
-            let mut j = i;
-            let mut block_ids = Vec::new();
-            let mut end_number = citation_number;
-
-            while j < chunks.len() {
-                let Some(candidate_id) = chunks[j].0.first() else {
-                    break;
-                };
-                if chunks[j].0.len() != 1 {
-                    break;
-                }
-                let Some(&candidate_number) = citation_numbers.get(candidate_id) else {
-                    break;
-                };
-                if chunks[j].1 != candidate_number.to_string() {
-                    break;
-                }
-                if !block_ids.is_empty() && candidate_number != end_number + 1 {
-                    break;
-                }
-
-                block_ids.push(candidate_id.clone());
-                end_number = candidate_number;
-                j += 1;
-            }
-
-            if block_ids.len() < 2 {
-                collapsed.push(chunks[i].clone());
-                i += 1;
-                continue;
-            }
-
-            collapsed.push((block_ids, format!("{citation_number}–{end_number}")));
-            i = j;
-        }
-
-        collapsed
-    }
-
-    fn collapse_compound_citation_chunks(
-        &self,
-        chunks: Vec<(Vec<String>, String)>,
-    ) -> Vec<(Vec<String>, String)> {
-        let Some(compound) = self
-            .config
-            .bibliography
-            .as_ref()
-            .and_then(|b| b.compound_numeric.as_ref())
-        else {
-            return chunks;
-        };
-
-        if !matches!(
-            compound.sub_label,
-            citum_schema::options::bibliography::SubLabelStyle::Alphabetic
-        ) {
-            return chunks;
-        }
-
-        let citation_numbers = self.citation_numbers.borrow();
-        let mut collapsed = Vec::new();
-        let mut i = 0;
-
-        while i < chunks.len() {
-            let Some(ref_id) = chunks[i].0.first() else {
-                collapsed.push(chunks[i].clone());
-                i += 1;
-                continue;
-            };
-            let Some(group_id) = self.compound_set_by_ref.get(ref_id) else {
-                collapsed.push(chunks[i].clone());
-                i += 1;
-                continue;
-            };
-            let Some(&citation_number) = citation_numbers.get(ref_id) else {
-                collapsed.push(chunks[i].clone());
-                i += 1;
-                continue;
-            };
-
-            let mut j = i;
-            let mut block_ids = Vec::new();
-            let mut member_ordinals = Vec::new();
-
-            while j < chunks.len() {
-                let Some(candidate_id) = chunks[j].0.first() else {
-                    break;
-                };
-                if chunks[j].0.len() != 1
-                    || self.compound_set_by_ref.get(candidate_id) != Some(group_id)
-                    || citation_numbers.get(candidate_id).copied() != Some(citation_number)
-                {
-                    break;
-                }
-
-                let Some(member_index) = self.compound_member_index.get(candidate_id).copied()
-                else {
-                    break;
-                };
-                let expected = format!(
-                    "{}{}",
-                    citation_number,
-                    self.citation_sub_label_for_ref(candidate_id)
-                        .unwrap_or_default()
-                );
-                if chunks[j].1 != expected {
-                    break;
-                }
-
-                block_ids.push(candidate_id.clone());
-                member_ordinals.push((member_index + 1) as u32);
-                j += 1;
-            }
-
-            if block_ids.len() < 2 {
-                collapsed.push(chunks[i].clone());
-                i += 1;
-                continue;
-            }
-
-            let labels = consecutive_segments(&member_ordinals)
-                .into_iter()
-                .map(|segment| match segment {
-                    ConsecutiveSegment::Single(value) => {
-                        crate::values::int_to_letter(value).unwrap_or_default()
-                    }
-                    ConsecutiveSegment::Range { start, end } => {
-                        let start_label = crate::values::int_to_letter(start).unwrap_or_default();
-                        let end_label = crate::values::int_to_letter(end).unwrap_or_default();
-                        format!("{start_label}-{end_label}")
-                    }
-                })
-                .collect::<Vec<_>>()
-                .join(",");
-
-            collapsed.push((block_ids, format!("{citation_number}{labels}")));
-            i = j;
-        }
-
-        collapsed
     }
 
     /// Ensure suffix has proper spacing (add space if suffix doesn't start with
@@ -754,39 +581,31 @@ fn key_base(key: &str) -> String {
 pub fn get_variable_key(component: &TemplateComponent) -> Option<String> {
     use citum_schema::template::Rendering;
 
-    // Helper to create context suffix from rendering options
-    let context_suffix = |rendering: &Rendering| -> String {
+    fn context_suffix(rendering: &Rendering) -> String {
         match (&rendering.prefix, &rendering.suffix) {
             (Some(p), Some(s)) => format!(":{}_{}", p, s),
             (Some(p), None) => format!(":{}", p),
             (None, Some(s)) => format!(":{}", s),
             (None, None) => String::new(),
         }
-    };
+    }
+
+    fn make_key(kind: &str, value: impl std::fmt::Debug, ctx: String) -> Option<String> {
+        Some(format!("{}:{:?}{}", kind, value, ctx))
+    }
 
     match component {
         TemplateComponent::Contributor(c) => {
-            let ctx = context_suffix(&c.rendering);
-            Some(format!("contributor:{:?}{}", c.contributor, ctx))
+            make_key("contributor", &c.contributor, context_suffix(&c.rendering))
         }
-        TemplateComponent::Date(d) => {
-            let ctx = context_suffix(&d.rendering);
-            Some(format!("date:{:?}{}", d.date, ctx))
-        }
+        TemplateComponent::Date(d) => make_key("date", &d.date, context_suffix(&d.rendering)),
         TemplateComponent::Variable(v) => {
-            let ctx = context_suffix(&v.rendering);
-            Some(format!("variable:{:?}{}", v.variable, ctx))
+            make_key("variable", &v.variable, context_suffix(&v.rendering))
         }
-        TemplateComponent::Title(t) => {
-            let ctx = context_suffix(&t.rendering);
-            Some(format!("title:{:?}{}", t.title, ctx))
-        }
-        TemplateComponent::Number(n) => {
-            let ctx = context_suffix(&n.rendering);
-            Some(format!("number:{:?}{}", n.number, ctx))
-        }
-        TemplateComponent::List(_) => None, // Lists contain multiple variables, not deduplicated
-        _ => None,                          // Future component types
+        TemplateComponent::Title(t) => make_key("title", &t.title, context_suffix(&t.rendering)),
+        TemplateComponent::Number(n) => make_key("number", &n.number, context_suffix(&n.rendering)),
+        TemplateComponent::List(_) => None,
+        _ => None,
     }
 }
 

@@ -1,4 +1,5 @@
 use super::*;
+use crate::render::ProcTemplate;
 
 struct GroupRenderState<'a> {
     first_item: &'a crate::reference::CitationItem,
