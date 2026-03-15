@@ -20,4 +20,5 @@ Extracted contributor.rs (1150L) into contributor/ dir:
 
 All 706 tests pass, clippy clean.
 
-## 2026-03-14\n- crates/citum-engine/src/ffi.rs (847→570 mod.rs + 252 biblatex.rs): extracted biblatex module, parse_c_str! macro, parse_bibliography_json/load_style_yaml helpers; 32.7% reduction in mod.rs
+## 2026-03-14
+- crates/citum-engine/src/ffi/mod.rs (847→570 + 252 biblatex.rs): extracted biblatex module, parse_c_str! macro, parse_bibliography_json/load_style_yaml helpers; 32.7% reduction in mod.rs
