@@ -1,0 +1,497 @@
+//! Name-formatting helpers for contributor rendering.
+
+use crate::values::{ProcHints, RenderContext, RenderOptions};
+use citum_schema::options::contributors::NameForm;
+use citum_schema::options::{
+    AndOptions, AndOtherOptions, DemoteNonDroppingParticle, DisplayAsSort, ShortenListOptions,
+};
+use citum_schema::template::{ContributorForm, NameOrder};
+
+/// Configuration for formatting a single name.
+pub(crate) struct NameFormatContext<'a> {
+    pub(crate) display_as_sort: Option<DisplayAsSort>,
+    pub(crate) name_order: Option<&'a NameOrder>,
+    pub(crate) initialize_with: Option<&'a String>,
+    pub(crate) initialize_with_hyphen: Option<bool>,
+    pub(crate) name_form: Option<NameForm>,
+    pub(crate) demote_ndp: Option<&'a DemoteNonDroppingParticle>,
+    pub(crate) sort_separator: Option<&'a String>,
+}
+
+/// Partition names into (first_names, use_et_al, last_names) based on et-al options.
+fn partition_et_al<'a>(
+    names: &'a [crate::reference::FlatName],
+    shorten: Option<&'a ShortenListOptions>,
+    hints: &'a ProcHints,
+) -> (
+    Vec<&'a crate::reference::FlatName>,
+    bool,
+    Vec<&'a crate::reference::FlatName>,
+) {
+    if let Some(opts) = shorten {
+        // Determine effective min/use_first based on citation position.
+        let is_subsequent = matches!(
+            hints.position,
+            Some(citum_schema::citation::Position::Subsequent)
+                | Some(citum_schema::citation::Position::Ibid)
+                | Some(citum_schema::citation::Position::IbidWithLocator)
+        );
+        let effective_min_threshold = if is_subsequent {
+            opts.subsequent_min.unwrap_or(opts.min) as usize
+        } else {
+            opts.min as usize
+        };
+        let effective_use_first = if is_subsequent {
+            opts.subsequent_use_first.unwrap_or(opts.use_first) as usize
+        } else {
+            opts.use_first as usize
+        };
+
+        // When min_names_to_show is set (name expansion disambiguation),
+        // determine effective threshold for et-al application.
+        let effective_min = if let Some(expanded) = hints.min_names_to_show {
+            expanded.max(effective_use_first)
+        } else {
+            effective_use_first
+        };
+
+        // Apply et-al only if the list exceeds the minimum threshold
+        if names.len() >= effective_min_threshold {
+            if effective_min >= names.len() {
+                (names.iter().collect::<Vec<_>>(), false, Vec::new())
+            } else {
+                let first: Vec<&crate::reference::FlatName> =
+                    names.iter().take(effective_min).collect();
+                let last: Vec<&crate::reference::FlatName> = if let Some(ul) = opts.use_last {
+                    let take_last = ul as usize;
+                    let skip = std::cmp::max(effective_min, names.len().saturating_sub(take_last));
+                    names.iter().skip(skip).collect()
+                } else {
+                    Vec::new()
+                };
+                (first, true, last)
+            }
+        } else {
+            (names.iter().collect::<Vec<_>>(), false, Vec::new())
+        }
+    } else {
+        (names.iter().collect::<Vec<_>>(), false, Vec::new())
+    }
+}
+
+/// Format a list of names according to style options.
+///
+/// # Panics
+///
+/// This function assumes the non-empty input check at the top remains in place;
+/// violating that invariant can trigger indexing or `unwrap()` panics in later
+/// formatting branches.
+#[allow(clippy::too_many_arguments)]
+pub fn format_names(
+    names: &[crate::reference::FlatName],
+    form: &ContributorForm,
+    options: &RenderOptions<'_>,
+    name_order: Option<&citum_schema::template::NameOrder>,
+    sort_separator_override: Option<&String>,
+    shorten_override: Option<&ShortenListOptions>,
+    and_override: Option<&AndOptions>,
+    initialize_with_override: Option<&String>,
+    hints: &ProcHints,
+) -> String {
+    if names.is_empty() {
+        return String::new();
+    }
+
+    let config = options.config.contributors.as_ref();
+    let locale = options.locale;
+
+    // Determine shortening options:
+    // 1. Use explicit override from template (e.g. bibliography et-al)
+    // 2. Else use global config
+    let shorten = shorten_override.or_else(|| config.and_then(|c| c.shorten.as_ref()));
+
+    let and_others = shorten
+        .map(|opts| opts.and_others)
+        .unwrap_or(AndOtherOptions::EtAl);
+
+    let (first_names, use_et_al, last_names) = partition_et_al(names, shorten, hints);
+
+    // Build format context once
+    let ctx = NameFormatContext {
+        display_as_sort: config.and_then(|c| c.display_as_sort),
+        name_order,
+        initialize_with: initialize_with_override
+            .or_else(|| config.and_then(|c| c.initialize_with.as_ref())),
+        initialize_with_hyphen: config.and_then(|c| c.initialize_with_hyphen),
+        name_form: config.and_then(|c| c.name_form),
+        demote_ndp: config.and_then(|c| c.demote_non_dropping_particle.as_ref()),
+        sort_separator: sort_separator_override
+            .or_else(|| config.and_then(|c| c.sort_separator.as_ref())),
+    };
+
+    let delimiter = config.and_then(|c| c.delimiter.as_deref()).unwrap_or(", ");
+
+    let formatted_first: Vec<String> = first_names
+        .iter()
+        .enumerate()
+        .map(|(i, name)| format_single_name(name, form, i, &ctx, hints.expand_given_names))
+        .collect();
+
+    let formatted_last: Vec<String> = last_names
+        .iter()
+        .enumerate()
+        .map(|(i, name)| {
+            let original_idx = names.len() - last_names.len() + i;
+            format_single_name(name, form, original_idx, &ctx, hints.expand_given_names)
+        })
+        .collect();
+
+    // Determine "and" setting: use override if provided, else global config
+    let and_option = and_override.or_else(|| config.and_then(|c| c.and.as_ref()));
+
+    // Determine conjunction between last two names
+    // Default (None or no config) means no conjunction, matching CSL behavior
+    let and_str = match and_option {
+        Some(AndOptions::Text) => Some(locale.and_term(false)),
+        Some(AndOptions::Symbol) => Some(locale.and_term(true)),
+        Some(AndOptions::None) | None => None, // No conjunction
+        _ => None,                             // Catch-all for future non_exhaustive variants
+    };
+    // When "et al." is applied, most styles expect comma-separated shown names
+    // before the abbreviation (e.g., "Smith, Jones, et al."), not a final
+    // conjunction ("Smith, Jones, and Brown, et al.").
+    let and_str = if use_et_al && formatted_last.is_empty() {
+        None
+    } else {
+        and_str
+    };
+
+    // Check if delimiter should precede last name (Oxford comma)
+    use citum_schema::options::DelimiterPrecedesLast;
+    let delimiter_precedes_last = config.and_then(|c| c.delimiter_precedes_last.as_ref());
+
+    let result = if formatted_first.len() == 1 {
+        formatted_first[0].clone()
+    } else if and_str.is_none() {
+        // No conjunction - just join all with delimiter
+        formatted_first.join(delimiter)
+    } else if formatted_first.len() == 2 {
+        let conjunction = and_str.as_ref().unwrap();
+        // For two names: citations don't use delimiter before conjunction,
+        // but bibliographies do (contextual Oxford comma).
+        let use_delimiter = if options.context == RenderContext::Bibliography {
+            // In bibliography, check delimiter-precedes-last setting
+            match delimiter_precedes_last {
+                Some(DelimiterPrecedesLast::Always) => true,
+                Some(DelimiterPrecedesLast::Never) => false,
+                Some(DelimiterPrecedesLast::Contextual) | None => true, // Default: use comma in bibliography
+                Some(DelimiterPrecedesLast::AfterInvertedName) => ctx
+                    .display_as_sort
+                    .as_ref()
+                    .is_some_and(|das| matches!(das, DisplayAsSort::All | DisplayAsSort::First)),
+            }
+        } else {
+            // In citations, never use delimiter before conjunction for 2 names
+            false
+        };
+
+        if use_delimiter {
+            format!(
+                "{}{}{} {}",
+                formatted_first[0], delimiter, conjunction, formatted_first[1]
+            )
+        } else {
+            format!(
+                "{} {} {}",
+                formatted_first[0], conjunction, formatted_first[1]
+            )
+        }
+    } else {
+        let and_str = and_str.unwrap();
+        let last = formatted_first.last().unwrap();
+        let rest = &formatted_first[..formatted_first.len() - 1];
+        // Check if delimiter should precede "and" (Oxford comma)
+        let use_delimiter = match delimiter_precedes_last {
+            Some(DelimiterPrecedesLast::Always) => true,
+            Some(DelimiterPrecedesLast::Never) => false,
+            Some(DelimiterPrecedesLast::Contextual) | None => true, // Default: comma for 3+ names
+            Some(DelimiterPrecedesLast::AfterInvertedName) => {
+                ctx.display_as_sort.as_ref().is_some_and(|das| {
+                    matches!(das, DisplayAsSort::All)
+                        || (matches!(das, DisplayAsSort::First) && first_names.len() == 1)
+                })
+            }
+        };
+        if use_delimiter {
+            format!("{}{}{} {}", rest.join(delimiter), delimiter, and_str, last)
+        } else {
+            format!("{} {} {}", rest.join(delimiter), and_str, last)
+        }
+    };
+
+    if use_et_al {
+        if !formatted_last.is_empty() {
+            // et-al-use-last: result + ellipsis + last names
+            // CSL typically uses an ellipsis (...) for this.
+            format!("{} … {}", result, formatted_last.join(delimiter))
+        } else {
+            // Determine delimiter before "et al." based on delimiter_precedes_et_al option
+            use citum_schema::options::DelimiterPrecedesLast;
+            let delimiter_precedes = config.and_then(|c| c.delimiter_precedes_et_al.as_ref());
+            let use_delimiter = match delimiter_precedes {
+                Some(DelimiterPrecedesLast::Always) => true,
+                Some(DelimiterPrecedesLast::Never) => false,
+                Some(DelimiterPrecedesLast::AfterInvertedName) => {
+                    // Use delimiter if last displayed name was inverted (family-first)
+                    ctx.display_as_sort.as_ref().is_some_and(|das| {
+                        matches!(das, DisplayAsSort::All)
+                            || (matches!(das, DisplayAsSort::First) && first_names.len() == 1)
+                    })
+                }
+                Some(DelimiterPrecedesLast::Contextual) | None => {
+                    // Default: use delimiter only if more than one name displayed
+                    first_names.len() > 1
+                }
+            };
+
+            let and_others_term = match and_others {
+                AndOtherOptions::EtAl => locale.et_al(),
+                AndOtherOptions::Text => locale.et_al().trim_end_matches('.'),
+            };
+
+            if use_delimiter {
+                format!("{}, {}", result, and_others_term)
+            } else {
+                format!("{} {}", result, and_others_term)
+            }
+        }
+    } else {
+        result
+    }
+}
+
+/// Initialize a given name by extracting initials.
+///
+/// Splits the given name on word separators (space, hyphen, non-breaking space),
+/// and converts each part to its first character followed by the initialize suffix.
+fn initialize_given_name(
+    given: &str,
+    initialize_with: Option<&String>,
+    initialize_with_hyphen: Option<bool>,
+) -> String {
+    let init = initialize_with.map(|s| s.as_str()).unwrap_or(". ");
+    let separators = if initialize_with_hyphen == Some(false) {
+        vec![' ', '\u{00A0}'] // Non-breaking space too
+    } else {
+        vec![' ', '-', '\u{00A0}']
+    };
+
+    let mut result = String::new();
+    let mut current_part = String::new();
+
+    for c in given.chars() {
+        if separators.contains(&c) {
+            if !current_part.is_empty() {
+                if let Some(first) = current_part.chars().next() {
+                    result.push(first);
+                    result.push_str(init);
+                }
+                current_part.clear();
+            }
+            // Preserve only non-whitespace separators (e.g., hyphen for J.-P.).
+            // Strip any trailing separator space before the hyphen so we get
+            // "J.-P." rather than "J. -P." when init contains a trailing space.
+            if !c.is_whitespace() {
+                let trimmed_len = result.trim_end().len();
+                result.truncate(trimmed_len);
+                result.push(c);
+            }
+        } else {
+            current_part.push(c);
+        }
+    }
+
+    if !current_part.is_empty()
+        && let Some(first) = current_part.chars().next()
+    {
+        result.push(first);
+        result.push_str(init);
+    }
+    result.trim().to_string()
+}
+
+/// Format a single name.
+pub(crate) fn format_single_name(
+    name: &crate::reference::FlatName,
+    form: &ContributorForm,
+    index: usize,
+    ctx: &NameFormatContext,
+    expand_given_names: bool,
+) -> String {
+    fn join_particle_family(particle: &str, family: &str) -> String {
+        if particle.ends_with('-') {
+            format!("{particle}{family}")
+        } else {
+            format!("{particle} {family}")
+        }
+    }
+
+    // Handle literal names (e.g., corporate authors)
+    if let Some(literal) = &name.literal {
+        return literal.clone();
+    }
+
+    let family = name.family.as_deref().unwrap_or("");
+    let given = name.given.as_deref().unwrap_or("");
+    let dp = name.dropping_particle.as_deref().unwrap_or("");
+    let ndp = name.non_dropping_particle.as_deref().unwrap_or("");
+    let suffix = name.suffix.as_deref().unwrap_or("");
+
+    // Determine if we should invert (Family, Given)
+    let inverted = match ctx.name_order {
+        Some(NameOrder::GivenFirst) => false,
+        Some(NameOrder::FamilyFirst) => true,
+        None => match ctx.display_as_sort {
+            Some(DisplayAsSort::All) => true,
+            Some(DisplayAsSort::First) => index == 0,
+            _ => false,
+        },
+    };
+
+    // Determine effective form
+    let effective_form = if expand_given_names && matches!(form, ContributorForm::Short) {
+        &ContributorForm::Long
+    } else {
+        form
+    };
+
+    match effective_form {
+        ContributorForm::FamilyOnly => {
+            // FamilyOnly form strictly outputs literally just the family name without non-dropping particles.
+            family.to_string()
+        }
+        ContributorForm::Short => {
+            // Short form usually just family name, but includes non-dropping particle
+            // e.g. "van Beethoven" (unless demoted? CSL spec says demote only affects sorting/display of full names mostly?)
+            // Spec: "demote-non-dropping-particle ... This attribute does not affect ... the short form"
+            // So for short form, we keep ndp with family.
+
+            if !ndp.is_empty() {
+                format!("{} {}", ndp, family)
+            } else {
+                family.to_string()
+            }
+        }
+        ContributorForm::Long | ContributorForm::Verb | ContributorForm::VerbShort => {
+            // Determine parts based on demotion
+            let demote = matches!(
+                ctx.demote_ndp,
+                Some(DemoteNonDroppingParticle::DisplayAndSort)
+            );
+
+            let family_part = if !ndp.is_empty() && !demote {
+                join_particle_family(ndp, family)
+            } else {
+                family.to_string()
+            };
+
+            // Determine how to render the given name based on NameForm.
+            // If name_form is None and initialize_with is present, treat as Initials for backward compat.
+            let effective_name_form = match ctx.name_form {
+                Some(f) => f,
+                None if ctx.initialize_with.is_some() => NameForm::Initials,
+                _ => NameForm::Full,
+            };
+
+            let given_part = match effective_name_form {
+                NameForm::FamilyOnly => String::new(),
+                NameForm::Initials => {
+                    initialize_given_name(given, ctx.initialize_with, ctx.initialize_with_hyphen)
+                }
+                NameForm::Full => given.to_string(),
+            };
+
+            // Construct particle part (dropping + demoted non-dropping)
+            let mut particle_part = String::new();
+            if !dp.is_empty() {
+                particle_part.push_str(dp);
+            }
+            if demote && !ndp.is_empty() {
+                if !particle_part.is_empty() {
+                    particle_part.push(' ');
+                }
+                particle_part.push_str(ndp);
+            }
+
+            if inverted {
+                // "Family, Given" format
+                // Family Part + sort_separator + Given Part + Particle Part + Suffix
+                let sep = ctx.sort_separator.map(|s| s.as_str()).unwrap_or(", ");
+                let mut suffix_part = String::new();
+                if !given_part.is_empty() {
+                    suffix_part.push_str(&given_part);
+                }
+                if !particle_part.is_empty() {
+                    if !suffix_part.is_empty() {
+                        suffix_part.push(' ');
+                    }
+                    suffix_part.push_str(&particle_part);
+                }
+                if !suffix.is_empty() {
+                    if !suffix_part.is_empty() {
+                        suffix_part.push(' ');
+                    }
+                    suffix_part.push_str(suffix);
+                }
+
+                if !suffix_part.is_empty() {
+                    format!("{}{}{}", family_part, sep, suffix_part)
+                } else {
+                    family_part
+                }
+            } else {
+                // "Given Family" format
+                // Given Part + Particle Part + Family Part + Suffix
+                let mut parts = Vec::new();
+                if !given_part.is_empty() {
+                    parts.push(given_part);
+                }
+                if !particle_part.is_empty() {
+                    parts.push(particle_part);
+                }
+                if !family_part.is_empty() {
+                    if let Some(last) = parts.last_mut()
+                        && last.ends_with('-')
+                    {
+                        last.push_str(&family_part);
+                    } else {
+                        parts.push(family_part);
+                    }
+                }
+                if !suffix.is_empty() {
+                    parts.push(suffix.to_string());
+                }
+
+                parts.join(" ")
+            }
+        }
+    }
+}
+
+/// Format contributors in short form for citation grouping.
+pub fn format_contributors_short(
+    names: &[crate::reference::FlatName],
+    options: &RenderOptions<'_>,
+) -> String {
+    format_names(
+        names,
+        &ContributorForm::Short,
+        options,
+        None,
+        None,
+        None,
+        None,
+        None,
+        &ProcHints::default(),
+    )
+}
