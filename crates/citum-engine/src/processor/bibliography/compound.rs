@@ -1,0 +1,212 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
+//! Compound-entry merging for numeric bibliography styles.
+
+use super::Processor;
+use crate::render::ProcEntry;
+use crate::render::bibliography::render_entry_body_with_format;
+use crate::render::component::ProcTemplateComponent;
+use crate::render::format::OutputFormat;
+use citum_schema::template::{NumberVariable, TemplateComponent};
+use indexmap::IndexMap;
+use std::collections::HashMap;
+
+impl Processor {
+    pub(super) fn compound_numeric_config(
+        &self,
+    ) -> Option<citum_schema::options::bibliography::CompoundNumericConfig> {
+        self.get_config()
+            .bibliography
+            .as_ref()
+            .and_then(|bibliography| bibliography.compound_numeric.as_ref())
+            .cloned()
+    }
+
+    pub(super) fn is_citation_number_label(component: &ProcTemplateComponent) -> bool {
+        matches!(
+            &component.template_component,
+            TemplateComponent::Number(number) if number.number == NumberVariable::CitationNumber
+        )
+    }
+
+    pub(super) fn build_compound_group_lookup(
+        compound_groups: &IndexMap<usize, Vec<String>>,
+    ) -> HashMap<String, usize> {
+        let mut ref_to_group = HashMap::new();
+        for (&group_number, ids) in compound_groups {
+            if ids.len() > 1 {
+                for id in ids {
+                    ref_to_group.insert(id.clone(), group_number);
+                }
+            }
+        }
+        ref_to_group
+    }
+
+    fn render_compound_entry_bodies<F>(entries: &[ProcEntry]) -> HashMap<String, String>
+    where
+        F: OutputFormat<Output = String>,
+    {
+        entries
+            .iter()
+            .map(|entry| {
+                let content_entry = ProcEntry {
+                    id: entry.id.clone(),
+                    template: entry
+                        .template
+                        .iter()
+                        .filter(|component| !Self::is_citation_number_label(component))
+                        .cloned()
+                        .collect(),
+                    metadata: entry.metadata.clone(),
+                };
+                (
+                    entry.id.clone(),
+                    render_entry_body_with_format::<F>(&content_entry)
+                        .trim()
+                        .to_string(),
+                )
+            })
+            .collect()
+    }
+
+    fn build_present_group_members(
+        entries: &[ProcEntry],
+        ref_to_group: &HashMap<String, usize>,
+    ) -> HashMap<usize, Vec<String>> {
+        let mut group_members_present = HashMap::new();
+        for entry in entries {
+            if let Some(&group_number) = ref_to_group.get(&entry.id) {
+                group_members_present
+                    .entry(group_number)
+                    .or_insert_with(Vec::new)
+                    .push(entry.id.clone());
+            }
+        }
+        group_members_present
+    }
+
+    fn build_merged_compound_entry(
+        &self,
+        entry: ProcEntry,
+        group_ids: &[String],
+        entries_by_id: &HashMap<String, ProcEntry>,
+        rendered_strings: &HashMap<String, String>,
+        compound_config: &citum_schema::options::bibliography::CompoundNumericConfig,
+    ) -> ProcEntry {
+        let mut parts = Vec::new();
+
+        for (index, id) in group_ids.iter().enumerate() {
+            if !entries_by_id.contains_key(id) {
+                continue;
+            }
+
+            let sub_label = match compound_config.sub_label {
+                citum_schema::options::bibliography::SubLabelStyle::Alphabetic => {
+                    format!(
+                        "{}{}",
+                        crate::values::int_to_letter((index + 1) as u32)
+                            .unwrap_or_else(|| "a".to_string()),
+                        compound_config.sub_label_suffix
+                    )
+                }
+                citum_schema::options::bibliography::SubLabelStyle::Numeric => {
+                    format!("{}{}", index + 1, compound_config.sub_label_suffix)
+                }
+            };
+
+            if let Some(rendered) = rendered_strings.get(id) {
+                parts.push(format!("{} {}", sub_label, rendered));
+            }
+        }
+
+        let mut merged_template: Vec<_> = entry
+            .template
+            .iter()
+            .filter(|component| Self::is_citation_number_label(component))
+            .cloned()
+            .collect();
+        merged_template.push(ProcTemplateComponent {
+            template_component: TemplateComponent::default(),
+            value: parts.join(&compound_config.sub_delimiter),
+            pre_formatted: true,
+            config: entry
+                .template
+                .first()
+                .and_then(|component| component.config.clone()),
+            ..Default::default()
+        });
+
+        ProcEntry {
+            id: entry.id,
+            template: merged_template,
+            metadata: entry.metadata,
+        }
+    }
+
+    pub(super) fn merge_compound_entries<F>(&self, entries: Vec<ProcEntry>) -> Vec<ProcEntry>
+    where
+        F: OutputFormat<Output = String>,
+    {
+        let compound_groups = self.compound_groups.borrow();
+        if compound_groups.is_empty() {
+            return entries;
+        }
+
+        let Some(compound_config) = self.compound_numeric_config() else {
+            return entries;
+        };
+
+        let ref_to_group = Self::build_compound_group_lookup(&compound_groups);
+        if ref_to_group.is_empty() {
+            return entries;
+        }
+
+        let rendered_strings = Self::render_compound_entry_bodies::<F>(&entries);
+        let entries_by_id: HashMap<String, ProcEntry> = entries
+            .iter()
+            .map(|entry| (entry.id.clone(), entry.clone()))
+            .collect();
+        let group_members_present = Self::build_present_group_members(&entries, &ref_to_group);
+        let first_present_by_group: HashMap<usize, String> = group_members_present
+            .iter()
+            .filter_map(|(&group_number, ids)| {
+                ids.first()
+                    .cloned()
+                    .map(|first_id| (group_number, first_id))
+            })
+            .collect();
+
+        let mut result = Vec::new();
+        for entry in entries {
+            if let Some(&group_number) = ref_to_group.get(&entry.id) {
+                let Some(present_ids) = group_members_present.get(&group_number) else {
+                    result.push(entry);
+                    continue;
+                };
+
+                if present_ids.len() == 1 {
+                    result.push(entry);
+                    continue;
+                }
+
+                if first_present_by_group.get(&group_number) == Some(&entry.id) {
+                    result.push(self.build_merged_compound_entry(
+                        entry,
+                        &compound_groups[&group_number],
+                        &entries_by_id,
+                        &rendered_strings,
+                        &compound_config,
+                    ));
+                }
+            } else {
+                result.push(entry);
+            }
+        }
+
+        result
+    }
+}

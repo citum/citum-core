@@ -63,13 +63,8 @@ pub struct BibliographyBlock {
 
 /// A parser for Djot citations using winnow.
 /// Syntax: `[@key]`, `[+@key]`, or `[-@key]`. Multi-cites: `[@key1; @key2]`.
+#[derive(Default)]
 pub struct DjotParser;
-
-impl Default for DjotParser {
-    fn default() -> Self {
-        Self
-    }
-}
 
 fn parse_suppress_author_modifier(input: &mut &str) -> winnow::Result<bool, ContextError> {
     let modifier: Option<char> = opt('-').parse_next(input)?;
@@ -383,10 +378,11 @@ fn parse_citation_item_no_integral(
 
 impl ScopeTracker {
     fn current_structure(&self) -> CitationStructure {
+        const DEFAULT_STRUCTURE: &str = "document";
         let chapter_scope = self
             .current_chapter
             .clone()
-            .unwrap_or_else(|| "document".to_string());
+            .unwrap_or_else(|| DEFAULT_STRUCTURE.to_string());
         let section_scope = self
             .current_section
             .clone()
@@ -497,10 +493,9 @@ fn extract_group_from_attrs(_class: &str, attrs: Attributes) -> String {
 
     for (kind, value) in attrs {
         if let Some(key) = kind.key() {
-            let val = value.to_string();
             match key {
-                "title" => title = Some(val),
-                "type" => ref_type = Some(val),
+                "title" => title = Some(value.to_string()),
+                "type" => ref_type = Some(value.to_string()),
                 _ => {}
             }
         }
@@ -512,9 +507,11 @@ fn extract_group_from_attrs(_class: &str, attrs: Attributes) -> String {
         yaml.push_str(&format!("heading:\n  literal: \"{t}\"\n"));
     }
 
-    match ref_type {
-        Some(t) => yaml.push_str(&format!("selector:\n  type: {t}\n")),
-        None => yaml.push_str("selector: {}\n"),
+    yaml.push_str("selector:");
+    if let Some(t) = ref_type {
+        yaml.push_str(&format!("\n  type: {t}\n"));
+    } else {
+        yaml.push_str(" {}\n");
     }
 
     yaml
