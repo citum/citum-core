@@ -1,11 +1,11 @@
 ---
 # csl26-l13e
 title: Rust refine pass
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-03-15T13:16:42Z
-updated_at: 2026-03-15T15:36:03Z
+updated_at: 2026-03-15T16:03:20Z
 ---
 
 Reviewer-pattern refinement pass. One file per session.
@@ -42,3 +42,7 @@ Completed djot adapter/pipeline refactor (csl26-5zzb):
 - Created explicit parser boundary through CitationParser trait
 - Added 3 djot adapter tests (citation extraction, footnotes, multiple cites)
 - All 712 tests passing, verification gate clean
+
+## Summary of Changes
+
+Rolling log complete. All refactor items landed: RenderContext struct in citum-cli/src/main.rs, collected_types_recursive simplification in template_compiler/types.rs, public facade refinement in fixups/mod.rs, and the grouped/djot sub-bean waves (csl26-ey6s, csl26-5zzb).
