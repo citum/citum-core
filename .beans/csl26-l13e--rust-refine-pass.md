@@ -20,3 +20,7 @@ Reviewer-pattern refinement pass. One file per session.
 - citum-cli/src/main.rs: introduce RenderContext<'a>, remove 5 #[allow(clippy::too_many_arguments)] suppressions (render_refs_human, render_refs_json, print_human_safe, print_human, print_json_with_format)
 
 - citum-migrate/src/template_compiler/types.rs: collect_types_recursive → associated fn, remove #[allow(clippy::only_used_in_recursion)]
+
+- citum-migrate/src/fixups/mod.rs: refine the public fixups surface into a
+  documented facade over `media`, `locator`, and `template` submodules after
+  the simplify split, keeping `main.rs` call sites stable
