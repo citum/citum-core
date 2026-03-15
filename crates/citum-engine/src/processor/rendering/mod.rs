@@ -106,6 +106,7 @@ mod helpers;
 mod tests;
 
 pub(crate) use grouped_fallback::GroupRenderParams;
+pub use grouped_fallback::TemplateRenderParams;
 pub(super) use helpers::{
     find_grouping_component, has_contributor_component, leading_group_affix,
     strip_author_component, strip_leading_group_affixes,

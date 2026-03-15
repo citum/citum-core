@@ -18,3 +18,31 @@ pub(crate) struct GroupRenderParams<'a> {
     /// The citation position (e.g., ibid, subsequent).
     pub(crate) position: Option<&'a citum_schema::citation::Position>,
 }
+
+/// Parameters for rendering a template with a citation number.
+///
+/// Bundles all rendering configuration into a single struct so that
+/// `process_template_with_number` and its format-generic variant can
+/// accept a single argument instead of ten, eliminating the need for
+/// `#[allow(clippy::too_many_arguments)]` suppressions.
+#[derive(Debug)]
+pub struct TemplateRenderParams<'a> {
+    /// The template components to render.
+    pub template: &'a [citum_schema::template::TemplateComponent],
+    /// The rendering context (citation or bibliography).
+    pub context: crate::values::RenderContext,
+    /// The citation mode (integral or non-integral).
+    pub mode: citum_schema::citation::CitationMode,
+    /// Whether to suppress the author component.
+    pub suppress_author: bool,
+    /// The citation number for numeric styles.
+    pub citation_number: usize,
+    /// An optional locator string (e.g., a page range).
+    pub locator: Option<&'a str>,
+    /// The type label for the locator (e.g., page, chapter).
+    pub locator_label: Option<citum_schema::citation::LocatorType>,
+    /// The citation position (e.g., ibid, subsequent).
+    pub position: Option<&'a citum_schema::citation::Position>,
+    /// Whether the author was rendered in integral form in the prose anchor.
+    pub integral_name_state: Option<citum_schema::citation::IntegralNameState>,
+}

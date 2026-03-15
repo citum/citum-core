@@ -694,49 +694,28 @@ impl<'a> Renderer<'a> {
         )
     }
 
-    /// Process a template for a reference with citation number.
-    #[allow(clippy::too_many_arguments)]
+    /// Process a template for a reference using plain text format.
+    ///
+    /// Accepts a [`TemplateRenderParams`] bundle rather than individual arguments
+    /// to keep the call site readable and avoid argument-count lint issues.
     pub fn process_template_with_number(
         &self,
         reference: &Reference,
-        template: &[TemplateComponent],
-        context: RenderContext,
-        mode: citum_schema::citation::CitationMode,
-        suppress_author: bool,
-        citation_number: usize,
-        locator: Option<&str>,
-        locator_label: Option<citum_schema::citation::LocatorType>,
-        position: Option<&citum_schema::citation::Position>,
-        integral_name_state: Option<citum_schema::citation::IntegralNameState>,
+        params: TemplateRenderParams<'_>,
     ) -> Option<ProcTemplate> {
         self.process_template_with_number_with_format::<crate::render::plain::PlainText>(
-            reference,
-            template,
-            context,
-            mode,
-            suppress_author,
-            citation_number,
-            locator,
-            locator_label,
-            position,
-            integral_name_state,
+            reference, params,
         )
     }
 
-    /// Process a template for a reference with citation number and specific format.
-    #[allow(clippy::too_many_arguments)]
+    /// Process a template for a reference with a specific output format.
+    ///
+    /// Accepts a [`TemplateRenderParams`] bundle rather than individual arguments
+    /// to keep the call site readable and avoid argument-count lint issues.
     pub fn process_template_with_number_with_format<F>(
         &self,
         reference: &Reference,
-        template: &[TemplateComponent],
-        context: RenderContext,
-        mode: citum_schema::citation::CitationMode,
-        suppress_author: bool,
-        citation_number: usize,
-        locator: Option<&str>,
-        locator_label: Option<citum_schema::citation::LocatorType>,
-        position: Option<&citum_schema::citation::Position>,
-        integral_name_state: Option<citum_schema::citation::IntegralNameState>,
+        params: TemplateRenderParams<'_>,
     ) -> Option<ProcTemplate>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -744,15 +723,15 @@ impl<'a> Renderer<'a> {
         self.process_template_request_with_format::<F>(
             reference,
             TemplateRenderRequest {
-                template,
-                context,
-                mode,
-                suppress_author,
-                locator: locator.map(str::to_string),
-                locator_label,
-                citation_number,
-                position: position.cloned(),
-                integral_name_state,
+                template: params.template,
+                context: params.context,
+                mode: params.mode,
+                suppress_author: params.suppress_author,
+                locator: params.locator.map(str::to_string),
+                locator_label: params.locator_label,
+                citation_number: params.citation_number,
+                position: params.position.cloned(),
+                integral_name_state: params.integral_name_state,
             },
         )
     }

@@ -81,15 +81,18 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
                                 .as_ref()
                         });
 
+                        let name_overrides = super::names::NamesOverrides {
+                            name_order: effective_name_order,
+                            sort_separator: component.sort_separator.as_ref(),
+                            shorten: component.shorten.as_ref(),
+                            and: component.and.as_ref(),
+                            initialize_with: effective_rendering.initialize_with.as_ref(),
+                        };
                         let formatted = super::names::format_names(
                             &names_vec,
                             &component.form,
                             options,
-                            effective_name_order,
-                            component.sort_separator.as_ref(),
-                            component.shorten.as_ref(),
-                            component.and.as_ref(),
-                            effective_rendering.initialize_with.as_ref(),
+                            &name_overrides,
                             hints,
                         );
 
@@ -176,15 +179,18 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
                 if let Some(translators) = reference.translator() {
                     let names_vec = resolve_multilingual_for_contrib(&translators, options);
                     if !names_vec.is_empty() {
+                        let name_overrides = super::names::NamesOverrides {
+                            name_order: component.name_order.as_ref(),
+                            sort_separator: component.sort_separator.as_ref(),
+                            shorten: component.shorten.as_ref(),
+                            and: component.and.as_ref(),
+                            initialize_with: effective_rendering.initialize_with.as_ref(),
+                        };
                         let formatted = super::names::format_names(
                             &names_vec,
                             &component.form,
                             options,
-                            component.name_order.as_ref(),
-                            component.sort_separator.as_ref(),
-                            component.shorten.as_ref(),
-                            component.and.as_ref(),
-                            effective_rendering.initialize_with.as_ref(),
+                            &name_overrides,
                             hints,
                         );
 
