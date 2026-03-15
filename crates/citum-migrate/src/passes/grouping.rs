@@ -41,7 +41,6 @@ fn group_vol_issue_both_top_level(
     components.insert(min_idx, vol_issue_list);
 }
 
-#[allow(clippy::collapsible_if, clippy::ptr_arg)]
 fn group_vol_issue_issue_at_top(
     components: &mut Vec<TemplateComponent>,
     issue_idx: usize,
@@ -90,19 +89,16 @@ fn group_vol_issue_issue_at_top(
                 issue_with_parens,
                 vol_issue_delimiter.clone(),
             )
+            && matches!(style_preset, Some(crate::preset_detector::StylePreset::Apa))
+            && !list_contains_title(list)
         {
-            if matches!(style_preset, Some(crate::preset_detector::StylePreset::Apa))
-                && !list_contains_title(list)
-            {
-                list.delimiter = Some(DelimiterPunctuation::Comma);
-            }
+            list.delimiter = Some(DelimiterPunctuation::Comma);
         }
     }
 }
 
-#[allow(clippy::ptr_arg)]
 fn group_vol_issue_both_nested(
-    components: &mut Vec<TemplateComponent>,
+    components: &mut [TemplateComponent],
     vol_issue_delimiter: DelimiterPunctuation,
 ) {
     let issue_exists_nested = find_issue_in_components(components);

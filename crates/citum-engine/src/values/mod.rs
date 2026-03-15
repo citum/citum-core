@@ -265,8 +265,8 @@ fn select_by_transliteration<'a>(
             return name;
         }
     }
-    // Fallback to original
-    &m.original
+    // Fallback: any available transliteration before falling back to original
+    m.transliterations.values().next().unwrap_or(&m.original)
 }
 
 /// Resolve a multilingual contributor name based on style configuration.

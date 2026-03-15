@@ -48,3 +48,4 @@ bindings/latex/libcsln_processor.dylib
 
 # Claude worktrees (local development)
 .claude/worktrees/
+.git-rewrite/

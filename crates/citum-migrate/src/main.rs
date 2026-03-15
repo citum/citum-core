@@ -29,6 +29,17 @@ use roxmltree::Document;
 use std::fs;
 use std::path::PathBuf;
 
+/// Shorthand for the per-type template map used throughout the migration pipeline.
+type TypeTemplateMap = std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>;
+
+/// Output from the XML compilation fallback pipeline.
+type XmlFallback = (
+    Vec<TemplateComponent>,
+    Option<TypeTemplateMap>,
+    Vec<TemplateComponent>,
+    CitationPositionOverrides,
+);
+
 struct CliArgs {
     path: String,
     debug_variable: Option<String>,
@@ -44,7 +55,7 @@ struct CompiledOutput {
     bibliography_contributor_overrides: Option<citum_schema::options::ContributorConfig>,
     new_cit: Vec<TemplateComponent>,
     new_bib: Vec<TemplateComponent>,
-    type_templates: Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+    type_templates: Option<TypeTemplateMap>,
     citation_wrap: Option<WrapPunctuation>,
     citation_prefix: Option<String>,
     citation_suffix: Option<String>,
@@ -615,7 +626,7 @@ fn resolve_citation_metadata(
 
 fn postprocess_inferred_bibliography(
     new_bib: &mut Vec<TemplateComponent>,
-    type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+    type_templates: &mut Option<TypeTemplateMap>,
     legacy_style: &csl_legacy::model::Style,
 ) {
     // Output-driven inference can leak literal sample years into prefixes
@@ -804,18 +815,12 @@ fn apply_author_date_bibliography_passes(
 
 /// Run the full XML compilation pipeline for bibliography and citation templates.
 /// This is the fallback when no hand-authored or inferred template is available.
-#[allow(clippy::type_complexity)]
 fn compile_from_xml(
     legacy_style: &csl_legacy::model::Style,
     options: &mut citum_schema::options::Config,
     enable_provenance: bool,
     tracker: &citum_migrate::provenance::ProvenanceTracker,
-) -> (
-    Vec<TemplateComponent>,
-    Option<std::collections::HashMap<citum_schema::template::TypeSelector, Vec<TemplateComponent>>>,
-    Vec<TemplateComponent>,
-    CitationPositionOverrides,
-) {
+) -> XmlFallback {
     // Extract author suffix before macro inlining (will be lost during inlining)
     let author_suffix = if let Some(ref bib) = legacy_style.bibliography {
         analysis::bibliography::extract_author_suffix(&bib.layout)
@@ -969,21 +974,11 @@ fn log_template_sources(resolved: &template_resolver::ResolvedTemplates) {
     }
 }
 
-#[allow(clippy::type_complexity)]
 fn select_and_process_bibliography_template(
     resolved: &template_resolver::ResolvedTemplates,
-    xml_fallback: &Option<(
-        Vec<TemplateComponent>,
-        Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
-        Vec<TemplateComponent>,
-        CitationPositionOverrides,
-    )>,
+    xml_fallback: &Option<XmlFallback>,
     legacy_style: &csl_legacy::model::Style,
-) -> (
-    Vec<TemplateComponent>,
-    Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
-    bool,
-) {
+) -> (Vec<TemplateComponent>, Option<TypeTemplateMap>, bool) {
     let (mut new_bib, mut type_templates, inferred_bib_source) =
         if let Some(ref resolved_bib) = resolved.bibliography {
             let inferred_bib = matches!(
@@ -1034,18 +1029,12 @@ fn select_and_process_bibliography_template(
     (new_bib, type_templates, inferred_bib_source)
 }
 
-#[allow(clippy::type_complexity)]
 fn select_citation_template(
     resolved: &template_resolver::ResolvedTemplates,
-    xml_fallback: &Option<(
-        Vec<TemplateComponent>,
-        Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
-        Vec<TemplateComponent>,
-        CitationPositionOverrides,
-    )>,
+    xml_fallback: &Option<XmlFallback>,
     inferred_bib_source: bool,
     legacy_style: &csl_legacy::model::Style,
-    type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+    type_templates: &mut Option<TypeTemplateMap>,
 ) -> (
     Vec<TemplateComponent>,
     Option<Vec<TemplateComponent>>,
