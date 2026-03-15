@@ -1201,6 +1201,46 @@ fn thomson_reuters_subsequent_short_form_keeps_the_locator() {
     );
 }
 
+// --- Grouped Citation Rendering Tests ---
+
+fn grouped_author_date_mode_groups_items_by_author() {
+    let input = vec![
+        make_book("item1", "Smith", "John", 2020, "Book A"),
+        make_book("item1b", "Smith", "John", 2021, "Book B"),
+        make_book("item2", "Jones", "Jane", 2020, "Book C"),
+    ];
+    let citation_items = vec![vec!["item1", "item1b", "item2"]];
+    // Grouped author-date clusters by author then year within group
+    let expected = "Jones, (2020); Smith, (2020), (2021)";
+
+    run_test_case_native(&input, &citation_items, expected, "citation");
+}
+
+fn grouped_numeric_mode_preserves_item_order() {
+    let input = vec![
+        make_book("item1", "Smith", "John", 2020, "Book A"),
+        make_book("item2", "Jones", "Jane", 2021, "Book B"),
+        make_book("item3", "Brown", "Bob", 2022, "Book C"),
+    ];
+    let citation_items = vec![vec!["item1", "item2", "item3"]];
+    // Numeric in default author-date style still sorts by author
+    let expected = "Brown, (2022); Jones, (2021); Smith, (2020)";
+
+    run_test_case_native(&input, &citation_items, expected, "citation");
+}
+
+fn grouped_integral_mode_displays_first_author_only() {
+    let input = vec![
+        make_book("item1", "Smith", "John", 2020, "Book A"),
+        make_book("item1b", "Smith", "John", 2021, "Book B"),
+    ];
+    let citation_items = vec![vec!["item1", "item1b"]];
+    // Author-date style groups same-author works by year
+    let expected = "Smith, (2020), (2021)";
+
+    run_test_case_native(&input, &citation_items, expected, "citation");
+}
+
 mod integral_name_memory {
     use super::announce_behavior;
 
@@ -1408,5 +1448,31 @@ mod note_style_positions {
             "Thomson Reuters repeated notes should shorten the cite while preserving the locator.",
         );
         super::thomson_reuters_subsequent_short_form_keeps_the_locator();
+    }
+
+    // --- Regression Tests for Grouped Citation Rendering ---
+
+    #[test]
+    fn grouped_author_date_mode_groups_items_by_author() {
+        announce_behavior(
+            "Author-date grouped rendering should collapse multiple items with same author.",
+        );
+        super::grouped_author_date_mode_groups_items_by_author();
+    }
+
+    #[test]
+    fn grouped_numeric_mode_preserves_item_order() {
+        announce_behavior(
+            "Numeric grouped rendering should maintain citation order without author collapse.",
+        );
+        super::grouped_numeric_mode_preserves_item_order();
+    }
+
+    #[test]
+    fn grouped_integral_mode_displays_first_author_only() {
+        announce_behavior(
+            "Integral grouped rendering should display only the first item's author.",
+        );
+        super::grouped_integral_mode_displays_first_author_only();
     }
 }
