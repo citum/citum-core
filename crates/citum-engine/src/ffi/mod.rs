@@ -10,6 +10,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! This module provides a C-compatible interface for other languages
 //! (like Lua, Python, or JavaScript) to use the processor.
 
+mod biblatex;
+
 use crate::processor::Processor;
 use crate::reference::{Bibliography, Citation, Reference};
 use crate::render::djot::Djot;
@@ -19,9 +21,7 @@ use crate::render::plain::PlainText;
 use crate::render::typst::Typst;
 use citum_schema::Style;
 use citum_schema::locale::Locale;
-use citum_schema::reference::InputReference;
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
 use std::path::Path;
@@ -45,6 +45,36 @@ fn safe_c_string(s: String) -> *mut c_char {
             ptr::null_mut()
         }
     }
+}
+
+/// Parse a `*const c_char` to `&str`, returning null on failure.
+macro_rules! parse_c_str {
+    ($ptr:expr) => {
+        match unsafe { CStr::from_ptr($ptr) }.to_str() {
+            Ok(s) => s,
+            Err(_) => return ptr::null_mut(),
+        }
+    };
+}
+
+/// Parse bibliography JSON string, handling both CSL-JSON and native formats.
+fn parse_bibliography_json(bib_str: &str) -> Result<Bibliography, String> {
+    // Try parsing as CSL-JSON bibliography first
+    match serde_json::from_str::<Vec<csl_legacy::csl_json::Reference>>(bib_str) {
+        Ok(legacy_refs) => Ok(legacy_refs
+            .into_iter()
+            .map(|r| (r.id.clone(), Reference::from(r)))
+            .collect()),
+        Err(_) => serde_json::from_str(bib_str)
+            .map_err(|e| format!("Bibliography JSON parse error: {}", e)),
+    }
+}
+
+/// Load and parse a Citum YAML style file from disk.
+fn load_style_yaml(path: &str) -> Result<Style, String> {
+    let src = std::fs::read_to_string(Path::new(path))
+        .map_err(|e| format!("Failed to read style YAML: {}", e))?;
+    serde_yaml::from_str(&src).map_err(|e| format!("Style YAML parse error: {}", e))
 }
 
 /// Get the last error message.
@@ -76,15 +106,8 @@ pub unsafe extern "C" fn citum_processor_new(
         return ptr::null_mut();
     }
 
-    let style_str = match unsafe { CStr::from_ptr(style_json) }.to_str() {
-        Ok(s) => s,
-        Err(_) => return ptr::null_mut(),
-    };
-
-    let bib_str = match unsafe { CStr::from_ptr(bib_json) }.to_str() {
-        Ok(s) => s,
-        Err(_) => return ptr::null_mut(),
-    };
+    let style_str = parse_c_str!(style_json);
+    let bib_str = parse_c_str!(bib_json);
 
     let style: Style = match serde_json::from_str(style_str) {
         Ok(s) => s,
@@ -94,21 +117,13 @@ pub unsafe extern "C" fn citum_processor_new(
         }
     };
 
-    // Try parsing as CSL-JSON bibliography first
-    let bib: Bibliography =
-        match serde_json::from_str::<Vec<csl_legacy::csl_json::Reference>>(bib_str) {
-            Ok(legacy_refs) => legacy_refs
-                .into_iter()
-                .map(|r| (r.id.clone(), Reference::from(r)))
-                .collect(),
-            Err(_) => match serde_json::from_str(bib_str) {
-                Ok(b) => b,
-                Err(e) => {
-                    set_error(format!("Bibliography JSON parse error: {}", e));
-                    return ptr::null_mut();
-                }
-            },
-        };
+    let bib: Bibliography = match parse_bibliography_json(bib_str) {
+        Ok(b) => b,
+        Err(e) => {
+            set_error(e);
+            return ptr::null_mut();
+        }
+    };
 
     let processor = Box::new(Processor::new(style, bib));
     Box::into_raw(processor)
@@ -128,20 +143,9 @@ pub unsafe extern "C" fn citum_processor_new_with_locale(
         return ptr::null_mut();
     }
 
-    let style_str = match unsafe { CStr::from_ptr(style_json) }.to_str() {
-        Ok(s) => s,
-        Err(_) => return ptr::null_mut(),
-    };
-
-    let bib_str = match unsafe { CStr::from_ptr(bib_json) }.to_str() {
-        Ok(s) => s,
-        Err(_) => return ptr::null_mut(),
-    };
-
-    let locale_str = match unsafe { CStr::from_ptr(locale_json) }.to_str() {
-        Ok(s) => s,
-        Err(_) => return ptr::null_mut(),
-    };
+    let style_str = parse_c_str!(style_json);
+    let bib_str = parse_c_str!(bib_json);
+    let locale_str = parse_c_str!(locale_json);
 
     let style: Style = match serde_json::from_str(style_str) {
         Ok(s) => s,
@@ -151,20 +155,13 @@ pub unsafe extern "C" fn citum_processor_new_with_locale(
         }
     };
 
-    let bib: Bibliography =
-        match serde_json::from_str::<Vec<csl_legacy::csl_json::Reference>>(bib_str) {
-            Ok(legacy_refs) => legacy_refs
-                .into_iter()
-                .map(|r| (r.id.clone(), Reference::from(r)))
-                .collect(),
-            Err(_) => match serde_json::from_str(bib_str) {
-                Ok(b) => b,
-                Err(e) => {
-                    set_error(format!("Bibliography JSON parse error: {}", e));
-                    return ptr::null_mut();
-                }
-            },
-        };
+    let bib: Bibliography = match parse_bibliography_json(bib_str) {
+        Ok(b) => b,
+        Err(e) => {
+            set_error(e);
+            return ptr::null_mut();
+        }
+    };
 
     let locale: Locale = match serde_json::from_str(locale_str) {
         Ok(l) => l,
@@ -195,26 +192,13 @@ pub unsafe extern "C" fn citum_processor_new_from_yaml(
         return ptr::null_mut();
     }
 
-    let style_path_str = match unsafe { CStr::from_ptr(style_yaml_path) }.to_str() {
-        Ok(s) => s,
-        Err(_) => return ptr::null_mut(),
-    };
-    let bib_path_str = match unsafe { CStr::from_ptr(bib_yaml_path) }.to_str() {
-        Ok(s) => s,
-        Err(_) => return ptr::null_mut(),
-    };
+    let style_path_str = parse_c_str!(style_yaml_path);
+    let bib_path_str = parse_c_str!(bib_yaml_path);
 
-    let style_src = match std::fs::read_to_string(Path::new(style_path_str)) {
+    let style: Style = match load_style_yaml(style_path_str) {
         Ok(s) => s,
         Err(e) => {
-            set_error(format!("Failed to read style YAML: {}", e));
-            return ptr::null_mut();
-        }
-    };
-    let style: Style = match serde_yaml::from_str(&style_src) {
-        Ok(s) => s,
-        Err(e) => {
-            set_error(format!("Style YAML parse error: {}", e));
+            set_error(e);
             return ptr::null_mut();
         }
     };
@@ -241,254 +225,6 @@ pub unsafe extern "C" fn citum_processor_new_from_yaml(
     Box::into_raw(processor)
 }
 
-/// Convert a biblatex entry into an InputReference.
-fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
-    let id = Some(entry.key.clone());
-    let field_str = |key: &str| {
-        entry.fields.get(key).map(|f| {
-            f.iter()
-                .map(|c| match &c.v {
-                    biblatex::Chunk::Normal(s) | biblatex::Chunk::Verbatim(s) => s.as_str(),
-                    _ => "",
-                })
-                .collect::<String>()
-        })
-    };
-
-    use citum_schema::reference::{
-        InputReference,
-        contributor::{Contributor, SimpleName},
-        date::EdtfString,
-        types::*,
-    };
-    use url::Url;
-
-    let title = field_str("title").map(Title::Single);
-    let issued = field_str("date")
-        .map(EdtfString)
-        .unwrap_or(EdtfString(String::new()));
-    let publisher = field_str("publisher").map(|p| {
-        Contributor::SimpleName(SimpleName {
-            name: p.into(),
-            location: field_str("location"),
-        })
-    });
-
-    let author = entry
-        .author()
-        .ok()
-        .map(|p| contributors_from_biblatex_persons(&p));
-    let editor = entry.editors().ok().map(|e| {
-        let all_persons: Vec<biblatex::Person> =
-            e.into_iter().flat_map(|(persons, _)| persons).collect();
-        contributors_from_biblatex_persons(&all_persons)
-    });
-
-    let language = field_str("langid").or_else(|| field_str("language"));
-
-    match entry.entry_type.to_string().to_lowercase().as_str() {
-        "book" | "mvbook" | "collection" | "mvcollection" | "manual" => {
-            InputReference::Monograph(Box::new(Monograph {
-                id,
-                r#type: if matches!(
-                    entry.entry_type.to_string().to_lowercase().as_str(),
-                    "manual"
-                ) {
-                    MonographType::Manual
-                } else {
-                    MonographType::Book
-                },
-                title,
-                container_title: None,
-                author,
-                editor,
-                translator: None,
-                recipient: None,
-                interviewer: None,
-                issued,
-                publisher,
-                url: field_str("url").and_then(|u| Url::parse(&u).ok()),
-                accessed: None,
-                language,
-                field_languages: HashMap::new(),
-                note: field_str("note"),
-                isbn: field_str("isbn"),
-                doi: field_str("doi"),
-                ads_bibcode: field_str("bibcode"),
-                edition: field_str("edition"),
-                report_number: if matches!(
-                    entry.entry_type.to_string().to_lowercase().as_str(),
-                    "report"
-                ) {
-                    field_str("number")
-                } else {
-                    None
-                },
-                collection_number: if !matches!(
-                    entry.entry_type.to_string().to_lowercase().as_str(),
-                    "report"
-                ) {
-                    field_str("number")
-                } else {
-                    None
-                },
-                genre: field_str("type"),
-                medium: None,
-                archive: None,
-                archive_location: None,
-                keywords: None,
-                original_date: None,
-                original_title: None,
-            }))
-        }
-        "inbook" | "incollection" | "inproceedings" => {
-            let parent_title = field_str("booktitle").map(Title::Single);
-            InputReference::CollectionComponent(Box::new(CollectionComponent {
-                id,
-                r#type: MonographComponentType::Chapter,
-                title,
-                author,
-                translator: None,
-                issued,
-                parent: Parent::Embedded(Collection {
-                    id: None,
-                    r#type: CollectionType::EditedBook,
-                    title: parent_title,
-                    short_title: None,
-                    editor,
-                    translator: None,
-                    issued: EdtfString(String::new()),
-                    publisher,
-                    collection_number: field_str("number"),
-                    url: None,
-                    accessed: None,
-                    language: None,
-                    field_languages: HashMap::new(),
-                    note: None,
-                    isbn: None,
-                    keywords: None,
-                }),
-                pages: field_str("pages").map(NumOrStr::Str),
-                url: field_str("url").and_then(|u| Url::parse(&u).ok()),
-                accessed: field_str("urldate").map(EdtfString),
-                language,
-                field_languages: HashMap::new(),
-                note: field_str("note"),
-                doi: field_str("doi"),
-                genre: field_str("type"),
-                medium: None,
-                keywords: None,
-            }))
-        }
-        "article" => {
-            let parent_title = field_str("journaltitle")
-                .or_else(|| field_str("journal"))
-                .map(Title::Single);
-            InputReference::SerialComponent(Box::new(SerialComponent {
-                id,
-                r#type: SerialComponentType::Article,
-                title,
-                author,
-                translator: None,
-                issued,
-                parent: Parent::Embedded(Serial {
-                    r#type: SerialType::AcademicJournal,
-                    title: parent_title,
-                    short_title: None,
-                    editor: None,
-                    publisher: None,
-                    issn: field_str("issn"),
-                }),
-                url: field_str("url").and_then(|u| Url::parse(&u).ok()),
-                accessed: field_str("urldate").map(EdtfString),
-                language,
-                field_languages: HashMap::new(),
-                note: field_str("note"),
-                doi: field_str("doi"),
-                ads_bibcode: field_str("bibcode"),
-                pages: field_str("pages"),
-                volume: field_str("volume").map(NumOrStr::Str),
-                issue: field_str("number").map(NumOrStr::Str),
-                genre: field_str("type"),
-                medium: None,
-                keywords: None,
-            }))
-        }
-        _ => InputReference::Monograph(Box::new(Monograph {
-            id,
-            r#type: MonographType::Document,
-            title,
-            container_title: None,
-            author,
-            editor,
-            translator: None,
-            recipient: None,
-            interviewer: None,
-            issued,
-            publisher,
-            url: field_str("url").and_then(|u| Url::parse(&u).ok()),
-            accessed: field_str("urldate").map(EdtfString),
-            language,
-            field_languages: HashMap::new(),
-            note: field_str("note"),
-            isbn: field_str("isbn"),
-            doi: field_str("doi"),
-            ads_bibcode: field_str("bibcode"),
-            edition: field_str("edition"),
-            report_number: if matches!(
-                entry.entry_type.to_string().to_lowercase().as_str(),
-                "report"
-            ) {
-                field_str("number")
-            } else {
-                None
-            },
-            collection_number: if !matches!(
-                entry.entry_type.to_string().to_lowercase().as_str(),
-                "report"
-            ) {
-                field_str("number")
-            } else {
-                None
-            },
-            genre: field_str("type"),
-            medium: None,
-            archive: None,
-            archive_location: None,
-            keywords: None,
-            original_date: None,
-            original_title: None,
-        })),
-    }
-}
-
-fn contributors_from_biblatex_persons(
-    persons: &[biblatex::Person],
-) -> citum_schema::reference::contributor::Contributor {
-    use citum_schema::reference::contributor::{Contributor, ContributorList, StructuredName};
-    let contributors: Vec<Contributor> = persons
-        .iter()
-        .map(|p| {
-            Contributor::StructuredName(StructuredName {
-                given: p.given_name.clone().into(),
-                family: p.name.clone().into(),
-                suffix: if p.suffix.is_empty() {
-                    None
-                } else {
-                    Some(p.suffix.clone())
-                },
-                dropping_particle: None,
-                non_dropping_particle: if p.prefix.is_empty() {
-                    None
-                } else {
-                    Some(p.prefix.clone())
-                },
-            })
-        })
-        .collect();
-    Contributor::ContributorList(ContributorList(contributors))
-}
-
 /// Create a new processor from a Citum YAML style and a biblatex `.bib` file.
 ///
 /// Reads the style from `style_yaml_path` (Citum YAML) and the bibliography
@@ -507,26 +243,13 @@ pub unsafe extern "C" fn citum_processor_new_from_bib(
         return ptr::null_mut();
     }
 
-    let style_path_str = match unsafe { CStr::from_ptr(style_yaml_path) }.to_str() {
-        Ok(s) => s,
-        Err(_) => return ptr::null_mut(),
-    };
-    let bib_path_str = match unsafe { CStr::from_ptr(bib_path) }.to_str() {
-        Ok(s) => s,
-        Err(_) => return ptr::null_mut(),
-    };
+    let style_path_str = parse_c_str!(style_yaml_path);
+    let bib_path_str = parse_c_str!(bib_path);
 
-    let style_src = match std::fs::read_to_string(Path::new(style_path_str)) {
+    let style: Style = match load_style_yaml(style_path_str) {
         Ok(s) => s,
         Err(e) => {
-            set_error(format!("Failed to read style YAML: {}", e));
-            return ptr::null_mut();
-        }
-    };
-    let style: Style = match serde_yaml::from_str(&style_src) {
-        Ok(s) => s,
-        Err(e) => {
-            set_error(format!("Style YAML parse error: {}", e));
+            set_error(e);
             return ptr::null_mut();
         }
     };
@@ -538,7 +261,7 @@ pub unsafe extern "C" fn citum_processor_new_from_bib(
             return ptr::null_mut();
         }
     };
-    let bibliography_parsed = match biblatex::Bibliography::parse(&bib_src) {
+    let bibliography_parsed = match ::biblatex::Bibliography::parse(&bib_src) {
         Ok(b) => b,
         Err(e) => {
             set_error(format!("BibLaTeX parse error: {}", e));
@@ -549,7 +272,7 @@ pub unsafe extern "C" fn citum_processor_new_from_bib(
     let mut bib: Bibliography = indexmap::IndexMap::new();
     for entry in bibliography_parsed.iter() {
         let key = entry.key.clone();
-        let reference = input_reference_from_biblatex(entry);
+        let reference = self::biblatex::input_reference_from_biblatex(entry);
         bib.insert(key, reference);
     }
 
