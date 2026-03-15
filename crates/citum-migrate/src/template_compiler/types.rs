@@ -3,19 +3,18 @@ use super::*;
 impl TemplateCompiler {
     pub(super) fn collect_types_with_branches(&self, nodes: &[CslnNode]) -> Vec<ItemType> {
         let mut types = Vec::new();
-        self.collect_types_recursive(nodes, &mut types);
+        Self::collect_types_recursive(nodes, &mut types);
         types.sort_by_key(|t| self.item_type_to_string(t));
         types.dedup_by_key(|t| self.item_type_to_string(t));
         types
     }
 
     #[allow(dead_code)]
-    #[allow(clippy::only_used_in_recursion)]
-    pub(super) fn collect_types_recursive(&self, nodes: &[CslnNode], types: &mut Vec<ItemType>) {
+    pub(super) fn collect_types_recursive(nodes: &[CslnNode], types: &mut Vec<ItemType>) {
         for node in nodes {
             match node {
                 CslnNode::Group(g) => {
-                    self.collect_types_recursive(&g.children, types);
+                    Self::collect_types_recursive(&g.children, types);
                 }
                 CslnNode::Condition(c) => {
                     // Collect types from if branch
@@ -27,12 +26,12 @@ impl TemplateCompiler {
                     }
 
                     // Recurse into branches
-                    self.collect_types_recursive(&c.then_branch, types);
+                    Self::collect_types_recursive(&c.then_branch, types);
                     for else_if in &c.else_if_branches {
-                        self.collect_types_recursive(&else_if.children, types);
+                        Self::collect_types_recursive(&else_if.children, types);
                     }
                     if let Some(ref else_nodes) = c.else_branch {
-                        self.collect_types_recursive(else_nodes, types);
+                        Self::collect_types_recursive(else_nodes, types);
                     }
                 }
                 _ => {}
