@@ -44,9 +44,8 @@ fn format_interviewer_note(names: &[csl_legacy::csl_json::Name]) -> Option<Strin
     }
 }
 
-#[allow(clippy::too_many_arguments)]
-fn from_software_ref(
-    legacy: csl_legacy::csl_json::Reference,
+/// Pre-extracted common fields shared by all reference conversion functions.
+struct RefContext {
     id: Option<String>,
     title: Option<Title>,
     issued: EdtfString,
@@ -55,12 +54,18 @@ fn from_software_ref(
     language: Option<String>,
     note: Option<String>,
     doi: Option<String>,
-) -> InputReference {
+    isbn: Option<String>,
+    edition: Option<String>,
+    container_title_short: Option<String>,
+    journal_abbreviation: Option<String>,
+}
+
+fn from_software_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::Software(Box::new(Software {
-        id,
-        title,
+        id: ctx.id,
+        title: ctx.title,
         author: legacy.author.map(Contributor::from),
-        issued,
+        issued: ctx.issued,
         publisher: legacy.publisher.map(|n| {
             Contributor::SimpleName(SimpleName {
                 name: n.into(),
@@ -71,36 +76,26 @@ fn from_software_ref(
         repository: None,
         license: None,
         platform: None,
-        doi,
-        url,
-        accessed,
-        language,
+        doi: ctx.doi,
+        url: ctx.url,
+        accessed: ctx.accessed,
+        language: ctx.language,
         field_languages: HashMap::new(),
-        note,
+        note: ctx.note,
         keywords: None,
     }))
 }
 
-#[allow(clippy::too_many_arguments)]
 fn from_monograph_ref(
     legacy: csl_legacy::csl_json::Reference,
-    id: Option<String>,
-    title: Option<Title>,
-    issued: EdtfString,
-    url: Option<Url>,
-    accessed: Option<EdtfString>,
-    language: Option<String>,
-    mut note: Option<String>,
-    doi: Option<String>,
-    isbn: Option<String>,
-    edition: Option<String>,
+    mut ctx: RefContext,
 ) -> InputReference {
     if (legacy.ref_type == "personal_communication" || legacy.ref_type == "personal-communication")
-        && note.is_none()
+        && ctx.note.is_none()
     {
-        note = Some("personal communication".to_string());
-    } else if legacy.ref_type == "interview" && note.is_none() {
-        note = legacy
+        ctx.note = Some("personal communication".to_string());
+    } else if legacy.ref_type == "interview" && ctx.note.is_none() {
+        ctx.note = legacy
             .interviewer
             .as_ref()
             .and_then(|names| format_interviewer_note(names));
@@ -129,31 +124,31 @@ fn from_monograph_ref(
     };
 
     InputReference::Monograph(Box::new(Monograph {
-        id,
+        id: ctx.id,
         r#type,
-        title,
+        title: ctx.title,
         container_title: legacy.container_title.clone().map(Title::Single),
         author: legacy.author.map(Contributor::from),
         editor: legacy.editor.map(Contributor::from),
         translator: legacy.translator.map(Contributor::from),
         recipient: legacy.recipient.map(Contributor::from),
         interviewer: legacy.interviewer.map(Contributor::from),
-        issued,
+        issued: ctx.issued,
         publisher: legacy.publisher.map(|n| {
             Contributor::SimpleName(SimpleName {
                 name: n.into(),
                 location: legacy.publisher_place,
             })
         }),
-        url,
-        accessed,
-        language,
+        url: ctx.url,
+        accessed: ctx.accessed,
+        language: ctx.language,
         field_languages: HashMap::new(),
-        note: note.clone(),
-        isbn,
-        doi,
+        note: ctx.note,
+        isbn: ctx.isbn,
+        doi: ctx.doi,
         ads_bibcode: None,
-        edition,
+        edition: ctx.edition,
         report_number: legacy.number.map(|v| v.to_string()),
         collection_number: legacy.collection_number.map(|v| v.to_string()),
         genre: legacy.genre,
@@ -166,36 +161,27 @@ fn from_monograph_ref(
     }))
 }
 
-#[allow(clippy::too_many_arguments)]
 fn from_collection_component_ref(
     legacy: csl_legacy::csl_json::Reference,
-    id: Option<String>,
-    title: Option<Title>,
-    issued: EdtfString,
-    url: Option<Url>,
-    accessed: Option<EdtfString>,
-    language: Option<String>,
-    note: Option<String>,
-    doi: Option<String>,
-    legacy_container_title_short: Option<String>,
+    ctx: RefContext,
 ) -> InputReference {
     let parent_title = legacy.container_title.map(Title::Single);
     InputReference::CollectionComponent(Box::new(CollectionComponent {
-        id,
+        id: ctx.id,
         r#type: if legacy.ref_type == "paper-conference" {
             MonographComponentType::Document
         } else {
             MonographComponentType::Chapter
         },
-        title,
+        title: ctx.title,
         author: legacy.author.map(Contributor::from),
         translator: legacy.translator.map(Contributor::from),
-        issued,
+        issued: ctx.issued,
         parent: Parent::Embedded(Collection {
             id: None,
             r#type: CollectionType::EditedBook,
             title: parent_title,
-            short_title: legacy_container_title_short,
+            short_title: ctx.container_title_short,
             editor: legacy.editor.map(Contributor::from),
             translator: None,
             issued: EdtfString(String::new()),
@@ -221,31 +207,21 @@ fn from_collection_component_ref(
             keywords: None,
         }),
         pages: legacy.page.map(NumOrStr::Str),
-        url,
-        accessed,
-        language,
+        url: ctx.url,
+        accessed: ctx.accessed,
+        language: ctx.language,
         field_languages: HashMap::new(),
-        note: note.clone(),
-        doi,
+        note: ctx.note,
+        doi: ctx.doi,
         genre: legacy.genre,
         medium: legacy.medium,
         keywords: None,
     }))
 }
 
-#[allow(clippy::too_many_arguments)]
 fn from_serial_component_ref(
     legacy: csl_legacy::csl_json::Reference,
-    id: Option<String>,
-    title: Option<Title>,
-    issued: EdtfString,
-    url: Option<Url>,
-    accessed: Option<EdtfString>,
-    language: Option<String>,
-    note: Option<String>,
-    doi: Option<String>,
-    legacy_container_title_short: Option<String>,
-    legacy_journal_abbreviation: Option<String>,
+    ctx: RefContext,
 ) -> InputReference {
     let mut genre = legacy.genre;
     if legacy.ref_type == "entry-encyclopedia" && genre.is_none() {
@@ -260,16 +236,16 @@ fn from_serial_component_ref(
     };
     let parent_title = legacy.container_title.map(Title::Single);
     InputReference::SerialComponent(Box::new(SerialComponent {
-        id,
+        id: ctx.id,
         r#type: SerialComponentType::Article,
-        title,
+        title: ctx.title,
         author: legacy.author.map(Contributor::from),
         translator: legacy.translator.map(Contributor::from),
-        issued,
+        issued: ctx.issued,
         parent: Parent::Embedded(Serial {
             r#type: serial_type,
             title: parent_title,
-            short_title: legacy_container_title_short.or(legacy_journal_abbreviation),
+            short_title: ctx.container_title_short.or(ctx.journal_abbreviation),
             editor: None,
             publisher: legacy.publisher.clone().map(|n| {
                 Contributor::SimpleName(SimpleName {
@@ -279,12 +255,12 @@ fn from_serial_component_ref(
             }),
             issn: legacy.issn,
         }),
-        url,
-        accessed,
-        language,
+        url: ctx.url,
+        accessed: ctx.accessed,
+        language: ctx.language,
         field_languages: HashMap::new(),
-        note: note.clone(),
-        doi,
+        note: ctx.note,
+        doi: ctx.doi,
         ads_bibcode: None,
         pages: legacy.page,
         volume: legacy.volume.map(|v| match v {
@@ -313,109 +289,68 @@ fn from_serial_component_ref(
     }))
 }
 
-#[allow(clippy::too_many_arguments)]
-fn from_legal_case_ref(
-    legacy: csl_legacy::csl_json::Reference,
-    id: Option<String>,
-    title: Option<Title>,
-    issued: EdtfString,
-    url: Option<Url>,
-    accessed: Option<EdtfString>,
-    language: Option<String>,
-    note: Option<String>,
-    doi: Option<String>,
-) -> InputReference {
+fn from_legal_case_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::LegalCase(Box::new(LegalCase {
-        id,
-        title,
+        id: ctx.id,
+        title: ctx.title,
         authority: legacy.authority.unwrap_or_default(),
         volume: legacy.volume.map(|v| v.to_string()),
         reporter: legacy.container_title,
         page: legacy.page,
-        issued,
-        url,
-        accessed,
-        language,
+        issued: ctx.issued,
+        url: ctx.url,
+        accessed: ctx.accessed,
+        language: ctx.language,
         field_languages: HashMap::new(),
-        note: note.clone(),
-        doi,
+        note: ctx.note,
+        doi: ctx.doi,
         keywords: None,
     }))
 }
 
-#[allow(clippy::too_many_arguments)]
-fn from_statute_ref(
-    legacy: csl_legacy::csl_json::Reference,
-    id: Option<String>,
-    title: Option<Title>,
-    issued: EdtfString,
-    url: Option<Url>,
-    accessed: Option<EdtfString>,
-    language: Option<String>,
-    note: Option<String>,
-) -> InputReference {
+fn from_statute_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::Statute(Box::new(Statute {
-        id,
-        title,
+        id: ctx.id,
+        title: ctx.title,
         authority: legacy.authority,
         volume: legacy.volume.map(|v| v.to_string()),
         code: legacy.container_title,
         section: legacy.section,
-        issued,
-        url,
-        accessed,
-        language,
+        issued: ctx.issued,
+        url: ctx.url,
+        accessed: ctx.accessed,
+        language: ctx.language,
         field_languages: HashMap::new(),
-        note: note.clone(),
+        note: ctx.note,
         keywords: None,
     }))
 }
 
-#[allow(clippy::too_many_arguments)]
-fn from_treaty_ref(
-    legacy: csl_legacy::csl_json::Reference,
-    id: Option<String>,
-    title: Option<Title>,
-    issued: EdtfString,
-    url: Option<Url>,
-    accessed: Option<EdtfString>,
-    language: Option<String>,
-    note: Option<String>,
-) -> InputReference {
+fn from_treaty_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::Treaty(Box::new(Treaty {
-        id,
-        title,
+        id: ctx.id,
+        title: ctx.title,
         author: legacy.author.map(Contributor::from),
         volume: legacy.volume.map(|v| v.to_string()),
         reporter: legacy.container_title,
         page: legacy.page,
-        issued,
-        url,
-        accessed,
-        language,
+        issued: ctx.issued,
+        url: ctx.url,
+        accessed: ctx.accessed,
+        language: ctx.language,
         field_languages: HashMap::new(),
-        note: note.clone(),
+        note: ctx.note,
         keywords: None,
     }))
 }
 
-#[allow(clippy::too_many_arguments)]
-fn from_standard_ref(
-    legacy: csl_legacy::csl_json::Reference,
-    id: Option<String>,
-    title: Option<Title>,
-    issued: EdtfString,
-    url: Option<Url>,
-    accessed: Option<EdtfString>,
-    language: Option<String>,
-    note: Option<String>,
-) -> InputReference {
+fn from_standard_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::Standard(Box::new(Standard {
-        id,
-        title,
+        id: ctx.id,
+        title: ctx.title,
         authority: legacy.authority,
         standard_number: legacy.number.map(|v| v.to_string()).unwrap_or_default(),
-        issued,
+        issued: ctx.issued,
         status: None,
         publisher: legacy.publisher.map(|n| {
             Contributor::SimpleName(SimpleName {
@@ -423,63 +358,42 @@ fn from_standard_ref(
                 location: legacy.publisher_place,
             })
         }),
-        url,
-        accessed,
-        language,
+        url: ctx.url,
+        accessed: ctx.accessed,
+        language: ctx.language,
         field_languages: HashMap::new(),
-        note: note.clone(),
+        note: ctx.note,
         keywords: None,
     }))
 }
 
-#[allow(clippy::too_many_arguments)]
-fn from_patent_ref(
-    legacy: csl_legacy::csl_json::Reference,
-    id: Option<String>,
-    title: Option<Title>,
-    issued: EdtfString,
-    url: Option<Url>,
-    accessed: Option<EdtfString>,
-    language: Option<String>,
-    note: Option<String>,
-) -> InputReference {
+fn from_patent_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::Patent(Box::new(Patent {
-        id,
-        title,
+        id: ctx.id,
+        title: ctx.title,
         author: legacy.author.map(Contributor::from),
         assignee: None,
         patent_number: legacy.number.map(|v| v.to_string()).unwrap_or_default(),
         application_number: None,
         filing_date: None,
-        issued,
+        issued: ctx.issued,
         jurisdiction: None,
         authority: legacy.authority,
-        url,
-        accessed,
-        language,
+        url: ctx.url,
+        accessed: ctx.accessed,
+        language: ctx.language,
         field_languages: HashMap::new(),
-        note: note.clone(),
+        note: ctx.note,
         keywords: None,
     }))
 }
 
-#[allow(clippy::too_many_arguments)]
-fn from_dataset_ref(
-    legacy: csl_legacy::csl_json::Reference,
-    id: Option<String>,
-    title: Option<Title>,
-    issued: EdtfString,
-    url: Option<Url>,
-    accessed: Option<EdtfString>,
-    language: Option<String>,
-    note: Option<String>,
-    doi: Option<String>,
-) -> InputReference {
+fn from_dataset_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::Dataset(Box::new(Dataset {
-        id,
-        title,
+        id: ctx.id,
+        title: ctx.title,
         author: legacy.author.map(Contributor::from),
-        issued,
+        issued: ctx.issued,
         publisher: legacy.publisher.map(|n| {
             Contributor::SimpleName(SimpleName {
                 name: n.into(),
@@ -490,56 +404,43 @@ fn from_dataset_ref(
         format: None,
         size: None,
         repository: None,
-        doi,
-        url,
-        accessed,
-        language,
+        doi: ctx.doi,
+        url: ctx.url,
+        accessed: ctx.accessed,
+        language: ctx.language,
         field_languages: HashMap::new(),
-        note: note.clone(),
+        note: ctx.note,
         keywords: None,
     }))
 }
 
-#[allow(clippy::too_many_arguments)]
-fn from_document_ref(
-    legacy: csl_legacy::csl_json::Reference,
-    id: Option<String>,
-    title: Option<Title>,
-    issued: EdtfString,
-    url: Option<Url>,
-    accessed: Option<EdtfString>,
-    language: Option<String>,
-    note: Option<String>,
-    doi: Option<String>,
-    isbn: Option<String>,
-    edition: Option<String>,
-) -> InputReference {
+fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::Monograph(Box::new(Monograph {
-        id,
+        id: ctx.id,
         r#type: MonographType::Document,
-        title,
+        title: ctx.title,
         container_title: legacy.container_title.clone().map(Title::Single),
         author: legacy.author.map(Contributor::from),
         editor: legacy.editor.map(Contributor::from),
         translator: legacy.translator.map(Contributor::from),
         recipient: legacy.recipient.map(Contributor::from),
         interviewer: legacy.interviewer.map(Contributor::from),
-        issued,
+        issued: ctx.issued,
         publisher: legacy.publisher.map(|n| {
             Contributor::SimpleName(SimpleName {
                 name: n.into(),
                 location: legacy.publisher_place,
             })
         }),
-        url,
-        accessed,
-        language,
+        url: ctx.url,
+        accessed: ctx.accessed,
+        language: ctx.language,
         field_languages: HashMap::new(),
-        note,
-        isbn,
-        doi,
+        note: ctx.note,
+        isbn: ctx.isbn,
+        doi: ctx.doi,
         ads_bibcode: None,
-        edition,
+        edition: ctx.edition,
         report_number: legacy.number.map(|v| v.to_string()),
         collection_number: legacy.collection_number.map(|v| v.to_string()),
         genre: legacy.genre,
@@ -554,28 +455,27 @@ fn from_document_ref(
 
 impl From<csl_legacy::csl_json::Reference> for InputReference {
     fn from(legacy: csl_legacy::csl_json::Reference) -> Self {
-        let legacy_container_title_short =
-            short_title_from_legacy(&legacy, "container-title-short");
-        let legacy_journal_abbreviation = short_title_from_legacy(&legacy, "journalAbbreviation");
-        let id = Some(legacy.id.clone());
-        let language = legacy.language.clone();
-        let title = legacy.title.clone().map(Title::Single);
-        let issued = legacy
-            .issued
-            .clone()
-            .map(EdtfString::from)
-            .unwrap_or(EdtfString(String::new()));
-        let url = legacy.url.as_ref().and_then(|u| Url::parse(u).ok());
-        let accessed = legacy.accessed.clone().map(EdtfString::from);
-        let note = legacy.note.clone();
-        let doi = legacy.doi.clone();
-        let isbn = legacy.isbn.clone();
-        let edition = legacy.edition.as_ref().map(|e| e.to_string());
+        let ctx = RefContext {
+            id: Some(legacy.id.clone()),
+            title: legacy.title.clone().map(Title::Single),
+            issued: legacy
+                .issued
+                .clone()
+                .map(EdtfString::from)
+                .unwrap_or(EdtfString(String::new())),
+            url: legacy.url.as_ref().and_then(|u| Url::parse(u).ok()),
+            accessed: legacy.accessed.clone().map(EdtfString::from),
+            language: legacy.language.clone(),
+            note: legacy.note.clone(),
+            doi: legacy.doi.clone(),
+            isbn: legacy.isbn.clone(),
+            edition: legacy.edition.as_ref().map(|e| e.to_string()),
+            container_title_short: short_title_from_legacy(&legacy, "container-title-short"),
+            journal_abbreviation: short_title_from_legacy(&legacy, "journalAbbreviation"),
+        };
 
         match legacy.ref_type.as_str() {
-            "software" => from_software_ref(
-                legacy, id, title, issued, url, accessed, language, note, doi,
-            ),
+            "software" => from_software_ref(legacy, ctx),
             "book"
             | "report"
             | "thesis"
@@ -586,52 +486,21 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
             | "post-weblog"
             | "interview"
             | "personal_communication"
-            | "personal-communication" => from_monograph_ref(
-                legacy, id, title, issued, url, accessed, language, note, doi, isbn, edition,
-            ),
-            "chapter" | "paper-conference" | "entry-dictionary" => from_collection_component_ref(
-                legacy,
-                id,
-                title,
-                issued,
-                url,
-                accessed,
-                language,
-                note,
-                doi,
-                legacy_container_title_short,
-            ),
+            | "personal-communication" => from_monograph_ref(legacy, ctx),
+            "chapter" | "paper-conference" | "entry-dictionary" => {
+                from_collection_component_ref(legacy, ctx)
+            }
             "article-journal" | "article" | "article-magazine" | "article-newspaper"
-            | "broadcast" | "motion_picture" | "entry-encyclopedia" => from_serial_component_ref(
-                legacy,
-                id,
-                title,
-                issued,
-                url,
-                accessed,
-                language,
-                note,
-                doi,
-                legacy_container_title_short,
-                legacy_journal_abbreviation,
-            ),
-            "legal-case" | "legal_case" => from_legal_case_ref(
-                legacy, id, title, issued, url, accessed, language, note, doi,
-            ),
-            "statute" | "legislation" => {
-                from_statute_ref(legacy, id, title, issued, url, accessed, language, note)
+            | "broadcast" | "motion_picture" | "entry-encyclopedia" => {
+                from_serial_component_ref(legacy, ctx)
             }
-            "treaty" => from_treaty_ref(legacy, id, title, issued, url, accessed, language, note),
-            "standard" => {
-                from_standard_ref(legacy, id, title, issued, url, accessed, language, note)
-            }
-            "patent" => from_patent_ref(legacy, id, title, issued, url, accessed, language, note),
-            "dataset" => from_dataset_ref(
-                legacy, id, title, issued, url, accessed, language, note, doi,
-            ),
-            _ => from_document_ref(
-                legacy, id, title, issued, url, accessed, language, note, doi, isbn, edition,
-            ),
+            "legal-case" | "legal_case" => from_legal_case_ref(legacy, ctx),
+            "statute" | "legislation" => from_statute_ref(legacy, ctx),
+            "treaty" => from_treaty_ref(legacy, ctx),
+            "standard" => from_standard_ref(legacy, ctx),
+            "patent" => from_patent_ref(legacy, ctx),
+            "dataset" => from_dataset_ref(legacy, ctx),
+            _ => from_document_ref(legacy, ctx),
         }
     }
 }
