@@ -60,6 +60,27 @@ struct DisambiguationFlags {
     is_label_mode: bool,
 }
 
+struct GroupDisambiguationContext<'a> {
+    key: &'a str,
+    group: &'a [&'a Reference],
+    flags: DisambiguationFlags,
+    author_group_lengths: &'a HashMap<String, usize>,
+}
+
+#[derive(Clone, Copy)]
+struct HintPlan<'a> {
+    key: &'a str,
+    expand_given_names: bool,
+    min_names_to_show: Option<usize>,
+    disamb_condition: bool,
+}
+
+#[derive(Clone, Copy)]
+enum HintOrder {
+    Encountered,
+    GroupSorted,
+}
+
 impl<'a> Disambiguator<'a> {
     /// Creates a disambiguator that uses the default title-based fallback order.
     pub fn new(bibliography: &'a Bibliography, config: &'a Config, locale: &'a Locale) -> Self {
@@ -127,7 +148,15 @@ impl<'a> Disambiguator<'a> {
         let flags = self.disambiguation_flags();
 
         for (key, group) in grouped {
-            self.apply_group_hints(&mut hints, &key, &group, flags, &author_group_lengths);
+            self.apply_group_hints(
+                &mut hints,
+                GroupDisambiguationContext {
+                    key: &key,
+                    group: &group,
+                    flags,
+                    author_group_lengths: &author_group_lengths,
+                },
+            );
         }
 
         hints
@@ -175,113 +204,94 @@ impl<'a> Disambiguator<'a> {
     fn apply_group_hints(
         &self,
         hints: &mut HashMap<String, ProcHints>,
-        key: &str,
-        group: &[&Reference],
-        flags: DisambiguationFlags,
-        author_group_lengths: &HashMap<String, usize>,
+        context: GroupDisambiguationContext<'_>,
     ) {
-        if self.try_apply_singleton_hint(hints, group, author_group_lengths) {
+        if self.try_apply_singleton_hint(hints, &context) {
             return;
         }
 
-        if self.try_apply_label_mode_year_suffix(hints, key, group, flags, author_group_lengths) {
+        if self.try_apply_label_mode_year_suffix(hints, &context) {
             return;
         }
 
-        if self.try_apply_name_partitions(hints, key, group, flags, author_group_lengths) {
+        if self.try_apply_name_partitions(hints, &context) {
             return;
         }
 
-        if self.try_apply_givenname_resolution(hints, key, group, flags, author_group_lengths) {
+        if self.try_apply_givenname_resolution(hints, &context) {
             return;
         }
 
-        if self.try_apply_combined_resolution(hints, key, group, flags, author_group_lengths) {
+        if self.try_apply_combined_resolution(hints, &context) {
             return;
         }
 
-        self.apply_year_suffix(hints, group, key, false, author_group_lengths, None);
+        self.apply_year_suffix(hints, &context, false, None);
     }
 
     fn try_apply_singleton_hint(
         &self,
         hints: &mut HashMap<String, ProcHints>,
-        group: &[&Reference],
-        author_group_lengths: &HashMap<String, usize>,
+        context: &GroupDisambiguationContext<'_>,
     ) -> bool {
-        if group.len() != 1 {
+        if context.group.len() != 1 {
             return false;
         }
 
-        self.insert_hint(hints, group[0], author_group_lengths, ProcHints::default());
+        self.insert_hint(
+            hints,
+            context.group[0],
+            context.author_group_lengths,
+            ProcHints::default(),
+        );
         true
     }
 
     fn try_apply_label_mode_year_suffix(
         &self,
         hints: &mut HashMap<String, ProcHints>,
-        key: &str,
-        group: &[&Reference],
-        flags: DisambiguationFlags,
-        author_group_lengths: &HashMap<String, usize>,
+        context: &GroupDisambiguationContext<'_>,
     ) -> bool {
-        if !(flags.is_label_mode && flags.year_suffix) {
+        if !(context.flags.is_label_mode && context.flags.year_suffix) {
             return false;
         }
 
-        self.apply_year_suffix(hints, group, key, false, author_group_lengths, None);
+        self.apply_year_suffix(hints, context, false, None);
         true
     }
 
     fn try_apply_name_partitions(
         &self,
         hints: &mut HashMap<String, ProcHints>,
-        key: &str,
-        group: &[&Reference],
-        flags: DisambiguationFlags,
-        author_group_lengths: &HashMap<String, usize>,
+        context: &GroupDisambiguationContext<'_>,
     ) -> bool {
-        if !flags.add_names {
+        if !context.flags.add_names {
             return false;
         }
 
-        let Some((min_names_to_show, partitions)) = self.partition_by_name_expansion(group) else {
+        let Some((min_names_to_show, partitions)) = self.partition_by_name_expansion(context.group)
+        else {
             return false;
         };
 
         for subgroup in partitions.values() {
             if subgroup.len() == 1 {
-                self.apply_resolution(
-                    hints,
-                    subgroup,
-                    key,
-                    author_group_lengths,
-                    false,
-                    Some(min_names_to_show),
-                );
+                self.apply_resolution(hints, subgroup, context, false, Some(min_names_to_show));
                 continue;
             }
 
-            if flags.add_givenname
+            if context.flags.add_givenname
                 && self.check_givenname_resolution(subgroup, Some(min_names_to_show))
             {
-                self.apply_resolution(
-                    hints,
-                    subgroup,
-                    key,
-                    author_group_lengths,
-                    true,
-                    Some(min_names_to_show),
-                );
+                self.apply_resolution(hints, subgroup, context, true, Some(min_names_to_show));
                 continue;
             }
 
-            self.apply_year_suffix(
+            self.apply_year_suffix_for_group(
                 hints,
                 subgroup,
-                key,
+                context,
                 false,
-                author_group_lengths,
                 Some(min_names_to_show),
             );
         }
@@ -292,43 +302,30 @@ impl<'a> Disambiguator<'a> {
     fn try_apply_givenname_resolution(
         &self,
         hints: &mut HashMap<String, ProcHints>,
-        key: &str,
-        group: &[&Reference],
-        flags: DisambiguationFlags,
-        author_group_lengths: &HashMap<String, usize>,
+        context: &GroupDisambiguationContext<'_>,
     ) -> bool {
-        if !(flags.add_givenname && self.check_givenname_resolution(group, None)) {
+        if !(context.flags.add_givenname && self.check_givenname_resolution(context.group, None)) {
             return false;
         }
 
-        self.apply_resolution(hints, group, key, author_group_lengths, true, None);
+        self.apply_resolution(hints, context.group, context, true, None);
         true
     }
 
     fn try_apply_combined_resolution(
         &self,
         hints: &mut HashMap<String, ProcHints>,
-        key: &str,
-        group: &[&Reference],
-        flags: DisambiguationFlags,
-        author_group_lengths: &HashMap<String, usize>,
+        context: &GroupDisambiguationContext<'_>,
     ) -> bool {
-        if !flags.add_names || !flags.add_givenname {
+        if !context.flags.add_names || !context.flags.add_givenname {
             return false;
         }
 
-        let Some(min_names_to_show) = self.find_combined_resolution(group) else {
+        let Some(min_names_to_show) = self.find_combined_resolution(context.group) else {
             return false;
         };
 
-        self.apply_resolution(
-            hints,
-            group,
-            key,
-            author_group_lengths,
-            true,
-            Some(min_names_to_show),
-        );
+        self.apply_resolution(hints, context.group, context, true, Some(min_names_to_show));
         true
     }
 
@@ -346,26 +343,22 @@ impl<'a> Disambiguator<'a> {
         &self,
         hints: &mut HashMap<String, ProcHints>,
         group: &[&Reference],
-        key: &str,
-        author_group_lengths: &HashMap<String, usize>,
+        context: &GroupDisambiguationContext<'_>,
         expand_given_names: bool,
         min_names_to_show: Option<usize>,
     ) {
-        for (idx, reference) in group.iter().enumerate() {
-            self.insert_hint(
-                hints,
-                reference,
-                author_group_lengths,
-                ProcHints {
-                    disamb_condition: false,
-                    group_index: idx + 1,
-                    group_key: key.to_string(),
-                    expand_given_names,
-                    min_names_to_show,
-                    ..Default::default()
-                },
-            );
-        }
+        self.insert_group_hints(
+            hints,
+            group,
+            context.author_group_lengths,
+            HintPlan {
+                key: context.key,
+                expand_given_names,
+                min_names_to_show,
+                disamb_condition: false,
+            },
+            HintOrder::Encountered,
+        );
     }
 
     fn insert_hint(
@@ -393,18 +386,78 @@ impl<'a> Disambiguator<'a> {
     fn apply_year_suffix(
         &self,
         hints: &mut HashMap<String, ProcHints>,
-        group: &[&Reference],
-        key: &str,
+        context: &GroupDisambiguationContext<'_>,
         expand_given_names: bool,
-        author_group_lengths: &HashMap<String, usize>,
         min_names_to_show: Option<usize>,
     ) {
-        let sorted_group = if let Some(sort_spec) = self.group_sort {
-            // Use GroupSorter for per-group ordering
+        self.apply_year_suffix_for_group(
+            hints,
+            context.group,
+            context,
+            expand_given_names,
+            min_names_to_show,
+        );
+    }
+
+    fn apply_year_suffix_for_group(
+        &self,
+        hints: &mut HashMap<String, ProcHints>,
+        group: &[&Reference],
+        context: &GroupDisambiguationContext<'_>,
+        expand_given_names: bool,
+        min_names_to_show: Option<usize>,
+    ) {
+        self.insert_group_hints(
+            hints,
+            group,
+            context.author_group_lengths,
+            HintPlan {
+                key: context.key,
+                expand_given_names,
+                min_names_to_show,
+                disamb_condition: true,
+            },
+            HintOrder::GroupSorted,
+        );
+    }
+
+    fn insert_group_hints(
+        &self,
+        hints: &mut HashMap<String, ProcHints>,
+        group: &[&Reference],
+        author_group_lengths: &HashMap<String, usize>,
+        plan: HintPlan<'_>,
+        order: HintOrder,
+    ) {
+        for (idx, reference) in self.ordered_group(group, order).iter().enumerate() {
+            self.insert_hint(
+                hints,
+                reference,
+                author_group_lengths,
+                ProcHints {
+                    disamb_condition: plan.disamb_condition,
+                    group_index: idx + 1,
+                    group_key: plan.key.to_string(),
+                    expand_given_names: plan.expand_given_names,
+                    min_names_to_show: plan.min_names_to_show,
+                    ..Default::default()
+                },
+            );
+        }
+    }
+
+    fn ordered_group<'b>(&self, group: &[&'b Reference], order: HintOrder) -> Vec<&'b Reference> {
+        match order {
+            HintOrder::Encountered => group.to_vec(),
+            HintOrder::GroupSorted => self.sort_group_for_year_suffix(group),
+        }
+    }
+
+    fn sort_group_for_year_suffix<'b>(&self, group: &[&'b Reference]) -> Vec<&'b Reference> {
+        if let Some(sort_spec) = self.group_sort {
             let sorter = GroupSorter::new(self.locale);
             sorter.sort_references(group.to_vec(), sort_spec)
         } else {
-            // Fallback to title sorting (default behavior)
             let mut sorted: Vec<&Reference> = group.to_vec();
             sorted.sort_by(|a, b| {
                 let a_title = a
@@ -420,22 +473,6 @@ impl<'a> Disambiguator<'a> {
                 a_title.cmp(&b_title)
             });
             sorted
-        };
-
-        for (i, reference) in sorted_group.iter().enumerate() {
-            self.insert_hint(
-                hints,
-                reference,
-                author_group_lengths,
-                ProcHints {
-                    disamb_condition: true,
-                    group_index: i + 1,
-                    group_key: key.to_string(),
-                    expand_given_names,
-                    min_names_to_show,
-                    ..Default::default()
-                },
-            );
         }
     }
 
