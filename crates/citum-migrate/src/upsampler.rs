@@ -768,7 +768,90 @@ impl Upsampler {
         }
     }
 
-    #[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
+    #[allow(clippy::too_many_arguments)]
+    fn apply_name_child_options(
+        &self,
+        n: &legacy::Names,
+        variable: &csln::Variable,
+        options: &mut csln::NamesOptions,
+        et_al_min: &mut Option<usize>,
+        et_al_use_first: &mut Option<usize>,
+        et_al_term: &mut String,
+    ) {
+        for child in &n.children {
+            match child {
+                LNode::Name(name) => {
+                    options.mode = match name.form.as_deref() {
+                        Some("short") => Some(csln::NameMode::Short),
+                        Some("count") => Some(csln::NameMode::Count),
+                        _ => Some(csln::NameMode::Long),
+                    };
+                    options.and = match name.and.as_deref() {
+                        Some("text") => Some(csln::AndTerm::Text),
+                        Some("symbol") => Some(csln::AndTerm::Symbol),
+                        _ => None,
+                    };
+                    options.initialize_with = name.initialize_with.clone();
+                    options.sort_separator = name.sort_separator.clone();
+                    options.name_as_sort_order = match name.name_as_sort_order.as_deref() {
+                        Some("first") => Some(csln::NameAsSortOrder::First),
+                        Some("all") => Some(csln::NameAsSortOrder::All),
+                        _ => None,
+                    };
+                    options.delimiter_precedes_last = match name.delimiter_precedes_last.as_deref()
+                    {
+                        Some("contextual") => Some(csln::DelimiterPrecedes::Contextual),
+                        Some("after-inverted-name") => {
+                            Some(csln::DelimiterPrecedes::AfterInvertedName)
+                        }
+                        Some("always") => Some(csln::DelimiterPrecedes::Always),
+                        Some("never") => Some(csln::DelimiterPrecedes::Never),
+                        _ => None,
+                    };
+
+                    // Name node can also have et-al attributes
+                    if name.et_al_min.is_some() {
+                        *et_al_min = name.et_al_min;
+                    }
+                    if name.et_al_use_first.is_some() {
+                        *et_al_use_first = name.et_al_use_first;
+                    }
+                }
+                LNode::Label(label) => {
+                    options.label = Some(csln::LabelOptions {
+                        variable: variable.clone(),
+                        form: self.map_label_form(&label.form),
+                        pluralize: true,
+                        formatting: self.map_formatting(
+                            &label.formatting,
+                            &label.prefix,
+                            &label.suffix,
+                            None,
+                            label.strip_periods,
+                        ),
+                    });
+                }
+                LNode::EtAl(et_al) => {
+                    if let Some(term) = &et_al.term {
+                        *et_al_term = term.clone();
+                    }
+                    // Formatting from et-al node? Legacy model needs to capture it.
+                    // For now, default.
+                }
+                LNode::Substitute(sub) => {
+                    for sub_node in &sub.children {
+                        if let LNode::Names(sub_names) = sub_node
+                            && let Some(sub_var) = self.map_variable(&sub_names.variable)
+                        {
+                            options.substitute.push(sub_var);
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
     fn map_names(&self, n: &legacy::Names) -> Option<csln::CslnNode> {
         let vars: Vec<&str> = n.variable.split_whitespace().collect();
         if vars.is_empty() {
@@ -813,78 +896,14 @@ impl Upsampler {
         let mut et_al_term = "et al.".to_string();
         let et_al_formatting = FormattingOptions::default();
 
-        for child in &n.children {
-            match child {
-                LNode::Name(name) => {
-                    options.mode = match name.form.as_deref() {
-                        Some("short") => Some(csln::NameMode::Short),
-                        Some("count") => Some(csln::NameMode::Count),
-                        _ => Some(csln::NameMode::Long),
-                    };
-                    options.and = match name.and.as_deref() {
-                        Some("text") => Some(csln::AndTerm::Text),
-                        Some("symbol") => Some(csln::AndTerm::Symbol),
-                        _ => None,
-                    };
-                    options.initialize_with = name.initialize_with.clone();
-                    options.sort_separator = name.sort_separator.clone();
-                    options.name_as_sort_order = match name.name_as_sort_order.as_deref() {
-                        Some("first") => Some(csln::NameAsSortOrder::First),
-                        Some("all") => Some(csln::NameAsSortOrder::All),
-                        _ => None,
-                    };
-                    options.delimiter_precedes_last = match name.delimiter_precedes_last.as_deref()
-                    {
-                        Some("contextual") => Some(csln::DelimiterPrecedes::Contextual),
-                        Some("after-inverted-name") => {
-                            Some(csln::DelimiterPrecedes::AfterInvertedName)
-                        }
-                        Some("always") => Some(csln::DelimiterPrecedes::Always),
-                        Some("never") => Some(csln::DelimiterPrecedes::Never),
-                        _ => None,
-                    };
-
-                    // Name node can also have et-al attributes
-                    if name.et_al_min.is_some() {
-                        et_al_min = name.et_al_min;
-                    }
-                    if name.et_al_use_first.is_some() {
-                        et_al_use_first = name.et_al_use_first;
-                    }
-                }
-                LNode::Label(label) => {
-                    options.label = Some(csln::LabelOptions {
-                        variable: variable.clone(),
-                        form: self.map_label_form(&label.form),
-                        pluralize: true,
-                        formatting: self.map_formatting(
-                            &label.formatting,
-                            &label.prefix,
-                            &label.suffix,
-                            None,
-                            label.strip_periods,
-                        ),
-                    });
-                }
-                LNode::EtAl(et_al) => {
-                    if let Some(term) = &et_al.term {
-                        et_al_term = term.clone();
-                    }
-                    // Formatting from et-al node? Legacy model needs to capture it.
-                    // For now, default.
-                }
-                LNode::Substitute(sub) => {
-                    for sub_node in &sub.children {
-                        if let LNode::Names(sub_names) = sub_node
-                            && let Some(sub_var) = self.map_variable(&sub_names.variable)
-                        {
-                            options.substitute.push(sub_var);
-                        }
-                    }
-                }
-                _ => {}
-            }
-        }
+        self.apply_name_child_options(
+            n,
+            &variable,
+            &mut options,
+            &mut et_al_min,
+            &mut et_al_use_first,
+            &mut et_al_term,
+        );
 
         if let Some(min) = et_al_min {
             options.et_al = Some(csln::EtAlOptions {
