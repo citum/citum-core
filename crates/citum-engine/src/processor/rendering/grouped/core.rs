@@ -1,6 +1,14 @@
-use super::GroupRenderParams;
-use super::*;
-use crate::render::ProcTemplate;
+use super::super::{
+    GroupRenderParams, Renderer, TemplateComponentTracker, TemplateRenderParams,
+    TemplateRenderRequest, find_grouping_component, get_variable_key, has_contributor_component,
+    leading_group_affix, strip_author_component, strip_leading_group_affixes,
+};
+use super::group_citation_items_by_author;
+use crate::error::ProcessorError;
+use crate::reference::Reference;
+use crate::render::{ProcTemplate, ProcTemplateComponent};
+use crate::values::{ComponentValues, ProcHints, RenderContext, RenderOptions};
+use citum_schema::template::TemplateComponent;
 
 struct GroupRenderState<'a> {
     first_item: &'a crate::reference::CitationItem,
@@ -21,38 +29,6 @@ struct GroupItemRenderRequest<'a> {
     suppress_author: bool,
     position: Option<&'a citum_schema::citation::Position>,
     delimiter: &'a str,
-}
-
-pub(super) fn group_citation_items_by_author<'a>(
-    renderer: &Renderer<'_>,
-    items: &'a [crate::reference::CitationItem],
-) -> Vec<(String, Vec<&'a crate::reference::CitationItem>)> {
-    let preserve_individual_citations = items.iter().any(|item| {
-        renderer
-            .hints
-            .get(&item.id)
-            .is_some_and(|hints| hints.min_names_to_show.is_some() || hints.expand_given_names)
-    });
-
-    let mut groups: Vec<(String, Vec<&'a crate::reference::CitationItem>)> = Vec::new();
-
-    for item in items {
-        let reference = renderer.bibliography.get(&item.id);
-        let author_key = if preserve_individual_citations {
-            item.id.clone()
-        } else {
-            reference.map(author_grouping_key).unwrap_or_default()
-        };
-
-        match groups.last_mut() {
-            Some(group) if !author_key.is_empty() && group.0 == author_key => {
-                group.1.push(item);
-            }
-            _ => groups.push((author_key, vec![item])),
-        }
-    }
-
-    groups
 }
 
 impl<'a> Renderer<'a> {
@@ -628,7 +604,7 @@ impl<'a> Renderer<'a> {
     }
 
     /// Get the citation number for a reference, assigning one if not yet cited.
-    pub(super) fn get_or_assign_citation_number(&self, ref_id: &str) -> usize {
+    pub fn get_or_assign_citation_number(&self, ref_id: &str) -> usize {
         let mut numbers = self.citation_numbers.borrow_mut();
         let next_num = numbers.len() + 1;
         *numbers.entry(ref_id.to_string()).or_insert(next_num)
@@ -736,7 +712,8 @@ impl<'a> Renderer<'a> {
         )
     }
 
-    pub(super) fn process_template_request_with_format<F>(
+    /// Process a template request with a specific output format.
+    pub fn process_template_request_with_format<F>(
         &self,
         reference: &Reference,
         request: TemplateRenderRequest<'_>,
@@ -968,24 +945,39 @@ impl<'a> Renderer<'a> {
         self.render_item_from_template_with_format::<F>(reference, request, item_request.delimiter)
     }
 }
+/// Resolves a template component by applying type-specific overrides.
+fn resolve_component_for_ref_type(
+    component: &TemplateComponent,
+    ref_type: &str,
+) -> TemplateComponent {
+    use citum_schema::template::ComponentOverride;
 
-fn author_grouping_key(reference: &Reference) -> String {
-    reference
-        .author()
-        .map_or_else(
-            || {
-                reference.editor().map_or_else(
-                    || {
-                        reference
-                            .title()
-                            .map_or_else(String::new, |title| title.to_string())
-                    },
-                    |editor| editor.to_string(),
-                )
-            },
-            |author| author.to_string(),
-        )
-        .to_lowercase()
+    let Some(overrides) = component.overrides() else {
+        return component.clone();
+    };
+
+    let mut specific: Option<TemplateComponent> = None;
+    let mut default_fallback: Option<TemplateComponent> = None;
+    let mut type_matched = false;
+
+    for (selector, ov) in overrides {
+        if selector.matches(ref_type) {
+            type_matched = true;
+            if let ComponentOverride::Component(c) = ov {
+                specific = Some((**c).clone());
+            }
+        } else if selector.matches("default")
+            && let ComponentOverride::Component(c) = ov
+        {
+            default_fallback = Some((**c).clone());
+        }
+    }
+
+    if type_matched {
+        specific.unwrap_or_else(|| component.clone())
+    } else {
+        default_fallback.unwrap_or_else(|| component.clone())
+    }
 }
 
 pub(super) fn filter_author_from_template(
