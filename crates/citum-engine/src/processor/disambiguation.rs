@@ -429,28 +429,41 @@ impl<'a> Disambiguator<'a> {
         plan: HintPlan<'_>,
         order: HintOrder,
     ) {
-        for (idx, reference) in self.ordered_group(group, order).iter().enumerate() {
-            self.insert_hint(
-                hints,
-                reference,
-                author_group_lengths,
-                ProcHints {
-                    disamb_condition: plan.disamb_condition,
-                    group_index: idx + 1,
-                    group_key: plan.key.to_string(),
-                    expand_given_names: plan.expand_given_names,
-                    min_names_to_show: plan.min_names_to_show,
-                    ..Default::default()
-                },
-            );
+        match order {
+            HintOrder::Encountered => {
+                for (idx, reference) in group.iter().enumerate() {
+                    self.insert_planned_hint(hints, reference, author_group_lengths, plan, idx + 1);
+                }
+            }
+            HintOrder::GroupSorted => {
+                for (idx, reference) in self.sort_group_for_year_suffix(group).iter().enumerate() {
+                    self.insert_planned_hint(hints, reference, author_group_lengths, plan, idx + 1);
+                }
+            }
         }
     }
 
-    fn ordered_group<'b>(&self, group: &[&'b Reference], order: HintOrder) -> Vec<&'b Reference> {
-        match order {
-            HintOrder::Encountered => group.to_vec(),
-            HintOrder::GroupSorted => self.sort_group_for_year_suffix(group),
-        }
+    fn insert_planned_hint(
+        &self,
+        hints: &mut HashMap<String, ProcHints>,
+        reference: &Reference,
+        author_group_lengths: &HashMap<String, usize>,
+        plan: HintPlan<'_>,
+        group_index: usize,
+    ) {
+        self.insert_hint(
+            hints,
+            reference,
+            author_group_lengths,
+            ProcHints {
+                disamb_condition: plan.disamb_condition,
+                group_index,
+                group_key: plan.key.to_string(),
+                expand_given_names: plan.expand_given_names,
+                min_names_to_show: plan.min_names_to_show,
+                ..Default::default()
+            },
+        );
     }
 
     fn sort_group_for_year_suffix<'b>(&self, group: &[&'b Reference]) -> Vec<&'b Reference> {

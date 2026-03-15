@@ -6,6 +6,12 @@ struct GroupRenderState<'a> {
     template: Vec<TemplateComponent>,
 }
 
+struct ItemRenderState<'a> {
+    item: &'a crate::reference::CitationItem,
+    reference: &'a Reference,
+    template: Vec<TemplateComponent>,
+}
+
 struct GroupItemRenderRequest<'a> {
     item: &'a crate::reference::CitationItem,
     template: &'a [TemplateComponent],
@@ -91,9 +97,9 @@ impl<'a> Renderer<'a> {
         for item in group {
             let state = self.resolve_item_render_state(item, spec)?;
             if let Some(item_str) = self.render_group_item_from_template_with_format::<F>(
-                state.first_ref,
+                state.reference,
                 GroupItemRenderRequest {
-                    item,
+                    item: state.item,
                     template: &state.template,
                     mode,
                     suppress_author,
@@ -138,9 +144,9 @@ impl<'a> Renderer<'a> {
         for item in group {
             let state = self.resolve_item_render_state(item, spec)?;
             if let Some(item_str) = self.render_group_item_from_template_with_format::<F>(
-                state.first_ref,
+                state.reference,
                 GroupItemRenderRequest {
-                    item,
+                    item: state.item,
                     template: &state.template,
                     mode,
                     suppress_author,
@@ -280,17 +286,17 @@ impl<'a> Renderer<'a> {
         &'b self,
         item: &'b crate::reference::CitationItem,
         spec: &'b citum_schema::CitationSpec,
-    ) -> Result<GroupRenderState<'b>, ProcessorError> {
-        let first_ref = self
+    ) -> Result<ItemRenderState<'b>, ProcessorError> {
+        let reference = self
             .bibliography
             .get(&item.id)
             .ok_or_else(|| ProcessorError::ReferenceNotFound(item.id.clone()))?;
-        let item_language = crate::values::effective_item_language(first_ref);
+        let item_language = crate::values::effective_item_language(reference);
         let item_template = spec.resolve_template_for_language(item_language.as_deref());
 
-        Ok(GroupRenderState {
-            first_item: item,
-            first_ref,
+        Ok(ItemRenderState {
+            item,
+            reference,
             template: item_template.unwrap_or_default(),
         })
     }
@@ -956,9 +962,9 @@ impl<'a> Renderer<'a> {
                 intra_delimiter
             };
             if let Some(item_str) = self.render_group_item_from_template_with_format::<F>(
-                state.first_ref,
+                state.reference,
                 GroupItemRenderRequest {
-                    item,
+                    item: state.item,
                     template: &filtered_template,
                     mode,
                     suppress_author,
