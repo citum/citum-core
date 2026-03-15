@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: normal
 created_at: 2026-03-15T13:16:42Z
-updated_at: 2026-03-15T15:22:26Z
+updated_at: 2026-03-15T15:36:03Z
 ---
 
 Reviewer-pattern refinement pass. One file per session.
@@ -33,3 +33,12 @@ Completed grouped citation rendering refactor (csl26-ey6s):
 - Made TemplateRenderRequest public for split impl blocks
 - Added 3 regression tests for grouped citation modes
 - All 709 tests passing, verification gate clean
+
+## 2026-03-15: Task 3 - Djot Adapter Refactor
+
+Completed djot adapter/pipeline refactor (csl26-5zzb):
+- Split djot.rs into djot/mod.rs + djot/parsing.rs submodules
+- Extracted winnow parsers, frontmatter, scope tracking to djot/parsing.rs
+- Created explicit parser boundary through CitationParser trait
+- Added 3 djot adapter tests (citation extraction, footnotes, multiple cites)
+- All 712 tests passing, verification gate clean

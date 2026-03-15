@@ -11,7 +11,9 @@ use common::*;
 use citum_engine::{
     Processor,
     io::load_bibliography,
-    processor::document::{DocumentFormat, djot::DjotParser, markdown::MarkdownParser},
+    processor::document::{
+        CitationParser, DocumentFormat, djot::DjotParser, markdown::MarkdownParser,
+    },
 };
 use citum_schema::{
     BibliographySpec, Locale, Style, StyleInfo,
@@ -806,6 +808,77 @@ mod markdown_documents {
             "Markdown integral citations rendered with a note style should generate note content instead of inline prose cites.",
         );
         super::given_markdown_integral_note_citation_when_rendered_with_a_note_style_then_a_generated_note_is_emitted();
+    }
+}
+
+// --- Djot Adapter & Pipeline Tests ---
+
+fn djot_parser_extracts_citations_from_simple_document() {
+    let document = "A citation [@kuhn1962] appears here.";
+    let parser = DjotParser;
+
+    let parsed = parser.parse_document(document, &Locale::en_us());
+    assert_eq!(parsed.citations.len(), 1, "Should extract one citation");
+    assert_eq!(parsed.citations[0].citation.items[0].id, "kuhn1962");
+}
+
+fn djot_parser_respects_manual_footnotes() {
+    let document = "Text[^m1].\n\n[^m1]: See [@kuhn1962].";
+    let parser = DjotParser;
+
+    let parsed = parser.parse_document(document, &Locale::en_us());
+    assert_eq!(
+        parsed.manual_note_order.len(),
+        1,
+        "Should track one manual note"
+    );
+    assert_eq!(parsed.manual_note_order[0], "m1");
+    assert_eq!(
+        parsed.citations.len(),
+        1,
+        "Should extract citation in footnote"
+    );
+}
+
+fn djot_parsing_handles_multiple_citations() {
+    let document = "First [@smith2020] and second [@jones2021] citations.";
+    let parser = DjotParser;
+
+    let parsed = parser.parse_document(document, &Locale::en_us());
+    assert_eq!(
+        parsed.citations.len(),
+        2,
+        "Should extract two separate citations"
+    );
+    assert_eq!(parsed.citations[0].citation.items[0].id, "smith2020");
+    assert_eq!(parsed.citations[1].citation.items[0].id, "jones2021");
+}
+
+mod djot_adapter {
+    use super::announce_behavior;
+
+    #[test]
+    fn simple_document_citation_extraction() {
+        announce_behavior(
+            "The Djot parser adapter should extract citations from simple documents.",
+        );
+        super::djot_parser_extracts_citations_from_simple_document();
+    }
+
+    #[test]
+    fn manual_footnotes_are_tracked() {
+        announce_behavior(
+            "The Djot parser should track manual footnotes and citations within them.",
+        );
+        super::djot_parser_respects_manual_footnotes();
+    }
+
+    #[test]
+    fn multiple_citations_extraction() {
+        announce_behavior(
+            "The Djot parser should extract multiple citations from a single document.",
+        );
+        super::djot_parsing_handles_multiple_citations();
     }
 }
 
