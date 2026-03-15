@@ -20,7 +20,7 @@ use clap_complete::{Shell, generate};
 #[cfg(feature = "schema")]
 use schemars::schema_for;
 use serde::Serialize;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fmt::Write as _;
 use std::fs;
@@ -889,28 +889,22 @@ fn run_render_refs(args: RenderRefsArgs) -> Result<(), Box<dyn Error>> {
         }
     };
 
+    let render_ctx = RenderContext {
+        processor: &processor,
+        style_name: &style_name,
+        item_ids: &item_ids,
+        annotations: annotations.as_ref(),
+        annotation_style: &annotation_style,
+    };
     let output = if args.json {
-        render_refs_json(
-            &processor,
-            &style_name,
-            args.mode,
-            &item_ids,
-            input_citations,
-            args.format,
-            annotations.as_ref(),
-            &annotation_style,
-        )?
+        render_refs_json(&render_ctx, args.mode, input_citations, args.format)?
     } else {
         render_refs_human(
-            &processor,
-            &style_name,
+            &render_ctx,
             args.mode,
-            &item_ids,
             input_citations,
             args.show_keys,
             args.format,
-            annotations.as_ref(),
-            &annotation_style,
         )?
     };
 
@@ -1715,84 +1709,53 @@ fn to_document_format(output_format: OutputFormat) -> Result<DocumentFormat, Box
     }
 }
 
+/// Shared rendering context threaded through the reference-rendering call chain.
+struct RenderContext<'a> {
+    /// The configured citation processor.
+    processor: &'a citum_engine::Processor,
+    /// Display name of the active style.
+    style_name: &'a str,
+    /// Reference IDs to render.
+    item_ids: &'a [String],
+    /// Optional annotation map (reference ID → annotation text).
+    annotations: Option<&'a HashMap<String, String>>,
+    /// Formatting style for annotations.
+    annotation_style: &'a citum_engine::io::AnnotationStyle,
+}
+
 /// Render bibliography/citation output as a human-readable string.
 ///
 /// Dispatches to the correct monomorphised format renderer based on `output_format`.
-#[allow(clippy::too_many_arguments)]
 fn render_refs_human(
-    processor: &Processor,
-    style_name: &str,
+    ctx: &RenderContext<'_>,
     mode: RenderMode,
-    item_ids: &[String],
     citations: Option<Vec<Citation>>,
     show_keys: bool,
     output_format: OutputFormat,
-    annotations: Option<&std::collections::HashMap<String, String>>,
-    annotation_style: &AnnotationStyle,
 ) -> Result<String, Box<dyn Error>> {
     let show_cite = matches!(mode, RenderMode::Cite | RenderMode::Both);
     let show_bib = matches!(mode, RenderMode::Bib | RenderMode::Both);
     match output_format {
-        OutputFormat::Plain => print_human_safe::<PlainText>(
-            processor,
-            style_name,
-            show_cite,
-            show_bib,
-            item_ids,
-            citations,
-            show_keys,
-            annotations,
-            annotation_style,
-        )
-        .map_err(|e| e.into()),
-        OutputFormat::Html => print_human_safe::<Html>(
-            processor,
-            style_name,
-            show_cite,
-            show_bib,
-            item_ids,
-            citations,
-            show_keys,
-            annotations,
-            annotation_style,
-        )
-        .map_err(|e| e.into()),
-        OutputFormat::Djot => print_human_safe::<Djot>(
-            processor,
-            style_name,
-            show_cite,
-            show_bib,
-            item_ids,
-            citations,
-            show_keys,
-            annotations,
-            annotation_style,
-        )
-        .map_err(|e| e.into()),
-        OutputFormat::Latex => print_human_safe::<Latex>(
-            processor,
-            style_name,
-            show_cite,
-            show_bib,
-            item_ids,
-            citations,
-            show_keys,
-            annotations,
-            annotation_style,
-        )
-        .map_err(|e| e.into()),
-        OutputFormat::Typst => print_human_safe::<Typst>(
-            processor,
-            style_name,
-            show_cite,
-            show_bib,
-            item_ids,
-            citations,
-            show_keys,
-            annotations,
-            annotation_style,
-        )
-        .map_err(|e| e.into()),
+        OutputFormat::Plain => {
+            print_human_safe::<PlainText>(ctx, show_cite, show_bib, citations, show_keys)
+                .map_err(|e| e.into())
+        }
+        OutputFormat::Html => {
+            print_human_safe::<Html>(ctx, show_cite, show_bib, citations, show_keys)
+                .map_err(|e| e.into())
+        }
+        OutputFormat::Djot => {
+            print_human_safe::<Djot>(ctx, show_cite, show_bib, citations, show_keys)
+                .map_err(|e| e.into())
+        }
+        OutputFormat::Latex => {
+            print_human_safe::<Latex>(ctx, show_cite, show_bib, citations, show_keys)
+                .map_err(|e| e.into())
+        }
+        OutputFormat::Typst => {
+            print_human_safe::<Typst>(ctx, show_cite, show_bib, citations, show_keys)
+                .map_err(|e| e.into())
+        }
     }
 }
 
@@ -1800,70 +1763,22 @@ fn render_refs_human(
 ///
 /// Builds a JSON object containing rendered citation and/or bibliography entries,
 /// keyed by reference ID.
-#[allow(clippy::too_many_arguments)]
 fn render_refs_json(
-    processor: &Processor,
-    style_name: &str,
+    ctx: &RenderContext<'_>,
     mode: RenderMode,
-    item_ids: &[String],
     citations: Option<Vec<Citation>>,
     output_format: OutputFormat,
-    annotations: Option<&std::collections::HashMap<String, String>>,
-    annotation_style: &AnnotationStyle,
 ) -> Result<String, Box<dyn Error>> {
     let show_cite = matches!(mode, RenderMode::Cite | RenderMode::Both);
     let show_bib = matches!(mode, RenderMode::Bib | RenderMode::Both);
     match output_format {
-        OutputFormat::Plain => print_json_with_format::<PlainText>(
-            processor,
-            style_name,
-            show_cite,
-            show_bib,
-            item_ids,
-            citations,
-            annotations,
-            annotation_style,
-        ),
-        OutputFormat::Html => print_json_with_format::<Html>(
-            processor,
-            style_name,
-            show_cite,
-            show_bib,
-            item_ids,
-            citations,
-            annotations,
-            annotation_style,
-        ),
-        OutputFormat::Djot => print_json_with_format::<Djot>(
-            processor,
-            style_name,
-            show_cite,
-            show_bib,
-            item_ids,
-            citations,
-            annotations,
-            annotation_style,
-        ),
-        OutputFormat::Latex => print_json_with_format::<Latex>(
-            processor,
-            style_name,
-            show_cite,
-            show_bib,
-            item_ids,
-            citations,
-            annotations,
-            annotation_style,
-        ),
-        OutputFormat::Typst => print_json_with_format::<Typst>(
-            processor,
-            style_name,
-            show_cite,
-            show_bib,
-            item_ids,
-            citations,
-            annotations,
-            annotation_style,
-        ),
+        OutputFormat::Plain => {
+            print_json_with_format::<PlainText>(ctx, show_cite, show_bib, citations)
+        }
+        OutputFormat::Html => print_json_with_format::<Html>(ctx, show_cite, show_bib, citations),
+        OutputFormat::Djot => print_json_with_format::<Djot>(ctx, show_cite, show_bib, citations),
+        OutputFormat::Latex => print_json_with_format::<Latex>(ctx, show_cite, show_bib, citations),
+        OutputFormat::Typst => print_json_with_format::<Typst>(ctx, show_cite, show_bib, citations),
     }
 }
 
@@ -2030,17 +1945,12 @@ fn serialize_any<T: Serialize>(obj: &T, ext: &str) -> Result<Vec<u8>, Box<dyn Er
 ///
 /// Catches any Rust panics that escape the processor and converts them into an
 /// `Err` with a user-friendly message, preventing the CLI from crashing.
-#[allow(clippy::too_many_arguments)]
 fn print_human_safe<F>(
-    processor: &Processor,
-    style_name: &str,
+    ctx: &RenderContext<'_>,
     show_cite: bool,
     show_bib: bool,
-    item_ids: &[String],
     citations: Option<Vec<Citation>>,
     show_keys: bool,
-    annotations: Option<&std::collections::HashMap<String, String>>,
-    annotation_style: &AnnotationStyle,
 ) -> Result<String, String>
 where
     F: citum_engine::render::format::OutputFormat<Output = String> + Send + Sync + 'static,
@@ -2048,17 +1958,7 @@ where
     use std::panic;
 
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-        print_human::<F>(
-            processor,
-            style_name,
-            show_cite,
-            show_bib,
-            item_ids,
-            citations,
-            show_keys,
-            annotations,
-            annotation_style,
-        )
+        print_human::<F>(ctx, show_cite, show_bib, citations, show_keys)
     }));
 
     match result {
@@ -2074,30 +1974,25 @@ where
 ///
 /// Builds a formatted string containing citation clusters and/or bibliography
 /// entries, optionally prefixed with reference IDs when `show_keys` is `true`.
-#[allow(clippy::too_many_arguments)]
 fn print_human<F>(
-    processor: &Processor,
-    style_name: &str,
+    ctx: &RenderContext<'_>,
     show_cite: bool,
     show_bib: bool,
-    item_ids: &[String],
     citations: Option<Vec<Citation>>,
     show_keys: bool,
-    annotations: Option<&std::collections::HashMap<String, String>>,
-    annotation_style: &AnnotationStyle,
 ) -> String
 where
     F: citum_engine::render::format::OutputFormat<Output = String>,
 {
     let mut output = String::new();
-    let _ = writeln!(output, "\n=== {} ===\n", style_name);
+    let _ = writeln!(output, "\n=== {} ===\n", ctx.style_name);
 
     if show_cite {
         if let Some(cite_list) = citations {
             let _ = writeln!(output, "CITATIONS (From file):");
             for (i, (citation, text)) in cite_list
                 .iter()
-                .zip(render_citation_file_entries::<F>(processor, &cite_list))
+                .zip(render_citation_file_entries::<F>(ctx.processor, &cite_list))
                 .enumerate()
             {
                 if show_keys {
@@ -2113,7 +2008,7 @@ where
             }
         } else {
             let _ = writeln!(output, "CITATIONS (Non-Integral):");
-            for id in item_ids {
+            for id in ctx.item_ids {
                 let citation = Citation {
                     id: Some(id.to_string()),
                     items: vec![CitationItem {
@@ -2123,7 +2018,7 @@ where
                     mode: citum_schema::citation::CitationMode::NonIntegral,
                     ..Default::default()
                 };
-                match processor.process_citation_with_format::<F>(&citation) {
+                match ctx.processor.process_citation_with_format::<F>(&citation) {
                     Ok(text) => {
                         if show_keys {
                             let _ = writeln!(output, "  [{}] {}", id, text);
@@ -2139,7 +2034,7 @@ where
             let _ = writeln!(output);
 
             let _ = writeln!(output, "CITATIONS (Integral):");
-            for id in item_ids {
+            for id in ctx.item_ids {
                 let citation = Citation {
                     id: Some(id.to_string()),
                     items: vec![CitationItem {
@@ -2149,7 +2044,7 @@ where
                     mode: citum_schema::citation::CitationMode::Integral,
                     ..Default::default()
                 };
-                match processor.process_citation_with_format::<F>(&citation) {
+                match ctx.processor.process_citation_with_format::<F>(&citation) {
                     Ok(text) => {
                         if show_keys {
                             let _ = writeln!(output, "  [{}] {}", id, text);
@@ -2168,7 +2063,8 @@ where
 
     if show_bib {
         // Check if the style has bibliography groups defined
-        if processor
+        if ctx
+            .processor
             .style
             .bibliography
             .as_ref()
@@ -2180,14 +2076,14 @@ where
                 // When show_keys is requested, render each entry with its ID prefix so the
                 // oracle parser can match entries by key. Group headings are omitted in this
                 // mode because the oracle only looks for `[id] text` patterns.
-                let filter: HashSet<&str> = item_ids.iter().map(|id| id.as_str()).collect();
-                let processed = processor.process_references();
+                let filter: HashSet<&str> = ctx.item_ids.iter().map(|id| id.as_str()).collect();
+                let processed = ctx.processor.process_references();
                 for entry in processed.bibliography {
                     if filter.contains(entry.id.as_str()) {
                         let text = citum_engine::render::refs_to_string_with_format::<F>(
                             vec![entry.clone()],
-                            annotations,
-                            Some(annotation_style),
+                            ctx.annotations,
+                            Some(ctx.annotation_style),
                         );
                         let trimmed = text.trim();
                         if !trimmed.is_empty() {
@@ -2197,7 +2093,7 @@ where
                 }
             } else {
                 // Use grouped renderer for human-readable output (preserves group headings)
-                let grouped = processor.render_grouped_bibliography_with_format::<F>();
+                let grouped = ctx.processor.render_grouped_bibliography_with_format::<F>();
                 output.push_str(&grouped);
             }
         } else {
@@ -2206,14 +2102,14 @@ where
                 // Oracle/show_keys path: render each entry individually so entries
                 // can be matched by reference ID. Compound merging is skipped here
                 // because the oracle addresses each ref independently.
-                let filter: HashSet<&str> = item_ids.iter().map(|id| id.as_str()).collect();
-                let processed = processor.process_references();
+                let filter: HashSet<&str> = ctx.item_ids.iter().map(|id| id.as_str()).collect();
+                let processed = ctx.processor.process_references();
                 for entry in processed.bibliography {
                     if filter.contains(entry.id.as_str()) {
                         let text = citum_engine::render::refs_to_string_with_format::<F>(
                             vec![entry.clone()],
-                            annotations,
-                            Some(annotation_style),
+                            ctx.annotations,
+                            Some(ctx.annotation_style),
                         );
                         let trimmed = text.trim();
                         if !trimmed.is_empty() {
@@ -2224,8 +2120,9 @@ where
             } else {
                 // Human-readable path: use the engine bibliography renderer so
                 // compound numeric groups are merged while still honoring keys.
-                let bib =
-                    processor.render_selected_bibliography_with_format::<F, _>(item_ids.to_vec());
+                let bib = ctx
+                    .processor
+                    .render_selected_bibliography_with_format::<F, _>(ctx.item_ids.to_vec());
                 let _ = writeln!(output, "{}", bib);
             }
         }
@@ -2281,16 +2178,11 @@ where
 ///
 /// Returns a pretty-printed JSON object with `style`, `items`, and optionally
 /// `citations` and `bibliography` keys.
-#[allow(clippy::too_many_arguments)]
 fn print_json_with_format<F>(
-    processor: &Processor,
-    style_name: &str,
+    ctx: &RenderContext<'_>,
     show_cite: bool,
     show_bib: bool,
-    item_ids: &[String],
     citations: Option<Vec<Citation>>,
-    annotations: Option<&std::collections::HashMap<String, String>>,
-    annotation_style: &AnnotationStyle,
 ) -> Result<String, Box<dyn Error>>
 where
     F: citum_engine::render::format::OutputFormat<Output = String>,
@@ -2298,15 +2190,15 @@ where
     use serde_json::json;
 
     let mut result = json!({
-        "style": style_name,
-        "items": item_ids.len()
+        "style": ctx.style_name,
+        "items": ctx.item_ids.len()
     });
 
     if show_cite {
         if let Some(cite_list) = citations {
             let rendered: Vec<_> = cite_list
                 .iter()
-                .zip(render_citation_file_entries::<F>(processor, &cite_list))
+                .zip(render_citation_file_entries::<F>(ctx.processor, &cite_list))
                 .map(|(citation, text)| {
                     json!({
                         "id": citation.id,
@@ -2316,7 +2208,8 @@ where
                 .collect();
             result["citations"] = json!(rendered);
         } else {
-            let non_integral: Vec<_> = item_ids
+            let non_integral: Vec<_> = ctx
+                .item_ids
                 .iter()
                 .map(|id| {
                     let citation = Citation {
@@ -2330,14 +2223,15 @@ where
                     };
                     json!({
                         "id": id,
-                        "text": processor
+                        "text": ctx.processor
                             .process_citation_with_format::<F>(&citation)
                             .unwrap_or_else(|e| e.to_string())
                     })
                 })
                 .collect();
 
-            let integral: Vec<_> = item_ids
+            let integral: Vec<_> = ctx
+                .item_ids
                 .iter()
                 .map(|id| {
                     let citation = Citation {
@@ -2351,7 +2245,7 @@ where
                     };
                     json!({
                         "id": id,
-                        "text": processor
+                        "text": ctx.processor
                             .process_citation_with_format::<F>(&citation)
                             .unwrap_or_else(|e| e.to_string())
                     })
@@ -2366,8 +2260,8 @@ where
     }
 
     if show_bib {
-        let filter: HashSet<&str> = item_ids.iter().map(|id| id.as_str()).collect();
-        let processed = processor.process_references();
+        let filter: HashSet<&str> = ctx.item_ids.iter().map(|id| id.as_str()).collect();
+        let processed = ctx.processor.process_references();
         let entries: Vec<_> = processed
             .bibliography
             .into_iter()
@@ -2375,8 +2269,8 @@ where
             .map(|entry| {
                 let text = citum_engine::render::refs_to_string_with_format::<F>(
                     vec![entry.clone()],
-                    annotations,
-                    Some(annotation_style),
+                    ctx.annotations,
+                    Some(ctx.annotation_style),
                 );
                 json!({
                     "id": entry.id,
@@ -2605,17 +2499,17 @@ references:
             ..Default::default()
         }];
 
-        let output = print_json_with_format::<PlainText>(
-            &processor,
-            "numeric-test",
-            true,
-            false,
-            &["smith2020".to_string(), "adams2021".to_string()],
-            Some(citations),
-            None,
-            &AnnotationStyle::default(),
-        )
-        .expect("json rendering should succeed");
+        let item_ids = vec!["smith2020".to_string(), "adams2021".to_string()];
+        let annotation_style = AnnotationStyle::default();
+        let render_ctx = RenderContext {
+            processor: &processor,
+            style_name: "numeric-test",
+            item_ids: &item_ids,
+            annotations: None,
+            annotation_style: &annotation_style,
+        };
+        let output = print_json_with_format::<PlainText>(&render_ctx, true, false, Some(citations))
+            .expect("json rendering should succeed");
         let parsed: serde_json::Value =
             serde_json::from_str(&output).expect("output should be valid JSON");
 
