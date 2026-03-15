@@ -3,7 +3,144 @@ use citum_schema::template::{
     TemplateNumber, WrapPunctuation,
 };
 
-#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
+fn group_vol_issue_both_top_level(
+    components: &mut Vec<TemplateComponent>,
+    vol_idx: usize,
+    issue_idx: usize,
+    vol_issue_delimiter: DelimiterPunctuation,
+) {
+    let min_idx = vol_idx.min(issue_idx);
+    let max_idx = vol_idx.max(issue_idx);
+    components.remove(max_idx);
+    components.remove(min_idx);
+    let vol_issue_list = TemplateComponent::List(TemplateList {
+        items: vec![
+            TemplateComponent::Number(TemplateNumber {
+                number: NumberVariable::Volume,
+                form: None,
+                rendering: Rendering::default(),
+                overrides: None,
+                ..Default::default()
+            }),
+            TemplateComponent::Number(TemplateNumber {
+                number: NumberVariable::Issue,
+                form: None,
+                rendering: Rendering {
+                    wrap: Some(WrapPunctuation::Parentheses),
+                    ..Default::default()
+                },
+                overrides: None,
+                ..Default::default()
+            }),
+        ],
+        delimiter: Some(vol_issue_delimiter),
+        rendering: Rendering::default(),
+        overrides: None,
+        ..Default::default()
+    });
+    components.insert(min_idx, vol_issue_list);
+}
+
+#[allow(clippy::collapsible_if, clippy::ptr_arg)]
+fn group_vol_issue_issue_at_top(
+    components: &mut Vec<TemplateComponent>,
+    issue_idx: usize,
+    style_preset: Option<crate::preset_detector::StylePreset>,
+    vol_issue_delimiter: DelimiterPunctuation,
+) {
+    let list_idx = components.iter().enumerate().find_map(|(idx, c)| {
+        if let TemplateComponent::List(list) = c
+            && find_volume_in_list(list).is_some()
+        {
+            return Some(idx);
+        }
+        None
+    });
+
+    if let Some(list_idx) = list_idx {
+        let issue_overrides = if let Some(TemplateComponent::Number(n)) = components.get(issue_idx)
+        {
+            n.overrides.clone()
+        } else {
+            None
+        };
+
+        components.remove(issue_idx);
+
+        let adjusted_list_idx = if issue_idx < list_idx {
+            list_idx - 1
+        } else {
+            list_idx
+        };
+
+        let issue_with_parens = TemplateComponent::Number(TemplateNumber {
+            number: NumberVariable::Issue,
+            form: None,
+            rendering: Rendering {
+                wrap: Some(WrapPunctuation::Parentheses),
+                ..Default::default()
+            },
+            overrides: issue_overrides,
+            ..Default::default()
+        });
+
+        if let Some(TemplateComponent::List(list)) = components.get_mut(adjusted_list_idx)
+            && insert_issue_after_volume(
+                &mut list.items,
+                issue_with_parens,
+                vol_issue_delimiter.clone(),
+            )
+        {
+            if matches!(style_preset, Some(crate::preset_detector::StylePreset::Apa))
+                && !list_contains_title(list)
+            {
+                list.delimiter = Some(DelimiterPunctuation::Comma);
+            }
+        }
+    }
+}
+
+#[allow(clippy::ptr_arg)]
+fn group_vol_issue_both_nested(
+    components: &mut Vec<TemplateComponent>,
+    vol_issue_delimiter: DelimiterPunctuation,
+) {
+    let issue_exists_nested = find_issue_in_components(components);
+    let volume_exists_nested = components.iter().any(|c| {
+        if let TemplateComponent::List(list) = c {
+            find_volume_in_list(list).is_some()
+        } else {
+            false
+        }
+    });
+
+    if issue_exists_nested && volume_exists_nested {
+        let issue_with_parens = TemplateComponent::Number(TemplateNumber {
+            number: NumberVariable::Issue,
+            form: None,
+            rendering: Rendering {
+                wrap: Some(WrapPunctuation::Parentheses),
+                ..Default::default()
+            },
+            overrides: None,
+            ..Default::default()
+        });
+
+        for component in components.iter_mut() {
+            if let TemplateComponent::List(list) = component
+                && find_volume_in_list(list).is_some()
+                && insert_issue_after_volume(
+                    &mut list.items,
+                    issue_with_parens.clone(),
+                    vol_issue_delimiter.clone(),
+                )
+            {
+                break;
+            }
+        }
+    }
+}
+
 pub fn group_volume_and_issue(
     components: &mut Vec<TemplateComponent>,
     options: &citum_schema::options::Config,
@@ -32,149 +169,15 @@ pub fn group_volume_and_issue(
         |c| matches!(c, TemplateComponent::Number(n) if n.number == NumberVariable::Volume),
     );
 
-    // Case 1: Both at top level - combine into a List
     if let (Some(vol_idx), Some(issue_idx)) = (vol_pos, issue_pos) {
-        let min_idx = vol_idx.min(issue_idx);
-        let max_idx = vol_idx.max(issue_idx);
-
-        // Remove from end first to preserve indices
-        components.remove(max_idx);
-        components.remove(min_idx);
-
-        let vol_issue_list = TemplateComponent::List(TemplateList {
-            items: vec![
-                TemplateComponent::Number(TemplateNumber {
-                    number: NumberVariable::Volume,
-                    form: None,
-                    rendering: Rendering::default(),
-                    overrides: None,
-                    ..Default::default()
-                }),
-                TemplateComponent::Number(TemplateNumber {
-                    number: NumberVariable::Issue,
-                    form: None,
-                    rendering: Rendering {
-                        wrap: Some(WrapPunctuation::Parentheses),
-                        ..Default::default()
-                    },
-                    overrides: None,
-                    ..Default::default()
-                }),
-            ],
-            delimiter: Some(vol_issue_delimiter),
-            rendering: Rendering::default(),
-            overrides: None,
-            ..Default::default()
-        });
-
-        components.insert(min_idx, vol_issue_list);
+        group_vol_issue_both_top_level(components, vol_idx, issue_idx, vol_issue_delimiter);
         return;
     }
 
-    // Case 2: Issue at top level, volume inside a nested List
-    // Find the List containing volume and add issue to it
     if let Some(issue_idx) = issue_pos {
-        // First, find which List index contains volume (immutable borrow)
-        let list_idx = components.iter().enumerate().find_map(|(idx, c)| {
-            if let TemplateComponent::List(list) = c
-                && find_volume_in_list(list).is_some()
-            {
-                return Some(idx);
-            }
-            None
-        });
-
-        if let Some(list_idx) = list_idx {
-            // Extract the issue's overrides before removing it
-            let issue_overrides =
-                if let Some(TemplateComponent::Number(n)) = components.get(issue_idx) {
-                    n.overrides.clone()
-                } else {
-                    None
-                };
-
-            // Remove issue from top level (adjusting for index shift if needed)
-            components.remove(issue_idx);
-
-            // Adjust list_idx if issue was before it
-            let adjusted_list_idx = if issue_idx < list_idx {
-                list_idx - 1
-            } else {
-                list_idx
-            };
-
-            // Create issue component with parentheses wrap
-            let issue_with_parens = TemplateComponent::Number(TemplateNumber {
-                number: NumberVariable::Issue,
-                form: None,
-                rendering: Rendering {
-                    wrap: Some(WrapPunctuation::Parentheses),
-                    ..Default::default()
-                },
-                overrides: issue_overrides,
-                ..Default::default()
-            });
-
-            // Now mutably access the list and add issue after volume
-            if let Some(TemplateComponent::List(list)) = components.get_mut(adjusted_list_idx) {
-                // Try to insert issue after volume - recursively searching nested lists
-                if insert_issue_after_volume(
-                    &mut list.items,
-                    issue_with_parens,
-                    vol_issue_delimiter.clone(),
-                ) {
-                    // Only update outer list delimiter if it's a serial source list
-                    // (avoid changing delimiters for lists containing titles)
-                    if matches!(style_preset, Some(crate::preset_detector::StylePreset::Apa))
-                        && !list_contains_title(list)
-                    {
-                        list.delimiter = Some(DelimiterPunctuation::Comma);
-                    }
-                }
-            }
-        }
-    }
-
-    // Case 3: Neither at top level - issue is in a nested list somewhere
-    // Find issue anywhere in nested lists and try to move it to volume's list
-    if issue_pos.is_none() && vol_pos.is_none() {
-        // Find the issue in any nested list and create a new one after volume
-        let issue_exists_nested = find_issue_in_components(components);
-        let volume_exists_nested = components.iter().any(|c| {
-            if let TemplateComponent::List(list) = c {
-                find_volume_in_list(list).is_some()
-            } else {
-                false
-            }
-        });
-
-        if issue_exists_nested && volume_exists_nested {
-            // Create issue component with parentheses wrap
-            let issue_with_parens = TemplateComponent::Number(TemplateNumber {
-                number: NumberVariable::Issue,
-                form: None,
-                rendering: Rendering {
-                    wrap: Some(WrapPunctuation::Parentheses),
-                    ..Default::default()
-                },
-                overrides: None,
-                ..Default::default()
-            });
-
-            // Find the list containing volume and add issue to it
-            for component in components.iter_mut() {
-                if let TemplateComponent::List(list) = component
-                    && find_volume_in_list(list).is_some()
-                    && insert_issue_after_volume(
-                        &mut list.items,
-                        issue_with_parens.clone(),
-                        vol_issue_delimiter.clone(),
-                    )
-                {
-                    break;
-                }
-            }
-        }
+        group_vol_issue_issue_at_top(components, issue_idx, style_preset, vol_issue_delimiter);
+    } else if vol_pos.is_none() {
+        group_vol_issue_both_nested(components, vol_issue_delimiter);
     }
 }
 
