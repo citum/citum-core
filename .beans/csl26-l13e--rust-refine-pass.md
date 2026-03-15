@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: normal
 created_at: 2026-03-15T13:16:42Z
-updated_at: 2026-03-15T13:27:28Z
+updated_at: 2026-03-15T15:22:26Z
 ---
 
 Reviewer-pattern refinement pass. One file per session.
@@ -24,3 +24,12 @@ Reviewer-pattern refinement pass. One file per session.
 - citum-migrate/src/fixups/mod.rs: refine the public fixups surface into a
   documented facade over `media`, `locator`, and `template` submodules after
   the simplify split, keeping `main.rs` call sites stable
+
+## 2026-03-15: Task 2 - Grouped Refactor
+
+Completed grouped citation rendering refactor (csl26-ey6s):
+- Split grouped.rs into grouped/core.rs + grouped/grouping.rs submodules
+- Extracted author grouping logic into public grouped/grouping.rs module
+- Made TemplateRenderRequest public for split impl blocks
+- Added 3 regression tests for grouped citation modes
+- All 709 tests passing, verification gate clean
