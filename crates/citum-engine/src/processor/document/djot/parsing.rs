@@ -1,14 +1,9 @@
-/*
-SPDX-License-Identifier: MIT OR Apache-2.0
-SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
-*/
+//! Djot-specific parsing logic using winnow.
 
-//! Djot document parsing and HTML conversion.
-
-use super::{
-    CitationParser, CitationPlacement, CitationStructure, DocumentIntegralNameOverride,
-    ManualNoteReference, ParsedCitation, ParsedDocument,
+use super::super::{
+    CitationStructure, DocumentIntegralNameOverride, ManualNoteReference, ParsedCitation,
 };
+use super::BibliographyBlock;
 use crate::{Citation, CitationItem};
 use citum_schema::citation::{CitationMode, normalize_locator_text};
 use citum_schema::grouping::BibliographyGroup;
@@ -24,16 +19,16 @@ use winnow::error::ContextError;
 use winnow::token::{take_until, take_while};
 
 #[derive(Debug, Clone)]
-struct FootnoteDefinitionRange {
-    label: String,
-    content: Range<usize>,
+pub(crate) struct FootnoteDefinitionRange {
+    pub label: String,
+    pub content: Range<usize>,
 }
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(rename_all = "kebab-case")]
-struct DocumentFrontmatter {
-    bibliography: Option<Vec<BibliographyGroup>>,
-    integral_names: Option<DocumentIntegralNameOverride>,
+pub(crate) struct DocumentFrontmatter {
+    pub bibliography: Option<Vec<BibliographyGroup>>,
+    pub integral_names: Option<DocumentIntegralNameOverride>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -50,22 +45,6 @@ struct ScopeTracker {
     section_stack: Vec<Option<String>>,
 }
 
-/// A bibliography block parsed from djot source.
-#[derive(Debug, Clone)]
-pub struct BibliographyBlock {
-    /// Byte offset of the opening `:::` in source.
-    pub start: usize,
-    /// Byte offset past the closing `:::`.
-    pub end: usize,
-    /// The bibliography group for this block.
-    pub group: BibliographyGroup,
-}
-
-/// A parser for Djot citations using winnow.
-/// Syntax: `[@key]`, `[+@key]`, or `[-@key]`. Multi-cites: `[@key1; @key2]`.
-#[derive(Default)]
-pub struct DjotParser;
-
 fn parse_suppress_author_modifier(input: &mut &str) -> winnow::Result<bool, ContextError> {
     let modifier: Option<char> = opt('-').parse_next(input)?;
     Ok(modifier.is_some())
@@ -76,55 +55,7 @@ fn parse_integral_modifier(input: &mut &str) -> winnow::Result<bool, ContextErro
     Ok(modifier.is_some())
 }
 
-impl CitationParser for DjotParser {
-    fn parse_document(&self, content: &str, locale: &Locale) -> ParsedDocument {
-        // Try to parse frontmatter and get remaining content
-        let (frontmatter, remaining_content) = parse_frontmatter(content);
-        let body_start = content.len() - remaining_content.len();
-
-        let (manual_note_references, manual_note_labels, footnote_definitions) =
-            scan_manual_notes(remaining_content);
-
-        let mut manual_note_order = Vec::new();
-        let mut seen_manual = HashSet::new();
-        for note in &manual_note_references {
-            if seen_manual.insert(note.label.clone()) {
-                manual_note_order.push(note.label.clone());
-            }
-        }
-
-        let mut citations: Vec<_> = find_citations(remaining_content, locale)
-            .into_iter()
-            .map(|(start, end, citation)| ParsedCitation {
-                start,
-                end,
-                citation,
-                placement: citation_placement(start, end, &footnote_definitions),
-                structure: CitationStructure::default(),
-            })
-            .collect();
-        annotate_citation_structures(remaining_content, &mut citations);
-
-        // Scan for inline bibliography blocks in remaining content
-        let bibliography_blocks = scan_bibliography_blocks(remaining_content);
-
-        ParsedDocument {
-            citations,
-            manual_note_order,
-            manual_note_references,
-            manual_note_labels,
-            bibliography_blocks,
-            frontmatter_groups: frontmatter
-                .as_ref()
-                .and_then(|frontmatter| frontmatter.bibliography.clone()),
-            frontmatter_integral_names: frontmatter
-                .and_then(|frontmatter| frontmatter.integral_names),
-            body_start,
-        }
-    }
-}
-
-fn scan_manual_notes(
+pub(crate) fn scan_manual_notes(
     content: &str,
 ) -> (
     Vec<ManualNoteReference>,
@@ -171,21 +102,7 @@ fn scan_manual_notes(
     )
 }
 
-fn citation_placement(
-    start: usize,
-    end: usize,
-    footnote_definitions: &[FootnoteDefinitionRange],
-) -> CitationPlacement {
-    footnote_definitions
-        .iter()
-        .find(|definition| definition.content.start <= start && end <= definition.content.end)
-        .map(|definition| CitationPlacement::ManualFootnote {
-            label: definition.label.clone(),
-        })
-        .unwrap_or(CitationPlacement::InlineProse)
-}
-
-fn annotate_citation_structures(content: &str, citations: &mut [ParsedCitation]) {
+pub(crate) fn annotate_citation_structures(content: &str, citations: &mut [ParsedCitation]) {
     if citations.is_empty() {
         return;
     }
@@ -267,7 +184,7 @@ fn scope_for_offset(changes: &[ScopeChange], offset: usize) -> CitationStructure
         .unwrap_or_default()
 }
 
-fn find_citations(content: &str, locale: &Locale) -> Vec<(usize, usize, Citation)> {
+pub(crate) fn find_citations(content: &str, locale: &Locale) -> Vec<(usize, usize, Citation)> {
     let mut results = Vec::new();
     let mut input = content;
     let mut offset = 0;
@@ -434,7 +351,7 @@ impl ScopeTracker {
 
 /// Parse YAML frontmatter from content.
 /// Returns (frontmatter, remaining_content).
-fn parse_frontmatter(content: &str) -> (Option<DocumentFrontmatter>, &str) {
+pub(crate) fn parse_frontmatter(content: &str) -> (Option<DocumentFrontmatter>, &str) {
     let trimmed = content.trim_start();
     if !trimmed.starts_with("---") {
         return (None, content);
@@ -456,7 +373,7 @@ fn parse_frontmatter(content: &str) -> (Option<DocumentFrontmatter>, &str) {
 
 /// Scan document for inline bibliography blocks (`::: bibliography :::`)
 /// and extract their metadata from attributes.
-fn scan_bibliography_blocks(content: &str) -> Vec<BibliographyBlock> {
+pub(crate) fn scan_bibliography_blocks(content: &str) -> Vec<BibliographyBlock> {
     let mut blocks = Vec::new();
     let mut div_stack: Vec<(usize, String)> = Vec::new();
 
@@ -515,124 +432,4 @@ fn extract_group_from_attrs(_class: &str, attrs: Attributes) -> String {
     }
 
     yaml
-}
-
-/// Convert Djot markup to HTML using jotdown.
-pub fn djot_to_html(djot: &str) -> String {
-    let events = Parser::new(djot);
-    jotdown::html::render_to_string(events)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use citum_schema::citation::{CitationLocator, LocatorType};
-
-    #[test]
-    fn test_parse_multi_cite_with_locators() {
-        let parser = DjotParser;
-        let content = "[@kuhn1962; @watson1953, ch. 2]";
-        let citations = parser.parse_citations(content, &Locale::en_us());
-
-        assert_eq!(citations.len(), 1);
-        let (_, _, citation) = &citations[0];
-        assert_eq!(citation.items.len(), 2);
-        assert_eq!(citation.items[0].id, "kuhn1962");
-        assert_eq!(citation.items[1].id, "watson1953");
-        assert_eq!(
-            citation.items[1].locator,
-            Some(CitationLocator::single(LocatorType::Chapter, "2"))
-        );
-    }
-
-    #[test]
-    fn test_parse_structured_locator() {
-        let parser = DjotParser;
-        let content = "[@kuhn1962, section: 5]";
-        let citations = parser.parse_citations(content, &Locale::en_us());
-
-        assert_eq!(citations.len(), 1);
-        let (_, _, citation) = &citations[0];
-        assert_eq!(
-            citation.items[0].locator,
-            Some(CitationLocator::single(LocatorType::Section, "5"))
-        );
-    }
-
-    #[test]
-    fn test_parse_compound_locator() {
-        let parser = DjotParser;
-        let content = "[@kuhn1962, chapter: 2, page: 10]";
-        let citations = parser.parse_citations(content, &Locale::en_us());
-
-        let (_, _, citation) = &citations[0];
-        let locator = citation.items[0].locator.as_ref().unwrap();
-        assert!(locator.is_compound());
-        assert_eq!(locator.segments()[0].label, LocatorType::Chapter);
-        assert_eq!(locator.segments()[1].label, LocatorType::Page);
-    }
-
-    #[test]
-    fn test_parse_suppress_author() {
-        let parser = DjotParser;
-        let content = "[-@kuhn1962]";
-        let citations = parser.parse_citations(content, &Locale::en_us());
-
-        assert_eq!(citations.len(), 1);
-        let (_, _, citation) = &citations[0];
-        assert_eq!(citation.items[0].id, "kuhn1962");
-        assert!(citation.suppress_author);
-    }
-
-    #[test]
-    fn test_parse_bracketed_integral_citation() {
-        let parser = DjotParser;
-        let content = "[+@kuhn1962]";
-        let citations = parser.parse_citations(content, &Locale::en_us());
-
-        assert_eq!(citations.len(), 1);
-        let (_, _, citation) = &citations[0];
-        assert_eq!(citation.mode, CitationMode::Integral);
-        assert_eq!(citation.items[0].id, "kuhn1962");
-        assert!(!citation.suppress_author);
-    }
-
-    #[test]
-    fn test_parse_semicolon_without_citation() {
-        let parser = DjotParser;
-        let content = "[foo; bar]";
-        let citations = parser.parse_citations(content, &Locale::en_us());
-
-        assert_eq!(citations.len(), 0);
-    }
-
-    #[test]
-    fn test_parse_document_tracks_manual_footnotes() {
-        let parser = DjotParser;
-        let content = "Text[^m1].\n\n[^m1]: See [@kuhn1962].";
-        let parsed = parser.parse_document(content, &Locale::en_us());
-
-        assert_eq!(parsed.manual_note_order, vec!["m1".to_string()]);
-        assert_eq!(parsed.manual_note_references.len(), 1);
-        assert_eq!(parsed.citations.len(), 1);
-        assert_eq!(
-            parsed.citations[0].placement,
-            CitationPlacement::ManualFootnote {
-                label: "m1".to_string()
-            }
-        );
-    }
-
-    #[test]
-    fn test_parse_document_marks_prose_citations_as_inline() {
-        let parser = DjotParser;
-        let content = "Text [@kuhn1962].";
-        let parsed = parser.parse_document(content, &Locale::en_us());
-
-        assert_eq!(parsed.citations.len(), 1);
-        assert_eq!(
-            parsed.citations[0].placement,
-            CitationPlacement::InlineProse
-        );
-    }
 }
