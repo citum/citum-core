@@ -54,7 +54,41 @@ fn span_classes(attrs: Option<&Attributes>) -> Vec<String> {
         .collect()
 }
 
-#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
+/// Process a djot End container event, applying formatting and merging into parent frame.
+fn handle_end_event<F: OutputFormat<Output = String>>(
+    container: Container,
+    frame: DjotFrame,
+    parent: &mut DjotFrame,
+    fmt: &F,
+) {
+    let inner_text = frame.children.join("");
+    let formatted = match container {
+        Container::Emphasis => fmt.emph(inner_text),
+        Container::Strong => fmt.strong(inner_text),
+        Container::Link(_, _) => {
+            if let Some(url) = frame.link_url.as_deref() {
+                fmt.link(url, inner_text)
+            } else {
+                inner_text
+            }
+        }
+        Container::Span => {
+            if frame
+                .classes
+                .iter()
+                .any(|class| class == "smallcaps" || class == "small-caps")
+            {
+                fmt.small_caps(inner_text)
+            } else {
+                inner_text
+            }
+        }
+        _ => inner_text,
+    };
+    parent.push_rendered(formatted, frame.last_char);
+    parent.has_explicit_link |= frame.has_explicit_link;
+}
+
 fn render_djot_inline_internal<F, G>(src: &str, fmt: &F, mut transform_text: G) -> (String, bool)
 where
     F: OutputFormat<Output = String>,
@@ -83,35 +117,8 @@ where
                 });
             }
             Event::End(container) => {
-                if let Some(frame) = stack.pop() {
-                    let inner_text = frame.children.join("");
-                    let formatted = match container {
-                        Container::Emphasis => fmt.emph(inner_text),
-                        Container::Strong => fmt.strong(inner_text),
-                        Container::Link(_, _) => {
-                            if let Some(url) = frame.link_url.as_deref() {
-                                fmt.link(url, inner_text)
-                            } else {
-                                inner_text
-                            }
-                        }
-                        Container::Span => {
-                            if frame
-                                .classes
-                                .iter()
-                                .any(|class| class == "smallcaps" || class == "small-caps")
-                            {
-                                fmt.small_caps(inner_text)
-                            } else {
-                                inner_text
-                            }
-                        }
-                        _ => inner_text,
-                    };
-                    if let Some(parent) = stack.last_mut() {
-                        parent.push_rendered(formatted, frame.last_char);
-                        parent.has_explicit_link |= frame.has_explicit_link;
-                    }
+                if let (Some(frame), Some(parent)) = (stack.pop(), stack.last_mut()) {
+                    handle_end_event(container, frame, parent, fmt);
                 }
             }
             Event::Str(s) => {

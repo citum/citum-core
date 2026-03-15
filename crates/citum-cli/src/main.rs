@@ -1970,11 +1970,163 @@ where
     }
 }
 
+/// Render the citations section into output.
+fn render_citations_section<F>(
+    ctx: &RenderContext<'_>,
+    citations: Option<Vec<Citation>>,
+    show_keys: bool,
+    output: &mut String,
+) where
+    F: citum_engine::render::format::OutputFormat<Output = String>,
+{
+    if let Some(cite_list) = citations {
+        let _ = writeln!(output, "CITATIONS (From file):");
+        for (i, (citation, text)) in cite_list
+            .iter()
+            .zip(render_citation_file_entries::<F>(ctx.processor, &cite_list))
+            .enumerate()
+        {
+            if show_keys {
+                let _ = writeln!(
+                    output,
+                    "  [{}] {}",
+                    citation.id.as_deref().unwrap_or(&format!("{}", i)),
+                    text
+                );
+            } else {
+                let _ = writeln!(output, "  {}", text);
+            }
+        }
+    } else {
+        let _ = writeln!(output, "CITATIONS (Non-Integral):");
+        for id in ctx.item_ids {
+            let citation = Citation {
+                id: Some(id.to_string()),
+                items: vec![CitationItem {
+                    id: id.to_string(),
+                    ..Default::default()
+                }],
+                mode: citum_schema::citation::CitationMode::NonIntegral,
+                ..Default::default()
+            };
+            match ctx.processor.process_citation_with_format::<F>(&citation) {
+                Ok(text) => {
+                    if show_keys {
+                        let _ = writeln!(output, "  [{}] {}", id, text);
+                    } else {
+                        let _ = writeln!(output, "  {}", text);
+                    }
+                }
+                Err(e) => {
+                    let _ = writeln!(output, "  [{}] ERROR: {}", id, e);
+                }
+            }
+        }
+        let _ = writeln!(output);
+
+        let _ = writeln!(output, "CITATIONS (Integral):");
+        for id in ctx.item_ids {
+            let citation = Citation {
+                id: Some(id.to_string()),
+                items: vec![CitationItem {
+                    id: id.to_string(),
+                    ..Default::default()
+                }],
+                mode: citum_schema::citation::CitationMode::Integral,
+                ..Default::default()
+            };
+            match ctx.processor.process_citation_with_format::<F>(&citation) {
+                Ok(text) => {
+                    if show_keys {
+                        let _ = writeln!(output, "  [{}] {}", id, text);
+                    } else {
+                        let _ = writeln!(output, "  {}", text);
+                    }
+                }
+                Err(e) => {
+                    let _ = writeln!(output, "  [{}] ERROR: {}", id, e);
+                }
+            }
+        }
+    }
+    let _ = writeln!(output);
+}
+
+/// Render the bibliography section into output.
+fn render_bibliography_section<F>(ctx: &RenderContext<'_>, show_keys: bool, output: &mut String)
+where
+    F: citum_engine::render::format::OutputFormat<Output = String>,
+{
+    // Check if the style has bibliography groups defined
+    if ctx
+        .processor
+        .style
+        .bibliography
+        .as_ref()
+        .and_then(|b| b.groups.as_ref())
+        .is_some()
+    {
+        let _ = writeln!(output, "BIBLIOGRAPHY:");
+        if show_keys {
+            // When show_keys is requested, render each entry with its ID prefix so the
+            // oracle parser can match entries by key. Group headings are omitted in this
+            // mode because the oracle only looks for `[id] text` patterns.
+            let filter: HashSet<&str> = ctx.item_ids.iter().map(|id| id.as_str()).collect();
+            let processed = ctx.processor.process_references();
+            for entry in processed.bibliography {
+                if filter.contains(entry.id.as_str()) {
+                    let text = citum_engine::render::refs_to_string_with_format::<F>(
+                        vec![entry.clone()],
+                        ctx.annotations,
+                        Some(ctx.annotation_style),
+                    );
+                    let trimmed = text.trim();
+                    if !trimmed.is_empty() {
+                        let _ = writeln!(output, "  [{}] {}", entry.id, trimmed);
+                    }
+                }
+            }
+        } else {
+            // Use grouped renderer for human-readable output (preserves group headings)
+            let grouped = ctx.processor.render_grouped_bibliography_with_format::<F>();
+            output.push_str(&grouped);
+        }
+    } else {
+        let _ = writeln!(output, "BIBLIOGRAPHY:");
+        if show_keys {
+            // Oracle/show_keys path: render each entry individually so entries
+            // can be matched by reference ID. Compound merging is skipped here
+            // because the oracle addresses each ref independently.
+            let filter: HashSet<&str> = ctx.item_ids.iter().map(|id| id.as_str()).collect();
+            let processed = ctx.processor.process_references();
+            for entry in processed.bibliography {
+                if filter.contains(entry.id.as_str()) {
+                    let text = citum_engine::render::refs_to_string_with_format::<F>(
+                        vec![entry.clone()],
+                        ctx.annotations,
+                        Some(ctx.annotation_style),
+                    );
+                    let trimmed = text.trim();
+                    if !trimmed.is_empty() {
+                        let _ = writeln!(output, "  [{}] {}", entry.id, trimmed);
+                    }
+                }
+            }
+        } else {
+            // Human-readable path: use the engine bibliography renderer so
+            // compound numeric groups are merged while still honoring keys.
+            let bib = ctx
+                .processor
+                .render_selected_bibliography_with_format::<F, _>(ctx.item_ids.to_vec());
+            let _ = writeln!(output, "{}", bib);
+        }
+    }
+}
+
 /// Core human-readable renderer for references and citations.
 ///
 /// Builds a formatted string containing citation clusters and/or bibliography
 /// entries, optionally prefixed with reference IDs when `show_keys` is `true`.
-#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 fn print_human<F>(
     ctx: &RenderContext<'_>,
     show_cite: bool,
@@ -1989,144 +2141,11 @@ where
     let _ = writeln!(output, "\n=== {} ===\n", ctx.style_name);
 
     if show_cite {
-        if let Some(cite_list) = citations {
-            let _ = writeln!(output, "CITATIONS (From file):");
-            for (i, (citation, text)) in cite_list
-                .iter()
-                .zip(render_citation_file_entries::<F>(ctx.processor, &cite_list))
-                .enumerate()
-            {
-                if show_keys {
-                    let _ = writeln!(
-                        output,
-                        "  [{}] {}",
-                        citation.id.as_deref().unwrap_or(&format!("{}", i)),
-                        text
-                    );
-                } else {
-                    let _ = writeln!(output, "  {}", text);
-                }
-            }
-        } else {
-            let _ = writeln!(output, "CITATIONS (Non-Integral):");
-            for id in ctx.item_ids {
-                let citation = Citation {
-                    id: Some(id.to_string()),
-                    items: vec![CitationItem {
-                        id: id.to_string(),
-                        ..Default::default()
-                    }],
-                    mode: citum_schema::citation::CitationMode::NonIntegral,
-                    ..Default::default()
-                };
-                match ctx.processor.process_citation_with_format::<F>(&citation) {
-                    Ok(text) => {
-                        if show_keys {
-                            let _ = writeln!(output, "  [{}] {}", id, text);
-                        } else {
-                            let _ = writeln!(output, "  {}", text);
-                        }
-                    }
-                    Err(e) => {
-                        let _ = writeln!(output, "  [{}] ERROR: {}", id, e);
-                    }
-                }
-            }
-            let _ = writeln!(output);
-
-            let _ = writeln!(output, "CITATIONS (Integral):");
-            for id in ctx.item_ids {
-                let citation = Citation {
-                    id: Some(id.to_string()),
-                    items: vec![CitationItem {
-                        id: id.to_string(),
-                        ..Default::default()
-                    }],
-                    mode: citum_schema::citation::CitationMode::Integral,
-                    ..Default::default()
-                };
-                match ctx.processor.process_citation_with_format::<F>(&citation) {
-                    Ok(text) => {
-                        if show_keys {
-                            let _ = writeln!(output, "  [{}] {}", id, text);
-                        } else {
-                            let _ = writeln!(output, "  {}", text);
-                        }
-                    }
-                    Err(e) => {
-                        let _ = writeln!(output, "  [{}] ERROR: {}", id, e);
-                    }
-                }
-            }
-        }
-        let _ = writeln!(output);
+        render_citations_section::<F>(ctx, citations, show_keys, &mut output);
     }
 
     if show_bib {
-        // Check if the style has bibliography groups defined
-        if ctx
-            .processor
-            .style
-            .bibliography
-            .as_ref()
-            .and_then(|b| b.groups.as_ref())
-            .is_some()
-        {
-            let _ = writeln!(output, "BIBLIOGRAPHY:");
-            if show_keys {
-                // When show_keys is requested, render each entry with its ID prefix so the
-                // oracle parser can match entries by key. Group headings are omitted in this
-                // mode because the oracle only looks for `[id] text` patterns.
-                let filter: HashSet<&str> = ctx.item_ids.iter().map(|id| id.as_str()).collect();
-                let processed = ctx.processor.process_references();
-                for entry in processed.bibliography {
-                    if filter.contains(entry.id.as_str()) {
-                        let text = citum_engine::render::refs_to_string_with_format::<F>(
-                            vec![entry.clone()],
-                            ctx.annotations,
-                            Some(ctx.annotation_style),
-                        );
-                        let trimmed = text.trim();
-                        if !trimmed.is_empty() {
-                            let _ = writeln!(output, "  [{}] {}", entry.id, trimmed);
-                        }
-                    }
-                }
-            } else {
-                // Use grouped renderer for human-readable output (preserves group headings)
-                let grouped = ctx.processor.render_grouped_bibliography_with_format::<F>();
-                output.push_str(&grouped);
-            }
-        } else {
-            let _ = writeln!(output, "BIBLIOGRAPHY:");
-            if show_keys {
-                // Oracle/show_keys path: render each entry individually so entries
-                // can be matched by reference ID. Compound merging is skipped here
-                // because the oracle addresses each ref independently.
-                let filter: HashSet<&str> = ctx.item_ids.iter().map(|id| id.as_str()).collect();
-                let processed = ctx.processor.process_references();
-                for entry in processed.bibliography {
-                    if filter.contains(entry.id.as_str()) {
-                        let text = citum_engine::render::refs_to_string_with_format::<F>(
-                            vec![entry.clone()],
-                            ctx.annotations,
-                            Some(ctx.annotation_style),
-                        );
-                        let trimmed = text.trim();
-                        if !trimmed.is_empty() {
-                            let _ = writeln!(output, "  [{}] {}", entry.id, trimmed);
-                        }
-                    }
-                }
-            } else {
-                // Human-readable path: use the engine bibliography renderer so
-                // compound numeric groups are merged while still honoring keys.
-                let bib = ctx
-                    .processor
-                    .render_selected_bibliography_with_format::<F, _>(ctx.item_ids.to_vec());
-                let _ = writeln!(output, "{}", bib);
-            }
-        }
+        render_bibliography_section::<F>(ctx, show_keys, &mut output);
     }
 
     output

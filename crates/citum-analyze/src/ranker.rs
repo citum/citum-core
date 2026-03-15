@@ -42,21 +42,11 @@ pub struct ParentRanking {
     pub fields: Vec<String>,
 }
 
-#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
-pub fn run_parent_ranker(styles_dir: &str, json_output: bool, format_filter: Option<&str>) {
-    let mut stats = ParentRankerStats {
-        format_filter: format_filter.map(|s| s.to_string()),
-        ..Default::default()
-    };
-
-    // Maps: parent_id -> (count, format, fields)
-    let mut parent_counts: HashMap<String, (u32, Option<String>, Vec<String>)> = HashMap::new();
-
-    // First, scan independent styles to get their format
-    let independent_dir = Path::new(styles_dir);
+fn collect_independent_formats(styles_dir: &Path) -> (u32, HashMap<String, String>) {
+    let mut total_independent = 0u32;
     let mut independent_formats: HashMap<String, String> = HashMap::new();
 
-    for entry in WalkDir::new(independent_dir)
+    for entry in WalkDir::new(styles_dir)
         .max_depth(1)
         .into_iter()
         .filter_map(|e| e.ok())
@@ -68,7 +58,7 @@ pub fn run_parent_ranker(styles_dir: &str, json_output: bool, format_filter: Opt
         })
     {
         if let Ok(info) = extract_style_info(entry.path()) {
-            stats.total_independent += 1;
+            total_independent += 1;
             if let Some(format) = info.citation_format {
                 let style_url = format!(
                     "http://www.zotero.org/styles/{}",
@@ -79,17 +69,18 @@ pub fn run_parent_ranker(styles_dir: &str, json_output: bool, format_filter: Opt
         }
     }
 
-    // Scan dependent styles directory
-    let dependent_dir = Path::new(styles_dir).join("dependent");
-    if !dependent_dir.exists() {
-        eprintln!(
-            "Warning: No 'dependent' subdirectory found in {}",
-            styles_dir
-        );
-        eprintln!("Dependent styles are typically in styles-legacy/dependent/");
-    }
+    (total_independent, independent_formats)
+}
 
-    for entry in WalkDir::new(&dependent_dir)
+fn collect_parent_counts(
+    dependent_dir: &Path,
+    format_filter: Option<&str>,
+    independent_formats: &HashMap<String, String>,
+    stats: &mut ParentRankerStats,
+) -> HashMap<String, (u32, Option<String>, Vec<String>)> {
+    let mut parent_counts: HashMap<String, (u32, Option<String>, Vec<String>)> = HashMap::new();
+
+    for entry in WalkDir::new(dependent_dir)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| {
@@ -136,7 +127,13 @@ pub fn run_parent_ranker(styles_dir: &str, json_output: bool, format_filter: Opt
         }
     }
 
-    // Build ranked list
+    parent_counts
+}
+
+fn build_rankings(
+    parent_counts: HashMap<String, (u32, Option<String>, Vec<String>)>,
+    total_dependent: u32,
+) -> Vec<ParentRanking> {
     let mut rankings: Vec<ParentRanking> = parent_counts
         .into_iter()
         .map(|(parent_id, (count, format, mut fields))| {
@@ -151,16 +148,43 @@ pub fn run_parent_ranker(styles_dir: &str, json_output: bool, format_filter: Opt
                 parent_id,
                 short_name,
                 dependent_count: count,
-                percentage: (count as f64 / stats.total_dependent.max(1) as f64) * 100.0,
+                percentage: (count as f64 / total_dependent.max(1) as f64) * 100.0,
                 format,
                 fields,
             }
         })
         .collect();
 
-    // Sort by dependent count descending
     rankings.sort_by(|a, b| b.dependent_count.cmp(&a.dependent_count));
-    stats.parent_rankings = rankings;
+    rankings
+}
+
+pub fn run_parent_ranker(styles_dir: &str, json_output: bool, format_filter: Option<&str>) {
+    let mut stats = ParentRankerStats {
+        format_filter: format_filter.map(|s| s.to_string()),
+        ..Default::default()
+    };
+
+    let independent_dir = Path::new(styles_dir);
+    let (total_independent, independent_formats) = collect_independent_formats(independent_dir);
+    stats.total_independent = total_independent;
+
+    let dependent_dir = Path::new(styles_dir).join("dependent");
+    if !dependent_dir.exists() {
+        eprintln!(
+            "Warning: No 'dependent' subdirectory found in {}",
+            styles_dir
+        );
+        eprintln!("Dependent styles are typically in styles-legacy/dependent/");
+    }
+
+    let parent_counts = collect_parent_counts(
+        &dependent_dir,
+        format_filter,
+        &independent_formats,
+        &mut stats,
+    );
+    stats.parent_rankings = build_rankings(parent_counts, stats.total_dependent);
 
     if json_output {
         println!("{}", serde_json::to_string_pretty(&stats).unwrap());

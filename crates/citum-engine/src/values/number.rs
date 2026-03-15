@@ -8,8 +8,119 @@ use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
 use citum_schema::locale::TermForm;
 use citum_schema::template::{NumberVariable, TemplateNumber};
 
+/// Resolve the raw value string for a number variable from a reference.
+fn resolve_number_value(
+    number: &NumberVariable,
+    reference: &Reference,
+    hints: &ProcHints,
+    options: &RenderOptions<'_>,
+) -> Option<String> {
+    match number {
+        NumberVariable::Volume => reference.volume().map(|v| v.to_string()),
+        NumberVariable::Issue => reference.issue().map(|v| v.to_string()),
+        NumberVariable::Pages => {
+            if options.context == crate::values::RenderContext::Citation
+                && options.locator.is_some()
+                && matches!(
+                    options.config.processing,
+                    Some(citum_schema::options::Processing::Note)
+                )
+            {
+                None
+            } else {
+                reference.pages().map(|p| {
+                    format_page_range(&p.to_string(), options.config.page_range_format.as_ref())
+                })
+            }
+        }
+        NumberVariable::Edition => reference.edition(),
+        NumberVariable::CollectionNumber => reference.collection_number(),
+        NumberVariable::Number => reference.number(),
+        NumberVariable::DocketNumber => match reference {
+            Reference::Brief(r) => r.docket_number.clone(),
+            _ => None,
+        },
+        NumberVariable::PatentNumber => match reference {
+            Reference::Patent(r) => Some(r.patent_number.clone()),
+            _ => None,
+        },
+        NumberVariable::StandardNumber => match reference {
+            Reference::Standard(r) => Some(r.standard_number.clone()),
+            _ => None,
+        },
+        NumberVariable::ReportNumber => match reference {
+            Reference::Monograph(r) => r.report_number.clone(),
+            _ => None,
+        },
+        NumberVariable::PartNumber
+        | NumberVariable::SupplementNumber
+        | NumberVariable::PrintingNumber => None,
+        NumberVariable::CitationNumber => hints.citation_number.map(|n| {
+            if options.context == crate::values::RenderContext::Citation
+                && let Some(sub_label) = &hints.citation_sub_label
+            {
+                return format!("{}{}", n, sub_label);
+            }
+            n.to_string()
+        }),
+        NumberVariable::CitationLabel => {
+            let config = match options.config.processing.as_ref() {
+                Some(citum_schema::options::Processing::Label(cfg)) => cfg,
+                _ => return None,
+            };
+            let params = config.effective_params();
+            let base = crate::processor::labels::generate_base_label(reference, &params);
+            if base.is_empty() {
+                return None;
+            }
+            let suffix = if hints.disamb_condition && hints.group_index > 0 {
+                crate::values::int_to_letter(hints.group_index as u32).unwrap_or_default()
+            } else {
+                String::new()
+            };
+            Some(format!("{}{}", base, suffix))
+        }
+        _ => None,
+    }
+}
+
+/// Resolve a label prefix for a number variable if label_form is configured.
+fn resolve_number_label<F: crate::render::format::OutputFormat<Output = String>>(
+    number: &NumberVariable,
+    label_form: &citum_schema::template::LabelForm,
+    value: &str,
+    effective_rendering: &citum_schema::template::Rendering,
+    options: &RenderOptions<'_>,
+    fmt: &F,
+) -> Option<String> {
+    if let Some(locator_type) = number_var_to_locator_type(number) {
+        // Check pluralization
+        let plural = check_plural(value, &locator_type);
+
+        let term_form = match label_form {
+            citum_schema::template::LabelForm::Long => TermForm::Long,
+            citum_schema::template::LabelForm::Short => TermForm::Short,
+            citum_schema::template::LabelForm::Symbol => TermForm::Symbol,
+        };
+
+        options
+            .locale
+            .locator_term(&locator_type, plural, term_form)
+            .map(|t| {
+                let term_str = if crate::values::should_strip_periods(effective_rendering, options)
+                {
+                    crate::values::strip_trailing_periods(t)
+                } else {
+                    t.to_string()
+                };
+                fmt.text(&format!("{} ", term_str))
+            })
+    } else {
+        None
+    }
+}
+
 impl ComponentValues for TemplateNumber {
-    #[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
     fn values<F: crate::render::format::OutputFormat<Output = String>>(
         &self,
         reference: &Reference,
@@ -17,75 +128,8 @@ impl ComponentValues for TemplateNumber {
         options: &RenderOptions<'_>,
     ) -> Option<ProcValues<F::Output>> {
         let fmt = F::default();
-        use citum_schema::template::LabelForm;
 
-        let value = match self.number {
-            NumberVariable::Volume => reference.volume().map(|v| v.to_string()),
-            NumberVariable::Issue => reference.issue().map(|v| v.to_string()),
-            NumberVariable::Pages => {
-                if options.context == crate::values::RenderContext::Citation
-                    && options.locator.is_some()
-                    && matches!(
-                        options.config.processing,
-                        Some(citum_schema::options::Processing::Note)
-                    )
-                {
-                    None
-                } else {
-                    reference.pages().map(|p| {
-                        format_page_range(&p.to_string(), options.config.page_range_format.as_ref())
-                    })
-                }
-            }
-            NumberVariable::Edition => reference.edition(),
-            NumberVariable::CollectionNumber => reference.collection_number(),
-            NumberVariable::Number => reference.number(),
-            NumberVariable::DocketNumber => match reference {
-                Reference::Brief(r) => r.docket_number.clone(),
-                _ => None,
-            },
-            NumberVariable::PatentNumber => match reference {
-                Reference::Patent(r) => Some(r.patent_number.clone()),
-                _ => None,
-            },
-            NumberVariable::StandardNumber => match reference {
-                Reference::Standard(r) => Some(r.standard_number.clone()),
-                _ => None,
-            },
-            NumberVariable::ReportNumber => match reference {
-                Reference::Monograph(r) => r.report_number.clone(),
-                _ => None,
-            },
-            NumberVariable::PartNumber
-            | NumberVariable::SupplementNumber
-            | NumberVariable::PrintingNumber => None,
-            NumberVariable::CitationNumber => hints.citation_number.map(|n| {
-                if options.context == crate::values::RenderContext::Citation
-                    && let Some(sub_label) = &hints.citation_sub_label
-                {
-                    return format!("{}{}", n, sub_label);
-                }
-                n.to_string()
-            }),
-            NumberVariable::CitationLabel => {
-                let config = match options.config.processing.as_ref() {
-                    Some(citum_schema::options::Processing::Label(cfg)) => cfg,
-                    _ => return None,
-                };
-                let params = config.effective_params();
-                let base = crate::processor::labels::generate_base_label(reference, &params);
-                if base.is_empty() {
-                    return None;
-                }
-                let suffix = if hints.disamb_condition && hints.group_index > 0 {
-                    crate::values::int_to_letter(hints.group_index as u32).unwrap_or_default()
-                } else {
-                    String::new()
-                };
-                Some(format!("{}{}", base, suffix))
-            }
-            _ => None,
-        };
+        let value = resolve_number_value(&self.number, reference, hints, options);
 
         value.filter(|s| !s.is_empty()).map(|value| {
             // Resolve effective rendering options
@@ -97,33 +141,14 @@ impl ComponentValues for TemplateNumber {
 
             // Handle label if label_form is specified
             let prefix = if let Some(label_form) = &self.label_form {
-                if let Some(locator_type) = number_var_to_locator_type(&self.number) {
-                    // Check pluralization
-                    let plural = check_plural(&value, &locator_type);
-
-                    let term_form = match label_form {
-                        LabelForm::Long => TermForm::Long,
-                        LabelForm::Short => TermForm::Short,
-                        LabelForm::Symbol => TermForm::Symbol,
-                    };
-
-                    options
-                        .locale
-                        .locator_term(&locator_type, plural, term_form)
-                        .map(|t| {
-                            let term_str = if crate::values::should_strip_periods(
-                                &effective_rendering,
-                                options,
-                            ) {
-                                crate::values::strip_trailing_periods(t)
-                            } else {
-                                t.to_string()
-                            };
-                            fmt.text(&format!("{} ", term_str))
-                        })
-                } else {
-                    None
-                }
+                resolve_number_label(
+                    &self.number,
+                    label_form,
+                    &value,
+                    &effective_rendering,
+                    options,
+                    &fmt,
+                )
             } else {
                 None
             };

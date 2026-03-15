@@ -227,6 +227,48 @@ pub fn effective_component_language(
     }
 }
 
+/// Select a structured name from transliteration maps using priority-list then script-match rules.
+fn select_by_transliteration<'a>(
+    m: &'a citum_schema::reference::contributor::MultilingualName,
+    preferred_transliteration: Option<&[String]>,
+    preferred_script: Option<&String>,
+) -> &'a citum_schema::reference::contributor::StructuredName {
+    // 1. Priority list: exact match
+    if let Some(tags) = preferred_transliteration {
+        for tag in tags {
+            if let Some(name) = m.transliterations.get(tag) {
+                return name;
+            }
+        }
+        // 2. Priority list: substring match
+        for tag in tags {
+            if let Some((_, name)) = m
+                .transliterations
+                .iter()
+                .find(|(k, _)| k.contains(tag.as_str()))
+            {
+                return name;
+            }
+        }
+    }
+    // 3. Preferred script: exact match
+    if let Some(script) = preferred_script {
+        if let Some(name) = m.transliterations.get(script) {
+            return name;
+        }
+        // 4. Preferred script: substring match
+        if let Some((_, name)) = m
+            .transliterations
+            .iter()
+            .find(|(tag, _)| tag.contains(script))
+        {
+            return name;
+        }
+    }
+    // Fallback to original
+    &m.original
+}
+
 /// Resolve a multilingual contributor name based on style configuration.
 ///
 /// Uses holistic name matching - selects the entire name variant (original/transliterated/translated)
@@ -238,7 +280,6 @@ pub fn effective_component_language(
 /// * `preferred_transliteration` - Optional ordered list of BCP 47 transliteration tags
 /// * `preferred_script` - Optional preferred script (e.g., "Latn")
 /// * `style_locale` - The style's locale for translation matching
-#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 pub fn resolve_multilingual_name(
     contributor: &citum_schema::reference::contributor::Contributor,
     mode: Option<&citum_schema::options::MultilingualMode>,
@@ -259,108 +300,15 @@ pub fn resolve_multilingual_name(
 
             let selected_name = match mode {
                 MultilingualMode::Primary => &m.original,
-
                 MultilingualMode::Transliterated => {
-                    // 1. Priority list: exact match
-                    if let Some(tags) = preferred_transliteration {
-                        for tag in tags {
-                            if let Some(name) = m.transliterations.get(tag) {
-                                return vec![crate::reference::FlatName {
-                                    given: Some(name.given.to_string()),
-                                    family: Some(name.family.to_string()),
-                                    suffix: name.suffix.clone(),
-                                    dropping_particle: name.dropping_particle.clone(),
-                                    non_dropping_particle: name.non_dropping_particle.clone(),
-                                    literal: None,
-                                }];
-                            }
-                        }
-                        // 2. Priority list: substring match
-                        for tag in tags {
-                            if let Some((_, name)) = m
-                                .transliterations
-                                .iter()
-                                .find(|(k, _)| k.contains(tag.as_str()))
-                            {
-                                return vec![crate::reference::FlatName {
-                                    given: Some(name.given.to_string()),
-                                    family: Some(name.family.to_string()),
-                                    suffix: name.suffix.clone(),
-                                    dropping_particle: name.dropping_particle.clone(),
-                                    non_dropping_particle: name.non_dropping_particle.clone(),
-                                    literal: None,
-                                }];
-                            }
-                        }
-                    }
-                    // 3. Preferred script: exact match
-                    if let Some(script) = preferred_script {
-                        if let Some(name) = m.transliterations.get(script) {
-                            name
-                        } else {
-                            // 4. Preferred script: substring match
-                            m.transliterations
-                                .iter()
-                                .find(|(tag, _)| tag.contains(script))
-                                .map(|(_, n)| n)
-                                .unwrap_or(&m.original)
-                        }
-                    } else {
-                        // Use any available transliteration
-                        m.transliterations.values().next().unwrap_or(&m.original)
-                    }
+                    select_by_transliteration(m, preferred_transliteration, preferred_script)
                 }
-
                 MultilingualMode::Translated => {
                     m.translations.get(style_locale).unwrap_or(&m.original)
                 }
-
                 // Combined mode for names defaults to transliterated (parenthetical combo not common for names)
                 MultilingualMode::Combined => {
-                    // Use same logic as Transliterated: priority list then preferred_script
-                    if let Some(tags) = preferred_transliteration {
-                        for tag in tags {
-                            if let Some(name) = m.transliterations.get(tag) {
-                                return vec![crate::reference::FlatName {
-                                    given: Some(name.given.to_string()),
-                                    family: Some(name.family.to_string()),
-                                    suffix: name.suffix.clone(),
-                                    dropping_particle: name.dropping_particle.clone(),
-                                    non_dropping_particle: name.non_dropping_particle.clone(),
-                                    literal: None,
-                                }];
-                            }
-                        }
-                        for tag in tags {
-                            if let Some((_, name)) = m
-                                .transliterations
-                                .iter()
-                                .find(|(k, _)| k.contains(tag.as_str()))
-                            {
-                                return vec![crate::reference::FlatName {
-                                    given: Some(name.given.to_string()),
-                                    family: Some(name.family.to_string()),
-                                    suffix: name.suffix.clone(),
-                                    dropping_particle: name.dropping_particle.clone(),
-                                    non_dropping_particle: name.non_dropping_particle.clone(),
-                                    literal: None,
-                                }];
-                            }
-                        }
-                    }
-                    if let Some(script) = preferred_script {
-                        m.transliterations
-                            .get(script)
-                            .or_else(|| {
-                                m.transliterations
-                                    .iter()
-                                    .find(|(tag, _)| tag.contains(script))
-                                    .map(|(_, n)| n)
-                            })
-                            .unwrap_or(&m.original)
-                    } else {
-                        m.transliterations.values().next().unwrap_or(&m.original)
-                    }
+                    select_by_transliteration(m, preferred_transliteration, preferred_script)
                 }
             };
 

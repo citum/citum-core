@@ -1,6 +1,6 @@
 //! Name-formatting helpers for contributor rendering.
 
-use crate::values::{ProcHints, RenderContext, RenderOptions};
+use crate::values::{ProcHints, RenderOptions};
 use citum_schema::options::contributors::NameForm;
 use citum_schema::options::{
     AndOptions, AndOtherOptions, DemoteNonDroppingParticle, DisplayAsSort, ShortenListOptions,
@@ -97,6 +97,134 @@ fn partition_et_al<'a>(
     }
 }
 
+/// Join a list of formatted names with a conjunction and Oxford-comma rules.
+fn join_names_with_conjunction(
+    formatted_first: &[String],
+    and_str: Option<&str>,
+    delimiter: &str,
+    delimiter_precedes_last: Option<&citum_schema::options::DelimiterPrecedesLast>,
+    first_names_len: usize,
+    ctx: &NameFormatContext,
+    context: crate::values::RenderContext,
+) -> String {
+    use citum_schema::options::{DelimiterPrecedesLast, DisplayAsSort};
+
+    match and_str {
+        None => {
+            // No conjunction - just join all with delimiter
+            formatted_first.join(delimiter)
+        }
+        Some(conjunction) if formatted_first.len() == 2 => {
+            // For two names: citations don't use delimiter before conjunction,
+            // but bibliographies do (contextual Oxford comma).
+            let use_delimiter = if context == crate::values::RenderContext::Bibliography {
+                // In bibliography, check delimiter-precedes-last setting
+                match delimiter_precedes_last {
+                    Some(DelimiterPrecedesLast::Always) => true,
+                    Some(DelimiterPrecedesLast::Never) => false,
+                    Some(DelimiterPrecedesLast::Contextual) | None => true, // Default: use comma in bibliography
+                    Some(DelimiterPrecedesLast::AfterInvertedName) => {
+                        ctx.display_as_sort.as_ref().is_some_and(|das| {
+                            matches!(das, DisplayAsSort::All | DisplayAsSort::First)
+                        })
+                    }
+                }
+            } else {
+                // In citations, never use delimiter before conjunction for 2 names
+                false
+            };
+
+            if use_delimiter {
+                format!(
+                    "{}{}{} {}",
+                    formatted_first[0], delimiter, conjunction, formatted_first[1]
+                )
+            } else {
+                format!(
+                    "{} {} {}",
+                    formatted_first[0], conjunction, formatted_first[1]
+                )
+            }
+        }
+        Some(conjunction) => {
+            let last = formatted_first.last().unwrap();
+            let rest = &formatted_first[..formatted_first.len() - 1];
+            // Check if delimiter should precede "and" (Oxford comma)
+            let use_delimiter = match delimiter_precedes_last {
+                Some(DelimiterPrecedesLast::Always) => true,
+                Some(DelimiterPrecedesLast::Never) => false,
+                Some(DelimiterPrecedesLast::Contextual) | None => true, // Default: comma for 3+ names
+                Some(DelimiterPrecedesLast::AfterInvertedName) => {
+                    ctx.display_as_sort.as_ref().is_some_and(|das| {
+                        matches!(das, DisplayAsSort::All)
+                            || (matches!(das, DisplayAsSort::First) && first_names_len == 1)
+                    })
+                }
+            };
+            if use_delimiter {
+                format!(
+                    "{}{}{} {}",
+                    rest.join(delimiter),
+                    delimiter,
+                    conjunction,
+                    last
+                )
+            } else {
+                format!("{} {} {}", rest.join(delimiter), conjunction, last)
+            }
+        }
+    }
+}
+
+/// Apply et-al suffix or return result unchanged.
+#[allow(clippy::too_many_arguments)]
+fn apply_et_al(
+    result: String,
+    formatted_last: &[String],
+    and_others: AndOtherOptions,
+    delimiter: &str,
+    delimiter_precedes: Option<&citum_schema::options::DelimiterPrecedesLast>,
+    first_count: usize,
+    ctx: &NameFormatContext,
+    locale: &citum_schema::locale::Locale,
+) -> String {
+    use citum_schema::options::DelimiterPrecedesLast;
+
+    if !formatted_last.is_empty() {
+        // et-al-use-last: result + ellipsis + last names
+        // CSL typically uses an ellipsis (...) for this.
+        return format!("{} … {}", result, formatted_last.join(delimiter));
+    }
+
+    // Determine delimiter before "et al." based on delimiter_precedes_et_al option
+    let use_delimiter = match delimiter_precedes {
+        Some(DelimiterPrecedesLast::Always) => true,
+        Some(DelimiterPrecedesLast::Never) => false,
+        Some(DelimiterPrecedesLast::AfterInvertedName) => {
+            // Use delimiter if last displayed name was inverted (family-first)
+            ctx.display_as_sort.as_ref().is_some_and(|das| {
+                matches!(das, DisplayAsSort::All)
+                    || (matches!(das, DisplayAsSort::First) && first_count == 1)
+            })
+        }
+        Some(DelimiterPrecedesLast::Contextual) | None => {
+            // Default: use delimiter only if more than one name displayed
+            first_count > 1
+        }
+    };
+
+    let and_others_term = match and_others {
+        AndOtherOptions::EtAl => locale.et_al(),
+        AndOtherOptions::Text => locale.et_al().trim_end_matches('.'),
+    };
+
+    if use_delimiter {
+        format!("{}, {}", result, and_others_term)
+    } else {
+        format!("{} {}", result, and_others_term)
+    }
+}
+
 /// Format a list of names according to style options.
 ///
 /// # Panics
@@ -104,7 +232,6 @@ fn partition_et_al<'a>(
 /// This function assumes the non-empty input check at the top remains in place;
 /// violating that invariant can trigger indexing or `unwrap()` panics in later
 /// formatting branches.
-#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 pub fn format_names(
     names: &[crate::reference::FlatName],
     form: &ContributorForm,
@@ -187,107 +314,36 @@ pub fn format_names(
     };
 
     // Check if delimiter should precede last name (Oxford comma)
-    use citum_schema::options::DelimiterPrecedesLast;
     let delimiter_precedes_last = config.and_then(|c| c.delimiter_precedes_last.as_ref());
 
     let result = if formatted_first.len() == 1 {
         formatted_first[0].clone()
-    } else if and_str.is_none() {
-        // No conjunction - just join all with delimiter
-        formatted_first.join(delimiter)
-    } else if formatted_first.len() == 2 {
-        let conjunction = and_str.as_ref().unwrap();
-        // For two names: citations don't use delimiter before conjunction,
-        // but bibliographies do (contextual Oxford comma).
-        let use_delimiter = if options.context == RenderContext::Bibliography {
-            // In bibliography, check delimiter-precedes-last setting
-            match delimiter_precedes_last {
-                Some(DelimiterPrecedesLast::Always) => true,
-                Some(DelimiterPrecedesLast::Never) => false,
-                Some(DelimiterPrecedesLast::Contextual) | None => true, // Default: use comma in bibliography
-                Some(DelimiterPrecedesLast::AfterInvertedName) => ctx
-                    .display_as_sort
-                    .as_ref()
-                    .is_some_and(|das| matches!(das, DisplayAsSort::All | DisplayAsSort::First)),
-            }
-        } else {
-            // In citations, never use delimiter before conjunction for 2 names
-            false
-        };
-
-        if use_delimiter {
-            format!(
-                "{}{}{} {}",
-                formatted_first[0], delimiter, conjunction, formatted_first[1]
-            )
-        } else {
-            format!(
-                "{} {} {}",
-                formatted_first[0], conjunction, formatted_first[1]
-            )
-        }
     } else {
-        let and_str = and_str.unwrap();
-        let last = formatted_first.last().unwrap();
-        let rest = &formatted_first[..formatted_first.len() - 1];
-        // Check if delimiter should precede "and" (Oxford comma)
-        let use_delimiter = match delimiter_precedes_last {
-            Some(DelimiterPrecedesLast::Always) => true,
-            Some(DelimiterPrecedesLast::Never) => false,
-            Some(DelimiterPrecedesLast::Contextual) | None => true, // Default: comma for 3+ names
-            Some(DelimiterPrecedesLast::AfterInvertedName) => {
-                ctx.display_as_sort.as_ref().is_some_and(|das| {
-                    matches!(das, DisplayAsSort::All)
-                        || (matches!(das, DisplayAsSort::First) && first_names.len() == 1)
-                })
-            }
-        };
-        if use_delimiter {
-            format!("{}{}{} {}", rest.join(delimiter), delimiter, and_str, last)
-        } else {
-            format!("{} {} {}", rest.join(delimiter), and_str, last)
-        }
+        join_names_with_conjunction(
+            &formatted_first,
+            and_str.as_ref().map(|s| &s[..]),
+            delimiter,
+            delimiter_precedes_last,
+            first_names.len(),
+            &ctx,
+            options.context,
+        )
     };
 
-    if use_et_al {
-        if !formatted_last.is_empty() {
-            // et-al-use-last: result + ellipsis + last names
-            // CSL typically uses an ellipsis (...) for this.
-            format!("{} … {}", result, formatted_last.join(delimiter))
-        } else {
-            // Determine delimiter before "et al." based on delimiter_precedes_et_al option
-            use citum_schema::options::DelimiterPrecedesLast;
-            let delimiter_precedes = config.and_then(|c| c.delimiter_precedes_et_al.as_ref());
-            let use_delimiter = match delimiter_precedes {
-                Some(DelimiterPrecedesLast::Always) => true,
-                Some(DelimiterPrecedesLast::Never) => false,
-                Some(DelimiterPrecedesLast::AfterInvertedName) => {
-                    // Use delimiter if last displayed name was inverted (family-first)
-                    ctx.display_as_sort.as_ref().is_some_and(|das| {
-                        matches!(das, DisplayAsSort::All)
-                            || (matches!(das, DisplayAsSort::First) && first_names.len() == 1)
-                    })
-                }
-                Some(DelimiterPrecedesLast::Contextual) | None => {
-                    // Default: use delimiter only if more than one name displayed
-                    first_names.len() > 1
-                }
-            };
-
-            let and_others_term = match and_others {
-                AndOtherOptions::EtAl => locale.et_al(),
-                AndOtherOptions::Text => locale.et_al().trim_end_matches('.'),
-            };
-
-            if use_delimiter {
-                format!("{}, {}", result, and_others_term)
-            } else {
-                format!("{} {}", result, and_others_term)
-            }
-        }
-    } else {
-        result
+    if !use_et_al {
+        return result;
     }
+
+    apply_et_al(
+        result,
+        &formatted_last,
+        and_others,
+        delimiter,
+        config.and_then(|c| c.delimiter_precedes_et_al.as_ref()),
+        first_names.len(),
+        &ctx,
+        locale,
+    )
 }
 
 /// Initialize a given name by extracting initials.
@@ -340,8 +396,70 @@ fn initialize_given_name(
     result.trim().to_string()
 }
 
+/// Assemble a long-form name from its computed parts.
+///
+/// When `inverted` is true uses "Family, Given" order; otherwise "Given Family".
+fn assemble_long_name(
+    family_part: String,
+    given_part: String,
+    particle_part: String,
+    suffix: &str,
+    inverted: bool,
+    sort_separator: &str,
+) -> String {
+    if inverted {
+        // "Family, Given" format
+        // Family Part + sort_separator + Given Part + Particle Part + Suffix
+        let mut suffix_part = String::new();
+        if !given_part.is_empty() {
+            suffix_part.push_str(&given_part);
+        }
+        if !particle_part.is_empty() {
+            if !suffix_part.is_empty() {
+                suffix_part.push(' ');
+            }
+            suffix_part.push_str(&particle_part);
+        }
+        if !suffix.is_empty() {
+            if !suffix_part.is_empty() {
+                suffix_part.push(' ');
+            }
+            suffix_part.push_str(suffix);
+        }
+
+        if !suffix_part.is_empty() {
+            format!("{}{}{}", family_part, sort_separator, suffix_part)
+        } else {
+            family_part
+        }
+    } else {
+        // "Given Family" format
+        // Given Part + Particle Part + Family Part + Suffix
+        let mut parts = Vec::new();
+        if !given_part.is_empty() {
+            parts.push(given_part);
+        }
+        if !particle_part.is_empty() {
+            parts.push(particle_part);
+        }
+        if !family_part.is_empty() {
+            if let Some(last) = parts.last_mut()
+                && last.ends_with('-')
+            {
+                last.push_str(&family_part);
+            } else {
+                parts.push(family_part);
+            }
+        }
+        if !suffix.is_empty() {
+            parts.push(suffix.to_string());
+        }
+
+        parts.join(" ")
+    }
+}
+
 /// Format a single name.
-#[allow(clippy::too_many_lines, clippy::cognitive_complexity)] // FIXME: csl26-44gu
 pub(crate) fn format_single_name(
     name: &crate::reference::FlatName,
     form: &ContributorForm,
@@ -444,57 +562,15 @@ pub(crate) fn format_single_name(
                 particle_part.push_str(ndp);
             }
 
-            if inverted {
-                // "Family, Given" format
-                // Family Part + sort_separator + Given Part + Particle Part + Suffix
-                let sep = ctx.sort_separator.map(|s| s.as_str()).unwrap_or(", ");
-                let mut suffix_part = String::new();
-                if !given_part.is_empty() {
-                    suffix_part.push_str(&given_part);
-                }
-                if !particle_part.is_empty() {
-                    if !suffix_part.is_empty() {
-                        suffix_part.push(' ');
-                    }
-                    suffix_part.push_str(&particle_part);
-                }
-                if !suffix.is_empty() {
-                    if !suffix_part.is_empty() {
-                        suffix_part.push(' ');
-                    }
-                    suffix_part.push_str(suffix);
-                }
-
-                if !suffix_part.is_empty() {
-                    format!("{}{}{}", family_part, sep, suffix_part)
-                } else {
-                    family_part
-                }
-            } else {
-                // "Given Family" format
-                // Given Part + Particle Part + Family Part + Suffix
-                let mut parts = Vec::new();
-                if !given_part.is_empty() {
-                    parts.push(given_part);
-                }
-                if !particle_part.is_empty() {
-                    parts.push(particle_part);
-                }
-                if !family_part.is_empty() {
-                    if let Some(last) = parts.last_mut()
-                        && last.ends_with('-')
-                    {
-                        last.push_str(&family_part);
-                    } else {
-                        parts.push(family_part);
-                    }
-                }
-                if !suffix.is_empty() {
-                    parts.push(suffix.to_string());
-                }
-
-                parts.join(" ")
-            }
+            let sep = ctx.sort_separator.map(|s| s.as_str()).unwrap_or(", ");
+            assemble_long_name(
+                family_part,
+                given_part,
+                particle_part,
+                suffix,
+                inverted,
+                sep,
+            )
         }
     }
 }

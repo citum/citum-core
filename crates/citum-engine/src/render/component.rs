@@ -46,6 +46,63 @@ pub struct ProcEntry {
 use super::format::OutputFormat;
 use super::plain::PlainText;
 
+/// Resolve the semantic CSS class for a rendered component based on its template type.
+fn resolve_semantic_class(component: &ProcTemplateComponent) -> Option<String> {
+    use citum_schema::template::{DateVariable, NumberVariable, SimpleVariable};
+    match &component.template_component {
+        TemplateComponent::Title(t) => match t.title {
+            TitleType::Primary => Some("csln-title".to_string()),
+            TitleType::ParentMonograph | TitleType::ParentSerial => {
+                Some("csln-container-title".to_string())
+            }
+            _ => Some("csln-title".to_string()),
+        },
+        TemplateComponent::Contributor(c) => Some(format!("csln-{}", c.contributor.as_str())),
+        TemplateComponent::Date(d) => Some(format!(
+            "csln-{}",
+            match d.date {
+                DateVariable::Issued => "issued",
+                DateVariable::Accessed => "accessed",
+                DateVariable::OriginalPublished => "original-published",
+                DateVariable::Submitted => "submitted",
+                DateVariable::EventDate => "event-date",
+            }
+        )),
+        TemplateComponent::Number(n) => Some(format!(
+            "csln-{}",
+            match n.number {
+                NumberVariable::Volume => "volume",
+                NumberVariable::Issue => "issue",
+                NumberVariable::Pages => "pages",
+                NumberVariable::Edition => "edition",
+                NumberVariable::ChapterNumber => "chapter-number",
+                NumberVariable::CollectionNumber => "collection-number",
+                NumberVariable::NumberOfPages => "number-of-pages",
+                NumberVariable::NumberOfVolumes => "number-of-volumes",
+                NumberVariable::CitationNumber => "citation-number",
+                _ => "number",
+            }
+        )),
+        TemplateComponent::Variable(v) => Some(format!(
+            "csln-{}",
+            match v.variable {
+                SimpleVariable::Doi => "doi",
+                SimpleVariable::Url => "url",
+                SimpleVariable::Isbn => "isbn",
+                SimpleVariable::Issn => "issn",
+                SimpleVariable::Pmid => "pmid",
+                SimpleVariable::Note => "note",
+                SimpleVariable::Publisher => "publisher",
+                SimpleVariable::PublisherPlace => "publisher-place",
+                SimpleVariable::ContainerTitleShort => "container-title-short",
+                SimpleVariable::Archive => "archive",
+                _ => "variable",
+            }
+        )),
+        _ => None,
+    }
+}
+
 /// Render a single component to string using the default PlainText format.
 pub fn render_component(component: &ProcTemplateComponent) -> String {
     PlainText.finish(render_component_with_format::<PlainText>(component))
@@ -59,7 +116,6 @@ pub fn render_component_with_format<F: OutputFormat<Output = String>>(
 }
 
 /// Render a single component using a specific output format and an existing renderer instance.
-#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String>>(
     component: &ProcTemplateComponent,
     fmt: &F,
@@ -146,64 +202,8 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
         .and_then(|c| c.semantic_classes)
         .unwrap_or(true);
 
-    if show_semantics {
-        use citum_schema::template::{DateVariable, NumberVariable, SimpleVariable};
-        let semantic_class = match &component.template_component {
-            TemplateComponent::Title(t) => match t.title {
-                TitleType::Primary => Some("csln-title".to_string()),
-                TitleType::ParentMonograph | TitleType::ParentSerial => {
-                    Some("csln-container-title".to_string())
-                }
-                _ => Some("csln-title".to_string()),
-            },
-            TemplateComponent::Contributor(c) => Some(format!("csln-{}", c.contributor.as_str())),
-            TemplateComponent::Date(d) => Some(format!(
-                "csln-{}",
-                match d.date {
-                    DateVariable::Issued => "issued",
-                    DateVariable::Accessed => "accessed",
-                    DateVariable::OriginalPublished => "original-published",
-                    DateVariable::Submitted => "submitted",
-                    DateVariable::EventDate => "event-date",
-                }
-            )),
-            TemplateComponent::Number(n) => Some(format!(
-                "csln-{}",
-                match n.number {
-                    NumberVariable::Volume => "volume",
-                    NumberVariable::Issue => "issue",
-                    NumberVariable::Pages => "pages",
-                    NumberVariable::Edition => "edition",
-                    NumberVariable::ChapterNumber => "chapter-number",
-                    NumberVariable::CollectionNumber => "collection-number",
-                    NumberVariable::NumberOfPages => "number-of-pages",
-                    NumberVariable::NumberOfVolumes => "number-of-volumes",
-                    NumberVariable::CitationNumber => "citation-number",
-                    _ => "number",
-                }
-            )),
-            TemplateComponent::Variable(v) => Some(format!(
-                "csln-{}",
-                match v.variable {
-                    SimpleVariable::Doi => "doi",
-                    SimpleVariable::Url => "url",
-                    SimpleVariable::Isbn => "isbn",
-                    SimpleVariable::Issn => "issn",
-                    SimpleVariable::Pmid => "pmid",
-                    SimpleVariable::Note => "note",
-                    SimpleVariable::Publisher => "publisher",
-                    SimpleVariable::PublisherPlace => "publisher-place",
-                    SimpleVariable::ContainerTitleShort => "container-title-short",
-                    SimpleVariable::Archive => "archive",
-                    _ => "variable",
-                }
-            )),
-            _ => None,
-        };
-
-        if let Some(class) = semantic_class {
-            output = fmt.semantic(&class, output);
-        }
+    if show_semantics && let Some(class) = resolve_semantic_class(component) {
+        output = fmt.semantic(&class, output);
     }
 
     output

@@ -13,12 +13,111 @@ use citum_schema::reference::{
 use std::collections::HashMap;
 use url::Url;
 
+/// Build a CollectionComponent from a biblatex inbook/incollection/inproceedings entry.
+#[allow(clippy::too_many_arguments)]
+fn build_inbook_reference<F>(
+    id: Option<String>,
+    title: Option<Title>,
+    author: Option<Contributor>,
+    editor: Option<Contributor>,
+    issued: EdtfString,
+    publisher: Option<Contributor>,
+    field_str: &F,
+    language: Option<String>,
+) -> InputReference
+where
+    F: Fn(&str) -> Option<String>,
+{
+    let parent_title = field_str("booktitle").map(Title::Single);
+    InputReference::CollectionComponent(Box::new(CollectionComponent {
+        id,
+        r#type: MonographComponentType::Chapter,
+        title,
+        author,
+        translator: None,
+        issued,
+        parent: Parent::Embedded(Collection {
+            id: None,
+            r#type: CollectionType::EditedBook,
+            title: parent_title,
+            short_title: None,
+            editor,
+            translator: None,
+            issued: EdtfString(String::new()),
+            publisher,
+            collection_number: field_str("number"),
+            url: None,
+            accessed: None,
+            language: None,
+            field_languages: HashMap::new(),
+            note: None,
+            isbn: None,
+            keywords: None,
+        }),
+        pages: field_str("pages").map(NumOrStr::Str),
+        url: field_str("url").and_then(|u| Url::parse(&u).ok()),
+        accessed: field_str("urldate").map(EdtfString),
+        language,
+        field_languages: HashMap::new(),
+        note: field_str("note"),
+        doi: field_str("doi"),
+        genre: field_str("type"),
+        medium: None,
+        keywords: None,
+    }))
+}
+
+/// Build a SerialComponent from a biblatex article entry.
+fn build_article_reference<F>(
+    id: Option<String>,
+    title: Option<Title>,
+    author: Option<Contributor>,
+    issued: EdtfString,
+    field_str: &F,
+    language: Option<String>,
+) -> InputReference
+where
+    F: Fn(&str) -> Option<String>,
+{
+    let parent_title = field_str("journaltitle")
+        .or_else(|| field_str("journal"))
+        .map(Title::Single);
+    InputReference::SerialComponent(Box::new(SerialComponent {
+        id,
+        r#type: SerialComponentType::Article,
+        title,
+        author,
+        translator: None,
+        issued,
+        parent: Parent::Embedded(Serial {
+            r#type: SerialType::AcademicJournal,
+            title: parent_title,
+            short_title: None,
+            editor: None,
+            publisher: None,
+            issn: field_str("issn"),
+        }),
+        url: field_str("url").and_then(|u| Url::parse(&u).ok()),
+        accessed: field_str("urldate").map(EdtfString),
+        language,
+        field_languages: HashMap::new(),
+        note: field_str("note"),
+        doi: field_str("doi"),
+        ads_bibcode: field_str("bibcode"),
+        pages: field_str("pages"),
+        volume: field_str("volume").map(NumOrStr::Str),
+        issue: field_str("number").map(NumOrStr::Str),
+        genre: field_str("type"),
+        medium: None,
+        keywords: None,
+    }))
+}
+
 /// Convert a biblatex entry into an InputReference.
 ///
 /// Maps biblatex entry types (book, article, inproceedings, etc.) to
 /// appropriate Citum reference types. Extracts all relevant fields
 /// including contributors, dates, and metadata.
-#[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
 pub(super) fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
     let id = Some(entry.key.clone());
     let field_str = |key: &str| {
@@ -78,79 +177,10 @@ pub(super) fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputRef
                 &entry_type,
             )))
         }
-        "inbook" | "incollection" | "inproceedings" => {
-            let parent_title = field_str("booktitle").map(Title::Single);
-            InputReference::CollectionComponent(Box::new(CollectionComponent {
-                id,
-                r#type: MonographComponentType::Chapter,
-                title,
-                author,
-                translator: None,
-                issued,
-                parent: Parent::Embedded(Collection {
-                    id: None,
-                    r#type: CollectionType::EditedBook,
-                    title: parent_title,
-                    short_title: None,
-                    editor,
-                    translator: None,
-                    issued: EdtfString(String::new()),
-                    publisher,
-                    collection_number: field_str("number"),
-                    url: None,
-                    accessed: None,
-                    language: None,
-                    field_languages: HashMap::new(),
-                    note: None,
-                    isbn: None,
-                    keywords: None,
-                }),
-                pages: field_str("pages").map(NumOrStr::Str),
-                url: field_str("url").and_then(|u| Url::parse(&u).ok()),
-                accessed: field_str("urldate").map(EdtfString),
-                language,
-                field_languages: HashMap::new(),
-                note: field_str("note"),
-                doi: field_str("doi"),
-                genre: field_str("type"),
-                medium: None,
-                keywords: None,
-            }))
-        }
-        "article" => {
-            let parent_title = field_str("journaltitle")
-                .or_else(|| field_str("journal"))
-                .map(Title::Single);
-            InputReference::SerialComponent(Box::new(SerialComponent {
-                id,
-                r#type: SerialComponentType::Article,
-                title,
-                author,
-                translator: None,
-                issued,
-                parent: Parent::Embedded(Serial {
-                    r#type: SerialType::AcademicJournal,
-                    title: parent_title,
-                    short_title: None,
-                    editor: None,
-                    publisher: None,
-                    issn: field_str("issn"),
-                }),
-                url: field_str("url").and_then(|u| Url::parse(&u).ok()),
-                accessed: field_str("urldate").map(EdtfString),
-                language,
-                field_languages: HashMap::new(),
-                note: field_str("note"),
-                doi: field_str("doi"),
-                ads_bibcode: field_str("bibcode"),
-                pages: field_str("pages"),
-                volume: field_str("volume").map(NumOrStr::Str),
-                issue: field_str("number").map(NumOrStr::Str),
-                genre: field_str("type"),
-                medium: None,
-                keywords: None,
-            }))
-        }
+        "inbook" | "incollection" | "inproceedings" => build_inbook_reference(
+            id, title, author, editor, issued, publisher, &field_str, language,
+        ),
+        "article" => build_article_reference(id, title, author, issued, &field_str, language),
         _ => InputReference::Monograph(Box::new(biblatex_monograph(
             id,
             MonographType::Document,

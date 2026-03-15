@@ -117,8 +117,80 @@ pub(super) fn format_role_term<F: crate::render::format::OutputFormat<Output = S
     fmt.text(&format!("{}{}{}", prefix, term_str, suffix))
 }
 
+/// Apply FullThenShort integral-citation subsequent-form rewrite to contributor form.
+fn apply_integral_subsequent_form(
+    component: &mut TemplateContributor,
+    hints: &ProcHints,
+    options: &RenderOptions<'_>,
+) {
+    if options.context != RenderContext::Citation {
+        return;
+    }
+    if !matches!(options.mode, citum_schema::citation::CitationMode::Integral) {
+        return;
+    }
+    if !matches!(component.contributor, ContributorRole::Author) {
+        return;
+    }
+    if !matches!(
+        hints.integral_name_state,
+        Some(citum_schema::citation::IntegralNameState::Subsequent)
+    ) {
+        return;
+    }
+    if !options
+        .config
+        .integral_names
+        .as_ref()
+        .is_some_and(|cfg| matches!(cfg.resolve().rule, IntegralNameRule::FullThenShort))
+    {
+        return;
+    }
+    let subsequent_form = options
+        .config
+        .integral_names
+        .as_ref()
+        .map(|cfg| cfg.resolve().subsequent_form)
+        .unwrap_or(IntegralNameForm::Short);
+    component.form = match subsequent_form {
+        IntegralNameForm::Short => ContributorForm::Short,
+        IntegralNameForm::FamilyOnly => ContributorForm::FamilyOnly,
+    };
+}
+
+/// Build name overrides and format all names for a contributor component.
+fn format_contributor_names(
+    component: &TemplateContributor,
+    names_vec: &[crate::reference::FlatName],
+    effective_rendering: &citum_schema::template::Rendering,
+    options: &RenderOptions<'_>,
+    hints: &ProcHints,
+) -> String {
+    let effective_name_order = component.name_order.as_ref().or_else(|| {
+        options
+            .config
+            .contributors
+            .as_ref()?
+            .role
+            .as_ref()?
+            .roles
+            .as_ref()?
+            .get(component.contributor.as_str())?
+            .name_order
+            .as_ref()
+    });
+
+    let name_overrides = names::NamesOverrides {
+        name_order: effective_name_order,
+        sort_separator: component.sort_separator.as_ref(),
+        shorten: component.shorten.as_ref(),
+        and: component.and.as_ref(),
+        initialize_with: effective_rendering.initialize_with.as_ref(),
+    };
+    names::format_names(names_vec, &component.form, options, &name_overrides, hints)
+}
+
 impl ComponentValues for TemplateContributor {
-    #[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
     fn values<F: crate::render::format::OutputFormat<Output = String>>(
         &self,
         reference: &Reference,
@@ -131,30 +203,7 @@ impl ComponentValues for TemplateContributor {
             resolve_contributor_overrides(self, self.overrides.as_ref(), &reference.ref_type());
 
         // Apply integral-citation subsequent-form (FullThenShort rule)
-        if options.context == RenderContext::Citation
-            && matches!(options.mode, citum_schema::citation::CitationMode::Integral)
-            && matches!(component.contributor, ContributorRole::Author)
-            && matches!(
-                hints.integral_name_state,
-                Some(citum_schema::citation::IntegralNameState::Subsequent)
-            )
-            && options
-                .config
-                .integral_names
-                .as_ref()
-                .is_some_and(|cfg| matches!(cfg.resolve().rule, IntegralNameRule::FullThenShort))
-        {
-            let subsequent_form = options
-                .config
-                .integral_names
-                .as_ref()
-                .map(|cfg| cfg.resolve().subsequent_form)
-                .unwrap_or(IntegralNameForm::Short);
-            component.form = match subsequent_form {
-                IntegralNameForm::Short => ContributorForm::Short,
-                IntegralNameForm::FamilyOnly => ContributorForm::FamilyOnly,
-            };
-        }
+        apply_integral_subsequent_form(&mut component, hints, options);
 
         // Respect explicit suppression before any contributor substitution logic.
         if effective_rendering.suppress == Some(true) {
@@ -220,29 +269,8 @@ impl ComponentValues for TemplateContributor {
             return None;
         }
 
-        let effective_name_order = component.name_order.as_ref().or_else(|| {
-            options
-                .config
-                .contributors
-                .as_ref()?
-                .role
-                .as_ref()?
-                .roles
-                .as_ref()?
-                .get(component.contributor.as_str())?
-                .name_order
-                .as_ref()
-        });
-
-        let name_overrides = names::NamesOverrides {
-            name_order: effective_name_order,
-            sort_separator: component.sort_separator.as_ref(),
-            shorten: component.shorten.as_ref(),
-            and: component.and.as_ref(),
-            initialize_with: effective_rendering.initialize_with.as_ref(),
-        };
         let formatted =
-            names::format_names(&names_vec, &component.form, options, &name_overrides, hints);
+            format_contributor_names(&component, &names_vec, &effective_rendering, options, hints);
 
         let role_omitted = is_role_label_omitted(options, &component.contributor);
         let (role_prefix, role_suffix) = labels::resolve_role_labels::<F>(
