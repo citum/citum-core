@@ -34,12 +34,14 @@ redundant_explicit_links = "warn"
 unescaped_backticks = "warn"
 
 [workspace.lints.clippy]
+cognitive_complexity = "deny"
 empty_docs = "deny"
 four_forward_slashes = "deny"
 missing_errors_doc = "warn"
 missing_panics_doc = "warn"
 missing_safety_doc = "deny"
 tabs_in_doc_comments = "deny"
+too_many_lines = "deny"
 
 [profile.release]
 opt-level = 3

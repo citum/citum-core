@@ -11,6 +11,7 @@ fn announce_behavior(summary: &str) {
     println!("behavior: {summary}");
 }
 
+#[allow(clippy::too_many_lines)] // test functions naturally exceed 100 lines
 #[test]
 fn test_extract_type_conditional_substitute() {
     announce_behavior(

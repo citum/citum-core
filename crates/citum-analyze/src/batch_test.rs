@@ -17,6 +17,7 @@ use std::path::Path;
 use std::process::Command;
 use walkdir::WalkDir;
 
+#[allow(clippy::too_many_lines)] // test functions naturally exceed 100 lines
 fn main() {
     let args: Vec<String> = env::args().collect();
 

@@ -80,104 +80,121 @@ impl TemplateCompiler {
             } else {
                 match node {
                     CslnNode::Group(g) => {
-                        // Check if this group has its own wrap
-                        let group_wrap = Self::infer_wrap_from_affixes(
-                            &g.formatting.prefix,
-                            &g.formatting.suffix,
-                        );
-                        let effective_wrap = if group_wrap.0.is_some() {
-                            group_wrap.clone()
-                        } else {
-                            inherited_wrap.clone()
-                        };
-
-                        // Collect group components into a temporary list
-                        let mut group_occurrences = Vec::new();
-                        self.collect_occurrences(
-                            &g.children,
-                            &effective_wrap,
-                            context,
-                            &mut group_occurrences,
-                        );
-
-                        // Extract components from occurrences for grouping logic
-                        let group_components: Vec<TemplateComponent> = group_occurrences
-                            .iter()
-                            .map(|o| o.component.clone())
-                            .collect();
-
-                        // Decide if this should be a List
-                        let meaningful_delimiter = g
-                            .delimiter
-                            .as_ref()
-                            .is_some_and(|d| matches!(d.as_str(), "" | "none" | ": " | " " | ", "));
-                        let is_small_structural_group =
-                            group_components.len() >= 2 && group_components.len() <= 3;
-                        let should_be_list = meaningful_delimiter
-                            && is_small_structural_group
-                            && group_wrap.0.is_none();
-
-                        if should_be_list && !group_components.is_empty() {
-                            let list = TemplateComponent::List(TemplateList {
-                                items: group_components,
-                                delimiter: self.map_delimiter(&g.delimiter),
-                                rendering: self.convert_formatting(&g.formatting),
-                                ..Default::default()
-                            });
-                            let source_order = g.source_order;
-                            occurrences.push(ComponentOccurrence {
-                                component: list,
-                                context: context.clone(),
-                                source_order,
-                            });
-                        } else {
-                            // Flatten - add all group occurrences directly
-                            occurrences.extend(group_occurrences);
-                        }
+                        self.collect_group_occurrences(g, inherited_wrap, context, occurrences);
                     }
                     CslnNode::Condition(c) => {
-                        // THEN branch: type-specific if types specified
-                        let then_context = if c.if_item_type.is_empty() {
-                            BranchContext::Default
-                        } else {
-                            BranchContext::TypeSpecific(c.if_item_type.clone())
-                        };
-                        self.collect_occurrences(
-                            &c.then_branch,
-                            inherited_wrap,
-                            &then_context,
-                            occurrences,
-                        );
-
-                        // ELSE_IF branches: each is type-specific
-                        for else_if in &c.else_if_branches {
-                            let else_if_context = if else_if.if_item_type.is_empty() {
-                                BranchContext::Default
-                            } else {
-                                BranchContext::TypeSpecific(else_if.if_item_type.clone())
-                            };
-                            self.collect_occurrences(
-                                &else_if.children,
-                                inherited_wrap,
-                                &else_if_context,
-                                occurrences,
-                            );
-                        }
-
-                        // ELSE branch: always default context
-                        if let Some(ref else_nodes) = c.else_branch {
-                            self.collect_occurrences(
-                                else_nodes,
-                                inherited_wrap,
-                                &BranchContext::Default,
-                                occurrences,
-                            );
-                        }
+                        self.collect_condition_occurrences(c, inherited_wrap, occurrences);
                     }
                     _ => {}
                 }
             }
             i += 1;
+        }
+    }
+
+    fn collect_group_occurrences(
+        &self,
+        g: &citum_schema::legacy::GroupBlock,
+        inherited_wrap: &(
+            Option<citum_schema::template::WrapPunctuation>,
+            Option<String>,
+            Option<String>,
+        ),
+        context: &BranchContext,
+        occurrences: &mut Vec<ComponentOccurrence>,
+    ) {
+        // Check if this group has its own wrap
+        let group_wrap = Self::infer_wrap_from_affixes(&g.formatting.prefix, &g.formatting.suffix);
+        let effective_wrap = if group_wrap.0.is_some() {
+            group_wrap.clone()
+        } else {
+            inherited_wrap.clone()
+        };
+
+        // Collect group components into a temporary list
+        let mut group_occurrences = Vec::new();
+        self.collect_occurrences(
+            &g.children,
+            &effective_wrap,
+            context,
+            &mut group_occurrences,
+        );
+
+        // Extract components from occurrences for grouping logic
+        let group_components: Vec<TemplateComponent> = group_occurrences
+            .iter()
+            .map(|o| o.component.clone())
+            .collect();
+
+        // Decide if this should be a List
+        let meaningful_delimiter = g
+            .delimiter
+            .as_ref()
+            .is_some_and(|d| matches!(d.as_str(), "" | "none" | ": " | " " | ", "));
+        let is_small_structural_group = group_components.len() >= 2 && group_components.len() <= 3;
+        let should_be_list =
+            meaningful_delimiter && is_small_structural_group && group_wrap.0.is_none();
+
+        if should_be_list && !group_components.is_empty() {
+            let list = TemplateComponent::List(TemplateList {
+                items: group_components,
+                delimiter: self.map_delimiter(&g.delimiter),
+                rendering: self.convert_formatting(&g.formatting),
+                ..Default::default()
+            });
+            let source_order = g.source_order;
+            occurrences.push(ComponentOccurrence {
+                component: list,
+                context: context.clone(),
+                source_order,
+            });
+        } else {
+            // Flatten - add all group occurrences directly
+            occurrences.extend(group_occurrences);
+        }
+    }
+
+    fn collect_condition_occurrences(
+        &self,
+        c: &citum_schema::legacy::ConditionBlock,
+        inherited_wrap: &(
+            Option<citum_schema::template::WrapPunctuation>,
+            Option<String>,
+            Option<String>,
+        ),
+        occurrences: &mut Vec<ComponentOccurrence>,
+    ) {
+        // THEN branch: type-specific if types specified
+        let then_context = if c.if_item_type.is_empty() {
+            BranchContext::Default
+        } else {
+            BranchContext::TypeSpecific(c.if_item_type.clone())
+        };
+        self.collect_occurrences(&c.then_branch, inherited_wrap, &then_context, occurrences);
+
+        // ELSE_IF branches: each is type-specific
+        for else_if in &c.else_if_branches {
+            let else_if_context = if else_if.if_item_type.is_empty() {
+                BranchContext::Default
+            } else {
+                BranchContext::TypeSpecific(else_if.if_item_type.clone())
+            };
+            self.collect_occurrences(
+                &else_if.children,
+                inherited_wrap,
+                &else_if_context,
+                occurrences,
+            );
+        }
+
+        // ELSE branch: always default context
+        if let Some(ref else_nodes) = c.else_branch {
+            self.collect_occurrences(
+                else_nodes,
+                inherited_wrap,
+                &BranchContext::Default,
+                occurrences,
+            );
         }
     }
 

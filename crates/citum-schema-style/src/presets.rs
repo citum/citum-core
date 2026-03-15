@@ -117,8 +117,8 @@ pub enum ContributorPreset {
 }
 
 impl ContributorPreset {
-    /// Convert this preset to a concrete `ContributorConfig`.
-    pub fn config(&self) -> ContributorConfig {
+    /// Convert named-style presets to config.
+    fn config_named_presets(&self) -> ContributorConfig {
         match self {
             ContributorPreset::Apa => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::First),
@@ -153,7 +153,7 @@ impl ContributorPreset {
                 ..Default::default()
             },
             ContributorPreset::Ieee => ContributorConfig {
-                display_as_sort: Some(DisplayAsSort::None), // Given-first format
+                display_as_sort: Some(DisplayAsSort::None),
                 and: Some(AndOptions::Text),
                 delimiter: Some(", ".to_string()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
@@ -182,6 +182,13 @@ impl ContributorPreset {
                 }),
                 ..Default::default()
             },
+            _ => unreachable!(),
+        }
+    }
+
+    /// Convert numeric-style presets to config.
+    fn config_numeric_presets(&self) -> ContributorConfig {
+        match self {
             ContributorPreset::NumericCompact => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::All),
                 and: Some(AndOptions::None),
@@ -261,6 +268,13 @@ impl ContributorPreset {
                 demote_non_dropping_particle: Some(DemoteNonDroppingParticle::SortOnly),
                 ..Default::default()
             },
+            _ => unreachable!(),
+        }
+    }
+
+    /// Convert specialty-style presets to config.
+    fn config_specialty_presets(&self) -> ContributorConfig {
+        match self {
             ContributorPreset::AnnualReviews => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::All),
                 and: Some(AndOptions::None),
@@ -304,6 +318,29 @@ impl ContributorPreset {
                 demote_non_dropping_particle: Some(DemoteNonDroppingParticle::SortOnly),
                 ..Default::default()
             },
+            _ => unreachable!(),
+        }
+    }
+
+    /// Convert this preset to a concrete `ContributorConfig`.
+    pub fn config(&self) -> ContributorConfig {
+        match self {
+            ContributorPreset::Apa
+            | ContributorPreset::Chicago
+            | ContributorPreset::Vancouver
+            | ContributorPreset::Ieee
+            | ContributorPreset::Harvard
+            | ContributorPreset::Springer => self.config_named_presets(),
+            ContributorPreset::NumericCompact
+            | ContributorPreset::NumericMedium
+            | ContributorPreset::NumericTight
+            | ContributorPreset::NumericLarge
+            | ContributorPreset::NumericAllAuthors
+            | ContributorPreset::NumericGivenDot => self.config_numeric_presets(),
+            ContributorPreset::AnnualReviews
+            | ContributorPreset::MathPhys
+            | ContributorPreset::SocSciFirst
+            | ContributorPreset::PhysicsNumeric => self.config_specialty_presets(),
         }
     }
 }

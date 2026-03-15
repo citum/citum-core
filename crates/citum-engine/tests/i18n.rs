@@ -631,6 +631,7 @@ fn given_no_item_language_when_resolving_the_effective_item_language_then_the_mu
     assert_eq!(effective_item_language(&reference), Some("ja".to_string()));
 }
 
+#[allow(clippy::too_many_lines)] // test functions naturally exceed 100 lines
 fn given_localized_citation_templates_when_the_item_language_matches_then_the_locale_specific_template_is_selected()
  {
     let style = Style {

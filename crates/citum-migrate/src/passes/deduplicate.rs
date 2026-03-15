@@ -218,6 +218,87 @@ fn suppress_issue_in_parent_monograph_list(items: &mut [TemplateComponent]) {
     }
 }
 
+fn suppress_component_if_seen(component: &mut TemplateComponent, seen_vars: &mut HashSet<String>) {
+    use citum_schema::template::{ComponentOverride, TypeSelector};
+    let suppress_rendering = citum_schema::template::Rendering {
+        suppress: Some(true),
+        ..Default::default()
+    };
+    match component {
+        TemplateComponent::Variable(v) => {
+            let key = format!("{:?}", v.variable);
+            if seen_vars.contains(&key) {
+                let overrides = v
+                    .overrides
+                    .get_or_insert_with(std::collections::HashMap::new);
+                overrides.insert(
+                    TypeSelector::Single("all".to_string()),
+                    ComponentOverride::Rendering(suppress_rendering),
+                );
+            } else {
+                seen_vars.insert(key);
+            }
+        }
+        TemplateComponent::Contributor(c) => {
+            let key = format!("{:?}", c.contributor);
+            if seen_vars.contains(&key) {
+                let overrides = c
+                    .overrides
+                    .get_or_insert_with(std::collections::HashMap::new);
+                overrides.insert(
+                    TypeSelector::Single("all".to_string()),
+                    ComponentOverride::Rendering(suppress_rendering),
+                );
+            } else {
+                seen_vars.insert(key);
+            }
+        }
+        TemplateComponent::Title(t) => {
+            let key = format!("{:?}", t.title);
+            if seen_vars.contains(&key) {
+                let overrides = t
+                    .overrides
+                    .get_or_insert_with(std::collections::HashMap::new);
+                overrides.insert(
+                    TypeSelector::Single("all".to_string()),
+                    ComponentOverride::Rendering(suppress_rendering),
+                );
+            } else {
+                seen_vars.insert(key);
+            }
+        }
+        TemplateComponent::Date(d) => {
+            let key = format!("{:?}", d.date);
+            if seen_vars.contains(&key) {
+                let overrides = d
+                    .overrides
+                    .get_or_insert_with(std::collections::HashMap::new);
+                overrides.insert(
+                    TypeSelector::Single("all".to_string()),
+                    ComponentOverride::Rendering(suppress_rendering),
+                );
+            } else {
+                seen_vars.insert(key);
+            }
+        }
+        TemplateComponent::Number(n) => {
+            let key = format!("{:?}", n.number);
+            if seen_vars.contains(&key) {
+                let overrides = n
+                    .overrides
+                    .get_or_insert_with(std::collections::HashMap::new);
+                overrides.insert(
+                    TypeSelector::Single("all".to_string()),
+                    ComponentOverride::Rendering(suppress_rendering),
+                );
+            } else {
+                seen_vars.insert(key);
+            }
+        }
+        _ => {}
+    }
+}
+
 /// Deduplicate variables across sibling lists using global tracking.
 /// When a variable is rendered in multiple sibling List nodes at the same nesting level,
 /// suppress it in all but the first occurrence to enforce the "once" rule.
@@ -233,120 +314,11 @@ fn deduplicate_variables_in_sibling_lists(
     let mut i = 0;
 
     while i < items.len() {
-        match &mut items[i] {
-            TemplateComponent::Variable(v) => {
-                let var_key = format!("{:?}", v.variable);
-                if seen_vars.contains(&var_key) {
-                    // Suppress this variable (it appeared in a prior sibling List or component)
-                    let overrides = v
-                        .overrides
-                        .get_or_insert_with(std::collections::HashMap::new);
-                    use citum_schema::template::{ComponentOverride, TypeSelector};
-                    let key = TypeSelector::Single("all".to_string());
-                    overrides.insert(
-                        key,
-                        ComponentOverride::Rendering(citum_schema::template::Rendering {
-                            suppress: Some(true),
-                            ..Default::default()
-                        }),
-                    );
-                } else {
-                    seen_vars.insert(var_key);
-                }
-                i += 1;
-            }
-            TemplateComponent::Contributor(c) => {
-                let var_key = format!("{:?}", c.contributor);
-                if seen_vars.contains(&var_key) {
-                    // Suppress this contributor (it appeared in a prior sibling List or component)
-                    let overrides = c
-                        .overrides
-                        .get_or_insert_with(std::collections::HashMap::new);
-                    use citum_schema::template::{ComponentOverride, TypeSelector};
-                    let key = TypeSelector::Single("all".to_string());
-                    overrides.insert(
-                        key,
-                        ComponentOverride::Rendering(citum_schema::template::Rendering {
-                            suppress: Some(true),
-                            ..Default::default()
-                        }),
-                    );
-                } else {
-                    seen_vars.insert(var_key);
-                }
-                i += 1;
-            }
-            TemplateComponent::Title(t) => {
-                let var_key = format!("{:?}", t.title);
-                if seen_vars.contains(&var_key) {
-                    // Suppress this title (it appeared in a prior sibling List or component)
-                    let overrides = t
-                        .overrides
-                        .get_or_insert_with(std::collections::HashMap::new);
-                    use citum_schema::template::{ComponentOverride, TypeSelector};
-                    let key = TypeSelector::Single("all".to_string());
-                    overrides.insert(
-                        key,
-                        ComponentOverride::Rendering(citum_schema::template::Rendering {
-                            suppress: Some(true),
-                            ..Default::default()
-                        }),
-                    );
-                } else {
-                    seen_vars.insert(var_key);
-                }
-                i += 1;
-            }
-            TemplateComponent::Date(d) => {
-                let var_key = format!("{:?}", d.date);
-                if seen_vars.contains(&var_key) {
-                    // Suppress this date (it appeared in a prior sibling List or component)
-                    let overrides = d
-                        .overrides
-                        .get_or_insert_with(std::collections::HashMap::new);
-                    use citum_schema::template::{ComponentOverride, TypeSelector};
-                    let key = TypeSelector::Single("all".to_string());
-                    overrides.insert(
-                        key,
-                        ComponentOverride::Rendering(citum_schema::template::Rendering {
-                            suppress: Some(true),
-                            ..Default::default()
-                        }),
-                    );
-                } else {
-                    seen_vars.insert(var_key);
-                }
-                i += 1;
-            }
-            TemplateComponent::Number(n) => {
-                let var_key = format!("{:?}", n.number);
-                if seen_vars.contains(&var_key) {
-                    // Suppress this number (it appeared in a prior sibling List or component)
-                    let overrides = n
-                        .overrides
-                        .get_or_insert_with(std::collections::HashMap::new);
-                    use citum_schema::template::{ComponentOverride, TypeSelector};
-                    let key = TypeSelector::Single("all".to_string());
-                    overrides.insert(
-                        key,
-                        ComponentOverride::Rendering(citum_schema::template::Rendering {
-                            suppress: Some(true),
-                            ..Default::default()
-                        }),
-                    );
-                } else {
-                    seen_vars.insert(var_key);
-                }
-                i += 1;
-            }
-            TemplateComponent::List(list) => {
-                // Recursively process the items within this list
-                deduplicate_variables_in_sibling_lists(&mut list.items, seen_vars);
-                i += 1;
-            }
-            _ => {
-                i += 1;
-            }
+        if let TemplateComponent::List(list) = &mut items[i] {
+            deduplicate_variables_in_sibling_lists(&mut list.items, seen_vars);
+        } else {
+            suppress_component_if_seen(&mut items[i], seen_vars);
         }
+        i += 1;
     }
 }

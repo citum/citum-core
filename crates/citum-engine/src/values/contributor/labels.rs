@@ -6,6 +6,55 @@ use citum_schema::locale::TermForm;
 use citum_schema::options::EditorLabelFormat;
 use citum_schema::template::{ContributorForm, ContributorRole, Rendering, TemplateContributor};
 
+/// Resolve role label from global editor_label_format config.
+///
+/// Returns `(prefix, suffix)` using verb-prefix, short-suffix, or long-suffix format.
+fn resolve_editor_format_label<F: OutputFormat<Output = String>>(
+    format: EditorLabelFormat,
+    component: &TemplateContributor,
+    names_count: usize,
+    effective_rendering: &Rendering,
+    options: &RenderOptions<'_>,
+    fmt: &F,
+) -> (Option<String>, Option<String>) {
+    let plural = names_count > 1;
+    match format {
+        EditorLabelFormat::VerbPrefix => {
+            let term = options
+                .locale
+                .role_term(&component.contributor, plural, TermForm::Verb);
+            (
+                term.map(|t| {
+                    super::format_role_term::<F>(t, fmt, effective_rendering, options, "", " ")
+                }),
+                None,
+            )
+        }
+        EditorLabelFormat::ShortSuffix => {
+            let term = options
+                .locale
+                .role_term(&component.contributor, plural, TermForm::Short);
+            (
+                None,
+                term.map(|t| {
+                    super::format_role_term::<F>(t, fmt, effective_rendering, options, " (", ")")
+                }),
+            )
+        }
+        EditorLabelFormat::LongSuffix => {
+            let term = options
+                .locale
+                .role_term(&component.contributor, plural, TermForm::Long);
+            (
+                None,
+                term.map(|t| {
+                    super::format_role_term::<F>(t, fmt, effective_rendering, options, ", ", "")
+                }),
+            )
+        }
+    }
+}
+
 /// Resolve the role-label prefix and suffix for a formatted contributor.
 ///
 /// Returns `(prefix, suffix)` strings to wrap the formatted name list.
@@ -57,66 +106,14 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
             component.contributor,
             ContributorRole::Editor | ContributorRole::Translator
         ) {
-            let plural = names_count > 1;
-            return match format {
-                EditorLabelFormat::VerbPrefix => {
-                    let term =
-                        options
-                            .locale
-                            .role_term(&component.contributor, plural, TermForm::Verb);
-                    (
-                        term.map(|t| {
-                            super::format_role_term::<F>(
-                                t,
-                                fmt,
-                                effective_rendering,
-                                options,
-                                "",
-                                " ",
-                            )
-                        }),
-                        None,
-                    )
-                }
-                EditorLabelFormat::ShortSuffix => {
-                    let term =
-                        options
-                            .locale
-                            .role_term(&component.contributor, plural, TermForm::Short);
-                    (
-                        None,
-                        term.map(|t| {
-                            super::format_role_term::<F>(
-                                t,
-                                fmt,
-                                effective_rendering,
-                                options,
-                                " (",
-                                ")",
-                            )
-                        }),
-                    )
-                }
-                EditorLabelFormat::LongSuffix => {
-                    let term =
-                        options
-                            .locale
-                            .role_term(&component.contributor, plural, TermForm::Long);
-                    (
-                        None,
-                        term.map(|t| {
-                            super::format_role_term::<F>(
-                                t,
-                                fmt,
-                                effective_rendering,
-                                options,
-                                ", ",
-                                "",
-                            )
-                        }),
-                    )
-                }
-            };
+            return resolve_editor_format_label(
+                format,
+                component,
+                names_count,
+                effective_rendering,
+                options,
+                fmt,
+            );
         }
         return (None, None);
     }

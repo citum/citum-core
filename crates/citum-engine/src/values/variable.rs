@@ -27,6 +27,106 @@ fn container_title_short(reference: &Reference) -> Option<String> {
     }
 }
 
+/// Format a locator value with optional label prefix from the locale.
+fn format_locator_value(
+    show_label: Option<bool>,
+    strip_label_periods: Option<bool>,
+    loc: &str,
+    label_type: &citum_schema::citation::LocatorType,
+    options: &RenderOptions<'_>,
+) -> String {
+    if show_label == Some(false) && matches!(label_type, citum_schema::citation::LocatorType::Page)
+    {
+        return loc.to_string();
+    }
+
+    // Chicago-style notes typically render page locators bare ("23"),
+    // while most non-note styles expect labels ("p. 23").
+    if matches!(label_type, citum_schema::citation::LocatorType::Page)
+        && matches!(
+            options.config.processing,
+            Some(citum_schema::options::Processing::Note)
+        )
+    {
+        return loc.to_string();
+    }
+
+    // Check if value is plural (contains hyphen, comma, or space)
+    let is_plural = loc.contains('-') || loc.contains(',') || loc.contains(' ');
+
+    // Look up term from locale
+    if let Some(term) =
+        options
+            .locale
+            .locator_term(label_type, is_plural, citum_schema::locale::TermForm::Short)
+    {
+        if strip_label_periods == Some(true) {
+            let locator_term = crate::values::strip_trailing_periods(term);
+            format!("{}{}", locator_term, loc)
+        } else {
+            format!("{} {}", term, loc)
+        }
+    } else {
+        loc.to_string()
+    }
+}
+
+/// Resolve the raw value string for a simple variable from a reference.
+fn resolve_variable_value(
+    variable: &SimpleVariable,
+    show_label: Option<bool>,
+    strip_label_periods: Option<bool>,
+    reference: &Reference,
+    options: &RenderOptions<'_>,
+) -> Option<String> {
+    match variable {
+        SimpleVariable::Doi => reference.doi(),
+        SimpleVariable::Url => reference.url().map(|u| u.to_string()),
+        SimpleVariable::Isbn => reference.isbn(),
+        SimpleVariable::Issn => reference.issn(),
+        SimpleVariable::Publisher => reference.publisher_str(),
+        SimpleVariable::PublisherPlace => reference.publisher_place(),
+        SimpleVariable::Genre => reference.genre(),
+        SimpleVariable::Medium => reference.medium(),
+        SimpleVariable::Abstract => reference.abstract_text(),
+        SimpleVariable::Note => reference.note(),
+        SimpleVariable::Archive => reference.archive(),
+        SimpleVariable::ArchiveLocation => reference.archive_location(),
+        SimpleVariable::Authority => reference.authority(),
+        SimpleVariable::Reporter => reference.reporter(),
+        SimpleVariable::Page => reference.pages().map(|v| v.to_string()),
+        SimpleVariable::Volume => reference.volume().map(|v| v.to_string()),
+        SimpleVariable::Number => reference.number(),
+        SimpleVariable::DocketNumber => match reference {
+            Reference::Brief(r) => r.docket_number.clone(),
+            _ => None,
+        },
+        SimpleVariable::PatentNumber => match reference {
+            Reference::Patent(r) => Some(r.patent_number.clone()),
+            _ => None,
+        },
+        SimpleVariable::StandardNumber => match reference {
+            Reference::Standard(r) => Some(r.standard_number.clone()),
+            _ => None,
+        },
+        SimpleVariable::AdsBibcode => reference.ads_bibcode(),
+        SimpleVariable::ReportNumber => match reference {
+            Reference::Monograph(r) => r.report_number.clone(),
+            _ => None,
+        },
+        SimpleVariable::Version => reference.version(),
+        SimpleVariable::ContainerTitleShort => container_title_short(reference),
+        SimpleVariable::Locator => options.locator.map(|loc| {
+            if let Some(label_type) = &options.locator_label {
+                format_locator_value(show_label, strip_label_periods, loc, label_type, options)
+            } else {
+                loc.to_string()
+            }
+        }),
+        _ => None,
+    }
+}
+
 impl ComponentValues for TemplateVariable {
     fn values<F: crate::render::format::OutputFormat<Output = String>>(
         &self,
@@ -34,89 +134,13 @@ impl ComponentValues for TemplateVariable {
         _hints: &ProcHints,
         options: &RenderOptions<'_>,
     ) -> Option<ProcValues<F::Output>> {
-        let value = match self.variable {
-            SimpleVariable::Doi => reference.doi(),
-            SimpleVariable::Url => reference.url().map(|u| u.to_string()),
-            SimpleVariable::Isbn => reference.isbn(),
-            SimpleVariable::Issn => reference.issn(),
-            SimpleVariable::Publisher => reference.publisher_str(),
-            SimpleVariable::PublisherPlace => reference.publisher_place(),
-            SimpleVariable::Genre => reference.genre(),
-            SimpleVariable::Medium => reference.medium(),
-            SimpleVariable::Abstract => reference.abstract_text(),
-            SimpleVariable::Note => reference.note(),
-            SimpleVariable::Archive => reference.archive(),
-            SimpleVariable::ArchiveLocation => reference.archive_location(),
-            SimpleVariable::Authority => reference.authority(),
-            SimpleVariable::Reporter => reference.reporter(),
-            SimpleVariable::Page => reference.pages().map(|v| v.to_string()),
-            SimpleVariable::Volume => reference.volume().map(|v| v.to_string()),
-            SimpleVariable::Number => reference.number(),
-            SimpleVariable::DocketNumber => match reference {
-                Reference::Brief(r) => r.docket_number.clone(),
-                _ => None,
-            },
-            SimpleVariable::PatentNumber => match reference {
-                Reference::Patent(r) => Some(r.patent_number.clone()),
-                _ => None,
-            },
-            SimpleVariable::StandardNumber => match reference {
-                Reference::Standard(r) => Some(r.standard_number.clone()),
-                _ => None,
-            },
-            SimpleVariable::AdsBibcode => reference.ads_bibcode(),
-            SimpleVariable::ReportNumber => match reference {
-                Reference::Monograph(r) => r.report_number.clone(),
-                _ => None,
-            },
-            SimpleVariable::Version => reference.version(),
-            SimpleVariable::ContainerTitleShort => container_title_short(reference),
-            SimpleVariable::Locator => {
-                // If we have a locator value in options, use it
-                options.locator.map(|loc| {
-                    if let Some(label_type) = &options.locator_label {
-                        if self.show_label == Some(false)
-                            && matches!(label_type, citum_schema::citation::LocatorType::Page)
-                        {
-                            return loc.to_string();
-                        }
-
-                        // Chicago-style notes typically render page locators bare ("23"),
-                        // while most non-note styles expect labels ("p. 23").
-                        if matches!(label_type, citum_schema::citation::LocatorType::Page)
-                            && matches!(
-                                options.config.processing,
-                                Some(citum_schema::options::Processing::Note)
-                            )
-                        {
-                            return loc.to_string();
-                        }
-
-                        // Check if value is plural (contains hyphen, comma, or space)
-                        let is_plural = loc.contains('-') || loc.contains(',') || loc.contains(' ');
-
-                        // Look up term from locale
-                        if let Some(term) = options.locale.locator_term(
-                            label_type,
-                            is_plural,
-                            citum_schema::locale::TermForm::Short,
-                        ) {
-                            if self.strip_label_periods == Some(true) {
-                                let locator_term = crate::values::strip_trailing_periods(term);
-                                format!("{}{}", locator_term, loc)
-                            } else {
-                                format!("{} {}", term, loc)
-                            }
-                        } else {
-                            loc.to_string()
-                        }
-                    } else {
-                        loc.to_string()
-                    }
-                })
-            }
-            _ => None,
-        };
+        let value = resolve_variable_value(
+            &self.variable,
+            self.show_label,
+            self.strip_label_periods,
+            reference,
+            options,
+        );
 
         value.filter(|s: &String| !s.is_empty()).map(|value| {
             use citum_schema::options::{LinkAnchor, LinkTarget};

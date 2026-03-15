@@ -41,6 +41,151 @@ pub(super) fn resolve_multilingual_for_contrib(
     )
 }
 
+/// Attempt to substitute an empty author field with the editor contributor.
+fn resolve_editor_substitute<F: OutputFormat<Output = String>>(
+    component: &TemplateContributor,
+    hints: &ProcHints,
+    options: &RenderOptions<'_>,
+    reference: &Reference,
+    effective_rendering: &Rendering,
+    fmt: &F,
+    substitute: &citum_schema::options::Substitute,
+) -> Option<ProcValues<F::Output>> {
+    if let Some(editors) = reference.editor() {
+        let names_vec = resolve_multilingual_for_contrib(&editors, options);
+        if !names_vec.is_empty() {
+            let effective_name_order = component.name_order.as_ref().or_else(|| {
+                options
+                    .config
+                    .contributors
+                    .as_ref()?
+                    .role
+                    .as_ref()?
+                    .roles
+                    .as_ref()?
+                    .get(component.contributor.as_str())?
+                    .name_order
+                    .as_ref()
+            });
+
+            let name_overrides = super::names::NamesOverrides {
+                name_order: effective_name_order,
+                sort_separator: component.sort_separator.as_ref(),
+                shorten: component.shorten.as_ref(),
+                and: component.and.as_ref(),
+                initialize_with: effective_rendering.initialize_with.as_ref(),
+            };
+            let formatted = super::names::format_names(
+                &names_vec,
+                &component.form,
+                options,
+                &name_overrides,
+                hints,
+            );
+
+            // Add role suffix in bibliography context only.
+            // In citations, substituted editors look identical to authors.
+            let suffix = if options.context == RenderContext::Bibliography {
+                if super::is_role_label_omitted(options, &ContributorRole::Editor) {
+                    None
+                } else {
+                    substitute
+                        .contributor_role_form
+                        .as_ref()
+                        .and_then(|form: &String| {
+                            let plural = names_vec.len() > 1;
+                            let term_form = match form.as_str() {
+                                "short" => citum_schema::locale::TermForm::Short,
+                                "verb" => citum_schema::locale::TermForm::Verb,
+                                "verb-short" => citum_schema::locale::TermForm::VerbShort,
+                                _ => citum_schema::locale::TermForm::Short,
+                            };
+                            options
+                                .locale
+                                .role_term(&ContributorRole::Editor, plural, term_form)
+                                .map(|term| {
+                                    super::format_role_term::<F>(
+                                        term,
+                                        fmt,
+                                        effective_rendering,
+                                        options,
+                                        " (",
+                                        ")",
+                                    )
+                                })
+                        })
+                }
+            } else {
+                None
+            };
+
+            let url = crate::values::resolve_effective_url(
+                component.links.as_ref(),
+                options.config.links.as_ref(),
+                reference,
+                citum_schema::options::LinkAnchor::Component,
+            );
+
+            return Some(ProcValues {
+                value: fmt.text(&formatted),
+                prefix: None,
+                suffix,
+                url,
+                substituted_key: Some("contributor:Editor".to_string()),
+                pre_formatted: true,
+            });
+        }
+    }
+    None
+}
+
+/// Attempt to substitute an empty author field with the translator contributor.
+fn resolve_translator_substitute<F: OutputFormat<Output = String>>(
+    component: &TemplateContributor,
+    hints: &ProcHints,
+    options: &RenderOptions<'_>,
+    reference: &Reference,
+    effective_rendering: &Rendering,
+    fmt: &F,
+) -> Option<ProcValues<F::Output>> {
+    if let Some(translators) = reference.translator() {
+        let names_vec = resolve_multilingual_for_contrib(&translators, options);
+        if !names_vec.is_empty() {
+            let name_overrides = super::names::NamesOverrides {
+                name_order: component.name_order.as_ref(),
+                sort_separator: component.sort_separator.as_ref(),
+                shorten: component.shorten.as_ref(),
+                and: component.and.as_ref(),
+                initialize_with: effective_rendering.initialize_with.as_ref(),
+            };
+            let formatted = super::names::format_names(
+                &names_vec,
+                &component.form,
+                options,
+                &name_overrides,
+                hints,
+            );
+
+            let url = crate::values::resolve_effective_url(
+                component.links.as_ref(),
+                options.config.links.as_ref(),
+                reference,
+                citum_schema::options::LinkAnchor::Component,
+            );
+
+            return Some(ProcValues {
+                value: fmt.text(&formatted),
+                prefix: None,
+                suffix: Some(fmt.text(" (Trans.)")),
+                url,
+                substituted_key: None,
+                pre_formatted: true,
+            });
+        }
+    }
+    None
+}
+
 /// Attempt to substitute an empty author field with editor, title, or translator.
 ///
 /// Returns `Some(ProcValues)` if a substitute was found, `None` if the chain
@@ -64,87 +209,16 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
     for key in &substitute.template {
         match key {
             SubstituteKey::Editor => {
-                if let Some(editors) = reference.editor() {
-                    let names_vec = resolve_multilingual_for_contrib(&editors, options);
-                    if !names_vec.is_empty() {
-                        let effective_name_order = component.name_order.as_ref().or_else(|| {
-                            options
-                                .config
-                                .contributors
-                                .as_ref()?
-                                .role
-                                .as_ref()?
-                                .roles
-                                .as_ref()?
-                                .get(component.contributor.as_str())?
-                                .name_order
-                                .as_ref()
-                        });
-
-                        let name_overrides = super::names::NamesOverrides {
-                            name_order: effective_name_order,
-                            sort_separator: component.sort_separator.as_ref(),
-                            shorten: component.shorten.as_ref(),
-                            and: component.and.as_ref(),
-                            initialize_with: effective_rendering.initialize_with.as_ref(),
-                        };
-                        let formatted = super::names::format_names(
-                            &names_vec,
-                            &component.form,
-                            options,
-                            &name_overrides,
-                            hints,
-                        );
-
-                        // Add role suffix in bibliography context only.
-                        // In citations, substituted editors look identical to authors.
-                        let suffix = if options.context == RenderContext::Bibliography {
-                            if super::is_role_label_omitted(options, &ContributorRole::Editor) {
-                                None
-                            } else {
-                                substitute.contributor_role_form.as_ref().and_then(|form| {
-                                    let plural = names_vec.len() > 1;
-                                    let term_form = match form.as_str() {
-                                        "short" => citum_schema::locale::TermForm::Short,
-                                        "verb" => citum_schema::locale::TermForm::Verb,
-                                        "verb-short" => citum_schema::locale::TermForm::VerbShort,
-                                        _ => citum_schema::locale::TermForm::Short,
-                                    };
-                                    options
-                                        .locale
-                                        .role_term(&ContributorRole::Editor, plural, term_form)
-                                        .map(|term| {
-                                            super::format_role_term::<F>(
-                                                term,
-                                                fmt,
-                                                effective_rendering,
-                                                options,
-                                                " (",
-                                                ")",
-                                            )
-                                        })
-                                })
-                            }
-                        } else {
-                            None
-                        };
-
-                        let url = crate::values::resolve_effective_url(
-                            component.links.as_ref(),
-                            options.config.links.as_ref(),
-                            reference,
-                            citum_schema::options::LinkAnchor::Component,
-                        );
-
-                        return Some(ProcValues {
-                            value: fmt.text(&formatted),
-                            prefix: None,
-                            suffix,
-                            url,
-                            substituted_key: Some("contributor:Editor".to_string()),
-                            pre_formatted: true,
-                        });
-                    }
+                if let Some(result) = resolve_editor_substitute(
+                    component,
+                    hints,
+                    options,
+                    reference,
+                    effective_rendering,
+                    fmt,
+                    &substitute,
+                ) {
+                    return Some(result);
                 }
             }
             SubstituteKey::Title => {
@@ -176,40 +250,15 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
                 }
             }
             SubstituteKey::Translator => {
-                if let Some(translators) = reference.translator() {
-                    let names_vec = resolve_multilingual_for_contrib(&translators, options);
-                    if !names_vec.is_empty() {
-                        let name_overrides = super::names::NamesOverrides {
-                            name_order: component.name_order.as_ref(),
-                            sort_separator: component.sort_separator.as_ref(),
-                            shorten: component.shorten.as_ref(),
-                            and: component.and.as_ref(),
-                            initialize_with: effective_rendering.initialize_with.as_ref(),
-                        };
-                        let formatted = super::names::format_names(
-                            &names_vec,
-                            &component.form,
-                            options,
-                            &name_overrides,
-                            hints,
-                        );
-
-                        let url = crate::values::resolve_effective_url(
-                            component.links.as_ref(),
-                            options.config.links.as_ref(),
-                            reference,
-                            citum_schema::options::LinkAnchor::Component,
-                        );
-
-                        return Some(ProcValues {
-                            value: fmt.text(&formatted),
-                            prefix: None,
-                            suffix: Some(fmt.text(" (Trans.)")),
-                            url,
-                            substituted_key: None,
-                            pre_formatted: true,
-                        });
-                    }
+                if let Some(result) = resolve_translator_substitute(
+                    component,
+                    hints,
+                    options,
+                    reference,
+                    effective_rendering,
+                    fmt,
+                ) {
+                    return Some(result);
                 }
             }
         }

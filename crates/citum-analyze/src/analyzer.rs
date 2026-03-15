@@ -174,136 +174,144 @@ fn analyze_style_attrs(node: &roxmltree::Node, stats: &mut StyleStats) {
     }
 }
 
+fn analyze_citation_node(node: &roxmltree::Node, stats: &mut StyleStats) {
+    if let Some(v) = node.attribute("disambiguate-add-year-suffix") {
+        *stats
+            .disambiguate_add_year_suffix
+            .entry(v.to_string())
+            .or_insert(0) += 1;
+    }
+    if let Some(v) = node.attribute("disambiguate-add-givenname") {
+        *stats
+            .disambiguate_add_givenname
+            .entry(v.to_string())
+            .or_insert(0) += 1;
+    }
+    if let Some(v) = node.attribute("givenname-disambiguation-rule") {
+        *stats
+            .givenname_disambiguation_rule
+            .entry(v.to_string())
+            .or_insert(0) += 1;
+    }
+    if let Some(v) = node.attribute("et-al-min") {
+        *stats.citation_et_al_min.entry(v.to_string()).or_insert(0) += 1;
+    }
+    if let Some(v) = node.attribute("et-al-use-first") {
+        *stats
+            .citation_et_al_use_first
+            .entry(v.to_string())
+            .or_insert(0) += 1;
+    }
+}
+
+fn analyze_bibliography_node(node: &roxmltree::Node, stats: &mut StyleStats) {
+    if let Some(v) = node.attribute("subsequent-author-substitute") {
+        *stats
+            .subsequent_author_substitute
+            .entry(format!("{:?}", v))
+            .or_insert(0) += 1;
+    }
+    if let Some(v) = node.attribute("et-al-min") {
+        *stats.bib_et_al_min.entry(v.to_string()).or_insert(0) += 1;
+    }
+}
+
+fn analyze_if_node(node: &roxmltree::Node, stats: &mut StyleStats) {
+    // Analyze condition patterns
+    if let Some(v) = node.attribute("type") {
+        for t in v.split_whitespace() {
+            *stats.condition_type.entry(t.to_string()).or_insert(0) += 1;
+        }
+    }
+    if let Some(v) = node.attribute("variable") {
+        for t in v.split_whitespace() {
+            *stats.condition_variable.entry(t.to_string()).or_insert(0) += 1;
+        }
+    }
+    if let Some(v) = node.attribute("is-numeric") {
+        for t in v.split_whitespace() {
+            *stats.condition_is_numeric.entry(t.to_string()).or_insert(0) += 1;
+        }
+    }
+    if let Some(v) = node.attribute("is-uncertain-date") {
+        for t in v.split_whitespace() {
+            *stats
+                .condition_is_uncertain_date
+                .entry(t.to_string())
+                .or_insert(0) += 1;
+        }
+    }
+    if let Some(v) = node.attribute("locator") {
+        for t in v.split_whitespace() {
+            *stats.condition_locator.entry(t.to_string()).or_insert(0) += 1;
+        }
+    }
+    if let Some(v) = node.attribute("position") {
+        for t in v.split_whitespace() {
+            *stats.condition_position.entry(t.to_string()).or_insert(0) += 1;
+        }
+    }
+}
+
+fn analyze_name_node(node: &roxmltree::Node, stats: &mut StyleStats) {
+    if let Some(v) = node.attribute("form") {
+        *stats.name_form.entry(v.to_string()).or_insert(0) += 1;
+    }
+    if let Some(v) = node.attribute("initialize") {
+        *stats.name_initialize.entry(v.to_string()).or_insert(0) += 1;
+    }
+    if let Some(v) = node.attribute("initialize-with") {
+        *stats
+            .name_initialize_with
+            .entry(format!("{:?}", v))
+            .or_insert(0) += 1;
+    }
+
+    // Check for unhandled name attributes
+    let known = [
+        "form",
+        "initialize",
+        "initialize-with",
+        "initialize-with-hyphen",
+        "and",
+        "delimiter",
+        "delimiter-precedes-last",
+        "delimiter-precedes-et-al",
+        "et-al-min",
+        "et-al-use-first",
+        "et-al-subsequent-min",
+        "et-al-subsequent-use-first",
+        "name-as-sort-order",
+        "sort-separator",
+        "prefix",
+        "suffix",
+        "font-variant",
+        "font-style",
+        "font-weight",
+        "text-decoration",
+        "vertical-align",
+    ];
+    for attr in node.attributes() {
+        if !known.contains(&attr.name()) {
+            *stats
+                .unhandled_name_attrs
+                .entry(attr.name().to_string())
+                .or_insert(0) += 1;
+        }
+    }
+}
+
 fn analyze_nodes(node: &roxmltree::Node, stats: &mut StyleStats) {
     let tag = node.tag_name().name();
 
     match tag {
-        "citation" => {
-            if let Some(v) = node.attribute("disambiguate-add-year-suffix") {
-                *stats
-                    .disambiguate_add_year_suffix
-                    .entry(v.to_string())
-                    .or_insert(0) += 1;
-            }
-            if let Some(v) = node.attribute("disambiguate-add-givenname") {
-                *stats
-                    .disambiguate_add_givenname
-                    .entry(v.to_string())
-                    .or_insert(0) += 1;
-            }
-            if let Some(v) = node.attribute("givenname-disambiguation-rule") {
-                *stats
-                    .givenname_disambiguation_rule
-                    .entry(v.to_string())
-                    .or_insert(0) += 1;
-            }
-            if let Some(v) = node.attribute("et-al-min") {
-                *stats.citation_et_al_min.entry(v.to_string()).or_insert(0) += 1;
-            }
-            if let Some(v) = node.attribute("et-al-use-first") {
-                *stats
-                    .citation_et_al_use_first
-                    .entry(v.to_string())
-                    .or_insert(0) += 1;
-            }
-        }
-        "bibliography" => {
-            if let Some(v) = node.attribute("subsequent-author-substitute") {
-                *stats
-                    .subsequent_author_substitute
-                    .entry(format!("{:?}", v))
-                    .or_insert(0) += 1;
-            }
-            if let Some(v) = node.attribute("et-al-min") {
-                *stats.bib_et_al_min.entry(v.to_string()).or_insert(0) += 1;
-            }
-        }
-        "if" | "else-if" => {
-            // Analyze condition patterns
-            if let Some(v) = node.attribute("type") {
-                for t in v.split_whitespace() {
-                    *stats.condition_type.entry(t.to_string()).or_insert(0) += 1;
-                }
-            }
-            if let Some(v) = node.attribute("variable") {
-                for t in v.split_whitespace() {
-                    *stats.condition_variable.entry(t.to_string()).or_insert(0) += 1;
-                }
-            }
-            if let Some(v) = node.attribute("is-numeric") {
-                for t in v.split_whitespace() {
-                    *stats.condition_is_numeric.entry(t.to_string()).or_insert(0) += 1;
-                }
-            }
-            if let Some(v) = node.attribute("is-uncertain-date") {
-                for t in v.split_whitespace() {
-                    *stats
-                        .condition_is_uncertain_date
-                        .entry(t.to_string())
-                        .or_insert(0) += 1;
-                }
-            }
-            if let Some(v) = node.attribute("locator") {
-                for t in v.split_whitespace() {
-                    *stats.condition_locator.entry(t.to_string()).or_insert(0) += 1;
-                }
-            }
-            if let Some(v) = node.attribute("position") {
-                for t in v.split_whitespace() {
-                    *stats.condition_position.entry(t.to_string()).or_insert(0) += 1;
-                }
-            }
-        }
+        "citation" => analyze_citation_node(node, stats),
+        "bibliography" => analyze_bibliography_node(node, stats),
+        "if" | "else-if" => analyze_if_node(node, stats),
         "names" => {
             *stats.element_names.entry("count".to_string()).or_insert(0) += 1;
         }
-        "name" => {
-            if let Some(v) = node.attribute("form") {
-                *stats.name_form.entry(v.to_string()).or_insert(0) += 1;
-            }
-            if let Some(v) = node.attribute("initialize") {
-                *stats.name_initialize.entry(v.to_string()).or_insert(0) += 1;
-            }
-            if let Some(v) = node.attribute("initialize-with") {
-                *stats
-                    .name_initialize_with
-                    .entry(format!("{:?}", v))
-                    .or_insert(0) += 1;
-            }
-
-            // Check for unhandled name attributes
-            let known = [
-                "form",
-                "initialize",
-                "initialize-with",
-                "initialize-with-hyphen",
-                "and",
-                "delimiter",
-                "delimiter-precedes-last",
-                "delimiter-precedes-et-al",
-                "et-al-min",
-                "et-al-use-first",
-                "et-al-subsequent-min",
-                "et-al-subsequent-use-first",
-                "name-as-sort-order",
-                "sort-separator",
-                "prefix",
-                "suffix",
-                "font-variant",
-                "font-style",
-                "font-weight",
-                "text-decoration",
-                "vertical-align",
-            ];
-            for attr in node.attributes() {
-                if !known.contains(&attr.name()) {
-                    *stats
-                        .unhandled_name_attrs
-                        .entry(attr.name().to_string())
-                        .or_insert(0) += 1;
-                }
-            }
-        }
+        "name" => analyze_name_node(node, stats),
         "date" => {
             *stats.element_date.entry("count".to_string()).or_insert(0) += 1;
             if let Some(v) = node.attribute("form") {
@@ -339,18 +347,7 @@ fn analyze_nodes(node: &roxmltree::Node, stats: &mut StyleStats) {
     }
 }
 
-fn print_stats(stats: &StyleStats) {
-    println!(
-        "=== CSL Style Analysis ===
-"
-    );
-    println!("Total styles analyzed: {}", stats.total_styles);
-    println!(
-        "Parse errors: {}
-",
-        stats.parse_errors.len()
-    );
-
+fn print_style_section(stats: &StyleStats) {
     println!(
         "=== Style-Level Attributes ===
 "
@@ -366,7 +363,9 @@ fn print_stats(stats: &StyleStats) {
         &stats.demote_non_dropping_particle,
     );
     print_counter("page-range-format", &stats.page_range_format);
+}
 
+fn print_citation_section(stats: &StyleStats) {
     println!(
         "
 === Citation Attributes ===
@@ -385,7 +384,9 @@ fn print_stats(stats: &StyleStats) {
         &stats.givenname_disambiguation_rule,
     );
     print_counter("et-al-min (citation)", &stats.citation_et_al_min);
+}
 
+fn print_bibliography_section(stats: &StyleStats) {
     println!(
         "
 === Bibliography Attributes ===
@@ -396,7 +397,9 @@ fn print_stats(stats: &StyleStats) {
         &stats.subsequent_author_substitute,
     );
     print_counter("et-al-min (bibliography)", &stats.bib_et_al_min);
+}
 
+fn print_condition_section(stats: &StyleStats) {
     println!(
         "
 === Condition Patterns ===
@@ -410,7 +413,9 @@ fn print_stats(stats: &StyleStats) {
         &stats.condition_is_uncertain_date,
     );
     print_counter("position conditions", &stats.condition_position);
+}
 
+fn print_name_date_element_section(stats: &StyleStats) {
     println!(
         "
 === Name Element Options ===
@@ -479,6 +484,25 @@ fn print_stats(stats: &StyleStats) {
         );
         print_counter("name element", &stats.unhandled_name_attrs);
     }
+}
+
+fn print_stats(stats: &StyleStats) {
+    println!(
+        "=== CSL Style Analysis ===
+"
+    );
+    println!("Total styles analyzed: {}", stats.total_styles);
+    println!(
+        "Parse errors: {}
+",
+        stats.parse_errors.len()
+    );
+
+    print_style_section(stats);
+    print_citation_section(stats);
+    print_bibliography_section(stats);
+    print_condition_section(stats);
+    print_name_date_element_section(stats);
 
     if !stats.parse_errors.is_empty() {
         println!(

@@ -10,6 +10,47 @@ pub(super) fn selector_matches_any(selector: &TypeSelector, candidates: &[&str])
         .any(|candidate| selector.matches(candidate))
 }
 
+fn apply_legal_case_additions(
+    template: &mut Vec<TemplateComponent>,
+    has_issued: bool,
+    has_parent_serial: bool,
+    has_reporter: bool,
+    has_page: bool,
+    style_is_elsevier_harvard: bool,
+    style_is_springer_socpsych: bool,
+) {
+    if !has_issued {
+        let mut date_component = citum_schema::template::TemplateDate {
+            date: DateVariable::Issued,
+            ..Default::default()
+        };
+        if style_is_springer_socpsych {
+            date_component.form = citum_schema::template::DateForm::Full;
+        }
+        template.push(TemplateComponent::Date(date_component));
+    }
+    if !has_parent_serial {
+        template.push(TemplateComponent::Title(
+            citum_schema::template::TemplateTitle {
+                title: TitleType::ParentSerial,
+                ..Default::default()
+            },
+        ));
+    }
+    if (style_is_elsevier_harvard || style_is_springer_socpsych) && !has_reporter {
+        template.push(TemplateComponent::Variable(TemplateVariable {
+            variable: SimpleVariable::Reporter,
+            ..Default::default()
+        }));
+    }
+    if style_is_springer_socpsych && !has_page {
+        template.push(TemplateComponent::Variable(TemplateVariable {
+            variable: SimpleVariable::Page,
+            ..Default::default()
+        }));
+    }
+}
+
 pub(super) fn normalize_legal_case_type_template(
     legacy_style: &csl_legacy::model::Style,
     type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
@@ -94,36 +135,15 @@ pub(super) fn normalize_legal_case_type_template(
             true
         });
 
-        if !has_issued {
-            let mut date_component = citum_schema::template::TemplateDate {
-                date: DateVariable::Issued,
-                ..Default::default()
-            };
-            if style_is_springer_socpsych {
-                date_component.form = citum_schema::template::DateForm::Full;
-            }
-            template.push(TemplateComponent::Date(date_component));
-        }
-        if !has_parent_serial {
-            template.push(TemplateComponent::Title(
-                citum_schema::template::TemplateTitle {
-                    title: TitleType::ParentSerial,
-                    ..Default::default()
-                },
-            ));
-        }
-        if (style_is_elsevier_harvard || style_is_springer_socpsych) && !has_reporter {
-            template.push(TemplateComponent::Variable(TemplateVariable {
-                variable: SimpleVariable::Reporter,
-                ..Default::default()
-            }));
-        }
-        if style_is_springer_socpsych && !has_page {
-            template.push(TemplateComponent::Variable(TemplateVariable {
-                variable: SimpleVariable::Page,
-                ..Default::default()
-            }));
-        }
+        apply_legal_case_additions(
+            template,
+            has_issued,
+            has_parent_serial,
+            has_reporter,
+            has_page,
+            style_is_elsevier_harvard,
+            style_is_springer_socpsych,
+        );
     }
 }
 
