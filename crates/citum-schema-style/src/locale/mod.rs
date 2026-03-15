@@ -54,168 +54,176 @@ pub struct Locale {
     pub sort_articles: Vec<String>,
 }
 
+/// Extract English (US) role terms.
+fn en_us_role_terms() -> HashMap<ContributorRole, ContributorTerm> {
+    let mut roles = HashMap::new();
+
+    roles.insert(
+        ContributorRole::Editor,
+        ContributorTerm {
+            singular: SimpleTerm {
+                long: "editor".into(),
+                short: "ed.".into(),
+            },
+            plural: SimpleTerm {
+                long: "editors".into(),
+                short: "eds.".into(),
+            },
+            verb: SimpleTerm {
+                long: "edited by".into(),
+                short: "ed.".into(),
+            },
+        },
+    );
+
+    roles.insert(
+        ContributorRole::Translator,
+        ContributorTerm {
+            singular: SimpleTerm {
+                long: "translator".into(),
+                short: "Trans.".into(),
+            },
+            plural: SimpleTerm {
+                long: "translators".into(),
+                short: "Trans.".into(),
+            },
+            verb: SimpleTerm {
+                long: "translated by".into(),
+                short: "Trans.".into(),
+            },
+        },
+    );
+
+    roles.insert(
+        ContributorRole::Director,
+        ContributorTerm {
+            singular: SimpleTerm {
+                long: "director".into(),
+                short: "Dir.".into(),
+            },
+            plural: SimpleTerm {
+                long: "directors".into(),
+                short: "dirs.".into(),
+            },
+            verb: SimpleTerm {
+                long: "directed by".into(),
+                short: "dir.".into(),
+            },
+        },
+    );
+
+    roles
+}
+
+/// Extract English (US) locator terms.
+fn en_us_locator_terms() -> HashMap<LocatorType, LocatorTerm> {
+    let mut locators = HashMap::new();
+    locators.insert(
+        LocatorType::Page,
+        LocatorTerm {
+            long: Some(SingularPlural {
+                singular: "page".into(),
+                plural: "pages".into(),
+            }),
+            short: Some(SingularPlural {
+                singular: "p.".into(),
+                plural: "pp.".into(),
+            }),
+            symbol: None,
+        },
+    );
+
+    locators.insert(
+        LocatorType::Chapter,
+        LocatorTerm {
+            long: Some(SingularPlural {
+                singular: "chapter".into(),
+                plural: "chapters".into(),
+            }),
+            short: Some(SingularPlural {
+                singular: "ch.".into(),
+                plural: "chs.".into(),
+            }),
+            symbol: None,
+        },
+    );
+
+    locators.insert(
+        LocatorType::Volume,
+        LocatorTerm {
+            long: Some(SingularPlural {
+                singular: "volume".into(),
+                plural: "volumes".into(),
+            }),
+            short: Some(SingularPlural {
+                singular: "vol.".into(),
+                plural: "vols.".into(),
+            }),
+            symbol: None,
+        },
+    );
+
+    locators.insert(
+        LocatorType::Section,
+        LocatorTerm {
+            long: Some(SingularPlural {
+                singular: "section".into(),
+                plural: "sections".into(),
+            }),
+            short: Some(SingularPlural {
+                singular: "sec.".into(),
+                plural: "secs.".into(),
+            }),
+            symbol: Some(SingularPlural {
+                singular: "§".into(),
+                plural: "§§".into(),
+            }),
+        },
+    );
+
+    locators.insert(
+        LocatorType::Part,
+        LocatorTerm {
+            long: Some(SingularPlural {
+                singular: "part".into(),
+                plural: "parts".into(),
+            }),
+            short: Some(SingularPlural {
+                singular: "pt.".into(),
+                plural: "pts.".into(),
+            }),
+            symbol: None,
+        },
+    );
+
+    locators.insert(
+        LocatorType::Supplement,
+        LocatorTerm {
+            long: Some(SingularPlural {
+                singular: "supplement".into(),
+                plural: "supplements".into(),
+            }),
+            short: Some(SingularPlural {
+                singular: "suppl.".into(),
+                plural: "suppls.".into(),
+            }),
+            symbol: None,
+        },
+    );
+
+    locators
+}
+
 impl Locale {
     /// Create a new English (US) locale with default terms.
-    #[allow(clippy::too_many_lines)] // FIXME: csl26-44gu
     pub fn en_us() -> Self {
-        let mut roles = HashMap::new();
-
-        roles.insert(
-            ContributorRole::Editor,
-            ContributorTerm {
-                singular: SimpleTerm {
-                    long: "editor".into(),
-                    short: "ed.".into(),
-                },
-                plural: SimpleTerm {
-                    long: "editors".into(),
-                    short: "eds.".into(),
-                },
-                verb: SimpleTerm {
-                    long: "edited by".into(),
-                    short: "ed.".into(),
-                },
-            },
-        );
-
-        roles.insert(
-            ContributorRole::Translator,
-            ContributorTerm {
-                singular: SimpleTerm {
-                    long: "translator".into(),
-                    short: "Trans.".into(),
-                },
-                plural: SimpleTerm {
-                    long: "translators".into(),
-                    short: "Trans.".into(),
-                },
-                verb: SimpleTerm {
-                    long: "translated by".into(),
-                    short: "Trans.".into(),
-                },
-            },
-        );
-
-        roles.insert(
-            ContributorRole::Director,
-            ContributorTerm {
-                singular: SimpleTerm {
-                    long: "director".into(),
-                    short: "Dir.".into(),
-                },
-                plural: SimpleTerm {
-                    long: "directors".into(),
-                    short: "dirs.".into(),
-                },
-                verb: SimpleTerm {
-                    long: "directed by".into(),
-                    short: "dir.".into(),
-                },
-            },
-        );
-
-        // Populate basic locator terms
-        let mut locators = HashMap::new();
-        locators.insert(
-            LocatorType::Page,
-            LocatorTerm {
-                long: Some(SingularPlural {
-                    singular: "page".into(),
-                    plural: "pages".into(),
-                }),
-                short: Some(SingularPlural {
-                    singular: "p.".into(),
-                    plural: "pp.".into(),
-                }),
-                symbol: None,
-            },
-        );
-
-        locators.insert(
-            LocatorType::Chapter,
-            LocatorTerm {
-                long: Some(SingularPlural {
-                    singular: "chapter".into(),
-                    plural: "chapters".into(),
-                }),
-                short: Some(SingularPlural {
-                    singular: "ch.".into(),
-                    plural: "chs.".into(),
-                }),
-                symbol: None,
-            },
-        );
-
-        locators.insert(
-            LocatorType::Volume,
-            LocatorTerm {
-                long: Some(SingularPlural {
-                    singular: "volume".into(),
-                    plural: "volumes".into(),
-                }),
-                short: Some(SingularPlural {
-                    singular: "vol.".into(),
-                    plural: "vols.".into(),
-                }),
-                symbol: None,
-            },
-        );
-
-        locators.insert(
-            LocatorType::Section,
-            LocatorTerm {
-                long: Some(SingularPlural {
-                    singular: "section".into(),
-                    plural: "sections".into(),
-                }),
-                short: Some(SingularPlural {
-                    singular: "sec.".into(),
-                    plural: "secs.".into(),
-                }),
-                symbol: Some(SingularPlural {
-                    singular: "§".into(),
-                    plural: "§§".into(),
-                }),
-            },
-        );
-
-        locators.insert(
-            LocatorType::Part,
-            LocatorTerm {
-                long: Some(SingularPlural {
-                    singular: "part".into(),
-                    plural: "parts".into(),
-                }),
-                short: Some(SingularPlural {
-                    singular: "pt.".into(),
-                    plural: "pts.".into(),
-                }),
-                symbol: None,
-            },
-        );
-
-        locators.insert(
-            LocatorType::Supplement,
-            LocatorTerm {
-                long: Some(SingularPlural {
-                    singular: "supplement".into(),
-                    plural: "supplements".into(),
-                }),
-                short: Some(SingularPlural {
-                    singular: "suppl.".into(),
-                    plural: "suppls.".into(),
-                }),
-                symbol: None,
-            },
-        );
-
         Self {
             locale: "en-US".into(),
             dates: DateTerms::en_us(),
-            roles,
-            locators,
+            roles: en_us_role_terms(),
+            locators: en_us_locator_terms(),
             terms: Terms::en_us(),
-            punctuation_in_quote: true, // American English convention
+            punctuation_in_quote: true,
             sort_articles: vec!["the".into(), "a".into(), "an".into()],
         }
     }
