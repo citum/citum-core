@@ -13,38 +13,38 @@ use citum_schema::reference::{
 use std::collections::HashMap;
 use url::Url;
 
-/// Build a CollectionComponent from a biblatex inbook/incollection/inproceedings entry.
-#[allow(clippy::too_many_arguments)]
-fn build_inbook_reference<F>(
+/// Common fields shared across all biblatex reference conversion helpers.
+struct BibRefContext<'a> {
     id: Option<String>,
     title: Option<Title>,
     author: Option<Contributor>,
     editor: Option<Contributor>,
     issued: EdtfString,
     publisher: Option<Contributor>,
-    field_str: &F,
     language: Option<String>,
-) -> InputReference
-where
-    F: Fn(&str) -> Option<String>,
-{
+    field_str: &'a dyn Fn(&str) -> Option<String>,
+}
+
+/// Build a CollectionComponent from a biblatex inbook/incollection/inproceedings entry.
+fn build_inbook_reference(ctx: BibRefContext<'_>) -> InputReference {
+    let field_str = ctx.field_str;
     let parent_title = field_str("booktitle").map(Title::Single);
     InputReference::CollectionComponent(Box::new(CollectionComponent {
-        id,
+        id: ctx.id,
         r#type: MonographComponentType::Chapter,
-        title,
-        author,
+        title: ctx.title,
+        author: ctx.author,
         translator: None,
-        issued,
+        issued: ctx.issued,
         parent: Parent::Embedded(Collection {
             id: None,
             r#type: CollectionType::EditedBook,
             title: parent_title,
             short_title: None,
-            editor,
+            editor: ctx.editor,
             translator: None,
             issued: EdtfString(String::new()),
-            publisher,
+            publisher: ctx.publisher,
             collection_number: field_str("number"),
             url: None,
             accessed: None,
@@ -57,7 +57,7 @@ where
         pages: field_str("pages").map(NumOrStr::Str),
         url: field_str("url").and_then(|u| Url::parse(&u).ok()),
         accessed: field_str("urldate").map(EdtfString),
-        language,
+        language: ctx.language,
         field_languages: HashMap::new(),
         note: field_str("note"),
         doi: field_str("doi"),
@@ -68,27 +68,18 @@ where
 }
 
 /// Build a SerialComponent from a biblatex article entry.
-fn build_article_reference<F>(
-    id: Option<String>,
-    title: Option<Title>,
-    author: Option<Contributor>,
-    issued: EdtfString,
-    field_str: &F,
-    language: Option<String>,
-) -> InputReference
-where
-    F: Fn(&str) -> Option<String>,
-{
+fn build_article_reference(ctx: BibRefContext<'_>) -> InputReference {
+    let field_str = ctx.field_str;
     let parent_title = field_str("journaltitle")
         .or_else(|| field_str("journal"))
         .map(Title::Single);
     InputReference::SerialComponent(Box::new(SerialComponent {
-        id,
+        id: ctx.id,
         r#type: SerialComponentType::Article,
-        title,
-        author,
+        title: ctx.title,
+        author: ctx.author,
         translator: None,
-        issued,
+        issued: ctx.issued,
         parent: Parent::Embedded(Serial {
             r#type: SerialType::AcademicJournal,
             title: parent_title,
@@ -99,7 +90,7 @@ where
         }),
         url: field_str("url").and_then(|u| Url::parse(&u).ok()),
         accessed: field_str("urldate").map(EdtfString),
-        language,
+        language: ctx.language,
         field_languages: HashMap::new(),
         note: field_str("note"),
         doi: field_str("doi"),
@@ -157,6 +148,17 @@ pub(super) fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputRef
     // Compute entry_type once to avoid repeated conversions
     let entry_type = entry.entry_type.to_string().to_lowercase();
 
+    let ctx = BibRefContext {
+        id,
+        title,
+        author,
+        editor,
+        issued,
+        publisher,
+        language,
+        field_str: &field_str,
+    };
+
     match entry_type.as_str() {
         "book" | "mvbook" | "collection" | "mvcollection" | "manual" => {
             let mono_type = if entry_type == "manual" {
@@ -164,34 +166,14 @@ pub(super) fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputRef
             } else {
                 MonographType::Book
             };
-            InputReference::Monograph(Box::new(biblatex_monograph(
-                id,
-                mono_type,
-                title,
-                author,
-                editor,
-                issued,
-                publisher,
-                &field_str,
-                language,
-                &entry_type,
-            )))
+            InputReference::Monograph(Box::new(biblatex_monograph(mono_type, &entry_type, ctx)))
         }
-        "inbook" | "incollection" | "inproceedings" => build_inbook_reference(
-            id, title, author, editor, issued, publisher, &field_str, language,
-        ),
-        "article" => build_article_reference(id, title, author, issued, &field_str, language),
+        "inbook" | "incollection" | "inproceedings" => build_inbook_reference(ctx),
+        "article" => build_article_reference(ctx),
         _ => InputReference::Monograph(Box::new(biblatex_monograph(
-            id,
             MonographType::Document,
-            title,
-            author,
-            editor,
-            issued,
-            publisher,
-            &field_str,
-            language,
             &entry_type,
+            ctx,
         ))),
     }
 }
@@ -200,37 +182,27 @@ pub(super) fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputRef
 ///
 /// Extracts report_number and collection_number based on entry type,
 /// and handles URL parsing.
-#[allow(clippy::too_many_arguments)]
-fn biblatex_monograph<F>(
-    id: Option<String>,
+fn biblatex_monograph(
     r#type: MonographType,
-    title: Option<Title>,
-    author: Option<Contributor>,
-    editor: Option<Contributor>,
-    issued: EdtfString,
-    publisher: Option<Contributor>,
-    field_str: &F,
-    language: Option<String>,
     entry_type: &str,
-) -> Monograph
-where
-    F: Fn(&str) -> Option<String>,
-{
+    ctx: BibRefContext<'_>,
+) -> Monograph {
+    let field_str = ctx.field_str;
     Monograph {
-        id,
+        id: ctx.id,
         r#type,
-        title,
+        title: ctx.title,
         container_title: None,
-        author,
-        editor,
+        author: ctx.author,
+        editor: ctx.editor,
         translator: None,
         recipient: None,
         interviewer: None,
-        issued,
-        publisher,
+        issued: ctx.issued,
+        publisher: ctx.publisher,
         url: field_str("url").and_then(|u| Url::parse(&u).ok()),
         accessed: field_str("urldate").map(EdtfString),
-        language,
+        language: ctx.language,
         field_languages: HashMap::new(),
         note: field_str("note"),
         isbn: field_str("isbn"),

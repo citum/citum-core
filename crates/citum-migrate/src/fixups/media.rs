@@ -10,7 +10,6 @@ pub(super) fn selector_matches_any(selector: &TypeSelector, candidates: &[&str])
         .any(|candidate| selector.matches(candidate))
 }
 
-#[allow(clippy::too_many_arguments)]
 fn apply_legal_case_additions(
     template: &mut Vec<TemplateComponent>,
     has_issued: bool,

@@ -21,7 +21,7 @@ use citum_schema::{
     BibliographySpec, CitationSpec, Style, StyleInfo,
     template::{
         ComponentOverride, DateVariable, DelimiterPunctuation, NumberVariable, Rendering,
-        SimpleVariable, TemplateComponent, TitleType, TypeSelector,
+        SimpleVariable, TemplateComponent, TitleType, TypeSelector, WrapPunctuation,
     },
 };
 use csl_legacy::parser::parse_style;
@@ -35,6 +35,22 @@ struct CliArgs {
     template_mode: template_resolver::TemplateMode,
     template_dir: Option<PathBuf>,
     min_template_confidence: f64,
+}
+
+/// All compiled template and option data needed to build the final Style.
+struct CompiledOutput {
+    options: citum_schema::options::Config,
+    citation_contributor_overrides: Option<citum_schema::options::ContributorConfig>,
+    bibliography_contributor_overrides: Option<citum_schema::options::ContributorConfig>,
+    new_cit: Vec<TemplateComponent>,
+    new_bib: Vec<TemplateComponent>,
+    type_templates: Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+    citation_wrap: Option<WrapPunctuation>,
+    citation_prefix: Option<String>,
+    citation_suffix: Option<String>,
+    citation_delimiter: Option<String>,
+    citation_subsequent_override: Option<Vec<TemplateComponent>>,
+    citation_ibid_override: Option<Vec<TemplateComponent>>,
 }
 
 fn parse_cli_args(args: &[String]) -> CliArgs {
@@ -134,6 +150,143 @@ fn parse_cli_args(args: &[String]) -> CliArgs {
     }
 }
 
+/// Extracts style name from path and resolves templates.
+fn resolve_style_name_and_templates(
+    path: &str,
+    cli: &CliArgs,
+) -> (String, template_resolver::ResolvedTemplates) {
+    let style_name = std::path::Path::new(path)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("unknown")
+        .to_string();
+
+    let workspace_root = {
+        let style_path = std::path::Path::new(path);
+        if style_path.is_absolute() {
+            style_path
+                .ancestors()
+                .find(|p| p.join("Cargo.toml").exists())
+                .unwrap_or(style_path.parent().unwrap_or(std::path::Path::new(".")))
+                .to_path_buf()
+        } else {
+            std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
+        }
+    };
+
+    let resolved = template_resolver::resolve_templates(
+        path,
+        style_name.as_str(),
+        cli.template_dir.as_deref(),
+        &workspace_root,
+        cli.template_mode,
+        cli.min_template_confidence,
+    );
+
+    (style_name, resolved)
+}
+
+/// Extracts migration options and contributor configuration overrides.
+///
+/// Returns the options Config, citation contributor overrides,
+/// bibliography contributor overrides, and a flag indicating if
+/// citation has scope shorten.
+fn extract_migration_options(
+    legacy_style: &csl_legacy::model::Style,
+) -> (
+    citum_schema::options::Config,
+    Option<citum_schema::options::ContributorConfig>,
+    Option<citum_schema::options::ContributorConfig>,
+    bool,
+) {
+    let mut options = OptionsExtractor::extract(legacy_style);
+    apply_preset_extractions(&mut options);
+    let citation_contributor_overrides =
+        citum_migrate::options_extractor::contributors::extract_citation_contributor_overrides(
+            legacy_style,
+        );
+    let bibliography_contributor_overrides =
+        citum_migrate::options_extractor::contributors::extract_bibliography_contributor_overrides(
+            legacy_style,
+        );
+    let citation_has_scope_shorten = citation_contributor_overrides
+        .as_ref()
+        .and_then(|contributors| contributors.shorten.as_ref())
+        .is_some();
+
+    (
+        options,
+        citation_contributor_overrides,
+        bibliography_contributor_overrides,
+        citation_has_scope_shorten,
+    )
+}
+
+/// Assemble the final Citum Style from compiled output and legacy metadata.
+fn build_final_style(legacy_style: &csl_legacy::model::Style, c: CompiledOutput) -> Style {
+    let citation_scope_options =
+        c.citation_contributor_overrides
+            .map(|contributors| citum_schema::options::Config {
+                contributors: Some(contributors),
+                ..Default::default()
+            });
+    let bibliography_scope_options =
+        c.bibliography_contributor_overrides
+            .map(|contributors| citum_schema::options::Config {
+                contributors: Some(contributors),
+                ..Default::default()
+            });
+    let bibliography_sort = resolve_migrated_bibliography_sort(
+        c.options.processing.as_ref(),
+        legacy_style
+            .bibliography
+            .as_ref()
+            .and_then(|bib| bib.sort.as_ref()),
+    );
+    Style {
+        info: StyleInfo {
+            title: Some(legacy_style.info.title.clone()),
+            id: Some(legacy_style.info.id.clone()),
+            default_locale: legacy_style.default_locale.clone(),
+            ..Default::default()
+        },
+        templates: None,
+        options: Some(c.options),
+        citation: Some(CitationSpec {
+            options: citation_scope_options,
+            use_preset: None,
+            template: Some(c.new_cit),
+            wrap: c.citation_wrap,
+            prefix: c.citation_prefix,
+            suffix: c.citation_suffix,
+            delimiter: c.citation_delimiter,
+            multi_cite_delimiter: legacy_style.citation.layout.delimiter.clone(),
+            subsequent: c.citation_subsequent_override.map(|t| {
+                Box::new(CitationSpec {
+                    template: Some(t),
+                    ..Default::default()
+                })
+            }),
+            ibid: c.citation_ibid_override.map(|t| {
+                Box::new(CitationSpec {
+                    template: Some(t),
+                    ..Default::default()
+                })
+            }),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            options: bibliography_scope_options,
+            use_preset: None,
+            template: Some(c.new_bib),
+            type_templates: c.type_templates,
+            sort: bibliography_sort,
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = std::env::args().collect();
     let cli = parse_cli_args(&args);
@@ -150,59 +303,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let legacy_style = parse_style(doc.root_element())?;
 
     // 0. Extract global options (new Citum Config)
-    let mut options = OptionsExtractor::extract(&legacy_style);
-    apply_preset_extractions(&mut options);
-    let citation_contributor_overrides =
-        citum_migrate::options_extractor::contributors::extract_citation_contributor_overrides(
-            &legacy_style,
-        );
-    let bibliography_contributor_overrides =
-        citum_migrate::options_extractor::contributors::extract_bibliography_contributor_overrides(
-            &legacy_style,
-        );
-    let citation_has_scope_shorten = citation_contributor_overrides
-        .as_ref()
-        .and_then(|contributors| contributors.shorten.as_ref())
-        .is_some();
+    let (
+        mut options,
+        citation_contributor_overrides,
+        bibliography_contributor_overrides,
+        citation_has_scope_shorten,
+    ) = extract_migration_options(&legacy_style);
 
     // Resolve template: try hand-authored, cached inferred, or live inference
     // before falling back to the XML compiler pipeline.
-    let style_name = std::path::Path::new(path)
-        .file_stem()
-        .and_then(|s| s.to_str())
-        .unwrap_or("unknown");
-
-    // Determine workspace root by finding the Cargo workspace directory.
-    // For relative paths like "styles-legacy/foo.csl", this is the current directory.
-    // For absolute paths, walk up from the style file to find the workspace.
-    let workspace_root = {
-        let style_path = std::path::Path::new(path);
-        if style_path.is_absolute() {
-            // Walk up to find Cargo.toml
-            style_path
-                .ancestors()
-                .find(|p| p.join("Cargo.toml").exists())
-                .unwrap_or(style_path.parent().unwrap_or(std::path::Path::new(".")))
-                .to_path_buf()
-        } else {
-            std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
-        }
-    };
-
-    let mut resolved = template_resolver::resolve_templates(
-        path,
-        style_name,
-        cli.template_dir.as_deref(),
-        &workspace_root,
-        cli.template_mode,
-        cli.min_template_confidence,
-    );
+    let (style_name, mut resolved) = resolve_style_name_and_templates(path, &cli);
 
     validate_and_normalize_inferred_citations(
         &mut resolved,
         &options,
         &legacy_style,
-        style_name,
+        style_name.as_str(),
         citation_has_scope_shorten,
     );
 
@@ -215,7 +331,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     log_template_sources(&resolved);
 
-    let (mut new_bib, mut type_templates, inferred_bib_source) =
+    let (new_bib, mut type_templates, inferred_bib_source) =
         select_and_process_bibliography_template(&resolved, &xml_fallback, &legacy_style);
 
     let (mut new_cit, citation_subsequent_override, citation_ibid_override) =
@@ -233,72 +349,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         resolve_citation_metadata(&resolved, &legacy_style, &options, &mut new_cit);
 
     // 5. Build Style in correct format for citum_engine
-    let style = {
-        let citation_scope_options =
-            citation_contributor_overrides.map(|contributors| citum_schema::options::Config {
-                contributors: Some(contributors),
-                ..Default::default()
-            });
-
-        let bibliography_scope_options =
-            bibliography_contributor_overrides.map(|contributors| citum_schema::options::Config {
-                contributors: Some(contributors),
-                ..Default::default()
-            });
-
-        let bibliography_sort = resolve_migrated_bibliography_sort(
-            options.processing.as_ref(),
-            legacy_style
-                .bibliography
-                .as_ref()
-                .and_then(|bib| bib.sort.as_ref()),
-        );
-
-        Style {
-            info: StyleInfo {
-                title: Some(legacy_style.info.title.clone()),
-                id: Some(legacy_style.info.id.clone()),
-                default_locale: legacy_style.default_locale.clone(),
-                ..Default::default()
-            },
-            templates: None,
-            options: Some(options),
-            citation: Some({
-                CitationSpec {
-                    options: citation_scope_options,
-                    use_preset: None,
-                    template: Some(new_cit),
-                    wrap: citation_wrap,
-                    prefix: citation_prefix,
-                    suffix: citation_suffix,
-                    delimiter: citation_delimiter,
-                    multi_cite_delimiter: legacy_style.citation.layout.delimiter.clone(),
-                    subsequent: citation_subsequent_override.map(|template| {
-                        Box::new(CitationSpec {
-                            template: Some(template),
-                            ..Default::default()
-                        })
-                    }),
-                    ibid: citation_ibid_override.map(|template| {
-                        Box::new(CitationSpec {
-                            template: Some(template),
-                            ..Default::default()
-                        })
-                    }),
-                    ..Default::default()
-                }
-            }),
-            bibliography: Some(BibliographySpec {
-                options: bibliography_scope_options,
-                use_preset: None,
-                template: Some(new_bib),
-                type_templates,
-                sort: bibliography_sort,
-                ..Default::default()
-            }),
-            ..Default::default()
-        }
-    };
+    let style = build_final_style(
+        &legacy_style,
+        CompiledOutput {
+            options,
+            citation_contributor_overrides,
+            bibliography_contributor_overrides,
+            new_cit,
+            new_bib,
+            type_templates,
+            citation_wrap,
+            citation_prefix,
+            citation_suffix,
+            citation_delimiter,
+            citation_subsequent_override,
+            citation_ibid_override,
+        },
+    );
 
     output_style_and_debug(&style, cli.debug_variable.as_deref(), &tracker)?;
     Ok(())

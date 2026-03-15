@@ -176,15 +176,19 @@ fn join_names_with_conjunction(
     }
 }
 
+/// Parameters controlling et-al abbreviation formatting.
+struct EtAlContext<'a> {
+    and_others: AndOtherOptions,
+    delimiter: &'a str,
+    delimiter_precedes: Option<&'a citum_schema::options::DelimiterPrecedesLast>,
+    first_count: usize,
+}
+
 /// Apply et-al suffix or return result unchanged.
-#[allow(clippy::too_many_arguments)]
 fn apply_et_al(
     result: String,
     formatted_last: &[String],
-    and_others: AndOtherOptions,
-    delimiter: &str,
-    delimiter_precedes: Option<&citum_schema::options::DelimiterPrecedesLast>,
-    first_count: usize,
+    et_al: EtAlContext<'_>,
     ctx: &NameFormatContext,
     locale: &citum_schema::locale::Locale,
 ) -> String {
@@ -193,27 +197,27 @@ fn apply_et_al(
     if !formatted_last.is_empty() {
         // et-al-use-last: result + ellipsis + last names
         // CSL typically uses an ellipsis (...) for this.
-        return format!("{} … {}", result, formatted_last.join(delimiter));
+        return format!("{} … {}", result, formatted_last.join(et_al.delimiter));
     }
 
     // Determine delimiter before "et al." based on delimiter_precedes_et_al option
-    let use_delimiter = match delimiter_precedes {
+    let use_delimiter = match et_al.delimiter_precedes {
         Some(DelimiterPrecedesLast::Always) => true,
         Some(DelimiterPrecedesLast::Never) => false,
         Some(DelimiterPrecedesLast::AfterInvertedName) => {
             // Use delimiter if last displayed name was inverted (family-first)
             ctx.display_as_sort.as_ref().is_some_and(|das| {
                 matches!(das, DisplayAsSort::All)
-                    || (matches!(das, DisplayAsSort::First) && first_count == 1)
+                    || (matches!(das, DisplayAsSort::First) && et_al.first_count == 1)
             })
         }
         Some(DelimiterPrecedesLast::Contextual) | None => {
             // Default: use delimiter only if more than one name displayed
-            first_count > 1
+            et_al.first_count > 1
         }
     };
 
-    let and_others_term = match and_others {
+    let and_others_term = match et_al.and_others {
         AndOtherOptions::EtAl => locale.et_al(),
         AndOtherOptions::Text => locale.et_al().trim_end_matches('.'),
     };
@@ -337,10 +341,12 @@ pub fn format_names(
     apply_et_al(
         result,
         &formatted_last,
-        and_others,
-        delimiter,
-        config.and_then(|c| c.delimiter_precedes_et_al.as_ref()),
-        first_names.len(),
+        EtAlContext {
+            and_others,
+            delimiter,
+            delimiter_precedes: config.and_then(|c| c.delimiter_precedes_et_al.as_ref()),
+            first_count: first_names.len(),
+        },
         &ctx,
         locale,
     )

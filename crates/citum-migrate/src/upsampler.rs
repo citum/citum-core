@@ -768,7 +768,6 @@ impl Upsampler {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn apply_name_child_options(
         &self,
         n: &legacy::Names,
