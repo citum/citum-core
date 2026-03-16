@@ -347,4 +347,14 @@ mod tests {
 
         assert!(citations.is_empty());
     }
+
+    #[test]
+    fn test_markdown_finalize_html_output_is_passthrough() {
+        // MarkdownParser does not perform any markup-to-HTML conversion; the
+        // caller is responsible for rendering CommonMark. The trait default
+        // returns the input unchanged.
+        let parser = MarkdownParser;
+        let input = "**bold** and _em_ and [@key].";
+        assert_eq!(parser.finalize_html_output(input), input);
+    }
 }

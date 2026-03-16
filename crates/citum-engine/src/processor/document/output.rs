@@ -5,7 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 //! Document-output helpers shared by the processing pipeline.
 
-use super::{DocumentFormat, djot};
+use super::{BibliographyBlock, DocumentFormat};
 use std::collections::HashSet;
 
 #[derive(Debug, Default)]
@@ -59,7 +59,7 @@ pub(super) struct RenderedDocumentBody {
 
 pub(super) fn stage_document_bibliography_blocks(
     body: &str,
-    blocks: &[djot::BibliographyBlock],
+    blocks: &[BibliographyBlock],
 ) -> String {
     let mut staged = body.to_string();
     for (index, block) in blocks.iter().enumerate().rev() {
@@ -100,9 +100,10 @@ fn document_bibliography_heading(format: DocumentFormat) -> &'static str {
     match format {
         DocumentFormat::Latex => "\n\n\\section*{Bibliography}\n\n",
         DocumentFormat::Typst => "\n\n= Bibliography\n\n",
-        DocumentFormat::Plain | DocumentFormat::Djot | DocumentFormat::Html => {
-            "\n\n# Bibliography\n\n"
-        }
+        DocumentFormat::Plain
+        | DocumentFormat::Djot
+        | DocumentFormat::Markdown
+        | DocumentFormat::Html => "\n\n# Bibliography\n\n",
     }
 }
 
@@ -125,7 +126,10 @@ pub(super) fn render_document_bibliography_block_replacement(
             let prefix = match format {
                 DocumentFormat::Latex => format!("\\subsection*{{{heading}}}\n\n"),
                 DocumentFormat::Typst => format!("== {heading}\n\n"),
-                DocumentFormat::Plain | DocumentFormat::Djot | DocumentFormat::Html => {
+                DocumentFormat::Plain
+                | DocumentFormat::Djot
+                | DocumentFormat::Markdown
+                | DocumentFormat::Html => {
                     format!("## {heading}\n\n")
                 }
             };

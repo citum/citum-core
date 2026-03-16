@@ -7,25 +7,13 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 mod parsing;
 
-use super::{CitationParser, CitationPlacement, ParsedDocument};
-use citum_schema::grouping::BibliographyGroup;
+use super::{BibliographyBlock, CitationParser, CitationPlacement, ParsedDocument};
 use citum_schema::locale::Locale;
 use parsing::{
     FootnoteDefinitionRange, annotate_citation_structures, find_citations, parse_frontmatter,
     scan_bibliography_blocks, scan_manual_notes,
 };
 use std::collections::HashSet;
-
-/// A bibliography block parsed from djot source.
-#[derive(Debug, Clone)]
-pub struct BibliographyBlock {
-    /// Byte offset of the opening `:::` in source.
-    pub start: usize,
-    /// Byte offset past the closing `:::`.
-    pub end: usize,
-    /// The bibliography group for this block.
-    pub group: BibliographyGroup,
-}
 
 /// A parser for Djot citations using winnow.
 /// Syntax: `[@key]`, `[+@key]`, or `[-@key]`. Multi-cites: `[@key1; @key2]`.
@@ -77,6 +65,11 @@ impl CitationParser for DjotParser {
                 .and_then(|frontmatter| frontmatter.integral_names),
             body_start,
         }
+    }
+
+    /// Convert Djot markup to HTML using jotdown after citation splicing.
+    fn finalize_html_output(&self, rendered: &str) -> String {
+        djot_to_html(rendered)
     }
 }
 
@@ -211,6 +204,19 @@ mod tests {
         assert_eq!(
             parsed.citations[0].placement,
             CitationPlacement::InlineProse
+        );
+    }
+
+    #[test]
+    fn test_djot_finalize_html_output_converts_to_html() {
+        // DjotParser explicitly overrides finalize_html_output to run jotdown,
+        // converting Djot markup to HTML. This is adapter-specific behavior;
+        // other parsers (e.g. MarkdownParser) return markup unchanged.
+        let parser = DjotParser;
+        let result = parser.finalize_html_output("{_em_}");
+        assert!(
+            result.contains("<em>em</em>"),
+            "unexpected output: {result}"
         );
     }
 }

@@ -15,10 +15,9 @@ mod output;
 mod pipeline;
 mod types;
 
-pub use djot::BibliographyBlock;
 pub(crate) use types::ManualNoteReference;
 pub use types::{
-    CitationParser, CitationPlacement, CitationStructure, DocumentFormat,
+    BibliographyBlock, CitationParser, CitationPlacement, CitationStructure, DocumentFormat,
     DocumentIntegralNameOverride, ParsedCitation, ParsedDocument,
 };
 

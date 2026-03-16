@@ -6,6 +6,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! Shared document-processing types and parser contracts.
 
 use crate::Citation;
+use citum_schema::grouping::BibliographyGroup;
 use citum_schema::locale::Locale;
 use citum_schema::options::IntegralNameConfig;
 use serde::Deserialize;
@@ -99,6 +100,21 @@ pub(crate) struct ManualNoteReference {
     pub start: usize,
 }
 
+/// A bibliography block found in a document by a format-specific adapter.
+///
+/// Stores the byte range of the block in the source so the pipeline can
+/// replace it with rendered output, plus the group descriptor that controls
+/// which entries are selected and how they are headed.
+#[derive(Debug, Clone)]
+pub struct BibliographyBlock {
+    /// Byte offset of the block's opening marker in source.
+    pub start: usize,
+    /// Byte offset past the block's closing marker in source.
+    pub end: usize,
+    /// The bibliography group for this block.
+    pub group: BibliographyGroup,
+}
+
 /// Structured output from a document parser.
 #[derive(Debug, Clone, Default)]
 pub struct ParsedDocument {
@@ -108,8 +124,8 @@ pub struct ParsedDocument {
     pub manual_note_order: Vec<String>,
     pub(crate) manual_note_references: Vec<ManualNoteReference>,
     pub(crate) manual_note_labels: HashSet<String>,
-    /// Bibliography blocks found in the document.
-    pub bibliography_blocks: Vec<super::djot::BibliographyBlock>,
+    /// Bibliography blocks found in the document, in source order.
+    pub bibliography_blocks: Vec<BibliographyBlock>,
     /// Bibliography groups from YAML frontmatter.
     pub frontmatter_groups: Option<Vec<citum_schema::grouping::BibliographyGroup>>,
     /// Integral-name override from YAML frontmatter.
@@ -119,16 +135,25 @@ pub struct ParsedDocument {
 }
 
 /// A trait for document parsers that can identify citations.
+///
+/// Each implementation is a format-specific adapter (Djot, Markdown, etc.).
+/// Adapters are responsible for source-syntax citation parsing, note discovery,
+/// frontmatter extraction, bibliography block detection, and HTML finalization.
+/// The shared pipeline consumes the resulting [`ParsedDocument`] without
+/// inspecting format-specific internals.
 pub trait CitationParser {
     /// Parse the document into citation placements and note metadata.
     fn parse_document(&self, content: &str, locale: &Locale) -> ParsedDocument;
 
     /// Finalize rendered document markup as HTML.
     ///
-    /// The default implementation treats the rendered markup as Djot-compatible
-    /// content and converts it with the existing Djot HTML renderer.
+    /// Called after citation strings have been spliced back into the source
+    /// markup and the result must be converted to HTML. The default
+    /// implementation is a pass-through: it returns the markup unchanged.
+    /// Format-specific adapters that require a markup-to-HTML conversion step
+    /// (e.g. Djot via `jotdown`) must override this method.
     fn finalize_html_output(&self, rendered: &str) -> String {
-        super::djot::djot_to_html(rendered)
+        rendered.to_owned()
     }
 
     /// Find and extract citations from a document string.
@@ -144,12 +169,19 @@ pub trait CitationParser {
 }
 
 /// Document output format.
+///
+/// This governs the render target for citation strings and the generated
+/// bibliography. It is independent of the document *input* format (Djot,
+/// Markdown) and of in-field reference markup (Djot inline via
+/// `render_djot_inline`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DocumentFormat {
     /// Plain text (raw markup).
     Plain,
     /// Djot markup.
     Djot,
+    /// Markdown markup.
+    Markdown,
     /// HTML output.
     Html,
     /// LaTeX output.
