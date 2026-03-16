@@ -53,7 +53,7 @@ options:
 citation:
   options:
     contributors:
-      initialize-with: ""
+      name-form: full
       shorten:
         min: 4
         use-first: 1
@@ -65,6 +65,7 @@ citation:
     - contributor: author
       form: long
       name-order: given-first
+      and: text
       shorten:
         min: 8
         use-first: 1
@@ -80,7 +81,6 @@ citation:
     - number: volume
     - title: parent-monograph
     - title: parent-serial
-    - variable: publisher
     - variable: url
   suffix: .
   delimiter: " "
