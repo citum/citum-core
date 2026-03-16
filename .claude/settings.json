@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "defaultMode": "acceptEdits",
+  "defaultMode": "bypassPermissions",
   "hooks": {
     "SessionStart": [
       { "hooks": [{ "type": "command", "command": "beans prime" }] }
