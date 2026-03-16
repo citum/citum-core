@@ -5,7 +5,7 @@ The core citation and bibliography processing engine for Citum.
 ## Document Input Formats
 
 The engine supports two document input formats for the `process_document` pipeline.
-These are independent from the **document output format** (HTML, Plain, LaTeX, Typst)
+These are independent from the **document output format** (such as HTML, Plain, LaTeX, Typst, Djot, Markdown)
 and from **reference field inline markup** (Djot inline in `title`, `annotation`, and
 `note` fields via `render_djot_inline`).
 
