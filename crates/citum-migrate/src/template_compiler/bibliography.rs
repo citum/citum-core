@@ -1,4 +1,5 @@
 use super::*;
+use citum_schema::template::{NumberVariable, SimpleVariable};
 
 impl TemplateCompiler {
     pub fn compile_bibliography(
@@ -69,7 +70,8 @@ impl TemplateCompiler {
         candidates.retain(|t| {
             matches!(
                 t,
-                ItemType::Patent
+                ItemType::ArticleJournal
+                    | ItemType::Patent
                     | ItemType::Webpage
                     | ItemType::EntryEncyclopedia
                     | ItemType::LegalCase
@@ -97,6 +99,12 @@ impl TemplateCompiler {
                 self.postprocess_legal_case_template(&mut type_template);
             }
 
+            if matches!(item_type, ItemType::ArticleJournal)
+                && !self.article_journal_template_needs_preservation(&type_template)
+            {
+                continue;
+            }
+
             if type_template == default_template {
                 continue;
             }
@@ -108,6 +116,12 @@ impl TemplateCompiler {
         }
 
         type_templates
+    }
+
+    fn article_journal_template_needs_preservation(&self, template: &[TemplateComponent]) -> bool {
+        let has_doi = template.iter().any(component_has_doi);
+        let has_detail_component = template.iter().any(component_has_article_detail);
+        has_doi && has_detail_component
     }
 
     /// Post-process a legal_case type template to ensure correct field set.
@@ -167,5 +181,25 @@ impl TemplateCompiler {
                 }),
             );
         }
+    }
+}
+
+fn component_has_doi(component: &TemplateComponent) -> bool {
+    match component {
+        TemplateComponent::Variable(variable) => variable.variable == SimpleVariable::Doi,
+        TemplateComponent::List(list) => list.items.iter().any(component_has_doi),
+        _ => false,
+    }
+}
+
+fn component_has_article_detail(component: &TemplateComponent) -> bool {
+    match component {
+        TemplateComponent::Date(date) => date.date == citum_schema::template::DateVariable::Issued,
+        TemplateComponent::Number(number) => matches!(
+            number.number,
+            NumberVariable::Volume | NumberVariable::Issue | NumberVariable::Pages
+        ),
+        TemplateComponent::List(list) => list.items.iter().any(component_has_article_detail),
+        _ => false,
     }
 }

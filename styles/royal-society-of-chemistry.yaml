@@ -40,6 +40,8 @@ options:
     periodical:
       emph: true
   bibliography:
+    article-journal:
+      no-page-fallback: doi
     entry-suffix: .
     separator: ", "
 citation:
@@ -120,6 +122,18 @@ bibliography:
         standard:
           suppress: true
   type-templates:
+    article-journal:
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: parent-serial
+        emph: true
+      - date: issued
+        form: year
+      - number: volume
+      - number: pages
+      - variable: doi
+        prefix: "DOI:"
     dataset:
       - items:
           - number: citation-number

@@ -1,6 +1,8 @@
 use super::*;
 use citum_schema::grouping::SortKey as GroupSortKey;
-use citum_schema::options::{Processing, SortKey, SubstituteConfig, SubstituteKey};
+use citum_schema::options::{
+    ArticleJournalNoPageFallback, Processing, SortKey, SubstituteConfig, SubstituteKey,
+};
 use csl_legacy::parser::parse_style;
 use roxmltree::Document;
 
@@ -239,4 +241,78 @@ fn test_extract_group_sort_ignores_citation_number_only() {
 
     let sort = super::bibliography::extract_group_sort_from_bibliography(legacy_sort);
     assert!(sort.is_none());
+}
+
+#[test]
+fn test_extract_article_journal_no_page_doi_fallback() {
+    let xml = r#"<style>
+        <citation><layout><text variable="title"/></layout></citation>
+        <bibliography>
+            <layout>
+                <choose>
+                    <if type="article-journal">
+                        <group delimiter=", ">
+                            <text variable="container-title"/>
+                            <choose>
+                                <if variable="page">
+                                    <date variable="issued"><date-part name="year"/></date>
+                                    <text variable="volume"/>
+                                    <text variable="page"/>
+                                </if>
+                                <else>
+                                    <text variable="DOI" prefix="DOI:"/>
+                                </else>
+                            </choose>
+                        </group>
+                    </if>
+                </choose>
+            </layout>
+        </bibliography>
+    </style>"#;
+    let style = parse_csl(xml).unwrap();
+    let config = OptionsExtractor::extract(&style);
+
+    assert_eq!(
+        config
+            .bibliography
+            .and_then(|bibliography| bibliography.article_journal)
+            .and_then(|article_journal| article_journal.no_page_fallback),
+        Some(ArticleJournalNoPageFallback::Doi)
+    );
+}
+
+#[test]
+fn test_extract_article_journal_no_page_doi_fallback_ignores_additive_doi_patterns() {
+    let xml = r#"<style>
+        <citation><layout><text variable="title"/></layout></citation>
+        <bibliography>
+            <layout>
+                <choose>
+                    <if type="article-journal">
+                        <group delimiter=", ">
+                            <text variable="container-title"/>
+                            <date variable="issued"><date-part name="year"/></date>
+                            <text variable="volume"/>
+                            <choose>
+                                <if variable="page">
+                                    <text variable="page"/>
+                                </if>
+                            </choose>
+                            <text variable="DOI" prefix="DOI:"/>
+                        </group>
+                    </if>
+                </choose>
+            </layout>
+        </bibliography>
+    </style>"#;
+    let style = parse_csl(xml).unwrap();
+    let config = OptionsExtractor::extract(&style);
+
+    assert!(
+        config
+            .bibliography
+            .and_then(|bibliography| bibliography.article_journal)
+            .and_then(|article_journal| article_journal.no_page_fallback)
+            .is_none()
+    );
 }

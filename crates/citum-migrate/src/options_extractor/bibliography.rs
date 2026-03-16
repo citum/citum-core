@@ -1,9 +1,10 @@
 use citum_schema::grouping::{GroupSort, GroupSortKey, SortKey as GroupSortKeyType};
 use citum_schema::options::{
-    BibliographyConfig, Sort, SortKey, SortSpec, SubsequentAuthorSubstituteRule,
+    ArticleJournalBibliographyConfig, ArticleJournalNoPageFallback, BibliographyConfig, Sort,
+    SortKey, SortSpec, SubsequentAuthorSubstituteRule,
 };
 use citum_schema::template::DelimiterPunctuation;
-use csl_legacy::model::{CslNode, Layout, Macro, Sort as LegacySort, Style};
+use csl_legacy::model::{Choose, ChooseBranch, CslNode, Layout, Macro, Sort as LegacySort, Style};
 
 /// Extracts bibliography configuration options from a CSL style.
 ///
@@ -55,6 +56,13 @@ pub fn extract_bibliography_config(style: &Style) -> Option<BibliographyConfig> 
         has_config = true;
     }
 
+    if has_article_journal_no_page_doi_fallback(style, &bib.layout) {
+        config.article_journal = Some(ArticleJournalBibliographyConfig {
+            no_page_fallback: Some(ArticleJournalNoPageFallback::Doi),
+        });
+        has_config = true;
+    }
+
     // Sort extraction
     if let Some(sort) = &bib.sort
         && let Some(csln_sort) = extract_sort_from_bibliography(sort)
@@ -79,6 +87,175 @@ pub fn should_suppress_period_after_url(style: &Style, layout: &Layout) -> bool 
     }
 
     style_has_doi_without_period(style)
+}
+
+fn has_article_journal_no_page_doi_fallback(style: &Style, layout: &Layout) -> bool {
+    nodes_have_article_journal_no_page_doi_fallback(&layout.children, &style.macros)
+}
+
+fn nodes_have_article_journal_no_page_doi_fallback(nodes: &[CslNode], macros: &[Macro]) -> bool {
+    nodes.iter().any(|node| match node {
+        CslNode::Choose(choose) => {
+            choose_has_article_journal_no_page_doi_fallback(choose, macros)
+                || nodes_have_article_journal_no_page_doi_fallback(
+                    &choose.if_branch.children,
+                    macros,
+                )
+                || choose.else_if_branches.iter().any(|branch| {
+                    nodes_have_article_journal_no_page_doi_fallback(&branch.children, macros)
+                })
+                || choose.else_branch.as_ref().is_some_and(|branch| {
+                    nodes_have_article_journal_no_page_doi_fallback(branch, macros)
+                })
+        }
+        CslNode::Group(group) => {
+            nodes_have_article_journal_no_page_doi_fallback(&group.children, macros)
+        }
+        CslNode::Text(text) => text
+            .macro_name
+            .as_ref()
+            .and_then(|name| macros.iter().find(|macro_def| macro_def.name == *name))
+            .is_some_and(|macro_def| {
+                nodes_have_article_journal_no_page_doi_fallback(&macro_def.children, macros)
+            }),
+        CslNode::Names(names) => {
+            nodes_have_article_journal_no_page_doi_fallback(&names.children, macros)
+        }
+        _ => false,
+    })
+}
+
+fn choose_has_article_journal_no_page_doi_fallback(choose: &Choose, macros: &[Macro]) -> bool {
+    branch_targets_article_journal(&choose.if_branch)
+        && branch_has_exact_page_to_doi_fallback(&choose.if_branch.children, macros)
+        || choose.else_if_branches.iter().any(|branch| {
+            branch_targets_article_journal(branch)
+                && branch_has_exact_page_to_doi_fallback(&branch.children, macros)
+        })
+}
+
+fn branch_targets_article_journal(branch: &ChooseBranch) -> bool {
+    branch.type_.as_deref().is_some_and(|types| {
+        types
+            .split_whitespace()
+            .any(|item_type| item_type == "article-journal")
+    })
+}
+
+fn branch_has_exact_page_to_doi_fallback(nodes: &[CslNode], macros: &[Macro]) -> bool {
+    nodes.iter().any(|node| match node {
+        CslNode::Choose(choose) => {
+            is_exact_page_to_doi_fallback(choose, macros)
+                || branch_has_exact_page_to_doi_fallback(&choose.if_branch.children, macros)
+                || choose
+                    .else_if_branches
+                    .iter()
+                    .any(|branch| branch_has_exact_page_to_doi_fallback(&branch.children, macros))
+                || choose
+                    .else_branch
+                    .as_ref()
+                    .is_some_and(|branch| branch_has_exact_page_to_doi_fallback(branch, macros))
+        }
+        CslNode::Group(group) => branch_has_exact_page_to_doi_fallback(&group.children, macros),
+        CslNode::Text(text) => text
+            .macro_name
+            .as_ref()
+            .and_then(|name| macros.iter().find(|macro_def| macro_def.name == *name))
+            .is_some_and(|macro_def| {
+                branch_has_exact_page_to_doi_fallback(&macro_def.children, macros)
+            }),
+        _ => false,
+    })
+}
+
+fn is_exact_page_to_doi_fallback(choose: &Choose, macros: &[Macro]) -> bool {
+    choose.else_if_branches.is_empty()
+        && branch_is_page_presence_test(&choose.if_branch)
+        && branch_renders_page_detail(&choose.if_branch.children, macros)
+        && choose
+            .else_branch
+            .as_ref()
+            .is_some_and(|branch| nodes_render_only_doi(branch, macros))
+}
+
+fn branch_is_page_presence_test(branch: &ChooseBranch) -> bool {
+    branch.variable.as_deref() == Some("page")
+        && branch.type_.is_none()
+        && branch.is_numeric.is_none()
+        && branch.is_uncertain_date.is_none()
+        && branch.locator.is_none()
+        && branch.position.is_none()
+}
+
+fn branch_renders_page_detail(nodes: &[CslNode], macros: &[Macro]) -> bool {
+    nodes_reference_variable(nodes, macros, "page")
+        && !nodes_reference_variable(nodes, macros, "doi")
+        && !nodes_reference_variable(nodes, macros, "url")
+}
+
+fn nodes_render_only_doi(nodes: &[CslNode], macros: &[Macro]) -> bool {
+    let mut saw_doi = false;
+    if !nodes_render_only_doi_inner(nodes, macros, &mut saw_doi) {
+        return false;
+    }
+    saw_doi
+}
+
+fn nodes_render_only_doi_inner(nodes: &[CslNode], macros: &[Macro], saw_doi: &mut bool) -> bool {
+    nodes.iter().all(|node| match node {
+        CslNode::Text(text) => {
+            if let Some(variable) = text.variable.as_deref() {
+                if variable.eq_ignore_ascii_case("doi") {
+                    *saw_doi = true;
+                    true
+                } else {
+                    false
+                }
+            } else if let Some(name) = text.macro_name.as_deref() {
+                macros
+                    .iter()
+                    .find(|macro_def| macro_def.name == name)
+                    .is_some_and(|macro_def| {
+                        nodes_render_only_doi_inner(&macro_def.children, macros, saw_doi)
+                    })
+            } else {
+                false
+            }
+        }
+        CslNode::Group(group) => nodes_render_only_doi_inner(&group.children, macros, saw_doi),
+        _ => false,
+    })
+}
+
+fn nodes_reference_variable(nodes: &[CslNode], macros: &[Macro], variable: &str) -> bool {
+    nodes.iter().any(|node| match node {
+        CslNode::Text(text) => {
+            text.variable
+                .as_deref()
+                .is_some_and(|value| value.eq_ignore_ascii_case(variable))
+                || text
+                    .macro_name
+                    .as_deref()
+                    .and_then(|name| macros.iter().find(|macro_def| macro_def.name == name))
+                    .is_some_and(|macro_def| {
+                        nodes_reference_variable(&macro_def.children, macros, variable)
+                    })
+        }
+        CslNode::Group(group) => nodes_reference_variable(&group.children, macros, variable),
+        CslNode::Choose(choose) => {
+            nodes_reference_variable(&choose.if_branch.children, macros, variable)
+                || choose
+                    .else_if_branches
+                    .iter()
+                    .any(|branch| nodes_reference_variable(&branch.children, macros, variable))
+                || choose
+                    .else_branch
+                    .as_ref()
+                    .is_some_and(|branch| nodes_reference_variable(branch, macros, variable))
+        }
+        CslNode::Names(names) => nodes_reference_variable(&names.children, macros, variable),
+        _ => false,
+    })
 }
 
 fn style_has_doi_without_period(style: &Style) -> bool {

@@ -14,7 +14,10 @@ pub mod multilingual;
 pub mod processing;
 pub mod substitute;
 
-pub use bibliography::{BibliographyConfig, SubsequentAuthorSubstituteRule};
+pub use bibliography::{
+    ArticleJournalBibliographyConfig, ArticleJournalNoPageFallback, BibliographyConfig,
+    SubsequentAuthorSubstituteRule,
+};
 pub use contributors::{
     AndOptions, AndOtherOptions, ContributorConfig, ContributorConfigEntry, DelimiterPrecedesLast,
     DemoteNonDroppingParticle, DisplayAsSort, EditorLabelFormat, RoleOptions, RoleRendering,

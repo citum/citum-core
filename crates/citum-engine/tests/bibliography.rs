@@ -12,13 +12,18 @@ use citum_engine::Processor;
 use citum_schema::{
     BibliographySpec, CitationSpec, Style, StyleInfo,
     options::{
-        AndOptions, BibliographyConfig, Config, ContributorConfig, DelimiterPrecedesLast,
+        AndOptions, ArticleJournalBibliographyConfig, ArticleJournalNoPageFallback,
+        BibliographyConfig, Config, ContributorConfig, DelimiterPrecedesLast,
         DemoteNonDroppingParticle, DisplayAsSort, Processing, ProcessingCustom, Sort, SortKey,
         SortSpec,
     },
-    reference::{Contributor, InputReference, Monograph, MonographType, StructuredName, Title},
+    reference::{
+        Contributor, EdtfString, InputReference, Monograph, MonographType, NumOrStr, Parent,
+        Serial, SerialComponent, SerialComponentType, SerialType, StructuredName, Title,
+    },
     template::{
-        DelimiterPunctuation, SimpleVariable, TemplateComponent, TemplateList, TemplateTitle,
+        DateForm, DateVariable, DelimiterPunctuation, NumberVariable, Rendering, SimpleVariable,
+        TemplateComponent, TemplateDate, TemplateList, TemplateNumber, TemplateTitle,
         TemplateVariable, TitleForm, TitleType,
     },
 };
@@ -152,6 +157,118 @@ fn build_container_title_short_style(title_type: TitleType) -> Style {
         }),
         ..Default::default()
     }
+}
+
+fn build_article_journal_no_page_fallback_style() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Article Journal Fallback Test".to_string()),
+            id: Some("article-journal-fallback-test".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            bibliography: Some(BibliographyConfig {
+                article_journal: Some(ArticleJournalBibliographyConfig {
+                    no_page_fallback: Some(ArticleJournalNoPageFallback::Doi),
+                }),
+                separator: Some(", ".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::ParentSerial,
+                    ..Default::default()
+                }),
+                TemplateComponent::List(TemplateList {
+                    items: vec![
+                        TemplateComponent::Date(TemplateDate {
+                            date: DateVariable::Issued,
+                            form: DateForm::Year,
+                            ..Default::default()
+                        }),
+                        TemplateComponent::Number(TemplateNumber {
+                            number: NumberVariable::Volume,
+                            ..Default::default()
+                        }),
+                        TemplateComponent::Number(TemplateNumber {
+                            number: NumberVariable::Issue,
+                            rendering: Rendering {
+                                prefix: Some("(".to_string()),
+                                suffix: Some(")".to_string()),
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        }),
+                        TemplateComponent::Number(TemplateNumber {
+                            number: NumberVariable::Pages,
+                            rendering: Rendering {
+                                prefix: Some("pp. ".to_string()),
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        }),
+                    ],
+                    delimiter: Some(DelimiterPunctuation::Comma),
+                    ..Default::default()
+                }),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::Doi,
+                    rendering: Rendering {
+                        prefix: Some("DOI:".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn make_article_journal_with_detail(
+    id: &str,
+    pages: Option<&str>,
+    doi: Option<&str>,
+) -> InputReference {
+    InputReference::SerialComponent(Box::new(SerialComponent {
+        id: Some(id.to_string()),
+        r#type: SerialComponentType::Article,
+        title: Some(Title::Single("Fallback Article".to_string())),
+        author: Some(Contributor::StructuredName(StructuredName {
+            family: "Doe".into(),
+            given: "Jane".into(),
+            suffix: None,
+            dropping_particle: None,
+            non_dropping_particle: None,
+        })),
+        translator: None,
+        issued: EdtfString("2024".to_string()),
+        parent: Parent::Embedded(Serial {
+            r#type: SerialType::AcademicJournal,
+            title: Some(Title::Single("Journal of Fallbacks".to_string())),
+            short_title: None,
+            editor: None,
+            publisher: None,
+            issn: None,
+        }),
+        url: None,
+        accessed: None,
+        language: None,
+        field_languages: Default::default(),
+        note: None,
+        doi: doi.map(str::to_string),
+        ads_bibcode: None,
+        pages: pages.map(str::to_string),
+        volume: Some(NumOrStr::Str("12".to_string())),
+        issue: Some(NumOrStr::Str("3".to_string())),
+        genre: None,
+        medium: None,
+        keywords: None,
+    }))
 }
 
 fn build_processing_style(processing: Processing) -> Style {
@@ -695,6 +812,61 @@ fn anonymous_works_with_the_same_year_still_sort_by_year_first() {
     assert!(result.find("2019").unwrap() < result.find("2020").unwrap());
 }
 
+fn article_journal_with_pages_keeps_standard_detail_block() {
+    let style = build_article_journal_no_page_fallback_style();
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "article-with-pages".to_string(),
+        make_article_journal_with_detail(
+            "article-with-pages",
+            Some("101-109"),
+            Some("10.1234/fallback"),
+        ),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert!(result.contains("Journal of Fallbacks"));
+    assert!(result.contains("2024"));
+    assert!(result.contains("12"));
+    assert!(result.contains("101"));
+    assert!(!result.contains("DOI:10.1234/fallback"));
+}
+
+fn page_less_article_journal_swaps_detail_block_for_doi() {
+    let style = build_article_journal_no_page_fallback_style();
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "article-without-pages".to_string(),
+        make_article_journal_with_detail("article-without-pages", None, Some("10.1234/fallback")),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert!(result.contains("Journal of Fallbacks"));
+    assert!(result.contains("DOI:10.1234/fallback"));
+    assert!(!result.contains("2024"));
+    assert!(!result.contains("pp."));
+}
+
+fn royal_society_of_chemistry_restores_legacy_page_less_doi_behavior() {
+    let style = load_style("styles/royal-society-of-chemistry.yaml");
+    let bib = citum_engine::io::load_bibliography(
+        &project_root().join("tests/fixtures/references-expanded.json"),
+    )
+    .expect("expanded bibliography should load");
+    let processor = Processor::new(style, bib);
+    let result = processor
+        .render_selected_bibliography_with_format::<citum_engine::render::plain::PlainText, _>(
+            vec!["ITEM-1".to_string()],
+        );
+
+    assert!(result.contains("DOI:10.1234/example"));
+    assert!(!result.contains("pp."));
+}
+
 mod sorting {
     use super::announce_behavior;
 
@@ -828,6 +1000,34 @@ mod contributor_particles {
             "Hyphenated non-dropping particles should stay attached correctly when contributor names are rendered in display order.",
         );
         super::hyphenated_non_dropping_particles_render_correctly_in_display_order();
+    }
+}
+
+mod article_journal_no_page_fallback {
+    use super::announce_behavior;
+
+    #[test]
+    fn journal_articles_with_pages_keep_the_standard_detail_block() {
+        announce_behavior(
+            "A bibliography article-journal entry with pages should keep the standard detail block and suppress the DOI fallback path.",
+        );
+        super::article_journal_with_pages_keeps_standard_detail_block();
+    }
+
+    #[test]
+    fn page_less_journal_articles_can_swap_the_detail_block_for_a_doi() {
+        announce_behavior(
+            "A bibliography article-journal entry without pages should swap its normal year-volume-pages detail block for DOI output when the style opts in.",
+        );
+        super::page_less_article_journal_swaps_detail_block_for_doi();
+    }
+
+    #[test]
+    fn royal_society_of_chemistry_restores_the_legacy_page_less_doi_behavior() {
+        announce_behavior(
+            "The Royal Society of Chemistry bibliography should restore the legacy page-less journal behavior by rendering DOI instead of the standard detail block.",
+        );
+        super::royal_society_of_chemistry_restores_legacy_page_less_doi_behavior();
     }
 }
 

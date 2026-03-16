@@ -8,7 +8,17 @@ use crate::error::ProcessorError;
 use crate::reference::Reference;
 use crate::render::{ProcTemplate, ProcTemplateComponent};
 use crate::values::{ComponentValues, ProcHints, RenderContext, RenderOptions};
-use citum_schema::template::TemplateComponent;
+use citum_schema::{
+    options::ArticleJournalNoPageFallback,
+    reference::NumOrStr,
+    template::{DateVariable, NumberVariable, SimpleVariable, TemplateComponent},
+};
+
+#[derive(Clone, Copy)]
+enum ArticleJournalBibliographyMode {
+    StandardDetail,
+    DoiFallback,
+}
 
 struct GroupRenderState<'a> {
     first_item: &'a crate::reference::CitationItem,
@@ -659,6 +669,8 @@ impl<'a> Renderer<'a> {
             default_template
         };
 
+        let template = self.apply_article_journal_bibliography_policy(reference, template);
+
         let template_ref = &template;
 
         self.process_template_request_with_format::<F>(
@@ -775,6 +787,47 @@ impl<'a> Renderer<'a> {
             None
         } else {
             Some(components)
+        }
+    }
+
+    fn apply_article_journal_bibliography_policy(
+        &self,
+        reference: &Reference,
+        template: Vec<TemplateComponent>,
+    ) -> Vec<TemplateComponent> {
+        let Some(mode) = self.article_journal_bibliography_mode(reference) else {
+            return template;
+        };
+
+        filter_article_journal_template_components(&template, mode)
+    }
+
+    fn article_journal_bibliography_mode(
+        &self,
+        reference: &Reference,
+    ) -> Option<ArticleJournalBibliographyMode> {
+        if reference.ref_type() != "article-journal" {
+            return None;
+        }
+
+        let fallback = self
+            .config
+            .bibliography
+            .as_ref()?
+            .article_journal
+            .as_ref()?
+            .no_page_fallback?;
+
+        match fallback {
+            ArticleJournalNoPageFallback::Doi => {
+                if reference_has_pages(reference) {
+                    Some(ArticleJournalBibliographyMode::StandardDetail)
+                } else if reference_has_doi(reference) {
+                    Some(ArticleJournalBibliographyMode::DoiFallback)
+                } else {
+                    None
+                }
+            }
         }
     }
 
@@ -985,6 +1038,77 @@ fn resolve_component_for_ref_type(
     } else {
         default_fallback.unwrap_or_else(|| component.clone())
     }
+}
+
+fn filter_article_journal_template_components(
+    components: &[TemplateComponent],
+    mode: ArticleJournalBibliographyMode,
+) -> Vec<TemplateComponent> {
+    components
+        .iter()
+        .filter_map(|component| filter_article_journal_template_component(component, mode))
+        .collect()
+}
+
+fn filter_article_journal_template_component(
+    component: &TemplateComponent,
+    mode: ArticleJournalBibliographyMode,
+) -> Option<TemplateComponent> {
+    if should_suppress_article_journal_component(component, mode) {
+        return None;
+    }
+
+    match component {
+        TemplateComponent::List(list) => {
+            let mut filtered = list.clone();
+            filtered.items = filter_article_journal_template_components(&list.items, mode);
+            (!filtered.items.is_empty()).then_some(TemplateComponent::List(filtered))
+        }
+        _ => Some(component.clone()),
+    }
+}
+
+fn should_suppress_article_journal_component(
+    component: &TemplateComponent,
+    mode: ArticleJournalBibliographyMode,
+) -> bool {
+    match mode {
+        ArticleJournalBibliographyMode::StandardDetail => is_doi_component(component),
+        ArticleJournalBibliographyMode::DoiFallback => is_article_detail_component(component),
+    }
+}
+
+fn is_doi_component(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Variable(variable) if variable.variable == SimpleVariable::Doi
+    )
+}
+
+fn is_article_detail_component(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Date(date) if date.date == DateVariable::Issued
+    ) || matches!(
+        component,
+        TemplateComponent::Number(number)
+            if matches!(
+                number.number,
+                NumberVariable::Volume | NumberVariable::Issue | NumberVariable::Pages
+            )
+    )
+}
+
+fn reference_has_pages(reference: &Reference) -> bool {
+    match reference.pages() {
+        Some(NumOrStr::Str(pages)) => !pages.trim().is_empty(),
+        Some(NumOrStr::Number(_)) => true,
+        None => false,
+    }
+}
+
+fn reference_has_doi(reference: &Reference) -> bool {
+    reference.doi().is_some_and(|doi| !doi.trim().is_empty())
 }
 
 pub(super) fn filter_author_from_template(

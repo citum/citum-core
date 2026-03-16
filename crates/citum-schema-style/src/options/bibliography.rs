@@ -13,6 +13,9 @@ use std::collections::HashMap;
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct BibliographyConfig {
+    /// Article-journal-specific bibliography policies.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub article_journal: Option<ArticleJournalBibliographyConfig>,
     /// String to substitute for repeating authors (e.g., "———").
     #[serde(skip_serializing_if = "Option::is_none")]
     pub subsequent_author_substitute: Option<String>,
@@ -44,6 +47,25 @@ pub struct BibliographyConfig {
     /// When present, enables grouping of references by input bibliography `sets`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub compound_numeric: Option<CompoundNumericConfig>,
+}
+
+/// Article-journal-specific bibliography configuration.
+#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct ArticleJournalBibliographyConfig {
+    /// Fallback policy used when page data is absent from an article-journal reference.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub no_page_fallback: Option<ArticleJournalNoPageFallback>,
+}
+
+/// Named fallback policies for page-less article-journal bibliography entries.
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum ArticleJournalNoPageFallback {
+    /// Replace the standard article detail block with the DOI component.
+    Doi,
 }
 
 /// Rules for subsequent author substitution.
@@ -174,5 +196,28 @@ mod tests {
         let json = r#"{"compound-numeric": {"sub-label": "alphabetic"}}"#;
         let config: BibliographyConfig = serde_json::from_str(json).unwrap();
         assert!(config.compound_numeric.is_some());
+    }
+
+    #[test]
+    fn test_article_journal_no_page_fallback_deserializes() {
+        let json = r#"{"article-journal":{"no-page-fallback":"doi"}}"#;
+        let config: BibliographyConfig = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            config.article_journal.and_then(|cfg| cfg.no_page_fallback),
+            Some(ArticleJournalNoPageFallback::Doi)
+        );
+    }
+
+    #[test]
+    fn test_article_journal_no_page_fallback_roundtrip() {
+        let config = BibliographyConfig {
+            article_journal: Some(ArticleJournalBibliographyConfig {
+                no_page_fallback: Some(ArticleJournalNoPageFallback::Doi),
+            }),
+            ..Default::default()
+        };
+        let json = serde_json::to_string(&config).unwrap();
+        let deserialized: BibliographyConfig = serde_json::from_str(&json).unwrap();
+        assert_eq!(config, deserialized);
     }
 }
