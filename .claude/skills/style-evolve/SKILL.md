@@ -70,19 +70,19 @@ Route to `../style-migrate-enhance/SKILL.md`.
 Build a new Citum style from source evidence. Escalate to `@dplanner` for design.
 Accepted source hints: `--source-url`, `--source-text`, `--source-issue`, `--source-file`.
 
-## Co-Evolution Rule (Mandatory)
+## Co-Evolution Rule (Mandatory — implement-first)
 
-Every style iteration must also assess processor/preset opportunities — not just fix
-the style. This is not a checkbox; it requires a delivered artifact.
+Every style iteration must also assess and act on processor/preset opportunities.
+The default is **attempt the fix, not assess and defer.**
 
 At the end of every task, produce this table:
 
 ```
 ## Code Opportunities
 
-| Description | Type | Action |
-|---|---|---|
-| <what was observed> | preset / missing-feature / processor-defect | implemented / deferred: <reason> |
+| Description | Type | Action | Unlocks |
+|---|---|---|---|
+| <what was observed> | preset / missing-feature / processor-defect | implemented / deferred: <bean-id> | <oracle scenarios now fixed, or —> |
 ```
 
 **Types:**
@@ -91,13 +91,18 @@ At the end of every task, produce this table:
 - **processor-defect** — incorrect output from a valid template; requires an engine fix
 
 **Rules:**
-- Every task must include this table, even when empty (write "no opportunities
-  observed this iteration" as the only row).
-- `deferred` requires a **bean ID** — vague rationales like "only one style needs
-  this" are not acceptable. File the bean, get the ID, reference it here.
-- Before deferring a `processor-defect` or `missing-feature`: use jCodeMunch to
-  locate the relevant engine code and assess if a fix is tractable this session.
-  If tractable (~30 lines of Rust), implement it now. If not, file the bean first.
+- Every task must include this table, even when empty ("no opportunities observed"
+  as the only row).
+- For `processor-defect` and `missing-feature`: attempt the Rust fix by default.
+  Group failures by root cause first, then use jCodeMunch to locate the code,
+  then write and test the fix. See `../style-maintain/SKILL.md` Co-Evolution for
+  the step-by-step workflow.
+- Defer **only** when a hard blocker applies (schema design needed, >3-module cascade,
+  unclear fix direction after one experiment). `deferred` requires a **bean ID** with
+  a rich description — not a stub. Run `beans list -S "<keyword>"` before filing to
+  avoid duplicates.
+- When a fix lands: populate the `Unlocks` column with oracle scenarios the fix
+  resolves across the portfolio (not just the current style).
 - A missing or empty table means the task is **incomplete**.
 
 ## Authority Hierarchy
@@ -189,6 +194,25 @@ Every completed task delivers:
    legacy CSL/citeproc behavior
 5. Code Opportunities table (mandatory — see above)
 6. QA verdict from `../style-qa/SKILL.md`
+7. Research value: `high` / `medium` / `low`
+
+   - `high` — fidelity is stable or improved, SQI improved (`+N`), and at least one
+     Code Opportunity was **implemented** this task
+   - `medium` — fidelity is stable, SQI is improved or neutral (`+N` or `±0`), and
+     only deferred Code Opportunities are present
+   - `low` — fidelity is stable, SQI is neutral (`±0`), and no new Code Opportunities
+     were identified or implemented
+
+## Divergence Preflight (Applies at Every Layer)
+
+Read `docs/adjudication/DIVERGENCE_REGISTER.md` before classifying **any** oracle failure
+— including diagnostic work done before dispatching a worker skill.
+
+The preflight is not just Step 0 inside `style-maintain`; it applies whenever this skill
+or its orchestrator is categorizing failures, assessing scope, or deciding what to "fix."
+Classifying a failure as a bug without checking the register first is invalid, even during
+a pre-dispatch survey. If the failure matches a registered divergence, record the div-ID
+and move on — do not schedule a fix.
 
 ## Codebase Exploration (Engine / Schema Internals)
 
