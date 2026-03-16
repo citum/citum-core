@@ -1,8 +1,8 @@
 # Pandoc Markdown Citations Specification
 
-**Status:** Active
-**Version:** 1.0
-**Date:** 2026-03-09
+**Status:** Completed
+**Version:** 1.1
+**Date:** 2026-03-16
 **Supersedes:** None
 **Related:** `crates/citum-cli/src/main.rs`, `crates/citum-engine/src/processor/document/README.md`
 
@@ -60,14 +60,19 @@ author-date and note-insensitive inline rendering paths. Add unit coverage for
 the Markdown parser itself where syntax normalization is non-obvious.
 
 ## Acceptance Criteria
-- [ ] `citum render doc --input-format markdown` no longer errors for supported
+- [x] `citum render doc --input-format markdown` no longer errors for supported
       Pandoc citation syntax
-- [ ] Inline Markdown citations render correctly for single, suppressed-author,
+- [x] Inline Markdown citations render correctly for single, suppressed-author,
       locator, and multi-cite scenarios
-- [ ] The implementation introduces a dedicated Markdown parser module that
+- [x] The implementation introduces a dedicated Markdown parser module that
       implements `CitationParser`
-- [ ] Existing Djot document behavior remains unchanged
-- [ ] Tests cover the new Markdown citation path
+- [x] Existing Djot document behavior remains unchanged
+- [x] Tests cover the new Markdown citation path
 
 ## Changelog
 - v1.0 (2026-03-09): Initial version.
+- v1.1 (2026-03-16): All criteria met. `BibliographyBlock` moved to shared
+  `types.rs`; `CitationParser::finalize_html_output` default changed to
+  pass-through; `DocumentFormat::Markdown` variant added; engine README
+  restructured to distinguish document input, output, and field markup concerns.
+

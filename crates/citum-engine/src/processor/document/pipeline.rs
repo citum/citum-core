@@ -11,7 +11,7 @@ use super::output::{
     rewrite_document_markup_for_typst, rewrite_group_headings_for_document,
     stage_document_bibliography_blocks,
 };
-use super::{CitationParser, DocumentFormat, ParsedDocument, djot};
+use super::{BibliographyBlock, CitationParser, DocumentFormat, ParsedDocument};
 use crate::processor::Processor;
 
 impl Processor {
@@ -79,7 +79,7 @@ impl Processor {
     fn process_document_with_bibliography_blocks<P, F>(
         &self,
         body: &str,
-        blocks: Vec<djot::BibliographyBlock>,
+        blocks: Vec<BibliographyBlock>,
         parser: &P,
         format: DocumentFormat,
     ) -> String
@@ -214,7 +214,7 @@ impl Processor {
     fn replace_document_bibliography_blocks<F>(
         &self,
         rendered: &mut RenderedDocumentBody,
-        blocks: &[djot::BibliographyBlock],
+        blocks: &[BibliographyBlock],
         format: DocumentFormat,
     ) where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -247,6 +247,7 @@ impl Processor {
             None => match format {
                 DocumentFormat::Html => parser.finalize_html_output(&result),
                 DocumentFormat::Djot
+                | DocumentFormat::Markdown
                 | DocumentFormat::Plain
                 | DocumentFormat::Latex
                 | DocumentFormat::Typst => result,
