@@ -112,13 +112,14 @@ pub fn render_component(component: &ProcTemplateComponent) -> String {
 pub fn render_component_with_format<F: OutputFormat<Output = String>>(
     component: &ProcTemplateComponent,
 ) -> F::Output {
-    render_component_with_format_and_renderer::<F>(component, &F::default())
+    render_component_with_format_and_renderer::<F>(component, &F::default(), true)
 }
 
 /// Render a single component using a specific output format and an existing renderer instance.
 pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String>>(
     component: &ProcTemplateComponent,
     fmt: &F,
+    show_semantics: bool,
 ) -> F::Output {
     // Get merged rendering (global config + local settings + overrides)
     let rendering = get_effective_rendering(component);
@@ -196,12 +197,6 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
     }
 
     // 6. Apply semantic class based on component type
-    let show_semantics = component
-        .config
-        .as_ref()
-        .and_then(|c| c.semantic_classes)
-        .unwrap_or(true);
-
     if show_semantics && let Some(class) = resolve_semantic_class(component) {
         output = fmt.semantic(&class, output);
     }

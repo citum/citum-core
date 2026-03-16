@@ -84,6 +84,9 @@ pub struct Processor {
     pub compound_member_index: HashMap<String, usize>,
     /// Compound numeric groups: citation number → ordered ref IDs in the group.
     pub compound_groups: RefCell<IndexMap<usize, Vec<String>>>,
+    /// Whether to output semantic markup (HTML spans, Djot attributes).
+    /// Defaults to true; set to false to suppress class attributes (e.g. `--no-semantics`).
+    pub show_semantics: bool,
 }
 
 /// Processed output containing citations and bibliography.

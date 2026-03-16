@@ -810,7 +810,7 @@ fn run_render_doc(args: RenderDocArgs) -> Result<(), Box<dyn Error>> {
         );
     }
 
-    let processor = create_processor(style_obj, bibliography, &args.style)?;
+    let processor = create_processor(style_obj, bibliography, &args.style, args.no_semantics)?;
 
     let doc_content = fs::read_to_string(&args.input)?;
     let output = match args.input_format {
@@ -876,7 +876,7 @@ fn run_render_refs(args: RenderRefsArgs) -> Result<(), Box<dyn Error>> {
         format: AnnotationFormat::Djot,
     };
 
-    let processor = create_processor(style_obj, bibliography, &args.style)?;
+    let processor = create_processor(style_obj, bibliography, &args.style, args.no_semantics)?;
 
     let style_name = {
         let path = Path::new(&args.style);
@@ -920,6 +920,7 @@ fn create_processor(
     style: Style,
     loaded: LoadedBibliography,
     style_input: &str,
+    no_semantics: bool,
 ) -> Result<Processor, Box<dyn Error>> {
     let LoadedBibliography { references, sets } = loaded;
     let compound_sets = sets.unwrap_or_default();
@@ -938,10 +939,14 @@ fn create_processor(
             // Builtin style: use embedded locale directly.
             load_locale_builtin(locale_id)
         };
-        Processor::try_with_locale_and_compound_sets(style, references, locale, compound_sets)
-            .map_err(|e| e.into())
+        let mut processor =
+            Processor::try_with_locale_and_compound_sets(style, references, locale, compound_sets)?;
+        processor.show_semantics = !no_semantics;
+        Ok(processor)
     } else {
-        Processor::try_with_compound_sets(style, references, compound_sets).map_err(|e| e.into())
+        let mut processor = Processor::try_with_compound_sets(style, references, compound_sets)?;
+        processor.show_semantics = !no_semantics;
+        Ok(processor)
     }
 }
 
@@ -959,18 +964,7 @@ fn load_any_style(style_input: &str, no_semantics: bool) -> Result<Style, Box<dy
         let config = StoreConfig::load().unwrap_or_default();
         let resolver = StoreResolver::new(data_dir, config.store_format());
         if let Ok(style) = resolver.resolve_style(style_input) {
-            let mut style_obj = style;
-            if no_semantics {
-                if let Some(ref mut options) = style_obj.options {
-                    options.semantic_classes = Some(false);
-                } else {
-                    style_obj.options = Some(citum_schema::options::Config {
-                        semantic_classes: Some(false),
-                        ..Default::default()
-                    });
-                }
-            }
-            return Ok(style_obj);
+            return Ok(style);
         }
     }
 
@@ -1808,28 +1802,16 @@ fn find_locales_dir(style_path: &str) -> PathBuf {
 /// Load a Citum style from a file path.
 ///
 /// Selects the deserialiser based on the file extension (`cbor`, `json`, or YAML
-/// for anything else).  When `no_semantics` is `true`, the `semantic_classes`
-/// option is forced to `false` before returning.
-fn load_style(path: &Path, no_semantics: bool) -> Result<Style, Box<dyn Error>> {
+/// for anything else).
+fn load_style(path: &Path, _no_semantics: bool) -> Result<Style, Box<dyn Error>> {
     let bytes = fs::read(path)?;
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
 
-    let mut style_obj: Style = match ext {
+    let style_obj: Style = match ext {
         "cbor" => ciborium::de::from_reader(std::io::Cursor::new(&bytes))?,
         "json" => serde_json::from_slice(&bytes)?,
         _ => serde_yaml::from_slice(&bytes)?,
     };
-
-    if no_semantics {
-        if let Some(ref mut options) = style_obj.options {
-            options.semantic_classes = Some(false);
-        } else {
-            style_obj.options = Some(citum_schema::options::Config {
-                semantic_classes: Some(false),
-                ..Default::default()
-            });
-        }
-    }
 
     Ok(style_obj)
 }

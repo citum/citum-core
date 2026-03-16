@@ -44,6 +44,7 @@ impl Processor {
                 member_index: &self.compound_member_index,
                 sets: &self.compound_sets,
             },
+            self.show_semantics,
         )
     }
 

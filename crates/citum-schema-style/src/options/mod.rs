@@ -105,10 +105,6 @@ pub struct Config {
     /// Examples: Comma (APA ", "), Colon (Chicago ": ").
     #[serde(skip_serializing_if = "Option::is_none")]
     pub volume_pages_delimiter: Option<DelimiterPunctuation>,
-    /// Whether to output semantic markup (HTML spans, Djot attributes).
-    /// Defaults to true.
-    #[serde(default = "default_true", skip_serializing_if = "Option::is_none")]
-    pub semantic_classes: Option<bool>,
     /// Strip trailing periods from terms, labels, and abbreviated dates.
     #[serde(skip_serializing_if = "Option::is_none", rename = "strip-periods")]
     pub strip_periods: Option<bool>,
@@ -268,7 +264,6 @@ impl Config {
             bibliography,
             links,
             volume_pages_delimiter,
-            semantic_classes,
             strip_periods,
             notes,
             integral_names,
@@ -328,10 +323,6 @@ where
     let value: Option<crate::options::titles::TitlesConfigEntry> =
         Option::deserialize(deserializer)?;
     Ok(value.map(|entry| entry.resolve()))
-}
-
-fn default_true() -> Option<bool> {
-    Some(true)
 }
 
 #[cfg(test)]

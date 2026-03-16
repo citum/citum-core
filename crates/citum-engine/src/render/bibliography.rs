@@ -511,7 +511,6 @@ mod tests {
                 entry_suffix: Some("".to_string()),
                 ..Default::default()
             }),
-            semantic_classes: Some(true),
             ..Default::default()
         };
 

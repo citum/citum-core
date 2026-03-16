@@ -56,8 +56,12 @@ pub struct ContributorConfig {
     /// Shorten the list of contributors (et al. handling).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub shorten: Option<ShortenListOptions>,
-    /// The delimiter between contributors.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The delimiter between contributors. Defaults to `", "` if not specified.
+    /// `None` means "not configured at this level" and will not override an inherited value.
+    #[serde(
+        default = "default_contributor_delimiter",
+        skip_serializing_if = "is_default_contributor_delimiter"
+    )]
     pub delimiter: Option<String>,
     /// Conjunction between last two contributors.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -77,7 +81,9 @@ pub struct ContributorConfig {
     /// Handling of non-dropping particles (e.g., "van" in "van Gogh").
     #[serde(skip_serializing_if = "Option::is_none")]
     pub demote_non_dropping_particle: Option<DemoteNonDroppingParticle>,
-    /// Delimiter between family and given name when inverted (default: ", ").
+    /// Delimiter between family and given name when inverted (e.g., `", "` → "Smith, John").
+    /// Defaults to `", "` in the engine when not specified.
+    /// `None` means "not configured at this level" and will not override an inherited value.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sort_separator: Option<String>,
     /// How to render given names. See `NameForm` for variants.
@@ -325,4 +331,12 @@ pub enum AndOtherOptions {
     #[default]
     EtAl,
     Text,
+}
+
+fn default_contributor_delimiter() -> Option<String> {
+    Some(", ".to_string())
+}
+
+fn is_default_contributor_delimiter(v: &Option<String>) -> bool {
+    v.as_deref() == Some(", ")
 }

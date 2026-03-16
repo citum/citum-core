@@ -459,6 +459,7 @@ impl Processor {
                 member_index: &self.compound_member_index,
                 sets: &self.compound_sets,
             },
+            self.show_semantics,
         );
         let anchor_position = match citation.position.as_ref() {
             Some(citum_schema::citation::Position::Ibid)

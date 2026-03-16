@@ -40,6 +40,7 @@ impl Default for Processor {
             compound_set_by_ref,
             compound_member_index,
             compound_groups: RefCell::new(IndexMap::new()),
+            show_semantics: true,
         }
     }
 }
@@ -65,6 +66,7 @@ impl Processor {
             compound_set_by_ref,
             compound_member_index,
             compound_groups: RefCell::new(IndexMap::new()),
+            show_semantics: true,
         };
 
         // Pre-calculate hints for disambiguation.

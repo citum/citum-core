@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Bibliography-specific configuration.
-#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct BibliographyConfig {
@@ -25,15 +25,18 @@ pub struct BibliographyConfig {
     /// Whether to use a hanging indent.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hanging_indent: Option<bool>,
-    /// Suffix appended to each bibliography entry (e.g., ".").
+    /// Suffix appended to each bibliography entry (e.g., `"."`).
     /// Extracted from CSL 1.0 `<layout suffix=".">` attribute.
-    /// If None, a trailing period is added by default unless entry ends with DOI/URL.
+    /// If `None`, no suffix is appended.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub entry_suffix: Option<String>,
-    /// Separator between bibliography components (e.g., ". " for Chicago/APA, ", " for Elsevier).
+    /// Separator between bibliography components (e.g., `". "` for Chicago/APA, `", "` for Elsevier).
     /// Extracted from CSL 1.0 group delimiter attribute.
-    /// Defaults to ". " if not specified.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Defaults to `". "`.
+    #[serde(
+        default = "default_separator",
+        skip_serializing_if = "is_default_separator"
+    )]
     pub separator: Option<String>,
     /// Whether to suppress the trailing period after URLs/DOIs.
     /// Default behavior is to add a period (Chicago, MLA style).
@@ -96,6 +99,16 @@ pub enum SubLabelStyle {
     Numeric,
 }
 
+/// Default bibliography component separator.
+fn default_separator() -> Option<String> {
+    Some(". ".to_string())
+}
+
+/// Skip serializing separator when it is the default value.
+fn is_default_separator(v: &Option<String>) -> bool {
+    v.as_deref() == Some(". ")
+}
+
 /// Default sub-label suffix.
 fn default_sub_label_suffix() -> String {
     ")".to_string()
@@ -144,6 +157,22 @@ pub struct CompoundNumericConfig {
     /// Delimiter between sub-items (default: ", ").
     #[serde(default = "default_sub_delimiter")]
     pub sub_delimiter: String,
+}
+
+impl Default for BibliographyConfig {
+    fn default() -> Self {
+        Self {
+            article_journal: None,
+            subsequent_author_substitute: None,
+            subsequent_author_substitute_rule: None,
+            hanging_indent: None,
+            entry_suffix: None,
+            separator: default_separator(),
+            suppress_period_after_url: false,
+            custom: None,
+            compound_numeric: None,
+        }
+    }
 }
 
 impl Default for CompoundNumericConfig {
