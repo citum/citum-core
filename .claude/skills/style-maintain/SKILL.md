@@ -57,24 +57,59 @@ Token efficiency matters — diagnose everything before touching any files.
 3. `type-templates` only for true structural outliers.
 4. Processor/schema changes only after planner escalation.
 
-## Co-Evolution (Mandatory — not a checkbox)
+## Co-Evolution (Mandatory — implement-first)
 
-Style work and engine work evolve together. When you classify a failure, don't stop at
-"deferred." The point of this classification is to drive engine improvements.
+Style work and engine work evolve together. The default action for every `processor-defect`
+or `missing-feature` is **to attempt the fix now** — not assess and defer.
 
-**For each `processor-defect` or `missing-feature`:**
+**Step 1 — Group failures by root cause before any jCodeMunch lookup.**
 
-1. Use jCodeMunch to locate the relevant engine code — do not load full source files:
-   ```
-   search_symbols("<term or feature name>", repo: "local/citum-core")
-   get_symbol("<SymbolName>", repo: "local/citum-core")
-   ```
-2. Assess tractability: can this be fixed in ~30 lines of Rust? If yes, fix it now.
-3. If not tractable in this session: file a bean with the symbol name, file path, line
-   number, oracle diff, and a concrete description of the fix needed.
-   `beans create "engine: <description>" -t bug -d "..."`
-4. Reference the bean ID in the Code Opportunities table. **"Deferred" without a bean
-   ID is not acceptable** — it means the opportunity will be lost.
+Multiple oracle failures often share one engine root. Deduplicate first:
+- List all `processor-defect` / `missing-feature` failures.
+- Group by suspected root cause (e.g., "volume-pages delimiter", "editor name order").
+- One jCodeMunch lookup per group, not per failure.
+
+**Step 2 — Locate the relevant code.**
+
+```
+search_symbols("<feature or field name>", repo: "local/citum-core")
+get_symbol("<SymbolName>", repo: "local/citum-core")
+```
+
+**Step 3 — Attempt the fix. Do not pre-assess tractability.**
+
+Write the Rust, run `~/.claude/scripts/verify.sh` (or `cargo nextest run`). If green,
+include the fix in the same commit as the style change. Most engine fixes are smaller than
+they look once you're in the code.
+
+Defer **only** when one of these hard blockers applies:
+- Fix requires new schema YAML fields that need design review (new `info.*` or
+  `options.*` keys that affect the style spec).
+- Fix touches >3 modules and cascades through trait bounds.
+- Fix direction is genuinely unclear after reading the symbol *and* one minimal
+  experiment fails to converge.
+
+If you're not sure, err toward trying. A failed experiment that isolates the defect is
+more useful than a bean filed from the oracle diff alone.
+
+**Step 4 — If deferring: file a rich bean, not a stub.**
+
+`beans create "engine: <description>" -t bug -d "..."`
+
+The bean body must include:
+- jCodeMunch symbol path and line (copy from `get_symbol` output)
+- Oracle diff snippet showing the exact failure
+- Proposed fix sketch (even two pseudocode lines)
+- Which oracle scenarios this fix would unlock
+
+Before filing, run `beans list -S "<feature-keyword>"` — avoid duplicate beans for the
+same root cause.
+
+**Step 5 — When a fix lands, record what it unlocks.**
+
+In the Code Opportunities table row, add a `Unlocks` column listing oracle scenarios
+(e.g., `volume-pages in nature, cell`) so the user knows which other styles to re-run
+next session.
 
 The Code Opportunities table is delivered as part of every task output (inherited from
 style-evolve). Every row must be either `implemented` or `deferred: <bean-id>`.

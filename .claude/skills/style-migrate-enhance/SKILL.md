@@ -60,7 +60,10 @@ git add -A && git commit -m "feat(styles): migrate <style-name>"
 ## Required Artifacts
 - Iteration log (what changed, what improved, what remains).
 - Final wave summary table.
-- Suggested migration-engine improvements only when repeated across styles.
+- Code Opportunities table (same format as `../style-evolve/SKILL.md`) — one row per
+  gap observed. Migration-engine gaps go in as `missing-feature`; apply the same
+  implement-first rule: attempt the fix, defer only when a hard blocker applies.
+  Gaps that appear across multiple styles are highest priority for implementation.
 
 ## Verification
 - Structured oracle: `node scripts/oracle.js <legacy-style> --json`
