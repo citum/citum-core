@@ -1,8 +1,8 @@
 # Pandoc Markdown Citations Specification
 
 **Status:** Completed
-**Version:** 1.0
-**Date:** 2026-03-09
+**Version:** 1.1
+**Date:** 2026-03-16
 **Supersedes:** None
 **Related:** `crates/citum-cli/src/main.rs`, `crates/citum-engine/src/processor/document/README.md`
 
