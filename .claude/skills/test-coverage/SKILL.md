@@ -24,6 +24,21 @@ always one of two things:
 
 Use the audit script and this checklist before declaring something tested.
 
+## Test Style
+
+Before writing a test, pick the right style (full rule in
+`docs/guides/CODING_STANDARDS.md` § "Test Style"):
+
+| Scenario | Location | Style |
+|----------|----------|-------|
+| Single-function / pure logic | Inline `#[cfg(test)]` | Plain `#[test]` |
+| Single-scenario integration | `tests/` | Plain `#[test]` |
+| Parameterised cross-module behavior | `tests/` | `#[rstest]` + `given_…_when_…_then_…` |
+
+BDD naming (`given_…_when_…_then_…`) is only for `#[rstest]` integration
+tests with 2+ parameterised cases. Do not apply it to unit tests or
+single-scenario integration tests.
+
 ## Quick audit
 
 ```bash
