@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "lib/crate")]
 
 use citum_schema::template::{TemplateComponent, TypeSelector, WrapPunctuation};
 use csl_legacy::model::Layout;

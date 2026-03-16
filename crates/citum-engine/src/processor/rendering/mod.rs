@@ -162,7 +162,10 @@ impl TemplateComponentTracker {
 
 impl<'a> Renderer<'a> {
     /// Creates a new `Renderer` instance.
-    #[allow(clippy::too_many_arguments)]
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "necessary complexity for citation rendering"
+    )]
     pub fn new(
         style: &'a citum_schema::Style,
         bibliography: &'a Bibliography,

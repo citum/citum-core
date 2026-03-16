@@ -190,10 +190,8 @@ pub(crate) fn find_citations(content: &str, locale: &Locale) -> Vec<(usize, usiz
     let mut offset = 0;
 
     while !input.is_empty() {
-        let next_bracket = input.find('[');
-        let start_pos = match next_bracket {
-            Some(b) => b,
-            None => break,
+        let Some(start_pos) = input.find('[') else {
+            break;
         };
 
         let potential = &input[start_pos..];

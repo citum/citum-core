@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "test")]
 
 use citum_migrate::options_extractor::OptionsExtractor;
 use citum_schema::options::SubstituteKey;
@@ -11,7 +11,10 @@ fn announce_behavior(summary: &str) {
     println!("behavior: {summary}");
 }
 
-#[allow(clippy::too_many_lines)] // test functions naturally exceed 100 lines
+#[allow(
+    clippy::too_many_lines,
+    reason = "test functions naturally exceed 100 lines"
+)]
 #[test]
 fn test_extract_type_conditional_substitute() {
     announce_behavior(

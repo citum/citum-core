@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "test/bench")]
 
 use citum_schema::citation::{CitationItem, IntegralNameState};
 use citum_schema::options::{IntegralNameContexts, IntegralNameRule, IntegralNameScope};

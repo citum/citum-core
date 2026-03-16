@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "test")]
 
 /// Integration tests for citum-bindings.
 ///

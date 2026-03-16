@@ -9,7 +9,7 @@ impl TemplateCompiler {
         types
     }
 
-    #[allow(dead_code)]
+    #[allow(dead_code, reason = "helper functions")]
     pub(super) fn collect_types_recursive(nodes: &[CslnNode], types: &mut Vec<ItemType>) {
         for node in nodes {
             match node {
@@ -44,7 +44,7 @@ impl TemplateCompiler {
     /// When encountering type-based conditions, selects the matching branch
     /// for the given type, or falls back to else branch if no match.
     /// Currently unused - infrastructure for future `type_templates` generation.
-    #[allow(dead_code)]
+    #[allow(dead_code, reason = "helper functions")]
     pub(super) fn compile_for_type(
         &self,
         nodes: &[CslnNode],
@@ -115,7 +115,7 @@ impl TemplateCompiler {
     }
 
     /// Convert `ItemType` to its string representation.
-    #[allow(dead_code)]
+    #[allow(dead_code, reason = "helper functions")]
     pub(super) fn item_type_to_string(&self, item_type: &ItemType) -> String {
         match item_type {
             ItemType::Article => "article".to_string(),

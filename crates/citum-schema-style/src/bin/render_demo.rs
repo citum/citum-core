@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "test/bench/bin crate")]
 
 use citum_schema_style::renderer::RenderItem;
 use citum_schema_style::{CslnStyle, ItemType, Renderer, Variable};

@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "test")]
 
 use citum_engine::processor::Processor;
 use citum_engine::render::latex::Latex;

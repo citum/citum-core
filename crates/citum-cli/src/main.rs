@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "bin")]
 
 use citum_engine::{
     Bibliography, Citation, CitationItem, DocumentFormat, Processor,

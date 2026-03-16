@@ -561,9 +561,9 @@ impl Locale {
             if let Some(locator_type) = Self::parse_locator_type(key) {
                 if let Some(forms) = Self::get_forms(value) {
                     let locator_term = LocatorTerm {
-                        long: Self::extract_singular_plural(&forms.get("long")),
-                        short: Self::extract_singular_plural(&forms.get("short")),
-                        symbol: Self::extract_singular_plural(&forms.get("symbol")),
+                        long: Self::extract_singular_plural(forms.get("long").as_ref()),
+                        short: Self::extract_singular_plural(forms.get("short").as_ref()),
+                        symbol: Self::extract_singular_plural(forms.get("symbol").as_ref()),
                     };
                     locale.locators.insert(locator_type, locator_term);
                 }
@@ -709,7 +709,7 @@ impl Locale {
         }
     }
 
-    fn extract_singular_plural(value: &Option<&raw::RawTermValue>) -> Option<SingularPlural> {
+    fn extract_singular_plural(value: Option<&&raw::RawTermValue>) -> Option<SingularPlural> {
         match value {
             Some(raw::RawTermValue::SingularPlural { singular, plural }) => Some(SingularPlural {
                 singular: singular.clone(),

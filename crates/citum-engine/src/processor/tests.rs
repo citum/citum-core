@@ -1017,7 +1017,10 @@ fn test_disambiguation_combined_expansion() {
 }
 
 /// Tests the behavior of `test_apa_titles_config`.
-#[allow(clippy::too_many_lines)] // test functions naturally exceed 100 lines
+#[allow(
+    clippy::too_many_lines,
+    reason = "test functions naturally exceed 100 lines"
+)]
 #[test]
 fn test_apa_titles_config() {
     use crate::reference::Reference;
@@ -2173,7 +2176,10 @@ fn test_citation_visibility_modifiers() {
 }
 
 /// Tests the behavior of `test_bibliography_per_group_disambiguation`.
-#[allow(clippy::too_many_lines)] // test functions naturally exceed 100 lines
+#[allow(
+    clippy::too_many_lines,
+    reason = "test functions naturally exceed 100 lines"
+)]
 #[test]
 fn test_bibliography_per_group_disambiguation() {
     use citum_schema::grouping::{

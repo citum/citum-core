@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "test")]
 
 use citum_migrate::{TemplateCompiler, Upsampler};
 use citum_schema::CslnNode;
@@ -196,7 +196,10 @@ fn test_upsample_strip_periods_preserves_none_and_false() {
     }
 }
 
-#[allow(clippy::too_many_lines)] // test functions naturally exceed 100 lines
+#[allow(
+    clippy::too_many_lines,
+    reason = "test functions naturally exceed 100 lines"
+)]
 #[test]
 fn test_template_compiler_preserves_strip_periods_through_compilation() {
     announce_behavior(

@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "test")]
 
 use citum_migrate::{Compressor, MacroInliner, TemplateCompiler, Upsampler};
 use citum_schema::template::{

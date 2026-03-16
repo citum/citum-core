@@ -34,14 +34,46 @@ redundant_explicit_links = "warn"
 unescaped_backticks = "warn"
 
 [workspace.lints.clippy]
-cognitive_complexity = "deny"
-empty_docs = "deny"
-four_forward_slashes = "deny"
-missing_errors_doc = "warn"
-missing_panics_doc = "warn"
-missing_safety_doc = "deny"
-tabs_in_doc_comments = "deny"
-too_many_lines = "deny"
+# Lint groups with explicit priorities to allow per-lint overrides
+all = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+
+# Enforce that any #[allow(...)] attribute must include a reason = "..." argument
+allow_attributes_without_reason = "deny"
+
+# High-frequency noise lints: valid patterns in this codebase, not errors
+must_use_candidate = "allow"          # Internal pipeline functions return values consumed by callers via chaining; #[must_use] would require call-site annotations on every intermediate step
+similar_names = "allow"                # Citation domain uses terse abbreviations (fn_, var, val) that are conventional and would not be clarified by longer names
+module_name_repetitions = "allow"      # Type names like citum_engine::engine::Engine mirror the module hierarchy intentionally so callers can use the full path as documentation
+uninlined_format_args = "allow"        # 33+ sites — migrating is stylistic churn with zero semantic benefit; revisit when a Rust edition forces it
+assigning_clones = "allow"             # a = b.clone() is more readable than a.clone_from(&b) when a and b are not adjacent in long expressions; allocation difference is negligible for the String/Vec types used here
+needless_raw_string_hashes = "allow"   # Raw strings in YAML/CSL tests use consistent r##\"...\"## framing so all test strings look uniform regardless of whether inner # chars are present
+doc_markdown = "allow"                 # Backtick-heavy citation field names (volume-title, container-title) trigger false positives on hyphenated identifiers that are not code
+match_same_arms = "allow"              # Citation processing matches often have semantically distinct arms that happen to share an implementation today but will diverge as new types are added
+map_unwrap_or = "allow"                # .map(...).unwrap_or(...) separates transformation from fallback more readably when the map closure is multi-line; map_or conflates them
+redundant_closure_for_method_calls = "allow"  # .map(Type::method) hides which concrete type is being operated on in generic pipelines; the explicit closure documents the type at the call site
+manual_string_new = "allow"            # \"\".to_string() is visually consistent with non-empty literal conversions (\"foo\".to_string()); String::new() at the start of a chain reads as a different idiom
+trivially_copy_pass_by_ref = "allow"   # Public API signatures use &T uniformly for value and reference params to keep method signatures stable if the type stops being Copy in future
+cast_possible_truncation = "allow"     # 15 sites in rendering and analysis paths accept bounded truncation; adding try_into().expect() at each would obscure the invariant that inputs are already range-checked
+ref_option = "allow"                   # &Option<T> is used on output struct fields where the caller inspects the option without taking ownership; changing to Option<&T> would require .as_ref() at every call site
+items_after_statements = "allow"       # 33+ sites — test helpers and local let-bindings follow the statement that motivates them; hoisting all of them would obscure that locality
+unnecessary_wraps = "allow"            # Parser and compiler functions return Result<T, String> for uniform error propagation even when the current implementation cannot fail; keeps the API open for fallible variants
+unused_self = "allow"                  # 48 sites — removing &self from trait-impl methods or methods with future state access would break the trait signature or require a larger refactor
+match_wildcard_for_single_variants = "allow"  # Explicit _ arms are defensive — they ensure the match stays exhaustive after new enum variants are added without requiring callers to update
+default_trait_access = "allow"         # 22 sites in schema builders — Foo { field: Default::default(), .. } is clearer than ..Default::default() when only one field is being overridden
+needless_pass_by_value = "allow"       # Builder-pattern entry points take ownership to enforce move semantics and prevent callers from retaining references to partially-consumed inputs
+format_push_string = "allow"           # 23 sites — format!() push pattern is readable for string assembly in rendering code; write!(&mut s, ...) would require declaring s as mut and importing Write at each call site
+struct_excessive_bools = "allow"       # Disambiguation structs use boolean flags that map 1:1 to YAML boolean fields; an enum would add an indirection layer with no clarity gain
+type_complexity = "allow"              # Template and schema types compose multiple generic parameters by design; extracting type aliases would scatter the definitions without reducing actual complexity
+implicit_hasher = "allow"              # HashMap is used with the default hasher intentionally; accepting BuildHasher would complicate the API for no current use case
+cast_precision_loss = "allow"          # Integer-to-float casts in stats/analysis paths accept precision loss — the inputs are small counters where f64 precision is sufficient
+
+# Retained pedantic-style denials (already explicit in pre-existing config)
+cognitive_complexity = "deny"      # Enforce readable function logic
+empty_docs = "deny"                # Require substantive documentation
+four_forward_slashes = "deny"      # Enforce comment syntax correctness
+missing_safety_doc = "deny"        # Safety-critical items must be documented
+tabs_in_doc_comments = "deny"      # Enforce consistent formatting
 
 [profile.release]
 opt-level = 3

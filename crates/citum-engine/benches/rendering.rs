@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "test")]
 
 use citum_engine::processor::disambiguation::Disambiguator;
 use citum_engine::{

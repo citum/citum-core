@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "bin")]
 
 /*
 SPDX-License-Identifier: MIT OR Apache-2.0

@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "test/bench")]
 
 use std::fs;
 use std::path::PathBuf;

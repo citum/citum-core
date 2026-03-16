@@ -24,7 +24,7 @@ impl TemplateCompiler {
     /// Add type-specific overrides to all items within a List.
     /// This ensures that when a List is created inside a type-specific branch,
     /// all its items get the appropriate suppress=true with type-specific unsuppress.
-    #[allow(dead_code)]
+    #[allow(dead_code, reason = "helper functions")]
     pub(super) fn add_type_overrides_to_list_items(
         &self,
         items: &mut [TemplateComponent],
@@ -50,7 +50,7 @@ impl TemplateCompiler {
         }
     }
 
-    #[allow(dead_code)]
+    #[allow(dead_code, reason = "helper functions")]
     pub(super) fn add_overrides_recursive(
         &self,
         component: &mut TemplateComponent,
@@ -79,7 +79,7 @@ impl TemplateCompiler {
     }
 
     /// Get a debug name for a component
-    #[allow(dead_code)]
+    #[allow(dead_code, reason = "helper functions")]
     pub(super) fn get_component_name(&self, comp: &TemplateComponent) -> String {
         match comp {
             TemplateComponent::Contributor(c) => format!("contributor:{:?}", c.contributor),
@@ -92,7 +92,7 @@ impl TemplateCompiler {
         }
     }
 
-    #[allow(dead_code)]
+    #[allow(dead_code, reason = "helper functions")]
     pub(super) fn add_overrides_to_existing(
         &self,
         existing: &mut TemplateComponent,
@@ -311,7 +311,7 @@ impl TemplateCompiler {
 
     /// Old deduplication method - no longer needed with occurrence-based compilation.
     /// Kept for reference but not used in new code path.
-    #[allow(dead_code)]
+    #[allow(dead_code, reason = "helper functions")]
     pub(super) fn deduplicate_and_flatten(
         &self,
         components: Vec<TemplateComponent>,
@@ -379,7 +379,7 @@ impl TemplateCompiler {
         result
     }
 
-    #[allow(dead_code)]
+    #[allow(dead_code, reason = "helper functions")]
     pub(super) fn clean_list_recursive(
         &self,
         list: &TemplateList,
@@ -438,7 +438,7 @@ impl TemplateCompiler {
         vars
     }
 
-    #[allow(dead_code)]
+    #[allow(dead_code, reason = "helper functions")]
     pub(super) fn merge_overrides_into(
         &self,
         target: &mut TemplateComponent,

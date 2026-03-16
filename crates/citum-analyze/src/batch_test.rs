@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "bin crate")]
 /*
 SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
@@ -17,7 +17,10 @@ use std::path::Path;
 use std::process::Command;
 use walkdir::WalkDir;
 
-#[allow(clippy::too_many_lines)] // test functions naturally exceed 100 lines
+#[allow(
+    clippy::too_many_lines,
+    reason = "test functions naturally exceed 100 lines"
+)]
 fn main() {
     let args: Vec<String> = env::args().collect();
 

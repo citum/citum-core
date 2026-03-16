@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "test")]
 
 use citum_migrate::options_extractor::OptionsExtractor;
 use citum_schema::options::MonthFormat;
