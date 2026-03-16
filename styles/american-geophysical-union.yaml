@@ -71,6 +71,7 @@ citation:
       form: year
       prefix: ", "
     - variable: locator
+      prefix: ", "
   wrap: parentheses
   delimiter: ". "
   multi-cite-delimiter: "; "
@@ -150,3 +151,30 @@ bibliography:
         article-journal:
           prefix: https://doi.org/
     - variable: url
+  type-templates:
+    interview:
+      - contributor: author
+        form: long
+        name-order: family-first
+      - date: issued
+        form: year-month-day
+        wrap: parentheses
+        prefix: " "
+      - title: primary
+        prefix: ". "
+      - variable: medium
+        wrap: brackets
+        prefix: " "
+      - variable: url
+        prefix: ". Retrieved from "
+    patent:
+      - contributor: author
+        form: long
+        name-order: family-first
+        and: symbol
+      - date: issued
+        form: year-month-day
+        wrap: parentheses
+        prefix: " "
+      - number: number
+        prefix: ". "
