@@ -1,4 +1,7 @@
-use super::*;
+use super::{
+    ContributorRole, DateVariable, NumberVariable, TemplateCompiler, TemplateComponent,
+    TemplateTitle, TitleType,
+};
 
 impl TemplateCompiler {
     pub(super) fn sort_citation_components(&self, components: &mut [TemplateComponent]) {

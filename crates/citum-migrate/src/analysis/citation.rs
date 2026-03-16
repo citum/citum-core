@@ -2,6 +2,7 @@ use citum_schema::template::WrapPunctuation;
 use csl_legacy::model::{CslNode, Layout, Macro};
 
 /// Infer citation wrapping from CSL layout.
+#[must_use]
 pub fn infer_citation_wrapping(
     layout: &Layout,
 ) -> (Option<WrapPunctuation>, Option<String>, Option<String>) {
@@ -23,9 +24,7 @@ pub fn infer_citation_wrapping(
 
     // Fall back to layout prefix/suffix if set (edge cases)
     match (layout.prefix.as_deref(), layout.suffix.as_deref()) {
-        (None, None) | (Some(""), Some("")) | (Some(""), None) | (None, Some("")) => {
-            (None, None, None)
-        }
+        (None | Some(""), None | Some("")) => (None, None, None),
         _ => (None, layout.prefix.clone(), layout.suffix.clone()),
     }
 }
@@ -269,6 +268,7 @@ fn find_deepest_delimiter(nodes: &[CslNode], macros: &[Macro]) -> Option<(String
 /// Finds the delimiter between author and date in a citation layout.
 /// Uses depth-first search to find the DEEPEST group that contains both
 /// author and date, handling nested groups, Choose blocks, and macro expansion.
+#[must_use]
 pub fn extract_citation_delimiter(layout: &Layout, macros: &[Macro]) -> Option<String> {
     if let Some((delim, _)) = find_deepest_delimiter(&layout.children, macros) {
         return Some(delim);

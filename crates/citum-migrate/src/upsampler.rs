@@ -63,7 +63,7 @@ fn analyze_position_choose_nodes(nodes: &[LNode], analysis: &mut CitationPositio
             LNode::Group(group) => analyze_position_choose_nodes(&group.children, analysis),
             LNode::Names(names) => analyze_position_choose_nodes(&names.children, analysis),
             LNode::Substitute(substitute) => {
-                analyze_position_choose_nodes(&substitute.children, analysis)
+                analyze_position_choose_nodes(&substitute.children, analysis);
             }
             _ => {}
         }
@@ -83,7 +83,7 @@ fn is_supported_position_token(token: &str) -> bool {
 }
 
 fn uses_default_match_mode(match_mode: Option<&str>) -> bool {
-    matches!(match_mode, None | Some("all") | Some("any"))
+    matches!(match_mode, None | Some("all" | "any"))
 }
 
 fn branch_has_non_position_conditions(branch: &legacy::ChooseBranch) -> bool {
@@ -324,6 +324,7 @@ fn unsupported_position_result<T>(result: Result<T, ()>) -> Result<T, CitationPo
 
 impl CitationPositionTemplates {
     /// Returns true when at least one position-specific override is available.
+    #[must_use]
     pub fn has_overrides(&self) -> bool {
         self.subsequent.is_some() || self.ibid.is_some()
     }
@@ -331,6 +332,7 @@ impl CitationPositionTemplates {
 
 impl Upsampler {
     /// Create an upsampler without provenance tracking.
+    #[must_use]
     pub fn new() -> Self {
         Self {
             provenance: None,
@@ -340,6 +342,7 @@ impl Upsampler {
     }
 
     /// Create an upsampler that records provenance during XML migration.
+    #[must_use]
     pub fn with_provenance(provenance: crate::ProvenanceTracker) -> Self {
         Self {
             provenance: Some(provenance),
@@ -349,6 +352,7 @@ impl Upsampler {
     }
 
     /// The entry point for converting a flattened legacy tree into Citum nodes.
+    #[must_use]
     pub fn upsample_nodes(&self, legacy_nodes: &[LNode]) -> Vec<csln::CslnNode> {
         let mut csln_nodes = Vec::new();
         let mut i = 0;
@@ -379,6 +383,7 @@ impl Upsampler {
     /// Pure position-only trees still use direct branch selection. Mixed trees
     /// are specialized by stripping `position` from matching branches while
     /// preserving their remaining predicates and non-position sibling content.
+    #[must_use]
     pub fn extract_citation_position_templates(
         &self,
         legacy_nodes: &[LNode],
@@ -701,7 +706,7 @@ impl Upsampler {
                     && let Some(var) = self.map_variable(var_str)
                 {
                     if let Some(ref prov) = self.provenance {
-                        let var_name = format!("{:?}", var).to_lowercase();
+                        let var_name = format!("{var:?}").to_lowercase();
                         prov.record_upsampling(&var_name, "Text", "Variable");
                     }
                     if migrate_debug_enabled() {
@@ -745,7 +750,7 @@ impl Upsampler {
                     let suffix = t.suffix.as_deref().unwrap_or("");
                     let text_cased = self.apply_text_case(term, t.text_case.as_deref());
                     return Some(csln::CslnNode::Text {
-                        value: format!("{}{}{}", prefix, text_cased, suffix),
+                        value: format!("{prefix}{text_cased}{suffix}"),
                     });
                 }
                 if let Some(val) = &t.value {
@@ -879,14 +884,10 @@ impl Upsampler {
                 let fallback_min = et_al_min.unwrap_or(0) as u8;
                 let fallback_use_first = et_al_use_first.unwrap_or(0) as u8;
                 Some(Box::new(csln::EtAlSubsequent {
-                    min: n
-                        .et_al_subsequent_min
-                        .map(|v| v as u8)
-                        .unwrap_or(fallback_min),
+                    min: n.et_al_subsequent_min.map_or(fallback_min, |v| v as u8),
                     use_first: n
                         .et_al_subsequent_use_first
-                        .map(|v| v as u8)
-                        .unwrap_or(fallback_use_first),
+                        .map_or(fallback_use_first, |v| v as u8),
                 }))
             } else {
                 None
@@ -1078,10 +1079,10 @@ impl Upsampler {
         // behaves like a default/else branch rather than a type-specific branch.
         let if_match_none = c.if_branch.match_mode.as_deref() == Some("none");
 
-        let if_item_type = if !if_match_none {
-            self.map_branch_item_types(c.if_branch.type_.as_deref())
-        } else {
+        let if_item_type = if if_match_none {
             Vec::new()
+        } else {
+            self.map_branch_item_types(c.if_branch.type_.as_deref())
         };
         let if_variables = self.map_branch_variables(c.if_branch.variable.as_deref());
 

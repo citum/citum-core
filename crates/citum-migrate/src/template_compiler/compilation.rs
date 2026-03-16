@@ -1,10 +1,13 @@
-use super::*;
+use super::{
+    BranchContext, ComponentOccurrence, CslnNode, IndexMap, TemplateCompiler, TemplateComponent,
+    TemplateList,
+};
 
 impl TemplateCompiler {
     /// Attempt to merge a Text node with the next component.
     /// If next node compiles to a component, prepend text to its prefix.
     /// Apply inherited wrap to Date components if applicable.
-    /// Returns (component, source_order).
+    /// Returns (component, `source_order`).
     fn merge_text_lookahead(
         &self,
         text_value: &str,
@@ -223,7 +226,7 @@ impl TemplateCompiler {
             } else {
                 // Other non-variable components - give unique key
                 list_counter += 1;
-                format!("other:{}", list_counter)
+                format!("other:{list_counter}")
             };
 
             grouped.entry(key).or_default().push(occurrence);
@@ -312,7 +315,7 @@ impl TemplateCompiler {
                     TemplateComponent::List(_) => "List".to_string(),
                     _ => "Other".to_string(),
                 };
-                eprintln!("  {} -> order: {:?}", comp_type, order);
+                eprintln!("  {comp_type} -> order: {order:?}");
             }
         }
 
@@ -330,7 +333,7 @@ impl TemplateCompiler {
                     TemplateComponent::Title(t) => format!("Title({:?})", t.title),
                     _ => "...".to_string(),
                 };
-                eprintln!("  {} -> order: {:?}", comp_type, order);
+                eprintln!("  {comp_type} -> order: {order:?}");
             }
         }
 

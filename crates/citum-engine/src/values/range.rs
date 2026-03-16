@@ -22,6 +22,7 @@ pub enum ConsecutiveSegment {
 /// Collapse an ordered sequence into standalone values and consecutive ranges.
 ///
 /// Duplicate values are coalesced, and descending steps start a new segment.
+#[must_use]
 pub fn consecutive_segments(values: &[u32]) -> Vec<ConsecutiveSegment> {
     if values.is_empty() {
         return Vec::new();

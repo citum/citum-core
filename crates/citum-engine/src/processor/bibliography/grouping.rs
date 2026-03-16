@@ -106,7 +106,10 @@ impl Processor {
             group_bibliography.insert(reference.id().unwrap_or_default(), (*reference).clone());
         }
 
-        let resolved_sort = group.sort.as_ref().map(|sort| sort.resolve());
+        let resolved_sort = group
+            .sort
+            .as_ref()
+            .map(citum_schema::GroupSortEntry::resolve);
         let disambiguator = if let Some(sort) = resolved_sort.as_ref() {
             Disambiguator::with_group_sort(
                 &group_bibliography,
@@ -201,7 +204,7 @@ impl Processor {
             .as_ref()
             .and_then(|group_heading| self.resolve_group_heading(group_heading))
         {
-            result.push_str(&format!("# {}\n\n", heading));
+            result.push_str(&format!("# {heading}\n\n"));
         }
 
         result.push_str(&crate::render::refs_to_string_with_format::<F>(
@@ -419,7 +422,7 @@ impl Processor {
             author: reference
                 .author()
                 .map(|authors| format_contributors_short(&authors.to_names_vec(), &options)),
-            year: reference.issued().map(|issued| issued.year().to_string()),
+            year: reference.issued().map(|issued| issued.year().clone()),
             title: reference.title().map(|title| title.to_string()),
         }
     }

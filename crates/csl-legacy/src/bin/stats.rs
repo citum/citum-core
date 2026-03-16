@@ -11,7 +11,7 @@ fn main() {
     let entries = match fs::read_dir(styles_dir) {
         Ok(e) => e,
         Err(e) => {
-            eprintln!("Error reading styles directory: {}", e);
+            eprintln!("Error reading styles directory: {e}");
             return;
         }
     };
@@ -21,7 +21,7 @@ fn main() {
     let mut errors = 0;
     let mut error_types = std::collections::HashMap::new();
 
-    println!("Starting analysis of styles in {}...", styles_dir);
+    println!("Starting analysis of styles in {styles_dir}...");
 
     for entry in entries.flatten() {
         let path = entry.path();
@@ -29,15 +29,14 @@ fn main() {
             total += 1;
 
             // Read file
-            let text = match fs::read_to_string(&path) {
-                Ok(t) => t,
-                Err(_) => {
-                    *error_types
-                        .entry("File read error".to_string())
-                        .or_insert(0) += 1;
-                    errors += 1;
-                    continue;
-                }
+            let text = if let Ok(t) = fs::read_to_string(&path) {
+                t
+            } else {
+                *error_types
+                    .entry("File read error".to_string())
+                    .or_insert(0) += 1;
+                errors += 1;
+                continue;
             };
 
             // Parse XML
@@ -45,7 +44,7 @@ fn main() {
                 Ok(d) => d,
                 Err(e) => {
                     *error_types
-                        .entry(format!("XML Parse Error: {}", e))
+                        .entry(format!("XML Parse Error: {e}"))
                         .or_insert(0) += 1;
                     errors += 1;
                     continue;
@@ -74,16 +73,16 @@ fn main() {
     }
 
     println!("\n=== ANALYSIS COMPLETE ===");
-    println!("Total Styles: {}", total);
+    println!("Total Styles: {total}");
     println!(
         "Success:      {} ({:.1}%)",
         success,
-        (success as f64 / total as f64) * 100.0
+        (f64::from(success) / f64::from(total)) * 100.0
     );
     println!(
         "Failures:     {} ({:.1}%)",
         errors,
-        (errors as f64 / total as f64) * 100.0
+        (f64::from(errors) / f64::from(total)) * 100.0
     );
     println!("\n=== TOP ERRORS ===");
 
@@ -91,6 +90,6 @@ fn main() {
     err_vec.sort_by(|a, b| b.1.cmp(a.1));
 
     for (msg, count) in err_vec.into_iter().take(20) {
-        println!("{:4}x {}", count, msg);
+        println!("{count:4}x {msg}");
     }
 }

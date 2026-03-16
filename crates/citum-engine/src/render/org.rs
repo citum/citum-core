@@ -32,7 +32,7 @@ impl OutputFormat for OrgOutputFormat {
         if content.is_empty() {
             return content;
         }
-        format!("/{}/", content)
+        format!("/{content}/")
     }
 
     /// Render content with strong emphasis (bold in org-mode: *text*).
@@ -40,7 +40,7 @@ impl OutputFormat for OrgOutputFormat {
         if content.is_empty() {
             return content;
         }
-        format!("*{}*", content)
+        format!("*{content}*")
     }
 
     /// Render content in small capitals (org-mode uses ~text~).
@@ -48,7 +48,7 @@ impl OutputFormat for OrgOutputFormat {
         if content.is_empty() {
             return content;
         }
-        format!("~{}~", content)
+        format!("~{content}~")
     }
 
     fn quote(&self, content: Self::Output) -> Self::Output {
@@ -56,22 +56,22 @@ impl OutputFormat for OrgOutputFormat {
             return content;
         }
         // Org-mode doesn't have native quotation marks, use as-is with Unicode
-        format!("\u{201C}{}\u{201D}", content)
+        format!("\u{201C}{content}\u{201D}")
     }
 
     fn affix(&self, prefix: &str, content: Self::Output, suffix: &str) -> Self::Output {
-        format!("{}{}{}", prefix, content, suffix)
+        format!("{prefix}{content}{suffix}")
     }
 
     fn inner_affix(&self, prefix: &str, content: Self::Output, suffix: &str) -> Self::Output {
-        format!("{}{}{}", prefix, content, suffix)
+        format!("{prefix}{content}{suffix}")
     }
 
     fn wrap_punctuation(&self, wrap: &WrapPunctuation, content: Self::Output) -> Self::Output {
         match wrap {
-            WrapPunctuation::Parentheses => format!("({})", content),
-            WrapPunctuation::Brackets => format!("[{}]", content),
-            WrapPunctuation::Quotes => format!("\u{201C}{}\u{201D}", content),
+            WrapPunctuation::Parentheses => format!("({content})"),
+            WrapPunctuation::Brackets => format!("[{content}]"),
+            WrapPunctuation::Quotes => format!("\u{201C}{content}\u{201D}"),
             WrapPunctuation::None => content,
         }
     }
@@ -83,7 +83,7 @@ impl OutputFormat for OrgOutputFormat {
 
     /// Render a hyperlink in org-mode format: [[url][text]]
     fn link(&self, url: &str, content: Self::Output) -> Self::Output {
-        format!("[[{}][{}]]", url, content)
+        format!("[[{url}][{content}]]")
     }
 
     fn entry(

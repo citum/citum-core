@@ -1,4 +1,4 @@
-//! Integration tests for StoreResolver.
+//! Integration tests for `StoreResolver`.
 
 use crate::{StoreFormat, StoreResolver};
 use std::fs;

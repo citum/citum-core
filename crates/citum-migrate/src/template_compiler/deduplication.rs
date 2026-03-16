@@ -1,4 +1,6 @@
-use super::*;
+use super::{
+    CslnNode, HashMap, ItemType, Rendering, TemplateCompiler, TemplateComponent, TemplateList,
+};
 
 impl TemplateCompiler {
     pub(super) fn has_variable_recursive(
@@ -29,23 +31,20 @@ impl TemplateCompiler {
         current_types: &[ItemType],
     ) {
         for item in items.iter_mut() {
-            match item {
-                TemplateComponent::List(nested_list) => {
-                    // Recursively process nested lists
-                    self.add_type_overrides_to_list_items(&mut nested_list.items, current_types);
-                }
-                _ => {
-                    // Add suppress=true to base, with type-specific unsuppress overrides
-                    let mut base = self.get_component_rendering(item);
-                    base.suppress = Some(true);
-                    self.set_component_rendering(item, base.clone());
+            if let TemplateComponent::List(nested_list) = item {
+                // Recursively process nested lists
+                self.add_type_overrides_to_list_items(&mut nested_list.items, current_types);
+            } else {
+                // Add suppress=true to base, with type-specific unsuppress overrides
+                let mut base = self.get_component_rendering(item);
+                base.suppress = Some(true);
+                self.set_component_rendering(item, base.clone());
 
-                    for item_type in current_types {
-                        let type_str = self.item_type_to_string(item_type);
-                        let mut unsuppressed = base.clone();
-                        unsuppressed.suppress = Some(false);
-                        self.add_override_to_component(item, type_str, unsuppressed);
-                    }
+                for item_type in current_types {
+                    let type_str = self.item_type_to_string(item_type);
+                    let mut unsuppressed = base.clone();
+                    unsuppressed.suppress = Some(false);
+                    self.add_override_to_component(item, type_str, unsuppressed);
                 }
             }
         }
@@ -123,7 +122,7 @@ impl TemplateCompiler {
         }
     }
 
-    /// Simplified compile that only takes then_branch (for citations).
+    /// Simplified compile that only takes `then_branch` (for citations).
     /// This avoids pulling in type-specific variations from else branches.
     pub(super) fn compile_simple(&self, nodes: &[CslnNode]) -> Vec<TemplateComponent> {
         use citum_schema::ItemType;
@@ -176,9 +175,7 @@ impl TemplateCompiler {
                         } else {
                             // Take then_branch, but fall back to else_if/else_branch if empty
                             let then_components = self.compile_simple(&c.then_branch);
-                            if !then_components.is_empty() {
-                                components.extend(then_components);
-                            } else {
+                            if then_components.is_empty() {
                                 // Try else_if branches first
                                 let mut found = false;
                                 for else_if in &c.else_if_branches {
@@ -192,6 +189,8 @@ impl TemplateCompiler {
                                 if !found && let Some(ref else_nodes) = c.else_branch {
                                     components.extend(self.compile_simple(else_nodes));
                                 }
+                            } else {
+                                components.extend(then_components);
                             }
                         }
                     }

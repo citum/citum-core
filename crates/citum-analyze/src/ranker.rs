@@ -49,13 +49,8 @@ fn collect_independent_formats(styles_dir: &Path) -> (u32, HashMap<String, Strin
     for entry in WalkDir::new(styles_dir)
         .max_depth(1)
         .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| {
-            e.path()
-                .extension()
-                .map(|ext| ext == "csl")
-                .unwrap_or(false)
-        })
+        .filter_map(std::result::Result::ok)
+        .filter(|e| e.path().extension().is_some_and(|ext| ext == "csl"))
     {
         if let Ok(info) = extract_style_info(entry.path()) {
             total_independent += 1;
@@ -82,13 +77,8 @@ fn collect_parent_counts(
 
     for entry in WalkDir::new(dependent_dir)
         .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| {
-            e.path()
-                .extension()
-                .map(|ext| ext == "csl")
-                .unwrap_or(false)
-        })
+        .filter_map(std::result::Result::ok)
+        .filter(|e| e.path().extension().is_some_and(|ext| ext == "csl"))
     {
         match extract_dependent_info(entry.path()) {
             Ok(info) => {
@@ -148,7 +138,7 @@ fn build_rankings(
                 parent_id,
                 short_name,
                 dependent_count: count,
-                percentage: (count as f64 / total_dependent.max(1) as f64) * 100.0,
+                percentage: (f64::from(count) / f64::from(total_dependent.max(1))) * 100.0,
                 format,
                 fields,
             }
@@ -161,7 +151,7 @@ fn build_rankings(
 
 pub fn run_parent_ranker(styles_dir: &str, json_output: bool, format_filter: Option<&str>) {
     let mut stats = ParentRankerStats {
-        format_filter: format_filter.map(|s| s.to_string()),
+        format_filter: format_filter.map(std::string::ToString::to_string),
         ..Default::default()
     };
 
@@ -171,10 +161,7 @@ pub fn run_parent_ranker(styles_dir: &str, json_output: bool, format_filter: Opt
 
     let dependent_dir = Path::new(styles_dir).join("dependent");
     if !dependent_dir.exists() {
-        eprintln!(
-            "Warning: No 'dependent' subdirectory found in {}",
-            styles_dir
-        );
+        eprintln!("Warning: No 'dependent' subdirectory found in {styles_dir}");
         eprintln!("Dependent styles are typically in styles-legacy/dependent/");
     }
 
@@ -201,8 +188,8 @@ struct DependentInfo {
 }
 
 fn extract_dependent_info(path: &Path) -> Result<DependentInfo, String> {
-    let content = fs::read_to_string(path).map_err(|e| format!("read error: {}", e))?;
-    let doc = roxmltree::Document::parse(&content).map_err(|e| format!("parse error: {}", e))?;
+    let content = fs::read_to_string(path).map_err(|e| format!("read error: {e}"))?;
+    let doc = roxmltree::Document::parse(&content).map_err(|e| format!("parse error: {e}"))?;
 
     let root = doc.root_element();
     let mut parent_id = None;
@@ -216,7 +203,9 @@ fn extract_dependent_info(path: &Path) -> Result<DependentInfo, String> {
                 match info_child.tag_name().name() {
                     "link" => {
                         if info_child.attribute("rel") == Some("independent-parent") {
-                            parent_id = info_child.attribute("href").map(|s| s.to_string());
+                            parent_id = info_child
+                                .attribute("href")
+                                .map(std::string::ToString::to_string);
                         }
                     }
                     "category" => {
@@ -246,8 +235,8 @@ struct StyleInfo {
 }
 
 fn extract_style_info(path: &Path) -> Result<StyleInfo, String> {
-    let content = fs::read_to_string(path).map_err(|e| format!("read error: {}", e))?;
-    let doc = roxmltree::Document::parse(&content).map_err(|e| format!("parse error: {}", e))?;
+    let content = fs::read_to_string(path).map_err(|e| format!("read error: {e}"))?;
+    let doc = roxmltree::Document::parse(&content).map_err(|e| format!("parse error: {e}"))?;
 
     let root = doc.root_element();
     let mut citation_format = None;
@@ -275,9 +264,8 @@ fn print_parent_rankings(stats: &ParentRankerStats) {
 
     if let Some(ref filter) = stats.format_filter {
         println!(
-            "Filter: citation-format = {}
-",
-            filter
+            "Filter: citation-format = {filter}
+"
         );
     }
 
@@ -298,7 +286,7 @@ fn print_parent_rankings(stats: &ParentRankerStats) {
         let mut formats: Vec<_> = stats.format_distribution.iter().collect();
         formats.sort_by(|a, b| b.1.cmp(a.1));
         for (format, count) in formats {
-            println!("  {:20} {:5}", format, count);
+            println!("  {format:20} {count:5}");
         }
         println!();
     }
@@ -352,7 +340,7 @@ fn print_parent_rankings(stats: &ParentRankerStats) {
             .collect();
 
         if !top_for_format.is_empty() {
-            println!("  {} styles:", format);
+            println!("  {format} styles:");
             for r in top_for_format {
                 println!("    - {} ({} dependents)", r.short_name, r.dependent_count);
             }

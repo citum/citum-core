@@ -3,6 +3,7 @@ use citum_schema::{CslnNode, ItemType};
 pub struct Compressor;
 
 impl Compressor {
+    #[must_use]
     pub fn compress_nodes(&self, nodes: Vec<CslnNode>) -> Vec<CslnNode> {
         let mut compressed = Vec::new();
         for node in nodes {

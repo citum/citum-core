@@ -18,6 +18,7 @@ use citum_schema::options::titles::TextCase;
 ///
 /// `.nocase`-protected spans are handled at the Djot rendering layer,
 /// not here — this function operates on already-resolved text segments.
+#[must_use]
 pub fn apply_text_case(text: &str, case: TextCase) -> String {
     match case {
         TextCase::AsIs => text.to_string(),
@@ -37,6 +38,7 @@ pub fn apply_text_case(text: &str, case: TextCase) -> String {
 /// - `SentenceApa`: capitalize first word of main title AND each subtitle
 /// - `SentenceNlm`: capitalize first word of main title only
 /// - Other variants: applied uniformly to each part
+#[must_use]
 pub fn apply_to_structured_parts(
     main: &str,
     subtitles: &[&str],
@@ -63,6 +65,7 @@ pub fn apply_to_structured_parts(
 }
 
 /// Returns true if the given language tag indicates English.
+#[must_use]
 pub fn is_english_language(lang: Option<&str>) -> bool {
     match lang {
         Some(tag) => {
@@ -77,16 +80,17 @@ pub fn is_english_language(lang: Option<&str>) -> bool {
 /// Resolve the effective text-case, applying language fallback.
 ///
 /// For non-English languages without defined transforms, returns `AsIs`.
+#[must_use]
 pub fn resolve_text_case(case: TextCase, language: Option<&str>) -> TextCase {
-    if !is_english_language(language) {
+    if is_english_language(language) {
+        case
+    } else {
         // Non-English: only explicit as-is, lowercase, uppercase pass through.
         // All English-specific transforms fall back to as-is.
         match case {
             TextCase::AsIs | TextCase::Lowercase | TextCase::Uppercase => case,
             _ => TextCase::AsIs,
         }
-    } else {
-        case
     }
 }
 

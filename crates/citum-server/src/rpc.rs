@@ -147,7 +147,7 @@ fn render_bibliography(params: &Value, id: Value) -> Result<Value, ServerError> 
         content
             .lines()
             .filter(|line| !line.is_empty())
-            .map(|s| s.to_string())
+            .map(std::string::ToString::to_string)
             .collect()
     });
     let result = BibliographyResult {
@@ -268,7 +268,7 @@ pub fn run_stdio() -> io::Result<()> {
         };
 
         // Write response as newline-delimited JSON.
-        writeln!(stdout, "{}", response)?;
+        writeln!(stdout, "{response}")?;
         stdout.flush()?;
     }
 

@@ -35,8 +35,8 @@ fn main() {
     };
 
     match processor.process_citation_with_format::<Latex>(&cite) {
-        Ok(res) => println!("CITATION: {}", res),
-        Err(e) => println!("ERROR: {:?}", e),
+        Ok(res) => println!("CITATION: {res}"),
+        Err(e) => println!("ERROR: {e:?}"),
     }
 
     // Try suppress author just in case
@@ -46,7 +46,7 @@ fn main() {
         ..cite.clone()
     };
     match processor.process_citation_with_format::<Latex>(&cite_sa) {
-        Ok(res) => println!("CITATION SA: {}", res),
-        Err(e) => println!("ERROR: {:?}", e),
+        Ok(res) => println!("CITATION SA: {res}"),
+        Err(e) => println!("ERROR: {e:?}"),
     }
 }

@@ -29,6 +29,7 @@ impl<'a> SelectorEvaluator<'a> {
     /// # Arguments
     ///
     /// * `cited_ids` - Set of reference IDs cited visibly
+    #[must_use]
     pub const fn new(cited_ids: &'a HashSet<String>) -> Self {
         Self { cited_ids }
     }
@@ -42,6 +43,7 @@ impl<'a> SelectorEvaluator<'a> {
     ///
     /// * `reference` - The reference to test
     /// * `selector` - The selector predicate
+    #[must_use]
     pub fn matches(&self, reference: &Reference, selector: &GroupSelector) -> bool {
         selector
             .ref_type

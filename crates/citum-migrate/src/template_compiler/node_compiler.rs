@@ -1,4 +1,8 @@
-use super::*;
+use super::{
+    ContributorForm, ContributorRole, CslnNode, DateForm, DateVariable, NumberVariable,
+    SimpleVariable, TemplateCompiler, TemplateComponent, TemplateContributor, TemplateDate,
+    TemplateNumber, TemplateTitle, TemplateVariable, TitleType, Variable,
+};
 
 impl TemplateCompiler {
     pub(super) fn compile_node(&self, node: &CslnNode) -> Option<TemplateComponent> {
@@ -102,7 +106,7 @@ impl TemplateCompiler {
         }))
     }
 
-    /// Map a Variable to ContributorRole.
+    /// Map a Variable to `ContributorRole`.
     pub(super) fn map_variable_to_role(&self, var: &Variable) -> Option<ContributorRole> {
         match var {
             Variable::Author => Some(ContributorRole::Author),
@@ -144,7 +148,7 @@ impl TemplateCompiler {
         }))
     }
 
-    /// Map a Variable to DateVariable.
+    /// Map a Variable to `DateVariable`.
     pub(super) fn map_variable_to_date(&self, var: &Variable) -> Option<DateVariable> {
         match var {
             Variable::Issued => Some(DateVariable::Issued),
@@ -169,7 +173,7 @@ impl TemplateCompiler {
         ))
     }
 
-    /// Build type overrides from FormattingOptions.
+    /// Build type overrides from `FormattingOptions`.
     fn build_type_overrides(
         &self,
         overrides: &std::collections::HashMap<
@@ -222,7 +226,7 @@ impl TemplateCompiler {
             // Convert overrides from FormattingOptions to Rendering
             if super::migrate_debug_enabled() {
                 for (t, fmt) in &var.overrides {
-                    eprintln!("  {:?} -> {:?}", t, fmt);
+                    eprintln!("  {t:?} -> {fmt:?}");
                 }
             }
             let overrides = self.build_type_overrides(&var.overrides);
@@ -290,7 +294,7 @@ impl TemplateCompiler {
         None
     }
 
-    /// Map a Variable to TitleType.
+    /// Map a Variable to `TitleType`.
     pub(super) fn map_variable_to_title(&self, var: &Variable) -> Option<TitleType> {
         match var {
             Variable::Title => Some(TitleType::Primary),
@@ -300,7 +304,7 @@ impl TemplateCompiler {
         }
     }
 
-    /// Map a Variable to NumberVariable.
+    /// Map a Variable to `NumberVariable`.
     pub(super) fn map_variable_to_number(&self, var: &Variable) -> Option<NumberVariable> {
         match var {
             Variable::Volume => Some(NumberVariable::Volume),
@@ -316,7 +320,7 @@ impl TemplateCompiler {
         }
     }
 
-    /// Map a Variable to SimpleVariable.
+    /// Map a Variable to `SimpleVariable`.
     pub(super) fn map_variable_to_simple(&self, var: &Variable) -> Option<SimpleVariable> {
         match var {
             Variable::DOI => Some(SimpleVariable::Doi),

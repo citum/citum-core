@@ -13,7 +13,7 @@ fn main() {
     let entries = match fs::read_dir(styles_dir) {
         Ok(e) => e,
         Err(e) => {
-            eprintln!("Error reading styles directory: {}", e);
+            eprintln!("Error reading styles directory: {e}");
             return;
         }
     };
@@ -25,7 +25,7 @@ fn main() {
     let mut total_output_nodes = 0;
     let mut error_types = std::collections::HashMap::new();
 
-    println!("Starting BULK MIGRATION of styles in {}...", styles_dir);
+    println!("Starting BULK MIGRATION of styles in {styles_dir}...");
 
     for entry in entries.flatten() {
         let path = entry.path();
@@ -47,7 +47,7 @@ fn main() {
                 Ok(s) => s,
                 Err(e) => {
                     *error_types
-                        .entry(format!("Legacy Parse Error: {}", e))
+                        .entry(format!("Legacy Parse Error: {e}"))
                         .or_insert(0) += 1;
                     failures += 1;
                     continue;
@@ -93,21 +93,21 @@ fn main() {
     }
 
     println!("\n\n=== MIGRATION STATS ===");
-    println!("Total Styles: {}", total);
+    println!("Total Styles: {total}");
     println!(
         "Success:      {} ({:.1}%)",
         success,
-        (success as f64 / total as f64) * 100.0
+        (f64::from(success) / f64::from(total)) * 100.0
     );
     println!(
         "Failures:     {} ({:.1}%)",
         failures,
-        (failures as f64 / total as f64) * 100.0
+        (f64::from(failures) / f64::from(total)) * 100.0
     );
 
     println!("\n=== DATA RETENTION ===");
-    println!("Input Nodes:  {}", total_input_nodes);
-    println!("Output Nodes: {}", total_output_nodes);
+    println!("Input Nodes:  {total_input_nodes}");
+    println!("Output Nodes: {total_output_nodes}");
     println!(
         "Retention:    {:.1}%",
         (total_output_nodes as f64 / total_input_nodes as f64) * 100.0
@@ -118,7 +118,7 @@ fn main() {
     let mut err_vec: Vec<_> = error_types.iter().collect();
     err_vec.sort_by(|a, b| b.1.cmp(a.1));
     for (msg, count) in err_vec.into_iter().take(10) {
-        println!("{:4}x {}", count, msg);
+        println!("{count:4}x {msg}");
     }
 }
 

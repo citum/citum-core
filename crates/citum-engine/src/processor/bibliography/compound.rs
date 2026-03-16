@@ -119,7 +119,7 @@ impl Processor {
             };
 
             if let Some(rendered) = rendered_strings.get(id) {
-                parts.push(format!("{} {}", sub_label, rendered));
+                parts.push(format!("{sub_label} {rendered}"));
             }
         }
 

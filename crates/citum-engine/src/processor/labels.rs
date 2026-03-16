@@ -11,7 +11,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! ## Algorithm
 //!
 //! - 1 author:  up to `single_author_chars` chars from family name + year
-//! - 2+ authors (below et_al_min): `multi_author_chars` chars each + year
+//! - 2+ authors (below `et_al_min)`: `multi_author_chars` chars each + year
 //! - >= et_al_min authors: first N authors' initials (N from `et_al_names`) + et_al_marker + year
 
 use crate::reference::Reference;
@@ -20,11 +20,12 @@ use citum_schema::options::LabelParams;
 /// Generate a base citation label for a reference (without disambiguation suffix).
 ///
 /// Uses the first letter(s) of author family names combined with the
-/// publication year according to the resolved LabelParams.
+/// publication year according to the resolved `LabelParams`.
+#[must_use]
 pub fn generate_base_label(reference: &Reference, params: &LabelParams) -> String {
     let name_part = generate_name_part(reference, params);
     let year_part = generate_year_part(reference, params.year_digits);
-    format!("{}{}", name_part, year_part)
+    format!("{name_part}{year_part}")
 }
 
 fn generate_name_part(reference: &Reference, params: &LabelParams) -> String {
@@ -64,8 +65,7 @@ fn generate_name_part(reference: &Reference, params: &LabelParams) -> String {
                     .take(params.multi_author_chars as usize)
                     .collect::<String>()
             })
-            .collect::<Vec<_>>()
-            .join("")
+            .collect::<String>()
     } else {
         // et_al_min or more authors: first N initials + et_al_marker
         let initials: String = names
@@ -78,8 +78,7 @@ fn generate_name_part(reference: &Reference, params: &LabelParams) -> String {
                     .take(params.multi_author_chars as usize)
                     .collect::<String>()
             })
-            .collect::<Vec<_>>()
-            .join("");
+            .collect::<String>();
         format!("{}{}", initials, params.et_al_marker)
     }
 }

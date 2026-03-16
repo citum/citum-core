@@ -541,7 +541,7 @@ struct CheckItem {
 
 fn main() {
     if let Err(e) = run() {
-        eprintln!("\nError: {}", e);
+        eprintln!("\nError: {e}");
         std::process::exit(1);
     }
 }
@@ -653,13 +653,12 @@ fn run_styles_list() -> Result<(), Box<dyn Error>> {
 
     for name in citum_schema::embedded::EMBEDDED_STYLE_NAMES {
         let style = citum_schema::embedded::get_embedded_style(name)
-            .ok_or_else(|| format!("failed to load builtin style: {}", name))??;
+            .ok_or_else(|| format!("failed to load builtin style: {name}"))??;
 
         let alias = citum_schema::embedded::EMBEDDED_STYLE_ALIASES
             .iter()
             .find(|(_, full)| *full == *name)
-            .map(|(a, _)| *a)
-            .unwrap_or("-");
+            .map_or("-", |(a, _)| *a);
 
         let title = style.info.title.as_deref().unwrap_or("-");
 
@@ -701,25 +700,25 @@ fn run_store_list() -> Result<(), Box<dyn Error>> {
     println!("Configured format: {}", config.store_format());
     println!();
 
-    if !styles.is_empty() {
-        println!("Installed styles ({}):", styles.len());
-        for name in &styles {
-            println!("  - {}", name);
-        }
+    if styles.is_empty() {
+        println!("No installed styles.");
         println!();
     } else {
-        println!("No installed styles.");
+        println!("Installed styles ({}):", styles.len());
+        for name in &styles {
+            println!("  - {name}");
+        }
         println!();
     }
 
-    if !locales.is_empty() {
-        println!("Installed locales ({}):", locales.len());
-        for name in &locales {
-            println!("  - {}", name);
-        }
+    if locales.is_empty() {
+        println!("No installed locales.");
         println!();
     } else {
-        println!("No installed locales.");
+        println!("Installed locales ({}):", locales.len());
+        for name in &locales {
+            println!("  - {name}");
+        }
         println!();
     }
 
@@ -747,7 +746,7 @@ fn run_store_install(source: &Path) -> Result<(), Box<dyn Error>> {
         .install_style(source)
         .or_else(|_| resolver.install_locale(source))?;
 
-    println!("Successfully installed: {}", name);
+    println!("Successfully installed: {name}");
     Ok(())
 }
 
@@ -765,14 +764,11 @@ fn run_store_remove(name: &str) -> Result<(), Box<dyn Error>> {
     let locales = resolver.list_locales().unwrap_or_default();
 
     if !styles.contains(&name.to_string()) && !locales.contains(&name.to_string()) {
-        return Err(format!("style or locale not found: {}", name).into());
+        return Err(format!("style or locale not found: {name}").into());
     }
 
     // Ask for confirmation
-    print!(
-        "Are you sure you want to remove '{}'? This cannot be undone. [y/N] ",
-        name
-    );
+    print!("Are you sure you want to remove '{name}'? This cannot be undone. [y/N] ");
     io::stdout().flush()?;
 
     let mut response = String::new();
@@ -788,7 +784,7 @@ fn run_store_remove(name: &str) -> Result<(), Box<dyn Error>> {
         .remove_style(name)
         .or_else(|_| resolver.remove_locale(name))?;
 
-    println!("Successfully removed: {}", name);
+    println!("Successfully removed: {name}");
     Ok(())
 }
 
@@ -881,9 +877,10 @@ fn run_render_refs(args: RenderRefsArgs) -> Result<(), Box<dyn Error>> {
     let style_name = {
         let path = Path::new(&args.style);
         if path.exists() {
-            path.file_name()
-                .map(|s: &std::ffi::OsStr| s.to_string_lossy().to_string())
-                .unwrap_or_else(|| "unknown".to_string())
+            path.file_name().map_or_else(
+                || "unknown".to_string(),
+                |s: &std::ffi::OsStr| s.to_string_lossy().to_string(),
+            )
         } else {
             args.style.clone()
         }
@@ -969,7 +966,7 @@ fn load_any_style(style_input: &str, no_semantics: bool) -> Result<Style, Box<dy
     }
 
     if let Some(res) = citum_schema::embedded::get_embedded_style(style_input) {
-        return res.map_err(|e| e.into());
+        return res.map_err(std::convert::Into::into);
     }
 
     // Fuzzy matching suggestion
@@ -983,14 +980,14 @@ fn load_any_style(style_input: &str, no_semantics: bool) -> Result<Style, Box<dy
         .filter(|&&name| strsim::jaro_winkler(style_input, name) > 0.8)
         .collect();
 
-    let mut msg = format!("style not found: '{}'", style_input);
-    if !suggestions.is_empty() {
+    let mut msg = format!("style not found: '{style_input}'");
+    if suggestions.is_empty() {
+        msg.push_str("\n\nUse `citum styles list` to see all available builtin styles.");
+    } else {
         msg.push_str("\n\nDid you mean one of these?");
         for s in suggestions {
-            msg.push_str(&format!("\n  - {}", s));
+            msg.push_str(&format!("\n  - {s}"));
         }
-    } else {
-        msg.push_str("\n\nUse `citum styles list` to see all available builtin styles.");
     }
 
     Err(msg.into())
@@ -1068,7 +1065,7 @@ fn run_check(args: CheckArgs) -> Result<(), Box<dyn Error>> {
             } else {
                 println!("FAIL {:<12} {}", check.kind, check.path);
                 if let Some(err) = &check.error {
-                    println!("  -> {}", err);
+                    println!("  -> {err}");
                 }
             }
         }
@@ -1364,18 +1361,18 @@ fn input_reference_to_csl_json(reference: &InputReference) -> csl_legacy::csl_js
         InputReference::Monograph(m) => {
             r.ref_type = "book".to_string();
             r.isbn = m.isbn.clone();
-            r.url = m.url.as_ref().map(|u| u.to_string());
+            r.url = m.url.as_ref().map(std::string::ToString::to_string);
             r.edition = m.edition.clone().map(StringOrNumber::String);
         }
         InputReference::SerialComponent(s) => {
             r.ref_type = "article-journal".to_string();
             r.container_title = match &s.parent {
                 citum_schema::reference::Parent::Embedded(parent) => {
-                    parent.title.as_ref().map(|t| t.to_string())
+                    parent.title.as_ref().map(std::string::ToString::to_string)
                 }
                 citum_schema::reference::Parent::Id(_) => None,
             };
-            r.page = s.pages.as_ref().map(|p| p.to_string());
+            r.page = s.pages.clone();
             r.volume = s
                 .volume
                 .as_ref()
@@ -1384,7 +1381,7 @@ fn input_reference_to_csl_json(reference: &InputReference) -> csl_legacy::csl_js
                 .issue
                 .as_ref()
                 .map(|v| StringOrNumber::String(v.to_string()));
-            r.url = s.url.as_ref().map(|u| u.to_string());
+            r.url = s.url.as_ref().map(std::string::ToString::to_string);
         }
         InputReference::CollectionComponent(c) => {
             r.ref_type = "chapter".to_string();
@@ -1394,7 +1391,7 @@ fn input_reference_to_csl_json(reference: &InputReference) -> csl_legacy::csl_js
                 }
                 citum_schema::reference::Parent::Id(_) => None,
             };
-            r.page = c.pages.as_ref().map(|p| p.to_string());
+            r.page = c.pages.as_ref().map(std::string::ToString::to_string);
         }
         _ => {
             r.ref_type = "book".to_string();
@@ -1450,9 +1447,9 @@ fn render_biblatex(input: &InputBibliography) -> String {
             InputReference::CollectionComponent(_) => "incollection",
             _ => "book",
         };
-        let _ = writeln!(&mut out, "@{}{{{},", entry_type, id);
+        let _ = writeln!(&mut out, "@{entry_type}{{{id},");
         if let Some(title) = reference.title() {
-            let _ = writeln!(&mut out, "  title = {{{}}},", title);
+            let _ = writeln!(&mut out, "  title = {{{title}}},");
         }
         if let Some(contributor) = reference.author() {
             let names: Vec<String> = contributor_to_biblatex_names(contributor);
@@ -1463,10 +1460,10 @@ fn render_biblatex(input: &InputBibliography) -> String {
         if let Some(issued) = reference.issued()
             && let Some(year) = issued.0.get(0..4)
         {
-            let _ = writeln!(&mut out, "  year = {{{}}},", year);
+            let _ = writeln!(&mut out, "  year = {{{year}}},");
         }
         if let Some(doi) = reference.doi() {
-            let _ = writeln!(&mut out, "  doi = {{{}}},", doi);
+            let _ = writeln!(&mut out, "  doi = {{{doi}}},");
         }
         let _ = writeln!(&mut out, "}}\n");
     }
@@ -1732,23 +1729,23 @@ fn render_refs_human(
     match output_format {
         OutputFormat::Plain => {
             print_human_safe::<PlainText>(ctx, show_cite, show_bib, citations, show_keys)
-                .map_err(|e| e.into())
+                .map_err(std::convert::Into::into)
         }
         OutputFormat::Html => {
             print_human_safe::<Html>(ctx, show_cite, show_bib, citations, show_keys)
-                .map_err(|e| e.into())
+                .map_err(std::convert::Into::into)
         }
         OutputFormat::Djot => {
             print_human_safe::<Djot>(ctx, show_cite, show_bib, citations, show_keys)
-                .map_err(|e| e.into())
+                .map_err(std::convert::Into::into)
         }
         OutputFormat::Latex => {
             print_human_safe::<Latex>(ctx, show_cite, show_bib, citations, show_keys)
-                .map_err(|e| e.into())
+                .map_err(std::convert::Into::into)
         }
         OutputFormat::Typst => {
             print_human_safe::<Typst>(ctx, show_cite, show_bib, citations, show_keys)
-                .map_err(|e| e.into())
+                .map_err(std::convert::Into::into)
         }
     }
 }
@@ -1848,9 +1845,7 @@ fn load_merged_bibliography(paths: &[PathBuf]) -> Result<LoadedBibliography, Box
         if let Some(sets) = loaded.sets {
             for (set_id, members) in sets {
                 if merged_sets.insert(set_id.clone(), members).is_some() {
-                    return Err(
-                        format!("Duplicate compound set id while merging: {}", set_id).into(),
-                    );
+                    return Err(format!("Duplicate compound set id while merging: {set_id}").into());
                 }
             }
         }
@@ -1886,7 +1881,7 @@ fn write_output(output: &str, path: Option<&PathBuf>) -> Result<(), Box<dyn Erro
     if let Some(file) = path {
         fs::write(file, output)?;
     } else {
-        println!("{}", output);
+        println!("{output}");
     }
     Ok(())
 }
@@ -1972,20 +1967,20 @@ fn render_citations_section<F>(
                 let _ = writeln!(
                     output,
                     "  [{}] {}",
-                    citation.id.as_deref().unwrap_or(&format!("{}", i)),
+                    citation.id.as_deref().unwrap_or(&format!("{i}")),
                     text
                 );
             } else {
-                let _ = writeln!(output, "  {}", text);
+                let _ = writeln!(output, "  {text}");
             }
         }
     } else {
         let _ = writeln!(output, "CITATIONS (Non-Integral):");
         for id in ctx.item_ids {
             let citation = Citation {
-                id: Some(id.to_string()),
+                id: Some(id.clone()),
                 items: vec![CitationItem {
-                    id: id.to_string(),
+                    id: id.clone(),
                     ..Default::default()
                 }],
                 mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1994,13 +1989,13 @@ fn render_citations_section<F>(
             match ctx.processor.process_citation_with_format::<F>(&citation) {
                 Ok(text) => {
                     if show_keys {
-                        let _ = writeln!(output, "  [{}] {}", id, text);
+                        let _ = writeln!(output, "  [{id}] {text}");
                     } else {
-                        let _ = writeln!(output, "  {}", text);
+                        let _ = writeln!(output, "  {text}");
                     }
                 }
                 Err(e) => {
-                    let _ = writeln!(output, "  [{}] ERROR: {}", id, e);
+                    let _ = writeln!(output, "  [{id}] ERROR: {e}");
                 }
             }
         }
@@ -2009,9 +2004,9 @@ fn render_citations_section<F>(
         let _ = writeln!(output, "CITATIONS (Integral):");
         for id in ctx.item_ids {
             let citation = Citation {
-                id: Some(id.to_string()),
+                id: Some(id.clone()),
                 items: vec![CitationItem {
-                    id: id.to_string(),
+                    id: id.clone(),
                     ..Default::default()
                 }],
                 mode: citum_schema::citation::CitationMode::Integral,
@@ -2020,13 +2015,13 @@ fn render_citations_section<F>(
             match ctx.processor.process_citation_with_format::<F>(&citation) {
                 Ok(text) => {
                     if show_keys {
-                        let _ = writeln!(output, "  [{}] {}", id, text);
+                        let _ = writeln!(output, "  [{id}] {text}");
                     } else {
-                        let _ = writeln!(output, "  {}", text);
+                        let _ = writeln!(output, "  {text}");
                     }
                 }
                 Err(e) => {
-                    let _ = writeln!(output, "  [{}] ERROR: {}", id, e);
+                    let _ = writeln!(output, "  [{id}] ERROR: {e}");
                 }
             }
         }
@@ -2053,7 +2048,11 @@ where
             // When show_keys is requested, render each entry with its ID prefix so the
             // oracle parser can match entries by key. Group headings are omitted in this
             // mode because the oracle only looks for `[id] text` patterns.
-            let filter: HashSet<&str> = ctx.item_ids.iter().map(|id| id.as_str()).collect();
+            let filter: HashSet<&str> = ctx
+                .item_ids
+                .iter()
+                .map(std::string::String::as_str)
+                .collect();
             let processed = ctx.processor.process_references();
             for entry in processed.bibliography {
                 if filter.contains(entry.id.as_str()) {
@@ -2079,7 +2078,11 @@ where
             // Oracle/show_keys path: render each entry individually so entries
             // can be matched by reference ID. Compound merging is skipped here
             // because the oracle addresses each ref independently.
-            let filter: HashSet<&str> = ctx.item_ids.iter().map(|id| id.as_str()).collect();
+            let filter: HashSet<&str> = ctx
+                .item_ids
+                .iter()
+                .map(std::string::String::as_str)
+                .collect();
             let processed = ctx.processor.process_references();
             for entry in processed.bibliography {
                 if filter.contains(entry.id.as_str()) {
@@ -2100,7 +2103,7 @@ where
             let bib = ctx
                 .processor
                 .render_selected_bibliography_with_format::<F, _>(ctx.item_ids.to_vec());
-            let _ = writeln!(output, "{}", bib);
+            let _ = writeln!(output, "{bib}");
         }
     }
 }
@@ -2215,9 +2218,9 @@ where
                 .iter()
                 .map(|id| {
                     let citation = Citation {
-                        id: Some(id.to_string()),
+                        id: Some(id.clone()),
                         items: vec![CitationItem {
-                            id: id.to_string(),
+                            id: id.clone(),
                             ..Default::default()
                         }],
                         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -2237,9 +2240,9 @@ where
                 .iter()
                 .map(|id| {
                     let citation = Citation {
-                        id: Some(id.to_string()),
+                        id: Some(id.clone()),
                         items: vec![CitationItem {
-                            id: id.to_string(),
+                            id: id.clone(),
                             ..Default::default()
                         }],
                         mode: citum_schema::citation::CitationMode::Integral,
@@ -2262,7 +2265,11 @@ where
     }
 
     if show_bib {
-        let filter: HashSet<&str> = ctx.item_ids.iter().map(|id| id.as_str()).collect();
+        let filter: HashSet<&str> = ctx
+            .item_ids
+            .iter()
+            .map(std::string::String::as_str)
+            .collect();
         let processed = ctx.processor.process_references();
         let entries: Vec<_> = processed
             .bibliography

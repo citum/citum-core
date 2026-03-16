@@ -29,14 +29,14 @@ fn smarten_title_quotes(input: &str) -> String {
 
     while let Some((_, ch)) = it.next() {
         let next = it.peek().map(|(_, c)| *c);
-        let prev_is_alpha = prev.is_some_and(|c| c.is_alphabetic());
+        let prev_is_alpha = prev.is_some_and(char::is_alphabetic);
         let prev_is_digit = prev.is_some_and(|c| c.is_ascii_digit());
         let prev_can_close_double_quote = prev.is_some_and(|c| {
             c.is_alphanumeric() || matches!(c, '\'' | '"' | '\u{2019}' | '\u{201D}')
         });
-        let next_is_alpha = next.is_some_and(|c| c.is_alphabetic());
+        let next_is_alpha = next.is_some_and(char::is_alphabetic);
         let next_is_digit = next.is_some_and(|c| c.is_ascii_digit());
-        let next_is_alnum = next.is_some_and(|c| c.is_alphanumeric());
+        let next_is_alnum = next.is_some_and(char::is_alphanumeric);
         let prev_opens_quote =
             prev.is_none_or(|c| c.is_whitespace() || "([{\u{2018}\u{201C}'\"".contains(c));
         let next_closes_quote =
@@ -133,15 +133,15 @@ fn make_case_transform(case: TextCase) -> impl FnMut(&str) -> String {
         let cased = match case {
             TextCase::Sentence | TextCase::SentenceApa | TextCase::SentenceNlm => {
                 let lowered = text.to_lowercase();
-                if !seen_alpha {
+                if seen_alpha {
+                    lowered
+                } else {
                     // Capitalize the first alphabetic character we encounter
                     let result = capitalize_first_word(&lowered);
                     if result.chars().any(|c: char| c.is_alphabetic()) {
                         seen_alpha = true;
                     }
                     result
-                } else {
-                    lowered
                 }
             }
             _ => apply_text_case(text, case),
@@ -151,7 +151,7 @@ fn make_case_transform(case: TextCase) -> impl FnMut(&str) -> String {
 }
 
 /// Render a single title part through Djot with case transform + smart quotes.
-/// Returns (rendered_value, has_explicit_link).
+/// Returns (`rendered_value`, `has_explicit_link`).
 fn render_part_with_case<F: crate::render::format::OutputFormat<Output = String>>(
     value: &str,
     fmt: &F,
@@ -190,7 +190,7 @@ fn render_structured_title<F: crate::render::format::OutputFormat<Output = Strin
 
     let subs: Vec<&str> = match &st.sub {
         Subtitle::String(s) => vec![s.as_str()],
-        Subtitle::Vector(v) => v.iter().map(|s| s.as_str()).collect(),
+        Subtitle::Vector(v) => v.iter().map(std::string::String::as_str).collect(),
     };
 
     for sub in subs {

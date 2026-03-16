@@ -31,7 +31,7 @@ fn main() {
         .iter()
         .position(|a| a == "--format")
         .and_then(|i| args.get(i + 1))
-        .map(|s| s.as_str());
+        .map(std::string::String::as_str);
 
     if rank_parents {
         ranker::run_parent_ranker(styles_dir, json_output, format_filter);

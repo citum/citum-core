@@ -89,7 +89,7 @@ impl Processor {
         let Some(config) = citation_config
             .integral_names
             .as_ref()
-            .map(|cfg| cfg.resolve())
+            .map(citum_schema::options::IntegralNameConfig::resolve)
         else {
             return;
         };

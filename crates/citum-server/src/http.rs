@@ -38,7 +38,7 @@ pub async fn run_http(port: u16) -> Result<(), Box<dyn std::error::Error>> {
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     let listener = tokio::net::TcpListener::bind(addr).await?;
 
-    eprintln!("Citum server listening on http://{}", addr);
+    eprintln!("Citum server listening on http://{addr}");
 
     axum::serve(listener, app()).await?;
 

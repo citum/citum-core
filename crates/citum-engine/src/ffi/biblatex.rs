@@ -1,14 +1,18 @@
-//! Biblatex entry conversion to Citum InputReference.
+//! Biblatex entry conversion to Citum `InputReference`.
 //!
 //! Provides functions to convert biblatex entries and contributor
-//! information into Citum's InputReference and Contributor types.
+//! information into Citum's `InputReference` and Contributor types.
 
 use biblatex;
 use citum_schema::reference::{
     InputReference,
     contributor::{Contributor, ContributorList, SimpleName, StructuredName},
     date::EdtfString,
-    types::*,
+    types::{
+        Collection, CollectionComponent, CollectionType, Monograph, MonographComponentType,
+        MonographType, NumOrStr, Parent, Serial, SerialComponent, SerialComponentType, SerialType,
+        Title,
+    },
 };
 use std::collections::HashMap;
 use url::Url;
@@ -25,7 +29,7 @@ struct BibRefContext<'a> {
     field_str: &'a dyn Fn(&str) -> Option<String>,
 }
 
-/// Build a CollectionComponent from a biblatex inbook/incollection/inproceedings entry.
+/// Build a `CollectionComponent` from a biblatex inbook/incollection/inproceedings entry.
 fn build_inbook_reference(ctx: BibRefContext<'_>) -> InputReference {
     let field_str = ctx.field_str;
     let parent_title = field_str("booktitle").map(Title::Single);
@@ -67,7 +71,7 @@ fn build_inbook_reference(ctx: BibRefContext<'_>) -> InputReference {
     }))
 }
 
-/// Build a SerialComponent from a biblatex article entry.
+/// Build a `SerialComponent` from a biblatex article entry.
 fn build_article_reference(ctx: BibRefContext<'_>) -> InputReference {
     let field_str = ctx.field_str;
     let parent_title = field_str("journaltitle")
@@ -104,7 +108,7 @@ fn build_article_reference(ctx: BibRefContext<'_>) -> InputReference {
     }))
 }
 
-/// Convert a biblatex entry into an InputReference.
+/// Convert a biblatex entry into an `InputReference`.
 ///
 /// Maps biblatex entry types (book, article, inproceedings, etc.) to
 /// appropriate Citum reference types. Extracts all relevant fields
@@ -123,9 +127,7 @@ pub(super) fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputRef
     };
 
     let title = field_str("title").map(Title::Single);
-    let issued = field_str("date")
-        .map(EdtfString)
-        .unwrap_or(EdtfString(String::new()));
+    let issued = field_str("date").map_or(EdtfString(String::new()), EdtfString);
     let publisher = field_str("publisher").map(|p| {
         Contributor::SimpleName(SimpleName {
             name: p.into(),
@@ -180,7 +182,7 @@ pub(super) fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputRef
 
 /// Build a Monograph reference with common fields from biblatex.
 ///
-/// Extracts report_number and collection_number based on entry type,
+/// Extracts `report_number` and `collection_number` based on entry type,
 /// and handles URL parsing.
 fn biblatex_monograph(
     r#type: MonographType,
@@ -214,10 +216,10 @@ fn biblatex_monograph(
         } else {
             None
         },
-        collection_number: if entry_type != "report" {
-            field_str("number")
-        } else {
+        collection_number: if entry_type == "report" {
             None
+        } else {
+            field_str("number")
         },
         genre: field_str("type"),
         medium: None,
@@ -232,7 +234,7 @@ fn biblatex_monograph(
 /// Convert biblatex persons (authors/editors) to a Contributor list.
 ///
 /// Maps biblatex Person data (given name, family name, prefix, suffix)
-/// to Citum's StructuredName contributors wrapped in a ContributorList.
+/// to Citum's `StructuredName` contributors wrapped in a `ContributorList`.
 pub(super) fn contributors_from_biblatex_persons(persons: &[biblatex::Person]) -> Contributor {
     let contributors: Vec<Contributor> = persons
         .iter()

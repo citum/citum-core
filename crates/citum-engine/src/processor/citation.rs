@@ -60,8 +60,7 @@ pub(crate) fn apply_note_start_text_case_to_leading_text_node(
 
     let text_end = rendered[text_start..]
         .find('<')
-        .map(|offset| text_start + offset)
-        .unwrap_or(rendered.len());
+        .map_or(rendered.len(), |offset| text_start + offset);
 
     let mut result = String::with_capacity(rendered.len());
     result.push_str(&rendered[..text_start]);
@@ -196,14 +195,14 @@ impl Processor {
 
         let formatted_prefix =
             if !citation_prefix.is_empty() && !citation_prefix.ends_with(char::is_whitespace) {
-                format!("{} ", citation_prefix)
+                format!("{citation_prefix} ")
             } else {
                 citation_prefix.to_string()
             };
 
         let formatted_suffix =
             if !citation_suffix.is_empty() && !citation_suffix.starts_with(char::is_whitespace) {
-                format!(" {}", citation_suffix)
+                format!(" {citation_suffix}")
             } else {
                 citation_suffix.to_string()
             };
@@ -256,8 +255,10 @@ impl Processor {
         if self.is_note_style()
             && matches!(
                 citation.position,
-                Some(citum_schema::citation::Position::Ibid)
-                    | Some(citum_schema::citation::Position::IbidWithLocator)
+                Some(
+                    citum_schema::citation::Position::Ibid
+                        | citum_schema::citation::Position::IbidWithLocator
+                )
             )
             && matches!(
                 citation.mode,

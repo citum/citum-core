@@ -1,4 +1,4 @@
-use super::*;
+use super::{CslnNode, ItemType, TemplateCompiler, TemplateComponent};
 
 impl TemplateCompiler {
     pub(super) fn collect_types_with_branches(&self, nodes: &[CslnNode]) -> Vec<ItemType> {
@@ -43,7 +43,7 @@ impl TemplateCompiler {
     ///
     /// When encountering type-based conditions, selects the matching branch
     /// for the given type, or falls back to else branch if no match.
-    /// Currently unused - infrastructure for future type_templates generation.
+    /// Currently unused - infrastructure for future `type_templates` generation.
     #[allow(dead_code)]
     pub(super) fn compile_for_type(
         &self,
@@ -114,7 +114,7 @@ impl TemplateCompiler {
         components
     }
 
-    /// Convert ItemType to its string representation.
+    /// Convert `ItemType` to its string representation.
     #[allow(dead_code)]
     pub(super) fn item_type_to_string(&self, item_type: &ItemType) -> String {
         match item_type {

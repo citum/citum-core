@@ -268,7 +268,7 @@ fn compound_locator_joins_segments_with_separator() {
         },
     ];
     let rendered = collapse_compound_locator(&segments, &locale);
-    assert!(rendered.contains("3"), "should contain first value");
+    assert!(rendered.contains('3'), "should contain first value");
     assert!(rendered.contains("42"), "should contain second value");
     assert!(rendered.contains(", "), "should join with comma-space");
 }
@@ -315,7 +315,7 @@ fn resolve_item_locator_prefers_compound() {
         ..Default::default()
     };
     let (value, label) = resolve_item_locator(&item, &locale);
-    assert!(value.unwrap().contains("5"));
+    assert!(value.unwrap().contains('5'));
     assert!(
         label.is_none(),
         "compound locators embed labels per-segment"
@@ -562,7 +562,7 @@ fn legal_cases_render_per_item_instead_of_grouped_year_compression() {
         "full legal-case title should be preserved in each item"
     );
     assert!(
-        rendered.contains(";"),
+        rendered.contains(';'),
         "legal-case items should remain separate within the citation"
     );
     assert!(

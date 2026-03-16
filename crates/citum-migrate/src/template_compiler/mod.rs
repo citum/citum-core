@@ -32,7 +32,7 @@ mod types;
 /// and default branches. This is critical for correct suppress semantics.
 #[derive(Debug, Clone)]
 enum BranchContext {
-    /// Type-specific branch (THEN/ELSE_IF with type conditions).
+    /// Type-specific branch (`THEN/ELSE_IF` with type conditions).
     /// Components here should be shown ONLY for these types.
     TypeSpecific(Vec<ItemType>),
     /// Default branch (ELSE or no condition).
@@ -48,7 +48,7 @@ struct ComponentOccurrence {
     source_order: Option<usize>,
 }
 
-/// Compiles CslnNode trees into TemplateComponents.
+/// Compiles `CslnNode` trees into `TemplateComponents`.
 pub struct TemplateCompiler;
 
 fn migrate_debug_enabled() -> bool {
@@ -66,11 +66,12 @@ fn migrate_debug_enabled() -> bool {
 }
 
 impl TemplateCompiler {
-    /// Compile a list of CslnNodes into TemplateComponents.
+    /// Compile a list of `CslnNodes` into `TemplateComponents`.
     ///
     /// Uses occurrence-based compilation to properly handle mutually exclusive
     /// conditional branches. Components are collected with their branch context,
     /// then merged with correct suppress semantics.
+    #[must_use]
     pub fn compile(&self, nodes: &[CslnNode]) -> Vec<TemplateComponent> {
         let no_wrap = (None, None, None);
         let mut occurrences = Vec::new();
@@ -80,6 +81,7 @@ impl TemplateCompiler {
 
     /// Compile and sort for citation output (author first, then date).
     /// Uses simplified compile that skips else branches to avoid extra fields.
+    #[must_use]
     pub fn compile_citation(&self, nodes: &[CslnNode]) -> Vec<TemplateComponent> {
         let mut components = self.compile_simple(nodes);
         self.sort_citation_components(&mut components);

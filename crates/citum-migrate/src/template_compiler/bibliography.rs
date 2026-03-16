@@ -1,7 +1,8 @@
-use super::*;
+use super::{CslnNode, ItemType, TemplateCompiler, TemplateComponent};
 use citum_schema::template::{NumberVariable, SimpleVariable};
 
 impl TemplateCompiler {
+    #[must_use]
     pub fn compile_bibliography(
         &self,
         nodes: &[CslnNode],
@@ -16,6 +17,7 @@ impl TemplateCompiler {
     ///
     /// Uses the new occurrence-based compilation approach which correctly handles
     /// mutually exclusive conditional branches with proper suppress semantics.
+    #[must_use]
     pub fn compile_bibliography_with_types(
         &self,
         nodes: &[CslnNode],
@@ -124,7 +126,7 @@ impl TemplateCompiler {
         has_doi && has_detail_component
     }
 
-    /// Post-process a legal_case type template to ensure correct field set.
+    /// Post-process a `legal_case` type template to ensure correct field set.
     ///
     /// Legal case citations follow the pattern: Title, Authority Year.
     /// - Ensures `variable: authority` is inserted after `title: primary`
@@ -169,8 +171,7 @@ impl TemplateCompiler {
                             if t.title == citum_schema::template::TitleType::Primary
                     )
                 })
-                .map(|p| p + 1)
-                .unwrap_or(template.len());
+                .map_or(template.len(), |p| p + 1);
 
             template.insert(
                 insert_pos,

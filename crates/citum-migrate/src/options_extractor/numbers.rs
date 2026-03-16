@@ -7,6 +7,7 @@ use std::collections::HashSet;
 ///
 /// Scans the style's macros to find the punctuation used between volume
 /// and page number components.
+#[must_use]
 pub fn extract_volume_pages_delimiter(
     style: &Style,
     bib_macros: &HashSet<String>,
@@ -130,6 +131,7 @@ fn group_contains_macro_with_page(nodes: &[CslNode]) -> bool {
 ///
 /// Determines how page ranges should be abbreviated (expanded, minimal, Chicago, etc.)
 /// based on the style's layout rules.
+#[must_use]
 pub fn extract_page_range_format(style: &Style) -> Option<PageRangeFormat> {
     style
         .page_range_format

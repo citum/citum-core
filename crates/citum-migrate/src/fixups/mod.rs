@@ -8,6 +8,7 @@ mod media;
 mod template;
 
 /// Returns whether a type selector matches any candidate type name.
+#[must_use]
 pub fn selector_matches_any(selector: &TypeSelector, candidates: &[&str]) -> bool {
     media::selector_matches_any(selector, candidates)
 }
@@ -95,16 +96,19 @@ pub fn move_group_wrap_to_citation_items(
 }
 
 /// Returns whether a citation template contains a citation-number component.
+#[must_use]
 pub fn citation_template_has_citation_number(template: &[TemplateComponent]) -> bool {
     locator::citation_template_has_citation_number(template)
 }
 
 /// Returns whether a note citation template is too small to preserve note semantics.
+#[must_use]
 pub fn note_citation_template_is_underfit(template: &[TemplateComponent]) -> bool {
     template::note_citation_template_is_underfit(template)
 }
 
 /// Returns whether a citation template contains only author and year structure.
+#[must_use]
 pub fn citation_template_is_author_year_only(template: &[TemplateComponent]) -> bool {
     template::citation_template_is_author_year_only(template)
 }
@@ -123,6 +127,7 @@ pub fn normalize_author_date_inferred_contributors(
 }
 
 /// Returns whether a migrated type template should be merged into inferred output.
+#[must_use]
 pub fn should_merge_inferred_type_template(
     type_name: &str,
     inferred_template: &[TemplateComponent],

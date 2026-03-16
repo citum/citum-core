@@ -76,8 +76,8 @@ fn test_legal_fixture_is_covered_in_processor_tests() {
     // Verify Civil Rights Act includes title and year
     assert!(
         civil.contains("Civil Rights Act of 1964")
-            && civil.starts_with("(")
-            && civil.ends_with(")"),
+            && civil.starts_with('(')
+            && civil.ends_with(')'),
         "Civil Rights Act citation should include act name within parentheses"
     );
     // Verify Treaty has parties and date

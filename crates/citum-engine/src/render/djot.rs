@@ -32,43 +32,43 @@ impl OutputFormat for Djot {
         if content.is_empty() {
             return content;
         }
-        format!("_{}_", content)
+        format!("_{content}_")
     }
 
     fn strong(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;
         }
-        format!("*{}*", content)
+        format!("*{content}*")
     }
 
     fn small_caps(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;
         }
-        format!("[{}]{{.small-caps}}", content)
+        format!("[{content}]{{.small-caps}}")
     }
 
     fn quote(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;
         }
-        format!("\u{201C}{}\u{201D}", content)
+        format!("\u{201C}{content}\u{201D}")
     }
 
     fn affix(&self, prefix: &str, content: Self::Output, suffix: &str) -> Self::Output {
-        format!("{}{}{}", prefix, content, suffix)
+        format!("{prefix}{content}{suffix}")
     }
 
     fn inner_affix(&self, prefix: &str, content: Self::Output, suffix: &str) -> Self::Output {
-        format!("{}{}{}", prefix, content, suffix)
+        format!("{prefix}{content}{suffix}")
     }
 
     fn wrap_punctuation(&self, wrap: &WrapPunctuation, content: Self::Output) -> Self::Output {
         match wrap {
-            WrapPunctuation::Parentheses => format!("({})", content),
-            WrapPunctuation::Brackets => format!("[{}]", content),
-            WrapPunctuation::Quotes => format!("\u{201C}{}\u{201D}", content),
+            WrapPunctuation::Parentheses => format!("({content})"),
+            WrapPunctuation::Brackets => format!("[{content}]"),
+            WrapPunctuation::Quotes => format!("\u{201C}{content}\u{201D}"),
             WrapPunctuation::None => content,
         }
     }
@@ -77,14 +77,14 @@ impl OutputFormat for Djot {
         if content.is_empty() {
             return content;
         }
-        format!("[{}]{{.{}}}", content, class)
+        format!("[{content}]{{.{class}}}")
     }
 
     fn link(&self, url: &str, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;
         }
-        format!("[{}]({})", content, url)
+        format!("[{content}]({url})")
     }
 
     fn entry(

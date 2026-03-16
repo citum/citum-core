@@ -41,7 +41,7 @@ struct GroupItemRenderRequest<'a> {
     delimiter: &'a str,
 }
 
-impl<'a> Renderer<'a> {
+impl Renderer<'_> {
     /// Render citation items with author grouping, using plain text format.
     ///
     /// # Errors
@@ -433,11 +433,11 @@ impl<'a> Renderer<'a> {
             ) && !item_str.is_empty()
             {
                 let suffix = item.suffix.as_deref().unwrap_or("");
-                if !suffix.is_empty() {
+                if suffix.is_empty() {
+                    item_parts.push(item_str);
+                } else {
                     let spaced_suffix = Self::ensure_suffix_spacing(suffix);
                     item_parts.push(fmt.affix("", item_str, &spaced_suffix));
-                } else {
-                    item_parts.push(item_str);
                 }
             }
         }
@@ -621,6 +621,7 @@ impl<'a> Renderer<'a> {
     }
 
     /// Get the citation number for a reference, assigning one if not yet cited.
+    #[must_use]
     pub fn get_or_assign_citation_number(&self, ref_id: &str) -> usize {
         let mut numbers = self.citation_numbers.borrow_mut();
         let next_num = numbers.len() + 1;
@@ -628,6 +629,7 @@ impl<'a> Renderer<'a> {
     }
 
     /// Process a bibliography entry.
+    #[must_use]
     pub fn process_bibliography_entry(
         &self,
         reference: &Reference,
@@ -640,6 +642,7 @@ impl<'a> Renderer<'a> {
     }
 
     /// Process a bibliography entry with specific format.
+    #[must_use]
     pub fn process_bibliography_entry_with_format<F>(
         &self,
         reference: &Reference,
@@ -693,6 +696,7 @@ impl<'a> Renderer<'a> {
     ///
     /// Accepts a [`TemplateRenderParams`] bundle rather than individual arguments
     /// to keep the call site readable and avoid argument-count lint issues.
+    #[must_use]
     pub fn process_template_with_number(
         &self,
         reference: &Reference,
@@ -732,6 +736,7 @@ impl<'a> Renderer<'a> {
     }
 
     /// Process a template request with a specific output format.
+    #[must_use]
     pub fn process_template_request_with_format<F>(
         &self,
         reference: &Reference,
@@ -768,7 +773,7 @@ impl<'a> Renderer<'a> {
             position,
             integral_name_state,
         );
-        let ref_type = reference.ref_type().to_string();
+        let ref_type = reference.ref_type().clone();
         let mut tracker = TemplateComponentTracker::default();
         let components: Vec<ProcTemplateComponent> = template
             .iter()

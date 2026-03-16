@@ -25,14 +25,14 @@ const CITATION_JSON: &str = r#"{"id":"c1","items":[{"id":"ITEM-1"}]}"#;
 #[test]
 fn render_citation_returns_string() {
     let result = render_citation(STYLE_YAML, REFS_JSON, CITATION_JSON);
-    assert!(result.is_ok(), "render_citation failed: {:?}", result);
+    assert!(result.is_ok(), "render_citation failed: {result:?}");
     assert!(!result.unwrap().is_empty());
 }
 
 #[test]
 fn render_bibliography_returns_string() {
     let result = render_bibliography(STYLE_YAML, REFS_JSON);
-    assert!(result.is_ok(), "render_bibliography failed: {:?}", result);
+    assert!(result.is_ok(), "render_bibliography failed: {result:?}");
     assert!(!result.unwrap().is_empty());
 }
 

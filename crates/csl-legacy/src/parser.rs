@@ -7,7 +7,11 @@
 //! attributes / children, and return a `Result<T, String>` where `Err` carries
 //! a human-readable description of what was missing or unexpected.
 
-use crate::model::*;
+use crate::model::{
+    Bibliography, Choose, ChooseBranch, Citation, CslNode, Date, DatePart, EtAl, Formatting, Group,
+    Info, Label, Layout, Locale, Macro, Name, Names, Number, Sort, SortKey, Style, Substitute,
+    Term, Text,
+};
 use roxmltree::Node;
 
 /// Parse the root `<style>` element into a [`Style`].
@@ -19,27 +23,39 @@ pub fn parse_style(node: Node) -> Result<Style, String> {
     let version = node.attribute("version").unwrap_or_default().to_string();
     let xmlns = node.attribute("xmlns").unwrap_or_default().to_string();
     let class = node.attribute("class").unwrap_or_default().to_string();
-    let default_locale = node.attribute("default-locale").map(|s| s.to_string());
+    let default_locale = node
+        .attribute("default-locale")
+        .map(std::string::ToString::to_string);
 
     // Style-level name options (inherited by all names)
-    let initialize_with = node.attribute("initialize-with").map(|s| s.to_string());
+    let initialize_with = node
+        .attribute("initialize-with")
+        .map(std::string::ToString::to_string);
     let initialize_with_hyphen = node
         .attribute("initialize-with-hyphen")
         .map(|s| s == "true");
-    let names_delimiter = node.attribute("names-delimiter").map(|s| s.to_string());
-    let name_as_sort_order = node.attribute("name-as-sort-order").map(|s| s.to_string());
-    let sort_separator = node.attribute("sort-separator").map(|s| s.to_string());
+    let names_delimiter = node
+        .attribute("names-delimiter")
+        .map(std::string::ToString::to_string);
+    let name_as_sort_order = node
+        .attribute("name-as-sort-order")
+        .map(std::string::ToString::to_string);
+    let sort_separator = node
+        .attribute("sort-separator")
+        .map(std::string::ToString::to_string);
     let delimiter_precedes_last = node
         .attribute("delimiter-precedes-last")
-        .map(|s| s.to_string());
+        .map(std::string::ToString::to_string);
     let delimiter_precedes_et_al = node
         .attribute("delimiter-precedes-et-al")
-        .map(|s| s.to_string());
-    let and = node.attribute("and").map(|s| s.to_string());
-    let page_range_format = node.attribute("page-range-format").map(|s| s.to_string());
+        .map(std::string::ToString::to_string);
+    let and = node.attribute("and").map(std::string::ToString::to_string);
+    let page_range_format = node
+        .attribute("page-range-format")
+        .map(std::string::ToString::to_string);
     let demote_non_dropping_particle = node
         .attribute("demote-non-dropping-particle")
-        .map(|s| s.to_string());
+        .map(std::string::ToString::to_string);
 
     let mut info = Info::default();
     let mut locale = Vec::new();
@@ -113,7 +129,7 @@ fn parse_info(node: Node) -> Result<Info, String> {
             "title" => info.title = child.text().unwrap_or_default().to_string(),
             "id" => info.id = child.text().unwrap_or_default().to_string(),
             "updated" => info.updated = child.text().unwrap_or_default().to_string(),
-            "summary" => info.summary = child.text().map(|s| s.to_string()),
+            "summary" => info.summary = child.text().map(std::string::ToString::to_string),
             "category" => {
                 if let Some(field) = child.attribute("field").filter(|f| *f != "generic-base") {
                     info.fields.push(field.to_string());
@@ -123,7 +139,7 @@ fn parse_info(node: Node) -> Result<Info, String> {
             }
             "link" => {
                 let href = child.attribute("href").unwrap_or_default().to_string();
-                let rel = child.attribute("rel").map(|s| s.to_string());
+                let rel = child.attribute("rel").map(std::string::ToString::to_string);
                 info.links.push(crate::model::InfoLink { href, rel });
             }
             "author" => info.authors.push(parse_info_person(child)),
@@ -132,7 +148,7 @@ fn parse_info(node: Node) -> Result<Info, String> {
                 // Prefer license= attribute; fall back to text content
                 info.rights = child
                     .attribute("license")
-                    .map(|s| s.to_string())
+                    .map(std::string::ToString::to_string)
                     .or_else(|| {
                         child
                             .text()
@@ -154,9 +170,9 @@ fn parse_info_person(node: Node) -> crate::model::InfoPerson {
             continue;
         }
         match child.tag_name().name() {
-            "name" => person.name = child.text().map(|s| s.to_string()),
-            "email" => person.email = child.text().map(|s| s.to_string()),
-            "uri" => person.uri = child.text().map(|s| s.to_string()),
+            "name" => person.name = child.text().map(std::string::ToString::to_string),
+            "email" => person.email = child.text().map(std::string::ToString::to_string),
+            "uri" => person.uri = child.text().map(std::string::ToString::to_string),
             _ => {}
         }
     }
@@ -168,7 +184,7 @@ fn parse_info_person(node: Node) -> crate::model::InfoPerson {
 /// The `xml:lang` attribute is read as `lang`; all `<term>` children inside
 /// `<terms>` are collected and parsed individually.
 fn parse_locale(node: Node) -> Result<Locale, String> {
-    let lang = node.attribute("lang").map(|s| s.to_string());
+    let lang = node.attribute("lang").map(std::string::ToString::to_string);
     let mut terms = Vec::new();
 
     for child in node.children() {
@@ -190,7 +206,7 @@ fn parse_locale(node: Node) -> Result<Locale, String> {
 /// `<single>` / `<multiple>` child elements.
 fn parse_term(node: Node) -> Result<Term, String> {
     let name = node.attribute("name").unwrap_or_default().to_string();
-    let form = node.attribute("form").map(|s| s.to_string());
+    let form = node.attribute("form").map(std::string::ToString::to_string);
     let value = node.text().unwrap_or_default().to_string();
     let mut single = None;
     let mut multiple = None;
@@ -292,10 +308,10 @@ fn parse_bibliography(node: Node) -> Result<Bibliography, String> {
 
     let subsequent_author_substitute = node
         .attribute("subsequent-author-substitute")
-        .map(|s| s.to_string());
+        .map(std::string::ToString::to_string);
     let subsequent_author_substitute_rule = node
         .attribute("subsequent-author-substitute-rule")
-        .map(|s| s.to_string());
+        .map(std::string::ToString::to_string);
 
     for child in node.children() {
         if !child.is_element() {
@@ -320,9 +336,15 @@ fn parse_bibliography(node: Node) -> Result<Bibliography, String> {
 
 /// Parse a `<layout>` element into a [`Layout`].
 fn parse_layout(node: Node) -> Result<Layout, String> {
-    let prefix = node.attribute("prefix").map(|s| s.to_string());
-    let suffix = node.attribute("suffix").map(|s| s.to_string());
-    let delimiter = node.attribute("delimiter").map(|s| s.to_string());
+    let prefix = node
+        .attribute("prefix")
+        .map(std::string::ToString::to_string);
+    let suffix = node
+        .attribute("suffix")
+        .map(std::string::ToString::to_string);
+    let delimiter = node
+        .attribute("delimiter")
+        .map(std::string::ToString::to_string);
     let children = parse_children(node)?;
     Ok(Layout {
         prefix,
@@ -348,9 +370,13 @@ fn parse_sort(node: Node) -> Result<Sort, String> {
 
 /// Parse a `<key>` element into a [`SortKey`].
 fn parse_sort_key(node: Node) -> Result<SortKey, String> {
-    let variable = node.attribute("variable").map(|s| s.to_string());
-    let macro_name = node.attribute("macro").map(|s| s.to_string());
-    let sort = node.attribute("sort").map(|s| s.to_string());
+    let variable = node
+        .attribute("variable")
+        .map(std::string::ToString::to_string);
+    let macro_name = node
+        .attribute("macro")
+        .map(std::string::ToString::to_string);
+    let sort = node.attribute("sort").map(std::string::ToString::to_string);
     Ok(SortKey {
         variable,
         macro_name,
@@ -410,17 +436,31 @@ fn parse_text(node: Node) -> Result<Text, String> {
 
     let formatting = parse_formatting(node);
     Ok(Text {
-        value: node.attribute("value").map(|s| s.to_string()),
-        variable: node.attribute("variable").map(|s| s.to_string()),
-        macro_name: node.attribute("macro").map(|s| s.to_string()),
-        term: node.attribute("term").map(|s| s.to_string()),
-        form: node.attribute("form").map(|s| s.to_string()),
-        prefix: node.attribute("prefix").map(|s| s.to_string()),
-        suffix: node.attribute("suffix").map(|s| s.to_string()),
+        value: node
+            .attribute("value")
+            .map(std::string::ToString::to_string),
+        variable: node
+            .attribute("variable")
+            .map(std::string::ToString::to_string),
+        macro_name: node
+            .attribute("macro")
+            .map(std::string::ToString::to_string),
+        term: node.attribute("term").map(std::string::ToString::to_string),
+        form: node.attribute("form").map(std::string::ToString::to_string),
+        prefix: node
+            .attribute("prefix")
+            .map(std::string::ToString::to_string),
+        suffix: node
+            .attribute("suffix")
+            .map(std::string::ToString::to_string),
         quotes: node.attribute("quotes").map(|s| s == "true"),
-        text_case: node.attribute("text-case").map(|s| s.to_string()),
+        text_case: node
+            .attribute("text-case")
+            .map(std::string::ToString::to_string),
         strip_periods: node.attribute("strip-periods").map(|s| s == "true"),
-        plural: node.attribute("plural").map(|s| s.to_string()),
+        plural: node
+            .attribute("plural")
+            .map(std::string::ToString::to_string),
         macro_call_order: None,
         formatting,
     })
@@ -458,12 +498,22 @@ fn parse_date(node: Node) -> Result<Date, String> {
 
     Ok(Date {
         variable,
-        form: node.attribute("form").map(|s| s.to_string()),
-        prefix: node.attribute("prefix").map(|s| s.to_string()),
-        suffix: node.attribute("suffix").map(|s| s.to_string()),
-        delimiter: node.attribute("delimiter").map(|s| s.to_string()),
-        date_parts: node.attribute("date-parts").map(|s| s.to_string()),
-        text_case: node.attribute("text-case").map(|s| s.to_string()),
+        form: node.attribute("form").map(std::string::ToString::to_string),
+        prefix: node
+            .attribute("prefix")
+            .map(std::string::ToString::to_string),
+        suffix: node
+            .attribute("suffix")
+            .map(std::string::ToString::to_string),
+        delimiter: node
+            .attribute("delimiter")
+            .map(std::string::ToString::to_string),
+        date_parts: node
+            .attribute("date-parts")
+            .map(std::string::ToString::to_string),
+        text_case: node
+            .attribute("text-case")
+            .map(std::string::ToString::to_string),
         parts,
         macro_call_order: None,
         formatting,
@@ -480,9 +530,13 @@ fn parse_date_part(node: Node) -> Result<DatePart, String> {
             .attribute("name")
             .ok_or("Date-part missing name")?
             .to_string(),
-        form: node.attribute("form").map(|s| s.to_string()),
-        prefix: node.attribute("prefix").map(|s| s.to_string()),
-        suffix: node.attribute("suffix").map(|s| s.to_string()),
+        form: node.attribute("form").map(std::string::ToString::to_string),
+        prefix: node
+            .attribute("prefix")
+            .map(std::string::ToString::to_string),
+        suffix: node
+            .attribute("suffix")
+            .map(std::string::ToString::to_string),
     })
 }
 
@@ -504,13 +558,23 @@ fn parse_label(node: Node) -> Result<Label, String> {
     let formatting = parse_formatting(node);
 
     Ok(Label {
-        variable: node.attribute("variable").map(|s| s.to_string()),
-        form: node.attribute("form").map(|s| s.to_string()),
-        prefix: node.attribute("prefix").map(|s| s.to_string()),
-        suffix: node.attribute("suffix").map(|s| s.to_string()),
-        text_case: node.attribute("text-case").map(|s| s.to_string()),
+        variable: node
+            .attribute("variable")
+            .map(std::string::ToString::to_string),
+        form: node.attribute("form").map(std::string::ToString::to_string),
+        prefix: node
+            .attribute("prefix")
+            .map(std::string::ToString::to_string),
+        suffix: node
+            .attribute("suffix")
+            .map(std::string::ToString::to_string),
+        text_case: node
+            .attribute("text-case")
+            .map(std::string::ToString::to_string),
         strip_periods: node.attribute("strip-periods").map(|s| s == "true"),
-        plural: node.attribute("plural").map(|s| s.to_string()),
+        plural: node
+            .attribute("plural")
+            .map(std::string::ToString::to_string),
         macro_call_order: None,
         formatting,
     })
@@ -529,10 +593,12 @@ fn parse_names(node: Node) -> Result<Names, String> {
     let formatting = parse_formatting(node);
     Ok(Names {
         variable,
-        delimiter: node.attribute("delimiter").map(|s| s.to_string()),
+        delimiter: node
+            .attribute("delimiter")
+            .map(std::string::ToString::to_string),
         delimiter_precedes_et_al: node
             .attribute("delimiter-precedes-et-al")
-            .map(|s| s.to_string()),
+            .map(std::string::ToString::to_string),
         et_al_min: node.attribute("et-al-min").and_then(|s| s.parse().ok()),
         et_al_use_first: node
             .attribute("et-al-use-first")
@@ -543,8 +609,12 @@ fn parse_names(node: Node) -> Result<Names, String> {
         et_al_subsequent_use_first: node
             .attribute("et-al-subsequent-use-first")
             .and_then(|s| s.parse().ok()),
-        prefix: node.attribute("prefix").map(|s| s.to_string()),
-        suffix: node.attribute("suffix").map(|s| s.to_string()),
+        prefix: node
+            .attribute("prefix")
+            .map(std::string::ToString::to_string),
+        suffix: node
+            .attribute("suffix")
+            .map(std::string::ToString::to_string),
         children,
         macro_call_order: None,
         formatting,
@@ -554,12 +624,24 @@ fn parse_names(node: Node) -> Result<Names, String> {
 /// Extract inline formatting attributes from any CSL element node.
 fn parse_formatting(node: Node) -> Formatting {
     Formatting {
-        font_style: node.attribute("font-style").map(|s| s.to_string()),
-        font_variant: node.attribute("font-variant").map(|s| s.to_string()),
-        font_weight: node.attribute("font-weight").map(|s| s.to_string()),
-        text_decoration: node.attribute("text-decoration").map(|s| s.to_string()),
-        vertical_align: node.attribute("vertical-align").map(|s| s.to_string()),
-        display: node.attribute("display").map(|s| s.to_string()),
+        font_style: node
+            .attribute("font-style")
+            .map(std::string::ToString::to_string),
+        font_variant: node
+            .attribute("font-variant")
+            .map(std::string::ToString::to_string),
+        font_weight: node
+            .attribute("font-weight")
+            .map(std::string::ToString::to_string),
+        text_decoration: node
+            .attribute("text-decoration")
+            .map(std::string::ToString::to_string),
+        vertical_align: node
+            .attribute("vertical-align")
+            .map(std::string::ToString::to_string),
+        display: node
+            .attribute("display")
+            .map(std::string::ToString::to_string),
     }
 }
 
@@ -578,9 +660,15 @@ fn parse_group(node: Node) -> Result<Group, String> {
     let children = parse_children(node)?;
     let formatting = parse_formatting(node);
     Ok(Group {
-        delimiter: node.attribute("delimiter").map(|s| s.to_string()),
-        prefix: node.attribute("prefix").map(|s| s.to_string()),
-        suffix: node.attribute("suffix").map(|s| s.to_string()),
+        delimiter: node
+            .attribute("delimiter")
+            .map(std::string::ToString::to_string),
+        prefix: node
+            .attribute("prefix")
+            .map(std::string::ToString::to_string),
+        suffix: node
+            .attribute("suffix")
+            .map(std::string::ToString::to_string),
         children,
         macro_call_order: None,
         formatting,
@@ -618,13 +706,25 @@ fn parse_choose(node: Node) -> Result<Choose, String> {
 /// Parse an `<if>` or `<else-if>` element into a [`ChooseBranch`].
 fn parse_choose_branch(node: Node) -> Result<ChooseBranch, String> {
     Ok(ChooseBranch {
-        match_mode: node.attribute("match").map(|s| s.to_string()),
-        type_: node.attribute("type").map(|s| s.to_string()),
-        variable: node.attribute("variable").map(|s| s.to_string()),
-        is_numeric: node.attribute("is-numeric").map(|s| s.to_string()),
-        is_uncertain_date: node.attribute("is-uncertain-date").map(|s| s.to_string()),
-        locator: node.attribute("locator").map(|s| s.to_string()),
-        position: node.attribute("position").map(|s| s.to_string()),
+        match_mode: node
+            .attribute("match")
+            .map(std::string::ToString::to_string),
+        type_: node.attribute("type").map(std::string::ToString::to_string),
+        variable: node
+            .attribute("variable")
+            .map(std::string::ToString::to_string),
+        is_numeric: node
+            .attribute("is-numeric")
+            .map(std::string::ToString::to_string),
+        is_uncertain_date: node
+            .attribute("is-uncertain-date")
+            .map(std::string::ToString::to_string),
+        locator: node
+            .attribute("locator")
+            .map(std::string::ToString::to_string),
+        position: node
+            .attribute("position")
+            .map(std::string::ToString::to_string),
         children: parse_children(node)?,
     })
 }
@@ -653,10 +753,16 @@ fn parse_number(node: Node) -> Result<Number, String> {
 
     Ok(Number {
         variable,
-        form: node.attribute("form").map(|s| s.to_string()),
-        prefix: node.attribute("prefix").map(|s| s.to_string()),
-        suffix: node.attribute("suffix").map(|s| s.to_string()),
-        text_case: node.attribute("text-case").map(|s| s.to_string()),
+        form: node.attribute("form").map(std::string::ToString::to_string),
+        prefix: node
+            .attribute("prefix")
+            .map(std::string::ToString::to_string),
+        suffix: node
+            .attribute("suffix")
+            .map(std::string::ToString::to_string),
+        text_case: node
+            .attribute("text-case")
+            .map(std::string::ToString::to_string),
         macro_call_order: None,
         formatting,
     })
@@ -666,21 +772,29 @@ fn parse_number(node: Node) -> Result<Number, String> {
 fn parse_name(node: Node) -> Result<Name, String> {
     let formatting = parse_formatting(node);
     Ok(Name {
-        and: node.attribute("and").map(|s| s.to_string()),
-        delimiter: node.attribute("delimiter").map(|s| s.to_string()),
-        name_as_sort_order: node.attribute("name-as-sort-order").map(|s| s.to_string()),
-        sort_separator: node.attribute("sort-separator").map(|s| s.to_string()),
-        initialize_with: node.attribute("initialize-with").map(|s| s.to_string()),
+        and: node.attribute("and").map(std::string::ToString::to_string),
+        delimiter: node
+            .attribute("delimiter")
+            .map(std::string::ToString::to_string),
+        name_as_sort_order: node
+            .attribute("name-as-sort-order")
+            .map(std::string::ToString::to_string),
+        sort_separator: node
+            .attribute("sort-separator")
+            .map(std::string::ToString::to_string),
+        initialize_with: node
+            .attribute("initialize-with")
+            .map(std::string::ToString::to_string),
         initialize_with_hyphen: node
             .attribute("initialize-with-hyphen")
             .map(|s| s == "true"),
-        form: node.attribute("form").map(|s| s.to_string()),
+        form: node.attribute("form").map(std::string::ToString::to_string),
         delimiter_precedes_last: node
             .attribute("delimiter-precedes-last")
-            .map(|s| s.to_string()),
+            .map(std::string::ToString::to_string),
         delimiter_precedes_et_al: node
             .attribute("delimiter-precedes-et-al")
-            .map(|s| s.to_string()),
+            .map(std::string::ToString::to_string),
         et_al_min: node.attribute("et-al-min").and_then(|s| s.parse().ok()),
         et_al_use_first: node
             .attribute("et-al-use-first")
@@ -691,8 +805,12 @@ fn parse_name(node: Node) -> Result<Name, String> {
         et_al_subsequent_use_first: node
             .attribute("et-al-subsequent-use-first")
             .and_then(|s| s.parse().ok()),
-        prefix: node.attribute("prefix").map(|s| s.to_string()),
-        suffix: node.attribute("suffix").map(|s| s.to_string()),
+        prefix: node
+            .attribute("prefix")
+            .map(std::string::ToString::to_string),
+        suffix: node
+            .attribute("suffix")
+            .map(std::string::ToString::to_string),
         formatting,
     })
 }
@@ -700,7 +818,7 @@ fn parse_name(node: Node) -> Result<Name, String> {
 /// Parse an `<et-al>` element into an [`EtAl`] node.
 fn parse_et_al(node: Node) -> Result<EtAl, String> {
     Ok(EtAl {
-        term: node.attribute("term").map(|s| s.to_string()),
+        term: node.attribute("term").map(std::string::ToString::to_string),
     })
 }
 
@@ -776,7 +894,7 @@ mod tests {
     #[test]
     fn test_parse_info_rights_license_attr() {
         let xml = wrap_style(
-            r#"<!-- rights override handled in info block -->"#,
+            r"<!-- rights override handled in info block -->",
         )
         .replace(
             "<updated>2024-01-01T00:00:00+00:00</updated>",

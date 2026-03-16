@@ -8,7 +8,7 @@ use roxmltree::Document;
 
 fn parse_csl(xml: &str) -> Result<Style, String> {
     let doc = Document::parse(xml).map_err(|e| e.to_string())?;
-    parse_style(doc.root_element()).map_err(|e| e.to_string())
+    parse_style(doc.root_element()).map_err(|e| e.clone())
 }
 
 #[test]

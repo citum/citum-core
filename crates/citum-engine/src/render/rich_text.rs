@@ -48,7 +48,7 @@ fn span_classes(attrs: Option<&Attributes>) -> Vec<String> {
         .flat_map(|classes| {
             classes
                 .split_whitespace()
-                .map(|class| class.to_string())
+                .map(std::string::ToString::to_string)
                 .collect::<Vec<_>>()
         })
         .collect()
@@ -185,7 +185,7 @@ where
         .unwrap_or_default()
 }
 
-/// Render djot inline markup and map events to OutputFormat methods.
+/// Render djot inline markup and map events to `OutputFormat` methods.
 ///
 /// Parses the input as djot inline markup and transforms container and text
 /// events into formatted output. Block-level containers are collapsed to their
@@ -194,10 +194,10 @@ where
 ///
 /// # Arguments
 /// * `src` - Input string with djot inline markup
-/// * `fmt` - OutputFormat implementation for rendering
+/// * `fmt` - `OutputFormat` implementation for rendering
 ///
 /// # Returns
-/// Formatted string with markup applied according to the OutputFormat's methods
+/// Formatted string with markup applied according to the `OutputFormat`'s methods
 pub fn render_djot_inline<F: OutputFormat<Output = String>>(src: &str, fmt: &F) -> String {
     render_djot_inline_internal(src, fmt, str::to_string).0
 }
@@ -264,7 +264,7 @@ pub fn render_org_inline<F: OutputFormat<Output = String>>(src: &str, fmt: &F) -
                     top.1.push_str(&fmt.text(value));
                 }
             }
-            Event::Start(Element::Verbatim { value }) | Event::Start(Element::Code { value }) => {
+            Event::Start(Element::Verbatim { value } | Element::Code { value }) => {
                 if let Some(top) = stack.last_mut() {
                     top.1.push_str(&fmt.text(value));
                 }

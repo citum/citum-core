@@ -64,7 +64,7 @@ impl ComponentValues for TemplateList {
                     prefix: v.prefix,
                     suffix: v.suffix,
                     url: v.url,
-                    ref_type: Some(reference.ref_type().to_string()),
+                    ref_type: Some(reference.ref_type().clone()),
                     config: Some(options.config.clone()),
                     item_language: crate::values::effective_component_language(reference, item),
                     pre_formatted: v.pre_formatted,

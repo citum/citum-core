@@ -5,6 +5,7 @@ use csl_legacy::model::{CslNode, Style};
 ///
 /// Analyzes the style's date layouts to determine month format
 /// and other date presentation options.
+#[must_use]
 pub fn extract_date_config(style: &Style) -> Option<DateConfig> {
     let mut config = DateConfig::default();
     let mut found_date = false;

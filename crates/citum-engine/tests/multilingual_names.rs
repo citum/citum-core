@@ -78,7 +78,10 @@ fn given_a_priority_list_when_resolving_then_the_highest_matching_script_wins(
         translations: HashMap::new(),
     });
 
-    let preferred_owned: Vec<String> = preferred.iter().map(|s| s.to_string()).collect();
+    let preferred_owned: Vec<String> = preferred
+        .iter()
+        .map(std::string::ToString::to_string)
+        .collect();
     let resolved = resolve_multilingual_name(
         &contributor,
         Some(&MultilingualMode::Transliterated),

@@ -167,7 +167,7 @@ fn scrub_component_override_literals(
 ) {
     match override_value {
         citum_schema::template::ComponentOverride::Component(component) => {
-            scrub_inferred_literal_artifacts(component)
+            scrub_inferred_literal_artifacts(component);
         }
         citum_schema::template::ComponentOverride::Rendering(rendering) => {
             if let Some(prefix) = rendering.prefix.as_ref() {

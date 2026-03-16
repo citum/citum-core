@@ -35,7 +35,7 @@ pub(super) fn is_role_label_omitted(options: &RenderOptions<'_>, role: &Contribu
 
 /// Resolve contributor overrides and return both effective component and rendering.
 ///
-/// Handles ComponentOverride variants (both Rendering and Component) with type-specific
+/// Handles `ComponentOverride` variants (both Rendering and Component) with type-specific
 /// and default fallback logic.
 fn resolve_contributor_overrides(
     base_component: &TemplateContributor,
@@ -56,7 +56,7 @@ fn resolve_contributor_overrides(
         let mut match_found = false;
 
         // Try specific type match
-        for (selector, ov) in ovs.iter() {
+        for (selector, ov) in ovs {
             if selector.matches(ref_type) {
                 match ov {
                     ComponentOverride::Rendering(r) => {
@@ -76,7 +76,7 @@ fn resolve_contributor_overrides(
 
         // Fall back to default if no specific match
         if !match_found {
-            for (selector, ov) in ovs.iter() {
+            for (selector, ov) in ovs {
                 if selector.matches("default") {
                     match ov {
                         ComponentOverride::Rendering(r) => {
@@ -99,7 +99,7 @@ fn resolve_contributor_overrides(
 
 /// Format a role term with period stripping if configured.
 ///
-/// Handles the repeated pattern of checking should_strip_periods and formatting
+/// Handles the repeated pattern of checking `should_strip_periods` and formatting
 /// the result with a given prefix and suffix pattern.
 pub(super) fn format_role_term<F: crate::render::format::OutputFormat<Output = String>>(
     term: &str,
@@ -114,10 +114,10 @@ pub(super) fn format_role_term<F: crate::render::format::OutputFormat<Output = S
     } else {
         term.to_string()
     };
-    fmt.text(&format!("{}{}{}", prefix, term_str, suffix))
+    fmt.text(&format!("{prefix}{term_str}{suffix}"))
 }
 
-/// Apply FullThenShort integral-citation subsequent-form rewrite to contributor form.
+/// Apply `FullThenShort` integral-citation subsequent-form rewrite to contributor form.
 fn apply_integral_subsequent_form(
     component: &mut TemplateContributor,
     hints: &ProcHints,
@@ -150,8 +150,7 @@ fn apply_integral_subsequent_form(
         .config
         .integral_names
         .as_ref()
-        .map(|cfg| cfg.resolve().subsequent_form)
-        .unwrap_or(IntegralNameForm::Short);
+        .map_or(IntegralNameForm::Short, |cfg| cfg.resolve().subsequent_form);
     component.form = match subsequent_form {
         IntegralNameForm::Short => ContributorForm::Short,
         IntegralNameForm::FamilyOnly => ContributorForm::FamilyOnly,

@@ -22,20 +22,20 @@ fn bench_formats(c: &mut Criterion) {
     group.bench_function("YAML", |b| {
         b.iter(|| {
             let _: Style = serde_yaml::from_str(black_box(&style_yaml)).unwrap();
-        })
+        });
     });
 
     group.bench_function("JSON", |b| {
         b.iter(|| {
             let _: Style = serde_json::from_str(black_box(&style_json)).unwrap();
-        })
+        });
     });
 
     group.bench_function("CBOR", |b| {
         b.iter(|| {
             let _: Style =
                 ciborium::de::from_reader(std::io::Cursor::new(black_box(&style_cbor))).unwrap();
-        })
+        });
     });
 
     group.finish();
@@ -53,20 +53,20 @@ fn bench_formats(c: &mut Criterion) {
     group.bench_function("YAML", |b| {
         b.iter(|| {
             let _: InputBibliography = serde_yaml::from_str(black_box(&bib_yaml)).unwrap();
-        })
+        });
     });
 
     group.bench_function("JSON", |b| {
         b.iter(|| {
             let _: InputBibliography = serde_json::from_str(black_box(&bib_json)).unwrap();
-        })
+        });
     });
 
     group.bench_function("CBOR", |b| {
         b.iter(|| {
             let _: InputBibliography =
                 ciborium::de::from_reader(std::io::Cursor::new(black_box(&bib_cbor))).unwrap();
-        })
+        });
     });
 
     group.finish();

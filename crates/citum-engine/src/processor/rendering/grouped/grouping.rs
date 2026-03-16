@@ -4,7 +4,7 @@ use crate::reference::Reference;
 
 /// Group citation items by author, respecting individual citation hints.
 ///
-/// Returns a list of (author_key, items) tuples. If any item has disambiguation
+/// Returns a list of (`author_key`, items) tuples. If any item has disambiguation
 /// hints, all items are grouped individually by citation id.
 pub(crate) fn group_citation_items_by_author<'a>(
     renderer: &super::super::Renderer<'_>,

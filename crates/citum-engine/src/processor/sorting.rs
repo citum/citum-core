@@ -40,6 +40,7 @@ pub struct Sorter<'a> {
 
 impl<'a> Sorter<'a> {
     /// Creates a new `Sorter` instance.
+    #[must_use]
     pub fn new(config: &'a Config, locale: &'a Locale) -> Self {
         Self { config, locale }
     }
@@ -49,9 +50,10 @@ impl<'a> Sorter<'a> {
     /// This handles multi-key sorting based on the style's `SortSpec`. It includes
     /// specific logic for handling anonymous works (falling back from author to editor
     /// to title) and stripping articles for title-based sorting.
+    #[must_use]
     pub fn sort_references<'b>(&self, references: Vec<&'b Reference>) -> Vec<&'b Reference> {
         let mut refs = references;
-        let processing = self.config.processing.as_ref().cloned().unwrap_or_default();
+        let processing = self.config.processing.clone().unwrap_or_default();
         let proc_config = processing.config();
 
         if let Some(sort_config) = &proc_config.sort {

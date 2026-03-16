@@ -59,6 +59,7 @@ pub fn detect_style_preset(config: &Config) -> Option<StylePreset> {
 /// Returns the matching preset if found, or `None` if the config is custom.
 /// The detection is "fuzzy" - we check characteristic fields that define each
 /// preset, not every single field.
+#[must_use]
 pub fn detect_contributor_preset(config: &ContributorConfig) -> Option<ContributorPreset> {
     fn shorten_matches(config: &ContributorConfig, min: u8, use_first: u8) -> bool {
         config
@@ -175,6 +176,7 @@ pub fn detect_contributor_preset(config: &ContributorConfig) -> Option<Contribut
 /// Detects if a `TitlesConfig` matches a known preset.
 ///
 /// Returns the matching preset if found, or `None` if the config is custom.
+#[must_use]
 pub fn detect_title_preset(config: &TitlesConfig) -> Option<TitlePreset> {
     let component_quoted = config
         .component
@@ -200,13 +202,17 @@ pub fn detect_title_preset(config: &TitlesConfig) -> Option<TitlePreset> {
     if !component_quoted
         && matches!(
             component_case,
-            Some(citum_schema::options::TextCase::Sentence)
-                | Some(citum_schema::options::TextCase::SentenceNlm)
+            Some(
+                citum_schema::options::TextCase::Sentence
+                    | citum_schema::options::TextCase::SentenceNlm
+            )
         )
         && matches!(
             monograph_case,
-            Some(citum_schema::options::TextCase::Sentence)
-                | Some(citum_schema::options::TextCase::SentenceNlm)
+            Some(
+                citum_schema::options::TextCase::Sentence
+                    | citum_schema::options::TextCase::SentenceNlm
+            )
         )
         && !monograph_emph
         && !periodical_emph
@@ -219,13 +225,17 @@ pub fn detect_title_preset(config: &TitlesConfig) -> Option<TitlePreset> {
     if !component_quoted
         && matches!(
             component_case,
-            Some(citum_schema::options::TextCase::Sentence)
-                | Some(citum_schema::options::TextCase::SentenceApa)
+            Some(
+                citum_schema::options::TextCase::Sentence
+                    | citum_schema::options::TextCase::SentenceApa
+            )
         )
         && matches!(
             monograph_case,
-            Some(citum_schema::options::TextCase::Sentence)
-                | Some(citum_schema::options::TextCase::SentenceApa)
+            Some(
+                citum_schema::options::TextCase::Sentence
+                    | citum_schema::options::TextCase::SentenceApa
+            )
         )
         && monograph_emph
         && periodical_emph
@@ -254,6 +264,7 @@ pub fn detect_title_preset(config: &TitlesConfig) -> Option<TitlePreset> {
 /// Detects if a `DateConfig` matches a known preset.
 ///
 /// Returns the matching preset if found, or `None` if the config is custom.
+#[must_use]
 pub fn detect_date_preset(config: &DateConfig) -> Option<DatePreset> {
     use citum_schema::options::MonthFormat;
 
@@ -365,7 +376,7 @@ mod tests {
         let config = ContributorConfig {
             and: Some(AndOptions::None),
             display_as_sort: Some(DisplayAsSort::All),
-            initialize_with: Some("".to_string()),
+            initialize_with: Some(String::new()),
             sort_separator: Some(" ".to_string()),
             demote_non_dropping_particle: Some(DemoteNonDroppingParticle::Never),
             ..Default::default()
@@ -381,7 +392,7 @@ mod tests {
         let config = ContributorConfig {
             and: Some(AndOptions::None),
             display_as_sort: Some(DisplayAsSort::All),
-            initialize_with: Some("".to_string()),
+            initialize_with: Some(String::new()),
             sort_separator: Some(" ".to_string()),
             demote_non_dropping_particle: Some(DemoteNonDroppingParticle::SortOnly),
             shorten: Some(ShortenListOptions {

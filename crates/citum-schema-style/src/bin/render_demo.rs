@@ -30,13 +30,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cit_output = renderer.render_citation(&style.citation, &item);
 
     println!("\n=== RENDERED CITATION ===");
-    println!("{}", cit_output);
+    println!("{cit_output}");
     println!("=========================");
 
     // 4. Render Bibliography
     let bib_output = renderer.render_citation(&style.bibliography, &item);
     println!("\n=== RENDERED BIBLIOGRAPHY ===");
-    println!("{}", bib_output);
+    println!("{bib_output}");
     println!("=============================");
 
     Ok(())

@@ -19,7 +19,7 @@ fn apa_style_path() -> String {
 }
 
 /// Minimal bibliography: one book (Hawking 1988) in native Citum schema format.
-/// `issued` is a plain EDTF string; `author` is a ContributorList.
+/// `issued` is a plain EDTF string; `author` is a `ContributorList`.
 fn hawking_refs() -> serde_json::Value {
     json!({
         "ITEM-2": {

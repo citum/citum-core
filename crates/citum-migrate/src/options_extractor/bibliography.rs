@@ -10,6 +10,7 @@ use csl_legacy::model::{Choose, ChooseBranch, CslNode, Layout, Macro, Sort as Le
 ///
 /// Collects settings for subsequent author substitution, hanging indent,
 /// entry suffix, and separator punctuation from the bibliography element.
+#[must_use]
 pub fn extract_bibliography_config(style: &Style) -> Option<BibliographyConfig> {
     let bib = style.bibliography.as_ref()?;
 
@@ -81,6 +82,7 @@ pub fn extract_bibliography_config(style: &Style) -> Option<BibliographyConfig> 
 ///
 /// Returns true if the CSL style indicates that URL components should not
 /// be followed by a period in bibliography output.
+#[must_use]
 pub fn should_suppress_period_after_url(style: &Style, layout: &Layout) -> bool {
     if layout.suffix.as_ref().is_some_and(|s| !s.is_empty()) {
         return false;
@@ -334,6 +336,7 @@ fn nodes_have_doi_without_period(nodes: &[CslNode]) -> bool {
 ///
 /// Parses the delimiter between bibliography entries to determine the
 /// appropriate separator character (comma, semicolon, etc.).
+#[must_use]
 pub fn extract_bibliography_separator_from_layout(
     layout: &Layout,
     macros: &[Macro],
@@ -444,12 +447,13 @@ pub fn extract_bibliography_separator_from_layout(
 /// Extracts bibliography sort configuration from a CSL sort element.
 ///
 /// Converts CSL sort keys and order (ascending/descending) to the citum format.
+#[must_use]
 pub fn extract_sort_from_bibliography(sort: &LegacySort) -> Option<Sort> {
     let mut csln_sort = Sort::default();
     for key in &sort.keys {
         let sort_key = match key.variable.as_deref() {
-            Some("author") | Some("editor") => SortKey::Author,
-            Some("issued") | Some("year") => SortKey::Year,
+            Some("author" | "editor") => SortKey::Author,
+            Some("issued" | "year") => SortKey::Year,
             Some("title") => SortKey::Title,
             Some("citation-number") => SortKey::CitationNumber,
             _ => continue,
@@ -474,7 +478,8 @@ pub fn extract_sort_from_bibliography(sort: &LegacySort) -> Option<Sort> {
 /// citation numbers follow bibliography order when a sort spec is present.
 /// Extracts group sort configuration for multi-group bibliographies.
 ///
-/// Converts CSL sort keys with grouping context to citum GroupSort format.
+/// Converts CSL sort keys with grouping context to citum `GroupSort` format.
+#[must_use]
 pub fn extract_group_sort_from_bibliography(sort: &LegacySort) -> Option<GroupSort> {
     let template: Vec<GroupSortKey> = sort
         .keys

@@ -1,4 +1,4 @@
-use super::*;
+use super::TemplateComponent;
 
 pub fn strip_author_component(component: &TemplateComponent) -> Option<TemplateComponent> {
     match component {

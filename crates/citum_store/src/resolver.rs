@@ -33,6 +33,7 @@ pub struct StoreResolver {
 
 impl StoreResolver {
     /// Create a new resolver with the given data directory and format.
+    #[must_use]
     pub fn new(data_dir: PathBuf, format: StoreFormat) -> Self {
         StoreResolver { data_dir, format }
     }
@@ -128,7 +129,7 @@ impl StoreResolver {
 
         for fmt in &formats_to_try {
             let ext = fmt.extension();
-            let path = category_dir.join(format!("{}.{}", name, ext));
+            let path = category_dir.join(format!("{name}.{ext}"));
 
             if path.exists() && path.is_file() {
                 return self.deserialize_item(&path, *fmt);
@@ -202,7 +203,7 @@ impl StoreResolver {
         // Detect format from source, or use configured default
         let format = StoreFormat::detect_from_extension(source).unwrap_or(self.format);
         let ext = format.extension();
-        let dest = category_dir.join(format!("{}.{}", name, ext));
+        let dest = category_dir.join(format!("{name}.{ext}"));
 
         fs::copy(source, &dest)?;
         Ok(name)

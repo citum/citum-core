@@ -45,12 +45,14 @@ fn last_visible_non_space_char(input: &str) -> Option<char> {
         .find(|ch| !ch.is_whitespace())
 }
 
-/// Render processed templates into a final bibliography string using PlainText format.
+/// Render processed templates into a final bibliography string using `PlainText` format.
+#[must_use]
 pub fn refs_to_string(proc_entries: Vec<ProcEntry>) -> String {
     refs_to_string_with_format::<PlainText>(proc_entries, None, None)
 }
 
 /// Render one processed bibliography entry body without outer entry/bibliography wrappers.
+#[must_use]
 pub fn render_entry_body_with_format<F: OutputFormat<Output = String>>(
     entry: &ProcEntry,
 ) -> String {
@@ -115,7 +117,7 @@ pub fn render_entry_body_with_format<F: OutputFormat<Output = String>>(
             }
         }
 
-        let _ = write!(&mut entry_output, "{}", rendered);
+        let _ = write!(&mut entry_output, "{rendered}");
     }
 
     let bib_cfg = proc_template
@@ -147,6 +149,7 @@ pub fn render_entry_body_with_format<F: OutputFormat<Output = String>>(
 }
 
 /// Render processed templates into a final bibliography string using a specific format.
+#[must_use]
 pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
     proc_entries: Vec<ProcEntry>,
     annotations: Option<&HashMap<String, String>>,
@@ -173,7 +176,7 @@ pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
             // Render annotation text through markup format if enabled
             let rendered = match style.format {
                 AnnotationFormat::Djot => render_djot_inline(annotation_text, &fmt),
-                AnnotationFormat::Plain => annotation_text.to_string(),
+                AnnotationFormat::Plain => annotation_text.clone(),
                 AnnotationFormat::Org => render_org_inline(annotation_text, &fmt),
             };
 
@@ -184,7 +187,7 @@ pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
                     if line.trim().is_empty() {
                         line.to_string()
                     } else {
-                        let indented_line = format!("{}{}", indent_prefix, line);
+                        let indented_line = format!("{indent_prefix}{line}");
                         if style.italic {
                             fmt.finish(fmt.emph(fmt.text(&indented_line)))
                         } else {
@@ -293,7 +296,7 @@ mod tests {
         let config = Config {
             bibliography: Some(BibliographyConfig {
                 separator: Some(". ".to_string()),
-                entry_suffix: Some("".to_string()),
+                entry_suffix: Some(String::new()),
                 ..Default::default()
             }),
             ..Default::default()
@@ -354,7 +357,7 @@ mod tests {
         let config = Config {
             bibliography: Some(BibliographyConfig {
                 separator: Some(", ".to_string()),
-                entry_suffix: Some("".to_string()),
+                entry_suffix: Some(String::new()),
                 ..Default::default()
             }),
             ..Default::default()
@@ -508,7 +511,7 @@ mod tests {
         let config = Config {
             bibliography: Some(BibliographyConfig {
                 separator: Some(". ".to_string()),
-                entry_suffix: Some("".to_string()),
+                entry_suffix: Some(String::new()),
                 ..Default::default()
             }),
             ..Default::default()

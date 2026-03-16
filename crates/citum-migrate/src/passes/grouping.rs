@@ -178,6 +178,7 @@ pub fn group_volume_and_issue(
 }
 
 /// Check if issue exists anywhere in nested components.
+#[must_use]
 pub fn find_issue_in_components(components: &[TemplateComponent]) -> bool {
     for component in components {
         match component {
@@ -237,6 +238,7 @@ pub fn insert_issue_after_volume(
 }
 
 /// Check if a List contains a volume variable (recursively).
+#[must_use]
 pub fn find_volume_in_list(list: &TemplateList) -> Option<()> {
     for item in &list.items {
         match item {
@@ -254,6 +256,7 @@ pub fn find_volume_in_list(list: &TemplateList) -> Option<()> {
     None
 }
 
+#[must_use]
 pub fn list_contains_title(list: &TemplateList) -> bool {
     list.items.iter().any(|c| {
         matches!(c, TemplateComponent::Title(_))

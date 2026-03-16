@@ -408,7 +408,7 @@ fn test_citation_locator_label_renders_term_with_loaded_locale() {
     assert_eq!(rendered, "(Kuhn, 1962, p. 23)");
 }
 
-/// Tests the behavior of test_citation_locator_can_suppress_label.
+/// Tests the behavior of `test_citation_locator_can_suppress_label`.
 #[test]
 fn test_citation_locator_can_suppress_label() {
     let mut style = make_style();
@@ -455,7 +455,7 @@ fn test_citation_locator_can_suppress_label() {
     assert_eq!(rendered, "(Kuhn, 1962, 23)");
 }
 
-/// Tests the behavior of test_citation_locator_can_strip_label_periods.
+/// Tests the behavior of `test_citation_locator_can_strip_label_periods`.
 #[test]
 fn test_citation_locator_can_strip_label_periods() {
     let mut style = make_style();
@@ -502,7 +502,7 @@ fn test_citation_locator_can_strip_label_periods() {
     assert_eq!(rendered, "(Kuhn, 1962, p23)");
 }
 
-/// Tests the behavior of test_springer_locator_label_survives_sorting.
+/// Tests the behavior of `test_springer_locator_label_survives_sorting`.
 #[test]
 fn test_springer_locator_label_survives_sorting() {
     use std::{fs, path::Path};
@@ -650,7 +650,7 @@ fn test_parsed_style_no_date_terms_match_expected_variants() {
     );
 }
 
-/// Tests the behavior of test_render_bibliography.
+/// Tests the behavior of `test_render_bibliography`.
 #[test]
 fn test_render_bibliography() {
     let style = make_style();
@@ -665,7 +665,7 @@ fn test_render_bibliography() {
     assert!(result.contains("_The Structure of Scientific Revolutions_"));
 }
 
-/// Tests the behavior of test_disambiguation_hints.
+/// Tests the behavior of `test_disambiguation_hints`.
 #[test]
 fn test_disambiguation_hints() {
     let style = make_style();
@@ -692,7 +692,7 @@ fn test_disambiguation_hints() {
     assert!(hints.get("kuhn1962b").unwrap().disamb_condition);
 }
 
-/// Tests the behavior of test_disambiguation_givenname.
+/// Tests the behavior of `test_disambiguation_givenname`.
 #[test]
 fn test_disambiguation_givenname() {
     use citum_schema::options::{
@@ -792,7 +792,7 @@ fn test_disambiguation_givenname() {
     assert!(cit_b.contains("A. Smith"));
 }
 
-/// Tests the behavior of test_disambiguation_add_names.
+/// Tests the behavior of `test_disambiguation_add_names`.
 #[test]
 fn test_disambiguation_add_names() {
     use citum_schema::options::{
@@ -906,7 +906,7 @@ fn test_disambiguation_add_names() {
     assert!(cit_2.contains("Smith") && cit_2.contains("Brown"));
 }
 
-/// Tests the behavior of test_disambiguation_combined_expansion.
+/// Tests the behavior of `test_disambiguation_combined_expansion`.
 #[test]
 fn test_disambiguation_combined_expansion() {
     use citum_schema::options::{
@@ -1008,17 +1008,15 @@ fn test_disambiguation_combined_expansion() {
     // Should expand to "S. Smith & J. Smith" and "S. Smith & B. Smith"
     assert!(
         cit_1.contains("S. Smith") && cit_1.contains("J. Smith"),
-        "Output was: {}",
-        cit_1
+        "Output was: {cit_1}"
     );
     assert!(
         cit_2.contains("S. Smith") && cit_2.contains("B. Smith"),
-        "Output was: {}",
-        cit_2
+        "Output was: {cit_2}"
     );
 }
 
-/// Tests the behavior of test_apa_titles_config.
+/// Tests the behavior of `test_apa_titles_config`.
 #[allow(clippy::too_many_lines)] // test functions naturally exceed 100 lines
 #[test]
 fn test_apa_titles_config() {
@@ -1100,7 +1098,7 @@ fn test_apa_titles_config() {
         style,
         references
             .into_iter()
-            .map(|r| (r.id().unwrap().to_string(), r))
+            .map(|r| (r.id().unwrap().clone(), r))
             .collect(),
     );
 
@@ -1109,36 +1107,31 @@ fn test_apa_titles_config() {
     // Book Case: Primary title -> monograph category -> Italic, No "In "
     assert!(
         res.contains("_A Global Book_"),
-        "Book title should be italicized: {}",
-        res
+        "Book title should be italicized: {res}"
     );
     assert!(
         !res.contains("In _A Global Book_"),
-        "Book title should NOT have 'In ' prefix: {}",
-        res
+        "Book title should NOT have 'In ' prefix: {res}"
     );
 
     // Journal Article Case: ParentSerial -> periodical category -> Italic, No "In "
     assert!(
         res.contains("_Nature_"),
-        "Journal title should be italicized: {}",
-        res
+        "Journal title should be italicized: {res}"
     );
     assert!(
         !res.contains("In _Nature_"),
-        "Journal title should NOT have 'In ' prefix: {}",
-        res
+        "Journal title should NOT have 'In ' prefix: {res}"
     );
 
     // Chapter Case: ParentMonograph -> container_monograph category -> Italic, WITH "In "
     assert!(
         res.contains("In _A Book_"),
-        "Chapter container title should have 'In ' prefix: {}",
-        res
+        "Chapter container title should have 'In ' prefix: {res}"
     );
 }
 
-/// Tests the behavior of test_numeric_citation_numbers_with_repeated_refs.
+/// Tests the behavior of `test_numeric_citation_numbers_with_repeated_refs`.
 #[test]
 fn test_numeric_citation_numbers_with_repeated_refs() {
     // Citation numbers should remain stable once assigned.
@@ -1226,7 +1219,7 @@ fn test_numeric_citation_numbers_with_repeated_refs() {
     assert_eq!(cit3, "[1]", "Second citation of ref1 should still be [1]");
 }
 
-/// Tests the behavior of test_numeric_citation_numbers_follow_registry_order.
+/// Tests the behavior of `test_numeric_citation_numbers_follow_registry_order`.
 #[test]
 fn test_numeric_citation_numbers_follow_registry_order() {
     use citum_schema::CitationSpec;
@@ -1288,7 +1281,7 @@ fn test_numeric_citation_numbers_follow_registry_order() {
     );
 }
 
-/// Tests the behavior of test_citation_grouping_same_author.
+/// Tests the behavior of `test_citation_grouping_same_author`.
 #[test]
 fn test_citation_grouping_same_author() {
     // Test that adjacent citations by the same author are collapsed:
@@ -1333,17 +1326,15 @@ fn test_citation_grouping_same_author() {
     // Year suffix assigned by title order: "Function..." < "Structure..."
     assert!(
         result.contains("Kuhn, 1962a, 1962b") || result.contains("Kuhn, 1962b, 1962a"),
-        "Same-author citations should be grouped. Got: {}",
-        result
+        "Same-author citations should be grouped. Got: {result}"
     );
     assert!(
         !result.contains("; Kuhn"),
-        "Should not have semicolon between same-author citations. Got: {}",
-        result
+        "Should not have semicolon between same-author citations. Got: {result}"
     );
 }
 
-/// Tests the behavior of test_label_mode_does_not_group_by_author.
+/// Tests the behavior of `test_label_mode_does_not_group_by_author`.
 #[test]
 fn test_label_mode_does_not_group_by_author() {
     let mut style = make_style();
@@ -1396,17 +1387,15 @@ fn test_label_mode_does_not_group_by_author() {
 
     assert!(
         !result.contains(", Kuhn"),
-        "Label mode should not include grouped author text. Got: {}",
-        result
+        "Label mode should not include grouped author text. Got: {result}"
     );
     assert!(
-        result.contains(";"),
-        "Label mode should render separate labels for multi-item citations. Got: {}",
-        result
+        result.contains(';'),
+        "Label mode should render separate labels for multi-item citations. Got: {result}"
     );
 }
 
-/// Tests the behavior of test_citation_grouping_different_authors.
+/// Tests the behavior of `test_citation_grouping_different_authors`.
 #[test]
 fn test_citation_grouping_different_authors() {
     // Different authors should NOT be grouped
@@ -1447,17 +1436,15 @@ fn test_citation_grouping_different_authors() {
     // Should have semicolon between different authors
     assert!(
         result.contains("Kuhn") && result.contains("Smith"),
-        "Should contain both authors. Got: {}",
-        result
+        "Should contain both authors. Got: {result}"
     );
     assert!(
         result.contains("; "),
-        "Different authors should be separated by semicolon. Got: {}",
-        result
+        "Different authors should be separated by semicolon. Got: {result}"
     );
 }
 
-/// Tests the behavior of test_sort_anonymous_work_by_title.
+/// Tests the behavior of `test_sort_anonymous_work_by_title`.
 #[test]
 fn test_sort_anonymous_work_by_title() {
     // Anonymous works (no author) should sort by title, with leading articles stripped
@@ -1513,18 +1500,16 @@ fn test_sort_anonymous_work_by_title() {
     assert!(
         jones_pos < role_pos,
         "Jones should come before Role. Got:
-{}",
-        result
+{result}"
     );
     assert!(
         role_pos < smith_pos,
         "Role should come before Smith. Got:
-{}",
-        result
+{result}"
     );
 }
 
-/// Tests the behavior of test_whole_entry_linking_html.
+/// Tests the behavior of `test_whole_entry_linking_html`.
 #[test]
 fn test_whole_entry_linking_html() {
     use crate::render::html::Html;
@@ -1559,7 +1544,7 @@ fn test_whole_entry_linking_html() {
     assert!(result.contains("Linked Page"));
 }
 
-/// Tests the behavior of test_global_title_linking_html.
+/// Tests the behavior of `test_global_title_linking_html`.
 #[test]
 fn test_global_title_linking_html() {
     use crate::render::html::Html;
@@ -1588,7 +1573,7 @@ fn test_global_title_linking_html() {
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography_with_format::<Html>();
 
-    println!("Result: {}", result);
+    println!("Result: {result}");
 
     // The title should be automatically hyperlinked because of global config.
     // Note: In this test, title substitutes for author, so it gets csln-author class.
@@ -1683,12 +1668,11 @@ fn test_chicago_title_preset_preserves_djot_markup_html() {
         result.contains(
             r#"<span class="csln-title">“<i>Homo sapiens</i> and <b>modern</b> world”</span>"#
         ),
-        "Result: {}",
-        result
+        "Result: {result}"
     );
 }
 
-/// Tests the behavior of test_whole_entry_linking_typst.
+/// Tests the behavior of `test_whole_entry_linking_typst`.
 #[test]
 fn test_whole_entry_linking_typst() {
     use crate::render::typst::Typst;
@@ -1722,7 +1706,7 @@ fn test_whole_entry_linking_typst() {
     assert!(result.contains("Linked Page"));
 }
 
-/// Tests the behavior of test_typst_single_item_citation_links_to_bibliography_entry.
+/// Tests the behavior of `test_typst_single_item_citation_links_to_bibliography_entry`.
 #[test]
 fn test_typst_single_item_citation_links_to_bibliography_entry() {
     use crate::render::typst::Typst;
@@ -1744,7 +1728,7 @@ fn test_typst_single_item_citation_links_to_bibliography_entry() {
     assert!(result.contains("#link(<ref-kuhn1962>)"));
 }
 
-/// Tests the behavior of test_numeric_integral_citation_author_year.
+/// Tests the behavior of `test_numeric_integral_citation_author_year`.
 #[test]
 fn test_numeric_integral_citation_author_year() {
     use citum_schema::options::Processing;
@@ -1775,7 +1759,7 @@ fn test_numeric_integral_citation_author_year() {
     assert_eq!(result, "Kuhn [1]");
 }
 
-/// Tests the behavior of test_numeric_non_integral_citation_number.
+/// Tests the behavior of `test_numeric_non_integral_citation_number`.
 #[test]
 fn test_numeric_non_integral_citation_number() {
     use citum_schema::citation::CitationMode;
@@ -1936,7 +1920,7 @@ fn test_numeric_citation_number_collapse_skips_affixed_items() {
     );
 }
 
-/// Tests the behavior of test_numeric_citation_numbers_follow_bibliography_sort.
+/// Tests the behavior of `test_numeric_citation_numbers_follow_bibliography_sort`.
 #[test]
 fn test_numeric_citation_numbers_follow_bibliography_sort() {
     let mut style = make_style();
@@ -2005,7 +1989,7 @@ fn test_numeric_citation_numbers_follow_bibliography_sort() {
     assert_eq!(result, "[1]");
 }
 
-/// Tests the behavior of test_author_date_citations_preserve_input_order_without_explicit_sort.
+/// Tests the behavior of `test_author_date_citations_preserve_input_order_without_explicit_sort`.
 #[test]
 fn test_author_date_citations_preserve_input_order_without_explicit_sort() {
     let style = make_style();
@@ -2044,7 +2028,7 @@ fn test_author_date_citations_preserve_input_order_without_explicit_sort() {
     assert!(result.find("Smith").unwrap() < result.find("Kuhn").unwrap());
 }
 
-/// Tests the behavior of test_numeric_integral_with_multiple_items.
+/// Tests the behavior of `test_numeric_integral_with_multiple_items`.
 #[test]
 fn test_numeric_integral_with_multiple_items() {
     use citum_schema::options::Processing;
@@ -2092,7 +2076,7 @@ fn test_numeric_integral_with_multiple_items() {
     assert!(result.contains("Smith [2]"));
 }
 
-/// Tests the behavior of test_label_integral_citation_uses_author_text.
+/// Tests the behavior of `test_label_integral_citation_uses_author_text`.
 #[test]
 fn test_label_integral_citation_uses_author_text() {
     use citum_schema::options::Processing;
@@ -2144,17 +2128,15 @@ fn test_label_integral_citation_uses_author_text() {
     // instead of just returning the author name
     assert!(
         result.contains("Kuhn"),
-        "should contain author, got: {}",
-        result
+        "should contain author, got: {result}"
     );
     assert!(
         result.contains("62") && result.len() > "Kuhn".len(),
-        "should contain label, got: {}",
-        result
+        "should contain label, got: {result}"
     );
 }
 
-/// Tests the behavior of test_citation_visibility_modifiers.
+/// Tests the behavior of `test_citation_visibility_modifiers`.
 #[test]
 fn test_citation_visibility_modifiers() {
     use citum_schema::citation::CitationMode;
@@ -2190,7 +2172,7 @@ fn test_citation_visibility_modifiers() {
     assert_eq!(res_integral, "Kuhn (1962)");
 }
 
-/// Tests the behavior of test_bibliography_per_group_disambiguation.
+/// Tests the behavior of `test_bibliography_per_group_disambiguation`.
 #[allow(clippy::too_many_lines)] // test functions naturally exceed 100 lines
 #[test]
 fn test_bibliography_per_group_disambiguation() {
@@ -2307,12 +2289,11 @@ fn test_bibliography_per_group_disambiguation() {
     let count_a = result.matches("1962a").count();
     assert_eq!(
         count_a, 2,
-        "1962a should appear in both groups if disambiguated locally. Output: {}",
-        result
+        "1962a should appear in both groups if disambiguated locally. Output: {result}"
     );
 }
 
-/// Tests the behavior of test_group_heading_localized_uses_processor_locale.
+/// Tests the behavior of `test_group_heading_localized_uses_processor_locale`.
 #[test]
 fn test_group_heading_localized_uses_processor_locale() {
     use citum_schema::grouping::{BibliographyGroup, GroupHeading, GroupSelector};
@@ -2342,7 +2323,7 @@ fn test_group_heading_localized_uses_processor_locale() {
     assert!(output.contains("# Tài liệu tiếng Việt"));
 }
 
-/// Tests the behavior of test_group_heading_term_resolves_from_locale.
+/// Tests the behavior of `test_group_heading_term_resolves_from_locale`.
 #[test]
 fn test_group_heading_term_resolves_from_locale() {
     use citum_schema::grouping::{BibliographyGroup, GroupHeading, GroupSelector};
@@ -2368,7 +2349,7 @@ fn test_group_heading_term_resolves_from_locale() {
     assert!(output.contains("# and"));
 }
 
-/// Tests the behavior of test_position_detection_first.
+/// Tests the behavior of `test_position_detection_first`.
 #[test]
 fn test_position_detection_first() {
     use crate::reference::CitationItem;
@@ -2388,7 +2369,7 @@ fn test_position_detection_first() {
     assert_eq!(citations[0].position, Some(citum_schema::Position::First));
 }
 
-/// Tests the behavior of test_position_detection_subsequent.
+/// Tests the behavior of `test_position_detection_subsequent`.
 #[test]
 fn test_position_detection_subsequent() {
     use crate::reference::CitationItem;
@@ -2429,7 +2410,7 @@ fn test_position_detection_subsequent() {
     );
 }
 
-/// Tests the behavior of test_position_detection_ibid.
+/// Tests the behavior of `test_position_detection_ibid`.
 #[test]
 fn test_position_detection_ibid() {
     use crate::reference::CitationItem;
@@ -2499,7 +2480,7 @@ fn test_position_detection_ibid_same_locator() {
     assert_eq!(citations[1].position, Some(citum_schema::Position::Ibid));
 }
 
-/// Tests the behavior of test_position_detection_ibid_with_locator.
+/// Tests the behavior of `test_position_detection_ibid_with_locator`.
 #[test]
 fn test_position_detection_ibid_with_locator() {
     use crate::reference::CitationItem;
@@ -2540,7 +2521,7 @@ fn test_position_detection_ibid_with_locator() {
     );
 }
 
-/// Tests the behavior of test_position_detection_multi_item_no_ibid.
+/// Tests the behavior of `test_position_detection_multi_item_no_ibid`.
 #[test]
 fn test_position_detection_multi_item_no_ibid() {
     use crate::reference::CitationItem;
@@ -2588,7 +2569,7 @@ fn test_position_detection_multi_item_no_ibid() {
     );
 }
 
-/// Tests the behavior of test_position_detection_explicit_position_respected.
+/// Tests the behavior of `test_position_detection_explicit_position_respected`.
 #[test]
 fn test_position_detection_explicit_position_respected() {
     use crate::reference::CitationItem;
@@ -2610,7 +2591,7 @@ fn test_position_detection_explicit_position_respected() {
     assert_eq!(citations[0].position, Some(citum_schema::Position::Ibid));
 }
 
-/// Tests annotate_positions via process_citations for ibid case.
+/// Tests `annotate_positions` via `process_citations` for ibid case.
 ///
 /// Verifies that when the same item is cited consecutively with no locator,
 /// the second citation is marked as Ibid position.
@@ -2650,10 +2631,10 @@ fn test_annotate_positions_ibid_via_public_api() {
     );
 }
 
-/// Tests annotate_positions for ibid-with-locator case.
+/// Tests `annotate_positions` for ibid-with-locator case.
 ///
 /// Verifies that when the same item is cited consecutively with different locators,
-/// the second citation is marked as IbidWithLocator position.
+/// the second citation is marked as `IbidWithLocator` position.
 #[test]
 fn test_annotate_positions_ibid_with_locator_via_public_api() {
     use crate::reference::CitationItem;
@@ -2698,7 +2679,7 @@ fn test_annotate_positions_ibid_with_locator_via_public_api() {
     );
 }
 
-/// Tests annotate_positions for subsequent case.
+/// Tests `annotate_positions` for subsequent case.
 ///
 /// Verifies that when the same item is cited non-consecutively (with another item in between),
 /// the second citation is marked as Subsequent position (not Ibid).
@@ -2761,7 +2742,7 @@ fn test_annotate_positions_subsequent_via_public_api() {
     );
 }
 
-/// Tests annotate_positions for multi-item citations.
+/// Tests `annotate_positions` for multi-item citations.
 ///
 /// Verifies that positions are tracked correctly per-item in a multi-item citation group,
 /// with multi-item citations never being marked as Ibid.
@@ -2819,7 +2800,7 @@ fn test_annotate_positions_multi_item_via_public_api() {
     );
 }
 
-/// Tests annotate_positions when the previous note contains multiple sources.
+/// Tests `annotate_positions` when the previous note contains multiple sources.
 ///
 /// Verifies that a multi-source previous note invalidates lexical relative
 /// markers, so the next single-source repeat becomes `Subsequent`, not `Ibid`.
@@ -3057,13 +3038,11 @@ bibliography:
     );
     assert!(
         result.contains("a)"),
-        "Should contain sub-label a): {}",
-        result
+        "Should contain sub-label a): {result}"
     );
     assert!(
         result.contains("b)"),
-        "Should contain sub-label b): {}",
-        result
+        "Should contain sub-label b): {result}"
     );
     // Should have 2 entries (1 compound + 1 standalone), not 3
     let entries: Vec<&str> = result.trim().split("\n\n").collect();
@@ -3160,8 +3139,8 @@ fn test_compound_numeric_citation_subentry_disabled() {
 
 /// Verifies integral (narrative) citations include sub-labels for compound groups.
 ///
-/// Regression test: render_author_number_for_numeric_integral_with_format was
-/// using a bare citation number without consulting citation_sub_label_for_ref,
+/// Regression test: `render_author_number_for_numeric_integral_with_format` was
+/// using a bare citation number without consulting `citation_sub_label_for_ref`,
 /// so grouped refs rendered "Smith [1]" instead of "Smith [1a]".
 #[test]
 fn test_compound_numeric_integral_citation_sub_label() {
@@ -3228,8 +3207,7 @@ fn test_compound_numeric_integral_citation_sub_label() {
     let rendered_a = processor.process_citation(&cite_a).unwrap();
     assert!(
         rendered_a.contains("[1a]"),
-        "first compound member should show sub-label 'a': got '{}'",
-        rendered_a
+        "first compound member should show sub-label 'a': got '{rendered_a}'"
     );
 
     // Second member should render "Jones [1b]", not "Jones [1]"
@@ -3245,17 +3223,16 @@ fn test_compound_numeric_integral_citation_sub_label() {
     let rendered_b = processor.process_citation(&cite_b).unwrap();
     assert!(
         rendered_b.contains("[1b]"),
-        "second compound member should show sub-label 'b': got '{}'",
-        rendered_b
+        "second compound member should show sub-label 'b': got '{rendered_b}'"
     );
 }
 
-/// Verifies render_bibliography correctly merges compound groups when called
+/// Verifies `render_bibliography` correctly merges compound groups when called
 /// through the standard public API (regression guard for Bug 3).
 ///
-/// The CLI's non-show_keys bibliography path was calling process_references()
-/// directly and rendering entries one-by-one, bypassing merge_compound_entries.
-/// This test ensures render_bibliography (the correct path) produces a single
+/// The CLI's non-show_keys bibliography path was calling `process_references()`
+/// directly and rendering entries one-by-one, bypassing `merge_compound_entries`.
+/// This test ensures `render_bibliography` (the correct path) produces a single
 /// merged entry — not two separate [1] entries.
 #[test]
 fn test_compound_numeric_bibliography_no_duplicate_labels() {
@@ -3320,8 +3297,7 @@ bibliography:
     let label_1_count = result.matches("[1]").count();
     assert_eq!(
         label_1_count, 1,
-        "expected exactly one [1] label for the merged group, got {}: {}",
-        label_1_count, result
+        "expected exactly one [1] label for the merged group, got {label_1_count}: {result}"
     );
 
     // Should contain exactly one compound group entry
@@ -3831,8 +3807,7 @@ fn test_grouped_integral_citation_renders_all_items() {
     // Both years must appear — verifies multi-item single-group rendering
     assert!(
         result.contains("1962") && result.contains("1970"),
-        "integral grouped citation should render all items in group, got: {}",
-        result
+        "integral grouped citation should render all items in group, got: {result}"
     );
 }
 
@@ -3890,12 +3865,10 @@ fn test_label_integral_citation_includes_label() {
     // Should include both author and citation label (e.g., "Kuhn [Kuh62]" or similar)
     assert!(
         result.contains("Kuhn"),
-        "label-integral should include author, got: {}",
-        result
+        "label-integral should include author, got: {result}"
     );
     assert!(
         result.contains("62") && result.len() > "Kuhn".len(),
-        "label-integral should include citation label, got: {}",
-        result
+        "label-integral should include citation label, got: {result}"
     );
 }

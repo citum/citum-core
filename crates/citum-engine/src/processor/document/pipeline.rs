@@ -110,7 +110,7 @@ impl Processor {
             parsed,
             parser,
             format,
-            |processor| processor.render_grouped_bibliography_with_format::<F>(),
+            super::super::Processor::render_grouped_bibliography_with_format::<F>,
         )
     }
 

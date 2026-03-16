@@ -1,4 +1,7 @@
-use super::*;
+use super::{
+    CslnNode, DelimiterPunctuation, FormattingOptions, HashMap, Rendering, TemplateCompiler,
+    TemplateComponent,
+};
 
 impl TemplateCompiler {
     pub(super) fn map_label_form(
@@ -16,7 +19,7 @@ impl TemplateCompiler {
         }
     }
 
-    /// Convert FormattingOptions to Rendering.
+    /// Convert `FormattingOptions` to Rendering.
     pub(super) fn convert_formatting(&self, fmt: &FormattingOptions) -> Rendering {
         // Infer wrap from prefix/suffix patterns
         let (mut wrap, remaining_prefix, remaining_suffix) =
@@ -66,7 +69,7 @@ impl TemplateCompiler {
     /// CSL 1.0 uses `prefix="("` and `suffix=")"` for parentheses wrapping.
     /// Citum prefers explicit `wrap: parentheses` for cleaner representation.
     ///
-    /// Returns (wrap, remaining_prefix, remaining_suffix) where the wrap chars
+    /// Returns (wrap, `remaining_prefix`, `remaining_suffix`) where the wrap chars
     /// have been extracted and remaining affixes are returned.
     pub(super) fn infer_wrap_from_affixes(
         prefix: &Option<String>,
@@ -83,11 +86,11 @@ impl TemplateCompiler {
             (Some(p), Some(s)) if p.ends_with('(') && s.starts_with(')') => {
                 let remaining_prefix = p
                     .strip_suffix('(')
-                    .map(|r| r.to_string())
+                    .map(std::string::ToString::to_string)
                     .filter(|s| !s.is_empty());
                 let remaining_suffix = s
                     .strip_prefix(')')
-                    .map(|r| r.to_string())
+                    .map(std::string::ToString::to_string)
                     .filter(|s| !s.is_empty());
                 (
                     Some(WrapPunctuation::Parentheses),
@@ -99,11 +102,11 @@ impl TemplateCompiler {
             (Some(p), Some(s)) if p.ends_with('[') && s.starts_with(']') => {
                 let remaining_prefix = p
                     .strip_suffix('[')
-                    .map(|r| r.to_string())
+                    .map(std::string::ToString::to_string)
                     .filter(|s| !s.is_empty());
                 let remaining_suffix = s
                     .strip_prefix(']')
-                    .map(|r| r.to_string())
+                    .map(std::string::ToString::to_string)
                     .filter(|s| !s.is_empty());
                 (
                     Some(WrapPunctuation::Brackets),
@@ -172,7 +175,7 @@ impl TemplateCompiler {
             _ => {} // List and future variants - don't modify
         }
     }
-    /// Map a String delimiter to DelimiterPunctuation.
+    /// Map a String delimiter to `DelimiterPunctuation`.
     /// Preserves custom delimiters that don't match standard patterns.
     pub(super) fn map_delimiter(&self, delimiter: &Option<String>) -> Option<DelimiterPunctuation> {
         delimiter
@@ -295,8 +298,8 @@ impl TemplateCompiler {
         }
     }
 
-    /// Extracts the source_order from a CslnNode, if present.
-    /// Returns the order value or usize::MAX if not set (sorts last).
+    /// Extracts the `source_order` from a `CslnNode`, if present.
+    /// Returns the order value or `usize::MAX` if not set (sorts last).
     pub(super) fn extract_source_order(&self, node: &CslnNode) -> Option<usize> {
         let order = match node {
             CslnNode::Variable(v) => v.source_order,
@@ -314,7 +317,7 @@ impl TemplateCompiler {
                     CslnNode::Date(d) => format!("Date({:?})", d.variable),
                     CslnNode::Names(n) => format!("Names({:?})", n.variable),
                     CslnNode::Group(_) => "Group".to_string(),
-                    CslnNode::Text { value } => format!("Text({})", value),
+                    CslnNode::Text { value } => format!("Text({value})"),
                     CslnNode::Condition(_) => "Condition".to_string(),
                     CslnNode::Term(t) => format!("Term({:?})", t.term),
                 },

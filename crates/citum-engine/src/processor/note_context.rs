@@ -20,7 +20,7 @@ use citum_schema::citation::Position;
 fn effective_locator_string(item: &CitationItem) -> Option<String> {
     item.locator
         .as_ref()
-        .map(|locator| locator.canonical_string())
+        .map(citum_schema::citation::CitationLocator::canonical_string)
 }
 
 impl Processor {
@@ -31,7 +31,7 @@ impl Processor {
     /// - First: Item not cited before
     /// - Subsequent: Item cited before but not immediately preceding
     /// - Ibid: Same single item as immediately preceding citation with same locator context
-    /// - IbidWithLocator: Same single item as preceding, different locators
+    /// - `IbidWithLocator`: Same single item as preceding, different locators
     ///
     /// Multi-item citations are never marked as Ibid (only First or Subsequent).
     /// Only sets position if currently None (respects explicit caller values).

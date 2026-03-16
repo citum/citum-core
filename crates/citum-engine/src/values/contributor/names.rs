@@ -36,7 +36,7 @@ pub struct NamesOverrides<'a> {
     pub initialize_with: Option<&'a String>,
 }
 
-/// Partition names into (first_names, use_et_al, last_names) based on et-al options.
+/// Partition names into (`first_names`, `use_et_al`, `last_names`) based on et-al options.
 fn partition_et_al<'a>(
     names: &'a [crate::reference::FlatName],
     shorten: Option<&'a ShortenListOptions>,
@@ -50,9 +50,11 @@ fn partition_et_al<'a>(
         // Determine effective min/use_first based on citation position.
         let is_subsequent = matches!(
             hints.position,
-            Some(citum_schema::citation::Position::Subsequent)
-                | Some(citum_schema::citation::Position::Ibid)
-                | Some(citum_schema::citation::Position::IbidWithLocator)
+            Some(
+                citum_schema::citation::Position::Subsequent
+                    | citum_schema::citation::Position::Ibid
+                    | citum_schema::citation::Position::IbidWithLocator
+            )
         );
         let effective_min_threshold = if is_subsequent {
             opts.subsequent_min.unwrap_or(opts.min) as usize
@@ -223,9 +225,9 @@ fn apply_et_al(
     };
 
     if use_delimiter {
-        format!("{}, {}", result, and_others_term)
+        format!("{result}, {and_others_term}")
     } else {
-        format!("{} {}", result, and_others_term)
+        format!("{result} {and_others_term}")
     }
 }
 
@@ -236,6 +238,7 @@ fn apply_et_al(
 /// This function assumes the non-empty input check at the top remains in place;
 /// violating that invariant can trigger indexing or `unwrap()` panics in later
 /// formatting branches.
+#[must_use]
 pub fn format_names(
     names: &[crate::reference::FlatName],
     form: &ContributorForm,
@@ -257,9 +260,7 @@ pub fn format_names(
         .shorten
         .or_else(|| config.and_then(|c| c.shorten.as_ref()));
 
-    let and_others = shorten
-        .map(|opts| opts.and_others)
-        .unwrap_or(AndOtherOptions::EtAl);
+    let and_others = shorten.map_or(AndOtherOptions::EtAl, |opts| opts.and_others);
 
     let (first_names, use_et_al, last_names) = partition_et_al(names, shorten, hints);
 
@@ -361,7 +362,7 @@ fn initialize_given_name(
     initialize_with: Option<&String>,
     initialize_with_hyphen: Option<bool>,
 ) -> String {
-    let init = initialize_with.map(|s| s.as_str()).unwrap_or(". ");
+    let init = initialize_with.map_or(". ", std::string::String::as_str);
     let separators = if initialize_with_hyphen == Some(false) {
         vec![' ', '\u{00A0}'] // Non-breaking space too
     } else {
@@ -433,10 +434,10 @@ fn assemble_long_name(
             suffix_part.push_str(suffix);
         }
 
-        if !suffix_part.is_empty() {
-            format!("{}{}{}", family_part, sort_separator, suffix_part)
-        } else {
+        if suffix_part.is_empty() {
             family_part
+        } else {
+            format!("{family_part}{sort_separator}{suffix_part}")
         }
     } else {
         // "Given Family" format
@@ -521,10 +522,10 @@ pub(crate) fn format_single_name(
             // Spec: "demote-non-dropping-particle ... This attribute does not affect ... the short form"
             // So for short form, we keep ndp with family.
 
-            if !ndp.is_empty() {
-                format!("{} {}", ndp, family)
-            } else {
+            if ndp.is_empty() {
                 family.to_string()
+            } else {
+                format!("{ndp} {family}")
             }
         }
         ContributorForm::Long | ContributorForm::Verb | ContributorForm::VerbShort => {
@@ -568,7 +569,7 @@ pub(crate) fn format_single_name(
                 particle_part.push_str(ndp);
             }
 
-            let sep = ctx.sort_separator.map(|s| s.as_str()).unwrap_or(", ");
+            let sep = ctx.sort_separator.map_or(", ", std::string::String::as_str);
             assemble_long_name(
                 family_part,
                 given_part,
@@ -582,6 +583,7 @@ pub(crate) fn format_single_name(
 }
 
 /// Format contributors in short form for citation grouping.
+#[must_use]
 pub fn format_contributors_short(
     names: &[crate::reference::FlatName],
     options: &RenderOptions<'_>,

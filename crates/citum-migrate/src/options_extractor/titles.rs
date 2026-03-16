@@ -7,6 +7,7 @@ use std::collections::HashSet;
 /// This reads title-related rendering intent directly from legacy CSL so the
 /// migrated style carries explicit title emphasis, quoting, and text-case
 /// behavior in `options.titles`.
+#[must_use]
 pub fn extract_title_config(style: &Style) -> Option<TitlesConfig> {
     let mut config = TitlesConfig::default();
     let mut has_config = false;

@@ -350,7 +350,7 @@ impl ScopeTracker {
 }
 
 /// Parse YAML frontmatter from content.
-/// Returns (frontmatter, remaining_content).
+/// Returns (frontmatter, `remaining_content`).
 pub(crate) fn parse_frontmatter(content: &str) -> (Option<DocumentFrontmatter>, &str) {
     let trimmed = content.trim_start();
     if !trimmed.starts_with("---") {

@@ -42,7 +42,7 @@ fn make_reference() -> Reference {
     })
 }
 
-/// Helper to create NameFormatContext for tests.
+/// Helper to create `NameFormatContext` for tests.
 fn make_name_format_context<'a>(
     display_as_sort: Option<DisplayAsSort>,
     name_order: Option<&'a NameOrder>,
@@ -63,7 +63,7 @@ fn make_name_format_context<'a>(
     }
 }
 
-/// Tests the behavior of test_contributor_values.
+/// Tests the behavior of `test_contributor_values`.
 #[test]
 fn test_contributor_values() {
     let config = make_config();
@@ -102,7 +102,7 @@ fn test_contributor_values() {
     assert_eq!(values.value, "Kuhn");
 }
 
-/// Tests the behavior of test_date_values.
+/// Tests the behavior of `test_date_values`.
 #[test]
 fn test_date_values() {
     let config = make_config();
@@ -136,7 +136,7 @@ fn test_date_values() {
     assert_eq!(values.value, "1962");
 }
 
-/// Tests the behavior of test_et_al.
+/// Tests the behavior of `test_et_al`.
 #[test]
 fn test_et_al() {
     let config = make_config();
@@ -185,7 +185,7 @@ fn test_et_al() {
     assert_eq!(values.value, "LeCun et al.");
 }
 
-/// Tests the behavior of test_format_page_range_expanded.
+/// Tests the behavior of `test_format_page_range_expanded`.
 #[test]
 fn test_format_page_range_expanded() {
     use citum_schema::options::PageRangeFormat;
@@ -199,7 +199,7 @@ fn test_format_page_range_expanded() {
     );
 }
 
-/// Tests the behavior of test_format_page_range_minimal.
+/// Tests the behavior of `test_format_page_range_minimal`.
 #[test]
 fn test_format_page_range_minimal() {
     use citum_schema::options::PageRangeFormat;
@@ -218,7 +218,7 @@ fn test_format_page_range_minimal() {
     );
 }
 
-/// Tests the behavior of test_format_page_range_minimal_two.
+/// Tests the behavior of `test_format_page_range_minimal_two`.
 #[test]
 fn test_format_page_range_minimal_two() {
     use citum_schema::options::PageRangeFormat;
@@ -233,7 +233,7 @@ fn test_format_page_range_minimal_two() {
     );
 }
 
-/// Tests the behavior of test_format_page_range_chicago.
+/// Tests the behavior of `test_format_page_range_chicago`.
 #[test]
 fn test_format_page_range_chicago() {
     use citum_schema::options::PageRangeFormat;
@@ -252,7 +252,7 @@ fn test_format_page_range_chicago() {
     );
 }
 
-/// Tests the behavior of test_format_page_range_no_format.
+/// Tests the behavior of `test_format_page_range_no_format`.
 #[test]
 fn test_format_page_range_no_format() {
     // No format specified: just convert hyphen to en-dash
@@ -286,7 +286,7 @@ fn test_consecutive_segments() {
     );
 }
 
-/// Tests the behavior of test_et_al_delimiter_never.
+/// Tests the behavior of `test_et_al_delimiter_never`.
 #[test]
 fn test_et_al_delimiter_never() {
     use citum_schema::options::DelimiterPrecedesLast;
@@ -343,7 +343,7 @@ fn test_et_al_delimiter_never() {
     assert_eq!(values.value, "Smith et al.");
 }
 
-/// Tests the behavior of test_et_al_delimiter_always.
+/// Tests the behavior of `test_et_al_delimiter_always`.
 #[test]
 fn test_et_al_delimiter_always() {
     use citum_schema::options::DelimiterPrecedesLast;
@@ -400,7 +400,7 @@ fn test_et_al_delimiter_always() {
     assert_eq!(values.value, "Smith, et al.");
 }
 
-/// Tests the behavior of test_demote_non_dropping_particle.
+/// Tests the behavior of `test_demote_non_dropping_particle`.
 #[test]
 fn test_demote_non_dropping_particle() {
     use citum_schema::options::DemoteNonDroppingParticle;
@@ -472,7 +472,7 @@ fn test_demote_non_dropping_particle() {
     assert_eq!(res_straight, "Ludwig van Beethoven");
 }
 
-/// Tests the behavior of test_initialize_with_variants_for_multi_part_given_names.
+/// Tests the behavior of `test_initialize_with_variants_for_multi_part_given_names`.
 #[test]
 fn test_initialize_with_variants_for_multi_part_given_names() {
     let name = FlatName {
@@ -534,7 +534,7 @@ fn test_initialize_with_variants_for_multi_part_given_names() {
     assert_eq!(dot_space, "Kuhn, T. S.");
 }
 
-/// Tests the behavior of test_initialize_with_hyphen_guard.
+/// Tests the behavior of `test_initialize_with_hyphen_guard`.
 #[test]
 fn test_initialize_with_hyphen_guard() {
     let name = FlatName {
@@ -571,7 +571,7 @@ fn test_initialize_with_hyphen_guard() {
     assert_eq!(hyphen_disabled, "Kuhn, J.");
 }
 
-/// Tests NameForm variants: Full, FamilyOnly, Initials, and backward-compat defaulting.
+/// Tests `NameForm` variants: Full, `FamilyOnly`, Initials, and backward-compat defaulting.
 #[test]
 fn test_name_form_variants() {
     use citum_schema::options::contributors::NameForm;
@@ -646,7 +646,7 @@ fn test_name_form_initials_hyphen_default_separator() {
     assert_eq!(result, "J.-P. Sartre");
 }
 
-/// Tests the behavior of test_template_list_suppression.
+/// Tests the behavior of `test_template_list_suppression`.
 #[test]
 fn test_template_list_suppression() {
     let config = make_config();
@@ -686,7 +686,7 @@ fn test_template_list_suppression() {
     assert!(values.is_none());
 }
 
-/// Tests the behavior of test_et_al_use_last.
+/// Tests the behavior of `test_et_al_use_last`.
 #[test]
 fn test_et_al_use_last() {
     let mut config = make_config();
@@ -737,7 +737,7 @@ fn test_et_al_use_last() {
     assert_eq!(values.value, "LeCun … Hinton");
 }
 
-/// Tests the behavior of test_et_al_use_last_overlap.
+/// Tests the behavior of `test_et_al_use_last_overlap`.
 #[test]
 fn test_et_al_use_last_overlap() {
     // Edge case: use_first + use_last >= names.len() should show all names
@@ -790,7 +790,7 @@ fn test_et_al_use_last_overlap() {
     assert_eq!(values.value, "Alpha & Beta … Gamma");
 }
 
-/// Tests the behavior of test_title_hyperlink.
+/// Tests the behavior of `test_title_hyperlink`.
 #[test]
 fn test_title_hyperlink() {
     use citum_schema::options::LinksConfig;
@@ -836,7 +836,7 @@ fn test_title_hyperlink() {
     );
 }
 
-/// Tests the behavior of test_title_hyperlink_url_fallback.
+/// Tests the behavior of `test_title_hyperlink_url_fallback`.
 #[test]
 fn test_title_hyperlink_url_fallback() {
     use citum_schema::options::LinksConfig;
@@ -881,7 +881,7 @@ fn test_title_hyperlink_url_fallback() {
     assert_eq!(values.url, Some("https://example.com/resource".to_string()));
 }
 
-/// Tests the behavior of test_title_values_smarten_leading_single_quotes.
+/// Tests the behavior of `test_title_values_smarten_leading_single_quotes`.
 #[test]
 fn test_title_values_smarten_leading_single_quotes() {
     // Upstream provenance: CSL fixture `flipflop_LeadingSingleQuote`.
@@ -920,7 +920,7 @@ fn test_title_values_smarten_leading_single_quotes() {
     );
 }
 
-/// Tests the behavior of test_title_values_smarten_starting_apostrophe.
+/// Tests the behavior of `test_title_values_smarten_starting_apostrophe`.
 #[test]
 fn test_title_values_smarten_starting_apostrophe() {
     // Upstream provenance: CSL fixture `flipflop_StartingApostrophe`.
@@ -962,7 +962,7 @@ fn test_title_values_smarten_starting_apostrophe() {
     );
 }
 
-/// Tests the behavior of test_title_values_smarten_french_apostrophes.
+/// Tests the behavior of `test_title_values_smarten_french_apostrophes`.
 #[test]
 fn test_title_values_smarten_french_apostrophes() {
     // Upstream provenance: adapted from CSL fixture `flipflop_Apostrophes`.
@@ -1295,7 +1295,7 @@ fn test_title_values_inline_link_suppresses_outer_title_link() {
     assert_eq!(values.url, None);
 }
 
-/// Tests the behavior of test_variable_hyperlink.
+/// Tests the behavior of `test_variable_hyperlink`.
 #[test]
 fn test_variable_hyperlink() {
     use citum_schema::options::LinksConfig;
@@ -1339,7 +1339,7 @@ fn test_variable_hyperlink() {
     assert_eq!(values.url, Some("https://doi.org/10.1234/pub".to_string()));
 }
 
-/// Tests the behavior of test_editor_label_format.
+/// Tests the behavior of `test_editor_label_format`.
 #[test]
 fn test_editor_label_format() {
     let mut config = make_config();
@@ -1427,7 +1427,7 @@ fn test_editor_label_format() {
     }
 }
 
-/// Tests the behavior of test_term_values.
+/// Tests the behavior of `test_term_values`.
 #[test]
 fn test_term_values() {
     let config = make_config();
@@ -1459,7 +1459,7 @@ fn test_term_values() {
     assert_eq!(values.value, "in");
 }
 
-/// Tests the behavior of test_template_list_term_suppression.
+/// Tests the behavior of `test_template_list_term_suppression`.
 #[test]
 fn test_template_list_term_suppression() {
     let config = make_config();
@@ -1500,7 +1500,7 @@ fn test_template_list_term_suppression() {
     assert!(values.is_none());
 }
 
-/// Tests the behavior of test_date_fallback.
+/// Tests the behavior of `test_date_fallback`.
 #[test]
 fn test_date_fallback() {
     let config = make_config();
@@ -1542,7 +1542,7 @@ fn test_date_fallback() {
     assert_eq!(values.value, "n.d.");
 }
 
-/// Tests the behavior of test_strip_periods_global_config.
+/// Tests the behavior of `test_strip_periods_global_config`.
 #[test]
 fn test_strip_periods_global_config() {
     let mut config = make_config();
@@ -1584,7 +1584,7 @@ fn test_strip_periods_global_config() {
     assert_eq!(values.suffix.as_ref().unwrap(), " (ed)");
 }
 
-/// Tests the behavior of test_strip_periods_component_override.
+/// Tests the behavior of `test_strip_periods_component_override`.
 #[test]
 fn test_strip_periods_component_override() {
     let mut config = make_config();
@@ -1631,7 +1631,7 @@ fn test_strip_periods_component_override() {
     assert_eq!(values.suffix.as_ref().unwrap(), " (ed)");
 }
 
-/// Tests the behavior of test_strip_periods_no_strip_by_default.
+/// Tests the behavior of `test_strip_periods_no_strip_by_default`.
 #[test]
 fn test_strip_periods_no_strip_by_default() {
     let config = make_config();
@@ -1672,7 +1672,7 @@ fn test_strip_periods_no_strip_by_default() {
     assert_eq!(values.suffix.as_ref().unwrap(), " (ed.)");
 }
 
-/// Tests the behavior of test_strip_trailing_periods.
+/// Tests the behavior of `test_strip_trailing_periods`.
 #[test]
 fn test_strip_trailing_periods() {
     assert_eq!(strip_trailing_periods("test."), "test");
@@ -1682,7 +1682,7 @@ fn test_strip_trailing_periods() {
     assert_eq!(strip_trailing_periods("..."), "");
 }
 
-/// Tests the behavior of test_should_strip_periods_precedence.
+/// Tests the behavior of `test_should_strip_periods_precedence`.
 #[test]
 fn test_should_strip_periods_precedence() {
     let config = Config {
@@ -1733,7 +1733,7 @@ fn test_should_strip_periods_precedence() {
     assert!(!should_strip_periods(&rendering_default, &options_none));
 }
 
-/// Tests the behavior of test_sort_separator_space.
+/// Tests the behavior of `test_sort_separator_space`.
 #[test]
 fn test_sort_separator_space() {
     use citum_schema::options::DisplayAsSort;
@@ -1747,7 +1747,7 @@ fn test_sort_separator_space() {
 
     // Test with space separator: should produce "Smith J" (no comma)
     let sep_space = " ".to_string();
-    let init_empty = "".to_string();
+    let init_empty = String::new();
     let ctx = make_name_format_context(
         Some(DisplayAsSort::All),
         None,
@@ -1776,7 +1776,7 @@ fn test_sort_separator_space() {
     assert_eq!(result_default, "Smith, J");
 }
 
-/// Tests the behavior of preferred_transliteration_exact_match.
+/// Tests the behavior of `preferred_transliteration_exact_match`.
 #[test]
 fn preferred_transliteration_exact_match() {
     use citum_schema::reference::types::{MultilingualComplex, MultilingualString};
@@ -1803,7 +1803,7 @@ fn preferred_transliteration_exact_match() {
     assert_eq!(result, "Chan-cheng");
 }
 
-/// Tests the behavior of preferred_transliteration_substring_match.
+/// Tests the behavior of `preferred_transliteration_substring_match`.
 #[test]
 fn preferred_transliteration_substring_match() {
     use citum_schema::reference::types::{MultilingualComplex, MultilingualString};
@@ -1827,7 +1827,7 @@ fn preferred_transliteration_substring_match() {
     assert_eq!(result, "Zhànzhēng");
 }
 
-/// Tests the behavior of preferred_transliteration_fallback_to_preferred_script.
+/// Tests the behavior of `preferred_transliteration_fallback_to_preferred_script`.
 #[test]
 fn preferred_transliteration_fallback_to_preferred_script() {
     use citum_schema::reference::types::{MultilingualComplex, MultilingualString};
@@ -1852,7 +1852,7 @@ fn preferred_transliteration_fallback_to_preferred_script() {
     assert_eq!(result, "Zhànzhēng");
 }
 
-/// Tests the behavior of preferred_transliteration_fallback_to_original.
+/// Tests the behavior of `preferred_transliteration_fallback_to_original`.
 #[test]
 fn preferred_transliteration_fallback_to_original() {
     use citum_schema::reference::types::{MultilingualComplex, MultilingualString};
@@ -1874,17 +1874,17 @@ fn preferred_transliteration_fallback_to_original() {
     assert_eq!(result, "战争");
 }
 
-/// Tests int_to_letter edge case: zero input returns None.
+/// Tests `int_to_letter` edge case: zero input returns None.
 ///
-/// Verifies that int_to_letter correctly rejects invalid input (0).
+/// Verifies that `int_to_letter` correctly rejects invalid input (0).
 #[test]
 fn test_int_to_letter_zero_edge_case() {
     assert_eq!(int_to_letter(0), None);
 }
 
-/// Tests int_to_letter for large numbers (triple letters and beyond).
+/// Tests `int_to_letter` for large numbers (triple letters and beyond).
 ///
-/// Verifies that int_to_letter correctly converts 27→aa, 52→az, 53→ba,
+/// Verifies that `int_to_letter` correctly converts 27→aa, 52→az, 53→ba,
 /// demonstrating base-26 conversion with wrapping.
 #[test]
 fn test_int_to_letter_large_number() {
@@ -1895,7 +1895,7 @@ fn test_int_to_letter_large_number() {
 
 /// Tests locator label selection with different value formats.
 ///
-/// Verifies that check_plural correctly identifies plural locators:
+/// Verifies that `check_plural` correctly identifies plural locators:
 /// ranges (hyphens), lists (commas), and conjunctions (ampersands).
 #[test]
 fn test_locator_label_selection_comprehensive() {

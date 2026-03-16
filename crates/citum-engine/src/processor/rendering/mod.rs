@@ -64,7 +64,7 @@ fn collapse_compound_locator(segments: &[LocatorSegment], locale: &Locale) -> St
             let term = locale
                 .locator_term(&seg.label, plural, TermForm::Short)
                 .or_else(|| locale.locator_term(&seg.label, plural, TermForm::Symbol))
-                .map(|t| t.to_string())
+                .map(std::string::ToString::to_string)
                 .unwrap_or_else(|| {
                     serde_json::to_value(seg.label)
                         .ok()
@@ -118,7 +118,7 @@ pub struct TemplateRenderRequest<'a> {
     pub template: &'a [TemplateComponent],
     /// The rendering context (Citation or Bibliography).
     pub context: RenderContext,
-    /// The citation mode (Integral or NonIntegral).
+    /// The citation mode (Integral or `NonIntegral`).
     pub mode: citum_schema::citation::CitationMode,
     /// Whether to suppress the author in output.
     pub suppress_author: bool,
@@ -311,7 +311,7 @@ impl<'a> Renderer<'a> {
             suffix.to_string()
         } else {
             // Add space before suffix to separate from content
-            format!(" {}", suffix)
+            format!(" {suffix}")
         }
     }
 
@@ -455,11 +455,11 @@ impl<'a> Renderer<'a> {
         let sub_label = self.citation_sub_label_for_ref(&ref_id).unwrap_or_default();
 
         // Format: "Author [Na]"
-        if !author_part.is_empty() {
-            format!("{} [{}{}]", author_part, citation_number, sub_label)
-        } else {
+        if author_part.is_empty() {
             // Fallback: just citation number if no author
-            format!("[{}{}]", citation_number, sub_label)
+            format!("[{citation_number}{sub_label}]")
+        } else {
+            format!("{author_part} [{citation_number}{sub_label}]")
         }
     }
 
@@ -594,20 +594,21 @@ fn key_base(key: &str) -> String {
 /// The key includes rendering context (prefix/suffix) to allow the same variable
 /// to render multiple times if it appears in semantically different contexts.
 /// This enables styles like Chicago that require year after author AND after publisher.
+#[must_use]
 pub fn get_variable_key(component: &TemplateComponent) -> Option<String> {
     use citum_schema::template::Rendering;
 
     fn context_suffix(rendering: &Rendering) -> String {
         match (&rendering.prefix, &rendering.suffix) {
-            (Some(p), Some(s)) => format!(":{}_{}", p, s),
-            (Some(p), None) => format!(":{}", p),
-            (None, Some(s)) => format!(":{}", s),
+            (Some(p), Some(s)) => format!(":{p}_{s}"),
+            (Some(p), None) => format!(":{p}"),
+            (None, Some(s)) => format!(":{s}"),
             (None, None) => String::new(),
         }
     }
 
     fn make_key(kind: &str, value: impl std::fmt::Debug, ctx: String) -> Option<String> {
-        Some(format!("{}:{:?}{}", kind, value, ctx))
+        Some(format!("{kind}:{value:?}{ctx}"))
     }
 
     match component {

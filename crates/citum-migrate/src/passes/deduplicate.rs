@@ -40,9 +40,8 @@ fn deduplicate_numbers_in_list(list: &mut citum_schema::template::TemplateList) 
                 // Remove duplicate number
                 list.items.remove(i);
                 continue;
-            } else {
-                seen_types.push(n.number.clone());
             }
+            seen_types.push(n.number.clone());
         }
         i += 1;
     }
@@ -65,9 +64,8 @@ fn deduplicate_dates_in_list(list: &mut citum_schema::template::TemplateList) {
                 // Remove duplicate date
                 list.items.remove(i);
                 continue;
-            } else {
-                seen_types.push(d.date.clone());
             }
+            seen_types.push(d.date.clone());
         }
         i += 1;
     }
@@ -90,9 +88,8 @@ fn deduplicate_titles_in_list(list: &mut citum_schema::template::TemplateList) {
             if seen_types.contains(&t.title) {
                 list.items.remove(i);
                 continue;
-            } else {
-                seen_types.push(t.title.clone());
             }
+            seen_types.push(t.title.clone());
         }
         i += 1;
     }
@@ -134,6 +131,7 @@ pub fn deduplicate_lists_in_items(items: &mut Vec<TemplateComponent>) {
     }
 }
 
+#[must_use]
 pub fn list_signature(list: &citum_schema::template::TemplateList) -> String {
     let mut sig = String::new();
     for item in &list.items {

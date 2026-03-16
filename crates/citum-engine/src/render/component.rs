@@ -103,12 +103,14 @@ fn resolve_semantic_class(component: &ProcTemplateComponent) -> Option<String> {
     }
 }
 
-/// Render a single component to string using the default PlainText format.
+/// Render a single component to string using the default `PlainText` format.
+#[must_use]
 pub fn render_component(component: &ProcTemplateComponent) -> String {
     PlainText.finish(render_component_with_format::<PlainText>(component))
 }
 
 /// Render a single component using a specific output format.
+#[must_use]
 pub fn render_component_with_format<F: OutputFormat<Output = String>>(
     component: &ProcTemplateComponent,
 ) -> F::Output {
@@ -205,6 +207,7 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
 }
 
 /// Get effective rendering, applying global config, then local template settings, then type-specific overrides.
+#[must_use]
 pub fn get_effective_rendering(component: &ProcTemplateComponent) -> Rendering {
     let mut effective = Rendering::default();
 
@@ -276,6 +279,7 @@ pub fn get_effective_rendering(component: &ProcTemplateComponent) -> Rendering {
 ///
 /// The returned rendering reflects title type, mapped reference category, and
 /// optional language-specific overrides from the style configuration.
+#[must_use]
 pub fn get_title_category_rendering(
     title_type: &TitleType,
     ref_type: Option<&str>,

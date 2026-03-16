@@ -413,7 +413,7 @@ multilingual:
 
     let cjk_config = mlt.scripts.get("cjk").unwrap();
     assert!(cjk_config.use_native_ordering);
-    assert_eq!(cjk_config.delimiter, Some("".to_string()));
+    assert_eq!(cjk_config.delimiter, Some(String::new()));
 }
 
 // --- Multilingual Rendering Tests ---

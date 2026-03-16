@@ -70,12 +70,12 @@ impl std::fmt::Display for TransformationEvent {
                 location,
                 element_type,
                 ..
-            } => write!(f, "{} element at {}", element_type, location),
+            } => write!(f, "{element_type} element at {location}"),
             TransformationEvent::MacroExpansion { macro_name, source } => {
-                write!(f, "Expanded from macro '{}' at {}", macro_name, source)
+                write!(f, "Expanded from macro '{macro_name}' at {source}")
             }
             TransformationEvent::Upsampled { from_type, to_type } => {
-                write!(f, "Upsampled from {} to {}", from_type, to_type)
+                write!(f, "Upsampled from {from_type} to {to_type}")
             }
             TransformationEvent::Merged { with, reason } => {
                 write!(f, "Merged ({}) with {} location(s)", reason, with.len())
@@ -86,13 +86,12 @@ impl std::fmt::Display for TransformationEvent {
                 component_type,
             } => write!(
                 f,
-                "{} component at index {} in {}",
-                component_type, index, position
+                "{component_type} component at index {index} in {position}"
             ),
             TransformationEvent::TypeOverride {
                 item_type,
                 override_reason,
-            } => write!(f, "Type override for {}: {}", item_type, override_reason),
+            } => write!(f, "Type override for {item_type}: {override_reason}"),
         }
     }
 }
@@ -116,6 +115,7 @@ struct ProvenanceTrackerInner {
 }
 
 impl ProvenanceTracker {
+    #[must_use]
     pub fn new(enabled: bool) -> Self {
         Self {
             inner: Arc::new(ProvenanceTrackerInner {
@@ -253,6 +253,7 @@ impl ProvenanceTracker {
         }
     }
 
+    #[must_use]
     pub fn get_provenance(&self, var_name: &str) -> Option<VariableProvenance> {
         if !self.inner.enabled {
             return None;
@@ -265,6 +266,7 @@ impl ProvenanceTracker {
             .and_then(|vars| vars.get(var_name).cloned())
     }
 
+    #[must_use]
     pub fn get_all_variables(&self) -> Vec<String> {
         self.inner
             .variables
