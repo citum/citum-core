@@ -111,10 +111,51 @@
         "text"
       ]
     },
+    "ArticleJournalBibliographyConfig": {
+      "description": "Article-journal-specific bibliography configuration.",
+      "type": "object",
+      "properties": {
+        "no-page-fallback": {
+          "description": "Fallback policy used when page data is absent from an article-journal reference.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ArticleJournalNoPageFallback"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "ArticleJournalNoPageFallback": {
+      "description": "Named fallback policies for page-less article-journal bibliography entries.",
+      "oneOf": [
+        {
+          "description": "Replace the standard article detail block with the DOI component.",
+          "type": "string",
+          "enum": [
+            "doi"
+          ]
+        }
+      ]
+    },
     "BibliographyConfig": {
       "description": "Bibliography-specific configuration.",
       "type": "object",
       "properties": {
+        "article-journal": {
+          "description": "Article-journal-specific bibliography policies.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ArticleJournalBibliographyConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "compound-numeric": {
           "description": "Configuration for compound numeric bibliography entries. When present, enables grouping of references by input bibliography `sets`.",
           "anyOf": [

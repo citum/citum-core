@@ -448,9 +448,17 @@ fn given_a_multilingual_author_when_rendering_a_citation_then_the_selected_name_
     let mut bib = indexmap::IndexMap::new();
     bib.insert(
         "item1".to_string(),
-        make_multilingual_book(
-            "item1", "東京", "太郎", "ja", "ja-Latn", "Tokyo", "Taro", 2020, "Title",
-        ),
+        make_multilingual_book(common::MultilingualBookParams {
+            id: "item1",
+            original_family: "東京",
+            original_given: "太郎",
+            lang: "ja",
+            translit_script: "ja-Latn",
+            translit_family: "Tokyo",
+            translit_given: "Taro",
+            year: 2020,
+            title: "Title",
+        }),
     );
 
     // Given a multilingual citation style and a single Japanese reference.

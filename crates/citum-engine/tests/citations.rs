@@ -331,17 +331,17 @@ fn disambiguation_duplicate_family_names_expand_given_names_only_where_needed() 
     // Sorted by author (Asthma, then Bronchitis) and year (1885, then 1980)
     let expected = "Asthma, (1885); Asthma, Asthma, (1980); Bronchitis, (1995)";
 
-    run_test_case_native_with_options(
-        &input,
-        &citation_items,
+    run_test_case_native_with_options(common::TestCaseOptions {
+        input: &input,
+        citation_items: &citation_items,
         expected,
-        "citation",
-        false,
-        false,
-        true,
-        None,
-        None,
-    );
+        mode: "citation",
+        disambiguate_year_suffix: false,
+        disambiguate_names: false,
+        disambiguate_givenname: true,
+        et_al_min: None,
+        et_al_use_first: None,
+    });
 }
 
 /// Test et-al expansion success: Name expansion disambiguates conflicting references.
@@ -367,17 +367,17 @@ fn disambiguation_et_al_conflicts_expand_names_when_that_resolves_them() {
     let citation_items = vec![vec!["ITEM-1", "ITEM-2"]];
     let expected = "Smith, Brown, et al., (1980); Smith, Beefheart, et al., (1980)";
 
-    run_test_case_native_with_options(
-        &input,
-        &citation_items,
+    run_test_case_native_with_options(common::TestCaseOptions {
+        input: &input,
+        citation_items: &citation_items,
         expected,
-        "citation",
-        false,
-        true,
-        false,
-        Some(3),
-        Some(1),
-    );
+        mode: "citation",
+        disambiguate_year_suffix: false,
+        disambiguate_names: true,
+        disambiguate_givenname: false,
+        et_al_min: Some(3),
+        et_al_use_first: Some(1),
+    });
 }
 
 /// Test et-al expansion failure: Cascade to year suffix when name expansion fails.
@@ -399,17 +399,17 @@ fn disambiguation_et_al_conflicts_fall_back_to_year_suffixes() {
     let citation_items = vec![vec!["ITEM-1", "ITEM-2"]];
     let expected = "Smith et al., (1980a), (1980b)";
 
-    run_test_case_native_with_options(
-        &input,
-        &citation_items,
+    run_test_case_native_with_options(common::TestCaseOptions {
+        input: &input,
+        citation_items: &citation_items,
         expected,
-        "citation",
-        true,
-        true,
-        false,
-        Some(3),
-        Some(1),
-    );
+        mode: "citation",
+        disambiguate_year_suffix: true,
+        disambiguate_names: true,
+        disambiguate_givenname: false,
+        et_al_min: Some(3),
+        et_al_use_first: Some(1),
+    });
 }
 
 /// Test given name expansion with initial form (initialize_with).
@@ -430,17 +430,17 @@ fn disambiguation_initials_are_used_when_short_form_family_names_collide() {
 J Doe, (2000); A Doe, (2000)
 T Smith, (2000); T Smith, (2000)";
 
-    run_test_case_native_with_options(
-        &input,
-        &citation_items,
+    run_test_case_native_with_options(common::TestCaseOptions {
+        input: &input,
+        citation_items: &citation_items,
         expected,
-        "citation",
-        false,
-        false,
-        true,
-        None,
-        None,
-    );
+        mode: "citation",
+        disambiguate_year_suffix: false,
+        disambiguate_names: false,
+        disambiguate_givenname: true,
+        et_al_min: None,
+        et_al_use_first: None,
+    });
 }
 
 /// Test subsequent et-al: first cite shows full list; repeat cite applies subsequent_min/use_first.
@@ -577,17 +577,17 @@ fn subsequent_et_al_configuration_uses_the_subsequent_form_on_repeat() {
     let citation_items = vec![vec!["ITEM-1", "ITEM-2", "ITEM-3"]];
     let expected = "Baur et al., (2000b); Baur et al., (2000a); Doe, (2000)";
 
-    run_test_case_native_with_options(
-        &input,
-        &citation_items,
+    run_test_case_native_with_options(common::TestCaseOptions {
+        input: &input,
+        citation_items: &citation_items,
         expected,
-        "citation",
-        true,
-        false,
-        false,
-        Some(3),
-        Some(1),
-    );
+        mode: "citation",
+        disambiguate_year_suffix: true,
+        disambiguate_names: false,
+        disambiguate_givenname: false,
+        et_al_min: Some(3),
+        et_al_use_first: Some(1),
+    });
 }
 
 /// Test conditional disambiguation with identical author-year pairs.
