@@ -5,7 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 //! Reference types for the Citum processor.
 //!
-//! This module re-exports types from citum_schema (for citations) and csl_legacy
+//! This module re-exports types from `citum_schema` (for citations) and `csl_legacy`
 //! (for CSL-JSON bibliography data) for backward compatibility.
 //!
 //! For new data, prefer using `citum_schema::reference::InputReference` which

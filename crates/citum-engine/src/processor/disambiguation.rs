@@ -83,6 +83,7 @@ enum HintOrder {
 
 impl<'a> Disambiguator<'a> {
     /// Creates a disambiguator that uses the default title-based fallback order.
+    #[must_use]
     pub fn new(bibliography: &'a Bibliography, config: &'a Config, locale: &'a Locale) -> Self {
         Self {
             bibliography,
@@ -93,6 +94,7 @@ impl<'a> Disambiguator<'a> {
     }
 
     /// Creates a disambiguator with an explicit per-group sort specification.
+    #[must_use]
     pub fn with_group_sort(
         bibliography: &'a Bibliography,
         config: &'a Config,
@@ -137,9 +139,10 @@ impl<'a> Disambiguator<'a> {
     /// - Brown, Tom (2020) - "Article C"
     ///
     /// Output hints:
-    /// - "item-1": { group_key: "smith:2020", expand_given_names: true, group_length: 2 }
-    /// - "item-2": { group_key: "smith:2020", expand_given_names: true, group_length: 2 }
-    /// - "item-3": { group_key: "brown:2020" } (no collision)
+    /// - "item-1": { `group_key`: "smith:2020", `expand_given_names`: true, `group_length`: 2 }
+    /// - "item-2": { `group_key`: "smith:2020", `expand_given_names`: true, `group_length`: 2 }
+    /// - "item-3": { `group_key`: "brown:2020" } (no collision)
+    #[must_use]
     pub fn calculate_hints(&self) -> HashMap<String, ProcHints> {
         let mut hints = HashMap::new();
         let refs: Vec<&Reference> = self.bibliography.values().collect();
@@ -173,15 +176,9 @@ impl<'a> Disambiguator<'a> {
         };
 
         DisambiguationFlags {
-            add_names: disamb_config.as_ref().map(|d| d.names).unwrap_or(false),
-            add_givenname: disamb_config
-                .as_ref()
-                .map(|d| d.add_givenname)
-                .unwrap_or(false),
-            year_suffix: disamb_config
-                .as_ref()
-                .map(|d| d.year_suffix)
-                .unwrap_or(false),
+            add_names: disamb_config.as_ref().is_some_and(|d| d.names),
+            add_givenname: disamb_config.as_ref().is_some_and(|d| d.add_givenname),
+            year_suffix: disamb_config.as_ref().is_some_and(|d| d.year_suffix),
             is_label_mode: self
                 .config
                 .processing
@@ -332,7 +329,7 @@ impl<'a> Disambiguator<'a> {
     fn find_combined_resolution(&self, group: &[&Reference]) -> Option<usize> {
         let max_authors = group
             .iter()
-            .map(|r| r.author().map(|a| a.to_names_vec().len()).unwrap_or(0))
+            .map(|r| r.author().map_or(0, |a| a.to_names_vec().len()))
             .max()
             .unwrap_or(0);
 
@@ -497,7 +494,7 @@ impl<'a> Disambiguator<'a> {
     ) -> Option<(usize, HashMap<String, Vec<&'b Reference>>)> {
         let max_authors = group
             .iter()
-            .map(|r| r.author().map(|a| a.to_names_vec().len()).unwrap_or(0))
+            .map(|r| r.author().map_or(0, |a| a.to_names_vec().len()))
             .max()
             .unwrap_or(0);
 
@@ -563,7 +560,7 @@ impl<'a> Disambiguator<'a> {
                     collision = true;
                     break;
                 }
-            } else if !seen.insert("".to_string()) {
+            } else if !seen.insert(String::new()) {
                 collision = true;
                 break;
             }
@@ -621,7 +618,7 @@ impl<'a> Disambiguator<'a> {
                     .join(",")
             }
         } else {
-            "".to_string()
+            String::new()
         }
     }
 
@@ -643,7 +640,7 @@ impl<'a> Disambiguator<'a> {
             .map(|y| y.to_string())
             .unwrap_or_default();
 
-        format!("{}:{}", author_key, year)
+        format!("{author_key}:{year}")
     }
 }
 
@@ -662,11 +659,11 @@ mod tests {
     use citum_schema::{BibliographySpec, CitationSpec, Style, StyleInfo};
 
     fn make_ref(id: &str, family: &str, given: &str, year: i32) -> Reference {
-        let title = format!("Title {}", id);
+        let title = format!("Title {id}");
         Reference::Monograph(Box::new(Monograph {
             id: Some(id.to_string()),
             r#type: MonographType::Book,
-            title: Some(Title::Single(title.to_string())),
+            title: Some(Title::Single(title.clone())),
             container_title: None,
             author: Some(Contributor::StructuredName(StructuredName {
                 family: MultilingualString::Simple(family.to_string()),
@@ -703,7 +700,7 @@ mod tests {
     }
 
     fn make_multi_author_ref(id: &str, authors: &[(&str, &str)], year: i32) -> Reference {
-        let title = format!("Title {}", id);
+        let title = format!("Title {id}");
         Reference::Monograph(Box::new(Monograph {
             id: Some(id.to_string()),
             r#type: MonographType::Book,

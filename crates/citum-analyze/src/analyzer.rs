@@ -14,13 +14,8 @@ pub fn run_style_analyzer(styles_dir: &str, json_output: bool) {
     // Walk directory and analyze each .csl file
     for entry in WalkDir::new(styles_dir)
         .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| {
-            e.path()
-                .extension()
-                .map(|ext| ext == "csl")
-                .unwrap_or(false)
-        })
+        .filter_map(std::result::Result::ok)
+        .filter(|e| e.path().extension().is_some_and(|ext| ext == "csl"))
     {
         if let Err(e) = analyze_style(entry.path(), &mut stats) {
             stats
@@ -96,9 +91,9 @@ pub struct StyleStats {
 pub type Counter = HashMap<String, u32>;
 
 fn analyze_style(path: &Path, stats: &mut StyleStats) -> Result<(), String> {
-    let content = fs::read_to_string(path).map_err(|e| format!("read error: {}", e))?;
+    let content = fs::read_to_string(path).map_err(|e| format!("read error: {e}"))?;
 
-    let doc = roxmltree::Document::parse(&content).map_err(|e| format!("parse error: {}", e))?;
+    let doc = roxmltree::Document::parse(&content).map_err(|e| format!("parse error: {e}"))?;
 
     let root = doc.root_element();
 
@@ -121,10 +116,10 @@ fn analyze_style_attrs(node: &roxmltree::Node, stats: &mut StyleStats) {
 
     // Name formatting
     if let Some(v) = node.attribute("initialize-with") {
-        *stats.initialize_with.entry(format!("{:?}", v)).or_insert(0) += 1;
+        *stats.initialize_with.entry(format!("{v:?}")).or_insert(0) += 1;
     }
     if let Some(v) = node.attribute("names-delimiter") {
-        *stats.names_delimiter.entry(format!("{:?}", v)).or_insert(0) += 1;
+        *stats.names_delimiter.entry(format!("{v:?}")).or_insert(0) += 1;
     }
     if let Some(v) = node.attribute("name-as-sort-order") {
         *stats.name_as_sort_order.entry(v.to_string()).or_insert(0) += 1;
@@ -208,7 +203,7 @@ fn analyze_bibliography_node(node: &roxmltree::Node, stats: &mut StyleStats) {
     if let Some(v) = node.attribute("subsequent-author-substitute") {
         *stats
             .subsequent_author_substitute
-            .entry(format!("{:?}", v))
+            .entry(format!("{v:?}"))
             .or_insert(0) += 1;
     }
     if let Some(v) = node.attribute("et-al-min") {
@@ -263,7 +258,7 @@ fn analyze_name_node(node: &roxmltree::Node, stats: &mut StyleStats) {
     if let Some(v) = node.attribute("initialize-with") {
         *stats
             .name_initialize_with
-            .entry(format!("{:?}", v))
+            .entry(format!("{v:?}"))
             .or_insert(0) += 1;
     }
 
@@ -525,15 +520,15 @@ fn print_counter(name: &str, counter: &Counter) {
     }
 
     let total: u32 = counter.values().sum();
-    println!("{}: {} occurrences", name, total);
+    println!("{name}: {total} occurrences");
 
     // Sort by count descending
     let mut items: Vec<_> = counter.iter().collect();
     items.sort_by(|a, b| b.1.cmp(a.1));
 
     for (value, count) in items.iter().take(8) {
-        let pct = (**count as f64 / total as f64) * 100.0;
-        println!("  {:40} {:5} ({:.1}%)", value, count, pct);
+        let pct = (f64::from(**count) / f64::from(total)) * 100.0;
+        println!("  {value:40} {count:5} ({pct:.1}%)");
     }
     if items.len() > 8 {
         println!("  ... and {} more values", items.len() - 8);

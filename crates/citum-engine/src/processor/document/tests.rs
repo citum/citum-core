@@ -785,12 +785,12 @@ fn test_document_frontmatter_can_disable_integral_name_memory() {
     );
     let parser = DjotParser;
 
-    let content = r#"---
+    let content = r"---
 integral-names:
   enabled: false
 ---
 
-First [+@item1]. Later [+@item1]."#;
+First [+@item1]. Later [+@item1].";
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
@@ -809,7 +809,7 @@ fn test_document_frontmatter_can_override_integral_name_scope_for_typst() {
     );
     let parser = DjotParser;
 
-    let content = r#"---
+    let content = r"---
 integral-names:
   enabled: true
   scope: chapter
@@ -821,7 +821,7 @@ integral-names:
 
 # Two
 
-[+@item1]."#;
+[+@item1].";
     let result = processor.process_document::<_, Typst>(content, &parser, DocumentFormat::Typst);
 
     assert!(result.contains("#link(<ref-item1>)[John Doe]. #link(<ref-item1>)[Doe]."));

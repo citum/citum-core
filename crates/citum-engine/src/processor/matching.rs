@@ -21,6 +21,7 @@ pub struct Matcher<'a> {
 
 impl<'a> Matcher<'a> {
     /// Build a matcher from the active style and default configuration.
+    #[must_use]
     pub fn new(style: &'a Style, default_config: &'a Config) -> Self {
         Self {
             style,
@@ -30,6 +31,7 @@ impl<'a> Matcher<'a> {
 
     /// Check if primary contributors (authors/editors) match between two references.
     /// Uses the style's substitution logic to determine the primary contributor.
+    #[must_use]
     pub fn contributors_match(&self, prev: &Reference, current: &Reference) -> bool {
         let substitute = self.get_substitute_config();
         let prev_contributors = self.get_primary_contributors(prev, &substitute);
@@ -50,8 +52,13 @@ impl<'a> Matcher<'a> {
             .options
             .as_ref()
             .and_then(|o| o.substitute.as_ref())
-            .map(|s| s.resolve())
-            .or_else(|| self.default_config.substitute.as_ref().map(|s| s.resolve()))
+            .map(citum_schema::options::SubstituteConfig::resolve)
+            .or_else(|| {
+                self.default_config
+                    .substitute
+                    .as_ref()
+                    .map(citum_schema::options::SubstituteConfig::resolve)
+            })
             .unwrap_or_default()
     }
 

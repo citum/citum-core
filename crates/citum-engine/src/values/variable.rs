@@ -10,7 +10,7 @@ use citum_schema::template::{SimpleVariable, TemplateVariable};
 
 /// Extracts the short title from a parent reference if available.
 ///
-/// Returns the short_title from the embedded parent of collection or serial
+/// Returns the `short_title` from the embedded parent of collection or serial
 /// components, or None if the parent is an ID reference or the component
 /// type doesn't support short titles.
 fn container_title_short(reference: &Reference) -> Option<String> {
@@ -62,9 +62,9 @@ fn format_locator_value(
     {
         if strip_label_periods == Some(true) {
             let locator_term = crate::values::strip_trailing_periods(term);
-            format!("{}{}", locator_term, loc)
+            format!("{locator_term}{loc}")
         } else {
-            format!("{} {}", term, loc)
+            format!("{term} {loc}")
         }
     } else {
         loc.to_string()
@@ -170,7 +170,7 @@ impl ComponentValues for TemplateVariable {
                     && (links.doi == Some(true)
                         || matches!(links.target, Some(LinkTarget::Doi | LinkTarget::UrlOrDoi)))
                 {
-                    url = reference.doi().map(|d| format!("https://doi.org/{}", d));
+                    url = reference.doi().map(|d| format!("https://doi.org/{d}"));
                 }
             }
 

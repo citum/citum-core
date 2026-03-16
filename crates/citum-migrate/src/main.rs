@@ -99,7 +99,7 @@ fn parse_cli_args(args: &[String]) -> CliArgs {
                     template_mode = match args[i + 1].parse::<template_resolver::TemplateMode>() {
                         Ok(mode) => mode,
                         Err(msg) => {
-                            eprintln!("Error: {}", msg);
+                            eprintln!("Error: {msg}");
                             std::process::exit(1);
                         }
                     };
@@ -307,7 +307,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let enable_provenance = cli.debug_variable.is_some();
     let tracker = ProvenanceTracker::new(enable_provenance);
 
-    eprintln!("Migrating {} to Citum...", path);
+    eprintln!("Migrating {path} to Citum...");
 
     let text = fs::read_to_string(path)?;
     let doc = Document::parse(&text)?;
@@ -389,14 +389,14 @@ fn output_style_and_debug(
 ) -> Result<(), Box<dyn std::error::Error>> {
     // Output YAML to stdout
     let yaml = serde_yaml::to_string(style)?;
-    println!("{}", yaml);
+    println!("{yaml}");
 
     // Output debug information if requested
     if let Some(var_name) = debug_variable {
         eprintln!("\n");
         eprintln!("=== PROVENANCE DEBUG ===\n");
         let debug_output = DebugOutputFormatter::format_variable(tracker, var_name);
-        eprint!("{}", debug_output);
+        eprint!("{debug_output}");
     }
 
     Ok(())
@@ -440,7 +440,7 @@ fn bibliography_sort_matches_processing_default(
     sort: &citum_schema::grouping::GroupSort,
 ) -> bool {
     processing
-        .and_then(|processing| processing.default_bibliography_sort())
+        .and_then(citum_schema::options::Processing::default_bibliography_sort)
         .is_some_and(|preset| preset.group_sort() == *sort)
 }
 
@@ -542,13 +542,13 @@ fn override_bibliography_options_if_inferred(
 
         if allow_bib_punctuation_override {
             if let Some(ref delim) = resolved_bib.delimiter {
-                eprintln!("  Overriding bibliography separator: {:?}", delim);
+                eprintln!("  Overriding bibliography separator: {delim:?}");
                 let bib_cfg = options.bibliography.get_or_insert_with(Default::default);
                 bib_cfg.separator = Some(delim.clone());
             }
 
             if let Some(ref suffix) = resolved_bib.entry_suffix {
-                eprintln!("  Overriding bibliography entry suffix: {:?}", suffix);
+                eprintln!("  Overriding bibliography entry suffix: {suffix:?}");
                 let bib_cfg = options.bibliography.get_or_insert_with(Default::default);
                 bib_cfg.entry_suffix = Some(suffix.clone());
             }
@@ -681,8 +681,7 @@ fn validate_and_normalize_inferred_citations(
             };
             if let Some(reason) = reject_reason {
                 eprintln!(
-                    "Rejecting inferred citation template for {}: {}. Falling back to XML citation template.",
-                    style_name, reason
+                    "Rejecting inferred citation template for {style_name}: {reason}. Falling back to XML citation template."
                 );
                 resolved.citation = None;
             }
@@ -707,8 +706,7 @@ fn validate_and_normalize_inferred_citations(
             && normalize_contributor_form_to_short(&mut resolved_cit.template)
         {
             eprintln!(
-                "Normalized citation contributor form to short for {} (author-year inferred citation template).",
-                style_name
+                "Normalized citation contributor form to short for {style_name} (author-year inferred citation template)."
             );
         }
     }
@@ -732,8 +730,7 @@ fn validate_and_normalize_inferred_citations(
             )
         {
             eprintln!(
-                "Normalized inferred author-date citation contributors for {} (family-short + scoped shorten).",
-                style_name
+                "Normalized inferred author-date citation contributors for {style_name} (family-short + scoped shorten)."
             );
         }
     }
@@ -927,7 +924,7 @@ fn compile_from_xml(
     // Detect holistic style preset for semantic fixups
     let style_preset = preset_detector::detect_style_preset(options);
     if let Some(preset) = style_preset {
-        eprintln!("Detected style preset: {:?}", preset);
+        eprintln!("Detected style preset: {preset:?}");
     }
 
     if is_in_text_class && is_author_date_processing {
@@ -1179,7 +1176,7 @@ fn apply_type_overrides(
                             DelimiterPunctuation::Comma => ", ".to_string(),
                             DelimiterPunctuation::Colon => ":".to_string(),
                             DelimiterPunctuation::Space => " ".to_string(),
-                            _ => "".to_string(),
+                            _ => String::new(),
                         }),
                         ..Default::default()
                     },
@@ -1232,7 +1229,7 @@ fn relax_inferred_bibliography_date_suppression(template: &mut [TemplateComponen
                 }
             }
             TemplateComponent::List(list) => {
-                relax_inferred_bibliography_date_suppression(&mut list.items)
+                relax_inferred_bibliography_date_suppression(&mut list.items);
             }
             _ => {}
         }

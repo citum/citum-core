@@ -24,21 +24,18 @@ pub(super) fn ensure_numeric_locator_citation_component(
     });
 
     if let Some(idx) = template.iter().position(component_has_citation_number) {
-        match &mut template[idx] {
-            TemplateComponent::List(list) => {
-                list.items.push(locator_component);
-                if list.delimiter.is_none() {
-                    list.delimiter = Some(DelimiterPunctuation::None);
-                }
+        if let TemplateComponent::List(list) = &mut template[idx] {
+            list.items.push(locator_component);
+            if list.delimiter.is_none() {
+                list.delimiter = Some(DelimiterPunctuation::None);
             }
-            _ => {
-                let original = template[idx].clone();
-                template[idx] = TemplateComponent::List(TemplateList {
-                    items: vec![original, locator_component],
-                    delimiter: Some(DelimiterPunctuation::None),
-                    ..Default::default()
-                });
-            }
+        } else {
+            let original = template[idx].clone();
+            template[idx] = TemplateComponent::List(TemplateList {
+                items: vec![original, locator_component],
+                delimiter: Some(DelimiterPunctuation::None),
+                ..Default::default()
+            });
         }
     }
 }

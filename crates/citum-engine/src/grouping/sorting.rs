@@ -31,6 +31,7 @@ pub struct GroupSorter<'a> {
 
 impl<'a> GroupSorter<'a> {
     /// Create a sorter that uses `locale` for locale-sensitive comparisons.
+    #[must_use]
     pub const fn new(locale: &'a Locale) -> Self {
         Self { locale }
     }
@@ -43,6 +44,7 @@ impl<'a> GroupSorter<'a> {
     ///
     /// * `references` - References to sort
     /// * `sort_spec` - Group sort specification
+    #[must_use]
     pub fn sort_references<'b>(
         &self,
         mut references: Vec<&'b Reference>,
@@ -61,6 +63,7 @@ impl<'a> GroupSorter<'a> {
     }
 
     /// Compare two references by a single sort key.
+    #[must_use]
     pub fn compare_by_key(
         &self,
         a: &Reference,
@@ -178,6 +181,7 @@ impl<'a> GroupSorter<'a> {
     }
 
     /// Public helper retained for tests/debugging.
+    #[must_use]
     pub fn extract_author_sort_key(
         &self,
         reference: &Reference,

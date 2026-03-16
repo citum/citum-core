@@ -9,6 +9,7 @@ use std::collections::{HashMap, HashSet};
 ///
 /// Collects name formatting options including "and" text, name display order,
 /// and et-al thresholds that apply to all contributors in the style.
+#[must_use]
 pub fn extract_contributor_config(style: &Style) -> Option<ContributorConfig> {
     let mut config = ContributorConfig::default();
     let mut has_config = false;
@@ -77,6 +78,7 @@ pub fn extract_contributor_config(style: &Style) -> Option<ContributorConfig> {
 ///
 /// Collects contributor formatting options that apply only to citations
 /// (as opposed to bibliographies).
+#[must_use]
 pub fn extract_citation_contributor_overrides(style: &Style) -> Option<ContributorConfig> {
     let cit_macros = collect_citation_macros(style);
     extract_scope_contributor_overrides(
@@ -92,6 +94,7 @@ pub fn extract_citation_contributor_overrides(style: &Style) -> Option<Contribut
 ///
 /// Collects contributor formatting options that apply only to bibliographies
 /// (as opposed to citations).
+#[must_use]
 pub fn extract_bibliography_contributor_overrides(style: &Style) -> Option<ContributorConfig> {
     let bib = style.bibliography.as_ref()?;
     let bib_macros = collect_bibliography_macros(style);
@@ -377,6 +380,7 @@ fn extract_from_names(names: &Names) -> Option<ContributorConfig> {
 ///
 /// Determines the fallback contributor order (author → editor → translator → title)
 /// used when rendering citations and bibliographies.
+#[must_use]
 pub fn extract_substitute_pattern(style: &Style) -> Option<CslnSubstitute> {
     let bib_macros = collect_bibliography_macros(style);
     let cit_macros = collect_citation_macros(style);

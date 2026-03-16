@@ -5,6 +5,7 @@ use csl_legacy::model::Info as LegacyInfo;
 pub struct InfoExtractor;
 
 impl InfoExtractor {
+    #[must_use]
     pub fn extract(legacy: &LegacyInfo) -> StyleInfo {
         let fields = legacy
             .fields
@@ -31,7 +32,9 @@ impl InfoExtractor {
             })
             .collect::<Vec<_>>();
 
-        let source = if !legacy.id.is_empty() {
+        let source = if legacy.id.is_empty() {
+            None
+        } else {
             Some(StyleSource {
                 csl_id: legacy.id.clone(),
                 adapted_by: Some("citum-migrate".to_string()),
@@ -39,8 +42,6 @@ impl InfoExtractor {
                 original_authors,
                 links,
             })
-        } else {
-            None
         };
 
         StyleInfo {

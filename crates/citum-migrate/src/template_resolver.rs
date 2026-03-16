@@ -33,8 +33,7 @@ impl std::str::FromStr for TemplateMode {
             "inferred" => Ok(Self::Inferred),
             "xml" => Ok(Self::Xml),
             other => Err(format!(
-                "invalid template mode '{}': expected auto|hand|inferred|xml",
-                other
+                "invalid template mode '{other}': expected auto|hand|inferred|xml"
             )),
         }
     }
@@ -59,10 +58,10 @@ impl TemplateSection {
         match self {
             // Keep support for legacy cache naming (`{style}.json`).
             Self::Bibliography => vec![
-                cache_dir.join(format!("{}.bibliography.json", style_name)),
-                cache_dir.join(format!("{}.json", style_name)),
+                cache_dir.join(format!("{style_name}.bibliography.json")),
+                cache_dir.join(format!("{style_name}.json")),
             ],
-            Self::Citation => vec![cache_dir.join(format!("{}.citation.json", style_name))],
+            Self::Citation => vec![cache_dir.join(format!("{style_name}.citation.json"))],
         }
     }
 
@@ -80,7 +79,7 @@ pub enum TemplateSource {
     InferredCached(PathBuf),
     /// From live Node.js inference (then cached).
     InferredLive,
-    /// XML compiler fallback (resolve_templates returns None for section).
+    /// XML compiler fallback (`resolve_templates` returns None for section).
     XmlCompiled,
 }
 
@@ -139,6 +138,7 @@ struct TemplateFragment {
 }
 
 /// Resolve citation and bibliography templates from configured sources.
+#[must_use]
 pub fn resolve_templates(
     style_path: &str,
     style_name: &str,
@@ -153,16 +153,17 @@ pub fn resolve_templates(
 
     let hand_path = workspace_root
         .join("examples")
-        .join(format!("{}-style.yaml", style_name));
+        .join(format!("{style_name}-style.yaml"));
     let hand_authored = if matches!(mode, TemplateMode::Auto | TemplateMode::Hand) {
         load_hand_authored_sections(&hand_path)
     } else {
         None
     };
 
-    let cache_dir = template_dir
-        .map(|p| p.to_path_buf())
-        .unwrap_or_else(|| workspace_root.join("templates").join("inferred"));
+    let cache_dir = template_dir.map_or_else(
+        || workspace_root.join("templates").join("inferred"),
+        std::path::Path::to_path_buf,
+    );
 
     let ctx = ResolveContext {
         style_path,
@@ -299,7 +300,7 @@ fn load_inferred_json(
     let text = match std::fs::read_to_string(path) {
         Ok(t) => t,
         Err(e) => {
-            eprintln!("  [template_resolver] Failed to read cache file: {}", e);
+            eprintln!("  [template_resolver] Failed to read cache file: {e}");
             return None;
         }
     };
@@ -314,7 +315,7 @@ fn parse_fragment(
     let fragment: InferredFragment = match serde_json::from_str(text) {
         Ok(f) => f,
         Err(e) => {
-            eprintln!("  [template_resolver] Failed to parse cache JSON: {}", e);
+            eprintln!("  [template_resolver] Failed to parse cache JSON: {e}");
             eprintln!(
                 "  [template_resolver] First 200 chars: {}",
                 &text[..text.len().min(200)]

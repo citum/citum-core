@@ -193,8 +193,7 @@ fn assign_orphan_manual_note_numbers(
         manual_citations
             .get(label)
             .and_then(|indices| indices.first())
-            .map(|index| parsed.citations[*index].start)
-            .unwrap_or(usize::MAX)
+            .map_or(usize::MAX, |index| parsed.citations[*index].start)
     });
 
     for label in orphan_labels {
@@ -244,13 +243,9 @@ pub(super) fn merge_note_rule(default: NoteRule, config: &StyleNoteConfig) -> No
     NoteRule {
         punctuation: config
             .punctuation
-            .map(map_quote_placement)
-            .unwrap_or(default.punctuation),
-        number: config
-            .number
-            .map(map_number_placement)
-            .unwrap_or(default.number),
-        order: config.order.map(map_note_order).unwrap_or(default.order),
+            .map_or(default.punctuation, map_quote_placement),
+        number: config.number.map_or(default.number, map_number_placement),
+        order: config.order.map_or(default.order, map_note_order),
     }
 }
 

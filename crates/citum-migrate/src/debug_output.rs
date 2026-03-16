@@ -11,11 +11,12 @@ pub struct DebugOutputFormatter;
 
 impl DebugOutputFormatter {
     /// Format debug output for a specific variable
+    #[must_use]
     pub fn format_variable(tracker: &ProvenanceTracker, var_name: &str) -> String {
         match tracker.get_provenance(var_name) {
             Some(provenance) => {
                 let mut output = String::new();
-                output.push_str(&format!("Variable: {}\n", var_name));
+                output.push_str(&format!("Variable: {var_name}\n"));
                 output.push('\n');
 
                 // Group events by category
@@ -44,7 +45,7 @@ impl DebugOutputFormatter {
                 if !transformations.is_empty() {
                     output.push_str("Transformations:\n");
                     for event in transformations {
-                        output.push_str(&format!("  - {}\n", event));
+                        output.push_str(&format!("  - {event}\n"));
                     }
                     output.push('\n');
                 }
@@ -54,7 +55,7 @@ impl DebugOutputFormatter {
                     let placements_count = placements.len();
                     output.push_str("Compiled to:\n");
                     for event in placements {
-                        output.push_str(&format!("  - {}\n", event));
+                        output.push_str(&format!("  - {event}\n"));
                     }
                     output.push_str("\nSummary:\n");
                     output.push_str(&format!(
@@ -62,21 +63,20 @@ impl DebugOutputFormatter {
                         provenance.events.len()
                     ));
                     output.push_str(&format!("  Source nodes found: {}\n", source_nodes.len()));
-                    output.push_str(&format!("  Template placements: {}\n", placements_count));
+                    output.push_str(&format!("  Template placements: {placements_count}\n"));
                 }
 
                 output
             }
             None => {
-                format!(
-                    "Variable '{}' not found in provenance.\n\nAvailable variables:\n",
-                    var_name
-                ) + &Self::format_available_variables(tracker)
+                format!("Variable '{var_name}' not found in provenance.\n\nAvailable variables:\n")
+                    + &Self::format_available_variables(tracker)
             }
         }
     }
 
     /// Format list of available variables
+    #[must_use]
     pub fn format_available_variables(tracker: &ProvenanceTracker) -> String {
         let mut vars: Vec<_> = tracker.get_all_variables();
         vars.sort();
@@ -92,6 +92,7 @@ impl DebugOutputFormatter {
     }
 
     /// Format full debug report for all tracked variables
+    #[must_use]
     pub fn format_all_variables(tracker: &ProvenanceTracker) -> String {
         let mut vars: Vec<_> = tracker.get_all_variables();
         vars.sort();

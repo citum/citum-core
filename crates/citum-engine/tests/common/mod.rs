@@ -209,7 +209,7 @@ pub fn make_multilingual_book(params: MultilingualBookParams) -> Reference {
 
 // --- Test Execution Helpers ---
 
-/// Execute a test case with default disambiguation settings (year_suffix only).
+/// Execute a test case with default disambiguation settings (`year_suffix` only).
 pub fn run_test_case_native(
     input: &[Reference],
     citation_items: &[Vec<&str>],
@@ -254,7 +254,7 @@ pub fn run_test_case_native_with_options(options: TestCaseOptions) {
 
     // Build bibliography from native references
     let mut bibliography = indexmap::IndexMap::new();
-    for item in options.input.iter() {
+    for item in options.input {
         if let Some(id) = item.id() {
             bibliography.insert(id, item.clone());
         }

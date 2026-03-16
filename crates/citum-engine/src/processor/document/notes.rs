@@ -307,8 +307,10 @@ impl Processor {
 
         if !matches!(
             citation.position,
-            Some(citum_schema::citation::Position::Ibid)
-                | Some(citum_schema::citation::Position::IbidWithLocator)
+            Some(
+                citum_schema::citation::Position::Ibid
+                    | citum_schema::citation::Position::IbidWithLocator
+            )
         ) {
             return false;
         }
@@ -325,10 +327,10 @@ impl Processor {
         };
 
         let position_spec = match position {
-            Some(citum_schema::citation::Position::Ibid)
-            | Some(citum_schema::citation::Position::IbidWithLocator) => {
-                citation_spec.ibid.as_ref()
-            }
+            Some(
+                citum_schema::citation::Position::Ibid
+                | citum_schema::citation::Position::IbidWithLocator,
+            ) => citation_spec.ibid.as_ref(),
             Some(citum_schema::citation::Position::Subsequent) => citation_spec.subsequent.as_ref(),
             _ => None,
         };
@@ -378,7 +380,7 @@ impl Processor {
                         &citum_schema::locale::GeneralTerm::Ibid,
                         citum_schema::locale::TermForm::Long,
                     )
-                    .map(|term| term.to_string())
+                    .map(std::string::ToString::to_string)
             })
             .unwrap_or_else(|| "ibid.".to_string());
 
@@ -462,8 +464,10 @@ impl Processor {
             self.show_semantics,
         );
         let anchor_position = match citation.position.as_ref() {
-            Some(citum_schema::citation::Position::Ibid)
-            | Some(citum_schema::citation::Position::IbidWithLocator) => None,
+            Some(
+                citum_schema::citation::Position::Ibid
+                | citum_schema::citation::Position::IbidWithLocator,
+            ) => None,
             other => other,
         };
 

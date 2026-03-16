@@ -180,7 +180,7 @@ fn disambiguation_same_author_same_year_titles_follow_title_order() {
     run_test_case_native(&input, &citation_items, expected, "citation");
 }
 
-/// Test the upstream YearSuffixAtTwoLevels disambiguation cascade.
+/// Test the upstream `YearSuffixAtTwoLevels` disambiguation cascade.
 #[allow(clippy::too_many_lines)] // test functions naturally exceed 100 lines
 fn disambiguation_two_level_author_collisions_get_distinct_suffixes() {
     let input = vec![
@@ -232,7 +232,7 @@ fn disambiguation_two_level_author_collisions_get_distinct_suffixes() {
         })),
         contributors: Some(ContributorConfig {
             display_as_sort: Some(DisplayAsSort::First),
-            initialize_with: Some("".to_string()),
+            initialize_with: Some(String::new()),
             shorten: Some(ShortenListOptions {
                 min: 3,
                 use_first: 1,
@@ -412,7 +412,7 @@ fn disambiguation_et_al_conflicts_fall_back_to_year_suffixes() {
     });
 }
 
-/// Test given name expansion with initial form (initialize_with).
+/// Test given name expansion with initial form (`initialize_with`).
 fn disambiguation_initials_are_used_when_short_form_family_names_collide() {
     let input = vec![
         make_book("ITEM-1", "Roe", "Jane", 2000, "Book A"),
@@ -443,7 +443,7 @@ T Smith, (2000); T Smith, (2000)";
     });
 }
 
-/// Test subsequent et-al: first cite shows full list; repeat cite applies subsequent_min/use_first.
+/// Test subsequent et-al: first cite shows full list; repeat cite applies `subsequent_min/use_first`.
 fn subsequent_et_al_thresholds_shorten_the_repeat_citation() {
     use citum_schema::options::{Disambiguation, Processing, ProcessingCustom, ShortenListOptions};
 
@@ -619,16 +619,21 @@ fn disambiguation_suffixes_continue_past_z() {
 
     for i in 1..=30 {
         input.push(make_book(
-            &format!("ITEM-{}", i),
+            &format!("ITEM-{i}"),
             "Smith",
             "John",
             1986,
             "Book",
         ));
-        citation_ids.push(format!("ITEM-{}", i));
+        citation_ids.push(format!("ITEM-{i}"));
     }
 
-    let citation_items = vec![citation_ids.iter().map(|s| s.as_str()).collect()];
+    let citation_items = vec![
+        citation_ids
+            .iter()
+            .map(std::string::String::as_str)
+            .collect(),
+    ];
     let expected = "Smith, (1986a), (1986b), (1986c), (1986d), (1986e), (1986f), (1986g), (1986h), (1986i), (1986j), (1986k), (1986l), (1986m), (1986n), (1986o), (1986p), (1986q), (1986r), (1986s), (1986t), (1986u), (1986v), (1986w), (1986x), (1986y), (1986z), (1986aa), (1986ab), (1986ac), (1986ad)";
 
     run_test_case_native(&input, &citation_items, expected, "citation");
@@ -816,8 +821,7 @@ fn chicago_notes_immediate_repeat_renders_compact_ibid() {
         .expect("Failed to process ibid citation");
     assert!(
         ibid_result.contains("Ibid."),
-        "Ibid citation should contain lexical ibid: got {}",
-        ibid_result
+        "Ibid citation should contain lexical ibid: got {ibid_result}"
     );
     // The ibid position is being respected - the citation should be shorter
     // than the full first citation because it uses the ibid spec

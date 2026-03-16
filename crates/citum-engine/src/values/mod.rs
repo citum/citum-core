@@ -95,6 +95,7 @@ fn resolve_transliteration<'a>(
 /// * `preferred_transliteration` - Optional ordered list of BCP 47 transliteration tags
 /// * `preferred_script` - Optional preferred script (e.g., "Latn")
 /// * `style_locale` - The style's locale for translation matching
+#[must_use]
 pub fn resolve_multilingual_string(
     string: &citum_schema::reference::types::MultilingualString,
     mode: Option<&citum_schema::options::MultilingualMode>,
@@ -151,7 +152,7 @@ pub fn resolve_multilingual_string(
                     let translation = complex.translations.get(style_locale);
 
                     match (trans, translation) {
-                        (Some(t), Some(tr)) => format!("{} [{}]", t, tr),
+                        (Some(t), Some(tr)) => format!("{t} [{tr}]"),
                         (Some(t), None) => t.to_string(),
                         (None, Some(tr)) => format!("{} [{}]", complex.original, tr),
                         (None, None) => complex.original.clone(),
@@ -167,6 +168,7 @@ pub fn resolve_multilingual_string(
 /// This prefers an explicit `field_languages` entry, then a multilingual title
 /// language tag for the provided title value, and finally the reference-level
 /// language.
+#[must_use]
 pub fn effective_field_language(
     reference: &Reference,
     scope: &str,
@@ -184,11 +186,13 @@ pub fn effective_field_language(
 }
 
 /// Resolve the effective language for the primary title of a reference.
+#[must_use]
 pub fn effective_item_language(reference: &Reference) -> Option<String> {
     effective_field_language(reference, "title", reference.title().as_ref())
 }
 
 /// Resolve the effective language for the specific template component being rendered.
+#[must_use]
 pub fn effective_component_language(
     reference: &Reference,
     component: &TemplateComponent,
@@ -280,6 +284,7 @@ fn select_by_transliteration<'a>(
 /// * `preferred_transliteration` - Optional ordered list of BCP 47 transliteration tags
 /// * `preferred_script` - Optional preferred script (e.g., "Latn")
 /// * `style_locale` - The style's locale for translation matching
+#[must_use]
 pub fn resolve_multilingual_name(
     contributor: &citum_schema::reference::contributor::Contributor,
     mode: Option<&citum_schema::options::MultilingualMode>,
@@ -340,6 +345,7 @@ pub fn resolve_multilingual_name(
 }
 
 /// Resolve the URL for a component based on its links configuration and the reference data.
+#[must_use]
 pub fn resolve_url(
     links: &citum_schema::options::LinksConfig,
     reference: &Reference,
@@ -350,11 +356,11 @@ pub fn resolve_url(
 
     match target {
         LinkTarget::Url => reference.url().map(|u| u.to_string()),
-        LinkTarget::Doi => reference.doi().map(|d| format!("https://doi.org/{}", d)),
+        LinkTarget::Doi => reference.doi().map(|d| format!("https://doi.org/{d}")),
         LinkTarget::UrlOrDoi => reference
             .url()
             .map(|u| u.to_string())
-            .or_else(|| reference.doi().map(|d| format!("https://doi.org/{}", d))),
+            .or_else(|| reference.doi().map(|d| format!("https://doi.org/{d}"))),
         LinkTarget::Pubmed => reference
             .id()
             .filter(|id| id.starts_with("pmid:"))
@@ -367,6 +373,7 @@ pub fn resolve_url(
 }
 
 /// Resolve the effective URL for a component, checking local links then falling back to global config.
+#[must_use]
 pub fn resolve_effective_url(
     local_links: Option<&citum_schema::options::LinksConfig>,
     global_links: Option<&citum_schema::options::LinksConfig>,
@@ -505,6 +512,7 @@ impl ComponentValues for TemplateComponent {
 /// 1. Component-level `strip_periods`
 /// 2. Global config `strip_periods`
 /// 3. Defaults to false
+#[must_use]
 pub fn should_strip_periods(
     rendering: &citum_schema::template::Rendering,
     options: &RenderOptions<'_>,
@@ -519,6 +527,7 @@ pub fn should_strip_periods(
 ///
 /// Only removes periods at the end of the string, preserves internal periods
 /// (e.g., "Ph.D." remains unchanged if there's no trailing period).
+#[must_use]
 pub fn strip_trailing_periods(s: &str) -> String {
     s.trim_end_matches('.').to_string()
 }
@@ -544,7 +553,7 @@ pub(crate) fn resolve_rendering_overrides(
         let mut match_found = false;
 
         // Try specific type match
-        for (selector, ov) in ovs.iter() {
+        for (selector, ov) in ovs {
             if selector.matches(ref_type)
                 && let ComponentOverride::Rendering(r) = ov
             {
@@ -555,7 +564,7 @@ pub(crate) fn resolve_rendering_overrides(
 
         // Fall back to default if no specific match
         if !match_found {
-            for (selector, ov) in ovs.iter() {
+            for (selector, ov) in ovs {
                 if selector.matches("default")
                     && let ComponentOverride::Rendering(r) = ov
                 {

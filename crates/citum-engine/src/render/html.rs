@@ -53,46 +53,43 @@ impl OutputFormat for Html {
         if content.is_empty() {
             return content;
         }
-        format!("<i>{}</i>", content)
+        format!("<i>{content}</i>")
     }
 
     fn strong(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;
         }
-        format!("<b>{}</b>", content)
+        format!("<b>{content}</b>")
     }
 
     fn small_caps(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;
         }
-        format!(
-            r#"<span style="font-variant:small-caps">{}</span>"#,
-            content
-        )
+        format!(r#"<span style="font-variant:small-caps">{content}</span>"#)
     }
 
     fn quote(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;
         }
-        format!("\u{201C}{}\u{201D}", content)
+        format!("\u{201C}{content}\u{201D}")
     }
 
     fn affix(&self, prefix: &str, content: Self::Output, suffix: &str) -> Self::Output {
-        format!("{}{}{}", prefix, content, suffix)
+        format!("{prefix}{content}{suffix}")
     }
 
     fn inner_affix(&self, prefix: &str, content: Self::Output, suffix: &str) -> Self::Output {
-        format!("{}{}{}", prefix, content, suffix)
+        format!("{prefix}{content}{suffix}")
     }
 
     fn wrap_punctuation(&self, wrap: &WrapPunctuation, content: Self::Output) -> Self::Output {
         match wrap {
-            WrapPunctuation::Parentheses => format!("({})", content),
-            WrapPunctuation::Brackets => format!("[{}]", content),
-            WrapPunctuation::Quotes => format!("\u{201C}{}\u{201D}", content),
+            WrapPunctuation::Parentheses => format!("({content})"),
+            WrapPunctuation::Brackets => format!("[{content}]"),
+            WrapPunctuation::Quotes => format!("\u{201C}{content}\u{201D}"),
             WrapPunctuation::None => content,
         }
     }
@@ -101,7 +98,7 @@ impl OutputFormat for Html {
         if content.is_empty() {
             return content;
         }
-        format!(r#"<span class="{}">{}</span>"#, class, content)
+        format!(r#"<span class="{class}">{content}</span>"#)
     }
 
     fn citation(&self, ids: Vec<String>, content: Self::Output) -> Self::Output {
@@ -109,10 +106,7 @@ impl OutputFormat for Html {
             return content;
         }
         let ids_str = ids.join(" ");
-        format!(
-            r#"<span class="csln-citation" data-ref="{}">{}</span>"#,
-            ids_str, content
-        )
+        format!(r#"<span class="csln-citation" data-ref="{ids_str}">{content}</span>"#)
     }
 
     fn link(&self, url: &str, content: Self::Output) -> Self::Output {
@@ -123,7 +117,7 @@ impl OutputFormat for Html {
     }
 
     fn format_id(&self, id: &str) -> String {
-        format!("ref-{}", id)
+        format!("ref-{id}")
     }
 
     fn bibliography(&self, entries: Vec<Self::Output>) -> Self::Output {
@@ -150,15 +144,15 @@ impl OutputFormat for Html {
 
         let mut attrs = format!(r#"id="{}""#, self.format_id(id));
         if let Some(author) = &metadata.author {
-            attrs.push_str(&format!(r#" data-author="{}""#, author));
+            attrs.push_str(&format!(r#" data-author="{author}""#));
         }
         if let Some(year) = &metadata.year {
-            attrs.push_str(&format!(r#" data-year="{}""#, year));
+            attrs.push_str(&format!(r#" data-year="{year}""#));
         }
         if let Some(title) = &metadata.title {
-            attrs.push_str(&format!(r#" data-title="{}""#, title));
+            attrs.push_str(&format!(r#" data-title="{title}""#));
         }
 
-        format!(r#"<div class="csln-entry" {}>{}</div>"#, attrs, content)
+        format!(r#"<div class="csln-entry" {attrs}>{content}</div>"#)
     }
 }

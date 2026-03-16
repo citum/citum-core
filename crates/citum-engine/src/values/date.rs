@@ -46,7 +46,7 @@ fn format_time(
     };
 
     let with_period = match period {
-        Some(p) => format!("{} {}", time_str, p),
+        Some(p) => format!("{time_str} {p}"),
         None => time_str,
     };
 
@@ -63,7 +63,7 @@ fn format_time(
         if tz_str.is_empty() {
             with_period
         } else {
-            format!("{} {}", with_period, tz_str)
+            format!("{with_period} {tz_str}")
         }
     } else {
         with_period
@@ -84,14 +84,14 @@ fn format_range_start(
             if month.is_empty() {
                 year
             } else {
-                format!("{} {}", month, year)
+                format!("{month} {year}")
             }
         }
         DateForm::MonthDay => {
             let month = date.month(&locale.dates.months.long);
             let day = date.day();
             match day {
-                Some(d) => format!("{} {}", month, d),
+                Some(d) => format!("{month} {d}"),
                 None => month,
             }
         }
@@ -101,8 +101,8 @@ fn format_range_start(
             let day = date.day();
             match (month.is_empty(), day) {
                 (true, _) => year,
-                (false, None) => format!("{} {}", month, year),
-                (false, Some(d)) => format!("{} {}, {}", month, d, year),
+                (false, None) => format!("{month} {year}"),
+                (false, Some(d)) => format!("{month} {d}, {year}"),
             }
         }
         DateForm::YearMonthDay => {
@@ -111,8 +111,8 @@ fn format_range_start(
             let day = date.day();
             match (month.is_empty(), day) {
                 (true, _) => year,
-                (false, None) => format!("{}, {}", year, month),
-                (false, Some(d)) => format!("{}, {} {}", year, month, d),
+                (false, None) => format!("{year}, {month}"),
+                (false, Some(d)) => format!("{year}, {month} {d}"),
             }
         }
         DateForm::DayMonthAbbrYear => {
@@ -121,8 +121,8 @@ fn format_range_start(
             let day = date.day();
             match (month.is_empty(), day) {
                 (true, _) => year,
-                (false, None) => format!("{} {}", month, year),
-                (false, Some(d)) => format!("{} {} {}", d, month, year),
+                (false, None) => format!("{month} {year}"),
+                (false, Some(d)) => format!("{d} {month} {year}"),
             }
         }
     }
@@ -142,10 +142,8 @@ fn format_date_range(
             .or(locale.dates.open_ended_term.as_deref())
         {
             // U+2013 en-dash is the Unicode standard range delimiter (not language-specific)
-            let delimiter = date_config
-                .map(|c| c.range_delimiter.as_str())
-                .unwrap_or("–");
-            Some(format!("{}{}{}", start, delimiter, end_marker))
+            let delimiter = date_config.map_or("–", |c| c.range_delimiter.as_str());
+            Some(format!("{start}{delimiter}{end_marker}"))
         } else {
             // No open-ended term available - return start date only
             Some(start)
@@ -153,10 +151,8 @@ fn format_date_range(
     } else if let Some(end) = date.range_end(&locale.dates.months.long) {
         // Closed range with end date
         // U+2013 en-dash is the Unicode standard range delimiter (not language-specific)
-        let delimiter = date_config
-            .map(|c| c.range_delimiter.as_str())
-            .unwrap_or("–");
-        Some(format!("{}{}{}", start, delimiter, end))
+        let delimiter = date_config.map_or("–", |c| c.range_delimiter.as_str());
+        Some(format!("{start}{delimiter}{end}"))
     } else {
         Some(start)
     }
@@ -172,12 +168,12 @@ fn apply_date_markers(
     if date.is_approximate()
         && let Some(marker) = date_config.and_then(|c| c.approximation_marker.as_ref())
     {
-        result = format!("{}{}", marker, result);
+        result = format!("{marker}{result}");
     }
     if date.is_uncertain()
         && let Some(marker) = date_config.and_then(|c| c.uncertainty_marker.as_ref())
     {
-        result = format!("{}{}", result, marker);
+        result = format!("{result}{marker}");
     }
     result
 }
@@ -189,7 +185,7 @@ fn compute_disamb_suffix<F: crate::render::format::OutputFormat<Output = String>
     options: &RenderOptions<'_>,
     fmt: &F,
 ) -> Option<String> {
-    if hints.disamb_condition && formatted.as_ref().map(|s| s.len() == 4).unwrap_or(false) {
+    if hints.disamb_condition && formatted.as_ref().is_some_and(|s| s.len() == 4) {
         // Check if year suffix is enabled. Fall back to AuthorDate default
         // (year_suffix: true) when processing is not explicitly set, matching
         // the behavior in disambiguation.rs which uses unwrap_or_default().
@@ -201,8 +197,7 @@ fn compute_disamb_suffix<F: crate::render::format::OutputFormat<Output = String>
             .config()
             .disambiguate
             .as_ref()
-            .map(|d| d.year_suffix)
-            .unwrap_or(false);
+            .is_some_and(|d| d.year_suffix);
 
         if use_suffix {
             int_to_letter(hints.group_index as u32).map(|s| fmt.text(&s))
@@ -235,7 +230,7 @@ fn format_single_date(
             if month.is_empty() {
                 Some(year)
             } else {
-                Some(format!("{} {}", month, year))
+                Some(format!("{month} {year}"))
             }
         }
         DateForm::MonthDay => {
@@ -245,7 +240,7 @@ fn format_single_date(
             }
             let day = date.day();
             match day {
-                Some(d) => Some(format!("{} {}", month, d)),
+                Some(d) => Some(format!("{month} {d}")),
                 None => Some(month),
             }
         }
@@ -258,16 +253,16 @@ fn format_single_date(
             let day = date.day();
             let base = match (month.is_empty(), day) {
                 (true, _) => year,
-                (false, None) => format!("{} {}", month, year),
-                (false, Some(d)) => format!("{} {}, {}", month, d, year),
+                (false, None) => format!("{month} {year}"),
+                (false, Some(d)) => format!("{month} {d}, {year}"),
             };
             // Append time component if configured and present
             if let (Some(time_fmt), Some(time)) = (
                 date_config.and_then(|c| c.time_format.as_ref()),
                 date.time(),
             ) {
-                let show_secs = date_config.map(|c| c.show_seconds).unwrap_or(false);
-                let show_tz = date_config.map(|c| c.show_timezone).unwrap_or(false);
+                let show_secs = date_config.is_some_and(|c| c.show_seconds);
+                let show_tz = date_config.is_some_and(|c| c.show_timezone);
                 let time_str = format_time(
                     time,
                     time_fmt,
@@ -277,7 +272,7 @@ fn format_single_date(
                     locale.dates.pm.as_deref(),
                     locale.dates.timezone_utc.as_deref(),
                 );
-                Some(format!("{}, {}", base, time_str))
+                Some(format!("{base}, {time_str}"))
             } else {
                 Some(base)
             }
@@ -291,8 +286,8 @@ fn format_single_date(
             let day = date.day();
             match (month.is_empty(), day) {
                 (true, _) => Some(year),
-                (false, None) => Some(format!("{}, {}", year, month)),
-                (false, Some(d)) => Some(format!("{}, {} {}", year, month, d)),
+                (false, None) => Some(format!("{year}, {month}")),
+                (false, Some(d)) => Some(format!("{year}, {month} {d}")),
             }
         }
         DateForm::DayMonthAbbrYear => {
@@ -304,8 +299,8 @@ fn format_single_date(
             let day = date.day();
             match (month.is_empty(), day) {
                 (true, _) => Some(year),
-                (false, None) => Some(format!("{} {}", month, year)),
-                (false, Some(d)) => Some(format!("{} {} {}", d, month, year)),
+                (false, None) => Some(format!("{month} {year}")),
+                (false, Some(d)) => Some(format!("{d} {month} {year}")),
             }
         }
     }
@@ -396,6 +391,7 @@ impl ComponentValues for TemplateDate {
 }
 
 /// Convert a 1-based index into an alphabetic suffix (`1 -> "a"`, `27 -> "aa"`).
+#[must_use]
 pub fn int_to_letter(n: u32) -> Option<String> {
     if n == 0 {
         return None;

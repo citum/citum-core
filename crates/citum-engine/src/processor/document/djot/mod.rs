@@ -82,13 +82,15 @@ fn citation_placement(
     footnote_definitions
         .iter()
         .find(|definition| definition.content.start <= start && end <= definition.content.end)
-        .map(|definition| CitationPlacement::ManualFootnote {
-            label: definition.label.clone(),
+        .map_or(CitationPlacement::InlineProse, |definition| {
+            CitationPlacement::ManualFootnote {
+                label: definition.label.clone(),
+            }
         })
-        .unwrap_or(CitationPlacement::InlineProse)
 }
 
 /// Convert Djot markup to HTML using jotdown.
+#[must_use]
 pub fn djot_to_html(djot: &str) -> String {
     let events = jotdown::Parser::new(djot);
     jotdown::html::render_to_string(events)

@@ -54,7 +54,8 @@ fn resolve_punctuation_collision(first: char, second: char) -> String {
     }
 }
 
-/// Render a processed template into a final citation string using PlainText format.
+/// Render a processed template into a final citation string using `PlainText` format.
+#[must_use]
 pub fn citation_to_string(
     proc_template: &ProcTemplate,
     wrap: Option<&WrapPunctuation>,
@@ -66,6 +67,7 @@ pub fn citation_to_string(
 }
 
 /// Render a processed template into a final citation string using a specific format.
+#[must_use]
 pub fn citation_to_string_with_format<F: OutputFormat<Output = String>>(
     proc_template: &ProcTemplate,
     wrap: Option<&WrapPunctuation>,
@@ -124,7 +126,7 @@ pub fn citation_to_string_with_format<F: OutputFormat<Output = String>>(
         _ => (prefix.unwrap_or(""), suffix.unwrap_or("")),
     };
 
-    format!("{}{}{}", open, content, close)
+    format!("{open}{content}{close}")
 }
 
 #[cfg(test)]
@@ -277,7 +279,7 @@ mod tests {
         }
 
         let plain = lines.join("\n");
-        let expected = r#"ENDING IN COLON
+        let expected = r"ENDING IN COLON
 “colon”: colon
 “period”.: colon
 “semicolon”; colon
@@ -318,7 +320,7 @@ ENDING IN COMMA
 “semicolon”;, comma
 “exclamation”!, comma
 “question”?, comma
-“comma”, comma"#;
+“comma”, comma";
 
         let mut typst_lines = Vec::new();
         for (heading, delimiter) in delimiters {

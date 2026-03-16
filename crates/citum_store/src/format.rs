@@ -44,6 +44,7 @@ impl std::fmt::Display for StoreFormat {
 
 impl StoreFormat {
     /// Detect format from file extension.
+    #[must_use]
     pub fn detect_from_extension(path: &Path) -> Option<StoreFormat> {
         path.extension()
             .and_then(|ext| ext.to_str())
@@ -56,6 +57,7 @@ impl StoreFormat {
     }
 
     /// File extension without leading dot.
+    #[must_use]
     pub fn extension(&self) -> &'static str {
         match self {
             StoreFormat::Yaml => "yaml",

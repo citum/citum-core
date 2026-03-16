@@ -26,6 +26,7 @@ use std::path::PathBuf;
 /// - Linux:   `~/.local/share/citum/`
 /// - macOS:   `~/Library/Application Support/citum/`
 /// - Windows: `%APPDATA%\citum\`
+#[must_use]
 pub fn platform_data_dir() -> Option<PathBuf> {
     dirs::data_dir().map(|d| d.join("citum"))
 }

@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 use super::Renderer;
 use crate::values::range::{ConsecutiveSegment, consecutive_segments};
 
-impl<'a> Renderer<'a> {
+impl Renderer<'_> {
     pub(super) fn collapse_numeric_citation_chunks(
         &self,
         chunks: Vec<(Vec<String>, String)>,

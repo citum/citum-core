@@ -166,6 +166,7 @@ pub struct Name {
 
 impl Name {
     /// Create a new structured name.
+    #[must_use]
     pub fn new(family: &str, given: &str) -> Self {
         Self {
             family: Some(family.to_string()),
@@ -175,6 +176,7 @@ impl Name {
     }
 
     /// Create a literal name (organization or single-field).
+    #[must_use]
     pub fn literal(name: &str) -> Self {
         Self {
             literal: Some(name.to_string()),
@@ -183,6 +185,7 @@ impl Name {
     }
 
     /// Get the family name or literal.
+    #[must_use]
     pub fn family_or_literal(&self) -> &str {
         self.family
             .as_deref()
@@ -195,7 +198,7 @@ impl Name {
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct DateVariable {
-    /// Date parts: [[year, month, day], [end_year, end_month, end_day]]
+    /// Date parts: [[year, month, day], [`end_year`, `end_month`, `end_day`]]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub date_parts: Option<Vec<Vec<i32>>>,
     /// Literal date string
@@ -214,6 +217,7 @@ pub struct DateVariable {
 
 impl DateVariable {
     /// Create a date with year only.
+    #[must_use]
     pub fn year(year: i32) -> Self {
         Self {
             date_parts: Some(vec![vec![year]]),
@@ -222,6 +226,7 @@ impl DateVariable {
     }
 
     /// Create a date with year and month.
+    #[must_use]
     pub fn year_month(year: i32, month: i32) -> Self {
         Self {
             date_parts: Some(vec![vec![year, month]]),
@@ -230,6 +235,7 @@ impl DateVariable {
     }
 
     /// Create a full date.
+    #[must_use]
     pub fn full(year: i32, month: i32, day: i32) -> Self {
         Self {
             date_parts: Some(vec![vec![year, month, day]]),
@@ -238,6 +244,7 @@ impl DateVariable {
     }
 
     /// Get the year from the first date part.
+    #[must_use]
     pub fn year_value(&self) -> Option<i32> {
         self.date_parts
             .as_ref()
@@ -247,6 +254,7 @@ impl DateVariable {
     }
 
     /// Get the month from the first date part.
+    #[must_use]
     pub fn month_value(&self) -> Option<i32> {
         self.date_parts
             .as_ref()
@@ -256,6 +264,7 @@ impl DateVariable {
     }
 
     /// Get the day from the first date part.
+    #[must_use]
     pub fn day_value(&self) -> Option<i32> {
         self.date_parts
             .as_ref()
@@ -278,14 +287,14 @@ pub enum StringOrNumber {
 impl std::fmt::Display for StringOrNumber {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::String(s) => write!(f, "{}", s),
-            Self::Number(n) => write!(f, "{}", n),
+            Self::String(s) => write!(f, "{s}"),
+            Self::Number(n) => write!(f, "{n}"),
         }
     }
 }
 
 /// A bibliography is a collection of references keyed by ID.
-/// Uses IndexMap to preserve insertion order for numeric citation styles.
+/// Uses `IndexMap` to preserve insertion order for numeric citation styles.
 pub type Bibliography = indexmap::IndexMap<String, Reference>;
 
 #[cfg(test)]

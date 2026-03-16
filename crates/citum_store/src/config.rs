@@ -62,6 +62,7 @@ impl StoreConfig {
     }
 
     /// Get the configured store format.
+    #[must_use]
     pub fn store_format(&self) -> StoreFormat {
         self.store.format.parse().unwrap_or(StoreFormat::Yaml)
     }

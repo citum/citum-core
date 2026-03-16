@@ -6,7 +6,7 @@ use citum_schema::locale::TermForm;
 use citum_schema::options::EditorLabelFormat;
 use citum_schema::template::{ContributorForm, ContributorRole, Rendering, TemplateContributor};
 
-/// Resolve role label from global editor_label_format config.
+/// Resolve role label from global `editor_label_format` config.
 ///
 /// Returns `(prefix, suffix)` using verb-prefix, short-suffix, or long-suffix format.
 fn resolve_editor_format_label<F: OutputFormat<Output = String>>(
@@ -85,8 +85,8 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
         let term_text = role.and_then(|r| options.locale.role_term(&r, plural, term_form));
 
         return match label_config.placement {
-            LabelPlacement::Prefix => (term_text.map(|t| fmt.text(&format!("{} ", t))), None),
-            LabelPlacement::Suffix => (None, term_text.map(|t| fmt.text(&format!(", {}", t)))),
+            LabelPlacement::Prefix => (term_text.map(|t| fmt.text(&format!("{t} "))), None),
+            LabelPlacement::Suffix => (None, term_text.map(|t| fmt.text(&format!(", {t}")))),
         };
     }
 

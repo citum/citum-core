@@ -57,19 +57,19 @@ impl OutputFormat for Latex {
     }
 
     fn emph(&self, content: Self::Output) -> Self::Output {
-        format!(r"\textit{{{}}}", content)
+        format!(r"\textit{{{content}}}")
     }
 
     fn strong(&self, content: Self::Output) -> Self::Output {
-        format!(r"\textbf{{{}}}", content)
+        format!(r"\textbf{{{content}}}")
     }
 
     fn small_caps(&self, content: Self::Output) -> Self::Output {
-        format!(r"\textsc{{{}}}", content)
+        format!(r"\textsc{{{content}}}")
     }
 
     fn quote(&self, content: Self::Output) -> Self::Output {
-        format!("``{}''", content)
+        format!("``{content}''")
     }
 
     fn affix(&self, prefix: &str, content: Self::Output, suffix: &str) -> Self::Output {
@@ -82,8 +82,8 @@ impl OutputFormat for Latex {
 
     fn wrap_punctuation(&self, wrap: &WrapPunctuation, content: Self::Output) -> Self::Output {
         match wrap {
-            WrapPunctuation::Parentheses => format!("({})", content),
-            WrapPunctuation::Brackets => format!("[{}]", content),
+            WrapPunctuation::Parentheses => format!("({content})"),
+            WrapPunctuation::Brackets => format!("[{content}]"),
             WrapPunctuation::Quotes => self.quote(content),
             WrapPunctuation::None => content,
         }
@@ -96,7 +96,7 @@ impl OutputFormat for Latex {
     }
 
     fn link(&self, url: &str, content: Self::Output) -> Self::Output {
-        format!(r"\href{{{}}}{{{}}}", url, content)
+        format!(r"\href{{{url}}}{{{content}}}")
     }
 
     fn bibliography(&self, entries: Vec<Self::Output>) -> Self::Output {
@@ -110,6 +110,6 @@ impl OutputFormat for Latex {
         _url: Option<&str>,
         _metadata: &super::format::ProcEntryMetadata,
     ) -> Self::Output {
-        format!("\\noindent\\hangindent=2em\\hangafter=1 {}", content)
+        format!("\\noindent\\hangindent=2em\\hangafter=1 {content}")
     }
 }

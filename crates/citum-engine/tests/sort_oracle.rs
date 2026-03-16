@@ -90,8 +90,7 @@ fn test_apa_7th_sort_anonymous_works_by_title() {
 
     assert!(
         guide_pos < chicago_pos,
-        "Anonymous works should file under title with article stripping. Got: {}",
-        result
+        "Anonymous works should file under title with article stripping. Got: {result}"
     );
 }
 

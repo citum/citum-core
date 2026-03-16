@@ -134,7 +134,7 @@ impl Processor {
         self.get_config()
             .processing
             .as_ref()
-            .and_then(|processing| processing.default_bibliography_sort())
+            .and_then(citum_schema::options::Processing::default_bibliography_sort)
             .map(|preset| preset.group_sort())
     }
 
@@ -161,7 +161,7 @@ impl Processor {
             sorter
                 .sort_references(self.bibliography.values().collect(), &sort_spec)
                 .into_iter()
-                .filter_map(|reference| reference.id())
+                .filter_map(citum_schema::reference::InputReference::id)
                 .collect()
         } else {
             self.bibliography.keys().cloned().collect()
@@ -226,6 +226,7 @@ impl Processor {
     }
 
     /// Create a new processor with default English locale (en-US).
+    #[must_use]
     pub fn new(style: Style, bibliography: Bibliography) -> Self {
         Self::with_compound_sets(style, bibliography, IndexMap::new())
     }
@@ -248,6 +249,7 @@ impl Processor {
     ///
     /// If `compound_sets` is invalid, this constructor ignores the supplied sets
     /// and falls back to a processor without compound sets.
+    #[must_use]
     pub fn with_compound_sets(
         style: Style,
         bibliography: Bibliography,
@@ -260,6 +262,7 @@ impl Processor {
     /// Create a new processor with a specified locale.
     ///
     /// The locale determines term translations and locale-specific formatting behavior.
+    #[must_use]
     pub fn with_locale(style: Style, bibliography: Bibliography, locale: Locale) -> Self {
         Self::with_locale_and_compound_sets(style, bibliography, locale, IndexMap::new())
     }
@@ -292,6 +295,7 @@ impl Processor {
     ///
     /// If `compound_sets` is invalid, this constructor ignores the supplied sets
     /// and falls back to a processor without compound sets.
+    #[must_use]
     pub fn with_locale_and_compound_sets(
         style: Style,
         bibliography: Bibliography,
@@ -306,6 +310,7 @@ impl Processor {
     ///
     /// Loads the locale specified in the style's `default_locale` field from the given directory,
     /// falling back to en-US if not found or not specified.
+    #[must_use]
     pub fn with_style_locale(
         style: Style,
         bibliography: Bibliography,

@@ -47,6 +47,7 @@ pub struct MacroInliner {
 
 impl MacroInliner {
     /// Create a new macro inliner from a CSL 1.0 style.
+    #[must_use]
     pub fn new(style: &Style) -> Self {
         let mut macros = HashMap::new();
         for m in &style.macros {
@@ -61,6 +62,7 @@ impl MacroInliner {
     /// Create a new macro inliner with provenance tracking.
     ///
     /// Tracks source locations to help debug migration issues.
+    #[must_use]
     pub fn with_provenance(style: &Style, provenance: ProvenanceTracker) -> Self {
         let mut macros = HashMap::new();
         for m in &style.macros {
@@ -73,6 +75,7 @@ impl MacroInliner {
     }
 
     /// Return the optional provenance tracker.
+    #[must_use]
     pub fn provenance(&self) -> Option<&ProvenanceTracker> {
         self.provenance.as_ref()
     }
@@ -80,6 +83,7 @@ impl MacroInliner {
     /// Expand all macro calls in a node list.
     ///
     /// Recursively replaces macro references with their definitions.
+    #[must_use]
     pub fn expand_nodes(&self, nodes: &[CslNode]) -> Vec<CslNode> {
         let mut order_counter = 0;
         self.expand_nodes_with_order(nodes, &mut order_counter)
@@ -147,7 +151,7 @@ impl MacroInliner {
     }
 
     /// Internal method that tracks macro call order during expansion.
-    /// The order_counter is incremented each time a TOP-LEVEL macro is expanded,
+    /// The `order_counter` is incremented each time a TOP-LEVEL macro is expanded,
     /// and all nodes within that macro inherit the same order value.
     fn expand_nodes_with_order(
         &self,
@@ -246,7 +250,7 @@ impl MacroInliner {
         expanded
     }
 
-    /// Assigns macro_call_order only if not already set.
+    /// Assigns `macro_call_order` only if not already set.
     /// This ensures nested macro nodes keep their own order while non-macro nodes get the parent order.
     fn assign_macro_order_if_none(&self, node: &mut CslNode, order: usize) {
         match node {
@@ -306,7 +310,7 @@ impl MacroInliner {
         }
     }
 
-    /// Assigns macro_call_order to a node and all its descendants.
+    /// Assigns `macro_call_order` to a node and all its descendants.
     /// This ensures all nodes within an expanded macro inherit the macro's order.
     #[allow(dead_code)]
     fn assign_macro_order(&self, node: &mut CslNode, order: usize) {
@@ -405,6 +409,7 @@ impl MacroInliner {
     }
 
     /// Returns a version of the bibliography layout with all macros inlined.
+    #[must_use]
     pub fn inline_bibliography(&self, style: &Style) -> Option<Vec<CslNode>> {
         style.bibliography.as_ref().map(|bib| {
             // Clone the layout children so we can mutate them
@@ -421,6 +426,7 @@ impl MacroInliner {
     }
 
     /// Returns a version of the citation layout with all macros inlined.
+    #[must_use]
     pub fn inline_citation(&self, style: &Style) -> Vec<CslNode> {
         self.expand_nodes(&style.citation.layout.children)
     }

@@ -1,4 +1,4 @@
-//! citum_edtf - A modern EDTF (Extended Date/Time Format) parser
+//! `citum_edtf` - A modern EDTF (Extended Date/Time Format) parser
 //!
 //! This crate implements ISO 8601-2:2019 (EDTF) Level 0 and Level 1.
 use winnow::ascii::dec_int;
@@ -148,10 +148,10 @@ use std::fmt;
 impl fmt::Display for Edtf {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Edtf::Date(d) => write!(f, "{}", d),
+            Edtf::Date(d) => write!(f, "{d}"),
             Edtf::Interval(i) => write!(f, "{}/{}", i.start, i.end),
-            Edtf::IntervalFrom(d) => write!(f, "{}/..", d),
-            Edtf::IntervalTo(d) => write!(f, "../{}", d),
+            Edtf::IntervalFrom(d) => write!(f, "{d}/.."),
+            Edtf::IntervalTo(d) => write!(f, "../{d}"),
         }
     }
 }
@@ -166,7 +166,7 @@ impl fmt::Display for Date {
             }
         }
         if let Some(t) = self.time {
-            write!(f, "T{}", t)?;
+            write!(f, "T{t}")?;
         }
         Ok(())
     }
@@ -178,45 +178,45 @@ impl fmt::Display for Year {
             write!(f, "Y{}", self.value)
         } else if self.value < 0 {
             let abs_val = self.value.abs();
-            let mut s = format!("{:04}", abs_val);
+            let mut s = format!("{abs_val:04}");
             match self.unspecified {
-                UnspecifiedYear::None => write!(f, "-{}", s),
+                UnspecifiedYear::None => write!(f, "-{s}"),
                 UnspecifiedYear::One => {
                     s.replace_range(3..4, "u");
-                    write!(f, "-{}", s)
+                    write!(f, "-{s}")
                 }
                 UnspecifiedYear::Two => {
                     s.replace_range(2..4, "uu");
-                    write!(f, "-{}", s)
+                    write!(f, "-{s}")
                 }
                 UnspecifiedYear::Three => {
                     s.replace_range(1..4, "uuu");
-                    write!(f, "-{}", s)
+                    write!(f, "-{s}")
                 }
                 UnspecifiedYear::Four => {
                     s.replace_range(0..4, "uuuu");
-                    write!(f, "-{}", s)
+                    write!(f, "-{s}")
                 }
             }
         } else {
             let mut s = format!("{:04}", self.value);
             match self.unspecified {
-                UnspecifiedYear::None => write!(f, "{}", s),
+                UnspecifiedYear::None => write!(f, "{s}"),
                 UnspecifiedYear::One => {
                     s.replace_range(3..4, "u");
-                    write!(f, "{}", s)
+                    write!(f, "{s}")
                 }
                 UnspecifiedYear::Two => {
                     s.replace_range(2..4, "uu");
-                    write!(f, "{}", s)
+                    write!(f, "{s}")
                 }
                 UnspecifiedYear::Three => {
                     s.replace_range(1..4, "uuu");
-                    write!(f, "{}", s)
+                    write!(f, "{s}")
                 }
                 UnspecifiedYear::Four => {
                     s.replace_range(0..4, "uuuu");
-                    write!(f, "{}", s)
+                    write!(f, "{s}")
                 }
             }
         }
@@ -226,7 +226,7 @@ impl fmt::Display for Year {
 impl fmt::Display for MonthOrSeason {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            MonthOrSeason::Month(m) => write!(f, "{:02}", m),
+            MonthOrSeason::Month(m) => write!(f, "{m:02}"),
             MonthOrSeason::Unspecified => write!(f, "uu"),
             MonthOrSeason::Spring => write!(f, "21"),
             MonthOrSeason::Summer => write!(f, "22"),
@@ -239,7 +239,7 @@ impl fmt::Display for MonthOrSeason {
 impl fmt::Display for Day {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Day::Day(d) => write!(f, "{:02}", d),
+            Day::Day(d) => write!(f, "{d:02}"),
             Day::Unspecified => write!(f, "uu"),
         }
     }
@@ -444,17 +444,16 @@ pub fn parse_date(input: &mut &str) -> Result<Date, ErrMode<ContextError>> {
         Quality::default()
     };
 
-    let day =
-        if let Some(MonthOrSeason::Month(_)) | Some(MonthOrSeason::Unspecified) = month_or_season {
-            if input.starts_with('-') {
-                let _ = '-'.parse_next(input)?;
-                Some(parse_day.parse_next(input)?)
-            } else {
-                None
-            }
+    let day = if let Some(MonthOrSeason::Month(_) | MonthOrSeason::Unspecified) = month_or_season {
+        if input.starts_with('-') {
+            let _ = '-'.parse_next(input)?;
+            Some(parse_day.parse_next(input)?)
         } else {
             None
-        };
+        }
+    } else {
+        None
+    };
     let day_quality = if day.is_some() {
         parse_quality.parse_next(input)?
     } else {

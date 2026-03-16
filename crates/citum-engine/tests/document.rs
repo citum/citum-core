@@ -85,8 +85,7 @@ fn given_simple_author_date_document_when_rendered_as_html_then_a_bibliography_h
     // Verify that the citation was replaced
     assert!(
         html_output.contains("kuhn1962") || html_output.contains("Kuhn"),
-        "Output should contain reference to kuhn1962 or Kuhn. Got: {}",
-        html_output
+        "Output should contain reference to kuhn1962 or Kuhn. Got: {html_output}"
     );
 
     // Verify document structure is preserved

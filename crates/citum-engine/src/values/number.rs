@@ -59,7 +59,7 @@ fn resolve_number_value(
             if options.context == crate::values::RenderContext::Citation
                 && let Some(sub_label) = &hints.citation_sub_label
             {
-                return format!("{}{}", n, sub_label);
+                return format!("{n}{sub_label}");
             }
             n.to_string()
         }),
@@ -78,13 +78,13 @@ fn resolve_number_value(
             } else {
                 String::new()
             };
-            Some(format!("{}{}", base, suffix))
+            Some(format!("{base}{suffix}"))
         }
         _ => None,
     }
 }
 
-/// Resolve a label prefix for a number variable if label_form is configured.
+/// Resolve a label prefix for a number variable if `label_form` is configured.
 fn resolve_number_label<F: crate::render::format::OutputFormat<Output = String>>(
     number: &NumberVariable,
     label_form: &citum_schema::template::LabelForm,
@@ -113,7 +113,7 @@ fn resolve_number_label<F: crate::render::format::OutputFormat<Output = String>>
                 } else {
                     t.to_string()
                 };
-                fmt.text(&format!("{} ", term_str))
+                fmt.text(&format!("{term_str} "))
             })
     } else {
         None
@@ -175,6 +175,7 @@ impl ComponentValues for TemplateNumber {
 /// Determines which `LocatorType` corresponds to a given numeric variable,
 /// allowing proper label selection when rendering page, volume, or issue information.
 /// Returns `None` for variables with no locator equivalent (e.g. edition, version).
+#[must_use]
 pub fn number_var_to_locator_type(
     var: &NumberVariable,
 ) -> Option<citum_schema::citation::LocatorType> {
@@ -203,6 +204,7 @@ pub fn number_var_to_locator_type(
 /// Returns `true` if the value contains range or list separators — hyphens (`-`),
 /// en-dashes (`–`), commas (`,`), or ampersands (`&`) — indicating multiple items
 /// such as `"1-10"`, `"1, 3"`, or `"1 & 3"`.
+#[must_use]
 pub fn check_plural(value: &str, _locator_type: &citum_schema::citation::LocatorType) -> bool {
     // Simple heuristic: if contains ranges or separators, it's plural.
     // "1-10", "1, 3", "1 & 3"
@@ -212,6 +214,7 @@ pub fn check_plural(value: &str, _locator_type: &citum_schema::citation::Locator
 /// Format a page range according to the specified format.
 ///
 /// Formats: expanded (default), minimal, minimal-two, chicago, chicago-16
+#[must_use]
 pub fn format_page_range(
     pages: &str,
     format: Option<&citum_schema::options::PageRangeFormat>,
@@ -219,7 +222,7 @@ pub fn format_page_range(
     use citum_schema::options::PageRangeFormat;
 
     // First, replace hyphen with en-dash
-    let pages = pages.replace("-", "–");
+    let pages = pages.replace('-', "–");
 
     // If no range or no format specified, return as-is
     let format = match format {
@@ -249,13 +252,14 @@ pub fn format_page_range(
                 PageRangeFormat::Chicago | PageRangeFormat::Chicago16 => format_chicago(s, e),
                 _ => end.to_string(), // Future variants: default to expanded
             };
-            format!("{}–{}", start, formatted_end)
+            format!("{start}–{formatted_end}")
         }
         _ => pages, // Can't parse or invalid range
     }
 }
 
-/// Minimal format: keep only differing digits, with minimum min_digits
+/// Minimal format: keep only differing digits, with minimum `min_digits`
+#[must_use]
 pub fn format_minimal(start: &str, end: &str, min_digits: usize) -> String {
     let start_chars: Vec<char> = start.chars().collect();
     let end_chars: Vec<char> = end.chars().collect();
@@ -279,6 +283,7 @@ pub fn format_minimal(start: &str, end: &str, min_digits: usize) -> String {
 }
 
 /// Chicago Manual of Style page range format
+#[must_use]
 pub fn format_chicago(start: u32, end: u32) -> String {
     // Chicago rules (simplified from CMOS 17th):
     // - Under 100: use all digits (3–10, 71–72, 96–117)

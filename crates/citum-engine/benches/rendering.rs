@@ -33,7 +33,7 @@ fn bench_rendering(c: &mut Criterion) {
     let mut bib = Bibliography::new();
     for r in input_bib.references {
         if let Some(id) = r.id() {
-            bib.insert(id.to_string(), r);
+            bib.insert(id.clone(), r);
         }
     }
 
@@ -51,7 +51,7 @@ fn bench_rendering(c: &mut Criterion) {
         let processor = Processor::new(style.clone(), bib.clone());
         b.iter(|| {
             processor.process_citation(black_box(&citation)).unwrap();
-        })
+        });
     });
 
     // Benchmark Bibliography Processing (full set)
@@ -59,7 +59,7 @@ fn bench_rendering(c: &mut Criterion) {
         let processor = Processor::new(style.clone(), bib.clone());
         b.iter(|| {
             processor.process_references();
-        })
+        });
     });
 
     bench_disambiguation(c);

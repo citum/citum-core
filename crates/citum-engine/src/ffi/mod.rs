@@ -41,7 +41,7 @@ fn safe_c_string(s: String) -> *mut c_char {
     match CString::new(s) {
         Ok(c) => c.into_raw(),
         Err(e) => {
-            set_error(format!("String contains null bytes: {}", e));
+            set_error(format!("String contains null bytes: {e}"));
             ptr::null_mut()
         }
     }
@@ -65,16 +65,17 @@ fn parse_bibliography_json(bib_str: &str) -> Result<Bibliography, String> {
             .into_iter()
             .map(|r| (r.id.clone(), Reference::from(r)))
             .collect()),
-        Err(_) => serde_json::from_str(bib_str)
-            .map_err(|e| format!("Bibliography JSON parse error: {}", e)),
+        Err(_) => {
+            serde_json::from_str(bib_str).map_err(|e| format!("Bibliography JSON parse error: {e}"))
+        }
     }
 }
 
 /// Load and parse a Citum YAML style file from disk.
 fn load_style_yaml(path: &str) -> Result<Style, String> {
     let src = std::fs::read_to_string(Path::new(path))
-        .map_err(|e| format!("Failed to read style YAML: {}", e))?;
-    serde_yaml::from_str(&src).map_err(|e| format!("Style YAML parse error: {}", e))
+        .map_err(|e| format!("Failed to read style YAML: {e}"))?;
+    serde_yaml::from_str(&src).map_err(|e| format!("Style YAML parse error: {e}"))
 }
 
 /// Get the last error message.
@@ -86,8 +87,7 @@ pub unsafe extern "C" fn citum_get_last_error() -> *mut c_char {
     LAST_ERROR.with(|e| {
         e.borrow()
             .as_ref()
-            .map(|s| safe_c_string(s.clone()))
-            .unwrap_or(ptr::null_mut())
+            .map_or(ptr::null_mut(), |s| safe_c_string(s.clone()))
     })
 }
 
@@ -112,7 +112,7 @@ pub unsafe extern "C" fn citum_processor_new(
     let style: Style = match serde_json::from_str(style_str) {
         Ok(s) => s,
         Err(e) => {
-            set_error(format!("Style JSON parse error: {}", e));
+            set_error(format!("Style JSON parse error: {e}"));
             return ptr::null_mut();
         }
     };
@@ -150,7 +150,7 @@ pub unsafe extern "C" fn citum_processor_new_with_locale(
     let style: Style = match serde_json::from_str(style_str) {
         Ok(s) => s,
         Err(e) => {
-            set_error(format!("Style JSON parse error: {}", e));
+            set_error(format!("Style JSON parse error: {e}"));
             return ptr::null_mut();
         }
     };
@@ -166,7 +166,7 @@ pub unsafe extern "C" fn citum_processor_new_with_locale(
     let locale: Locale = match serde_json::from_str(locale_str) {
         Ok(l) => l,
         Err(e) => {
-            set_error(format!("Locale JSON parse error: {}", e));
+            set_error(format!("Locale JSON parse error: {e}"));
             return ptr::null_mut();
         }
     };
@@ -206,7 +206,7 @@ pub unsafe extern "C" fn citum_processor_new_from_yaml(
     let loaded = match crate::io::load_bibliography_with_sets(Path::new(bib_path_str)) {
         Ok(b) => b,
         Err(e) => {
-            set_error(format!("Failed to load bibliography: {}", e));
+            set_error(format!("Failed to load bibliography: {e}"));
             return ptr::null_mut();
         }
     };
@@ -218,7 +218,7 @@ pub unsafe extern "C" fn citum_processor_new_from_yaml(
     ) {
         Ok(p) => Box::new(p),
         Err(e) => {
-            set_error(format!("Invalid compound sets: {}", e));
+            set_error(format!("Invalid compound sets: {e}"));
             return ptr::null_mut();
         }
     };
@@ -257,14 +257,14 @@ pub unsafe extern "C" fn citum_processor_new_from_bib(
     let bib_src = match std::fs::read_to_string(Path::new(bib_path_str)) {
         Ok(s) => s,
         Err(e) => {
-            set_error(format!("Failed to read bibliography: {}", e));
+            set_error(format!("Failed to read bibliography: {e}"));
             return ptr::null_mut();
         }
     };
     let bibliography_parsed = match ::biblatex::Bibliography::parse(&bib_src) {
         Ok(b) => b,
         Err(e) => {
-            set_error(format!("BibLaTeX parse error: {}", e));
+            set_error(format!("BibLaTeX parse error: {e}"));
             return ptr::null_mut();
         }
     };
@@ -304,7 +304,7 @@ where
     let cite_str = match unsafe { CStr::from_ptr(cite_json) }.to_str() {
         Ok(s) => s,
         Err(e) => {
-            set_error(format!("Invalid UTF-8 in citation JSON: {}", e));
+            set_error(format!("Invalid UTF-8 in citation JSON: {e}"));
             return ptr::null_mut();
         }
     };
@@ -312,7 +312,7 @@ where
     let citation: Citation = match serde_json::from_str(cite_str) {
         Ok(c) => c,
         Err(e) => {
-            set_error(format!("Citation JSON parse error: {}", e));
+            set_error(format!("Citation JSON parse error: {e}"));
             return ptr::null_mut();
         }
     };
@@ -320,7 +320,7 @@ where
     match processor.process_citation_with_format::<F>(&citation) {
         Ok(rendered) => safe_c_string(rendered),
         Err(e) => {
-            set_error(format!("Rendering error: {}", e));
+            set_error(format!("Rendering error: {e}"));
             ptr::null_mut()
         }
     }
@@ -509,7 +509,7 @@ pub unsafe extern "C" fn citum_render_citations_json(
     let citations_str = match unsafe { CStr::from_ptr(citations_json) }.to_str() {
         Ok(s) => s,
         Err(e) => {
-            set_error(format!("Invalid UTF-8 in citations JSON: {}", e));
+            set_error(format!("Invalid UTF-8 in citations JSON: {e}"));
             return ptr::null_mut();
         }
     };
@@ -517,7 +517,7 @@ pub unsafe extern "C" fn citum_render_citations_json(
     let citations: Vec<Citation> = match serde_json::from_str(citations_str) {
         Ok(c) => c,
         Err(e) => {
-            set_error(format!("Citations JSON parse error: {}", e));
+            set_error(format!("Citations JSON parse error: {e}"));
             return ptr::null_mut();
         }
     };
@@ -538,12 +538,12 @@ pub unsafe extern "C" fn citum_render_citations_json(
         Ok(rendered) => match serde_json::to_string(&rendered) {
             Ok(json) => safe_c_string(json),
             Err(e) => {
-                set_error(format!("Failed to serialize result: {}", e));
+                set_error(format!("Failed to serialize result: {e}"));
                 ptr::null_mut()
             }
         },
         Err(e) => {
-            set_error(format!("Batch rendering error: {}", e));
+            set_error(format!("Batch rendering error: {e}"));
             ptr::null_mut()
         }
     }

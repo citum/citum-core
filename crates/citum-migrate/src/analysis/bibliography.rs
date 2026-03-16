@@ -3,6 +3,7 @@ use citum_schema::template::{ContributorRole, TemplateComponent};
 use csl_legacy::model::{CslNode, Layout, Style};
 
 /// Extract the suffix on the author macro call from the bibliography layout.
+#[must_use]
 pub fn extract_author_suffix(layout: &Layout) -> Option<String> {
     for node in &layout.children {
         // Check for group containing author macro call
@@ -41,6 +42,7 @@ pub fn apply_author_suffix(components: &mut [TemplateComponent], suffix: Option<
 }
 
 /// Check if the bibliography name element has an 'and' attribute.
+#[must_use]
 pub fn extract_bibliography_and(style: &Style) -> Option<AndOptions> {
     for macro_def in &style.macros {
         if macro_def.name == "author"

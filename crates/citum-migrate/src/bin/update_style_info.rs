@@ -13,7 +13,7 @@ fn main() {
     let entries = match fs::read_dir(styles_dir) {
         Ok(e) => e,
         Err(e) => {
-            eprintln!("Error reading styles directory: {}", e);
+            eprintln!("Error reading styles directory: {e}");
             return;
         }
     };
@@ -36,10 +36,10 @@ fn main() {
 
             // Find corresponding CSL file
             let yaml_stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
-            let csl_path = Path::new(csl_dir).join(format!("{}.csl", yaml_stem));
+            let csl_path = Path::new(csl_dir).join(format!("{yaml_stem}.csl"));
 
             if !csl_path.exists() {
-                eprintln!("Warning: No CSL file found for {}", filename);
+                eprintln!("Warning: No CSL file found for {filename}");
                 failures += 1;
                 continue;
             }
@@ -105,16 +105,16 @@ fn main() {
     }
 
     println!("\n\n=== UPDATE STATS ===");
-    println!("Total Styles: {}", total);
+    println!("Total Styles: {total}");
     println!(
         "Success:      {} ({:.1}%)",
         success,
-        (success as f64 / total as f64) * 100.0
+        (f64::from(success) / f64::from(total)) * 100.0
     );
     println!(
         "Failures:     {} ({:.1}%)",
         failures,
-        (failures as f64 / total as f64) * 100.0
+        (f64::from(failures) / f64::from(total)) * 100.0
     );
 }
 
@@ -132,7 +132,7 @@ fn inject_info_block(yaml_text: &str, style_info: &citum_schema::StyleInfo) -> S
             for j in (i + 1)..lines.len() {
                 if !lines[j].is_empty()
                     && !lines[j].starts_with("  ")
-                    && !lines[j].starts_with("\t")
+                    && !lines[j].starts_with('\t')
                 {
                     info_end = j;
                     break;
@@ -155,7 +155,7 @@ fn inject_info_block(yaml_text: &str, style_info: &citum_schema::StyleInfo) -> S
     let after: String = lines[info_end..].join("\n");
 
     let indented_info = indent_yaml(&info_yaml);
-    format!("info:\n{}\n{}", indented_info, after)
+    format!("info:\n{indented_info}\n{after}")
 }
 
 fn indent_yaml(yaml: &str) -> String {
@@ -164,7 +164,7 @@ fn indent_yaml(yaml: &str) -> String {
             if line.is_empty() {
                 line.to_string()
             } else {
-                format!("  {}", line)
+                format!("  {line}")
             }
         })
         .collect::<Vec<_>>()

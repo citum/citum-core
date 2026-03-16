@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //!
 //! Runs CSL 1.0 → Citum migration on all styles and reports success rates.
 //!
-//! Usage: csln_batch_test <styles_dir> [--verbose] [--sample N]
+//! Usage: `csln_batch_test` <`styles_dir`> [--verbose] [--sample N]
 
 use std::collections::HashMap;
 use std::env;
@@ -43,13 +43,8 @@ fn main() {
     // Collect all .csl files
     let mut styles: Vec<_> = WalkDir::new(styles_dir)
         .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| {
-            e.path()
-                .extension()
-                .map(|ext| ext == "csl")
-                .unwrap_or(false)
-        })
+        .filter_map(std::result::Result::ok)
+        .filter(|e| e.path().extension().is_some_and(|ext| ext == "csl"))
         .map(|e| e.path().to_path_buf())
         .collect();
 
@@ -72,7 +67,7 @@ fn main() {
     let total = styles.len();
     let mut results = BatchResults::default();
 
-    eprintln!("Testing {} styles...\n", total);
+    eprintln!("Testing {total} styles...\n");
 
     for (i, path) in styles.iter().enumerate() {
         let result = test_style(path);
@@ -178,7 +173,7 @@ fn test_style(path: &Path) -> TestResult {
 
     let migrate_output = match migrate_output {
         Ok(o) => o,
-        Err(e) => return TestResult::MigrationFailed(format!("spawn error: {}", e)),
+        Err(e) => return TestResult::MigrationFailed(format!("spawn error: {e}")),
     };
 
     if !migrate_output.status.success() {
@@ -197,7 +192,7 @@ fn test_style(path: &Path) -> TestResult {
     // Step 3: Write to temp file and run processor
     let temp_path = std::env::temp_dir().join("csln_batch_test.yaml");
     if let Err(e) = fs::write(&temp_path, yaml_content.as_bytes()) {
-        return TestResult::ProcessorFailed(format!("write error: {}", e));
+        return TestResult::ProcessorFailed(format!("write error: {e}"));
     }
 
     let proc_output = Command::new("cargo")
@@ -207,7 +202,7 @@ fn test_style(path: &Path) -> TestResult {
 
     let proc_output = match proc_output {
         Ok(o) => o,
-        Err(e) => return TestResult::ProcessorFailed(format!("spawn error: {}", e)),
+        Err(e) => return TestResult::ProcessorFailed(format!("spawn error: {e}")),
     };
 
     if !proc_output.status.success() {
@@ -302,7 +297,7 @@ fn print_error_summary(errors: &HashMap<String, usize>) {
     items.sort_by(|a, b| b.1.cmp(a.1));
 
     for (error, count) in items.iter().take(10) {
-        println!("  {:5} - {}", count, error);
+        println!("  {count:5} - {error}");
     }
     if items.len() > 10 {
         println!("  ... and {} more error types", items.len() - 10);

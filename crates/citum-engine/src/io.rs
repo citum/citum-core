@@ -41,7 +41,7 @@ pub struct AnnotationStyle {
     /// Indent the annotation paragraph. Default: true.
     #[serde(default = "default_true")]
     pub indent: bool,
-    /// Line break style before annotation. Default: BlankLine.
+    /// Line break style before annotation. Default: `BlankLine`.
     #[serde(default)]
     pub paragraph_break: ParagraphBreak,
     /// Markup format for annotation text. Default: Djot.
@@ -90,13 +90,13 @@ pub enum AnnotationFormat {
 /// Render a free-text reference field with djot inline markup.
 ///
 /// Applies `render_djot_inline` to the source text, using the provided
-/// OutputFormat to handle emphasis, links, and other inline markup.
+/// `OutputFormat` to handle emphasis, links, and other inline markup.
 /// This is the render-time hook for processing note, abstract, and other
 /// free-text reference fields that may contain djot markup.
 ///
 /// # Arguments
 /// * `src` - Input string with optional djot inline markup
-/// * `fmt` - OutputFormat implementation for rendering
+/// * `fmt` - `OutputFormat` implementation for rendering
 ///
 /// # Returns
 /// Rendered string with markup applied
@@ -115,39 +115,36 @@ pub fn load_citations(path: &Path) -> Result<Vec<Citation>, ProcessorError> {
     let bytes = fs::read(path)?;
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
 
-    match ext {
-        "json" => {
-            // Check for syntax errors first
-            let _: serde_json::Value = serde_json::from_slice(&bytes)
-                .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
+    if ext == "json" {
+        // Check for syntax errors first
+        let _: serde_json::Value = serde_json::from_slice(&bytes)
+            .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
 
-            if let Ok(citations) = serde_json::from_slice::<Vec<Citation>>(&bytes) {
-                return Ok(citations);
-            }
-            match serde_json::from_slice::<Citation>(&bytes) {
-                Ok(citation) => Ok(vec![citation]),
-                Err(e) => Err(ProcessorError::ParseError(
-                    "JSON".to_string(),
-                    e.to_string(),
-                )),
-            }
+        if let Ok(citations) = serde_json::from_slice::<Vec<Citation>>(&bytes) {
+            return Ok(citations);
         }
-        _ => {
-            let content = String::from_utf8_lossy(&bytes);
-            // Check for syntax errors first
-            let _: serde_yaml::Value = serde_yaml::from_str(&content)
-                .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string()))?;
+        match serde_json::from_slice::<Citation>(&bytes) {
+            Ok(citation) => Ok(vec![citation]),
+            Err(e) => Err(ProcessorError::ParseError(
+                "JSON".to_string(),
+                e.to_string(),
+            )),
+        }
+    } else {
+        let content = String::from_utf8_lossy(&bytes);
+        // Check for syntax errors first
+        let _: serde_yaml::Value = serde_yaml::from_str(&content)
+            .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string()))?;
 
-            if let Ok(citations) = serde_yaml::from_str::<Vec<Citation>>(&content) {
-                return Ok(citations);
-            }
-            match serde_yaml::from_str::<Citation>(&content) {
-                Ok(citation) => Ok(vec![citation]),
-                Err(e) => Err(ProcessorError::ParseError(
-                    "YAML".to_string(),
-                    e.to_string(),
-                )),
-            }
+        if let Ok(citations) = serde_yaml::from_str::<Vec<Citation>>(&content) {
+            return Ok(citations);
+        }
+        match serde_yaml::from_str::<Citation>(&content) {
+            Ok(citation) => Ok(vec![citation]),
+            Err(e) => Err(ProcessorError::ParseError(
+                "YAML".to_string(),
+                e.to_string(),
+            )),
         }
     }
 }
@@ -163,22 +160,19 @@ pub fn load_annotations(path: &Path) -> Result<HashMap<String, String>, Processo
     let bytes = fs::read(path)?;
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
 
-    match ext {
-        "json" => {
-            let _: serde_json::Value = serde_json::from_slice(&bytes)
-                .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
+    if ext == "json" {
+        let _: serde_json::Value = serde_json::from_slice(&bytes)
+            .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
 
-            serde_json::from_slice::<HashMap<String, String>>(&bytes)
-                .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))
-        }
-        _ => {
-            let content = String::from_utf8_lossy(&bytes);
-            let _: serde_yaml::Value = serde_yaml::from_str(&content)
-                .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string()))?;
+        serde_json::from_slice::<HashMap<String, String>>(&bytes)
+            .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))
+    } else {
+        let content = String::from_utf8_lossy(&bytes);
+        let _: serde_yaml::Value = serde_yaml::from_str(&content)
+            .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string()))?;
 
-            serde_yaml::from_str::<HashMap<String, String>>(&content)
-                .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string()))
-        }
+        serde_yaml::from_str::<HashMap<String, String>>(&content)
+            .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string()))
     }
 }
 
@@ -209,26 +203,21 @@ pub fn validate_compound_sets(
                 return Err(ProcessorError::ParseError(
                     "BIBLIOGRAPHY".to_string(),
                     format!(
-                        "reference '{}' appears more than once in compound set '{}'",
-                        member, set_id
+                        "reference '{member}' appears more than once in compound set '{set_id}'"
                     ),
                 ));
             }
             if !bibliography.contains_key(member) {
                 return Err(ProcessorError::ParseError(
                     "BIBLIOGRAPHY".to_string(),
-                    format!(
-                        "compound set '{}' references unknown id '{}'",
-                        set_id, member
-                    ),
+                    format!("compound set '{set_id}' references unknown id '{member}'"),
                 ));
             }
             if let Some(existing) = member_owner.insert(member.clone(), set_id.clone()) {
                 return Err(ProcessorError::ParseError(
                     "BIBLIOGRAPHY".to_string(),
                     format!(
-                        "reference '{}' appears in both compound sets '{}' and '{}'",
-                        member, existing, set_id
+                        "reference '{member}' appears in both compound sets '{existing}' and '{set_id}'"
                     ),
                 ));
             }
@@ -244,16 +233,16 @@ fn loaded_from_input_bibliography(
     let mut references = IndexMap::new();
     for r in input_bib.references {
         if let Some(id) = r.id() {
-            references.insert(id.to_string(), r);
+            references.insert(id.clone(), r);
         }
     }
     let sets = validate_compound_sets(input_bib.sets, &references)?;
     Ok(LoadedBibliography { references, sets })
 }
 
-/// Parse JSON bibliography bytes into a LoadedBibliography.
+/// Parse JSON bibliography bytes into a `LoadedBibliography`.
 ///
-/// Supports CSL-JSON, Citum JSON, wrapped legacy format, and IndexMap variants.
+/// Supports CSL-JSON, Citum JSON, wrapped legacy format, and `IndexMap` variants.
 fn parse_json_bibliography(bytes: &[u8]) -> Result<LoadedBibliography, ProcessorError> {
     // Check for syntax errors first
     let _: serde_json::Value = serde_json::from_slice(bytes)
@@ -319,9 +308,9 @@ fn parse_json_bibliography(bytes: &[u8]) -> Result<LoadedBibliography, Processor
     }
 }
 
-/// Parse YAML bibliography string into a LoadedBibliography.
+/// Parse YAML bibliography string into a `LoadedBibliography`.
 ///
-/// Supports Citum YAML, wrapped legacy format, IndexMap, and Vec variants.
+/// Supports Citum YAML, wrapped legacy format, `IndexMap`, and Vec variants.
 fn parse_yaml_bibliography(content: &str) -> Result<LoadedBibliography, ProcessorError> {
     // Check for syntax errors first
     let _: serde_yaml::Value = serde_yaml::from_str(content)
@@ -376,7 +365,7 @@ fn parse_yaml_bibliography(content: &str) -> Result<LoadedBibliography, Processo
     if let Ok(refs) = serde_yaml::from_str::<Vec<InputReference>>(content) {
         for r in refs {
             if let Some(id) = r.id() {
-                bib.insert(id.to_string(), r);
+                bib.insert(id.clone(), r);
             }
         }
         return Ok(LoadedBibliography {
@@ -598,7 +587,7 @@ issued: "2020"
     }
 
     #[test]
-    /// Parse a JSON array of CSL-JSON objects directly into LoadedBibliography.
+    /// Parse a JSON array of CSL-JSON objects directly into `LoadedBibliography`.
     fn parse_json_csl_vec() {
         let json = r#"[
   {"id": "smith-2020", "type": "book", "title": "Test Book"},
@@ -612,7 +601,7 @@ issued: "2020"
     }
 
     #[test]
-    /// Parse a Citum InputBibliography from JSON with references and sets.
+    /// Parse a Citum `InputBibliography` from JSON with references and sets.
     fn parse_json_citum_input_bibliography() {
         let json = r#"{
   "references": [
@@ -653,7 +642,7 @@ issued: "2020"
     }
 
     #[test]
-    /// Parse an IndexMap of CSL-JSON objects keyed by id from JSON.
+    /// Parse an `IndexMap` of CSL-JSON objects keyed by id from JSON.
     fn parse_json_indexmap() {
         // IndexMap format: object with entries having no "references" key,
         // where each value can be parsed as a LegacyReference.
@@ -669,7 +658,7 @@ issued: "2020"
     }
 
     #[test]
-    /// Parse a Citum YAML InputBibliography with references.
+    /// Parse a Citum YAML `InputBibliography` with references.
     fn parse_yaml_citum_input_bibliography() {
         let yaml = r#"
 references:
@@ -687,13 +676,13 @@ references:
     #[test]
     /// Parse a wrapped legacy YAML object with references and optional sets.
     fn parse_yaml_wrapped_legacy() {
-        let yaml = r#"
+        let yaml = r"
 references:
   - id: yaml-legacy-1
     type: book
     title: YAML Legacy Book
 sets: null
-"#;
+";
         let result = parse_yaml_bibliography(yaml).expect("should parse wrapped legacy YAML");
         assert_eq!(result.references.len(), 1);
         assert!(result.references.contains_key("yaml-legacy-1"));
@@ -701,13 +690,13 @@ sets: null
     }
 
     #[test]
-    /// Parse an IndexMap of legacy references keyed by id from YAML.
+    /// Parse an `IndexMap` of legacy references keyed by id from YAML.
     fn parse_yaml_indexmap() {
         // IndexMap format: plain object with reference-id keys mapping to legacy ref objects.
         // Structure: { id1: {type, title}, id2: {type, title} }
         // Must use legacy CSL-JSON field names (not InputReference class tags)
         // to avoid matching InputBibliography or Vec<InputReference>.
-        let yaml = r#"ref-yaml-1:
+        let yaml = r"ref-yaml-1:
   id: ref-yaml-1
   type: book
   title: First Book
@@ -715,7 +704,7 @@ ref-yaml-2:
   id: ref-yaml-2
   type: journal-article
   title: Second Article
-"#;
+";
         let result = parse_yaml_bibliography(yaml).expect("should parse YAML IndexMap format");
         assert_eq!(result.references.len(), 2);
         assert!(result.references.contains_key("ref-yaml-1"));
@@ -723,7 +712,7 @@ ref-yaml-2:
     }
 
     #[test]
-    /// Parse a YAML sequence of InputReference objects.
+    /// Parse a YAML sequence of `InputReference` objects.
     fn parse_yaml_vec_input_references() {
         let yaml = r#"
 - class: monograph

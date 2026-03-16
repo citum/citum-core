@@ -20,7 +20,7 @@ fn test_verify_comprehensive_examples() {
             println!("Successfully parsed {} references", refs.len());
             for reference in &refs {
                 let id = reference.id().expect("Reference should have an ID");
-                println!("Parsed: {}", id);
+                println!("Parsed: {id}");
 
                 // Verify specific fields for Foucault example
                 if id == "foucault_discipline" {
@@ -37,7 +37,7 @@ fn test_verify_comprehensive_examples() {
             println!("Successfully verified {} references", refs.len());
         }
         Err(e) => {
-            panic!("Failed to parse comprehensive.yaml: {}", e);
+            panic!("Failed to parse comprehensive.yaml: {e}");
         }
     }
 }
@@ -80,10 +80,10 @@ fn test_verify_all_refs_examples() {
             .file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("unknown");
-        println!("\nTesting: {}", filename);
+        println!("\nTesting: {filename}");
 
         let content =
-            fs::read_to_string(&path).unwrap_or_else(|_| panic!("Failed to read {}", filename));
+            fs::read_to_string(&path).unwrap_or_else(|_| panic!("Failed to read {filename}"));
 
         // Attempt to deserialize into InputBibliography
         let bib: Result<citum_schema::InputBibliography, _> = serde_yaml::from_str(&content);
@@ -94,11 +94,11 @@ fn test_verify_all_refs_examples() {
                 println!("  ✓ Successfully parsed {} references", refs.len());
                 for reference in &refs {
                     let id = reference.id().expect("Reference should have an ID");
-                    println!("    - {}", id);
+                    println!("    - {id}");
                 }
             }
             Err(e) => {
-                panic!("Failed to parse {}: {}", filename, e);
+                panic!("Failed to parse {filename}: {e}");
             }
         }
     }
