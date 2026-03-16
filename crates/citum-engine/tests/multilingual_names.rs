@@ -9,10 +9,11 @@ use citum_engine::values::resolve_multilingual_name;
 use citum_schema::options::MultilingualMode;
 use citum_schema::reference::MultilingualString;
 use citum_schema::reference::contributor::{Contributor, MultilingualName, StructuredName};
+use rstest::rstest;
 use std::collections::HashMap;
 
 #[test]
-fn test_resolve_multilingual_name_primary() {
+fn primary_mode_returns_original_family_name() {
     let original = StructuredName {
         family: MultilingualString::Simple("Kuhn".to_string()),
         given: MultilingualString::Simple("Thomas".to_string()),
@@ -40,14 +41,14 @@ fn test_resolve_multilingual_name_primary() {
     assert_eq!(resolved[0].family, Some("Kuhn".to_string()));
 }
 
-#[test]
-fn test_resolve_multilingual_name_transliteration_priority() {
-    let original = StructuredName {
-        family: MultilingualString::Simple("Пушкин".to_string()),
-        given: MultilingualString::Simple("Александр".to_string()),
-        ..Default::default()
-    };
-
+/// Preferred scripts to try and the expected resolved family name.
+#[rstest]
+#[case::exact_match(&["ru-Latn-pinyin", "ru-Latn"], "Pǔxīkīn")]
+#[case::fallback_to_second(&["non-existent", "ru-Latn"], "Pushkin")]
+fn given_a_priority_list_when_resolving_then_the_highest_matching_script_wins(
+    #[case] preferred: &[&str],
+    #[case] expected_family: &str,
+) {
     let mut transliterations = HashMap::new();
     transliterations.insert(
         "ru-Latn".to_string(),
@@ -66,46 +67,31 @@ fn test_resolve_multilingual_name_transliteration_priority() {
         },
     );
 
-    let m = MultilingualName {
-        original,
+    let contributor = Contributor::Multilingual(MultilingualName {
+        original: StructuredName {
+            family: MultilingualString::Simple("Пушкин".to_string()),
+            given: MultilingualString::Simple("Александр".to_string()),
+            ..Default::default()
+        },
         lang: None,
         transliterations,
         translations: HashMap::new(),
-    };
+    });
 
-    let contributor = Contributor::Multilingual(m);
-
-    // Test exact match priority
+    let preferred_owned: Vec<String> = preferred.iter().map(|s| s.to_string()).collect();
     let resolved = resolve_multilingual_name(
         &contributor,
         Some(&MultilingualMode::Transliterated),
-        Some(&["ru-Latn-pinyin".to_string(), "ru-Latn".to_string()]),
+        Some(&preferred_owned),
         None,
         "en-US",
     );
 
-    assert_eq!(resolved[0].family, Some("Pǔxīkīn".to_string()));
-
-    // Test fallback to second priority
-    let resolved2 = resolve_multilingual_name(
-        &contributor,
-        Some(&MultilingualMode::Transliterated),
-        Some(&["non-existent".to_string(), "ru-Latn".to_string()]),
-        None,
-        "en-US",
-    );
-
-    assert_eq!(resolved2[0].family, Some("Pushkin".to_string()));
+    assert_eq!(resolved[0].family, Some(expected_family.to_string()));
 }
 
 #[test]
-fn test_resolve_multilingual_name_substring_match() {
-    let original = StructuredName {
-        family: MultilingualString::Simple("Пушкин".to_string()),
-        given: MultilingualString::Simple("Александр".to_string()),
-        ..Default::default()
-    };
-
+fn substring_script_preference_matches_containing_transliteration() {
     let mut transliterations = HashMap::new();
     transliterations.insert(
         "ru-Latn-special".to_string(),
@@ -116,16 +102,18 @@ fn test_resolve_multilingual_name_substring_match() {
         },
     );
 
-    let m = MultilingualName {
-        original,
+    let contributor = Contributor::Multilingual(MultilingualName {
+        original: StructuredName {
+            family: MultilingualString::Simple("Пушкин".to_string()),
+            given: MultilingualString::Simple("Александр".to_string()),
+            ..Default::default()
+        },
         lang: None,
         transliterations,
         translations: HashMap::new(),
-    };
+    });
 
-    let contributor = Contributor::Multilingual(m);
-
-    // Should match "ru-Latn-special" because it contains "special"
+    // "special" is a substring of "ru-Latn-special"
     let resolved = resolve_multilingual_name(
         &contributor,
         Some(&MultilingualMode::Transliterated),
