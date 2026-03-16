@@ -135,27 +135,28 @@ pub fn make_article_multi_author(
     }))
 }
 
-#[allow(clippy::too_many_arguments)]
-pub fn make_multilingual_book(
-    id: &str,
-    original_family: &str,
-    original_given: &str,
-    lang: &str,
-    translit_script: &str,
-    translit_family: &str,
-    translit_given: &str,
-    year: i32,
-    title: &str,
-) -> Reference {
+pub struct MultilingualBookParams<'a> {
+    pub id: &'a str,
+    pub original_family: &'a str,
+    pub original_given: &'a str,
+    pub lang: &'a str,
+    pub translit_script: &'a str,
+    pub translit_family: &'a str,
+    pub translit_given: &'a str,
+    pub year: i32,
+    pub title: &'a str,
+}
+
+pub fn make_multilingual_book(params: MultilingualBookParams) -> Reference {
     use citum_schema::reference::contributor::MultilingualName;
     use std::collections::HashMap;
 
     let mut transliterations = HashMap::new();
     transliterations.insert(
-        translit_script.to_string(),
+        params.translit_script.to_string(),
         StructuredName {
-            family: MultilingualString::Simple(translit_family.to_string()),
-            given: MultilingualString::Simple(translit_given.to_string()),
+            family: MultilingualString::Simple(params.translit_family.to_string()),
+            given: MultilingualString::Simple(params.translit_given.to_string()),
             suffix: None,
             dropping_particle: None,
             non_dropping_particle: None,
@@ -163,19 +164,19 @@ pub fn make_multilingual_book(
     );
 
     Reference::Monograph(Box::new(Monograph {
-        id: Some(id.to_string()),
+        id: Some(params.id.to_string()),
         r#type: MonographType::Book,
-        title: Some(Title::Single(title.to_string())),
+        title: Some(Title::Single(params.title.to_string())),
         container_title: None,
         author: Some(Contributor::Multilingual(MultilingualName {
             original: StructuredName {
-                family: MultilingualString::Simple(original_family.to_string()),
-                given: MultilingualString::Simple(original_given.to_string()),
+                family: MultilingualString::Simple(params.original_family.to_string()),
+                given: MultilingualString::Simple(params.original_given.to_string()),
                 suffix: None,
                 dropping_particle: None,
                 non_dropping_particle: None,
             },
-            lang: Some(lang.to_string()),
+            lang: Some(params.lang.to_string()),
             transliterations,
             translations: HashMap::new(),
         })),
@@ -183,7 +184,7 @@ pub fn make_multilingual_book(
         translator: None,
         recipient: None,
         interviewer: None,
-        issued: EdtfString(year.to_string()),
+        issued: EdtfString(params.year.to_string()),
         publisher: None,
         url: None,
         accessed: None,
@@ -215,44 +216,45 @@ pub fn run_test_case_native(
     expected: &str,
     mode: &str,
 ) {
-    run_test_case_native_with_options(
+    run_test_case_native_with_options(TestCaseOptions {
         input,
         citation_items,
         expected,
         mode,
-        true,
-        false,
-        false,
-        None,
-        None,
-    );
+        disambiguate_year_suffix: true,
+        disambiguate_names: false,
+        disambiguate_givenname: false,
+        et_al_min: None,
+        et_al_use_first: None,
+    });
 }
 
-#[allow(clippy::too_many_arguments)]
+pub struct TestCaseOptions<'a> {
+    pub input: &'a [Reference],
+    pub citation_items: &'a [Vec<&'a str>],
+    pub expected: &'a str,
+    pub mode: &'a str,
+    pub disambiguate_year_suffix: bool,
+    pub disambiguate_names: bool,
+    pub disambiguate_givenname: bool,
+    pub et_al_min: Option<u8>,
+    pub et_al_use_first: Option<u8>,
+}
+
 /// Execute a test case with custom disambiguation settings.
-pub fn run_test_case_native_with_options(
-    input: &[Reference],
-    citation_items: &[Vec<&str>],
-    expected: &str,
-    mode: &str,
-    disambiguate_year_suffix: bool,
-    disambiguate_names: bool,
-    disambiguate_givenname: bool,
-    et_al_min: Option<u8>,
-    et_al_use_first: Option<u8>,
-) {
+pub fn run_test_case_native_with_options(options: TestCaseOptions) {
     // Create author-date style with customizable disambiguation options
     let style = build_author_date_style(
-        disambiguate_year_suffix,
-        disambiguate_names,
-        disambiguate_givenname,
-        et_al_min,
-        et_al_use_first,
+        options.disambiguate_year_suffix,
+        options.disambiguate_names,
+        options.disambiguate_givenname,
+        options.et_al_min,
+        options.et_al_use_first,
     );
 
     // Build bibliography from native references
     let mut bibliography = indexmap::IndexMap::new();
-    for item in input.iter() {
+    for item in options.input.iter() {
         if let Some(id) = item.id() {
             bibliography.insert(id, item.clone());
         }
@@ -260,10 +262,10 @@ pub fn run_test_case_native_with_options(
 
     let processor = Processor::new(style, bibliography);
 
-    if mode == "citation" {
+    if options.mode == "citation" {
         let mut results = Vec::new();
 
-        for batch in citation_items {
+        for batch in options.citation_items {
             let items: Vec<CitationItem> = batch
                 .iter()
                 .map(|id| CitationItem {
@@ -285,10 +287,14 @@ pub fn run_test_case_native_with_options(
         }
 
         let actual = results.join("\n");
-        assert_eq!(actual.trim(), expected.trim(), "Citation output mismatch");
-    } else if mode == "bibliography" {
-        if !citation_items.is_empty() {
-            for batch in citation_items {
+        assert_eq!(
+            actual.trim(),
+            options.expected.trim(),
+            "Citation output mismatch"
+        );
+    } else if options.mode == "bibliography" {
+        if !options.citation_items.is_empty() {
+            for batch in options.citation_items {
                 let items: Vec<CitationItem> = batch
                     .iter()
                     .map(|id| CitationItem {
@@ -307,7 +313,7 @@ pub fn run_test_case_native_with_options(
         let actual = processor.render_bibliography();
         assert_eq!(
             actual.trim(),
-            expected.trim(),
+            options.expected.trim(),
             "Bibliography output mismatch"
         );
     }
