@@ -759,6 +759,7 @@ impl<'a> Renderer<'a> {
             suppress_author,
             locator: locator.as_deref(),
             locator_label,
+            show_semantics: self.show_semantics,
         };
         let hint = self.build_template_render_hint(
             reference,

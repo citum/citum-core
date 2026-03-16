@@ -38,6 +38,8 @@ pub struct Renderer<'a> {
     pub compound_member_index: &'a HashMap<String, usize>,
     /// Compound sets keyed by set id.
     pub compound_sets: &'a IndexMap<String, Vec<String>>,
+    /// Whether to output semantic markup (HTML spans, Djot attributes).
+    pub show_semantics: bool,
 }
 
 /// Borrowed compound-set context for rendering.
@@ -160,6 +162,7 @@ impl TemplateComponentTracker {
 
 impl<'a> Renderer<'a> {
     /// Creates a new `Renderer` instance.
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         style: &'a citum_schema::Style,
         bibliography: &'a Bibliography,
@@ -168,6 +171,7 @@ impl<'a> Renderer<'a> {
         hints: &'a HashMap<String, ProcHints>,
         citation_numbers: &'a RefCell<HashMap<String, usize>>,
         compound: CompoundRenderData<'a>,
+        show_semantics: bool,
     ) -> Self {
         Self {
             style,
@@ -179,6 +183,7 @@ impl<'a> Renderer<'a> {
             compound_set_by_ref: compound.set_by_ref,
             compound_member_index: compound.member_index,
             compound_sets: compound.sets,
+            show_semantics,
         }
     }
 
@@ -409,6 +414,7 @@ impl<'a> Renderer<'a> {
             suppress_author,
             locator,
             locator_label,
+            show_semantics: self.show_semantics,
         }
     }
 

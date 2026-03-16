@@ -76,6 +76,7 @@ fn test_contributor_values() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let reference = make_reference();
     let hints = ProcHints::default();
@@ -114,6 +115,7 @@ fn test_date_values() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let reference = make_reference();
     let hints = ProcHints::default();
@@ -147,6 +149,7 @@ fn test_et_al() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -307,6 +310,7 @@ fn test_et_al_delimiter_never() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -363,6 +367,7 @@ fn test_et_al_delimiter_always() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -654,6 +659,7 @@ fn test_template_list_suppression() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let reference = Reference::from(LegacyReference {
         id: "multi".to_string(),
@@ -702,6 +708,7 @@ fn test_et_al_use_last() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -753,6 +760,7 @@ fn test_et_al_use_last_overlap() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -797,6 +805,7 @@ fn test_title_hyperlink() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -842,6 +851,7 @@ fn test_title_hyperlink_url_fallback() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -885,6 +895,7 @@ fn test_title_values_smarten_leading_single_quotes() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -923,6 +934,7 @@ fn test_title_values_smarten_starting_apostrophe() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -964,6 +976,7 @@ fn test_title_values_smarten_french_apostrophes() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -1003,6 +1016,7 @@ fn test_title_values_smarten_double_quotes() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -1037,6 +1051,7 @@ fn test_title_values_flip_flop_outer_single_inner_double_quotes() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -1071,6 +1086,7 @@ fn test_title_values_flip_flop_outer_double_inner_single_quotes() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -1105,6 +1121,7 @@ fn test_title_values_preserve_ambiguous_double_quotes() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -1139,6 +1156,7 @@ fn test_title_values_render_djot_markup_as_preformatted() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -1174,6 +1192,7 @@ fn test_title_values_smarten_djot_text_leaves() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -1209,6 +1228,7 @@ fn test_title_values_smarten_djot_double_quotes() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -1244,6 +1264,7 @@ fn test_title_values_inline_link_suppresses_outer_title_link() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -1289,6 +1310,7 @@ fn test_variable_hyperlink() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -1351,6 +1373,7 @@ fn test_editor_label_format() {
             suppress_author: false,
             locator: None,
             locator_label: None,
+            show_semantics: true,
         };
         let values = component
             .values::<PlainText>(&reference, &hints, &options)
@@ -1372,6 +1395,7 @@ fn test_editor_label_format() {
             suppress_author: false,
             locator: None,
             locator_label: None,
+            show_semantics: true,
         };
         let values = component
             .values::<PlainText>(&reference, &hints, &options)
@@ -1393,6 +1417,7 @@ fn test_editor_label_format() {
             suppress_author: false,
             locator: None,
             locator_label: None,
+            show_semantics: true,
         };
         let values = component
             .values::<PlainText>(&reference, &hints, &options)
@@ -1415,6 +1440,7 @@ fn test_term_values() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let reference = make_reference();
     let hints = ProcHints::default();
@@ -1446,6 +1472,7 @@ fn test_template_list_term_suppression() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     // Reference with no editor
     let reference = make_reference();
@@ -1486,6 +1513,7 @@ fn test_date_fallback() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     // Reference with NO issued date
     let reference = Reference::from(LegacyReference {
@@ -1539,6 +1567,7 @@ fn test_strip_periods_global_config() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
 
     let component = TemplateContributor {
@@ -1580,6 +1609,7 @@ fn test_strip_periods_component_override() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
 
     // Component overrides global setting
@@ -1625,6 +1655,7 @@ fn test_strip_periods_no_strip_by_default() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
 
     let component = TemplateContributor {
@@ -1667,6 +1698,7 @@ fn test_should_strip_periods_precedence() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
 
     // Component override takes precedence
@@ -1696,6 +1728,7 @@ fn test_should_strip_periods_precedence() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     assert!(!should_strip_periods(&rendering_default, &options_none));
 }
@@ -1912,6 +1945,7 @@ fn title_value_with_config(title_str: &str, ref_type: &str, config: &Config) -> 
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
     let reference = Reference::from(LegacyReference {
@@ -2068,6 +2102,7 @@ fn test_text_case_structured_title_sentence_apa() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -2125,6 +2160,7 @@ fn test_text_case_structured_title_sentence_nlm() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -2176,6 +2212,7 @@ fn test_text_case_non_english_falls_back_to_as_is() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
 
@@ -2218,6 +2255,7 @@ fn test_text_case_template_level_override() {
         suppress_author: false,
         locator: None,
         locator_label: None,
+        show_semantics: true,
     };
     let hints = ProcHints::default();
     let reference = Reference::from(LegacyReference {

@@ -70,8 +70,11 @@ impl ComponentValues for TemplateList {
                     pre_formatted: v.pre_formatted,
                 };
 
-                let rendered =
-                    crate::render::render_component_with_format_and_renderer::<F>(&proc_item, &fmt);
+                let rendered = crate::render::render_component_with_format_and_renderer::<F>(
+                    &proc_item,
+                    &fmt,
+                    options.show_semantics,
+                );
                 if rendered.is_empty() {
                     None
                 } else {

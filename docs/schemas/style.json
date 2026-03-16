@@ -176,7 +176,7 @@
           "additionalProperties": true
         },
         "entry-suffix": {
-          "description": "Suffix appended to each bibliography entry (e.g., \".\"). Extracted from CSL 1.0 `<layout suffix=\".\">` attribute. If None, a trailing period is added by default unless entry ends with DOI/URL.",
+          "description": "Suffix appended to each bibliography entry (e.g., `\".\"`). Extracted from CSL 1.0 `<layout suffix=\".\">` attribute. If `None`, no suffix is appended.",
           "type": [
             "string",
             "null"
@@ -190,7 +190,7 @@
           ]
         },
         "separator": {
-          "description": "Separator between bibliography components (e.g., \". \" for Chicago/APA, \", \" for Elsevier). Extracted from CSL 1.0 group delimiter attribute. Defaults to \". \" if not specified.",
+          "description": "Separator between bibliography components (e.g., `\". \"` for Chicago/APA, `\", \"` for Elsevier). Extracted from CSL 1.0 group delimiter attribute. Defaults to `\". \"`.",
           "type": [
             "string",
             "null"
@@ -937,14 +937,6 @@
           "description": "Whether to place periods/commas inside quotation marks. true = American style (\"text.\"), false = British style (\"text\".) Defaults to false; en-US locale typically sets this to true.",
           "type": "boolean"
         },
-        "semantic-classes": {
-          "description": "Whether to output semantic markup (HTML spans, Djot attributes). Defaults to true.",
-          "default": true,
-          "type": [
-            "boolean",
-            "null"
-          ]
-        },
         "strip-periods": {
           "description": "Strip trailing periods from terms, labels, and abbreviated dates.",
           "type": [
@@ -1012,7 +1004,7 @@
           "additionalProperties": true
         },
         "delimiter": {
-          "description": "The delimiter between contributors.",
+          "description": "The delimiter between contributors. Defaults to `\", \"` if not specified. `None` means \"not configured at this level\" and will not override an inherited value.",
           "type": [
             "string",
             "null"
@@ -1121,7 +1113,7 @@
           ]
         },
         "sort-separator": {
-          "description": "Delimiter between family and given name when inverted (default: \", \").",
+          "description": "Delimiter between family and given name when inverted (e.g., `\", \"` → \"Smith, John\"). Defaults to `\", \"` in the engine when not specified. `None` means \"not configured at this level\" and will not override an inherited value.",
           "type": [
             "string",
             "null"

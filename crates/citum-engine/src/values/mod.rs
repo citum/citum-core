@@ -464,6 +464,8 @@ pub struct RenderOptions<'a> {
     pub locator: Option<&'a str>,
     /// Optional locator label (e.g. page, section)
     pub locator_label: Option<citum_schema::citation::LocatorType>,
+    /// Whether to output semantic markup (HTML spans, Djot attributes).
+    pub show_semantics: bool,
 }
 
 /// Trait for extracting values from template components.
