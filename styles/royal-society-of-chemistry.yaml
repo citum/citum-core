@@ -56,12 +56,19 @@ bibliography:
   template:
     - contributor: author
       form: long
-      name-order: family-first
+      name-order: given-first
     - title: parent-monograph
       emph: true
     - title: parent-serial
       emph: true
     - variable: publisher
+      overrides:
+        chapter:
+          suppress: true
+        paper-conference:
+          suppress: true
+        entry-encyclopedia:
+          suppress: true
     - date: issued
       form: year
     - number: volume
@@ -89,6 +96,14 @@ bibliography:
         dataset:
           suppress: true
         standard:
+          suppress: true
+        entry-encyclopedia:
+          suppress: true
+        broadcast:
+          suppress: true
+        interview:
+          suppress: true
+        personal_communication:
           suppress: true
     - contributor: editor
       form: short
@@ -132,38 +147,27 @@ bibliography:
         form: long
       - date: accessed
         form: full
-    legal_case:
-      - number: citation-number
-      - contributor: author
-        form: long
-        and: text
-      - title: primary
-        overrides:
-          song:
-            emph: true
-          bill:
-            emph: true
-          legal_case:
-            emph: true
-          motion_picture:
-            emph: true
-          book:
-            emph: true
-          graphic:
-            emph: true
-          legislation:
-            emph: true
-          report:
-            emph: true
-      - variable: authority
+    thesis:
+      - items:
+          - number: citation-number
+          - contributor: author
+            form: long
+            name-order: given-first
+        delimiter: none
+      - variable: genre
       - variable: publisher
-      - variable: publisher-place
-      - number: edition
+      - date: issued
+        form: year
+    legal_case:
+      - items:
+          - number: citation-number
+          - title: primary
+            emph: true
+        delimiter: none
       - date: issued
         form: year
       - number: volume
         prefix: "vol. "
-        suppress: true
     patent:
       - items:
           - number: citation-number
