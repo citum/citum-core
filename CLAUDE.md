@@ -136,7 +136,7 @@ Use `/humanizer` on docs before finalizing. Exceptions: rule 18 (curly quotes) e
 
 ## Verification & Coding Standards
 
-[docs/guides/CODING_STANDARDS.md](./docs/guides/CODING_STANDARDS.md) — verification table, benchmark workflow, Serde checklist.
+[docs/guides/CODING_STANDARDS.md](./docs/guides/CODING_STANDARDS.md) — verification table, benchmark workflow, Serde checklist, **test style rule** (BDD `given/when/then` + `#[rstest]` for parameterised integration tests; plain `#[test]` for unit tests and single-scenario integration tests).
 
 ## Current Status
 
