@@ -274,10 +274,17 @@ impl<'a> Renderer<'a> {
         };
         let group_ids = group.iter().map(|item| item.id.clone()).collect();
         let prefix = first_item.prefix.as_deref().unwrap_or("");
+        // Suffix is embedded in item_parts by render_group_item_parts_with_format when
+        // item_parts is non-empty. Apply it here only when item_parts was empty (author-only output).
+        let suffix = if item_parts.is_empty() {
+            first_item.suffix.as_deref()
+        } else {
+            None
+        };
 
         Ok(Some(fmt.citation(
             group_ids,
-            self.affix_content(&fmt, content, Some(prefix), None),
+            self.affix_content(&fmt, content, Some(prefix), suffix),
         )))
     }
 
