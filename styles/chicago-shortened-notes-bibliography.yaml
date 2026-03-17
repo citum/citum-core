@@ -28,6 +28,8 @@ info:
       rel: template
     - href: https://www.chicagomanualofstyle.org/
       rel: documentation
+  short-name: "Chicago Shortened Notes"
+  edition: "18th edition"
 options:
   processing: note
   contributors:

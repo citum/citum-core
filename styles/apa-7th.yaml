@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/style.json
 info:
-  title: APA 7th Edition
+  title: American Psychological Association 7th edition
   fields:
   - anthropology
   - communications
@@ -25,6 +25,8 @@ info:
       rel: template
     - href: https://apastyle.apa.org/style-grammar-guidelines/references
       rel: documentation
+  short-name: "APA"
+  edition: "7th"
 options:
   processing: author-date
   substitute: standard
