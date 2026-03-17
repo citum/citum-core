@@ -72,7 +72,7 @@ pub use template::{
 pub type Template = Vec<TemplateComponent>;
 
 /// Canonical Citum style schema version used when `Style.version` is omitted.
-pub const STYLE_SCHEMA_VERSION: &str = "0.8.0";
+pub const STYLE_SCHEMA_VERSION: &str = "0.9.0";
 
 /// The new Citum Style model.
 ///
