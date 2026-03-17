@@ -15,7 +15,6 @@ pub(super) fn ensure_numeric_locator_citation_component(
 
     let locator_component = TemplateComponent::Variable(TemplateVariable {
         variable: SimpleVariable::Locator,
-        show_label: Some(true),
         rendering: Rendering {
             prefix: Some(", ".to_string()),
             ..Default::default()
@@ -45,7 +44,7 @@ pub(super) fn normalize_wrapped_numeric_locator_citation_component(
     template: &mut [TemplateComponent],
     citation_delimiter: &mut Option<String>,
 ) {
-    let Some((locator_wrap, no_inner_delimiter, strip_label_periods)) =
+    let Some((locator_wrap, no_inner_delimiter)) =
         find_wrapped_locator_group_format(&layout.children)
     else {
         return;
@@ -56,14 +55,12 @@ pub(super) fn normalize_wrapped_numeric_locator_citation_component(
         return;
     }
 
-    if apply_wrapped_locator_formatting(template, &locator_wrap, strip_label_periods)
-        && no_inner_delimiter
-    {
+    if apply_wrapped_locator_formatting(template, &locator_wrap) && no_inner_delimiter {
         *citation_delimiter = Some(String::new());
     }
 }
 
-fn find_wrapped_locator_group_format(nodes: &[CslNode]) -> Option<(WrapPunctuation, bool, bool)> {
+fn find_wrapped_locator_group_format(nodes: &[CslNode]) -> Option<(WrapPunctuation, bool)> {
     for node in nodes {
         match node {
             CslNode::Group(group) => {
@@ -75,9 +72,7 @@ fn find_wrapped_locator_group_format(nodes: &[CslNode]) -> Option<(WrapPunctuati
                 if let Some(wrap) = wrap
                     && nodes_use_citation_locator(&group.children)
                 {
-                    let strip_label_periods =
-                        nodes_have_locator_label_with_stripped_periods(&group.children);
-                    return Some((wrap, group.delimiter.is_none(), strip_label_periods));
+                    return Some((wrap, group.delimiter.is_none()));
                 }
 
                 if let Some(found) = find_wrapped_locator_group_format(&group.children) {
@@ -105,36 +100,9 @@ fn find_wrapped_locator_group_format(nodes: &[CslNode]) -> Option<(WrapPunctuati
     None
 }
 
-fn nodes_have_locator_label_with_stripped_periods(nodes: &[CslNode]) -> bool {
-    nodes
-        .iter()
-        .any(node_has_locator_label_with_stripped_periods)
-}
-
-fn node_has_locator_label_with_stripped_periods(node: &CslNode) -> bool {
-    match node {
-        CslNode::Label(label) => {
-            label.variable.as_deref() == Some("locator") && label.strip_periods == Some(true)
-        }
-        CslNode::Group(group) => nodes_have_locator_label_with_stripped_periods(&group.children),
-        CslNode::Choose(choose) => {
-            nodes_have_locator_label_with_stripped_periods(&choose.if_branch.children)
-                || choose
-                    .else_if_branches
-                    .iter()
-                    .any(|branch| nodes_have_locator_label_with_stripped_periods(&branch.children))
-                || choose.else_branch.as_ref().is_some_and(|children| {
-                    nodes_have_locator_label_with_stripped_periods(children)
-                })
-        }
-        _ => false,
-    }
-}
-
 fn apply_wrapped_locator_formatting(
     template: &mut [TemplateComponent],
     wrap: &WrapPunctuation,
-    strip_label_periods: bool,
 ) -> bool {
     let mut changed = false;
     for component in template {
@@ -142,14 +110,6 @@ fn apply_wrapped_locator_formatting(
             TemplateComponent::Variable(variable)
                 if variable.variable == SimpleVariable::Locator =>
             {
-                if variable.show_label != Some(true) {
-                    variable.show_label = Some(true);
-                    changed = true;
-                }
-                if strip_label_periods && variable.strip_label_periods != Some(true) {
-                    variable.strip_label_periods = Some(true);
-                    changed = true;
-                }
                 if variable.rendering.wrap.as_ref() != Some(wrap) {
                     variable.rendering.wrap = Some(wrap.clone());
                     changed = true;
@@ -164,7 +124,7 @@ fn apply_wrapped_locator_formatting(
                 }
             }
             TemplateComponent::List(list) => {
-                if apply_wrapped_locator_formatting(&mut list.items, wrap, strip_label_periods) {
+                if apply_wrapped_locator_formatting(&mut list.items, wrap) {
                     changed = true;
                 }
             }
@@ -196,7 +156,6 @@ pub(super) fn normalize_author_date_locator_citation_component(
 
     template.push(TemplateComponent::Variable(TemplateVariable {
         variable: SimpleVariable::Locator,
-        show_label: Some(true),
         rendering: Rendering {
             prefix: Some(locator_prefix),
             ..Default::default()
@@ -275,9 +234,6 @@ fn apply_author_date_locator_formatting(
                 if variable.variable == SimpleVariable::Locator =>
             {
                 found_locator = true;
-                if variable.show_label != Some(true) {
-                    variable.show_label = Some(true);
-                }
                 if should_replace_author_date_locator_prefix(
                     variable.rendering.prefix.as_deref(),
                     locator_prefix,
