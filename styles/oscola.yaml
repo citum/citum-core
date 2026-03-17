@@ -20,6 +20,8 @@ info:
   short-name: "OSCOLA"
   edition: "4th edition"
 options:
+  locators:
+    strip-label-periods: true
   substitute:
     contributor-role-form: short
     template:
@@ -106,8 +108,6 @@ citation:
         prefix: ", "
       - variable: locator
         prefix: " "
-        show-label: true
-        strip-label-periods: true
   ibid:
     note-start-text-case: lowercase
     delimiter: " "
@@ -116,8 +116,6 @@ citation:
         form: long
         strip-periods: true
       - variable: locator
-        show-label: true
-        strip-label-periods: true
 bibliography:
   options:
     contributors:

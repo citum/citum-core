@@ -20,6 +20,8 @@ info:
   short-name: "AMA"
   edition: "11th edition"
 options:
+  locators:
+    strip-label-periods: true
   substitute: editor-short
   processing: numeric
   contributors:
@@ -40,7 +42,6 @@ citation:
     - items:
         - number: citation-number
         - variable: locator
-          strip-label-periods: true
           wrap: parentheses
       delimiter: none
   multi-cite-delimiter: ","

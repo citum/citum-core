@@ -17,6 +17,7 @@ info:
     - href: https://academic.oup.com/femsre/pages/Manuscript_Styling
       rel: documentation
 options:
+  locators: note
   substitute: editor-short
   contributors:
     display-as-sort: all
@@ -71,7 +72,6 @@ citation:
       form: year
       prefix: " "
     - variable: locator
-      show-label: false
       prefix: ": "
   wrap: parentheses
   delimiter: " "

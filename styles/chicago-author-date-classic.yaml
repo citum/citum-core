@@ -81,7 +81,6 @@ citation:
         personal_communication:
           suppress: true
     - variable: locator
-      show-label: true
       prefix: " "
   wrap: parentheses
   delimiter: ". "

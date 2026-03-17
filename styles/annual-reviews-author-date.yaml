@@ -87,7 +87,6 @@ citation:
       form: year
       prefix: " "
     - variable: locator
-      show-label: true
       prefix: " "
   wrap: parentheses
   delimiter: ". "

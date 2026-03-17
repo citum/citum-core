@@ -16,6 +16,7 @@ info:
     - href: https://bristoluniversitypressdigital.com/view/journals/evp/evp-overview.xml?tab_body=instructions-for-authors
       rel: documentation
 options:
+  locators: note
   substitute:
     contributor-role-form: short
     template: []
@@ -68,7 +69,6 @@ citation:
       form: year
       prefix: ", "
     - variable: locator
-      show-label: false
       prefix: ":"
   wrap: parentheses
   delimiter: " "

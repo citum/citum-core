@@ -18,6 +18,8 @@ info:
     - href: https://academic.oup.com/amamanualofstyle
       rel: documentation
 options:
+  locators:
+    strip-label-periods: true
   substitute:
     contributor-role-form: short
     template:
@@ -48,7 +50,6 @@ citation:
     - items:
         - number: citation-number
         - variable: locator
-          strip-label-periods: true
           wrap: parentheses
       delimiter: none
   multi-cite-delimiter: ","

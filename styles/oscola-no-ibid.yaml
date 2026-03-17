@@ -20,6 +20,8 @@ info:
     - href: https://www.law.ox.ac.uk/oscola
       rel: documentation
 options:
+  locators:
+    strip-label-periods: true
   substitute:
     contributor-role-form: short
     template:
@@ -106,8 +108,6 @@ citation:
         prefix: ", "
       - variable: locator
         prefix: " "
-        show-label: true
-        strip-label-periods: true
 bibliography:
   options:
     contributors:

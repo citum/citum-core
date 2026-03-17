@@ -64,7 +64,6 @@ citation:
         wrap: quotes
       - variable: locator
         prefix: ", "
-        show-label: true
   template:
     - contributor: author
       form: long

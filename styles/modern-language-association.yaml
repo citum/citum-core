@@ -21,6 +21,7 @@ info:
   short-name: "MLA"
   edition: "9th"
 options:
+  locators: note
   processing: author-date
   substitute: standard
   integral-names:
@@ -59,14 +60,12 @@ citation:
           wrap: quotes
           prefix: ", "
     - variable: locator
-      show-label: false
   integral:
     template:
       - contributor: author
         form: long
         name-order: given-first
       - variable: locator
-        show-label: false
         wrap: parentheses
   wrap: parentheses
   multi-cite-delimiter: "; "

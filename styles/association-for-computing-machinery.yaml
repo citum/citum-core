@@ -14,6 +14,7 @@ info:
   id: http://www.zotero.org/styles/association-for-computing-machinery
   default-locale: en-US
 options:
+  locators: note
   substitute: editor-translator-short
   processing: numeric
   contributors:
@@ -35,7 +36,6 @@ citation:
     - number: citation-number
     - variable: locator
       prefix: ":"
-      show-label: false
   wrap: brackets
   delimiter: ""
   multi-cite-delimiter: ", "
