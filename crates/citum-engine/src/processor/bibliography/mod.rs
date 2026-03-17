@@ -13,7 +13,7 @@ mod compound;
 mod grouping;
 
 use super::matching::Matcher;
-use super::rendering::{CompoundRenderData, Renderer};
+use super::rendering::{CompoundRenderData, Renderer, RendererResources};
 use super::{ProcessedReferences, Processor};
 use crate::reference::Reference;
 use crate::render::format::OutputFormat;
@@ -33,10 +33,12 @@ impl Processor {
     /// Create a renderer with compound data from processor state.
     fn make_renderer(&self) -> Renderer<'_> {
         Renderer::new(
-            &self.style,
-            &self.bibliography,
-            &self.locale,
-            self.get_config(),
+            RendererResources {
+                style: &self.style,
+                bibliography: &self.bibliography,
+                locale: &self.locale,
+                config: self.get_config(),
+            },
             &self.hints,
             &self.citation_numbers,
             CompoundRenderData {

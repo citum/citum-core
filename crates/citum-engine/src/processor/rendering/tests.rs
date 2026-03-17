@@ -334,10 +334,12 @@ fn affix_content_normalizes_prefix_and_suffix_spacing() {
     let compound_member_index = HashMap::new();
     let compound_sets = IndexMap::new();
     let renderer = Renderer::new(
-        &style,
-        &bibliography,
-        &locale,
-        &config,
+        RendererResources {
+            style: &style,
+            bibliography: &bibliography,
+            locale: &locale,
+            config: &config,
+        },
         &hints,
         &citation_numbers,
         CompoundRenderData {
@@ -427,10 +429,12 @@ fn grouping_helper_matches_citation_wide_preserve_behavior() {
     let compound_member_index = HashMap::new();
     let compound_sets = IndexMap::new();
     let renderer = Renderer::new(
-        &style,
-        &bibliography,
-        &locale,
-        &config,
+        RendererResources {
+            style: &style,
+            bibliography: &bibliography,
+            locale: &locale,
+            config: &config,
+        },
         &hints,
         &citation_numbers,
         CompoundRenderData {

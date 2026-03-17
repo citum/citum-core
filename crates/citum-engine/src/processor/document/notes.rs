@@ -14,7 +14,7 @@ use super::output::HtmlPlaceholderRegistry;
 use super::{CitationPlacement, ParsedDocument};
 use crate::Citation;
 use crate::processor::Processor;
-use crate::processor::rendering::{CompoundRenderData, Renderer};
+use crate::processor::rendering::{CompoundRenderData, Renderer, RendererResources};
 use std::collections::HashMap;
 
 impl Processor {
@@ -450,10 +450,12 @@ impl Processor {
             .unwrap_or("; ");
 
         let renderer = Renderer::new(
-            &self.style,
-            &self.bibliography,
-            &self.locale,
-            self.get_config(),
+            RendererResources {
+                style: &self.style,
+                bibliography: &self.bibliography,
+                locale: &self.locale,
+                config: self.get_config(),
+            },
             &self.hints,
             &self.citation_numbers,
             CompoundRenderData {
