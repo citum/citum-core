@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "test")]
 
 /*
 SPDX-License-Identifier: MIT OR Apache-2.0
@@ -181,7 +181,10 @@ fn disambiguation_same_author_same_year_titles_follow_title_order() {
 }
 
 /// Test the upstream `YearSuffixAtTwoLevels` disambiguation cascade.
-#[allow(clippy::too_many_lines)] // test functions naturally exceed 100 lines
+#[allow(
+    clippy::too_many_lines,
+    reason = "test functions naturally exceed 100 lines"
+)]
 fn disambiguation_two_level_author_collisions_get_distinct_suffixes() {
     let input = vec![
         make_book_multi_author(

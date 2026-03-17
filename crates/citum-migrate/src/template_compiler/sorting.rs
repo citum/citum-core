@@ -17,7 +17,7 @@ impl TemplateCompiler {
 
     /// Sort components for bibliography: citation-number first (for numeric styles),
     /// then author, date, title, then rest.
-    #[allow(dead_code)]
+    #[allow(dead_code, reason = "helper functions")]
     pub(super) fn sort_bibliography_components(
         &self,
         components: &mut [TemplateComponent],

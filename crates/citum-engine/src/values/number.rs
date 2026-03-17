@@ -64,9 +64,10 @@ fn resolve_number_value(
             n.to_string()
         }),
         NumberVariable::CitationLabel => {
-            let config = match options.config.processing.as_ref() {
-                Some(citum_schema::options::Processing::Label(cfg)) => cfg,
-                _ => return None,
+            let Some(citum_schema::options::Processing::Label(config)) =
+                options.config.processing.as_ref()
+            else {
+                return None;
             };
             let params = config.effective_params();
             let base = crate::processor::labels::generate_base_label(reference, &params);
@@ -225,9 +226,8 @@ pub fn format_page_range(
     let pages = pages.replace('-', "–");
 
     // If no range or no format specified, return as-is
-    let format = match format {
-        Some(f) => f,
-        None => return pages, // Default: just convert to en-dash
+    let Some(format) = format else {
+        return pages; // Default: just convert to en-dash
     };
 
     // Check if this is a range (contains en-dash)

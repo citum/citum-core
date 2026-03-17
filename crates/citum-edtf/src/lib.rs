@@ -545,7 +545,7 @@ mod tests {
     fn test_extended_year() {
         let mut input = "Y17000000002";
         let res = parse_date(&mut input).unwrap();
-        assert_eq!(res.year.value, 17000000002_i64);
+        assert_eq!(res.year.value, 17_000_000_002_i64);
     }
 
     #[test]

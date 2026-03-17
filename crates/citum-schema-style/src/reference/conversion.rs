@@ -1,7 +1,11 @@
 use crate::reference::InputReference;
 use crate::reference::contributor::{Contributor, ContributorList, SimpleName, StructuredName};
 use crate::reference::date::EdtfString;
-use crate::reference::types::*;
+use crate::reference::types::{
+    Collection, CollectionComponent, CollectionType, Dataset, LegalCase, Monograph,
+    MonographComponentType, MonographType, NumOrStr, Parent, Patent, Serial, SerialComponent,
+    SerialComponentType, SerialType, Software, Standard, Statute, Title, Treaty,
+};
 use std::collections::HashMap;
 use url::Url;
 
@@ -149,7 +153,7 @@ fn from_monograph_ref(
         doi: ctx.doi,
         ads_bibcode: None,
         edition: ctx.edition,
-        report_number: legacy.number.map(|v| v.to_string()),
+        report_number: legacy.number,
         collection_number: legacy.collection_number.map(|v| v.to_string()),
         genre: legacy.genre,
         medium: legacy.medium,
@@ -349,7 +353,7 @@ fn from_standard_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         id: ctx.id,
         title: ctx.title,
         authority: legacy.authority,
-        standard_number: legacy.number.map(|v| v.to_string()).unwrap_or_default(),
+        standard_number: legacy.number.unwrap_or_default(),
         issued: ctx.issued,
         status: None,
         publisher: legacy.publisher.map(|n| {
@@ -373,7 +377,7 @@ fn from_patent_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> 
         title: ctx.title,
         author: legacy.author.map(Contributor::from),
         assignee: None,
-        patent_number: legacy.number.map(|v| v.to_string()).unwrap_or_default(),
+        patent_number: legacy.number.unwrap_or_default(),
         application_number: None,
         filing_date: None,
         issued: ctx.issued,
@@ -441,7 +445,7 @@ fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         doi: ctx.doi,
         ads_bibcode: None,
         edition: ctx.edition,
-        report_number: legacy.number.map(|v| v.to_string()),
+        report_number: legacy.number,
         collection_number: legacy.collection_number.map(|v| v.to_string()),
         genre: legacy.genre,
         medium: legacy.medium,

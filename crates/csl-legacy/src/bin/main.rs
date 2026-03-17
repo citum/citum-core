@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "bin crate")]
 
 //! Example binary for parsing a legacy CSL style and printing the JSON form.
 

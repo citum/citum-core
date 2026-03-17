@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "test")]
 /*
 SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
@@ -43,7 +43,7 @@ fn test_contributor_cross_list_duplicate_suppressed() {
     deduplicate_variables_cross_lists(&mut components);
 
     // Verify the first author is unsuppressed
-    #[allow(clippy::collapsible_if)]
+    #[allow(clippy::collapsible_if, reason = "pattern matching readability")]
     if let TemplateComponent::List(ref list) = components[0] {
         if let TemplateComponent::Contributor(ref contrib) = list.items[0] {
             assert!(
@@ -59,7 +59,7 @@ fn test_contributor_cross_list_duplicate_suppressed() {
     }
 
     // Verify the second author is suppressed
-    #[allow(clippy::collapsible_if)]
+    #[allow(clippy::collapsible_if, reason = "pattern matching readability")]
     if let TemplateComponent::List(ref list) = components[1] {
         if let TemplateComponent::Contributor(ref contrib) = list.items[0] {
             assert!(
@@ -110,7 +110,7 @@ fn test_date_cross_list_duplicate_suppressed() {
     deduplicate_variables_cross_lists(&mut components);
 
     // Verify the first date is unsuppressed
-    #[allow(clippy::collapsible_if)]
+    #[allow(clippy::collapsible_if, reason = "pattern matching readability")]
     if let TemplateComponent::List(ref list) = components[0] {
         if let TemplateComponent::Date(ref date) = list.items[0] {
             assert!(
@@ -126,7 +126,7 @@ fn test_date_cross_list_duplicate_suppressed() {
     }
 
     // Verify the second date is suppressed
-    #[allow(clippy::collapsible_if)]
+    #[allow(clippy::collapsible_if, reason = "pattern matching readability")]
     if let TemplateComponent::List(ref list) = components[1] {
         if let TemplateComponent::Date(ref date) = list.items[0] {
             assert!(
@@ -187,7 +187,7 @@ fn test_variable_cross_list_duplicate_suppressed() {
     }
 
     // Verify the second variable is suppressed
-    #[allow(clippy::collapsible_if)]
+    #[allow(clippy::collapsible_if, reason = "pattern matching readability")]
     if let TemplateComponent::List(ref list) = components[1] {
         if let TemplateComponent::Variable(ref var) = list.items[0] {
             assert!(
@@ -247,7 +247,7 @@ fn test_nested_list_variable_once_per_branch() {
     deduplicate_variables_cross_lists(&mut components);
 
     // Verify Doi is unsuppressed in the first list
-    #[allow(clippy::collapsible_if)]
+    #[allow(clippy::collapsible_if, reason = "pattern matching readability")]
     if let TemplateComponent::List(ref list) = components[0] {
         if let TemplateComponent::Variable(ref var) = list.items[0] {
             assert!(
@@ -263,7 +263,7 @@ fn test_nested_list_variable_once_per_branch() {
     }
 
     // Verify publisher in the inner nested list is unsuppressed (first occurrence)
-    #[allow(clippy::collapsible_if)]
+    #[allow(clippy::collapsible_if, reason = "pattern matching readability")]
     if let TemplateComponent::List(ref list) = components[0] {
         if let TemplateComponent::List(ref inner_list) = list.items[1] {
             if let TemplateComponent::Variable(ref var) = inner_list.items[0] {
@@ -281,7 +281,7 @@ fn test_nested_list_variable_once_per_branch() {
     }
 
     // Verify publisher in the second list is suppressed (duplicate)
-    #[allow(clippy::collapsible_if)]
+    #[allow(clippy::collapsible_if, reason = "pattern matching readability")]
     if let TemplateComponent::List(ref list) = components[1] {
         if let TemplateComponent::Variable(ref var) = list.items[0] {
             assert!(

@@ -2485,7 +2485,7 @@
           ]
         },
         "preferred-transliteration": {
-          "description": "Ordered priority list of BCP 47 transliteration tags (e.g. [\"ja-Latn-hepburn\", \"ja-Latn\"]). Takes precedence over `preferred_script` when resolving transliterations.",
+          "description": "Ordered priority list of BCP 47 transliteration tags (e.g. `[\"ja-Latn-hepburn\", \"ja-Latn\"]`). Takes precedence over `preferred_script` when resolving transliterations.",
           "type": [
             "array",
             "null"

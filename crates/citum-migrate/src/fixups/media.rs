@@ -10,26 +10,27 @@ pub(super) fn selector_matches_any(selector: &TypeSelector, candidates: &[&str])
         .any(|candidate| selector.matches(candidate))
 }
 
-fn apply_legal_case_additions(
-    template: &mut Vec<TemplateComponent>,
+struct LegalCaseFlags {
     has_issued: bool,
     has_parent_serial: bool,
     has_reporter: bool,
     has_page: bool,
     style_is_elsevier_harvard: bool,
     style_is_springer_socpsych: bool,
-) {
-    if !has_issued {
+}
+
+fn apply_legal_case_additions(template: &mut Vec<TemplateComponent>, flags: LegalCaseFlags) {
+    if !flags.has_issued {
         let mut date_component = citum_schema::template::TemplateDate {
             date: DateVariable::Issued,
             ..Default::default()
         };
-        if style_is_springer_socpsych {
+        if flags.style_is_springer_socpsych {
             date_component.form = citum_schema::template::DateForm::Full;
         }
         template.push(TemplateComponent::Date(date_component));
     }
-    if !has_parent_serial {
+    if !flags.has_parent_serial {
         template.push(TemplateComponent::Title(
             citum_schema::template::TemplateTitle {
                 title: TitleType::ParentSerial,
@@ -37,13 +38,14 @@ fn apply_legal_case_additions(
             },
         ));
     }
-    if (style_is_elsevier_harvard || style_is_springer_socpsych) && !has_reporter {
+    if (flags.style_is_elsevier_harvard || flags.style_is_springer_socpsych) && !flags.has_reporter
+    {
         template.push(TemplateComponent::Variable(TemplateVariable {
             variable: SimpleVariable::Reporter,
             ..Default::default()
         }));
     }
-    if style_is_springer_socpsych && !has_page {
+    if flags.style_is_springer_socpsych && !flags.has_page {
         template.push(TemplateComponent::Variable(TemplateVariable {
             variable: SimpleVariable::Page,
             ..Default::default()
@@ -137,12 +139,14 @@ pub(super) fn normalize_legal_case_type_template(
 
         apply_legal_case_additions(
             template,
-            has_issued,
-            has_parent_serial,
-            has_reporter,
-            has_page,
-            style_is_elsevier_harvard,
-            style_is_springer_socpsych,
+            LegalCaseFlags {
+                has_issued,
+                has_parent_serial,
+                has_reporter,
+                has_page,
+                style_is_elsevier_harvard,
+                style_is_springer_socpsych,
+            },
         );
     }
 }

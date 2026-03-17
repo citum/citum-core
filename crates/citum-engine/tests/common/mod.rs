@@ -1,9 +1,9 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "test")]
 /*
 SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
-#![allow(dead_code)]
+#![allow(dead_code, reason = "test helpers")]
 
 use std::{fs, path::PathBuf};
 

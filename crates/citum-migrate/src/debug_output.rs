@@ -84,10 +84,11 @@ impl DebugOutputFormatter {
         if vars.is_empty() {
             "  (none tracked)\n".to_string()
         } else {
-            vars.iter()
-                .enumerate()
-                .map(|(i, v)| format!("  {}. {}\n", i + 1, v))
-                .collect::<String>()
+            let mut result = String::new();
+            for (i, v) in vars.iter().enumerate() {
+                result.push_str(&format!("  {}. {}\n", i + 1, v));
+            }
+            result
         }
     }
 

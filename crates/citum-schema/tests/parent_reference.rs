@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "test")]
 
 use citum_schema::reference::{
     CollectionComponent, EdtfString, MonographComponentType, Parent, SerialComponent,

@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "lib/crate")]
 
 //! Platform-aware store for user-installed Citum styles and locales.
 //!

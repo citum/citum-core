@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "bin")]
 
 use citum_migrate::{MacroInliner, Upsampler};
 use csl_legacy::parser::parse_style;
@@ -33,14 +33,12 @@ fn main() {
             total += 1;
 
             // 1. Read & Parse (Legacy)
-            let text = match fs::read_to_string(&path) {
-                Ok(t) => t,
-                Err(_) => continue,
+            let Ok(text) = fs::read_to_string(&path) else {
+                continue;
             };
 
-            let doc = match Document::parse(&text) {
-                Ok(d) => d,
-                Err(_) => continue,
+            let Ok(doc) = Document::parse(&text) else {
+                continue;
             };
 
             let legacy_style = match parse_style(doc.root_element()) {

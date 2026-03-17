@@ -15,20 +15,20 @@ pub mod citation;
 /// Bibliography grouping and sorting specifications.
 pub mod grouping;
 /// Legacy CSL 1.0 compatibility types.
-#[allow(missing_docs)]
+#[allow(missing_docs, reason = "internal derives")]
 pub mod legacy;
 /// Locale-specific terms and translations.
 pub mod locale;
 /// Style configuration options.
-#[allow(missing_docs)]
+#[allow(missing_docs, reason = "internal derives")]
 pub mod options;
 /// Configuration presets for common styles.
 pub mod presets;
 /// Bibliographic reference data types.
-#[allow(missing_docs)]
+#[allow(missing_docs, reason = "internal derives")]
 pub mod reference;
 /// Citation and bibliography template components.
-#[allow(missing_docs)]
+#[allow(missing_docs, reason = "internal derives")]
 pub mod template;
 
 /// Embedded templates for priority styles (APA, Chicago, Vancouver, IEEE, Harvard).
@@ -417,7 +417,7 @@ impl CitationSpec {
         use crate::citation::Position;
 
         let position_spec = match position {
-            Some(Position::Ibid) | Some(Position::IbidWithLocator) => {
+            Some(Position::Ibid | Position::IbidWithLocator) => {
                 self.ibid.as_ref().or(self.subsequent.as_ref())
             }
             Some(Position::Subsequent) => self.subsequent.as_ref(),
@@ -945,7 +945,7 @@ bibliography:
         // precise check for APA structure
         match &citation_template[0] {
             template::TemplateComponent::Contributor(c) => {
-                assert_eq!(c.contributor, template::ContributorRole::Author)
+                assert_eq!(c.contributor, template::ContributorRole::Author);
             }
             _ => panic!("Expected Contributor"),
         }
@@ -959,7 +959,7 @@ bibliography:
         // Verify first component is citation number
         match &bib_template[0] {
             template::TemplateComponent::Number(n) => {
-                assert_eq!(n.number, template::NumberVariable::CitationNumber)
+                assert_eq!(n.number, template::NumberVariable::CitationNumber);
             }
             _ => panic!("Expected Number"),
         }
@@ -987,7 +987,7 @@ citation:
         assert_eq!(resolved.len(), 1);
         match &resolved[0] {
             template::TemplateComponent::Variable(v) => {
-                assert_eq!(v.variable, template::SimpleVariable::Doi)
+                assert_eq!(v.variable, template::SimpleVariable::Doi);
             }
             _ => panic!("Expected Variable"),
         }
@@ -1028,13 +1028,13 @@ citation:
         );
         match &citation.resolve_template_for_language(Some("de")).unwrap()[0] {
             template::TemplateComponent::Variable(v) => {
-                assert_eq!(v.variable, template::SimpleVariable::Publisher)
+                assert_eq!(v.variable, template::SimpleVariable::Publisher);
             }
             _ => panic!("Expected Variable"),
         }
         match &citation.resolve_template_for_language(Some("fr")).unwrap()[0] {
             template::TemplateComponent::Variable(v) => {
-                assert_eq!(v.variable, template::SimpleVariable::Doi)
+                assert_eq!(v.variable, template::SimpleVariable::Doi);
             }
             _ => panic!("Expected Variable"),
         }

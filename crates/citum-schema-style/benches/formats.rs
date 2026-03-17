@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "test/bench/bin crate")]
 
 use citum_schema_style::{InputBibliography, Style};
 use criterion::{Criterion, black_box, criterion_group, criterion_main};

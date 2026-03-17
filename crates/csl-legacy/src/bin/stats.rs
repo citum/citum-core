@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "bin crate")]
 
 //! Utility binary for scanning a style directory and summarizing parse failures.
 
@@ -29,9 +29,7 @@ fn main() {
             total += 1;
 
             // Read file
-            let text = if let Ok(t) = fs::read_to_string(&path) {
-                t
-            } else {
+            let Ok(text) = fs::read_to_string(&path) else {
                 *error_types
                     .entry("File read error".to_string())
                     .or_insert(0) += 1;

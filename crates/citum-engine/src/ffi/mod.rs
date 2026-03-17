@@ -3,7 +3,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-#![allow(unsafe_code)]
+#![allow(unsafe_code, reason = "FFI interface")]
 
 //! C-FFI for the Citum processor.
 //!

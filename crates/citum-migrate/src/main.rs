@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "bin")]
 
 use citum_migrate::{
     Compressor, MacroInliner, OptionsExtractor, TemplateCompiler, Upsampler, analysis,

@@ -215,7 +215,7 @@ impl TemplateCompiler {
         }
     }
 
-    #[allow(dead_code)]
+    #[allow(dead_code, reason = "helper functions")]
     pub(super) fn get_component_overrides(
         &self,
         component: &TemplateComponent,
