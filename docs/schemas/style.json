@@ -3462,6 +3462,13 @@
             "null"
           ]
         },
+        "edition": {
+          "description": "Edition or version qualifier used alongside `short_name` to disambiguate multiple editions of the same style family (e.g. `\"7th\"`, `\"18th edition\"`). Omit when only one edition exists.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "fields": {
           "description": "Discipline classifications for this style.",
           "type": "array",
@@ -3471,6 +3478,13 @@
         },
         "id": {
           "description": "Stable identifier for the style, usually a URI or slug.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "short-name": {
+          "description": "Concise display name for the style family, used by UIs to label search results and match banners (e.g. `\"APA\"`, `\"Chicago Notes\"`, `\"MLA\"`). Omit for journal-specific styles whose full title is their identity. Combine with `edition` to produce labels like `\"APA 7th\"`.",
           "type": [
             "string",
             "null"
