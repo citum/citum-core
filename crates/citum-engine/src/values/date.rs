@@ -5,10 +5,74 @@
 
 use crate::reference::{EdtfString, Reference};
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
-use citum_edtf::Timezone;
+use citum_edtf::{Day, Edtf, MonthOrSeason, Timezone};
 use citum_schema::locale::{GeneralTerm, TermForm};
 use citum_schema::options::dates::TimeFormat;
+use citum_schema::reference::RefDate;
 use citum_schema::template::{DateForm, DateVariable as TemplateDateVar, TemplateDate};
+
+fn month_to_string(month: u32, months: &[String]) -> String {
+    if month > 0 {
+        let index = month - 1;
+        if index < months.len() as u32 {
+            months[index as usize].clone()
+        } else {
+            String::new()
+        }
+    } else {
+        String::new()
+    }
+}
+
+fn extract_month(date: &EdtfString, months: &[String]) -> String {
+    let parsed_date = date.parse();
+    let month: Option<u32> = match parsed_date {
+        RefDate::Edtf(edtf) => edtf.month(),
+        RefDate::Literal(_) => None,
+    };
+    match month {
+        Some(month) => month_to_string(month, months),
+        None => String::new(),
+    }
+}
+
+fn extract_range_end(date: &EdtfString, months: &[String]) -> Option<String> {
+    match date.parse() {
+        RefDate::Edtf(edtf) => match edtf {
+            Edtf::Interval(interval) => {
+                let end = &interval.end;
+                let year = end.year.value.to_string();
+                let month = match end.month_or_season {
+                    Some(MonthOrSeason::Month(m)) => Some(m),
+                    _ => None,
+                };
+                let day = match end.day {
+                    Some(Day::Day(d)) => Some(d),
+                    _ => None,
+                };
+
+                match (month, day) {
+                    (Some(m), Some(d)) if m > 0 && d > 0 => {
+                        let month_str = month_to_string(m, months);
+                        Some(format!("{} {}, {}", month_str, d, year))
+                    }
+                    (Some(m), _) if m > 0 => {
+                        let month_str = month_to_string(m, months);
+                        Some(format!("{} {}", month_str, year))
+                    }
+                    _ => Some(year),
+                }
+            }
+            Edtf::IntervalFrom(_date) => None, // Open-ended
+            Edtf::IntervalTo(date) => {
+                let year = date.year.value.to_string();
+                Some(year)
+            }
+            _ => None,
+        },
+        RefDate::Literal(_) => None,
+    }
+}
 
 /// Formats a time with the specified format, optionally including seconds and timezone.
 ///
@@ -79,7 +143,7 @@ fn format_range_start(
     match form {
         DateForm::Year => date.year(),
         DateForm::YearMonth => {
-            let month = date.month(&locale.dates.months.long);
+            let month = extract_month(date, &locale.dates.months.long);
             let year = date.year();
             if month.is_empty() {
                 year
@@ -88,7 +152,7 @@ fn format_range_start(
             }
         }
         DateForm::MonthDay => {
-            let month = date.month(&locale.dates.months.long);
+            let month = extract_month(date, &locale.dates.months.long);
             let day = date.day();
             match day {
                 Some(d) => format!("{month} {d}"),
@@ -97,7 +161,7 @@ fn format_range_start(
         }
         DateForm::Full => {
             let year = date.year();
-            let month = date.month(&locale.dates.months.long);
+            let month = extract_month(date, &locale.dates.months.long);
             let day = date.day();
             match (month.is_empty(), day) {
                 (true, _) => year,
@@ -107,7 +171,7 @@ fn format_range_start(
         }
         DateForm::YearMonthDay => {
             let year = date.year();
-            let month = date.month(&locale.dates.months.long);
+            let month = extract_month(date, &locale.dates.months.long);
             let day = date.day();
             match (month.is_empty(), day) {
                 (true, _) => year,
@@ -117,7 +181,7 @@ fn format_range_start(
         }
         DateForm::DayMonthAbbrYear => {
             let year = date.year();
-            let month = date.month(&locale.dates.months.short);
+            let month = extract_month(date, &locale.dates.months.short);
             let day = date.day();
             match (month.is_empty(), day) {
                 (true, _) => year,
@@ -148,7 +212,7 @@ fn format_date_range(
             // No open-ended term available - return start date only
             Some(start)
         }
-    } else if let Some(end) = date.range_end(&locale.dates.months.long) {
+    } else if let Some(end) = extract_range_end(date, &locale.dates.months.long) {
         // Closed range with end date
         // U+2013 en-dash is the Unicode standard range delimiter (not language-specific)
         let delimiter = date_config.map_or("–", |c| c.range_delimiter.as_str());
@@ -226,7 +290,7 @@ fn format_single_date(
             if year.is_empty() {
                 return None;
             }
-            let month = date.month(&locale.dates.months.long);
+            let month = extract_month(date, &locale.dates.months.long);
             if month.is_empty() {
                 Some(year)
             } else {
@@ -234,7 +298,7 @@ fn format_single_date(
             }
         }
         DateForm::MonthDay => {
-            let month = date.month(&locale.dates.months.long);
+            let month = extract_month(date, &locale.dates.months.long);
             if month.is_empty() {
                 return None;
             }
@@ -249,7 +313,7 @@ fn format_single_date(
             if year.is_empty() {
                 return None;
             }
-            let month = date.month(&locale.dates.months.long);
+            let month = extract_month(date, &locale.dates.months.long);
             let day = date.day();
             let base = match (month.is_empty(), day) {
                 (true, _) => year,
@@ -282,7 +346,7 @@ fn format_single_date(
             if year.is_empty() {
                 return None;
             }
-            let month = date.month(&locale.dates.months.long);
+            let month = extract_month(date, &locale.dates.months.long);
             let day = date.day();
             match (month.is_empty(), day) {
                 (true, _) => Some(year),
@@ -295,7 +359,7 @@ fn format_single_date(
             if year.is_empty() {
                 return None;
             }
-            let month = date.month(&locale.dates.months.short);
+            let month = extract_month(date, &locale.dates.months.short);
             let day = date.day();
             match (month.is_empty(), day) {
                 (true, _) => Some(year),
