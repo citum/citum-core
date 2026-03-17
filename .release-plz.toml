@@ -3,7 +3,6 @@
 
 [workspace]
 # Enable automatic changelog updates from Conventional Commits
-changelog_update = false
 
 # Do not publish to crates.io (project-specific decision)
 publish = false
