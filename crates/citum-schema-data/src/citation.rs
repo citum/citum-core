@@ -12,7 +12,6 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 /// A list of citations to process.
 pub type Citations = Vec<Citation>;
@@ -437,18 +436,17 @@ impl CitationItem {
 /// guarded by the preceding segment-count match.
 pub fn normalize_locator_text(
     locator: &str,
-    locale: &crate::locale::Locale,
+    aliases: &[(String, LocatorType)],
 ) -> Option<CitationLocator> {
     let locator = locator.trim();
     if locator.is_empty() {
         return None;
     }
 
-    let aliases = locator_aliases(locale);
-    let raw_segments = split_locator_segments(locator, &aliases);
+    let raw_segments = split_locator_segments(locator, aliases);
     let segments: Vec<LocatorSegment> = raw_segments
         .into_iter()
-        .filter_map(|segment| parse_locator_segment(segment, &aliases))
+        .filter_map(|segment| parse_locator_segment(segment, aliases))
         .collect();
 
     match segments.len() {
@@ -530,121 +528,6 @@ fn alias_boundary(remainder: &str) -> bool {
         || remainder.starts_with(':')
         || remainder.starts_with('.')
         || remainder.starts_with(char::is_whitespace)
-}
-
-fn locator_aliases(locale: &crate::locale::Locale) -> Vec<(String, LocatorType)> {
-    let mut aliases = HashMap::<String, LocatorType>::new();
-
-    for (alias, label) in english_locator_aliases() {
-        aliases.insert(alias.to_string(), *label);
-    }
-
-    for (label, term) in &locale.locators {
-        for form in [&term.long, &term.short, &term.symbol]
-            .into_iter()
-            .flatten()
-        {
-            aliases
-                .entry(form.singular.to_lowercase())
-                .or_insert(*label);
-            aliases.entry(form.plural.to_lowercase()).or_insert(*label);
-        }
-    }
-
-    let mut aliases: Vec<(String, LocatorType)> = aliases.into_iter().collect();
-    aliases.sort_by(|a, b| b.0.len().cmp(&a.0.len()).then_with(|| a.0.cmp(&b.0)));
-    aliases
-}
-
-fn english_locator_aliases() -> &'static [(&'static str, LocatorType)] {
-    &[
-        ("algorithm", LocatorType::Algorithm),
-        ("alg.", LocatorType::Algorithm),
-        ("book", LocatorType::Book),
-        ("bk.", LocatorType::Book),
-        ("chapter", LocatorType::Chapter),
-        ("chap.", LocatorType::Chapter),
-        ("ch.", LocatorType::Chapter),
-        ("chapters", LocatorType::Chapter),
-        ("chs.", LocatorType::Chapter),
-        ("clause", LocatorType::Clause),
-        ("cl.", LocatorType::Clause),
-        ("column", LocatorType::Column),
-        ("col.", LocatorType::Column),
-        ("columns", LocatorType::Column),
-        ("cols.", LocatorType::Column),
-        ("corollary", LocatorType::Corollary),
-        ("cor.", LocatorType::Corollary),
-        ("definition", LocatorType::Definition),
-        ("def.", LocatorType::Definition),
-        ("division", LocatorType::Division),
-        ("div.", LocatorType::Division),
-        ("figure", LocatorType::Figure),
-        ("fig.", LocatorType::Figure),
-        ("figures", LocatorType::Figure),
-        ("figs.", LocatorType::Figure),
-        ("folio", LocatorType::Folio),
-        ("fol.", LocatorType::Folio),
-        ("line", LocatorType::Line),
-        ("l.", LocatorType::Line),
-        ("lines", LocatorType::Line),
-        ("ll.", LocatorType::Line),
-        ("lemma", LocatorType::Lemma),
-        ("lem.", LocatorType::Lemma),
-        ("note", LocatorType::Note),
-        ("n.", LocatorType::Note),
-        ("notes", LocatorType::Note),
-        ("nn.", LocatorType::Note),
-        ("number", LocatorType::Number),
-        ("no.", LocatorType::Number),
-        ("numbers", LocatorType::Number),
-        ("nos.", LocatorType::Number),
-        ("opus", LocatorType::Opus),
-        ("op.", LocatorType::Opus),
-        ("page", LocatorType::Page),
-        ("p.", LocatorType::Page),
-        ("pages", LocatorType::Page),
-        ("pp.", LocatorType::Page),
-        ("paragraph", LocatorType::Paragraph),
-        ("para.", LocatorType::Paragraph),
-        ("paragraphs", LocatorType::Paragraph),
-        ("paras.", LocatorType::Paragraph),
-        ("part", LocatorType::Part),
-        ("pt.", LocatorType::Part),
-        ("parts", LocatorType::Part),
-        ("pts.", LocatorType::Part),
-        ("problem", LocatorType::Problem),
-        ("prob.", LocatorType::Problem),
-        ("proposition", LocatorType::Proposition),
-        ("prop.", LocatorType::Proposition),
-        ("recital", LocatorType::Recital),
-        ("rec.", LocatorType::Recital),
-        ("schedule", LocatorType::Schedule),
-        ("sched.", LocatorType::Schedule),
-        ("section", LocatorType::Section),
-        ("sec.", LocatorType::Section),
-        ("sections", LocatorType::Section),
-        ("secs.", LocatorType::Section),
-        ("§", LocatorType::Section),
-        ("§§", LocatorType::Section),
-        ("surah", LocatorType::Surah),
-        ("theorem", LocatorType::Theorem),
-        ("thm.", LocatorType::Theorem),
-        ("sub verbo", LocatorType::SubVerbo),
-        ("s.v.", LocatorType::SubVerbo),
-        ("supplement", LocatorType::Supplement),
-        ("suppl.", LocatorType::Supplement),
-        ("verse", LocatorType::Verse),
-        ("v.", LocatorType::Verse),
-        ("verses", LocatorType::Verse),
-        ("vv.", LocatorType::Verse),
-        ("volume", LocatorType::Volume),
-        ("vol.", LocatorType::Volume),
-        ("volumes", LocatorType::Volume),
-        ("vols.", LocatorType::Volume),
-        ("issue", LocatorType::Issue),
-        ("issues", LocatorType::Issue),
-    ]
 }
 
 #[cfg(test)]
@@ -850,92 +733,6 @@ mod tests {
     }
 
     #[test]
-    fn test_normalize_locator_text_structured_compound() {
-        let locale = crate::locale::Locale::en_us();
-        let locator = normalize_locator_text("chapter: 2, page: 10", &locale).unwrap();
-        assert!(locator.is_compound());
-        let segments = locator.segments();
-        assert_eq!(segments[0].label, LocatorType::Chapter);
-        assert_eq!(segments[1].label, LocatorType::Page);
-    }
-
-    #[test]
-    fn test_normalize_locator_text_bare_page() {
-        let locale = crate::locale::Locale::en_us();
-        let locator = normalize_locator_text("45", &locale).unwrap();
-        assert_eq!(locator, CitationLocator::single(LocatorType::Page, "45"));
-    }
-
-    #[test]
-    fn test_normalize_locator_text_empty_returns_none() {
-        let locale = crate::locale::Locale::en_us();
-
-        assert_eq!(normalize_locator_text("", &locale), None);
-        assert_eq!(normalize_locator_text("   ", &locale), None);
-    }
-
-    #[test]
-    fn test_normalize_locator_text_label_without_value_returns_none() {
-        let locale = crate::locale::Locale::en_us();
-
-        assert_eq!(normalize_locator_text("chapter:", &locale), None);
-        assert_eq!(normalize_locator_text("section", &locale), None);
-    }
-
-    #[test]
-    fn test_normalize_locator_text_preserves_page_list_as_single_segment() {
-        let locale = crate::locale::Locale::en_us();
-        let locator = normalize_locator_text("12, 14", &locale).unwrap();
-
-        assert_eq!(
-            locator,
-            CitationLocator::single(LocatorType::Page, "12, 14")
-        );
-        assert!(!locator.is_compound());
-    }
-
-    #[test]
-    fn test_normalize_locator_text_symbol_alias_boundary() {
-        let locale = crate::locale::Locale::en_us();
-        let locator = normalize_locator_text("§ 4", &locale).unwrap();
-
-        assert_eq!(locator, CitationLocator::single(LocatorType::Section, "4"));
-    }
-
-    #[test]
-    fn test_normalize_locator_text_abbreviated_alias_boundary() {
-        let locale = crate::locale::Locale::en_us();
-        let locator = normalize_locator_text("pp. 10-12", &locale).unwrap();
-
-        assert_eq!(locator, CitationLocator::single(LocatorType::Page, "10-12"));
-    }
-
-    #[test]
-    fn test_normalize_locator_text_locale_alias() {
-        let mut locale = crate::locale::Locale::en_us();
-        locale.locale = "fr-FR".to_string();
-        locale.locators.insert(
-            LocatorType::Page,
-            crate::locale::LocatorTerm {
-                long: Some(crate::locale::SingularPlural {
-                    singular: "page".to_string(),
-                    plural: "pages".to_string(),
-                }),
-                short: Some(crate::locale::SingularPlural {
-                    singular: "p.".to_string(),
-                    plural: "pp.".to_string(),
-                }),
-                symbol: Some(crate::locale::SingularPlural {
-                    singular: "p".to_string(),
-                    plural: "pp".to_string(),
-                }),
-            },
-        );
-        let locator = normalize_locator_text("pages 10-12", &locale).unwrap();
-        assert_eq!(locator, CitationLocator::single(LocatorType::Page, "10-12"));
-    }
-
-    #[test]
     fn test_locator_value_heuristic_plural() {
         let lv_range = LocatorValue::from("42-45");
         assert!(lv_range.is_plural());
@@ -951,5 +748,75 @@ mod tests {
 
         let lv_ampersand = LocatorValue::from("A & B");
         assert!(lv_ampersand.is_plural());
+    }
+
+    #[test]
+    fn test_normalize_locator_text_with_explicit_aliases() {
+        let aliases = vec![
+            ("page".to_string(), LocatorType::Page),
+            ("p.".to_string(), LocatorType::Page),
+            ("chapter".to_string(), LocatorType::Chapter),
+            ("ch.".to_string(), LocatorType::Chapter),
+            ("section".to_string(), LocatorType::Section),
+            ("§".to_string(), LocatorType::Section),
+        ];
+
+        // Bare number defaults to Page
+        assert_eq!(
+            normalize_locator_text("45", &aliases),
+            Some(CitationLocator::single(LocatorType::Page, "45"))
+        );
+
+        // Explicit label
+        assert_eq!(
+            normalize_locator_text("chapter 2", &aliases),
+            Some(CitationLocator::single(LocatorType::Chapter, "2"))
+        );
+
+        // Abbreviated label
+        assert_eq!(
+            normalize_locator_text("ch. 3", &aliases),
+            Some(CitationLocator::single(LocatorType::Chapter, "3"))
+        );
+
+        // Symbol label
+        assert_eq!(
+            normalize_locator_text("§ 4", &aliases),
+            Some(CitationLocator::single(LocatorType::Section, "4"))
+        );
+
+        // Compound locator
+        let compound = normalize_locator_text("chapter 2, page 10", &aliases).unwrap();
+        assert!(compound.is_compound());
+        let segs = compound.segments();
+        assert_eq!(segs[0].label, LocatorType::Chapter);
+        assert_eq!(segs[1].label, LocatorType::Page);
+
+        // Empty or invalid input
+        assert_eq!(normalize_locator_text("", &aliases), None);
+        assert_eq!(normalize_locator_text("   ", &aliases), None);
+        assert_eq!(normalize_locator_text("chapter:", &aliases), None);
+    }
+
+    #[test]
+    fn test_normalize_locator_text_with_abbreviated_aliases() {
+        let aliases = vec![
+            ("page".to_string(), LocatorType::Page),
+            ("pp.".to_string(), LocatorType::Page),
+            ("vol.".to_string(), LocatorType::Volume),
+        ];
+
+        assert_eq!(
+            normalize_locator_text("page 45", &aliases),
+            Some(CitationLocator::single(LocatorType::Page, "45"))
+        );
+        assert_eq!(
+            normalize_locator_text("pp. 10-12", &aliases),
+            Some(CitationLocator::single(LocatorType::Page, "10-12"))
+        );
+        assert_eq!(
+            normalize_locator_text("vol. 1", &aliases),
+            Some(CitationLocator::single(LocatorType::Volume, "1"))
+        );
     }
 }

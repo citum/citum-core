@@ -1,17 +1,24 @@
 //! Public schema types for Citum styles, citations, references, and locales.
 
-use indexmap::IndexMap;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+/// Compatibility facade merging data input types with style-specific logic.
+#[allow(missing_docs, reason = "internal derives")]
+pub mod citation {
+    pub use crate::locale::locator::normalize_locator_text;
+    pub use citum_schema_data::citation::*;
+}
+
+/// Bibliographic reference data types.
+pub use citum_schema_data::reference;
+
 /// Renderer for converting processor output to different formats.
 pub mod renderer;
 pub use renderer::Renderer;
 
-/// Citation input model.
-pub mod citation;
 /// Bibliography grouping and sorting specifications.
 pub mod grouping;
 /// Legacy CSL 1.0 compatibility types.
@@ -24,9 +31,6 @@ pub mod locale;
 pub mod options;
 /// Configuration presets for common styles.
 pub mod presets;
-/// Bibliographic reference data types.
-#[allow(missing_docs, reason = "internal derives")]
-pub mod reference;
 /// Citation and bibliography template components.
 #[allow(missing_docs, reason = "internal derives")]
 pub mod template;
@@ -37,9 +41,13 @@ pub mod embedded;
 /// Declarative macros for AST and configurations.
 pub mod macros;
 
+#[cfg(test)]
+mod reference_multilingual_tests;
+
 pub use citation::{
     Citation, CitationItem, CitationMode, Citations, IntegralNameState, LocatorType, Position,
 };
+pub use citum_schema_data::{InputBibliography, InputBibliographyInfo};
 pub use grouping::{
     BibliographyGroup, CitedStatus, FieldMatcher, GroupHeading, GroupSelector, GroupSort,
     GroupSortEntry, GroupSortKey, NameSortOrder, SortKey, TypeSelector,
@@ -59,44 +67,6 @@ pub use template::{
     Rendering, TemplateComponent, TemplateContributor, TemplateDate, TemplateList, TemplateNumber,
     TemplateTerm, TemplateTitle, TemplateVariable, WrapPunctuation,
 };
-
-/// A collection of bibliographic references with optional metadata.
-#[derive(Debug, Default, Deserialize, Serialize, Clone)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case")]
-pub struct InputBibliography {
-    /// Bibliography metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub info: Option<InputBibliographyInfo>,
-    /// The list of references.
-    pub references: Vec<reference::InputReference>,
-    /// Optional compound entry sets keyed by set id.
-    ///
-    /// Each set id maps to an ordered list of reference ids that should be treated
-    /// as one compound numeric group when `compound-numeric` is enabled by style.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[cfg_attr(
-        feature = "schema",
-        schemars(with = "Option<std::collections::BTreeMap<String, Vec<String>>>")
-    )]
-    pub sets: Option<IndexMap<String, Vec<String>>>,
-    /// Custom user-defined fields for extensions.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub custom: Option<HashMap<String, serde_json::Value>>,
-}
-
-/// Metadata for an input bibliography.
-#[derive(Debug, Default, Deserialize, Serialize, Clone)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case")]
-pub struct InputBibliographyInfo {
-    /// Human-readable title for the bibliography dataset.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<String>,
-    /// Creator or maintainer of the bibliography dataset.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub author: Option<String>,
-}
 
 /// A named template (reusable sequence of components).
 pub type Template = Vec<TemplateComponent>;

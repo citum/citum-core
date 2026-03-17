@@ -8,6 +8,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! Locales provide language-specific terms, date formats, and punctuation rules
 //! for citation formatting.
 
+/// Locator text normalization.
+pub mod locator;
 /// Raw locale types used during locale file parsing.
 pub mod raw;
 /// Structured locale types used by the processor.

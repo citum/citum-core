@@ -15,9 +15,6 @@ pub mod types;
 #[cfg(all(test, feature = "legacy-convert"))]
 mod tests;
 
-#[cfg(test)]
-mod multilingual_tests;
-
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};

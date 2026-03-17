@@ -24,6 +24,72 @@ pub enum Edtf {
     IntervalTo(Date),
 }
 
+impl Edtf {
+    /// Extract the year component. For intervals, this is the start year.
+    pub fn year(&self) -> i64 {
+        match self {
+            Self::Date(date) => date.year.value,
+            Self::Interval(interval) => interval.start.year.value,
+            Self::IntervalFrom(date) => date.year.value,
+            Self::IntervalTo(date) => date.year.value,
+        }
+    }
+
+    /// Extract the month component if present. For intervals, this is the start month.
+    pub fn month(&self) -> Option<u32> {
+        let m_opt = match self {
+            Self::Date(date) => date.month_or_season,
+            Self::Interval(interval) => interval.start.month_or_season,
+            Self::IntervalFrom(date) => date.month_or_season,
+            Self::IntervalTo(date) => date.month_or_season,
+        };
+        match m_opt {
+            Some(MonthOrSeason::Month(m)) => Some(m),
+            _ => None,
+        }
+    }
+
+    /// Extract the day component if present. For intervals, this is the start day.
+    pub fn day(&self) -> Option<u32> {
+        let d_opt = match self {
+            Self::Date(date) => date.day,
+            Self::Interval(interval) => interval.start.day,
+            Self::IntervalFrom(date) => date.day,
+            Self::IntervalTo(date) => date.day,
+        };
+        match d_opt {
+            Some(Day::Day(d)) => Some(d),
+            _ => None,
+        }
+    }
+
+    /// Check if this is a range (interval).
+    pub fn is_range(&self) -> bool {
+        matches!(
+            self,
+            Self::Interval(_) | Self::IntervalFrom(_) | Self::IntervalTo(_)
+        )
+    }
+
+    /// Check if the range is open-ended (ends with "..").
+    pub fn is_open_range(&self) -> bool {
+        matches!(self, Self::IntervalFrom(_))
+    }
+
+    /// Extract the time component from the date, if present.
+    pub fn time(&self) -> Option<Time> {
+        match self {
+            Self::Date(date) => date.time,
+            _ => None,
+        }
+    }
+
+    /// Check if the date has a time component.
+    pub fn has_time(&self) -> bool {
+        self.time().is_some()
+    }
+}
+
 /// A date interval.
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

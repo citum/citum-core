@@ -487,7 +487,14 @@ dependencies = [
 name = "citum-schema-data"
 version = "0.12.0"
 dependencies = [
- "citum-schema-style",
+ "citum-edtf",
+ "csl-legacy",
+ "indexmap 2.13.0",
+ "schemars",
+ "serde",
+ "serde_json",
+ "serde_yaml_ng",
+ "url",
 ]
 
 [[package]]
@@ -496,6 +503,7 @@ version = "0.12.0"
 dependencies = [
  "ciborium",
  "citum-edtf",
+ "citum-schema-data",
  "criterion",
  "csl-legacy",
  "indexmap 2.13.0",

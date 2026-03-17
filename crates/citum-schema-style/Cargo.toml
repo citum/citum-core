@@ -14,11 +14,12 @@ citum_edtf = { package = "citum-edtf", path = "../citum-edtf", features = ["serd
 url = { version = "2.5", features = ["serde"] }
 csl_legacy = { package = "csl-legacy", path = "../csl-legacy", optional = true }
 indexmap = { version = "2", features = ["serde"] }
+citum_schema_data = { package = "citum-schema-data", path = "../citum-schema-data" }
 
 [features]
 default = []
-legacy-convert = ["dep:csl_legacy"]
-schema = ["dep:schemars"]
+legacy-convert = ["dep:csl_legacy", "citum_schema_data/legacy-convert"]
+schema = ["dep:schemars", "citum_schema_data/schema"]
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
