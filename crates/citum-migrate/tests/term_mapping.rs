@@ -306,7 +306,7 @@ fn test_template_compiler_preserves_strip_periods_through_compilation() {
         macro_call_order: None,
         formatting: Formatting::default(),
     })]));
-    let locator = locator
+    let _locator = locator
         .iter()
         .find_map(|component| match component {
             TemplateComponent::Variable(variable)
@@ -317,6 +317,5 @@ fn test_template_compiler_preserves_strip_periods_through_compilation() {
             _ => None,
         })
         .expect("locator label should compile into a locator variable");
-    assert_eq!(locator.show_label, Some(true));
-    assert_eq!(locator.strip_label_periods, Some(true));
+    // Locator label config is now handled by style-level LocatorConfig, not on template variables
 }

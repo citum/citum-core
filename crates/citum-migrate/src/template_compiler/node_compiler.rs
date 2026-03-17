@@ -266,25 +266,21 @@ impl TemplateCompiler {
         // Check if it's a simple variable
         if let Some(simple_var) = self.map_variable_to_simple(&var.variable) {
             let mut rendering = self.convert_formatting(&var.formatting);
-            let mut show_label = None;
-            let mut strip_label_periods = None;
 
-            if let Some(label) = &var.label {
-                if matches!(simple_var, SimpleVariable::Locator) {
-                    show_label = Some(true);
-                    strip_label_periods = label.formatting.strip_periods;
-                } else {
-                    rendering.strip_periods =
-                        label.formatting.strip_periods.or(rendering.strip_periods);
-                }
+            if let Some(label) = &var.label
+                && !matches!(simple_var, SimpleVariable::Locator)
+            {
+                // Locator labels are handled by style-level locators config
+                // TODO(csl26-3he9): propagate strip_periods to LocatorConfig.strip_label_periods
+                // during migration; currently requires manual style YAML edit.
+                rendering.strip_periods =
+                    label.formatting.strip_periods.or(rendering.strip_periods);
             }
 
             // Convert overrides from FormattingOptions to Rendering
             let overrides = self.build_type_overrides(&var.overrides);
             return Some(TemplateComponent::Variable(TemplateVariable {
                 variable: simple_var,
-                show_label,
-                strip_label_periods,
                 rendering,
                 overrides,
                 ..Default::default()

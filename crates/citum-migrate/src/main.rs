@@ -1447,7 +1447,6 @@ mod tests {
             }),
             TemplateComponent::Variable(TemplateVariable {
                 variable: SimpleVariable::Locator,
-                show_label: Some(true),
                 rendering: Rendering {
                     prefix: Some(" ".to_string()),
                     ..Default::default()
@@ -1471,7 +1470,6 @@ mod tests {
             .expect("locator component should exist");
 
         assert_eq!(locator.rendering.prefix.as_deref(), Some(", "));
-        assert_eq!(locator.show_label, Some(true));
     }
 
     fn parse_legacy_style(xml: &str) -> csl_legacy::model::Style {
