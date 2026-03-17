@@ -10,6 +10,7 @@ pub mod contributors;
 pub mod dates;
 pub mod integral_names;
 pub mod localization;
+pub mod locators;
 pub mod multilingual;
 pub mod processing;
 pub mod substitute;
@@ -29,6 +30,10 @@ pub use integral_names::{
     IntegralNameScope, ResolvedIntegralNameConfig,
 };
 pub use localization::{Localize, MonthFormat, Scope};
+pub use locators::{
+    LabelForm, LabelRepeat, LocatorConfig, LocatorConfigEntry, LocatorKindConfig, LocatorPattern,
+    LocatorPreset, TypeClass,
+};
 pub use multilingual::{MultilingualConfig, MultilingualMode, ScriptConfig};
 pub use processing::{
     CitationSortPolicy, Disambiguation, Group, LabelConfig, LabelParams, LabelPreset, Processing,
@@ -86,6 +91,15 @@ pub struct Config {
     )]
     #[cfg_attr(feature = "schema", schemars(with = "Option<TitlesConfigEntry>"))]
     pub titles: Option<crate::options::titles::TitlesConfig>,
+    /// Locator rendering configuration. Accepts a preset name (e.g., "note")
+    /// or explicit configuration.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_locator_config",
+        default
+    )]
+    #[cfg_attr(feature = "schema", schemars(with = "Option<LocatorConfigEntry>"))]
+    pub locators: Option<LocatorConfig>,
     /// Page range formatting (expanded, minimal, chicago).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page_range_format: Option<PageRangeFormat>,
@@ -260,6 +274,7 @@ impl Config {
             multilingual,
             dates,
             titles,
+            locators,
             page_range_format,
             bibliography,
             links,
@@ -322,6 +337,15 @@ where
 {
     let value: Option<crate::options::titles::TitlesConfigEntry> =
         Option::deserialize(deserializer)?;
+    Ok(value.map(|entry| entry.resolve()))
+}
+
+/// Deserialize locator config from either a preset name or explicit config.
+fn deserialize_locator_config<'de, D>(deserializer: D) -> Result<Option<LocatorConfig>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let value: Option<LocatorConfigEntry> = Option::deserialize(deserializer)?;
     Ok(value.map(|entry| entry.resolve()))
 }
 
