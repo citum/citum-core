@@ -10,7 +10,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! final output. Template-level rendering still lives in `rendering`.
 
 use super::Processor;
-use super::rendering::{CompoundRenderData, Renderer};
+use super::rendering::{CompoundRenderData, Renderer, RendererResources};
 use crate::error::ProcessorError;
 use crate::reference::Citation;
 use citum_schema::NoteStartTextCase;
@@ -136,10 +136,12 @@ impl Processor {
         let sorted_items = self.sort_citation_items(citation.items.clone(), effective_spec);
         let citation_config = self.get_citation_config();
         let renderer = Renderer::new(
-            &self.style,
-            &self.bibliography,
-            &self.locale,
-            &citation_config,
+            RendererResources {
+                style: &self.style,
+                bibliography: &self.bibliography,
+                locale: &self.locale,
+                config: &citation_config,
+            },
             &self.hints,
             &self.citation_numbers,
             CompoundRenderData {

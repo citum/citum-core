@@ -160,27 +160,35 @@ impl TemplateComponentTracker {
     }
 }
 
+/// Core style resources borrowed by every [`Renderer`] instance.
+///
+/// Bundles the four immutable resolution inputs so that [`Renderer::new`] stays
+/// within clippy's argument-count limit.
+pub struct RendererResources<'a> {
+    /// The style definition containing templates and options.
+    pub style: &'a citum_schema::Style,
+    /// The bibliography containing the reference data.
+    pub bibliography: &'a Bibliography,
+    /// The locale used for terms and formatting.
+    pub locale: &'a Locale,
+    /// The active configuration options.
+    pub config: &'a Config,
+}
+
 impl<'a> Renderer<'a> {
     /// Creates a new `Renderer` instance.
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "necessary complexity for citation rendering"
-    )]
     pub fn new(
-        style: &'a citum_schema::Style,
-        bibliography: &'a Bibliography,
-        locale: &'a Locale,
-        config: &'a Config,
+        resources: RendererResources<'a>,
         hints: &'a HashMap<String, ProcHints>,
         citation_numbers: &'a RefCell<HashMap<String, usize>>,
         compound: CompoundRenderData<'a>,
         show_semantics: bool,
     ) -> Self {
         Self {
-            style,
-            bibliography,
-            locale,
-            config,
+            style: resources.style,
+            bibliography: resources.bibliography,
+            locale: resources.locale,
+            config: resources.config,
             hints,
             citation_numbers,
             compound_set_by_ref: compound.set_by_ref,

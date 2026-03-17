@@ -9,7 +9,7 @@ use super::RenderedBibliographyGroup;
 use crate::grouping::{GroupSorter, SelectorEvaluator};
 use crate::processor::Processor;
 use crate::processor::disambiguation::Disambiguator;
-use crate::processor::rendering::{CompoundRenderData, Renderer};
+use crate::processor::rendering::{CompoundRenderData, Renderer, RendererResources};
 use crate::reference::{Bibliography, Reference};
 use crate::render::ProcEntry;
 use crate::render::format::{OutputFormat, ProcEntryMetadata};
@@ -160,10 +160,12 @@ impl Processor {
         let effective_style = self.effective_group_style(group);
         let bibliography_config = self.get_bibliography_config();
         let renderer = Renderer::new(
-            &effective_style,
-            &self.bibliography,
-            &self.locale,
-            &bibliography_config,
+            RendererResources {
+                style: &effective_style,
+                bibliography: &self.bibliography,
+                locale: &self.locale,
+                config: &bibliography_config,
+            },
             hints,
             &self.citation_numbers,
             CompoundRenderData {
