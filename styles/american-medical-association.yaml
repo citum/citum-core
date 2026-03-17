@@ -18,6 +18,7 @@ info:
     - href: https://academic.oup.com/amamanualofstyle
       rel: documentation
   short-name: "AMA"
+  edition: "11th edition"
 options:
   substitute: editor-short
   processing: numeric
