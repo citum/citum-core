@@ -31,6 +31,7 @@ info:
   short-name: "Chicago Author-Date"
   edition: "18th edition"
 options:
+  locators: note
   processing:
     disambiguate:
       names: true
@@ -90,7 +91,6 @@ citation:
         personal_communication:
           suppress: true
     - variable: locator
-      show-label: false
       prefix: ", "
   wrap: parentheses
   delimiter: " "

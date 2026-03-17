@@ -55,7 +55,6 @@ citation:
   template:
     - number: citation-label
     - variable: locator
-      show-label: true
       prefix: ", "
   wrap: brackets
   delimiter: ""

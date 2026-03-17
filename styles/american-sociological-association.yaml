@@ -18,6 +18,7 @@ info:
     - href: https://owl.purdue.edu/owl/research_and_citation/asa_style/index.html
       rel: documentation
 options:
+  locators: note
   substitute:
     contributor-role-form: short
     template:
@@ -74,7 +75,6 @@ citation:
       form: year
       prefix: " "
     - variable: locator
-      show-label: false
       prefix: ":"
   wrap: parentheses
   delimiter: " "

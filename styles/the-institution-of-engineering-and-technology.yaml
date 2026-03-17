@@ -40,7 +40,6 @@ citation:
     - items:
         - number: citation-number
         - variable: locator
-          show-label: true
           prefix: ", "
       delimiter: none
   wrap: brackets

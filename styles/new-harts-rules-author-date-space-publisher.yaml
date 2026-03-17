@@ -14,6 +14,7 @@ info:
   id: http://www.zotero.org/styles/new-harts-rules-author-date-space-publisher
   default-locale: en-GB
 options:
+  locators: note
   substitute:
     template: []
     overrides:
@@ -67,7 +68,6 @@ citation:
         personal_communication:
           suppress: true
     - variable: locator
-      show-label: false
       prefix: ": "
   wrap: parentheses
   delimiter: " "

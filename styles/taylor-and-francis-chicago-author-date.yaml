@@ -16,6 +16,7 @@ info:
     - href: https://files.taylorandfrancis.com/tf_ChicagoAD.pdf
       rel: documentation
 options:
+  locators: note
   processing: author-date
   contributors:
     and: text
@@ -49,7 +50,6 @@ citation:
           form: year
       delimiter: space
     - variable: locator
-      show-label: false
   wrap: parentheses
   delimiter: ", "
   multi-cite-delimiter: "; "
