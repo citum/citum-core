@@ -889,6 +889,17 @@
             }
           ]
         },
+        "locators": {
+          "description": "Locator rendering configuration. Accepts a preset name (e.g., \"note\") or explicit configuration.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LocatorConfigEntry"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "multilingual": {
           "description": "Multilingual rendering defaults.",
           "anyOf": [
@@ -2280,6 +2291,39 @@
         "symbol"
       ]
     },
+    "LabelForm2": {
+      "description": "How a locator label is displayed.",
+      "oneOf": [
+        {
+          "description": "No label, bare value: \"33\"",
+          "type": "string",
+          "enum": [
+            "none"
+          ]
+        },
+        {
+          "description": "Short form: \"p. 33\"",
+          "type": "string",
+          "enum": [
+            "short"
+          ]
+        },
+        {
+          "description": "Long form: \"page 33\"",
+          "type": "string",
+          "enum": [
+            "long"
+          ]
+        },
+        {
+          "description": "Symbol form if available in locale",
+          "type": "string",
+          "enum": [
+            "symbol"
+          ]
+        }
+      ]
+    },
     "LabelPlacement": {
       "description": "Label placement relative to contributor names.",
       "type": "string",
@@ -2310,6 +2354,32 @@
           "type": "string",
           "enum": [
             "ams"
+          ]
+        }
+      ]
+    },
+    "LabelRepeat": {
+      "description": "Whether labels appear on every segment, only the first, or none.",
+      "oneOf": [
+        {
+          "description": "Label on every segment",
+          "type": "string",
+          "enum": [
+            "all"
+          ]
+        },
+        {
+          "description": "Label only on the first segment",
+          "type": "string",
+          "enum": [
+            "first"
+          ]
+        },
+        {
+          "description": "No labels",
+          "type": "string",
+          "enum": [
+            "none"
           ]
         }
       ]
@@ -2452,6 +2522,442 @@
         }
       },
       "additionalProperties": false
+    },
+    "LocatorConfig": {
+      "description": "Top-level locator rendering configuration.",
+      "type": "object",
+      "properties": {
+        "default-label-form": {
+          "description": "Default label form for all locator kinds (default: Short).",
+          "default": "short",
+          "allOf": [
+            {
+              "$ref": "#/definitions/LabelForm2"
+            }
+          ]
+        },
+        "fallback-delimiter": {
+          "description": "Fallback delimiter for unmatched compound locators (default: \", \").",
+          "default": ", ",
+          "type": "string"
+        },
+        "kinds": {
+          "description": "Per-kind configuration overrides.",
+          "default": {},
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/LocatorKindConfig"
+          }
+        },
+        "patterns": {
+          "description": "Patterns for compound locators and type-specific rendering.",
+          "default": [],
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LocatorPattern"
+          }
+        },
+        "range-format": {
+          "description": "Range format for all locator kinds (default: Expanded).",
+          "default": "expanded",
+          "allOf": [
+            {
+              "$ref": "#/definitions/PageRangeFormat"
+            }
+          ]
+        },
+        "strip-label-periods": {
+          "description": "Strip trailing periods from labels globally (e.g., \"p.\" → \"p\").",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "LocatorConfigEntry": {
+      "description": "Preset-or-explicit entry — same pattern as DateConfigEntry.",
+      "anyOf": [
+        {
+          "description": "A preset name.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/LocatorPreset"
+            }
+          ]
+        },
+        {
+          "description": "Explicit configuration.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/LocatorConfig"
+            }
+          ]
+        }
+      ]
+    },
+    "LocatorKindConfig": {
+      "description": "Per-locator-kind configuration overrides.",
+      "type": "object",
+      "properties": {
+        "label-form": {
+          "description": "Override the default label form for this locator kind.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LabelForm2"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "range-format": {
+          "description": "Override the global range format for this locator kind.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/PageRangeFormat"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "strip-label-periods": {
+          "description": "Strip trailing periods from labels (e.g., \"p.\" → \"p\").",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "LocatorPattern": {
+      "description": "A pattern matching a specific combination of LocatorType values.\n\nPatterns are tested in declaration order; first match wins.",
+      "type": "object",
+      "required": [
+        "kinds",
+        "order"
+      ],
+      "properties": {
+        "delimiter": {
+          "description": "Delimiter between segments (default: \", \").",
+          "default": ", ",
+          "type": "string"
+        },
+        "kinds": {
+          "description": "The set of LocatorType values this pattern matches (order-insensitive).",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LocatorType"
+          }
+        },
+        "label-repeat": {
+          "description": "Whether labels appear on every segment, only the first, or none.",
+          "default": "all",
+          "allOf": [
+            {
+              "$ref": "#/definitions/LabelRepeat"
+            }
+          ]
+        },
+        "order": {
+          "description": "Rendering order of segments when pattern matches.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LocatorType"
+          }
+        },
+        "type-class": {
+          "description": "Optional gate on reference type class.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TypeClass"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "LocatorPreset": {
+      "description": "Named presets for common locator configurations.",
+      "oneOf": [
+        {
+          "description": "Note style: bare page numbers, short labels for other kinds.",
+          "type": "string",
+          "enum": [
+            "note"
+          ]
+        },
+        {
+          "description": "Author-date / numbered: short labels for all kinds.",
+          "type": "string",
+          "enum": [
+            "author-date"
+          ]
+        }
+      ]
+    },
+    "LocatorType": {
+      "description": "Locator types for pinpoint citations.",
+      "oneOf": [
+        {
+          "description": "Locator refers to a book within a larger work.",
+          "type": "string",
+          "enum": [
+            "book"
+          ]
+        },
+        {
+          "description": "Locator refers to a chapter.",
+          "type": "string",
+          "enum": [
+            "chapter"
+          ]
+        },
+        {
+          "description": "Locator refers to a clause.",
+          "type": "string",
+          "enum": [
+            "clause"
+          ]
+        },
+        {
+          "description": "Locator refers to a column.",
+          "type": "string",
+          "enum": [
+            "column"
+          ]
+        },
+        {
+          "description": "Locator refers to a corollary.",
+          "type": "string",
+          "enum": [
+            "corollary"
+          ]
+        },
+        {
+          "description": "Locator refers to a definition.",
+          "type": "string",
+          "enum": [
+            "definition"
+          ]
+        },
+        {
+          "description": "Locator refers to a division.",
+          "type": "string",
+          "enum": [
+            "division"
+          ]
+        },
+        {
+          "description": "Locator refers to a figure.",
+          "type": "string",
+          "enum": [
+            "figure"
+          ]
+        },
+        {
+          "description": "Locator refers to a folio.",
+          "type": "string",
+          "enum": [
+            "folio"
+          ]
+        },
+        {
+          "description": "Locator refers to a numbered line.",
+          "type": "string",
+          "enum": [
+            "line"
+          ]
+        },
+        {
+          "description": "Locator refers to a lemma.",
+          "type": "string",
+          "enum": [
+            "lemma"
+          ]
+        },
+        {
+          "description": "Locator refers to a note.",
+          "type": "string",
+          "enum": [
+            "note"
+          ]
+        },
+        {
+          "description": "Locator refers to a numbered unit.",
+          "type": "string",
+          "enum": [
+            "number"
+          ]
+        },
+        {
+          "description": "Locator refers to an opus number.",
+          "type": "string",
+          "enum": [
+            "opus"
+          ]
+        },
+        {
+          "description": "Locator refers to a page.",
+          "type": "string",
+          "enum": [
+            "page"
+          ]
+        },
+        {
+          "description": "Locator refers to a paragraph.",
+          "type": "string",
+          "enum": [
+            "paragraph"
+          ]
+        },
+        {
+          "description": "Locator refers to a sub-paragraph.",
+          "type": "string",
+          "enum": [
+            "subparagraph"
+          ]
+        },
+        {
+          "description": "Locator refers to a sub-clause.",
+          "type": "string",
+          "enum": [
+            "subclause"
+          ]
+        },
+        {
+          "description": "Locator refers to a sub-division.",
+          "type": "string",
+          "enum": [
+            "subdivision"
+          ]
+        },
+        {
+          "description": "Locator refers to a sub-section.",
+          "type": "string",
+          "enum": [
+            "subsection"
+          ]
+        },
+        {
+          "description": "Locator refers to a part or division.",
+          "type": "string",
+          "enum": [
+            "part"
+          ]
+        },
+        {
+          "description": "Locator refers to a problem.",
+          "type": "string",
+          "enum": [
+            "problem"
+          ]
+        },
+        {
+          "description": "Locator refers to a proposition.",
+          "type": "string",
+          "enum": [
+            "proposition"
+          ]
+        },
+        {
+          "description": "Locator refers to a recital.",
+          "type": "string",
+          "enum": [
+            "recital"
+          ]
+        },
+        {
+          "description": "Locator refers to a schedule.",
+          "type": "string",
+          "enum": [
+            "schedule"
+          ]
+        },
+        {
+          "description": "Locator refers to a section.",
+          "type": "string",
+          "enum": [
+            "section"
+          ]
+        },
+        {
+          "description": "Locator refers to a surah.",
+          "type": "string",
+          "enum": [
+            "surah"
+          ]
+        },
+        {
+          "description": "Locator refers to a theorem.",
+          "type": "string",
+          "enum": [
+            "theorem"
+          ]
+        },
+        {
+          "description": "Locator refers to an entry under a headword.",
+          "type": "string",
+          "enum": [
+            "sub-verbo"
+          ]
+        },
+        {
+          "description": "Locator refers to a supplement.",
+          "type": "string",
+          "enum": [
+            "supplement"
+          ]
+        },
+        {
+          "description": "Locator refers to a verse.",
+          "type": "string",
+          "enum": [
+            "verse"
+          ]
+        },
+        {
+          "description": "Locator refers to a volume.",
+          "type": "string",
+          "enum": [
+            "volume"
+          ]
+        },
+        {
+          "description": "Locator refers to a periodical volume.",
+          "type": "string",
+          "enum": [
+            "volume-periodical"
+          ]
+        },
+        {
+          "description": "Locator refers to a monograph volume.",
+          "type": "string",
+          "enum": [
+            "volume-book"
+          ]
+        },
+        {
+          "description": "Locator refers to an issue.",
+          "type": "string",
+          "enum": [
+            "issue"
+          ]
+        },
+        {
+          "description": "Locator refers to an algorithm.",
+          "type": "string",
+          "enum": [
+            "algorithm"
+          ]
+        }
+      ]
     },
     "MonthFormat": {
       "description": "Month display format.",
@@ -4921,22 +5427,8 @@
             "null"
           ]
         },
-        "show-label": {
-          "description": "Whether locator labels (e.g., \"p.\", \"sec.\") should be rendered when `variable: locator` is used. If omitted, processor defaults apply.",
-          "type": [
-            "boolean",
-            "null"
-          ]
-        },
         "small-caps": {
           "description": "Render in small caps.",
-          "type": [
-            "boolean",
-            "null"
-          ]
-        },
-        "strip-label-periods": {
-          "description": "Strip trailing periods from locator labels (e.g., \"p.\" -> \"p\"). Only applies to `variable: locator`.",
           "type": [
             "boolean",
             "null"
@@ -5367,6 +5859,32 @@
             {
               "$ref": "#/definitions/TitlesConfig"
             }
+          ]
+        }
+      ]
+    },
+    "TypeClass": {
+      "description": "A coarse reference genre used as an optional gate on locator patterns.",
+      "oneOf": [
+        {
+          "description": "Legal citations (e.g., \"legal-case\", \"statute\")",
+          "type": "string",
+          "enum": [
+            "legal"
+          ]
+        },
+        {
+          "description": "Classical works with traditional numbering",
+          "type": "string",
+          "enum": [
+            "classical"
+          ]
+        },
+        {
+          "description": "Standard reference types",
+          "type": "string",
+          "enum": [
+            "standard"
           ]
         }
       ]
