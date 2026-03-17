@@ -74,8 +74,8 @@ fn test_contributor_values() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let reference = make_reference();
@@ -113,8 +113,8 @@ fn test_date_values() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let reference = make_reference();
@@ -147,8 +147,8 @@ fn test_et_al() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -308,8 +308,8 @@ fn test_et_al_delimiter_never() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -365,8 +365,8 @@ fn test_et_al_delimiter_always() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -657,8 +657,8 @@ fn test_template_list_suppression() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let reference = Reference::from(LegacyReference {
@@ -706,8 +706,8 @@ fn test_et_al_use_last() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -758,8 +758,8 @@ fn test_et_al_use_last_overlap() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -803,8 +803,8 @@ fn test_title_hyperlink() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -849,8 +849,8 @@ fn test_title_hyperlink_url_fallback() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -893,8 +893,8 @@ fn test_title_values_smarten_leading_single_quotes() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -932,8 +932,8 @@ fn test_title_values_smarten_starting_apostrophe() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -974,8 +974,8 @@ fn test_title_values_smarten_french_apostrophes() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -1014,8 +1014,8 @@ fn test_title_values_smarten_double_quotes() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -1049,8 +1049,8 @@ fn test_title_values_flip_flop_outer_single_inner_double_quotes() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -1084,8 +1084,8 @@ fn test_title_values_flip_flop_outer_double_inner_single_quotes() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -1119,8 +1119,8 @@ fn test_title_values_preserve_ambiguous_double_quotes() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -1154,8 +1154,8 @@ fn test_title_values_render_djot_markup_as_preformatted() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -1190,8 +1190,8 @@ fn test_title_values_smarten_djot_text_leaves() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -1226,8 +1226,8 @@ fn test_title_values_smarten_djot_double_quotes() {
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -1262,8 +1262,8 @@ fn test_title_values_inline_link_suppresses_outer_title_link() {
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -1308,8 +1308,8 @@ fn test_variable_hyperlink() {
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -1371,8 +1371,8 @@ fn test_editor_label_format() {
             context: RenderContext::Bibliography,
             mode: citum_schema::citation::CitationMode::NonIntegral,
             suppress_author: false,
-            locator: None,
-            locator_label: None,
+            locator_raw: None,
+            ref_type: None,
             show_semantics: true,
         };
         let values = component
@@ -1393,8 +1393,8 @@ fn test_editor_label_format() {
             context: RenderContext::Bibliography,
             mode: citum_schema::citation::CitationMode::NonIntegral,
             suppress_author: false,
-            locator: None,
-            locator_label: None,
+            locator_raw: None,
+            ref_type: None,
             show_semantics: true,
         };
         let values = component
@@ -1415,8 +1415,8 @@ fn test_editor_label_format() {
             context: RenderContext::Bibliography,
             mode: citum_schema::citation::CitationMode::NonIntegral,
             suppress_author: false,
-            locator: None,
-            locator_label: None,
+            locator_raw: None,
+            ref_type: None,
             show_semantics: true,
         };
         let values = component
@@ -1438,8 +1438,8 @@ fn test_term_values() {
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let reference = make_reference();
@@ -1470,8 +1470,8 @@ fn test_template_list_term_suppression() {
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     // Reference with no editor
@@ -1511,8 +1511,8 @@ fn test_date_fallback() {
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     // Reference with NO issued date
@@ -1565,8 +1565,8 @@ fn test_strip_periods_global_config() {
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
 
@@ -1607,8 +1607,8 @@ fn test_strip_periods_component_override() {
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
 
@@ -1653,8 +1653,8 @@ fn test_strip_periods_no_strip_by_default() {
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
 
@@ -1696,8 +1696,8 @@ fn test_should_strip_periods_precedence() {
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
 
@@ -1726,8 +1726,8 @@ fn test_should_strip_periods_precedence() {
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     assert!(!should_strip_periods(&rendering_default, &options_none));
@@ -1943,8 +1943,8 @@ fn title_value_with_config(title_str: &str, ref_type: &str, config: &Config) -> 
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -2100,8 +2100,8 @@ fn test_text_case_structured_title_sentence_apa() {
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -2158,8 +2158,8 @@ fn test_text_case_structured_title_sentence_nlm() {
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -2210,8 +2210,8 @@ fn test_text_case_non_english_falls_back_to_as_is() {
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();
@@ -2253,8 +2253,8 @@ fn test_text_case_template_level_override() {
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
         suppress_author: false,
-        locator: None,
-        locator_label: None,
+        locator_raw: None,
+        ref_type: None,
         show_semantics: true,
     };
     let hints = ProcHints::default();

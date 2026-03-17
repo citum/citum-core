@@ -20,7 +20,7 @@ fn resolve_number_value(
         NumberVariable::Issue => reference.issue().map(|v| v.to_string()),
         NumberVariable::Pages => {
             if options.context == crate::values::RenderContext::Citation
-                && options.locator.is_some()
+                && options.locator_raw.is_some()
                 && matches!(
                     options.config.processing,
                     Some(citum_schema::options::Processing::Note)

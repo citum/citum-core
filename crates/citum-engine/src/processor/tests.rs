@@ -411,7 +411,14 @@ fn test_citation_locator_label_renders_term_with_loaded_locale() {
 /// Tests the behavior of `test_citation_locator_can_suppress_label`.
 #[test]
 fn test_citation_locator_can_suppress_label() {
+    // Label suppression is now configured via style-level locators config.
     let mut style = make_style();
+    if let Some(opts) = style.options.as_mut() {
+        opts.locators = Some(citum_schema::options::LocatorConfig {
+            default_label_form: citum_schema::options::LabelForm::None,
+            ..Default::default()
+        });
+    }
     style.citation = Some(citum_schema::CitationSpec {
         template: Some(vec![
             citum_schema::TemplateComponent::Contributor(
@@ -428,7 +435,6 @@ fn test_citation_locator_can_suppress_label() {
             }),
             citum_schema::TemplateComponent::Variable(citum_schema::template::TemplateVariable {
                 variable: citum_schema::template::SimpleVariable::Locator,
-                show_label: Some(false),
                 ..Default::default()
             }),
         ]),
@@ -458,7 +464,22 @@ fn test_citation_locator_can_suppress_label() {
 /// Tests the behavior of `test_citation_locator_can_strip_label_periods`.
 #[test]
 fn test_citation_locator_can_strip_label_periods() {
+    // strip_label_periods is now configured via style-level locators config.
     let mut style = make_style();
+    if let Some(opts) = style.options.as_mut() {
+        let mut kinds = std::collections::HashMap::new();
+        kinds.insert(
+            citum_schema::citation::LocatorType::Page,
+            citum_schema::options::LocatorKindConfig {
+                strip_label_periods: Some(true),
+                ..Default::default()
+            },
+        );
+        opts.locators = Some(citum_schema::options::LocatorConfig {
+            kinds,
+            ..Default::default()
+        });
+    }
     style.citation = Some(citum_schema::CitationSpec {
         template: Some(vec![
             citum_schema::TemplateComponent::Contributor(
@@ -475,7 +496,6 @@ fn test_citation_locator_can_strip_label_periods() {
             }),
             citum_schema::TemplateComponent::Variable(citum_schema::template::TemplateVariable {
                 variable: citum_schema::template::SimpleVariable::Locator,
-                strip_label_periods: Some(true),
                 ..Default::default()
             }),
         ]),

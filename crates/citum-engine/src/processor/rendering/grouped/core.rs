@@ -683,8 +683,7 @@ impl Renderer<'_> {
                 context: RenderContext::Bibliography,
                 mode: citum_schema::citation::CitationMode::NonIntegral,
                 suppress_author: false,
-                locator: None,
-                locator_label: None,
+                locator_raw: None,
                 citation_number: entry_number,
                 position: None,
                 integral_name_state: None,
@@ -726,8 +725,7 @@ impl Renderer<'_> {
                 context: params.context,
                 mode: params.mode,
                 suppress_author: params.suppress_author,
-                locator: params.locator.map(str::to_string),
-                locator_label: params.locator_label,
+                locator_raw: params.locator_raw,
                 citation_number: params.citation_number,
                 position: params.position.cloned(),
                 integral_name_state: params.integral_name_state,
@@ -750,20 +748,20 @@ impl Renderer<'_> {
             context,
             mode,
             suppress_author,
-            locator,
-            locator_label,
+            locator_raw,
             citation_number,
             position,
             integral_name_state,
         } = request;
+        let ref_type = reference.ref_type();
         let options = RenderOptions {
             config: self.config,
             locale: self.locale,
             context,
             mode,
             suppress_author,
-            locator: locator.as_deref(),
-            locator_label,
+            locator_raw,
+            ref_type: Some(ref_type.clone()),
             show_semantics: self.show_semantics,
         };
         let hint = self.build_template_render_hint(
@@ -773,7 +771,6 @@ impl Renderer<'_> {
             position,
             integral_name_state,
         );
-        let ref_type = reference.ref_type().clone();
         let mut tracker = TemplateComponentTracker::default();
         let components: Vec<ProcTemplateComponent> = template
             .iter()
