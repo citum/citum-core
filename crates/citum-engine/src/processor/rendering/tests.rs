@@ -1,10 +1,7 @@
 use super::*;
 use crate::Processor;
 use crate::processor::rendering::grouped::group_citation_items_by_author;
-use citum_schema::citation::{
-    Citation, CitationItem, CitationLocator, CitationMode, IntegralNameState, LocatorType,
-    LocatorValue,
-};
+use citum_schema::citation::{Citation, CitationItem, CitationMode, IntegralNameState};
 use citum_schema::options::{
     Config, IntegralNameConfig, IntegralNameContexts, IntegralNameForm, IntegralNameRule,
     IntegralNameScope, Processing,
@@ -252,74 +249,6 @@ fn test_strip_author_component_nested_list() {
 
     assert_eq!(filtered_list.items.len(), 1);
     assert!(matches!(filtered_list.items[0], TemplateComponent::Date(_)));
-}
-
-#[test]
-fn compound_locator_joins_segments_with_separator() {
-    let locale = Locale::default();
-    let segments = vec![
-        LocatorSegment {
-            label: LocatorType::Chapter,
-            value: LocatorValue::from("3"),
-        },
-        LocatorSegment {
-            label: LocatorType::Section,
-            value: LocatorValue::from("42"),
-        },
-    ];
-    let rendered = collapse_compound_locator(&segments, &locale);
-    assert!(rendered.contains('3'), "should contain first value");
-    assert!(rendered.contains("42"), "should contain second value");
-    assert!(rendered.contains(", "), "should join with comma-space");
-}
-
-#[test]
-fn compound_locator_plural_detection() {
-    let locale = Locale::default();
-    // Range with en-dash should trigger plural
-    let segments = vec![LocatorSegment {
-        label: LocatorType::Page,
-        value: LocatorValue::from("10\u{2013}12"),
-    }];
-    let rendered = collapse_compound_locator(&segments, &locale);
-    assert!(rendered.contains("10\u{2013}12"));
-}
-
-#[test]
-fn compound_locator_fallback_uses_kebab_case() {
-    let locale = Locale::default();
-    let segments = vec![LocatorSegment {
-        label: LocatorType::SubVerbo,
-        value: LocatorValue::from("test"),
-    }];
-    let rendered = collapse_compound_locator(&segments, &locale);
-    // Should use kebab-case "sub-verbo", not PascalCase "SubVerbo"
-    assert!(
-        rendered.contains("sub-verbo"),
-        "expected kebab-case fallback, got: {rendered}"
-    );
-}
-
-#[test]
-fn resolve_item_locator_prefers_compound() {
-    let locale = Locale::default();
-    let item = citum_schema::citation::CitationItem {
-        id: "test".to_string(),
-        locator: Some(
-            CitationLocator::compound(vec![
-                LocatorSegment::new(LocatorType::Chapter, "5"),
-                LocatorSegment::new(LocatorType::Section, "42"),
-            ])
-            .unwrap(),
-        ),
-        ..Default::default()
-    };
-    let (value, label) = resolve_item_locator(&item, &locale);
-    assert!(value.unwrap().contains('5'));
-    assert!(
-        label.is_none(),
-        "compound locators embed labels per-segment"
-    );
 }
 
 #[test]

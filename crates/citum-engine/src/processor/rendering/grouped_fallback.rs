@@ -37,10 +37,8 @@ pub struct TemplateRenderParams<'a> {
     pub suppress_author: bool,
     /// The citation number for numeric styles.
     pub citation_number: usize,
-    /// An optional locator string (e.g., a page range).
-    pub locator: Option<&'a str>,
-    /// The type label for the locator (e.g., page, chapter).
-    pub locator_label: Option<citum_schema::citation::LocatorType>,
+    /// The raw citation locator if present.
+    pub locator_raw: Option<&'a citum_schema::citation::CitationLocator>,
     /// The citation position (e.g., ibid, subsequent).
     pub position: Option<&'a citum_schema::citation::Position>,
     /// Whether the author was rendered in integral form in the prose anchor.

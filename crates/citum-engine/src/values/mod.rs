@@ -14,6 +14,8 @@ pub mod contributor;
 pub mod date;
 /// List-component value extraction helpers.
 pub mod list;
+/// Locator rendering logic.
+pub mod locator;
 /// Numeric variable extraction and page-range helpers.
 pub mod number;
 /// Shared helpers for collapsing consecutive numeric or ordinal sequences.
@@ -467,10 +469,10 @@ pub struct RenderOptions<'a> {
     /// Whether to suppress the author name for this citation.
     /// Set from the citation-level `suppress_author` flag.
     pub suppress_author: bool,
-    /// Optional locator value (e.g. "42")
-    pub locator: Option<&'a str>,
-    /// Optional locator label (e.g. page, section)
-    pub locator_label: Option<citum_schema::citation::LocatorType>,
+    /// Optional raw citation locator for rendering via locator config.
+    pub locator_raw: Option<&'a citum_schema::citation::CitationLocator>,
+    /// Reference type for optional type-class gating in locator patterns.
+    pub ref_type: Option<String>,
     /// Whether to output semantic markup (HTML spans, Djot attributes).
     pub show_semantics: bool,
 }

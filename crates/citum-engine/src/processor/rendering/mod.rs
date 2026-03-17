@@ -7,8 +7,8 @@
 use crate::error::ProcessorError;
 use crate::reference::{Bibliography, Reference};
 use crate::values::{ProcHints, RenderContext, RenderOptions};
-use citum_schema::citation::{CitationLocator, LocatorSegment, LocatorType};
-use citum_schema::locale::{Locale, TermForm};
+use citum_schema::citation::CitationLocator;
+use citum_schema::locale::Locale;
 use citum_schema::options::Config;
 use citum_schema::template::TemplateComponent;
 use indexmap::IndexMap;
@@ -52,51 +52,6 @@ pub struct CompoundRenderData<'a> {
     pub sets: &'a IndexMap<String, Vec<String>>,
 }
 
-/// Collapse compound locator segments into a pre-labelled string.
-///
-/// Each segment is rendered as `"term value"` using the locale's short-form term,
-/// then joined with `", "`. Falls back to the label name if no locale term exists.
-fn collapse_compound_locator(segments: &[LocatorSegment], locale: &Locale) -> String {
-    segments
-        .iter()
-        .map(|seg| {
-            let plural = seg.value.is_plural();
-            let term = locale
-                .locator_term(&seg.label, plural, TermForm::Short)
-                .or_else(|| locale.locator_term(&seg.label, plural, TermForm::Symbol))
-                .map(std::string::ToString::to_string)
-                .unwrap_or_else(|| {
-                    serde_json::to_value(seg.label)
-                        .ok()
-                        .and_then(|v| v.as_str().map(String::from))
-                        .unwrap_or_else(|| format!("{:?}", seg.label))
-                });
-            format!("{} {}", term, seg.value.value_str())
-        })
-        .collect::<Vec<_>>()
-        .join(", ")
-}
-
-/// Resolve a citation item's locator into a `(value, label)` pair for `RenderOptions`.
-///
-/// Compound locators are collapsed to a pre-labelled string with no separate label
-/// (since labels are embedded per-segment). Flat locators pass through unchanged.
-fn resolve_item_locator(
-    item: &citum_schema::citation::CitationItem,
-    locale: &Locale,
-) -> (Option<String>, Option<LocatorType>) {
-    match item.locator.as_ref() {
-        Some(CitationLocator::Single(segment)) => (
-            Some(segment.value.value_str().to_string()),
-            Some(segment.label),
-        ),
-        Some(CitationLocator::Compound { segments }) => {
-            (Some(collapse_compound_locator(segments, locale)), None)
-        }
-        None => (None, None),
-    }
-}
-
 mod collapse;
 mod grouped;
 mod grouped_fallback;
@@ -122,10 +77,8 @@ pub struct TemplateRenderRequest<'a> {
     pub mode: citum_schema::citation::CitationMode,
     /// Whether to suppress the author in output.
     pub suppress_author: bool,
-    /// The locator value if present.
-    pub locator: Option<String>,
-    /// The locator label if present.
-    pub locator_label: Option<LocatorType>,
+    /// The raw citation locator if present (for new rendering logic).
+    pub locator_raw: Option<&'a CitationLocator>,
     /// The citation number for numeric styles.
     pub citation_number: usize,
     /// The citation position (e.g., Ibid).
@@ -369,20 +322,18 @@ impl<'a> Renderer<'a> {
 
     fn citation_render_request<'b>(
         &self,
-        item: &crate::reference::CitationItem,
+        item: &'b crate::reference::CitationItem,
         template: &'b [TemplateComponent],
         mode: &citum_schema::citation::CitationMode,
         suppress_author: bool,
         position: Option<&citum_schema::citation::Position>,
     ) -> TemplateRenderRequest<'b> {
-        let (loc_value, loc_label) = resolve_item_locator(item, self.locale);
         TemplateRenderRequest {
             template,
             context: RenderContext::Citation,
             mode: mode.clone(),
             suppress_author,
-            locator: loc_value,
-            locator_label: loc_label,
+            locator_raw: item.locator.as_ref(),
             citation_number: self.get_or_assign_citation_number(&item.id),
             position: position.cloned(),
             integral_name_state: item.integral_name_state,
@@ -414,8 +365,8 @@ impl<'a> Renderer<'a> {
         &'b self,
         mode: citum_schema::citation::CitationMode,
         suppress_author: bool,
-        locator: Option<&'b str>,
-        locator_label: Option<LocatorType>,
+        locator_raw: Option<&'b CitationLocator>,
+        ref_type: Option<String>,
     ) -> RenderOptions<'b> {
         RenderOptions {
             config: self.config,
@@ -423,8 +374,8 @@ impl<'a> Renderer<'a> {
             context: RenderContext::Citation,
             mode,
             suppress_author,
-            locator,
-            locator_label,
+            locator_raw,
+            ref_type,
             show_semantics: self.show_semantics,
         }
     }
@@ -443,12 +394,11 @@ impl<'a> Renderer<'a> {
         F: crate::render::format::OutputFormat<Output = String>,
     {
         let fmt = F::default();
-        let (loc_value, loc_label) = resolve_item_locator(item, self.locale);
         let options = self.citation_render_options(
             citum_schema::citation::CitationMode::Integral,
             false,
-            loc_value.as_deref(),
-            loc_label,
+            item.locator.as_ref(),
+            Some(reference.ref_type()),
         );
 
         // Render author in short form

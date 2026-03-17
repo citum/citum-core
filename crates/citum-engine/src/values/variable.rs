@@ -27,55 +27,9 @@ fn container_title_short(reference: &Reference) -> Option<String> {
     }
 }
 
-/// Format a locator value with optional label prefix from the locale.
-fn format_locator_value(
-    show_label: Option<bool>,
-    strip_label_periods: Option<bool>,
-    loc: &str,
-    label_type: &citum_schema::citation::LocatorType,
-    options: &RenderOptions<'_>,
-) -> String {
-    if show_label == Some(false) && matches!(label_type, citum_schema::citation::LocatorType::Page)
-    {
-        return loc.to_string();
-    }
-
-    // Chicago-style notes typically render page locators bare ("23"),
-    // while most non-note styles expect labels ("p. 23").
-    if matches!(label_type, citum_schema::citation::LocatorType::Page)
-        && matches!(
-            options.config.processing,
-            Some(citum_schema::options::Processing::Note)
-        )
-    {
-        return loc.to_string();
-    }
-
-    // Check if value is plural (contains hyphen, comma, or space)
-    let is_plural = loc.contains('-') || loc.contains(',') || loc.contains(' ');
-
-    // Look up term from locale
-    if let Some(term) =
-        options
-            .locale
-            .locator_term(label_type, is_plural, citum_schema::locale::TermForm::Short)
-    {
-        if strip_label_periods == Some(true) {
-            let locator_term = crate::values::strip_trailing_periods(term);
-            format!("{locator_term}{loc}")
-        } else {
-            format!("{term} {loc}")
-        }
-    } else {
-        loc.to_string()
-    }
-}
-
 /// Resolve the raw value string for a simple variable from a reference.
 fn resolve_variable_value(
     variable: &SimpleVariable,
-    show_label: Option<bool>,
-    strip_label_periods: Option<bool>,
     reference: &Reference,
     options: &RenderOptions<'_>,
 ) -> Option<String> {
@@ -116,12 +70,25 @@ fn resolve_variable_value(
         },
         SimpleVariable::Version => reference.version(),
         SimpleVariable::ContainerTitleShort => container_title_short(reference),
-        SimpleVariable::Locator => options.locator.map(|loc| {
-            if let Some(label_type) = &options.locator_label {
-                format_locator_value(show_label, strip_label_periods, loc, label_type, options)
+        SimpleVariable::Locator => options.locator_raw.map(|loc| {
+            // When no explicit locators config is set, derive a default from the
+            // processing mode so note styles automatically suppress page labels.
+            let derived;
+            let cfg = if let Some(c) = options.config.locators.as_ref() {
+                c
             } else {
-                loc.to_string()
-            }
+                derived = if matches!(
+                    options.config.processing,
+                    Some(citum_schema::options::Processing::Note)
+                ) {
+                    citum_schema::options::LocatorPreset::Note.config()
+                } else {
+                    citum_schema::options::LocatorConfig::default()
+                };
+                &derived
+            };
+            let ref_type = options.ref_type.as_deref().unwrap_or("");
+            crate::values::locator::render_locator(loc, ref_type, cfg, options.locale)
         }),
         _ => None,
     }
@@ -134,13 +101,7 @@ impl ComponentValues for TemplateVariable {
         _hints: &ProcHints,
         options: &RenderOptions<'_>,
     ) -> Option<ProcValues<F::Output>> {
-        let value = resolve_variable_value(
-            &self.variable,
-            self.show_label,
-            self.strip_label_periods,
-            reference,
-            options,
-        );
+        let value = resolve_variable_value(&self.variable, reference, options);
 
         value.filter(|s: &String| !s.is_empty()).map(|value| {
             use citum_schema::options::{LinkAnchor, LinkTarget};

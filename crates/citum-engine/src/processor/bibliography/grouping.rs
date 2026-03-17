@@ -415,8 +415,8 @@ impl Processor {
             context: RenderContext::Bibliography,
             mode: citum_schema::citation::CitationMode::NonIntegral,
             suppress_author: false,
-            locator: None,
-            locator_label: None,
+            locator_raw: None,
+            ref_type: None,
             show_semantics: self.show_semantics,
         };
 
