@@ -690,6 +690,17 @@ pub struct StyleInfo {
     /// Provenance: set when this style was adapted from a CSL 1.0 source.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub source: Option<StyleSource>,
+    /// Concise display name for the style family, used by UIs to label
+    /// search results and match banners (e.g. `"APA"`, `"Chicago Notes"`,
+    /// `"MLA"`). Omit for journal-specific styles whose full title is their
+    /// identity. Combine with `edition` to produce labels like `"APA 7th"`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub short_name: Option<String>,
+    /// Edition or version qualifier used alongside `short_name` to
+    /// disambiguate multiple editions of the same style family
+    /// (e.g. `"7th"`, `"18th edition"`). Omit when only one edition exists.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub edition: Option<String>,
 }
 
 #[cfg(test)]

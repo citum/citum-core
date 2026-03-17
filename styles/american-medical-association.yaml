@@ -1,5 +1,5 @@
 info:
-  title: AMA Manual of Style 11th edition
+  title: American Medical Association Manual of Style 11th edition
   description: 'AMA Manual of Style: A Guide for Authors and Editors (11th ed.)'
   fields:
   - medicine
@@ -17,6 +17,7 @@ info:
       rel: template
     - href: https://academic.oup.com/amamanualofstyle
       rel: documentation
+  short-name: "AMA"
 options:
   substitute: editor-short
   processing: numeric

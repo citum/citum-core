@@ -14,6 +14,7 @@ info:
       rel: template
     - href: http://www.citethemrightonline.com/
       rel: documentation
+  short-name: "Harvard"
 options:
   substitute:
     contributor-role-form: short

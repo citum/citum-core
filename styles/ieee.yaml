@@ -15,6 +15,7 @@ info:
       rel: self
     - href: https://journals.ieeeauthorcenter.ieee.org/your-role-in-article-production/ieee-editorial-style-manual/
       rel: documentation
+  short-name: "IEEE"
 options:
   substitute: editor-translator-short
   processing: numeric

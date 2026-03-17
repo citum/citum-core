@@ -13,6 +13,8 @@ info:
   title: MHRA Style Guide 4th edition (notes)
   id: http://www.zotero.org/styles/mhra-notes
   default-locale: en-GB
+  short-name: "MHRA"
+  edition: "4th edition"
 options:
   substitute:
     contributor-role-form: short

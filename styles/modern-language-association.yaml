@@ -1,5 +1,5 @@
 info:
-  title: MLA Handbook 9th edition (in-text citations)
+  title: Modern Language Association Handbook 9th edition (in-text citations)
   description: MLA source citations, in-text citations system (chapter 6)
   fields:
   - humanities
@@ -18,6 +18,8 @@ info:
       rel: self
     - href: https://style.mla.org/
       rel: documentation
+  short-name: "MLA"
+  edition: "9th"
 options:
   processing: author-date
   substitute: standard

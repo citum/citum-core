@@ -28,6 +28,8 @@ info:
       rel: template
     - href: https://www.chicagomanualofstyle.org/
       rel: documentation
+  short-name: "Chicago Author-Date"
+  edition: "18th edition"
 options:
   processing:
     disambiguate:

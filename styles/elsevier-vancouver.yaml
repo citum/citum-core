@@ -14,6 +14,7 @@ info:
       rel: self
     - href: http://www.elsevier.com/journals/energy/0360-5442/guide-for-authors#68000
       rel: documentation
+  short-name: "Vancouver"
 options:
   substitute:
     contributor-role-form: long
