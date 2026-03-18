@@ -2,8 +2,9 @@
 
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 /// Compatibility facade merging data input types with style-specific logic.
 #[allow(missing_docs, reason = "internal derives")]
@@ -31,6 +32,8 @@ pub mod locale;
 pub mod options;
 /// Configuration presets for common styles.
 pub mod presets;
+/// Style-level preset architecture (Level 2: named compiled-in Style structs).
+pub mod style_preset;
 /// Citation and bibliography template components.
 #[allow(missing_docs, reason = "internal derives")]
 pub mod template;
@@ -63,6 +66,7 @@ pub use locale::Locale;
 pub use options::Config;
 pub use options::TextCase;
 pub use presets::{ContributorPreset, DatePreset, SortPreset, SubstitutePreset, TitlePreset};
+pub use style_preset::{StylePreset, StylePresetSpec, StyleVariantDelta};
 pub use template::{
     Rendering, TemplateComponent, TemplateContributor, TemplateDate, TemplateList, TemplateNumber,
     TemplateTerm, TemplateTitle, TemplateVariable, WrapPunctuation,
@@ -102,6 +106,148 @@ pub struct Style {
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
+    /// Style-level preset reference with optional variant delta overlay.
+    ///
+    /// When present, the base [`StylePreset`] is resolved and the variant
+    /// delta merged before any further processing. Explicit `options`,
+    /// `citation`, and `bibliography` keys at the same document level take
+    /// precedence over the resolved preset.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub preset: Option<style_preset::StylePresetSpec>,
+}
+
+impl Style {
+    /// Resolve this style into its final effective form by applying presets.
+    ///
+    /// If the `preset` field is present, the base [`StylePreset`] is loaded,
+    /// the optional `variant` delta is applied over it, and finally any
+    /// explicit `options`, `citation`, or `bibliography` keys in the current
+    /// style document are merged on top (taking ultimate precedence).
+    ///
+    /// Returns the original style unchanged if no preset is specified.
+    #[must_use]
+    pub fn into_resolved(self) -> Self {
+        self.into_resolved_recursive(&mut HashSet::new())
+    }
+
+    /// Internal recursive resolver with loop protection.
+    #[must_use]
+    pub fn into_resolved_recursive(self, visited: &mut HashSet<StylePreset>) -> Self {
+        let Some(spec) = self.preset.clone() else {
+            return self;
+        };
+
+        if visited.contains(spec.preset()) {
+            // Loop detected: return the style as-is to avoid infinite recursion.
+            return self;
+        }
+        visited.insert(spec.preset().clone());
+
+        // 1. Resolve base preset + variant delta (recursively).
+        let mut effective = spec.resolve_with_visited(visited);
+
+        // 2. Apply style-level overrides from the local file (self).
+        // These take precedence over both the base preset and the variant delta.
+        merge_style_overlay(&mut effective, &self);
+
+        // 3. Keep the style-level metadata from the local file when explicitly
+        // provided, preserving inherited preset metadata otherwise.
+        effective.version = self.version;
+        // Keep the original preset spec for metadata round-tripping.
+        effective.preset = self.preset;
+
+        effective
+    }
+}
+
+pub(crate) fn merge_style_overlay(base: &mut Style, overlay: &Style) {
+    if !overlay.info.is_empty() {
+        base.info = merge_serialized(base.info.clone(), &overlay.info);
+    }
+
+    if let Some(templates) = &overlay.templates {
+        base.templates = Some(match &base.templates {
+            Some(existing) => merge_serialized(existing.clone(), templates),
+            None => templates.clone(),
+        });
+    }
+
+    if let Some(options) = &overlay.options {
+        match &mut base.options {
+            Some(existing) => existing.merge(options),
+            None => base.options = Some(options.clone()),
+        }
+    }
+
+    if let Some(citation) = &overlay.citation {
+        base.citation = Some(match &base.citation {
+            Some(existing) => merge_serialized(existing.clone(), citation),
+            None => citation.clone(),
+        });
+    }
+
+    if let Some(bibliography) = &overlay.bibliography {
+        base.bibliography = Some(match &base.bibliography {
+            Some(existing) => merge_serialized(existing.clone(), bibliography),
+            None => bibliography.clone(),
+        });
+    }
+
+    if let Some(custom) = &overlay.custom {
+        base.custom = Some(match &base.custom {
+            Some(existing) => merge_serialized(existing.clone(), custom),
+            None => custom.clone(),
+        });
+    }
+}
+
+pub(crate) fn merge_optional_serialized<T>(slot: &mut Option<T>, overlay: &serde_yaml::Value)
+where
+    T: Clone + DeserializeOwned + Serialize,
+{
+    if matches!(overlay, serde_yaml::Value::Null) {
+        *slot = None;
+        return;
+    }
+
+    *slot = Some(match slot.as_ref() {
+        Some(existing) => merge_serialized_value(existing.clone(), overlay),
+        None => serde_yaml::from_value(overlay.clone()).expect("valid serialized overlay"),
+    });
+}
+
+pub(crate) fn merge_serialized<T>(base: T, overlay: &T) -> T
+where
+    T: Clone + DeserializeOwned + Serialize,
+{
+    let overlay_value = serde_yaml::to_value(overlay).expect("serializable overlay");
+    merge_serialized_value(base, &overlay_value)
+}
+
+pub(crate) fn merge_serialized_value<T>(base: T, overlay: &serde_yaml::Value) -> T
+where
+    T: Clone + DeserializeOwned + Serialize,
+{
+    let mut base_value = serde_yaml::to_value(base).expect("serializable base");
+    merge_yaml_value(&mut base_value, overlay);
+    serde_yaml::from_value(base_value).expect("merged value matches schema")
+}
+
+pub(crate) fn merge_yaml_value(base: &mut serde_yaml::Value, overlay: &serde_yaml::Value) {
+    match (base, overlay) {
+        (serde_yaml::Value::Mapping(base_map), serde_yaml::Value::Mapping(overlay_map)) => {
+            for (key, overlay_value) in overlay_map {
+                if let Some(base_value) = base_map.get_mut(key) {
+                    merge_yaml_value(base_value, overlay_value);
+                } else {
+                    base_map.insert(key.clone(), overlay_value.clone());
+                }
+            }
+        }
+        (base_value, overlay_value) => {
+            *base_value = overlay_value.clone();
+        }
+    }
 }
 
 fn default_version() -> String {
@@ -671,6 +817,20 @@ pub struct StyleInfo {
     /// (e.g. `"7th"`, `"18th edition"`). Omit when only one edition exists.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub edition: Option<String>,
+}
+
+impl StyleInfo {
+    /// Returns `true` when all fields are absent (no content to merge).
+    pub fn is_empty(&self) -> bool {
+        self.title.is_none()
+            && self.id.is_none()
+            && self.description.is_none()
+            && self.default_locale.is_none()
+            && self.fields.is_empty()
+            && self.source.is_none()
+            && self.short_name.is_none()
+            && self.edition.is_none()
+    }
 }
 
 #[cfg(test)]
