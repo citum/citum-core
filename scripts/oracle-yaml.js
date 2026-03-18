@@ -28,6 +28,7 @@ const { toCiteprocItem } = require('./lib/citeproc-locators');
 const {
   PROJECT_ROOT,
   resolveYamlVerificationPlan,
+  resolveStyleData,
 } = require('./lib/style-verification');
 
 const CUSTOM_TAG_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
@@ -87,7 +88,11 @@ function parseArgs(argv = process.argv.slice(2)) {
 }
 
 function loadStyleData(yamlPath) {
-  return yaml.load(fs.readFileSync(yamlPath, 'utf8'), { schema: CUSTOM_TAG_SCHEMA }) || {};
+  const rawStyleData = yaml.load(fs.readFileSync(yamlPath, 'utf8'), { schema: CUSTOM_TAG_SCHEMA }) || {};
+  return {
+    rawStyleData,
+    resolvedStyleData: resolveStyleData(rawStyleData),
+  };
 }
 
 function inferStyleFormat(styleData) {
@@ -393,16 +398,17 @@ function runDirectComparison(options, stylePlan) {
 }
 
 function runComparison(options) {
-  const styleData = loadStyleData(options.yamlPath);
+  const { rawStyleData, resolvedStyleData } = loadStyleData(options.yamlPath);
   const stylePlan = resolveYamlVerificationPlan({
     yamlPath: options.yamlPath,
     legacyCslPath: options.legacyCslPath,
     refsFixture: options.refsFixture,
     citationsFixture: options.citationsFixture,
     fixtureFamily: options.fixtureFamily,
-    styleData,
-    styleFormat: inferStyleFormat(styleData),
-    hasBibliography: hasBibliographyTemplate(styleData),
+    styleData: rawStyleData,
+    resolvedStyleData,
+    styleFormat: inferStyleFormat(resolvedStyleData),
+    hasBibliography: hasBibliographyTemplate(resolvedStyleData),
   });
 
   if (shouldUseStructuredOracle(options, stylePlan)) {

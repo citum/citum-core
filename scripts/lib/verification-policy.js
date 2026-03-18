@@ -208,4 +208,73 @@ module.exports = {
   resolveScopeAuthority,
   validateFixtureSufficiency,
   validateVerificationPolicy,
+  deepMerge,
+  resolveStyleData,
 };
+
+/**
+ * Perform a deep merge of objects for style variant resolution.
+ */
+function deepMerge(target, source) {
+  if (!source || typeof source !== 'object') return target;
+  if (!target || typeof target !== 'object') return source;
+
+  const result = { ...target };
+  for (const [key, value] of Object.entries(source)) {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      result[key] = deepMerge(result[key], value);
+    } else {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
+const PRESET_BASES = {
+  'apa-7th': path.join(PROJECT_ROOT, 'styles', 'preset-bases', 'apa-7th.yaml'),
+  'chicago-notes-18th': path.join(PROJECT_ROOT, 'styles', 'preset-bases', 'chicago-notes-18th.yaml'),
+  'chicago-author-date-18th': path.join(PROJECT_ROOT, 'styles', 'preset-bases', 'chicago-author-date-18th.yaml'),
+};
+
+function localStyleOverlay(styleData) {
+  if (!styleData || typeof styleData !== 'object') {
+    return {};
+  }
+
+  const overlay = { ...styleData };
+  delete overlay.preset;
+  return overlay;
+}
+
+/**
+ * Resolves a style's preset reference.
+ */
+function resolveStyleData(styleData, visited = new Set()) {
+  const presetSpec = styleData?.preset;
+  if (!presetSpec) return styleData;
+
+  const presetKey = typeof presetSpec === 'string' ? presetSpec : presetSpec.preset;
+  if (!presetKey || !PRESET_BASES[presetKey] || visited.has(presetKey)) {
+    return styleData;
+  }
+
+  const basePath = PRESET_BASES[presetKey];
+  if (!fs.existsSync(basePath)) {
+    return styleData;
+  }
+
+  try {
+    const baseContent = fs.readFileSync(basePath, 'utf8');
+    let baseData = yaml.load(baseContent);
+
+    visited.add(presetKey);
+    baseData = resolveStyleData(baseData, visited);
+
+    const delta = typeof presetSpec === 'object' ? presetSpec.variant : null;
+    const mergedPreset = deepMerge(baseData, delta || {});
+    return deepMerge(mergedPreset, localStyleOverlay(styleData));
+  } catch (err) {
+    console.error(`Error resolving preset ${presetKey}: ${err.message}`);
+    return styleData;
+  }
+}

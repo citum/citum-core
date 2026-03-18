@@ -23,6 +23,7 @@ const {
   resolveScopeAuthority,
   resolveFixtureSufficiency,
   resolveVerificationPolicy,
+  resolveStyleData,
 } = require('./lib/verification-policy');
 const {
   DEFAULT_CITATIONS_FIXTURE,
@@ -438,14 +439,17 @@ function discoverCoreStyles(provenanceConfig = loadReportProvenance()) {
   return styleFiles.map((filename) => {
     const stylePath = path.join(stylesRoot, filename);
     const name = path.basename(filename, '.yaml');
+    let rawStyleData = null;
     let styleData = null;
 
     try {
-      styleData = yaml.load(fs.readFileSync(stylePath, 'utf8'), { schema: CUSTOM_TAG_SCHEMA });
+      rawStyleData = yaml.load(fs.readFileSync(stylePath, 'utf8'), { schema: CUSTOM_TAG_SCHEMA });
+      styleData = resolveStyleData(rawStyleData);
     } catch {
+      rawStyleData = null;
       styleData = null;
     }
-    const sourceName = inferLegacySourceName(name, styleData);
+    const sourceName = inferLegacySourceName(name, rawStyleData);
 
     const legacySourcePath = path.join(path.dirname(__dirname), 'styles-legacy', `${sourceName}.csl`);
     const hasLegacySource = fs.existsSync(legacySourcePath);
@@ -684,6 +688,8 @@ async function runCiteprocSnapshotOracle(runtime, stylePath, styleName, styleFor
     citationsHash: hashFile(resolvedCitationsFixture),
     snapshotStatus: snapshotStatus.status,
     snapshotHash: snapshotStatus.ok ? hashFile(snapshotStatus.snapshotPath) : null,
+    citumBin: runtime.citumBin,
+    citumBinHash: hashFile(runtime.citumBin),
     allowLiveFallback: runtime.allowLiveFallback,
     caseSensitive: runtime.caseSensitive,
   };
@@ -777,6 +783,8 @@ async function runNativeOracle(runtime, styleName) {
       styleHash: hashFile(styleYamlPath),
       fixtureHash: hashFile(fixturePath),
       snapshotHash: fs.existsSync(snapshotPath) ? hashFile(snapshotPath) : null,
+      citumBin: runtime.citumBin,
+      citumBinHash: hashFile(runtime.citumBin),
     },
     async compute() {
       const result = await runNodeOracleScript(scriptPath, [
@@ -817,6 +825,7 @@ async function renderCitumJson(runtime, styleYamlPath, refsFixture, mode = 'both
     refsHash: hashFile(refsFixture),
     citationsHash: resolvedCitationsFixture ? hashFile(resolvedCitationsFixture) : null,
     citumBin: runtime.citumBin,
+    citumBinHash: hashFile(runtime.citumBin),
   };
 
   return runCachedJsonJob(runtime, {
@@ -979,6 +988,8 @@ async function runFamilyFixtureOracle(runtime, stylePath, styleName, fixtureSetN
       styleHash: hashFile(stylePath),
       refsHash: hashFile(refsFixture),
       citationsHash: hashFile(citationsFixture),
+      citumBin: runtime.citumBin,
+      citumBinHash: hashFile(runtime.citumBin),
       caseSensitive: runtime.caseSensitive,
     },
     async compute() {
@@ -1184,13 +1195,28 @@ function safePct(value) {
 function loadStyleYaml(styleName) {
   const stylePath = path.join(path.dirname(__dirname), 'styles', `${styleName}.yaml`);
   if (!fs.existsSync(stylePath)) {
-    return { stylePath, styleData: null, error: `Style YAML not found: ${stylePath}` };
+    return {
+      stylePath,
+      rawStyleData: null,
+      resolvedStyleData: null,
+      error: `Style YAML not found: ${stylePath}`,
+    };
   }
   try {
-    const styleData = yaml.load(fs.readFileSync(stylePath, 'utf8'), { schema: CUSTOM_TAG_SCHEMA });
-    return { stylePath, styleData, error: null };
+    const rawStyleData = yaml.load(fs.readFileSync(stylePath, 'utf8'), { schema: CUSTOM_TAG_SCHEMA });
+    return {
+      stylePath,
+      rawStyleData,
+      resolvedStyleData: resolveStyleData(rawStyleData),
+      error: null,
+    };
   } catch (error) {
-    return { stylePath, styleData: null, error: `YAML parse error: ${error.message}` };
+    return {
+      stylePath,
+      rawStyleData: null,
+      resolvedStyleData: null,
+      error: `YAML parse error: ${error.message}`,
+    };
   }
 }
 
@@ -1504,7 +1530,7 @@ function computePresetUsageScore(styleData, concisionScore) {
 
 function computeQualityMetrics(styleSpec, oracleResult) {
   const loaded = loadStyleYaml(styleSpec.name);
-  if (!loaded.styleData) {
+  if (!loaded.resolvedStyleData) {
     return {
       score: 0,
       error: loaded.error,
@@ -1517,10 +1543,12 @@ function computeQualityMetrics(styleSpec, oracleResult) {
     };
   }
 
+  const authoredStyleData = loaded.rawStyleData || loaded.resolvedStyleData;
+  const effectiveStyleData = loaded.resolvedStyleData;
   const typeCoverage = computeTypeCoverageScore(oracleResult.citationsByType || {});
-  let fallbackRobustness = computeFallbackRobustness(loaded.styleData);
-  const concision = computeConcisionScore(loaded.styleData, styleSpec.format);
-  const presetUsage = computePresetUsageScore(loaded.styleData, concision.score);
+  let fallbackRobustness = computeFallbackRobustness(effectiveStyleData);
+  const concision = computeConcisionScore(effectiveStyleData, styleSpec.format);
+  const presetUsage = computePresetUsageScore(authoredStyleData, concision.score);
   const weights = {
     typeCoverage: 0.35,
     fallbackRobustness: 0.25,

@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 use citum_engine::Processor;
 use citum_engine::io::load_bibliography;
 use citum_schema::Style;
-use citum_schema::citation::{Citation, CitationItem};
+use citum_schema::citation::{Citation, CitationItem, CitationLocator, LocatorType};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -35,10 +35,7 @@ fn single_item_citation_with_locator(id: &str, locator: &str) -> Citation {
     Citation {
         items: vec![CitationItem {
             id: id.to_string(),
-            locator: Some(citum_schema::citation::CitationLocator::single(
-                citum_schema::citation::LocatorType::Page,
-                locator,
-            )),
+            locator: Some(CitationLocator::single(LocatorType::Page, locator)),
             ..Default::default()
         }],
         ..Default::default()
@@ -222,5 +219,72 @@ fn test_humanities_note_fixture_preserves_archive_and_interview_fields() {
         letter.contains("to Paul de Man")
             && letter.contains("University of California, Irvine, Critical Theory Archive"),
         "personal communication citation should include recipient and archive"
+    );
+}
+
+#[test]
+fn test_taylor_and_francis_author_date_wrapper_preserves_prefixed_multi_cites() {
+    let root = project_root();
+    let style = load_style(&root.join("styles/taylor-and-francis-chicago-author-date.yaml"));
+    let bibliography = load_bibliography(&root.join("tests/fixtures/references-expanded.json"))
+        .expect("expanded fixture should parse");
+
+    let processor = Processor::new(style, bibliography);
+    let citation = Citation {
+        items: vec![
+            CitationItem {
+                id: "ITEM-1".to_string(),
+                locator: Some(CitationLocator::single(LocatorType::Page, "44")),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ITEM-3".to_string(),
+                prefix: Some("cf. ".to_string()),
+                locator: Some(CitationLocator::single(LocatorType::Page, "437")),
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+
+    let rendered = processor
+        .process_citation(&citation)
+        .expect("prefixed multi-cite should render");
+
+    assert!(
+        rendered.contains("cf. LeCun, Bengio, and Hinton 2015")
+            && !rendered.contains("cf. LeCun et al"),
+        "prefixed multi-cites should retain the full three-author form: {rendered}"
+    );
+}
+
+#[test]
+fn test_taylor_and_francis_author_date_wrapper_preserves_media_and_translation_details() {
+    let root = project_root();
+    let style = load_style(&root.join("styles/taylor-and-francis-chicago-author-date.yaml"));
+    let bibliography = load_bibliography(&root.join("tests/fixtures/references-expanded.json"))
+        .expect("expanded fixture should parse");
+
+    let processor = Processor::new(style, bibliography);
+    let rendered_bib = processor.render_bibliography();
+
+    assert!(
+        rendered_bib.contains("The Arrival of a Train at La Ciotat Station")
+            && rendered_bib.contains("Short film")
+            && rendered_bib.contains("Directed by Louis Lumière"),
+        "motion pictures should retain genre and director detail"
+    );
+    assert!(
+        rendered_bib.contains("The Future of Artificial Intelligence")
+            && rendered_bib.contains("Interview by Stephen Colbert")
+            && rendered_bib.contains("Video interview")
+            && rendered_bib.contains("https://example.com/interview"),
+        "interviews should retain interviewer, medium, and url detail"
+    );
+    assert!(
+        rendered_bib.contains("Metamorphosis")
+            && rendered_bib.contains("Translated by David Wyllie")
+            && rendered_bib.contains("Kurt Wolff Verlag"),
+        "translated books should retain translator detail"
     );
 }

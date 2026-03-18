@@ -1,35 +1,18 @@
+# yaml-language-server: $schema=./citum.schema.json
 info:
-  title: 'Taylor & Francis Journals Standard Reference Style Guide: Chicago author-date version 2.0'
-  description: 'Taylor & Francis Journals adaptation of Chicago-style source citations (with Bluebook for legal citations), author-date system, 17th edition: with expanded page ranges, no substitution of repeated authors with em dashes'
-  source:
-    csl-id: http://www.zotero.org/styles/taylor-and-francis-chicago-author-date
-    adapted-by: citum-migrate
-    license: http://creativecommons.org/licenses/by-sa/3.0/
-    original-authors:
-    - name: Andrew Dunning
-      uri: https://orcid.org/0000-0003-0464-5036
-    links:
-    - href: http://www.zotero.org/styles/taylor-and-francis-chicago-author-date
-      rel: self
-    - href: http://www.zotero.org/styles/chicago-author-date-17th-edition
-      rel: template
-    - href: https://files.taylorandfrancis.com/tf_ChicagoAD.pdf
-      rel: documentation
+  title: 'Taylor & Francis Journals Standard Reference Style Guide: Chicago'
+  id: taylor-and-francis-chicago-author-date
+  description: 'Taylor & Francis Journals adaptation of Chicago-style, author-date system, using style presets.'
+
+preset: chicago-author-date-18th
+
 options:
-  locators: note
-  processing: author-date
-  contributors:
-    and: text
-    display-as-sort: first
-    demote-non-dropping-particle: display-and-sort
-  dates: long
-  titles: humanities
   page-range-format: expanded
-  bibliography:
-    hanging-indent: true
-    entry-suffix: .
-    separator: ". "
-  punctuation-in-quote: true
+  contributors:
+    role:
+      omit:
+        - translator
+
 citation:
   options:
     contributors:
@@ -37,40 +20,61 @@ citation:
         min: 4
         use-first: 1
   template:
-    - items:
-        - contributor: author
-          form: short
-          shorten:
-            min: 4
-            use-first: 1
-            and-others: et-al
-            delimiter-precedes-last: contextual
-          and: text
-        - date: issued
-          form: year
-      delimiter: space
+    - contributor: author
+      form: short
+      shorten:
+        min: 4
+        use-first: 1
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      and: text
+    - date: issued
+      form: year
     - variable: locator
+      prefix: ", "
   wrap: parentheses
-  delimiter: ", "
+  delimiter: " "
   multi-cite-delimiter: "; "
+
 bibliography:
   type-templates:
-    personal-communication: []
-    patent:
+    interview:
       - contributor: author
         form: long
+        name-order: family-first
       - date: issued
         form: year
       - title: primary
+        wrap: quotes
+      - contributor: interviewer
+        form: long
+        name-order: given-first
+        prefix: "Interview by "
       - items:
-          - term: patent
-            suffix: " "
-          - number: number
           - date: issued
-            form: full
-            prefix: ", issued "
-        delimiter: none
-        prefix: ". "
+            form: month-day
+          - date: issued
+            form: year
+        delimiter: ", "
+      - variable: medium
+      - variable: url
+        suffix: "."
+    motion_picture:
+      - contributor: author
+        form: long
+        name-order: family-first
+      - date: issued
+        form: year
+      - title: primary
+      - variable: genre
+      - contributor: author
+        form: long
+        name-order: given-first
+        prefix: "Directed by "
+      - date: issued
+        form: year
+      - variable: medium
+        text-case: capitalize-first
   template:
     - contributor: author
       form: long
@@ -83,6 +87,15 @@ bibliography:
         chapter:
           wrap: quotes
           suffix: "."
+    - contributor: translator
+      form: long
+      name-order: given-first
+      prefix: "Translated by "
+      overrides:
+        book:
+          suppress: false
+        default:
+          suppress: true
     - title: parent-monograph
       prefix: " In "
       overrides:

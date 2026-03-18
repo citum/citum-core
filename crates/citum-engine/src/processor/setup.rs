@@ -52,6 +52,7 @@ impl Processor {
         locale: Locale,
         compound_sets: IndexMap<String, Vec<String>>,
     ) -> Self {
+        let style = style.into_resolved();
         let (compound_set_by_ref, compound_member_index) =
             Self::build_compound_set_indexes(&compound_sets);
         let mut processor = Processor {
@@ -316,6 +317,7 @@ impl Processor {
         bibliography: Bibliography,
         locales_dir: &std::path::Path,
     ) -> Self {
+        let style = style.into_resolved();
         let locale = if let Some(ref locale_id) = style.info.default_locale {
             Locale::load(locale_id, locales_dir)
         } else {

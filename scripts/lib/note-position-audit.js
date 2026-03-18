@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
 const { execFileSync } = require('child_process');
+const { resolveStyleData } = require('./verification-policy');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
 const STYLES_DIR = path.join(PROJECT_ROOT, 'styles');
@@ -131,7 +132,7 @@ function discoverNoteStyles(stylesDir = STYLES_DIR) {
   const styles = [];
   for (const entry of fs.readdirSync(stylesDir).filter((name) => name.endsWith('.yaml')).sort()) {
     const absolutePath = path.join(stylesDir, entry);
-    const style = readYaml(absolutePath);
+    const style = resolveStyleData(readYaml(absolutePath));
     if (style?.options?.processing === 'note') {
       styles.push({
         name: path.basename(entry, '.yaml'),
