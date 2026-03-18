@@ -113,7 +113,7 @@ impl Default for MultilingualString {
 }
 
 /// A monograph, such as a book or a report, is a monolithic work published or produced as a complete entity.
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
@@ -160,11 +160,12 @@ pub struct Monograph {
     pub original_title: Option<Title>,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
 pub enum MonographType {
+    #[default]
     Book,
     Manual,
     Report,

@@ -13,6 +13,15 @@ use crate::Style;
 /// Raw YAML bytes for an embedded style by name.
 fn get_style_bytes(name: &str) -> Option<&'static [u8]> {
     match name {
+        "preset-bases/apa-7th" => Some(include_bytes!(
+            "../../../../styles/preset-bases/apa-7th.yaml"
+        )),
+        "preset-bases/chicago-author-date-18th" => Some(include_bytes!(
+            "../../../../styles/preset-bases/chicago-author-date-18th.yaml"
+        )),
+        "preset-bases/chicago-notes-18th" => Some(include_bytes!(
+            "../../../../styles/preset-bases/chicago-notes-18th.yaml"
+        )),
         "apa-7th" => Some(include_bytes!("../../../../styles/apa-7th.yaml")),
         "elsevier-harvard" => Some(include_bytes!("../../../../styles/elsevier-harvard.yaml")),
         "elsevier-with-titles" => Some(include_bytes!(
@@ -62,6 +71,17 @@ pub const EMBEDDED_STYLE_ALIASES: &[(&str, &str)] = &[
 
 /// Resolve a style name or alias to the full embedded style name.
 pub fn resolve_embedded_style_name(name: &str) -> Option<&'static str> {
+    match name {
+        "preset-bases/apa-7th" => return Some("preset-bases/apa-7th"),
+        "preset-bases/chicago-author-date-18th" => {
+            return Some("preset-bases/chicago-author-date-18th");
+        }
+        "preset-bases/chicago-notes-18th" => {
+            return Some("preset-bases/chicago-notes-18th");
+        }
+        _ => {}
+    }
+
     if let Some(n) = EMBEDDED_STYLE_NAMES.iter().find(|&&n| n == name) {
         return Some(*n);
     }

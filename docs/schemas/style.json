@@ -56,6 +56,17 @@
         }
       ]
     },
+    "preset": {
+      "description": "Style-level preset reference with optional variant delta overlay.\n\nWhen present, the base [`StylePreset`] is resolved and the variant delta merged before any further processing. Explicit `options`, `citation`, and `bibliography` keys at the same document level take precedence over the resolved preset.",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/StylePresetSpec"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "templates": {
       "description": "Named reusable templates.",
       "type": [
@@ -4070,6 +4081,73 @@
         }
       }
     },
+    "StylePreset": {
+      "description": "A named, compiled-in style preset (Level 2 of Citum's preset hierarchy).",
+      "oneOf": [
+        {
+          "description": "Chicago Manual of Style 18th edition — notes without bibliography.",
+          "type": "string",
+          "enum": [
+            "chicago-notes-18th"
+          ]
+        },
+        {
+          "description": "Chicago Manual of Style 18th edition — author-date system.",
+          "type": "string",
+          "enum": [
+            "chicago-author-date-18th"
+          ]
+        },
+        {
+          "description": "APA 7th edition — author-date system.",
+          "type": "string",
+          "enum": [
+            "apa-7th"
+          ]
+        }
+      ]
+    },
+    "StylePresetSpec": {
+      "description": "Top-level style preset reference with an optional variant delta overlay.",
+      "anyOf": [
+        {
+          "description": "A simple named style preset without a variant delta.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/StylePreset"
+            }
+          ]
+        },
+        {
+          "description": "A named style preset with an optional behavioral variant delta.",
+          "type": "object",
+          "required": [
+            "preset"
+          ],
+          "properties": {
+            "preset": {
+              "description": "The named style preset to use as the base.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/StylePreset"
+                }
+              ]
+            },
+            "variant": {
+              "description": "Optional behavioral variant delta merged over the base preset.",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/StyleVariantDelta"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
     "StyleSource": {
       "description": "Provenance block for styles adapted from a CSL 1.0 source.",
       "type": "object",
@@ -4108,6 +4186,53 @@
           "items": {
             "$ref": "#/definitions/StylePerson"
           }
+        }
+      }
+    },
+    "StyleVariantDelta": {
+      "description": "A partial overlay applied over a named preset-backed base style.",
+      "type": "object",
+      "properties": {
+        "bibliography": {
+          "description": "Overrides the base preset's bibliography block.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/BibliographySpec"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "citation": {
+          "description": "Overrides the base preset's citation block.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CitationSpec"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "custom": {
+          "description": "Forward-compatible escape hatch for future variant fields not yet in the schema.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "options": {
+          "description": "Overrides the base preset's global options block.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Config"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     },
