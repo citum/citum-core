@@ -444,23 +444,33 @@ grammarOptions:
   serialComma: true
 ```
 
-**Example — Turabian German:**
+**Example — Chicago German:**
 
-A style like "Turabian (German)" is represented as:
+A style like "Chicago Notes (German)" is represented as:
 - Base `LocalePreset`: `de-DE`
-- Override `de-DE-turabian`: overrides `bib-default` date format and a few
-  label terms specific to Turabian conventions.
+- Override `de-DE-chicago`: encodes German-specific deviations like
+  `delimiter-precedes-last: never` and specific verb forms.
 
 ```yaml
-# locales/overrides/de-DE-turabian.yaml
-id: de-DE-turabian
-baseLocale: de-DE
+# locales/overrides/de-DE-chicago.yaml
+id: de-DE-chicago
+base-locale: de-DE
+
+grammar-options:
+  delimiter-precedes-last: never
+  serial-comma: false
 
 messages:
   role.editor.verb: "hg. von"
+```
 
-dateFormats:
-  bib-default: "d. MMMM yyyy"
+A style document references this override by its ID:
+
+```yaml
+# styles/chicago-author-date.yaml
+options:
+  default-locale: de-DE
+  locale-override: de-DE-chicago
 ```
 
 ---

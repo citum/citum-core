@@ -3,7 +3,7 @@
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 /// Compatibility facade merging data input types with style-specific logic.
 #[allow(missing_docs, reason = "internal derives")]
@@ -31,6 +31,8 @@ pub mod locale;
 pub mod options;
 /// Configuration presets for common styles.
 pub mod presets;
+/// Style-level preset architecture (Level 2: named compiled-in Style structs).
+pub mod style_preset;
 /// Citation and bibliography template components.
 #[allow(missing_docs, reason = "internal derives")]
 pub mod template;
@@ -63,6 +65,7 @@ pub use locale::Locale;
 pub use options::Config;
 pub use options::TextCase;
 pub use presets::{ContributorPreset, DatePreset, SortPreset, SubstitutePreset, TitlePreset};
+pub use style_preset::{StylePreset, StylePresetSpec, StyleVariantDelta};
 pub use template::{
     Rendering, TemplateComponent, TemplateContributor, TemplateDate, TemplateList, TemplateNumber,
     TemplateTerm, TemplateTitle, TemplateVariable, WrapPunctuation,
@@ -102,6 +105,67 @@ pub struct Style {
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
+    /// Style-level preset reference with optional variant delta overlay.
+    ///
+    /// When present, the base [`StylePreset`] is resolved and the variant
+    /// delta merged before any further processing. Explicit `options`,
+    /// `citation`, and `bibliography` keys at the same document level take
+    /// precedence over the resolved preset.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub preset: Option<style_preset::StylePresetSpec>,
+}
+
+impl Style {
+    /// Resolve this style into its final effective form by applying presets.
+    ///
+    /// If the `preset` field is present, the base [`StylePreset`] is loaded,
+    /// the optional `variant` delta is applied over it, and finally any
+    /// explicit `options`, `citation`, or `bibliography` keys in the current
+    /// style document are merged on top (taking ultimate precedence).
+    ///
+    /// Returns the original style unchanged if no preset is specified.
+    pub fn into_resolved(self) -> Self {
+        self.into_resolved_recursive(&mut HashSet::new())
+    }
+
+    /// Internal recursive resolver with loop protection.
+    pub fn into_resolved_recursive(self, visited: &mut HashSet<StylePreset>) -> Self {
+        let Some(spec) = self.preset.clone() else {
+            return self;
+        };
+
+        if visited.contains(spec.preset()) {
+            // Loop detected: return the style as-is to avoid infinite recursion.
+            return self;
+        }
+        visited.insert(spec.preset().clone());
+
+        // 1. Resolve base preset + variant delta (recursively).
+        let mut effective = spec.resolve_with_visited(visited);
+
+        // 2. Apply style-level overrides from the local file (self).
+        // These take precedence over both the base preset and the variant delta.
+        if let Some(options) = self.options {
+            effective.options = Some(options);
+        }
+        if let Some(citation) = self.citation {
+            effective.citation = Some(citation);
+        }
+        if let Some(bibliography) = self.bibliography {
+            effective.bibliography = Some(bibliography);
+        }
+
+        // 3. Retain the style-level metadata (info, version, etc.) from the
+        // local file, not the preset.
+        effective.info = self.info;
+        effective.version = self.version;
+        effective.templates = self.templates;
+        effective.custom = self.custom;
+        // Keep the original preset spec for metadata round-tripping.
+        effective.preset = self.preset;
+
+        effective
+    }
 }
 
 fn default_version() -> String {

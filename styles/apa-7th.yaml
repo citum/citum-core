@@ -1,4 +1,5 @@
-# yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/style.json
+# yaml-language-server: $schema=./citum.schema.json
+preset: apa-7th
 info:
   title: American Psychological Association 7th edition
   fields:

@@ -13,7 +13,8 @@ use citum_engine::values::{
     effective_field_language, effective_item_language, resolve_multilingual_string,
 };
 use citum_schema::{
-    BibliographySpec, CitationSpec, LocalizedTemplateSpec, Style, StyleInfo,
+    BibliographySpec, CitationSpec, LocalizedTemplateSpec, Style, StyleInfo, StylePreset,
+    StylePresetSpec,
     options::{Config, MultilingualConfig, MultilingualMode, Processing, TitleRendering},
     reference::contributor::{Contributor, MultilingualName, StructuredName},
     reference::types::{
@@ -1097,4 +1098,66 @@ mod config {
         );
         super::given_multilingual_yaml_options_when_deserialized_then_the_config_keeps_script_preferences();
     }
+}
+
+#[test]
+fn given_chicago_preset_when_german_override_then_editor_verb_is_localized() {
+    let mut style = Style {
+        info: StyleInfo {
+            title: Some("Chicago German Test".to_string()),
+            id: Some("chicago-de".to_string()),
+            default_locale: Some("de-DE".to_string()),
+            ..Default::default()
+        },
+        preset: Some(StylePresetSpec {
+            preset: StylePreset::ChicagoNotes18th,
+            variant: None,
+        }),
+        options: Some(Config {
+            locale_override: Some("de-DE-chicago".to_string()),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    // Resolve it so the engine sees the Chicago templates
+    let style = style.into_resolved();
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "ref1".to_string(),
+        citum_schema::reference::InputReference::Monograph(Box::new(
+            citum_schema::reference::Monograph {
+                id: Some("ref1".to_string()),
+                r#type: citum_schema::reference::MonographType::Book,
+                title: Some(Title::Single("Title".to_string())),
+                author: None,
+                editor: Some(Contributor::StructuredName(StructuredName {
+                    given: "Editor".into(),
+                    family: "Name".into(),
+                    ..Default::default()
+                })),
+                issued: EdtfString("2024".to_string()),
+                ..Default::default()
+            },
+        )),
+    );
+
+    // Explicitly load the de-DE-chicago locale override.
+    // In a real application, the loader would merge this with the base de-DE locale.
+    // For this test, the override contains the role.editor.verb we want to verify.
+    let de_de_chicago_bytes = citum_schema::embedded::get_locale_override_bytes("de-DE-chicago")
+        .expect("de-DE-chicago bytes not found");
+    let locale: citum_schema::locale::Locale = serde_yaml::from_slice(de_de_chicago_bytes)
+        .expect("failed to parse de-DE-chicago");
+
+    let processor = Processor::with_locale(style, bib, locale);
+    let output = processor.render_bibliography();
+
+    // In de-DE-chicago, role.editor.verb is "hg. von"
+    assert!(
+        output.contains("hg. von Editor Name"),
+        "Output should contain localized editor verb: {}",
+        output
+    );
 }

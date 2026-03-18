@@ -1684,7 +1684,7 @@ fn create_processor(
 fn load_any_style(style_input: &str, no_semantics: bool) -> Result<Style, Box<dyn Error>> {
     let path = Path::new(style_input);
     if path.exists() && path.is_file() {
-        return load_style(path, no_semantics);
+        return load_style(path, no_semantics).map(|s| s.into_resolved());
     }
 
     // Try user store first
@@ -1694,12 +1694,12 @@ fn load_any_style(style_input: &str, no_semantics: bool) -> Result<Style, Box<dy
         let config = StoreConfig::load().unwrap_or_default();
         let resolver = StoreResolver::new(data_dir, config.store_format());
         if let Ok(style) = resolver.resolve_style(style_input) {
-            return Ok(style);
+            return Ok(style.into_resolved());
         }
     }
 
     if let Some(res) = citum_schema::embedded::get_embedded_style(style_input) {
-        return res.map_err(std::convert::Into::into);
+        return res.map(|s| s.into_resolved()).map_err(std::convert::Into::into);
     }
 
     // Fuzzy matching suggestion

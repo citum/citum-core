@@ -313,11 +313,50 @@ citation:
   wrap: brackets
 ```
 
+## Style-Level Presets
+ 
+To avoid duplicating complete styles for the most common formatting families, Citum provides **Style-Level Presets** (Level 2). These are named, compiled-in `Style` structs that you can reference at the top of your style YAML.
+ 
+### Base Presets
+ 
+Use the `preset` key to load a base style definition:
+ 
+```yaml
+preset: chicago-notes-18th
+```
+ 
+This produces a complete Chicago Notes 18th edition style without any other fields in your file.
+ 
+### Preset Variants
+ 
+For styles that differ from a parent by only a few rules (e.g., Turabian), use a `variant` delta overlay. This replaces fields in the base preset:
+ 
+```yaml
+preset: chicago-notes-18th
+variant:
+  citation:
+    ibid: ~    # Disables ibid support (Turabian 9th ed.)
+```
+ 
+### Presets + Locale Overrides
+ 
+Combine a style preset with a locale override for language-specific variants (e.g., Chicago for German users):
+ 
+```yaml
+preset: chicago-author-date-18th
+options:
+  locale-override: de-DE-chicago
+```
+ 
+Refer to [STYLE_PRESET_ARCHITECTURE.md](../specs/STYLE_PRESET_ARCHITECTURE.md) for the full list of available presets and technical details.
+ 
 ## Repeated Note Citation Recipes
-
+ 
 Use citation position overrides when note styles need distinct rendering for:
-
+ 
 - first cite (`citation.template`)
+- subsequent cites (`citation.subsequent`)
+- ibid cites (`citation.ibid`)
 - non-immediate repeat (`citation.subsequent.template`)
 - immediate repeat (`citation.ibid.template`)
 

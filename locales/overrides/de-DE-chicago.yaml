@@ -1,0 +1,33 @@
+# Chicago-Style German Locale Override (`de-DE-chicago`)
+#
+# Encodes locale-specific deviations used in Chicago-style German citations.
+# Apply this override to any Chicago style by setting:
+#
+#   options:
+#     locale-override: de-DE-chicago
+#
+# This replaces the CSL pattern of maintaining a separate language-variant
+# style file (e.g. chicago-author-date-de.csl). The structural template
+# remains identical to the English Chicago style; only locale-level
+# behaviour changes here.
+#
+# Source reference: styles-legacy/chicago-author-date-de.csl <summary> element.
+
+locale-schema-version: "2"
+locale: de-DE-chicago
+base-locale: de-DE
+
+grammar-options:
+  # CSL de variant: delimiter-precedes-last="never"
+  delimiter-precedes-last: never
+  # Chicago German uses no serial (Oxford) comma
+  serial-comma: false
+
+messages:
+  # Chicago-German editor verb form — "herausgegeben von" abbreviated
+  role.editor.verb: "hg. von"
+  # Chicago-German translator verb form
+  role.translator.verb: "übers. von"
+
+# No legacy-term-aliases needed — de-DE base already provides all standard terms.
+legacy-term-aliases: {}
