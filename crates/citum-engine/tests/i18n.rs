@@ -1102,17 +1102,14 @@ mod config {
 
 #[test]
 fn given_chicago_preset_when_german_override_then_editor_verb_is_localized() {
-    let mut style = Style {
+    let style = Style {
         info: StyleInfo {
             title: Some("Chicago German Test".to_string()),
             id: Some("chicago-de".to_string()),
             default_locale: Some("de-DE".to_string()),
             ..Default::default()
         },
-        preset: Some(StylePresetSpec {
-            preset: StylePreset::ChicagoNotes18th,
-            variant: None,
-        }),
+        preset: Some(StylePresetSpec::Key(StylePreset::ChicagoNotes18th)),
         options: Some(Config {
             locale_override: Some("de-DE-chicago".to_string()),
             ..Default::default()
@@ -1148,8 +1145,8 @@ fn given_chicago_preset_when_german_override_then_editor_verb_is_localized() {
     // For this test, the override contains the role.editor.verb we want to verify.
     let de_de_chicago_bytes = citum_schema::embedded::get_locale_override_bytes("de-DE-chicago")
         .expect("de-DE-chicago bytes not found");
-    let locale: citum_schema::locale::Locale = serde_yaml::from_slice(de_de_chicago_bytes)
-        .expect("failed to parse de-DE-chicago");
+    let locale: citum_schema::locale::Locale =
+        serde_yaml::from_slice(de_de_chicago_bytes).expect("failed to parse de-DE-chicago");
 
     let processor = Processor::with_locale(style, bib, locale);
     let output = processor.render_bibliography();

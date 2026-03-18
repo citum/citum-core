@@ -6,6 +6,7 @@ const {
   loadVerificationPolicy,
   resolveFixtureSufficiency,
   resolveVerificationPolicy,
+  resolveStyleData,
 } = require('./verification-policy');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
@@ -102,11 +103,12 @@ function resolveYamlVerificationPlan(options) {
     citationsFixture = null,
     fixtureFamily = null,
     styleName: explicitStyleName = null,
-    styleData = null,
+    styleData: rawStyleData = null,
     styleFormat = null,
     hasBibliography = null,
   } = options;
 
+  const styleData = resolveStyleData(rawStyleData);
   const styleName = explicitStyleName || path.basename(yamlPath, '.yaml');
   const verificationPolicy = loadVerificationPolicy();
   const fixtureSufficiency = loadFixtureSufficiency();
@@ -167,4 +169,5 @@ module.exports = {
   isProjectStylePath,
   resolveDefaultCitationFixture,
   resolveYamlVerificationPlan,
+  resolveStyleData,
 };

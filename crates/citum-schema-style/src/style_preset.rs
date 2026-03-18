@@ -37,9 +37,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 
-use crate::{BibliographySpec, CitationSpec, Style};
 use crate::embedded::get_embedded_style;
 use crate::options::Config;
+use crate::{BibliographySpec, CitationSpec, Style};
 use std::collections::HashSet;
 
 // ---------------------------------------------------------------------------
@@ -100,8 +100,10 @@ impl StylePreset {
 
     /// Return the base [`Style`] for this preset.
     ///
+    /// # Panics
+    ///
     /// Panics if the embedded YAML is missing or malformed — this is a
-    /// compile-time invariant enforced by CI, not a runtime condition.
+    /// compile-time invariant enforced by tests, not a runtime condition.
     pub fn base(&self) -> Style {
         let key = self.embedded_key();
         get_embedded_style(key)
@@ -284,24 +286,26 @@ pub enum StylePresetSpec {
 
         /// Optional behavioral variant delta merged over the base preset.
         #[serde(skip_serializing_if = "Option::is_none")]
-        variant: Option<StyleVariantDelta>,
+        variant: Option<Box<StyleVariantDelta>>,
     },
 }
 
 impl StylePresetSpec {
     /// Return the underlying [`StylePreset`].
+    #[must_use]
     pub fn preset(&self) -> &StylePreset {
         match self {
-            StylePresetSpec::Key(p) => p,
-            StylePresetSpec::Full { preset, .. } => preset,
+            Self::Key(p) => p,
+            Self::Full { preset, .. } => preset,
         }
     }
 
-    /// Return the optional [`StyleVariantDelta`].
+    /// Returns the variant delta, if any.
+    #[must_use]
     pub fn variant(&self) -> Option<&StyleVariantDelta> {
         match self {
-            StylePresetSpec::Key(_) => None,
-            StylePresetSpec::Full { variant, .. } => variant.as_ref(),
+            Self::Key(_) => None,
+            Self::Full { variant, .. } => variant.as_deref(),
         }
     }
 
@@ -389,7 +393,7 @@ custom:
         // Given a StylePresetSpec for Turabian using the new Full enum variant.
         let spec = StylePresetSpec::Full {
             preset: StylePreset::ChicagoNotes18th,
-            variant: Some(StyleVariantDelta::turabian()),
+            variant: Some(Box::new(StyleVariantDelta::turabian())),
         };
         // When resolve() is called, the result has ibid disabled.
         let style = spec.resolve();
@@ -409,8 +413,7 @@ variant:
   citation:
     ibid: ~
 "#;
-        let spec: StylePresetSpec =
-            serde_yaml::from_str(yaml).expect("deserialization failed");
+        let spec: StylePresetSpec = serde_yaml::from_str(yaml).expect("deserialization failed");
         // When deserialized: preset() key parses correctly.
         assert_eq!(*spec.preset(), StylePreset::ChicagoNotes18th);
         assert!(spec.variant().is_some());

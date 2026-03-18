@@ -124,11 +124,13 @@ impl Style {
     /// style document are merged on top (taking ultimate precedence).
     ///
     /// Returns the original style unchanged if no preset is specified.
+    #[must_use]
     pub fn into_resolved(self) -> Self {
         self.into_resolved_recursive(&mut HashSet::new())
     }
 
     /// Internal recursive resolver with loop protection.
+    #[must_use]
     pub fn into_resolved_recursive(self, visited: &mut HashSet<StylePreset>) -> Self {
         let Some(spec) = self.preset.clone() else {
             return self;

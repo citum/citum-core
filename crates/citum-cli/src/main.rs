@@ -1699,7 +1699,9 @@ fn load_any_style(style_input: &str, no_semantics: bool) -> Result<Style, Box<dy
     }
 
     if let Some(res) = citum_schema::embedded::get_embedded_style(style_input) {
-        return res.map(|s| s.into_resolved()).map_err(std::convert::Into::into);
+        return res
+            .map(|s| s.into_resolved())
+            .map_err(std::convert::Into::into);
     }
 
     // Fuzzy matching suggestion

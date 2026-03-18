@@ -23,6 +23,7 @@ const {
   resolveScopeAuthority,
   resolveFixtureSufficiency,
   resolveVerificationPolicy,
+  resolveStyleData,
 } = require('./lib/verification-policy');
 const {
   DEFAULT_CITATIONS_FIXTURE,
@@ -441,7 +442,8 @@ function discoverCoreStyles(provenanceConfig = loadReportProvenance()) {
     let styleData = null;
 
     try {
-      styleData = yaml.load(fs.readFileSync(stylePath, 'utf8'), { schema: CUSTOM_TAG_SCHEMA });
+      const rawData = yaml.load(fs.readFileSync(stylePath, 'utf8'), { schema: CUSTOM_TAG_SCHEMA });
+      styleData = resolveStyleData(rawData);
     } catch {
       styleData = null;
     }

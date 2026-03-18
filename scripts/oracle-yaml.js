@@ -28,6 +28,7 @@ const { toCiteprocItem } = require('./lib/citeproc-locators');
 const {
   PROJECT_ROOT,
   resolveYamlVerificationPlan,
+  resolveStyleData,
 } = require('./lib/style-verification');
 
 const CUSTOM_TAG_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
@@ -87,7 +88,8 @@ function parseArgs(argv = process.argv.slice(2)) {
 }
 
 function loadStyleData(yamlPath) {
-  return yaml.load(fs.readFileSync(yamlPath, 'utf8'), { schema: CUSTOM_TAG_SCHEMA }) || {};
+  const rawData = yaml.load(fs.readFileSync(yamlPath, 'utf8'), { schema: CUSTOM_TAG_SCHEMA }) || {};
+  return resolveStyleData(rawData);
 }
 
 function inferStyleFormat(styleData) {
