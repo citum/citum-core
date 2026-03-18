@@ -1,6 +1,63 @@
 # yaml-language-server: $schema=./citum.schema.json
 info:
-  title: "Chicago Notes 18th"
+  title: "Chicago Notes 18th (citation only)"
   id: "chicago-notes-18th"
-
-preset: chicago-notes-18th
+options:
+  locale-override: en-US-chicago
+  processing: note
+  contributors:
+    shorten:
+      min: 7
+      use-first: 3
+      and-others: et-al
+      delimiter-precedes-last: contextual
+    demote-non-dropping-particle: display-and-sort
+  dates: long
+  titles: humanities
+  page-range-format: chicago16
+  punctuation-in-quote: true
+citation:
+  options:
+    contributors:
+      shorten:
+        min: 3
+        use-first: 1
+        and-others: et-al
+        delimiter-precedes-last: contextual
+  ibid:
+    note-start-text-case: capitalize-first
+    suffix: ""
+    delimiter: ", "
+    template:
+      - term: ibid
+      - variable: locator
+        suffix: .
+  template:
+    - contributor: author
+      form: short
+      name-order: family-first
+      shorten:
+        min: 3
+        use-first: 1
+    - contributor: interviewer
+      form: verb
+      name-order: given-first
+      prefix: ", "
+    - contributor: recipient
+      form: verb
+      name-order: given-first
+      prefix: ", "
+    - title: primary
+      prefix: ", "
+    - title: parent-monograph
+      emph: true
+      prefix: ", "
+    - variable: locator
+      prefix: ", "
+    - variable: archive
+      prefix: ", "
+    - variable: archive-location
+      prefix: ", "
+  suffix: .
+  delimiter: ". "
+  multi-cite-delimiter: "; "
