@@ -30,7 +30,9 @@ info:
       rel: documentation
   short-name: "Chicago Shortened Notes"
   edition: "18th edition"
+  default-locale: en-US
 options:
+  locale-override: en-US-chicago
   processing: note
   contributors:
     shorten:

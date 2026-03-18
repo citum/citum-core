@@ -924,11 +924,11 @@ impl Renderer<'_> {
             return;
         }
 
-        if let Some(long) = options.locale.general_term(
+        if let Some(long) = options.locale.resolved_general_term(
             &citum_schema::locale::GeneralTerm::NoDate,
             citum_schema::locale::TermForm::Long,
         ) {
-            values.value = long.to_string();
+            values.value = long;
         }
     }
 

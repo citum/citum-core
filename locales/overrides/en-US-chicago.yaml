@@ -1,0 +1,12 @@
+# Chicago-style English override: curly quotes inside punctuation
+messages: {}
+grammar-options:
+  punctuation-in-quote: true
+  open-quote: "\u201C"
+  close-quote: "\u201D"
+  open-inner-quote: "\u2018"
+  close-inner-quote: "\u2019"
+  nbsp-before-colon: false
+  serial-comma: true
+  page-range-delimiter: "\u2013"
+legacy-term-aliases: {}

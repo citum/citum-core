@@ -343,6 +343,148 @@ impl MonthNames {
     }
 }
 
+/// Number formatting options for a locale.
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub struct NumberFormats {
+    /// Decimal separator (e.g., "." for en-US, "," for de-DE).
+    #[serde(default = "default_decimal_separator")]
+    pub decimal_separator: String,
+    /// Thousands separator (e.g., "," for en-US, "." for de-DE).
+    #[serde(default = "default_thousands_separator")]
+    pub thousands_separator: String,
+    /// Minimum digits to display.
+    #[serde(default = "default_minimum_digits")]
+    pub minimum_digits: u8,
+}
+
+fn default_decimal_separator() -> String {
+    ".".into()
+}
+
+fn default_thousands_separator() -> String {
+    ",".into()
+}
+
+fn default_minimum_digits() -> u8 {
+    1
+}
+
+/// Grammar options that vary by language or regional convention.
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub struct GrammarOptions {
+    /// Whether to place periods/commas inside closing quotation marks (American style).
+    #[serde(default)]
+    pub punctuation_in_quote: bool,
+    /// Whether to use a non-breaking space before colon/question mark (French style).
+    #[serde(default)]
+    pub nbsp_before_colon: bool,
+    /// Opening outer quotation mark character.
+    #[serde(default = "default_open_quote")]
+    pub open_quote: String,
+    /// Closing outer quotation mark character.
+    #[serde(default = "default_close_quote")]
+    pub close_quote: String,
+    /// Opening inner (nested) quotation mark character.
+    #[serde(default = "default_open_inner_quote")]
+    pub open_inner_quote: String,
+    /// Closing inner (nested) quotation mark character.
+    #[serde(default = "default_close_inner_quote")]
+    pub close_inner_quote: String,
+    /// Whether to use a serial (Oxford) comma before the final list item.
+    #[serde(default)]
+    pub serial_comma: bool,
+    /// Delimiter between page range endpoints.
+    #[serde(default = "default_page_range_delimiter")]
+    pub page_range_delimiter: String,
+}
+
+impl Default for GrammarOptions {
+    fn default() -> Self {
+        Self {
+            punctuation_in_quote: false,
+            nbsp_before_colon: false,
+            open_quote: default_open_quote(),
+            close_quote: default_close_quote(),
+            open_inner_quote: default_open_inner_quote(),
+            close_inner_quote: default_close_inner_quote(),
+            serial_comma: false,
+            page_range_delimiter: default_page_range_delimiter(),
+        }
+    }
+}
+
+fn default_open_quote() -> String {
+    "\u{201C}".into()
+}
+
+fn default_close_quote() -> String {
+    "\u{201D}".into()
+}
+
+fn default_open_inner_quote() -> String {
+    "\u{2018}".into()
+}
+
+fn default_close_inner_quote() -> String {
+    "\u{2019}".into()
+}
+
+fn default_page_range_delimiter() -> String {
+    "\u{2013}".into()
+}
+
+/// Message syntax variant active in a locale file.
+///
+/// Controls which `MessageEvaluator` implementation the engine selects at
+/// locale-load time.
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum MessageSyntax {
+    /// Plain text only; parameterized messages are not evaluated.
+    #[default]
+    Static,
+    /// ICU Message Format 1 evaluation (requires `IcuMf1MessageEvaluator`).
+    Mf1,
+    /// ICU Message Format 2 evaluation (reserved for future use).
+    Mf2,
+}
+
+/// Runtime evaluation options for a locale.
+///
+/// Declares which message syntax the `messages` map uses and controls
+/// evaluator selection. May grow with additional fields (custom function
+/// declarations, evaluator hints) without breaking existing locale files.
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub struct EvaluationConfig {
+    /// Message syntax used in this locale's `messages` map.
+    #[serde(default)]
+    pub message_syntax: MessageSyntax,
+}
+
+/// Partial patch applied on top of a base [`Locale`] for style-specific overrides.
+///
+/// A `LocaleOverride` allows a style to customize specific messages, grammar options,
+/// and legacy term aliases without duplicating the entire base locale. All fields are
+/// merged key-by-key into the target locale.
+#[derive(Debug, Clone, Default, serde::Deserialize, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", default)]
+pub struct LocaleOverride {
+    /// Message IDs to replace in the base locale (key-by-key insertion/replacement).
+    pub messages: std::collections::HashMap<String, String>,
+    /// If present, replaces the entire grammar-options block.
+    pub grammar_options: Option<GrammarOptions>,
+    /// Additional or replacement legacy term aliases (key-by-key insertion/replacement).
+    pub legacy_term_aliases: std::collections::HashMap<String, String>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

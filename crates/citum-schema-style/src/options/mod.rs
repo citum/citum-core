@@ -58,6 +58,13 @@ pub struct Config {
     /// Processing mode (author-date, numeric, etc.).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub processing: Option<Processing>,
+    /// Style-level locale override ID loaded from `locales/overrides/<id>.*`.
+    ///
+    /// This patches the locale selected by `StyleInfo.default_locale` without
+    /// duplicating the full base locale. Runtime loading is limited to the
+    /// style-global config; nested citation or bibliography configs are ignored.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub locale_override: Option<String>,
     /// Localization settings.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub localize: Option<Localize>,
@@ -270,6 +277,7 @@ impl Config {
             other,
             substitute,
             processing,
+            locale_override,
             localize,
             multilingual,
             dates,
@@ -279,6 +287,7 @@ impl Config {
             bibliography,
             links,
             volume_pages_delimiter,
+            locale_override,
             strip_periods,
             notes,
             integral_names,
@@ -490,6 +499,7 @@ substitute:
         // Base config with global options
         let base_yaml = r#"
 processing: author-date
+locale-override: en-US-base
 contributors:
   display-as-sort: first
   and: symbol
@@ -500,6 +510,7 @@ contributors:
         let override_yaml = r#"
 contributors:
   and: text
+locale-override: en-US-chicago
 "#;
         let override_config: Config = serde_yaml::from_str(override_yaml).unwrap();
 
@@ -508,12 +519,19 @@ contributors:
 
         // Processing should remain from base (not overridden)
         assert_eq!(base.processing, Some(Processing::AuthorDate));
+        assert_eq!(base.locale_override.as_deref(), Some("en-US-chicago"));
 
         // Contributors should be merged with override values taking precedence
         assert_eq!(
             base.contributors.as_ref().unwrap().and,
             Some(AndOptions::Text)
         );
+    }
+
+    #[test]
+    fn test_config_deserializes_locale_override() {
+        let config: Config = serde_yaml::from_str("locale-override: en-US-chicago").unwrap();
+        assert_eq!(config.locale_override.as_deref(), Some("en-US-chicago"));
     }
 
     #[test]

@@ -878,6 +878,13 @@
             }
           ]
         },
+        "locale-override": {
+          "description": "Style-level locale override ID loaded from `locales/overrides/<id>.*`.\n\nThis patches the locale selected by `StyleInfo.default_locale` without duplicating the full base locale. Runtime loading is limited to the style-global config; nested citation or bibliography configs are ignored.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "localize": {
           "description": "Localization settings.",
           "anyOf": [

@@ -397,10 +397,10 @@ impl ComponentValues for TemplateDate {
             if matches!(self.date, TemplateDateVar::Issued)
                 && let Some(nd) = options
                     .locale
-                    .general_term(&GeneralTerm::NoDate, TermForm::Short)
+                    .resolved_general_term(&GeneralTerm::NoDate, TermForm::Short)
             {
                 return Some(ProcValues {
-                    value: nd.to_string(),
+                    value: nd,
                     prefix: None,
                     suffix: None,
                     url: None,
