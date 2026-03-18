@@ -375,12 +375,10 @@ impl Processor {
             .and_then(|ibid| ibid.suffix.clone())
             .filter(|suffix| !suffix.trim().is_empty())
             .or_else(|| {
-                self.locale
-                    .general_term(
-                        &citum_schema::locale::GeneralTerm::Ibid,
-                        citum_schema::locale::TermForm::Long,
-                    )
-                    .map(std::string::ToString::to_string)
+                self.locale.resolved_general_term(
+                    &citum_schema::locale::GeneralTerm::Ibid,
+                    citum_schema::locale::TermForm::Long,
+                )
             })
             .unwrap_or_else(|| "ibid.".to_string());
 

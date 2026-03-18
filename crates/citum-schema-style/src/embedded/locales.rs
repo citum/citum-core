@@ -24,3 +24,18 @@ pub fn get_locale_bytes(id: &str) -> Option<&'static [u8]> {
 
 /// All available embedded locale IDs.
 pub const EMBEDDED_LOCALE_IDS: &[&str] = &["en-US", "de-DE", "fr-FR", "tr-TR"];
+
+/// Raw YAML bytes for an embedded locale override by ID.
+///
+/// Returns `None` for overrides not bundled with the binary.
+pub fn get_locale_override_bytes(id: &str) -> Option<&'static [u8]> {
+    match id {
+        "en-US-chicago" => Some(include_bytes!(
+            "../../../../locales/overrides/en-US-chicago.yaml"
+        )),
+        _ => None,
+    }
+}
+
+/// All available embedded locale override IDs.
+pub const EMBEDDED_LOCALE_OVERRIDE_IDS: &[&str] = &["en-US-chicago"];

@@ -46,6 +46,70 @@
       "additionalProperties": {
         "$ref": "#/definitions/RawTermValue"
       }
+    },
+    "locale-schema-version": {
+      "description": "Schema version. Absent or \"1\" uses the legacy term-map path. \"2\" activates the new messages/dateFormats/grammarOptions path.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "evaluation": {
+      "description": "Runtime evaluation options (message syntax, evaluator hints).",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/EvaluationConfig"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "messages": {
+      "description": "ICU Message Format 1 messages keyed by message ID (v2 locales only).",
+      "default": {},
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "date-formats": {
+      "description": "Named date format presets: symbolic name \u2192 CLDR date pattern (v2 locales only).",
+      "default": {},
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "number-formats": {
+      "description": "Locale-level number formatting options.",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/NumberFormats"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "grammar-options": {
+      "description": "Grammar toggles that vary by language.",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/GrammarOptions"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "legacy-term-aliases": {
+      "description": "Backwards-compatibility aliases: old CSL term key \u2192 new message ID.",
+      "default": {},
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
     }
   },
   "definitions": {
@@ -224,6 +288,100 @@
           }
         }
       ]
+    },
+    "EvaluationConfig": {
+      "description": "Runtime evaluation options for a locale.",
+      "type": "object",
+      "properties": {
+        "message-syntax": {
+          "description": "Message syntax used in this locale's `messages` map.",
+          "default": "static",
+          "allOf": [
+            {
+              "$ref": "#/definitions/MessageSyntax"
+            }
+          ]
+        }
+      }
+    },
+    "GrammarOptions": {
+      "description": "Grammar options that vary by language or regional convention.",
+      "type": "object",
+      "properties": {
+        "punctuation-in-quote": {
+          "description": "Whether to place periods/commas inside closing quotation marks (American style).",
+          "default": false,
+          "type": "boolean"
+        },
+        "nbsp-before-colon": {
+          "description": "Whether to use a non-breaking space before colon/question mark (French style).",
+          "default": false,
+          "type": "boolean"
+        },
+        "open-quote": {
+          "description": "Opening outer quotation mark character.",
+          "default": "\u201c",
+          "type": "string"
+        },
+        "close-quote": {
+          "description": "Closing outer quotation mark character.",
+          "default": "\u201d",
+          "type": "string"
+        },
+        "open-inner-quote": {
+          "description": "Opening inner (nested) quotation mark character.",
+          "default": "\u2018",
+          "type": "string"
+        },
+        "close-inner-quote": {
+          "description": "Closing inner (nested) quotation mark character.",
+          "default": "\u2019",
+          "type": "string"
+        },
+        "serial-comma": {
+          "description": "Whether to use a serial (Oxford) comma before the final list item.",
+          "default": false,
+          "type": "boolean"
+        },
+        "page-range-delimiter": {
+          "description": "Delimiter between page range endpoints.",
+          "default": "\u2013",
+          "type": "string"
+        }
+      }
+    },
+    "MessageSyntax": {
+      "description": "Message syntax variant active in a locale file.",
+      "default": "static",
+      "type": "string",
+      "enum": [
+        "static",
+        "mf1",
+        "mf2"
+      ]
+    },
+    "NumberFormats": {
+      "description": "Number formatting options for a locale.",
+      "type": "object",
+      "properties": {
+        "decimal-separator": {
+          "description": "Decimal separator (e.g., \".\" for en-US, \",\" for de-DE).",
+          "default": ".",
+          "type": "string"
+        },
+        "thousands-separator": {
+          "description": "Thousands separator (e.g., \",\" for en-US, \".\" for de-DE).",
+          "default": ",",
+          "type": "string"
+        },
+        "minimum-digits": {
+          "description": "Minimum digits to display.",
+          "default": 1,
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        }
+      }
     }
   }
 }

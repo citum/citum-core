@@ -180,7 +180,7 @@ fn render_segment_with_label_str(
         LabelForm::None => TermForm::Short, // Shouldn't reach here
     };
 
-    if let Some(term) = locale.locator_term(&seg.label, plural, term_form) {
+    if let Some(term) = locale.resolved_locator_term(&seg.label, plural, term_form) {
         let strip_periods = kind_cfg
             .and_then(|k| k.strip_label_periods)
             .or(global_strip)
@@ -188,7 +188,7 @@ fn render_segment_with_label_str(
         if strip_periods {
             // Stripping the trailing period removes the natural separator,
             // so no additional space is added (e.g. "p." → "p23" not "p 23").
-            let term_str = crate::values::strip_trailing_periods(term);
+            let term_str = crate::values::strip_trailing_periods(&term);
             format!("{term_str}{value_str}")
         } else {
             format!("{term} {value_str}")

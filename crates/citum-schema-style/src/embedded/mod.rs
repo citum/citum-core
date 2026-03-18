@@ -32,7 +32,9 @@ pub use harvard::bibliography as harvard_bibliography;
 pub use harvard::citation as harvard_citation;
 pub use ieee::bibliography as ieee_bibliography;
 pub use ieee::citation as ieee_citation;
-pub use locales::{EMBEDDED_LOCALE_IDS, get_locale_bytes};
+pub use locales::{
+    EMBEDDED_LOCALE_IDS, EMBEDDED_LOCALE_OVERRIDE_IDS, get_locale_bytes, get_locale_override_bytes,
+};
 pub use numeric::citation as numeric_citation;
 pub use styles::{
     EMBEDDED_STYLE_ALIASES, EMBEDDED_STYLE_NAMES, get_embedded_style, resolve_embedded_style_name,

@@ -1,4 +1,8 @@
+locale-schema-version: "2"
 locale: de-DE
+
+evaluation:
+  message-syntax: mf1
 dates:
   months:
     long:
@@ -724,3 +728,45 @@ terms:
   version:
     long: Version
 
+messages:
+  term.page-label: "{count, plural, one {S.} other {S.}}"
+  term.page-label-long: "{count, plural, one {Seite} other {Seiten}}"
+  term.and: "und"
+  term.et-al: "u.\u00A0a."
+  term.no-date: "o.\u00A0J."
+  term.accessed: "zugegriffen"
+  term.retrieved: "abgerufen"
+  role.editor.label: "{count, plural, one {Hrsg.} other {Hrsg.}}"
+  role.editor.label-long: "{count, plural, one {Herausgeber} other {Herausgeber}}"
+  role.editor.verb: "herausgegeben von"
+  pattern.retrieved-from: "abgerufen von {url}"
+  date.open-ended: "heute"
+
+date-formats:
+  numeric-short: "d.M.yyyy"
+  textual-long: "MMMM yyyy"
+  textual-full: "d. MMMM yyyy"
+  bib-default: "d. MMMM yyyy"
+  year-only: "yyyy"
+  iso: "yyyy-MM-dd"
+
+grammar-options:
+  punctuation-in-quote: false
+  nbsp-before-colon: false
+  open-quote: "\u201E"
+  close-quote: "\u201C"
+  open-inner-quote: "\u201A"
+  close-inner-quote: "\u2018"
+  serial-comma: false
+  page-range-delimiter: "\u2013"
+
+legacy-term-aliases:
+  page: term.page-label
+  pages: term.page-label
+  et_al: term.et-al
+  and: term.and
+  accessed: term.accessed
+  retrieved: term.retrieved
+  no_date: term.no-date
+  "no date": term.no-date
+  editor: role.editor.label

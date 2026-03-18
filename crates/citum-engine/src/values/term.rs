@@ -48,9 +48,8 @@ impl ComponentValues for TemplateTerm {
         let form = self.form.unwrap_or(TermForm::Long);
         let mut value = options
             .locale
-            .general_term(&self.term, form)
-            .unwrap_or("")
-            .to_string();
+            .resolved_general_term(&self.term, form)
+            .unwrap_or_default();
 
         // Apply strip-periods if configured
         if crate::values::should_strip_periods(&effective_rendering, options) {

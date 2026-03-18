@@ -1,4 +1,8 @@
+locale-schema-version: "2"
 locale: en-US
+
+evaluation:
+  message-syntax: mf1
 dates:
   months:
     long:
@@ -810,3 +814,66 @@ terms:
       plural: versions
     short: v.
 
+messages:
+  # Locator labels
+  term.page-label: "{count, plural, one {p.} other {pp.}}"
+  term.page-label-long: "{count, plural, one {page} other {pages}}"
+  term.chapter-label: "{count, plural, one {chap.} other {chaps.}}"
+  term.volume-label: "{count, plural, one {vol.} other {vols.}}"
+  term.section-label: "{count, plural, one {sec.} other {secs.}}"
+  term.figure-label: "{count, plural, one {fig.} other {figs.}}"
+  # Conjunctions and connectors
+  term.and: "and"
+  term.and-symbol: "&"
+  term.et-al: "et al."
+  term.and-others: "and others"
+  # Date and access terms
+  term.accessed: "accessed"
+  term.retrieved: "retrieved"
+  term.no-date: "n.d."
+  term.no-date-long: "no date"
+  term.forthcoming: "forthcoming"
+  term.circa: "ca."
+  term.circa-long: "circa"
+  # Role labels
+  role.editor.label: "{count, plural, one {ed.} other {eds.}}"
+  role.editor.label-long: "{count, plural, one {editor} other {editors}}"
+  role.editor.verb: "edited by"
+  role.translator.label: "trans."
+  role.translator.label-long: "{count, plural, one {translator} other {translators}}"
+  role.translator.verb: "translated by"
+  # Compositional patterns
+  pattern.page-range: "{start}\u2013{end}"
+  pattern.retrieved-from: "retrieved from {url}"
+  pattern.available-at: "available at {url}"
+  date.open-ended: "present"
+
+date-formats:
+  numeric-short: "M/d/yyyy"
+  textual-long: "MMMM yyyy"
+  textual-full: "MMMM d, yyyy"
+  bib-default: "MMMM d, yyyy"
+  year-only: "yyyy"
+  iso: "yyyy-MM-dd"
+
+grammar-options:
+  punctuation-in-quote: true
+  nbsp-before-colon: false
+  open-quote: "\u201C"
+  close-quote: "\u201D"
+  open-inner-quote: "\u2018"
+  close-inner-quote: "\u2019"
+  serial-comma: true
+  page-range-delimiter: "\u2013"
+
+legacy-term-aliases:
+  page: term.page-label
+  pages: term.page-label
+  et_al: term.et-al
+  and: term.and
+  accessed: term.accessed
+  retrieved: term.retrieved
+  no_date: term.no-date
+  "no date": term.no-date
+  editor: role.editor.label
+  translator: role.translator.label

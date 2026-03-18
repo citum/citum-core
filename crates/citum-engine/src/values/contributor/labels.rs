@@ -20,35 +20,38 @@ fn resolve_editor_format_label<F: OutputFormat<Output = String>>(
     let plural = names_count > 1;
     match format {
         EditorLabelFormat::VerbPrefix => {
-            let term = options
-                .locale
-                .role_term(&component.contributor, plural, TermForm::Verb);
+            let term =
+                options
+                    .locale
+                    .resolved_role_term(&component.contributor, plural, TermForm::Verb);
             (
                 term.map(|t| {
-                    super::format_role_term::<F>(t, fmt, effective_rendering, options, "", " ")
+                    super::format_role_term::<F>(&t, fmt, effective_rendering, options, "", " ")
                 }),
                 None,
             )
         }
         EditorLabelFormat::ShortSuffix => {
-            let term = options
-                .locale
-                .role_term(&component.contributor, plural, TermForm::Short);
+            let term =
+                options
+                    .locale
+                    .resolved_role_term(&component.contributor, plural, TermForm::Short);
             (
                 None,
                 term.map(|t| {
-                    super::format_role_term::<F>(t, fmt, effective_rendering, options, " (", ")")
+                    super::format_role_term::<F>(&t, fmt, effective_rendering, options, " (", ")")
                 }),
             )
         }
         EditorLabelFormat::LongSuffix => {
-            let term = options
-                .locale
-                .role_term(&component.contributor, plural, TermForm::Long);
+            let term =
+                options
+                    .locale
+                    .resolved_role_term(&component.contributor, plural, TermForm::Long);
             (
                 None,
                 term.map(|t| {
-                    super::format_role_term::<F>(t, fmt, effective_rendering, options, ", ", "")
+                    super::format_role_term::<F>(&t, fmt, effective_rendering, options, ", ", "")
                 }),
             )
         }
@@ -82,7 +85,7 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
             _ => Some(component.contributor.clone()),
         };
 
-        let term_text = role.and_then(|r| options.locale.role_term(&r, plural, term_form));
+        let term_text = role.and_then(|r| options.locale.resolved_role_term(&r, plural, term_form));
 
         return match label_config.placement {
             LabelPlacement::Prefix => (term_text.map(|t| fmt.text(&format!("{t} "))), None),
@@ -126,23 +129,24 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
                 ContributorForm::VerbShort => TermForm::VerbShort,
                 _ => TermForm::Verb,
             };
-            let term = options.locale.role_term(role, plural, term_form);
+            let term = options.locale.resolved_role_term(role, plural, term_form);
             (
                 term.map(|t| {
-                    super::format_role_term::<F>(t, fmt, effective_rendering, options, "", " ")
+                    super::format_role_term::<F>(&t, fmt, effective_rendering, options, "", " ")
                 }),
                 None,
             )
         }
         (ContributorForm::Long, ContributorRole::Editor | ContributorRole::Translator) => {
             let plural = names_count > 1;
-            let term = options
-                .locale
-                .role_term(&component.contributor, plural, TermForm::Short);
+            let term =
+                options
+                    .locale
+                    .resolved_role_term(&component.contributor, plural, TermForm::Short);
             (
                 None,
                 term.map(|t| {
-                    super::format_role_term::<F>(t, fmt, effective_rendering, options, " (", ")")
+                    super::format_role_term::<F>(&t, fmt, effective_rendering, options, " (", ")")
                 }),
             )
         }

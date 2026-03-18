@@ -54,6 +54,27 @@ pub struct Locale {
     /// These should be lowercase and will be matched case-insensitively.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub sort_articles: Vec<String>,
+    /// Schema version from the source locale file (None = legacy v1).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub locale_schema_version: Option<String>,
+    /// Runtime evaluation configuration.
+    #[serde(default)]
+    pub evaluation: EvaluationConfig,
+    /// ICU MF1 messages keyed by message ID (populated for v2 locales).
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub messages: HashMap<String, String>,
+    /// Named date format presets: symbolic name → CLDR pattern.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub date_formats: HashMap<String, String>,
+    /// Number formatting options.
+    #[serde(default)]
+    pub number_formats: NumberFormats,
+    /// Grammar options.
+    #[serde(default)]
+    pub grammar_options: GrammarOptions,
+    /// Backwards-compatibility aliases: old term key → new message ID.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub legacy_term_aliases: HashMap<String, String>,
 }
 
 /// Extract English (US) role terms.
@@ -227,6 +248,26 @@ impl Locale {
             terms: Terms::en_us(),
             punctuation_in_quote: true,
             sort_articles: vec!["the".into(), "a".into(), "an".into()],
+            locale_schema_version: None,
+            evaluation: EvaluationConfig::default(),
+            messages: HashMap::new(),
+            date_formats: HashMap::new(),
+            number_formats: NumberFormats {
+                decimal_separator: ".".into(),
+                thousands_separator: ",".into(),
+                minimum_digits: 1,
+            },
+            grammar_options: GrammarOptions {
+                punctuation_in_quote: true,
+                nbsp_before_colon: false,
+                open_quote: "\u{201C}".into(),
+                close_quote: "\u{201D}".into(),
+                open_inner_quote: "\u{2018}".into(),
+                close_inner_quote: "\u{2019}".into(),
+                serial_comma: true,
+                page_range_delimiter: "\u{2013}".into(),
+            },
+            legacy_term_aliases: HashMap::new(),
         }
     }
 
@@ -326,6 +367,23 @@ impl Locale {
         })
     }
 
+    /// Resolve a contributor role term, evaluating MF1 messages when configured.
+    pub fn resolved_role_term(
+        &self,
+        role: &ContributorRole,
+        plural: bool,
+        form: TermForm,
+    ) -> Option<String> {
+        if let Some(message_id) = Self::role_message_id(role, form)
+            && let Some(resolved) =
+                self.resolve_message_text(message_id, Some(u64::from(plural) + 1), &[])
+        {
+            return Some(resolved);
+        }
+
+        self.role_term(role, plural, form).map(ToOwned::to_owned)
+    }
+
     /// Get a locator term.
     pub fn locator_term(
         &self,
@@ -348,8 +406,44 @@ impl Locale {
         }
     }
 
+    /// Resolve a locator term, evaluating MF1 messages when configured.
+    pub fn resolved_locator_term(
+        &self,
+        locator: &LocatorType,
+        plural: bool,
+        form: TermForm,
+    ) -> Option<String> {
+        if let Some(message_id) = Self::locator_message_id(locator, form)
+            && let Some(resolved) =
+                self.resolve_message_text(message_id, Some(u64::from(plural) + 1), &[])
+        {
+            return Some(resolved);
+        }
+
+        self.locator_term(locator, plural, form)
+            .map(ToOwned::to_owned)
+    }
+
     /// Get a general term by type and form.
     pub fn general_term(&self, term: &GeneralTerm, form: TermForm) -> Option<&str> {
+        // Legacy borrowed lookup path: prefer plain v2 messages first, then
+        // alias-backed messages, and finally the v1 term tables.
+        let candidate_id = format!("term.{}", Self::general_term_to_message_id(term));
+        if let Some(msg) = self.messages.get(&candidate_id) {
+            // Only use plain messages here (no ICU variable syntax)
+            if !msg.contains('{') {
+                return Some(msg.as_str());
+            }
+        }
+        // Check legacy_term_aliases
+        let legacy_key = Self::general_term_to_legacy_key(term);
+        if let Some(msg_id) = self.legacy_term_aliases.get(legacy_key)
+            && let Some(msg) = self.messages.get(msg_id)
+            && !msg.contains('{')
+        {
+            return Some(msg.as_str());
+        }
+
         // First try the flattened map
         if let Some(simple) = self.terms.general.get(term) {
             return Some(match form {
@@ -413,6 +507,17 @@ impl Locale {
         }
     }
 
+    /// Resolve a general term, evaluating MF1 messages when configured.
+    pub fn resolved_general_term(&self, term: &GeneralTerm, form: TermForm) -> Option<String> {
+        if let Some(message_id) = Self::general_message_id(term, form)
+            && let Some(resolved) = self.resolve_message_text(message_id, None, &[])
+        {
+            return Some(resolved);
+        }
+
+        self.general_term(term, form).map(ToOwned::to_owned)
+    }
+
     /// Get the "and" term based on style preference.
     pub fn and_term(&self, use_symbol: bool) -> &str {
         if use_symbol {
@@ -446,6 +551,265 @@ impl Locale {
                 .unwrap_or("")
         }
     }
+
+    /// Map a GeneralTerm to its canonical message ID suffix (e.g., GeneralTerm::EtAl → "et-al").
+    fn general_term_to_message_id(term: &GeneralTerm) -> &'static str {
+        match term {
+            GeneralTerm::And => "and",
+            GeneralTerm::EtAl => "et-al",
+            GeneralTerm::AndOthers => "and-others",
+            GeneralTerm::Accessed => "accessed",
+            GeneralTerm::Retrieved => "retrieved",
+            GeneralTerm::NoDate => "no-date",
+            GeneralTerm::Ibid => "ibid",
+            GeneralTerm::In => "in",
+            GeneralTerm::At => "at",
+            GeneralTerm::By => "by",
+            GeneralTerm::From => "from",
+            GeneralTerm::Of => "of",
+            GeneralTerm::To => "to",
+            GeneralTerm::Anonymous => "anonymous",
+            GeneralTerm::Circa => "circa",
+            GeneralTerm::Forthcoming => "forthcoming",
+            GeneralTerm::Online => "online",
+            GeneralTerm::AvailableAt => "available-at",
+            GeneralTerm::ReviewOf => "review-of",
+            GeneralTerm::Here => "here",
+            GeneralTerm::Deposited => "deposited",
+            GeneralTerm::Patent => "patent",
+            GeneralTerm::Volume => "volume",
+            GeneralTerm::Issue => "issue",
+            GeneralTerm::Page => "page",
+            GeneralTerm::Chapter => "chapter",
+            GeneralTerm::Edition => "edition",
+            GeneralTerm::Section => "section",
+            GeneralTerm::OriginalWorkPublished => "original-work-published",
+        }
+    }
+
+    /// Map a GeneralTerm to its legacy CSL key string for alias lookup.
+    fn general_term_to_legacy_key(term: &GeneralTerm) -> &'static str {
+        match term {
+            GeneralTerm::EtAl => "et_al",
+            GeneralTerm::NoDate => "no_date",
+            _ => Self::general_term_to_message_id(term),
+        }
+    }
+
+    fn role_message_id(role: &ContributorRole, form: TermForm) -> Option<&'static str> {
+        let prefix = match role {
+            ContributorRole::Editor => "role.editor",
+            ContributorRole::Translator => "role.translator",
+            _ => return None,
+        };
+
+        match form {
+            TermForm::Long => Some(match prefix {
+                "role.editor" => "role.editor.label-long",
+                "role.translator" => "role.translator.label-long",
+                _ => return None,
+            }),
+            TermForm::Short => Some(match prefix {
+                "role.editor" => "role.editor.label",
+                "role.translator" => "role.translator.label",
+                _ => return None,
+            }),
+            TermForm::Verb | TermForm::VerbShort => Some(match prefix {
+                "role.editor" => "role.editor.verb",
+                "role.translator" => "role.translator.verb",
+                _ => return None,
+            }),
+            TermForm::Symbol => None,
+        }
+    }
+
+    fn locator_message_id(locator: &LocatorType, form: TermForm) -> Option<&'static str> {
+        let prefix = match locator {
+            LocatorType::Page => "term.page-label",
+            LocatorType::Chapter => "term.chapter-label",
+            LocatorType::Volume => "term.volume-label",
+            LocatorType::Section => "term.section-label",
+            LocatorType::Figure => "term.figure-label",
+            LocatorType::Note => "term.note-label",
+            _ => return None,
+        };
+
+        match form {
+            TermForm::Long => Some(match prefix {
+                "term.page-label" => "term.page-label-long",
+                "term.chapter-label" => "term.chapter-label-long",
+                "term.volume-label" => "term.volume-label-long",
+                "term.section-label" => "term.section-label-long",
+                "term.figure-label" => "term.figure-label-long",
+                "term.note-label" => "term.note-label-long",
+                _ => return None,
+            }),
+            TermForm::Short => Some(prefix),
+            TermForm::Symbol | TermForm::Verb | TermForm::VerbShort => None,
+        }
+    }
+
+    fn general_message_id(term: &GeneralTerm, form: TermForm) -> Option<&'static str> {
+        match (term, form) {
+            (GeneralTerm::And, _) => Some("term.and"),
+            (GeneralTerm::EtAl, _) => Some("term.et-al"),
+            (GeneralTerm::AndOthers, _) => Some("term.and-others"),
+            (GeneralTerm::Accessed, _) => Some("term.accessed"),
+            (GeneralTerm::Retrieved, _) => Some("term.retrieved"),
+            (GeneralTerm::NoDate, TermForm::Long) => Some("term.no-date-long"),
+            (GeneralTerm::NoDate, _) => Some("term.no-date"),
+            (GeneralTerm::Forthcoming, _) => Some("term.forthcoming"),
+            (GeneralTerm::Circa, TermForm::Long) => Some("term.circa-long"),
+            (GeneralTerm::Circa, _) => Some("term.circa"),
+            _ => None,
+        }
+    }
+
+    fn resolve_message_text(
+        &self,
+        message_id: &str,
+        count: Option<u64>,
+        variables: &[(&str, &str)],
+    ) -> Option<String> {
+        let message = self.messages.get(message_id)?;
+        if !message.contains('{') {
+            return Some(message.clone());
+        }
+        if self.evaluation.message_syntax != MessageSyntax::Mf1 {
+            return None;
+        }
+
+        let mut args = HashMap::new();
+        if let Some(count) = count {
+            args.insert("count".to_string(), count.to_string());
+        }
+        for (key, value) in variables {
+            args.insert((*key).to_string(), (*value).to_string());
+        }
+
+        evaluate_mf1_message(message, &args)
+    }
+}
+
+fn evaluate_mf1_message(message: &str, args: &HashMap<String, String>) -> Option<String> {
+    let mut rendered = String::new();
+    let mut cursor = 0usize;
+
+    while let Some(offset) = message[cursor..].find('{') {
+        let open = cursor + offset;
+        rendered.push_str(&message[cursor..open]);
+        let close = find_matching_brace(message, open)?;
+        let inner = message.get(open + 1..close)?.trim();
+        rendered.push_str(&evaluate_mf1_placeholder(inner, args)?);
+        cursor = close + 1;
+    }
+
+    rendered.push_str(&message[cursor..]);
+    Some(rendered)
+}
+
+fn evaluate_mf1_placeholder(inner: &str, args: &HashMap<String, String>) -> Option<String> {
+    let Some((variable, remainder)) = split_top_level_once(inner, ',') else {
+        return args.get(inner.trim()).cloned();
+    };
+    let variable = variable.trim();
+    let remainder = remainder.trim();
+
+    let Some((kind, body)) = split_top_level_once(remainder, ',') else {
+        return match remainder {
+            "number" => args.get(variable).cloned(),
+            _ => None,
+        };
+    };
+
+    match kind.trim() {
+        "plural" => {
+            let count = args.get(variable)?.parse::<u64>().ok()?;
+            let selectors = parse_mf1_selectors(body.trim())?;
+            let branch = if count == 1 {
+                selectors
+                    .get("one")
+                    .or_else(|| selectors.get("other"))
+                    .cloned()
+            } else {
+                selectors.get("other").cloned()
+            }?;
+            evaluate_mf1_message(&branch, args)
+        }
+        "select" => {
+            let selectors = parse_mf1_selectors(body.trim())?;
+            let selected = args.get(variable).map(String::as_str).unwrap_or("other");
+            let branch = selectors
+                .get(selected)
+                .or_else(|| selectors.get("other"))
+                .cloned()?;
+            evaluate_mf1_message(&branch, args)
+        }
+        "number" => args.get(variable).cloned(),
+        _ => None,
+    }
+}
+
+fn split_top_level_once(input: &str, delimiter: char) -> Option<(&str, &str)> {
+    let mut depth = 0usize;
+
+    for (index, ch) in input.char_indices() {
+        match ch {
+            '{' => depth += 1,
+            '}' => depth = depth.saturating_sub(1),
+            _ if ch == delimiter && depth == 0 => {
+                let delimiter_len = ch.len_utf8();
+                return Some((&input[..index], &input[index + delimiter_len..]));
+            }
+            _ => {}
+        }
+    }
+
+    None
+}
+
+fn parse_mf1_selectors(input: &str) -> Option<HashMap<String, String>> {
+    let mut selectors = HashMap::new();
+    let mut cursor = 0usize;
+
+    while cursor < input.len() {
+        let trimmed = input[cursor..].trim_start();
+        cursor = input.len() - trimmed.len();
+        if trimmed.is_empty() {
+            break;
+        }
+
+        let key_end = trimmed.find('{')?;
+        let key = trimmed[..key_end].trim();
+        let open = cursor + key_end;
+        let close = find_matching_brace(input, open)?;
+        selectors.insert(key.to_string(), input[open + 1..close].to_string());
+        cursor = close + 1;
+    }
+
+    Some(selectors)
+}
+
+fn find_matching_brace(input: &str, open_index: usize) -> Option<usize> {
+    let mut depth = 0usize;
+
+    for (index, ch) in input
+        .char_indices()
+        .skip_while(|(index, _)| *index < open_index)
+    {
+        match ch {
+            '{' => depth += 1,
+            '}' => {
+                depth = depth.checked_sub(1)?;
+                if depth == 0 {
+                    return Some(index);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    None
 }
 
 impl Locale {
@@ -531,6 +895,10 @@ impl Locale {
     }
 
     /// Convert a RawLocale to a Locale.
+    #[allow(
+        clippy::too_many_lines,
+        reason = "Complex parsing of raw locale data with multiple term types"
+    )]
     fn from_raw(raw: raw::RawLocale) -> Self {
         // Determine punctuation-in-quote from locale ID
         // en-US uses American style (inside), en-GB and others use outside
@@ -556,6 +924,30 @@ impl Locale {
         locale.punctuation_in_quote = punctuation_in_quote;
         // Set locale-specific articles based on language
         locale.sort_articles = Self::default_articles_for_locale(&raw.locale);
+
+        // v2 schema fields — copied verbatim (no structural transformation needed at this layer)
+        locale.locale_schema_version = raw.locale_schema_version;
+        locale.evaluation = raw.evaluation.unwrap_or_default();
+        locale.messages = raw.messages;
+        locale.date_formats = raw.date_formats;
+        locale.legacy_term_aliases = raw.legacy_term_aliases;
+
+        // Merge grammar_options: use raw value if present, otherwise derive from locale ID
+        if let Some(go) = raw.grammar_options {
+            locale.grammar_options = go;
+        } else {
+            // Derive punctuation_in_quote from locale ID (preserving existing behaviour)
+            locale.grammar_options.punctuation_in_quote = locale.punctuation_in_quote;
+        }
+        // For v2 locales that explicitly declare grammar_options, the grammar_options
+        // field is the authoritative source. Sync back to the legacy punctuation_in_quote
+        // field so all existing call sites in citum-engine get the correct value.
+        locale.punctuation_in_quote = locale.grammar_options.punctuation_in_quote;
+
+        // Merge number_formats if provided
+        if let Some(nf) = raw.number_formats {
+            locale.number_formats = nf;
+        }
 
         // Map raw terms to structured terms and locators
         for (key, value) in &raw.terms {
@@ -858,11 +1250,32 @@ impl Locale {
             },
         }
     }
+
+    /// Apply a partial override, merging its fields into this locale.
+    ///
+    /// Performs key-by-key insertion or replacement for:
+    /// - `messages`: new or updated message IDs
+    /// - `grammar_options`: if `Some`, replaces the entire block and syncs
+    ///   `punctuation_in_quote` field
+    /// - `legacy_term_aliases`: new or updated term aliases
+    pub fn apply_override(&mut self, ov: &LocaleOverride) {
+        for (k, v) in &ov.messages {
+            self.messages.insert(k.clone(), v.clone());
+        }
+        if let Some(go) = &ov.grammar_options {
+            self.grammar_options = go.clone();
+            self.punctuation_in_quote = go.punctuation_in_quote;
+        }
+        for (k, v) in &ov.legacy_term_aliases {
+            self.legacy_term_aliases.insert(k.clone(), v.clone());
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashMap;
 
     #[test]
     fn test_en_us_locale() {
@@ -1033,5 +1446,112 @@ terms:
             Some("n.d.")
         );
         assert_eq!(locale.terms.no_date.as_deref(), Some("n.d."));
+    }
+
+    /// v2 locale with grammar-options overrides punctuation_in_quote correctly.
+    #[test]
+    fn test_v2_grammar_options_sync_punctuation_in_quote() {
+        let yaml = r#"
+locale-schema-version: "2"
+locale: en-GB
+grammar-options:
+  punctuation-in-quote: false
+"#;
+        let locale = Locale::from_yaml_str(yaml).unwrap();
+        // grammar_options is the authoritative source for v2 locales
+        assert!(!locale.grammar_options.punctuation_in_quote);
+        // legacy field is synced from grammar_options
+        assert!(!locale.punctuation_in_quote);
+    }
+
+    /// v1 locale (no grammar-options) derives punctuation_in_quote from locale ID.
+    #[test]
+    fn test_v1_locale_derives_punctuation_from_locale_id() {
+        let yaml = r#"
+locale: en-US
+"#;
+        let locale = Locale::from_yaml_str(yaml).unwrap();
+        // en-US uses American style (inside)
+        assert!(locale.punctuation_in_quote);
+        assert!(locale.grammar_options.punctuation_in_quote);
+    }
+
+    /// apply_override merges messages key-by-key into the base locale.
+    #[test]
+    fn test_apply_override_merges_messages() {
+        let mut locale = Locale::en_us();
+        locale
+            .messages
+            .insert("term.page-label".into(), "p.".into());
+        let ov = LocaleOverride {
+            messages: [("term.page-label".into(), "pg.".into())].into(),
+            ..Default::default()
+        };
+        locale.apply_override(&ov);
+        assert_eq!(
+            locale.messages.get("term.page-label").map(|s| s.as_str()),
+            Some("pg.")
+        );
+    }
+
+    /// apply_override with grammar_options replaces block and syncs punctuation_in_quote.
+    #[test]
+    fn test_apply_override_grammar_options_syncs_punctuation() {
+        let mut locale = Locale::en_us();
+        locale.punctuation_in_quote = false;
+        let ov = LocaleOverride {
+            grammar_options: Some(GrammarOptions {
+                punctuation_in_quote: true,
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        locale.apply_override(&ov);
+        assert!(locale.punctuation_in_quote);
+        assert!(locale.grammar_options.punctuation_in_quote);
+    }
+
+    #[test]
+    fn test_resolved_locator_term_evaluates_plural_message() {
+        let locale = Locale::en_us();
+
+        assert_eq!(
+            locale.resolved_locator_term(&LocatorType::Page, false, TermForm::Short),
+            Some("p.".to_string())
+        );
+        assert_eq!(
+            locale.resolved_locator_term(&LocatorType::Page, true, TermForm::Short),
+            Some("pp.".to_string())
+        );
+    }
+
+    #[test]
+    fn test_resolved_role_term_evaluates_plural_message() {
+        let locale = Locale::en_us();
+
+        assert_eq!(
+            locale.resolved_role_term(&ContributorRole::Editor, false, TermForm::Long),
+            Some("editor".to_string())
+        );
+        assert_eq!(
+            locale.resolved_role_term(&ContributorRole::Editor, true, TermForm::Long),
+            Some("editors".to_string())
+        );
+    }
+
+    #[test]
+    fn test_evaluate_mf1_message_supports_nested_selectors() {
+        let args = HashMap::from([
+            ("context".to_string(), "formal".to_string()),
+            ("name".to_string(), "note".to_string()),
+        ]);
+
+        assert_eq!(
+            evaluate_mf1_message(
+                "{context, select, formal {See {name}} other {see {name}}}",
+                &args
+            ),
+            Some("See note".to_string())
+        );
     }
 }

@@ -24,8 +24,7 @@ impl Processor {
             GroupHeading::Literal { literal } => Some(literal.clone()),
             GroupHeading::Term { term, form } => self
                 .locale
-                .general_term(term, form.unwrap_or(citum_schema::locale::TermForm::Long))
-                .map(ToOwned::to_owned),
+                .resolved_general_term(term, form.unwrap_or(citum_schema::locale::TermForm::Long)),
             GroupHeading::Localized { localized } => self.resolve_localized_heading(localized),
         }
     }

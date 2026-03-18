@@ -102,10 +102,10 @@ fn resolve_editor_substitute<F: OutputFormat<Output = String>>(
                             };
                             options
                                 .locale
-                                .role_term(&ContributorRole::Editor, plural, term_form)
+                                .resolved_role_term(&ContributorRole::Editor, plural, term_form)
                                 .map(|term| {
                                     super::format_role_term::<F>(
-                                        term,
+                                        &term,
                                         fmt,
                                         effective_rendering,
                                         options,

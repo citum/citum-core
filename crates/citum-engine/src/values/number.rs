@@ -106,13 +106,13 @@ fn resolve_number_label<F: crate::render::format::OutputFormat<Output = String>>
 
         options
             .locale
-            .locator_term(&locator_type, plural, term_form)
+            .resolved_locator_term(&locator_type, plural, term_form)
             .map(|t| {
                 let term_str = if crate::values::should_strip_periods(effective_rendering, options)
                 {
-                    crate::values::strip_trailing_periods(t)
+                    crate::values::strip_trailing_periods(&t)
                 } else {
-                    t.to_string()
+                    t
                 };
                 fmt.text(&format!("{term_str} "))
             })

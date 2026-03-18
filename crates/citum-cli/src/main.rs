@@ -9,10 +9,14 @@ use citum_engine::{
     processor::document::{djot::DjotParser, markdown::MarkdownParser},
     render::{djot::Djot, html::Html, latex::Latex, plain::PlainText, typst::Typst},
 };
-use citum_schema::locale::RawLocale;
-use citum_schema::options::Processing;
+use citum_schema::locale::{GeneralTerm, RawLocale, TermForm, types::LocaleOverride};
+use citum_schema::options::{Config, EditorLabelFormat, Processing};
 use citum_schema::reference::InputReference;
-use citum_schema::{InputBibliography, Locale, Style};
+use citum_schema::template::{
+    ContributorForm, ContributorRole, LabelForm as TemplateLabelForm, NumberVariable,
+    RoleLabelForm, TemplateComponent,
+};
+use citum_schema::{BibliographySpec, CitationSpec, InputBibliography, Locale, Style, Template};
 use citum_store::{StoreConfig, StoreResolver, platform_data_dir};
 use clap::builder::styling::{AnsiColor, Effects, Styles};
 use clap::{ArgAction, Args, CommandFactory, Parser, Subcommand, ValueEnum};
@@ -185,6 +189,18 @@ enum Commands {
         command: StoreCommands,
     },
 
+    /// Validate a style against a locale file
+    Style {
+        #[command(subcommand)]
+        command: StyleCommands,
+    },
+
+    /// Validate locale files and inspect locale-specific behavior
+    Locale {
+        #[command(subcommand)]
+        command: LocaleCommands,
+    },
+
     /// Generate JSON schema for Citum models
     #[cfg(feature = "schema")]
     Schema(SchemaArgs),
@@ -326,6 +342,18 @@ enum StoreCommands {
     },
 }
 
+#[derive(Subcommand)]
+enum StyleCommands {
+    /// Validate that a style's locale-driven features resolve against a locale file
+    Lint(LintStyleArgs),
+}
+
+#[derive(Subcommand)]
+enum LocaleCommands {
+    /// Validate a locale file's message syntax and alias targets
+    Lint(LintLocaleArgs),
+}
+
 #[derive(Args, Debug)]
 struct RenderDocArgs {
     /// Path to input document
@@ -463,6 +491,24 @@ struct CheckArgs {
     json: bool,
 }
 
+#[derive(Args, Debug)]
+struct LintLocaleArgs {
+    /// Path to locale file
+    #[arg(index = 1)]
+    path: PathBuf,
+}
+
+#[derive(Args, Debug)]
+struct LintStyleArgs {
+    /// Style file path or builtin name
+    #[arg(index = 1)]
+    style: String,
+
+    /// Locale file used for validation
+    #[arg(long, required = true)]
+    locale: PathBuf,
+}
+
 #[cfg(feature = "schema")]
 #[derive(Args, Debug)]
 struct SchemaArgs {
@@ -568,6 +614,12 @@ fn run() -> Result<(), Box<dyn Error>> {
             StoreCommands::List => run_store_list(),
             StoreCommands::Install { source } => run_store_install(&source),
             StoreCommands::Remove { name } => run_store_remove(&name),
+        },
+        Commands::Style { command } => match command {
+            StyleCommands::Lint(args) => run_lint_style(args),
+        },
+        Commands::Locale { command } => match command {
+            LocaleCommands::Lint(args) => run_lint_locale(args),
         },
         #[cfg(feature = "schema")]
         Commands::Schema(args) => run_schema(args),
@@ -788,6 +840,666 @@ fn run_store_remove(name: &str) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum LintSeverity {
+    Warning,
+    Error,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct LintFinding {
+    severity: LintSeverity,
+    path: String,
+    message: String,
+}
+
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+struct LintReport {
+    findings: Vec<LintFinding>,
+}
+
+impl LintReport {
+    fn warning(&mut self, path: impl Into<String>, message: impl Into<String>) {
+        self.findings.push(LintFinding {
+            severity: LintSeverity::Warning,
+            path: path.into(),
+            message: message.into(),
+        });
+    }
+
+    fn error(&mut self, path: impl Into<String>, message: impl Into<String>) {
+        self.findings.push(LintFinding {
+            severity: LintSeverity::Error,
+            path: path.into(),
+            message: message.into(),
+        });
+    }
+
+    fn has_errors(&self) -> bool {
+        self.findings
+            .iter()
+            .any(|finding| finding.severity == LintSeverity::Error)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum LocaleRequirementKind {
+    General {
+        term: GeneralTerm,
+        form: TermForm,
+    },
+    Role {
+        role: ContributorRole,
+        form: TermForm,
+    },
+    Locator {
+        locator: citum_schema::citation::LocatorType,
+        form: TermForm,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct LocaleRequirement {
+    path: String,
+    kind: LocaleRequirementKind,
+}
+
+fn run_lint_locale(args: LintLocaleArgs) -> Result<(), Box<dyn Error>> {
+    let raw = load_raw_locale(&args.path)?;
+    let report = lint_raw_locale(&raw);
+    print_lint_report("locale lint", &report);
+    if report.has_errors() {
+        return Err(format!("Locale lint failed: {}", args.path.display()).into());
+    }
+    Ok(())
+}
+
+fn run_lint_style(args: LintStyleArgs) -> Result<(), Box<dyn Error>> {
+    let style = load_any_style(&args.style, false)?;
+    let locale = load_locale_file(&args.locale)?;
+    let report = lint_style_against_locale(&style, &locale);
+    print_lint_report("style lint", &report);
+    Ok(())
+}
+
+fn print_lint_report(label: &str, report: &LintReport) {
+    if report.findings.is_empty() {
+        println!("{label}: ok");
+        return;
+    }
+
+    println!("{label}:");
+    for finding in &report.findings {
+        let level = match finding.severity {
+            LintSeverity::Warning => "warning",
+            LintSeverity::Error => "error",
+        };
+        println!("  {level}: {}: {}", finding.path, finding.message);
+    }
+}
+
+fn load_raw_locale(path: &Path) -> Result<RawLocale, Box<dyn Error>> {
+    let bytes = fs::read(path)?;
+    let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
+
+    let raw = match ext {
+        "cbor" => ciborium::de::from_reader::<RawLocale, _>(std::io::Cursor::new(&bytes))?,
+        "json" => serde_json::from_slice::<RawLocale>(&bytes)?,
+        _ => serde_yaml::from_slice::<RawLocale>(&bytes)?,
+    };
+
+    Ok(raw)
+}
+
+fn load_locale_file(path: &Path) -> Result<Locale, Box<dyn Error>> {
+    Locale::from_file(path)
+        .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err).into())
+}
+
+fn lint_raw_locale(raw: &RawLocale) -> LintReport {
+    let mut report = LintReport::default();
+    let uses_mf1 = raw.evaluation.as_ref().is_some_and(|config| {
+        config.message_syntax == citum_schema::locale::types::MessageSyntax::Mf1
+    });
+
+    for (message_id, message) in &raw.messages {
+        if (uses_mf1 || message.contains('{'))
+            && let Err(err) = lint_mf1_message(message)
+        {
+            report.error(
+                format!("messages.{message_id}"),
+                format!("invalid MF1 message: {err}"),
+            );
+        }
+    }
+
+    for (legacy_key, message_id) in &raw.legacy_term_aliases {
+        if !raw.messages.contains_key(message_id) {
+            report.error(
+                format!("legacy-term-aliases.{legacy_key}"),
+                format!("target '{message_id}' does not exist in messages"),
+            );
+        }
+    }
+
+    report
+}
+
+fn lint_style_against_locale(style: &Style, locale: &Locale) -> LintReport {
+    let mut report = LintReport::default();
+    let requirements = collect_style_locale_requirements(style);
+
+    for requirement in requirements {
+        match requirement.kind {
+            LocaleRequirementKind::General { term, form } => {
+                if locale.resolved_general_term(&term, form).is_none() {
+                    report.warning(
+                        requirement.path,
+                        format!(
+                            "locale does not resolve general term '{term:?}' in form '{form:?}'"
+                        ),
+                    );
+                }
+            }
+            LocaleRequirementKind::Role { role, form } => {
+                let singular = locale.resolved_role_term(&role, false, form);
+                let plural = locale.resolved_role_term(&role, true, form);
+                if singular.is_none() || plural.is_none() {
+                    report.warning(
+                        requirement.path,
+                        format!(
+                            "locale does not fully resolve role term '{role:?}' in form '{form:?}'"
+                        ),
+                    );
+                }
+            }
+            LocaleRequirementKind::Locator { locator, form } => {
+                let singular = locale.resolved_locator_term(&locator, false, form);
+                let plural = locale.resolved_locator_term(&locator, true, form);
+                if singular.is_none() || plural.is_none() {
+                    report.warning(
+                        requirement.path,
+                        format!(
+                            "locale does not fully resolve locator term '{locator:?}' in form '{form:?}'"
+                        ),
+                    );
+                }
+            }
+        }
+    }
+
+    report
+}
+
+fn collect_style_locale_requirements(style: &Style) -> Vec<LocaleRequirement> {
+    let mut requirements = Vec::new();
+    let base_config = style.options.clone().unwrap_or_default();
+
+    if let Some(template) = &style.templates {
+        for (name, components) in template {
+            collect_template_requirements(
+                components,
+                &format!("templates.{name}"),
+                &base_config,
+                &mut requirements,
+            );
+        }
+    }
+
+    if let Some(citation) = &style.citation {
+        collect_citation_spec_requirements(citation, "citation", &base_config, &mut requirements);
+    }
+
+    if let Some(bibliography) = &style.bibliography {
+        collect_bibliography_spec_requirements(
+            bibliography,
+            "bibliography",
+            &base_config,
+            &mut requirements,
+        );
+    }
+
+    requirements
+}
+
+fn collect_citation_spec_requirements(
+    spec: &CitationSpec,
+    path: &str,
+    base_config: &Config,
+    requirements: &mut Vec<LocaleRequirement>,
+) {
+    let effective_config = spec.options.as_ref().map_or_else(
+        || base_config.clone(),
+        |options| Config::merged(base_config, options),
+    );
+
+    if let Some(template) = spec.resolve_template() {
+        collect_template_requirements(
+            &template,
+            &format!("{path}.template"),
+            &effective_config,
+            requirements,
+        );
+    }
+    if let Some(locales) = &spec.locales {
+        for (index, localized) in locales.iter().enumerate() {
+            collect_template_requirements(
+                &localized.template,
+                &format!("{path}.locales[{index}].template"),
+                &effective_config,
+                requirements,
+            );
+        }
+    }
+    if let Some(spec) = &spec.integral {
+        collect_citation_spec_requirements(
+            spec,
+            &format!("{path}.integral"),
+            &effective_config,
+            requirements,
+        );
+    }
+    if let Some(spec) = &spec.non_integral {
+        collect_citation_spec_requirements(
+            spec,
+            &format!("{path}.non-integral"),
+            &effective_config,
+            requirements,
+        );
+    }
+    if let Some(spec) = &spec.subsequent {
+        collect_citation_spec_requirements(
+            spec,
+            &format!("{path}.subsequent"),
+            &effective_config,
+            requirements,
+        );
+    }
+    if let Some(spec) = &spec.ibid {
+        collect_citation_spec_requirements(
+            spec,
+            &format!("{path}.ibid"),
+            &effective_config,
+            requirements,
+        );
+    }
+}
+
+fn collect_bibliography_spec_requirements(
+    spec: &BibliographySpec,
+    path: &str,
+    base_config: &Config,
+    requirements: &mut Vec<LocaleRequirement>,
+) {
+    let effective_config = spec.options.as_ref().map_or_else(
+        || base_config.clone(),
+        |options| Config::merged(base_config, options),
+    );
+
+    if let Some(template) = spec.resolve_template() {
+        collect_template_requirements(
+            &template,
+            &format!("{path}.template"),
+            &effective_config,
+            requirements,
+        );
+    }
+    if let Some(locales) = &spec.locales {
+        for (index, localized) in locales.iter().enumerate() {
+            collect_template_requirements(
+                &localized.template,
+                &format!("{path}.locales[{index}].template"),
+                &effective_config,
+                requirements,
+            );
+        }
+    }
+    if let Some(type_templates) = &spec.type_templates {
+        for (selector, template) in type_templates {
+            collect_template_requirements(
+                template,
+                &format!("{path}.type-templates[{selector:?}]"),
+                &effective_config,
+                requirements,
+            );
+        }
+    }
+    if let Some(groups) = &spec.groups {
+        for (index, group) in groups.iter().enumerate() {
+            if let Some(heading) = &group.heading
+                && let citum_schema::grouping::GroupHeading::Term { term, form } = heading
+            {
+                requirements.push(LocaleRequirement {
+                    path: format!("{path}.groups[{index}].heading"),
+                    kind: LocaleRequirementKind::General {
+                        term: *term,
+                        form: form.unwrap_or(TermForm::Long),
+                    },
+                });
+            }
+            if let Some(template) = &group.template {
+                collect_template_requirements(
+                    template,
+                    &format!("{path}.groups[{index}].template"),
+                    &effective_config,
+                    requirements,
+                );
+            }
+        }
+    }
+}
+
+fn collect_template_requirements(
+    template: &Template,
+    path: &str,
+    config: &Config,
+    requirements: &mut Vec<LocaleRequirement>,
+) {
+    for (index, component) in template.iter().enumerate() {
+        let component_path = format!("{path}[{index}]");
+        match component {
+            TemplateComponent::Term(term) => requirements.push(LocaleRequirement {
+                path: component_path,
+                kind: LocaleRequirementKind::General {
+                    term: term.term,
+                    form: term.form.unwrap_or(TermForm::Long),
+                },
+            }),
+            TemplateComponent::Contributor(contributor) => {
+                collect_contributor_requirements(
+                    contributor,
+                    &component_path,
+                    config,
+                    requirements,
+                );
+            }
+            TemplateComponent::Number(number) => {
+                if let Some(form) = number.label_form.clone()
+                    && let Some(locator) = number_variable_to_locator(number.number.clone())
+                {
+                    let term_form = match form {
+                        TemplateLabelForm::Short => TermForm::Short,
+                        TemplateLabelForm::Long => TermForm::Long,
+                        TemplateLabelForm::Symbol => TermForm::Symbol,
+                    };
+                    requirements.push(LocaleRequirement {
+                        path: component_path,
+                        kind: LocaleRequirementKind::Locator {
+                            locator,
+                            form: term_form,
+                        },
+                    });
+                }
+            }
+            TemplateComponent::Date(date) => {
+                if matches!(date.date, citum_schema::template::DateVariable::Issued) {
+                    requirements.push(LocaleRequirement {
+                        path: component_path.clone(),
+                        kind: LocaleRequirementKind::General {
+                            term: GeneralTerm::NoDate,
+                            form: TermForm::Short,
+                        },
+                    });
+                }
+                if let Some(fallback) = &date.fallback {
+                    collect_template_requirements(
+                        fallback,
+                        &format!("{component_path}.fallback"),
+                        config,
+                        requirements,
+                    );
+                }
+            }
+            TemplateComponent::List(list) => {
+                collect_template_requirements(
+                    &list.items,
+                    &format!("{component_path}.items"),
+                    config,
+                    requirements,
+                );
+            }
+            _ => {}
+        }
+    }
+}
+
+fn collect_contributor_requirements(
+    contributor: &citum_schema::template::TemplateContributor,
+    path: &str,
+    config: &Config,
+    requirements: &mut Vec<LocaleRequirement>,
+) {
+    if let Some(label) = &contributor.label {
+        let role =
+            role_label_term_to_role(&label.term).unwrap_or_else(|| contributor.contributor.clone());
+        let form = match label.form {
+            RoleLabelForm::Short => TermForm::Short,
+            RoleLabelForm::Long => TermForm::Long,
+        };
+        requirements.push(LocaleRequirement {
+            path: format!("{path}.label"),
+            kind: LocaleRequirementKind::Role { role, form },
+        });
+        return;
+    }
+
+    let editor_label_format = config
+        .contributors
+        .as_ref()
+        .and_then(|contributors| contributors.editor_label_format);
+    if let Some(editor_label_format) = editor_label_format
+        && matches!(
+            contributor.contributor,
+            ContributorRole::Editor | ContributorRole::Translator
+        )
+    {
+        let form = match editor_label_format {
+            EditorLabelFormat::VerbPrefix => TermForm::Verb,
+            EditorLabelFormat::ShortSuffix => TermForm::Short,
+            EditorLabelFormat::LongSuffix => TermForm::Long,
+        };
+        requirements.push(LocaleRequirement {
+            path: path.to_string(),
+            kind: LocaleRequirementKind::Role {
+                role: contributor.contributor.clone(),
+                form,
+            },
+        });
+        return;
+    }
+
+    match contributor.form {
+        ContributorForm::Verb => requirements.push(LocaleRequirement {
+            path: path.to_string(),
+            kind: LocaleRequirementKind::Role {
+                role: contributor.contributor.clone(),
+                form: TermForm::Verb,
+            },
+        }),
+        ContributorForm::VerbShort => requirements.push(LocaleRequirement {
+            path: path.to_string(),
+            kind: LocaleRequirementKind::Role {
+                role: contributor.contributor.clone(),
+                form: TermForm::VerbShort,
+            },
+        }),
+        ContributorForm::Long
+            if matches!(
+                contributor.contributor,
+                ContributorRole::Editor | ContributorRole::Translator
+            ) =>
+        {
+            requirements.push(LocaleRequirement {
+                path: path.to_string(),
+                kind: LocaleRequirementKind::Role {
+                    role: contributor.contributor.clone(),
+                    form: TermForm::Short,
+                },
+            });
+        }
+        _ => {}
+    }
+}
+
+fn role_label_term_to_role(term: &str) -> Option<ContributorRole> {
+    match term {
+        "editor" => Some(ContributorRole::Editor),
+        "translator" => Some(ContributorRole::Translator),
+        "director" => Some(ContributorRole::Director),
+        "recipient" => Some(ContributorRole::Recipient),
+        "interviewer" => Some(ContributorRole::Interviewer),
+        _ => None,
+    }
+}
+
+fn number_variable_to_locator(
+    number: NumberVariable,
+) -> Option<citum_schema::citation::LocatorType> {
+    use citum_schema::citation::LocatorType;
+
+    match number {
+        NumberVariable::Volume | NumberVariable::NumberOfVolumes => Some(LocatorType::Volume),
+        NumberVariable::Pages | NumberVariable::NumberOfPages => Some(LocatorType::Page),
+        NumberVariable::ChapterNumber => Some(LocatorType::Chapter),
+        NumberVariable::Issue => Some(LocatorType::Issue),
+        NumberVariable::Number
+        | NumberVariable::DocketNumber
+        | NumberVariable::PatentNumber
+        | NumberVariable::StandardNumber
+        | NumberVariable::ReportNumber
+        | NumberVariable::PrintingNumber
+        | NumberVariable::CitationNumber
+        | NumberVariable::CitationLabel => Some(LocatorType::Number),
+        NumberVariable::PartNumber => Some(LocatorType::Part),
+        NumberVariable::SupplementNumber => Some(LocatorType::Supplement),
+        _ => None,
+    }
+}
+
+fn lint_mf1_message(message: &str) -> Result<(), String> {
+    lint_mf1_segment(message)
+}
+
+fn lint_mf1_segment(message: &str) -> Result<(), String> {
+    let mut cursor = 0usize;
+    while let Some(offset) = message[cursor..].find('{') {
+        let open = cursor + offset;
+        let close = find_matching_brace(message, open)
+            .ok_or_else(|| format!("unmatched '{{' at byte offset {open}"))?;
+        let inner = message
+            .get(open + 1..close)
+            .ok_or_else(|| "invalid brace range".to_string())?
+            .trim();
+        lint_mf1_placeholder(inner)?;
+        cursor = close + 1;
+    }
+    Ok(())
+}
+
+fn lint_mf1_placeholder(inner: &str) -> Result<(), String> {
+    let Some((variable, remainder)) = split_top_level_once(inner, ',') else {
+        if inner.trim().is_empty() {
+            return Err("empty placeholder".to_string());
+        }
+        return Ok(());
+    };
+    if variable.trim().is_empty() {
+        return Err("placeholder variable name is empty".to_string());
+    }
+    let remainder = remainder.trim();
+    let Some((kind, body)) = split_top_level_once(remainder, ',') else {
+        return match remainder {
+            "number" => Ok(()),
+            _ => Err(format!("unsupported or malformed formatter '{remainder}'")),
+        };
+    };
+
+    match kind.trim() {
+        "plural" | "select" => {
+            let selectors = parse_mf1_selectors(body.trim())?;
+            if !selectors.contains_key("other") {
+                return Err(format!("{} requires an 'other' branch", kind.trim()));
+            }
+            for branch in selectors.values() {
+                lint_mf1_segment(branch)?;
+            }
+            Ok(())
+        }
+        "number" => Ok(()),
+        other => Err(format!("unsupported formatter '{other}'")),
+    }
+}
+
+fn split_top_level_once(input: &str, delimiter: char) -> Option<(&str, &str)> {
+    let mut depth = 0usize;
+    for (index, ch) in input.char_indices() {
+        match ch {
+            '{' => depth += 1,
+            '}' => depth = depth.saturating_sub(1),
+            _ if ch == delimiter && depth == 0 => {
+                let len = ch.len_utf8();
+                return Some((&input[..index], &input[index + len..]));
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+fn parse_mf1_selectors(input: &str) -> Result<HashMap<String, String>, String> {
+    let mut selectors = HashMap::new();
+    let mut cursor = 0usize;
+
+    while cursor < input.len() {
+        let trimmed = input[cursor..].trim_start();
+        cursor = input.len() - trimmed.len();
+        if trimmed.is_empty() {
+            break;
+        }
+
+        let key_end = trimmed
+            .find('{')
+            .ok_or_else(|| "selector branch is missing '{'".to_string())?;
+        let key = trimmed[..key_end].trim();
+        if key.is_empty() {
+            return Err("selector branch key is empty".to_string());
+        }
+        let open = cursor + key_end;
+        let close = find_matching_brace(input, open)
+            .ok_or_else(|| format!("selector '{key}' is missing a closing '}}'"))?;
+        selectors.insert(key.to_string(), input[open + 1..close].to_string());
+        cursor = close + 1;
+    }
+
+    if selectors.is_empty() {
+        return Err("selector has no branches".to_string());
+    }
+
+    Ok(selectors)
+}
+
+fn find_matching_brace(input: &str, open_index: usize) -> Option<usize> {
+    let mut depth = 0usize;
+
+    for (index, ch) in input
+        .char_indices()
+        .skip_while(|(index, _)| *index < open_index)
+    {
+        match ch {
+            '{' => depth += 1,
+            '}' => {
+                depth = depth.checked_sub(1)?;
+                if depth == 0 {
+                    return Some(index);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    None
+}
+
 /// Execute the `render doc` subcommand.
 ///
 /// Reads a document, resolves citations against the provided bibliography,
@@ -923,7 +1635,7 @@ fn create_processor(
     let compound_sets = sets.unwrap_or_default();
     if let Some(ref locale_id) = style.info.default_locale {
         let path = Path::new(style_input);
-        let locale = if path.exists() && path.is_file() {
+        let mut locale = if path.exists() && path.is_file() {
             // File-based style: search for locale on disk, fall back to embedded.
             let locales_dir = find_locales_dir(style_input);
             let disk_locale = Locale::load(locale_id, &locales_dir);
@@ -936,6 +1648,27 @@ fn create_processor(
             // Builtin style: use embedded locale directly.
             load_locale_builtin(locale_id)
         };
+        if let Some(override_id) = style
+            .options
+            .as_ref()
+            .and_then(|options| options.locale_override.as_deref())
+        {
+            let locale_override = if path.exists() && path.is_file() {
+                load_locale_override_for_file_style(override_id, style_input)?
+                    .or_else(|| load_locale_override_builtin(override_id))
+            } else {
+                load_locale_override_builtin(override_id)
+            };
+            let locale_override = locale_override.ok_or_else(|| {
+                std::io::Error::new(
+                    std::io::ErrorKind::NotFound,
+                    format!(
+                    "locale override not found: '{override_id}' (expected under locales/overrides/)"
+                    ),
+                )
+            })?;
+            locale.apply_override(&locale_override);
+        }
         let mut processor =
             Processor::try_with_locale_and_compound_sets(style, references, locale, compound_sets)?;
         processor.show_semantics = !no_semantics;
@@ -1796,6 +2529,14 @@ fn find_locales_dir(style_path: &str) -> PathBuf {
     PathBuf::from(".")
 }
 
+fn load_locale_override_for_file_style(
+    override_id: &str,
+    style_path: &str,
+) -> Result<Option<LocaleOverride>, Box<dyn Error>> {
+    let overrides_dir = find_locales_dir(style_path).join("overrides");
+    load_locale_override_from_dir(override_id, &overrides_dir)
+}
+
 /// Load a Citum style from a file path.
 ///
 /// Selects the deserialiser based on the file extension (`cbor`, `json`, or YAML
@@ -1821,6 +2562,47 @@ fn load_locale_builtin(locale_id: &str) -> Locale {
     } else {
         // Locale not bundled — fall back to the hardcoded en-US default.
         Locale::en_us()
+    }
+}
+
+fn load_locale_override_from_dir(
+    override_id: &str,
+    overrides_dir: &Path,
+) -> Result<Option<LocaleOverride>, Box<dyn Error>> {
+    for ext in ["yaml", "yml", "json", "cbor"] {
+        let path = overrides_dir.join(format!("{override_id}.{ext}"));
+        if path.exists() && path.is_file() {
+            return load_locale_override_file(&path).map(Some);
+        }
+    }
+    Ok(None)
+}
+
+fn load_locale_override_file(path: &Path) -> Result<LocaleOverride, Box<dyn Error>> {
+    let bytes = fs::read(path)?;
+    let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
+    parse_locale_override_bytes(&bytes, ext)
+        .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err).into())
+}
+
+fn load_locale_override_builtin(override_id: &str) -> Option<LocaleOverride> {
+    let bytes = citum_schema::embedded::get_locale_override_bytes(override_id)?;
+    parse_locale_override_bytes(bytes, "yaml").ok()
+}
+
+fn parse_locale_override_bytes(bytes: &[u8], ext: &str) -> Result<LocaleOverride, String> {
+    use citum_schema::locale::raw::RawLocaleOverride;
+
+    match ext {
+        "cbor" => ciborium::de::from_reader::<RawLocaleOverride, _>(std::io::Cursor::new(bytes))
+            .map(Into::into)
+            .map_err(|e| format!("Failed to parse CBOR locale override: {e}")),
+        "json" => serde_json::from_slice::<RawLocaleOverride>(bytes)
+            .map(Into::into)
+            .map_err(|e| format!("Failed to parse JSON locale override: {e}")),
+        _ => serde_yaml::from_slice::<RawLocaleOverride>(bytes)
+            .map(Into::into)
+            .map_err(|e| format!("Failed to parse YAML locale override: {e}")),
     }
 }
 
@@ -2303,10 +3085,13 @@ mod tests {
     use super::*;
     use citum_schema::citation::CitationMode;
     use citum_schema::grouping::{GroupSort, GroupSortEntry, GroupSortKey, SortKey};
+    use citum_schema::locale::types::{EvaluationConfig, MessageSyntax};
     use citum_schema::options::{Config, Processing};
     use citum_schema::template::{
-        NumberVariable, TemplateComponent, TemplateNumber, WrapPunctuation,
+        NumberVariable, TemplateComponent, TemplateContributor, TemplateNumber, TemplateTerm,
+        WrapPunctuation,
     };
+    use std::collections::HashMap;
     use std::time::{SystemTime, UNIX_EPOCH};
 
     // ------------------------------------------------------------------
@@ -2526,5 +3311,204 @@ references:
 
         let _ = std::fs::remove_file(bib_path);
         let _ = std::fs::remove_dir(base);
+    }
+
+    #[test]
+    fn test_create_processor_applies_locale_override_from_file_style() {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock should be after epoch")
+            .as_nanos();
+        let base = std::env::temp_dir().join(format!("citum-locale-override-{now}"));
+        let style_path = base.join("style.yaml");
+        let overrides_dir = base.join("locales").join("overrides");
+        std::fs::create_dir_all(&overrides_dir).expect("override dir should exist");
+        std::fs::write(&style_path, "info: { title: Test Style }\n")
+            .expect("style file should write");
+        std::fs::write(
+            overrides_dir.join("test-override.yaml"),
+            r#"
+grammar-options:
+  punctuation-in-quote: false
+  nbsp-before-colon: false
+  open-quote: "<<"
+  close-quote: ">>"
+  open-inner-quote: "<"
+  close-inner-quote: ">"
+  serial-comma: false
+  page-range-delimiter: "~"
+"#,
+        )
+        .expect("override file should write");
+
+        let style = Style {
+            info: citum_schema::StyleInfo {
+                title: Some("Test Style".into()),
+                default_locale: Some("en-US".into()),
+                ..Default::default()
+            },
+            options: Some(Config {
+                locale_override: Some("test-override".into()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let loaded = LoadedBibliography {
+            references: Bibliography::new(),
+            sets: None,
+        };
+
+        let processor = create_processor(
+            style,
+            loaded,
+            style_path.to_str().expect("utf-8 path"),
+            false,
+        )
+        .expect("processor should apply locale override");
+
+        assert!(!processor.locale.punctuation_in_quote);
+        assert_eq!(processor.locale.grammar_options.open_quote, "<<");
+        assert_eq!(processor.locale.grammar_options.page_range_delimiter, "~");
+
+        let _ = std::fs::remove_dir_all(base);
+    }
+
+    #[test]
+    fn test_create_processor_applies_builtin_locale_override() {
+        let style = citum_schema::embedded::get_embedded_style("chicago")
+            .expect("embedded style should exist")
+            .expect("embedded style should parse");
+        let loaded = LoadedBibliography {
+            references: Bibliography::new(),
+            sets: None,
+        };
+
+        let processor =
+            create_processor(style, loaded, "chicago", false).expect("processor should load");
+
+        assert_eq!(processor.locale.locale, "en-US");
+        assert_eq!(
+            processor
+                .style
+                .options
+                .as_ref()
+                .and_then(|c| c.locale_override.as_deref()),
+            Some("en-US-chicago")
+        );
+        assert_eq!(
+            processor.locale.grammar_options.page_range_delimiter,
+            "\u{2013}"
+        );
+    }
+
+    #[test]
+    fn test_parse_locale_override_bytes_from_json() {
+        let override_data = serde_json::to_vec(&serde_json::json!({
+            "messages": { "term.page-label": "pg." },
+            "legacy-term-aliases": { "page": "term.page-label" }
+        }))
+        .expect("json should serialize");
+
+        let parsed = parse_locale_override_bytes(&override_data, "json")
+            .expect("override json should parse");
+
+        assert_eq!(
+            parsed.messages,
+            HashMap::from([(String::from("term.page-label"), String::from("pg."))])
+        );
+        assert_eq!(
+            parsed.legacy_term_aliases.get("page").map(String::as_str),
+            Some("term.page-label")
+        );
+    }
+
+    #[test]
+    fn test_lint_raw_locale_reports_invalid_mf1_syntax() {
+        let raw = RawLocale {
+            locale: "en-US".into(),
+            evaluation: Some(EvaluationConfig {
+                message_syntax: MessageSyntax::Mf1,
+            }),
+            messages: HashMap::from([(
+                "term.page-label".into(),
+                "{count, plural, one {p.} other {pp.}".into(),
+            )]),
+            ..Default::default()
+        };
+
+        let report = lint_raw_locale(&raw);
+
+        assert!(report.has_errors());
+        assert!(report.findings.iter().any(|finding| {
+            finding.path == "messages.term.page-label"
+                && finding.message.contains("invalid MF1 message")
+        }));
+    }
+
+    #[test]
+    fn test_lint_raw_locale_reports_missing_alias_target() {
+        let raw = RawLocale {
+            locale: "en-US".into(),
+            messages: HashMap::from([("term.page-label".into(), "p.".into())]),
+            legacy_term_aliases: HashMap::from([("page".into(), "term.page-label-long".into())]),
+            ..Default::default()
+        };
+
+        let report = lint_raw_locale(&raw);
+
+        assert!(report.has_errors());
+        assert!(report.findings.iter().any(|finding| {
+            finding.path == "legacy-term-aliases.page" && finding.message.contains("does not exist")
+        }));
+    }
+
+    #[test]
+    fn test_lint_style_against_locale_warns_for_missing_general_term() {
+        let style = Style {
+            citation: Some(citum_schema::CitationSpec {
+                template: Some(vec![TemplateComponent::Term(TemplateTerm {
+                    term: GeneralTerm::NoDate,
+                    form: Some(TermForm::Short),
+                    ..Default::default()
+                })]),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let locale = Locale::default();
+
+        let report = lint_style_against_locale(&style, &locale);
+
+        assert!(!report.has_errors());
+        assert!(report.findings.iter().any(|finding| {
+            finding.severity == LintSeverity::Warning
+                && finding.path == "citation.template[0]"
+                && finding.message.contains("general term")
+        }));
+    }
+
+    #[test]
+    fn test_lint_style_against_locale_warns_for_missing_role_term() {
+        let style = Style {
+            citation: Some(citum_schema::CitationSpec {
+                template: Some(vec![TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Editor,
+                    form: ContributorForm::Verb,
+                    ..Default::default()
+                })]),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let locale = Locale::default();
+
+        let report = lint_style_against_locale(&style, &locale);
+
+        assert!(!report.has_errors());
+        assert!(report.findings.iter().any(|finding| {
+            finding.severity == LintSeverity::Warning
+                && finding.path == "citation.template[0]"
+                && finding.message.contains("role term")
+        }));
     }
 }

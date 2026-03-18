@@ -156,7 +156,7 @@
           ]
         },
         "subsequent-author-substitute": {
-          "description": "String to substitute for repeating authors (e.g., \"———\").",
+          "description": "String to substitute for repeating authors (e.g., \"\u2014\u2014\u2014\").",
           "type": [
             "string",
             "null"
@@ -181,7 +181,7 @@
       "additionalProperties": false
     },
     "BibliographyGroup": {
-      "description": "A bibliography group with selector, optional heading, and per-group sorting.\n\nGroups allow styles to divide bibliographies into labeled sections with distinct sorting rules. Items match the first group whose selector evaluates to true (first-match semantics).\n\n# Examples\n\n```yaml groups: - id: vietnamese heading: localized: vi: \"Tài liệu tiếng Việt\" en-US: \"Vietnamese Sources\" selector: field: language: vi sort: template: - key: author sort-order: given-family ```",
+      "description": "A bibliography group with selector, optional heading, and per-group sorting.\n\nGroups allow styles to divide bibliographies into labeled sections with distinct sorting rules. Items match the first group whose selector evaluates to true (first-match semantics).\n\n# Examples\n\n```yaml groups: - id: vietnamese heading: localized: vi: \"T\u00e0i li\u1ec7u ti\u1ebfng Vi\u1ec7t\" en-US: \"Vietnamese Sources\" selector: field: language: vi sort: template: - key: author sort-order: given-family ```",
       "type": "object",
       "required": [
         "id",
@@ -340,7 +340,7 @@
       "description": "Citation collapse behavior for multi-item citations.",
       "oneOf": [
         {
-          "description": "Collapse adjacent citation numbers into a numeric range such as `1–3`.",
+          "description": "Collapse adjacent citation numbers into a numeric range such as `1\u20133`.",
           "type": "string",
           "enum": [
             "citation-number"
@@ -747,7 +747,7 @@
           ]
         },
         "sub-label-suffix": {
-          "description": "Suffix after sub-label (e.g., \")\" → \"a)\", \".\" → \"a.\").",
+          "description": "Suffix after sub-label (e.g., \")\" \u2192 \"a)\", \".\" \u2192 \"a.\").",
           "default": ")",
           "type": "string"
         },
@@ -824,6 +824,13 @@
             {
               "type": "null"
             }
+          ]
+        },
+        "locale-override": {
+          "description": "Style-level locale override ID loaded from `locales/overrides/<id>.*`.\n\nThis patches the locale selected by `StyleInfo.default_locale` without duplicating the full base locale. Runtime loading is limited to the style-global config; nested citation or bibliography configs are ignored.",
+          "type": [
+            "string",
+            "null"
           ]
         },
         "localize": {
@@ -1384,15 +1391,15 @@
           "$ref": "#/definitions/MonthFormat"
         },
         "open-range-marker": {
-          "description": "Marker for open-ended ranges (e.g., \"–present\"). None uses locale default.",
+          "description": "Marker for open-ended ranges (e.g., \"\u2013present\"). None uses locale default.",
           "type": [
             "string",
             "null"
           ]
         },
         "range-delimiter": {
-          "description": "Delimiter for date ranges (default: en-dash \"–\").",
-          "default": "–",
+          "description": "Delimiter for date ranges (default: en-dash \"\u2013\").",
+          "default": "\u2013",
           "type": "string"
         },
         "show-seconds": {
@@ -1818,7 +1825,7 @@
           ]
         },
         {
-          "description": "The general term for section locators (e.g., \"section\", \"§\").",
+          "description": "The general term for section locators (e.g., \"section\", \"\u00a7\").",
           "type": "string",
           "enum": [
             "section"
@@ -2552,14 +2559,14 @@
       "description": "Name sorting order for culturally appropriate collation.",
       "oneOf": [
         {
-          "description": "Family name first (Western convention). Example: \"Smith, John\" → \"S\" sorts before \"T\"",
+          "description": "Family name first (Western convention). Example: \"Smith, John\" \u2192 \"S\" sorts before \"T\"",
           "type": "string",
           "enum": [
             "family-given"
           ]
         },
         {
-          "description": "Given name first (Vietnamese convention). Example: \"Nguyễn Văn A\" → \"Nguyễn\" sorts before \"Trần\"",
+          "description": "Given name first (Vietnamese convention). Example: \"Nguy\u1ec5n V\u0103n A\" \u2192 \"Nguy\u1ec5n\" sorts before \"Tr\u1ea7n\"",
           "type": "string",
           "enum": [
             "given-family"
@@ -2712,21 +2719,21 @@
       "description": "Page range formatting options.",
       "oneOf": [
         {
-          "description": "Full expansion: 321-328 → 321–328",
+          "description": "Full expansion: 321-328 \u2192 321\u2013328",
           "type": "string",
           "enum": [
             "expanded"
           ]
         },
         {
-          "description": "Minimal digits: 321-328 → 321–8",
+          "description": "Minimal digits: 321-328 \u2192 321\u20138",
           "type": "string",
           "enum": [
             "minimal"
           ]
         },
         {
-          "description": "Minimal two digits: 321-328 → 321–28",
+          "description": "Minimal two digits: 321-328 \u2192 321\u201328",
           "type": "string",
           "enum": [
             "minimal-two"
@@ -3326,14 +3333,14 @@
       "description": "Sort order presets for bibliography entries.\n\nEach preset encodes the sort key sequence for a citation style family. Use for the `bibliography.sort` field to avoid repeating boilerplate key lists.",
       "oneOf": [
         {
-          "description": "Author → year → title. Standard for author-date styles (APA, Chicago, Harvard).",
+          "description": "Author \u2192 year \u2192 title. Standard for author-date styles (APA, Chicago, Harvard).",
           "type": "string",
           "enum": [
             "author-date-title"
           ]
         },
         {
-          "description": "Author → title → year. Used in some footnote and note styles.",
+          "description": "Author \u2192 title \u2192 year. Used in some footnote and note styles.",
           "type": "string",
           "enum": [
             "author-title-date"
@@ -3628,21 +3635,21 @@
       "description": "Substitute presets for author substitution fallback logic.\n\nThese presets define the order in which fields are tried when the primary author is missing. Most styles follow the standard order, but some have variations.",
       "oneOf": [
         {
-          "description": "Standard substitution order: Editor → Title → Translator. Used by most citation styles (APA, Chicago, etc.).",
+          "description": "Standard substitution order: Editor \u2192 Title \u2192 Translator. Used by most citation styles (APA, Chicago, etc.).",
           "type": "string",
           "enum": [
             "standard"
           ]
         },
         {
-          "description": "Editor-first: Editor → Translator → Title. Prioritizes contributors over title.",
+          "description": "Editor-first: Editor \u2192 Translator \u2192 Title. Prioritizes contributors over title.",
           "type": "string",
           "enum": [
             "editor-first"
           ]
         },
         {
-          "description": "Title-first: Title → Editor → Translator. Used when anonymous works should show title prominently.",
+          "description": "Title-first: Title \u2192 Editor \u2192 Translator. Used when anonymous works should show title prominently.",
           "type": "string",
           "enum": [
             "title-first"
@@ -4865,7 +4872,7 @@
           ]
         },
         {
-          "description": "Symbol form of a term (e.g., \"§\" for section).",
+          "description": "Symbol form of a term (e.g., \"\u00a7\" for section).",
           "type": "string",
           "enum": [
             "symbol"
