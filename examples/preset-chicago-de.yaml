@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=../citum.schema.json
+info:
+  title: "Chicago Author-Date (German Override)"
+  id: "chicago-author-date-de"
+
+preset:
+  preset: chicago-author-date-18th
+
+options:
+  locale-override: de-DE-chicago
+  default-locale: de-DE

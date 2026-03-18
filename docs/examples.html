@@ -682,7 +682,9 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 </div>
                 <p class="text-slate-600 leading-relaxed mb-6">
                     Current bibliography data can carry original text, transliterations, and translations.
-                    Styles then declare how titles and contributor names should render for a given workflow.
+                    Styles then declare how titles and contributor names should render for a given workflow,
+                    and locale overrides can ship style-specific term and phrasing adjustments without cloning
+                    an entire style.
                 </p>
             </div>
 
@@ -816,6 +818,20 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                         <code class="text-xs bg-slate-200 px-1 rounded">options.multilingual</code> values.
                     </p>
                 </div>
+                <div class="border-l-4 border-primary pl-4">
+                    <p class="text-xs text-slate-600 mb-2">
+                        Render the shipped German Chicago locale-override example:
+                    </p>
+                    <div class="bg-slate-900 rounded p-3 overflow-x-auto">
+                        <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">citum</span> render refs \
+  -b tests/fixtures/references-expanded.json \
+  -s examples/preset-chicago-de.yaml</pre>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">
+                        This example keeps Chicago Author-Date as the base style while switching to the shipped
+                        <code class="text-xs bg-slate-200 px-1 rounded">de-DE-chicago</code> locale override.
+                    </p>
+                </div>
             </div>
         </article>
 
@@ -920,7 +936,8 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                     and titles can be expressed as a single preset name
                     instead of spelling out every field. Mix preset
                     shorthand with explicit overrides for maximum clarity
-                    and concision.
+                    and concision. The same idea now applies at the
+                    whole-style level through style presets.
                 </p>
             </div>
             <div class="bg-slate-900 p-6 overflow-x-auto">
@@ -941,6 +958,57 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
 <span class="text-slate-500">#   titles:       apa | chicago | humanities | ieee | journal-emphasis | scientific</span>
 <span class="text-slate-500">#   substitute:   standard | editor-* | editor-translator-* | editor-title-* | editor-translator-title-*</span>
 <span class="text-slate-500">#   citation:     use-preset: numeric-citation</span></pre>
+            </div>
+            <div class="border-t border-slate-200">
+                <div class="px-8 py-4 bg-slate-100">
+                    <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                        Style Presets
+                    </h3>
+                </div>
+                <div class="bg-slate-900 p-6 overflow-x-auto">
+                    <pre class="font-mono text-sm text-slate-300 leading-relaxed">
+<span class="text-slate-500"># Whole-style inheritance with layered overrides</span>
+<span class="text-indigo-400">preset</span>:
+  <span class="text-primary">preset</span>: <span class="text-emerald-400">chicago-notes-18th</span>
+  <span class="text-primary">variant</span>:
+    <span class="text-primary">citation</span>:
+      <span class="text-primary">ibid</span>: <span class="text-emerald-400">~</span>
+
+<span class="text-indigo-400">options</span>:
+  <span class="text-primary">locale-override</span>: <span class="text-emerald-400">de-DE-chicago</span></pre>
+                </div>
+            </div>
+            <div class="bg-white p-6 border-t border-slate-200">
+                <div class="grid gap-4">
+                    <div class="border-l-4 border-emerald-500 pl-4">
+                        <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
+                            Minimal Base Style
+                        </div>
+                        <div class="text-sm text-slate-700">
+                            <code class="text-xs bg-slate-100 px-1 rounded">examples/preset-chicago-notes.yaml</code>
+                            shows a style file that only names the preset.
+                        </div>
+                    </div>
+                    <div class="border-l-4 border-primary pl-4">
+                        <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
+                            Behavioral Variant
+                        </div>
+                        <div class="text-sm text-slate-700">
+                            <code class="text-xs bg-slate-100 px-1 rounded">examples/preset-turabian.yaml</code>
+                            demonstrates a Chicago Notes variant that disables
+                            <code class="text-xs bg-slate-100 px-1 rounded">ibid</code>.
+                        </div>
+                    </div>
+                    <div class="border-l-4 border-indigo-500 pl-4">
+                        <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
+                            Locale + Preset
+                        </div>
+                        <div class="text-sm text-slate-700">
+                            <code class="text-xs bg-slate-100 px-1 rounded">examples/preset-chicago-de.yaml</code>
+                            combines a style preset with a locale override.
+                        </div>
+                    </div>
+                </div>
             </div>
         </article>
 

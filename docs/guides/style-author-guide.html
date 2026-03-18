@@ -220,7 +220,15 @@
                                 Rendering Options
                             </a>
                         </div>
-
+ 
+                        <div class="toc-section">
+                            <div class="toc-section-title">Configuration</div>
+                            <a href="#style-presets" class="sidebar-link">
+                                <span class="material-icons text-sm">chevron_right</span>
+                                Style-Level Presets
+                            </a>
+                        </div>
+ 
                         <div class="toc-section">
                             <div class="toc-section-title">Advanced Patterns</div>
                             <a href="#type-overrides" class="sidebar-link">
@@ -702,6 +710,47 @@
                     </div>
                 </section>
 
+                <!-- Style-Level Presets -->
+                <section id="style-presets" class="scroll-mt-24">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                        <span class="material-icons text-primary">auto_awesome</span>
+                        Style-Level Presets
+                    </h2>
+                    <p class="text-slate-600 mb-6 leading-relaxed">
+                        To avoid duplicating complete styles for the most common formatting families, Citum provides <strong>Style-Level Presets</strong>. These are named, compiled-in styles that you can reference at the top of your style YAML.
+                    </p>
+ 
+                    <div class="grid gap-6 md:grid-cols-2 mb-8">
+                        <div class="bg-white border border-slate-200 rounded-lg p-6">
+                            <h3 class="font-bold text-slate-900 mb-2">Base Presets</h3>
+                            <p class="text-slate-600 text-sm mb-4">Use the <code>preset</code> key to load a complete base style definition.</p>
+                            <div class="bg-slate-900 rounded p-3 overflow-x-auto">
+                                <pre class="font-mono text-xs text-emerald-400">preset: chicago-notes-18th</pre>
+                            </div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-lg p-6">
+                            <h3 class="font-bold text-slate-900 mb-2">Preset Variants</h3>
+                            <p class="text-slate-600 text-sm mb-4">Use a <code>variant</code> delta to express deviations from a base preset (e.g., Turabian).</p>
+                            <div class="bg-slate-900 rounded p-3 overflow-x-auto">
+                                <pre class="font-mono text-xs text-emerald-400">preset: chicago-notes-18th
+variant:
+  citation:
+    ibid: ~</pre>
+                            </div>
+                        </div>
+                    </div>
+ 
+                    <div class="bg-primary/5 border border-primary/10 rounded-lg p-6">
+                        <h3 class="font-bold text-slate-900 mb-2">Presets + Locale Overrides</h3>
+                        <p class="text-slate-700 text-sm mb-4">Combine a style preset with a locale override for language-specific variants without structural duplication.</p>
+                        <div class="bg-slate-900 rounded p-3 overflow-x-auto">
+                            <pre class="font-mono text-xs text-emerald-400">preset: chicago-author-date-18th
+options:
+  locale-override: de-DE-chicago</pre>
+                        </div>
+                    </div>
+                </section>
+ 
                 <!-- Template Components -->
                 <section id="template-components" class="scroll-mt-24">
                     <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
