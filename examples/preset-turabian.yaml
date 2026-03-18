@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=../citum.schema.json
+info:
+  title: "Turabian (Chicago Notes Variant)"
+  id: "turabian-variant"
+
+preset:
+  preset: chicago-notes-18th
+  variant:
+    citation:
+      ibid: ~    # Disable ibid support (Turabian 9th ed.)
+    options:
+      bibliography:
+        entry-suffix: "."
