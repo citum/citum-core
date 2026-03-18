@@ -6,6 +6,7 @@ const {
   loadVerificationPolicy,
   resolveFixtureSufficiency,
   resolveVerificationPolicy,
+  resolveStyleData,
 } = require('./verification-policy');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
@@ -102,7 +103,8 @@ function resolveYamlVerificationPlan(options) {
     citationsFixture = null,
     fixtureFamily = null,
     styleName: explicitStyleName = null,
-    styleData = null,
+    styleData: rawStyleData = null,
+    resolvedStyleData = null,
     styleFormat = null,
     hasBibliography = null,
   } = options;
@@ -121,7 +123,7 @@ function resolveYamlVerificationPlan(options) {
       requiredScenarios: [],
       fixtureSets: [],
     };
-  const sourceName = inferLegacySourceName(styleName, styleData);
+  const sourceName = inferLegacySourceName(styleName, rawStyleData);
   const resolvedLegacyCslPath = legacyCslPath
     ? path.resolve(legacyCslPath)
     : path.join(LEGACY_STYLES_DIR, `${sourceName}.csl`);
@@ -167,4 +169,5 @@ module.exports = {
   isProjectStylePath,
   resolveDefaultCitationFixture,
   resolveYamlVerificationPlan,
+  resolveStyleData,
 };

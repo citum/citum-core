@@ -54,11 +54,21 @@ test('discoverCoreStyles classifies representative style origins and CSL reach',
   assert.deepEqual(unknownOrigins, []);
 });
 
+test('discoverCoreStyles keeps wrapper style baseline identity while resolving preset behavior', () => {
+  const styles = loadStyleMap();
+  const chicagoNotes = styles.get('chicago-notes');
+
+  assert.equal(chicagoNotes.sourceName, 'chicago-notes');
+  assert.equal(chicagoNotes.format, 'note');
+  assert.equal(chicagoNotes.hasBibliography, false);
+});
+
 test('buildNoteStyleLookup indexes shipped note styles', () => {
   const noteStyles = buildNoteStyleLookup();
 
   assert.equal(noteStyles.has('chicago-notes'), true);
   assert.equal(noteStyles.get('chicago-notes').style.options.processing, 'note');
+  assert.equal(Boolean(noteStyles.get('chicago-notes').style.bibliography), true);
   assert.equal(noteStyles.has('apa-7th'), false);
 });
 
@@ -115,14 +125,14 @@ test('verification policy exposes registered divergence metadata for div-004', (
   assert.match(divergence.note, /Missing-name works sort by title/);
 });
 
-test('citation-only styles do not advertise bibliography verification scopes', () => {
+test('citation-only note styles do not advertise bibliography verification scopes', () => {
   const styles = loadStyleMap();
   const policy = loadVerificationPolicy();
-  const chicagoNotes = styles.get('chicago-notes');
-  const stylePolicy = resolveVerificationPolicy('chicago-notes', policy);
+  const chicagoNotesClassic = styles.get('chicago-notes-classic');
+  const stylePolicy = resolveVerificationPolicy('chicago-notes-classic', policy);
 
-  assert.equal(chicagoNotes.hasBibliography, false);
-  assert.deepEqual(getEffectiveVerificationScopes(stylePolicy, chicagoNotes.hasBibliography), ['citation']);
+  assert.equal(chicagoNotesClassic.hasBibliography, false);
+  assert.deepEqual(getEffectiveVerificationScopes(stylePolicy, chicagoNotesClassic.hasBibliography), ['citation']);
 });
 
 test('comparison text helper supports both live-oracle and native-snapshot entry shapes', () => {

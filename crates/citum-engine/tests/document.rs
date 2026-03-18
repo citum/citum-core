@@ -335,7 +335,7 @@ fn given_chicago_note_locator_repeat_when_integral_ibid_is_rendered_then_anchor_
 
 fn given_locale_specific_ibid_term_when_the_style_has_no_ibid_override_then_the_locale_term_is_used_without_base_suffix_punctuation()
  {
-    let mut style = load_style("styles/chicago-notes.yaml");
+    let mut style = load_style("styles/chicago-notes.yaml").into_resolved();
     if let Some(citation) = style.citation.as_mut() {
         citation.suffix = Some(".".to_string());
         citation.ibid = None;
@@ -365,7 +365,7 @@ fn given_locale_specific_ibid_term_when_the_style_has_no_ibid_override_then_the_
 }
 
 fn given_explicit_style_ibid_suffix_when_locale_also_defines_ibid_then_the_style_suffix_wins() {
-    let mut style = load_style("styles/chicago-notes.yaml");
+    let mut style = load_style("styles/chicago-notes.yaml").into_resolved();
     if let Some(citation) = style.citation.as_mut()
         && let Some(ibid) = citation.ibid.as_mut()
     {

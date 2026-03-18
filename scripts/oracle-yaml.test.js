@@ -1,6 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const path = require('node:path');
+const yaml = require('js-yaml');
 
 const {
   mergeStructuredResults,
@@ -8,6 +10,7 @@ const {
   shouldUseStructuredOracle,
 } = require('./oracle-yaml');
 const { resolveYamlVerificationPlan } = require('./lib/style-verification');
+const { resolveStyleData } = require('./lib/verification-policy');
 
 function planFor(styleFile, overrides = {}) {
   return resolveYamlVerificationPlan({
@@ -75,6 +78,39 @@ test('oracle-yaml resolves chicago-author-date and ieee to their scoped family f
 
   assert.equal(path.basename(ieeePlan.legacyCslPath), 'ieee.csl');
   assert.deepEqual(ieeePlan.familyRuns.map((run) => run.setName), ['physics-numeric']);
+});
+
+test('oracle-yaml keeps preset-backed wrapper styles mapped to their filename baseline', () => {
+  const yamlPath = path.join(__dirname, '..', 'styles', 'chicago-notes.yaml');
+  const rawStyleData = yaml.load(fs.readFileSync(yamlPath, 'utf8')) || {};
+  const plan = resolveYamlVerificationPlan({
+    yamlPath,
+    styleData: rawStyleData,
+    resolvedStyleData: resolveStyleData(rawStyleData),
+    styleFormat: 'note',
+    hasBibliography: true,
+  });
+
+  assert.equal(path.basename(plan.legacyCslPath), 'chicago-notes.csl');
+});
+
+test('resolveStyleData deep-merges preset wrappers with local overrides', () => {
+  const yamlPath = path.join(
+    __dirname,
+    '..',
+    'styles',
+    'taylor-and-francis-chicago-author-date.yaml'
+  );
+  const rawStyleData = yaml.load(fs.readFileSync(yamlPath, 'utf8')) || {};
+  const resolved = resolveStyleData(rawStyleData);
+
+  assert.equal(resolved.options['page-range-format'], 'expanded');
+  assert.equal(resolved.options.processing.disambiguate.names, true);
+  assert.equal(resolved.citation.options.contributors.shorten.min, 4);
+  assert.equal(
+    resolved.bibliography['type-templates'].motion_picture[4].prefix,
+    'Directed by '
+  );
 });
 
 test('oracle-yaml sums component summary counts across structured family runs', () => {
