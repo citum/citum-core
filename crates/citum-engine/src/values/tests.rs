@@ -77,6 +77,7 @@ fn test_contributor_values() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let reference = make_reference();
     let hints = ProcHints::default();
@@ -116,6 +117,7 @@ fn test_date_values() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let reference = make_reference();
     let hints = ProcHints::default();
@@ -150,6 +152,7 @@ fn test_et_al() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -311,6 +314,7 @@ fn test_et_al_delimiter_never() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -368,6 +372,7 @@ fn test_et_al_delimiter_always() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -660,6 +665,7 @@ fn test_template_list_suppression() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let reference = Reference::from(LegacyReference {
         id: "multi".to_string(),
@@ -709,6 +715,7 @@ fn test_et_al_use_last() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -761,6 +768,7 @@ fn test_et_al_use_last_overlap() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -806,6 +814,7 @@ fn test_title_hyperlink() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -852,6 +861,7 @@ fn test_title_hyperlink_url_fallback() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -896,6 +906,7 @@ fn test_title_values_smarten_leading_single_quotes() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -935,6 +946,7 @@ fn test_title_values_smarten_starting_apostrophe() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -977,6 +989,7 @@ fn test_title_values_smarten_french_apostrophes() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -1017,6 +1030,7 @@ fn test_title_values_smarten_double_quotes() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -1052,6 +1066,7 @@ fn test_title_values_flip_flop_outer_single_inner_double_quotes() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -1087,6 +1102,7 @@ fn test_title_values_flip_flop_outer_double_inner_single_quotes() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -1122,6 +1138,7 @@ fn test_title_values_preserve_ambiguous_double_quotes() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -1157,6 +1174,7 @@ fn test_title_values_render_djot_markup_as_preformatted() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -1193,6 +1211,7 @@ fn test_title_values_smarten_djot_text_leaves() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -1229,6 +1248,7 @@ fn test_title_values_smarten_djot_double_quotes() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -1265,6 +1285,7 @@ fn test_title_values_inline_link_suppresses_outer_title_link() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -1311,6 +1332,7 @@ fn test_variable_hyperlink() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -1374,6 +1396,7 @@ fn test_editor_label_format() {
             locator_raw: None,
             ref_type: None,
             show_semantics: true,
+            current_template_index: None,
         };
         let values = component
             .values::<PlainText>(&reference, &hints, &options)
@@ -1396,6 +1419,7 @@ fn test_editor_label_format() {
             locator_raw: None,
             ref_type: None,
             show_semantics: true,
+            current_template_index: None,
         };
         let values = component
             .values::<PlainText>(&reference, &hints, &options)
@@ -1418,6 +1442,7 @@ fn test_editor_label_format() {
             locator_raw: None,
             ref_type: None,
             show_semantics: true,
+            current_template_index: None,
         };
         let values = component
             .values::<PlainText>(&reference, &hints, &options)
@@ -1441,6 +1466,7 @@ fn test_term_values() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let reference = make_reference();
     let hints = ProcHints::default();
@@ -1473,6 +1499,7 @@ fn test_template_list_term_suppression() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     // Reference with no editor
     let reference = make_reference();
@@ -1514,6 +1541,7 @@ fn test_date_fallback() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     // Reference with NO issued date
     let reference = Reference::from(LegacyReference {
@@ -1568,6 +1596,7 @@ fn test_strip_periods_global_config() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
 
     let component = TemplateContributor {
@@ -1610,6 +1639,7 @@ fn test_strip_periods_component_override() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
 
     // Component overrides global setting
@@ -1656,6 +1686,7 @@ fn test_strip_periods_no_strip_by_default() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
 
     let component = TemplateContributor {
@@ -1699,6 +1730,7 @@ fn test_should_strip_periods_precedence() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
 
     // Component override takes precedence
@@ -1729,6 +1761,7 @@ fn test_should_strip_periods_precedence() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     assert!(!should_strip_periods(&rendering_default, &options_none));
 }
@@ -1946,6 +1979,7 @@ fn title_value_with_config(title_str: &str, ref_type: &str, config: &Config) -> 
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
     let reference = Reference::from(LegacyReference {
@@ -2103,6 +2137,7 @@ fn test_text_case_structured_title_sentence_apa() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -2161,6 +2196,7 @@ fn test_text_case_structured_title_sentence_nlm() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -2213,6 +2249,7 @@ fn test_text_case_non_english_falls_back_to_as_is() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
 
@@ -2256,6 +2293,7 @@ fn test_text_case_template_level_override() {
         locator_raw: None,
         ref_type: None,
         show_semantics: true,
+        current_template_index: None,
     };
     let hints = ProcHints::default();
     let reference = Reference::from(LegacyReference {

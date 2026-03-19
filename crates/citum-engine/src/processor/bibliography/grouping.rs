@@ -173,6 +173,7 @@ impl Processor {
                 sets: &self.compound_sets,
             },
             self.show_semantics,
+            self.inject_ast_indices,
         );
 
         sorted_refs
@@ -417,6 +418,7 @@ impl Processor {
             locator_raw: None,
             ref_type: None,
             show_semantics: self.show_semantics,
+            current_template_index: None,
         };
 
         ProcEntryMetadata {

@@ -39,6 +39,22 @@ mod tests {
     }
 
     #[test]
+    fn test_html_semantic_attributes_include_template_index() {
+        let component = ProcTemplateComponent {
+            template_component: tc_title!(Primary, emph = true),
+            template_index: Some(2),
+            value: "My Title".to_string(),
+            ..Default::default()
+        };
+
+        let result = render_component_with_format::<Html>(&component);
+        assert_eq!(
+            result,
+            r#"<span class="csln-title" data-index="2"><i>My Title</i></span>"#
+        );
+    }
+
+    #[test]
     fn test_djot_title() {
         let component = ProcTemplateComponent {
             template_component: tc_title!(Primary, emph = true),
@@ -138,6 +154,7 @@ mod tests {
     fn test_typst_contributor_small_caps() {
         let component = ProcTemplateComponent {
             template_component: tc_contributor!(Author, Long, small_caps = true),
+            template_index: Some(4),
             value: "Smith".to_string(),
             ..Default::default()
         };

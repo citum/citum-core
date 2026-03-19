@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 mod common;
 use common::*;
 
-use citum_engine::Processor;
+use citum_engine::{Processor, render::html::Html};
 use citum_schema::{
     BibliographySpec, CitationSpec, Style, StyleInfo,
     options::{
@@ -227,6 +227,121 @@ fn build_article_journal_no_page_fallback_style() -> Style {
         }),
         ..Default::default()
     }
+}
+
+fn bibliography_html_injects_sparse_indices_from_type_template() {
+    let style_yaml = r#"
+info:
+  title: Indexed Bibliography Preview
+  id: indexed-bibliography-preview
+bibliography:
+  type-templates:
+    article-journal:
+      - contributor: author
+        form: long
+      - variable: doi
+        prefix: " "
+      - title: primary
+        prefix: ". "
+"#;
+    let style: Style = serde_yaml::from_str(style_yaml).expect("style should parse");
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_value(serde_json::json!({
+        "id": "ITEM-1",
+        "type": "article-journal",
+        "title": "Preview Article",
+        "author": [{"family": "Smith", "given": "Jane"}]
+    }))
+    .expect("legacy fixture should parse");
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert("ITEM-1".to_string(), legacy.into());
+
+    let processor = Processor::new(style, bib).with_inject_ast_indices(true);
+    let rendered = processor.render_bibliography_with_format::<Html>();
+
+    assert!(
+        rendered.contains(r#"class="csln-author" data-index="0""#),
+        "author wrapper should carry the first type-template index: {rendered}"
+    );
+    assert!(
+        rendered.contains(r#"class="csln-title" data-index="2""#),
+        "title wrapper should carry the sparse third type-template index: {rendered}"
+    );
+    assert!(
+        !rendered.contains(r#"data-index="1""#),
+        "missing DOI output should preserve sparse template indices: {rendered}"
+    );
+}
+
+fn build_list_index_preview_style(use_type_template: bool) -> Style {
+    let bibliography_yaml = if use_type_template {
+        r#"
+bibliography:
+  type-templates:
+    article-journal:
+      - items:
+          - contributor: author
+            form: long
+          - title: primary
+            prefix: ". "
+        delimiter: ", "
+"#
+    } else {
+        r#"
+bibliography:
+  template:
+    - items:
+        - contributor: author
+          form: long
+        - title: primary
+          prefix: ". "
+      delimiter: ", "
+"#
+    };
+
+    let yaml = format!(
+        r#"
+info:
+  title: List Index Preview
+  id: {}
+{}
+"#,
+        if use_type_template {
+            "list-index-preview-type"
+        } else {
+            "list-index-preview-default"
+        },
+        bibliography_yaml
+    );
+
+    serde_yaml::from_str(&yaml).expect("style should parse")
+}
+
+fn assert_list_preview_inherits_parent_index(use_type_template: bool) {
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_value(serde_json::json!({
+        "id": "ITEM-1",
+        "type": "article-journal",
+        "title": "Preview Article",
+        "author": [{"family": "Smith", "given": "Jane"}]
+    }))
+    .expect("legacy fixture should parse");
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert("ITEM-1".to_string(), legacy.into());
+
+    let processor = Processor::new(build_list_index_preview_style(use_type_template), bib)
+        .with_inject_ast_indices(true);
+    let rendered = processor.render_bibliography_with_format::<Html>();
+
+    assert!(
+        rendered.contains(r#"class="csln-author" data-index="0""#),
+        "list-rendered author should inherit the parent top-level index: {rendered}"
+    );
+    assert!(
+        rendered.contains(r#"class="csln-title" data-index="0""#),
+        "list-rendered title should inherit the parent top-level index: {rendered}"
+    );
 }
 
 fn make_article_journal_with_detail(
@@ -1040,5 +1155,31 @@ mod numeric_styles {
             "A numeric bibliography should reuse the citation number assigned during citation rendering.",
         );
         super::numeric_bibliography_uses_assigned_citation_numbers();
+    }
+}
+
+mod annotated_html_preview {
+    use super::announce_behavior;
+    use rstest::rstest;
+
+    #[test]
+    fn bibliography_type_templates_preserve_sparse_component_indices() {
+        announce_behavior(
+            "Annotated bibliography HTML should preserve original type-template indices when intermediate components do not render.",
+        );
+        super::bibliography_html_injects_sparse_indices_from_type_template();
+    }
+
+    #[rstest]
+    #[case::default_template(false, "default bibliography template")]
+    #[case::type_template(true, "matching bibliography type-template")]
+    fn given_a_top_level_list_when_rendering_annotated_html_then_list_children_inherit_the_parent_index(
+        #[case] use_type_template: bool,
+        #[case] source: &str,
+    ) {
+        announce_behavior(&format!(
+            "Annotated bibliography HTML should map list-rendered child wrappers back to the parent top-level index when rendering via {source}."
+        ));
+        super::assert_list_preview_inherits_parent_index(use_type_template);
     }
 }

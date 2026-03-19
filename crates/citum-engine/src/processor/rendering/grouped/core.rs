@@ -653,24 +653,22 @@ impl Renderer<'_> {
     {
         let bib_spec = self.style.bibliography.as_ref()?;
 
-        // Resolve default template (handles preset vs explicit)
         let item_language = crate::values::effective_item_language(reference);
-        let default_template = bib_spec.resolve_template_for_language(item_language.as_deref())?;
+        let default_template = bib_spec.resolve_template_for_language(item_language.as_deref());
 
-        // Determine effective template (override or default)
         let ref_type = reference.ref_type();
-        let template = if let Some(type_templates) = &bib_spec.type_templates {
+        let matched_type_template = bib_spec.type_templates.as_ref().and_then(|type_templates| {
             let mut matched_template = None;
-            for (selector, t) in type_templates {
+            for (selector, template) in type_templates {
                 if selector.matches(&ref_type) {
-                    matched_template = Some(t.clone());
+                    matched_template = Some(template.clone());
                     break;
                 }
             }
-            matched_template.unwrap_or(default_template)
-        } else {
-            default_template
-        };
+            matched_template
+        });
+
+        let template = matched_type_template.or(default_template)?;
 
         let template = self.apply_article_journal_bibliography_policy(reference, template);
 
@@ -763,6 +761,7 @@ impl Renderer<'_> {
             locator_raw,
             ref_type: Some(ref_type.clone()),
             show_semantics: self.show_semantics,
+            current_template_index: None,
         };
         let hint = self.build_template_render_hint(
             reference,
@@ -774,12 +773,17 @@ impl Renderer<'_> {
         let mut tracker = TemplateComponentTracker::default();
         let components: Vec<ProcTemplateComponent> = template
             .iter()
-            .filter_map(|component| {
+            .enumerate()
+            .filter_map(|(template_index, component)| {
+                let mut component_options = options.clone();
+                component_options.current_template_index =
+                    self.inject_ast_indices.then_some(template_index);
                 self.render_template_component_with_format::<F>(
                     reference,
                     &ref_type,
-                    &options,
+                    &component_options,
                     &hint,
+                    template_index,
                     component,
                     &mut tracker,
                 )
@@ -863,12 +867,17 @@ impl Renderer<'_> {
         }
     }
 
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "Template rendering needs the resolved context plus the source template index."
+    )]
     fn render_template_component_with_format<F>(
         &self,
         reference: &Reference,
         ref_type: &str,
         options: &RenderOptions<'_>,
         hint: &ProcHints,
+        template_index: usize,
         component: &TemplateComponent,
         tracker: &mut TemplateComponentTracker,
     ) -> Option<ProcTemplateComponent>
@@ -894,6 +903,7 @@ impl Renderer<'_> {
 
         Some(ProcTemplateComponent {
             template_component: resolved_component,
+            template_index: self.inject_ast_indices.then_some(template_index),
             value: values.value,
             prefix: values.prefix,
             suffix: values.suffix,

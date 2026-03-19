@@ -40,6 +40,8 @@ pub struct Renderer<'a> {
     pub compound_sets: &'a IndexMap<String, Vec<String>>,
     /// Whether to output semantic markup (HTML spans, Djot attributes).
     pub show_semantics: bool,
+    /// Whether to attach source template indices to rendered semantic wrappers.
+    pub inject_ast_indices: bool,
 }
 
 /// Borrowed compound-set context for rendering.
@@ -136,6 +138,7 @@ impl<'a> Renderer<'a> {
         citation_numbers: &'a RefCell<HashMap<String, usize>>,
         compound: CompoundRenderData<'a>,
         show_semantics: bool,
+        inject_ast_indices: bool,
     ) -> Self {
         Self {
             style: resources.style,
@@ -148,6 +151,7 @@ impl<'a> Renderer<'a> {
             compound_member_index: compound.member_index,
             compound_sets: compound.sets,
             show_semantics,
+            inject_ast_indices,
         }
     }
 
@@ -377,6 +381,7 @@ impl<'a> Renderer<'a> {
             locator_raw,
             ref_type,
             show_semantics: self.show_semantics,
+            current_template_index: None,
         }
     }
 

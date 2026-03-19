@@ -41,6 +41,7 @@ impl Default for Processor {
             compound_member_index,
             compound_groups: RefCell::new(IndexMap::new()),
             show_semantics: true,
+            inject_ast_indices: false,
         }
     }
 }
@@ -68,6 +69,7 @@ impl Processor {
             compound_member_index,
             compound_groups: RefCell::new(IndexMap::new()),
             show_semantics: true,
+            inject_ast_indices: false,
         };
 
         // Pre-calculate hints for disambiguation.
@@ -324,6 +326,18 @@ impl Processor {
             Locale::en_us()
         };
         Self::with_locale_and_compound_sets(style, bibliography, locale, IndexMap::new())
+    }
+
+    /// Return a copy of the processor that injects source template indices into semantic HTML.
+    #[must_use]
+    pub fn with_inject_ast_indices(mut self, inject_ast_indices: bool) -> Self {
+        self.inject_ast_indices = inject_ast_indices;
+        self
+    }
+
+    /// Enable or disable source template index injection for semantic HTML output.
+    pub fn set_inject_ast_indices(&mut self, inject_ast_indices: bool) {
+        self.inject_ast_indices = inject_ast_indices;
     }
 
     /// Return the global style configuration.
