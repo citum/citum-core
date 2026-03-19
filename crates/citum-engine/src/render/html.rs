@@ -5,8 +5,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 //! HTML output format.
 
-use super::format::OutputFormat;
+use super::format::{OutputFormat, SemanticAttribute};
 use citum_schema::template::WrapPunctuation;
+use std::fmt::Write;
 
 #[derive(Default, Clone)]
 /// Renders processed citations and bibliography entries as HTML fragments.
@@ -30,6 +31,10 @@ impl Html {
             }
         }
         escaped
+    }
+
+    fn escape_attribute_value(value: &str) -> String {
+        value.replace('&', "&amp;").replace('"', "&quot;")
     }
 }
 
@@ -99,6 +104,29 @@ impl OutputFormat for Html {
             return content;
         }
         format!(r#"<span class="{class}">{content}</span>"#)
+    }
+
+    fn semantic_with_attributes(
+        &self,
+        class: &str,
+        content: Self::Output,
+        attributes: &[SemanticAttribute],
+    ) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+
+        let mut extra_attrs = String::new();
+        for attribute in attributes {
+            let _ = write!(
+                &mut extra_attrs,
+                r#" {}="{}""#,
+                attribute.name,
+                Self::escape_attribute_value(&attribute.value)
+            );
+        }
+
+        format!(r#"<span class="{class}"{extra_attrs}>{content}</span>"#)
     }
 
     fn citation(&self, ids: Vec<String>, content: Self::Output) -> Self::Output {

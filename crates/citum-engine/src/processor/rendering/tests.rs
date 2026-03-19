@@ -277,6 +277,7 @@ fn affix_content_normalizes_prefix_and_suffix_spacing() {
             sets: &compound_sets,
         },
         true,
+        false,
     );
     let fmt = crate::render::plain::PlainText;
 
@@ -372,6 +373,7 @@ fn grouping_helper_matches_citation_wide_preserve_behavior() {
             sets: &compound_sets,
         },
         true,
+        false,
     );
     let items = vec![
         CitationItem {

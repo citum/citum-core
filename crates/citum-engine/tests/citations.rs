@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 mod common;
 use common::*;
 
-use citum_engine::Processor;
+use citum_engine::{Processor, render::html::Html};
 use citum_schema::{
     CitationSpec, Style, StyleInfo,
     citation::{Citation, CitationItem, CitationMode, IntegralNameState},
@@ -1249,6 +1249,59 @@ fn grouped_integral_mode_displays_first_author_only() {
     run_test_case_native(&input, &citation_items, expected, "citation");
 }
 
+fn citation_html_injects_sparse_template_indices_when_enabled() {
+    let style_yaml = r#"
+info:
+  title: Indexed Citation Preview
+  id: indexed-citation-preview
+citation:
+  template:
+    - title: primary
+    - variable: doi
+      prefix: ". "
+    - variable: url
+      prefix: " "
+"#;
+    let style: Style = serde_yaml::from_str(style_yaml).expect("style should parse");
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_value(serde_json::json!({
+        "id": "ITEM-1",
+        "type": "book",
+        "title": "Preview Book",
+        "URL": "https://example.com/preview-book"
+    }))
+    .expect("legacy fixture should parse");
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert("ITEM-1".to_string(), legacy.into());
+
+    let processor = Processor::new(style, bib).with_inject_ast_indices(true);
+    let citation = Citation {
+        items: vec![CitationItem {
+            id: "ITEM-1".to_string(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let rendered = processor
+        .process_citation_with_format::<Html>(&citation)
+        .expect("citation should render");
+
+    assert!(
+        rendered.contains(r#"class="csln-title" data-index="0""#),
+        "title wrapper should carry the first template index: {rendered}"
+    );
+    assert!(
+        rendered.contains(r#"class="csln-url" data-index="2""#),
+        "url wrapper should carry the sparse third template index: {rendered}"
+    );
+    assert!(
+        !rendered.contains(r#"data-index="1""#),
+        "missing DOI output should preserve sparse template indices: {rendered}"
+    );
+}
+
 mod integral_name_memory {
     use super::announce_behavior;
 
@@ -1482,5 +1535,17 @@ mod note_style_positions {
             "Integral grouped rendering should display only the first item's author.",
         );
         super::grouped_integral_mode_displays_first_author_only();
+    }
+}
+
+mod annotated_html_preview {
+    use super::announce_behavior;
+
+    #[test]
+    fn citation_indices_stay_sparse_when_template_components_do_not_render() {
+        announce_behavior(
+            "Annotated citation HTML should preserve the original template indices when intermediate components do not render.",
+        );
+        super::citation_html_injects_sparse_template_indices_when_enabled();
     }
 }

@@ -87,6 +87,8 @@ pub struct Processor {
     /// Whether to output semantic markup (HTML spans, Djot attributes).
     /// Defaults to true; set to false to suppress class attributes (e.g. `--no-semantics`).
     pub show_semantics: bool,
+    /// Whether to annotate semantic HTML wrappers with source template indices.
+    pub inject_ast_indices: bool,
 }
 
 /// Processed output containing citations and bibliography.

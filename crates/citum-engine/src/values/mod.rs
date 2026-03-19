@@ -457,6 +457,7 @@ pub enum RenderContext {
 }
 
 /// Options for rendering.
+#[derive(Clone)]
 pub struct RenderOptions<'a> {
     /// Effective configuration after style and default resolution.
     pub config: &'a Config,
@@ -475,6 +476,8 @@ pub struct RenderOptions<'a> {
     pub ref_type: Option<String>,
     /// Whether to output semantic markup (HTML spans, Djot attributes).
     pub show_semantics: bool,
+    /// The current top-level template index, when propagating preview annotations.
+    pub current_template_index: Option<usize>,
 }
 
 /// Trait for extracting values from template components.

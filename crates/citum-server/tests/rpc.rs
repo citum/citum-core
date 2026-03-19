@@ -131,6 +131,28 @@ fn render_bibliography_html_returns_wrapped_markup() {
     );
 }
 
+#[test]
+fn render_bibliography_html_injects_template_indices_when_requested() {
+    let req = make_request(
+        13,
+        "render_bibliography",
+        json!({
+            "style_path": apa_style_path(),
+            "refs": hawking_refs(),
+            "output_format": "html",
+            "inject_ast_indices": true
+        }),
+    );
+    let result = dispatch(req).expect("dispatch should succeed");
+    let content = result["result"]["content"]
+        .as_str()
+        .expect("content should be a string");
+    assert!(
+        content.contains(r#"data-index="0""#),
+        "html bibliography should include template indices when requested: {content}"
+    );
+}
+
 // --- render_citation ---
 
 #[test]
@@ -177,6 +199,30 @@ fn render_citation_html_returns_markup() {
     assert!(
         citation.contains("csln-citation"),
         "html citation should contain citation wrapper: {citation}"
+    );
+}
+
+#[test]
+fn render_citation_html_injects_template_indices_when_requested() {
+    let req = make_request(
+        14,
+        "render_citation",
+        json!({
+            "style_path": apa_style_path(),
+            "refs": hawking_refs(),
+            "output_format": "html",
+            "inject_ast_indices": true,
+            "citation": {
+                "id": "cite-1",
+                "items": [{"id": "ITEM-2"}]
+            }
+        }),
+    );
+    let result = dispatch(req).expect("dispatch should succeed");
+    let citation = result["result"].as_str().expect("result should be string");
+    assert!(
+        citation.contains(r#"class="csln-issued" data-index="1""#),
+        "html citation should annotate the rendered citation component when requested: {citation}"
     );
 }
 

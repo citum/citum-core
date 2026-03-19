@@ -310,6 +310,7 @@ mod tests {
                     ..Default::default()
                 },
             ),
+            template_index: None,
             value: "Publisher1".to_string(),
             prefix: None,
             suffix: None,
@@ -331,6 +332,7 @@ mod tests {
                     ..Default::default()
                 },
             ),
+            template_index: None,
             value: "Place".to_string(),
             prefix: None,
             suffix: None,
@@ -374,6 +376,7 @@ mod tests {
                     ..Default::default()
                 },
             ),
+            template_index: None,
             value: "Eds.".to_string(),
             prefix: None,
             suffix: None,
@@ -390,6 +393,7 @@ mod tests {
                 rendering: Rendering::default(),
                 ..Default::default()
             }),
+            template_index: None,
             value: "Title".to_string(),
             prefix: None,
             suffix: None,
@@ -461,6 +465,7 @@ mod tests {
                     ..Default::default()
                 },
             ),
+            template_index: None,
             value: "Hawking, S.".to_string(),
             prefix: None,
             suffix: None,
@@ -480,6 +485,7 @@ mod tests {
                 },
                 ..Default::default()
             }),
+            template_index: None,
             value: "1988".to_string(),
             prefix: None,
             suffix: None,
@@ -526,6 +532,7 @@ mod tests {
                 },
                 ..Default::default()
             }),
+            template_index: None,
             value: "322(10)".to_string(),
             prefix: None,
             suffix: None,
@@ -546,6 +553,7 @@ mod tests {
                 },
                 ..Default::default()
             }),
+            template_index: None,
             value: "891–921".to_string(),
             prefix: None,
             suffix: None,
@@ -565,6 +573,7 @@ mod tests {
                 },
                 ..Default::default()
             }),
+            template_index: None,
             value: "10.1002/andp.19053221004".to_string(),
             prefix: None,
             suffix: None,
@@ -614,6 +623,7 @@ mod tests {
                         ..Default::default()
                     },
                 ),
+                template_index: None,
                 value: value.to_string(),
                 prefix: None,
                 suffix: None,

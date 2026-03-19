@@ -11,6 +11,8 @@ use citum_schema::template::{Rendering, TemplateComponent, TitleType, WrapPunctu
 pub struct ProcTemplateComponent {
     /// The original template component (for rendering instructions).
     pub template_component: TemplateComponent,
+    /// The 0-based source index in the active layout template, when requested.
+    pub template_index: Option<usize>,
     /// The processed values.
     pub value: String,
     /// Optional prefix from value extraction.
@@ -43,7 +45,7 @@ pub struct ProcEntry {
     pub metadata: super::format::ProcEntryMetadata,
 }
 
-use super::format::OutputFormat;
+use super::format::{OutputFormat, SemanticAttribute};
 use super::plain::PlainText;
 
 /// Resolve the semantic CSS class for a rendered component based on its template type.
@@ -200,7 +202,16 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
 
     // 6. Apply semantic class based on component type
     if show_semantics && let Some(class) = resolve_semantic_class(component) {
-        output = fmt.semantic(&class, output);
+        let semantic_attributes = component
+            .template_index
+            .map(|index| {
+                vec![SemanticAttribute {
+                    name: "data-index",
+                    value: index.to_string(),
+                }]
+            })
+            .unwrap_or_default();
+        output = fmt.semantic_with_attributes(&class, output, &semantic_attributes);
     }
 
     output

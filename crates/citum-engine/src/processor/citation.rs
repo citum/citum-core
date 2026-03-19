@@ -150,6 +150,7 @@ impl Processor {
                 sets: &self.compound_sets,
             },
             self.show_semantics,
+            self.inject_ast_indices,
         );
         let processing = citation_config.processing.clone().unwrap_or_default();
         let rendered_groups = if matches!(

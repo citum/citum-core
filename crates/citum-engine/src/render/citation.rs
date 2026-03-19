@@ -152,6 +152,7 @@ mod tests {
                     rendering: Rendering::default(),
                     ..Default::default()
                 }),
+                template_index: None,
                 value: "Kuhn".to_string(),
                 prefix: None,
                 suffix: None,
@@ -168,6 +169,7 @@ mod tests {
                     rendering: Rendering::default(),
                     ..Default::default()
                 }),
+                template_index: None,
                 value: "1962".to_string(),
                 prefix: None,
                 suffix: None,
@@ -205,6 +207,7 @@ mod tests {
                     },
                     ..Default::default()
                 }),
+                template_index: None,
                 value: "colon".to_string(),
                 prefix: None,
                 suffix: None,
@@ -221,6 +224,7 @@ mod tests {
                     rendering: Rendering::default(),
                     ..Default::default()
                 }),
+                template_index: None,
                 value: "period".to_string(),
                 prefix: None,
                 suffix: None,
@@ -359,6 +363,7 @@ ENDING IN COMMA
                     },
                     ..Default::default()
                 }),
+                template_index: None,
                 value: value.to_string(),
                 prefix: None,
                 suffix: None,
@@ -375,6 +380,7 @@ ENDING IN COMMA
                     rendering: Rendering::default(),
                     ..Default::default()
                 }),
+                template_index: None,
                 value: heading["ENDING IN ".len()..].to_ascii_lowercase(),
                 prefix: None,
                 suffix: None,

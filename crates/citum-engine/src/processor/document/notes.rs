@@ -462,6 +462,7 @@ impl Processor {
                 sets: &self.compound_sets,
             },
             self.show_semantics,
+            self.inject_ast_indices,
         );
         let anchor_position = match citation.position.as_ref() {
             Some(

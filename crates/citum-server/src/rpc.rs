@@ -47,6 +47,13 @@ impl OutputFormat {
     }
 }
 
+fn parse_inject_ast_indices(params: &Value) -> bool {
+    params
+        .get("inject_ast_indices")
+        .and_then(Value::as_bool)
+        .unwrap_or(false)
+}
+
 #[derive(Debug, Serialize)]
 struct BibliographyResult {
     format: OutputFormat,
@@ -97,6 +104,7 @@ fn render_citation(params: &Value, id: Value) -> Result<Value, ServerError> {
         .get("citation")
         .ok_or_else(|| ServerError::MissingField("citation".to_string()))?;
     let output_format = OutputFormat::parse(params)?;
+    let inject_ast_indices = parse_inject_ast_indices(params);
 
     // Load the style.
     let style = load_style(style_path)?;
@@ -109,7 +117,8 @@ fn render_citation(params: &Value, id: Value) -> Result<Value, ServerError> {
         .map_err(|e| ServerError::CitationError(e.to_string()))?;
 
     // Create processor and render.
-    let processor = Processor::new(style, bibliography);
+    let mut processor = Processor::new(style, bibliography);
+    processor.set_inject_ast_indices(inject_ast_indices);
 
     let result = render_citation_with_format(&processor, &citation, output_format)
         .map_err(|e| ServerError::CitationError(e.to_string()))?;
@@ -131,6 +140,7 @@ fn render_bibliography(params: &Value, id: Value) -> Result<Value, ServerError> 
         .get("refs")
         .ok_or_else(|| ServerError::MissingField("refs".to_string()))?;
     let output_format = OutputFormat::parse(params)?;
+    let inject_ast_indices = parse_inject_ast_indices(params);
 
     // Load the style.
     let style = load_style(style_path)?;
@@ -140,7 +150,8 @@ fn render_bibliography(params: &Value, id: Value) -> Result<Value, ServerError> 
         .map_err(|e| ServerError::BibliographyError(e.to_string()))?;
 
     // Create processor and render bibliography.
-    let processor = Processor::new(style, bibliography);
+    let mut processor = Processor::new(style, bibliography);
+    processor.set_inject_ast_indices(inject_ast_indices);
 
     let content = render_bibliography_with_format(&processor, output_format)?;
     let entries = matches!(output_format, OutputFormat::Plain).then(|| {

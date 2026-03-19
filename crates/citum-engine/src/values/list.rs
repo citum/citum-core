@@ -60,6 +60,7 @@ impl ComponentValues for TemplateList {
                 // Use the central rendering logic to apply global config, local settings, and overrides
                 let proc_item = crate::render::ProcTemplateComponent {
                     template_component: item.clone(),
+                    template_index: options.current_template_index,
                     value: v.value,
                     prefix: v.prefix,
                     suffix: v.suffix,

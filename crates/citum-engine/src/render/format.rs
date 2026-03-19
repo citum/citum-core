@@ -7,6 +7,15 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 use citum_schema::template::WrapPunctuation;
 
+/// Extra attributes applied to semantic wrappers when a renderer supports them.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SemanticAttribute {
+    /// The attribute name.
+    pub name: &'static str,
+    /// The attribute value.
+    pub value: String,
+}
+
 /// Trait for defining how to render template components into a specific format.
 ///
 /// Implementations of this trait define how various formatting instructions
@@ -63,6 +72,19 @@ pub trait OutputFormat: Default + Clone {
     /// This is used for machine readability or fine-grained CSS styling.
     /// Examples include "csln-title", "csln-author", "csln-doi".
     fn semantic(&self, class: &str, content: Self::Output) -> Self::Output;
+
+    /// Apply a semantic identifier plus optional attributes to the content.
+    ///
+    /// Formats that do not support extra attributes can ignore them and reuse
+    /// [`Self::semantic`].
+    fn semantic_with_attributes(
+        &self,
+        class: &str,
+        content: Self::Output,
+        _attributes: &[SemanticAttribute],
+    ) -> Self::Output {
+        self.semantic(class, content)
+    }
 
     /// Render a full citation container with one or more reference IDs.
     fn citation(&self, _ids: Vec<String>, content: Self::Output) -> Self::Output {
