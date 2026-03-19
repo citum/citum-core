@@ -66,7 +66,7 @@ pub use locale::Locale;
 pub use options::Config;
 pub use options::TextCase;
 pub use presets::{ContributorPreset, DatePreset, SortPreset, SubstitutePreset, TitlePreset};
-pub use style_preset::{StylePreset, StylePresetSpec, StyleVariantDelta};
+pub use style_preset::StylePreset;
 pub use template::{
     Rendering, TemplateComponent, TemplateContributor, TemplateDate, TemplateList, TemplateNumber,
     TemplateTerm, TemplateTitle, TemplateVariable, WrapPunctuation,
@@ -90,6 +90,7 @@ pub struct Style {
     #[serde(default = "default_version")]
     pub version: String,
     /// Style metadata.
+    #[serde(default)]
     pub info: StyleInfo,
     /// Named reusable templates.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -113,7 +114,14 @@ pub struct Style {
     /// `citation`, and `bibliography` keys at the same document level take
     /// precedence over the resolved preset.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub preset: Option<style_preset::StylePresetSpec>,
+    pub preset: Option<style_preset::StylePreset>,
+    /// Raw YAML captured when the style was loaded via [`Style::from_yaml_str`]
+    /// or [`Style::from_yaml_bytes`]. Used by [`merge_style_overlay`] for
+    /// null-aware overlay merging (e.g., `ibid: ~` correctly clears an
+    /// inherited preset value). Absent in programmatically-constructed styles.
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    #[serde(skip, default)]
+    pub raw_yaml: Option<serde_yaml::Value>,
 }
 
 impl Style {
@@ -133,30 +141,56 @@ impl Style {
     /// Internal recursive resolver with loop protection.
     #[must_use]
     pub fn into_resolved_recursive(self, visited: &mut HashSet<StylePreset>) -> Self {
-        let Some(spec) = self.preset.clone() else {
+        let Some(preset) = self.preset.clone() else {
             return self;
         };
 
-        if visited.contains(spec.preset()) {
+        if visited.contains(&preset) {
             // Loop detected: return the style as-is to avoid infinite recursion.
             return self;
         }
-        visited.insert(spec.preset().clone());
+        visited.insert(preset.clone());
 
-        // 1. Resolve base preset + variant delta (recursively).
-        let mut effective = spec.resolve_with_visited(visited);
+        // 1. Load the preset base (recursively resolves if the base itself has a preset).
+        let mut effective = preset.resolve_with_visited(visited);
 
         // 2. Apply style-level overrides from the local file (self).
-        // These take precedence over both the base preset and the variant delta.
         merge_style_overlay(&mut effective, &self);
 
-        // 3. Keep the style-level metadata from the local file when explicitly
-        // provided, preserving inherited preset metadata otherwise.
+        // 3. Preserve local file metadata for round-tripping.
         effective.version = self.version;
-        // Keep the original preset spec for metadata round-tripping.
         effective.preset = self.preset;
 
         effective
+    }
+
+    /// Parse a Citum style from a YAML string, preserving raw YAML for
+    /// null-aware overlay merging during preset resolution.
+    ///
+    /// Preferred over `serde_yaml::from_str` when the style may be preset-backed,
+    /// so that `ibid: ~` and similar null overrides correctly clear inherited values.
+    ///
+    /// # Errors
+    ///
+    /// Returns a serde error if YAML parsing or deserialization fails.
+    pub fn from_yaml_str(s: &str) -> Result<Self, serde_yaml::Error> {
+        let raw: serde_yaml::Value = serde_yaml::from_str(s)?;
+        let mut style: Style = serde_yaml::from_value(raw.clone())?;
+        style.raw_yaml = Some(raw);
+        Ok(style)
+    }
+
+    /// Parse a Citum style from YAML bytes, preserving raw YAML for
+    /// null-aware overlay merging during preset resolution.
+    ///
+    /// # Errors
+    ///
+    /// Returns a serde error if YAML parsing or deserialization fails.
+    pub fn from_yaml_bytes(bytes: &[u8]) -> Result<Self, serde_yaml::Error> {
+        let raw: serde_yaml::Value = serde_yaml::from_slice(bytes)?;
+        let mut style: Style = serde_yaml::from_value(raw.clone())?;
+        style.raw_yaml = Some(raw);
+        Ok(style)
     }
 }
 
@@ -179,17 +213,30 @@ pub(crate) fn merge_style_overlay(base: &mut Style, overlay: &Style) {
         }
     }
 
-    if let Some(citation) = &overlay.citation {
-        base.citation = Some(match &base.citation {
-            Some(existing) => merge_serialized(existing.clone(), citation),
-            None => citation.clone(),
+    let raw_citation = overlay.raw_yaml.as_ref().and_then(|v| v.get("citation"));
+    if raw_citation.is_some() || overlay.citation.is_some() {
+        base.citation = Some(match (&base.citation, raw_citation) {
+            (Some(existing), Some(raw)) => merge_serialized_value(existing.clone(), raw),
+            (Some(existing), None) => {
+                merge_serialized(existing.clone(), overlay.citation.as_ref().unwrap())
+            }
+            (None, Some(raw)) => serde_yaml::from_value(raw.clone()).expect("citation parses"),
+            (None, None) => overlay.citation.clone().unwrap(),
         });
     }
 
-    if let Some(bibliography) = &overlay.bibliography {
-        base.bibliography = Some(match &base.bibliography {
-            Some(existing) => merge_serialized(existing.clone(), bibliography),
-            None => bibliography.clone(),
+    let raw_bibliography = overlay
+        .raw_yaml
+        .as_ref()
+        .and_then(|v| v.get("bibliography"));
+    if raw_bibliography.is_some() || overlay.bibliography.is_some() {
+        base.bibliography = Some(match (&base.bibliography, raw_bibliography) {
+            (Some(existing), Some(raw)) => merge_serialized_value(existing.clone(), raw),
+            (Some(existing), None) => {
+                merge_serialized(existing.clone(), overlay.bibliography.as_ref().unwrap())
+            }
+            (None, Some(raw)) => serde_yaml::from_value(raw.clone()).expect("bibliography parses"),
+            (None, None) => overlay.bibliography.clone().unwrap(),
         });
     }
 
@@ -199,21 +246,6 @@ pub(crate) fn merge_style_overlay(base: &mut Style, overlay: &Style) {
             None => custom.clone(),
         });
     }
-}
-
-pub(crate) fn merge_optional_serialized<T>(slot: &mut Option<T>, overlay: &serde_yaml::Value)
-where
-    T: Clone + DeserializeOwned + Serialize,
-{
-    if matches!(overlay, serde_yaml::Value::Null) {
-        *slot = None;
-        return;
-    }
-
-    *slot = Some(match slot.as_ref() {
-        Some(existing) => merge_serialized_value(existing.clone(), overlay),
-        None => serde_yaml::from_value(overlay.clone()).expect("valid serialized overlay"),
-    });
 }
 
 pub(crate) fn merge_serialized<T>(base: T, overlay: &T) -> T

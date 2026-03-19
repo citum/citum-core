@@ -75,7 +75,7 @@ fn parse_bibliography_json(bib_str: &str) -> Result<Bibliography, String> {
 fn load_style_yaml(path: &str) -> Result<Style, String> {
     let src = std::fs::read_to_string(Path::new(path))
         .map_err(|e| format!("Failed to read style YAML: {e}"))?;
-    serde_yaml::from_str(&src).map_err(|e| format!("Style YAML parse error: {e}"))
+    Style::from_yaml_str(&src).map_err(|e| format!("Style YAML parse error: {e}"))
 }
 
 /// Get the last error message.

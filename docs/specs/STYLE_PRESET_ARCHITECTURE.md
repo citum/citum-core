@@ -1,8 +1,8 @@
 # Style Preset Architecture
 
 **Status:** Active
-**Version:** 1.4
-**Date:** 2026-03-18
+**Version:** 1.5
+**Date:** 2026-03-19
 **Bean:** `csl26-fsjy`
 **Related:** bean `csl26-zy07` (unblocked by this spec), bean `csl26-wp6y` (follow-up policy work), `LOCALE_MESSAGES.md`
 
@@ -23,7 +23,7 @@ the preset, rather than duplicating the full style definition.
 The motivating case is **behavioral dependents** — styles that differ from a
 parent by 2–5 rules (e.g. Turabian ≈ Chicago Notes + no ibid + footnote
 punctuation tweaks). In CSL these are full standalone files. In Citum they
-become a preset reference plus a compact `StyleVariantDelta`.
+become a `preset:` declaration plus a few top-level field overrides.
 
 ---
 
@@ -49,20 +49,32 @@ them without loading a YAML file from disk.
 A `StylePreset` identifies a compiled-in `Style` struct by a stable key.
 
 ```yaml
-# YAML surface on a style document
+# Minimal preset-backed style — inherits everything from the base
 preset: chicago-notes-18th
 ```
 
 ```yaml
-# YAML surface with a variant delta
+# Behavioral variant — override specific fields at the top level
 preset: chicago-notes-18th
-variant:
-  citation:
-    ibid: ~       # null disables ibid — Turabian 9th ed.
-  options:
-    bibliography:
-      entry-suffix: "."
+citation:
+  ibid: ~       # null disables ibid — Turabian 9th ed.
+options:
+  bibliography:
+    entry-suffix: "."
 ```
+
+```yaml
+# Locale variant — override locale rendering options at the top level
+preset: chicago-author-date-18th
+options:
+  locale-override: de-DE-chicago
+  default-locale: de-DE
+```
+
+The authoring rule is uniform: declare `preset:`, then override any fields you
+need at the top level of the style file. There is no separate `variant` layer —
+top-level fields are the only override mechanism, keeping the mental model
+simple for style authors.
 
 ### Naming convention
 
@@ -79,86 +91,46 @@ The key is the canonical identity. `info.short_name` and `info.edition`
 
 ### Initial set
 
-| Variant | Base |
-|---------|------|
-| `chicago-notes-18th` | compiled from `styles/preset-bases/chicago-notes-18th.yaml` |
-| `chicago-author-date-18th` | compiled from `styles/preset-bases/chicago-author-date-18th.yaml` |
-| `apa-7th` | compiled from `styles/preset-bases/apa-7th.yaml` |
+| Preset key | Base file |
+|------------|-----------|
+| `chicago-notes-18th` | `styles/preset-bases/chicago-notes-18th.yaml` |
+| `chicago-author-date-18th` | `styles/preset-bases/chicago-author-date-18th.yaml` |
+| `apa-7th` | `styles/preset-bases/apa-7th.yaml` |
 
 Additional presets are added as csl26-zy07 backfills `short_name`/`edition` on
 the full style library.
 
 ---
 
-## §3 `StyleVariantDelta` — Partial Style Overlay
+## §3 `Style.preset` Field
 
-A `StyleVariantDelta` is a partial `Style` where every field is optional. At
-resolve time, fields present in the delta are merged onto the corresponding
-fields in the base preset. Fields absent from the delta are inherited
-unchanged.
-
-**Merge semantics:** object fields merge structurally and recursively. Scalars,
-arrays, and explicit `null` values replace inherited values. This keeps compact
-wrapper styles viable for nested configuration such as
-`options.page-range-format`, while still allowing authors to replace a whole
-template array when they need a different sequence of components.
-
-```rust
-pub struct StyleVariantDelta {
-    /// Overrides the base preset's top-level options.
-    pub options: Option<Config>,
-    /// Overrides the base preset's citation block.
-    pub citation: Option<CitationSpec>,
-    /// Overrides the base preset's bibliography block.
-    pub bibliography: Option<BibliographySpec>,
-    /// Forward-compatible escape hatch for variant concerns not yet in the
-    /// schema (e.g. page-layout presets for student papers, tracked in a
-    /// follow-up bean). Stored but ignored by the engine until the consuming
-    /// feature is implemented.
-    pub custom: Option<HashMap<String, serde_json::Value>>,
-}
-```
-
-`custom` exists specifically so that a follow-up bean (Turabian student
-title-page handling) can prototype its YAML surface without a schema break.
-
----
-
-## §4 `StylePresetSpec` — Top-Level Style Field
-
-A `StylePresetSpec` groups the preset key and optional variant delta into a
-single YAML block, added as `preset:` at the top level of `Style`.
-
-```rust
-pub struct StylePresetSpec {
-    pub preset: StylePreset,
-    pub variant: Option<StyleVariantDelta>,
-}
-```
-
-Full `Style` with the new field:
+The `preset` field on `Style` holds an optional `StylePreset` value — a plain
+enum that serializes to/from a kebab-case string:
 
 ```rust
 pub struct Style {
     // … existing fields …
-    pub preset: Option<StylePresetSpec>,
+    pub preset: Option<StylePreset>,
 }
 ```
 
-When `preset` is present the engine produces the final `Style` during processor
-construction, before rendering or locale setup. Resolution order is:
+When `preset` is present, the engine produces the final `Style` during
+processor construction by:
 
-1. preset base
-2. optional `variant`
-3. explicit file-level `options`, `citation`, `bibliography`, and other style
-   fields
+1. Loading the preset base.
+2. Merging any explicit top-level fields from the local file on top (with local
+   fields taking ultimate precedence).
 
-This makes the engine the canonical runtime resolution boundary for all callers
-(CLI, tests, FFI, and embedded integrations).
+This two-step resolution makes the engine the canonical runtime resolution
+boundary for all callers (CLI, tests, FFI, and embedded integrations).
+
+**Merge semantics:** object fields merge structurally and recursively. Scalars,
+arrays, and explicit `null` values replace inherited values. Arrays replace
+wholesale — there is no per-element merging.
 
 ---
 
-## §5 Registry Location
+## §4 Registry Location
 
 The `StylePreset` registry lives in `crates/citum-schema-style` as compiled-in
 data, while the engine owns runtime resolution. Rationale:
@@ -173,7 +145,7 @@ data, while the engine owns runtime resolution. Rationale:
 
 ---
 
-## §6 Locale Complement
+## §5 Locale Complement
 
 Style presets interact cleanly with the locale override system (LOCALE_MESSAGES.md):
 
@@ -185,7 +157,9 @@ options:
 
 The `de-DE-chicago` locale override encodes the locale-specific deviations from
 `chicago-author-date-de.csl` (German conjunctions, date order, editor verb form)
-without duplicating the style's structural template.
+without duplicating the style's structural template. This is expressed as a
+regular top-level `options` override — the same mechanism used for any other
+behavioral difference from the preset.
 
 This replaces the CSL pattern of language-variant style files like
 `chicago-author-date-de.csl`. German-speaking users select
@@ -198,13 +172,13 @@ worked example.
 
 ---
 
-## §7 Wizard & CLI Implications
+## §6 Wizard & CLI Implications
 
 **Style Navigator** (citum-hub): The 'Closest match' banner names a preset key
 (e.g. `chicago-notes-18th`), not a file path. "Use this" loads the compiled
 preset directly into `WizardState`. A YAML file is only produced when the user
-deviates from the preset — and even then the output contains `preset:` +
-`variant:` only, not the full style.
+deviates from the preset — and even then the output contains `preset:` plus
+only the overriding fields, not the full style.
 
 **CLI**: `citum render` resolves `preset` before rendering. A future
 `--preset <key>` flag would make the registry directly addressable without a
@@ -216,31 +190,28 @@ is tracked separately and blocks on this bean's preset key shape being stable.
 
 ---
 
-## §9 Circular Dependency Prevention
+## §7 Circular Dependency Prevention
 
 To prevent infinite recursion during preset resolution, Citum implements two
 levels of protection:
 
-1. **Resolution Loop Protection:** The `into_resolved()` and `resolve()` methods
-   internally track visited `StylePreset` variants using a `HashSet`. If a
-   preset is encountered twice in the same resolution chain, the recursive call
-   is aborted and the style is returned unresolved for that branch.
+1. **Resolution loop protection:** `into_resolved()` tracks visited
+   `StylePreset` variants in a `HashSet`. If a preset is encountered twice in
+   the same resolution chain, the recursive call is aborted and the style is
+   returned as-is for that branch.
 
-2. **Base Style Invariant:** A `Style` that serves as the base for a
-   `StylePreset` (e.g. `styles/apa-7th.yaml`) **must not** itself contain a
-   `preset` field. This is enforced by:
-   - **Unit tests:** `all_presets_resolve_cleanly` verifies every variant in the
-     registry resolves without loops.
-   - **Validation policy:** Documentation and schema level warnings (planned)
-     discourage circularity in user-authored styles.
+2. **Base style invariant:** A `Style` that serves as the base for a
+   `StylePreset` (e.g. `styles/preset-bases/apa-7th.yaml`) **must not** itself
+   contain a `preset` field. Enforced by the `all_presets_resolve_cleanly` unit
+   test and documented as an authoring constraint.
 
-If a circular dependency is detected at runtime, the engine will stop at the
-first repetition and render using any fields present beyond the `preset` key,
+If a circular dependency is detected at runtime, the engine stops at the first
+repetition and renders using any fields present beyond the `preset` key,
 effectively treating the circular reference as a no-op.
 
 ---
 
-## §10 Corpus Impact
+## §8 Corpus Impact
 
 `citum-analyze` now includes a corpus-savings report:
 
@@ -279,24 +250,17 @@ Top families by combined dependent + wrapper opportunity in this snapshot were
 `apa` (906), `elsevier-harvard` (715), `elsevier-with-titles` (686),
 `elsevier-vancouver` (590), and `springer-vancouver-brackets` (475).
 
-## §11 Known Tensions And Follow-Up Questions
+---
+
+## §9 Known Tensions and Follow-Up Questions
 
 This design is intentionally shippable before every policy question is fully
 settled.
 
-Style presets improve reuse and reduce duplication, but they also introduce two
-views of a style:
-
-1. **Authored identity** — the wrapper YAML file and its declared style name
-2. **Resolved behavior** — the effective style after preset resolution and
-   layered overrides
-
-That distinction is acceptable, but it creates real follow-up work:
-
 - **Benchmark identity.** When a preset-backed style overrides part of its
   parent, the project still needs a stable rule for what comparator or oracle
   identity should govern fidelity claims.
-- **Wrapper vs independent style.** A compact wrapper is valuable; a large
+- **Wrapper vs independent style.** A compact override is valuable; a large
   override layer may become harder to understand than an explicit standalone
   style. The project should define when presets are encouraged and when they
   should be avoided.
@@ -304,41 +268,36 @@ That distinction is acceptable, but it creates real follow-up work:
   but arrays and template lists still replace wholesale. This is the correct
   merge rule, but it creates an authoring footgun unless the docs and examples
   stay explicit.
-- **Future guardrails.** If preset-backed wrappers grow large or opaque, the
-  project may need linting, complexity heuristics, or other authoring
-  guardrails.
 
-This spec standardizes runtime resolution and merge semantics now. Broader
-policy and authoring guidance are tracked in `csl26-wp6y`.
+Broader policy and authoring guidance are tracked in `csl26-wp6y`.
 
 ---
 
-## §11 Acceptance Criteria
+## §10 Acceptance Criteria
 
-- [ ] `StylePreset::ChicagoNotes18th.base()` returns a `Style` that round-trips
+- [x] `StylePreset::ChicagoNotes18th.base()` returns a `Style` that round-trips
       through serde without error.
-- [ ] `StylePreset::ChicagoNotes18th.resolve(Some(&turabian_delta))` produces a
-      `Style` where `citation.ibid` is `None`.
-- [ ] A style YAML with `preset: chicago-notes-18th` and no other fields
-      deserializes and produces the same effective `Style` as the base preset.
-- [ ] A style YAML with `preset: chicago-notes-18th` + `variant.citation.ibid: ~`
+- [x] A style YAML with `preset: chicago-notes-18th` and no other fields
+      deserializes and resolves to the same effective `Style` as the base preset.
+- [x] A style YAML with `preset: chicago-notes-18th` + `citation.ibid: ~`
       produces a `Style` where `citation.ibid` is `None`.
-- [ ] A style YAML with `preset: chicago-author-date-18th` +
+- [x] A style YAML with `preset: chicago-author-date-18th` +
       `options.page-range-format: expanded` preserves inherited option fields
       while overriding only the page-range behavior.
-- [ ] `StyleVariantDelta.custom` round-trips arbitrary YAML under an unknown key
-      without error or data loss.
-- [ ] `options.locale-override: de-DE-chicago` paired with
+- [x] `options.locale-override: de-DE-chicago` paired with
       `preset: chicago-author-date-18th` renders `"und"` (not `"and"`) for a
       multi-author citation.
-- [ ] `citum.schema.json` updated to include `StylePreset`, `StyleVariantDelta`,
-      and `StylePresetSpec`.
-- [ ] All existing oracle tests pass without regression.
+- [x] `citum.schema.json` updated to include `StylePreset`.
+- [x] All existing oracle tests pass without regression.
 
 ---
 
 ## Changelog
 
+- v1.5 (2026-03-19): Removed `StyleVariantDelta` and `StylePresetSpec`.
+  Top-level style fields are now the sole override mechanism; `Style.preset`
+  holds `Option<StylePreset>` directly. Unified authoring model: declare
+  `preset:`, then override any fields at top level.
 - v1.4 (2026-03-18): Updated merge semantics to structural deep merge, moved
   canonical runtime resolution into the engine, documented concrete preset
   base files, and added follow-up design tensions explicitly.

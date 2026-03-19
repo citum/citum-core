@@ -2548,7 +2548,7 @@ fn load_style(path: &Path, _no_semantics: bool) -> Result<Style, Box<dyn Error>>
     let style_obj: Style = match ext {
         "cbor" => ciborium::de::from_reader(std::io::Cursor::new(&bytes))?,
         "json" => serde_json::from_slice(&bytes)?,
-        _ => serde_yaml::from_slice(&bytes)?,
+        _ => Style::from_yaml_bytes(&bytes)?,
     };
 
     Ok(style_obj)

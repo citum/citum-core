@@ -3,8 +3,7 @@ info:
   title: "Chicago Author-Date (German Override)"
   id: "chicago-author-date-de"
 
-preset:
-  preset: chicago-author-date-18th
+preset: chicago-author-date-18th
 
 options:
   locale-override: de-DE-chicago

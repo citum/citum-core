@@ -3,9 +3,6 @@
   "title": "Style",
   "description": "The new Citum Style model.\n\nThis is the target schema for Citum, featuring declarative options and simple template components instead of procedural conditionals.",
   "type": "object",
-  "required": [
-    "info"
-  ],
   "properties": {
     "bibliography": {
       "description": "Bibliography specification.",
@@ -39,6 +36,7 @@
     },
     "info": {
       "description": "Style metadata.",
+      "default": {},
       "allOf": [
         {
           "$ref": "#/definitions/StyleInfo"
@@ -60,7 +58,7 @@
       "description": "Style-level preset reference with optional variant delta overlay.\n\nWhen present, the base [`StylePreset`] is resolved and the variant delta merged before any further processing. Explicit `options`, `citation`, and `bibliography` keys at the same document level take precedence over the resolved preset.",
       "anyOf": [
         {
-          "$ref": "#/definitions/StylePresetSpec"
+          "$ref": "#/definitions/StylePreset"
         },
         {
           "type": "null"
@@ -4082,7 +4080,7 @@
       }
     },
     "StylePreset": {
-      "description": "A named, compiled-in style preset (Level 2 of Citum's preset hierarchy).",
+      "description": "A named, compiled-in style preset (Level 2 of Citum's preset hierarchy).\n\nA style file declares `preset: <key>` to inherit a complete base style. Any top-level fields in the file (`options`, `citation`, `bibliography`, etc.) are merged over the preset base, with local fields taking ultimate precedence.",
       "oneOf": [
         {
           "description": "Chicago Manual of Style 18th edition — notes without bibliography.",
@@ -4104,47 +4102,6 @@
           "enum": [
             "apa-7th"
           ]
-        }
-      ]
-    },
-    "StylePresetSpec": {
-      "description": "Top-level style preset reference with an optional variant delta overlay.",
-      "anyOf": [
-        {
-          "description": "A simple named style preset without a variant delta.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/StylePreset"
-            }
-          ]
-        },
-        {
-          "description": "A named style preset with an optional behavioral variant delta.",
-          "type": "object",
-          "required": [
-            "preset"
-          ],
-          "properties": {
-            "preset": {
-              "description": "The named style preset to use as the base.",
-              "allOf": [
-                {
-                  "$ref": "#/definitions/StylePreset"
-                }
-              ]
-            },
-            "variant": {
-              "description": "Optional behavioral variant delta merged over the base preset.",
-              "anyOf": [
-                {
-                  "$ref": "#/definitions/StyleVariantDelta"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            }
-          }
         }
       ]
     },
@@ -4186,53 +4143,6 @@
           "items": {
             "$ref": "#/definitions/StylePerson"
           }
-        }
-      }
-    },
-    "StyleVariantDelta": {
-      "description": "A partial overlay applied over a named preset-backed base style.",
-      "type": "object",
-      "properties": {
-        "bibliography": {
-          "description": "Overrides the base preset's bibliography block.",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/BibliographySpec"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "citation": {
-          "description": "Overrides the base preset's citation block.",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/CitationSpec"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "custom": {
-          "description": "Forward-compatible escape hatch for future variant fields not yet in the schema.",
-          "type": [
-            "object",
-            "null"
-          ],
-          "additionalProperties": true
-        },
-        "options": {
-          "description": "Overrides the base preset's global options block.",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Config"
-            },
-            {
-              "type": "null"
-            }
-          ]
         }
       }
     },

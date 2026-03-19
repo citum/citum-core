@@ -14,7 +14,6 @@ use citum_engine::values::{
 };
 use citum_schema::{
     BibliographySpec, CitationSpec, LocalizedTemplateSpec, Style, StyleInfo, StylePreset,
-    StylePresetSpec,
     options::{Config, MultilingualConfig, MultilingualMode, Processing, TitleRendering},
     reference::contributor::{Contributor, MultilingualName, StructuredName},
     reference::types::{
@@ -1109,7 +1108,7 @@ fn given_chicago_preset_when_german_override_then_editor_verb_is_localized() {
             default_locale: Some("de-DE".to_string()),
             ..Default::default()
         },
-        preset: Some(StylePresetSpec::Key(StylePreset::ChicagoAuthorDate18th)),
+        preset: Some(StylePreset::ChicagoAuthorDate18th),
         options: Some(Config {
             locale_override: Some("de-DE-chicago".to_string()),
             ..Default::default()
