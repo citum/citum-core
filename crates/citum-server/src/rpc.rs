@@ -226,7 +226,7 @@ fn load_style(style_path: &str) -> Result<Style, ServerError> {
     let content =
         fs::read_to_string(path).map_err(|_| ServerError::StyleNotFound(style_path.to_string()))?;
 
-    serde_yaml::from_str::<Style>(&content).map_err(|e| ServerError::StyleValidation(e.to_string()))
+    Style::from_yaml_str(&content).map_err(|e| ServerError::StyleValidation(e.to_string()))
 }
 
 /// Run the JSON-RPC server on stdin/stdout.

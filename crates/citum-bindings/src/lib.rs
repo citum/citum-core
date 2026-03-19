@@ -34,7 +34,7 @@ use citum_schema::Style;
 
 /// Parse a Citum YAML style string, returning a structured error on failure.
 fn parse_style(style_yaml: &str) -> Result<Style, String> {
-    serde_yaml::from_str(style_yaml).map_err(|e| format!("Style parse error: {e}"))
+    Style::from_yaml_str(style_yaml).map_err(|e| format!("Style parse error: {e}"))
 }
 
 /// Parse a Citum native JSON bibliography string (`{id: Reference, ...}`).
@@ -115,7 +115,7 @@ pub fn render_bibliography(style_yaml: &str, refs_json: &str) -> Result<String, 
 /// ```
 #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "validateStyle"))]
 pub fn validate_style(style_yaml: &str) -> Result<(), String> {
-    serde_yaml::from_str::<Style>(style_yaml)
+    Style::from_yaml_str(style_yaml)
         .map(|_| ())
         .map_err(|e| format!("Style parse error: {e}"))
 }

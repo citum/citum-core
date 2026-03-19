@@ -327,26 +327,30 @@ preset: chicago-notes-18th
  
 This produces a complete Chicago Notes 18th edition style without any other fields in your file.
  
-### Preset Variants
- 
-For styles that differ from a parent by only a few rules (e.g., Turabian), use a `variant` delta overlay. This replaces fields in the base preset:
- 
+### Overriding Preset Fields
+
+Declare `preset:` and then add any top-level fields you want to change.
+All fields — `citation`, `bibliography`, `options`, `info` — merge over the
+preset base, with your fields taking ultimate precedence.
+
+Behavioral variant (e.g. Turabian = Chicago Notes without ibid):
+
 ```yaml
 preset: chicago-notes-18th
-variant:
-  citation:
-    ibid: ~    # Disables ibid support (Turabian 9th ed.)
+citation:
+  ibid: ~    # null disables ibid (Turabian 9th ed.)
 ```
- 
-### Presets + Locale Overrides
- 
-Combine a style preset with a locale override for language-specific variants (e.g., Chicago for German users):
- 
+
+Locale variant (e.g. Chicago for German users):
+
 ```yaml
 preset: chicago-author-date-18th
 options:
   locale-override: de-DE-chicago
 ```
+
+Both patterns use the same mechanism: top-level fields merged onto the preset.
+There is no separate `variant` layer.
  
 Refer to [STYLE_PRESET_ARCHITECTURE.md](../specs/STYLE_PRESET_ARCHITECTURE.md) for the full list of available presets and technical details.
  
