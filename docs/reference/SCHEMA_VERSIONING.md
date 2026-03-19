@@ -149,6 +149,10 @@ Code releases are managed by `release-plz`.
 
 Track schema changes separately from code changes:
 
+#### schema-v0.10.0 (2026-03-19)
+- Schema version bumped from 0.9.0 to 0.10.0
+- Added style-level preset support and null-aware preset overlay semantics
+
 #### schema-v0.8.0 (2026-03-05)
 - Schema version bumped from 0.7.1 to 0.8.0
 - Breaking change: compound grouping moved from per-reference `group-key`

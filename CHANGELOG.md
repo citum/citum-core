@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.14.0] - 2026-03-19
+
+### Bug Fixes
+
+**schema**
+
+- Null-aware preset overlay merging ([`080df92`](https://github.com/citum/citum-core/commit/080df92f2efa1e980935bbb2ae92f2ffffeb8267))
+
+
+### Features
+
+**analyze**
+
+- Preset migration savings ([`1eac12a`](https://github.com/citum/citum-core/commit/1eac12a4ea7d4c561d642201ce65217dc2158fb1))
+
+
+**engine**
+
+- Resolve style presets ([`be6a293`](https://github.com/citum/citum-core/commit/be6a293a7f970ff434770a0e66d1a39e649fa2de))
+
+
+**locale**
+
+- ICU MF1 locale system ([`6c5c98e`](https://github.com/citum/citum-core/commit/6c5c98efb4ad0ecfa462b3d94b2e38ac44c5cbe1))
+
+
+**schema**
+
+- Layered style preset overrides ([`eb8533a`](https://github.com/citum/citum-core/commit/eb8533ad8fa4d8252746f783f244e7f7c5874d15))
+
+- Default style schema version bumped to `0.10.0` for the preset architecture additions
+
 ### Features
 
 **engine**
@@ -2358,5 +2390,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **migrate**
 
 - Fix doc comment indentation for clippy ([`b78c1f3`](https://github.com/citum/citum-core/commit/b78c1f3a7a2248a3fbe01c751bb8e6c42bac3b5d))
-
 

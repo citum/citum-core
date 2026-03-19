@@ -82,7 +82,7 @@
     },
     "version": {
       "description": "Style schema version.",
-      "default": "0.9.0",
+      "default": "0.10.0",
       "type": "string"
     }
   },
