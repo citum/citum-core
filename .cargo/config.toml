@@ -1,0 +1,15 @@
+# .cargo/config.toml — workspace-level Cargo configuration
+
+# ── macOS / Apple Silicon linker wrapper ─────────────────────────────
+# Rust's Apple-Silicon linker emits CS_LINKER_SIGNED ad-hoc signatures
+# (codesign flags 0x20002).  macOS 15+ (Sequoia) runs a ~60 s security
+# scan on the first execution of any such binary, making `cargo nextest`
+# appear to hang after a fresh build.
+#
+# The wrapper re-signs every Mach-O executable with a proper ad-hoc
+# signature (flags 0x2) immediately after linking, so macOS trusts the
+# binary on first run without a scan delay.
+#
+# See: https://github.com/bdarcus/citum/issues/406
+[target.aarch64-apple-darwin]
+linker = "scripts/macos-link.sh"
