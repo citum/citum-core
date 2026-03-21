@@ -7,14 +7,14 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //!
 //! This module provides the logic to transform processed template components
 //! into formatted strings. It supports multiple output formats through a
-//! pluggable architecture defined by the [`OutputFormat`] trait.
+//! pluggable architecture defined by the [`crate::render::format::OutputFormat`] trait.
 //!
 //! ## Modules
-//! - [`format`]: Defines the core [`OutputFormat`] trait.
-//! - [`plain`], [`html`], [`djot`], [`latex`], [`typst`]: Concrete renderer implementations.
-//! - [`component`]: Logic for rendering individual template components.
-//! - [`citation`]: Logic for joining components into full citations.
-//! - [`bibliography`]: Logic for rendering bibliographies.
+//! - `format`: Defines the core [`crate::render::format::OutputFormat`] trait.
+//! - `plain`, `html`, `djot`, `latex`, `typst`: Concrete renderer implementations.
+//! - `component`: Logic for rendering individual template components.
+//! - `citation`: Logic for joining components into full citations.
+//! - `bibliography`: Logic for rendering bibliographies.
 
 /// Bibliography-level rendering and output assembly helpers.
 pub mod bibliography;

@@ -42,7 +42,7 @@ pub enum MultilingualMode {
     Transliterated,
     /// Use translation matching style locale.
     Translated,
-    /// Combine multiple views (e.g., "transliterated [translated]").
+    /// Combine multiple views (e.g., "transliterated \[translated\]").
     /// For now, this is a placeholder for more complex formatting strings.
     Combined,
 }

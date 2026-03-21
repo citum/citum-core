@@ -13,14 +13,14 @@ use crate::{
 
 /// Embedded citation template for IEEE style.
 ///
-/// Renders as: [1]
+/// Renders as: \[1\]
 pub fn citation() -> Vec<TemplateComponent> {
     vec![tc_number!(CitationNumber, wrap = WrapPunctuation::Brackets)]
 }
 
 /// Embedded bibliography template for IEEE style.
 ///
-/// Renders as: [1] A. B. Author and C. D. Author, "Title," *Journal*, vol. X, no. Y, pp. Z–W, Year.
+/// Renders as: \[1\] A. B. Author and C. D. Author, "Title," *Journal*, vol. X, no. Y, pp. Z–W, Year.
 pub fn bibliography() -> Vec<TemplateComponent> {
     vec![
         // [Citation number]

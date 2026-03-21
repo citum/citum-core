@@ -1,6 +1,6 @@
 //! CSL 1.0 XML → [`model`](crate::model) parser.
 //!
-//! The entry point is [`parse_style`], which accepts a [`roxmltree::Node`] rooted
+//! The entry point is [`crate::parser::parse_style()`], which accepts a [`roxmltree::Node`] rooted
 //! at `<style>` and returns a fully-populated [`model::Style`].
 //!
 //! All helper functions follow the same pattern: they receive a node, extract
