@@ -52,6 +52,13 @@ if [ -n "$output" ] && [ -f "$output" ]; then
         # We use --list so the binary exits immediately after test discovery;
         # errors are silently discarded since we only care about the cache
         # warm-up side-effect.
-        "$output" --list --format terse >/dev/null 2>&1 &
+        # Only warm up Rust test binaries. Test binaries built with --test
+        # contain libtest harness symbols (test_main_static); regular
+        # binaries such as update_style_info or citum do not.  Running a
+        # regular binary at link time is dangerous — it may have side
+        # effects (writing files, launching servers, etc.).
+        if nm "$output" 2>/dev/null | grep -q "test_main"; then
+            "$output" --list --format terse >/dev/null 2>&1 &
+        fi
     fi
 fi
