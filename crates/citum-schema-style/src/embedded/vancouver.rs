@@ -10,7 +10,7 @@ use crate::{
 
 /// Embedded citation template for Vancouver (numeric) style.
 ///
-/// Renders as: [1]
+/// Renders as: \[1\]
 pub fn citation() -> Vec<TemplateComponent> {
     vec![tc_number!(CitationNumber, wrap = WrapPunctuation::Brackets)]
 }

@@ -3061,7 +3061,7 @@
           ]
         },
         {
-          "description": "Combine multiple views (e.g., \"transliterated [translated]\"). For now, this is a placeholder for more complex formatting strings.",
+          "description": "Combine multiple views (e.g., \"transliterated \\[translated\\]\"). For now, this is a placeholder for more complex formatting strings.",
           "type": "string",
           "enum": [
             "combined"

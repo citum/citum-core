@@ -468,7 +468,7 @@ pub struct EvaluationConfig {
     pub message_syntax: MessageSyntax,
 }
 
-/// Partial patch applied on top of a base [`Locale`] for style-specific overrides.
+/// Partial patch applied on top of a base [`crate::locale::Locale`] for style-specific overrides.
 ///
 /// A `LocaleOverride` allows a style to customize specific messages, grammar options,
 /// and legacy term aliases without duplicating the entire base locale. All fields are

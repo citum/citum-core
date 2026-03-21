@@ -81,7 +81,7 @@ impl OutputFormat for OrgOutputFormat {
         content
     }
 
-    /// Render a hyperlink in org-mode format: [[url][text]]
+    /// Render a hyperlink in org-mode format: `[[url][text]]`
     fn link(&self, url: &str, content: Self::Output) -> Self::Output {
         format!("[[{url}][{content}]]")
     }
