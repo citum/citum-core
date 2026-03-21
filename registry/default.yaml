@@ -1,0 +1,57 @@
+version: "1"
+styles:
+  - id: apa-7th
+    aliases: [apa]
+    builtin: apa-7th
+    description: "APA 7th edition"
+    fields: [psychology, social-science]
+  - id: elsevier-harvard
+    aliases: [harvard]
+    builtin: elsevier-harvard
+    description: "Elsevier Harvard"
+    fields: [science]
+  - id: elsevier-with-titles
+    builtin: elsevier-with-titles
+    description: "Elsevier with Titles"
+    fields: [science]
+  - id: elsevier-vancouver
+    aliases: [vancouver]
+    builtin: elsevier-vancouver
+    description: "Elsevier Vancouver"
+    fields: [medicine]
+  - id: springer-basic-author-date
+    builtin: springer-basic-author-date
+    description: "Springer Basic Author-Date"
+    fields: [science]
+  - id: springer-vancouver-brackets
+    builtin: springer-vancouver-brackets
+    description: "Springer Vancouver Brackets"
+    fields: [science]
+  - id: springer-basic-brackets
+    builtin: springer-basic-brackets
+    description: "Springer Basic Brackets"
+    fields: [science]
+  - id: american-medical-association
+    aliases: [ama]
+    builtin: american-medical-association
+    description: "American Medical Association"
+    fields: [medicine]
+  - id: ieee
+    builtin: ieee
+    description: "Institute of Electrical and Electronics Engineers"
+    fields: [engineering]
+  - id: taylor-and-francis-chicago-author-date
+    aliases: [chicago-author-date]
+    builtin: taylor-and-francis-chicago-author-date
+    description: "Taylor & Francis Chicago Author-Date"
+    fields: [humanities]
+  - id: chicago-shortened-notes-bibliography
+    aliases: [chicago]
+    builtin: chicago-shortened-notes-bibliography
+    description: "Chicago Shortened Notes"
+    fields: [humanities]
+  - id: modern-language-association
+    aliases: [mla]
+    builtin: modern-language-association
+    description: "Modern Language Association"
+    fields: [humanities]

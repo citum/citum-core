@@ -89,6 +89,22 @@ enum InputFormat {
     Markdown,
 }
 
+/// Valid target types for JSON schema export.
+#[cfg(feature = "schema")]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
+enum SchemaType {
+    /// Citation style schema
+    Style,
+    /// Bibliography input schema
+    Bib,
+    /// Locale schema
+    Locale,
+    /// Citation input schema
+    Citation,
+    /// Style registry schema
+    Registry,
+}
+
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
 enum OutputFormat {
     Plain,
@@ -166,6 +182,22 @@ enum Commands {
     Styles {
         #[command(subcommand)]
         command: Option<StylesCommands>,
+    },
+
+    /// Manage and inspect the style registry
+    #[command(
+        about = "Manage and inspect the style registry",
+        long_about = "Inspect and manage the citation style registry.\n\n\
+                      The registry maps style names and aliases to available styles.\n\n\
+                      EXAMPLES:\n  \
+                      List all styles in the registry:\n    \
+                      citum registry list\n\n  \
+                      Resolve a style name or alias:\n    \
+                      citum registry resolve apa"
+    )]
+    Registry {
+        #[command(subcommand)]
+        command: RegistryCommands,
     },
 
     /// Manage user-installed styles and locales
@@ -299,6 +331,32 @@ enum RefsFormat {
 enum StylesCommands {
     /// List all embedded (builtin) style names
     List,
+}
+
+#[derive(Subcommand)]
+enum RegistryCommands {
+    /// List all styles in the registry
+    #[command(
+        about = "List all styles in the registry",
+        long_about = "Display all styles in the style registry with their\n\
+                      aliases and descriptions."
+    )]
+    List {
+        /// Output format
+        #[arg(long, default_value = "table")]
+        format: String,
+    },
+
+    /// Resolve a style name or alias to its canonical ID
+    #[command(
+        about = "Resolve a style name or alias to its canonical ID",
+        long_about = "Look up a style by name or alias in the registry.\n\
+                      Returns the canonical style ID and source (builtin or path)."
+    )]
+    Resolve {
+        /// Style name or alias to resolve
+        name: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -512,9 +570,9 @@ struct LintStyleArgs {
 #[cfg(feature = "schema")]
 #[derive(Args, Debug)]
 struct SchemaArgs {
-    /// Data type (style, bib, locale, citations)
+    /// Data type to export
     #[arg(index = 1, value_enum)]
-    r#type: Option<DataType>,
+    r#type: Option<SchemaType>,
 
     /// Output directory to export all schemas
     #[arg(short, long)]
@@ -610,6 +668,10 @@ fn run() -> Result<(), Box<dyn Error>> {
         Commands::Styles { command } => match command.unwrap_or(StylesCommands::List) {
             StylesCommands::List => run_styles_list(),
         },
+        Commands::Registry { command } => match command {
+            RegistryCommands::List { format } => run_registry_list(&format),
+            RegistryCommands::Resolve { name } => run_registry_resolve(&name),
+        },
         Commands::Store { command } => match command {
             StoreCommands::List => run_store_list(),
             StoreCommands::Install { source } => run_store_install(&source),
@@ -663,20 +725,16 @@ fn run() -> Result<(), Box<dyn Error>> {
 fn run_schema(args: SchemaArgs) -> Result<(), Box<dyn Error>> {
     if let Some(dir) = args.out_dir {
         fs::create_dir_all(&dir)?;
-        let types = [
-            (DataType::Style, "style.json"),
-            (DataType::Bib, "bib.json"),
-            (DataType::Locale, "locale.json"),
-            (DataType::Citations, "citation.json"),
+        let schemas = [
+            ("style", schema_for!(Style)),
+            ("bib", schema_for!(InputBibliography)),
+            ("locale", schema_for!(RawLocale)),
+            ("citation", schema_for!(citum_schema::Citations)),
+            ("registry", schema_for!(citum_schema::StyleRegistry)),
         ];
-        for (t, filename) in types {
-            let schema = match t {
-                DataType::Style => schema_for!(Style),
-                DataType::Bib => schema_for!(InputBibliography),
-                DataType::Locale => schema_for!(RawLocale),
-                DataType::Citations => schema_for!(citum_schema::Citations),
-            };
-            let path = dir.join(filename);
+        for (name, schema) in schemas {
+            let filename = format!("{name}.json");
+            let path = dir.join(&filename);
             fs::write(&path, serde_json::to_string_pretty(&schema)?)?;
         }
         println!("Schemas exported to {}", dir.display());
@@ -685,16 +743,17 @@ fn run_schema(args: SchemaArgs) -> Result<(), Box<dyn Error>> {
 
     if let Some(t) = args.r#type {
         let schema = match t {
-            DataType::Style => schema_for!(Style),
-            DataType::Bib => schema_for!(InputBibliography),
-            DataType::Locale => schema_for!(RawLocale),
-            DataType::Citations => schema_for!(citum_schema::Citations),
+            SchemaType::Style => schema_for!(Style),
+            SchemaType::Bib => schema_for!(InputBibliography),
+            SchemaType::Locale => schema_for!(RawLocale),
+            SchemaType::Citation => schema_for!(citum_schema::Citations),
+            SchemaType::Registry => schema_for!(citum_schema::StyleRegistry),
         };
         println!("{}", serde_json::to_string_pretty(&schema)?);
         return Ok(());
     }
 
-    Err("Specify a type (style, bib, locale, citation) or --out-dir".into())
+    Err("Specify a schema type (style, bib, locale, citation, registry) or --out-dir".into())
 }
 
 fn run_styles_list() -> Result<(), Box<dyn Error>> {
@@ -733,6 +792,61 @@ fn truncate(s: &str, max_len: usize) -> String {
         s.to_string()
     } else {
         format!("{}...", &s[..max_len - 3])
+    }
+}
+
+/// List all styles in the registry.
+fn run_registry_list(format: &str) -> Result<(), Box<dyn Error>> {
+    let registry = citum_schema::embedded::default_registry();
+
+    if format == "json" {
+        let json = serde_json::to_string_pretty(&registry)?;
+        println!("{}", json);
+    } else {
+        // Table format (default)
+        println!("Style Registry:");
+        println!();
+        println!("  {:<35} {:<30} {:<40}", "ID", "Aliases", "Description");
+        println!("  {}", "-".repeat(110));
+
+        for entry in &registry.styles {
+            let aliases = if entry.aliases.is_empty() {
+                "-".to_string()
+            } else {
+                entry.aliases.join(", ")
+            };
+            let description = entry.description.as_deref().unwrap_or("-");
+
+            println!(
+                "  {:<35} {:<30} {:<40}",
+                entry.id,
+                truncate(&aliases, 28),
+                truncate(description, 38)
+            );
+        }
+        println!();
+    }
+
+    Ok(())
+}
+
+/// Resolve a style name or alias in the registry.
+fn run_registry_resolve(name: &str) -> Result<(), Box<dyn Error>> {
+    let registry = citum_schema::embedded::default_registry();
+
+    if let Some(entry) = registry.resolve(name) {
+        let source = if entry.builtin.is_some() {
+            "builtin"
+        } else if entry.path.is_some() {
+            "path"
+        } else {
+            "unknown"
+        };
+        println!("{} ({})", entry.id, source);
+        Ok(())
+    } else {
+        eprintln!("Error: style not found: {name}");
+        std::process::exit(1);
     }
 }
 

@@ -41,6 +41,9 @@ pub mod template;
 /// Embedded templates for priority styles (APA, Chicago, Vancouver, IEEE, Harvard).
 pub mod embedded;
 
+/// Style registry — discovery and alias resolution.
+pub mod registry;
+
 /// Declarative macros for AST and configurations.
 pub mod macros;
 
@@ -66,6 +69,7 @@ pub use locale::Locale;
 pub use options::Config;
 pub use options::TextCase;
 pub use presets::{ContributorPreset, DatePreset, SortPreset, SubstitutePreset, TitlePreset};
+pub use registry::{RegistryEntry, StyleRegistry};
 pub use style_preset::StylePreset;
 pub use template::{
     Rendering, TemplateComponent, TemplateContributor, TemplateDate, TemplateList, TemplateNumber,

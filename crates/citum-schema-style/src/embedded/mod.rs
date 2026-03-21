@@ -20,6 +20,7 @@ pub mod styles;
 /// Embedded Vancouver templates.
 pub mod vancouver;
 
+use crate::registry::StyleRegistry;
 use crate::template::TemplateComponent;
 use std::collections::HashMap;
 
@@ -63,6 +64,11 @@ pub fn bibliography_templates() -> HashMap<&'static str, Vec<TemplateComponent>>
     map.insert("ieee", ieee_bibliography());
     map.insert("harvard", harvard_bibliography());
     map
+}
+
+/// Build the default style registry from the embedded YAML data.
+pub fn default_registry() -> StyleRegistry {
+    StyleRegistry::load_default()
 }
 
 #[cfg(test)]
