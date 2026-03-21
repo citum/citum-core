@@ -1,0 +1,16 @@
+[package]
+name = "citum-pdf"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "citum_pdf"
+
+[dependencies]
+typst = "0.13.1"
+typst-pdf = "0.13.1"
+typst-kit = { version = "0.13.1", default-features = false, features = ["fonts", "embed-fonts"] }
+
+[lints]
+workspace = true

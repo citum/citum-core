@@ -384,6 +384,7 @@ dependencies = [
  "biblatex 0.11.0",
  "ciborium",
  "citum-engine",
+ "citum-pdf",
  "citum-schema",
  "citum_store",
  "clap",
@@ -395,9 +396,6 @@ dependencies = [
  "serde_json",
  "serde_yaml_ng",
  "strsim 0.10.0",
- "typst",
- "typst-kit",
- "typst-pdf",
  "walkdir",
 ]
 
@@ -469,6 +467,15 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_yaml_ng",
+]
+
+[[package]]
+name = "citum-pdf"
+version = "0.15.0"
+dependencies = [
+ "typst",
+ "typst-kit",
+ "typst-pdf",
 ]
 
 [[package]]

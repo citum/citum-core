@@ -76,10 +76,10 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Lint with Clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: cargo clippy --workspace --all-targets --exclude citum-pdf -- -D warnings
 
       - name: Enforce public API docs
-        run: cargo doc --no-deps --workspace
+        run: cargo doc --no-deps --workspace --exclude citum-pdf
 
       - name: Run tests
         run: cargo test --verbose

@@ -1,7 +1,7 @@
 ---
 # csl26-4gim
 title: Reduce Rust compilation time (CI + workspace + typst isolation)
-status: in-progress
+status: completed
 type: task
 priority: high
 created_at: 2026-03-21T01:14:45Z

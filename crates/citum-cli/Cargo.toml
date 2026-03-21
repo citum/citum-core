@@ -24,14 +24,12 @@ citum_engine = { package = "citum-engine", path = "../citum-engine" }
 csl_legacy = { package = "csl-legacy", path = "../csl-legacy" }
 biblatex = "0.11"
 citum_store = { package = "citum_store", path = "../citum_store" }
-typst = { version = "0.13.1", optional = true }
-typst-pdf = { version = "0.13.1", optional = true }
-typst-kit = { version = "0.13.1", optional = true, default-features = false, features = ["fonts", "embed-fonts"] }
+citum-pdf = { path = "../citum-pdf", optional = true }
 
 [features]
 default = []
 schema = ["dep:schemars", "citum_schema/schema"]
-typst-pdf = ["dep:typst", "dep:typst-pdf", "dep:typst-kit"]
+typst-pdf = ["dep:citum-pdf"]
 
 [lints]
 workspace = true

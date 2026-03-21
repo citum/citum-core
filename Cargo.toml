@@ -8,6 +8,7 @@ members = [
     "crates/citum-engine",
     "crates/citum-analyze",
     "crates/citum-cli",
+    "crates/citum-pdf",
     "crates/citum-server",
     "crates/citum-edtf",
     "crates/citum_store",
