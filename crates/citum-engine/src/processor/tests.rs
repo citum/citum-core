@@ -6,11 +6,12 @@ use citum_schema::options::{
 };
 use citum_schema::template::{
     ContributorForm, ContributorRole, DateForm, DateVariable as TDateVar, NumberVariable,
-    Rendering, TemplateComponent, TemplateContributor, TemplateDate, TemplateNumber, TemplateTitle,
-    TitleType, WrapPunctuation,
+    Rendering, SimpleVariable, TemplateComponent, TemplateContributor, TemplateDate,
+    TemplateNumber, TemplateTitle, TemplateVariable, TitleType, WrapPunctuation,
 };
 use citum_schema::{BibliographySpec, CitationSpec, StyleInfo};
 use csl_legacy::csl_json::{DateVariable, Name, Reference as LegacyReference};
+use rstest::rstest;
 
 fn make_style() -> Style {
     Style {
@@ -145,6 +146,100 @@ fn make_bibliography() -> Bibliography {
     );
 
     bib
+}
+
+fn insert_book_reference(
+    bib: &mut Bibliography,
+    id: &str,
+    family: &str,
+    given: &str,
+    year: i32,
+    title: &str,
+) {
+    bib.insert(
+        id.to_string(),
+        Reference::from(LegacyReference {
+            id: id.to_string(),
+            ref_type: "book".to_string(),
+            author: Some(vec![Name::new(family, given)]),
+            title: Some(title.to_string()),
+            issued: Some(DateVariable::year(year)),
+            ..Default::default()
+        }),
+    );
+}
+
+fn render_integral_multi_cite(
+    base_multi_cite_delimiter: Option<&str>,
+    integral_multi_cite_delimiter: Option<&str>,
+    locale_and_term: Option<&str>,
+    serial_comma: Option<bool>,
+    include_third_item: bool,
+) -> String {
+    let mut style = make_style();
+    let mut base_citation = style.citation.take().unwrap_or_default();
+    base_citation.multi_cite_delimiter = base_multi_cite_delimiter.map(str::to_string);
+
+    if integral_multi_cite_delimiter.is_some() {
+        base_citation.integral = Some(Box::new(CitationSpec {
+            multi_cite_delimiter: integral_multi_cite_delimiter.map(str::to_string),
+            ..Default::default()
+        }));
+    }
+
+    style.citation = Some(base_citation);
+
+    let mut bib = make_bibliography();
+    insert_book_reference(
+        &mut bib,
+        "smith2020",
+        "Smith",
+        "Jane",
+        2020,
+        "Testing Citations",
+    );
+
+    if include_third_item {
+        insert_book_reference(&mut bib, "jones2021", "Jones", "Alex", 2021, "More Testing");
+    }
+
+    let processor = if locale_and_term.is_some() || serial_comma.is_some() {
+        let mut locale = citum_schema::locale::Locale::en_us();
+        if let Some(and_term) = locale_and_term {
+            locale.terms.and = Some(and_term.to_string());
+        }
+        if let Some(serial_comma) = serial_comma {
+            locale.grammar_options.serial_comma = serial_comma;
+        }
+        Processor::with_locale(style, bib, locale)
+    } else {
+        Processor::new(style, bib)
+    };
+
+    let mut items = vec![
+        CitationItem {
+            id: "kuhn1962".to_string(),
+            ..Default::default()
+        },
+        CitationItem {
+            id: "smith2020".to_string(),
+            ..Default::default()
+        },
+    ];
+    if include_third_item {
+        items.push(CitationItem {
+            id: "jones2021".to_string(),
+            ..Default::default()
+        });
+    }
+
+    processor
+        .process_citation(&Citation {
+            mode: citum_schema::citation::CitationMode::Integral,
+            items,
+            ..Default::default()
+        })
+        .unwrap()
 }
 
 fn make_numeric_books(ids: &[(&str, &str, i32, &str)]) -> Bibliography {
@@ -2193,6 +2288,123 @@ fn test_citation_visibility_modifiers() {
     let res_integral = processor.process_citation(&cit_integral).unwrap();
     // Integral mode for author-date styles: Kuhn (1962)
     assert_eq!(res_integral, "Kuhn (1962)");
+}
+
+#[rstest]
+#[case::two_items_default(None, None, None, None, false, "Kuhn (1962) and Smith (2020)")]
+#[case::three_items_serial_comma(
+    None,
+    None,
+    None,
+    Some(true),
+    true,
+    "Kuhn (1962), Smith (2020), and Jones (2021)"
+)]
+#[case::three_items_without_serial_comma(
+    None,
+    None,
+    Some("und"),
+    Some(false),
+    true,
+    "Kuhn (1962), Smith (2020) und Jones (2021)"
+)]
+#[case::integral_override_wins(None, Some("; "), None, None, false, "Kuhn (1962); Smith (2020)")]
+#[case::base_delimiter_does_not_disable_integral_prose_join(
+    Some("; "),
+    None,
+    None,
+    None,
+    false,
+    "Kuhn (1962) and Smith (2020)"
+)]
+fn given_integral_multi_cites_when_rendering_then_joining_respects_integral_behavior(
+    #[case] base_multi_cite_delimiter: Option<&str>,
+    #[case] integral_multi_cite_delimiter: Option<&str>,
+    #[case] locale_and_term: Option<&str>,
+    #[case] serial_comma: Option<bool>,
+    #[case] include_third_item: bool,
+    #[case] expected: &str,
+) {
+    let result = render_integral_multi_cite(
+        base_multi_cite_delimiter,
+        integral_multi_cite_delimiter,
+        locale_and_term,
+        serial_comma,
+        include_third_item,
+    );
+
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn test_integral_locator_does_not_duplicate_group_delimiter() {
+    let mut style = make_style();
+    style.citation = Some(CitationSpec {
+        template: Some(vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                form: ContributorForm::Short,
+                rendering: Rendering::default(),
+                ..Default::default()
+            }),
+            TemplateComponent::Date(TemplateDate {
+                date: TDateVar::Issued,
+                form: DateForm::Year,
+                rendering: Rendering {
+                    prefix: Some(", ".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+            TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::Locator,
+                rendering: Rendering {
+                    prefix: Some(", ".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        ]),
+        wrap: Some(WrapPunctuation::Parentheses),
+        integral: Some(Box::new(CitationSpec {
+            wrap: Some(WrapPunctuation::None),
+            ..Default::default()
+        })),
+        ..Default::default()
+    });
+
+    let mut bib = make_bibliography();
+    insert_book_reference(
+        &mut bib,
+        "kuhn1970",
+        "Kuhn",
+        "Thomas S.",
+        1970,
+        "The Essential Tension",
+    );
+
+    let processor = Processor::new(style, bib);
+    let citation = Citation {
+        mode: citum_schema::citation::CitationMode::Integral,
+        items: vec![
+            CitationItem {
+                id: "kuhn1962".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "kuhn1970".to_string(),
+                locator: Some(citum_schema::citation::CitationLocator::single(
+                    citum_schema::citation::LocatorType::Page,
+                    "123-125",
+                )),
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+
+    let result = processor.process_citation(&citation).unwrap();
+    assert_eq!(result, "Kuhn (1962, 1970, pp. 123–125)");
 }
 
 /// Tests the behavior of `test_bibliography_per_group_disambiguation`.
