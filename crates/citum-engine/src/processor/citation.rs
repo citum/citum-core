@@ -14,6 +14,7 @@ use super::rendering::{CompoundRenderData, Renderer, RendererResources};
 use crate::error::ProcessorError;
 use crate::reference::Citation;
 use citum_schema::NoteStartTextCase;
+use citum_schema::locale::{GeneralTerm, Locale, TermForm};
 use citum_schema::template::{DelimiterPunctuation, WrapPunctuation};
 
 fn capitalize_first(value: &str) -> String {
@@ -28,6 +29,33 @@ fn apply_note_start_text_case(value: &str, text_case: NoteStartTextCase) -> Stri
     match text_case {
         NoteStartTextCase::CapitalizeFirst => capitalize_first(value),
         NoteStartTextCase::Lowercase => value.to_lowercase(),
+    }
+}
+
+fn join_integral_groups(rendered_groups: Vec<String>, locale: &Locale) -> String {
+    match rendered_groups.len() {
+        0 => String::new(),
+        1 => rendered_groups.into_iter().next().unwrap_or_default(),
+        2 => {
+            let conjunction = locale
+                .resolved_general_term(&GeneralTerm::And, TermForm::Long)
+                .unwrap_or_else(|| locale.and_term(false).to_string());
+            rendered_groups.join(&format!(" {} ", conjunction.trim()))
+        }
+        _ => {
+            let conjunction = locale
+                .resolved_general_term(&GeneralTerm::And, TermForm::Long)
+                .unwrap_or_else(|| locale.and_term(false).to_string());
+            let final_delimiter = if locale.grammar_options.serial_comma {
+                format!(", {} ", conjunction.trim())
+            } else {
+                format!(" {} ", conjunction.trim())
+            };
+
+            let mut rendered_groups = rendered_groups;
+            let last = rendered_groups.pop().unwrap_or_default();
+            format!("{}{}{}", rendered_groups.join(", "), final_delimiter, last)
+        }
     }
 }
 
@@ -73,6 +101,16 @@ pub(crate) fn apply_note_start_text_case_to_leading_text_node(
 }
 
 impl Processor {
+    fn resolve_positioned_citation_spec(
+        &self,
+        citation: &Citation,
+    ) -> std::borrow::Cow<'_, citum_schema::CitationSpec> {
+        self.style.citation.as_ref().map_or_else(
+            || std::borrow::Cow::Owned(citum_schema::CitationSpec::default()),
+            |spec| spec.resolve_for_position(citation.position.as_ref()),
+        )
+    }
+
     fn track_cited_ids_and_init_numbers(&self, citation: &Citation) {
         self.initialize_numeric_citation_numbers();
         let mut cited_ids = self.cited_ids.borrow_mut();
@@ -82,15 +120,10 @@ impl Processor {
     }
 
     fn resolve_effective_citation_spec(&self, citation: &Citation) -> citum_schema::CitationSpec {
-        self.style
-            .citation
-            .as_ref()
-            .map_or_else(citum_schema::CitationSpec::default, |spec| {
-                spec.resolve_for_position(citation.position.as_ref())
-                    .into_owned()
-                    .resolve_for_mode(&citation.mode)
-                    .into_owned()
-            })
+        self.resolve_positioned_citation_spec(citation)
+            .into_owned()
+            .resolve_for_mode(&citation.mode)
+            .into_owned()
     }
 
     fn resolve_citation_delimiters<'a>(
@@ -153,6 +186,15 @@ impl Processor {
             self.inject_ast_indices,
         );
         let processing = citation_config.processing.clone().unwrap_or_default();
+        let has_explicit_integral_multi_cite_delimiter = matches!(
+            citation.mode,
+            citum_schema::citation::CitationMode::Integral
+        ) && self
+            .resolve_positioned_citation_spec(citation)
+            .integral
+            .as_ref()
+            .and_then(|spec| spec.multi_cite_delimiter.as_ref())
+            .is_some();
         let rendered_groups = if matches!(
             processing,
             citum_schema::options::Processing::Numeric
@@ -177,7 +219,17 @@ impl Processor {
             )?
         };
 
-        Ok(F::default().join(rendered_groups, renderer_inter_delimiter))
+        Ok(
+            if matches!(
+                citation.mode,
+                citum_schema::citation::CitationMode::Integral
+            ) && !has_explicit_integral_multi_cite_delimiter
+            {
+                join_integral_groups(rendered_groups, &self.locale)
+            } else {
+                F::default().join(rendered_groups, renderer_inter_delimiter)
+            },
+        )
     }
 
     fn apply_citation_input_affixes<F>(

@@ -42,6 +42,47 @@ struct GroupItemRenderRequest<'a> {
 }
 
 impl Renderer<'_> {
+    fn strip_redundant_leading_group_punctuation<'a>(
+        &self,
+        value: &'a str,
+        delimiter: &str,
+    ) -> &'a str {
+        let Some(delimiter_char) = delimiter.chars().find(|ch| !ch.is_whitespace()) else {
+            return value;
+        };
+
+        let trimmed = value.trim_start();
+        if !trimmed.starts_with(delimiter_char) {
+            return value;
+        }
+
+        trimmed[delimiter_char.len_utf8()..].trim_start()
+    }
+
+    fn join_integral_group_item_parts(&self, item_parts: &[String], delimiter: &str) -> String {
+        let repeated_item_delimiter = if delimiter.trim().is_empty() {
+            ", "
+        } else {
+            delimiter
+        };
+
+        let mut joined = String::new();
+        for (index, part) in item_parts.iter().enumerate() {
+            if index > 0 {
+                joined.push_str(repeated_item_delimiter);
+            }
+
+            let normalized = if index == 0 {
+                part.as_str()
+            } else {
+                self.strip_redundant_leading_group_punctuation(part, repeated_item_delimiter)
+            };
+            joined.push_str(normalized);
+        }
+
+        joined
+    }
+
     /// Render citation items with author grouping, using plain text format.
     ///
     /// # Errors
@@ -125,7 +166,7 @@ impl Renderer<'_> {
         let fmt = F::default();
         let first_item = group[0];
         let component_delimiter = spec.delimiter.as_deref().unwrap_or(" ");
-        let item_join_delim = spec.multi_cite_delimiter.as_deref().unwrap_or("; ");
+        let item_join_delim = spec.multi_cite_delimiter.as_deref().unwrap_or(", ");
         let mut group_items_str = Vec::new();
         let mut all_ids = Vec::new();
 
@@ -307,12 +348,19 @@ impl Renderer<'_> {
     ) -> Option<String> {
         if !author_part.is_empty() && !item_parts.is_empty() {
             let author_item_delimiter = group_delimiter.unwrap_or(params.intra_delimiter);
-            let repeated_item_delimiter = if author_item_delimiter.trim().is_empty() {
-                ", "
-            } else {
-                author_item_delimiter
+            let joined_items = match params.mode {
+                citum_schema::citation::CitationMode::Integral => {
+                    self.join_integral_group_item_parts(item_parts, author_item_delimiter)
+                }
+                citum_schema::citation::CitationMode::NonIntegral => {
+                    let repeated_item_delimiter = if author_item_delimiter.trim().is_empty() {
+                        ", "
+                    } else {
+                        author_item_delimiter
+                    };
+                    item_parts.join(repeated_item_delimiter)
+                }
             };
-            let joined_items = item_parts.join(repeated_item_delimiter);
             return Some(match params.mode {
                 citum_schema::citation::CitationMode::Integral => self
                     .format_integral_grouped_items(
