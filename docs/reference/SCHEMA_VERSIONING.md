@@ -58,6 +58,13 @@ Schema release prep now happens in the same workflow that prepares the code rele
 
 If schema files changed but no valid footer is present, the release workflow fails before opening or updating the release PR.
 
+Pull requests to `main` now run the same validation logic against the PR base
+commit in dry-run mode. That means schema-affecting PRs fail in CI before merge
+if they do not carry exactly one valid footer in the PR commit range.
+The PR check also allows a single rescue footer on a PR that does not itself
+change schema artifacts, so a follow-up PR can unblock an already broken
+release range on `main`.
+
 ## Schema Bump Contract
 
 The only supported schema bump marker is a commit footer:
@@ -71,6 +78,8 @@ Schema-Bump: major
 Rules:
 
 - Exactly one `Schema-Bump:` footer must appear across the unreleased commit range when schema changes are present.
+- Pull requests to `main` use the same rule against the PR commit range (`base..HEAD`), so the footer is enforced before merge as well as at release time.
+- A rescue PR may carry one valid footer even when that PR does not itself change schema artifacts, as long as the merge is intended to unblock an existing schema-changing unreleased range on `main`.
 - No footer is required when schema files and `STYLE_SCHEMA_VERSION` are unchanged.
 - If a PR is squash-merged, preserve the footer in the squash commit body.
 - The release prep script treats generated-schema drift in `docs/schemas` as the canonical signal that the schema changed.
@@ -143,8 +152,9 @@ The repo now treats `docs/schemas` as the only committed schema artifact set.
 CI validates:
 
 1. all schema-generating code still produces the checked-in `docs/schemas/*`
-2. the release-prep step can derive a valid schema bump decision from commit metadata
-3. `citum check` and auxiliary validation scripts read from the same canonical schema directory
+2. pull requests with schema changes include exactly one valid `Schema-Bump:` footer in their commit range
+3. the release-prep step can derive a valid schema bump decision from release-range commit metadata
+4. `citum check` and auxiliary validation scripts read from the same canonical schema directory
 
 ## Schema Changelog
 

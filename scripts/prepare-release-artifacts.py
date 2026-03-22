@@ -35,6 +35,15 @@ class SchemaBumpMarker:
     bump: str
 
 
+@dataclass(frozen=True)
+class ValidationTarget:
+    """Resolved git references used to validate schema release state."""
+
+    baseline_ref: str
+    baseline_label: str
+    commit_range: str
+
+
 def run(
     args: Sequence[str],
     *,
@@ -220,17 +229,58 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
         prog="prepare-release-artifacts.py",
         description="Regenerate release artifacts before release-plz opens a PR.",
     )
-    parser.add_argument(
+    baseline_group = parser.add_mutually_exclusive_group(required=True)
+    baseline_group.add_argument(
         "--previous-tag",
-        required=True,
         help="Latest released root tag (for example v0.15.0).",
+    )
+    baseline_group.add_argument(
+        "--baseline-ref",
+        help=(
+            "Git ref used as the comparison baseline for validation-only workflows "
+            "(for example origin/main or a pull request base SHA)."
+        ),
+    )
+    parser.add_argument(
+        "--commit-range",
+        help=(
+            "Explicit git commit range to scan for Schema-Bump footers. "
+            "Defaults to <baseline-ref>..HEAD."
+        ),
     )
     parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Preview the release prep decision without mutating tracked files.",
     )
+    parser.add_argument(
+        "--allow-orphan-footer",
+        action="store_true",
+        help=(
+            "Allow exactly one Schema-Bump footer even when the validated range does not "
+            "change generated schemas or STYLE_SCHEMA_VERSION. Intended for rescue PRs "
+            "whose merge commit will unblock an already schema-changing release range."
+        ),
+    )
     return parser.parse_args(argv)
+
+
+def resolve_validation_target(args: argparse.Namespace) -> ValidationTarget:
+    """Resolve the baseline ref and commit range for this invocation."""
+
+    baseline_ref = args.previous_tag or args.baseline_ref
+    if baseline_ref is None:
+        raise ReleasePrepError("A baseline ref is required for release preparation")
+
+    baseline_label = (
+        args.previous_tag if args.previous_tag is not None else f"baseline {baseline_ref}"
+    )
+    commit_range = args.commit_range or f"{baseline_ref}..HEAD"
+    return ValidationTarget(
+        baseline_ref=baseline_ref,
+        baseline_label=baseline_label,
+        commit_range=commit_range,
+    )
 
 
 def main(argv: Sequence[str]) -> int:
@@ -238,12 +288,11 @@ def main(argv: Sequence[str]) -> int:
 
     try:
         args = parse_args(argv)
-        previous_tag = args.previous_tag
-        commit_range = f"{previous_tag}..HEAD"
+        target = resolve_validation_target(args)
 
-        previous_schema_version = read_schema_version_at_ref(previous_tag)
+        previous_schema_version = read_schema_version_at_ref(target.baseline_ref)
         current_schema_version = read_current_schema_version()
-        previous_schema_output = read_schema_dir_contents_at_ref(previous_tag)
+        previous_schema_output = read_schema_dir_contents_at_ref(target.baseline_ref)
         current_schema_output = read_schema_dir_contents(SCHEMA_DIR)
 
         with tempfile.TemporaryDirectory(prefix="citum-schemas-") as tmp_dir:
@@ -261,16 +310,24 @@ def main(argv: Sequence[str]) -> int:
         schema_changed = (
             schema_output_drift or schema_files_changed_since_tag or schema_version_changed
         )
-        markers = collect_schema_bump_markers(commit_range)
+        markers = collect_schema_bump_markers(target.commit_range)
 
         if not schema_changed:
             if markers:
+                if args.allow_orphan_footer and len(markers) == 1:
+                    marker = markers[0]
+                    print(
+                        "No schema release prep needed for the validated range; "
+                        "allowing rescue footer "
+                        f"{marker.bump} from {marker.commit}."
+                    )
+                    return 0
                 raise ReleasePrepError(
                     "Found Schema-Bump footer(s) but generated schemas and STYLE_SCHEMA_VERSION "
                     f"did not change: {format_marker_list(markers)}"
                 )
             print(
-                f"No schema release prep needed since {previous_tag}; "
+                f"No schema release prep needed since {target.baseline_label}; "
                 "generated schemas and STYLE_SCHEMA_VERSION are unchanged."
             )
             return 0
@@ -278,7 +335,7 @@ def main(argv: Sequence[str]) -> int:
         if len(markers) != 1:
             raise ReleasePrepError(
                 "Schema changes were detected but exactly one Schema-Bump footer is required "
-                f"across {commit_range}. Found: {format_marker_list(markers) or 'none'}"
+                f"across {target.commit_range}. Found: {format_marker_list(markers) or 'none'}"
             )
 
         marker = markers[0]

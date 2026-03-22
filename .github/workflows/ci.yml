@@ -21,6 +21,8 @@ jobs:
       RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install beans CLI
         run: |
@@ -63,6 +65,15 @@ jobs:
       - name: Validate repo frontmatter manifests
         run: ./scripts/validate-frontmatter.sh --repo-only --copilot-strict
 
+      - name: Enforce schema bump footer contract on PRs
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          python3 scripts/prepare-release-artifacts.py \
+            --baseline-ref "${{ github.event.pull_request.base.sha }}" \
+            --commit-range "${{ github.event.pull_request.base.sha }}..HEAD" \
+            --allow-orphan-footer \
+            --dry-run
+
       - name: Validate production styles
         run: ./scripts/validate-production-styles.sh
 
@@ -74,6 +85,9 @@ jobs:
 
       - name: Run script regression tests
         run: node --test scripts/*.test.js
+
+      - name: Run release prep regression tests
+        run: python3 -m unittest scripts/test_prepare_release_artifacts.py
 
       - name: Check formatting
         run: cargo fmt --all -- --check
