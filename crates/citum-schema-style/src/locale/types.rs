@@ -448,9 +448,7 @@ pub enum MessageSyntax {
     /// Plain text only; parameterized messages are not evaluated.
     #[default]
     Static,
-    /// ICU Message Format 1 evaluation (requires `IcuMf1MessageEvaluator`).
-    Mf1,
-    /// ICU Message Format 2 evaluation (reserved for future use).
+    /// ICU Message Format 2 evaluation (requires `Mf2MessageEvaluator`).
     Mf2,
 }
 
