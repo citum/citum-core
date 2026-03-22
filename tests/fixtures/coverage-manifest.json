@@ -244,6 +244,60 @@
       "notes": "Chemistry family citation fixture paired with the compound numeric reference corpus."
     },
     {
+      "fixture": "tests/fixtures/references-secondary-roles.json",
+      "domain": "core",
+      "kind": "references",
+      "reference_types": [
+        "book",
+        "chapter",
+        "interview",
+        "personal_communication"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "secondary contributor role formatting",
+        "editor and translator role placement",
+        "interviewer and recipient coverage",
+        "plural role label rendering"
+      ],
+      "used_by": [
+        "scripts/oracle.js",
+        "scripts/oracle-yaml.js",
+        "scripts/report-core.js"
+      ],
+      "ci_status": "required",
+      "notes": "Cross-cutting role-heavy bibliography fixture for secondary contributor formatting and diagnostics."
+    },
+    {
+      "fixture": "tests/fixtures/citations-secondary-roles.json",
+      "domain": "core",
+      "kind": "citations",
+      "reference_types": [
+        "book",
+        "chapter",
+        "interview",
+        "personal_communication"
+      ],
+      "citation_scenarios": [
+        "secondary-role single item",
+        "chapter locator",
+        "interview locator",
+        "mixed cluster"
+      ],
+      "rendering_risks": [
+        "role-aware citation parity",
+        "author substitution with translators",
+        "note and author-date cross-family coverage"
+      ],
+      "used_by": [
+        "scripts/oracle.js",
+        "scripts/oracle-yaml.js",
+        "scripts/report-core.js"
+      ],
+      "ci_status": "required",
+      "notes": "Cross-cutting citation fixture for editor, translator, interviewer, and recipient scenarios."
+    },
+    {
       "fixture": "tests/fixtures/references-author-date.json",
       "domain": "core",
       "kind": "references",

@@ -75,9 +75,6 @@ pub struct ContributorConfig {
     /// When and how to display contributor roles.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub role: Option<RoleOptions>,
-    /// Global format for editor labels.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub editor_label_format: Option<EditorLabelFormat>,
     /// Handling of non-dropping particles (e.g., "van" in "van Gogh").
     #[serde(skip_serializing_if = "Option::is_none")]
     pub demote_non_dropping_particle: Option<DemoteNonDroppingParticle>,
@@ -126,9 +123,6 @@ impl ContributorConfig {
         if other.role.is_some() {
             self.role = other.role.clone();
         }
-        if other.editor_label_format.is_some() {
-            self.editor_label_format = other.editor_label_format;
-        }
         if other.demote_non_dropping_particle.is_some() {
             self.demote_non_dropping_particle = other.demote_non_dropping_particle;
         }
@@ -139,19 +133,64 @@ impl ContributorConfig {
             self.name_form = other.name_form;
         }
     }
+
+    /// Return the configured rendering override for a specific contributor role.
+    pub fn role_rendering(
+        &self,
+        role: &crate::template::ContributorRole,
+    ) -> Option<&RoleRendering> {
+        self.role.as_ref()?.role_rendering(role)
+    }
+
+    /// Resolve the effective label preset for a specific contributor role.
+    pub fn effective_role_label_preset(
+        &self,
+        role: &crate::template::ContributorRole,
+    ) -> Option<RoleLabelPreset> {
+        self.role
+            .as_ref()
+            .and_then(|role_options| role_options.effective_label_preset(role))
+    }
+
+    /// Return the configured name-order override for a specific contributor role.
+    pub fn effective_role_name_order(
+        &self,
+        role: &crate::template::ContributorRole,
+    ) -> Option<&crate::template::NameOrder> {
+        self.role_rendering(role)
+            .and_then(|rendering| rendering.name_order.as_ref())
+    }
 }
 
-/// Format for editor labels.
-#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
+/// Named role-label presets for secondary contributor rendering.
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
-pub enum EditorLabelFormat {
-    /// "edited by John Doe"
+pub enum RoleLabelPreset {
+    /// Suppress the configured role label.
+    None,
+    /// Render the localized verb label before the names.
     VerbPrefix,
-    /// "John Doe (Ed.)"
+    /// Render the localized short verb label before the names.
+    VerbShortPrefix,
+    /// Render the localized short label after the names.
     ShortSuffix,
-    /// "John Doe, editor"
+    /// Render the localized long label after the names.
     LongSuffix,
+}
+
+impl RoleLabelPreset {
+    /// Resolve a legacy string form to the corresponding role-label preset.
+    pub fn from_form_str(form: &str) -> Option<Self> {
+        match form {
+            "none" => Some(Self::None),
+            "verb" => Some(Self::VerbPrefix),
+            "verb-short" => Some(Self::VerbShortPrefix),
+            "short" => Some(Self::ShortSuffix),
+            "long" => Some(Self::LongSuffix),
+            _ => None,
+        }
+    }
 }
 
 /// Options for demoting non-dropping particles.
@@ -223,6 +262,9 @@ pub struct RoleOptions {
     /// Contributor roles for which to omit the role description.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub omit: Vec<String>,
+    /// Global role-label preset applied before legacy compatibility.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub preset: Option<RoleLabelPreset>,
     /// Global role label form.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub form: Option<String>,
@@ -237,11 +279,39 @@ pub struct RoleOptions {
     pub roles: Option<HashMap<String, RoleRendering>>,
 }
 
+impl RoleOptions {
+    /// Return the configured rendering override for a specific contributor role.
+    pub fn role_rendering(
+        &self,
+        role: &crate::template::ContributorRole,
+    ) -> Option<&RoleRendering> {
+        self.roles.as_ref()?.get(role.as_str())
+    }
+
+    /// Resolve the effective label preset for a specific contributor role.
+    pub fn effective_label_preset(
+        &self,
+        role: &crate::template::ContributorRole,
+    ) -> Option<RoleLabelPreset> {
+        self.role_rendering(role)
+            .and_then(|rendering| rendering.preset)
+            .or(self.preset)
+            .or_else(|| {
+                self.form
+                    .as_deref()
+                    .and_then(RoleLabelPreset::from_form_str)
+            })
+    }
+}
+
 /// Rendering options for contributor roles.
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub struct RoleRendering {
+    /// Per-role label preset override.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub preset: Option<RoleLabelPreset>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub prefix: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -257,6 +327,7 @@ pub struct RoleRendering {
 }
 
 impl RoleRendering {
+    /// Convert the rendering override to a generic rendering config.
     pub fn to_rendering(&self) -> crate::template::Rendering {
         crate::template::Rendering {
             emph: self.emph,

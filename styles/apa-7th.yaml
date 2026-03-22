@@ -33,7 +33,8 @@ options:
   substitute: standard
   contributors:
     initialize-with: ". "
-    editor-label-format: short-suffix
+    role:
+      preset: short-suffix
     demote-non-dropping-particle: never
     delimiter-precedes-last: always
     and: symbol

@@ -238,10 +238,7 @@ pub fn get_effective_rendering(component: &ProcTemplateComponent) -> Rendering {
             TemplateComponent::Contributor(c) => {
                 if let Some(contributors_config) = &config.contributors
                     && let Some(role_config) = &contributors_config.role
-                    && let Some(role_rendering) = role_config
-                        .roles
-                        .as_ref()
-                        .and_then(|r| r.get(c.contributor.as_str()))
+                    && let Some(role_rendering) = role_config.role_rendering(&c.contributor)
                 {
                     effective.merge(&role_rendering.to_rendering());
                 }

@@ -1,0 +1,19 @@
+[
+  { "id": "sr-cite-editor-only", "items": [{ "id": "sr-editor-only" }] },
+  { "id": "sr-cite-translator-only", "items": [{ "id": "sr-translator-only" }] },
+  { "id": "sr-cite-author-translator", "items": [{ "id": "sr-author-translator" }] },
+  {
+    "id": "sr-cite-chapter-container-editors",
+    "items": [{ "id": "sr-chapter-container-editors", "locator": { "label": "page", "value": "61-62" } }]
+  },
+  {
+    "id": "sr-cite-interview",
+    "items": [{ "id": "sr-interview", "locator": { "label": "page", "value": "14" } }]
+  },
+  { "id": "sr-cite-recipient", "items": [{ "id": "sr-recipient" }] },
+  { "id": "sr-cite-plural-translators", "items": [{ "id": "sr-plural-translators" }] },
+  {
+    "id": "sr-cite-mixed-cluster",
+    "items": [{ "id": "sr-author-translator" }, { "id": "sr-interview" }]
+  }
+]

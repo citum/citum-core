@@ -57,7 +57,7 @@ test('oracle-yaml resolves apa-7th to apa.csl and author-date fixtures', () => {
   assert.equal(path.basename(plan.legacyCslPath), 'apa.csl');
   assert.equal(path.basename(plan.baseRun.refsFixture), 'references-expanded.json');
   assert.equal(path.basename(plan.baseRun.citationsFixture), 'citations-expanded.json');
-  assert.deepEqual(plan.familyRuns.map((run) => run.setName), ['author-date']);
+  assert.deepEqual(plan.familyRuns.map((run) => run.setName), ['author-date', 'secondary-roles']);
 });
 
 test('oracle-yaml resolves chicago-notes to note fixtures and citation-only scope', () => {
@@ -65,7 +65,7 @@ test('oracle-yaml resolves chicago-notes to note fixtures and citation-only scop
 
   assert.equal(path.basename(plan.legacyCslPath), 'chicago-notes.csl');
   assert.equal(path.basename(plan.baseRun.citationsFixture), 'citations-note-expanded.json');
-  assert.deepEqual(plan.familyRuns.map((run) => run.setName), ['humanities-note']);
+  assert.deepEqual(plan.familyRuns.map((run) => run.setName), ['humanities-note', 'secondary-roles']);
   assert.deepEqual(plan.effectiveScopes, ['citation']);
 });
 
@@ -74,10 +74,10 @@ test('oracle-yaml resolves chicago-author-date and ieee to their scoped family f
   const ieeePlan = planFor('ieee.yaml', { styleFormat: 'numeric', hasBibliography: true });
 
   assert.equal(path.basename(chicagoPlan.legacyCslPath), 'chicago-author-date.csl');
-  assert.deepEqual(chicagoPlan.familyRuns.map((run) => run.setName), ['author-date']);
+  assert.deepEqual(chicagoPlan.familyRuns.map((run) => run.setName), ['author-date', 'secondary-roles']);
 
   assert.equal(path.basename(ieeePlan.legacyCslPath), 'ieee.csl');
-  assert.deepEqual(ieeePlan.familyRuns.map((run) => run.setName), ['physics-numeric']);
+  assert.deepEqual(ieeePlan.familyRuns.map((run) => run.setName), ['physics-numeric', 'secondary-roles']);
 });
 
 test('oracle-yaml keeps preset-backed wrapper styles mapped to their filename baseline', () => {

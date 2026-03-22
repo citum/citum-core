@@ -166,17 +166,13 @@ function compareText(expectedText, actualText, options = {}) {
 // -- Reference data lookup --
 
 /**
- * Find the reference data matching a bibliography entry.
+ * Return true when a reference has any primary person-like contributor.
  *
- * Uses multi-field scoring (author + year + title) to disambiguate
- * entries that share an author name.
- *
- * @param {string} entry - The bibliography entry text
- * @param {Object} testItems - Map of item IDs to reference data
- * @returns {{ id: string, ref: Object }|null} The best-matching reference and id, or null
+ * @param {Object} ref
+ * @returns {boolean}
  */
 function hasPrimaryNames(ref) {
-  return ['author', 'editor', 'translator'].some(
+  return ['author', 'editor', 'translator', 'interviewer', 'recipient'].some(
     (role) => Array.isArray(ref?.[role]) && ref[role].length > 0
   );
 }
@@ -184,24 +180,15 @@ function hasPrimaryNames(ref) {
 function findRefMatchForEntry(entry, testItems) {
   const entryLower = normalizeText(entry).toLowerCase();
   const candidates = [];
+  const nameRoles = ['author', 'editor', 'translator', 'interviewer', 'recipient'];
 
   for (const [id, ref] of Object.entries(testItems)) {
     let score = 0;
     let nameMatch = false;
 
-    // Check author family name
-    if (ref.author && ref.author.length > 0) {
-      const first = ref.author[0];
-      const name = (first.family || first.literal || '').toLowerCase();
-      if (name && entryLower.includes(name)) {
-        score += 1;
-        nameMatch = true;
-      }
-    }
-
-    // Check editor if no author match
-    if (!nameMatch && ref.editor && ref.editor.length > 0) {
-      const first = ref.editor[0];
+    for (const role of nameRoles) {
+      if (nameMatch || !ref[role] || ref[role].length === 0) continue;
+      const first = ref[role][0];
       const name = (first.family || first.literal || '').toLowerCase();
       if (name && entryLower.includes(name)) {
         score += 1;
@@ -350,6 +337,42 @@ function expandNamePosition(entryLower, familyPos, givenName) {
   return familyPos;
 }
 
+function positionsOverlap(left, right) {
+  if (!left || !right) return false;
+  return left.start < right.end && right.start < left.end;
+}
+
+function sliceMatchedValue(normalizedEntry, pos) {
+  if (!pos) return null;
+  return normalizedEntry.substring(pos.start, pos.end);
+}
+
+function findContributorComponent(normalizedEntry, names, occupiedPositions = []) {
+  if (!Array.isArray(names) || names.length === 0) return null;
+
+  const first = names[0];
+  const family = first.family || first.literal || '';
+  const given = first.given || '';
+  if (!family) return null;
+
+  const entryLower = normalizedEntry.toLowerCase();
+  let idx = entryLower.indexOf(family.toLowerCase());
+  while (idx !== -1) {
+    let pos = { start: idx, end: idx + family.length };
+    pos = expandNamePosition(entryLower, pos, given);
+    if (!occupiedPositions.some((occupied) => positionsOverlap(occupied, pos))) {
+      return {
+        found: true,
+        value: sliceMatchedValue(normalizedEntry, pos),
+        pos,
+      };
+    }
+    idx = entryLower.indexOf(family.toLowerCase(), idx + 1);
+  }
+
+  return null;
+}
+
 // -- Component parsing --
 
 /**
@@ -360,6 +383,7 @@ function expandNamePosition(entryLower, familyPos, givenName) {
  * @returns {Object} Components found: { contributors, year, title, ... }
  */
 function parseComponents(entry, refData) {
+  const normalized = normalizeText(entry);
   const result = {
     contributors: { found: false, value: null, pos: null },
     year: { found: false, value: null, pos: null },
@@ -371,26 +395,20 @@ function parseComponents(entry, refData) {
     publisher: { found: false, value: null, pos: null },
     doi: { found: false, value: null, pos: null },
     edition: { found: false, value: null, pos: null },
-    editors: { found: false, value: null, pos: null }
+    editors: { found: false, value: null, pos: null },
+    translators: { found: false, value: null, pos: null },
+    interviewers: { found: false, value: null, pos: null },
+    recipients: { found: false, value: null, pos: null }
   };
 
-  const entryLower = normalizeText(entry).toLowerCase();
+  const entryLower = normalized.toLowerCase();
 
-  // Contributors (authors/editors)
-  if (refData.author && refData.author.length > 0) {
-    const first = refData.author[0];
-    const familyName = (first.family || first.literal || '').toLowerCase();
-    if (familyName) {
-      const familyPos = findFieldPosition(entryLower, familyName);
-      const fullPos = expandNamePosition(entryLower, familyPos, first.given);
-      if (fullPos) {
-        result.contributors = {
-          found: true,
-          value: entry.substring(fullPos.start, fullPos.end),
-          pos: fullPos
-        };
-      }
-    }
+  const principalNames = (refData.author && refData.author.length > 0)
+    ? refData.author
+    : refData.editor;
+  const principalComponent = findContributorComponent(normalized, principalNames);
+  if (principalComponent) {
+    result.contributors = principalComponent;
   }
 
   // Year
@@ -502,20 +520,23 @@ function parseComponents(entry, refData) {
     }
   }
 
-  // Editors
-  if (refData.editor && refData.editor.length > 0) {
-    const first = refData.editor[0];
-    const familyName = (first.family || first.literal || '').toLowerCase();
-    if (familyName) {
-      const familyPos = findFieldPosition(entryLower, familyName);
-      const fullPos = expandNamePosition(entryLower, familyPos, first.given);
-      if (fullPos) {
-        result.editors = {
-          found: true,
-          value: entry.substring(fullPos.start, fullPos.end),
-          pos: fullPos
-        };
-      }
+  const occupiedPositions = [];
+  if (result.contributors.found && result.contributors.pos) {
+    occupiedPositions.push(result.contributors.pos);
+  }
+
+  const secondaryRoleMappings = [
+    ['editor', 'editors'],
+    ['translator', 'translators'],
+    ['interviewer', 'interviewers'],
+    ['recipient', 'recipients'],
+  ];
+
+  for (const [refKey, componentKey] of secondaryRoleMappings) {
+    const component = findContributorComponent(normalized, refData[refKey], occupiedPositions);
+    if (component) {
+      result[componentKey] = component;
+      occupiedPositions.push(component.pos);
     }
   }
 
@@ -528,7 +549,10 @@ function parseComponents(entry, refData) {
  * @param {Object} components - Parsed components from parseComponents()
  * @returns {Array<string>} Ordered list of component names by position
  */
-function analyzeOrdering(components) {
+function analyzeOrdering(entryOrComponents, refData = null) {
+  const components = typeof entryOrComponents === 'string'
+    ? parseComponents(entryOrComponents, refData)
+    : entryOrComponents;
   const positioned = Object.entries(components)
     .filter(([_, data]) => data.found && data.pos)
     .map(([name, data]) => ({ name, pos: data.pos }))

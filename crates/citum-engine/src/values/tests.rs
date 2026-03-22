@@ -1361,95 +1361,161 @@ fn test_variable_hyperlink() {
     assert_eq!(values.url, Some("https://doi.org/10.1234/pub".to_string()));
 }
 
-/// Tests the behavior of `test_editor_label_format`.
 #[test]
-fn test_editor_label_format() {
+fn test_role_label_preset_applies_to_translator_component() {
     let mut config = make_config();
     let locale = make_locale();
     let hints = ProcHints::default();
 
     let reference = Reference::from(LegacyReference {
-        id: "editor-test".to_string(),
+        id: "translator-test".to_string(),
         ref_type: "book".to_string(),
-        editor: Some(vec![Name::new("Doe", "John")]),
+        translator: Some(vec![Name::new("Muller", "Anna")]),
         ..Default::default()
     });
 
+    if let Some(ref mut contributors) = config.contributors {
+        contributors.role = Some(RoleOptions {
+            preset: Some(RoleLabelPreset::LongSuffix),
+            ..Default::default()
+        });
+    }
+
+    let options = RenderOptions {
+        config: &config,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
     let component = TemplateContributor {
-        contributor: ContributorRole::Editor,
+        contributor: ContributorRole::Translator,
         form: ContributorForm::Long,
         links: None,
         ..Default::default()
     };
 
-    // Test VerbPrefix
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "Muller, Anna");
+    assert_eq!(values.suffix, Some(", translator".to_string()));
+}
+
+#[test]
+fn test_translator_substitute_uses_locale_aware_role_label() {
+    let mut config = make_config();
+    let locale = make_locale();
+    let hints = ProcHints::default();
+
+    config.substitute = Some(SubstituteConfig::Explicit(Substitute {
+        contributor_role_form: Some("long".to_string()),
+        template: vec![SubstituteKey::Translator],
+        overrides: std::collections::HashMap::new(),
+    }));
+
+    let reference = Reference::from(LegacyReference {
+        id: "translator-substitute".to_string(),
+        ref_type: "book".to_string(),
+        translator: Some(vec![Name::new("Muller", "Anna")]),
+        ..Default::default()
+    });
+
+    let options = RenderOptions {
+        config: &config,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let component = TemplateContributor {
+        contributor: ContributorRole::Author,
+        form: ContributorForm::Long,
+        links: None,
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "Muller, Anna");
+    assert_eq!(values.suffix, Some(", translator".to_string()));
+    assert_eq!(
+        values.substituted_key,
+        Some("contributor:Translator".to_string())
+    );
+}
+
+#[test]
+fn test_role_specific_name_order_applies_in_substitute_path() {
+    let mut config = make_config();
+    let locale = make_locale();
+    let hints = ProcHints::default();
+
+    config.substitute = Some(SubstituteConfig::Explicit(Substitute {
+        contributor_role_form: Some("short".to_string()),
+        template: vec![SubstituteKey::Translator],
+        overrides: std::collections::HashMap::new(),
+    }));
+
     if let Some(ref mut contributors) = config.contributors {
-        contributors.editor_label_format = Some(EditorLabelFormat::VerbPrefix);
-    }
-    {
-        let options = RenderOptions {
-            config: &config,
-            locale: &locale,
-            context: RenderContext::Bibliography,
-            mode: citum_schema::citation::CitationMode::NonIntegral,
-            suppress_author: false,
-            locator_raw: None,
-            ref_type: None,
-            show_semantics: true,
-            current_template_index: None,
-        };
-        let values = component
-            .values::<PlainText>(&reference, &hints, &options)
-            .unwrap();
-        // Assuming locale for "editor" verb is "edited by"
-        assert_eq!(values.prefix, Some("edited by ".to_string()));
+        contributors.role = Some(RoleOptions {
+            roles: Some({
+                let mut roles = std::collections::HashMap::new();
+                roles.insert(
+                    "translator".to_string(),
+                    RoleRendering {
+                        name_order: Some(NameOrder::GivenFirst),
+                        ..Default::default()
+                    },
+                );
+                roles
+            }),
+            ..Default::default()
+        });
     }
 
-    // Test ShortSuffix
-    if let Some(ref mut contributors) = config.contributors {
-        contributors.editor_label_format = Some(EditorLabelFormat::ShortSuffix);
-    }
-    {
-        let options = RenderOptions {
-            config: &config,
-            locale: &locale,
-            context: RenderContext::Bibliography,
-            mode: citum_schema::citation::CitationMode::NonIntegral,
-            suppress_author: false,
-            locator_raw: None,
-            ref_type: None,
-            show_semantics: true,
-            current_template_index: None,
-        };
-        let values = component
-            .values::<PlainText>(&reference, &hints, &options)
-            .unwrap();
-        // Locale for "editor" short is "ed." (CSL standard lowercase)
-        assert_eq!(values.suffix, Some(" (ed.)".to_string()));
-    }
+    let reference = Reference::from(LegacyReference {
+        id: "translator-name-order".to_string(),
+        ref_type: "book".to_string(),
+        translator: Some(vec![Name::new("Muller", "Anna")]),
+        ..Default::default()
+    });
 
-    // Test LongSuffix
-    if let Some(ref mut contributors) = config.contributors {
-        contributors.editor_label_format = Some(EditorLabelFormat::LongSuffix);
-    }
-    {
-        let options = RenderOptions {
-            config: &config,
-            locale: &locale,
-            context: RenderContext::Bibliography,
-            mode: citum_schema::citation::CitationMode::NonIntegral,
-            suppress_author: false,
-            locator_raw: None,
-            ref_type: None,
-            show_semantics: true,
-            current_template_index: None,
-        };
-        let values = component
-            .values::<PlainText>(&reference, &hints, &options)
-            .unwrap();
-        // Assuming locale for "editor" long is "editor"
-        assert_eq!(values.suffix, Some(", editor".to_string()));
-    }
+    let options = RenderOptions {
+        config: &config,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let component = TemplateContributor {
+        contributor: ContributorRole::Author,
+        form: ContributorForm::Long,
+        links: None,
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "Anna Muller");
+    assert_eq!(values.suffix, Some(" (Trans.)".to_string()));
 }
 
 /// Tests the behavior of `test_term_values`.

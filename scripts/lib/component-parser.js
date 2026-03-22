@@ -49,14 +49,15 @@ function normalizeText(text) {
 function findRefDataForEntry(entry, testItems) {
   const entryLower = normalizeText(entry).toLowerCase();
   const candidates = [];
+  const nameRoles = ['author', 'editor', 'translator', 'interviewer', 'recipient'];
 
   for (const [id, ref] of Object.entries(testItems)) {
     let score = 0;
     let nameMatch = false;
 
-    // Check author family name
-    if (ref.author && ref.author.length > 0) {
-      const first = ref.author[0];
+    for (const role of nameRoles) {
+      if (nameMatch || !ref[role] || ref[role].length === 0) continue;
+      const first = ref[role][0];
       const name = (first.family || first.literal || '').toLowerCase();
       if (name && entryLower.includes(name)) {
         score += 1;
@@ -64,17 +65,19 @@ function findRefDataForEntry(entry, testItems) {
       }
     }
 
-    // Check editor if no author match
-    if (!nameMatch && ref.editor && ref.editor.length > 0) {
-      const first = ref.editor[0];
-      const name = (first.family || first.literal || '').toLowerCase();
-      if (name && entryLower.includes(name)) {
-        score += 1;
-        nameMatch = true;
+    if (!nameMatch) {
+      if (!ref.title) continue;
+      const titleLower = normalizeText(ref.title).toLowerCase();
+      if (entryLower.includes(titleLower)) {
+        score += 4;
+      } else {
+        const prefix = titleLower.substring(0, Math.min(40, titleLower.length));
+        if (prefix.length >= 10 && entryLower.includes(prefix)) {
+          score += 2;
+        }
       }
+      if (score === 0) continue;
     }
-
-    if (!nameMatch) continue;
 
     // Year match (strongly discriminating)
     if (ref.issued && ref.issued['date-parts'] && ref.issued['date-parts'][0]) {
@@ -199,6 +202,38 @@ function expandNamePosition(entryLower, familyPos, givenName) {
   return familyPos;
 }
 
+function positionsOverlap(left, right) {
+  if (!left || !right) return false;
+  return left.start < right.end && right.start < left.end;
+}
+
+function sliceMatchedValue(normalizedEntry, position) {
+  if (!position) return null;
+  return normalizedEntry.substring(position.start, position.end);
+}
+
+function findContributorComponent(normalizedEntry, names, occupiedPositions = []) {
+  if (!Array.isArray(names) || names.length === 0) return null;
+
+  const first = names[0];
+  const family = first.family || first.literal || '';
+  const given = first.given || '';
+  if (!family) return null;
+
+  const entryLower = normalizedEntry.toLowerCase();
+  let idx = entryLower.indexOf(family.toLowerCase());
+  while (idx !== -1) {
+    let position = { start: idx, end: idx + family.length };
+    position = expandNamePosition(entryLower, position, given);
+    if (!occupiedPositions.some((occupied) => positionsOverlap(occupied, position))) {
+      return { found: true, value: sliceMatchedValue(normalizedEntry, position), position };
+    }
+    idx = entryLower.indexOf(family.toLowerCase(), idx + 1);
+  }
+
+  return null;
+}
+
 // -- Component extraction --
 
 /**
@@ -231,6 +266,9 @@ function parseComponents(entry, refData) {
     url: { found: false, value: null, position: null },
     edition: { found: false, value: null, position: null },
     editors: { found: false, value: null, position: null },
+    translators: { found: false, value: null, position: null },
+    interviewers: { found: false, value: null, position: null },
+    recipients: { found: false, value: null, position: null },
   };
 
   // === Pattern-based components (not dependent on refData) ===
@@ -328,46 +366,28 @@ function parseComponents(entry, refData) {
     const principalNames = (refData.author && refData.author.length > 0)
       ? refData.author : refData.editor;
 
-    if (principalNames && principalNames.length > 0) {
-      const first = principalNames[0];
-      const family = first.family || first.literal || '';
-      const given = first.given || '';
-      if (family) {
-        let pos = findFieldPosition(entryLower, family);
-        if (pos) {
-          pos = expandNamePosition(entryLower, pos, given);
-          components.contributors = { found: true, value: family, position: pos };
-        }
-      }
+    const principalComponent = findContributorComponent(normalized, principalNames);
+    if (principalComponent) {
+      components.contributors = principalComponent;
     }
 
-    // Secondary editors (only if not already the principal contributor)
-    if (refData.editor && refData.editor.length > 0) {
-      const firstEditor = refData.editor[0];
-      const family = firstEditor.family || firstEditor.literal || '';
-      const given = firstEditor.given || '';
-      if (family) {
-        let idx = entryLower.indexOf(family.toLowerCase());
+    const occupiedPositions = [];
+    if (components.contributors.found && components.contributors.position) {
+      occupiedPositions.push(components.contributors.position);
+    }
 
-        // Check for overlap with contributors (author)
-        if (idx !== -1 && components.contributors.found &&
-          idx >= components.contributors.position.start &&
-          idx < components.contributors.position.end) {
-          // Overlap! Search for next occurrence
-          idx = entryLower.indexOf(family.toLowerCase(), idx + 1);
-        }
+    const secondaryRoleMappings = [
+      ['editor', 'editors'],
+      ['translator', 'translators'],
+      ['interviewer', 'interviewers'],
+      ['recipient', 'recipients'],
+    ];
 
-        if (idx !== -1) {
-          let pos = { start: idx, end: idx + family.length };
-          // Expand using given name if possible
-          pos = expandNamePosition(entryLower, pos, given);
-
-          components.editors = {
-            found: true,
-            value: family,
-            position: pos
-          };
-        }
+    for (const [refKey, componentKey] of secondaryRoleMappings) {
+      const component = findContributorComponent(normalized, refData[refKey], occupiedPositions);
+      if (component) {
+        components[componentKey] = component;
+        occupiedPositions.push(component.position);
       }
     }
 

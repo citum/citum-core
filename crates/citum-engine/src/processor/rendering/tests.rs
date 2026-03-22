@@ -209,6 +209,26 @@ fn test_variable_key_includes_context() {
 }
 
 #[test]
+fn test_substituted_contributor_keys_block_contextual_duplicate_components() {
+    let mut tracker = TemplateComponentTracker::default();
+    let translated_component = TemplateComponent::Contributor(TemplateContributor {
+        contributor: ContributorRole::Translator,
+        form: ContributorForm::Long,
+        rendering: Rendering {
+            suffix: Some(", translator".to_string()),
+            ..Default::default()
+        },
+        ..Default::default()
+    });
+    let translator_key =
+        get_variable_key(&translated_component).expect("translator component should have a key");
+
+    tracker.mark_rendered(None, Some("contributor:Translator"));
+
+    assert!(tracker.should_skip(Some(&translator_key)));
+}
+
+#[test]
 fn test_strip_author_component_nested_list() {
     let nested = TemplateComponent::List(TemplateList {
         items: vec![

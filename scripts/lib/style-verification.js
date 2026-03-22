@@ -30,6 +30,7 @@ const FIXTURE_SET_REFS = {
   'author-date': path.join(FIXTURES_DIR, 'references-author-date.json'),
   'humanities-note': path.join(FIXTURES_DIR, 'references-humanities-note.json'),
   'note-positions': path.join(FIXTURES_DIR, 'references-note-positions.json'),
+  'secondary-roles': path.join(FIXTURES_DIR, 'references-secondary-roles.json'),
   'legal': path.join(FIXTURES_DIR, 'references-legal.json'),
   'csl-m-adapted': path.join(FIXTURES_DIR, 'references-csl-m-adapted.json'),
 };
@@ -40,6 +41,7 @@ const FIXTURE_SET_CITATIONS = {
   'author-date': path.join(FIXTURES_DIR, 'citations-author-date.json'),
   'humanities-note': path.join(FIXTURES_DIR, 'citations-humanities-note.json'),
   'note-positions': path.join(FIXTURES_DIR, 'citations-note-positions.json'),
+  'secondary-roles': path.join(FIXTURES_DIR, 'citations-secondary-roles.json'),
   'legal': path.join(FIXTURES_DIR, 'citations-legal.json'),
   'csl-m-adapted': path.join(FIXTURES_DIR, 'citations-csl-m-adapted.json'),
 };
