@@ -1,11 +1,11 @@
 ---
 # csl26-zy07
 title: 'StyleInfo: add short_name + edition fields, convert Turabian and APA 6th'
-status: todo
+status: in-progress
 type: feature
 priority: normal
 created_at: 2026-03-17T10:25:53Z
-updated_at: 2026-03-17T10:38:32Z
+updated_at: 2026-03-22T22:37:00Z
 blocked_by:
     - csl26-fsjy
 ---
@@ -14,8 +14,8 @@ Add short_name and edition to StyleInfo for wizard discoverability, backfill on 
 
 ## Tasks
 
-- [ ] Add `short_name: Option<String>` and `edition: Option<String>` to `StyleInfo` in `citum-schema-style`
-- [ ] Backfill `short_name` (and `edition` where relevant) on all well-known styles in `styles/`
+- [x] Add `short_name: Option<String>` and `edition: Option<String>` to `StyleInfo` in `citum-schema-style`
+- [x] Backfill `short_name` (and `edition` where relevant) on all well-known styles in `styles/`
 - [ ] Convert APA 6th edition (source: `styles-legacy/apa-6th-edition.csl`; differs from
   7th in et-al thresholds, date format, and DOI display)
 - [ ] Hand-author Turabian Notes-Bibliography — **blocked by csl26-fsjy** (two-level
@@ -24,7 +24,7 @@ Add short_name and edition to StyleInfo for wizard discoverability, backfill on 
   resolved. (Base: `styles/chicago-notes.yaml`; deviations: no ibid. by default,
   student-paper title page handling, slightly different footnote punctuation per
   Kate L. Turabian 9th ed.)
-- [ ] Update `citum.schema.json` (run `cargo run --bin citum -- schema > citum.schema.json`)
+- [x] Update `citum.schema.json` (run `cargo run --bin citum -- schema > citum.schema.json`)
 
 ## Backfill targets (short_name + edition where applicable)
 

@@ -1,11 +1,11 @@
 ---
 # csl26-fsjy
 title: 'Design: two-level style preset architecture'
-status: draft
+status: completed
 type: feature
 priority: normal
 created_at: 2026-03-17T10:38:21Z
-updated_at: 2026-03-17T11:11:49Z
+updated_at: 2026-03-22T22:41:14Z
 ---
 
 Design how presets work at both the options level (existing) and the style level (new), and how behavioral dependent styles like Turabian are represented as style-level preset variants rather than standalone YAML files.
