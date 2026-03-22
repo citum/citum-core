@@ -125,6 +125,31 @@ const ITEMS = {
     publisher: 'World Bank Group',
     'publisher-place': 'Washington, DC',
   },
+  'ITEM-15': {
+    id: 'ITEM-15',
+    type: 'book',
+    title: 'Voices Across Borders',
+    translator: [{ family: 'Lopez', given: 'Maria' }],
+    issued: { 'date-parts': [[2018]] },
+    publisher: 'Beacon Press',
+  },
+  'ITEM-16': {
+    id: 'ITEM-16',
+    type: 'interview',
+    title: 'Thinking in Public',
+    author: [{ family: 'Arendt', given: 'Hannah' }],
+    interviewer: [{ family: 'Young-Bruehl', given: 'Elisabeth' }],
+    issued: { 'date-parts': [[1975]] },
+    publisher: 'Schocken Books',
+  },
+  'ITEM-17': {
+    id: 'ITEM-17',
+    type: 'personal_communication',
+    title: 'Letter to Colleague',
+    author: [{ family: 'Morrison', given: 'Toni' }],
+    recipient: [{ family: 'Walker', given: 'Alice' }],
+    issued: { 'date-parts': [[1983]] },
+  },
 };
 
 // -- Tests --
@@ -325,6 +350,32 @@ section('parseComponents - edition and editors');
 
   assert(comp.editors.found, 'finds editor marker (Ed.)');
   assert(comp.publisher.found, 'finds publisher');
+}
+
+section('parseComponents - translators, interviewers, and recipients');
+{
+  const translatorEntry = 'Lopez, M., translator. Voices across borders. Beacon Press.';
+  const translatorComp = parseComponents(translatorEntry, ITEMS['ITEM-15']);
+  assert(translatorComp.translators.found, 'finds translator name');
+  assertEqual(translatorComp.translators.value, 'Lopez, M.', 'captures rendered translator span');
+
+  const interviewEntry = 'Arendt, H. Thinking in public. Interview by Elisabeth Young-Bruehl. Schocken Books.';
+  const interviewComp = parseComponents(interviewEntry, ITEMS['ITEM-16']);
+  assert(interviewComp.interviewers.found, 'finds interviewer name');
+  assertEqual(interviewComp.interviewers.value, 'Elisabeth Young-Bruehl', 'captures rendered interviewer span');
+
+  const recipientEntry = 'Morrison, T. Letter to colleague. To Alice Walker. 1983.';
+  const recipientComp = parseComponents(recipientEntry, ITEMS['ITEM-17']);
+  assert(recipientComp.recipients.found, 'finds recipient name');
+  assertEqual(recipientComp.recipients.value, 'Alice Walker', 'captures rendered recipient span');
+}
+
+section('findRefDataForEntry - translator-only entry');
+{
+  const entry = 'Lopez, M., translator. Voices across borders. Beacon Press.';
+  const ref = findRefDataForEntry(entry, ITEMS);
+  assert(ref !== null, 'finds translator-only entry');
+  assertEqual(ref.id, 'ITEM-15', 'matches by translator name');
 }
 
 section('parseComponents - URL (no DOI)');

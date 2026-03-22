@@ -335,7 +335,8 @@ function run() {
           const differences = [];
           const matches = [];
           const keys = ['contributors', 'year', 'title', 'containerTitle', 'volume',
-            'issue', 'pages', 'publisher', 'doi', 'edition', 'editors'];
+            'issue', 'pages', 'publisher', 'doi', 'edition', 'editors',
+            'translators', 'interviewers', 'recipients'];
           for (const key of keys) {
             const ov = oComp[key];
             const cv = cComp[key];

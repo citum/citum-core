@@ -240,7 +240,6 @@
           "required": [
             "class",
             "issued",
-            "title",
             "type"
           ],
           "properties": {
@@ -443,7 +442,14 @@
               ]
             },
             "title": {
-              "$ref": "#/definitions/Title"
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "translator": {
               "anyOf": [
@@ -903,8 +909,7 @@
           "required": [
             "authority",
             "class",
-            "issued",
-            "title"
+            "issued"
           ],
           "properties": {
             "accessed": {
@@ -990,9 +995,12 @@
             },
             "title": {
               "description": "Case name (e.g., \"Brown v. Board of Education\")",
-              "allOf": [
+              "anyOf": [
                 {
                   "$ref": "#/definitions/Title"
+                },
+                {
+                  "type": "null"
                 }
               ]
             },
@@ -1017,8 +1025,7 @@
           "type": "object",
           "required": [
             "class",
-            "issued",
-            "title"
+            "issued"
           ],
           "properties": {
             "accessed": {
@@ -1101,9 +1108,12 @@
             },
             "title": {
               "description": "Statute name (e.g., \"Civil Rights Act of 1964\")",
-              "allOf": [
+              "anyOf": [
                 {
                   "$ref": "#/definitions/Title"
+                },
+                {
+                  "type": "null"
                 }
               ]
             },
@@ -1128,8 +1138,7 @@
           "type": "object",
           "required": [
             "class",
-            "issued",
-            "title"
+            "issued"
           ],
           "properties": {
             "accessed": {
@@ -1216,9 +1225,12 @@
             },
             "title": {
               "description": "Treaty name (e.g., \"Treaty of Versailles\")",
-              "allOf": [
+              "anyOf": [
                 {
                   "$ref": "#/definitions/Title"
+                },
+                {
+                  "type": "null"
                 }
               ]
             },
@@ -1243,8 +1255,7 @@
           "type": "object",
           "required": [
             "class",
-            "issued",
-            "title"
+            "issued"
           ],
           "properties": {
             "accessed": {
@@ -1320,9 +1331,12 @@
             },
             "title": {
               "description": "Hearing title",
-              "allOf": [
+              "anyOf": [
                 {
                   "$ref": "#/definitions/Title"
+                },
+                {
+                  "type": "null"
                 }
               ]
             },
@@ -1340,8 +1354,7 @@
           "type": "object",
           "required": [
             "class",
-            "issued",
-            "title"
+            "issued"
           ],
           "properties": {
             "accessed": {
@@ -1424,9 +1437,12 @@
             },
             "title": {
               "description": "Regulation title",
-              "allOf": [
+              "anyOf": [
                 {
                   "$ref": "#/definitions/Title"
+                },
+                {
+                  "type": "null"
                 }
               ]
             },
@@ -1451,8 +1467,7 @@
           "type": "object",
           "required": [
             "class",
-            "issued",
-            "title"
+            "issued"
           ],
           "properties": {
             "accessed": {
@@ -1539,9 +1554,12 @@
             },
             "title": {
               "description": "Brief title or case name",
-              "allOf": [
+              "anyOf": [
                 {
                   "$ref": "#/definitions/Title"
+                },
+                {
+                  "type": "null"
                 }
               ]
             },
@@ -1559,8 +1577,7 @@
           "type": "object",
           "required": [
             "class",
-            "issued",
-            "title"
+            "issued"
           ],
           "properties": {
             "accessed": {
@@ -1661,9 +1678,12 @@
             },
             "title": {
               "description": "Work title (e.g., \"Nicomachean Ethics\")",
-              "allOf": [
+              "anyOf": [
                 {
                   "$ref": "#/definitions/Title"
+                },
+                {
+                  "type": "null"
                 }
               ]
             },
@@ -1699,8 +1719,7 @@
           "required": [
             "class",
             "issued",
-            "patent-number",
-            "title"
+            "patent-number"
           ],
           "properties": {
             "accessed": {
@@ -1820,9 +1839,12 @@
             },
             "title": {
               "description": "Patent title",
-              "allOf": [
+              "anyOf": [
                 {
                   "$ref": "#/definitions/Title"
+                },
+                {
+                  "type": "null"
                 }
               ]
             },
@@ -1840,8 +1862,7 @@
           "type": "object",
           "required": [
             "class",
-            "issued",
-            "title"
+            "issued"
           ],
           "properties": {
             "accessed": {
@@ -1952,9 +1973,12 @@
             },
             "title": {
               "description": "Dataset title",
-              "allOf": [
+              "anyOf": [
                 {
                   "$ref": "#/definitions/Title"
+                },
+                {
+                  "type": "null"
                 }
               ]
             },
@@ -1980,8 +2004,7 @@
           "required": [
             "class",
             "issued",
-            "standard-number",
-            "title"
+            "standard-number"
           ],
           "properties": {
             "accessed": {
@@ -2072,9 +2095,12 @@
             },
             "title": {
               "description": "Standard title",
-              "allOf": [
+              "anyOf": [
                 {
                   "$ref": "#/definitions/Title"
+                },
+                {
+                  "type": "null"
                 }
               ]
             },
@@ -2092,8 +2118,7 @@
           "type": "object",
           "required": [
             "class",
-            "issued",
-            "title"
+            "issued"
           ],
           "properties": {
             "accessed": {
@@ -2204,9 +2229,12 @@
             },
             "title": {
               "description": "Software title",
-              "allOf": [
+              "anyOf": [
                 {
                   "$ref": "#/definitions/Title"
+                },
+                {
+                  "type": "null"
                 }
               ]
             },
@@ -2396,7 +2424,6 @@
       "description": "A serial publication (journal, magazine, etc.).",
       "type": "object",
       "required": [
-        "title",
         "type"
       ],
       "properties": {
@@ -2434,7 +2461,14 @@
           ]
         },
         "title": {
-          "$ref": "#/definitions/Title"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Title"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "type": {
           "$ref": "#/definitions/SerialType"

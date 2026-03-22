@@ -1,0 +1,105 @@
+[
+  {
+    "id": "sr-editor-only",
+    "class": "monograph",
+    "type": "book",
+    "title": "The Handbook of Civic Archives",
+    "editor": [
+      { "family": "Bennett", "given": "Alice" },
+      { "family": "Cho", "given": "Daniel" }
+    ],
+    "issued": { "date-parts": [[2019]] },
+    "publisher": "Beacon Academic",
+    "publisher-place": "Boston"
+  },
+  {
+    "id": "sr-translator-only",
+    "class": "monograph",
+    "type": "book",
+    "title": "Voices Across Borders",
+    "translator": [
+      { "family": "Lopez", "given": "Maria" }
+    ],
+    "issued": { "date-parts": [[2018]] },
+    "publisher": "Beacon Press",
+    "publisher-place": "New York"
+  },
+  {
+    "id": "sr-author-translator",
+    "class": "monograph",
+    "type": "book",
+    "title": "Theory and Practice",
+    "author": [
+      { "family": "Santos", "given": "Lucia" }
+    ],
+    "translator": [
+      { "family": "Nguyen", "given": "Minh" }
+    ],
+    "issued": { "date-parts": [[2021]] },
+    "publisher": "Northwind Press",
+    "publisher-place": "Chicago"
+  },
+  {
+    "id": "sr-chapter-container-editors",
+    "class": "collection-component",
+    "type": "chapter",
+    "title": "Documenting Local Memory",
+    "author": [
+      { "family": "Patel", "given": "Rina" }
+    ],
+    "editor": [
+      { "family": "Ibrahim", "given": "Samir" },
+      { "family": "Klein", "given": "Hannah" }
+    ],
+    "container-title": "The Archive Reader",
+    "issued": { "date-parts": [[2020]] },
+    "publisher": "University Press",
+    "publisher-place": "London",
+    "page": "55-78"
+  },
+  {
+    "id": "sr-interview",
+    "class": "monograph",
+    "type": "interview",
+    "title": "Thinking in Public",
+    "author": [
+      { "family": "Arendt", "given": "Hannah" }
+    ],
+    "interviewer": [
+      { "family": "Young-Bruehl", "given": "Elisabeth" }
+    ],
+    "issued": { "date-parts": [[1975]] },
+    "publisher": "Schocken Books",
+    "publisher-place": "New York"
+  },
+  {
+    "id": "sr-recipient",
+    "class": "monograph",
+    "type": "personal_communication",
+    "title": "Letter to Colleague",
+    "author": [
+      { "family": "Morrison", "given": "Toni" }
+    ],
+    "recipient": [
+      { "family": "Walker", "given": "Alice" }
+    ],
+    "issued": { "date-parts": [[1983, 5, 12]] },
+    "genre": "Letter"
+  },
+  {
+    "id": "sr-plural-translators",
+    "class": "monograph",
+    "type": "book",
+    "title": "Meditations on Exile",
+    "author": [
+      { "family": "Rahman", "given": "Amina" }
+    ],
+    "translator": [
+      { "family": "Diaz", "given": "Elena" },
+      { "family": "Fischer", "given": "Paul" }
+    ],
+    "issued": { "date-parts": [[2017]] },
+    "publisher": "Riverbank",
+    "publisher-place": "Toronto"
+  }
+]

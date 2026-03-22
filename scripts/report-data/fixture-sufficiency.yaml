@@ -25,6 +25,7 @@ families:
     fixture_sets:
       - core
       - compound-numeric
+      - secondary-roles
   physics-numeric:
     default_report_sufficient: false
     required_reference_types:
@@ -47,6 +48,7 @@ families:
     fixture_sets:
       - core
       - physics-numeric
+      - secondary-roles
   author-date:
     default_report_sufficient: false
     required_reference_types:
@@ -68,6 +70,7 @@ families:
     fixture_sets:
       - core
       - author-date
+      - secondary-roles
   note-humanities:
     default_report_sufficient: false
     required_reference_types:
@@ -90,6 +93,24 @@ families:
       - note
       - humanities-note
       - note-positions
+      - secondary-roles
+  secondary-roles:
+    default_report_sufficient: false
+    required_reference_types:
+      - book
+      - chapter
+      - interview
+      - personal_communication
+    required_scenarios:
+      - editor-only contributors
+      - translator-only substitution
+      - author plus translator formatting
+      - container editor formatting
+      - interviewer formatting
+      - recipient formatting
+      - plural secondary-role labels
+    fixture_sets:
+      - secondary-roles
   legal:
     default_report_sufficient: false
     required_reference_types:

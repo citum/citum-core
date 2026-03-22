@@ -10,7 +10,7 @@ use citum_engine::{
     render::{djot::Djot, html::Html, latex::Latex, plain::PlainText, typst::Typst},
 };
 use citum_schema::locale::{GeneralTerm, RawLocale, TermForm, types::LocaleOverride};
-use citum_schema::options::{Config, EditorLabelFormat, Processing};
+use citum_schema::options::{Config, Processing};
 use citum_schema::reference::InputReference;
 use citum_schema::template::{
     ContributorForm, ContributorRole, LabelForm as TemplateLabelForm, NumberVariable,
@@ -1397,20 +1397,16 @@ fn collect_contributor_requirements(
         return;
     }
 
-    let editor_label_format = config
-        .contributors
-        .as_ref()
-        .and_then(|contributors| contributors.editor_label_format);
-    if let Some(editor_label_format) = editor_label_format
-        && matches!(
-            contributor.contributor,
-            ContributorRole::Editor | ContributorRole::Translator
-        )
-    {
-        let form = match editor_label_format {
-            EditorLabelFormat::VerbPrefix => TermForm::Verb,
-            EditorLabelFormat::ShortSuffix => TermForm::Short,
-            EditorLabelFormat::LongSuffix => TermForm::Long,
+    let configured_preset = config.contributors.as_ref().and_then(|contributors| {
+        contributors.effective_role_label_preset(&contributor.contributor)
+    });
+    if let Some(role_label_preset) = configured_preset {
+        let form = match role_label_preset {
+            citum_schema::options::RoleLabelPreset::None => return,
+            citum_schema::options::RoleLabelPreset::VerbPrefix => TermForm::Verb,
+            citum_schema::options::RoleLabelPreset::VerbShortPrefix => TermForm::VerbShort,
+            citum_schema::options::RoleLabelPreset::ShortSuffix => TermForm::Short,
+            citum_schema::options::RoleLabelPreset::LongSuffix => TermForm::Long,
         };
         requirements.push(LocaleRequirement {
             path: path.to_string(),

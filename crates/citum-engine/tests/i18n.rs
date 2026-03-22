@@ -14,12 +14,19 @@ use citum_engine::values::{
 };
 use citum_schema::{
     BibliographySpec, CitationSpec, LocalizedTemplateSpec, Style, StyleInfo, StylePreset,
-    options::{Config, MultilingualConfig, MultilingualMode, Processing, TitleRendering},
+    options::{
+        Config, ContributorConfig, MultilingualConfig, MultilingualMode, Processing,
+        RoleLabelPreset, RoleOptions, RoleRendering, TitleRendering,
+    },
     reference::contributor::{Contributor, MultilingualName, StructuredName},
     reference::types::{
         Collection, CollectionComponent, MultilingualComplex, MultilingualString, Title,
     },
     reference::{EdtfString, InputReference, Monograph, MonographType, Parent},
+    template::{
+        ContributorForm, ContributorRole, DateForm, NameOrder, Rendering, TemplateContributor,
+        TemplateDate, TemplateTitle, TitleType,
+    },
 };
 use rstest::rstest;
 use std::collections::HashMap;
@@ -52,6 +59,111 @@ fn build_ml_style(name_mode: MultilingualMode, preferred_script: Option<String>)
         }),
         ..Default::default()
     }
+}
+
+fn make_german_translator_role_style() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Chicago German Translator Test".to_string()),
+            id: Some("chicago-de-translator".to_string()),
+            default_locale: Some("de-DE".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            locale_override: Some("de-DE-chicago".to_string()),
+            contributors: Some(ContributorConfig {
+                role: Some(RoleOptions {
+                    roles: Some(HashMap::from([(
+                        "translator".to_string(),
+                        RoleRendering {
+                            preset: Some(RoleLabelPreset::VerbPrefix),
+                            ..Default::default()
+                        },
+                    )])),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                citum_schema::template::TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Author,
+                    form: ContributorForm::Long,
+                    ..Default::default()
+                }),
+                citum_schema::template::TemplateComponent::Date(TemplateDate {
+                    date: citum_schema::template::DateVariable::Issued,
+                    form: DateForm::Year,
+                    rendering: Rendering {
+                        suffix: Some(". ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+                citum_schema::template::TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Primary,
+                    rendering: Rendering {
+                        emph: Some(true),
+                        suffix: Some(". ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+                citum_schema::template::TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Translator,
+                    form: ContributorForm::Long,
+                    name_order: Some(NameOrder::GivenFirst),
+                    ..Default::default()
+                }),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn make_german_translator_reference() -> InputReference {
+    InputReference::Monograph(Box::new(Monograph {
+        id: Some("ref1".to_string()),
+        r#type: MonographType::Book,
+        title: Some(Title::Single("Das Buch".to_string())),
+        container_title: None,
+        author: Some(Contributor::StructuredName(StructuredName {
+            given: "Autor".into(),
+            family: "Name".into(),
+            ..Default::default()
+        })),
+        editor: None,
+        translator: Some(Contributor::StructuredName(StructuredName {
+            given: "Ubersetzer".into(),
+            family: "Name".into(),
+            ..Default::default()
+        })),
+        recipient: None,
+        interviewer: None,
+        issued: EdtfString("2024".to_string()),
+        publisher: None,
+        url: None,
+        accessed: None,
+        language: Some("de".to_string()),
+        field_languages: HashMap::new(),
+        note: None,
+        isbn: None,
+        doi: None,
+        ads_bibcode: None,
+        edition: None,
+        report_number: None,
+        collection_number: None,
+        genre: None,
+        medium: None,
+        archive: None,
+        archive_location: None,
+        keywords: None,
+        original_date: None,
+        original_title: None,
+    }))
 }
 
 // --- Multilingual Resolution Tests ---
@@ -1100,7 +1212,7 @@ mod config {
 }
 
 #[test]
-fn given_chicago_preset_when_german_override_then_editor_verb_is_localized() {
+fn chicago_german_override_localizes_editor_verb() {
     let style = Style {
         info: StyleInfo {
             title: Some("Chicago German Test".to_string()),
@@ -1111,6 +1223,19 @@ fn given_chicago_preset_when_german_override_then_editor_verb_is_localized() {
         preset: Some(StylePreset::ChicagoAuthorDate18th),
         options: Some(Config {
             locale_override: Some("de-DE-chicago".to_string()),
+            contributors: Some(ContributorConfig {
+                role: Some(RoleOptions {
+                    roles: Some(HashMap::from([(
+                        "translator".to_string(),
+                        RoleRendering {
+                            preset: Some(RoleLabelPreset::VerbPrefix),
+                            ..Default::default()
+                        },
+                    )])),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
             ..Default::default()
         }),
         ..Default::default()
@@ -1183,6 +1308,27 @@ fn given_chicago_preset_when_german_override_then_editor_verb_is_localized() {
     assert!(
         output.contains("hg. von Editor Name"),
         "Output should contain localized editor verb: {}",
+        output
+    );
+}
+
+#[test]
+fn german_override_localizes_translator_verb_when_role_preset_requests_it() {
+    let style = make_german_translator_role_style();
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert("ref1".to_string(), make_german_translator_reference());
+
+    let de_de_chicago_bytes = citum_schema::embedded::get_locale_override_bytes("de-DE-chicago")
+        .expect("de-DE-chicago bytes not found");
+    let locale: citum_schema::locale::Locale =
+        serde_yaml::from_slice(de_de_chicago_bytes).expect("failed to parse de-DE-chicago");
+
+    let processor = Processor::with_locale(style, bib, locale);
+    let output = processor.render_bibliography();
+
+    assert!(
+        output.contains("übers. von Ubersetzer Name"),
+        "Output should contain localized translator verb: {}",
         output
     );
 }

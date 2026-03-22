@@ -1081,17 +1081,6 @@
             }
           ]
         },
-        "editor-label-format": {
-          "description": "Global format for editor labels.",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/EditorLabelFormat"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
         "initialize-with": {
           "description": "String to append after initialized given names (e.g., \". \" for \"J. Smith\"). If None, full given names are used (e.g., \"John Smith\").",
           "type": [
@@ -1645,32 +1634,6 @@
         "all",
         "first",
         "none"
-      ]
-    },
-    "EditorLabelFormat": {
-      "description": "Format for editor labels.",
-      "oneOf": [
-        {
-          "description": "\"edited by John Doe\"",
-          "type": "string",
-          "enum": [
-            "verb-prefix"
-          ]
-        },
-        {
-          "description": "\"John Doe (Ed.)\"",
-          "type": "string",
-          "enum": [
-            "short-suffix"
-          ]
-        },
-        {
-          "description": "\"John Doe, editor\"",
-          "type": "string",
-          "enum": [
-            "long-suffix"
-          ]
-        }
       ]
     },
     "FieldMatcher": {
@@ -3569,6 +3532,46 @@
         "long"
       ]
     },
+    "RoleLabelPreset": {
+      "description": "Named role-label presets for secondary contributor rendering.",
+      "oneOf": [
+        {
+          "description": "Suppress the configured role label.",
+          "type": "string",
+          "enum": [
+            "none"
+          ]
+        },
+        {
+          "description": "Render the localized verb label before the names.",
+          "type": "string",
+          "enum": [
+            "verb-prefix"
+          ]
+        },
+        {
+          "description": "Render the localized short verb label before the names.",
+          "type": "string",
+          "enum": [
+            "verb-short-prefix"
+          ]
+        },
+        {
+          "description": "Render the localized short label after the names.",
+          "type": "string",
+          "enum": [
+            "short-suffix"
+          ]
+        },
+        {
+          "description": "Render the localized long label after the names.",
+          "type": "string",
+          "enum": [
+            "long-suffix"
+          ]
+        }
+      ]
+    },
     "RoleOptions": {
       "description": "Role display options.",
       "type": "object",
@@ -3592,6 +3595,17 @@
           "type": [
             "string",
             "null"
+          ]
+        },
+        "preset": {
+          "description": "Global role-label preset applied before legacy compatibility.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/RoleLabelPreset"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "roles": {
@@ -3637,6 +3651,17 @@
           "type": [
             "string",
             "null"
+          ]
+        },
+        "preset": {
+          "description": "Per-role label preset override.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/RoleLabelPreset"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "small-caps": {

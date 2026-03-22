@@ -147,7 +147,8 @@ function compareComponents(oracleComp, cslnComp, refData) {
   const matches = [];
 
   const keys = ['contributors', 'year', 'title', 'containerTitle', 'volume',
-    'issue', 'pages', 'publisher', 'doi', 'edition', 'editors'];
+    'issue', 'pages', 'publisher', 'doi', 'edition', 'editors',
+    'translators', 'interviewers', 'recipients'];
 
   for (const key of keys) {
     const oracle = oracleComp[key];

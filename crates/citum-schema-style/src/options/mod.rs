@@ -21,7 +21,7 @@ pub use bibliography::{
 };
 pub use contributors::{
     AndOptions, AndOtherOptions, ContributorConfig, ContributorConfigEntry, DelimiterPrecedesLast,
-    DemoteNonDroppingParticle, DisplayAsSort, EditorLabelFormat, RoleOptions, RoleRendering,
+    DemoteNonDroppingParticle, DisplayAsSort, RoleLabelPreset, RoleOptions, RoleRendering,
     ShortenListOptions,
 };
 pub use dates::{DateConfig, DateConfigEntry};
@@ -447,6 +447,47 @@ contributors:
         let contributors = config.contributors.unwrap();
         assert_eq!(contributors.and, Some(AndOptions::Symbol));
         assert_eq!(contributors.display_as_sort, Some(DisplayAsSort::First));
+    }
+
+    #[test]
+    fn test_role_label_presets_parse_and_resolve_precedence() {
+        let yaml = r#"
+contributors:
+  role:
+    preset: short-suffix
+    roles:
+      editor:
+        preset: long-suffix
+"#;
+        let config: Config = serde_yaml::from_str(yaml).unwrap();
+        let contributors = config.contributors.unwrap();
+
+        assert_eq!(
+            contributors.effective_role_label_preset(&crate::template::ContributorRole::Editor),
+            Some(RoleLabelPreset::LongSuffix)
+        );
+        assert_eq!(
+            contributors.effective_role_label_preset(&crate::template::ContributorRole::Translator),
+            Some(RoleLabelPreset::ShortSuffix)
+        );
+    }
+
+    #[test]
+    fn test_role_specific_name_order_override_is_available() {
+        let yaml = r#"
+contributors:
+  role:
+    roles:
+      translator:
+        name-order: given-first
+"#;
+        let config: Config = serde_yaml::from_str(yaml).unwrap();
+        let contributors = config.contributors.unwrap();
+
+        assert_eq!(
+            contributors.effective_role_name_order(&crate::template::ContributorRole::Translator),
+            Some(&crate::template::NameOrder::GivenFirst)
+        );
     }
 
     #[test]

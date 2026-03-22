@@ -170,13 +170,7 @@ fn format_contributor_names(
             .config
             .contributors
             .as_ref()?
-            .role
-            .as_ref()?
-            .roles
-            .as_ref()?
-            .get(component.contributor.as_str())?
-            .name_order
-            .as_ref()
+            .effective_role_name_order(&component.contributor)
     });
 
     let name_overrides = names::NamesOverrides {

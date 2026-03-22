@@ -282,6 +282,9 @@ test('compareComponents reports differing component values as mismatches', () =>
       doi: { found: false },
       edition: { found: false },
       editors: { found: false },
+      translators: { found: false },
+      interviewers: { found: false },
+      recipients: { found: false },
     },
     {
       title: { found: true, value: 'Beta' },
@@ -295,6 +298,9 @@ test('compareComponents reports differing component values as mismatches', () =>
       doi: { found: false },
       edition: { found: false },
       editors: { found: false },
+      translators: { found: false },
+      interviewers: { found: false },
+      recipients: { found: false },
     },
     {}
   );

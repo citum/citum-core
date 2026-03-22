@@ -3,9 +3,6 @@
   "title": "Style",
   "description": "The new Citum Style model.\n\nThis is the target schema for Citum, featuring declarative options and simple template components instead of procedural conditionals.",
   "type": "object",
-  "required": [
-    "info"
-  ],
   "properties": {
     "bibliography": {
       "description": "Bibliography specification.",
@@ -39,6 +36,7 @@
     },
     "info": {
       "description": "Style metadata.",
+      "default": {},
       "allOf": [
         {
           "$ref": "#/definitions/StyleInfo"
@@ -50,6 +48,17 @@
       "anyOf": [
         {
           "$ref": "#/definitions/Config"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "preset": {
+      "description": "Style-level preset reference with optional variant delta overlay.\n\nWhen present, the base [`StylePreset`] is resolved and the variant delta merged before any further processing. Explicit `options`, `citation`, and `bibliography` keys at the same document level take precedence over the resolved preset.",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/StylePreset"
         },
         {
           "type": "null"
@@ -71,7 +80,7 @@
     },
     "version": {
       "description": "Style schema version.",
-      "default": "0.8.0",
+      "default": "0.10.0",
       "type": "string"
     }
   },
@@ -111,10 +120,51 @@
         "text"
       ]
     },
+    "ArticleJournalBibliographyConfig": {
+      "description": "Article-journal-specific bibliography configuration.",
+      "type": "object",
+      "properties": {
+        "no-page-fallback": {
+          "description": "Fallback policy used when page data is absent from an article-journal reference.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ArticleJournalNoPageFallback"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "ArticleJournalNoPageFallback": {
+      "description": "Named fallback policies for page-less article-journal bibliography entries.",
+      "oneOf": [
+        {
+          "description": "Replace the standard article detail block with the DOI component.",
+          "type": "string",
+          "enum": [
+            "doi"
+          ]
+        }
+      ]
+    },
     "BibliographyConfig": {
       "description": "Bibliography-specific configuration.",
       "type": "object",
       "properties": {
+        "article-journal": {
+          "description": "Article-journal-specific bibliography policies.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ArticleJournalBibliographyConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "compound-numeric": {
           "description": "Configuration for compound numeric bibliography entries. When present, enables grouping of references by input bibliography `sets`.",
           "anyOf": [
@@ -135,7 +185,7 @@
           "additionalProperties": true
         },
         "entry-suffix": {
-          "description": "Suffix appended to each bibliography entry (e.g., \".\"). Extracted from CSL 1.0 `<layout suffix=\".\">` attribute. If None, a trailing period is added by default unless entry ends with DOI/URL.",
+          "description": "Suffix appended to each bibliography entry (e.g., `\".\"`). Extracted from CSL 1.0 `<layout suffix=\".\">` attribute. If `None`, no suffix is appended.",
           "type": [
             "string",
             "null"
@@ -149,14 +199,14 @@
           ]
         },
         "separator": {
-          "description": "Separator between bibliography components (e.g., \". \" for Chicago/APA, \", \" for Elsevier). Extracted from CSL 1.0 group delimiter attribute. Defaults to \". \" if not specified.",
+          "description": "Separator between bibliography components (e.g., `\". \"` for Chicago/APA, `\", \"` for Elsevier). Extracted from CSL 1.0 group delimiter attribute. Defaults to `\". \"`.",
           "type": [
             "string",
             "null"
           ]
         },
         "subsequent-author-substitute": {
-          "description": "String to substitute for repeating authors (e.g., \"\u2014\u2014\u2014\").",
+          "description": "String to substitute for repeating authors (e.g., \"———\").",
           "type": [
             "string",
             "null"
@@ -181,7 +231,7 @@
       "additionalProperties": false
     },
     "BibliographyGroup": {
-      "description": "A bibliography group with selector, optional heading, and per-group sorting.\n\nGroups allow styles to divide bibliographies into labeled sections with distinct sorting rules. Items match the first group whose selector evaluates to true (first-match semantics).\n\n# Examples\n\n```yaml groups: - id: vietnamese heading: localized: vi: \"T\u00e0i li\u1ec7u ti\u1ebfng Vi\u1ec7t\" en-US: \"Vietnamese Sources\" selector: field: language: vi sort: template: - key: author sort-order: given-family ```",
+      "description": "A bibliography group with selector, optional heading, and per-group sorting.\n\nGroups allow styles to divide bibliographies into labeled sections with distinct sorting rules. Items match the first group whose selector evaluates to true (first-match semantics).\n\n# Examples\n\n```yaml groups: - id: vietnamese heading: localized: vi: \"Tài liệu tiếng Việt\" en-US: \"Vietnamese Sources\" selector: field: language: vi sort: template: - key: author sort-order: given-family ```",
       "type": "object",
       "required": [
         "id",
@@ -340,7 +390,7 @@
       "description": "Citation collapse behavior for multi-item citations.",
       "oneOf": [
         {
-          "description": "Collapse adjacent citation numbers into a numeric range such as `1\u20133`.",
+          "description": "Collapse adjacent citation numbers into a numeric range such as `1–3`.",
           "type": "string",
           "enum": [
             "citation-number"
@@ -601,6 +651,17 @@
             }
           ]
         },
+        "note-start-text-case": {
+          "description": "Optional text-case transform for standalone note-start citation output.\n\nThis is a style-owned rendering dimension layered on top of the existing repeated-note state, not a new citation `Position`.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NoteStartTextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "options": {
           "description": "Citation-specific option overrides merged over the style config.",
           "anyOf": [
@@ -747,7 +808,7 @@
           ]
         },
         "sub-label-suffix": {
-          "description": "Suffix after sub-label (e.g., \")\" \u2192 \"a)\", \".\" \u2192 \"a.\").",
+          "description": "Suffix after sub-label (e.g., \")\" → \"a)\", \".\" → \"a.\").",
           "default": ")",
           "type": "string"
         },
@@ -844,6 +905,17 @@
             }
           ]
         },
+        "locators": {
+          "description": "Locator rendering configuration. Accepts a preset name (e.g., \"note\") or explicit configuration.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LocatorConfigEntry"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "multilingual": {
           "description": "Multilingual rendering defaults.",
           "anyOf": [
@@ -891,14 +963,6 @@
         "punctuation-in-quote": {
           "description": "Whether to place periods/commas inside quotation marks. true = American style (\"text.\"), false = British style (\"text\".) Defaults to false; en-US locale typically sets this to true.",
           "type": "boolean"
-        },
-        "semantic-classes": {
-          "description": "Whether to output semantic markup (HTML spans, Djot attributes). Defaults to true.",
-          "default": true,
-          "type": [
-            "boolean",
-            "null"
-          ]
         },
         "strip-periods": {
           "description": "Strip trailing periods from terms, labels, and abbreviated dates.",
@@ -967,7 +1031,7 @@
           "additionalProperties": true
         },
         "delimiter": {
-          "description": "The delimiter between contributors.",
+          "description": "The delimiter between contributors. Defaults to `\", \"` if not specified. `None` means \"not configured at this level\" and will not override an inherited value.",
           "type": [
             "string",
             "null"
@@ -1011,17 +1075,6 @@
           "anyOf": [
             {
               "$ref": "#/definitions/DisplayAsSort"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "editor-label-format": {
-          "description": "Global format for editor labels.",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/EditorLabelFormat"
             },
             {
               "type": "null"
@@ -1076,7 +1129,7 @@
           ]
         },
         "sort-separator": {
-          "description": "Delimiter between family and given name when inverted (default: \", \").",
+          "description": "Delimiter between family and given name when inverted (e.g., `\", \"` → \"Smith, John\"). Defaults to `\", \"` in the engine when not specified. `None` means \"not configured at this level\" and will not override an inherited value.",
           "type": [
             "string",
             "null"
@@ -1391,15 +1444,15 @@
           "$ref": "#/definitions/MonthFormat"
         },
         "open-range-marker": {
-          "description": "Marker for open-ended ranges (e.g., \"\u2013present\"). None uses locale default.",
+          "description": "Marker for open-ended ranges (e.g., \"–present\"). None uses locale default.",
           "type": [
             "string",
             "null"
           ]
         },
         "range-delimiter": {
-          "description": "Delimiter for date ranges (default: en-dash \"\u2013\").",
-          "default": "\u2013",
+          "description": "Delimiter for date ranges (default: en-dash \"–\").",
+          "default": "–",
           "type": "string"
         },
         "show-seconds": {
@@ -1581,32 +1634,6 @@
         "all",
         "first",
         "none"
-      ]
-    },
-    "EditorLabelFormat": {
-      "description": "Format for editor labels.",
-      "oneOf": [
-        {
-          "description": "\"edited by John Doe\"",
-          "type": "string",
-          "enum": [
-            "verb-prefix"
-          ]
-        },
-        {
-          "description": "\"John Doe (Ed.)\"",
-          "type": "string",
-          "enum": [
-            "short-suffix"
-          ]
-        },
-        {
-          "description": "\"John Doe, editor\"",
-          "type": "string",
-          "enum": [
-            "long-suffix"
-          ]
-        }
       ]
     },
     "FieldMatcher": {
@@ -1825,7 +1852,7 @@
           ]
         },
         {
-          "description": "The general term for section locators (e.g., \"section\", \"\u00a7\").",
+          "description": "The general term for section locators (e.g., \"section\", \"§\").",
           "type": "string",
           "enum": [
             "section"
@@ -2243,6 +2270,39 @@
         "symbol"
       ]
     },
+    "LabelForm2": {
+      "description": "How a locator label is displayed.",
+      "oneOf": [
+        {
+          "description": "No label, bare value: \"33\"",
+          "type": "string",
+          "enum": [
+            "none"
+          ]
+        },
+        {
+          "description": "Short form: \"p. 33\"",
+          "type": "string",
+          "enum": [
+            "short"
+          ]
+        },
+        {
+          "description": "Long form: \"page 33\"",
+          "type": "string",
+          "enum": [
+            "long"
+          ]
+        },
+        {
+          "description": "Symbol form if available in locale",
+          "type": "string",
+          "enum": [
+            "symbol"
+          ]
+        }
+      ]
+    },
     "LabelPlacement": {
       "description": "Label placement relative to contributor names.",
       "type": "string",
@@ -2273,6 +2333,32 @@
           "type": "string",
           "enum": [
             "ams"
+          ]
+        }
+      ]
+    },
+    "LabelRepeat": {
+      "description": "Whether labels appear on every segment, only the first, or none.",
+      "oneOf": [
+        {
+          "description": "Label on every segment",
+          "type": "string",
+          "enum": [
+            "all"
+          ]
+        },
+        {
+          "description": "Label only on the first segment",
+          "type": "string",
+          "enum": [
+            "first"
+          ]
+        },
+        {
+          "description": "No labels",
+          "type": "string",
+          "enum": [
+            "none"
           ]
         }
       ]
@@ -2416,6 +2502,442 @@
       },
       "additionalProperties": false
     },
+    "LocatorConfig": {
+      "description": "Top-level locator rendering configuration.",
+      "type": "object",
+      "properties": {
+        "default-label-form": {
+          "description": "Default label form for all locator kinds (default: Short).",
+          "default": "short",
+          "allOf": [
+            {
+              "$ref": "#/definitions/LabelForm2"
+            }
+          ]
+        },
+        "fallback-delimiter": {
+          "description": "Fallback delimiter for unmatched compound locators (default: \", \").",
+          "default": ", ",
+          "type": "string"
+        },
+        "kinds": {
+          "description": "Per-kind configuration overrides.",
+          "default": {},
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/LocatorKindConfig"
+          }
+        },
+        "patterns": {
+          "description": "Patterns for compound locators and type-specific rendering.",
+          "default": [],
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LocatorPattern"
+          }
+        },
+        "range-format": {
+          "description": "Range format for all locator kinds (default: Expanded).",
+          "default": "expanded",
+          "allOf": [
+            {
+              "$ref": "#/definitions/PageRangeFormat"
+            }
+          ]
+        },
+        "strip-label-periods": {
+          "description": "Strip trailing periods from labels globally (e.g., \"p.\" → \"p\").",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "LocatorConfigEntry": {
+      "description": "Preset-or-explicit entry — same pattern as DateConfigEntry.",
+      "anyOf": [
+        {
+          "description": "A preset name.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/LocatorPreset"
+            }
+          ]
+        },
+        {
+          "description": "Explicit configuration.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/LocatorConfig"
+            }
+          ]
+        }
+      ]
+    },
+    "LocatorKindConfig": {
+      "description": "Per-locator-kind configuration overrides.",
+      "type": "object",
+      "properties": {
+        "label-form": {
+          "description": "Override the default label form for this locator kind.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LabelForm2"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "range-format": {
+          "description": "Override the global range format for this locator kind.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/PageRangeFormat"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "strip-label-periods": {
+          "description": "Strip trailing periods from labels (e.g., \"p.\" → \"p\").",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "LocatorPattern": {
+      "description": "A pattern matching a specific combination of LocatorType values.\n\nPatterns are tested in declaration order; first match wins.",
+      "type": "object",
+      "required": [
+        "kinds",
+        "order"
+      ],
+      "properties": {
+        "delimiter": {
+          "description": "Delimiter between segments (default: \", \").",
+          "default": ", ",
+          "type": "string"
+        },
+        "kinds": {
+          "description": "The set of LocatorType values this pattern matches (order-insensitive).",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LocatorType"
+          }
+        },
+        "label-repeat": {
+          "description": "Whether labels appear on every segment, only the first, or none.",
+          "default": "all",
+          "allOf": [
+            {
+              "$ref": "#/definitions/LabelRepeat"
+            }
+          ]
+        },
+        "order": {
+          "description": "Rendering order of segments when pattern matches.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LocatorType"
+          }
+        },
+        "type-class": {
+          "description": "Optional gate on reference type class.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TypeClass"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "LocatorPreset": {
+      "description": "Named presets for common locator configurations.",
+      "oneOf": [
+        {
+          "description": "Note style: bare page numbers, short labels for other kinds.",
+          "type": "string",
+          "enum": [
+            "note"
+          ]
+        },
+        {
+          "description": "Author-date / numbered: short labels for all kinds.",
+          "type": "string",
+          "enum": [
+            "author-date"
+          ]
+        }
+      ]
+    },
+    "LocatorType": {
+      "description": "Locator types for pinpoint citations.",
+      "oneOf": [
+        {
+          "description": "Locator refers to a book within a larger work.",
+          "type": "string",
+          "enum": [
+            "book"
+          ]
+        },
+        {
+          "description": "Locator refers to a chapter.",
+          "type": "string",
+          "enum": [
+            "chapter"
+          ]
+        },
+        {
+          "description": "Locator refers to a clause.",
+          "type": "string",
+          "enum": [
+            "clause"
+          ]
+        },
+        {
+          "description": "Locator refers to a column.",
+          "type": "string",
+          "enum": [
+            "column"
+          ]
+        },
+        {
+          "description": "Locator refers to a corollary.",
+          "type": "string",
+          "enum": [
+            "corollary"
+          ]
+        },
+        {
+          "description": "Locator refers to a definition.",
+          "type": "string",
+          "enum": [
+            "definition"
+          ]
+        },
+        {
+          "description": "Locator refers to a division.",
+          "type": "string",
+          "enum": [
+            "division"
+          ]
+        },
+        {
+          "description": "Locator refers to a figure.",
+          "type": "string",
+          "enum": [
+            "figure"
+          ]
+        },
+        {
+          "description": "Locator refers to a folio.",
+          "type": "string",
+          "enum": [
+            "folio"
+          ]
+        },
+        {
+          "description": "Locator refers to a numbered line.",
+          "type": "string",
+          "enum": [
+            "line"
+          ]
+        },
+        {
+          "description": "Locator refers to a lemma.",
+          "type": "string",
+          "enum": [
+            "lemma"
+          ]
+        },
+        {
+          "description": "Locator refers to a note.",
+          "type": "string",
+          "enum": [
+            "note"
+          ]
+        },
+        {
+          "description": "Locator refers to a numbered unit.",
+          "type": "string",
+          "enum": [
+            "number"
+          ]
+        },
+        {
+          "description": "Locator refers to an opus number.",
+          "type": "string",
+          "enum": [
+            "opus"
+          ]
+        },
+        {
+          "description": "Locator refers to a page.",
+          "type": "string",
+          "enum": [
+            "page"
+          ]
+        },
+        {
+          "description": "Locator refers to a paragraph.",
+          "type": "string",
+          "enum": [
+            "paragraph"
+          ]
+        },
+        {
+          "description": "Locator refers to a sub-paragraph.",
+          "type": "string",
+          "enum": [
+            "subparagraph"
+          ]
+        },
+        {
+          "description": "Locator refers to a sub-clause.",
+          "type": "string",
+          "enum": [
+            "subclause"
+          ]
+        },
+        {
+          "description": "Locator refers to a sub-division.",
+          "type": "string",
+          "enum": [
+            "subdivision"
+          ]
+        },
+        {
+          "description": "Locator refers to a sub-section.",
+          "type": "string",
+          "enum": [
+            "subsection"
+          ]
+        },
+        {
+          "description": "Locator refers to a part or division.",
+          "type": "string",
+          "enum": [
+            "part"
+          ]
+        },
+        {
+          "description": "Locator refers to a problem.",
+          "type": "string",
+          "enum": [
+            "problem"
+          ]
+        },
+        {
+          "description": "Locator refers to a proposition.",
+          "type": "string",
+          "enum": [
+            "proposition"
+          ]
+        },
+        {
+          "description": "Locator refers to a recital.",
+          "type": "string",
+          "enum": [
+            "recital"
+          ]
+        },
+        {
+          "description": "Locator refers to a schedule.",
+          "type": "string",
+          "enum": [
+            "schedule"
+          ]
+        },
+        {
+          "description": "Locator refers to a section.",
+          "type": "string",
+          "enum": [
+            "section"
+          ]
+        },
+        {
+          "description": "Locator refers to a surah.",
+          "type": "string",
+          "enum": [
+            "surah"
+          ]
+        },
+        {
+          "description": "Locator refers to a theorem.",
+          "type": "string",
+          "enum": [
+            "theorem"
+          ]
+        },
+        {
+          "description": "Locator refers to an entry under a headword.",
+          "type": "string",
+          "enum": [
+            "sub-verbo"
+          ]
+        },
+        {
+          "description": "Locator refers to a supplement.",
+          "type": "string",
+          "enum": [
+            "supplement"
+          ]
+        },
+        {
+          "description": "Locator refers to a verse.",
+          "type": "string",
+          "enum": [
+            "verse"
+          ]
+        },
+        {
+          "description": "Locator refers to a volume.",
+          "type": "string",
+          "enum": [
+            "volume"
+          ]
+        },
+        {
+          "description": "Locator refers to a periodical volume.",
+          "type": "string",
+          "enum": [
+            "volume-periodical"
+          ]
+        },
+        {
+          "description": "Locator refers to a monograph volume.",
+          "type": "string",
+          "enum": [
+            "volume-book"
+          ]
+        },
+        {
+          "description": "Locator refers to an issue.",
+          "type": "string",
+          "enum": [
+            "issue"
+          ]
+        },
+        {
+          "description": "Locator refers to an algorithm.",
+          "type": "string",
+          "enum": [
+            "algorithm"
+          ]
+        }
+      ]
+    },
     "MonthFormat": {
       "description": "Month display format.",
       "type": "string",
@@ -2448,7 +2970,7 @@
           ]
         },
         "preferred-transliteration": {
-          "description": "Ordered priority list of BCP 47 transliteration tags (e.g. [\"ja-Latn-hepburn\", \"ja-Latn\"]). Takes precedence over `preferred_script` when resolving transliterations.",
+          "description": "Ordered priority list of BCP 47 transliteration tags (e.g. `[\"ja-Latn-hepburn\", \"ja-Latn\"]`). Takes precedence over `preferred_script` when resolving transliterations.",
           "type": [
             "array",
             "null"
@@ -2502,7 +3024,7 @@
           ]
         },
         {
-          "description": "Combine multiple views (e.g., \"transliterated [translated]\"). For now, this is a placeholder for more complex formatting strings.",
+          "description": "Combine multiple views (e.g., \"transliterated \\[translated\\]\"). For now, this is a placeholder for more complex formatting strings.",
           "type": "string",
           "enum": [
             "combined"
@@ -2559,14 +3081,14 @@
       "description": "Name sorting order for culturally appropriate collation.",
       "oneOf": [
         {
-          "description": "Family name first (Western convention). Example: \"Smith, John\" \u2192 \"S\" sorts before \"T\"",
+          "description": "Family name first (Western convention). Example: \"Smith, John\" → \"S\" sorts before \"T\"",
           "type": "string",
           "enum": [
             "family-given"
           ]
         },
         {
-          "description": "Given name first (Vietnamese convention). Example: \"Nguy\u1ec5n V\u0103n A\" \u2192 \"Nguy\u1ec5n\" sorts before \"Tr\u1ea7n\"",
+          "description": "Given name first (Vietnamese convention). Example: \"Nguyễn Văn A\" → \"Nguyễn\" sorts before \"Trần\"",
           "type": "string",
           "enum": [
             "given-family"
@@ -2682,6 +3204,25 @@
         }
       ]
     },
+    "NoteStartTextCase": {
+      "description": "Text-case transform applied when a citation renders at note start.",
+      "oneOf": [
+        {
+          "description": "Uppercase the first character of the rendered citation.",
+          "type": "string",
+          "enum": [
+            "capitalize-first"
+          ]
+        },
+        {
+          "description": "Lowercase the rendered citation text.",
+          "type": "string",
+          "enum": [
+            "lowercase"
+          ]
+        }
+      ]
+    },
     "NumberForm": {
       "description": "Number rendering forms.",
       "type": "string",
@@ -2719,21 +3260,21 @@
       "description": "Page range formatting options.",
       "oneOf": [
         {
-          "description": "Full expansion: 321-328 \u2192 321\u2013328",
+          "description": "Full expansion: 321-328 → 321–328",
           "type": "string",
           "enum": [
             "expanded"
           ]
         },
         {
-          "description": "Minimal digits: 321-328 \u2192 321\u20138",
+          "description": "Minimal digits: 321-328 → 321–8",
           "type": "string",
           "enum": [
             "minimal"
           ]
         },
         {
-          "description": "Minimal two digits: 321-328 \u2192 321\u201328",
+          "description": "Minimal two digits: 321-328 → 321–28",
           "type": "string",
           "enum": [
             "minimal-two"
@@ -2927,6 +3468,17 @@
             "null"
           ]
         },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "wrap": {
           "description": "Punctuation to wrap the value in (e.g., parentheses).",
           "anyOf": [
@@ -2980,6 +3532,46 @@
         "long"
       ]
     },
+    "RoleLabelPreset": {
+      "description": "Named role-label presets for secondary contributor rendering.",
+      "oneOf": [
+        {
+          "description": "Suppress the configured role label.",
+          "type": "string",
+          "enum": [
+            "none"
+          ]
+        },
+        {
+          "description": "Render the localized verb label before the names.",
+          "type": "string",
+          "enum": [
+            "verb-prefix"
+          ]
+        },
+        {
+          "description": "Render the localized short verb label before the names.",
+          "type": "string",
+          "enum": [
+            "verb-short-prefix"
+          ]
+        },
+        {
+          "description": "Render the localized short label after the names.",
+          "type": "string",
+          "enum": [
+            "short-suffix"
+          ]
+        },
+        {
+          "description": "Render the localized long label after the names.",
+          "type": "string",
+          "enum": [
+            "long-suffix"
+          ]
+        }
+      ]
+    },
     "RoleOptions": {
       "description": "Role display options.",
       "type": "object",
@@ -3003,6 +3595,17 @@
           "type": [
             "string",
             "null"
+          ]
+        },
+        "preset": {
+          "description": "Global role-label preset applied before legacy compatibility.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/RoleLabelPreset"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "roles": {
@@ -3048,6 +3651,17 @@
           "type": [
             "string",
             "null"
+          ]
+        },
+        "preset": {
+          "description": "Per-role label preset override.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/RoleLabelPreset"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "small-caps": {
@@ -3333,14 +3947,14 @@
       "description": "Sort order presets for bibliography entries.\n\nEach preset encodes the sort key sequence for a citation style family. Use for the `bibliography.sort` field to avoid repeating boilerplate key lists.",
       "oneOf": [
         {
-          "description": "Author \u2192 year \u2192 title. Standard for author-date styles (APA, Chicago, Harvard).",
+          "description": "Author → year → title. Standard for author-date styles (APA, Chicago, Harvard).",
           "type": "string",
           "enum": [
             "author-date-title"
           ]
         },
         {
-          "description": "Author \u2192 title \u2192 year. Used in some footnote and note styles.",
+          "description": "Author → title → year. Used in some footnote and note styles.",
           "type": "string",
           "enum": [
             "author-title-date"
@@ -3395,6 +4009,13 @@
             "null"
           ]
         },
+        "edition": {
+          "description": "Edition or version qualifier used alongside `short_name` to disambiguate multiple editions of the same style family (e.g. `\"7th\"`, `\"18th edition\"`). Omit when only one edition exists.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "fields": {
           "description": "Discipline classifications for this style.",
           "type": "array",
@@ -3404,6 +4025,13 @@
         },
         "id": {
           "description": "Stable identifier for the style, usually a URI or slug.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "short-name": {
+          "description": "Concise display name for the style family, used by UIs to label search results and match banners (e.g. `\"APA\"`, `\"Chicago Notes\"`, `\"MLA\"`). Omit for journal-specific styles whose full title is their identity. Combine with `edition` to produce labels like `\"APA 7th\"`.",
           "type": [
             "string",
             "null"
@@ -3475,6 +4103,32 @@
           ]
         }
       }
+    },
+    "StylePreset": {
+      "description": "A named, compiled-in style preset (Level 2 of Citum's preset hierarchy).\n\nA style file declares `preset: <key>` to inherit a complete base style. Any top-level fields in the file (`options`, `citation`, `bibliography`, etc.) are merged over the preset base, with local fields taking ultimate precedence.",
+      "oneOf": [
+        {
+          "description": "Chicago Manual of Style 18th edition — notes without bibliography.",
+          "type": "string",
+          "enum": [
+            "chicago-notes-18th"
+          ]
+        },
+        {
+          "description": "Chicago Manual of Style 18th edition — author-date system.",
+          "type": "string",
+          "enum": [
+            "chicago-author-date-18th"
+          ]
+        },
+        {
+          "description": "APA 7th edition — author-date system.",
+          "type": "string",
+          "enum": [
+            "apa-7th"
+          ]
+        }
+      ]
     },
     "StyleSource": {
       "description": "Provenance block for styles adapted from a CSL 1.0 source.",
@@ -3635,21 +4289,21 @@
       "description": "Substitute presets for author substitution fallback logic.\n\nThese presets define the order in which fields are tried when the primary author is missing. Most styles follow the standard order, but some have variations.",
       "oneOf": [
         {
-          "description": "Standard substitution order: Editor \u2192 Title \u2192 Translator. Used by most citation styles (APA, Chicago, etc.).",
+          "description": "Standard substitution order: Editor → Title → Translator. Used by most citation styles (APA, Chicago, etc.).",
           "type": "string",
           "enum": [
             "standard"
           ]
         },
         {
-          "description": "Editor-first: Editor \u2192 Translator \u2192 Title. Prioritizes contributors over title.",
+          "description": "Editor-first: Editor → Translator → Title. Prioritizes contributors over title.",
           "type": "string",
           "enum": [
             "editor-first"
           ]
         },
         {
-          "description": "Title-first: Title \u2192 Editor \u2192 Translator. Used when anonymous works should show title prominently.",
+          "description": "Title-first: Title → Editor → Translator. Used when anonymous works should show title prominently.",
           "type": "string",
           "enum": [
             "title-first"
@@ -3927,6 +4581,17 @@
             "null"
           ]
         },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "wrap": {
           "description": "Punctuation to wrap the value in (e.g., parentheses).",
           "anyOf": [
@@ -4071,6 +4736,17 @@
             "null"
           ]
         },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "wrap": {
           "description": "Punctuation to wrap the value in (e.g., parentheses).",
           "anyOf": [
@@ -4201,6 +4877,17 @@
           "type": [
             "boolean",
             "null"
+          ]
+        },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TextCase"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "wrap": {
@@ -4351,6 +5038,17 @@
           "type": [
             "boolean",
             "null"
+          ]
+        },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TextCase"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "wrap": {
@@ -4535,6 +5233,17 @@
             }
           ]
         },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "wrap": {
           "description": "Punctuation to wrap the value in (e.g., parentheses).",
           "anyOf": [
@@ -4679,6 +5388,17 @@
             "null"
           ]
         },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "title": {
           "$ref": "#/definitions/TitleType"
         },
@@ -4774,22 +5494,8 @@
             "null"
           ]
         },
-        "show-label": {
-          "description": "Whether locator labels (e.g., \"p.\", \"sec.\") should be rendered when `variable: locator` is used. If omitted, processor defaults apply.",
-          "type": [
-            "boolean",
-            "null"
-          ]
-        },
         "small-caps": {
           "description": "Render in small caps.",
-          "type": [
-            "boolean",
-            "null"
-          ]
-        },
-        "strip-label-periods": {
-          "description": "Strip trailing periods from locator labels (e.g., \"p.\" -> \"p\"). Only applies to `variable: locator`.",
           "type": [
             "boolean",
             "null"
@@ -4821,6 +5527,17 @@
           "type": [
             "boolean",
             "null"
+          ]
+        },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TextCase"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "variable": {
@@ -4872,10 +5589,71 @@
           ]
         },
         {
-          "description": "Symbol form of a term (e.g., \"\u00a7\" for section).",
+          "description": "Symbol form of a term (e.g., \"§\" for section).",
           "type": "string",
           "enum": [
             "symbol"
+          ]
+        }
+      ]
+    },
+    "TextCase": {
+      "description": "Text-case transform applied to title-like fields.\n\nStyles select which transform applies to which field category. The engine provides the generic primitives; styles own the selection.",
+      "oneOf": [
+        {
+          "description": "English headline-style title case (capitalize principal words).",
+          "type": "string",
+          "enum": [
+            "title"
+          ]
+        },
+        {
+          "description": "Generic sentence case (capitalize first word only).",
+          "type": "string",
+          "enum": [
+            "sentence"
+          ]
+        },
+        {
+          "description": "APA-style sentence case: capitalize first word of main title and first word after each subtitle boundary.",
+          "type": "string",
+          "enum": [
+            "sentence-apa"
+          ]
+        },
+        {
+          "description": "NLM-style sentence case: capitalize first word of main title only; subtitles preserve only explicit/protected capitals.",
+          "type": "string",
+          "enum": [
+            "sentence-nlm"
+          ]
+        },
+        {
+          "description": "Capitalize the first letter of the value.",
+          "type": "string",
+          "enum": [
+            "capitalize-first"
+          ]
+        },
+        {
+          "description": "Transform the entire value to lowercase.",
+          "type": "string",
+          "enum": [
+            "lowercase"
+          ]
+        },
+        {
+          "description": "Transform the entire value to uppercase.",
+          "type": "string",
+          "enum": [
+            "uppercase"
+          ]
+        },
+        {
+          "description": "No transformation; render the value exactly as stored.",
+          "type": "string",
+          "enum": [
+            "as-is"
           ]
         }
       ]
@@ -5001,6 +5779,17 @@
           "type": [
             "string",
             "null"
+          ]
+        },
+        "text-case": {
+          "description": "Text-case transform to apply to this title category.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TextCase"
+            },
+            {
+              "type": "null"
+            }
           ]
         }
       },
@@ -5137,6 +5926,32 @@
             {
               "$ref": "#/definitions/TitlesConfig"
             }
+          ]
+        }
+      ]
+    },
+    "TypeClass": {
+      "description": "A coarse reference genre used as an optional gate on locator patterns.",
+      "oneOf": [
+        {
+          "description": "Legal citations (e.g., \"legal-case\", \"statute\")",
+          "type": "string",
+          "enum": [
+            "legal"
+          ]
+        },
+        {
+          "description": "Classical works with traditional numbering",
+          "type": "string",
+          "enum": [
+            "classical"
+          ]
+        },
+        {
+          "description": "Standard reference types",
+          "type": "string",
+          "enum": [
+            "standard"
           ]
         }
       ]
