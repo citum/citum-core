@@ -30,11 +30,17 @@ options:
     delimiter: ", "
     delimiter-precedes-last: always
     demote-non-dropping-particle: sort-only
-    display-as-sort: first
-  dates: short
+    display-as-sort: all
+    shorten:
+      min: 7
+      use-first: 3
+      and-others: et-al
+  dates: long
   titles: humanities
   page-range-format: expanded
   bibliography:
+    entry-suffix: .
+    hanging-indent: false
     separator: ". "
   punctuation-in-quote: true
 citation:
@@ -45,6 +51,7 @@ citation:
           wrap: parentheses
       delimiter: none
   multi-cite-delimiter: ","
+  collapse: citation-number
 bibliography:
   type-templates:
     [article-journal, article-magazine]:
@@ -52,7 +59,7 @@ bibliography:
         form: long
         name-order: family-first
         shorten:
-          min: 4
+          min: 7
           use-first: 3
           and-others: et-al
       - title: primary
