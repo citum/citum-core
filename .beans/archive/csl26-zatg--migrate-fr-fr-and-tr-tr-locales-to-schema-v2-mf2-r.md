@@ -5,10 +5,11 @@ title: |-
 
     Spec: locales/en-US.yaml and locales/de-DE.yaml as reference for v2 structure.
     No Rust changes needed.
-status: in-progress
+status: completed
 type: task
+priority: normal
 created_at: 2026-03-22T15:14:48Z
-updated_at: 2026-03-22T15:14:48Z
+updated_at: 2026-03-22T15:19:23Z
 ---
 
 Two related cleanup items in one PR:
@@ -20,3 +21,11 @@ Two related cleanup items in one PR:
 
 2. Replace unicode escape sequences with literal characters in en-US.yaml and de-DE.yaml (and write fr-FR/tr-TR correctly from the start):
    - \u2013 → –, \u201C → ,
+
+## Summary of Changes
+
+- locales/en-US.yaml: replaced 6 \uXXXX escape sequences with literal unicode characters
+- locales/de-DE.yaml: replaced 6 escapes incl. literal U+00A0 non-breaking spaces
+- locales/fr-FR.yaml: full v2 migration — header, MF2 messages section, date-formats, grammar-options (nbsp-before-colon: true, guillemets), legacy-term-aliases; HTML entities converted
+- locales/tr-TR.yaml: same v2 migration with Turkish pluralization and grammar-options
+- All i18n and citation tests pass (24 + 28)
