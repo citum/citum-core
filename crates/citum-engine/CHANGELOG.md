@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0](https://github.com/citum/citum-core/compare/citum-engine-v0.15.0...citum-engine-v0.16.0) - 2026-03-22
+
+### Added
+
+- *(engine)* add secondary role label presets
+
+### Fixed
+
+- *(citations)* use prose joining for integral multicites
+
+### Other
+
+- *(ci)* reduce compilation time A+B
+
 ## [0.15.0](https://github.com/citum/citum-core/compare/citum-engine-v0.14.0...citum-engine-v0.15.0) - 2026-03-19
 
 ### Added

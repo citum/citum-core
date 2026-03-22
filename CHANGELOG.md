@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.16.0](https://github.com/citum/citum-core/compare/v0.15.0...v0.16.0) - 2026-03-22
+
+### Added
+
+- *(locale)* pivot to MF2 message syntax
+- *(engine)* add secondary role label presets
+- *(schema)* add StyleRegistry type, registry, and CLI
+
+### Fixed
+
+- *(citations)* use prose joining for integral multicites
+
+### Other
+
+- *(release)* unify schema release prep
+- *(cli)* extract citum-pdf crate
+- *(ci)* reduce compilation time A+B
+
 ## [0.14.0] - 2026-03-19
 
 ### Bug Fixes

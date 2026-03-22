@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0](https://github.com/citum/citum-core/compare/citum-schema-style-v0.15.0...citum-schema-style-v0.16.0) - 2026-03-22
+
+### Added
+
+- *(locale)* pivot to MF2 message syntax
+- *(engine)* add secondary role label presets
+- *(schema)* add StyleRegistry type, registry, and CLI
+
+### Other
+
+- *(ci)* reduce compilation time A+B
+
 ## [0.14.0](https://github.com/citum/citum-core/compare/citum-schema-style-v0.13.0...citum-schema-style-v0.14.0) - 2026-03-19
 
 ### Added
