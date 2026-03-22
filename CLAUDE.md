@@ -19,6 +19,13 @@ Run `cargo fmt` first to fix formatting, then re-run `cargo fmt --check` to conf
 
 Docs/styles (`.md`, `.yaml` in `styles/`) skip checks entirely.
 
+If any `.rs` files in `crates/citum-cli/` or `crates/citum-schema*/` changed, regenerate
+schemas before committing and stage the result in the same commit:
+```bash
+cargo run --bin citum -- schema
+git add docs/schemas/
+```
+
 ### Manifest Frontmatter Preflight
 
 Before relying on local skills/commands in Claude, Codex, or Copilot, run:
@@ -71,6 +78,8 @@ Do not consider the task done until CI passes.
 - Any `styles-legacy/` submodule operation
 - `git push origin main`
 - `gh pr create`
+- Editing any file in `~/.claude/skills/` or `~/.claude/scripts/` — confirm the exact
+  absolute path before writing
 
 ## Agents
 
