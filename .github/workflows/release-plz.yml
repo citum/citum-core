@@ -55,6 +55,12 @@ jobs:
           echo "manifest_path=${snapshot_dir}/Cargo.toml" >> "${GITHUB_OUTPUT}"
           echo "Using released manifest from ${latest_tag}"
 
+      - name: Prepare release artifacts
+        shell: bash
+        run: |
+          python3 scripts/prepare-release-artifacts.py \
+            --previous-tag "${{ steps.released_manifest.outputs.tag }}"
+
       - name: Run release-plz release-pr
         id: release_pr
         shell: bash
@@ -123,12 +129,34 @@ jobs:
           import json
           import os
           import pathlib
+          import re
+          import subprocess
           import sys
 
           pr = json.loads(os.environ["PR_JSON"])
           current_body = os.environ["CURRENT_BODY"]
           previous_tag = os.environ["PREVIOUS_TAG"]
           schema_version = os.environ["SCHEMA_VERSION"]
+
+          previous_schema_source = subprocess.run(
+              [
+                  "git",
+                  "show",
+                  f"{previous_tag}:crates/citum-schema-style/src/lib.rs",
+              ],
+              check=True,
+              capture_output=True,
+              text=True,
+          ).stdout
+          match = re.search(
+              r'pub const STYLE_SCHEMA_VERSION: &str = "([^"]+)";',
+              previous_schema_source,
+          )
+          if match is None:
+              raise SystemExit(
+                  f"Could not determine STYLE_SCHEMA_VERSION from {previous_tag}"
+              )
+          previous_schema_version = match.group(1)
 
           releases = pr.get("releases", [])
           if not releases:
@@ -151,6 +179,17 @@ jobs:
               )
 
           package_names = ", ".join(f"`{release['package_name']}`" for release in releases)
+          if previous_schema_version == schema_version:
+              schema_summary = (
+                  "Schema format version remains unchanged at "
+                  f"`{schema_version}`."
+              )
+          else:
+              schema_summary = (
+                  "Schema format version bumps from "
+                  f"`{previous_schema_version}` to `{schema_version}`. "
+                  "This PR also refreshes `docs/schemas/*` and the schema changelog."
+              )
           body = "\n\n".join(
               [
                   heading,
@@ -159,11 +198,7 @@ jobs:
                       "track. All synchronized workspace crates move together, including "
                       "implementation crates whose names begin with `citum-schema`."
                   ),
-                  (
-                      "Schema format version remains unchanged unless "
-                      "`citum_schema::SCHEMA_VERSION` / `STYLE_SCHEMA_VERSION` changes. "
-                      f"The current schema format version is `{schema_version}`."
-                  ),
+                  schema_summary,
                   (
                       "Affected workspace crates: "
                       f"{package_names}."
