@@ -1,0 +1,69 @@
+{
+  "skill_name": "style-evolve",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "/style-evolve upgrade styles/alpha.yaml",
+      "expected_output": "Runs style-maintain on alpha.yaml; output includes all 7 contract fields: fidelity metrics (N/M), SQI delta, authority basis, divergence statement, Code Opportunities table, QA verdict, research value rating.",
+      "files": [],
+      "assertions": [
+        "Fidelity metrics in N/M format present (citations and bibliography)",
+        "SQI delta present (+N, -N, or ±0)",
+        "Authority basis stated (style guide / Citum policy / biblatex / citeproc / mixed)",
+        "Divergence field present (none, div-ID, or 'new adjudication required')",
+        "Code Opportunities table present with at least one row",
+        "Code Opportunities table Description column is not blank or all-dashes (real content or 'no opportunities observed')",
+        "QA verdict present (pass or fail with reason)",
+        "Research value rating present (high / medium / low)",
+        "Commit field present (short SHA + message, or 'none' if QA did not pass)",
+        "Routed-to sub-skill stated in output header"
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "/style-evolve migrate styles-legacy/acm-sig-proceedings.csl",
+      "expected_output": "Identifies migrate mode from .csl path, routes to style-migrate-enhance, does not ask user to confirm mode.",
+      "files": [],
+      "assertions": [
+        "Mode identified as migrate (not upgrade or create)",
+        "Output header states 'Routed to: style-migrate-enhance'",
+        "Did not ask user to confirm mode",
+        "Fidelity metrics in N/M format present",
+        "Code Opportunities table present with non-empty Description column"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/style-evolve upgrade styles/alpha.yaml",
+      "expected_output": "Even if no code opportunities found, the Co-Evolution table is present with at least a 'no opportunities observed' row — never omitted.",
+      "files": [],
+      "assertions": [
+        "Code Opportunities table present",
+        "Table Description column contains real text (not blank or all-dashes) — 'no opportunities observed' is acceptable, bare dashes are not",
+        "Table has Description, Type, Action, Unlocks columns"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/style-evolve upgrade styles/american-medical-association.yaml",
+      "expected_output": "Checks DIVERGENCE_REGISTER.md before classifying any oracle failure. Final output records exactly one of: 'applied divergence: div-XXX', 'no applicable divergence found', or 'new adjudication required'.",
+      "files": [],
+      "assertions": [
+        "Divergence preflight evidenced in output (register checked before classifying failures)",
+        "Final output records exactly one divergence outcome: 'applied divergence', 'no applicable divergence found', or 'new adjudication required'",
+        "No oracle failure classified as a bug without a divergence register check"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "/style-evolve upgrade styles/alpha.yaml",
+      "expected_output": "Completes full pipeline autonomously. Does not stop mid-task to ask questions. Commits automatically after QA pass. Does not end with 'what should I do next?'",
+      "files": [],
+      "assertions": [
+        "Does not ask user for approval mid-task (outside explicit permission gates)",
+        "Commits automatically after QA pass",
+        "Final message does not end with an open-ended question to the user"
+      ]
+    }
+  ]
+}
