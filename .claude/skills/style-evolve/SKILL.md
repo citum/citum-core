@@ -91,8 +91,10 @@ At the end of every task, produce this table:
 - **processor-defect** — incorrect output from a valid template; requires an engine fix
 
 **Rules:**
-- Every task must include this table, even when empty ("no opportunities observed"
-  as the only row).
+- Every task must include this table, even when empty. When nothing was found,
+  use exactly: `| no opportunities observed | — | — | — |`. Never leave the
+  Description cell blank or filled with dashes — a placeholder row with all
+  dashes is not acceptable.
 - For `processor-defect` and `missing-feature`: attempt the Rust fix by default.
   Group failures by root cause first, then use jCodeMunch to locate the code,
   then write and test the fix. See `../style-maintain/SKILL.md` Co-Evolution for
@@ -195,6 +197,13 @@ Every completed task delivers:
 5. Code Opportunities table (mandatory — see above)
 6. QA verdict from `../style-qa/SKILL.md`
 7. Research value: `high` / `medium` / `low`
+8. Commit: the short SHA and message of the commit made, or `none` if QA did
+   not pass. Format: `abc1234 fix(styles): <message>`
+
+Include a header line before the contract fields identifying the routed
+sub-skill, e.g. `**Routed to**: style-maintain` or
+`**Routed to**: style-migrate-enhance`. This makes the routing verifiable
+from the output report without reading the transcript.
 
    - `high` — fidelity is stable or improved, SQI improved (`+N`), and at least one
      Code Opportunity was **implemented** this task
