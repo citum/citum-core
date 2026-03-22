@@ -50,6 +50,10 @@ name = "citum-analyze"
 version_group = "workspace"
 
 [[package]]
+name = "citum-pdf"
+version_group = "workspace"
+
+[[package]]
 name = "citum-server"
 version_group = "workspace"
 
@@ -70,7 +74,21 @@ version_group = "workspace"
 name = "citum"
 version_group = "workspace"
 changelog_update = true
-changelog_path = "../../CHANGELOG.md"
+changelog_path = "CHANGELOG.md"
+changelog_include = [
+    "csl-legacy",
+    "citum-schema-data",
+    "citum-schema-style",
+    "citum-schema",
+    "citum-migrate",
+    "citum-engine",
+    "citum-analyze",
+    "citum-pdf",
+    "citum-server",
+    "citum-edtf",
+    "citum_store",
+    "citum-bindings",
+]
 git_release_enable = true
 git_tag_enable = true
 git_tag_name = "v{{ version }}"

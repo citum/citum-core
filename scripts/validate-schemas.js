@@ -11,7 +11,7 @@ ajv.addFormat('uint8', true);
 ajv.addFormat('uint32', true);
 
 const rootDir = path.join(__dirname, '..');
-const schemaDir = path.join(rootDir, 'crates/citum-cli/generated_schemas');
+const schemaDir = path.join(rootDir, 'docs/schemas');
 const skippedExampleFiles = new Set(['chicago-bib.yaml']);
 
 const schemas = {

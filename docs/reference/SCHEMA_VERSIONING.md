@@ -1,153 +1,157 @@
 # Schema Versioning Policy
 
-This document defines the versioning strategy for Citum style format and processor code.
+This document defines how Citum versions the Rust workspace and the Citum schema,
+and how those versions are now maintained by the release automation.
 
 ## Two-Track Versioning
 
-Citum uses **independent versioning** for code and schema to maintain clarity and stability:
+Citum keeps code and schema versioning separate:
 
-| Track | What | Version Source | Automation |
-|-------|------|----------------|------------|
-| **Code** | Rust crates (processor, core library, CLI) | `Cargo.toml` workspace version | Fully automated via release-plz |
-| **Schema** | Style YAML format specification | `citum_schema::SCHEMA_VERSION` (backed by `citum-schema-style`) | Semi-automated (manual bump + validation) |
+| Track | What | Source of truth | Automation |
+|-------|------|-----------------|------------|
+| **Code** | Rust workspace crates | `Cargo.toml` workspace version | `release-plz` |
+| **Schema** | Citum schema format exposed by `citum_schema::SCHEMA_VERSION` | `STYLE_SCHEMA_VERSION` in `crates/citum-schema-style/src/lib.rs` | release-prep + `scripts/bump.sh` |
 
-### Why Two Tracks?
+Why the split:
 
-**Separation of concerns:**
-- Code changes (refactoring, performance, new APIs) don't force schema version bumps
-- Schema changes (new fields, format breaking changes) don't force processor releases
-- Users see schema version bumps **only when the format actually changes**
+- Code refactors, performance work, and new APIs do not force schema bumps.
+- Schema changes bump only when the wire format or generated schemas actually change.
+- Users can reason about compatibility separately from processor release cadence.
 
-**Example:**
-- Processor v0.2.3 supports schema v1.0.0
-- Add optional `license` field to styles → schema v1.1.0, processor v0.2.4
-- Refactor processor internals → processor v0.2.5, schema unchanged (still v1.0.0)
+## Sources Of Truth
 
-## Version Relationship
+- Code release notes: root [`CHANGELOG.md`](../../CHANGELOG.md)
+- Code version tags: `vX.Y.Z`
+- Schema version constant: `crates/citum-schema-style/src/lib.rs`
+- Canonical committed JSON schemas: `docs/schemas/*.json`
+- Operational schema history: this file
+- Future normative compatibility docs: bean `csl26-fuw7`
 
-**Synchronization Rule:** Code version ≥ Schema version
+The root changelog is workspace-wide. The `citum` package owns it in
+`.release-plz.toml`, but its changelog now includes the other synchronized
+workspace crates so the top-level release PR reflects the full release.
 
-The processor can support multiple schema versions through backward compatibility:
-- Processor v2.3.1 MUST read schema v1.0.0 styles (via `#[serde(default)]` for new fields)
-- Processor v2.3.1 SHOULD read schema v2.0.0 styles (current format)
-
-## Git Tag Convention
-
-Different tag prefixes distinguish release types:
-
-```bash
-# Code/processor releases
-v0.1.0
-v0.2.0
-v1.0.0
-
-# Schema releases
-schema-v1.0.0
-schema-v1.1.0
-schema-v2.0.0
-```
-
-GitHub Releases will use clear naming:
-- `v0.2.3 - Processor Release`
-- `schema-v1.0.0 - Format Stabilization`
-
-## Pre-1.0 Compatibility
-
-**0.x.y versions (both tracks):**
-- Breaking changes allowed in minor version bumps
-- No backward compatibility guarantees
-- Experimental phase for both code API and style format
-
-**1.0.0+ versions:**
-- **Code track**: Stable public API, SemVer guarantees for library users
-- **Schema track**: Backward compatibility, processor must read older formats
-- Breaking schema changes only in major versions (2.0.0, 3.0.0)
-
-## Independent 1.0 Milestones
-
-Tracks reach 1.0 independently based on their own stability criteria:
-
-**Schema → 1.0.0 first** (most likely):
-- Format stabilized, validated against top 10 parent styles
-- Backward compatibility guarantees begin
-- Style authors get stability while processor evolves
-
-**Code → 1.0.0 later**:
-- Library API polished for external consumers
-- WASM bindings stable
-- Public API guarantees begin
-
-## Schema Versioning Workflow
-
-### Current Schema Version
-
-Check the public schema version constant in `../crates/citum-schema/src/lib.rs`:
-
-```rust
-pub const SCHEMA_VERSION: &str = citum_schema_style::STYLE_SCHEMA_VERSION;
-```
-
-This constant is the public source of truth and currently resolves to
-`STYLE_SCHEMA_VERSION` in `../crates/citum-schema-style/src/lib.rs`.
-
-All style files inherit this version as the `Style.version` default unless explicitly overridden in YAML.
-
-### When to Bump Schema Version
-
-**Patch version (1.0.0 → 1.0.1):**
-- Documentation clarifications
-- Bug fixes in validation logic (no format changes)
-- Typo corrections in field descriptions
-
-**Minor version (1.0.0 → 1.1.0):**
-- New optional fields (backward compatible)
-- New enum variants with `#[non_exhaustive]`
-- Deprecation warnings for old fields (not removal)
-- New preset types (non-breaking additions)
-
-**Major version (1.0.0 → 2.0.0):**
-- Required field additions
-- Field removals
-- Field type changes (breaking existing styles)
-- Enum variant removals
-- Changed semantics of existing fields
-
-### Bumping Schema Version
-
-Use the `../scripts/bump.sh` script to update the schema version:
-
-```bash
-# Bump schema by patch version
-../scripts/bump.sh schema patch
-
-# Preview changes without modifying files
-../scripts/bump.sh schema minor --dry-run
-
-# What it does:
-# 1. Updates STYLE_SCHEMA_VERSION in crates/citum-schema-style/src/lib.rs
-# 2. Updates ./SCHEMA_VERSIONING.md with a schema changelog entry
-# 3. Validates with `cargo test --quiet --lib`
-# 4. Creates a schema-vX.Y.Z git tag
-```
-
-**Manual process:**
-1. Update `STYLE_SCHEMA_VERSION` in `../crates/citum-schema-style/src/lib.rs`
-2. Run `cargo test --quiet --lib`
-3. Update this file with a schema changelog entry
-4. Commit the schema bump
-5. Create the `schema-vX.Y.Z` tag
+## Automated Release Flow
 
 ### Code Releases
 
-Code releases are managed by `release-plz`.
+Code releases are prepared by `.github/workflows/release-plz.yml`.
 
-- Do not use `../scripts/bump.sh` to bump `Cargo.toml` or create `v*` tags.
-- Do not use `../scripts/release.sh`; it is deprecated.
-- Push conventional-commit changes to `main` and let the `release-plz` workflow prepare the code release PR.
+1. The workflow looks up the latest root `v*` tag.
+2. `scripts/prepare-release-artifacts.py` runs before `release-plz release-pr`.
+3. `release-plz` updates `Cargo.toml`, `Cargo.lock`, crate changelogs, and the root `CHANGELOG.md`.
+4. The workflow rewrites the release PR body so it explicitly calls out the current schema version and whether it changed.
 
-### Schema Changelog
+Do not use `scripts/bump.sh` for code versions or `v*` tags.
 
-Track schema changes separately from code changes:
+### Schema Releases
+
+Schema release prep now happens in the same workflow that prepares the code release PR.
+
+`scripts/prepare-release-artifacts.py` does the following:
+
+1. Regenerates `docs/schemas/*` with `cargo run --bin citum --features schema -- schema --out-dir docs/schemas`.
+2. Detects whether the generated schema files changed, or whether `STYLE_SCHEMA_VERSION` already changed since the last root `v*` tag.
+3. Scans unreleased commits for exactly one `Schema-Bump:` footer.
+4. If schema files changed and the schema version did not already move, runs `./scripts/bump.sh schema <patch|minor|major> --yes --no-validate --no-commit --no-tag`.
+5. Regenerates `docs/schemas/*` again after the version bump so the committed JSON schemas match the new default schema version.
+
+If schema files changed but no valid footer is present, the release workflow fails before opening or updating the release PR.
+
+## Schema Bump Contract
+
+The only supported schema bump marker is a commit footer:
+
+```text
+Schema-Bump: patch
+Schema-Bump: minor
+Schema-Bump: major
+```
+
+Rules:
+
+- Exactly one `Schema-Bump:` footer must appear across the unreleased commit range when schema changes are present.
+- No footer is required when schema files and `STYLE_SCHEMA_VERSION` are unchanged.
+- If a PR is squash-merged, preserve the footer in the squash commit body.
+- The release prep script treats generated-schema drift in `docs/schemas` as the canonical signal that the schema changed.
+
+### Choosing Patch, Minor, Or Major
+
+**Patch**
+
+- Documentation clarifications in generated schema metadata
+- Validator fixes that do not change the accepted data model
+- Non-structural schema metadata corrections
+
+**Minor**
+
+- New optional fields
+- New non-breaking enum variants
+- New preset or registry structures that extend the format
+- Backward-compatible additions to generated JSON schemas
+
+**Major**
+
+- Required field additions
+- Field removals or renamed fields without compatibility shims
+- Type changes that invalidate existing documents
+- Semantic changes that require style authors to rewrite existing data
+
+## Tags And Baseline
+
+Schema tags continue to use the `schema-vX.Y.Z` prefix.
+
+Historical schema tags before this automation are incomplete. At the time this
+policy was updated, the repo retained `schema-v0.7.1`, but later schema history
+was tracked primarily in documentation rather than a complete tag chain. Treat
+that earlier period as pre-automation legacy.
+
+The first post-automation schema bump establishes the new automation baseline.
+From that point forward:
+
+- schema bumps must be driven by the `Schema-Bump:` footer contract
+- `STYLE_SCHEMA_VERSION`, `docs/schemas/*`, and the schema changelog entry in this file move together
+- future schema tags should continue from the automation-produced version line
+
+## Manual Schema Bump Helper
+
+`scripts/bump.sh` remains the single helper for changing `STYLE_SCHEMA_VERSION`.
+
+Interactive usage:
+
+```bash
+./scripts/bump.sh schema patch
+./scripts/bump.sh schema minor --dry-run
+```
+
+Automation usage:
+
+```bash
+./scripts/bump.sh schema minor --yes --no-validate --no-commit --no-tag
+```
+
+The helper updates:
+
+1. `STYLE_SCHEMA_VERSION`
+2. the schema changelog section in this file
+3. optional validation / commit / tag actions, depending on flags
+
+## CI Validation
+
+The repo now treats `docs/schemas` as the only committed schema artifact set.
+
+CI validates:
+
+1. all schema-generating code still produces the checked-in `docs/schemas/*`
+2. the release-prep step can derive a valid schema bump decision from commit metadata
+3. `citum check` and auxiliary validation scripts read from the same canonical schema directory
+
+## Schema Changelog
+
+Track schema changes separately from code changes.
+
+Historical note: entries below may predate the automation baseline and are the
+authoritative record when matching tags were not created at the time.
 
 #### schema-v0.10.0 (2026-03-19)
 - Schema version bumped from 0.9.0 to 0.10.0
@@ -161,66 +165,14 @@ Track schema changes separately from code changes:
 #### schema-v0.7.1 (2026-03-02)
 - Schema version bumped from 0.7.0 to 0.7.1
 
+## Follow-Up Work
 
-## CI Validation
-
-The CI pipeline validates schema consistency:
-
-1. **Format check**: All `.yaml` files in `styles/` must parse without errors
-2. **Version check**: Styles without explicit `version` field use current default
-3. **Backward compatibility**: Processor must read N-1 schema version (after 1.0)
-
-CI fails if:
-- Any style file fails to parse
-- Schema version regression detected (style requires newer schema than processor supports)
-
-## User-Facing Version Display
-
-Users encounter versions in different contexts:
-
-### CLI (Code Version)
-```bash
-$ citum --version
-citum 0.2.3
-
-$ cargo run --bin citum --features schema -- schema style
-# prints style JSON Schema to stdout
-```
-
-### Style Files (Schema Version)
-```yaml
-# styles/apa-7th.yaml
-version: "1.0.0"  # Schema version (optional, inherits default)
-info:
-  title: APA 7th Edition (Citum)
-  id: https://www.zotero.org/styles/apa-7th-citum
-```
-
-### Documentation
-- README.md shows both versions clearly
-- Release notes distinguish code vs schema releases
-- Migration guides reference specific schema versions
-
-## FAQ
-
-**Q: Why not unify code and schema versions?**
-A: Code refactoring would force schema version bumps (confusing users). Schema changes would force processor releases (unnecessary coupling).
-
-**Q: Can processor v2.0 read schema v1.0 styles?**
-A: Yes, after schema v1.0.0 release, backward compatibility is guaranteed via `#[serde(default)]` for new fields.
-
-**Q: Do individual styles have versions?**
-A: No, styles inherit the schema version. Style evolution is tracked via Git history, not version numbers. This follows CSL 1.0 precedent.
-
-**Q: When does schema hit 1.0.0?**
-A: When the format is validated against top 10 parent styles and stabilized for public use. Code may still be 0.x at that point.
-
-**Q: What if I want to use a newer schema before processor supports it?**
-A: Use explicit `version` field in style YAML. Processor will fail gracefully with version mismatch error.
+- Bean `csl26-fuw7` owns the deeper compatibility contract docs:
+  `docs/architecture/design/VERSIONING.md` and `docs/architecture/SCHEMA_CHANGELOG.md`
+- Bean `csl26-yipx` still owns runtime enforcement of `Style.version` in `citum check`
 
 ## References
 
 - [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
-- [release-plz Documentation](https://release-plz.ieni.dev/)
-- [git-cliff Configuration](https://git-cliff.org/./configuration)
+- [release-plz Documentation](https://release-plz.ieni.dev/docs/config)

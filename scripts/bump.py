@@ -312,12 +312,16 @@ def show_review(modified_files: dict[Path, FileSnapshot]) -> None:
         print_diff(path, snapshot.content, path.read_text(encoding="utf-8"))
 
 
-def stage_commit_and_tag(plan: ReleasePlan) -> None:
-    """Stage, commit, and tag the version bump."""
+def stage_commit(plan: ReleasePlan) -> None:
+    """Stage and commit the version bump."""
 
     run_git(["add", "--", *[str(path.relative_to(REPO_ROOT)) for path in plan.files_to_modify]])
     run_git(["commit", "-m", plan.commit_message])
     success("Changes committed")
+
+
+def create_tags(plan: ReleasePlan) -> None:
+    """Create tags for the version bump."""
 
     tag_message_suffix = f" - {plan.release_name}" if plan.release_name else ""
     for tag in plan.tags_to_create:
@@ -363,6 +367,22 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument("bump_type", choices=BUMP_CHOICES, help="Semantic version bump type.")
     parser.add_argument("--dry-run", action="store_true", help="Preview actions without modifying files.")
     parser.add_argument("--name", default="", help="Optional release title used in commit/tag text.")
+    parser.add_argument("--yes", action="store_true", help="Skip the interactive confirmation prompt.")
+    parser.add_argument(
+        "--no-validate",
+        action="store_true",
+        help="Skip `cargo test --quiet --lib` after updating files.",
+    )
+    parser.add_argument(
+        "--no-commit",
+        action="store_true",
+        help="Update files without creating a commit.",
+    )
+    parser.add_argument(
+        "--no-tag",
+        action="store_true",
+        help="Do not create git tags after committing the bump.",
+    )
     return parser.parse_args(normalized)
 
 
@@ -371,6 +391,8 @@ def main(argv: Sequence[str]) -> int:
 
     try:
         args = parse_args(argv)
+        if args.no_commit and not args.no_tag:
+            raise BumpError("--no-commit requires --no-tag")
         if args.track != "schema" and RELEASE_PLZ_WORKFLOW.exists():
             raise BumpError(
                 "Code releases are managed by release-plz in this repository. "
@@ -386,7 +408,7 @@ def main(argv: Sequence[str]) -> int:
 
         ensure_clean_targets(plan)
 
-        if not confirm_prompt():
+        if not args.yes and not confirm_prompt():
             info("Cancelled before making changes")
             return 0
 
@@ -394,16 +416,27 @@ def main(argv: Sequence[str]) -> int:
         try:
             update_schema_version(plan)
             update_schema_doc(plan)
-            validate_build()
+            if not args.no_validate:
+                validate_build()
             show_review(modified_files)
-            stage_commit_and_tag(plan)
+            if args.no_commit:
+                success("Files updated without creating a commit or tag")
+            else:
+                stage_commit(plan)
+                if not args.no_tag:
+                    create_tags(plan)
         except Exception:
             rollback(modified_files)
             raise
 
         print()
         success("Version bump complete!")
-        print("  Push: git push && git push --tags")
+        if args.no_commit:
+            print("  Review the modified files and commit them through the normal workflow.")
+        elif args.no_tag:
+            print("  Push: git push")
+        else:
+            print("  Push: git push && git push --tags")
         return 0
     except BumpError as exc:
         error(str(exc))
