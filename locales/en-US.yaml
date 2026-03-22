@@ -2,7 +2,7 @@ locale-schema-version: "2"
 locale: en-US
 
 evaluation:
-  message-syntax: mf1
+  message-syntax: mf2
 dates:
   months:
     long:
@@ -816,12 +816,30 @@ terms:
 
 messages:
   # Locator labels
-  term.page-label: "{count, plural, one {p.} other {pp.}}"
-  term.page-label-long: "{count, plural, one {page} other {pages}}"
-  term.chapter-label: "{count, plural, one {chap.} other {chaps.}}"
-  term.volume-label: "{count, plural, one {vol.} other {vols.}}"
-  term.section-label: "{count, plural, one {sec.} other {secs.}}"
-  term.figure-label: "{count, plural, one {fig.} other {figs.}}"
+  term.page-label: |
+    .match {$count :plural}
+    when one {p.}
+    when * {pp.}
+  term.page-label-long: |
+    .match {$count :plural}
+    when one {page}
+    when * {pages}
+  term.chapter-label: |
+    .match {$count :plural}
+    when one {chap.}
+    when * {chaps.}
+  term.volume-label: |
+    .match {$count :plural}
+    when one {vol.}
+    when * {vols.}
+  term.section-label: |
+    .match {$count :plural}
+    when one {sec.}
+    when * {secs.}
+  term.figure-label: |
+    .match {$count :plural}
+    when one {fig.}
+    when * {figs.}
   # Conjunctions and connectors
   term.and: "and"
   term.and-symbol: "&"
@@ -836,16 +854,25 @@ messages:
   term.circa: "ca."
   term.circa-long: "circa"
   # Role labels
-  role.editor.label: "{count, plural, one {ed.} other {eds.}}"
-  role.editor.label-long: "{count, plural, one {editor} other {editors}}"
+  role.editor.label: |
+    .match {$count :plural}
+    when one {ed.}
+    when * {eds.}
+  role.editor.label-long: |
+    .match {$count :plural}
+    when one {editor}
+    when * {editors}
   role.editor.verb: "edited by"
   role.translator.label: "trans."
-  role.translator.label-long: "{count, plural, one {translator} other {translators}}"
+  role.translator.label-long: |
+    .match {$count :plural}
+    when one {translator}
+    when * {translators}
   role.translator.verb: "translated by"
   # Compositional patterns
-  pattern.page-range: "{start}\u2013{end}"
-  pattern.retrieved-from: "retrieved from {url}"
-  pattern.available-at: "available at {url}"
+  pattern.page-range: "{$start}\u2013{$end}"
+  pattern.retrieved-from: "retrieved from {$url}"
+  pattern.available-at: "available at {$url}"
   date.open-ended: "present"
 
 date-formats:

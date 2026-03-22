@@ -1,15 +1,15 @@
 # Locale Messages Specification
 
-**Status:** Draft
-**Version:** 1.1
-**Date:** 2026-03-18
+**Status:** Active
+**Version:** 1.3
+**Date:** 2026-03-22
 **Supersedes:** (none)
-**Related:** bean `csl26-xd7e`
+**Related:** bean `csl26-qrpo` (ICU4X upgrade)
 
 ## Purpose
 
 Replace Citum's flat key-to-static-string locale model with a parameterized
-message system based on ICU Message Format 1 (MF1). This separates language
+message system based on Unicode MessageFormat 2 (MF2). This separates language
 realization (words, inflection, punctuation, date and number formats) from
 style structure (field order, conditions, what to omit), and enables
 composition of `StylePreset × LocalePreset × LocaleOverride` instead of
@@ -21,7 +21,7 @@ duplicating styles per language.
 - Schema additions to `RawLocale` and `Locale` for `messages`, `dateFormats`,
   `numberFormats`, `grammarOptions`, `legacyTermAliases`.
 - `LocaleOverride` struct and merge semantics.
-- `MessageEvaluator` trait and its ICU-backed implementation.
+- `MessageEvaluator` trait and `Mf2MessageEvaluator` implementation.
 - Migration compatibility layer: dual-path lookup and `localeSchemaVersion`
   gating.
 - CLI lint tooling: `citum locale lint` and `citum style lint --locale`.
@@ -30,8 +30,8 @@ duplicating styles per language.
 
 **Out of scope:**
 - Full Fluent (`.ftl`) syntax support.
-- MF2 message evaluation (designed for, but not implemented here — see §1.5).
-- MF2 custom formatter registration API (see §1.5).
+- MF2 custom function annotations (`:citum-date`, `:citum-names`) — see §1.5.
+- Full CLDR plural rules beyond `one`/`*` — see §1.3.
 - Gender agreement for contributor name declension (tracked separately).
 - Locale discovery or registry beyond the existing file-based `locales/`
   directory.
@@ -41,41 +41,43 @@ duplicating styles per language.
 
 ## Design
 
-### 1. Message Syntax: ICU Message Format 1
+### 1. Message Syntax: Unicode MessageFormat 2
 
-Citum adopts **ICU Message Format 1 (MF1)** as the canonical message syntax,
-with the conceptual model designed for forward compatibility with MF2 (see
-§1.5). The first implementation targets a minimal MF1-compatible subset behind
-a thin Rust abstraction (`MessageEvaluator` trait) so the underlying evaluation
-engine can be swapped without changing locale files or call sites.
+Citum adopts **Unicode MessageFormat 2 (MF2)** as the canonical message syntax.
+The implementation targets a minimal MF2 subset behind the `MessageEvaluator`
+trait so the underlying evaluation engine can be swapped without changing locale
+files or call sites. See §1.5 for the ICU4X migration path.
 
-Rationale for MF1 over Fluent:
+Rationale for MF2 over Fluent or MF1:
 
-- **YAML compatibility.** MF1 strings are ordinary YAML scalars. Fluent's
-  `.ftl` multi-line identifier syntax does not compose cleanly inside YAML
-  map values.
-- **Rust ecosystem.** The `icu4x` family provides `icu_plurals` with CLDR
-  plural rules, zero-copy, and WASM compatibility. No external runtime is
-  required.
-- **Mechanical migration.** Existing `singular`/`plural` pairs convert
-  directly to `{count, plural, one{…} other{…}}`, enabling an automated
-  migration script.
-- **Interoperability.** MF1 is understood by Lokalise, Crowdin, and most
-  major i18n platforms, simplifying future community locale contributions.
+- **Finalized standard.** MF2 is a ratified Unicode Technical Standard (CLDR
+  TR #35 §12). Unlike MF1, it will not change in backwards-incompatible ways.
+- **YAML compatibility.** MF2 multi-line `.match` blocks serialize cleanly as
+  YAML block scalars (`|`). Static strings require no delimiter changes.
+- **ICU4X alignment.** ICU4X's `icu_message_format` targets MF2 natively.
+  Adopting MF2 now means locale files require no changes when we upgrade to
+  the ICU4X evaluator (see §1.5 and bean `csl26-qrpo`).
+- **Interoperability.** MF2 is the future standard for Lokalise, Crowdin, and
+  other i18n platforms.
 
-Supported MF1 constructs (v2 locales with `evaluation.message-syntax: mf1`):
+**Supported MF2 subset** (v2 locales with `evaluation.message-syntax: mf2`):
 
 | Construct | Syntax | Notes |
 |-----------|--------|-------|
 | Plain text | `"retrieved"` | No variables. |
-| Variable interpolation | `"{names}"` | Named string substitution. |
-| Plural | `{count, plural, one{p.} other{pp.}}` | CLDR category dispatch via `icu_plurals`. |
-| Select | `{gender, select, masc{él} fem{ella} other{elle}}` | Arbitrary string-keyed dispatch. |
-| Number | `{count, number}` | Locale-formatted integer. |
+| Variable substitution | `{$names}` | Named string substitution. |
+| Plural | `.match {$count :plural}`<br>`when one {p.} when * {pp.}` | Two-value dispatch: `one` and `*` (wildcard). Full CLDR categories deferred to ICU4X. |
+| Select | `.match {$gender :select}`<br>`when masc {él} when * {elle}` | Arbitrary string-keyed dispatch with wildcard fallback. |
 
-**Date formatting is not done inside MF1 messages.** The engine formats dates
-using the `dateFormats` map and passes the result as a plain `{date}` variable.
-This is a deliberate deferral of MF2-style custom formatter annotations (e.g.
+**Out of scope in current evaluator:**
+- Full CLDR plural categories (`zero`, `two`, `few`, `many`) — only `one`/`*` supported.
+- MF2 custom function annotations (`:citum-date`, `:citum-names`) — see §1.5.
+- MF2 markup elements (`{#b}…{/b}`).
+- Multi-selector `.match` (matching on two variables simultaneously).
+
+**Date formatting is not done inside MF2 messages.** The engine formats dates
+using the `dateFormats` map and passes the result as a plain `{$date}` variable.
+This is a deliberate deferral of custom formatter annotations (e.g.
 `{$date :citum-date format=bib-default}`) — see §1.5.
 
 ---
@@ -96,16 +98,19 @@ date.open-ended: "present"
 Evaluated immediately in all schema versions. No evaluator required. The
 `general_term()` lookup path handles these in Phase 0.
 
-**Parameterized messages** — ICU MF1 (or future MF2) syntax containing
-variable references or selector constructs.
+**Parameterized messages** — MF2 syntax containing variable references or
+selector constructs.
 
 ```yaml
-term.page-label: "{count, plural, one {p.} other {pp.}}"
-pattern.page-range: "{start}–{end}"
+term.page-label: |
+  .match {$count :plural}
+  when one {p.}
+  when * {pp.}
+pattern.page-range: "{$start}–{$end}"
 ```
 
-Stored in the `messages` map in all schema versions, but only evaluated
-when `MessageEvaluator` is wired in (Phase 4). Before Phase 4, the engine
+Stored in the `messages` map and evaluated by `Mf2MessageEvaluator` when
+`message-syntax: mf2` is set. Before the evaluator is wired in, the engine
 silently falls back to the legacy term-map path for any message whose body
 contains `{`. This fallback is intentional — static terms already cover
 the rendering surface that Phase 0–3 exercises.
@@ -116,25 +121,23 @@ parameterized if and only if its body contains a `{` character.
 
 ---
 
-### 1.5 MF2 Forward-Compatibility Design
+### 1.5 ICU4X Migration Path
 
-ICU Message Format 2 (MF2) is the successor to MF1, currently at Unicode
-Candidate Recommendation status. MF1 and MF2 are syntactically incompatible,
-so migration requires changes to locale files. Citum's design minimises the
-blast radius of that future migration.
+MF2 is now active in Citum, but the current evaluator is a custom dependency-free
+implementation covering Citum's narrow message vocabulary. When ICU4X's
+`icu_message_format` crate stabilizes, we swap to a fully standard-conformant
+evaluator — no locale files or call sites change. See bean `csl26-qrpo` and
+[unicode-org/icu4x#3028](https://github.com/unicode-org/icu4x/issues/3028).
 
 #### Abstraction boundary
 
 The `MessageEvaluator` trait (§7.3) is the single seam between the rest of
 Citum and any message format implementation. Call sites in `citum-engine` use
-only the trait; they never depend on ICU, MF1 syntax, or any format-specific
-AST. This means:
+only the trait; they never depend on any format-specific AST. This means:
 
-- Adding `IcuMf2MessageEvaluator` (MF2 engine) is additive — no call-site
+- Adding `IcuMf2MessageEvaluator` (ICU4X-backed) is additive — no call-site
   changes.
-- Switching a locale from MF1 to MF2 is a two-step: update the locale file's
-  `evaluation.message-syntax: mf2` and rewrite the message strings to MF2
-  syntax.
+- The locale files already use MF2 syntax — they are unchanged by the swap.
 
 #### `evaluation.message-syntax` dispatch
 
@@ -144,43 +147,35 @@ implementation at locale-load time:
 
 | `message-syntax` | Evaluator | Status |
 |------------------|-----------|--------|
-| `static` (default) | None — plain string return | Phase 0 |
-| `mf1` | `IcuMf1MessageEvaluator` | Phase 4 |
-| `mf2` | `IcuMf2MessageEvaluator` | Future |
-
-A locale file declaring `message-syntax: mf1` signals intent. Until Phase 4
-is complete, the engine falls back to static-only evaluation for parameterized
-messages rather than erroring.
+| `static` (default) | None — plain string return | Active |
+| `mf2` | `Mf2MessageEvaluator` (custom) | **Active** |
+| `mf2` (future) | `IcuMf2MessageEvaluator` (ICU4X) | Planned — bean `csl26-qrpo` |
 
 #### `MessageArgs` as MF2 named variables
 
 `MessageArgs` (§7.3) maps directly to MF2's named-variable model: each field
 (`count`, `gender`, `names`, …) corresponds to a `$variable` in an MF2
-message. No structural change to `MessageArgs` is anticipated when migrating
-to MF2.
+message. No structural change to `MessageArgs` is needed when swapping to the
+ICU4X evaluator.
 
-MF2 multi-selector patterns (matching on multiple variables simultaneously)
-are accommodated by `MessageArgs` having multiple fields — the added
-expressiveness is in the message syntax, not in the Rust argument type.
+MF2 multi-selector patterns (matching on two variables simultaneously) are
+accommodated by `MessageArgs` having multiple fields — the added expressiveness
+is in the message syntax, not in the Rust argument type.
 
-#### Custom formatters (MF2 concept)
+#### Custom formatters (deferred)
 
 MF2 supports custom function annotations: `{$date :citum-date format=bib-default}`.
-In MF1 (and in Citum's current design) this is handled by pre-formatting:
-the engine computes the date string using `dateFormats["bib-default"]` and
-passes it as a plain `{date}` variable.
+Currently Citum pre-formats dates: the engine computes the date string using
+`dateFormats["bib-default"]` and passes it as a plain `{$date}` variable.
 
-This is intentionally conservative. Pre-formatting keeps the formatting logic
-in typed Rust code with full EDTF awareness, and avoids a two-layer parsing
-problem (CLDR date skeletons embedded inside ICU messages). The `MessageEvaluator`
-trait is structurally equivalent to a custom function registry at the Rust level —
-each implementation is a formatter. When MF2 is adopted, `:citum-date` and
-`:citum-names` can be registered as custom functions in `IcuMf2MessageEvaluator`
+Pre-formatting keeps the formatting logic in typed Rust code with full EDTF
+awareness and avoids a two-layer parsing problem. When the ICU4X evaluator is
+adopted, `:citum-date` and `:citum-names` can be registered as custom functions
 without changing any call sites or the `MessageArgs` shape.
 
-The `dateFormats` map (§3) is the stable API regardless of when custom
-formatter annotations are adopted: both the pre-formatting path and a future
-`:citum-date` formatter consume the same symbolic name → CLDR pattern mapping.
+The `dateFormats` map (§3) is the stable API regardless: both the pre-formatting
+path and a future `:citum-date` formatter consume the same symbolic name → CLDR
+pattern mapping.
 
 ---
 
@@ -218,7 +213,7 @@ flat term file but carries the same terms in the `messages` block, plus
 | `fallback` | `string\|null` | no | Locale ID to try when a message ID is missing. |
 | `version` | `string` | no | Semver of this locale file. |
 | `evaluation` | `object` | no | Runtime evaluation options. See §3.4. |
-| `messages` | `map<string, string>` | yes | Message ID → message body (static or MF1 syntax). |
+| `messages` | `map<string, string>` | yes | Message ID → message body (static or MF2 syntax). |
 | `date-formats` | `map<string, string>` | yes | Symbolic name → CLDR date pattern. |
 | `number-formats` | `object` | yes | `decimal-separator`, `thousands-separator`, `minimum-digits`. |
 | `grammar-options` | `object` | yes | See §3.3. |
@@ -231,18 +226,15 @@ the Phase 0 behaviour.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `message-syntax` | `string` | `"static"` | Message format in use: `static`, `mf1`, or `mf2`. |
+| `message-syntax` | `string` | `"static"` | Message format in use: `static` or `mf2`. |
 
 `message-syntax: static` — all messages are plain text; parameterized syntax
 is not evaluated (silently skipped). Safe default for v2 files that have not
 yet been audited for evaluator readiness.
 
-`message-syntax: mf1` — ICU MF1 evaluation is active (requires Phase 4
-`IcuMf1MessageEvaluator`). Before Phase 4, the engine treats this identically
-to `static` for graceful degradation.
-
-`message-syntax: mf2` — reserved for future MF2 engine. Treated as `static`
-until `IcuMf2MessageEvaluator` is registered.
+`message-syntax: mf2` — MF2 evaluation is active via `Mf2MessageEvaluator`.
+Supports variable substitution (`{$var}`), plural dispatch (`.match {$count :plural}`),
+and select dispatch (`.match {$var :select}`). See §1 for the supported subset.
 
 The `evaluation` block may grow with additional fields (e.g. custom function
 declarations, evaluator hints) without breaking existing locale files.
@@ -258,16 +250,34 @@ fallback: null
 version: "2.0.0"
 
 evaluation:
-  message-syntax: mf1
+  message-syntax: mf2
 
 messages:
   # Locator labels
-  term.page-label:      "{count, plural, one {p.} other {pp.}}"
-  term.page-label-long: "{count, plural, one {page} other {pages}}"
-  term.chapter-label:   "{count, plural, one {chap.} other {chaps.}}"
-  term.volume-label:    "{count, plural, one {vol.} other {vols.}}"
-  term.section-label:   "{count, plural, one {sec.} other {secs.}}"
-  term.figure-label:    "{count, plural, one {fig.} other {figs.}}"
+  term.page-label: |
+    .match {$count :plural}
+    when one {p.}
+    when * {pp.}
+  term.page-label-long: |
+    .match {$count :plural}
+    when one {page}
+    when * {pages}
+  term.chapter-label: |
+    .match {$count :plural}
+    when one {chap.}
+    when * {chaps.}
+  term.volume-label: |
+    .match {$count :plural}
+    when one {vol.}
+    when * {vols.}
+  term.section-label: |
+    .match {$count :plural}
+    when one {sec.}
+    when * {secs.}
+  term.figure-label: |
+    .match {$count :plural}
+    when one {fig.}
+    when * {figs.}
 
   # Conjunctions and connectors
   term.and:        "and"
@@ -285,18 +295,27 @@ messages:
   term.circa-long:  "circa"
 
   # Role labels
-  role.editor.label:       "{count, plural, one {ed.} other {eds.}}"
-  role.editor.label-long:  "{count, plural, one {editor} other {editors}}"
+  role.editor.label: |
+    .match {$count :plural}
+    when one {ed.}
+    when * {eds.}
+  role.editor.label-long: |
+    .match {$count :plural}
+    when one {editor}
+    when * {editors}
   role.editor.verb:        "edited by"
   role.translator.label:   "trans."
-  role.translator.label-long: "{count, plural, one {translator} other {translators}}"
+  role.translator.label-long: |
+    .match {$count :plural}
+    when one {translator}
+    when * {translators}
   role.translator.verb:    "translated by"
 
   # Compositional patterns
-  pattern.page-range:      "{start}\u2013{end}"
-  pattern.retrieved-from:  "retrieved from {url}"
-  pattern.available-at:    "available at {url}"
-  pattern.n-authors-et-al: "{mainList}, et al."
+  pattern.page-range:      "{$start}\u2013{$end}"
+  pattern.retrieved-from:  "retrieved from {$url}"
+  pattern.available-at:    "available at {$url}"
+  pattern.n-authors-et-al: "{$main_list}, et al."
 
   # Date terms
   date.open-ended: "present"
@@ -348,22 +367,34 @@ fallback: null
 version: "2.0.0"
 
 evaluation:
-  message-syntax: mf1
+  message-syntax: mf2
 
 messages:
-  term.page-label:      "{count, plural, one {S.} other {S.}}"
-  term.page-label-long: "{count, plural, one {Seite} other {Seiten}}"
+  term.page-label: |
+    .match {$count :plural}
+    when one {S.}
+    when * {S.}
+  term.page-label-long: |
+    .match {$count :plural}
+    when one {Seite}
+    when * {Seiten}
   term.and:             "und"
   term.et-al:           "u.\u00A0a."
   term.no-date:         "o.\u00A0J."
   term.accessed:        "Zugriff am"
   term.retrieved:       "abgerufen von"
 
-  role.editor.label:    "{count, plural, one {Hrsg.} other {Hrsg.}}"
-  role.editor.label-long: "{count, plural, one {Herausgeber} other {Herausgeber}}"
+  role.editor.label: |
+    .match {$count :plural}
+    when one {Hrsg.}
+    when * {Hrsg.}
+  role.editor.label-long: |
+    .match {$count :plural}
+    when one {Herausgeber}
+    when * {Herausgeber}
   role.editor.verb:     "herausgegeben von"
 
-  pattern.retrieved-from: "abgerufen von {url}"
+  pattern.retrieved-from: "abgerufen von {$url}"
   date.open-ended:      "heute"
 
 date-formats:
@@ -434,7 +465,10 @@ id: en-US-chicago
 baseLocale: en-US
 
 messages:
-  term.page-label: "{count, plural, one {p.} other {pp.}}"
+  term.page-label: |
+    .match {$count :plural}
+    when one {p.}
+    when * {pp.}
   term.no-date:    "n.d."
 
 dateFormats:
@@ -547,9 +581,8 @@ Rendering pipeline per citation:
 3. For each template component that calls a message ID:
    - Build `MessageArgs` from engine state (`count`, `names`, `gender`, etc.).
    - Call `MessageEvaluator::eval(id, &args)`.
-   - For plural constructs: call `icu_plurals::PluralRules::category(count)`
-     for the active locale to obtain the CLDR category string (`"one"`,
-     `"other"`, etc.), then select the matching arm of the MF1 message.
+   - For plural constructs: match against `"one"` for count == 1, `"*"` otherwise.
+     (Full CLDR plural categories deferred to ICU4X upgrade — see §1.5.)
    - For date variables: pre-format the date using the resolved `dateFormats`
      pattern, then substitute as a plain string.
    - Return the resolved `String`.
@@ -610,7 +643,7 @@ pub struct RawGrammarOptions {
 pub struct Locale {
     // existing fields unchanged …
 
-    /// Parsed and compiled MF1 messages. Populated only for v2 locales.
+    /// Parsed MF2 messages. Populated only for v2 locales.
     pub messages: HashMap<String, CompiledMessage>,
 
     /// Named date format presets.
@@ -636,61 +669,48 @@ pub struct Locale {
 `Locale::apply_override(override: &LocaleOverride) -> Locale` returns a new
 `Locale` with shallow-merged maps. The original is not mutated.
 
-#### 7.3 `MessageEvaluator` (`citum-engine/src/values/message.rs`)
+#### 7.3 `MessageEvaluator` (`crates/citum-schema-style/src/locale/message.rs`)
+
+The trait is the seam for ICU4X migration. Call sites in the engine depend only on
+this trait; they never import format-specific code.
 
 ```rust
-/// Evaluates an ICU MF1 message for a given locale and argument set.
-pub trait MessageEvaluator {
-    fn eval(&self, id: &str, args: &MessageArgs) -> Result<String, MessageError>;
-}
-
-/// Runtime inputs for message evaluation.
-pub struct MessageArgs {
-    /// Count for plural dispatch.
+/// Arguments passed to message evaluation.
+pub struct MessageArgs<'a> {
     pub count: Option<u64>,
-    /// Pre-formatted string value (e.g. a name list or URL).
-    pub value: Option<String>,
-    /// Grammatical gender for select dispatch.
-    pub gender: Option<GrammaticalGender>,
-    /// Pre-formatted name list string.
-    pub names: Option<String>,
-    /// Start of a range (e.g. page range start).
-    pub start: Option<String>,
-    /// End of a range.
-    pub end: Option<String>,
-    /// URL string.
-    pub url: Option<String>,
-    /// Pre-formatted date string.
-    pub date: Option<String>,
-    /// Main contributor list for "et al." patterns.
-    pub main_list: Option<String>,
+    pub value: Option<&'a str>,
+    pub gender: Option<&'a str>,
+    pub names: Option<&'a str>,
+    pub start: Option<&'a str>,
+    pub end: Option<&'a str>,
+    pub url: Option<&'a str>,
+    pub date: Option<&'a str>,
+    pub main_list: Option<&'a str>,
 }
 
-pub enum GrammaticalGender {
-    Masculine,
-    Feminine,
-    Neuter,
-    Other,
-}
-
-pub enum MessageError {
-    /// No message found for this ID in the active locale.
-    MissingMessage(String),
-    /// A variable referenced in the message body was not provided.
-    MissingVariable { message_id: String, variable: String },
-    /// The message body failed to parse as valid MF1.
-    ParseError { message_id: String, detail: String },
+/// Evaluates a parameterized message string with runtime arguments.
+///
+/// Returns Some(result) on success, None on parse error or missing variables.
+pub trait MessageEvaluator: Send + Sync {
+    fn evaluate(&self, message: &str, args: &MessageArgs<'_>) -> Option<String>;
 }
 ```
 
-The `IcuMessageEvaluator` struct implements `MessageEvaluator`:
-- Holds a reference to `Arc<Locale>` (already shared for concurrent rendering).
-- Parses all `messages` at locale-load time into a `HashMap<String, CompiledMessage>`.
-- For plural: delegates category computation to
-  `icu_plurals::PluralRules` initialized with the locale's BCP 47 tag.
-- For select: direct string-keyed dispatch, no CLDR dependency.
-- Available behind Cargo feature `icu-messages` (enabled by default in
-  `citum-engine`).
+The `Mf2MessageEvaluator` struct implements `MessageEvaluator` with a custom
+dependency-free evaluator:
+- For plain text: returned as-is.
+- For `{$var}` patterns: direct substitution from `MessageArgs` fields.
+- For `.match {$var :plural}`: two-value dispatch (`one` vs `*`).
+- For `.match {$var :select}`: string-keyed dispatch with wildcard fallback.
+- Returns `None` on parse error or missing required variable (caller provides fallback).
+
+The `Locale` struct holds `Arc<dyn MessageEvaluator>`, initialized at load time
+based on `evaluation.message_syntax`:
+- `Static` or unset → `Mf2MessageEvaluator` (parameterized evaluation skipped for
+  messages lacking `{` — fast path)
+- `Mf2` → `Mf2MessageEvaluator` (**current active evaluator**)
+- Future: `IcuMf2MessageEvaluator` when ICU4X `icu_message_format` stabilizes
+  (bean `csl26-qrpo`) — swap in one struct, no other changes
 
 ---
 
@@ -710,7 +730,7 @@ The `IcuMessageEvaluator` struct implements `MessageEvaluator`:
 
 #### Phase 1 — Convert high-impact terms
 
-Convert these term keys to ICU messages in `en-US.yaml` and `de-DE.yaml`:
+Convert these term keys to MF2 messages in `en-US.yaml` and `de-DE.yaml`:
 
 - All locator labels: `page`, `chapter`, `volume`, `section`, `figure`, `note`.
 - Role labels: `editor`, `translator`, `director`, `compiler`.
@@ -719,10 +739,14 @@ Convert these term keys to ICU messages in `en-US.yaml` and `de-DE.yaml`:
 Provide `scripts/migrate-locale-v1-to-v2.js`:
 
 - Reads a v1 locale YAML.
-- Converts every `singular`/`plural` pair to
-  `{count, plural, one{…} other{…}}`.
-- Emits a v2 YAML with `localeSchemaVersion: "2"` and a populated
-  `legacyTermAliases` block.
+- Converts every `singular`/`plural` pair to MF2 block scalar:
+  ```
+  .match {$count :plural}
+  when one {…}
+  when * {…}
+  ```
+- Emits a v2 YAML with `localeSchemaVersion: "2"`, `evaluation.message-syntax: mf2`,
+  and a populated `legacyTermAliases` block.
 
 #### Phase 2 — `dateFormats` and `grammarOptions`
 
@@ -741,7 +765,7 @@ Provide `scripts/migrate-locale-v1-to-v2.js`:
 
 #### Phase 4 — Validation tooling
 
-- `citum locale lint <file>`: parse locale YAML, validate MF1 syntax in all
+- `citum locale lint <file>`: parse locale YAML, validate MF2 syntax in all
   messages, report undeclared variables, check `legacyTermAliases` targets
   exist.
 - `citum style lint <style.yaml> --locale <locale.yaml>`: validate all message
@@ -752,15 +776,17 @@ Provide `scripts/migrate-locale-v1-to-v2.js`:
 
 ### 9. Performance Notes
 
-- **Parse once.** ICU message strings are parsed at `LocalePreset` load time
-  into `CompiledMessage` trees stored in a `HashMap`. Per-citation evaluation
-  operates on compiled trees only.
-- **Shared locale.** `Locale` (and its compiled message map) is wrapped in
-  `Arc<Locale>` and shared across concurrent rendering threads. No clone per
-  citation.
-- **CLDR plural rules.** `icu_plurals::PluralRules` is initialized once per
-  `(locale_id, PluralRuleType::Cardinal)` pair and held on the evaluator.
-  Not reconstructed per citation.
+- **Evaluate from raw string.** The current `Mf2MessageEvaluator` evaluates
+  directly from the raw message string on each call. There is no compile or
+  parse-once step. For Citum's narrow, mostly-static message vocabulary this is
+  acceptable. A parse-once optimisation (pre-compiling MF2 ASTs at locale-load
+  time) is deferred to the ICU4X upgrade (bean `csl26-qrpo`), which would
+  replace the evaluator entirely.
+- **Shared locale.** `Locale` (and its message map) is wrapped in `Arc<Locale>`
+  and shared across concurrent rendering threads. No clone per citation.
+- **Simple plural dispatch.** The current `one`/`*` dispatch is a single integer
+  comparison — zero allocation. Full CLDR rules (ICU4X) will be initialized once
+  per `(locale_id, PluralRuleType::Cardinal)` pair at that time.
 - **CBOR path.** The existing CBOR serialization path for `Locale` should be
   extended to include compiled messages for zero-parse cold starts in embedded
   or WASM scenarios.
@@ -773,8 +799,8 @@ Provide `scripts/migrate-locale-v1-to-v2.js`:
 |-----------|----------|
 | Message ID not found in active locale | Check `legacyTermAliases`; if still missing, try `fallback` locale; if still missing, return bare ID as plain text and emit `warn!`. |
 | ICU plural categories incomplete | Use `"other"` as universal fallback (consistent with CLDR recommendation). |
-| MF1 parse error in locale YAML | Hard error at locale-load time; engine falls back to `en-US`. Do not fail silently at render time. |
-| Missing variable in `MessageArgs` | Substitute empty string; emit `warn!` with message ID and variable name. |
+| MF2 parse / evaluation error | `MessageEvaluator::evaluate()` returns `None`. The call site (engine) provides the fallback — typically the legacy term-map value or the bare message ID. No panic, no hard error at render time. |
+| Missing variable in `MessageArgs` | `evaluate()` returns `None`; the call site falls back to the legacy path or bare ID. |
 | `LocaleOverride.baseLocale` not found | Emit error; treat override as standalone locale rather than crashing. |
 
 ---
@@ -798,12 +824,11 @@ Engine behavior by `localeSchemaVersion`:
 
 ## Implementation Notes
 
-- `icu_plurals` is the correct crate (part of `icu4x`), not `icu_messageformat_parser`.
-  The latter parses MF1 ASTs; we need a minimal MF1 evaluator plus a CLDR
-  plural-rules engine. Evaluate whether `icu_messageformat_parser` + `icu_plurals`
-  together cover the full evaluation path, or whether a small custom MF1
-  interpreter over `icu_plurals` is sufficient for Citum's constrained message
-  vocabulary.
+- The current `Mf2MessageEvaluator` is a custom dependency-free implementation
+  intentionally scoped to Citum's narrow message vocabulary. It does not attempt
+  to implement the full MF2 spec. The `MessageEvaluator` trait ensures that
+  upgrading to ICU4X's `icu_message_format` is a one-struct swap when it
+  stabilizes (see §1.5 and bean `csl26-qrpo`).
 - The existing `DatePreset` enum in `presets.rs` (`Long`, `Short`, `Numeric`,
   `Iso`) should be supplemented — not replaced — by the locale-bound
   `dateFormats` map. Styles using the old enum names continue to work via
@@ -827,7 +852,7 @@ Engine behavior by `localeSchemaVersion`:
       retain their base locale values.
 - [ ] `dateFormats["bib-default"]` in `en-US` resolves to a concrete CLDR pattern
       used by the EDTF date renderer.
-- [ ] `citum locale lint` reports a hard error for malformed MF1 syntax in a
+- [ ] `citum locale lint` reports a hard error for malformed MF2 syntax in a
       message value.
 - [ ] `citum locale lint` reports a warning when a message ID referenced in a
       style is absent from the locale file.
@@ -838,6 +863,17 @@ Engine behavior by `localeSchemaVersion`:
 
 ## Changelog
 
+- v1.3 (2026-03-22): **Pivot to MF2.** Replace MF1 as the canonical message
+  syntax with Unicode MessageFormat 2 (finalized standard). Implement custom
+  dependency-free `Mf2MessageEvaluator` (no external crate — GPL-3.0 crates
+  excluded). Supported subset: `{$var}` substitution, `.match {$count :plural}`
+  (one/`*`), `.match {$var :select}` (arbitrary keys). Update all locale YAML
+  examples to MF2 block-scalar syntax. Rewrite §1, §1.5 (ICU4X migration path),
+  §3.4, §7.3. Bean csl26-jrr6 complete (archived). ICU4X swap tracked in
+  bean csl26-qrpo / [unicode-org/icu4x#3028](https://github.com/unicode-org/icu4x/issues/3028).
+- v1.2 (2026-03-22): **Status: Active**. Add `MessageEvaluator` trait and
+  `message.rs` submodule. Update §7.3 with trait signature and load-time
+  selection logic.
 - v1.1 (2026-03-18): Add §1.4 message taxonomy (static vs parameterized),
   §1.5 MF2 forward-compatibility design (custom formatters, trait boundary,
   migration path), `evaluation` block with `message-syntax` field on

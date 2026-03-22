@@ -686,6 +686,14 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                     and locale overrides can ship style-specific term and phrasing adjustments without cloning
                     an entire style.
                 </p>
+                <p class="text-slate-600 leading-relaxed mb-6">
+                    Locale term messages use <strong>Unicode MessageFormat 2 (MF2)</strong> syntax. The current
+                    evaluator supports a focused subset: variable substitution (<code class="text-xs bg-slate-100 px-1 rounded">{$var}</code>),
+                    plural dispatch (<code class="text-xs bg-slate-100 px-1 rounded">.match {$count :plural}</code> with
+                    <code class="text-xs bg-slate-100 px-1 rounded">one</code>/<code class="text-xs bg-slate-100 px-1 rounded">*</code>),
+                    and select dispatch (<code class="text-xs bg-slate-100 px-1 rounded">.match {$var :select}</code>).
+                    Full CLDR plural rules and custom function annotations are deferred to a future ICU4X upgrade.
+                </p>
             </div>
 
             <!-- Style Configuration -->

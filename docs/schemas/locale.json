@@ -182,14 +182,7 @@
           ]
         },
         {
-          "description": "ICU Message Format 1 evaluation (requires `IcuMf1MessageEvaluator`).",
-          "type": "string",
-          "enum": [
-            "mf1"
-          ]
-        },
-        {
-          "description": "ICU Message Format 2 evaluation (reserved for future use).",
+          "description": "ICU Message Format 2 evaluation (requires `Mf2MessageEvaluator`).",
           "type": "string",
           "enum": [
             "mf2"

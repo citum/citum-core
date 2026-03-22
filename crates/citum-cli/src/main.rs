@@ -1072,17 +1072,18 @@ fn load_locale_file(path: &Path) -> Result<Locale, Box<dyn Error>> {
 
 fn lint_raw_locale(raw: &RawLocale) -> LintReport {
     let mut report = LintReport::default();
-    let uses_mf1 = raw.evaluation.as_ref().is_some_and(|config| {
-        config.message_syntax == citum_schema::locale::types::MessageSyntax::Mf1
+    let uses_mf2 = raw.evaluation.as_ref().is_some_and(|config| {
+        config.message_syntax == citum_schema::locale::types::MessageSyntax::Mf2
     });
 
     for (message_id, message) in &raw.messages {
-        if (uses_mf1 || message.contains('{'))
-            && let Err(err) = lint_mf1_message(message)
+        if uses_mf2
+            && (message.contains('{') || message.contains(".match"))
+            && let Err(err) = lint_mf2_message(message)
         {
             report.error(
                 format!("messages.{message_id}"),
-                format!("invalid MF1 message: {err}"),
+                format!("invalid MF2 message: {err}"),
             );
         }
     }
@@ -1486,106 +1487,74 @@ fn number_variable_to_locator(
     }
 }
 
-fn lint_mf1_message(message: &str) -> Result<(), String> {
-    lint_mf1_segment(message)
+/// Validate an MF2 message string for structural correctness.
+///
+/// Checks that:
+/// - `{…}` placeholders use `$variable` syntax (not bare MF1 identifiers)
+/// - `.match` blocks have a `$`-prefixed selector and at least one `when *` fallback
+///
+/// Returns `Err(description)` on the first structural violation.
+fn lint_mf2_message(message: &str) -> Result<(), String> {
+    let trimmed = message.trim();
+    if trimmed.starts_with(".match") {
+        lint_mf2_match(trimmed)
+    } else {
+        lint_mf2_pattern(trimmed)
+    }
 }
 
-fn lint_mf1_segment(message: &str) -> Result<(), String> {
+/// Validate variable placeholders in a plain MF2 pattern string.
+fn lint_mf2_pattern(pattern: &str) -> Result<(), String> {
     let mut cursor = 0usize;
-    while let Some(offset) = message[cursor..].find('{') {
+    while let Some(offset) = pattern[cursor..].find('{') {
         let open = cursor + offset;
-        let close = find_matching_brace(message, open)
+        let close = find_matching_brace(pattern, open)
             .ok_or_else(|| format!("unmatched '{{' at byte offset {open}"))?;
-        let inner = message
+        let inner = pattern
             .get(open + 1..close)
             .ok_or_else(|| "invalid brace range".to_string())?
             .trim();
-        lint_mf1_placeholder(inner)?;
+        if inner.is_empty() {
+            return Err("empty placeholder {}".to_string());
+        }
+        if !inner.starts_with('$') {
+            return Err(format!(
+                "placeholder '{{{inner}}}' must use $variable syntax \
+                 (bare identifiers are MF1, not MF2)"
+            ));
+        }
         cursor = close + 1;
     }
     Ok(())
 }
 
-fn lint_mf1_placeholder(inner: &str) -> Result<(), String> {
-    let Some((variable, remainder)) = split_top_level_once(inner, ',') else {
-        if inner.trim().is_empty() {
-            return Err("empty placeholder".to_string());
-        }
-        return Ok(());
-    };
-    if variable.trim().is_empty() {
-        return Err("placeholder variable name is empty".to_string());
+/// Validate an MF2 `.match` block.
+fn lint_mf2_match(message: &str) -> Result<(), String> {
+    let after_match = message[".match".len()..].trim_start();
+    let open = after_match
+        .find('{')
+        .ok_or("missing selector after .match")?;
+    let close = find_matching_brace(after_match, open).ok_or("unmatched '{' in .match selector")?;
+    let selector = after_match
+        .get(open + 1..close)
+        .ok_or("invalid selector range")?
+        .trim();
+    if !selector.starts_with('$') {
+        return Err(format!(
+            "selector '{selector}' must start with $ (e.g. {{$count :plural}})"
+        ));
     }
-    let remainder = remainder.trim();
-    let Some((kind, body)) = split_top_level_once(remainder, ',') else {
-        return match remainder {
-            "number" => Ok(()),
-            _ => Err(format!("unsupported or malformed formatter '{remainder}'")),
-        };
-    };
-
-    match kind.trim() {
-        "plural" | "select" => {
-            let selectors = parse_mf1_selectors(body.trim())?;
-            if !selectors.contains_key("other") {
-                return Err(format!("{} requires an 'other' branch", kind.trim()));
-            }
-            for branch in selectors.values() {
-                lint_mf1_segment(branch)?;
-            }
-            Ok(())
-        }
-        "number" => Ok(()),
-        other => Err(format!("unsupported formatter '{other}'")),
+    let variants = after_match
+        .get(close + 1..)
+        .ok_or("missing when blocks after .match selector")?
+        .trim();
+    if !variants.contains("when") {
+        return Err("no 'when' blocks found in .match".to_string());
     }
-}
-
-fn split_top_level_once(input: &str, delimiter: char) -> Option<(&str, &str)> {
-    let mut depth = 0usize;
-    for (index, ch) in input.char_indices() {
-        match ch {
-            '{' => depth += 1,
-            '}' => depth = depth.saturating_sub(1),
-            _ if ch == delimiter && depth == 0 => {
-                let len = ch.len_utf8();
-                return Some((&input[..index], &input[index + len..]));
-            }
-            _ => {}
-        }
+    if !variants.contains("when *") {
+        return Err("missing wildcard 'when *' fallback in .match".to_string());
     }
-    None
-}
-
-fn parse_mf1_selectors(input: &str) -> Result<HashMap<String, String>, String> {
-    let mut selectors = HashMap::new();
-    let mut cursor = 0usize;
-
-    while cursor < input.len() {
-        let trimmed = input[cursor..].trim_start();
-        cursor = input.len() - trimmed.len();
-        if trimmed.is_empty() {
-            break;
-        }
-
-        let key_end = trimmed
-            .find('{')
-            .ok_or_else(|| "selector branch is missing '{'".to_string())?;
-        let key = trimmed[..key_end].trim();
-        if key.is_empty() {
-            return Err("selector branch key is empty".to_string());
-        }
-        let open = cursor + key_end;
-        let close = find_matching_brace(input, open)
-            .ok_or_else(|| format!("selector '{key}' is missing a closing '}}'"))?;
-        selectors.insert(key.to_string(), input[open + 1..close].to_string());
-        cursor = close + 1;
-    }
-
-    if selectors.is_empty() {
-        return Err("selector has no branches".to_string());
-    }
-
-    Ok(selectors)
+    Ok(())
 }
 
 fn find_matching_brace(input: &str, open_index: usize) -> Option<usize> {
@@ -3533,15 +3502,16 @@ grammar-options:
     }
 
     #[test]
-    fn test_lint_raw_locale_reports_invalid_mf1_syntax() {
+    fn test_lint_raw_locale_reports_invalid_mf2_syntax() {
         let raw = RawLocale {
             locale: "en-US".into(),
             evaluation: Some(EvaluationConfig {
-                message_syntax: MessageSyntax::Mf1,
+                message_syntax: MessageSyntax::Mf2,
             }),
             messages: HashMap::from([(
                 "term.page-label".into(),
-                "{count, plural, one {p.} other {pp.}".into(),
+                // MF1-style bare identifier — invalid in MF2 (must use $count)
+                "{count}".into(),
             )]),
             ..Default::default()
         };
@@ -3551,7 +3521,7 @@ grammar-options:
         assert!(report.has_errors());
         assert!(report.findings.iter().any(|finding| {
             finding.path == "messages.term.page-label"
-                && finding.message.contains("invalid MF1 message")
+                && finding.message.contains("invalid MF2 message")
         }));
     }
 

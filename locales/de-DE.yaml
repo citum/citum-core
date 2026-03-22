@@ -2,7 +2,7 @@ locale-schema-version: "2"
 locale: de-DE
 
 evaluation:
-  message-syntax: mf1
+  message-syntax: mf2
 dates:
   months:
     long:
@@ -729,17 +729,22 @@ terms:
     long: Version
 
 messages:
-  term.page-label: "{count, plural, one {S.} other {S.}}"
-  term.page-label-long: "{count, plural, one {Seite} other {Seiten}}"
+  # S. is the same abbreviation for singular and plural in German (confirmed by CSL de-DE locale)
+  term.page-label: "S."
+  term.page-label-long: |
+    .match {$count :plural}
+    when one {Seite}
+    when * {Seiten}
   term.and: "und"
   term.et-al: "u.\u00A0a."
   term.no-date: "o.\u00A0J."
   term.accessed: "zugegriffen"
   term.retrieved: "abgerufen"
-  role.editor.label: "{count, plural, one {Hrsg.} other {Hrsg.}}"
-  role.editor.label-long: "{count, plural, one {Herausgeber} other {Herausgeber}}"
+  # Hrsg. and Herausgeber are invariant for singular/plural in German
+  role.editor.label: "Hrsg."
+  role.editor.label-long: "Herausgeber"
   role.editor.verb: "herausgegeben von"
-  pattern.retrieved-from: "abgerufen von {url}"
+  pattern.retrieved-from: "abgerufen von {$url}"
   date.open-ended: "heute"
 
 date-formats:
