@@ -1,4 +1,7 @@
+locale-schema-version: "2"
 locale: tr-TR
+evaluation:
+  message-syntax: mf2
 dates:
   months:
     long:
@@ -34,7 +37,7 @@ dates:
     - Kış
 roles:
   author:
-    long: 
+    long:
   chair:
     long:
       singular: başkan
@@ -56,9 +59,9 @@ roles:
     verb: compiled by
     verb-short: comp. by
   composer:
-    long: 
+    long:
   container-author:
-    long: 
+    long:
     verb: kitap editörü
   contributor:
     long:
@@ -154,7 +157,7 @@ roles:
     verb: çizen
     verb-short: çizen
   interviewer:
-    long: 
+    long:
     verb: röportaj yapan
   narrator:
     long:
@@ -175,7 +178,7 @@ roles:
     verb: organized by
     verb-short: org. by
   original-author:
-    long: 
+    long:
   performer:
     long:
       singular: icra eden
@@ -195,10 +198,10 @@ roles:
     verb: produced by
     verb-short: prod. by
   recipient:
-    long: 
+    long:
     verb: alıcı
   reviewed-author:
-    long: 
+    long:
     verb: tanıtım yazarı
   script-writer:
     long:
@@ -443,13 +446,13 @@ terms:
   ce:
     long: CE
   open_quote:
-    long: “
+    long: """
   close_quote:
-    long: ”
+    long: """
   open_inner_quote:
-    long: ‘
+    long: "'"
   close_inner_quote:
-    long: ’
+    long: "'"
   page_range_delimiter:
     long: "-"
   colon:
@@ -721,3 +724,77 @@ terms:
   version:
     long: versiyon
 
+messages:
+  # Locator labels
+  term.page-label: |
+    .match {$count :plural}
+    when one {s.}
+    when * {ss.}
+  term.page-label-long: |
+    .match {$count :plural}
+    when one {sayfa}
+    when * {sayfalar}
+  term.chapter-label: "böl."
+  term.volume-label: "c."
+  term.section-label: "blm."
+  term.figure-label: "şek."
+  # Conjunctions and connectors
+  term.and: "ve"
+  term.et-al: "vd."
+  term.and-others: "ve diğerleri"
+  # Date and access terms
+  term.accessed: "erişim"
+  term.retrieved: "geliş tarihi"
+  term.no-date: "t.y."
+  term.no-date-long: "tarih yok"
+  term.forthcoming: "gelecek"
+  term.circa: "yakl."
+  term.circa-long: "yaklaşık"
+  # Role labels
+  role.editor.label: "ed."
+  role.editor.label-long: |
+    .match {$count :plural}
+    when one {editör}
+    when * {editörler}
+  role.editor.verb: "editör"
+  role.translator.label: "çev."
+  role.translator.label-long: |
+    .match {$count :plural}
+    when one {çeviren}
+    when * {çevirenler}
+  role.translator.verb: "çeviren"
+  # Compositional patterns
+  pattern.page-range: "{$start}–{$end}"
+  pattern.retrieved-from: "erişim adresi: {$url}"
+  pattern.available-at: "erişim adresi: {$url}"
+  date.open-ended: "günümüz"
+
+date-formats:
+  numeric-short: "d.M.yyyy"
+  textual-long: "MMMM yyyy"
+  textual-full: "d MMMM yyyy"
+  bib-default: "d MMMM yyyy"
+  year-only: "yyyy"
+  iso: "yyyy-MM-dd"
+
+grammar-options:
+  punctuation-in-quote: false
+  nbsp-before-colon: false
+  open-quote: """
+  close-quote: """
+  open-inner-quote: "'"
+  close-inner-quote: "'"
+  serial-comma: false
+  page-range-delimiter: "-"
+
+legacy-term-aliases:
+  page: term.page-label
+  pages: term.page-label
+  et_al: term.et-al
+  and: term.and
+  accessed: term.accessed
+  retrieved: term.retrieved
+  no_date: term.no-date
+  "no date": term.no-date
+  editor: role.editor.label
+  translator: role.translator.label

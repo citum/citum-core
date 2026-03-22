@@ -1,4 +1,7 @@
+locale-schema-version: "2"
 locale: fr-FR
+evaluation:
+  message-syntax: mf2
 dates:
   months:
     long:
@@ -34,7 +37,7 @@ dates:
     - hiver
 roles:
   author:
-    long: 
+    long:
   chair:
     long:
       singular: président
@@ -59,11 +62,11 @@ roles:
     verb: compilé par
     verb-short: compil. par
   composer:
-    long: 
+    long:
     verb: composé par
     verb-short: comp. par
   container-author:
-    long: 
+    long:
     verb: par
   contributor:
     long:
@@ -161,7 +164,7 @@ roles:
     verb: illustré par
     verb-short: ill. par
   interviewer:
-    long: 
+    long:
     verb: entretien réalisé par
   narrator:
     long:
@@ -182,7 +185,7 @@ roles:
     verb: organisé par
     verb-short: org. par
   original-author:
-    long: 
+    long:
     verb: par
   performer:
     long:
@@ -203,10 +206,10 @@ roles:
     verb: produit par
     verb-short: prod. par
   recipient:
-    long: 
+    long:
     verb: à
   reviewed-author:
-    long: 
+    long:
     verb: par
   script-writer:
     long:
@@ -292,22 +295,22 @@ terms:
     long: lettre
     short: let.
   loc_cit:
-    long: "loc.&#160;cit."
+    long: "loc. cit."
   no date:
     long: sans date
-    short: "s.&#160;d."
+    short: "s. d."
   no_place:
     long: sans lieu
-    short: "s.&#160;l."
+    short: "s. l."
   no_publisher:
     long: sans nom
-    short: "s.&#160;n."
+    short: "s. n."
   on:
     long: sur
   online:
     long: en ligne
   op_cit:
-    long: "op.&#160;cit."
+    long: "op. cit."
   original_work_published:
     long: édition originale
     short: éd. orig.
@@ -495,21 +498,21 @@ terms:
   ce:
     long: n. è.
   open_quote:
-    long: "«&#160;"
+    long: "«"
   close_quote:
-    long: "&#160;»"
+    long: "»"
   open_inner_quote:
-    long: “
+    long: """
   close_inner_quote:
-    long: ”
+    long: """
   page_range_delimiter:
-    long: "&#8209;"
+    long: "‑"
   colon:
-    long: "&#160;:"
+    long: ":"
   comma:
     long: ","
   semicolon:
-    long: "&#160;;"
+    long: ";"
   ordinal:
     long: ᵉ
   long_ordinal_01:
@@ -683,8 +686,8 @@ terms:
       singular: sub verbo
       plural: sub verbis
     short:
-      singular: "s.&#160;v."
-      plural: "s.&#160;v."
+      singular: "s. v."
+      plural: "s. v."
   supplement:
     long:
       singular: supplément
@@ -798,3 +801,75 @@ terms:
       singular: éd.
       plural: éd.
 
+messages:
+  # Locator labels
+  term.page-label: "p."
+  term.page-label-long: |
+    .match {$count :plural}
+    when one {page}
+    when * {pages}
+  term.chapter-label: "chap."
+  term.volume-label: "vol."
+  term.section-label: "sect."
+  term.figure-label: "fig."
+  # Conjunctions and connectors
+  term.and: "et"
+  term.and-symbol: "&"
+  term.et-al: "et al."
+  term.and-others: "et autres"
+  # Date and access terms
+  term.accessed: "consulté le"
+  term.retrieved: "consulté"
+  term.no-date: "s. d."
+  term.no-date-long: "sans date"
+  term.forthcoming: "à paraître"
+  term.circa: "v."
+  term.circa-long: "vers"
+  # Role labels
+  role.editor.label: "éd."
+  role.editor.label-long: |
+    .match {$count :plural}
+    when one {éditeur}
+    when * {éditeurs}
+  role.editor.verb: "édité par"
+  role.translator.label: "trad."
+  role.translator.label-long: |
+    .match {$count :plural}
+    when one {traducteur}
+    when * {traducteurs}
+  role.translator.verb: "traduit par"
+  # Compositional patterns
+  pattern.page-range: "{$start}–{$end}"
+  pattern.retrieved-from: "consulté à l'adresse {$url}"
+  pattern.available-at: "disponible sur {$url}"
+  date.open-ended: "présent"
+
+date-formats:
+  numeric-short: "d/M/yyyy"
+  textual-long: "MMMM yyyy"
+  textual-full: "d MMMM yyyy"
+  bib-default: "d MMMM yyyy"
+  year-only: "yyyy"
+  iso: "yyyy-MM-dd"
+
+grammar-options:
+  punctuation-in-quote: false
+  nbsp-before-colon: true
+  open-quote: "«"
+  close-quote: "»"
+  open-inner-quote: """
+  close-inner-quote: """
+  serial-comma: false
+  page-range-delimiter: "‑"
+
+legacy-term-aliases:
+  page: term.page-label
+  pages: term.page-label
+  et_al: term.et-al
+  and: term.and
+  accessed: term.accessed
+  retrieved: term.retrieved
+  no_date: term.no-date
+  "no date": term.no-date
+  editor: role.editor.label
+  translator: role.translator.label

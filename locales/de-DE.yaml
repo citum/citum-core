@@ -736,8 +736,8 @@ messages:
     when one {Seite}
     when * {Seiten}
   term.and: "und"
-  term.et-al: "u.\u00A0a."
-  term.no-date: "o.\u00A0J."
+  term.et-al: "u. a."
+  term.no-date: "o. J."
   term.accessed: "zugegriffen"
   term.retrieved: "abgerufen"
   # Hrsg. and Herausgeber are invariant for singular/plural in German
@@ -758,12 +758,12 @@ date-formats:
 grammar-options:
   punctuation-in-quote: false
   nbsp-before-colon: false
-  open-quote: "\u201E"
-  close-quote: "\u201C"
-  open-inner-quote: "\u201A"
-  close-inner-quote: "\u2018"
+  open-quote: "„"
+  close-quote: """
+  open-inner-quote: "‚"
+  close-inner-quote: "'"
   serial-comma: false
-  page-range-delimiter: "\u2013"
+  page-range-delimiter: "–"
 
 legacy-term-aliases:
   page: term.page-label

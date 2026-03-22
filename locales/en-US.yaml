@@ -870,7 +870,7 @@ messages:
     when * {translators}
   role.translator.verb: "translated by"
   # Compositional patterns
-  pattern.page-range: "{$start}\u2013{$end}"
+  pattern.page-range: "{$start}–{$end}"
   pattern.retrieved-from: "retrieved from {$url}"
   pattern.available-at: "available at {$url}"
   date.open-ended: "present"
@@ -886,12 +886,12 @@ date-formats:
 grammar-options:
   punctuation-in-quote: true
   nbsp-before-colon: false
-  open-quote: "\u201C"
-  close-quote: "\u201D"
-  open-inner-quote: "\u2018"
-  close-inner-quote: "\u2019"
+  open-quote: """
+  close-quote: """
+  open-inner-quote: "'"
+  close-inner-quote: "'"
   serial-comma: true
-  page-range-delimiter: "\u2013"
+  page-range-delimiter: "–"
 
 legacy-term-aliases:
   page: term.page-label
