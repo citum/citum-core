@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.17.0](https://github.com/citum/citum-core/compare/v0.16.0...v0.17.0) - 2026-03-22
+
+### Added
+
+- *(schema)* role preset shorthand
+
 ## [0.16.0](https://github.com/citum/citum-core/compare/v0.15.0...v0.16.0) - 2026-03-22
 
 ### Added
