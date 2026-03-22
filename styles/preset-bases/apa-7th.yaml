@@ -32,8 +32,7 @@ options:
   substitute: standard
   contributors:
     initialize-with: ". "
-    role:
-      preset: short-suffix
+    role: short-suffix
     demote-non-dropping-particle: never
     delimiter-precedes-last: always
     and: symbol

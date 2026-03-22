@@ -72,8 +72,14 @@ pub struct ContributorConfig {
     /// When to include delimiter before "et al.".
     #[serde(skip_serializing_if = "Option::is_none")]
     pub delimiter_precedes_et_al: Option<DelimiterPrecedesLast>,
-    /// When and how to display contributor roles.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    /// When and how to display contributor roles. Accepts a preset name
+    /// (e.g., "short-suffix") or explicit configuration.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_role_options",
+        default
+    )]
+    #[cfg_attr(feature = "schema", schemars(with = "Option<RoleOptionsEntry>"))]
     pub role: Option<RoleOptions>,
     /// Handling of non-dropping particles (e.g., "van" in "van Gogh").
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -254,6 +260,33 @@ pub enum AndOptions {
     None,
 }
 
+/// Role options: either a preset name or explicit configuration.
+///
+/// Allows styles to write `role: short-suffix` as shorthand, or provide
+/// full explicit configuration with field-level overrides.
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(untagged)]
+pub enum RoleOptionsEntry {
+    /// A named preset (e.g., "short-suffix", "long-suffix").
+    Preset(RoleLabelPreset),
+    /// Explicit role options.
+    Explicit(Box<RoleOptions>),
+}
+
+impl RoleOptionsEntry {
+    /// Resolve this entry to a concrete `RoleOptions`.
+    pub fn resolve(self) -> RoleOptions {
+        match self {
+            RoleOptionsEntry::Preset(preset) => RoleOptions {
+                preset: Some(preset),
+                ..Default::default()
+            },
+            RoleOptionsEntry::Explicit(opts) => *opts,
+        }
+    }
+}
+
 /// Role display options.
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
@@ -410,4 +443,13 @@ fn default_contributor_delimiter() -> Option<String> {
 
 fn is_default_contributor_delimiter(v: &Option<String>) -> bool {
     v.as_deref() == Some(", ")
+}
+
+/// Deserialize role options from either a preset name or explicit config.
+fn deserialize_role_options<'de, D>(deserializer: D) -> Result<Option<RoleOptions>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let value: Option<RoleOptionsEntry> = Option::deserialize(deserializer)?;
+    Ok(value.map(|entry| entry.resolve()))
 }

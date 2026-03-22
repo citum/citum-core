@@ -21,8 +21,8 @@ pub use bibliography::{
 };
 pub use contributors::{
     AndOptions, AndOtherOptions, ContributorConfig, ContributorConfigEntry, DelimiterPrecedesLast,
-    DemoteNonDroppingParticle, DisplayAsSort, RoleLabelPreset, RoleOptions, RoleRendering,
-    ShortenListOptions,
+    DemoteNonDroppingParticle, DisplayAsSort, RoleLabelPreset, RoleOptions, RoleOptionsEntry,
+    RoleRendering, ShortenListOptions,
 };
 pub use dates::{DateConfig, DateConfigEntry};
 pub use integral_names::{
@@ -468,6 +468,20 @@ contributors:
         );
         assert_eq!(
             contributors.effective_role_label_preset(&crate::template::ContributorRole::Translator),
+            Some(RoleLabelPreset::ShortSuffix)
+        );
+
+        // Scalar shorthand form — must parse identically for preset-only case
+        let yaml_scalar = r#"
+contributors:
+  role: short-suffix
+"#;
+        let config2: Config = serde_yaml::from_str(yaml_scalar).unwrap();
+        let contributors2 = config2.contributors.unwrap();
+
+        assert_eq!(
+            contributors2
+                .effective_role_label_preset(&crate::template::ContributorRole::Translator),
             Some(RoleLabelPreset::ShortSuffix)
         );
     }
