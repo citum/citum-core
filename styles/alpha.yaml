@@ -1,8 +1,18 @@
-version: ''
+# yaml-language-server: $schema=./citum.schema.json
+version: '0.10.0'
 info:
   title: Alpha (biblatex-alpha)
-  id: https://github.com/citation-style-language/styles/alpha
+  id: alpha
   default-locale: en-US
+  source:
+    csl-id: http://www.zotero.org/styles/alpha
+    adapted-by: citum-migrate
+    license: http://creativecommons.org/licenses/by-sa/3.0/
+    links:
+    - href: http://www.zotero.org/styles/alpha
+      rel: self
+    - href: https://github.com/citation-style-language/styles/blob/master/alpha.csl
+      rel: documentation
 options:
   processing:
     # Alpha preset: 3-char single-author, 1-char multi-author, et-al at 4, "+" marker
@@ -19,13 +29,8 @@ options:
     delimiter: ', '
     delimiter-precedes-last: contextual
     sort-separator: ', '
-  titles:
-    monograph:
-      emph: true
-    periodical:
-      emph: true
-    serial:
-      emph: true
+    display-as-sort: all
+  titles: humanities
   bibliography:
     entry-suffix: .
     separator: ', '
@@ -45,6 +50,7 @@ bibliography:
       delimiter: ', '
       delimiter-precedes-last: contextual
       sort-separator: ', '
+      display-as-sort: all
   template:
     - number: citation-label
       wrap: brackets
