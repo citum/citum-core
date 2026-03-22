@@ -260,15 +260,21 @@ def update_schema_doc(plan: ReleasePlan) -> None:
     """Insert a schema changelog entry at the top of the changelog section."""
 
     content = SCHEMA_DOC.read_text(encoding="utf-8")
-    marker = "### Schema Changelog\n\nTrack schema changes separately from code changes:\n\n"
-    if marker not in content:
+    heading = "## Schema Changelog\n"
+    heading_index = content.find(heading)
+    if heading_index == -1:
         raise BumpError("Could not find the schema changelog section in SCHEMA_VERSIONING.md")
     name_suffix = f" - {plan.release_name}" if plan.release_name else ""
     entry = (
         f"#### schema-v{plan.new_version} ({date.today().isoformat()}){name_suffix}\n"
         f"- Schema version bumped from {plan.old_version} to {plan.new_version}\n\n"
     )
-    SCHEMA_DOC.write_text(content.replace(marker, marker + entry, 1), encoding="utf-8")
+    insert_at = content.find("\n#### ", heading_index)
+    if insert_at == -1:
+        raise BumpError("Could not find the first schema changelog entry in SCHEMA_VERSIONING.md")
+    insert_at += 1
+    updated = content[:insert_at] + entry + content[insert_at:]
+    SCHEMA_DOC.write_text(updated, encoding="utf-8")
 
 
 def validate_build() -> None:
