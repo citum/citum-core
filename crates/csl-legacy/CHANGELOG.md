@@ -7,30 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.17.0](https://github.com/citum/citum-core/compare/citum-analyze-v0.16.0...citum-analyze-v0.17.0) - 2026-03-22
+## [0.17.0](https://github.com/citum/citum-core/compare/csl-legacy-v0.16.0...csl-legacy-v0.17.0) - 2026-03-22
 
 ### Added
 
-- *(citum-analyze)* preset migration savings
 - *(lint)* clippy all=deny, pedantic suppressions
+- *(engine)* support expanded verification cases
+- *(schema)* add CitationField, StyleSource provenance to StyleInfo
 
 ### Fixed
 
 - *(lint)* pedantic autofixes
+- *(schema)* drop is_base from StyleInfo and csl-legacy Info
 
 ### Other
 
-- release v0.14.0
-- *(lint)* enforce too_many_lines and cognitive_complexity
+- *(ci)* reduce compilation time A+B
 - *(lints)* centralize doc lint enforcement
 - *(repo)* refresh snapshots and SPDX headers
 - CSLN -> Citum
 - relicense to MIT OR Apache-2.0
-- *(deps)* replace serde_yaml with serde_yaml_ng
+- *(csl-legacy, citum-cli)* add doc and test coverage
 - *(workspace)* migrate csln namespace to citum
-
-## [0.14.0](https://github.com/citum/citum-core/compare/citum-analyze-v0.13.0...citum-analyze-v0.14.0) - 2026-03-19
-
-### Added
-
-- *(citum-analyze)* preset migration savings
