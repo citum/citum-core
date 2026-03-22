@@ -1107,10 +1107,10 @@
           ]
         },
         "role": {
-          "description": "When and how to display contributor roles.",
+          "description": "When and how to display contributor roles. Accepts a preset name (e.g., \"short-suffix\") or explicit configuration.",
           "anyOf": [
             {
-              "$ref": "#/definitions/RoleOptions"
+              "$ref": "#/definitions/RoleOptionsEntry"
             },
             {
               "type": "null"
@@ -3626,6 +3626,27 @@
           ]
         }
       }
+    },
+    "RoleOptionsEntry": {
+      "description": "Role options: either a preset name or explicit configuration.\n\nAllows styles to write `role: short-suffix` as shorthand, or provide full explicit configuration with field-level overrides.",
+      "anyOf": [
+        {
+          "description": "A named preset (e.g., \"short-suffix\", \"long-suffix\").",
+          "allOf": [
+            {
+              "$ref": "#/definitions/RoleLabelPreset"
+            }
+          ]
+        },
+        {
+          "description": "Explicit role options.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/RoleOptions"
+            }
+          ]
+        }
+      ]
     },
     "RoleRendering": {
       "description": "Rendering options for contributor roles.",
