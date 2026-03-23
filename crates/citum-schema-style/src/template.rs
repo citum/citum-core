@@ -89,6 +89,9 @@ pub struct Rendering {
     /// Override name initialization (e.g., ". " or "").
     #[serde(skip_serializing_if = "Option::is_none")]
     pub initialize_with: Option<String>,
+    /// Override name form (e.g., initials, full, family-only).
+    #[serde(skip_serializing_if = "Option::is_none", rename = "name-form")]
+    pub name_form: Option<crate::options::contributors::NameForm>,
     /// Strip trailing periods from rendered value.
     #[serde(skip_serializing_if = "Option::is_none", rename = "strip-periods")]
     pub strip_periods: Option<bool>,
@@ -114,6 +117,7 @@ impl Rendering {
             wrap,
             suppress,
             initialize_with,
+            name_form,
             strip_periods,
         );
     }
@@ -278,6 +282,9 @@ pub struct TemplateContributor {
     /// Use to show editors as "Given Family" even when global setting is "Family, Given".
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name_order: Option<NameOrder>,
+    /// Override the name form (e.g., initials, full, family-only) for this specific component.
+    #[serde(skip_serializing_if = "Option::is_none", rename = "name-form")]
+    pub name_form: Option<crate::options::contributors::NameForm>,
     /// Custom delimiter between names (overrides global setting).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub delimiter: Option<String>,

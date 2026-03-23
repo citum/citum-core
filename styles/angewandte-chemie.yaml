@@ -14,6 +14,7 @@ options:
       - translator
   processing: numeric
   contributors:
+    name-form: initials
     initialize-with: ". "
     delimiter: ", "
     delimiter-precedes-last: always
@@ -43,6 +44,7 @@ citation:
 bibliography:
   options:
     contributors:
+      name-form: initials
       initialize-with: ". "
       delimiter: ", "
       delimiter-precedes-last: always

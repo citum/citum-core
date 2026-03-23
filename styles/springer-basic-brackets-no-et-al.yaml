@@ -28,6 +28,7 @@ options:
   processing: numeric
   contributors:
     display-as-sort: all
+    name-form: initials
     initialize-with: ""
     delimiter: ", "
     delimiter-precedes-last: always
@@ -50,6 +51,7 @@ bibliography:
   options:
     contributors:
       display-as-sort: all
+      name-form: initials
       initialize-with: ""
       delimiter: ", "
       delimiter-precedes-last: always

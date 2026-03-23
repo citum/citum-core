@@ -32,6 +32,7 @@ options:
   processing: author-date
   substitute: standard
   contributors:
+    name-form: initials
     initialize-with: ". "
     role: short-suffix
     demote-non-dropping-particle: never

@@ -30,6 +30,7 @@ options:
   substitute: editor-short
   contributors:
     display-as-sort: first
+    name-form: initials
     initialize-with: ". "
     shorten:
       min: 3
@@ -74,6 +75,7 @@ bibliography:
   options:
     contributors:
       display-as-sort: first
+      name-form: initials
       initialize-with: ". "
       delimiter-precedes-last: always
   template:

@@ -112,6 +112,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
+      name-form: initials
       initialize-with: ". "
     - title: primary
       overrides:

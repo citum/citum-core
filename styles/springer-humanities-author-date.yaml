@@ -29,6 +29,7 @@ options:
   substitute: editor-translator-short
   contributors:
     display-as-sort: first
+    name-form: initials
     initialize-with: ". "
     shorten:
       min: 11

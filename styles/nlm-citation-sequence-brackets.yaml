@@ -39,6 +39,7 @@ bibliography:
   options:
     contributors:
       display-as-sort: all
+      name-form: initials
       initialize-with: ""
       shorten:
         min: 7

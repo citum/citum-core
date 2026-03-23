@@ -26,6 +26,7 @@ options:
       - editor
   processing: numeric
   contributors:
+    name-form: initials
     initialize-with: ""
     delimiter-precedes-last: always
     demote-non-dropping-particle: sort-only

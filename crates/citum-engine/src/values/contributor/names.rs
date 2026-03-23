@@ -20,7 +20,7 @@ pub(crate) struct NameFormatContext<'a> {
 
 /// Per-call template overrides passed to [`format_names`].
 ///
-/// Bundles the five optional override parameters that come from a
+/// Bundles the optional override parameters that come from a
 /// `TemplateContributor` so that call sites do not need to spell out each
 /// one individually.
 pub struct NamesOverrides<'a> {
@@ -34,6 +34,8 @@ pub struct NamesOverrides<'a> {
     pub and: Option<&'a AndOptions>,
     /// Override for the `initialize-with` string used to form initials.
     pub initialize_with: Option<&'a String>,
+    /// Override for the name form (full, initials, family-only).
+    pub name_form: Option<NameForm>,
 }
 
 /// Partition names into (`first_names`, `use_et_al`, `last_names`) based on et-al options.
@@ -272,7 +274,9 @@ pub fn format_names(
             .initialize_with
             .or_else(|| config.and_then(|c| c.initialize_with.as_ref())),
         initialize_with_hyphen: config.and_then(|c| c.initialize_with_hyphen),
-        name_form: config.and_then(|c| c.name_form),
+        name_form: overrides
+            .name_form
+            .or_else(|| config.and_then(|c| c.name_form)),
         demote_ndp: config.and_then(|c| c.demote_non_dropping_particle.as_ref()),
         sort_separator: overrides
             .sort_separator
@@ -542,11 +546,11 @@ pub(crate) fn format_single_name(
             };
 
             // Determine how to render the given name based on NameForm.
-            // If name_form is None and initialize_with is present, treat as Initials for backward compat.
+            // initialize-with only controls the separator between initials, not whether
+            // to use initials at all. name-form controls the form.
             let effective_name_form = match ctx.name_form {
                 Some(f) => f,
-                None if ctx.initialize_with.is_some() => NameForm::Initials,
-                _ => NameForm::Full,
+                None => NameForm::Full,
             };
 
             let given_part = match effective_name_form {
@@ -598,6 +602,7 @@ pub fn format_contributors_short(
             shorten: None,
             and: None,
             initialize_with: None,
+            name_form: None,
         },
         &ProcHints::default(),
     )

@@ -25,6 +25,7 @@ options:
   substitute: editor-translator-short
   processing: numeric
   contributors:
+    name-form: initials
     initialize-with: ". "
     shorten:
       min: 4
@@ -48,6 +49,7 @@ citation:
 bibliography:
   options:
     contributors:
+      name-form: initials
       initialize-with: ". "
       shorten:
         min: 4

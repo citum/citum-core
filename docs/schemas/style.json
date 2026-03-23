@@ -3419,6 +3419,17 @@
             "null"
           ]
         },
+        "name-form": {
+          "description": "Override name form (e.g., initials, full, family-only).",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NameForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "prefix": {
           "description": "Text to prepend to the rendered value (outside any wrap).",
           "type": [
@@ -4514,6 +4525,17 @@
             }
           ]
         },
+        "name-form": {
+          "description": "Override name form (e.g., initials, full, family-only).",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NameForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "name-order": {
           "description": "Override the global name order for this specific component. Use to show editors as \"Given Family\" even when global setting is \"Family, Given\".",
           "anyOf": [
@@ -4698,6 +4720,17 @@
             }
           ]
         },
+        "name-form": {
+          "description": "Override name form (e.g., initials, full, family-only).",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NameForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "overrides": {
           "description": "Type-specific rendering overrides.",
           "type": [
@@ -4840,6 +4873,17 @@
           "items": {
             "$ref": "#/definitions/TemplateComponent"
           }
+        },
+        "name-form": {
+          "description": "Override name form (e.g., initials, full, family-only).",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NameForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "overrides": {
           "description": "Type-specific rendering overrides.",
@@ -4993,6 +5037,17 @@
           "anyOf": [
             {
               "$ref": "#/definitions/LinksConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name-form": {
+          "description": "Override name form (e.g., initials, full, family-only).",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NameForm"
             },
             {
               "type": "null"
@@ -5187,6 +5242,17 @@
             "null"
           ]
         },
+        "name-form": {
+          "description": "Override name form (e.g., initials, full, family-only).",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NameForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "overrides": {
           "description": "Type-specific rendering overrides.",
           "type": [
@@ -5350,6 +5416,17 @@
             }
           ]
         },
+        "name-form": {
+          "description": "Override name form (e.g., initials, full, family-only).",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NameForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "overrides": {
           "description": "Type-specific rendering overrides.",
           "type": [
@@ -5485,6 +5562,17 @@
           "anyOf": [
             {
               "$ref": "#/definitions/LinksConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name-form": {
+          "description": "Override name form (e.g., initials, full, family-only).",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NameForm"
             },
             {
               "type": "null"

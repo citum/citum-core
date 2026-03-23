@@ -239,6 +239,7 @@ fn test_strip_author_component_nested_list() {
                 shorten: None,
                 label: None,
                 name_order: None,
+                name_form: None,
                 delimiter: None,
                 sort_separator: None,
                 links: None,

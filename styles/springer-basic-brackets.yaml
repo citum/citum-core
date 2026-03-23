@@ -29,6 +29,7 @@ options:
   strip-periods: true
   contributors:
     display-as-sort: all
+    name-form: initials
     initialize-with: ''
     delimiter: ', '
     delimiter-precedes-last: always

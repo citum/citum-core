@@ -26,6 +26,7 @@ options:
   substitute: editor-translator-title-long
   contributors:
     display-as-sort: all
+    name-form: initials
     initialize-with: ""
     shorten:
       min: 5
@@ -43,6 +44,7 @@ options:
 citation:
   options:
     contributors:
+      name-form: initials
       initialize-with: .
       shorten:
         min: 3
@@ -74,6 +76,7 @@ bibliography:
   options:
     contributors:
       display-as-sort: all
+      name-form: initials
       initialize-with: ""
       shorten:
         min: 5

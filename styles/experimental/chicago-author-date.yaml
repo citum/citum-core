@@ -20,6 +20,7 @@ options:
       - title
   contributors:
     and: text
+    name-form: initials
     initialize-with: ". "
     # For author-date, CMOS uses family-first only for the first author in bib
     display-as-sort: first

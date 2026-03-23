@@ -391,6 +391,7 @@ pub fn build_author_date_style(
             None
         },
         initialize_with: Some(" ".to_string()),
+        name_form: Some(citum_schema::options::NameForm::Initials),
         ..Default::default()
     });
 

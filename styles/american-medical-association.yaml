@@ -25,6 +25,7 @@ options:
   substitute: editor-short
   processing: numeric
   contributors:
+    name-form: initials
     initialize-with: ""
     sort-separator: " "
     delimiter: ", "

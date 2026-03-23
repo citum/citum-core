@@ -650,7 +650,7 @@ mod tests {
     use crate::Processor;
     use citum_schema::citation::Citation;
     use citum_schema::grouping::{GroupSort, GroupSortKey, SortKey};
-    use citum_schema::options::{Config, ContributorConfig, DisplayAsSort};
+    use citum_schema::options::{Config, ContributorConfig, DisplayAsSort, NameForm};
     use citum_schema::reference::{
         Contributor, EdtfString, InputReference as Reference, Monograph, MonographType,
         MultilingualString, StructuredName, Title,
@@ -904,6 +904,7 @@ mod tests {
                 })),
                 contributors: Some(ContributorConfig {
                     initialize_with: Some(". ".to_string()),
+                    name_form: Some(NameForm::Initials),
                     ..Default::default()
                 }),
                 ..Default::default()

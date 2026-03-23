@@ -22,6 +22,7 @@ options:
   substitute: editor-translator-long
   processing: numeric
   contributors:
+    name-form: initials
     initialize-with: .
     delimiter-precedes-last: always
     demote-non-dropping-particle: sort-only
@@ -38,6 +39,7 @@ citation:
 bibliography:
   options:
     contributors:
+      name-form: initials
       initialize-with: .
       delimiter-precedes-last: always
   template:

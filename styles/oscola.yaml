@@ -30,7 +30,7 @@ options:
   processing: note
   contributors:
     display-as-sort: all
-    initialize-with: ""
+    name-form: full
     shorten:
       min: 5
       use-first: 3
@@ -92,7 +92,7 @@ citation:
   subsequent:
     options:
       contributors:
-        initialize-with: ""
+        name-form: full
         shorten:
           min: 4
           use-first: 1
@@ -120,7 +120,7 @@ bibliography:
   options:
     contributors:
       display-as-sort: all
-      initialize-with: ""
+      name-form: full
       shorten:
         min: 4
         use-first: 1
