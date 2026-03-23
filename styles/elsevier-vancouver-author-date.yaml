@@ -48,6 +48,7 @@ options:
 citation:
   options:
     contributors:
+      name-form: initials
       initialize-with: ". "
       shorten:
         min: 3

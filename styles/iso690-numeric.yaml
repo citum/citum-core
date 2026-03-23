@@ -9,6 +9,7 @@ info:
 options:
   processing: numeric
   contributors:
+    name-form: initials
     initialize-with: ''
     delimiter: ', '
     delimiter-precedes-last: always

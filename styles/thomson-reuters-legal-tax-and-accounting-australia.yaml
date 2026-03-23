@@ -20,6 +20,7 @@ options:
   substitute: editor-translator-short
   processing: note
   contributors:
+    name-form: initials
     initialize-with: ""
     shorten:
       min: 20
@@ -33,6 +34,7 @@ options:
 citation:
   options:
     contributors:
+      name-form: initials
       initialize-with: ""
       shorten:
         min: 20

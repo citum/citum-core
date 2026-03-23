@@ -20,6 +20,7 @@ options:
   substitute: editor-translator-short
   processing: numeric
   contributors:
+    name-form: initials
     initialize-with: ". "
     demote-non-dropping-particle: sort-only
   dates: short
@@ -39,6 +40,7 @@ citation:
 bibliography:
   options:
     contributors:
+      name-form: initials
       initialize-with: ". "
       delimiter-precedes-last: never
   template:

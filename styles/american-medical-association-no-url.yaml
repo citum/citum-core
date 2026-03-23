@@ -26,6 +26,7 @@ options:
       - editor
   processing: numeric
   contributors:
+    name-form: initials
     initialize-with: ""
     shorten:
       min: 7

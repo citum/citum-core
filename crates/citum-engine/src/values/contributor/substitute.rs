@@ -115,12 +115,19 @@ fn resolve_named_substitute<F: OutputFormat<Output = String>>(
             .and_then(|contributors| contributors.effective_role_name_order(&role))
     });
 
+    // Priority chain for name_form:
+    // 1. component.name_form (TemplateContributor-level override - highest priority)
+    // 2. effective_rendering.name_form (from overrides, second priority)
+    // 3. config (options-level fallback)
+    let effective_name_form = component.name_form.or(effective_rendering.name_form);
+
     let name_overrides = super::names::NamesOverrides {
         name_order: effective_name_order,
         sort_separator: component.sort_separator.as_ref(),
         shorten: component.shorten.as_ref(),
         and: component.and.as_ref(),
         initialize_with: effective_rendering.initialize_with.as_ref(),
+        name_form: effective_name_form,
     };
     let formatted =
         super::names::format_names(&names_vec, &component.form, options, &name_overrides, hints);

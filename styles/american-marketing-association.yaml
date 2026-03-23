@@ -41,6 +41,7 @@ options:
       year-suffix: true
   contributors:
     display-as-sort: first
+    name-form: initials
     initialize-with: ". "
     shorten:
       min: 4
@@ -72,6 +73,7 @@ options:
 citation:
   options:
     contributors:
+      name-form: initials
       initialize-with: ". "
       shorten:
         min: 4

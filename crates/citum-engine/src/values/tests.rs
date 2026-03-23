@@ -87,6 +87,7 @@ fn test_contributor_values() {
         form: ContributorForm::Short,
         label: None,
         name_order: None,
+        name_form: None,
         delimiter: None,
         sort_separator: None,
         shorten: None,
@@ -172,6 +173,7 @@ fn test_et_al() {
         form: ContributorForm::Short,
         label: None,
         name_order: None,
+        name_form: None,
         delimiter: None,
         sort_separator: None,
         shorten: None,
@@ -330,6 +332,7 @@ fn test_et_al_delimiter_never() {
         form: ContributorForm::Short,
         label: None,
         name_order: None,
+        name_form: None,
         delimiter: None,
         sort_separator: None,
         shorten: None,
@@ -388,6 +391,7 @@ fn test_et_al_delimiter_always() {
         form: ContributorForm::Short,
         label: None,
         name_order: None,
+        name_form: None,
         delimiter: None,
         sort_separator: None,
         shorten: None,
@@ -492,7 +496,7 @@ fn test_initialize_with_variants_for_multi_part_given_names() {
         None,
         Some(&init_compact),
         None,
-        None,
+        Some(NameForm::Initials),
         None,
         None,
     );
@@ -505,7 +509,7 @@ fn test_initialize_with_variants_for_multi_part_given_names() {
         None,
         Some(&init_space),
         None,
-        None,
+        Some(NameForm::Initials),
         None,
         None,
     );
@@ -518,7 +522,7 @@ fn test_initialize_with_variants_for_multi_part_given_names() {
         None,
         Some(&init_dot),
         None,
-        None,
+        Some(NameForm::Initials),
         None,
         None,
     );
@@ -531,7 +535,7 @@ fn test_initialize_with_variants_for_multi_part_given_names() {
         None,
         Some(&init_dot_space),
         None,
-        None,
+        Some(NameForm::Initials),
         None,
         None,
     );
@@ -554,7 +558,7 @@ fn test_initialize_with_hyphen_guard() {
         None,
         Some(&init_dot),
         None,
-        None,
+        Some(NameForm::Initials),
         None,
         None,
     );
@@ -567,7 +571,7 @@ fn test_initialize_with_hyphen_guard() {
         None,
         Some(&init_dot),
         Some(false),
-        None,
+        Some(NameForm::Initials),
         None,
         None,
     );
@@ -627,10 +631,13 @@ fn test_name_form_variants() {
         contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(initials_default, "J. D. Smith");
 
-    // Backward compat: name_form=None + initialize_with=Some → treated as Initials
+    // Semantic split: name_form=None + initialize_with=Some → Full (not Initials).
+    // initialize_with only controls the separator, not the form activation.
+    // The migrator is responsible for co-emitting name_form: Initials with initialize_with.
     let ctx = make_name_format_context(None, None, Some(&init_str), None, None, None, None);
-    let compat = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
-    assert_eq!(compat, "J. D. Smith");
+    let semantic_split =
+        contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
+    assert_eq!(semantic_split, "John David Smith");
 }
 
 /// Tests that Initials + defaulted separator produces correct hyphenated output.
@@ -1852,7 +1859,7 @@ fn test_sort_separator_space() {
         None,
         Some(&init_empty),
         None,
-        None,
+        Some(NameForm::Initials),
         None,
         Some(&sep_space),
     );
@@ -1866,7 +1873,7 @@ fn test_sort_separator_space() {
         None,
         Some(&init_empty),
         None,
-        None,
+        Some(NameForm::Initials),
         None,
         None,
     );

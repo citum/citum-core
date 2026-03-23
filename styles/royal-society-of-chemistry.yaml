@@ -24,6 +24,7 @@ options:
       - editor
   processing: numeric
   contributors:
+    name-form: initials
     initialize-with: ". "
     delimiter: ", "
     delimiter-precedes-last: never
@@ -52,6 +53,7 @@ citation:
 bibliography:
   options:
     contributors:
+      name-form: initials
       initialize-with: ". "
       delimiter: ", "
       delimiter-precedes-last: never

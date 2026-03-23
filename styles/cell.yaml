@@ -20,6 +20,7 @@ options:
   processing: numeric
   contributors:
     display-as-sort: all
+    name-form: initials
     initialize-with: .
     shorten:
       min: 11
@@ -43,6 +44,7 @@ bibliography:
   options:
     contributors:
       display-as-sort: all
+      name-form: initials
       initialize-with: .
       shorten:
         min: 11

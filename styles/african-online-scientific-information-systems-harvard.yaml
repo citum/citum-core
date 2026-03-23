@@ -39,6 +39,7 @@ options:
       year-suffix: true
   contributors:
     display-as-sort: all
+    name-form: initials
     initialize-with: .
     shorten:
       min: 3
@@ -67,6 +68,7 @@ options:
 citation:
   options:
     contributors:
+      name-form: initials
       initialize-with: ". "
       shorten:
         min: 3
@@ -93,6 +95,7 @@ bibliography:
   options:
     contributors:
       display-as-sort: all
+      name-form: initials
       initialize-with: .
       delimiter: ", "
       delimiter-precedes-last: never

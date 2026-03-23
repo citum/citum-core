@@ -1,6 +1,6 @@
 use citum_schema::options::{
     AndOptions, ContributorConfig, DelimiterPrecedesLast, DemoteNonDroppingParticle, DisplayAsSort,
-    ShortenListOptions, Substitute as CslnSubstitute, SubstituteKey,
+    NameForm, ShortenListOptions, Substitute as CslnSubstitute, SubstituteKey,
 };
 use csl_legacy::model::{CslNode, Names, Style, Substitute};
 use std::collections::{HashMap, HashSet};
@@ -279,6 +279,9 @@ fn merge_contributor_config_with_shorten_policy(
     {
         base.initialize_with = incoming.initialize_with;
     }
+    if incoming.name_form.is_some() && (overwrite_existing || base.name_form.is_none()) {
+        base.name_form = incoming.name_form;
+    }
     if incoming.initialize_with_hyphen.is_some()
         && (overwrite_existing || base.initialize_with_hyphen.is_none())
     {
@@ -344,6 +347,10 @@ fn extract_from_names(names: &Names) -> Option<ContributorConfig> {
             }
             if let Some(init) = &n.initialize_with {
                 config.initialize_with = Some(init.clone());
+                // When initialize-with is present, explicitly set name-form to Initials.
+                // This decouples the semantic meaning: name-form controls how names are
+                // formatted, initialize-with only controls the separator.
+                config.name_form = Some(NameForm::Initials);
                 has_config = true;
             }
             if let Some(init_hyphen) = n.initialize_with_hyphen {

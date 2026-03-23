@@ -18,7 +18,9 @@ Style: `styles/oscola.yaml`, citation template
 - Actual: "TS Kuhn"
 
 ## Root Cause
-Engine appears to be treating `initialize-with: ""` as "render abbreviated initials without dots" rather than "don't add dots after full names". This is a semantic mismatch in how the initialize-with flag is interpreted.
+**Pre-fix:** Engine implicitly activated `NameForm::Initials` when `initialize-with` was present (matching CSL 1.0 spec). Migrator emitted `initialize-with` without `name-form: initials`, causing styles like OSCOLA (which use `initialize-with: ""` to mean "no dots") to accidentally trigger initialization.
+
+**Post-fix:** `name-form: initials` is now the sole activator of initial rendering; `initialize-with` is a pure separator option. Migrator co-emits both fields where appropriate, ensuring backward compatibility without silent behavior changes.
 
 ## Impact Scope
 - Affects OSCOLA, OSCOLA-no-ibid, and potentially other note styles with similar configuration

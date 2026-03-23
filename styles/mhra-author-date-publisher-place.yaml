@@ -38,6 +38,7 @@ options:
       add-givenname: true
       year-suffix: true
   contributors:
+    name-form: initials
     initialize-with: ". "
     and: text
     demote-non-dropping-particle: display-and-sort
@@ -61,6 +62,7 @@ options:
 citation:
   options:
     contributors:
+      name-form: initials
       initialize-with: ". "
   template:
     - contributor: author

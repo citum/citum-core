@@ -25,6 +25,7 @@ options:
         - title
   contributors:
     display-as-sort: all
+    name-form: initials
     initialize-with: .
     shorten:
       min: 7
@@ -48,6 +49,7 @@ citation:
         add-givenname: false
         year-suffix: true
     contributors:
+      name-form: initials
       initialize-with: ". "
       shorten:
         min: 3
@@ -78,6 +80,7 @@ bibliography:
   options:
     contributors:
       display-as-sort: all
+      name-form: initials
       initialize-with: .
       shorten:
         min: 7

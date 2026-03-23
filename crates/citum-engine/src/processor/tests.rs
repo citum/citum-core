@@ -1,7 +1,7 @@
 use super::*;
 use crate::{Citation, CitationItem, Reference};
 use citum_schema::options::{
-    AndOptions, ContributorConfig, DisplayAsSort, LabelConfig, LabelPreset, Processing,
+    AndOptions, ContributorConfig, DisplayAsSort, LabelConfig, LabelPreset, NameForm, Processing,
     ShortenListOptions,
 };
 use citum_schema::template::{
@@ -843,6 +843,7 @@ fn test_disambiguation_givenname() {
         })),
         contributors: Some(ContributorConfig {
             initialize_with: Some(". ".to_string()),
+            name_form: Some(NameForm::Initials),
             ..Default::default()
         }),
         ..Default::default()
@@ -1068,6 +1069,7 @@ fn test_disambiguation_combined_expansion() {
                 ..Default::default()
             }),
             initialize_with: Some(". ".to_string()),
+            name_form: Some(NameForm::Initials),
             ..Default::default()
         }),
         ..Default::default()

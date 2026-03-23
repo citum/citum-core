@@ -60,6 +60,7 @@ impl TemplateCompiler {
             wrap,
             suppress: None,
             initialize_with: None,
+            name_form: None,
             strip_periods: fmt.strip_periods,
         }
     }

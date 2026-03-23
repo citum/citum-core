@@ -59,6 +59,7 @@ bibliography:
       suffix: ", "
       overrides:
         all:
+          name-form: initials
           initialize-with: "."
     - title: primary
     - items:
@@ -69,6 +70,7 @@ bibliography:
           suffix: ", "
           overrides:
             all:
+              name-form: initials
               initialize-with: "."
         - title: parent-monograph
       delimiter: " "
@@ -93,6 +95,7 @@ bibliography:
       suffix: ", "
       overrides:
         all:
+          name-form: initials
           initialize-with: "."
     - title: primary
     - title: parent-monograph
@@ -115,6 +118,7 @@ bibliography:
       suffix: ", "
       overrides:
         all:
+          name-form: initials
           initialize-with: "."
     - title: primary
     - variable: genre
@@ -159,6 +163,7 @@ bibliography:
       suffix: ", "
       overrides:
         all:
+          name-form: initials
           initialize-with: "."
     - title: primary
     - title: parent-serial
@@ -186,6 +191,7 @@ bibliography:
       suffix: ", "
       overrides:
         all:
+          name-form: initials
           initialize-with: "."
     - title: primary
     - variable: number
@@ -203,6 +209,7 @@ bibliography:
       suffix: ", "
       overrides:
         all:
+          name-form: initials
           initialize-with: "."
     - title: primary
     - date: issued
@@ -218,6 +225,7 @@ bibliography:
       suffix: ", "
       overrides:
         all:
+          name-form: initials
           initialize-with: "."
     - title: primary
     - date: issued
@@ -256,6 +264,7 @@ bibliography:
       suffix: ", "
       overrides:
         all:
+          name-form: initials
           initialize-with: "."
     - title: primary
     - date: issued
@@ -272,6 +281,7 @@ bibliography:
       form: long
       overrides:
         all:
+          name-form: initials
           initialize-with: "."
     - title: primary
     - items:

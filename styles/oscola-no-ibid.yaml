@@ -30,6 +30,7 @@ options:
   processing: note
   contributors:
     display-as-sort: all
+    name-form: initials
     initialize-with: ""
     shorten:
       min: 5
@@ -92,6 +93,7 @@ citation:
   subsequent:
     options:
       contributors:
+        name-form: initials
         initialize-with: ""
         shorten:
           min: 4
@@ -112,6 +114,7 @@ bibliography:
   options:
     contributors:
       display-as-sort: all
+      name-form: initials
       initialize-with: ""
       shorten:
         min: 4

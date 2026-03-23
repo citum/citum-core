@@ -173,12 +173,19 @@ fn format_contributor_names(
             .effective_role_name_order(&component.contributor)
     });
 
+    // Priority chain for name_form:
+    // 1. component.name_form (TemplateContributor-level override - highest priority)
+    // 2. effective_rendering.name_form (from overrides, second priority)
+    // 3. config (options-level fallback)
+    let effective_name_form = component.name_form.or(effective_rendering.name_form);
+
     let name_overrides = names::NamesOverrides {
         name_order: effective_name_order,
         sort_separator: component.sort_separator.as_ref(),
         shorten: component.shorten.as_ref(),
         and: component.and.as_ref(),
         initialize_with: effective_rendering.initialize_with.as_ref(),
+        name_form: effective_name_form,
     };
     names::format_names(names_vec, &component.form, options, &name_overrides, hints)
 }

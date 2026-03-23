@@ -24,6 +24,7 @@ options:
       - translator
       - title
   contributors:
+    name-form: initials
     initialize-with: .
     delimiter: ", "
     delimiter-precedes-last: always

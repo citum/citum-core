@@ -17,6 +17,7 @@ info:
 options:
   processing: numeric
   contributors:
+    name-form: initials
     initialize-with: .
     shorten:
       min: 11
@@ -38,6 +39,7 @@ citation:
 bibliography:
   options:
     contributors:
+      name-form: initials
       initialize-with: .
       shorten:
         min: 11

@@ -44,6 +44,7 @@ options:
       add-givenname: false
       year-suffix: true
   contributors:
+    name-form: initials
     initialize-with: ". "
     shorten:
       min: 3
@@ -92,6 +93,7 @@ citation:
 bibliography:
   options:
     contributors:
+      name-form: initials
       initialize-with: ". "
       delimiter: ", "
       shorten:

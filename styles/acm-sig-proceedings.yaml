@@ -27,6 +27,7 @@ options:
   contributors:
     and: text
     display-as-sort: all
+    name-form: initials
     initialize-with: .
     delimiter: ", "
     delimiter-precedes-last: never
@@ -54,6 +55,7 @@ bibliography:
     contributors:
       and: text
       display-as-sort: all
+      name-form: initials
       initialize-with: .
       delimiter: ", "
       delimiter-precedes-last: never
