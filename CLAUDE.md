@@ -22,9 +22,13 @@ Docs/styles (`.md`, `.yaml` in `styles/`) skip checks entirely.
 If any `.rs` files in `crates/citum-cli/` or `crates/citum-schema*/` changed, regenerate
 schemas before committing and stage the result in the same commit:
 ```bash
-cargo run --bin citum -- schema
+cargo run --bin citum --features schema -- schema --out-dir docs/schemas
 git add docs/schemas/
 ```
+
+Then add a `Schema-Bump: patch|minor|major` footer to the commit. Use `patch` for
+new optional fields, `major` for removals or type changes. The pre-commit hook
+handles this automatically if `scripts/install-hooks.sh` has been run.
 
 ### Manifest Frontmatter Preflight
 

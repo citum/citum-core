@@ -65,3 +65,7 @@ if (( body_has_content == 0 )); then
   echo "Commit body is required after a blank second line." >&2
   exit 1
 fi
+
+# Schema-Bump footer enforcement
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+python3 "$ROOT_DIR/scripts/schema-check.py" commit-msg "$msg_file"
