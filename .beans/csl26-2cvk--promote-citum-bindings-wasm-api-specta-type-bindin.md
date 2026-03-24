@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: high
 created_at: 2026-03-24T20:14:15Z
-updated_at: 2026-03-24T20:14:15Z
+updated_at: 2026-03-24T20:29:41Z
 ---
 
 Two related promotions in one PR batch:
@@ -24,3 +24,10 @@ Two related promotions in one PR batch:
 Spec: docs/specs/LANGUAGE_BINDINGS.md
 
 Cross-repo: citum-hub wasm-bridge slim (Steps 4-6) tracked as child work — slim to only 3 intent-engine functions after core PR merges.
+
+## Progress
+
+- [x] Phase 1: specta bindings on schema crates
+- [x] Phase 2: citum-bindings WASM API promotion
+- [x] Phase 3: spec activated
+- [ ] citum-hub wasm-bridge slimming (separate PR)
