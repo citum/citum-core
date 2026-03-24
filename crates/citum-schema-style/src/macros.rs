@@ -177,7 +177,7 @@ macro_rules! tc_term {
     };
 }
 
-/// Build a group `TemplateComponent` with optional rendering overrides.
+/// Build a group `TemplateComponent` with optional rendering options.
 #[macro_export]
 macro_rules! tc_group {
     ([$($item:expr),* $(,)?] $(, $key:ident = $val:expr)*) => {

@@ -18,7 +18,7 @@ SQI is computed per style from four subscores:
 1. `typeCoverage`: how broadly the style succeeds across observed reference types.
 2. `fallbackRobustness`: whether core types still render correctly via shared templates/fallback paths.
 3. `concision`: measures how efficiently the style achieves its rendering goals through template reuse.
-   - **Type-Variant Sprawl ($C_{sprawl}$):** Punishes defines of redundant `type-variants`. Calculated as $1 - (N_{variants} / N_{total\_types})$.
+   - **Type-Variant Sprawl ($C_{sprawl}$):** Penalizes redundant `type-variants`. Calculated as $1 - (N_{variants} / N_{total\_types})$.
    - **Template Deviation ($C_{diff}$):** For each `type-variant`, compares it against the `default` template. Styles get a higher score when variants are either non-existent or radically different (meaning the variance was necessary), while penalizing "near-duplicates" (identical except for 1-2 components).
    - **Pattern Deduplication ($C_{pattern}$):** Penalizes identical component sequences repeated across multiple templates instead of being factored into a shared Group or Preset.
 4. `presetUsage`: reuse of shared presets (`processing`, `contributors`, `dates`, `titles`, `substitute`, template presets).
