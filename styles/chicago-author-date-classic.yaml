@@ -121,7 +121,7 @@ bibliography:
       emph: true
     - variable: publisher-place
     - prefix: ") "
-      items:
+      group:
       - number: volume
       - number: issue
     - number: pages
@@ -144,7 +144,7 @@ bibliography:
       emph: true
     - variable: publisher-place
     - prefix: ") "
-      items:
+      group:
       - number: volume
     - number: pages
       prefix: ": "
@@ -182,7 +182,7 @@ bibliography:
     emph: true
   - variable: publisher-place
   - prefix: ") "
-    items:
+    group:
     - number: volume
     - number: issue
   - number: pages

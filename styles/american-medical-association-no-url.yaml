@@ -49,7 +49,7 @@ options:
 citation:
   template:
   - delimiter: none
-    items:
+    group:
     - number: citation-number
     - variable: locator
       wrap: parentheses

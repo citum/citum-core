@@ -79,7 +79,7 @@ bibliography:
       form: year
       prefix: " "
     - prefix: ", "
-      items:
+      group:
       - number: volume
     - number: pages
       prefix: ", "
@@ -115,7 +115,7 @@ bibliography:
       form: year
       prefix: " "
     - prefix: ", "
-      items:
+      group:
       - number: volume
     - number: pages
       prefix: ", "
@@ -151,7 +151,7 @@ bibliography:
       form: year
       prefix: ", "
     - prefix: ", "
-      items:
+      group:
       - number: volume
       - number: issue
     - number: pages
@@ -188,7 +188,7 @@ bibliography:
       form: year
       prefix: ": "
     - prefix: ", "
-      items:
+      group:
       - number: volume
       - number: issue
     - number: pages
@@ -225,7 +225,7 @@ bibliography:
       form: year
       prefix: ", "
     - prefix: ", "
-      items:
+      group:
       - number: volume
       - number: issue
     - number: pages
@@ -262,7 +262,7 @@ bibliography:
       form: year
       prefix: ", "
     - prefix: ", "
-      items:
+      group:
       - number: volume
       - number: issue
     - number: pages
@@ -299,7 +299,7 @@ bibliography:
       form: year
       prefix: ", "
     - prefix: ", "
-      items:
+      group:
       - number: volume
       - number: issue
     - number: pages
@@ -345,7 +345,7 @@ bibliography:
     form: year
     prefix: " "
   - prefix: ", "
-    items:
+    group:
     - number: volume
     - number: issue
   - number: pages

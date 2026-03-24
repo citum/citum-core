@@ -108,7 +108,7 @@ bibliography:
     - title: parent-serial
       emph: true
     - delimiter: ""
-      items:
+      group:
       - number: volume
       - number: issue
         wrap: parentheses

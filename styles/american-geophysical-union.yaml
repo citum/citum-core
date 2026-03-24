@@ -112,7 +112,7 @@ bibliography:
       prefix: " "
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -139,7 +139,7 @@ bibliography:
       shorten: *id002
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -165,7 +165,7 @@ bibliography:
       shorten: *id002
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -191,7 +191,7 @@ bibliography:
       shorten: *id002
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -220,7 +220,7 @@ bibliography:
       prefix: " "
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -251,7 +251,7 @@ bibliography:
       prefix: " "
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -295,7 +295,7 @@ bibliography:
       prefix: " "
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -333,7 +333,7 @@ bibliography:
       shorten: *id002
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -362,7 +362,7 @@ bibliography:
     prefix: " "
   - title: primary
   - prefix: ". In "
-    items:
+    group:
     - contributor: editor
       form: verb
       name-order: given-first

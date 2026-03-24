@@ -243,7 +243,7 @@ bibliography:
       name-order: family-first
     - title: primary
     - delimiter: none
-      items:
+      group:
       - term: patent
         suffix: " "
       - number: number
@@ -284,7 +284,7 @@ bibliography:
       prefix: ", interview with "
     - prefix: ", "
       delimiter: none
-      items:
+      group:
       - date: issued
         form: month-day
       - date: issued

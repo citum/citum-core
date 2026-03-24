@@ -133,7 +133,7 @@ bibliography:
     - variable: publisher-place
     dataset:
     - delimiter: none
-      items:
+      group:
       - number: citation-number
       - contributor: author
         form: long
@@ -198,13 +198,13 @@ bibliography:
     - variable: publisher-place
     standard:
     - delimiter: none
-      items:
+      group:
       - number: citation-number
       - date: issued
         form: year
     thesis:
     - delimiter: none
-      items:
+      group:
       - number: citation-number
       - contributor: author
         form: long
@@ -226,7 +226,7 @@ bibliography:
       form: full
     legal_case:
     - delimiter: none
-      items:
+      group:
       - number: citation-number
       - title: primary
         emph: true
@@ -236,7 +236,7 @@ bibliography:
       prefix: "vol. "
     patent:
     - delimiter: none
-      items:
+      group:
       - number: citation-number
       - variable: authority
     - number: number

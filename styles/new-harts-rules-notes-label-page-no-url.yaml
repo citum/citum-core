@@ -111,7 +111,7 @@ citation:
     - number: number
       prefix: ", Patent "
     - delimiter: none
-      items:
+      group:
       - date: issued
         form: month-day
         prefix: ", issued "
@@ -120,7 +120,7 @@ citation:
         prefix: ", "
     - delimiter: none
       prefix: ", "
-      items:
+      group:
       - date: issued
         form: month-day
       - date: issued
@@ -158,7 +158,7 @@ citation:
     - number: number
       prefix: ", Patent "
     - delimiter: none
-      items:
+      group:
       - date: issued
         form: month-day
         prefix: ", issued "
@@ -167,7 +167,7 @@ citation:
         prefix: ", "
     - delimiter: none
       prefix: ", "
-      items:
+      group:
       - date: issued
         form: month-day
       - date: issued
@@ -206,7 +206,7 @@ citation:
     - number: number
       prefix: ", Patent "
     - delimiter: none
-      items:
+      group:
       - date: issued
         form: month-day
         prefix: ", issued "
@@ -215,7 +215,7 @@ citation:
         prefix: ", "
     - delimiter: none
       prefix: ", "
-      items:
+      group:
       - date: issued
         form: month-day
       - date: issued
@@ -250,7 +250,7 @@ citation:
       prefix: " "
     - number: pages
     - delimiter: none
-      items:
+      group:
       - date: issued
         form: month-day
         prefix: ", issued "
@@ -259,7 +259,7 @@ citation:
         prefix: ", "
     - delimiter: none
       prefix: ", "
-      items:
+      group:
       - date: issued
         form: month-day
       - date: issued
@@ -287,7 +287,7 @@ citation:
     - number: number
       prefix: ", Patent "
     - delimiter: none
-      items:
+      group:
       - date: issued
         form: month-day
         prefix: ", issued "
@@ -296,7 +296,7 @@ citation:
         prefix: ", "
     - delimiter: none
       prefix: ", "
-      items:
+      group:
       - date: issued
         form: month-day
       - date: issued
@@ -334,7 +334,7 @@ citation:
     - number: number
       prefix: ", Patent "
     - delimiter: none
-      items:
+      group:
       - date: issued
         form: month-day
         prefix: ", issued "
@@ -343,7 +343,7 @@ citation:
         prefix: ", "
     - delimiter: none
       prefix: ", "
-      items:
+      group:
       - date: issued
         form: month-day
       - date: issued
@@ -380,7 +380,7 @@ citation:
   - number: number
     prefix: ", Patent "
   - delimiter: none
-    items:
+    group:
     - date: issued
       form: month-day
       prefix: ", issued "
@@ -389,7 +389,7 @@ citation:
       prefix: ", "
   - delimiter: none
     prefix: ", "
-    items:
+    group:
     - date: issued
       form: month-day
     - date: issued
@@ -415,7 +415,7 @@ bibliography:
     - title: primary
       wrap: quotes
     - prefix: ", in "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -442,7 +442,7 @@ bibliography:
     - title: primary
       wrap: quotes
     - prefix: ", in "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -467,7 +467,7 @@ bibliography:
     - title: primary
       wrap: quotes
     - prefix: ", in "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -493,7 +493,7 @@ bibliography:
     - title: primary
       wrap: quotes
     - prefix: ", in "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -514,7 +514,7 @@ bibliography:
     - title: primary
       wrap: quotes
     - prefix: ", in "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -539,7 +539,7 @@ bibliography:
   - title: primary
     wrap: quotes
   - prefix: ", in "
-    items:
+    group:
     - contributor: editor
       form: verb
       name-order: given-first

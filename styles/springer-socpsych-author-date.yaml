@@ -58,7 +58,7 @@ citation:
   sort: author-date-title
   template:
   - delimiter: space
-    items:
+    group:
     - contributor: author
       form: short
       shorten:
@@ -87,7 +87,7 @@ bibliography:
       prefix: " "
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -112,7 +112,7 @@ bibliography:
       shorten: *id001
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -136,7 +136,7 @@ bibliography:
       shorten: *id001
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -160,7 +160,7 @@ bibliography:
       shorten: *id001
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -187,7 +187,7 @@ bibliography:
       prefix: " "
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -214,7 +214,7 @@ bibliography:
       shorten: *id001
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -241,7 +241,7 @@ bibliography:
       prefix: " "
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -267,7 +267,7 @@ bibliography:
       shorten: *id001
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -291,7 +291,7 @@ bibliography:
       shorten: *id001
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -319,7 +319,7 @@ bibliography:
     - delimiter: " "
       wrap: parentheses
       prefix: " "
-      items:
+      group:
       - variable: authority
       - date: issued
         form: full
@@ -333,7 +333,7 @@ bibliography:
     prefix: " "
   - title: primary
   - prefix: ". In "
-    items:
+    group:
     - contributor: editor
       form: verb
       name-order: given-first

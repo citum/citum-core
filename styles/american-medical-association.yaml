@@ -47,7 +47,7 @@ options:
 citation:
   template:
   - delimiter: none
-    items:
+    group:
     - number: citation-number
     - variable: locator
       wrap: parentheses
@@ -66,7 +66,7 @@ bibliography:
     - title: primary
     - title: parent-serial
     - delimiter: none
-      items:
+      group:
       - date: issued
         form: year
         suffix: ";"
@@ -94,7 +94,7 @@ bibliography:
       name-order: family-first
     - title: primary
     - delimiter: " "
-      items:
+      group:
       - term: in
         suffix: ": "
       - contributor: editor
@@ -105,7 +105,7 @@ bibliography:
     - variable: publisher
       suffix: "; "
     - delimiter: none
-      items:
+      group:
       - date: issued
         form: year
       - number: pages
@@ -151,7 +151,7 @@ bibliography:
     - variable: publisher
       suffix: "; "
     - delimiter: none
-      items:
+      group:
       - date: issued
         form: year
       - number: pages
@@ -178,14 +178,14 @@ bibliography:
     legal-case:
     - title: primary
     - delimiter: " "
-      items:
+      group:
       - variable: reporter
       - number: volume
       - number: pages
         prefix: ", "
     - delimiter: " "
       wrap: parentheses
-      items:
+      group:
       - variable: authority
       - date: issued
         form: year
@@ -195,7 +195,7 @@ bibliography:
       name-order: family-first
     - title: primary
     - delimiter: none
-      items:
+      group:
       - term: online
         prefix: "Published "
         suffix: " "
@@ -220,7 +220,7 @@ bibliography:
     - title: primary
     - title: parent-serial
     - delimiter: none
-      items:
+      group:
       - term: online
         prefix: "Published "
         suffix: " "
@@ -237,7 +237,7 @@ bibliography:
       name-order: family-first
     - title: primary
     - delimiter: none
-      items:
+      group:
       - term: online
         prefix: "Published "
         suffix: " "

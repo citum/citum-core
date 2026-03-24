@@ -210,7 +210,7 @@ citation:
         form: short
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year
         - variable: locator
@@ -219,7 +219,7 @@ citation:
         form: short
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year
         - variable: locator
@@ -228,7 +228,7 @@ citation:
         form: short
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year
         - variable: locator
@@ -237,7 +237,7 @@ citation:
         form: short
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year
         - variable: locator
@@ -246,7 +246,7 @@ citation:
         form: short
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year
         - variable: locator
@@ -255,7 +255,7 @@ citation:
         form: short
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year
         - variable: locator
@@ -264,7 +264,7 @@ citation:
         form: short
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year
         - variable: locator
@@ -273,7 +273,7 @@ citation:
         form: short
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year
         - variable: locator
@@ -282,7 +282,7 @@ citation:
         form: short
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year
         - variable: locator
@@ -293,7 +293,7 @@ citation:
         quote: false
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year
         - variable: locator
@@ -302,7 +302,7 @@ citation:
         form: short
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year
         - variable: locator
@@ -311,7 +311,7 @@ citation:
         form: short
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year
         - variable: locator
@@ -320,7 +320,7 @@ citation:
         form: short
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year
         - variable: locator
@@ -331,7 +331,7 @@ citation:
         suffix: ", personal communication"
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year-month-day
         - variable: locator
@@ -340,7 +340,7 @@ citation:
         form: short
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year
         - variable: locator
@@ -349,7 +349,7 @@ citation:
         form: short
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year
         - variable: locator
@@ -358,7 +358,7 @@ citation:
         form: short
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year
         - variable: locator
@@ -367,7 +367,7 @@ citation:
         form: short
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year
         - variable: locator
@@ -376,7 +376,7 @@ citation:
         form: short
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - date: issued
           form: year
         - variable: locator
@@ -387,7 +387,7 @@ citation:
       form: short
     - delimiter: ", "
       wrap: parentheses
-      items:
+      group:
       - date: issued
         form: year
       - variable: locator
@@ -420,7 +420,7 @@ bibliography:
       wrap: parentheses
       prefix: " "
     - delimiter: ", "
-      items:
+      group:
       - title: parent-serial
         emph: true
       - items: &id003
@@ -455,11 +455,11 @@ bibliography:
       emph: false
     - delimiter: ", "
       prefix: ". "
-      items:
+      group:
       - title: parent-serial
         emph: true
       - delimiter: ""
-        items:
+        group:
         - number: volume
           emph: true
         - number: issue
@@ -503,7 +503,7 @@ bibliography:
     - delimiter: ""
       wrap: parentheses
       prefix: " "
-      items:
+      group:
       - term: volume
         form: short
         suffix: " "
@@ -515,7 +515,7 @@ bibliography:
       wrap: parentheses
       prefix: " "
     - delimiter: ", "
-      items:
+      group:
       - title: parent-serial
         emph: true
       - items: *id003
@@ -552,7 +552,7 @@ bibliography:
     - delimiter: ""
       wrap: parentheses
       prefix: " "
-      items:
+      group:
       - term: volume
         form: short
         suffix: " "
@@ -571,7 +571,7 @@ bibliography:
       emph: true
       prefix: ", "
     - delimiter: ", "
-      items:
+      group:
       - title: parent-serial
         emph: true
         prefix: "In "
@@ -600,17 +600,17 @@ bibliography:
     - delimiter: ", "
       prefix: " In "
       suffix: "."
-      items:
+      group:
       - contributor: editor
         form: long
         name-order: given-first
       - delimiter: " "
-        items:
+        group:
         - title: parent-monograph
           emph: true
         - delimiter: ", "
           wrap: parentheses
-          items:
+          group:
           - number: collection-number
             prefix: "Vol. "
           - number: pages
@@ -650,12 +650,12 @@ bibliography:
     - delimiter: " "
       prefix: " In "
       suffix: ". Oxford University Press."
-      items:
+      group:
       - title: parent-serial
         emph: true
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - number: volume
           prefix: "Vol. "
         - number: pages
@@ -681,7 +681,7 @@ bibliography:
     - delimiter: ""
       wrap: parentheses
       prefix: " "
-      items:
+      group:
       - term: volume
         form: short
         suffix: " "
@@ -700,7 +700,7 @@ bibliography:
       emph: true
       prefix: ", "
     - delimiter: ", "
-      items:
+      group:
       - title: parent-serial
         emph: true
       - items: *id003
@@ -727,7 +727,7 @@ bibliography:
       wrap: parentheses
       prefix: " "
       suffix: "."
-      items:
+      group:
       - variable: authority
       - date: issued
         form: year
@@ -764,7 +764,7 @@ bibliography:
       wrap: parentheses
       prefix: " "
       suffix: "."
-      items:
+      group:
       - variable: number
         prefix: "Patent No. "
     report:
@@ -787,7 +787,7 @@ bibliography:
     - delimiter: "; "
       wrap: brackets
       prefix: " "
-      items:
+      group:
       - variable: genre
       - variable: medium
     - variable: publisher
@@ -797,7 +797,7 @@ bibliography:
       prefix: " https://doi.org/"
     - delimiter: " "
       prefix: " "
-      items:
+      group:
       - date: accessed
         form: month-day
         prefix: "Retrieved "
@@ -827,7 +827,7 @@ bibliography:
     - delimiter: ""
       wrap: parentheses
       prefix: " "
-      items:
+      group:
       - term: volume
         form: short
         suffix: " "
@@ -846,7 +846,7 @@ bibliography:
       emph: true
       prefix: ", "
     - delimiter: ", "
-      items:
+      group:
       - title: parent-serial
         emph: true
       - items: *id003
@@ -883,7 +883,7 @@ bibliography:
     - delimiter: ""
       wrap: parentheses
       prefix: " "
-      items:
+      group:
       - term: volume
         form: short
         suffix: " "
@@ -902,7 +902,7 @@ bibliography:
       emph: true
       prefix: ", "
     - delimiter: ", "
-      items:
+      group:
       - title: parent-serial
         emph: true
       - items: *id003
@@ -936,7 +936,7 @@ bibliography:
     - delimiter: ""
       wrap: parentheses
       prefix: " "
-      items:
+      group:
       - term: volume
         form: short
         suffix: " "
@@ -955,7 +955,7 @@ bibliography:
       emph: true
       prefix: ", "
     - delimiter: ", "
-      items:
+      group:
       - title: parent-serial
         emph: true
       - items: *id003
@@ -1016,7 +1016,7 @@ bibliography:
   - delimiter: "; "
     wrap: brackets
     prefix: " "
-    items:
+    group:
     - variable: genre
     - variable: medium
   - number: edition
@@ -1025,7 +1025,7 @@ bibliography:
   - delimiter: ""
     wrap: parentheses
     prefix: " "
-    items:
+    group:
     - term: volume
       form: short
       suffix: " "
@@ -1044,11 +1044,11 @@ bibliography:
     emph: true
     prefix: ", "
   - delimiter: ", "
-    items:
+    group:
     - title: parent-serial
       emph: true
     - delimiter: ""
-      items:
+      group:
       - number: volume
         emph: true
       - number: issue
@@ -1063,7 +1063,7 @@ bibliography:
     prefix: "https://doi.org/"
   - delimiter: " "
     prefix: " "
-    items:
+    group:
     - date: accessed
       form: year-month-day
       prefix: "Retrieved "

@@ -47,7 +47,7 @@ citation:
     delimiter: ", "
     template:
     - delimiter: space
-      items:
+      group:
       - contributor: author
         form: short
       - date: issued
@@ -62,7 +62,7 @@ citation:
       form: short
     - delimiter: ", "
       wrap: parentheses
-      items:
+      group:
       - date: issued
         form: year
         fallback:
@@ -92,9 +92,9 @@ bibliography:
       wrap: quotes
     - delimiter: space
       suffix: "."
-      items:
+      group:
       - delimiter: space
-        items:
+        group:
         - term: in
         - title: parent-monograph
           emph: true
@@ -114,7 +114,7 @@ bibliography:
         delimiter: none
     - delimiter: period
       suffix: "."
-      items:
+      group:
       - variable: publisher-place
       - variable: publisher
     chapter:
@@ -130,9 +130,9 @@ bibliography:
       wrap: quotes
     - delimiter: space
       suffix: "."
-      items:
+      group:
       - delimiter: space
-        items:
+        group:
         - term: in
         - title: parent-monograph
           emph: true
@@ -145,7 +145,7 @@ bibliography:
         delimiter: none
     - delimiter: period
       suffix: "."
-      items:
+      group:
       - variable: publisher-place
       - variable: publisher
   template:
@@ -160,9 +160,9 @@ bibliography:
     suffix: "."
   - delimiter: space
     suffix: "."
-    items:
+    group:
     - delimiter: space
-      items:
+      group:
       - term: in
       - title: parent-monograph
         emph: true
@@ -172,9 +172,9 @@ bibliography:
       form: long
       emph: true
     - delimiter: none
-      items:
+      group:
       - delimiter: space
-        items:
+        group:
         - number: volume
         - number: issue
           wrap: parentheses
@@ -182,6 +182,6 @@ bibliography:
         prefix: ": "
   - delimiter: period
     suffix: "."
-    items:
+    group:
     - variable: publisher-place
     - variable: publisher

@@ -181,7 +181,7 @@ bibliography:
       wrap: parentheses
       prefix: " "
     - delimiter: ", "
-      items:
+      group:
       - title: parent-serial
         emph: true
       - items: &id003
@@ -233,17 +233,17 @@ bibliography:
     - delimiter: ", "
       prefix: " In "
       suffix: "."
-      items:
+      group:
       - contributor: editor
         form: long
         name-order: given-first
       - delimiter: " "
-        items:
+        group:
         - title: parent-monograph
           emph: true
         - delimiter: ", "
           wrap: parentheses
-          items:
+          group:
           - number: collection-number
             prefix: "Vol. "
           - number: pages
@@ -282,12 +282,12 @@ bibliography:
       suffix: "."
     - delimiter: " "
       suffix: "."
-      items:
+      group:
       - title: parent-serial
         emph: true
       - delimiter: ", "
         wrap: parentheses
-        items:
+        group:
         - number: volume
           prefix: "Vol. "
         - number: pages
@@ -347,7 +347,7 @@ bibliography:
   - delimiter: "; "
     wrap: brackets
     prefix: " "
-    items:
+    group:
     - variable: genre
     - variable: medium
   - number: edition
@@ -356,7 +356,7 @@ bibliography:
   - delimiter: ""
     wrap: parentheses
     prefix: " "
-    items:
+    group:
     - term: volume
       form: short
       suffix: " "
@@ -375,11 +375,11 @@ bibliography:
     emph: true
     prefix: ", "
   - delimiter: ", "
-    items:
+    group:
     - title: parent-serial
       emph: true
     - delimiter: ""
-      items:
+      group:
       - number: volume
         emph: true
       - number: issue
@@ -394,7 +394,7 @@ bibliography:
     prefix: "https://doi.org/"
   - delimiter: " "
     prefix: " "
-    items:
+    group:
     - date: accessed
       form: year-month-day
       prefix: "Retrieved "

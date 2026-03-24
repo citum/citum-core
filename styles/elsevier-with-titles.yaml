@@ -57,23 +57,23 @@ bibliography:
       wrap: brackets
       suffix: ""
     - delimiter: comma
-      items:
+      group:
       - contributor: author
         form: long
         name-form: initials
         initialize-with: "."
       - title: primary
       - delimiter: comma
-        items:
+        group:
         - delimiter: ": "
-          items:
+          group:
           - term: in
           - contributor: editor
             form: long
             initialize-with: "."
         - title: parent-monograph
         - delimiter: " "
-          items:
+          group:
           - title: parent-serial
           - number: volume
           - number: pages
@@ -105,18 +105,18 @@ bibliography:
       wrap: brackets
       suffix: ""
     - delimiter: comma
-      items:
+      group:
       - contributor: author
         form: long
       - title: primary
       - delimiter: comma
-        items:
+        group:
         - delimiter: ": "
-          items:
+          group:
           - term: in
         - title: parent-monograph
         - delimiter: " "
-          items:
+          group:
           - title: parent-serial
           - number: volume
           - date: issued
@@ -145,20 +145,20 @@ bibliography:
       wrap: brackets
       suffix: ""
     - delimiter: comma
-      items:
+      group:
       - contributor: author
         form: long
       - title: primary
       - delimiter: comma
-        items:
+        group:
         - delimiter: ": "
-          items:
+          group:
           - term: in
           - contributor: editor
             form: long
         - title: parent-monograph
         - delimiter: " "
-          items:
+          group:
           - title: parent-serial
           - number: volume
           - date: issued
@@ -187,20 +187,20 @@ bibliography:
       wrap: brackets
       suffix: ""
     - delimiter: comma
-      items:
+      group:
       - contributor: author
         form: long
       - title: primary
       - delimiter: comma
-        items:
+        group:
         - delimiter: ": "
-          items:
+          group:
           - term: in
           - contributor: editor
             form: long
         - title: parent-monograph
         - delimiter: " "
-          items:
+          group:
           - title: parent-serial
           - number: volume
           - number: pages
@@ -229,18 +229,18 @@ bibliography:
       wrap: brackets
       suffix: ""
     - delimiter: comma
-      items:
+      group:
       - contributor: author
         form: long
       - title: primary
       - delimiter: comma
-        items:
+        group:
         - delimiter: ": "
-          items:
+          group:
           - term: in
         - title: parent-monograph
         - delimiter: " "
-          items:
+          group:
           - title: parent-serial
           - number: volume
       - number: edition
@@ -272,7 +272,7 @@ bibliography:
     - title: primary
     - delimiter: " "
       prefix: ", "
-      items:
+      group:
       - term: in
         suffix: ":"
       - contributor: editor
@@ -284,7 +284,7 @@ bibliography:
     - delimiter: ""
       prefix: ", "
       suffix: "."
-      items:
+      group:
       - date: issued
         form: year
         suffix: ":"
@@ -295,20 +295,20 @@ bibliography:
       wrap: brackets
       suffix: ""
     - delimiter: comma
-      items:
+      group:
       - contributor: author
         form: long
       - title: primary
       - delimiter: comma
-        items:
+        group:
         - delimiter: ": "
-          items:
+          group:
           - term: in
           - contributor: editor
             form: long
         - title: parent-monograph
         - delimiter: " "
-          items:
+          group:
           - title: parent-serial
           - number: volume
           - number: pages
@@ -374,7 +374,7 @@ bibliography:
     - delimiter: ""
       prefix: ", "
       suffix: "."
-      items:
+      group:
       - date: issued
         form: year
         suffix: ":"
@@ -431,20 +431,20 @@ bibliography:
       wrap: brackets
       suffix: ""
     - delimiter: comma
-      items:
+      group:
       - contributor: author
         form: long
       - title: primary
       - delimiter: comma
-        items:
+        group:
         - delimiter: ": "
-          items:
+          group:
           - term: in
           - contributor: editor
             form: long
         - title: parent-monograph
         - delimiter: " "
-          items:
+          group:
           - title: parent-serial
           - number: volume
           - number: pages
@@ -539,20 +539,20 @@ bibliography:
     wrap: brackets
     suffix: ""
   - delimiter: comma
-    items:
+    group:
     - contributor: author
       form: long
     - title: primary
     - delimiter: comma
-      items:
+      group:
       - delimiter: ": "
-        items:
+        group:
         - term: in
         - contributor: editor
           form: long
       - title: parent-monograph
       - delimiter: " "
-        items:
+        group:
         - title: parent-serial
         - number: volume
         - number: pages

@@ -33,7 +33,7 @@ citation:
   template:
   - delimiter: none
     wrap: brackets
-    items:
+    group:
     - number: citation-number
     - variable: locator
       prefix: ", "
@@ -47,7 +47,7 @@ bibliography:
   type-variants:
     article-journal:
     - delimiter: ""
-      items:
+      group:
       - number: citation-number
         wrap: brackets
       - contributor: author
@@ -80,7 +80,7 @@ bibliography:
     - variable: url
     article-magazine:
     - delimiter: ""
-      items:
+      group:
       - number: citation-number
         wrap: brackets
       - contributor: author
@@ -111,7 +111,7 @@ bibliography:
     - variable: url
     book:
     - delimiter: ""
-      items:
+      group:
       - number: citation-number
         wrap: brackets
       - contributor: author
@@ -142,7 +142,7 @@ bibliography:
     - variable: url
     broadcast:
     - delimiter: ""
-      items:
+      group:
       - number: citation-number
         wrap: brackets
       - contributor: author
@@ -172,7 +172,7 @@ bibliography:
     - variable: url
     chapter:
     - delimiter: ""
-      items:
+      group:
       - number: citation-number
         wrap: brackets
       - contributor: author
@@ -203,7 +203,7 @@ bibliography:
     - variable: url
     dataset:
     - delimiter: ""
-      items:
+      group:
       - number: citation-number
         wrap: brackets
       - contributor: author
@@ -233,7 +233,7 @@ bibliography:
     - variable: url
     entry-encyclopedia:
     - delimiter: ""
-      items:
+      group:
       - number: citation-number
         wrap: brackets
       - contributor: author
@@ -264,7 +264,7 @@ bibliography:
     - variable: url
     motion-picture:
     - delimiter: ""
-      items:
+      group:
       - number: citation-number
         wrap: brackets
       - contributor: author
@@ -294,7 +294,7 @@ bibliography:
     - variable: url
     paper-conference:
     - delimiter: ""
-      items:
+      group:
       - number: citation-number
         wrap: brackets
       - contributor: author
@@ -341,7 +341,7 @@ bibliography:
       form: full
     personal_communication:
     - delimiter: ""
-      items:
+      group:
       - number: citation-number
         wrap: brackets
       - contributor: author
@@ -372,7 +372,7 @@ bibliography:
     - variable: url
     report:
     - delimiter: ""
-      items:
+      group:
       - number: citation-number
         wrap: brackets
       - contributor: author
@@ -402,7 +402,7 @@ bibliography:
     - variable: url
     thesis:
     - delimiter: ""
-      items:
+      group:
       - number: citation-number
         wrap: brackets
       - contributor: author
@@ -434,7 +434,7 @@ bibliography:
     - variable: url
   template:
   - delimiter: ""
-    items:
+    group:
     - number: citation-number
       wrap: brackets
     - contributor: author

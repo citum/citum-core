@@ -69,7 +69,7 @@ bibliography:
     - title: primary
       prefix: " "
     - delimiter: " "
-      items:
+      group:
       - prefix: "In: "
         contributor: editor
         form: long
@@ -77,12 +77,12 @@ bibliography:
       - title: parent-monograph
     - title: parent-serial
     - delimiter: ", "
-      items:
+      group:
       - variable: publisher
       - variable: publisher-place
     - delimiter: ":"
       prefix: " "
-      items:
+      group:
       - number: volume
       - number: pages
         prefix: ""
@@ -98,12 +98,12 @@ bibliography:
       prefix: " "
     - delimiter: ", "
       prefix: " "
-      items:
+      group:
       - title: primary
       - number: edition
     - delimiter: ", "
       prefix: ". "
-      items:
+      group:
       - variable: publisher
       - variable: publisher-place
     chapter:
@@ -118,7 +118,7 @@ bibliography:
     - title: primary
       prefix: " "
     - delimiter: " "
-      items:
+      group:
       - prefix: "In: "
         contributor: editor
         form: long
@@ -126,14 +126,14 @@ bibliography:
       - title: parent-monograph
     - title: parent-serial
     - delimiter: ", "
-      items:
+      group:
       - variable: publisher
       - variable: publisher-place
       - number: pages
         prefix: "pp "
     - delimiter: ":"
       prefix: " "
-      items:
+      group:
       - number: volume
       - number: pages
         prefix: ""
@@ -154,7 +154,7 @@ bibliography:
     - title: primary
       prefix: " "
     - delimiter: " "
-      items:
+      group:
       - prefix: "In: "
         contributor: editor
         form: long
@@ -162,14 +162,14 @@ bibliography:
       - title: parent-monograph
     - title: parent-serial
     - delimiter: ", "
-      items:
+      group:
       - variable: publisher
       - variable: publisher-place
       - number: pages
         prefix: "pp "
     - delimiter: ":"
       prefix: " "
-      items:
+      group:
       - number: volume
       - number: pages
         prefix: ""
@@ -185,7 +185,7 @@ bibliography:
       prefix: " "
     - delimiter: ", "
       prefix: ". "
-      items:
+      group:
       - variable: genre
       - variable: publisher
     webpage:
@@ -220,7 +220,7 @@ bibliography:
       prefix: ". "
     - delimiter: ":"
       prefix: " "
-      items:
+      group:
       - number: volume
       - number: pages
         prefix: ""
@@ -238,7 +238,7 @@ bibliography:
       prefix: ". "
     - delimiter: ":"
       prefix: " "
-      items:
+      group:
       - number: volume
       - number: pages
         prefix: ""
@@ -264,7 +264,7 @@ bibliography:
       prefix: " "
     - delimiter: ", "
       prefix: ". "
-      items:
+      group:
       - variable: publisher
       - variable: publisher-place
     paper-conference:
@@ -302,7 +302,7 @@ bibliography:
   - title: primary
     prefix: " "
   - delimiter: " "
-    items:
+    group:
     - prefix: "In: "
       contributor: editor
       form: long
@@ -310,14 +310,14 @@ bibliography:
     - title: parent-monograph
   - title: parent-serial
   - delimiter: ", "
-    items:
+    group:
     - variable: publisher
     - variable: publisher-place
     - number: pages
       prefix: "pp "
   - delimiter: ":"
     prefix: " "
-    items:
+    group:
     - number: volume
     - number: pages
       prefix: ""
