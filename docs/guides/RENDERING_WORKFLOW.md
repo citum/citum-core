@@ -222,11 +222,14 @@ if ref_type == "article-journal" {
 
 **Good (explicit in style):**
 ```yaml
-# Style explicitly declares type-specific behavior
-- variable: volume
-  overrides:
+# Style explicitly declares type-specific behavior via type-variants
+bibliography:
+  template:
+    - variable: volume
+  type-variants:
     article-journal:
-      prefix: "Vol. "
+      - variable: volume
+        prefix: "Vol. "
 ```
 
 #### Handling Missing Dates
@@ -279,17 +282,7 @@ The processor merges options using **three-tier precedence**:
 
 1. **Global options** (`options:`) - base defaults for all contexts
 2. **Context-specific** (`citation.options:` or `bibliography.options:`) - override global for that context
-3. **Template overrides** (component `overrides:`) - type-specific rendering. Supports concise list syntax for grouping multiple types.
-
-**Example: APA concise overrides**
-```yaml
-# Apply suppression rule to multiple periodical types at once
-- items:
-    - term: volume
-    - number: volume
-  overrides:
-    [article-journal, article-magazine, article-newspaper]: { suppress: true }
-```
+3. **Type variants** (`type-variants:`) - whole-template replacement per reference type. Use a comma-separated selector to share one template across multiple types.
 
 **Example: Context-specific options (APA uses different shortening)**
 ```yaml

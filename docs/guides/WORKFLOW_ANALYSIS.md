@@ -145,7 +145,7 @@ Compiled to:
   Template component at index 4 in bibliography.template
   - rendering.prefix: " "
   - rendering.suffix: None
-  - overrides: {article-journal: {suppress: false}}
+  (type-specific rendering now handled via bibliography.type-variants)
 
 Deduplication: Node 1 merged into Node 2 (same variable)
 Ordering: Placed after container-title by reorder_serial_components()

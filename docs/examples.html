@@ -1077,7 +1077,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
             </div>
         </article>
 
-        <!-- Type-Specific Overrides -->
+        <!-- Type Variants -->
         <article id="overrides" class="example-card rounded-xl overflow-hidden shadow-sm scroll-mt-24">
             <div class="p-8 bg-slate-50 border-b border-slate-200">
                 <div class="flex items-center gap-3 mb-4">
@@ -1085,28 +1085,39 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                         <span class="material-icons">settings_input_component</span>
                     </div>
                     <h2 class="text-2xl font-bold text-slate-900">
-                        Type-Specific Overrides
+                        Type Variants
                     </h2>
                 </div>
                 <p class="text-slate-600 leading-relaxed mb-6">
-                    Avoid complex conditional logic. Components in Citum can
-                    declaratively override their behavior or suppress
-                    themselves based on the item type. Use concise list syntax
-                    to apply the same rule to multiple types.
+                    When reference types need a completely different component layout,
+                    declare a <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">type-variants</code>
+                    map. Each entry replaces the default template for matching types.
+                    Use a comma-separated selector to share one template across multiple types.
                 </p>
             </div>
             <div class="bg-slate-900 p-6 overflow-x-auto">
                 <pre class="font-mono text-sm text-slate-300 leading-relaxed">
 <span class="text-indigo-400">bibliography</span>:
-  <span class="text-primary">template</span>:
+  <span class="text-primary">template</span>:              <span class="text-slate-500"># default for all other types</span>
+    - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
+    - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
+    - <span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
     - <span class="text-primary">variable</span>: <span class="text-emerald-400">publisher</span>
-      <span class="text-primary">overrides</span>:
-        <span class="text-primary">[article-journal, webpage, broadcast]</span>: { <span class="text-primary">suppress</span>: <span class="text-emerald-400">true</span> }
-    - <span class="text-primary">number</span>: <span class="text-emerald-400">pages</span>
-      <span class="text-primary">overrides</span>:
-        <span class="text-primary">[chapter, report, entry-encyclopedia]</span>:
-          <span class="text-primary">prefix</span>: <span class="text-emerald-400">"pp. "</span>
-          <span class="text-primary">wrap</span>: <span class="text-emerald-400">parentheses</span></pre>
+
+  <span class="text-primary">type-variants</span>:
+    <span class="text-emerald-400">article-journal</span>:      <span class="text-slate-500"># single type</span>
+      - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
+      - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
+      - <span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
+      - <span class="text-primary">title</span>: <span class="text-emerald-400">parent-serial</span>
+        <span class="text-primary">emph</span>: <span class="text-emerald-400">true</span>
+
+    <span class="text-emerald-400">book, report</span>:         <span class="text-slate-500"># comma-separated: share one template</span>
+      - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
+      - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
+      - <span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
+        <span class="text-primary">emph</span>: <span class="text-emerald-400">true</span>
+      - <span class="text-primary">variable</span>: <span class="text-emerald-400">publisher</span></pre>
             </div>
         </article>
 

@@ -231,13 +231,9 @@
  
                         <div class="toc-section">
                             <div class="toc-section-title">Advanced Patterns</div>
-                            <a href="#type-overrides" class="sidebar-link">
+                            <a href="#type-variants" class="sidebar-link">
                                 <span class="material-icons text-sm">chevron_right</span>
-                                Type Overrides
-                            </a>
-                            <a href="#type-templates" class="sidebar-link">
-                                <span class="material-icons text-sm">chevron_right</span>
-                                Type Templates
+                                Type Variants
                             </a>
                             <a href="#citation-modes" class="sidebar-link">
                                 <span class="material-icons text-sm">chevron_right</span>
@@ -304,7 +300,7 @@
                                 <tr class="hover:bg-slate-50">
                                     <td class="px-4 py-3 font-medium text-slate-900">Logic</td>
                                     <td class="px-4 py-3 text-slate-600">choose/if/else conditionals</td>
-                                    <td class="px-4 py-3 text-slate-600">Type overrides + inheritance</td>
+                                    <td class="px-4 py-3 text-slate-600">Type variants + inheritance</td>
                                 </tr>
                                 <tr class="hover:bg-slate-50">
                                     <td class="px-4 py-3 font-medium text-slate-900">Name Formatting</td>
@@ -319,7 +315,7 @@
                                 <tr class="hover:bg-slate-50">
                                     <td class="px-4 py-3 font-medium text-slate-900">Inheritance</td>
                                     <td class="px-4 py-3 text-slate-600">Parent style aliasing</td>
-                                    <td class="px-4 py-3 text-slate-600">Presets + type overrides</td>
+                                    <td class="px-4 py-3 text-slate-600">Presets + type variants</td>
                                 </tr>
                                 <tr class="hover:bg-slate-50">
                                     <td class="px-4 py-3 font-medium text-slate-900">Readability</td>
@@ -339,7 +335,7 @@
                             <div>
                                 <h3 class="font-bold text-slate-900 mb-2">Explicit Over Magic</h3>
                                 <p class="text-slate-700 leading-relaxed">
-                                    Citum styles are explicitly declarative. Special behavior is expressed in the style itself, not hidden in processor logic. If you need different punctuation for journals vs books, you declare it with type overrides. This makes styles portable, testable, and understandable without reading source code.
+                                    Citum styles are explicitly declarative. Special behavior is expressed in the style itself, not hidden in processor logic. If you need a different layout for journals vs books, you declare it with type variants. This makes styles portable, testable, and understandable without reading source code.
                                 </p>
                             </div>
                         </div>
@@ -959,94 +955,42 @@ options:
                     </div>
                 </section>
 
-                <!-- Type Overrides -->
-                <section id="type-overrides" class="scroll-mt-24">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                        <span class="material-icons text-primary">settings_input_component</span>
-                        Type Overrides
-                    </h2>
-                    <p class="text-slate-600 mb-6 leading-relaxed">
-                        Instead of using procedural conditionals, Citum components declare type-specific overrides that modify their behavior for specific reference types.
-                    </p>
-
-                    <!-- Pattern 1: Suppress -->
-                    <div class="mb-10">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Pattern 1: Suppress for a Type</h3>
-                        <p class="text-slate-600 text-sm mb-4">Hide the publisher for journal articles (they don't typically show the publisher):</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto">
-                            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><span class="text-indigo-400">- variable</span>: <span class="text-emerald-400">publisher</span>
-  <span class="text-primary">overrides</span>:
-    <span class="text-emerald-400">article-journal</span>: { <span class="text-primary">suppress</span>: <span class="text-emerald-400">true</span> }</pre>
-                        </div>
-                    </div>
-
-                    <!-- Pattern 2: Change Rendering -->
-                    <div class="mb-10">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Pattern 2: Change Rendering for a Type</h3>
-                        <p class="text-slate-600 text-sm mb-4">Add "pp. " prefix to page numbers only for chapters:</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto">
-                            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><span class="text-indigo-400">- number</span>: <span class="text-emerald-400">pages</span>
-  <span class="text-primary">overrides</span>:
-    <span class="text-emerald-400">chapter</span>:
-      <span class="text-primary">prefix</span>: <span class="text-emerald-400">"pp. "</span></pre>
-                        </div>
-                    </div>
-
-                    <!-- Pattern 3: Multiple Types -->
-                    <div class="mb-10">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Pattern 3: Apply Rule to Multiple Types</h3>
-                        <p class="text-slate-600 text-sm mb-4">Use a list to apply the same override to multiple types:</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto">
-                            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><span class="text-indigo-400">- variable</span>: <span class="text-emerald-400">publisher</span>
-  <span class="text-primary">overrides</span>:
-    [<span class="text-emerald-400">article-journal, webpage, broadcast</span>]:
-      <span class="text-primary">suppress</span>: <span class="text-emerald-400">true</span></pre>
-                        </div>
-                    </div>
-
-                    <!-- Pattern 4: All Selector -->
-                    <div>
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Pattern 4: Use "all" for Default, Override for Exceptions</h3>
-                        <p class="text-slate-600 text-sm mb-4">Set a default and override specific types:</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto">
-                            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><span class="text-indigo-400">- title</span>: <span class="text-emerald-400">primary</span>
-  <span class="text-primary">emph</span>: <span class="text-emerald-400">true</span>         <span class="text-slate-500"># Default: italicize</span>
-  <span class="text-primary">overrides</span>:
-    <span class="text-emerald-400">article-journal</span>: { <span class="text-primary">emph</span>: <span class="text-emerald-400">false</span> }  <span class="text-slate-500"># Exception: don't italicize</span></pre>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Type Templates -->
-                <section id="type-templates" class="scroll-mt-24">
+                <!-- Type Variants -->
+                <section id="type-variants" class="scroll-mt-24">
                     <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                         <span class="material-icons text-primary">category</span>
-                        Type Templates
+                        Type Variants
                     </h2>
                     <p class="text-slate-600 mb-6 leading-relaxed">
-                        For reference types that need completely different component layouts, use type-specific templates. This is more flexible than per-component overrides.
+                        When reference types need a completely different component layout, declare a
+                        <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">type-variants</code>
+                        map under the bibliography or citation spec. Each entry replaces the default
+                        template for matching types. Use a comma-separated selector to share one
+                        template across multiple types.
                     </p>
 
                     <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8">
                         <pre class="font-mono text-sm text-slate-300 leading-relaxed"><span class="text-indigo-400">bibliography</span>:
-  <span class="text-primary">template</span>:
+  <span class="text-primary">template</span>:              <span class="text-slate-500"># default for all other types</span>
     - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
     - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
     - <span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
+    - <span class="text-primary">variable</span>: <span class="text-emerald-400">publisher</span>
 
-  <span class="text-primary">type-templates</span>:
-    <span class="text-primary">article-journal</span>:     <span class="text-slate-500"># Single type</span>
+  <span class="text-primary">type-variants</span>:
+    <span class="text-emerald-400">article-journal</span>:      <span class="text-slate-500"># single type</span>
       - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
       - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
       - <span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
       - <span class="text-primary">title</span>: <span class="text-emerald-400">parent-serial</span>
+        <span class="text-primary">emph</span>: <span class="text-emerald-400">true</span>
 
-    [<span class="text-emerald-400">book, report</span>]:        <span class="text-slate-500"># Multiple types with same template</span>
+    <span class="text-emerald-400">book, report</span>:         <span class="text-slate-500"># comma-separated: share one template</span>
       - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
-      - <span class="text-primary">variable</span>: <span class="text-emerald-400">publisher</span>
       - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
-
-    []                        <span class="text-slate-500"># Empty list: suppress this type entirely</span></pre>
+      - <span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
+        <span class="text-primary">emph</span>: <span class="text-emerald-400">true</span>
+      - <span class="text-primary">variable</span>: <span class="text-emerald-400">publisher</span></pre>
                     </div>
 
                     <div class="bg-primary/10 border border-primary/20 rounded-lg p-6">
@@ -1055,9 +999,11 @@ options:
                                 <span class="material-icons text-primary mt-1">info</span>
                             </div>
                             <div>
-                                <h3 class="font-bold text-slate-900 mb-2">Type-Templates Override Default Template</h3>
+                                <h3 class="font-bold text-slate-900 mb-2">Type Variants Replace the Default Template</h3>
                                 <p class="text-slate-700 leading-relaxed">
-                                    If a reference type has an entry in type-templates, that template is used instead of the default template. Use an empty list [] to suppress specific types entirely.
+                                    If a reference type matches a <code class="font-mono bg-primary/10 px-1 rounded">type-variants</code> entry,
+                                    that template is used in full instead of the default template.
+                                    Types not listed fall through to the default.
                                 </p>
                             </div>
                         </div>
