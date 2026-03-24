@@ -4,7 +4,7 @@ use std::collections::HashSet;
 /// Deduplicate title components in nested lists.
 pub fn deduplicate_titles_in_lists(components: &mut Vec<TemplateComponent>) {
     for component in components {
-        if let TemplateComponent::List(list) = component {
+        if let TemplateComponent::Group(list) = component {
             deduplicate_titles_in_list(list);
         }
     }
@@ -14,7 +14,7 @@ pub fn deduplicate_titles_in_lists(components: &mut Vec<TemplateComponent>) {
 /// Removes duplicate edition, volume, issue, etc. within the same List.
 pub fn deduplicate_numbers_in_lists(components: &mut Vec<TemplateComponent>) {
     for component in components {
-        if let TemplateComponent::List(list) = component {
+        if let TemplateComponent::Group(list) = component {
             deduplicate_numbers_in_list(list);
         }
     }
@@ -24,91 +24,73 @@ pub fn deduplicate_numbers_in_lists(components: &mut Vec<TemplateComponent>) {
 /// Removes duplicate issued, accessed, etc. within the same List.
 pub fn deduplicate_dates_in_lists(components: &mut Vec<TemplateComponent>) {
     for component in components {
-        if let TemplateComponent::List(list) = component {
+        if let TemplateComponent::Group(list) = component {
             deduplicate_dates_in_list(list);
         }
     }
 }
 
-fn deduplicate_numbers_in_list(list: &mut citum_schema::template::TemplateList) {
-    // Track seen number types in this list
-    let mut seen_types = Vec::new();
+fn deduplicate_typed_components<T, F>(list: &mut citum_schema::template::TemplateGroup, extract: F)
+where
+    T: PartialEq + Clone,
+    F: Fn(&TemplateComponent) -> Option<T> + Copy,
+{
+    let mut seen = Vec::new();
     let mut i = 0;
-    while i < list.items.len() {
-        if let TemplateComponent::Number(n) = &list.items[i] {
-            if seen_types.contains(&n.number) {
-                // Remove duplicate number
-                list.items.remove(i);
+    while i < list.group.len() {
+        if let Some(key) = extract(&list.group[i]) {
+            if seen.contains(&key) {
+                list.group.remove(i);
                 continue;
             }
-            seen_types.push(n.number.clone());
+            seen.push(key);
         }
         i += 1;
     }
-
-    // Recursively process nested lists
-    for item in &mut list.items {
-        if let TemplateComponent::List(inner_list) = item {
-            deduplicate_numbers_in_list(inner_list);
+    for item in &mut list.group {
+        if let TemplateComponent::Group(inner) = item {
+            deduplicate_typed_components(inner, extract);
         }
     }
 }
 
-fn deduplicate_dates_in_list(list: &mut citum_schema::template::TemplateList) {
-    // Track seen date types in this list
-    let mut seen_types = Vec::new();
-    let mut i = 0;
-    while i < list.items.len() {
-        if let TemplateComponent::Date(d) = &list.items[i] {
-            if seen_types.contains(&d.date) {
-                // Remove duplicate date
-                list.items.remove(i);
-                continue;
-            }
-            seen_types.push(d.date.clone());
+fn deduplicate_numbers_in_list(list: &mut citum_schema::template::TemplateGroup) {
+    deduplicate_typed_components(list, |c| {
+        if let TemplateComponent::Number(n) = c {
+            Some(n.number.clone())
+        } else {
+            None
         }
-        i += 1;
-    }
-
-    // Recursively process nested lists
-    for item in &mut list.items {
-        if let TemplateComponent::List(inner_list) = item {
-            deduplicate_dates_in_list(inner_list);
-        }
-    }
+    });
 }
 
-fn deduplicate_titles_in_list(list: &mut citum_schema::template::TemplateList) {
-    // If list contains multiple titles of the same type, keep only the first
-    // TitleType doesn't implement Hash/Eq in some versions, using Vec::contains instead
-    let mut seen_types = Vec::new();
-    let mut i = 0;
-    while i < list.items.len() {
-        if let TemplateComponent::Title(t) = &list.items[i] {
-            if seen_types.contains(&t.title) {
-                list.items.remove(i);
-                continue;
-            }
-            seen_types.push(t.title.clone());
+fn deduplicate_dates_in_list(list: &mut citum_schema::template::TemplateGroup) {
+    deduplicate_typed_components(list, |c| {
+        if let TemplateComponent::Date(d) = c {
+            Some(d.date.clone())
+        } else {
+            None
         }
-        i += 1;
-    }
+    });
+}
 
-    // Recursively process nested lists
-    for item in &mut list.items {
-        if let TemplateComponent::List(inner_list) = item {
-            deduplicate_titles_in_list(inner_list);
+fn deduplicate_titles_in_list(list: &mut citum_schema::template::TemplateGroup) {
+    deduplicate_typed_components(list, |c| {
+        if let TemplateComponent::Title(t) = c {
+            Some(t.title.clone())
+        } else {
+            None
         }
-    }
+    });
 }
 
 /// Deduplicate identical nested lists.
 pub fn deduplicate_nested_lists(components: &mut [TemplateComponent]) {
     for component in components {
-        if let TemplateComponent::List(list) = component {
-            deduplicate_lists_in_items(&mut list.items);
+        if let TemplateComponent::Group(list) = component {
+            deduplicate_lists_in_items(&mut list.group);
             // Recursively process
-            deduplicate_nested_lists(&mut list.items);
+            deduplicate_nested_lists(&mut list.group);
         }
     }
 }
@@ -118,7 +100,7 @@ pub fn deduplicate_lists_in_items(items: &mut Vec<TemplateComponent>) {
     while i < items.len() {
         let mut j = i + 1;
         while j < items.len() {
-            if let (TemplateComponent::List(l1), TemplateComponent::List(l2)) =
+            if let (TemplateComponent::Group(l1), TemplateComponent::Group(l2)) =
                 (&items[i], &items[j])
                 && list_signature(l1) == list_signature(l2)
             {
@@ -132,16 +114,16 @@ pub fn deduplicate_lists_in_items(items: &mut Vec<TemplateComponent>) {
 }
 
 #[must_use]
-pub fn list_signature(list: &citum_schema::template::TemplateList) -> String {
+pub fn list_signature(list: &citum_schema::template::TemplateGroup) -> String {
     let mut sig = String::new();
-    for item in &list.items {
+    for item in &list.group {
         match item {
             TemplateComponent::Variable(v) => sig.push_str(&format!("v:{:?},", v.variable)),
             TemplateComponent::Number(n) => sig.push_str(&format!("n:{:?},", n.number)),
             TemplateComponent::Title(t) => sig.push_str(&format!("t:{:?},", t.title)),
             TemplateComponent::Contributor(c) => sig.push_str(&format!("c:{:?},", c.contributor)),
             TemplateComponent::Date(d) => sig.push_str(&format!("d:{:?},", d.date)),
-            TemplateComponent::List(l) => sig.push_str(&format!("l({}),", list_signature(l))),
+            TemplateComponent::Group(l) => sig.push_str(&format!("l({}),", list_signature(l))),
             _ => sig.push_str("unknown,"),
         }
     }
@@ -150,173 +132,52 @@ pub fn list_signature(list: &citum_schema::template::TemplateList) -> String {
 
 /// Suppress duplicate issue in parent-monograph lists for article-journal types.
 pub fn suppress_duplicate_issue_for_journals(
-    components: &mut [TemplateComponent],
-    style_preset: Option<crate::preset_detector::StylePreset>,
+    _components: &mut [TemplateComponent],
+    _style_preset: Option<crate::preset_detector::StylePreset>,
 ) {
-    use crate::preset_detector::StylePreset;
-    // Only apply to Chicago styles
-    if !matches!(style_preset, Some(StylePreset::Chicago)) {
-        return;
-    }
-
-    for component in components.iter_mut() {
-        if let TemplateComponent::List(list) = component {
-            suppress_issue_in_parent_monograph_list(&mut list.items);
-        }
-    }
-}
-
-fn suppress_issue_in_parent_monograph_list(items: &mut [TemplateComponent]) {
-    use citum_schema::template::{NumberVariable, TitleType};
-
-    // Check if this list has parent-monograph (indicating it's the monographic source list)
-    let has_parent_monograph = items.iter().any(|item| {
-        matches!(
-            item,
-            TemplateComponent::Title(t) if t.title == TitleType::ParentMonograph
-        ) || matches!(item, TemplateComponent::List(inner_list)
-            if inner_list.items.iter().any(|i| matches!(i, TemplateComponent::Title(t) if t.title == TitleType::ParentMonograph)))
-    });
-
-    if has_parent_monograph {
-        // Suppress issue for article-journal in this list
-        for item in items.iter_mut() {
-            if let TemplateComponent::Number(n) = item
-                && n.number == NumberVariable::Issue
-            {
-                let overrides = n
-                    .overrides
-                    .get_or_insert_with(std::collections::HashMap::new);
-                use citum_schema::template::{ComponentOverride, TypeSelector};
-                let key = TypeSelector::Single("article-journal".to_string());
-                if let Some(ComponentOverride::Rendering(rendering)) = overrides.get_mut(&key) {
-                    rendering.suppress = Some(true);
-                } else {
-                    overrides.insert(
-                        key,
-                        ComponentOverride::Rendering(citum_schema::template::Rendering {
-                            suppress: Some(true),
-                            ..Default::default()
-                        }),
-                    );
-                }
-            }
-            // Recursively check nested lists
-            if let TemplateComponent::List(inner_list) = item {
-                suppress_issue_in_parent_monograph_list(&mut inner_list.items);
-            }
-        }
-    }
-
-    // Recursively process all nested lists
-    for item in items.iter_mut() {
-        if let TemplateComponent::List(inner_list) = item {
-            suppress_issue_in_parent_monograph_list(&mut inner_list.items);
-        }
-    }
-}
-
-fn suppress_component_if_seen(component: &mut TemplateComponent, seen_vars: &mut HashSet<String>) {
-    use citum_schema::template::{ComponentOverride, TypeSelector};
-    let suppress_rendering = citum_schema::template::Rendering {
-        suppress: Some(true),
-        ..Default::default()
-    };
-    match component {
-        TemplateComponent::Variable(v) => {
-            let key = format!("{:?}", v.variable);
-            if seen_vars.contains(&key) {
-                let overrides = v
-                    .overrides
-                    .get_or_insert_with(std::collections::HashMap::new);
-                overrides.insert(
-                    TypeSelector::Single("all".to_string()),
-                    ComponentOverride::Rendering(suppress_rendering),
-                );
-            } else {
-                seen_vars.insert(key);
-            }
-        }
-        TemplateComponent::Contributor(c) => {
-            let key = format!("{:?}", c.contributor);
-            if seen_vars.contains(&key) {
-                let overrides = c
-                    .overrides
-                    .get_or_insert_with(std::collections::HashMap::new);
-                overrides.insert(
-                    TypeSelector::Single("all".to_string()),
-                    ComponentOverride::Rendering(suppress_rendering),
-                );
-            } else {
-                seen_vars.insert(key);
-            }
-        }
-        TemplateComponent::Title(t) => {
-            let key = format!("{:?}", t.title);
-            if seen_vars.contains(&key) {
-                let overrides = t
-                    .overrides
-                    .get_or_insert_with(std::collections::HashMap::new);
-                overrides.insert(
-                    TypeSelector::Single("all".to_string()),
-                    ComponentOverride::Rendering(suppress_rendering),
-                );
-            } else {
-                seen_vars.insert(key);
-            }
-        }
-        TemplateComponent::Date(d) => {
-            let key = format!("{:?}", d.date);
-            if seen_vars.contains(&key) {
-                let overrides = d
-                    .overrides
-                    .get_or_insert_with(std::collections::HashMap::new);
-                overrides.insert(
-                    TypeSelector::Single("all".to_string()),
-                    ComponentOverride::Rendering(suppress_rendering),
-                );
-            } else {
-                seen_vars.insert(key);
-            }
-        }
-        TemplateComponent::Number(n) => {
-            let key = format!("{:?}", n.number);
-            if seen_vars.contains(&key) {
-                let overrides = n
-                    .overrides
-                    .get_or_insert_with(std::collections::HashMap::new);
-                overrides.insert(
-                    TypeSelector::Single("all".to_string()),
-                    ComponentOverride::Rendering(suppress_rendering),
-                );
-            } else {
-                seen_vars.insert(key);
-            }
-        }
-        _ => {}
-    }
+    // Overrides-based suppression removed as component-level overrides are deprecated.
 }
 
 /// Deduplicate variables across sibling lists using global tracking.
 /// When a variable is rendered in multiple sibling List nodes at the same nesting level,
 /// suppress it in all but the first occurrence to enforce the "once" rule.
-pub fn deduplicate_variables_cross_lists(components: &mut [TemplateComponent]) {
+/// Deduplicate variables across sibling lists.
+/// Removes components whose variable was already seen at the same nesting level.
+pub fn deduplicate_variables_cross_lists(components: &mut Vec<TemplateComponent>) {
     let mut seen_vars = HashSet::new();
-    deduplicate_variables_in_sibling_lists(components, &mut seen_vars);
+    remove_duplicate_variables(components, &mut seen_vars);
 }
 
-fn deduplicate_variables_in_sibling_lists(
-    items: &mut [TemplateComponent],
-    seen_vars: &mut HashSet<String>,
-) {
+fn remove_duplicate_variables(items: &mut Vec<TemplateComponent>, seen_vars: &mut HashSet<String>) {
     let mut i = 0;
-
     while i < items.len() {
-        if let TemplateComponent::List(list) = &mut items[i] {
-            deduplicate_variables_in_sibling_lists(&mut list.items, seen_vars);
-        } else {
-            suppress_component_if_seen(&mut items[i], seen_vars);
+        match &mut items[i] {
+            TemplateComponent::Group(list) => {
+                remove_duplicate_variables(&mut list.group, seen_vars);
+                i += 1;
+            }
+            comp => {
+                let key = component_var_key(comp);
+                if let Some(k) = key {
+                    if seen_vars.contains(&k) {
+                        items.remove(i);
+                        continue;
+                    }
+                    seen_vars.insert(k);
+                }
+                i += 1;
+            }
         }
-        i += 1;
+    }
+}
+
+fn component_var_key(component: &TemplateComponent) -> Option<String> {
+    match component {
+        TemplateComponent::Variable(v) => Some(format!("{:?}", v.variable)),
+        TemplateComponent::Contributor(c) => Some(format!("{:?}", c.contributor)),
+        TemplateComponent::Title(t) => Some(format!("{:?}", t.title)),
+        TemplateComponent::Date(d) => Some(format!("{:?}", d.date)),
+        TemplateComponent::Number(n) => Some(format!("{:?}", n.number)),
+        _ => None,
     }
 }

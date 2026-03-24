@@ -1,6 +1,15 @@
 info:
   title: DIN 1505-2 (alphanumeric, Deutsch) - standard superseded by ISO-690
-  description: "Style following DIN 1505-2, using the alphanumeric citation keys, for other media types on additional standards \n      Hinweise zur Benutzung: \n      * Zitieren von Gesetzen: \n        - hier müssen manuell §, Abs und S. zur Seitenangabe beim Zitieren eingetragen werden \n        - im Kurzbeleg wird der Kurztitel verwendet, dafür keine Autoren eintragen! \n        - als Jahresangabe wird 'Datum des Inkrafttretens' herangezogen, Verwenden nur bei Verweis auf nicht z.Z. gültige Gesetze, z.B. (idF. v. 12.12.1972) \n       * Zitieren von Normen und Standards - nicht vollständig nach DIN 1505\n        - Nutzen Sie den Typ 'Bericht' - als Abhilfe, da es keinen Typ 'Standard' gibt.\n        - als Autor die Kurzbezeichnung inkl. Nummer und Jahr eingeben (z.B. VDI 2222-1997), Vorname leer, Jahr leer\n        - als Titel den ausführlichen Titel bei Bedarf (z.B. VDI Richtlinie 2222 Blatt 1 - Konstruktionsmethodik - Methodisches Entwickeln von Lösungsprinzipien)"
+  description: "Style following DIN 1505-2, using the alphanumeric citation keys, for other media types
+    on additional standards \n      Hinweise zur Benutzung: \n      * Zitieren von Gesetzen: \n      \
+    \  - hier müssen manuell §, Abs und S. zur Seitenangabe beim Zitieren eingetragen werden \n      \
+    \  - im Kurzbeleg wird der Kurztitel verwendet, dafür keine Autoren eintragen! \n        - als Jahresangabe
+    wird 'Datum des Inkrafttretens' herangezogen, Verwenden nur bei Verweis auf nicht z.Z. gültige Gesetze,
+    z.B. (idF. v. 12.12.1972) \n       * Zitieren von Normen und Standards - nicht vollständig nach DIN
+    1505\n        - Nutzen Sie den Typ 'Bericht' - als Abhilfe, da es keinen Typ 'Standard' gibt.\n  \
+    \      - als Autor die Kurzbezeichnung inkl. Nummer und Jahr eingeben (z.B. VDI 2222-1997), Vorname
+    leer, Jahr leer\n        - als Titel den ausführlichen Titel bei Bedarf (z.B. VDI Richtlinie 2222
+    Blatt 1 - Konstruktionsmethodik - Methodisches Entwickeln von Lösungsprinzipien)"
   source:
     csl-id: http://www.zotero.org/styles/din-1505-2-alphanumeric
     adapted-by: citum-migrate
@@ -53,9 +62,9 @@ options:
     separator: " : "
 citation:
   template:
-    - number: citation-label
-    - variable: locator
-      prefix: ", "
+  - number: citation-label
+  - variable: locator
+    prefix: ", "
   wrap: brackets
   delimiter: ""
   multi-cite-delimiter: "; "
@@ -71,18 +80,19 @@ bibliography:
       delimiter: " ; "
       delimiter-precedes-last: always
       sort-separator: ", "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
     - title: primary
       prefix: ": "
-    - items:
-        - contributor: editor
-          form: verb
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
+    - items: &id001
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - number: volume
@@ -91,12 +101,61 @@ bibliography:
       form: year
       prefix: ", "
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        article-journal:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
-      prefix: ", "
+      prefix: "pp. "
     - variable: publisher-place
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: ": "
+    - items: *id001
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - variable: publisher
+    - date: issued
+      form: year
+      prefix: ", "
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher-place
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: ": "
+    - items: *id001
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - variable: publisher
+    - date: issued
+      form: year
+      prefix: ", "
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher-place
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - title: primary
+    prefix: ": "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - number: volume
+  - variable: publisher
+  - date: issued
+    form: year
+    prefix: ", "
+  - number: pages
+    prefix: ", "
+  - variable: publisher-place

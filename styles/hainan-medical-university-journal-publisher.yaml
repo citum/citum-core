@@ -56,46 +56,135 @@ bibliography:
       delimiter-precedes-last: always
       delimiter-precedes-et-al: always
       sort-separator: " "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 6
     - title: primary
       prefix: " "
     - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            chapter:
-              prefix: "on "
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - items:
-        - number: volume
-        - number: issue
-          wrap: parentheses
-          overrides: {}
+      - number: volume
+      - number: issue
+        wrap: parentheses
     - variable: publisher
     - number: pages
       prefix: ", 2006: "
     - variable: publisher-place
       prefix: ": "
-    - date: issued
-      form: year
-      prefix: ", "
-      overrides:
-        article-journal:
-          suppress: true
-        chapter:
-          suppress: true
-        article-magazine:
-          suppress: true
-        entry-encyclopedia:
-          suppress: true
     - variable: url
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: ", 2006: "
+    - variable: publisher-place
+      prefix: ": "
+    - variable: url
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        prefix: "on "
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: ", 2006: "
+    - variable: publisher-place
+      prefix: ": "
+    - variable: url
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: ", 2006: "
+    - variable: publisher-place
+      prefix: ": "
+    - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - title: primary
+    prefix: " "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - items:
+    - number: volume
+    - number: issue
+      wrap: parentheses
+  - variable: publisher
+  - number: pages
+    prefix: ", 2006: "
+  - variable: publisher-place
+    prefix: ": "
+  - date: issued
+    form: year
+    prefix: ", "
+  - variable: url

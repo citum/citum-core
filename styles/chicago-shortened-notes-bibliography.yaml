@@ -1,8 +1,8 @@
-# yaml-language-server: $schema=./citum.schema.json
 preset: chicago-notes-18th
 info:
   title: Chicago Manual of Style 18th edition (shortened notes and bibliography)
-  description: Chicago-style source citations (with Bluebook for legal citations), shortened author-title notes and bibliography system
+  description: Chicago-style source citations (with Bluebook for legal citations), shortened 
+    author-title notes and bibliography system
   fields:
   - anthropology
   - communications
@@ -64,20 +64,21 @@ citation:
     suffix: ""
     delimiter: ", "
     template:
-      - term: ibid
-      - variable: locator
-        suffix: .
-  template:
-    - contributor: author
-      form: short
-      name-order: family-first
-      shorten:
-        min: 3
-        use-first: 1
-    - title: primary
-      prefix: ", "
+    - term: ibid
     - variable: locator
-      prefix: ", "
+      suffix: .
+  type-variants: ~
+  template:
+  - contributor: author
+    form: short
+    name-order: family-first
+    shorten:
+      min: 3
+      use-first: 1
+  - title: primary
+    prefix: ", "
+  - variable: locator
+    prefix: ", "
   suffix: .
   delimiter: ". "
   multi-cite-delimiter: "; "
@@ -89,40 +90,21 @@ bibliography:
         use-first: 3
         and-others: et-al
         delimiter-precedes-last: contextual
-  type-templates:
-    # Personal communications only appear in bibliography if reader can retrieve
-    # them (CMOS18 14.13, 14.111). Inaccessible items are in-text only.
-    personal-communication: []
-    # Patent entries: author, title, then "Patent [number], issued [full-date]"
-    # (CMOS18 14.158).
-    patent:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-      - items:
-          - term: patent
-            suffix: " "
-          - number: number
-          - date: issued
-            form: full
-            prefix: ", issued "
-        delimiter: none
-        prefix: ". "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 3
     - title: primary
     - items:
-        - contributor: editor
-          form: verb
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - number: volume
@@ -133,7 +115,43 @@ bibliography:
     - number: pages
       prefix: ": "
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
     - variable: url
+    personal-communication: []
+    patent:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - delimiter: none
+      prefix: ". "
+      items:
+      - term: patent
+        suffix: " "
+      - number: number
+      - date: issued
+        form: full
+        prefix: ", issued "
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - title: primary
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - number: volume
+  - variable: publisher
+  - date: issued
+    form: year
+    prefix: ", "
+  - number: pages
+    prefix: ": "
+  - variable: doi
+  - variable: url

@@ -33,70 +33,6 @@ pub(super) fn is_role_label_omitted(options: &RenderOptions<'_>, role: &Contribu
         })
 }
 
-/// Resolve contributor overrides and return both effective component and rendering.
-///
-/// Handles `ComponentOverride` variants (both Rendering and Component) with type-specific
-/// and default fallback logic.
-fn resolve_contributor_overrides(
-    base_component: &TemplateContributor,
-    overrides: Option<
-        &std::collections::HashMap<
-            citum_schema::template::TypeSelector,
-            citum_schema::template::ComponentOverride,
-        >,
-    >,
-    ref_type: &str,
-) -> (TemplateContributor, citum_schema::template::Rendering) {
-    use citum_schema::template::{ComponentOverride, TemplateComponent};
-
-    let mut component = base_component.clone();
-    let mut effective_rendering = component.rendering.clone();
-
-    if let Some(ovs) = overrides {
-        let mut match_found = false;
-
-        // Try specific type match
-        for (selector, ov) in ovs {
-            if selector.matches(ref_type) {
-                match ov {
-                    ComponentOverride::Rendering(r) => {
-                        effective_rendering.merge(r);
-                        match_found = true;
-                    }
-                    ComponentOverride::Component(c) => {
-                        if let TemplateComponent::Contributor(tc) = c.as_ref() {
-                            component = tc.clone();
-                            effective_rendering = component.rendering.clone();
-                            match_found = true;
-                        }
-                    }
-                }
-            }
-        }
-
-        // Fall back to default if no specific match
-        if !match_found {
-            for (selector, ov) in ovs {
-                if selector.matches("default") {
-                    match ov {
-                        ComponentOverride::Rendering(r) => {
-                            effective_rendering.merge(r);
-                        }
-                        ComponentOverride::Component(c) => {
-                            if let TemplateComponent::Contributor(tc) = c.as_ref() {
-                                component = tc.clone();
-                                effective_rendering = component.rendering.clone();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    (component, effective_rendering)
-}
-
 /// Format a role term with period stripping if configured.
 ///
 /// Handles the repeated pattern of checking `should_strip_periods` and formatting
@@ -199,8 +135,8 @@ impl ComponentValues for TemplateContributor {
     ) -> Option<ProcValues<F::Output>> {
         let fmt = F::default();
 
-        let (mut component, mut effective_rendering) =
-            resolve_contributor_overrides(self, self.overrides.as_ref(), &reference.ref_type());
+        let mut component = self.clone();
+        let mut effective_rendering = self.rendering.clone();
 
         // Apply integral-citation subsequent-form (FullThenShort rule)
         apply_integral_subsequent_form(&mut component, hints, options);

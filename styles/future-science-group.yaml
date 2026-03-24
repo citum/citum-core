@@ -12,7 +12,8 @@ info:
     links:
     - href: http://www.zotero.org/styles/future-science-group
       rel: self
-    - href: https://www.futuremedicine.com/pb-assets/Nanomedicine%20Author%20Guidelines-1540302236583.pdf
+    - href: 
+        https://www.futuremedicine.com/pb-assets/Nanomedicine%20Author%20Guidelines-1540302236583.pdf
       rel: documentation
 options:
   substitute: editor-long
@@ -42,11 +43,12 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
-  template:
+  type-variants:
+    book:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 3
     - title: primary
@@ -60,20 +62,60 @@ bibliography:
       name-order: family-first
     - variable: publisher
     - items:
-        - number: volume
-        - number: issue
-          wrap: parentheses
-          overrides: {}
+      - number: volume
+      - number: issue
+        wrap: parentheses
     - number: pages
-    - date: issued
-      form: year
-      wrap: parentheses
-      prefix: " "
-      overrides:
-        book:
-          suppress: true
-        motion_picture:
-          suppress: true
     - variable: publisher-place
       prefix: ", "
     - variable: url
+    motion_picture:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - contributor: editor
+      form: verb
+      name-order: family-first
+    - variable: publisher
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - number: pages
+    - variable: publisher-place
+      prefix: ", "
+    - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - title: primary
+    prefix: " "
+  - title: parent-monograph
+    emph: true
+  - title: parent-serial
+    emph: true
+  - contributor: editor
+    form: verb
+    name-order: family-first
+  - variable: publisher
+  - items:
+    - number: volume
+    - number: issue
+      wrap: parentheses
+  - number: pages
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "
+  - variable: publisher-place
+    prefix: ", "
+  - variable: url

@@ -17,16 +17,18 @@ info:
       rel: template
     - href: http://www.springer.com/cda/content/document/cda_downloaddocument/instruct-authors-e.pdf
       rel: documentation
-    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
+    - href: 
+        http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
       rel: documentation
-    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
+    - href: 
+        http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
       rel: documentation
 options:
   substitute:
     contributor-role-form: short
     template:
-      - editor
-      - translator
+    - editor
+    - translator
     overrides:
       report: []
   processing: numeric
@@ -67,62 +69,286 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: ", "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 7
     - date: issued
       form: year
       wrap: parentheses
       prefix: " "
-      overrides:
-        article-newspaper:
-          suppress: true
-        article-magazine:
-          suppress: true
-        patent:
-          suppress: true
-        broadcast:
-          suppress: true
-        interview:
-          suppress: true
-        personal_communication:
-          suppress: true
     - title: primary
-    - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            chapter:
-              prefix: "In "
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
-      prefix: ". In "
+    - prefix: ". In "
+      items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - items:
-        - number: volume
-        - number: issue
-          wrap: parentheses
-          overrides: {}
+      - number: volume
+      - number: issue
+        wrap: parentheses
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-          wrap: parentheses
-        paper-conference:
-          prefix: "pp. "
-          wrap: parentheses
       prefix: ", "
     - variable: publisher
       prefix: "). "
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
     - variable: publisher-place
     - variable: url
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+    - prefix: ". In "
+      items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - number: pages
+      prefix: ", "
+    - variable: publisher
+      prefix: "). "
+    - variable: doi
+    - variable: publisher-place
+    - variable: url
+    article-newspaper:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+    - prefix: ". In "
+      items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - number: pages
+      prefix: ", "
+    - variable: publisher
+      prefix: "). "
+    - variable: doi
+    - variable: publisher-place
+    - variable: url
+    broadcast:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+    - prefix: ". In "
+      items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - number: pages
+      prefix: ", "
+    - variable: publisher
+      prefix: "). "
+    - variable: doi
+    - variable: publisher-place
+    - variable: url
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+    - prefix: ". In "
+      items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        prefix: "In "
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - number: pages
+      prefix: "pp. "
+      wrap: parentheses
+    - variable: publisher
+      prefix: "). "
+    - variable: doi
+    - variable: publisher-place
+    - variable: url
+    interview:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+    - prefix: ". In "
+      items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - number: pages
+      prefix: ", "
+    - variable: publisher
+      prefix: "). "
+    - variable: doi
+    - variable: publisher-place
+    - variable: url
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+    - prefix: ". In "
+      items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - number: pages
+      prefix: "pp. "
+      wrap: parentheses
+    - variable: publisher
+      prefix: "). "
+    - variable: doi
+    - variable: publisher-place
+    - variable: url
+    patent:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+    - prefix: ". In "
+      items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - number: pages
+      prefix: ", "
+    - variable: publisher
+      prefix: "). "
+    - variable: doi
+    - variable: publisher-place
+    - variable: url
+    personal_communication:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+    - prefix: ". In "
+      items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - number: pages
+      prefix: ", "
+    - variable: publisher
+      prefix: "). "
+    - variable: doi
+    - variable: publisher-place
+    - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "
+  - title: primary
+  - prefix: ". In "
+    items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - items:
+    - number: volume
+    - number: issue
+      wrap: parentheses
+  - number: pages
+    prefix: ", "
+  - variable: publisher
+    prefix: "). "
+  - variable: doi
+  - variable: publisher-place
+  - variable: url

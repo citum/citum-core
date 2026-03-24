@@ -19,7 +19,7 @@ options:
   substitute:
     contributor-role-form: long
     template:
-      - translator
+    - translator
   processing: numeric
   contributors:
     display-as-sort: all
@@ -31,7 +31,7 @@ options:
     sort-separator: ' '
     role:
       omit:
-        - editor
+      - editor
   dates:
     month: long
   page-range-format: minimal
@@ -45,221 +45,256 @@ citation:
   wrap: brackets
   multi-cite-delimiter: ','
   delimiter: ''
-
 bibliography:
-  type-templates:
-    legal-case:
-      - number: citation-number
-        wrap: brackets
-      - title: primary
-        suffix: '. '
-      - number: volume
-        prefix: 'vol. '
-        suffix: '. '
-      - date: issued
-        form: year
-
-    webpage:
-      - number: citation-number
-        wrap: brackets
-      - contributor: author
-        form: long
-        suffix: '. '
-      - title: primary
-        suffix: ' '
-      - date: issued
-        form: year
-        suffix: '. '
-      - variable: url
-      - date: accessed
-        form: full
-        prefix: ' (accessed '
-        suffix: ')'
-
-    patent:
-      - number: citation-number
-        wrap: brackets
-      - contributor: author
-        form: long
-        suffix: '. '
-      - title: primary
-        suffix: '. '
-      - variable: number
-        suffix: ', '
-      - date: issued
-        form: year
-
-    thesis:
-      - number: citation-number
-        wrap: brackets
-      - contributor: author
-        form: long
-        suffix: '. '
-      - title: primary
-        suffix: '. '
-      - variable: genre
-        suffix: '. '
-      - variable: publisher
-        suffix: ', '
-      - date: issued
-        form: year
-
-  template:
+  type-variants:
+    article-journal:
     - number: citation-number
       wrap: brackets
-
     - contributor: author
       form: long
       suffix: '. '
-      overrides:
-        article-journal:
-          contributor: author
-          form: long
-          shorten:
-            min: 7
-            use-first: 6
-            and-others: et-al
-            delimiter-precedes-last: always
-          suffix: '. '
-
-    - contributor: editor
-      form: long
-      suffix: ', editors. '
-      suppress: true
-      overrides:
-        book:
-          suppress: false
-
+      shorten:
+        min: 7
+        use-first: 6
+        and-others: et-al
+        delimiter-precedes-last: always
     - title: primary
       suffix: '. '
-      overrides:
-        dataset:
-          suffix: ' '
-        interview:
-          suffix: ' '
-        personal-communication:
-          suffix: ' '
-
-    - contributor: editor
-      form: long
-      prefix: 'In: '
-      suffix: ', editors. '
-      suppress: true
-      overrides:
-        chapter:
-          suppress: false
-
-    - number: edition
-      suffix: '. '
-      suppress: true
-      overrides:
-        book:
-          suppress: false
-
-    - title: parent-monograph
-      suffix: ', '
-      suppress: true
-      overrides:
-        chapter:
-          suppress: false
-        paper-conference:
-          suppress: false
-
-    - title: parent-serial
-      suffix: ' '
-      suppress: true
-      overrides:
-        broadcast:
-          suppress: false
-
     - items:
-        - title: parent-serial
-        - date: issued
-          form: year
-          prefix: ' '
-          suffix: ';'
-        - number: volume
-        - number: pages
-          prefix: ':'
+      - title: parent-serial
+      - date: issued
+        form: year
+        prefix: ' '
+        suffix: ';'
+      - number: volume
+      - number: pages
+        prefix: ':'
       delimiter: none
-      suppress: true
-      overrides:
-        article-journal:
-          suppress: false
-        article-magazine:
-          suppress: false
-        entry-encyclopedia:
-          suppress: false
-
-    - items:
-        - title: parent-serial
-        - date: issued
-          form: year
-          prefix: ' '
-      delimiter: none
-      suppress: true
-      overrides:
-        article-newspaper:
-          suppress: false
-
-    - variable: publisher-place
-      suffix: ': '
-      suppress: true
-      overrides:
-        book:
-          suppress: false
-        report:
-          suppress: false
-
-    - variable: publisher
-      suffix: '; '
-      suppress: true
-      overrides:
-        book:
-          suppress: false
-        report:
-          suppress: false
-        chapter:
-          suppress: false
-
-    - date: issued
-      form: year
-      overrides:
-        article-journal:
-          suppress: true
-        article-magazine:
-          suppress: true
-        entry-encyclopedia:
-          suppress: true
-        article-newspaper:
-          suppress: true
-        book:
-          suppress: false
-        report:
-          suppress: false
-        chapter:
-          suppress: false
-        paper-conference:
-          suppress: false
-          suffix: ', '
-
-    - number: pages
-      prefix: ', p. '
-      suppress: true
-      overrides:
-        chapter:
-          suppress: false
-        paper-conference:
-          suppress: false
-          prefix: 'p. '
-
     - variable: doi
       prefix: '. https://doi.org/'
       suffix: '.'
       links:
         target: doi
         anchor: component
-      suppress: true
-      overrides:
-        article-journal:
-          suppress: false
+    article-magazine:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: '. '
+    - items:
+      - title: parent-serial
+      - date: issued
+        form: year
+        prefix: ' '
+        suffix: ';'
+      - number: volume
+      - number: pages
+        prefix: ':'
+      delimiter: none
+    article-newspaper:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: '. '
+    - items:
+      - title: parent-serial
+      - date: issued
+        form: year
+        prefix: ' '
+      delimiter: none
+    book:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - contributor: editor
+      form: long
+      suffix: ', editors. '
+    - title: primary
+      suffix: '. '
+    - number: edition
+      suffix: '. '
+    - variable: publisher-place
+      suffix: ': '
+    - variable: publisher
+      suffix: '; '
+    - date: issued
+      form: year
+    broadcast:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: '. '
+    - title: parent-serial
+      suffix: ' '
+    - date: issued
+      form: year
+    chapter:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: '. '
+    - contributor: editor
+      form: long
+      prefix: 'In: '
+      suffix: ', editors. '
+    - title: parent-monograph
+      suffix: ', '
+    - variable: publisher
+      suffix: '; '
+    - date: issued
+      form: year
+    - number: pages
+      prefix: ', p. '
+    dataset:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: ' '
+    - date: issued
+      form: year
+    entry-encyclopedia:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: '. '
+    - items:
+      - title: parent-serial
+      - date: issued
+        form: year
+        prefix: ' '
+        suffix: ';'
+      - number: volume
+      - number: pages
+        prefix: ':'
+      delimiter: none
+    interview:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: ' '
+    - date: issued
+      form: year
+    paper-conference:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: '. '
+    - title: parent-monograph
+      suffix: ', '
+    - date: issued
+      form: year
+      suffix: ', '
+    - number: pages
+      prefix: 'p. '
+    personal-communication:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: ' '
+    - date: issued
+      form: year
+    report:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: '. '
+    - variable: publisher-place
+      suffix: ': '
+    - variable: publisher
+      suffix: '; '
+    - date: issued
+      form: year
+    legal-case:
+    - number: citation-number
+      wrap: brackets
+    - title: primary
+      suffix: '. '
+    - number: volume
+      prefix: 'vol. '
+      suffix: '. '
+    - date: issued
+      form: year
+    webpage:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: ' '
+    - date: issued
+      form: year
+      suffix: '. '
+    - variable: url
+    - date: accessed
+      form: full
+      prefix: ' (accessed '
+      suffix: ')'
+    patent:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: '. '
+    - variable: number
+      suffix: ', '
+    - date: issued
+      form: year
+    thesis:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: '. '
+    - variable: genre
+      suffix: '. '
+    - variable: publisher
+      suffix: ', '
+    - date: issued
+      form: year
+  template:
+  - number: citation-number
+    wrap: brackets
+  - contributor: author
+    form: long
+    suffix: '. '
+  - title: primary
+    suffix: '. '
+  - date: issued
+    form: year

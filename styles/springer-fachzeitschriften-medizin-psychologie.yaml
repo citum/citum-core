@@ -1,6 +1,7 @@
 info:
   title: Springer - Fachzeitschriften Medizin Psychologie (Deutsch)
-  description: Springer Basic style (German, numeric, brackets, alphabetical) for Springer journals in medicine and psychology.
+  description: Springer Basic style (German, numeric, brackets, alphabetical) for Springer journals 
+    in medicine and psychology.
   fields:
   - medicine
   - psychology
@@ -16,15 +17,17 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/springer-basic-brackets-no-et-al-alphabetical
       rel: template
-    - href: http://static.springer.com/sgw/documents/135255/application/pdf/Musterbeitrag_Uebersichten_Leitthema_Schwerpunkt.pdf
+    - href: 
+        http://static.springer.com/sgw/documents/135255/application/pdf/Musterbeitrag_Uebersichten_Leitthema_Schwerpunkt.pdf
       rel: documentation
-    - href: http://static.springer.com/sgw/documents/69331/application/pdf/Leitfaden_Uebersichten_Leitthemen_Schwerpunkt.pdf
+    - href: 
+        http://static.springer.com/sgw/documents/69331/application/pdf/Leitfaden_Uebersichten_Leitthemen_Schwerpunkt.pdf
       rel: documentation
 options:
   substitute:
     template:
-      - editor
-      - translator
+    - editor
+    - translator
   processing: numeric
   contributors:
     display-as-sort: all
@@ -60,11 +63,12 @@ bibliography:
       delimiter-precedes-last: always
       delimiter-precedes-et-al: never
       sort-separator: " "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 5
         use-first: 3
     - date: issued
@@ -74,51 +78,119 @@ bibliography:
     - title: primary
       prefix: " "
     - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            chapter:
-              prefix: "on "
-          name-order: given-first
-        - title: parent-monograph
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
     - title: parent-serial
     - number: volume
     - number: issue
       prefix: ":"
-      overrides:
-        article-magazine:
-          suppress: true
     - variable: publisher
     - number: pages
       prefix: ", pp "
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
     - variable: publisher-place
       prefix: ", "
-  type-templates:
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+    - title: parent-serial
+    - number: volume
+    - variable: publisher
+    - number: pages
+      prefix: ", pp "
+    - variable: doi
+    - variable: publisher-place
+      prefix: ", "
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        prefix: "on "
+      - title: parent-monograph
+    - title: parent-serial
+    - number: volume
+    - number: issue
+      prefix: ":"
+    - variable: publisher
+    - number: pages
+      prefix: ", pp "
+    - variable: doi
+    - variable: publisher-place
+      prefix: ", "
     webpage:
-      - number: citation-number
-        suffix: ". "
-      - contributor: author
-        form: long
-        sort-separator: " "
-        shorten:
-          min: 5
-          use-first: 3
-          and-others: et-al
-          delimiter-precedes-last: always
-      - date: issued
-        form: year
-        wrap: parentheses
-      - title: primary
-        suffix: ". "
-      - variable: url
-        suffix: ". "
-      - term: accessed
-        form: long
-        suffix: ": "
-      - date: accessed
-        form: year
+    - number: citation-number
+      suffix: ". "
+    - contributor: author
+      form: long
+      sort-separator: " "
+      shorten:
+        min: 5
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: always
+    - date: issued
+      form: year
+      wrap: parentheses
+    - title: primary
+      suffix: ". "
+    - variable: url
+      suffix: ". "
+    - term: accessed
+      form: long
+      suffix: ": "
+    - date: accessed
+      form: year
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "
+  - title: primary
+    prefix: " "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+  - title: parent-serial
+  - number: volume
+  - number: issue
+    prefix: ":"
+  - variable: publisher
+  - number: pages
+    prefix: ", pp "
+  - variable: doi
+  - variable: publisher-place
+    prefix: ", "
   sort: author-date-title

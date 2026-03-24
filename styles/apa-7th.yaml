@@ -1,4 +1,3 @@
-# yaml-language-server: $schema=./citum.schema.json
 preset: apa-7th
 info:
   title: American Psychological Association 7th edition
@@ -68,36 +67,41 @@ options:
 citation:
   options:
     contributors:
-      shorten: { min: 3, use-first: 1 }
+      shorten: {min: 3, use-first: 1}
   sort: author-date-title
   non-integral:
     wrap: parentheses
-    template:
+    type-variants:
+      article-journal, article-magazine, article-newspaper, book, broadcast, chapter, dataset, entry-encyclopedia, interview, motion-picture, paper-conference, patent, report, software, standard, thesis, webpage:
       - contributor: author
         form: short
-        overrides:
-          legal-case: { suppress: true }
-          personal-communication:
-            contributor: author
-            form: long
-            name-order: given-first
-            suffix: ", personal communication"
-      - title: primary
-        form: short
-        suppress: false
-        overrides:
-          [book, chapter, thesis, article-journal, article-magazine, article-newspaper, report, webpage, paper-conference, patent, motion-picture, broadcast, interview, dataset, standard, software, entry-encyclopedia, personal-communication]:
-            suppress: true
-          legal-case:
-            emph: true
-            quote: false
       - date: issued
         form: year
-        overrides:
-          personal-communication:
-            date: issued
-            form: year-month-day
       - variable: locator
+      legal-case:
+      - title: primary
+        form: short
+        emph: true
+        quote: false
+      - date: issued
+        form: year
+      - variable: locator
+      personal-communication:
+      - contributor: author
+        form: long
+        name-order: given-first
+        suffix: ", personal communication"
+      - date: issued
+        form: year-month-day
+      - variable: locator
+    template:
+    - contributor: author
+      form: short
+    - title: primary
+      form: short
+    - date: issued
+      form: year
+    - variable: locator
   delimiter: ", "
   multi-cite-delimiter: "; "
   integral:
@@ -105,331 +109,63 @@ citation:
     options:
       contributors:
         and: text
-    template:
+    type-variants:
+      article-journal, article-magazine, article-newspaper, book, broadcast, chapter, dataset, entry-encyclopedia, interview, motion-picture, paper-conference, patent, report, software, standard, thesis, webpage:
       - contributor: author
         form: short
-        overrides:
-          legal-case: { suppress: true }
-          personal-communication:
-            contributor: author
-            form: long
-            name-order: given-first
-            suffix: ", personal communication"
+      - delimiter: ", "
+        wrap: parentheses
+        group:
+        - date: issued
+          form: year
+        - variable: locator
+      legal-case:
       - title: primary
         form: short
-        suppress: false
-        overrides:
-          [book, chapter, thesis, article-journal, article-magazine, article-newspaper, report, webpage, paper-conference, patent, motion-picture, broadcast, interview, dataset, standard, software, entry-encyclopedia, personal-communication]:
-            suppress: true
-          legal-case:
-            emph: true
-            quote: false
-      - items:
-          - date: issued
-            form: year
-            overrides:
-              personal-communication:
-                date: issued
-                form: year-month-day
-          - variable: locator
-        delimiter: ", "
-        wrap: parentheses
-bibliography:
-  type-templates:
-    personal-communication: []
-    article-newspaper:
-      - contributor: author
-        form: long
-        name-order: family-first
-        suffix: "."
-      - date: issued
-        form: year-month-day
-        wrap: parentheses
-        prefix: " "
-      - title: primary
-        emph: false
-      - title: parent-serial
         emph: true
-        prefix: ". "
-        suffix: "."
-    article-magazine:
+        quote: false
+      - delimiter: ", "
+        wrap: parentheses
+        group:
+        - date: issued
+          form: year
+        - variable: locator
+      personal-communication:
       - contributor: author
-        form: long
-        name-order: family-first
-        suffix: "."
-      - date: issued
-        form: year-month-day
-        wrap: parentheses
-        prefix: " "
-      - title: primary
-        emph: false
-      - items:
-          - title: parent-serial
-            emph: true
-          - items:
-              - number: volume
-                emph: true
-              - number: issue
-                wrap: parentheses
-            delimiter: ""
-        delimiter: ", "
-        prefix: ". "
-      - number: pages
-        prefix: ", "
-        suffix: "."
-    chapter:
-      - contributor: author
-        form: long
-        name-order: family-first
-        suffix: "."
-      - date: issued
-        form: year
-        wrap: parentheses
-        prefix: " "
-      - title: primary
-        emph: false
-        suffix: "."
-      - items:
-          - contributor: editor
-            form: long
-            name-order: given-first
-          - items:
-              - title: parent-monograph
-                emph: true
-              - items:
-                  - number: collection-number
-                    prefix: "Vol. "
-                  - number: pages
-                    prefix: "pp. "
-                delimiter: ", "
-                wrap: parentheses
-            delimiter: " "
-        delimiter: ", "
-        prefix: " In "
-        suffix: "."
-      - variable: publisher
-        prefix: " "
-        suffix: "."
-    patent:
-      - contributor: author
-        form: long
-        name-order: family-first
-        suffix: "."
-      - date: issued
-        form: year
-        wrap: parentheses
-        prefix: " "
-      - title: primary
-        emph: true
-      - items:
-          - variable: number
-            prefix: "Patent No. "
-        delimiter: ""
-        wrap: parentheses
-        prefix: " "
-        suffix: "."
-    entry-encyclopedia:
-      - contributor: author
-        form: long
-        name-order: family-first
-        suffix: "."
-      - date: issued
-        form: year
-        wrap: parentheses
-        prefix: " "
-      - title: primary
-        emph: false
-        suffix: "."
-      - items:
-          - title: parent-serial
-            emph: true
-          - items:
-              - number: volume
-                prefix: "Vol. "
-              - number: pages
-                prefix: "pp. "
-            delimiter: ", "
-            wrap: parentheses
-        delimiter: " "
-        prefix: " In "
-        suffix: ". Oxford University Press."
-    dataset:
-      - contributor: author
-        form: long
-        name-order: family-first
-        suffix: "."
-      - date: issued
-        form: year
-        wrap: parentheses
-        prefix: " "
-      - title: primary
-        emph: false
-        suffix: " [Dataset]."
-      - variable: publisher
-        prefix: " "
-        suffix: "."
-      - variable: url
-        prefix: " "
-    [motion-picture, broadcast, interview]:
-      - contributor: author
-        form: long
-        name-order: family-first
-        suffix: "."
-      - date: issued
-        form: year-month-day
-        wrap: parentheses
-        prefix: " "
-        overrides:
-          motion-picture:
-            date: issued
-            form: year
-      - title: primary
-        emph: true
-        overrides:
-          broadcast:
-            title: primary
-            emph: false
-      - number: issue
-        wrap: parentheses
-        prefix: " "
-        inner-prefix: "No. "
-        overrides:
-          [motion-picture, interview]:
-            suppress: true
-      - variable: note
-        wrap: parentheses
-        prefix: " "
-        overrides:
-          [motion-picture, broadcast]:
-            suppress: true
-      - variable: genre
-        wrap: brackets
-        prefix: " "
-        inner-suffix: "; Film"
-        suffix: "."
-        overrides:
-          [broadcast, interview]:
-            suppress: true
-      - variable: medium
-        wrap: brackets
-        prefix: " "
-        suffix: "."
-        overrides:
-          motion-picture:
-            suppress: true
-      - title: parent-serial
-        emph: true
-        prefix: " In "
-        suffix: "."
-        overrides:
-          [motion-picture, interview]:
-            suppress: true
-      - variable: url
-        prefix: " "
-        overrides:
-          [motion-picture, broadcast]:
-            suppress: true
-    paper-conference:
-      - contributor: author
-        form: long
-        name-order: family-first
-        suffix: "."
-      - date: issued
-        form: year
-        wrap: parentheses
-        prefix: " "
-      - title: primary
-        emph: false
-        suffix: "."
-      - title: parent-monograph
-        emph: true
-        prefix: " "
-      - number: pages
-        prefix: ", "
-        suffix: "."
-    report:
-      - contributor: author
-        form: long
-        name-order: family-first
-        suffix: "."
-      - date: issued
-        form: year
-        wrap: parentheses
-        prefix: " "
-      - title: primary
-        emph: true
-      - contributor: editor
         form: long
         name-order: given-first
-        label: { term: editor, form: short, placement: suffix }
+        suffix: ", personal communication"
+      - delimiter: ", "
         wrap: parentheses
-        prefix: " "
-      - items:
-          - variable: genre
-          - variable: medium
-        delimiter: "; "
-        wrap: brackets
-        prefix: " "
-      - variable: publisher
-        prefix: ". "
-        suffix: "."
-      - variable: doi
-        prefix: " https://doi.org/"
-      - items:
-          - date: accessed
-            form: month-day
-            prefix: "Retrieved "
-          - date: accessed
-            form: year
-            prefix: ", "
-            suffix: ", from"
-          - variable: url
-        delimiter: " "
-        prefix: " "
-    legal-case:
-      - title: primary
-        emph: false
-        quote: false
-        suffix: ", "
-      - number: volume
-        suffix: " "
-      - variable: reporter
-        suffix: " "
-      - number: pages
-      - items:
-          - variable: authority
-          - date: issued
-            form: year
-        delimiter: " "
-        wrap: parentheses
-        prefix: " "
-        suffix: "."
-  template:
+        group:
+        - date: issued
+          form: year-month-day
+        - variable: locator
+    template:
+    - contributor: author
+      form: short
+    - title: primary
+      form: short
+    - delimiter: ", "
+      wrap: parentheses
+      group:
+      - date: issued
+        form: year
+      - variable: locator
+bibliography:
+  type-variants:
+    "article-journal, article-magazine":
     - contributor: author
       form: long
       suffix: "."
       name-order: family-first
-      overrides:
-        legal-case: { suppress: true }
     - date: issued
       form: year
       wrap: parentheses
       prefix: " "
-      overrides:
-        [interview, article-newspaper, broadcast]:
-          date: issued
-          form: year-month-day
-        article-magazine:
-          date: issued
-          form: year-month-day
-        legal-case: { suppress: true }
     - title: primary
       emph: true
-      overrides:
-        [patent, dataset, standard, software]:
-          title: primary
-          emph: false
-    - items:
+    - items: &id001
         - variable: genre
         - variable: medium
       delimiter: "; "
@@ -438,84 +174,28 @@ bibliography:
     - number: edition
       wrap: parentheses
       prefix: " "
-      overrides:
-        patent:
-          items:
-            - term: patent
-              form: short
-              suffix: " "
-            - variable: number
-          delimiter: ""
-    - items:
-        - term: volume
-          form: short
-          suffix: " "
-          overrides:
-            [article-journal, article-magazine, article-newspaper]: { suppress: true }
-        - number: volume
-          overrides:
-            [article-journal, article-magazine, article-newspaper]: { suppress: true }
-      delimiter: ""
-      wrap: parentheses
-      prefix: " "
     - contributor: translator
       form: long
       name-order: given-first
-      label: { term: translator, form: short, placement: suffix }
+      label: &id002 {term: translator, form: short, placement: suffix}
       wrap: parentheses
       prefix: " "
-    - contributor: editor
-      form: long
-      name-order: given-first
-      prefix: ". In "
-      overrides:
-         [book, article-journal, article-magazine, article-newspaper]: { suppress: true }
-         report:
-           contributor: editor
-           form: long
-           name-order: given-first
-           label: { term: editor, form: short, placement: suffix }
-           wrap: parentheses
-           prefix: ". "
-    - title: parent-monograph
-      emph: true
-      prefix: ", "
-      overrides:
-         [book, article-journal, article-magazine, article-newspaper]: { suppress: true }
-    - items:
-         - title: parent-serial
-           emph: true
-           overrides:
-             broadcast: { title: parent-serial, emph: true, prefix: "In " }
-         - items:
-             - number: volume
-               emph: true
-             - number: issue
-               wrap: parentheses
-           delimiter: ""
-      delimiter: ", "
+    - delimiter: ", "
+      items:
+      - title: parent-serial
+        emph: true
+      - items: &id003
+          - number: volume
+            emph: true
+          - number: issue
+            wrap: parentheses
+        delimiter: ""
     - number: pages
-      overrides:
-        [chapter, entry-encyclopedia, report, paper-conference]:
-          number: pages
-          prefix: " (pp. "
-          suffix: ")."
       prefix: ", "
       suffix: "."
-    - variable: publisher
-      prefix: ". "
-      suffix: "."
-      overrides:
-        [article-journal, article-newspaper, article-magazine, broadcast, interview, webpage, standard]: { suppress: true }
-        patent:
-          items:
-            - variable: authority
-              prefix: ". "
-              suffix: "."
-          delimiter: ""
     - variable: doi
       prefix: "https://doi.org/"
-    - items:
+    - items: &id004
         - date: accessed
           form: year-month-day
           prefix: "Retrieved "
@@ -523,3 +203,200 @@ bibliography:
         - variable: url
       delimiter: " "
       prefix: " "
+    article-newspaper:
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: "."
+    - date: issued
+      form: year-month-day
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+      emph: false
+    - title: parent-serial
+      emph: true
+      prefix: ". "
+      suffix: "."
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: "."
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+      emph: false
+      suffix: "."
+    - delimiter: ", "
+      prefix: " In "
+      suffix: "."
+      items:
+      - contributor: editor
+        form: long
+        name-order: given-first
+      - delimiter: " "
+        items:
+        - title: parent-monograph
+          emph: true
+        - delimiter: ", "
+          wrap: parentheses
+          items:
+          - number: collection-number
+            prefix: "Vol. "
+          - number: pages
+            prefix: "pp. "
+    - variable: publisher
+      prefix: " "
+      suffix: "."
+    dataset:
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: "."
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+      emph: false
+      suffix: " [Dataset]."
+    - variable: publisher
+      prefix: " "
+      suffix: "."
+    - variable: url
+      prefix: " "
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: "."
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+      emph: false
+      suffix: "."
+    - delimiter: " "
+      suffix: "."
+      items:
+      - title: parent-serial
+        emph: true
+      - delimiter: ", "
+        wrap: parentheses
+        items:
+        - number: volume
+          prefix: "Vol. "
+        - number: pages
+          prefix: "pp. "
+    - variable: publisher
+      prefix: " "
+      suffix: "."
+    "motion-picture, broadcast":
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: "."
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+      emph: true
+    - variable: publisher
+      prefix: ". "
+      suffix: "."
+    - variable: url
+      prefix: " "
+    interview:
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: "."
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+      emph: true
+    - contributor: interviewer
+      form: long
+      name-order: family-first
+      label: {term: interviewer, form: long, placement: suffix}
+      wrap: parentheses
+      prefix: " "
+    - variable: publisher
+      prefix: ". "
+      suffix: "."
+    - variable: url
+      prefix: " "
+  template:
+  - contributor: author
+    form: long
+    suffix: "."
+    name-order: family-first
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "
+  - title: primary
+    emph: true
+  - delimiter: "; "
+    wrap: brackets
+    prefix: " "
+    items:
+    - variable: genre
+    - variable: medium
+  - number: edition
+    wrap: parentheses
+    prefix: " "
+  - delimiter: ""
+    wrap: parentheses
+    prefix: " "
+    items:
+    - term: volume
+      form: short
+      suffix: " "
+    - number: volume
+  - contributor: translator
+    form: long
+    name-order: given-first
+    label: *id002
+    wrap: parentheses
+    prefix: " "
+  - contributor: editor
+    form: long
+    name-order: given-first
+    prefix: ". In "
+  - title: parent-monograph
+    emph: true
+    prefix: ", "
+  - delimiter: ", "
+    items:
+    - title: parent-serial
+      emph: true
+    - delimiter: ""
+      items:
+      - number: volume
+        emph: true
+      - number: issue
+        wrap: parentheses
+  - number: pages
+    prefix: ", "
+    suffix: "."
+  - variable: publisher
+    prefix: ". "
+    suffix: "."
+  - variable: doi
+    prefix: "https://doi.org/"
+  - delimiter: " "
+    prefix: " "
+    items:
+    - date: accessed
+      form: year-month-day
+      prefix: "Retrieved "
+      suffix: ", from"
+    - variable: url

@@ -57,38 +57,24 @@ bibliography:
         and-others: et-al
         delimiter-precedes-last: contextual
       delimiter: ", "
-  template:
+  type-variants:
+    article-magazine:
     - contributor: author
       form: long
-      overrides:
-        personal_communication:
-          prefix: "pp. "
       name-order: given-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 1
     - title: primary
       wrap: quotes
-      overrides:
-        interview:
-          suppress: true
     - title: parent-monograph
     - title: parent-serial
     - items:
-        - number: volume
-        - number: issue
-          wrap: parentheses
-          overrides: {}
+      - number: volume
+      - number: issue
+        wrap: parentheses
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
-        article-magazine:
-          prefix: "pp. "
-        entry-encyclopedia:
-          prefix: "pp. "
+      prefix: "pp. "
     - variable: publisher
     - variable: publisher-place
     - date: issued
@@ -97,27 +83,160 @@ bibliography:
       prefix: " "
     - variable: doi
       prefix: " ["
-  type-templates:
+    chapter:
+    - contributor: author
+      form: long
+      name-order: given-first
+      shorten: *id001
+    - title: primary
+      wrap: quotes
+    - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher
+    - variable: publisher-place
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - variable: doi
+      prefix: " ["
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: given-first
+      shorten: *id001
+    - title: primary
+      wrap: quotes
+    - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher
+    - variable: publisher-place
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - variable: doi
+      prefix: " ["
+    interview:
+    - contributor: author
+      form: long
+      name-order: given-first
+      shorten: *id001
+    - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - number: pages
+    - variable: publisher
+    - variable: publisher-place
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - variable: doi
+      prefix: " ["
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: given-first
+      shorten: *id001
+    - title: primary
+      wrap: quotes
+    - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher
+    - variable: publisher-place
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - variable: doi
+      prefix: " ["
+    personal_communication:
+    - contributor: author
+      form: long
+      name-order: given-first
+      shorten: *id001
+      prefix: "pp. "
+    - title: primary
+      wrap: quotes
+    - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - number: pages
+    - variable: publisher
+    - variable: publisher-place
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - variable: doi
+      prefix: " ["
     webpage:
-      - number: citation-number
-        suffix: .
-      - contributor: author
-        form: long
-        shorten:
-          min: 4
-          use-first: 1
-          and-others: et-al
-          delimiter-precedes-last: contextual
-        and: text
-      - title: primary
-        quote: true
-        wrap: quotes
-      - date: issued
-        form: year
-      - variable: url
-        prefix: <
-        suffix: ">"
-      - date: accessed
-        form: year
-        prefix: " (accessed "
-        suffix: )
+    - number: citation-number
+      suffix: .
+    - contributor: author
+      form: long
+      shorten:
+        min: 4
+        use-first: 1
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      and: text
+    - title: primary
+      quote: true
+      wrap: quotes
+    - date: issued
+      form: year
+    - variable: url
+      prefix: <
+      suffix: ">"
+    - date: accessed
+      form: year
+      prefix: " (accessed "
+      suffix: )
+  template:
+  - contributor: author
+    form: long
+    name-order: given-first
+    shorten: *id001
+  - title: primary
+    wrap: quotes
+  - title: parent-monograph
+  - title: parent-serial
+  - items:
+    - number: volume
+    - number: issue
+      wrap: parentheses
+  - number: pages
+  - variable: publisher
+  - variable: publisher-place
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "
+  - variable: doi
+    prefix: " ["

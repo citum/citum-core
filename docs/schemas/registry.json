@@ -1,18 +1,14 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "StyleRegistry",
   "description": "A registry of citation styles with alias resolution.",
   "type": "object",
-  "required": [
-    "styles",
-    "version"
-  ],
   "properties": {
     "styles": {
       "description": "List of style entries in the registry.",
       "type": "array",
       "items": {
-        "$ref": "#/definitions/RegistryEntry"
+        "$ref": "#/$defs/RegistryEntry"
       }
     },
     "version": {
@@ -20,18 +16,19 @@
       "type": "string"
     }
   },
-  "definitions": {
+  "required": [
+    "version",
+    "styles"
+  ],
+  "$defs": {
     "RegistryEntry": {
       "description": "A single entry in a style registry.",
       "type": "object",
-      "required": [
-        "id"
-      ],
       "properties": {
         "aliases": {
           "description": "Short aliases that resolve to this entry (default empty).",
-          "default": [],
           "type": "array",
+          "default": [],
           "items": {
             "type": "string"
           }
@@ -52,8 +49,8 @@
         },
         "fields": {
           "description": "Subject/domain classification tags (default empty).",
-          "default": [],
           "type": "array",
+          "default": [],
           "items": {
             "type": "string"
           }
@@ -69,7 +66,10 @@
             "null"
           ]
         }
-      }
+      },
+      "required": [
+        "id"
+      ]
     }
   }
 }

@@ -40,33 +40,24 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
-  template:
+  type-variants:
+    article-magazine:
     - contributor: author
       form: long
       name-order: family-first
     - title: primary
       prefix: " "
-    - items:
-        - contributor: editor
-          form: verb
-          name-order: family-first
-        - title: parent-monograph
-          emph: true
+    - items: &id001
+      - contributor: editor
+        form: verb
+        name-order: family-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - number: volume
-    - number: issue
-      prefix: ": "
-      overrides:
-        article-magazine:
-          suppress: true
     - variable: publisher
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
       prefix: ": "
     - date: issued
       form: year
@@ -74,3 +65,71 @@ bibliography:
     - variable: doi
     - variable: publisher-place
     - variable: url
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+    - items: *id001
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - number: issue
+      prefix: ": "
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - date: issued
+      form: year
+      prefix: ", "
+    - variable: doi
+    - variable: publisher-place
+    - variable: url
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+    - items: *id001
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - number: issue
+      prefix: ": "
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - date: issued
+      form: year
+      prefix: ", "
+    - variable: doi
+    - variable: publisher-place
+    - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - title: primary
+    prefix: " "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: family-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - number: volume
+  - number: issue
+    prefix: ": "
+  - variable: publisher
+  - number: pages
+    prefix: ": "
+  - date: issued
+    form: year
+    prefix: ", "
+  - variable: doi
+  - variable: publisher-place
+  - variable: url

@@ -10,7 +10,7 @@ use citum_schema::options::{
 };
 use citum_schema::template::{
     ContributorForm, ContributorRole, DateForm, DateVariable, Rendering, TemplateComponent,
-    TemplateContributor, TemplateDate, TemplateList, TemplateTerm, TemplateTitle, TitleType,
+    TemplateContributor, TemplateDate, TemplateGroup, TemplateTerm, TemplateTitle, TitleType,
     WrapPunctuation,
 };
 use citum_schema::{BibliographySpec, CitationSpec, NoteStartTextCase, Style};
@@ -119,7 +119,6 @@ fn make_note_style() -> Style {
                     term: citum_schema::locale::GeneralTerm::Ibid,
                     form: None,
                     rendering: Rendering::default(),
-                    overrides: None,
                     custom: None,
                 })]),
                 suffix: Some(".".to_string()),
@@ -438,7 +437,7 @@ fn test_note_style_html_output_contains_footnotes() {
 
 #[test]
 fn test_note_style_integral_citation_keeps_prose_anchor() {
-    let style: Style = serde_yaml::from_str(include_str!(
+    let style = Style::from_yaml_str(include_str!(
         "../../../../../styles/chicago-shortened-notes-bibliography.yaml"
     ))
     .unwrap();
@@ -496,8 +495,8 @@ fn test_repro_djot_rendering() {
                         form: ContributorForm::Short,
                         ..Default::default()
                     }),
-                    TemplateComponent::List(TemplateList {
-                        items: vec![TemplateComponent::Date(TemplateDate {
+                    TemplateComponent::Group(TemplateGroup {
+                        group: vec![TemplateComponent::Date(TemplateDate {
                             date: DateVariable::Issued,
                             form: DateForm::Year,
                             ..Default::default()
@@ -507,7 +506,6 @@ fn test_repro_djot_rendering() {
                             ..Default::default()
                         },
                         delimiter: None,
-                        overrides: None,
                         custom: None,
                     }),
                 ]),
@@ -533,7 +531,7 @@ fn test_repro_djot_rendering() {
 
 #[test]
 fn test_real_chicago_note_style_generates_djot_footnotes() {
-    let style: Style = serde_yaml::from_str(include_str!(
+    let style = Style::from_yaml_str(include_str!(
         "../../../../../styles/chicago-shortened-notes-bibliography.yaml"
     ))
     .unwrap();

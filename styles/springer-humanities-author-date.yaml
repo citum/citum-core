@@ -1,6 +1,7 @@
 info:
   title: Springer - Humanities (author-date)
-  description: Style for Springer's humanities journals - the journals do look slightly different from each other, but this should work quite closely
+  description: Style for Springer's humanities journals - the journals do look slightly different 
+    from each other, but this should work quite closely
   fields:
   - humanities
   source:
@@ -12,14 +13,15 @@ info:
     links:
     - href: http://www.zotero.org/styles/springer-humanities-author-date
       rel: self
-    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
+    - href: 
+        http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
       rel: documentation
 options:
   processing: !custom
     sort:
       template:
-        - key: author
-        - key: year
+      - key: author
+      - key: year
     group:
       template: [author, year]
     disambiguate:
@@ -54,19 +56,19 @@ citation:
         min: 3
         use-first: 1
   template:
-    - items:
-        - contributor: author
-          form: short
-          shorten:
-            min: 3
-            use-first: 1
-            and-others: et-al
-            delimiter-precedes-last: contextual
-          and: text
-        - date: issued
-          form: year
-      delimiter: space
-    - variable: locator
+  - delimiter: space
+    items:
+    - contributor: author
+      form: short
+      shorten:
+        min: 3
+        use-first: 1
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      and: text
+    - date: issued
+      form: year
+  - variable: locator
   wrap: parentheses
   delimiter: ", "
   multi-cite-delimiter: "; "
@@ -82,33 +84,70 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: ", "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
     - date: issued
       form: year
     - title: primary
-    - items:
-        - contributor: editor
-          form: verb
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
+    - items: &id001
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - number: volume
     - number: issue
       prefix: ": "
-      overrides:
-        article-magazine:
-          suppress: true
     - number: pages
       prefix: ": "
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+    - title: primary
+    - items: *id001
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - number: pages
+      prefix: ": "
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - variable: doi
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - date: issued
+    form: year
+  - title: primary
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - number: volume
+  - number: issue
+    prefix: ": "
+  - number: pages
+    prefix: ": "
+  - variable: publisher-place
+  - variable: publisher
+    prefix: ": "
+  - variable: doi

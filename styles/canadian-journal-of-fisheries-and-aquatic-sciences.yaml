@@ -16,22 +16,22 @@ info:
 options:
   substitute:
     template:
-      - editor
-      - translator
-      - title
+    - editor
+    - translator
+    - title
   processing:
     sort:
       shorten-names: false
       render-substitutions: false
       template:
-        - key: year
-          ascending: true
-        - key: author
-          ascending: true
+      - key: year
+        ascending: true
+      - key: author
+        ascending: true
     group:
       template:
-        - year
-        - author
+      - year
+      - author
     disambiguate:
       names: false
       add-givenname: false
@@ -71,17 +71,17 @@ citation:
         delimiter-precedes-last: contextual
       delimiter: ", "
   template:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 3
-        use-first: 1
-    - date: issued
-      form: year
-      prefix: " "
-    - variable: locator
-      prefix: " "
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten:
+      min: 3
+      use-first: 1
+  - date: issued
+    form: year
+    prefix: " "
+  - variable: locator
+    prefix: " "
   wrap: parentheses
   delimiter: ". "
   multi-cite-delimiter: "; "
@@ -94,7 +94,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: ", "
-  template:
+  type-variants:
+    chapter:
     - contributor: author
       form: long
       name-order: family-first
@@ -102,26 +103,66 @@ bibliography:
       form: year
       prefix: " "
     - title: primary
-    - items:
-        - contributor: editor
-          form: verb
-          name-order: given-first
-        - title: parent-monograph
+    - items: &id001
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
     - title: parent-serial
     - items:
-        - number: volume
-        - number: issue
-          wrap: parentheses
-          overrides: {}
+      - number: volume
+      - number: issue
+        wrap: parentheses
     - variable: publisher
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
+      prefix: "pp. "
     - variable: publisher-place
       prefix: ", "
     - variable: doi
     - variable: url
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      prefix: " "
+    - title: primary
+    - items: *id001
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher-place
+      prefix: ", "
+    - variable: doi
+    - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - date: issued
+    form: year
+    prefix: " "
+  - title: primary
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+  - title: parent-serial
+  - items:
+    - number: volume
+    - number: issue
+      wrap: parentheses
+  - variable: publisher
+  - number: pages
+  - variable: publisher-place
+    prefix: ", "
+  - variable: doi
+  - variable: url
   sort: author-date-title

@@ -19,8 +19,8 @@ options:
   processing: !custom
     sort:
       template:
-        - key: author
-        - key: year
+      - key: author
+      - key: year
     group:
       template: [author, year]
     disambiguate:
@@ -55,19 +55,19 @@ citation:
         min: 3
         use-first: 1
   template:
-    - items:
-        - contributor: author
-          form: short
-          shorten:
-            min: 3
-            use-first: 1
-            and-others: et-al
-            delimiter-precedes-last: contextual
-          and: text
-        - date: issued
-          form: year
-      delimiter: space
-    - variable: locator
+  - delimiter: space
+    items:
+    - contributor: author
+      form: short
+      shorten:
+        min: 3
+        use-first: 1
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      and: text
+    - date: issued
+      form: year
+  - variable: locator
   wrap: parentheses
   delimiter: ", "
   multi-cite-delimiter: "; "
@@ -78,7 +78,8 @@ bibliography:
       name-form: initials
       initialize-with: ". "
       delimiter-precedes-last: always
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
@@ -86,26 +87,65 @@ bibliography:
       form: year
       prefix: " "
     - title: primary
-    - items:
-        - contributor: editor
-          form: verb
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
+    - items: &id001
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - items:
-        - number: volume
-        - number: issue
-          overrides:
-            article-magazine:
-              suppress: true
+      - number: volume
+      - number: issue
     - number: pages
       prefix: ": "
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      prefix: " "
+    - title: primary
+    - items: *id001
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+    - number: pages
+      prefix: ": "
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - variable: doi
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - date: issued
+    form: year
+    prefix: " "
+  - title: primary
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - items:
+    - number: volume
+    - number: issue
+  - number: pages
+    prefix: ": "
+  - variable: publisher-place
+  - variable: publisher
+    prefix: ": "
+  - variable: doi

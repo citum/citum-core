@@ -329,7 +329,7 @@ pub fn load_style(path: &str) -> Style {
     let style_path = project_root().join(path);
     let yaml = fs::read_to_string(&style_path)
         .unwrap_or_else(|err| panic!("failed to read style {}: {err}", style_path.display()));
-    serde_yaml::from_str(&yaml)
+    Style::from_yaml_str(&yaml)
         .unwrap_or_else(|err| panic!("failed to parse style {}: {err}", style_path.display()))
 }
 

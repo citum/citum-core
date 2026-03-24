@@ -108,7 +108,8 @@ test('resolveStyleData deep-merges preset wrappers with local overrides', () => 
   assert.equal(resolved.options.processing.disambiguate.names, true);
   assert.equal(resolved.citation.options.contributors.shorten.min, 4);
   assert.equal(
-    resolved.bibliography['type-templates'].motion_picture[4].prefix,
+    resolved.bibliography['type-variants']      ["motion-picture", 2],
+[4].prefix,
     'Directed by '
   );
 });

@@ -23,7 +23,7 @@ options:
   substitute:
     contributor-role-form: short
     template:
-      - editor
+    - editor
   processing: numeric
   contributors:
     name-form: initials
@@ -48,11 +48,11 @@ options:
   punctuation-in-quote: true
 citation:
   template:
-    - items:
-        - number: citation-number
-        - variable: locator
-          wrap: parentheses
-      delimiter: none
+  - delimiter: none
+    items:
+    - number: citation-number
+    - variable: locator
+      wrap: parentheses
   multi-cite-delimiter: ","
 bibliography:
   options:
@@ -62,46 +62,163 @@ bibliography:
         use-first: 3
         and-others: et-al
         delimiter-precedes-last: contextual
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 3
     - title: primary
       prefix: " "
     - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            chapter:
-              prefix: "on "
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
-    - date: issued
-      form: year
-      overrides:
-        article-journal:
-          suppress: true
-        chapter:
-          suppress: true
-        article-magazine:
-          suppress: true
-        entry-encyclopedia:
-          suppress: true
-        patent:
-          suppress: true
-        broadcast:
-          suppress: true
     - items:
-        - number: volume
-        - number: issue
-          wrap: parentheses
-          overrides: {}
+      - number: volume
+      - number: issue
+        wrap: parentheses
     - variable: publisher
     - number: pages
       prefix: "; 2006:"
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "; 2006:"
+    broadcast:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "; 2006:"
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        prefix: "on "
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "; 2006:"
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "; 2006:"
+    patent:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "; 2006:"
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - title: primary
+    prefix: " "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - date: issued
+    form: year
+  - items:
+    - number: volume
+    - number: issue
+      wrap: parentheses
+  - variable: publisher
+  - number: pages
+    prefix: "; 2006:"

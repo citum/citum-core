@@ -23,7 +23,7 @@ use citum_schema::{
     },
     template::{
         DateForm, DateVariable, DelimiterPunctuation, NumberVariable, Rendering, SimpleVariable,
-        TemplateComponent, TemplateDate, TemplateList, TemplateNumber, TemplateTitle,
+        TemplateComponent, TemplateDate, TemplateGroup, TemplateNumber, TemplateTitle,
         TemplateVariable, TitleForm, TitleType,
     },
 };
@@ -133,8 +133,8 @@ fn build_container_title_short_style(title_type: TitleType) -> Style {
             ..Default::default()
         }),
         bibliography: Some(BibliographySpec {
-            template: Some(vec![TemplateComponent::List(TemplateList {
-                items: vec![
+            template: Some(vec![TemplateComponent::Group(TemplateGroup {
+                group: vec![
                     TemplateComponent::Variable(TemplateVariable {
                         variable: SimpleVariable::ContainerTitleShort,
                         ..Default::default()
@@ -182,8 +182,8 @@ fn build_article_journal_no_page_fallback_style() -> Style {
                     title: TitleType::ParentSerial,
                     ..Default::default()
                 }),
-                TemplateComponent::List(TemplateList {
-                    items: vec![
+                TemplateComponent::Group(TemplateGroup {
+                    group: vec![
                         TemplateComponent::Date(TemplateDate {
                             date: DateVariable::Issued,
                             form: DateForm::Year,
@@ -235,7 +235,7 @@ info:
   title: Indexed Bibliography Preview
   id: indexed-bibliography-preview
 bibliography:
-  type-templates:
+  type-variants:
     article-journal:
       - contributor: author
         form: long
@@ -278,7 +278,7 @@ fn build_list_index_preview_style(use_type_template: bool) -> Style {
     let bibliography_yaml = if use_type_template {
         r#"
 bibliography:
-  type-templates:
+  type-variants:
     article-journal:
       - items:
           - contributor: author

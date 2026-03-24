@@ -14,15 +14,16 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/ecology-letters
       rel: template
-    - href: http://www.elsevier.com/journals/biological-conservation/0006-3207/guide-for-authors#68000
+    - href: 
+        http://www.elsevier.com/journals/biological-conservation/0006-3207/guide-for-authors#68000
       rel: documentation
   short-name: "Elsevier Harvard"
 options:
   processing: !custom
     sort:
       template:
-        - key: author
-        - key: year
+      - key: author
+      - key: year
     group:
       template: [author, year]
     disambiguate:
@@ -32,8 +33,8 @@ options:
   substitute:
     contributor-role-form: short
     template:
-      - translator
-      - title
+    - translator
+    - title
   contributors:
     display-as-sort: all
     name-form: initials
@@ -44,7 +45,7 @@ options:
     sort-separator: ", "
     role:
       omit:
-        - editor
+      - editor
   dates: numeric
   bibliography:
     hanging-indent: true
@@ -56,15 +57,53 @@ citation:
   options:
     substitute:
       template:
-        - editor
-        - translator
-        - title
+      - editor
+      - translator
+      - title
     contributors:
       shorten:
         min: 3
         use-first: 1
   sort: author-date-title
+  type-variants:
+    legal-case:
+    - title: primary
+      form: short
+      emph: true
+      quote: false
+    - date: issued
+      form: year
+    - variable: locator
   template:
+  - contributor: author
+    form: short
+    shorten:
+      min: 3
+      use-first: 1
+      and-others: et-al
+      delimiter-precedes-last: contextual
+    and: text
+  - date: issued
+    form: year
+  - variable: locator
+  wrap: parentheses
+  delimiter: ", "
+  multi-cite-delimiter: "; "
+  integral:
+    delimiter: " "
+    type-variants:
+      legal-case:
+      - title: primary
+        form: short
+        emph: true
+        quote: false
+      - items:
+        - date: issued
+          form: year
+        - variable: locator
+        delimiter: ", "
+        wrap: parentheses
+    template:
     - contributor: author
       form: short
       shorten:
@@ -73,239 +112,19 @@ citation:
         and-others: et-al
         delimiter-precedes-last: contextual
       and: text
-      overrides:
-        legal-case:
-          suppress: true
-    - title: primary
-      form: short
-      suppress: true
-      overrides:
-        legal-case:
-          suppress: false
-          emph: true
-          quote: false
-    - date: issued
-      form: year
-    - variable: locator
-  wrap: parentheses
-  delimiter: ", "
-  multi-cite-delimiter: "; "
-  integral:
-    delimiter: " "
-    template:
-      - contributor: author
-        form: short
-        shorten:
-          min: 3
-          use-first: 1
-          and-others: et-al
-          delimiter-precedes-last: contextual
-        and: text
-        overrides:
-          legal-case:
-            suppress: true
-      - title: primary
-        form: short
-        suppress: true
-        overrides:
-          legal-case:
-            suppress: false
-            emph: true
-            quote: false
-      - items:
-          - date: issued
-            form: year
-          - variable: locator
-        delimiter: ", "
-        wrap: parentheses
+    - delimiter: ", "
+      wrap: parentheses
+      items:
+      - date: issued
+        form: year
+      - variable: locator
 bibliography:
   options:
     substitute:
       template:
-        - translator
-  type-templates:
+      - translator
+  type-variants:
     [article-journal, article-magazine]:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - date: issued
-        form: year
-        prefix: ", "
-        suffix: "."
-      - title: primary
-        suffix: "."
-      - items:
-          - title: parent-serial
-          - items:
-              - number: volume
-              - number: pages
-            delimiter: ", "
-        delimiter: " "
-      - variable: doi
-        prefix: ". https://doi.org/"
-        links:
-          target: doi
-          anchor: component
-        overrides:
-          article-magazine:
-            suppress: true
-    book:
-      - contributor: editor
-        form: long
-        name-order: family-first
-        suffix: " (Eds.)"
-      - contributor: author
-        form: long
-        name-order: family-first
-      - date: issued
-        form: year
-        prefix: ", "
-        suffix: "."
-      - items:
-          - title: primary
-          - number: edition
-            suffix: ". ed."
-        delimiter: ", "
-        suffix: "."
-      - items:
-          - variable: publisher
-          - variable: publisher-place
-        delimiter: ", "
-    chapter:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - date: issued
-        form: year
-        prefix: ", "
-        suffix: "."
-      - title: primary
-      - items:
-          - term: in
-            suffix: ":"
-          - contributor: editor
-            form: long
-            name-order: family-first
-            suffix: " (Eds.),"
-          - title: parent-monograph
-        delimiter: " "
-        prefix: ", "
-        suffix: "."
-      - variable: publisher
-        suffix: ","
-      - number: pages
-        prefix: " pp. "
-    paper-conference:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - date: issued
-        form: year
-        prefix: ", "
-        suffix: "."
-      - title: primary
-      - title: parent-monograph
-        prefix: ", in: "
-        suffix: "."
-      - number: pages
-        prefix: "pp. "
-        suffix: "."
-    thesis:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - date: issued
-        form: year
-        prefix: ", "
-        suffix: "."
-      - title: primary
-      - variable: genre
-        wrap: parentheses
-        prefix: " "
-        suffix: "."
-      - variable: publisher
-    webpage:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - date: issued
-        form: year
-        prefix: ", "
-        suffix: "."
-      - title: primary
-        suffix: " [WWW Document]."
-      - variable: url
-        prefix: "URL "
-        links:
-          target: url
-          anchor: component
-      - date: accessed
-        form: full
-        prefix: " (accessed "
-        suffix: ")."
-    [article-newspaper, entry-encyclopedia, broadcast]:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - date: issued
-        form: year
-        prefix: ", "
-        suffix: "."
-      - title: primary
-        suffix: "."
-      - title: parent-serial
-        suffix: "."
-    legal-case:
-      - title: primary
-      - date: issued
-        form: year
-        prefix: ", "
-        suffix: ". "
-      - title: parent-serial
-        prefix: ", "
-      - variable: reporter
-        prefix: ", "
-        suffix: "."
-    [dataset, motion-picture, interview, personal-communication]:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - date: issued
-        form: year
-        prefix: ", "
-        suffix: "."
-      - title: primary
-        suffix: "."
-    patent:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - date: issued
-        form: year
-        prefix: ", "
-        suffix: "."
-      - title: primary
-        suffix: "."
-      - variable: number
-        suffix: "."
-    report:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - date: issued
-        form: year
-        prefix: ", "
-        suffix: "."
-      - title: primary
-      - variable: genre
-        wrap: parentheses
-        prefix: " "
-        suffix: "."
-      - items:
-          - variable: publisher
-          - variable: publisher-place
-        delimiter: ", "
-  template:
     - contributor: author
       form: long
       name-order: family-first
@@ -314,3 +133,181 @@ bibliography:
       prefix: ", "
       suffix: "."
     - title: primary
+      suffix: "."
+    - delimiter: " "
+      items:
+      - title: parent-serial
+      - delimiter: ", "
+        items:
+        - number: volume
+        - number: pages
+    - variable: doi
+      prefix: ". https://doi.org/"
+      links:
+        target: doi
+        anchor: component
+    book:
+    - contributor: editor
+      form: long
+      name-order: family-first
+      suffix: " (Eds.)"
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: "."
+    - delimiter: ", "
+      suffix: "."
+      items:
+      - title: primary
+      - number: edition
+        suffix: ". ed."
+    - delimiter: ", "
+      items:
+      - variable: publisher
+      - variable: publisher-place
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: "."
+    - title: primary
+    - delimiter: " "
+      prefix: ", "
+      suffix: "."
+      items:
+      - term: in
+        suffix: ":"
+      - contributor: editor
+        form: long
+        name-order: family-first
+        suffix: " (Eds.),"
+      - title: parent-monograph
+    - variable: publisher
+      suffix: ","
+    - number: pages
+      prefix: " pp. "
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: "."
+    - title: primary
+    - title: parent-monograph
+      prefix: ", in: "
+      suffix: "."
+    - number: pages
+      prefix: "pp. "
+      suffix: "."
+    thesis:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: "."
+    - title: primary
+    - variable: genre
+      wrap: parentheses
+      prefix: " "
+      suffix: "."
+    - variable: publisher
+    webpage:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: "."
+    - title: primary
+      suffix: " [WWW Document]."
+    - variable: url
+      prefix: "URL "
+      links:
+        target: url
+        anchor: component
+    - date: accessed
+      form: full
+      prefix: " (accessed "
+      suffix: ")."
+    [article-newspaper, entry-encyclopedia, broadcast]:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: "."
+    - title: primary
+      suffix: "."
+    - title: parent-serial
+      suffix: "."
+    legal-case:
+    - title: primary
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: ". "
+    - title: parent-serial
+      prefix: ", "
+    - variable: reporter
+      prefix: ", "
+      suffix: "."
+    [dataset, motion-picture, interview, personal-communication]:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: "."
+    - title: primary
+      suffix: "."
+    patent:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: "."
+    - title: primary
+      suffix: "."
+    - variable: number
+      suffix: "."
+    report:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: "."
+    - title: primary
+    - variable: genre
+      wrap: parentheses
+      prefix: " "
+      suffix: "."
+    - delimiter: ", "
+      items:
+      - variable: publisher
+      - variable: publisher-place
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - date: issued
+    form: year
+    prefix: ", "
+    suffix: "."
+  - title: primary

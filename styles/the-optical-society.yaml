@@ -31,7 +31,7 @@ options:
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
-  prefix: "\_["
+  prefix: " ["
   suffix: "]"
   multi-cite-delimiter: ","
 bibliography:
@@ -40,42 +40,74 @@ bibliography:
       name-form: initials
       initialize-with: ". "
       delimiter: ", "
-  template:
+  type-variants:
+    chapter:
     - contributor: author
       form: long
-      overrides:
-        personal_communication:
-          prefix: "pp. "
       name-order: given-first
     - title: primary
       wrap: quotes
-      overrides:
-        personal_communication:
-          suppress: true
     - title: parent-monograph
     - title: parent-serial
     - variable: publisher
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
+      prefix: "pp. "
     - date: issued
       form: year
       wrap: parentheses
       prefix: " "
-  type-templates:
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: primary
+      wrap: quotes
+    - title: parent-monograph
+    - title: parent-serial
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    personal_communication:
+    - contributor: author
+      form: long
+      name-order: given-first
+      prefix: "pp. "
+    - title: parent-monograph
+    - title: parent-serial
+    - variable: publisher
+    - number: pages
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
     patent:
-      - number: citation-number
-        suffix: ". "
-      - contributor: author
-        form: long
-        and: text
-      - title: primary
-        prefix: "\""
-        suffix: ",\" "
-      - date: issued
-        form: year
-      - term: no-date
-        form: short
+    - number: citation-number
+      suffix: ". "
+    - contributor: author
+      form: long
+      and: text
+    - title: primary
+      prefix: "\""
+      suffix: ",\" "
+    - date: issued
+      form: year
+    - term: no-date
+      form: short
+  template:
+  - contributor: author
+    form: long
+    name-order: given-first
+  - title: primary
+    wrap: quotes
+  - title: parent-monograph
+  - title: parent-serial
+  - variable: publisher
+  - number: pages
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "

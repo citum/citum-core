@@ -146,7 +146,15 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
                 None,
             )
         }
-        (ContributorForm::Long, ContributorRole::Editor | ContributorRole::Translator) => {
+        (
+            ContributorForm::Long,
+            ContributorRole::Editor
+            | ContributorRole::Translator
+            | ContributorRole::Interviewer
+            | ContributorRole::Director
+            | ContributorRole::Illustrator
+            | ContributorRole::Composer,
+        ) => {
             let plural = names_count > 1;
             let term =
                 options

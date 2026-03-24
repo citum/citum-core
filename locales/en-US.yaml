@@ -161,8 +161,10 @@ roles:
     verb: illustrated by
     verb-short: ill. by
   interviewer:
-    long: 
-    verb: interview by
+    long:
+      singular: interviewer
+      plural: interviewers
+    verb: interviewed by
   narrator:
     long:
       singular: narrator

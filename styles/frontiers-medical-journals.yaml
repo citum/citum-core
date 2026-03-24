@@ -54,21 +54,46 @@ bibliography:
         delimiter-precedes-last: contextual
       delimiter-precedes-last: always
       sort-separator: " "
-  template:
+  type-variants:
+    article-magazine:
     - contributor: author
       form: long
       name-order: family-first
     - title: primary
       prefix: " "
     - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            chapter:
-              prefix: "on "
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - date: issued
+      form: year
+      wrap: parentheses
+    - number: volume
+      prefix: " "
+    - number: pages
+      prefix: ":"
+    - variable: doi
+    - variable: url
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        prefix: "on "
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - variable: publisher-place
@@ -81,15 +106,63 @@ bibliography:
       prefix: " "
     - number: issue
       prefix: ":"
-      overrides:
-        article-magazine:
-          suppress: true
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
-      prefix: ":"
+      prefix: "pp. "
     - variable: doi
     - variable: url
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - date: issued
+      form: year
+      wrap: parentheses
+    - number: volume
+      prefix: " "
+    - number: issue
+      prefix: ":"
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
+    - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - title: primary
+    prefix: " "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - variable: publisher-place
+  - variable: publisher
+    prefix: ": "
+  - date: issued
+    form: year
+    wrap: parentheses
+  - number: volume
+    prefix: " "
+  - number: issue
+    prefix: ":"
+  - number: pages
+    prefix: ":"
+  - variable: doi
+  - variable: url

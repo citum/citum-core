@@ -1,6 +1,7 @@
 info:
   title: Taylor & Francis - Council of Science Editors (author-date)
-  description: The Council of Science Editors style for T&F journals as per guidelines (version 2.0, 18 Jan 2018).
+  description: The Council of Science Editors style for T&F journals as per guidelines (version 2.0,
+    18 Jan 2018).
   fields:
   - science
   source:
@@ -20,8 +21,8 @@ options:
   processing: !custom
     sort:
       template:
-        - key: author
-        - key: year
+      - key: author
+      - key: year
     group:
       template: [author, year]
     disambiguate:
@@ -54,19 +55,19 @@ citation:
         min: 3
         use-first: 1
   template:
-    - items:
-        - contributor: author
-          form: short
-          shorten:
-            min: 3
-            use-first: 1
-            and-others: et-al
-            delimiter-precedes-last: contextual
-          and: text
-        - date: issued
-          form: year
-      delimiter: space
-    - variable: locator
+  - delimiter: space
+    items:
+    - contributor: author
+      form: short
+      shorten:
+        min: 3
+        use-first: 1
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      and: text
+    - date: issued
+      form: year
+  - variable: locator
   wrap: parentheses
   delimiter: ", "
   multi-cite-delimiter: "; "
@@ -84,7 +85,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
@@ -93,30 +95,92 @@ bibliography:
       prefix: " "
     - title: primary
     - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            chapter:
-              prefix: "on "
-          name-order: given-first
-        - title: parent-monograph
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
     - title: parent-serial
     - items:
-        - number: volume
-        - number: issue
-          wrap: parentheses
-          overrides: {}
+      - number: volume
+      - number: issue
+        wrap: parentheses
     - variable: publisher
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
       prefix: "; "
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
     - variable: publisher-place
     - variable: url
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      prefix: " "
+    - title: primary
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        prefix: "on "
+      - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
+    - variable: publisher-place
+    - variable: url
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      prefix: " "
+    - title: primary
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
+    - variable: publisher-place
+    - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - date: issued
+    form: year
+    prefix: " "
+  - title: primary
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+  - title: parent-serial
+  - items:
+    - number: volume
+    - number: issue
+      wrap: parentheses
+  - variable: publisher
+  - number: pages
+    prefix: "; "
+  - variable: doi
+  - variable: publisher-place
+  - variable: url

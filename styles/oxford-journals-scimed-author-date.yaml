@@ -62,19 +62,19 @@ citation:
       delimiter-precedes-et-al: never
       sort-separator: " "
   template:
-    - contributor: author
-      form: short
-      name-order: family-first
-      shorten:
-        min: 4
-        use-first: 1
-        and-others: et-al
-        delimiter-precedes-last: contextual
-    - date: issued
-      form: year
-      prefix: " "
-    - variable: locator
-      prefix: ": "
+  - contributor: author
+    form: short
+    name-order: family-first
+    shorten:
+      min: 4
+      use-first: 1
+      and-others: et-al
+      delimiter-precedes-last: contextual
+  - date: issued
+    form: year
+    prefix: " "
+  - variable: locator
+    prefix: ": "
   wrap: parentheses
   delimiter: " "
   multi-cite-delimiter: "; "
@@ -93,27 +93,70 @@ bibliography:
       delimiter-precedes-last: always
       delimiter-precedes-et-al: never
       sort-separator: " "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 5
         use-first: 3
     - title: primary
       prefix: " "
     - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            chapter:
-              prefix: "on "
-          name-order: given-first
-          shorten:
-            min: 4
-            use-first: 3
-        - title: parent-monograph
-          emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: &id002
+          min: 4
+          use-first: 3
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - number: volume
+    - number: pages
+      prefix: ":"
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: *id002
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - number: volume
+    - number: pages
+      prefix: ":"
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: *id002
+        prefix: "on "
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - variable: publisher-place
@@ -122,13 +165,53 @@ bibliography:
     - date: issued
       form: year
       prefix: ", "
-      overrides:
-        article-journal:
-          suppress: true
-        article-magazine:
-          suppress: true
-        entry-encyclopedia:
-          suppress: true
     - number: volume
     - number: pages
       prefix: ":"
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: *id002
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - number: volume
+    - number: pages
+      prefix: ":"
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - title: primary
+    prefix: " "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+      shorten: *id002
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - variable: publisher-place
+  - variable: publisher
+    prefix: ": "
+  - date: issued
+    form: year
+    prefix: ", "
+  - number: volume
+  - number: pages
+    prefix: ":"

@@ -1,6 +1,9 @@
 info:
-  title: 'NLM Style Guide (Vancouver): Citing Medicine 2nd edition (citation-sequence, brackets, no "et al.")'
-  description: 'Citing Medicine: The NLM Style Guide for Authors, Editors, and Publishers, 2nd edition (2015), based on ANSI/NISO Z39.29-2005 (R2010); citation-sequence system, with in-text indicators in brackets, no "et al."'
+  title: 'NLM Style Guide (Vancouver): Citing Medicine 2nd edition (citation-sequence, brackets, no "et
+    al.")'
+  description: 'Citing Medicine: The NLM Style Guide for Authors, Editors, and Publishers, 2nd edition
+    (2015), based on ANSI/NISO Z39.29-2005 (R2010); citation-sequence system, with in-text indicators
+    in brackets, no "et al."'
   fields:
   - medicine
   source:
@@ -25,7 +28,7 @@ options:
   substitute:
     contributor-role-form: long
     template:
-      - editor
+    - editor
   processing: numeric
   contributors:
     display-as-sort: all
@@ -58,48 +61,205 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
     - title: primary
       prefix: " "
     - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            chapter:
-              prefix: "on "
-          name-order: given-first
-        - title: parent-monograph
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
     - title: parent-serial
-    - date: issued
-      form: year
-      overrides:
-        article-journal:
-          suppress: true
-        webpage:
-          suppress: true
-        article-newspaper:
-          suppress: true
-        article-magazine:
-          suppress: true
-        dataset:
-          suppress: true
     - items:
-        - number: volume
-        - number: issue
-          wrap: parentheses
-          overrides: {}
+      - number: volume
+      - number: issue
+        wrap: parentheses
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
-        entry-encyclopedia:
-          prefix: "pp. "
     - variable: url
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - number: pages
+    - variable: url
+    article-newspaper:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - number: pages
+    - variable: url
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        prefix: "on "
+      - title: parent-monograph
+    - title: parent-serial
+    - date: issued
+      form: year
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - number: pages
+      prefix: "pp. "
+    - variable: url
+    dataset:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - number: pages
+    - variable: url
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+    - title: parent-serial
+    - date: issued
+      form: year
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - number: pages
+      prefix: "pp. "
+    - variable: url
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+    - title: parent-serial
+    - date: issued
+      form: year
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - number: pages
+      prefix: "pp. "
+    - variable: url
+    webpage:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - number: pages
+    - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - title: primary
+    prefix: " "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+  - title: parent-serial
+  - date: issued
+    form: year
+  - items:
+    - number: volume
+    - number: issue
+      wrap: parentheses
+  - variable: publisher-place
+  - variable: publisher
+    prefix: ": "
+  - number: pages
+  - variable: url

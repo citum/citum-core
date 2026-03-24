@@ -1,17 +1,16 @@
-# yaml-language-server: $schema=./citum.schema.json
 info:
   title: 'Taylor & Francis Journals Standard Reference Style Guide: Chicago'
   id: taylor-and-francis-chicago-author-date
-  description: 'Taylor & Francis Journals adaptation of Chicago-style, author-date system, using style presets.'
+  description: 'Taylor & Francis Journals adaptation of Chicago-style, author-date system, using style
+    presets.'
 
 preset: chicago-author-date-18th
-
 options:
   page-range-format: expanded
   contributors:
     role:
       omit:
-        - translator
+      - translator
 
 citation:
   options:
@@ -20,143 +19,197 @@ citation:
         min: 4
         use-first: 1
   template:
-    - contributor: author
-      form: short
-      shorten:
-        min: 4
-        use-first: 1
-        and-others: et-al
-        delimiter-precedes-last: contextual
-      and: text
-    - date: issued
-      form: year
-    - variable: locator
-      prefix: ", "
+  - contributor: author
+    form: short
+    shorten:
+      min: 4
+      use-first: 1
+      and-others: et-al
+      delimiter-precedes-last: contextual
+    and: text
+  - date: issued
+    form: year
+  - variable: locator
+    prefix: ", "
   wrap: parentheses
   delimiter: " "
   multi-cite-delimiter: "; "
-
 bibliography:
-  type-templates:
-    interview:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - date: issued
-        form: year
-      - title: primary
-        wrap: quotes
-      - contributor: interviewer
-        form: long
-        name-order: given-first
-        prefix: "Interview by "
-      - items:
-          - date: issued
-            form: month-day
-          - date: issued
-            form: year
-        delimiter: ", "
-      - variable: medium
-      - variable: url
-        suffix: "."
-    motion_picture:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - date: issued
-        form: year
-      - title: primary
-      - variable: genre
-      - contributor: author
-        form: long
-        name-order: given-first
-        prefix: "Directed by "
-      - date: issued
-        form: year
-      - variable: medium
-        text-case: capitalize-first
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
     - date: issued
       form: year
     - title: primary
-      overrides:
-        article-journal:
-          wrap: quotes
-        chapter:
-          wrap: quotes
-          suffix: "."
+      wrap: quotes
     - contributor: translator
       form: long
       name-order: given-first
       prefix: "Translated by "
-      overrides:
-        book:
-          suppress: false
-        default:
-          suppress: true
-    - title: parent-monograph
-      prefix: " In "
-      overrides:
-        article-journal:
-          suppress: true
-        book:
-          suppress: true
-    - contributor: editor
-      form: long
-      name-order: given-first
-      prefix: ", edited by "
-      overrides:
-        article-journal:
-          suppress: true
-        book:
-          suppress: true
     - title: parent-serial
-      overrides:
-        chapter:
-          suppress: true
-        book:
-          suppress: true
     - number: volume
       prefix: " "
-      overrides:
-        chapter:
-          suppress: true
-        book:
-          suppress: true
     - number: issue
       wrap: parentheses
-      overrides:
-        chapter:
-          suppress: true
-        book:
-          suppress: true
     - number: pages
       prefix: ": "
-      overrides:
-        book:
-          suppress: true
-    - variable: publisher-place
-      overrides:
-        article-journal:
-          suppress: true
-    - variable: publisher
-      prefix: ": "
-      overrides:
-        article-journal:
-          suppress: true
-    - date: issued
-      form: year
-      prefix: ", "
-      suffix: "."
-      overrides:
-        article-journal:
-          suppress: true
-        chapter:
-          suppress: true
     - variable: doi
       prefix: ". https://doi.org/"
       suffix: "."
     - variable: url
       suffix: "."
+    book:
+    - contributor: author
+      form: long
+    - date: issued
+      form: year
+    - title: primary
+    - contributor: translator
+      form: long
+      name-order: given-first
+      prefix: "Translated by "
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: "."
+    - variable: doi
+      prefix: ". https://doi.org/"
+      suffix: "."
+    - variable: url
+      suffix: "."
+    chapter:
+    - contributor: author
+      form: long
+    - date: issued
+      form: year
+    - title: primary
+      wrap: quotes
+      suffix: "."
+    - contributor: translator
+      form: long
+      name-order: given-first
+      prefix: "Translated by "
+    - title: parent-monograph
+      prefix: " In "
+    - contributor: editor
+      form: long
+      name-order: given-first
+      prefix: ", edited by "
+    - number: pages
+      prefix: ": "
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - variable: doi
+      prefix: ". https://doi.org/"
+      suffix: "."
+    - variable: url
+      suffix: "."
+    default:
+    - contributor: author
+      form: long
+    - date: issued
+      form: year
+    - title: primary
+    - title: parent-monograph
+      prefix: " In "
+    - contributor: editor
+      form: long
+      name-order: given-first
+      prefix: ", edited by "
+    - title: parent-serial
+    - number: volume
+      prefix: " "
+    - number: issue
+      wrap: parentheses
+    - number: pages
+      prefix: ": "
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: "."
+    - variable: doi
+      prefix: ". https://doi.org/"
+      suffix: "."
+    - variable: url
+      suffix: "."
+    interview:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+    - title: primary
+      wrap: quotes
+    - contributor: interviewer
+      form: long
+      name-order: given-first
+      prefix: "Interview by "
+    - delimiter: ", "
+      items:
+      - date: issued
+        form: month-day
+      - date: issued
+        form: year
+    - variable: medium
+    - variable: url
+      suffix: "."
+    motion-picture:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+    - title: primary
+    - variable: genre
+    - contributor: author
+      form: long
+      name-order: given-first
+      prefix: "Directed by "
+    - date: issued
+      form: year
+      suffix: "."
+    - variable: medium
+      text-case: capitalize-first
+  template:
+  - contributor: author
+    form: long
+  - date: issued
+    form: year
+  - title: primary
+  - contributor: translator
+    form: long
+    name-order: given-first
+    prefix: "Translated by "
+  - title: parent-monograph
+    prefix: " In "
+  - contributor: editor
+    form: long
+    name-order: given-first
+    prefix: ", edited by "
+  - title: parent-serial
+  - number: volume
+    prefix: " "
+  - number: issue
+    wrap: parentheses
+  - number: pages
+    prefix: ": "
+  - variable: publisher-place
+  - variable: publisher
+    prefix: ": "
+  - date: issued
+    form: year
+    prefix: ", "
+    suffix: "."
+  - variable: doi
+    prefix: ". https://doi.org/"
+    suffix: "."
+  - variable: url
+    suffix: "."

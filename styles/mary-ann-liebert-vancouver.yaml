@@ -50,72 +50,160 @@ bibliography:
         delimiter-precedes-last: contextual
       delimiter-precedes-last: never
       sort-separator: " "
-  type-templates:
-    legal-case:
-      - title: primary
-        prefix: "Anonymous. "
-        suffix: ". "
-      - date: issued
-        form: year
-    webpage:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-      - date: issued
-        form: year
-        suffix: ". "
-      - variable: url
-        prefix: "Available from: "
-      - date: accessed
-        form: full
-        prefix: " [Last accessed: "
-        suffix: "]"
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 3
     - title: primary
       prefix: " "
-    - items:
-        - contributor: editor
-          form: verb
-          name-order: family-first
-          shorten:
-            min: 4
-            use-first: 3
-        - title: parent-monograph
+    - items: &id002
+      - contributor: editor
+        form: verb
+        name-order: family-first
+        shorten: &id003
+          min: 4
+          use-first: 3
+      - title: parent-monograph
     - title: parent-serial
     - items:
-        - number: volume
-        - number: issue
-          wrap: parentheses
-          overrides: {}
+      - number: volume
+      - number: issue
+        wrap: parentheses
     - variable: publisher
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
       prefix: "; "
-    - date: issued
-      form: year
-      overrides:
-        article-journal:
-          suppress: true
-        chapter:
-          suppress: true
-        paper-conference:
-          suppress: true
-        article-magazine:
-          suppress: true
-        entry-encyclopedia:
-          suppress: true
     - variable: doi
       prefix: "; "
     - variable: publisher-place
       prefix: ": "
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items: *id002
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "; "
+    - variable: doi
+      prefix: "; "
+    - variable: publisher-place
+      prefix: ": "
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items: *id002
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
+      prefix: "; "
+    - variable: publisher-place
+      prefix: ": "
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items: *id002
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "; "
+    - variable: doi
+      prefix: "; "
+    - variable: publisher-place
+      prefix: ": "
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items: *id002
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
+      prefix: "; "
+    - variable: publisher-place
+      prefix: ": "
+    legal-case:
+    - title: primary
+      prefix: "Anonymous. "
+      suffix: ". "
+    - date: issued
+      form: year
+    webpage:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - date: issued
+      form: year
+      suffix: ". "
+    - variable: url
+      prefix: "Available from: "
+    - date: accessed
+      form: full
+      prefix: " [Last accessed: "
+      suffix: "]"
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - title: primary
+    prefix: " "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: family-first
+      shorten: *id003
+    - title: parent-monograph
+  - title: parent-serial
+  - items:
+    - number: volume
+    - number: issue
+      wrap: parentheses
+  - variable: publisher
+  - number: pages
+    prefix: "; "
+  - date: issued
+    form: year
+  - variable: doi
+    prefix: "; "
+  - variable: publisher-place
+    prefix: ": "

@@ -13,11 +13,10 @@ use citum_schema::{
     template::{
         ContributorForm, ContributorRole, DateForm, DateVariable, DelimiterPunctuation,
         NumberVariable, Rendering, SimpleVariable, TemplateComponent, TemplateContributor,
-        TemplateDate, TemplateList, TemplateNumber, TemplateTitle, TemplateVariable, TitleType,
+        TemplateDate, TemplateGroup, TemplateNumber, TemplateTitle, TemplateVariable, TitleType,
     },
 };
 use indexmap::IndexMap;
-use std::collections::HashMap;
 use std::sync::OnceLock;
 
 mod bibliography;
@@ -32,11 +31,11 @@ mod types;
 /// and default branches. This is critical for correct suppress semantics.
 #[derive(Debug, Clone)]
 enum BranchContext {
-    /// Type-specific branch (`THEN/ELSE_IF` with type conditions).
-    /// Components here should be shown ONLY for these types.
-    TypeSpecific(Vec<ItemType>),
+    /// Conditional branch (e.g. `THEN/ELSE_IF` targeting specific types).
+    /// Components here are only active when the branch condition is met.
+    Conditional,
     /// Default branch (ELSE or no condition).
-    /// Components here should be shown for ALL types except overridden.
+    /// Components here should be shown for ALL types.
     Default,
 }
 

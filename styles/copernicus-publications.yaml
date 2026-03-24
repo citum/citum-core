@@ -19,8 +19,8 @@ options:
   processing: !custom
     sort:
       template:
-        - key: author
-        - key: year
+      - key: author
+      - key: year
     group:
       template: [author, year]
     disambiguate:
@@ -51,17 +51,17 @@ citation:
         min: 3
         use-first: 1
   template:
-    - contributor: author
-      form: short
-      shorten:
-        min: 3
-        use-first: 1
-        and-others: et-al
-        delimiter-precedes-last: contextual
-      and: text
-    - date: issued
-      form: year
-    - variable: locator
+  - contributor: author
+    form: short
+    shorten:
+      min: 3
+      use-first: 1
+      and-others: et-al
+      delimiter-precedes-last: contextual
+    and: text
+  - date: issued
+    form: year
+  - variable: locator
   wrap: parentheses
   delimiter: ", "
   multi-cite-delimiter: "; "
@@ -76,7 +76,8 @@ bibliography:
         use-first: 99
         and-others: et-al
         delimiter-precedes-last: contextual
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
@@ -86,15 +87,41 @@ bibliography:
     - title: parent-serial
     - number: volume
     - number: issue
-      overrides:
-        article-magazine:
-          suppress: true
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
     - variable: publisher-place
     - variable: publisher
     - number: pages
     - date: issued
       form: year
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: ": "
+    - title: parent-monograph
+    - title: parent-serial
+    - number: volume
+    - variable: doi
+    - variable: publisher-place
+    - variable: publisher
+    - number: pages
+    - date: issued
+      form: year
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - title: primary
+    prefix: ": "
+  - title: parent-monograph
+  - title: parent-serial
+  - number: volume
+  - number: issue
+  - variable: doi
+  - variable: publisher-place
+  - variable: publisher
+  - number: pages
+  - date: issued
+    form: year

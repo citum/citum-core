@@ -42,6 +42,8 @@ pub struct Renderer<'a> {
     pub show_semantics: bool,
     /// Whether to attach source template indices to rendered semantic wrappers.
     pub inject_ast_indices: bool,
+    /// Mapping from filtered to original template indices (for grouped citations).
+    pub filtered_to_original_index: RefCell<Option<Vec<usize>>>,
 }
 
 /// Borrowed compound-set context for rendering.
@@ -152,6 +154,7 @@ impl<'a> Renderer<'a> {
             compound_sets: compound.sets,
             show_semantics,
             inject_ast_indices,
+            filtered_to_original_index: RefCell::new(None),
         }
     }
 
@@ -507,7 +510,21 @@ impl<'a> Renderer<'a> {
             } else {
                 // Standard rendering: use template with citation number
                 let item_language = crate::values::effective_item_language(reference);
-                let template = spec.resolve_template_for_language(item_language.as_deref());
+                let default_template = spec.resolve_template_for_language(item_language.as_deref());
+
+                let ref_type = reference.ref_type();
+                let matched_type_template = spec.type_variants.as_ref().and_then(|type_variants| {
+                    let mut matched_template = None;
+                    for (selector, template) in type_variants {
+                        if selector.matches(&ref_type) {
+                            matched_template = Some(template.clone());
+                            break;
+                        }
+                    }
+                    matched_template
+                });
+
+                let template = matched_type_template.or(default_template);
                 let effective_template = template.as_deref().unwrap_or(&[]);
                 let effective_delim = spec.delimiter.as_deref().unwrap_or(intra_delimiter);
                 let request = self.citation_render_request(
@@ -587,7 +604,7 @@ pub fn get_variable_key(component: &TemplateComponent) -> Option<String> {
         }
         TemplateComponent::Title(t) => make_key("title", &t.title, context_suffix(&t.rendering)),
         TemplateComponent::Number(n) => make_key("number", &n.number, context_suffix(&n.rendering)),
-        TemplateComponent::List(_) => None,
+        TemplateComponent::Group(_) => None,
         _ => None,
     }
 }

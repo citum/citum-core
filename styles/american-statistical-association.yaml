@@ -20,21 +20,21 @@ options:
   substitute:
     contributor-role-form: short
     template:
-      - editor
-      - translator
+    - editor
+    - translator
   processing:
     sort:
       shorten-names: false
       render-substitutions: false
       template:
-        - key: author
-          ascending: true
-        - key: year
-          ascending: true
+      - key: author
+        ascending: true
+      - key: year
+        ascending: true
     group:
       template:
-        - author
-        - year
+      - author
+      - year
     disambiguate:
       names: false
       add-givenname: false
@@ -76,17 +76,17 @@ citation:
         delimiter-precedes-last: contextual
       delimiter: ", "
   template:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 3
-        use-first: 1
-    - date: issued
-      form: year
-      prefix: " "
-    - variable: locator
-      prefix: ","
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten:
+      min: 3
+      use-first: 1
+  - date: issued
+    form: year
+    prefix: " "
+  - variable: locator
+    prefix: ","
   wrap: parentheses
   delimiter: ". "
   multi-cite-delimiter: "; "
@@ -99,7 +99,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: ", "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
@@ -115,9 +116,7 @@ bibliography:
       emph: true
     - variable: publisher-place
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
     - contributor: editor
       form: verb
       name-order: given-first
@@ -125,13 +124,102 @@ bibliography:
       prefix: ": "
     - number: volume
     - number: issue
-      overrides:
-        article-magazine:
-          suppress: true
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+      wrap: quotes
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - variable: publisher-place
+    - variable: doi
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - variable: publisher
+      prefix: ": "
+    - number: volume
+    - number: pages
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+      wrap: quotes
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - variable: publisher-place
+    - variable: doi
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - variable: publisher
+      prefix: ": "
+    - number: volume
+    - number: issue
+    - number: pages
+      prefix: "pp. "
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+      wrap: quotes
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - variable: publisher-place
+    - variable: doi
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - variable: publisher
+      prefix: ": "
+    - number: volume
+    - number: issue
+    - number: pages
+      prefix: "pp. "
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "
+  - title: primary
+    wrap: quotes
+  - title: parent-monograph
+    emph: true
+  - title: parent-serial
+    emph: true
+  - variable: publisher-place
+  - variable: doi
+  - contributor: editor
+    form: verb
+    name-order: given-first
+  - variable: publisher
+    prefix: ": "
+  - number: volume
+  - number: issue
+  - number: pages
   sort: author-date-title

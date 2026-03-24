@@ -7,9 +7,9 @@ pub fn strip_author_component(component: &TemplateComponent) -> Option<TemplateC
         {
             None
         }
-        TemplateComponent::List(list) => {
+        TemplateComponent::Group(list) => {
             let filtered_items: Vec<TemplateComponent> = list
-                .items
+                .group
                 .iter()
                 .filter_map(strip_author_component)
                 .collect();
@@ -18,8 +18,8 @@ pub fn strip_author_component(component: &TemplateComponent) -> Option<TemplateC
                 None
             } else {
                 let mut filtered_list = list.clone();
-                filtered_list.items = filtered_items;
-                Some(TemplateComponent::List(filtered_list))
+                filtered_list.group = filtered_items;
+                Some(TemplateComponent::Group(filtered_list))
             }
         }
         _ => Some(component.clone()),
@@ -30,8 +30,8 @@ pub fn strip_author_component(component: &TemplateComponent) -> Option<TemplateC
 pub fn leading_group_affix(component: &TemplateComponent) -> Option<String> {
     let r = component.rendering();
     let own_affix = r.prefix.clone().or(r.inner_prefix.clone()).or_else(|| {
-        if let TemplateComponent::List(inner) = component {
-            inner.items.first().and_then(leading_group_affix)
+        if let TemplateComponent::Group(inner) = component {
+            inner.group.first().and_then(leading_group_affix)
         } else {
             None
         }
@@ -50,8 +50,8 @@ pub fn strip_leading_group_affixes(component: &mut TemplateComponent) {
     let r = component.rendering_mut();
     r.prefix = None;
     r.inner_prefix = None;
-    if let TemplateComponent::List(inner) = component
-        && let Some(first) = inner.items.first_mut()
+    if let TemplateComponent::Group(inner) = component
+        && let Some(first) = inner.group.first_mut()
     {
         strip_leading_group_affixes(first);
     }
@@ -64,7 +64,7 @@ pub fn strip_leading_group_affixes(component: &mut TemplateComponent) {
 pub fn find_grouping_component(component: &TemplateComponent) -> Option<&TemplateComponent> {
     match component {
         TemplateComponent::Contributor(_) | TemplateComponent::Title(_) => Some(component),
-        TemplateComponent::List(list) => list.items.iter().find_map(find_grouping_component),
+        TemplateComponent::Group(list) => list.group.iter().find_map(find_grouping_component),
         _ => None,
     }
 }
@@ -72,7 +72,7 @@ pub fn find_grouping_component(component: &TemplateComponent) -> Option<&Templat
 pub fn has_contributor_component(component: &TemplateComponent) -> bool {
     match component {
         TemplateComponent::Contributor(_) => true,
-        TemplateComponent::List(list) => list.items.iter().any(has_contributor_component),
+        TemplateComponent::Group(list) => list.group.iter().any(has_contributor_component),
         _ => false,
     }
 }

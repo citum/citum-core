@@ -1,6 +1,4 @@
-use super::{
-    CslnNode, HashMap, ItemType, Rendering, TemplateCompiler, TemplateComponent, TemplateList,
-};
+use super::{CslnNode, Rendering, TemplateCompiler, TemplateComponent, TemplateGroup};
 
 impl TemplateCompiler {
     pub(super) fn has_variable_recursive(
@@ -12,114 +10,13 @@ impl TemplateCompiler {
             if self.same_variable(item, target) {
                 return true;
             }
-            if let TemplateComponent::List(list) = item
-                && self.has_variable_recursive(&list.items, target)
+            if let TemplateComponent::Group(list) = item
+                && self.has_variable_recursive(&list.group, target)
             {
                 return true;
             }
         }
         false
-    }
-
-    /// Add type-specific overrides to all items within a List.
-    /// This ensures that when a List is created inside a type-specific branch,
-    /// all its items get the appropriate suppress=true with type-specific unsuppress.
-    #[allow(dead_code, reason = "helper functions")]
-    pub(super) fn add_type_overrides_to_list_items(
-        &self,
-        items: &mut [TemplateComponent],
-        current_types: &[ItemType],
-    ) {
-        for item in items.iter_mut() {
-            if let TemplateComponent::List(nested_list) = item {
-                // Recursively process nested lists
-                self.add_type_overrides_to_list_items(&mut nested_list.items, current_types);
-            } else {
-                // Add suppress=true to base, with type-specific unsuppress overrides
-                let mut base = self.get_component_rendering(item);
-                base.suppress = Some(true);
-                self.set_component_rendering(item, base.clone());
-
-                for item_type in current_types {
-                    let type_str = self.item_type_to_string(item_type);
-                    let mut unsuppressed = base.clone();
-                    unsuppressed.suppress = Some(false);
-                    self.add_override_to_component(item, type_str, unsuppressed);
-                }
-            }
-        }
-    }
-
-    #[allow(dead_code, reason = "helper functions")]
-    pub(super) fn add_overrides_recursive(
-        &self,
-        component: &mut TemplateComponent,
-        new_comp: &TemplateComponent,
-        current_types: &[ItemType],
-    ) {
-        if self.same_variable(component, new_comp) {
-            if current_types.is_empty() {
-                // Empty types means this is the default case - unsuppress the component
-                let mut rendering = self.get_component_rendering(component);
-                if rendering.suppress == Some(true) {
-                    rendering.suppress = Some(false);
-                    self.set_component_rendering(component, rendering);
-                }
-            } else {
-                // Add type-specific overrides
-                self.add_overrides_to_existing(component, new_comp, current_types);
-            }
-            return;
-        }
-        if let TemplateComponent::List(list) = component {
-            for item in &mut list.items {
-                self.add_overrides_recursive(item, new_comp, current_types);
-            }
-        }
-    }
-
-    /// Get a debug name for a component
-    #[allow(dead_code, reason = "helper functions")]
-    pub(super) fn get_component_name(&self, comp: &TemplateComponent) -> String {
-        match comp {
-            TemplateComponent::Contributor(c) => format!("contributor:{:?}", c.contributor),
-            TemplateComponent::Date(d) => format!("date:{:?}", d.date),
-            TemplateComponent::Title(t) => format!("title:{:?}", t.title),
-            TemplateComponent::Number(n) => format!("number:{:?}", n.number),
-            TemplateComponent::Variable(v) => format!("variable:{:?}", v.variable),
-            TemplateComponent::List(_) => "List".to_string(),
-            _ => "unknown".to_string(),
-        }
-    }
-
-    #[allow(dead_code, reason = "helper functions")]
-    pub(super) fn add_overrides_to_existing(
-        &self,
-        existing: &mut TemplateComponent,
-        new_comp: &TemplateComponent,
-        current_types: &[ItemType],
-    ) {
-        let base_rendering = self.get_component_rendering(new_comp);
-        let new_overrides = self.get_component_overrides(new_comp);
-
-        use citum_schema::template::ComponentOverride;
-
-        for item_type in current_types {
-            let type_str = self.item_type_to_string(item_type);
-            use citum_schema::template::TypeSelector;
-            let mut override_val = new_overrides
-                .as_ref()
-                .and_then(|ovr| ovr.get(&TypeSelector::Single(type_str.clone())))
-                .cloned()
-                .unwrap_or_else(|| ComponentOverride::Rendering(base_rendering.clone()));
-
-            if let ComponentOverride::Rendering(ref mut rendering) = override_val {
-                if rendering.suppress.is_none() || rendering.suppress == Some(true) {
-                    rendering.suppress = Some(false);
-                }
-                self.add_override_to_component(existing, type_str, rendering.clone());
-            }
-        }
     }
 
     /// Simplified compile that only takes `then_branch` (for citations).
@@ -208,105 +105,43 @@ impl TemplateCompiler {
     /// 1. Inside a List for specific types (e.g., article-journal)
     /// 2. As a standalone component for all types
     ///
-    /// Both will render for those types, causing duplication. This method adds
-    /// suppress overrides to standalone components for types where the variable
-    /// already appears in a List.
+    /// Both will render for those types, causing duplication. This method
+    /// suppresses standalone components when they duplicate List contents.
+    /// Type-specific behavior is handled by `type-variants` at the spec level.
     pub(super) fn fix_duplicate_variables(&self, components: &mut [TemplateComponent]) {
-        // Step 1: Collect which variables appear in Lists, and for which types
-        let mut list_vars: HashMap<String, Vec<String>> = HashMap::new();
+        // Collect variables that appear in default-visible Lists
         let mut default_list_vars: Vec<String> = Vec::new();
 
         for component in components.iter() {
-            if let TemplateComponent::List(list) = component {
-                // Check if this List is visible by default
+            if let TemplateComponent::Group(list) = component {
                 let base_rendering = self.get_component_rendering(component);
                 let is_default_visible = base_rendering.suppress != Some(true);
 
-                // Extract all variables from this List
-                let vars = self.extract_list_vars(list);
-
                 if is_default_visible {
-                    for var in &vars {
-                        if !default_list_vars.contains(var) {
-                            default_list_vars.push(var.clone());
-                        }
-                    }
-                } else {
-                    let visible_types = self.get_visible_types_for_component(component);
+                    let vars = self.extract_list_vars(list);
                     for var in vars {
-                        list_vars
-                            .entry(var)
-                            .or_default()
-                            .extend(visible_types.clone());
+                        if !default_list_vars.contains(&var) {
+                            default_list_vars.push(var);
+                        }
                     }
                 }
             }
         }
 
-        // Step 2: For each standalone component, add suppress overrides for types
-        // where it already appears in a List
+        // Suppress standalone components that duplicate List contents
         for component in components.iter_mut() {
-            // Skip Lists - we only care about standalone components
-            if matches!(component, TemplateComponent::List(_)) {
+            if matches!(component, TemplateComponent::Group(_)) {
                 continue;
             }
 
-            // Get the variable key for this component
-            if let Some(var_key) = self.get_variable_key(component) {
-                // If it appears in a default-visible List, suppress it by default
-                if default_list_vars.contains(&var_key) {
-                    let mut rendering = self.get_component_rendering(component);
-                    rendering.suppress = Some(true);
-                    self.set_component_rendering(component, rendering);
-                } else if let Some(types_in_lists) = list_vars.get(&var_key) {
-                    // Add suppress overrides for those types
-                    for type_str in types_in_lists {
-                        let mut suppressed = self.get_component_rendering(component);
-                        suppressed.suppress = Some(true);
-                        self.add_override_to_component(component, type_str.clone(), suppressed);
-                    }
-                }
+            if let Some(var_key) = self.get_variable_key(component)
+                && default_list_vars.contains(&var_key)
+            {
+                let mut rendering = self.get_component_rendering(component);
+                rendering.suppress = Some(true);
+                self.set_component_rendering(component, rendering);
             }
         }
-    }
-
-    /// Get the list of types for which a component is visible.
-    ///
-    /// Returns type names where suppress=false (either by default or via overrides).
-    pub(super) fn get_visible_types_for_component(
-        &self,
-        component: &TemplateComponent,
-    ) -> Vec<String> {
-        let base_rendering = self.get_component_rendering(component);
-        let overrides = self.get_component_overrides(component);
-
-        let mut visible_types = Vec::new();
-
-        // If component has suppress=true by default, only count types with suppress=false overrides
-        if base_rendering.suppress == Some(true)
-            && let Some(ovr) = overrides
-        {
-            use citum_schema::template::{ComponentOverride, TypeSelector};
-            for (selector, ov) in ovr {
-                if let ComponentOverride::Rendering(rendering) = ov
-                    && rendering.suppress != Some(true)
-                {
-                    match selector {
-                        TypeSelector::Single(s) => visible_types.push(s),
-                        TypeSelector::Multiple(types) => {
-                            for t in types {
-                                visible_types.push(t);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        // If component is visible by default (suppress=false or None),
-        // we would need to list all types except those with suppress=true overrides.
-        // For now, we skip this case as it would require enumerating all possible types.
-
-        visible_types
     }
 
     /// Old deduplication method - no longer needed with occurrence-based compilation.
@@ -321,30 +156,26 @@ impl TemplateCompiler {
         let mut result: Vec<TemplateComponent> = Vec::new();
 
         // First pass: add all non-List components and track their keys
-        // When encountering duplicates, merge their overrides
+        // When encountering duplicates, keep first occurrence
         for component in &components {
-            if !matches!(component, TemplateComponent::List(_)) {
+            if !matches!(component, TemplateComponent::Group(_)) {
                 if let Some(key) = self.get_variable_key(component) {
-                    if let Some(existing_idx) = seen_vars.iter().position(|k| k == &key) {
-                        // Duplicate found - merge overrides into existing component
-                        self.merge_overrides_into(&mut result[existing_idx], component);
-                    } else {
-                        seen_vars.push(key);
-                        result.push(component.clone());
+                    if seen_vars.contains(&key) {
+                        continue; // Skip duplicate
                     }
-                } else {
-                    result.push(component.clone());
+                    seen_vars.push(key);
                 }
+                result.push(component.clone());
             }
         }
 
         // Second pass: process Lists with recursive cleaning
         for component in components {
-            if let TemplateComponent::List(list) = component {
+            if let TemplateComponent::Group(list) = component {
                 // Recursively clean the list
                 if let Some(cleaned) = self.clean_list_recursive(&list, &seen_vars) {
                     // Check if it's a List or was unwrapped
-                    if let TemplateComponent::List(cleaned_list) = &cleaned {
+                    if let TemplateComponent::Group(cleaned_list) = &cleaned {
                         // Create signature for duplicate detection
                         let list_vars = self.extract_list_vars(cleaned_list);
                         let mut signature_parts = list_vars.clone();
@@ -382,13 +213,13 @@ impl TemplateCompiler {
     #[allow(dead_code, reason = "helper functions")]
     pub(super) fn clean_list_recursive(
         &self,
-        list: &TemplateList,
+        list: &TemplateGroup,
         seen_vars: &[String],
     ) -> Option<TemplateComponent> {
         let mut cleaned_items: Vec<TemplateComponent> = Vec::new();
 
-        for item in &list.items {
-            if let TemplateComponent::List(nested) = item {
+        for item in &list.group {
+            if let TemplateComponent::Group(nested) = item {
                 // Recursively clean nested lists
                 if let Some(cleaned) = self.clean_list_recursive(nested, seen_vars) {
                     cleaned_items.push(cleaned);
@@ -417,8 +248,8 @@ impl TemplateCompiler {
             return Some(cleaned_items.remove(0));
         }
 
-        Some(TemplateComponent::List(TemplateList {
-            items: cleaned_items,
+        Some(TemplateComponent::Group(TemplateGroup {
+            group: cleaned_items,
             delimiter: list.delimiter.clone(),
             rendering: list.rendering.clone(),
             ..Default::default()
@@ -426,40 +257,16 @@ impl TemplateCompiler {
     }
 
     /// Extract all variable keys from a List (recursively).
-    pub(super) fn extract_list_vars(&self, list: &TemplateList) -> Vec<String> {
+    pub(super) fn extract_list_vars(&self, list: &TemplateGroup) -> Vec<String> {
         let mut vars = Vec::new();
-        for item in &list.items {
+        for item in &list.group {
             if let Some(key) = self.get_variable_key(item) {
                 vars.push(key);
-            } else if let TemplateComponent::List(nested) = item {
+            } else if let TemplateComponent::Group(nested) = item {
                 vars.extend(self.extract_list_vars(nested));
             }
         }
         vars
-    }
-
-    #[allow(dead_code, reason = "helper functions")]
-    pub(super) fn merge_overrides_into(
-        &self,
-        target: &mut TemplateComponent,
-        source: &TemplateComponent,
-    ) {
-        if let Some(source_overrides) = self.get_component_overrides(source) {
-            let target_overrides = match target {
-                TemplateComponent::Contributor(c) => &mut c.overrides,
-                TemplateComponent::Date(d) => &mut d.overrides,
-                TemplateComponent::Number(n) => &mut n.overrides,
-                TemplateComponent::Title(t) => &mut t.overrides,
-                TemplateComponent::Variable(v) => &mut v.overrides,
-                TemplateComponent::List(l) => &mut l.overrides,
-                _ => return,
-            };
-
-            let overrides_map = target_overrides.get_or_insert_with(std::collections::HashMap::new);
-            for (k, v) in source_overrides {
-                overrides_map.entry(k.clone()).or_insert(v);
-            }
-        }
     }
 
     /// Get a unique key for a component for deduplication purposes.
@@ -472,7 +279,7 @@ impl TemplateCompiler {
             TemplateComponent::Variable(v) => Some(format!("variable:{:?}", v.variable)),
             TemplateComponent::Term(t) => Some(format!("term:{:?}", t.term)),
             // Lists don't have a single key - they contain multiple variables
-            TemplateComponent::List(_) => None,
+            TemplateComponent::Group(_) => None,
             _ => None,
         }
     }

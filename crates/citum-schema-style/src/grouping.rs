@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use crate::Template;
 use crate::locale::{GeneralTerm, TermForm};
 use crate::presets::SortPreset;
+use crate::template::TypeSelector;
 
 /// A bibliography group with selector, optional heading, and per-group sorting.
 ///
@@ -124,17 +125,6 @@ pub struct GroupSelector {
     /// Matches references that do NOT match the nested selector.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub not: Option<Box<GroupSelector>>,
-}
-
-/// Type-based selector.
-#[derive(Debug, Clone, Deserialize, Serialize)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(untagged)]
-pub enum TypeSelector {
-    /// Match a single type.
-    Single(String),
-    /// Match any of multiple types.
-    Multiple(Vec<String>),
 }
 
 /// Citation status filter.

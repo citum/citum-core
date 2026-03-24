@@ -1,6 +1,11 @@
 info:
-  title: Chicago Manual of Style 18th edition (notes without bibliography, place of publication substituted for publisher, archival references with place first, without URLs)
-  description: Chicago-style source citations (with Bluebook for legal citations), notes system without bibliography, listing up to six authors in a full citation (CMOS18 13.23), chapter page numbers (CMOS18 14.8), displaying number of volumes (CMOS18 14.20), substituting place of publication for publisher name (CMOS18 14.31), archival references with place first (CMOS18 14.205), without URLs (CMOS18 13.6)
+  title: Chicago Manual of Style 18th edition (notes without bibliography, place of publication 
+    substituted for publisher, archival references with place first, without URLs)
+  description: Chicago-style source citations (with Bluebook for legal citations), notes system 
+    without bibliography, listing up to six authors in a full citation (CMOS18 13.23), chapter page 
+    numbers (CMOS18 14.8), displaying number of volumes (CMOS18 14.20), substituting place of 
+    publication for publisher name (CMOS18 14.31), archival references with place first (CMOS18 
+    14.205), without URLs (CMOS18 13.6)
   fields:
   - anthropology
   - communications
@@ -57,35 +62,34 @@ citation:
     suffix: ""
     delimiter: ", "
     template:
-      - term: ibid
-      - variable: locator
-        suffix: .
+    - term: ibid
+    - variable: locator
+      suffix: .
   subsequent:
     options:
       contributors:
         name-form: family-only
-    template:
+    type-variants:
+      default:
       - contributor: author
         form: short
       - title: primary
         form: short
         prefix: ", "
-      - variable: locator
-        prefix: ", "
-        overrides:
-          book:
-            suppress: false
-          chapter:
-            suppress: false
-          article-journal:
-            suppress: false
-          default:
-            suppress: true
-  template:
+    template:
+    - contributor: author
+      form: short
+    - title: primary
+      form: short
+      prefix: ", "
+    - variable: locator
+      prefix: ", "
+  type-variants:
+    default:
     - contributor: author
       form: long
       name-order: given-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 3
     - title: primary
@@ -106,54 +110,68 @@ citation:
       prefix: " "
     - number: pages
       prefix: ": "
-    - number: number
-      prefix: ", Patent "
-      overrides:
-        patent:
-          suppress: false
-        default:
-          suppress: true
-    - items:
-        - date: issued
-          form: month-day
-          prefix: ", issued "
-        - date: issued
-          form: year
-          prefix: ", "
-      delimiter: none
-      overrides:
-        patent:
-          suppress: false
-        default:
-          suppress: true
-    - items:
-        - date: issued
-          form: month-day
-        - date: issued
-          form: year
-          prefix: ", "
-      delimiter: none
+    - delimiter: none
+      items:
+      - date: issued
+        form: month-day
+        prefix: ", issued "
+      - date: issued
+        form: year
+        prefix: ", "
+    - delimiter: none
       prefix: ", "
-      overrides:
-        interview:
-          suppress: false
-        default:
-          suppress: true
-    - variable: medium
+      items:
+      - date: issued
+        form: month-day
+      - date: issued
+        form: year
+        prefix: ", "
+  template:
+  - contributor: author
+    form: long
+    name-order: given-first
+    shorten: *id001
+  - title: primary
+    wrap: quotes
+  - title: parent-monograph
+    emph: true
+  - title: parent-serial
+    emph: true
+  - variable: publisher-place
+  - number: volume
+    prefix: ") 2, no. "
+  - contributor: editor
+    form: verb
+    name-order: given-first
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "
+  - number: pages
+    prefix: ": "
+  - number: number
+    prefix: ", Patent "
+  - delimiter: none
+    items:
+    - date: issued
+      form: month-day
+      prefix: ", issued "
+    - date: issued
+      form: year
       prefix: ", "
-      overrides:
-        interview:
-          suppress: false
-        default:
-          suppress: true
-    - contributor: interviewer
-      form: long
-      prefix: ", interview by "
-      overrides:
-        interview:
-          suppress: false
-        default:
-          suppress: true
+  - delimiter: none
+    prefix: ", "
+    items:
+    - date: issued
+      form: month-day
+    - date: issued
+      form: year
+      prefix: ", "
+  - variable: medium
+    prefix: ", "
+  - contributor: interviewer
+    form: long
+    prefix: ", interview by "
   suffix: .
   delimiter: ", "
   multi-cite-delimiter: "; "

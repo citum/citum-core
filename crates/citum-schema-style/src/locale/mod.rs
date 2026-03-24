@@ -200,6 +200,24 @@ fn en_us_role_terms() -> HashMap<ContributorRole, ContributorTerm> {
         },
     );
 
+    roles.insert(
+        ContributorRole::Interviewer,
+        ContributorTerm {
+            singular: SimpleTerm {
+                long: "Interviewer".into(),
+                short: "Interviewer".into(),
+            },
+            plural: SimpleTerm {
+                long: "Interviewers".into(),
+                short: "Interviewers".into(),
+            },
+            verb: SimpleTerm {
+                long: "interviewed by".into(),
+                short: "interviewed by".into(),
+            },
+        },
+    );
+
     roles
 }
 
@@ -424,13 +442,31 @@ impl Locale {
     pub fn role_term(&self, role: &ContributorRole, plural: bool, form: TermForm) -> Option<&str> {
         let term = self.roles.get(role)?;
         let simple = if plural { &term.plural } else { &term.singular };
-        Some(match form {
+        let term_text = match form {
             TermForm::Long => &simple.long,
-            TermForm::Short => &simple.short,
+            TermForm::Short => {
+                if simple.short.is_empty() {
+                    &simple.long
+                } else {
+                    &simple.short
+                }
+            }
             TermForm::Verb => &term.verb.long,
-            TermForm::VerbShort => &term.verb.short,
-            _ => &simple.long, // Fallback
-        })
+            TermForm::VerbShort => {
+                if term.verb.short.is_empty() {
+                    &term.verb.long
+                } else {
+                    &term.verb.short
+                }
+            }
+            _ => &simple.long,
+        };
+
+        if term_text.is_empty() {
+            None
+        } else {
+            Some(term_text.as_str())
+        }
     }
 
     /// Resolve a contributor role term, evaluating MF1 messages when configured.

@@ -1,23 +1,22 @@
-# yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/style.json
 info:
   title: "Chicago Manual of Style 18th edition (author-date)"
   id: "chicago-author-date"
   link: "https://www.chicagomanualofstyle.org/"
   authors:
-    - name: "Bruce D'Arcus"
-      uri: "https://github.com/bdarcus"
+  - name: "Bruce D'Arcus"
+    uri: "https://github.com/bdarcus"
   categories:
-    - author-date
-    - generic-base
+  - author-date
+  - generic-base
   license: "http://creativecommons.org/licenses/by-sa/3.0/"
 
 options:
   processing: author-date
   substitute:
     template:
-      - editor
-      - translator
-      - title
+    - editor
+    - translator
+    - title
   contributors:
     and: text
     name-form: initials
@@ -34,8 +33,8 @@ options:
 citation:
   sort:
     template:
-      - key: author
-      - key: issued
+    - key: author
+    - key: issued
   options:
     contributors:
       name-form: full
@@ -47,30 +46,28 @@ citation:
     wrap: parentheses
     delimiter: ", "
     template:
-      - items:
-          - contributor: author
-            form: short
-          - date: issued
-            form: year
-            fallback:
-              - term: no-date
-        delimiter: space
-      - variable: locator
-
+    - delimiter: space
+      items:
+      - contributor: author
+        form: short
+      - date: issued
+        form: year
+        fallback:
+        - term: no-date
+    - variable: locator
   integral:
     delimiter: " "
     template:
-      - contributor: author
-        form: short
-      - items:
-          - date: issued
-            form: year
-            fallback:
-              - term: no-date
-          - variable: locator
-        delimiter: ", "
-        wrap: parentheses
-
+    - contributor: author
+      form: short
+    - delimiter: ", "
+      wrap: parentheses
+      items:
+      - date: issued
+        form: year
+        fallback:
+        - term: no-date
+      - variable: locator
 bibliography:
   options:
     contributors:
@@ -79,59 +76,112 @@ bibliography:
       shorten:
         min: 11
         use-first: 7
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       suffix: "."
     - date: issued
       form: year
       suffix: "."
-      fallback:
-        - term: no-date
-          suffix: "."
+      fallback: &id001
+      - term: no-date
+        suffix: "."
     - title: primary
       suffix: "."
-      overrides:
-        article-journal:
-          wrap: quotes
-        chapter:
-          wrap: quotes
-    
-    # Source block
-    - items:
-        # Chapter "In" logic
-        - items:
-            - term: in
-            - title: parent-monograph
-              emph: true
-            - contributor: editor
-              form: verb
-          delimiter: space
-          overrides:
-            article-journal: { suppress: true }
-            book: { suppress: true }
-            report: { suppress: true }
-
-        - title: parent-serial
-          form: long
+      wrap: quotes
+    - delimiter: space
+      suffix: "."
+      items:
+      - delimiter: space
+        items:
+        - term: in
+        - title: parent-monograph
           emph: true
+        - contributor: editor
+          form: verb
+      - title: parent-serial
+        form: long
+        emph: true
+      - items: &id002
         - items:
-            - items:
-                - number: volume
-                - number: issue
-                  wrap: parentheses
-              delimiter: space
-            - number: pages
-              prefix: ": "
-          delimiter: none
-      delimiter: space
+          - number: volume
+          - number: issue
+            wrap: parentheses
+          delimiter: space
+        - number: pages
+          prefix: ": "
+        delimiter: none
+    - delimiter: period
       suffix: "."
-    
-    # Publication
-    - items:
-        - variable: publisher-place
-        - variable: publisher
-      delimiter: period
+      items:
+      - variable: publisher-place
+      - variable: publisher
+    chapter:
+    - contributor: author
+      form: long
       suffix: "."
-      overrides:
-        article-journal: { suppress: true }
+    - date: issued
+      form: year
+      suffix: "."
+      fallback: *id001
+    - title: primary
+      suffix: "."
+      wrap: quotes
+    - delimiter: space
+      suffix: "."
+      items:
+      - delimiter: space
+        items:
+        - term: in
+        - title: parent-monograph
+          emph: true
+        - contributor: editor
+          form: verb
+      - title: parent-serial
+        form: long
+        emph: true
+      - items: *id002
+        delimiter: none
+    - delimiter: period
+      suffix: "."
+      items:
+      - variable: publisher-place
+      - variable: publisher
+  template:
+  - contributor: author
+    form: long
+    suffix: "."
+  - date: issued
+    form: year
+    suffix: "."
+    fallback: *id001
+  - title: primary
+    suffix: "."
+  - delimiter: space
+    suffix: "."
+    items:
+    - delimiter: space
+      items:
+      - term: in
+      - title: parent-monograph
+        emph: true
+      - contributor: editor
+        form: verb
+    - title: parent-serial
+      form: long
+      emph: true
+    - delimiter: none
+      items:
+      - delimiter: space
+        items:
+        - number: volume
+        - number: issue
+          wrap: parentheses
+      - number: pages
+        prefix: ": "
+  - delimiter: period
+    suffix: "."
+    items:
+    - variable: publisher-place
+    - variable: publisher

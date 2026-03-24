@@ -1,6 +1,7 @@
 info:
   title: Chicago Manual of Style 17th edition (notes and bibliography)
-  description: Chicago-style source citations (with Bluebook for legal citations), notes and bibliography system, 17th edition
+  description: Chicago-style source citations (with Bluebook for legal citations), notes and 
+    bibliography system, 17th edition
   fields:
   - anthropology
   - communications
@@ -71,35 +72,34 @@ citation:
     suffix: ""
     delimiter: ", "
     template:
-      - term: ibid
-      - variable: locator
-        suffix: .
+    - term: ibid
+    - variable: locator
+      suffix: .
   subsequent:
     options:
       contributors:
         name-form: family-only
-    template:
+    type-variants:
+      default:
       - contributor: author
         form: short
       - title: primary
         form: short
         prefix: ", "
-      - variable: locator
-        prefix: ", "
-        overrides:
-          book:
-            suppress: false
-          chapter:
-            suppress: false
-          article-journal:
-            suppress: false
-          default:
-            suppress: true
-  template:
+    template:
+    - contributor: author
+      form: short
+    - title: primary
+      form: short
+      prefix: ", "
+    - variable: locator
+      prefix: ", "
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: given-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 1
     - title: primary
@@ -111,7 +111,7 @@ citation:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten:
+      shorten: &id002
         min: 4
         use-first: 1
     - number: pages
@@ -125,29 +125,87 @@ citation:
       wrap: parentheses
       prefix: " "
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
     - number: number
       prefix: ", Patent "
-      overrides:
-        patent:
-          suppress: false
-        default:
-          suppress: true
-    - items:
-        - date: issued
-          form: month-day
-          prefix: ", issued "
-        - date: issued
-          form: year
-          prefix: ", "
-      delimiter: none
-      overrides:
-        patent:
-          suppress: false
-        default:
-          suppress: true
+    - delimiter: none
+      items:
+      - date: issued
+        form: month-day
+        prefix: ", issued "
+      - date: issued
+        form: year
+        prefix: ", "
+    default:
+    - contributor: author
+      form: long
+      name-order: given-first
+      shorten: *id001
+    - title: primary
+      wrap: quotes
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - contributor: editor
+      form: verb
+      name-order: given-first
+      shorten: *id002
+    - number: pages
+    - variable: url
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - number: volume
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - variable: doi
+    - delimiter: none
+      items:
+      - date: issued
+        form: month-day
+        prefix: ", issued "
+      - date: issued
+        form: year
+        prefix: ", "
+  template:
+  - contributor: author
+    form: long
+    name-order: given-first
+    shorten: *id001
+  - title: primary
+    wrap: quotes
+  - title: parent-monograph
+    emph: true
+  - title: parent-serial
+    emph: true
+  - contributor: editor
+    form: verb
+    name-order: given-first
+    shorten: *id002
+  - number: pages
+  - variable: url
+  - variable: publisher-place
+  - variable: publisher
+    prefix: ": "
+  - number: volume
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "
+  - variable: doi
+  - number: number
+    prefix: ", Patent "
+  - delimiter: none
+    items:
+    - date: issued
+      form: month-day
+      prefix: ", issued "
+    - date: issued
+      form: year
+      prefix: ", "
   suffix: .
   delimiter: ", "
   multi-cite-delimiter: "; "
@@ -159,17 +217,18 @@ bibliography:
         use-first: 7
         and-others: et-al
         delimiter-precedes-last: contextual
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
     - title: primary
     - items:
-        - contributor: editor
-          form: verb
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - variable: publisher-place
@@ -182,7 +241,29 @@ bibliography:
     - variable: publisher
       prefix: ": "
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
     - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - title: primary
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - variable: publisher-place
+  - number: volume
+  - date: issued
+    form: year
+    prefix: " "
+  - number: pages
+    prefix: ": "
+  - variable: publisher
+    prefix: ": "
+  - variable: doi
+  - variable: url

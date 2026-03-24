@@ -7,7 +7,7 @@ pub(super) fn note_citation_template_is_underfit(template: &[TemplateComponent])
 fn component_is_contributor_only(component: &TemplateComponent) -> bool {
     match component {
         TemplateComponent::Contributor(_) => true,
-        TemplateComponent::List(list) => list.items.iter().all(component_is_contributor_only),
+        TemplateComponent::Group(list) => list.group.iter().all(component_is_contributor_only),
         _ => false,
     }
 }
@@ -20,8 +20,8 @@ pub(super) fn citation_template_is_author_year_only(template: &[TemplateComponen
         match component {
             TemplateComponent::Contributor(_) => has_contributor = true,
             TemplateComponent::Date(_) => has_date = true,
-            TemplateComponent::List(list) => {
-                for item in &list.items {
+            TemplateComponent::Group(list) => {
+                for item in &list.group {
                     match item {
                         TemplateComponent::Contributor(_) => has_contributor = true,
                         TemplateComponent::Date(_) => has_date = true,
@@ -46,8 +46,8 @@ pub(super) fn normalize_contributor_form_to_short(template: &mut [TemplateCompon
                     changed = true;
                 }
             }
-            TemplateComponent::List(list) => {
-                if normalize_contributor_form_to_short(&mut list.items) {
+            TemplateComponent::Group(list) => {
+                if normalize_contributor_form_to_short(&mut list.group) {
                     changed = true;
                 }
             }
@@ -78,9 +78,9 @@ pub(super) fn normalize_author_date_inferred_contributors(
                     changed = true;
                 }
             }
-            TemplateComponent::List(list) => {
+            TemplateComponent::Group(list) => {
                 if normalize_author_date_inferred_contributors(
-                    &mut list.items,
+                    &mut list.group,
                     drop_component_shorten,
                 ) {
                     changed = true;
@@ -129,7 +129,6 @@ pub(super) fn scrub_inferred_literal_artifacts(component: &mut TemplateComponent
             {
                 title.rendering.prefix = Some(cleaned);
             }
-            scrub_overrides_map(title.overrides.as_mut());
         }
         TemplateComponent::Number(number) => {
             if number.number == citum_schema::template::NumberVariable::Pages
@@ -138,46 +137,17 @@ pub(super) fn scrub_inferred_literal_artifacts(component: &mut TemplateComponent
             {
                 number.rendering.prefix = Some(cleaned);
             }
-            scrub_overrides_map(number.overrides.as_mut());
         }
-        TemplateComponent::List(list) => {
-            for item in &mut list.items {
+        TemplateComponent::Group(list) => {
+            for item in &mut list.group {
                 scrub_inferred_literal_artifacts(item);
             }
-            scrub_overrides_map(list.overrides.as_mut());
         }
-        TemplateComponent::Contributor(contributor) => {
-            scrub_overrides_map(contributor.overrides.as_mut());
-        }
-        TemplateComponent::Date(date) => {
-            scrub_overrides_map(date.overrides.as_mut());
-        }
-        TemplateComponent::Variable(variable) => {
-            scrub_overrides_map(variable.overrides.as_mut());
-        }
-        TemplateComponent::Term(term) => {
-            scrub_overrides_map(term.overrides.as_mut());
-        }
+        TemplateComponent::Contributor(_contributor) => {}
+        TemplateComponent::Date(_date) => {}
+        TemplateComponent::Variable(_variable) => {}
+        TemplateComponent::Term(_term) => {}
         _ => {}
-    }
-}
-
-fn scrub_component_override_literals(
-    override_value: &mut citum_schema::template::ComponentOverride,
-) {
-    match override_value {
-        citum_schema::template::ComponentOverride::Component(component) => {
-            scrub_inferred_literal_artifacts(component);
-        }
-        citum_schema::template::ComponentOverride::Rendering(rendering) => {
-            if let Some(prefix) = rendering.prefix.as_ref() {
-                if let Some(cleaned) = scrub_year_only_prefix(prefix) {
-                    rendering.prefix = Some(cleaned);
-                } else if let Some(cleaned) = scrub_pages_year_literal_prefix(prefix) {
-                    rendering.prefix = Some(cleaned);
-                }
-            }
-        }
     }
 }
 
@@ -222,39 +192,7 @@ fn is_four_digit_year(value: &str) -> bool {
             .is_ok_and(|year| (1800..=2100).contains(&year))
 }
 
-fn template_targets_type(template: &[TemplateComponent], target_type: &str) -> bool {
-    template
-        .iter()
-        .any(|component| component_targets_type(component, target_type))
-}
-
-fn component_targets_type(component: &TemplateComponent, target_type: &str) -> bool {
-    let overrides = match component {
-        TemplateComponent::Contributor(c) => c.overrides.as_ref(),
-        TemplateComponent::Date(d) => d.overrides.as_ref(),
-        TemplateComponent::Title(t) => t.overrides.as_ref(),
-        TemplateComponent::Number(n) => n.overrides.as_ref(),
-        TemplateComponent::Variable(v) => v.overrides.as_ref(),
-        TemplateComponent::List(l) => l.overrides.as_ref(),
-        TemplateComponent::Term(t) => t.overrides.as_ref(),
-        _ => None,
-    };
-
-    if let Some(overrides) = overrides
-        && overrides
-            .keys()
-            .any(|selector| selector.matches(target_type))
-    {
-        return true;
-    }
-
-    if let TemplateComponent::List(list) = component {
-        return list
-            .items
-            .iter()
-            .any(|item| component_targets_type(item, target_type));
-    }
-
+fn template_targets_type(_template: &[TemplateComponent], _target_type: &str) -> bool {
     false
 }
 
@@ -267,7 +205,7 @@ fn component_has_parent_title(component: &TemplateComponent) -> bool {
         TemplateComponent::Title(t) => {
             t.title == TitleType::ParentMonograph || t.title == TitleType::ParentSerial
         }
-        TemplateComponent::List(list) => list.items.iter().any(component_has_parent_title),
+        TemplateComponent::Group(list) => list.group.iter().any(component_has_parent_title),
         _ => false,
     }
 }
@@ -279,7 +217,7 @@ fn template_has_accessed_date(template: &[TemplateComponent]) -> bool {
 fn component_has_accessed_date(component: &TemplateComponent) -> bool {
     match component {
         TemplateComponent::Date(d) => d.date == DateVariable::Accessed,
-        TemplateComponent::List(list) => list.items.iter().any(component_has_accessed_date),
+        TemplateComponent::Group(list) => list.group.iter().any(component_has_accessed_date),
         _ => false,
     }
 }
@@ -310,7 +248,7 @@ fn template_has_primary_title(template: &[TemplateComponent]) -> bool {
 fn component_has_primary_title(component: &TemplateComponent) -> bool {
     match component {
         TemplateComponent::Title(t) => t.title == TitleType::Primary,
-        TemplateComponent::List(list) => list.items.iter().any(component_has_primary_title),
+        TemplateComponent::Group(list) => list.group.iter().any(component_has_primary_title),
         _ => false,
     }
 }
@@ -322,7 +260,7 @@ fn template_has_parent_serial(template: &[TemplateComponent]) -> bool {
 fn component_has_parent_serial(component: &TemplateComponent) -> bool {
     match component {
         TemplateComponent::Title(t) => t.title == TitleType::ParentSerial,
-        TemplateComponent::List(list) => list.items.iter().any(component_has_parent_serial),
+        TemplateComponent::Group(list) => list.group.iter().any(component_has_parent_serial),
         _ => false,
     }
 }
@@ -334,7 +272,7 @@ fn template_has_publisher(template: &[TemplateComponent]) -> bool {
 fn component_has_publisher(component: &TemplateComponent) -> bool {
     match component {
         TemplateComponent::Variable(v) => v.variable == SimpleVariable::Publisher,
-        TemplateComponent::List(list) => list.items.iter().any(component_has_publisher),
+        TemplateComponent::Group(list) => list.group.iter().any(component_has_publisher),
         _ => false,
     }
 }
@@ -346,21 +284,7 @@ fn template_has_volume(template: &[TemplateComponent]) -> bool {
 fn component_has_volume(component: &TemplateComponent) -> bool {
     match component {
         TemplateComponent::Number(n) => n.number == citum_schema::template::NumberVariable::Volume,
-        TemplateComponent::List(list) => list.items.iter().any(component_has_volume),
+        TemplateComponent::Group(list) => list.group.iter().any(component_has_volume),
         _ => false,
-    }
-}
-
-fn scrub_overrides_map(
-    overrides: Option<
-        &mut std::collections::HashMap<
-            citum_schema::template::TypeSelector,
-            citum_schema::template::ComponentOverride,
-        >,
-    >,
-) {
-    let Some(map) = overrides else { return };
-    for val in map.values_mut() {
-        scrub_component_override_literals(val);
     }
 }

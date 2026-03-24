@@ -1,6 +1,7 @@
 info:
   title: Landes Bioscience Journals
-  description: Vancouver style adapted for Landes Bioscience Journals (et al for 10+ authors, only year, space after semicolon
+  description: Vancouver style adapted for Landes Bioscience Journals (et al for 10+ authors, only
+    year, space after semicolon
   fields:
   - medicine
   source:
@@ -45,20 +46,19 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
-  template:
+  type-variants:
+    chapter:
     - contributor: author
       form: long
       name-order: family-first
     - title: primary
       prefix: " "
     - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            chapter:
-              prefix: "on "
-          name-order: given-first
-        - title: parent-monograph
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        prefix: "on "
+      - title: parent-monograph
     - title: parent-serial
     - number: volume
     - variable: url
@@ -70,3 +70,25 @@ bibliography:
       prefix: "; "
     - number: pages
       prefix: ". page "
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - title: primary
+    prefix: " "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+  - title: parent-serial
+  - number: volume
+  - variable: url
+  - variable: publisher-place
+  - variable: publisher
+    prefix: ": "
+  - date: issued
+    form: year
+    prefix: "; "
+  - number: pages
+    prefix: ". page "

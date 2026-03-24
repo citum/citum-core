@@ -53,7 +53,30 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: never
       sort-separator: ", "
-  template:
+  type-variants:
+    report:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: &id001
+        min: 8
+        use-first: 1
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: family-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - number: pages
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: ", "
+    article-journal+arxiv:
     - contributor: author
       form: long
       name-order: family-first
@@ -62,43 +85,34 @@ bibliography:
         use-first: 1
     - title: primary
       prefix: " "
-    - items:
-        - contributor: editor
-          form: verb
-          name-order: family-first
-        - title: parent-monograph
-          emph: true
     - title: parent-serial
-      emph: true
-    - number: pages
-    - variable: publisher
-      prefix: " ("
-      overrides:
-        report:
-          suppress: true
-    - variable: publisher-place
-      prefix: ", "
-      overrides:
-        report:
-          suppress: true
+    - variable: doi
+      prefix: " https://doi.org/"
     - date: issued
       form: year
       wrap: parentheses
       prefix: ", "
-  type-templates:
-    article-journal+arxiv:
-      - contributor: author
-        form: long
-        name-order: family-first
-        shorten:
-          min: 8
-          use-first: 1
-      - title: primary
-        prefix: " "
-      - title: parent-serial
-      - variable: doi
-        prefix: " https://doi.org/"
-      - date: issued
-        form: year
-        wrap: parentheses
-        prefix: ", "
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - title: primary
+    prefix: " "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: family-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - number: pages
+  - variable: publisher
+    prefix: " ("
+  - variable: publisher-place
+    prefix: ", "
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: ", "

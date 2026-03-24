@@ -19,25 +19,25 @@ options:
   substitute:
     contributor-role-form: short
     template:
-      - editor
-      - title
+    - editor
+    - title
   processing:
     sort:
       shorten-names: false
       render-substitutions: false
       template:
-        - key: author
-          ascending: true
-        - key: author
-          ascending: true
-        - key: author
-          ascending: true
-        - key: year
-          ascending: true
+      - key: author
+        ascending: true
+      - key: author
+        ascending: true
+      - key: author
+        ascending: true
+      - key: year
+        ascending: true
     group:
       template:
-        - author
-        - year
+      - author
+      - year
     disambiguate:
       names: false
       add-givenname: false
@@ -78,17 +78,17 @@ citation:
         delimiter-precedes-last: contextual
       delimiter: ", "
   template:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 3
-        use-first: 1
-    - date: issued
-      form: year
-      prefix: ", "
-    - variable: locator
-      prefix: " "
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten:
+      min: 3
+      use-first: 1
+  - date: issued
+    form: year
+    prefix: ", "
+  - variable: locator
+    prefix: " "
   wrap: parentheses
   delimiter: ". "
   multi-cite-delimiter: "; "
@@ -106,7 +106,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: never
       sort-separator: ", "
-  template:
+  type-variants:
+    chapter:
     - contributor: author
       form: long
       name-order: family-first
@@ -115,23 +116,59 @@ bibliography:
       wrap: parentheses
       prefix: " "
     - title: primary
-    - items:
-        - contributor: editor
-          form: verb
-          name-order: family-first
-        - title: parent-monograph
-          emph: true
+    - items: &id001
+      - contributor: editor
+        form: verb
+        name-order: family-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - number: volume
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
-      prefix: ", "
+      prefix: "pp. "
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+    - items: *id001
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "
+  - title: primary
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: family-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - number: volume
+  - number: pages
+    prefix: ", "
+  - variable: publisher-place
+  - variable: publisher
+    prefix: ": "
   sort: author-date-title

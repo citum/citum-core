@@ -1,6 +1,8 @@
 info:
   title: Chicago Manual of Style 18th edition (author-date, classic variants)
-  description: 'Chicago-style source citations (with Bluebook for legal citations), author-date system, with classic variants: 3-em dash for repeated names (CMOS18 13.113), chapter page numbers (CMOS18 14.8), and place of publication (CMOS18 14.30)'
+  description: 'Chicago-style source citations (with Bluebook for legal citations), author-date system,
+    with classic variants: 3-em dash for repeated names (CMOS18 13.113), chapter page numbers (CMOS18
+    14.8), and place of publication (CMOS18 14.30)'
   fields:
   - anthropology
   - communications
@@ -67,21 +69,26 @@ citation:
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-  template:
+  type-variants:
+    personal_communication:
     - contributor: author
       form: long
       name-order: given-first
-      shorten:
+      shorten: &id001
         min: 3
         use-first: 1
-    - date: issued
-      form: year
-      prefix: " "
-      overrides:
-        personal_communication:
-          suppress: true
     - variable: locator
       prefix: " "
+  template:
+  - contributor: author
+    form: long
+    name-order: given-first
+    shorten: *id001
+  - date: issued
+    form: year
+    prefix: " "
+  - variable: locator
+    prefix: " "
   wrap: parentheses
   delimiter: ". "
   multi-cite-delimiter: "; "
@@ -93,54 +100,95 @@ bibliography:
         use-first: 3
         and-others: et-al
         delimiter-precedes-last: contextual
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id002
         min: 8
         use-first: 3
     - date: issued
       form: year
     - title: primary
-    - items:
-        - contributor: editor
-          form: verb
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
+    - items: &id003
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - variable: publisher-place
-    - items:
-        - number: volume
-        - number: issue
-          overrides:
-            article-magazine:
-              suppress: true
-      prefix: ") "
+    - prefix: ") "
+      items:
+      - number: volume
+      - number: issue
     - number: pages
       prefix: ": "
     - variable: publisher
       prefix: ": "
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
     - variable: url
-  type-templates:
-    legal_case:
-      - title: primary
-      - variable: authority
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - date: issued
+      form: year
+    - title: primary
+    - items: *id003
+    - title: parent-serial
+      emph: true
+    - variable: publisher-place
+    - prefix: ") "
+      items:
       - number: volume
-        suppress: true
-      - title: parent-serial
-      - number: number
-      - date: issued
-        form: year
-      - term: at
-        form: long
-      - variable: locator
-      - variable: doi
-        prefix: https://doi.org/
+    - number: pages
+      prefix: ": "
+    - variable: publisher
+      prefix: ": "
+    - variable: doi
+    - variable: url
+    legal_case:
+    - title: primary
+    - variable: authority
+    - title: parent-serial
+    - number: number
+    - date: issued
+      form: year
+    - term: at
+      form: long
+    - variable: locator
+    - variable: doi
+      prefix: https://doi.org/
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id002
+  - date: issued
+    form: year
+  - title: primary
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - variable: publisher-place
+  - prefix: ") "
+    items:
+    - number: volume
+    - number: issue
+  - number: pages
+    prefix: ": "
+  - variable: publisher
+    prefix: ": "
+  - variable: doi
+  - variable: url
   sort: author-date-title

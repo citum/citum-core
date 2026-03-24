@@ -1,5 +1,5 @@
 use super::{
-    CslnNode, DelimiterPunctuation, FormattingOptions, HashMap, Rendering, TemplateCompiler,
+    CslnNode, DelimiterPunctuation, FormattingOptions, Rendering, TemplateCompiler,
     TemplateComponent,
 };
 
@@ -192,7 +192,7 @@ impl TemplateCompiler {
             TemplateComponent::Number(n) => n.rendering.clone(),
             TemplateComponent::Title(t) => t.rendering.clone(),
             TemplateComponent::Variable(v) => v.rendering.clone(),
-            TemplateComponent::List(l) => l.rendering.clone(),
+            TemplateComponent::Group(l) => l.rendering.clone(),
             TemplateComponent::Term(t) => t.rendering.clone(),
             _ => Rendering::default(),
         }
@@ -210,92 +210,9 @@ impl TemplateCompiler {
             TemplateComponent::Number(n) => n.rendering = rendering,
             TemplateComponent::Title(t) => t.rendering = rendering,
             TemplateComponent::Variable(v) => v.rendering = rendering,
-            TemplateComponent::List(l) => l.rendering = rendering,
+            TemplateComponent::Group(l) => l.rendering = rendering,
             TemplateComponent::Term(t) => t.rendering = rendering,
             _ => {}
-        }
-    }
-
-    #[allow(dead_code, reason = "helper functions")]
-    pub(super) fn get_component_overrides(
-        &self,
-        component: &TemplateComponent,
-    ) -> Option<
-        std::collections::HashMap<
-            citum_schema::template::TypeSelector,
-            citum_schema::template::ComponentOverride,
-        >,
-    > {
-        match component {
-            TemplateComponent::Contributor(c) => c.overrides.clone(),
-            TemplateComponent::Date(d) => d.overrides.clone(),
-            TemplateComponent::Number(n) => n.overrides.clone(),
-            TemplateComponent::Title(t) => t.overrides.clone(),
-            TemplateComponent::Variable(v) => v.overrides.clone(),
-            TemplateComponent::List(l) => l.overrides.clone(),
-            TemplateComponent::Term(t) => t.overrides.clone(),
-            _ => None,
-        }
-    }
-
-    /// Add a type-specific override to a component.
-    pub(super) fn add_override_to_component(
-        &self,
-        component: &mut TemplateComponent,
-        type_str: String,
-        rendering: Rendering,
-    ) {
-        // Skip if override is basically empty/default
-        if rendering == Rendering::default() {
-            return;
-        }
-
-        use citum_schema::template::{ComponentOverride, TypeSelector};
-
-        match component {
-            TemplateComponent::Contributor(c) => {
-                c.overrides.get_or_insert_with(HashMap::new).insert(
-                    TypeSelector::Single(type_str),
-                    ComponentOverride::Rendering(rendering),
-                );
-            }
-            TemplateComponent::Date(d) => {
-                d.overrides.get_or_insert_with(HashMap::new).insert(
-                    TypeSelector::Single(type_str),
-                    ComponentOverride::Rendering(rendering),
-                );
-            }
-            TemplateComponent::Term(t) => {
-                t.overrides.get_or_insert_with(HashMap::new).insert(
-                    TypeSelector::Single(type_str),
-                    ComponentOverride::Rendering(rendering),
-                );
-            }
-            TemplateComponent::Number(n) => {
-                n.overrides.get_or_insert_with(HashMap::new).insert(
-                    TypeSelector::Single(type_str),
-                    ComponentOverride::Rendering(rendering),
-                );
-            }
-            TemplateComponent::Title(t) => {
-                t.overrides.get_or_insert_with(HashMap::new).insert(
-                    TypeSelector::Single(type_str),
-                    ComponentOverride::Rendering(rendering),
-                );
-            }
-            TemplateComponent::Variable(v) => {
-                v.overrides.get_or_insert_with(HashMap::new).insert(
-                    TypeSelector::Single(type_str),
-                    ComponentOverride::Rendering(rendering),
-                );
-            }
-            TemplateComponent::List(l) => {
-                l.overrides.get_or_insert_with(HashMap::new).insert(
-                    TypeSelector::Single(type_str),
-                    ComponentOverride::Rendering(rendering),
-                );
-            }
-            _ => {} // Future variants
         }
     }
 

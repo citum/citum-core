@@ -18,8 +18,8 @@ options:
   substitute:
     contributor-role-form: long
     template:
-      - editor
-      - title
+    - editor
+    - title
   processing:
     disambiguate:
       names: false
@@ -57,16 +57,16 @@ citation:
         and-others: et-al
         delimiter-precedes-last: contextual
   template:
-    - contributor: author
-      form: short
-      shorten:
-        min: 3
-        use-first: 1
-    - date: issued
-      form: year
-      prefix: ", "
-    - variable: locator
-      prefix: ", "
+  - contributor: author
+    form: short
+    shorten:
+      min: 3
+      use-first: 1
+  - date: issued
+    form: year
+    prefix: ", "
+  - variable: locator
+    prefix: ", "
   wrap: brackets
   delimiter: ", "
   multi-cite-delimiter: "; "
@@ -84,11 +84,12 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
-  template:
+  type-variants:
+    chapter:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 6
     - title: primary
@@ -96,13 +97,11 @@ bibliography:
     - variable: publisher-place
       prefix: ", "
     - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            chapter:
-              prefix: "on "
-          name-order: given-first
-        - title: parent-monograph
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        prefix: "on "
+      - title: parent-monograph
     - title: parent-serial
     - number: volume
     - variable: publisher
@@ -112,4 +111,27 @@ bibliography:
     - number: pages
       prefix: ", pp "
     - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - title: primary
+    prefix: ": "
+  - variable: publisher-place
+    prefix: ", "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+  - title: parent-serial
+  - number: volume
+  - variable: publisher
+  - date: issued
+    form: year
+    prefix: ", "
+  - number: pages
+    prefix: ", pp "
+  - variable: url
   sort: author-date-title

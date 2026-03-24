@@ -1,6 +1,10 @@
 info:
-  title: Chicago Manual of Style 18th edition (notes and bibliography, classic variants, archival references with place first, without URLs)
-  description: 'Chicago-style source citations (with Bluebook for legal citations), notes and bibliography system, with classic variants: 3-em dash for repeated names (CMOS18 13.113), chapter page numbers (CMOS18 14.8), and place of publication (CMOS18 14.30); archival references with place first (CMOS18 14.205), without URLs (CMOS18 13.6)'
+  title: Chicago Manual of Style 18th edition (notes and bibliography, classic variants, archival 
+    references with place first, without URLs)
+  description: 'Chicago-style source citations (with Bluebook for legal citations), notes and bibliography
+    system, with classic variants: 3-em dash for repeated names (CMOS18 13.113), chapter page numbers
+    (CMOS18 14.8), and place of publication (CMOS18 14.30); archival references with place first (CMOS18
+    14.205), without URLs (CMOS18 13.6)'
   fields:
   - anthropology
   - communications
@@ -15,14 +19,16 @@ info:
   - sociology
   - theology
   source:
-    csl-id: http://www.zotero.org/styles/chicago-notes-bibliography-classic-archive-place-first-no-url
+    csl-id: 
+      http://www.zotero.org/styles/chicago-notes-bibliography-classic-archive-place-first-no-url
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
     - name: Andrew Dunning
       uri: https://orcid.org/0000-0003-0464-5036
     links:
-    - href: http://www.zotero.org/styles/chicago-notes-bibliography-classic-archive-place-first-no-url
+    - href: 
+        http://www.zotero.org/styles/chicago-notes-bibliography-classic-archive-place-first-no-url
       rel: self
     - href: http://www.zotero.org/styles/chicago-notes-bibliography
       rel: template
@@ -69,35 +75,34 @@ citation:
     suffix: ""
     delimiter: ", "
     template:
-      - term: ibid
-      - variable: locator
-        suffix: .
+    - term: ibid
+    - variable: locator
+      suffix: .
   subsequent:
     options:
       contributors:
         name-form: family-only
-    template:
+    type-variants:
+      default:
       - contributor: author
         form: short
       - title: primary
         form: short
         prefix: ", "
-      - variable: locator
-        prefix: ", "
-        overrides:
-          book:
-            suppress: false
-          chapter:
-            suppress: false
-          article-journal:
-            suppress: false
-          default:
-            suppress: true
-  template:
+    template:
+    - contributor: author
+      form: short
+    - title: primary
+      form: short
+      prefix: ", "
+    - variable: locator
+      prefix: ", "
+  type-variants:
+    default:
     - contributor: author
       form: long
       name-order: given-first
-      shorten:
+      shorten: &id001
         min: 3
         use-first: 1
     - title: primary
@@ -109,7 +114,7 @@ citation:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten:
+      shorten: &id002
         min: 4
         use-first: 1
     - variable: publisher-place
@@ -123,54 +128,71 @@ citation:
       prefix: " "
     - number: pages
       prefix: ": "
-    - number: number
-      prefix: ", Patent "
-      overrides:
-        patent:
-          suppress: false
-        default:
-          suppress: true
-    - items:
-        - date: issued
-          form: month-day
-          prefix: ", issued "
-        - date: issued
-          form: year
-          prefix: ", "
-      delimiter: none
-      overrides:
-        patent:
-          suppress: false
-        default:
-          suppress: true
-    - items:
-        - date: issued
-          form: month-day
-        - date: issued
-          form: year
-          prefix: ", "
-      delimiter: none
+    - delimiter: none
+      items:
+      - date: issued
+        form: month-day
+        prefix: ", issued "
+      - date: issued
+        form: year
+        prefix: ", "
+    - delimiter: none
       prefix: ", "
-      overrides:
-        interview:
-          suppress: false
-        default:
-          suppress: true
-    - variable: medium
+      items:
+      - date: issued
+        form: month-day
+      - date: issued
+        form: year
+        prefix: ", "
+  template:
+  - contributor: author
+    form: long
+    name-order: given-first
+    shorten: *id001
+  - title: primary
+    wrap: quotes
+  - title: parent-monograph
+    emph: true
+  - title: parent-serial
+    emph: true
+  - contributor: editor
+    form: verb
+    name-order: given-first
+    shorten: *id002
+  - variable: publisher-place
+    prefix: " ("
+  - variable: publisher
+    prefix: ": "
+  - number: volume
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "
+  - number: pages
+    prefix: ": "
+  - number: number
+    prefix: ", Patent "
+  - delimiter: none
+    items:
+    - date: issued
+      form: month-day
+      prefix: ", issued "
+    - date: issued
+      form: year
       prefix: ", "
-      overrides:
-        interview:
-          suppress: false
-        default:
-          suppress: true
-    - contributor: interviewer
-      form: long
-      prefix: ", interview by "
-      overrides:
-        interview:
-          suppress: false
-        default:
-          suppress: true
+  - delimiter: none
+    prefix: ", "
+    items:
+    - date: issued
+      form: month-day
+    - date: issued
+      form: year
+      prefix: ", "
+  - variable: medium
+    prefix: ", "
+  - contributor: interviewer
+    form: long
+    prefix: ", interview by "
   suffix: .
   delimiter: ", "
   multi-cite-delimiter: "; "
@@ -183,27 +205,27 @@ bibliography:
         and-others: et-al
         delimiter-precedes-last: contextual
   template:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-    - items:
-        - contributor: editor
-          form: verb
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
-    - title: parent-serial
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten:
+      min: 8
+      use-first: 3
+  - title: primary
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
       emph: true
-    - variable: publisher-place
-    - number: volume
-    - date: issued
-      form: year
-      prefix: " "
-    - number: pages
-      prefix: ": "
-    - variable: publisher
-      prefix: ": "
+  - title: parent-serial
+    emph: true
+  - variable: publisher-place
+  - number: volume
+  - date: issued
+    form: year
+    prefix: " "
+  - number: pages
+    prefix: ": "
+  - variable: publisher
+    prefix: ": "

@@ -46,228 +46,213 @@ options:
   punctuation-in-quote: true
 citation:
   template:
-    - items:
-        - number: citation-number
-        - variable: locator
-          wrap: parentheses
-      delimiter: none
+  - delimiter: none
+    items:
+    - number: citation-number
+    - variable: locator
+      wrap: parentheses
   multi-cite-delimiter: ","
   collapse: citation-number
 bibliography:
-  type-templates:
+  type-variants:
     [article-journal, article-magazine]:
-      - contributor: author
-        form: long
-        name-order: family-first
-        shorten:
-          min: 7
-          use-first: 3
-          and-others: et-al
-      - title: primary
-      - title: parent-serial
-      - items:
-          - date: issued
-            form: year
-            suffix: ";"
-          - number: volume
-          - number: issue
-            wrap: parentheses
-          - number: pages
-            prefix: ":"
-        delimiter: none
-      - variable: doi
-        prefix: " doi:"
-        overrides:
-          article-magazine:
-            suppress: true
-    [book, report, thesis]:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-      - variable: genre
-        overrides:
-          [book, report]:
-            suppress: true
-      - number: edition
-        overrides:
-          [report, thesis]:
-            suppress: true
-      - variable: publisher
-        suffix: "; "
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 7
+        use-first: 3
+        and-others: et-al
+    - title: primary
+    - title: parent-serial
+    - delimiter: none
+      items:
       - date: issued
         form: year
-    [chapter, paper-conference]:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-      - items:
-          - term: in
-            suffix: ": "
-          - contributor: editor
-            form: long
-            name-order: family-first
-            label: { term: editor, form: long, placement: suffix }
-          - title: parent-monograph
-        delimiter: " "
-      - variable: publisher
-        suffix: "; "
-        overrides:
-          paper-conference:
-            suppress: true
-      - items:
-          - date: issued
-            form: year
-          - number: pages
-            prefix: ":"
-        delimiter: none
-    webpage:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-      - date: issued
-        form: year
-      - date: accessed
-        form: month-day
-        prefix: "Accessed "
-      - date: accessed
-        form: year
-        prefix: ", "
-        suffix: ". "
-      - variable: url
-    article-newspaper:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-      - title: parent-serial
-      - date: issued
-        form: month-day
-      - date: issued
-        form: year
-        prefix: ", "
-    entry-encyclopedia:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-      - term: in
-        suffix: ": "
-      - title: parent-serial
-      - term: volume
-        form: short
-        suffix: " "
+        suffix: ";"
       - number: volume
-      - variable: publisher
-        suffix: "; "
-      - items:
-          - date: issued
-            form: year
-          - number: pages
-            prefix: ":"
-        delimiter: none
-    dataset:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-      - term: online
-        prefix: "Published "
-        suffix: " "
-      - date: issued
-        form: year
-        suffix: ". "
-      - date: accessed
-        form: month-day
-        prefix: "Accessed "
-      - date: accessed
-        form: year
-        prefix: ", "
-        suffix: ". "
-      - variable: url
-    legal-case:
-      - title: primary
-      - items:
-          - variable: reporter
-          - number: volume
-          - number: pages
-            prefix: ", "
-        delimiter: " "
-      - items:
-          - variable: authority
-          - date: issued
-            form: year
-        delimiter: " "
+      - number: issue
         wrap: parentheses
-    patent:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-      - items:
-          - term: online
-            prefix: "Published "
-            suffix: " "
-          - date: issued
-            form: month-day
-          - date: issued
-            form: year
-            prefix: ", "
-        delimiter: none
-      - variable: number
+      - number: pages
         prefix: ":"
-    motion-picture:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-      - date: issued
-        form: year
-    broadcast:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-      - title: parent-serial
-      - items:
-          - term: online
-            prefix: "Published "
-            suffix: " "
-          - date: issued
-            form: month-day
-          - date: issued
-            form: year
-            prefix: ", "
-          - variable: number
-            prefix: ":"
-        delimiter: none
-    [interview, personal-communication]:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-      - items:
-          - term: online
-            prefix: "Published "
-            suffix: " "
-          - date: issued
-            form: month-day
-          - date: issued
-            form: year
-            prefix: ", "
-        delimiter: none
-      - variable: url
-        overrides:
-          personal-communication:
-            suppress: true
-  template:
+    - variable: doi
+      prefix: " doi:"
+    [book, report, thesis]:
     - contributor: author
       form: long
       name-order: family-first
     - title: primary
+    - variable: genre
+    - number: edition
     - variable: publisher
       suffix: "; "
     - date: issued
       form: year
+    [chapter, paper-conference]:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - delimiter: " "
+      items:
+      - term: in
+        suffix: ": "
+      - contributor: editor
+        form: long
+        name-order: family-first
+        label: {term: editor, form: long, placement: suffix}
+      - title: parent-monograph
+    - variable: publisher
+      suffix: "; "
+    - delimiter: none
+      items:
+      - date: issued
+        form: year
+      - number: pages
+        prefix: ":"
+    webpage:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - date: issued
+      form: year
+    - date: accessed
+      form: month-day
+      prefix: "Accessed "
+    - date: accessed
+      form: year
+      prefix: ", "
+      suffix: ". "
+    - variable: url
+    article-newspaper:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - title: parent-serial
+    - date: issued
+      form: month-day
+    - date: issued
+      form: year
+      prefix: ", "
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - term: in
+      suffix: ": "
+    - title: parent-serial
+    - term: volume
+      form: short
+      suffix: " "
+    - number: volume
+    - variable: publisher
+      suffix: "; "
+    - delimiter: none
+      items:
+      - date: issued
+        form: year
+      - number: pages
+        prefix: ":"
+    dataset:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - term: online
+      prefix: "Published "
+      suffix: " "
+    - date: issued
+      form: year
+      suffix: ". "
+    - date: accessed
+      form: month-day
+      prefix: "Accessed "
+    - date: accessed
+      form: year
+      prefix: ", "
+      suffix: ". "
+    - variable: url
+    legal-case:
+    - title: primary
+    - delimiter: " "
+      items:
+      - variable: reporter
+      - number: volume
+      - number: pages
+        prefix: ", "
+    - delimiter: " "
+      wrap: parentheses
+      items:
+      - variable: authority
+      - date: issued
+        form: year
+    patent:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - delimiter: none
+      items:
+      - term: online
+        prefix: "Published "
+        suffix: " "
+      - date: issued
+        form: month-day
+      - date: issued
+        form: year
+        prefix: ", "
+    - variable: number
+      prefix: ":"
+    motion-picture:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - date: issued
+      form: year
+    broadcast:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - title: parent-serial
+    - delimiter: none
+      items:
+      - term: online
+        prefix: "Published "
+        suffix: " "
+      - date: issued
+        form: month-day
+      - date: issued
+        form: year
+        prefix: ", "
+      - variable: number
+        prefix: ":"
+    [interview, personal-communication]:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - delimiter: none
+      items:
+      - term: online
+        prefix: "Published "
+        suffix: " "
+      - date: issued
+        form: month-day
+      - date: issued
+        form: year
+        prefix: ", "
+    - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - title: primary
+  - variable: publisher
+    suffix: "; "
+  - date: issued
+    form: year

@@ -35,24 +35,32 @@ citation:
         and-others: et-al
         delimiter-precedes-last: contextual
       delimiter: ", "
-  template:
+  type-variants:
+    article-newspaper:
     - contributor: author
       form: short
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 3
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-    - date: issued
-      form: year
-      prefix: " "
-      overrides:
-        patent:
-          suppress: true
-        article-newspaper:
-          suppress: true
     - variable: locator
+    patent:
+    - contributor: author
+      form: short
+      name-order: family-first
+      shorten: *id001
+    - variable: locator
+  template:
+  - contributor: author
+    form: short
+    name-order: family-first
+    shorten: *id001
+  - date: issued
+    form: year
+    prefix: " "
+  - variable: locator
   wrap: parentheses
   delimiter: ". "
   multi-cite-delimiter: ", "
@@ -70,51 +78,182 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id002
         min: 5
         use-first: 3
     - date: issued
       form: year
       prefix: " "
-      overrides:
-        patent:
-          suppress: true
-        article-newspaper:
-          suppress: true
     - title: primary
     - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            chapter:
-              prefix: "on "
-          name-order: given-first
-          shorten:
-            min: 4
-            use-first: 3
-        - title: parent-monograph
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: &id003
+          min: 4
+          use-first: 3
+      - title: parent-monograph
     - title: parent-serial
     - items:
-        - number: volume
-        - number: issue
-          wrap: parentheses
-          overrides: {}
+      - number: volume
+      - number: issue
+        wrap: parentheses
     - variable: publisher
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
-        entry-encyclopedia:
-          prefix: "pp. "
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
     - variable: publisher-place
     - variable: url
+    article-newspaper:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - title: primary
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: *id003
+      - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+    - variable: doi
+    - variable: publisher-place
+    - variable: url
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - date: issued
+      form: year
+      prefix: " "
+    - title: primary
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: *id003
+        prefix: "on "
+      - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
+    - variable: publisher-place
+    - variable: url
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - date: issued
+      form: year
+      prefix: " "
+    - title: primary
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: *id003
+      - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
+    - variable: publisher-place
+    - variable: url
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - date: issued
+      form: year
+      prefix: " "
+    - title: primary
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: *id003
+      - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
+    - variable: publisher-place
+    - variable: url
+    patent:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - title: primary
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: *id003
+      - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+    - variable: doi
+    - variable: publisher-place
+    - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id002
+  - date: issued
+    form: year
+    prefix: " "
+  - title: primary
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+      shorten: *id003
+    - title: parent-monograph
+  - title: parent-serial
+  - items:
+    - number: volume
+    - number: issue
+      wrap: parentheses
+  - variable: publisher
+  - number: pages
+  - variable: doi
+  - variable: publisher-place
+  - variable: url

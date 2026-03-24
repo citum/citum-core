@@ -17,7 +17,7 @@ serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
 ciborium = "0.2"
 strsim = "0.10"
 walkdir = "2.4"
-schemars = { version = "0.8", optional = true }
+schemars = { version = "1.2.1", features = ["indexmap2"], optional = true }
 indexmap = "2.2.3"
 citum_schema = { package = "citum-schema", path = "../citum-schema" }
 citum_engine = { package = "citum-engine", path = "../citum-engine" }

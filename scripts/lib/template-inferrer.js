@@ -1030,6 +1030,35 @@ function inferTemplate(stylePath, section = 'bibliography') {
     delimiterSupport,
   });
 
+  if (section === 'citation') {
+    const integral = inferTemplate(stylePath, 'citation-integral');
+    const non_integral = inferTemplate(stylePath, 'citation-non-integral');
+
+    if (integral || non_integral) {
+      const baseJson = JSON.stringify(template);
+      const result = {
+        template,
+        meta: {
+          delimiterConsensus,
+          entrySuffix,
+          typesAnalyzed: Object.keys(typedComponents),
+          entryCount: rendered.entries.length,
+          confidence,
+          section,
+          wrap: citationWrap
+        }
+      };
+
+      if (integral && JSON.stringify(integral.template) !== baseJson) {
+        result.integral = { template: integral.template };
+      }
+      if (non_integral && JSON.stringify(non_integral.template) !== baseJson) {
+        result.non_integral = { template: non_integral.template };
+      }
+      return result;
+    }
+  }
+
   return {
     template,
     yaml: generateYaml(template, delimiterConsensus, citationWrap),

@@ -1,6 +1,7 @@
 info:
   title: SAGE - NLM/Vancouver
-  description: Vancouver superscript style modified to italicize journal names strip periods for use in SAGE journals
+  description: Vancouver superscript style modified to italicize journal names strip periods for use
+    in SAGE journals
   fields:
   - medicine
   source:
@@ -41,27 +42,47 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 3
     - title: primary
       prefix: " "
     - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            chapter:
-              prefix: "on "
-          name-order: given-first
-          shorten:
-            min: 4
-            use-first: 3
-        - title: parent-monograph
-          emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: &id002
+          min: 4
+          use-first: 3
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - variable: publisher
+    - number: pages
+      prefix: ", "
+    - variable: publisher-place
+    - variable: url
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: *id002
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - number: volume
@@ -69,23 +90,149 @@ bibliography:
     - date: issued
       form: year
       prefix: ", "
-      overrides:
-        article-journal:
-          suppress: true
-        entry-encyclopedia:
-          suppress: true
-        broadcast:
-          suppress: true
-        personal_communication:
-          suppress: true
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
-        article-magazine:
-          prefix: "pp. "
+      prefix: "pp. "
+    - variable: publisher-place
+    - variable: url
+    broadcast:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: *id002
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - variable: publisher
+    - number: pages
       prefix: ", "
     - variable: publisher-place
     - variable: url
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: *id002
+        prefix: "on "
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - variable: publisher
+    - date: issued
+      form: year
+      prefix: ", "
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher-place
+    - variable: url
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: *id002
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - variable: publisher
+    - number: pages
+      prefix: ", "
+    - variable: publisher-place
+    - variable: url
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: *id002
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - variable: publisher
+    - date: issued
+      form: year
+      prefix: ", "
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher-place
+    - variable: url
+    personal_communication:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: *id002
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - variable: publisher
+    - number: pages
+      prefix: ", "
+    - variable: publisher-place
+    - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - title: primary
+    prefix: " "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+      shorten: *id002
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - number: volume
+  - variable: publisher
+  - date: issued
+    form: year
+    prefix: ", "
+  - number: pages
+    prefix: ", "
+  - variable: publisher-place
+  - variable: url

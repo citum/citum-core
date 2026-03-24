@@ -16,16 +16,18 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/springer-lecture-notes-in-computer-science
       rel: template
-    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
+    - href: 
+        http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
       rel: documentation
-    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
+    - href: 
+        http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
       rel: documentation
 options:
   processing: !custom
     sort:
       template:
-        - key: author
-        - key: year
+      - key: author
+      - key: year
     group:
       template: [author, year]
     disambiguate:
@@ -57,19 +59,19 @@ citation:
         min: 3
         use-first: 1
   template:
-    - items:
-        - contributor: author
-          form: short
-          shorten:
-            min: 3
-            use-first: 1
-            and-others: et-al
-            delimiter-precedes-last: contextual
-          and: text
-        - date: issued
-          form: year
-      delimiter: space
-    - variable: locator
+  - delimiter: space
+    items:
+    - contributor: author
+      form: short
+      shorten:
+        min: 3
+        use-first: 1
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      and: text
+    - date: issued
+      form: year
+  - variable: locator
   wrap: parentheses
   delimiter: ", "
   multi-cite-delimiter: "; "
@@ -82,7 +84,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: ", "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
@@ -91,19 +94,65 @@ bibliography:
     - title: parent-monograph
     - title: parent-serial
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
     - variable: publisher-place
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
     - variable: url
     - variable: publisher
     - date: issued
       form: year
       wrap: parentheses
       prefix: " "
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: ": "
+    - title: parent-monograph
+    - title: parent-serial
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher-place
+    - variable: doi
+    - variable: url
+    - variable: publisher
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: ": "
+    - title: parent-monograph
+    - title: parent-serial
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher-place
+    - variable: doi
+    - variable: url
+    - variable: publisher
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - title: primary
+    prefix: ": "
+  - title: parent-monograph
+  - title: parent-serial
+  - number: pages
+  - variable: publisher-place
+  - variable: doi
+  - variable: url
+  - variable: publisher
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "

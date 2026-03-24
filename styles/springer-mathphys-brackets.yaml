@@ -16,9 +16,11 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/springer-lecture-notes-in-computer-science
       rel: template
-    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
+    - href: 
+        http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
       rel: documentation
-    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
+    - href: 
+        http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
       rel: documentation
 options:
   substitute: editor-short
@@ -48,7 +50,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: ", "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
@@ -57,11 +60,6 @@ bibliography:
     - title: parent-monograph
     - title: parent-serial
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
     - variable: publisher
     - variable: publisher-place
       prefix: ", "
@@ -71,26 +69,70 @@ bibliography:
       wrap: parentheses
       prefix: " "
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
-  type-templates:
+      prefix: https://doi.org/
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: ": "
+    - title: parent-monograph
+    - title: parent-serial
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher
+    - variable: publisher-place
+      prefix: ", "
+    - variable: url
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - variable: doi
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: ": "
+    - title: parent-monograph
+    - title: parent-serial
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher
+    - variable: publisher-place
+      prefix: ", "
+    - variable: url
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - variable: doi
     entry-encyclopedia:
-      - number: citation-number
-        suffix: ". "
-      - contributor: author
-        form: long
-        sort-separator: ", "
-      - title: primary
-        overrides:
-          song: {}
-          book: {}
-          legislation: {}
-          bill: {}
-          graphic: {}
-          motion_picture: {}
-          legal_case: {}
-          report: {}
-      - variable: url
-      - date: issued
-        form: year
+    - number: citation-number
+      suffix: ". "
+    - contributor: author
+      form: long
+      sort-separator: ", "
+    - title: primary
+    - variable: url
+    - date: issued
+      form: year
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - title: primary
+    prefix: ": "
+  - title: parent-monograph
+  - title: parent-serial
+  - number: pages
+  - variable: publisher
+  - variable: publisher-place
+    prefix: ", "
+  - variable: url
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "
+  - variable: doi

@@ -1,5 +1,5 @@
 use citum_schema::template::{
-    DelimiterPunctuation, Rendering, SimpleVariable, TemplateComponent, TemplateList,
+    DelimiterPunctuation, Rendering, SimpleVariable, TemplateComponent, TemplateGroup,
     TemplateVariable, WrapPunctuation,
 };
 use csl_legacy::model::{CslNode, Layout, Macro};
@@ -23,15 +23,15 @@ pub(super) fn ensure_numeric_locator_citation_component(
     });
 
     if let Some(idx) = template.iter().position(component_has_citation_number) {
-        if let TemplateComponent::List(list) = &mut template[idx] {
-            list.items.push(locator_component);
+        if let TemplateComponent::Group(list) = &mut template[idx] {
+            list.group.push(locator_component);
             if list.delimiter.is_none() {
                 list.delimiter = Some(DelimiterPunctuation::None);
             }
         } else {
             let original = template[idx].clone();
-            template[idx] = TemplateComponent::List(TemplateList {
-                items: vec![original, locator_component],
+            template[idx] = TemplateComponent::Group(TemplateGroup {
+                group: vec![original, locator_component],
                 delimiter: Some(DelimiterPunctuation::None),
                 ..Default::default()
             });
@@ -123,8 +123,8 @@ fn apply_wrapped_locator_formatting(
                     changed = true;
                 }
             }
-            TemplateComponent::List(list) => {
-                if apply_wrapped_locator_formatting(&mut list.items, wrap) {
+            TemplateComponent::Group(list) => {
+                if apply_wrapped_locator_formatting(&mut list.group, wrap) {
                     changed = true;
                 }
             }
@@ -241,8 +241,8 @@ fn apply_author_date_locator_formatting(
                     variable.rendering.prefix = Some(locator_prefix.to_string());
                 }
             }
-            TemplateComponent::List(list) => {
-                if apply_author_date_locator_formatting(&mut list.items, locator_prefix) {
+            TemplateComponent::Group(list) => {
+                if apply_author_date_locator_formatting(&mut list.group, locator_prefix) {
                     found_locator = true;
                 }
             }
@@ -356,7 +356,7 @@ fn apply_wrap_to_component(component: &mut TemplateComponent, wrap: WrapPunctuat
                 n.rendering.wrap = Some(wrap);
             }
         }
-        TemplateComponent::List(list) => {
+        TemplateComponent::Group(list) => {
             if list.rendering.wrap.is_none() {
                 list.rendering.wrap = Some(wrap);
             }
@@ -372,7 +372,7 @@ fn citation_template_has_locator(template: &[TemplateComponent]) -> bool {
 fn component_has_locator(component: &TemplateComponent) -> bool {
     match component {
         TemplateComponent::Variable(v) => v.variable == SimpleVariable::Locator,
-        TemplateComponent::List(list) => list.items.iter().any(component_has_locator),
+        TemplateComponent::Group(list) => list.group.iter().any(component_has_locator),
         _ => false,
     }
 }
@@ -482,7 +482,7 @@ fn component_has_citation_number(component: &TemplateComponent) -> bool {
         TemplateComponent::Number(n) => {
             n.number == citum_schema::template::NumberVariable::CitationNumber
         }
-        TemplateComponent::List(list) => list.items.iter().any(component_has_citation_number),
+        TemplateComponent::Group(list) => list.group.iter().any(component_has_citation_number),
         _ => false,
     }
 }

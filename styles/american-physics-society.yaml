@@ -31,7 +31,7 @@ options:
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
-  prefix: "\_["
+  prefix: " ["
   suffix: "]"
   collapse: citation-number
   multi-cite-delimiter: ","
@@ -41,12 +41,10 @@ bibliography:
       name-form: initials
       initialize-with: ". "
       delimiter: ", "
-  template:
+  type-variants:
+    chapter:
     - contributor: author
       form: long
-      overrides:
-        personal_communication:
-          prefix: "pp. "
       name-order: given-first
     - title: primary
       emph: true
@@ -58,48 +56,121 @@ bibliography:
     - date: issued
       form: year
       wrap: parentheses
-      overrides:
-        dataset:
-          suppress: true
-        interview:
-          suppress: true
-        personal_communication:
-          suppress: true
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
-        entry-encyclopedia:
-          prefix: "pp. "
+      prefix: "pp. "
+    dataset:
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: primary
+      emph: true
+    - title: parent-monograph
+    - title: parent-serial
+    - variable: publisher-place
+    - variable: publisher
+    - variable: url
+    - number: pages
       prefix: "), "
-  type-templates:
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: primary
+      emph: true
+    - title: parent-monograph
+    - title: parent-serial
+    - variable: publisher-place
+    - variable: publisher
+    - variable: url
+    - date: issued
+      form: year
+      wrap: parentheses
+    - number: pages
+      prefix: "pp. "
+    interview:
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: primary
+      emph: true
+    - title: parent-monograph
+    - title: parent-serial
+    - variable: publisher-place
+    - variable: publisher
+    - variable: url
+    - number: pages
+      prefix: "), "
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: primary
+      emph: true
+    - title: parent-monograph
+    - title: parent-serial
+    - variable: publisher-place
+    - variable: publisher
+    - variable: url
+    - date: issued
+      form: year
+      wrap: parentheses
+    - number: pages
+      prefix: "pp. "
+    personal_communication:
+    - contributor: author
+      form: long
+      name-order: given-first
+      prefix: "pp. "
+    - title: primary
+      emph: true
+    - title: parent-monograph
+    - title: parent-serial
+    - variable: publisher-place
+    - variable: publisher
+    - variable: url
+    - number: pages
+      prefix: "), "
     software:
-      - number: citation-number
-        wrap: brackets
-      - contributor: author
-        form: long
-        name-order: given-first
-      - title: primary
-        emph: true
-      - date: issued
-        form: year
-        wrap: parentheses
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: primary
+      emph: true
+    - date: issued
+      form: year
+      wrap: parentheses
     patent:
-      - number: citation-number
-        wrap: brackets
-      - contributor: author
-        form: long
-        shorten:
-          min: 11
-          use-first: 1
-          and-others: et-al
-          delimiter-precedes-last: contextual
-        and: text
-      - title: primary
-        emph: true
-      - date: issued
-        form: year
-      - term: no-date
-        form: short
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      shorten:
+        min: 11
+        use-first: 1
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      and: text
+    - title: primary
+      emph: true
+    - date: issued
+      form: year
+    - term: no-date
+      form: short
+  template:
+  - contributor: author
+    form: long
+    name-order: given-first
+  - title: primary
+    emph: true
+  - title: parent-monograph
+  - title: parent-serial
+  - variable: publisher-place
+  - variable: publisher
+  - variable: url
+  - date: issued
+    form: year
+    wrap: parentheses
+  - number: pages
+    prefix: "), "

@@ -1,5 +1,6 @@
 //! Public schema types for Citum styles, citations, references, and locales.
 
+use indexmap::IndexMap;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::de::DeserializeOwned;
@@ -56,7 +57,7 @@ pub use citation::{
 pub use citum_schema_data::{InputBibliography, InputBibliographyInfo};
 pub use grouping::{
     BibliographyGroup, CitedStatus, FieldMatcher, GroupHeading, GroupSelector, GroupSort,
-    GroupSortEntry, GroupSortKey, NameSortOrder, SortKey, TypeSelector,
+    GroupSortEntry, GroupSortKey, NameSortOrder, SortKey,
 };
 pub use legacy::{
     AndTerm, ConditionBlock, CslnInfo, CslnLocale, CslnNode, CslnStyle, DateBlock, DateForm,
@@ -72,8 +73,8 @@ pub use presets::{ContributorPreset, DatePreset, SortPreset, SubstitutePreset, T
 pub use registry::{RegistryEntry, StyleRegistry};
 pub use style_preset::StylePreset;
 pub use template::{
-    Rendering, TemplateComponent, TemplateContributor, TemplateDate, TemplateList, TemplateNumber,
-    TemplateTerm, TemplateTitle, TemplateVariable, WrapPunctuation,
+    Rendering, TemplateComponent, TemplateContributor, TemplateDate, TemplateGroup, TemplateNumber,
+    TemplateTerm, TemplateTitle, TemplateVariable, TypeSelector, WrapPunctuation,
 };
 
 /// A named template (reusable sequence of components).
@@ -81,6 +82,36 @@ pub type Template = Vec<TemplateComponent>;
 
 /// Canonical Citum style schema version used when `Style.version` is omitted.
 pub const STYLE_SCHEMA_VERSION: &str = "0.12.0";
+
+/// A non-fatal validation warning emitted by [`Style::validate`].
+#[derive(Debug, Clone, PartialEq)]
+pub enum SchemaWarning {
+    /// A `TypeSelector` references an unrecognized reference type name.
+    ///
+    /// This usually indicates a typo (e.g., `article_journal` instead of
+    /// `article-journal`). The selector will silently match nothing at
+    /// render time.
+    UnknownTypeName {
+        /// The unrecognized type name string.
+        name: String,
+        /// Human-readable location hint (e.g., `"bibliography.type-variants"`).
+        location: String,
+    },
+}
+
+impl std::fmt::Display for SchemaWarning {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SchemaWarning::UnknownTypeName { name, location } => {
+                write!(
+                    f,
+                    "unknown reference type \"{name}\" in {location} \
+                     (will silently match nothing; check for typos)"
+                )
+            }
+        }
+    }
+}
 
 /// The new Citum Style model.
 ///
@@ -195,6 +226,68 @@ impl Style {
         let mut style: Style = serde_yaml::from_value(raw.clone())?;
         style.raw_yaml = Some(raw);
         Ok(style)
+    }
+
+    /// Validate the style and return any non-fatal warnings.
+    ///
+    /// This method checks for issues that are syntactically valid but
+    /// semantically suspect, such as unrecognized reference type names in
+    /// `TypeSelector` values.
+    ///
+    /// Warnings do not prevent rendering; they are informational only.
+    pub fn validate(&self) -> Vec<SchemaWarning> {
+        let mut warnings = Vec::new();
+        self.collect_type_selector_warnings(&mut warnings);
+        warnings
+    }
+
+    /// Collect warnings for all `TypeSelector` values in the style.
+    fn collect_type_selector_warnings(&self, warnings: &mut Vec<SchemaWarning>) {
+        if let Some(bib) = &self.bibliography
+            && let Some(type_variants) = &bib.type_variants
+        {
+            for selector in type_variants.keys() {
+                for name in selector.unknown_type_names() {
+                    warnings.push(SchemaWarning::UnknownTypeName {
+                        name: name.to_string(),
+                        location: "bibliography.type-variants".to_string(),
+                    });
+                }
+            }
+        }
+        if let Some(cit) = &self.citation {
+            collect_citation_spec_warnings(cit, "citation", warnings);
+        }
+    }
+}
+
+/// Collect warnings from a `CitationSpec` and its sub-specs.
+fn collect_citation_spec_warnings(
+    spec: &CitationSpec,
+    location: &str,
+    warnings: &mut Vec<SchemaWarning>,
+) {
+    if let Some(type_variants) = &spec.type_variants {
+        for selector in type_variants.keys() {
+            for name in selector.unknown_type_names() {
+                warnings.push(SchemaWarning::UnknownTypeName {
+                    name: name.to_string(),
+                    location: format!("{location}.type-variants"),
+                });
+            }
+        }
+    }
+    // Recurse into sub-specs
+    for (sub_name, sub_spec) in [
+        ("integral", spec.integral.as_deref()),
+        ("non-integral", spec.non_integral.as_deref()),
+        ("subsequent", spec.subsequent.as_deref()),
+        ("ibid", spec.ibid.as_deref()),
+    ]
+    .into_iter()
+    .filter_map(|(n, s)| s.map(|s| (n, s)))
+    {
+        collect_citation_spec_warnings(sub_spec, &format!("{location}.{sub_name}"), warnings);
     }
 }
 
@@ -399,6 +492,13 @@ pub struct CitationSpec {
     /// Locale-specific template overrides checked before the default template.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub locales: Option<Vec<LocalizedTemplateSpec>>,
+    /// Type-specific template overrides for citations. When present, replaces
+    /// the default citation template for references of the specified types.
+    /// Type-variant lookup happens after mode (integral/non-integral) resolution.
+    /// If both the main spec and the active mode sub-spec have a `type-variants`
+    /// entry for the same type, the mode-specific one wins.
+    #[serde(skip_serializing_if = "Option::is_none", rename = "type-variants")]
+    pub type_variants: Option<IndexMap<template::TypeSelector, Template>>,
     /// Wrap the entire citation in punctuation. Preferred over prefix/suffix.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub wrap: Option<template::WrapPunctuation>,
@@ -490,6 +590,26 @@ impl CitationSpec {
             .or_else(|| self.resolve_template())
     }
 
+    /// Resolve the template for a given reference type and language.
+    ///
+    /// First checks `type_variants` for an entry matching `ref_type`.
+    /// Falls back to `resolve_template_for_language` if no type-specific
+    /// template is found.
+    pub fn resolve_template_for_type(
+        &self,
+        ref_type: &str,
+        language: Option<&str>,
+    ) -> Option<Template> {
+        if let Some(type_variants) = &self.type_variants {
+            for (selector, template) in type_variants {
+                if selector.matches(ref_type) {
+                    return Some(template.clone());
+                }
+            }
+        }
+        self.resolve_template_for_language(language)
+    }
+
     /// Resolve the effective spec for a given citation mode.
     ///
     /// If a mode-specific spec exists (e.g., `integral`), it merges with and overrides
@@ -523,6 +643,9 @@ impl CitationSpec {
                 }
                 if spec.locales.is_some() {
                     merged.locales = spec.locales.clone();
+                }
+                if spec.type_variants.is_some() {
+                    merged.type_variants = spec.type_variants.clone();
                 }
                 if spec.wrap.is_some() {
                     merged.wrap = spec.wrap.clone();
@@ -592,9 +715,19 @@ impl CitationSpec {
                 }
                 if spec.template.is_some() {
                     merged.template = spec.template.clone();
+                    // A position spec with its own template is a complete override —
+                    // clear inherited type_variants so the engine uses this template
+                    // directly rather than branching by ref type. If the position spec
+                    // wants type-specific rendering it must declare type_variants itself.
+                    if spec.type_variants.is_none() {
+                        merged.type_variants = None;
+                    }
                 }
                 if spec.locales.is_some() {
                     merged.locales = spec.locales.clone();
+                }
+                if spec.type_variants.is_some() {
+                    merged.type_variants = spec.type_variants.clone();
                 }
                 if spec.wrap.is_some() {
                     merged.wrap = spec.wrap.clone();
@@ -651,7 +784,7 @@ pub struct BibliographySpec {
     /// template for entries of the specified types. Keys are reference type
     /// names (e.g., "chapter", "article-journal").
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub type_templates: Option<HashMap<template::TypeSelector, Template>>,
+    pub type_variants: Option<IndexMap<template::TypeSelector, Template>>,
     /// Optional global bibliography sorting specification.
     ///
     /// When present, used for sorting the flat bibliography or as default
@@ -1302,5 +1435,92 @@ bibliography:
         assert_eq!(groups[1].id, "other");
         assert!(groups[1].heading.is_none());
         assert!(groups[1].selector.not.is_some());
+    }
+
+    #[test]
+    fn validate_type_name_accepts_known_types() {
+        assert!(template::validate_type_name("article-journal"));
+        assert!(template::validate_type_name("legal-case"));
+        assert!(template::validate_type_name("all"));
+        assert!(template::validate_type_name("default"));
+    }
+
+    #[test]
+    fn validate_type_name_normalizes_underscores() {
+        assert!(template::validate_type_name("article_journal"));
+        assert!(template::validate_type_name("legal_case"));
+    }
+
+    #[test]
+    fn validate_type_name_rejects_unknown() {
+        assert!(!template::validate_type_name("article-journall"));
+        assert!(!template::validate_type_name("unknown-type"));
+        assert!(!template::validate_type_name(""));
+    }
+
+    #[test]
+    fn style_validate_emits_warning_for_unknown_type_in_bib_type_variants() {
+        let mut type_variants = IndexMap::new();
+        type_variants.insert(
+            template::TypeSelector::Single("typo-type".to_string()),
+            vec![],
+        );
+
+        let style = Style {
+            bibliography: Some(BibliographySpec {
+                type_variants: Some(type_variants),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        let warnings = style.validate();
+        assert_eq!(warnings.len(), 1);
+        match &warnings[0] {
+            SchemaWarning::UnknownTypeName { name, location } => {
+                assert_eq!(name, "typo-type");
+                assert_eq!(location, "bibliography.type-variants");
+            }
+        }
+    }
+
+    #[test]
+    fn style_validate_no_warnings_for_valid_style() {
+        let mut type_variants = IndexMap::new();
+        type_variants.insert(
+            template::TypeSelector::Single("legal-case".to_string()),
+            vec![],
+        );
+
+        let style = Style {
+            bibliography: Some(BibliographySpec {
+                type_variants: Some(type_variants),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        let warnings = style.validate();
+        assert!(warnings.is_empty());
+    }
+
+    #[test]
+    fn null_type_variants_override_clears_preset_type_variants() {
+        let child_yaml = r#"
+preset: chicago-notes-18th
+citation:
+  type-variants: ~
+  template:
+  - contributor: author
+    form: short
+"#;
+        let style = Style::from_yaml_str(child_yaml).expect("parses");
+        let resolved = style.into_resolved();
+        let citation = resolved.citation.unwrap();
+        assert!(
+            citation.type_variants.is_none(),
+            "type_variants should be None after null override, got: {:?}",
+            citation.type_variants.as_ref().map(|tv| tv.keys().count())
+        );
     }
 }

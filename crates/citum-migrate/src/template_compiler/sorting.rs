@@ -42,9 +42,9 @@ impl TemplateCompiler {
             TemplateComponent::Contributor(_) => 8,
             TemplateComponent::Date(_) => 9,
             TemplateComponent::Title(_) => 10,
-            TemplateComponent::List(l) => {
+            TemplateComponent::Group(l) => {
                 if self.has_variable_recursive(
-                    &l.items,
+                    &l.group,
                     &TemplateComponent::Title(TemplateTitle {
                         title: TitleType::Primary,
                         ..Default::default()
@@ -52,7 +52,7 @@ impl TemplateCompiler {
                 ) {
                     3
                 } else if self.has_variable_recursive(
-                    &l.items,
+                    &l.group,
                     &TemplateComponent::Title(TemplateTitle {
                         title: TitleType::ParentSerial,
                         ..Default::default()
@@ -60,7 +60,7 @@ impl TemplateCompiler {
                 ) {
                     4
                 } else if self.has_variable_recursive(
-                    &l.items,
+                    &l.group,
                     &TemplateComponent::Title(TemplateTitle {
                         title: TitleType::ParentMonograph,
                         ..Default::default()

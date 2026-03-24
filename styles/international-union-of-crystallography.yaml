@@ -17,8 +17,8 @@ info:
 options:
   substitute:
     template:
-      - editor
-      - title
+    - editor
+    - title
   processing:
     disambiguate:
       names: true
@@ -62,15 +62,15 @@ citation:
         delimiter-precedes-last: contextual
       delimiter-precedes-et-al: never
   template:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 3
-        use-first: 1
-    - date: issued
-      form: year
-      prefix: ", "
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten:
+      min: 3
+      use-first: 1
+  - date: issued
+    form: year
+    prefix: ", "
   wrap: parentheses
   delimiter: ". "
   multi-cite-delimiter: "; "
@@ -81,28 +81,14 @@ bibliography:
       name-form: initials
       initialize-with: ". "
       delimiter-precedes-last: never
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
     - date: issued
       form: year
       wrap: parentheses
-    - title: primary
-      prefix: ". "
-      overrides:
-        chapter:
-          suppress: true
-        article-journal:
-          suppress: true
-        paper-conference:
-          suppress: true
-        article-newspaper:
-          suppress: true
-        webpage:
-          suppress: true
-        article-magazine:
-          suppress: true
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -110,12 +96,111 @@ bibliography:
     - number: volume
     - variable: publisher-place
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
       prefix: ", "
     - variable: publisher
       prefix: ". "
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap: parentheses
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - variable: publisher-place
+    - number: pages
+      prefix: ", "
+    - variable: publisher
+      prefix: ". "
+    article-newspaper:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap: parentheses
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - variable: publisher-place
+    - number: pages
+      prefix: ", "
+    - variable: publisher
+      prefix: ". "
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap: parentheses
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - variable: publisher-place
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher
+      prefix: ". "
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap: parentheses
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - variable: publisher-place
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher
+      prefix: ". "
+    webpage:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap: parentheses
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - variable: publisher-place
+    - number: pages
+      prefix: ", "
+    - variable: publisher
+      prefix: ". "
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - date: issued
+    form: year
+    wrap: parentheses
+  - title: primary
+    prefix: ". "
+  - title: parent-monograph
+    emph: true
+  - title: parent-serial
+    emph: true
+  - number: volume
+  - variable: publisher-place
+  - number: pages
+    prefix: ", "
+  - variable: publisher
+    prefix: ". "
   sort: author-date-title

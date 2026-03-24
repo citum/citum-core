@@ -161,7 +161,6 @@ fn test_variable_key_includes_context() {
         rendering: Rendering::default(),
         fallback: None,
         links: None,
-        overrides: None,
         custom: None,
     });
 
@@ -175,7 +174,6 @@ fn test_variable_key_includes_context() {
         },
         fallback: None,
         links: None,
-        overrides: None,
         custom: None,
     });
 
@@ -189,7 +187,6 @@ fn test_variable_key_includes_context() {
         },
         fallback: None,
         links: None,
-        overrides: None,
         custom: None,
     });
 
@@ -230,8 +227,8 @@ fn test_substituted_contributor_keys_block_contextual_duplicate_components() {
 
 #[test]
 fn test_strip_author_component_nested_list() {
-    let nested = TemplateComponent::List(TemplateList {
-        items: vec![
+    let nested = TemplateComponent::Group(TemplateGroup {
+        group: vec![
             TemplateComponent::Contributor(TemplateContributor {
                 contributor: ContributorRole::Author,
                 form: ContributorForm::Short,
@@ -244,7 +241,6 @@ fn test_strip_author_component_nested_list() {
                 sort_separator: None,
                 links: None,
                 rendering: Rendering::default(),
-                overrides: None,
                 custom: None,
             }),
             TemplateComponent::Date(TemplateDate {
@@ -253,23 +249,21 @@ fn test_strip_author_component_nested_list() {
                 rendering: Rendering::default(),
                 fallback: None,
                 links: None,
-                overrides: None,
                 custom: None,
             }),
         ],
         delimiter: Some(DelimiterPunctuation::Space),
         rendering: Rendering::default(),
-        overrides: None,
         custom: None,
     });
 
     let filtered = strip_author_component(&nested).expect("list should remain");
-    let TemplateComponent::List(filtered_list) = filtered else {
+    let TemplateComponent::Group(filtered_list) = filtered else {
         panic!("expected list");
     };
 
-    assert_eq!(filtered_list.items.len(), 1);
-    assert!(matches!(filtered_list.items[0], TemplateComponent::Date(_)));
+    assert_eq!(filtered_list.group.len(), 1);
+    assert!(matches!(filtered_list.group[0], TemplateComponent::Date(_)));
 }
 
 #[test]
@@ -524,5 +518,277 @@ fn legal_cases_render_per_item_instead_of_grouped_year_compression() {
     assert!(
         !rendered.contains("1954, 1955"),
         "legal-case items should not collapse into grouped year compression"
+    );
+}
+
+use std::str::FromStr;
+
+#[allow(clippy::too_many_lines, reason = "integration test fixture setup")]
+#[test]
+fn test_type_specific_rendering() {
+    let mut bibliography = Bibliography::new();
+    bibliography.insert(
+        "article1".to_string(),
+        make_reference(
+            "article1",
+            "article-journal",
+            Some(("Smith", "John")),
+            2020,
+            "Title A",
+        ),
+    );
+    bibliography.insert(
+        "book1".to_string(),
+        make_reference("book1", "book", Some(("Doe", "Jane")), 2021, "Title B"),
+    );
+
+    let mut type_variants = IndexMap::new();
+    // Article variant: Author (Short), Year
+    type_variants.insert(
+        TypeSelector::from_str("article-journal").unwrap(),
+        vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                form: ContributorForm::Short,
+                ..Default::default()
+            }),
+            TemplateComponent::Date(TemplateDate {
+                date: citum_schema::template::DateVariable::Issued,
+                form: DateForm::Year,
+                rendering: Rendering {
+                    prefix: Some(", ".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        ],
+    );
+    // Book variant: Author (Short), Title (Primary), Year
+    type_variants.insert(
+        TypeSelector::from_str("book").unwrap(),
+        vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                form: ContributorForm::Short,
+                ..Default::default()
+            }),
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                rendering: Rendering {
+                    emph: Some(true),
+                    prefix: Some(", ".to_string()),
+                    ..Default::default()
+                },
+                links: None,
+                custom: None,
+                ..Default::default()
+            }),
+            TemplateComponent::Date(TemplateDate {
+                date: citum_schema::template::DateVariable::Issued,
+                form: DateForm::Year,
+                rendering: Rendering {
+                    prefix: Some(", ".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        ],
+    );
+
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Type Specific".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::AuthorDate),
+            ..Default::default()
+        }),
+        citation: Some(CitationSpec {
+            type_variants: Some(type_variants),
+            template: Some(vec![TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::Locator,
+                rendering: Rendering::default(),
+                links: None,
+                custom: None,
+            })]),
+            wrap: Some(WrapPunctuation::Parentheses),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let processor = Processor::new(style, bibliography);
+
+    let cite_article = Citation {
+        items: vec![CitationItem {
+            id: "article1".to_string(),
+            ..Default::default()
+        }],
+        mode: CitationMode::NonIntegral,
+        ..Default::default()
+    };
+    let cite_book = Citation {
+        items: vec![CitationItem {
+            id: "book1".to_string(),
+            ..Default::default()
+        }],
+        mode: CitationMode::NonIntegral,
+        ..Default::default()
+    };
+
+    assert_eq!(
+        processor.process_citation(&cite_article).unwrap(),
+        "(Smith, 2020)"
+    );
+    assert_eq!(
+        processor.process_citation(&cite_book).unwrap(),
+        "(Doe, _Title B_, 2021)"
+    );
+}
+
+#[allow(clippy::too_many_lines, reason = "integration test fixture setup")]
+#[test]
+fn test_bibliography_type_specific_rendering() {
+    use crate::processor::rendering::RendererResources;
+    use citum_schema::BibliographySpec;
+
+    let mut bibliography = Bibliography::new();
+    let interview_ref = Reference::from(LegacyReference {
+        id: "ref1".to_string(),
+        ref_type: "interview".to_string(),
+        author: Some(vec![Name::new("Arendt", "Hannah")]),
+        title: Some("Thinking in Public".to_string()),
+        issued: Some(LegacyDateVariable::year(1975)),
+        interviewer: Some(vec![Name::new("Young-Bruehl", "Elisabeth")]),
+        publisher: Some("Schocken Books".to_string()),
+        ..Default::default()
+    });
+    bibliography.insert("ref1".to_string(), interview_ref);
+
+    let mut type_variants = IndexMap::new();
+    type_variants.insert(
+        TypeSelector::from_str("interview").unwrap(),
+        vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                form: ContributorForm::Long,
+                name_order: Some(NameOrder::FamilyFirst),
+                ..Default::default()
+            }),
+            TemplateComponent::Date(TemplateDate {
+                date: citum_schema::template::DateVariable::Issued,
+                form: DateForm::Year,
+                rendering: Rendering {
+                    wrap: Some(WrapPunctuation::Parentheses),
+                    prefix: Some(" ".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                rendering: Rendering {
+                    emph: Some(true),
+                    prefix: Some(" ".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Interviewer,
+                form: ContributorForm::Long,
+                name_order: Some(NameOrder::FamilyFirst),
+                rendering: Rendering {
+                    wrap: Some(WrapPunctuation::Parentheses),
+                    prefix: Some(" ".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+            TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::Publisher,
+                rendering: Rendering {
+                    prefix: Some(". ".to_string()),
+                    suffix: Some(".".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        ],
+    );
+
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Bib Type Specific".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            type_variants: Some(type_variants),
+            template: Some(vec![TemplateComponent::Title(TemplateTitle::default())]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let locale = Locale::default(); // Note: default locale might not have "Interviewer" term set up in a way that auto-labels work if we don't specify them.
+    // But we are specifying the interviewer component explicitly.
+    let config = Config::default();
+    let disambig = HashMap::new();
+    let series_map = RefCell::new(HashMap::new());
+    let set_by_ref = HashMap::new();
+    let member_index = HashMap::new();
+    let sets = IndexMap::new();
+
+    let renderer = crate::processor::rendering::Renderer::new(
+        RendererResources {
+            style: &style,
+            bibliography: &bibliography,
+            locale: &locale,
+            config: &config,
+        },
+        &disambig,
+        &series_map,
+        crate::processor::rendering::CompoundRenderData {
+            set_by_ref: &set_by_ref,
+            member_index: &member_index,
+            sets: &sets,
+        },
+        false,
+        false,
+    );
+
+    let reference = bibliography.get("ref1").unwrap();
+    let proc_template = renderer
+        .process_bibliography_entry_with_format::<crate::render::plain::PlainText>(reference, 1)
+        .unwrap();
+    let result = crate::render::bibliography::render_entry_body_with_format::<
+        crate::render::plain::PlainText,
+    >(&crate::render::component::ProcEntry {
+        id: "ref1".to_string(),
+        template: proc_template,
+        metadata: crate::render::format::ProcEntryMetadata::default(),
+    });
+
+    assert!(
+        result.contains("Arendt, Hannah"),
+        "Author missing: {}",
+        result
+    );
+    assert!(result.contains("(1975)"), "Date missing: {}", result);
+    assert!(
+        result.contains("_Thinking in Public_"),
+        "Title missing: {}",
+        result
+    );
+    assert!(
+        result.contains("Young-Bruehl, Elisabeth"),
+        "Interviewer missing: {}",
+        result
+    );
+    assert!(
+        result.contains("Schocken Books"),
+        "Publisher missing: {}",
+        result
     );
 }

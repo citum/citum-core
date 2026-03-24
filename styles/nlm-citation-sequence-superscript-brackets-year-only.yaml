@@ -1,6 +1,9 @@
 info:
-  title: 'NLM Style Guide (Vancouver): Citing Medicine 2nd edition (citation-sequence, superscript, brackets, year-only dates)'
-  description: 'Citing Medicine: The NLM Style Guide for Authors, Editors, and Publishers, 2nd edition (2015), based on ANSI/NISO Z39.29-2005 (R2010); citation-sequence system, with superscripted in-text indicators, brackets, and year-only dates.'
+  title: 'NLM Style Guide (Vancouver): Citing Medicine 2nd edition (citation-sequence, superscript, brackets,
+    year-only dates)'
+  description: 'Citing Medicine: The NLM Style Guide for Authors, Editors, and Publishers, 2nd edition
+    (2015), based on ANSI/NISO Z39.29-2005 (R2010); citation-sequence system, with superscripted in-text
+    indicators, brackets, and year-only dates.'
   fields:
   - medicine
   source:
@@ -49,33 +52,55 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
-  template:
+  type-variants:
+    chapter:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 6
     - title: primary
       prefix: " "
     - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            chapter:
-              prefix: "on "
-          name-order: given-first
-        - title: parent-monograph
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        prefix: "on "
+      - title: parent-monograph
     - title: parent-serial
     - date: issued
       form: year
     - items:
-        - number: volume
-        - number: issue
-          wrap: parentheses
-          overrides: {}
+      - number: volume
+      - number: issue
+        wrap: parentheses
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
     - number: pages
     - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - title: primary
+    prefix: " "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+  - title: parent-serial
+  - date: issued
+    form: year
+  - items:
+    - number: volume
+    - number: issue
+      wrap: parentheses
+  - variable: publisher-place
+  - variable: publisher
+    prefix: ": "
+  - number: pages
+  - variable: url

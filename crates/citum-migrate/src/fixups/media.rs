@@ -55,7 +55,7 @@ fn apply_legal_case_additions(template: &mut Vec<TemplateComponent>, flags: Lega
 
 pub(super) fn normalize_legal_case_type_template(
     legacy_style: &csl_legacy::model::Style,
-    type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+    type_templates: &mut Option<indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>>,
 ) {
     let Some(map) = type_templates.as_mut() else {
         return;
@@ -153,10 +153,10 @@ pub(super) fn normalize_legal_case_type_template(
 
 pub(super) fn ensure_inferred_media_type_templates(
     legacy_style: &csl_legacy::model::Style,
-    type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+    type_templates: &mut Option<indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>>,
     bibliography_template: &[TemplateComponent],
 ) {
-    let map = type_templates.get_or_insert_with(std::collections::HashMap::new);
+    let map = type_templates.get_or_insert_with(indexmap::IndexMap::new);
     let enable_interview_detail =
         legacy_style_uses_contributor_variable(legacy_style, "interviewer");
     let enable_motion_picture_detail = legacy_style_mentions_motion_picture_term(legacy_style)
@@ -255,7 +255,7 @@ fn base_media_template_from_bibliography(
 pub(super) fn ensure_personal_communication_omitted(
     legacy_style: &csl_legacy::model::Style,
     citation_template: &[TemplateComponent],
-    type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+    type_templates: &mut Option<indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>>,
 ) {
     if !citation_template_suppresses_personal_communication(citation_template)
         && !legacy_style_omits_personal_communication_in_bibliography(legacy_style)
@@ -265,7 +265,7 @@ pub(super) fn ensure_personal_communication_omitted(
     if !legacy_style_mentions_personal_communication(legacy_style) {
         return;
     }
-    let map = type_templates.get_or_insert_with(std::collections::HashMap::new);
+    let map = type_templates.get_or_insert_with(indexmap::IndexMap::new);
     map.insert(
         TypeSelector::Single("personal_communication".to_string()),
         Vec::new(),
@@ -282,28 +282,8 @@ fn citation_template_suppresses_personal_communication(template: &[TemplateCompo
         .any(component_suppresses_personal_communication)
 }
 
-fn component_suppresses_personal_communication(component: &TemplateComponent) -> bool {
-    match component {
-        TemplateComponent::Date(date_component) => {
-            date_component.overrides.as_ref().is_some_and(|overrides| {
-                overrides.iter().any(|(selector, override_component)| {
-                    selector_matches_any(
-                        selector,
-                        &["personal_communication", "personal-communication"],
-                    ) && matches!(
-                        override_component,
-                        citum_schema::template::ComponentOverride::Rendering(rendering)
-                            if rendering.suppress == Some(true)
-                    )
-                })
-            })
-        }
-        TemplateComponent::List(list) => list
-            .items
-            .iter()
-            .any(component_suppresses_personal_communication),
-        _ => false,
-    }
+fn component_suppresses_personal_communication(_component: &TemplateComponent) -> bool {
+    false
 }
 
 fn legacy_style_mentions_personal_communication(style: &csl_legacy::model::Style) -> bool {
@@ -492,10 +472,10 @@ fn legacy_style_mentions_motion_picture_term(style: &csl_legacy::model::Style) -
 
 pub(super) fn ensure_inferred_patent_type_template(
     legacy_style: &csl_legacy::model::Style,
-    type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+    type_templates: &mut Option<indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>>,
     bibliography_template: &[TemplateComponent],
 ) {
-    let map = type_templates.get_or_insert_with(std::collections::HashMap::new);
+    let map = type_templates.get_or_insert_with(indexmap::IndexMap::new);
     if map.keys().any(|selector| selector.matches("patent")) {
         return;
     }

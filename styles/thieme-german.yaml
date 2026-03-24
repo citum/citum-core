@@ -50,65 +50,154 @@ bibliography:
         delimiter-precedes-last: contextual
       delimiter-precedes-last: always
       sort-separator: " "
-  template:
+  type-variants:
+    article-magazine:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 3
     - title: primary
       prefix: " "
     - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            chapter:
-              prefix: "on "
-          name-order: given-first
-          shorten:
-            min: 4
-            use-first: 3
-        - title: parent-monograph
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: &id002
+          min: 4
+          use-first: 3
+      - title: parent-monograph
     - title: parent-serial
     - number: volume
-      overrides:
-        legal-case:
-          suppress: true
-    - number: issue
-      prefix: ": "
-      overrides:
-        article-magazine:
-          suppress: true
-        legal-case:
-          suppress: true
     - date: issued
       form: year
     - number: pages
       prefix: ". 2013: "
-      overrides:
-        legal-case:
-          suppress: true
     - variable: doi
-      overrides:
-        legal-case:
-          suppress: true
-    - variable: url
-      suppress: true
-      overrides:
-        webpage:
-          suppress: false
-          prefix: "; Im Internet: "
-    - date: accessed
-      form: full
-      suppress: true
-      overrides:
-        webpage:
-          suppress: false
-          prefix: "; Stand: "
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
-      overrides:
-        dataset:
-          suppress: true
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: *id002
+        prefix: "on "
+      - title: parent-monograph
+    - title: parent-serial
+    - number: volume
+    - number: issue
+      prefix: ": "
+    - date: issued
+      form: year
+    - number: pages
+      prefix: ". 2013: "
+    - variable: doi
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    dataset:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: *id002
+      - title: parent-monograph
+    - title: parent-serial
+    - number: volume
+    - number: issue
+      prefix: ": "
+    - date: issued
+      form: year
+    - number: pages
+      prefix: ". 2013: "
+    - variable: doi
+    - variable: publisher-place
+    legal-case:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: *id002
+      - title: parent-monograph
+    - title: parent-serial
+    - date: issued
+      form: year
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    webpage:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten: *id002
+      - title: parent-monograph
+    - title: parent-serial
+    - number: volume
+    - number: issue
+      prefix: ": "
+    - date: issued
+      form: year
+    - number: pages
+      prefix: ". 2013: "
+    - variable: doi
+    - variable: url
+      prefix: "; Im Internet: "
+    - date: accessed
+      form: full
+      prefix: "; Stand: "
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - title: primary
+    prefix: " "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+      shorten: *id002
+    - title: parent-monograph
+  - title: parent-serial
+  - number: volume
+  - number: issue
+    prefix: ": "
+  - date: issued
+    form: year
+  - number: pages
+    prefix: ". 2013: "
+  - variable: doi
+  - variable: publisher-place
+  - variable: publisher
+    prefix: ": "

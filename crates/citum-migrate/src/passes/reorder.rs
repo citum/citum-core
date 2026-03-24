@@ -1,19 +1,19 @@
-use citum_schema::template::{TemplateComponent, TemplateList};
+use citum_schema::template::{TemplateComponent, TemplateGroup};
 
 /// Recursively reorder serial components (container-title, volume) in a template.
 pub fn reorder_serial_components(components: &mut Vec<TemplateComponent>) {
     use citum_schema::template::{NumberVariable, TitleType};
 
     for component in components {
-        if let TemplateComponent::List(list) = component {
+        if let TemplateComponent::Group(list) = component {
             // Check if this list contains both volume and parent-serial
-            let has_volume = list.items.iter().any(|item| {
+            let has_volume = list.group.iter().any(|item| {
                 matches!(
                     item,
                     TemplateComponent::Number(n) if n.number == NumberVariable::Volume
                 )
             });
-            let has_parent_serial = list.items.iter().any(|item| {
+            let has_parent_serial = list.group.iter().any(|item| {
                 matches!(
                     item,
                     TemplateComponent::Title(t) if t.title == TitleType::ParentSerial
@@ -22,13 +22,13 @@ pub fn reorder_serial_components(components: &mut Vec<TemplateComponent>) {
 
             if has_volume && has_parent_serial {
                 // Find positions
-                let volume_pos = list.items.iter().position(|item| {
+                let volume_pos = list.group.iter().position(|item| {
                     matches!(
                         item,
                         TemplateComponent::Number(n) if n.number == NumberVariable::Volume
                     )
                 });
-                let parent_serial_pos = list.items.iter().position(|item| {
+                let parent_serial_pos = list.group.iter().position(|item| {
                     matches!(
                         item,
                         TemplateComponent::Title(t) if t.title == TitleType::ParentSerial
@@ -39,13 +39,13 @@ pub fn reorder_serial_components(components: &mut Vec<TemplateComponent>) {
                 if let (Some(vol_pos), Some(ps_pos)) = (volume_pos, parent_serial_pos)
                     && vol_pos < ps_pos
                 {
-                    list.items.swap(vol_pos, ps_pos);
+                    list.group.swap(vol_pos, ps_pos);
                 }
             }
 
             // Recursively process nested lists
-            for item in &mut list.items {
-                if let TemplateComponent::List(inner_list) = item {
+            for item in &mut list.group {
+                if let TemplateComponent::Group(inner_list) = item {
                     reorder_serial_components_in_list(inner_list);
                 }
             }
@@ -54,17 +54,17 @@ pub fn reorder_serial_components(components: &mut Vec<TemplateComponent>) {
 }
 
 /// Helper to reorder components in a single list.
-pub fn reorder_serial_components_in_list(list: &mut TemplateList) {
+pub fn reorder_serial_components_in_list(list: &mut TemplateGroup) {
     use citum_schema::template::{NumberVariable, TitleType};
 
     // Check if this list contains both volume and parent-serial
-    let has_volume = list.items.iter().any(|item| {
+    let has_volume = list.group.iter().any(|item| {
         matches!(
             item,
             TemplateComponent::Number(n) if n.number == NumberVariable::Volume
         )
     });
-    let has_parent_serial = list.items.iter().any(|item| {
+    let has_parent_serial = list.group.iter().any(|item| {
         matches!(
             item,
             TemplateComponent::Title(t) if t.title == TitleType::ParentSerial
@@ -73,13 +73,13 @@ pub fn reorder_serial_components_in_list(list: &mut TemplateList) {
 
     if has_volume && has_parent_serial {
         // Find positions
-        let volume_pos = list.items.iter().position(|item| {
+        let volume_pos = list.group.iter().position(|item| {
             matches!(
                 item,
                 TemplateComponent::Number(n) if n.number == NumberVariable::Volume
             )
         });
-        let parent_serial_pos = list.items.iter().position(|item| {
+        let parent_serial_pos = list.group.iter().position(|item| {
             matches!(
                 item,
                 TemplateComponent::Title(t) if t.title == TitleType::ParentSerial
@@ -90,7 +90,7 @@ pub fn reorder_serial_components_in_list(list: &mut TemplateList) {
         if let (Some(vol_pos), Some(ps_pos)) = (volume_pos, parent_serial_pos)
             && vol_pos < ps_pos
         {
-            list.items.swap(vol_pos, ps_pos);
+            list.group.swap(vol_pos, ps_pos);
         }
     }
 }
@@ -123,8 +123,8 @@ pub fn reorder_pages_for_serials(components: &mut Vec<TemplateComponent>) {
     fn contains_parent_serial_recursive(component: &TemplateComponent) -> bool {
         match component {
             TemplateComponent::Title(t) if t.title == TitleType::ParentSerial => true,
-            TemplateComponent::List(list) => {
-                list.items.iter().any(contains_parent_serial_recursive)
+            TemplateComponent::Group(list) => {
+                list.group.iter().any(contains_parent_serial_recursive)
             }
             _ => false,
         }
@@ -146,8 +146,8 @@ pub fn reorder_publisher_place_for_chicago(
 
     // Find the publisher-place component (it's in a List with wrap: parentheses)
     let publisher_place_pos = components.iter().position(|c| {
-        if let TemplateComponent::List(list) = c {
-            list.items.iter().any(|item| {
+        if let TemplateComponent::Group(list) = c {
+            list.group.iter().any(|item| {
                 matches!(
                     item,
                     TemplateComponent::Variable(v)
@@ -175,7 +175,7 @@ pub fn reorder_publisher_place_for_chicago(
         let mut publisher_place_component = components.remove(pp_pos);
 
         // Add space suffix to prevent default period separator
-        if let TemplateComponent::List(ref mut list) = publisher_place_component {
+        if let TemplateComponent::Group(ref mut list) = publisher_place_component {
             list.rendering.suffix = Some(" ".to_string());
         }
 
@@ -220,34 +220,6 @@ pub fn reorder_chapters_for_apa(
         // Swap them: move editor before parent-monograph
         let editor_comp = components.remove(ed_pos);
         components.insert(pm_pos, editor_comp);
-
-        // Re-calculate positions after move
-        let ed_pos = pm_pos;
-
-        // Apply APA chapter formatting
-        if let Some(TemplateComponent::Contributor(ed)) = components.get_mut(ed_pos) {
-            ed.name_order = Some(citum_schema::template::NameOrder::GivenFirst);
-            let overrides = ed
-                .overrides
-                .get_or_insert_with(std::collections::HashMap::new);
-            use citum_schema::template::{ComponentOverride, TypeSelector};
-            overrides.insert(
-                TypeSelector::Single("chapter".to_string()),
-                ComponentOverride::Rendering(citum_schema::template::Rendering {
-                    prefix: Some("In ".to_string()),
-                    suffix: Some(", ".to_string()),
-                    ..Default::default()
-                }),
-            );
-            overrides.insert(
-                TypeSelector::Single("paper-conference".to_string()),
-                ComponentOverride::Rendering(citum_schema::template::Rendering {
-                    prefix: Some("In ".to_string()),
-                    suffix: Some(", ".to_string()),
-                    ..Default::default()
-                }),
-            );
-        }
     }
 }
 
@@ -290,40 +262,15 @@ pub fn reorder_chapters_for_chicago(
         let pm_component = components.remove(pm_pos - 1); // Adjust index after removal
 
         // Add "In " prefix and ", " suffix to parent-monograph for chapters
-        let mut pm_with_prefix = pm_component.clone();
-        if let TemplateComponent::Title(ref mut title) = pm_with_prefix {
-            // Use type-specific override to add "In " prefix and ", " suffix for chapters
-            let mut overrides = title.overrides.clone().unwrap_or_default();
-            use citum_schema::template::{ComponentOverride, TypeSelector};
-            overrides.insert(
-                TypeSelector::Single("chapter".to_string()),
-                ComponentOverride::Rendering(citum_schema::template::Rendering {
-                    prefix: Some("In ".to_string()),
-                    suffix: Some(", ".to_string()),
-                    ..Default::default()
-                }),
-            );
-            title.overrides = Some(overrides);
-        }
+        let pm_with_prefix = pm_component.clone();
+        // (Overrides removed from TemplateTitle)
 
-        // Adjust editor for chapters: use ". " suffix and given-first name order
+        // Adjust editor for chapters: use given-first name order
         let mut editor_with_suffix = editor_component.clone();
         if let TemplateComponent::Contributor(ref mut contrib) = editor_with_suffix {
             // For chapters, editors should use given-first name order
             use citum_schema::template::NameOrder;
             contrib.name_order = Some(NameOrder::GivenFirst);
-
-            // Add override to change suffix for chapters
-            let mut overrides = contrib.overrides.clone().unwrap_or_default();
-            use citum_schema::template::{ComponentOverride, TypeSelector};
-            overrides.insert(
-                TypeSelector::Single("chapter".to_string()),
-                ComponentOverride::Rendering(citum_schema::template::Rendering {
-                    suffix: Some(". ".to_string()),
-                    ..Default::default()
-                }),
-            );
-            contrib.overrides = Some(overrides);
         }
 
         // Re-insert in new order: parent-monograph, then editor
@@ -333,144 +280,19 @@ pub fn reorder_chapters_for_chicago(
 }
 
 /// Propagate type-specific overrides within Lists.
-pub fn propagate_list_overrides(components: &mut [TemplateComponent]) {
-    for component in components.iter_mut() {
-        if let TemplateComponent::List(list) = component {
-            propagate_overrides_in_list(&mut list.items);
-
-            // Recursively process nested lists
-            for item in &mut list.items {
-                if let TemplateComponent::List(inner_list) = item {
-                    propagate_overrides_in_list(&mut inner_list.items);
-                }
-            }
-        }
-    }
-
-    fn propagate_overrides_in_list(items: &mut [TemplateComponent]) {
-        // Collect all type keys that have overrides in any item
-        let mut all_override_types: std::collections::HashSet<
-            citum_schema::template::TypeSelector,
-        > = std::collections::HashSet::new();
-
-        for item in items.iter() {
-            if let Some(overrides) = get_component_overrides(item) {
-                for key in overrides.keys() {
-                    all_override_types.insert(key.clone());
-                }
-            }
-        }
-
-        // For each type that exists in any item, ensure all items have it
-        for type_key in &all_override_types {
-            for item in items.iter_mut() {
-                if let Some(overrides) = get_component_overrides_mut(item)
-                    && !overrides.contains_key(type_key)
-                {
-                    use citum_schema::template::ComponentOverride;
-                    // Add the override with suppress: false
-                    overrides.insert(
-                        type_key.clone(),
-                        ComponentOverride::Rendering(citum_schema::template::Rendering {
-                            suppress: Some(false),
-                            ..Default::default()
-                        }),
-                    );
-                }
-            }
-        }
-    }
-
-    fn get_component_overrides(
-        comp: &TemplateComponent,
-    ) -> Option<
-        &std::collections::HashMap<
-            citum_schema::template::TypeSelector,
-            citum_schema::template::ComponentOverride,
-        >,
-    > {
-        match comp {
-            TemplateComponent::Contributor(c) => c.overrides.as_ref(),
-            TemplateComponent::Date(d) => d.overrides.as_ref(),
-            TemplateComponent::Title(t) => t.overrides.as_ref(),
-            TemplateComponent::Number(n) => n.overrides.as_ref(),
-            TemplateComponent::Variable(v) => v.overrides.as_ref(),
-            _ => None,
-        }
-    }
-
-    fn get_component_overrides_mut(
-        comp: &mut TemplateComponent,
-    ) -> Option<
-        &mut std::collections::HashMap<
-            citum_schema::template::TypeSelector,
-            citum_schema::template::ComponentOverride,
-        >,
-    > {
-        match comp {
-            TemplateComponent::Contributor(c) => {
-                if c.overrides.is_none() {
-                    c.overrides = Some(std::collections::HashMap::new());
-                }
-                c.overrides.as_mut()
-            }
-            TemplateComponent::Date(d) => {
-                if d.overrides.is_none() {
-                    d.overrides = Some(std::collections::HashMap::new());
-                }
-                d.overrides.as_mut()
-            }
-            TemplateComponent::Title(t) => {
-                if t.overrides.is_none() {
-                    t.overrides = Some(std::collections::HashMap::new());
-                }
-                t.overrides.as_mut()
-            }
-            TemplateComponent::Number(n) => {
-                if n.overrides.is_none() {
-                    n.overrides = Some(std::collections::HashMap::new());
-                }
-                n.overrides.as_mut()
-            }
-            TemplateComponent::Variable(v) => {
-                if v.overrides.is_none() {
-                    v.overrides = Some(std::collections::HashMap::new());
-                }
-                v.overrides.as_mut()
-            }
-            _ => None,
-        }
-    }
+pub fn propagate_list_overrides(_components: &mut [TemplateComponent]) {
+    // Overrides propagation logic removed as component-level overrides are deprecated.
 }
 
 /// Recursively ensure specific variables are un-suppressed for a given type.
+#[allow(
+    clippy::only_used_in_recursion,
+    reason = "item_type propagated for future unsuppress logic"
+)]
 pub fn unsuppress_for_type(components: &mut [TemplateComponent], item_type: &str) {
-    use citum_schema::template::SimpleVariable;
-
     for component in components {
-        match component {
-            TemplateComponent::Variable(v)
-                if matches!(
-                    v.variable,
-                    SimpleVariable::Publisher | SimpleVariable::PublisherPlace
-                ) =>
-            {
-                let overrides = v
-                    .overrides
-                    .get_or_insert_with(std::collections::HashMap::new);
-                use citum_schema::template::{ComponentOverride, TypeSelector};
-                overrides.insert(
-                    TypeSelector::Single(item_type.to_string()),
-                    ComponentOverride::Rendering(citum_schema::template::Rendering {
-                        suppress: Some(false),
-                        ..Default::default()
-                    }),
-                );
-            }
-            TemplateComponent::List(list) => {
-                unsuppress_for_type(&mut list.items, item_type);
-            }
-            _ => {}
+        if let TemplateComponent::Group(list) = component {
+            unsuppress_for_type(&mut list.group, item_type);
         }
     }
 }
@@ -512,8 +334,8 @@ pub fn move_access_components_to_end(components: &mut Vec<TemplateComponent>) {
             access_indices.push(i);
         }
         // Also check for List items containing accessed date (URL + accessed date pattern)
-        if let TemplateComponent::List(list) = c {
-            let has_access = list.items.iter().any(|item| {
+        if let TemplateComponent::Group(list) = c {
+            let has_access = list.group.iter().any(|item| {
                 matches!(item, TemplateComponent::Variable(v) if v.variable == SimpleVariable::Url)
                     || matches!(item, TemplateComponent::Date(d) if d.date == citum_schema::template::DateVariable::Accessed)
             });

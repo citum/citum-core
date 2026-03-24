@@ -33,7 +33,7 @@ options:
   volume-pages-delimiter: colon
 citation:
   template:
-    - number: citation-number
+  - number: citation-number
   wrap: parentheses
   multi-cite-delimiter: ", "
 bibliography:
@@ -45,7 +45,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
-  template:
+  type-variants:
+    chapter:
     - contributor: author
       form: long
       name-order: family-first
@@ -57,89 +58,98 @@ bibliography:
     - title: parent-serial
     - number: volume
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
-      prefix: ":"
+      prefix: "pp. "
     - contributor: editor
       form: verb
-      overrides:
-        chapter:
-          prefix: "In "
+      name-order: family-first
+      prefix: "In "
+    - variable: publisher
+    - variable: publisher-place
+      prefix: ", "
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      prefix: " "
+    - title: primary
+    - title: parent-monograph
+    - title: parent-serial
+    - number: volume
+    - number: pages
+      prefix: "pp. "
+    - contributor: editor
+      form: verb
       name-order: family-first
       prefix: ". In "
     - variable: publisher
     - variable: publisher-place
       prefix: ", "
-  type-templates:
     patent:
-      - number: citation-number
-        suffix: ". "
-      - contributor: author
-        form: long
-        sort-separator: " "
-      - date: issued
-        form: year
-      - title: primary
-      - variable: version
-        wrap: parentheses
-      - number: number
-        prefix: ". "
-      - title: parent-serial
-        prefix: ". "
-        overrides:
-          song: {}
-          legislation: {}
-          motion_picture: {}
-          paper-conference: {}
-          chapter: {}
-          legal_case: {}
-          bill: {}
-          graphic: {}
-          report: {}
-          book: {}
-      - number: edition
-      - term: edition
-        form: short
-      - variable: genre
-      - variable: publisher
-      - variable: publisher-place
+    - number: citation-number
+      suffix: ". "
+    - contributor: author
+      form: long
+      sort-separator: " "
+    - date: issued
+      form: year
+    - title: primary
+    - variable: version
+      wrap: parentheses
+    - number: number
+      prefix: ". "
+    - title: parent-serial
+      prefix: ". "
+    - number: edition
+    - term: edition
+      form: short
+    - variable: genre
+    - variable: publisher
+    - variable: publisher-place
     webpage:
-      - number: citation-number
-        suffix: ". "
-      - contributor: author
-        form: long
-        sort-separator: " "
-      - date: issued
-        form: year
-      - title: primary
-      - variable: version
-        wrap: parentheses
-      - number: number
-        prefix: ". "
-      - title: parent-serial
-        prefix: ". "
-        overrides:
-          legal_case: {}
-          chapter: {}
-          graphic: {}
-          book: {}
-          legislation: {}
-          report: {}
-          paper-conference: {}
-          motion_picture: {}
-          bill: {}
-          song: {}
-      - number: edition
-      - term: edition
-        form: short
-      - variable: genre
-      - variable: publisher
-      - variable: publisher-place
-      - variable: url
-      - term: retrieved
-        form: long
-      - date: accessed
-        form: year
+    - number: citation-number
+      suffix: ". "
+    - contributor: author
+      form: long
+      sort-separator: " "
+    - date: issued
+      form: year
+    - title: primary
+    - variable: version
+      wrap: parentheses
+    - number: number
+      prefix: ". "
+    - title: parent-serial
+      prefix: ". "
+    - number: edition
+    - term: edition
+      form: short
+    - variable: genre
+    - variable: publisher
+    - variable: publisher-place
+    - variable: url
+    - term: retrieved
+      form: long
+    - date: accessed
+      form: year
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - date: issued
+    form: year
+    prefix: " "
+  - title: primary
+  - title: parent-monograph
+  - title: parent-serial
+  - number: volume
+  - number: pages
+    prefix: ":"
+  - contributor: editor
+    form: verb
+    name-order: family-first
+    prefix: ". In "
+  - variable: publisher
+  - variable: publisher-place
+    prefix: ", "

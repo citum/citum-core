@@ -1,6 +1,8 @@
 info:
   title: Chicago Manual of Style 18th edition (notes without bibliography)
-  description: Chicago-style source citations (with Bluebook for legal citations), notes system without bibliography, listing up to six authors in a full citation (CMOS18 13.23), displaying number of volumes (CMOS18 14.20)
+  description: Chicago-style source citations (with Bluebook for legal citations), notes system 
+    without bibliography, listing up to six authors in a full citation (CMOS18 13.23), displaying 
+    number of volumes (CMOS18 14.20)
   fields:
   - anthropology
   - communications
@@ -48,14 +50,15 @@ citation:
     suffix: ""
     delimiter: ", "
     template:
-      - term: ibid
-      - variable: locator
-        suffix: .
+    - term: ibid
+    - variable: locator
+      suffix: .
   subsequent:
     options:
       contributors:
         name-form: family-only
-    template:
+    type-variants:
+      article-journal:
       - contributor: author
         form: short
       - title: primary
@@ -63,612 +66,497 @@ citation:
         prefix: ", "
       - variable: locator
         prefix: ", "
-        overrides:
-          book:
-            suppress: false
-          chapter:
-            suppress: false
-          article-journal:
-            suppress: false
-          default:
-            suppress: true
-  template:
+      book:
+      - contributor: author
+        form: short
+      - title: primary
+        form: short
+        prefix: ", "
+      - variable: locator
+        prefix: ", "
+      chapter:
+      - contributor: author
+        form: short
+      - title: primary
+        form: short
+        prefix: ", "
+      - variable: locator
+        prefix: ", "
+    template:
+    - contributor: author
+      form: short
+    - title: primary
+      form: short
+      prefix: ", "
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 3
         and-others: et-al
     - title: primary
       prefix: ", "
-      overrides:
-        manuscript:
-          wrap: quotes
     - contributor: translator
       form: long
-      overrides:
-        book:
-          prefix: ", trans. "
-          suppress: false
-        chapter:
-          prefix: ", trans. "
-          suppress: false
-        article-journal:
-          prefix: ", trans. "
-          suppress: false
-        default:
-          suppress: true
-    - variable: genre
-      prefix: ""
-      overrides:
-        manuscript:
-          prefix: ", "
-          suppress: false
-        default:
-          suppress: true
-    - date: issued
-      form: year
-      prefix: ""
-      overrides:
-        manuscript:
-          prefix: ", "
-          suppress: false
-        default:
-          suppress: true
-    - variable: archive-location
-      prefix: ""
-      overrides:
-        manuscript:
-          prefix: ", "
-          suppress: false
-        default:
-          suppress: true
-    - variable: archive
-      prefix: ""
-      overrides:
-        manuscript:
-          prefix: ", "
-          suppress: false
-        personal-communication:
-          suppress: false
-        default:
-          suppress: true
-    - date: issued
-      form: month-day
-      prefix: ", "
-      overrides:
-        personal-communication:
-          suppress: false
-        default:
-          suppress: true
-    - date: issued
-      form: year
-      prefix: ", "
-      overrides:
-        personal-communication:
-          suppress: false
-        default:
-          suppress: true
+      prefix: ", trans. "
     - items:
-        - title: parent-serial
-          prefix: ", "
-          overrides:
-            book:
-              suppress: true
-            chapter:
-              suppress: true
-            report:
-              suppress: true
-            thesis:
-              suppress: true
-            webpage:
-              suppress: true
-            dataset:
-              suppress: true
-            entry-encyclopedia:
-              suppress: true
-            legal-case:
-              suppress: true
-            patent:
-              suppress: true
-            motion-picture:
-              suppress: true
-            manuscript:
-              suppress: true
-            interview:
-              suppress: true
-            personal-communication:
-              suppress: true
-        - variable: publisher-place
-          wrap: parentheses
-          prefix: " "
-          overrides:
-            book:
-              suppress: true
-            chapter:
-              suppress: true
-            report:
-              suppress: true
-            thesis:
-              suppress: true
-            webpage:
-              suppress: true
-            dataset:
-              suppress: true
-            entry-encyclopedia:
-              suppress: true
-            legal-case:
-              suppress: true
-            patent:
-              suppress: true
-            motion-picture:
-              suppress: true
-            manuscript:
-              suppress: true
-            interview:
-              suppress: true
-            personal-communication:
-              suppress: true
-        - number: volume
-          prefix: " "
-          overrides:
-            book:
-              suppress: true
-            chapter:
-              suppress: true
-            report:
-              suppress: true
-            thesis:
-              suppress: true
-            webpage:
-              suppress: true
-            dataset:
-              suppress: true
-            entry-encyclopedia:
-              suppress: true
-            legal-case:
-              suppress: true
-            patent:
-              suppress: true
-            motion-picture:
-              suppress: true
-            manuscript:
-              suppress: true
-            interview:
-              suppress: true
-            personal-communication:
-              suppress: true
-        - number: issue
-          prefix: ", no. "
-          overrides:
-            book:
-              suppress: true
-            chapter:
-              suppress: true
-            report:
-              suppress: true
-            thesis:
-              suppress: true
-            webpage:
-              suppress: true
-            dataset:
-              suppress: true
-            entry-encyclopedia:
-              suppress: true
-            legal-case:
-              suppress: true
-            patent:
-              suppress: true
-            motion-picture:
-              suppress: true
-            manuscript:
-              suppress: true
-            interview:
-              suppress: true
-            personal-communication:
-              suppress: true
-        - date: issued
-          form: year
-          wrap: parentheses
-          prefix: " "
-          overrides:
-            book:
-              suppress: true
-            chapter:
-              suppress: true
-            report:
-              suppress: true
-            thesis:
-              suppress: true
-            webpage:
-              suppress: true
-            dataset:
-              suppress: true
-            entry-encyclopedia:
-              suppress: true
-            legal-case:
-              suppress: true
-            patent:
-              suppress: true
-            motion-picture:
-              suppress: true
-            manuscript:
-              suppress: true
-            interview:
-              suppress: true
-            personal-communication:
-              suppress: true
-        - number: pages
-          prefix: ": "
-          overrides:
-            book:
-              suppress: true
-            chapter:
-              suppress: true
-            report:
-              suppress: true
-            thesis:
-              suppress: true
-            webpage:
-              suppress: true
-            dataset:
-              suppress: true
-            entry-encyclopedia:
-              suppress: true
-            legal-case:
-              suppress: true
-            patent:
-              suppress: true
-            motion-picture:
-              suppress: true
-            interview:
-              suppress: true
-            personal-communication:
-              suppress: true
+      - title: parent-serial
+        prefix: ", "
+      - variable: publisher-place
+        wrap: parentheses
+        prefix: " "
+      - number: volume
+        prefix: " "
+      - number: issue
+        prefix: ", no. "
+      - date: issued
+        form: year
+        wrap: parentheses
+        prefix: " "
+      - number: pages
+        prefix: ": "
       delimiter: ""
-      overrides:
-        book:
-          suppress: true
-    - items:
-        - title: parent-monograph
-          prefix: ", in "
-        - title: parent-serial
-          prefix: ", in "
-          overrides:
-            chapter:
-              suppress: true
-        - number: volume
-          prefix: ", vol. "
-          overrides:
-            chapter:
-              suppress: true
-        - contributor: editor
-          form: long
-          prefix: ", ed. "
-        - items:
-            - variable: publisher
-            - date: issued
-              form: year
-          delimiter: ", "
-          wrap: parentheses
-          prefix: " "
-      delimiter: ""
-      overrides:
-        article-journal:
-          suppress: true
-        article-magazine:
-          suppress: true
-        article-newspaper:
-          suppress: true
-        book:
-          suppress: true
-        report:
-          suppress: true
-        thesis:
-          suppress: true
-        webpage:
-          suppress: true
-        dataset:
-          suppress: true
-        legal-case:
-          suppress: true
-        patent:
-          suppress: true
-        motion-picture:
-          suppress: true
-        broadcast:
-          suppress: true
-        manuscript:
-          suppress: true
-        interview:
-          suppress: true
-        personal-communication:
-          suppress: true
-    - items:
-        - variable: genre
-        - variable: publisher
-        - date: issued
-          form: year
-      delimiter: ", "
-      wrap: parentheses
-      prefix: " "
-      overrides:
-        article-journal:
-          suppress: true
-        article-magazine:
-          suppress: true
-        article-newspaper:
-          suppress: true
-        chapter:
-          suppress: true
-        paper-conference:
-          suppress: true
-        entry-encyclopedia:
-          suppress: true
-        legal-case:
-          suppress: true
-        patent:
-          suppress: true
-        motion-picture:
-          suppress: true
-        broadcast:
-          suppress: true
-        manuscript:
-          suppress: true
-        interview:
-          suppress: true
-        personal-communication:
-          suppress: true
-    - items:
-        - title: parent-serial
-        - date: issued
-          form: year
-        - number: pages
-      delimiter: ", "
+    - variable: locator
       prefix: ", "
-      overrides:
-        article-journal:
-          suppress: true
-        article-magazine:
-          suppress: true
-        article-newspaper:
-          suppress: true
-        chapter:
-          suppress: true
-        book:
-          suppress: true
-        report:
-          suppress: true
-        thesis:
-          suppress: true
-        webpage:
-          suppress: true
-        dataset:
-          suppress: true
-        entry-encyclopedia:
-          suppress: true
-        legal-case:
-          suppress: true
-        patent:
-          suppress: true
-        motion-picture:
-          suppress: true
-        broadcast:
-          suppress: true
-        manuscript:
-          suppress: true
-        interview:
-          suppress: true
-        personal-communication:
-          suppress: true
-    - variable: publisher
-      prefix: ", "
-      overrides:
-        dataset:
-          suppress: false
-        default:
-          suppress: true
-    - variable: url
-      prefix: ", "
-      overrides:
-        webpage:
-          suppress: false
-        dataset:
-          suppress: false
-        interview:
-          suppress: false
-        default:
-          suppress: true
-    - items:
-        - number: volume
-        - variable: reporter
-        - number: pages
-      delimiter: " "
-      prefix: ", "
-      overrides:
-        legal-case:
-          suppress: false
-        default:
-          suppress: true
-    - items:
-        - variable: authority
-        - date: issued
-          form: year
-      delimiter: " "
-      wrap: parentheses
-      prefix: " "
-      overrides:
-        legal-case:
-          suppress: false
-        default:
-          suppress: true
-    - number: number
-      prefix: ", Patent "
-      overrides:
-        patent:
-          suppress: false
-        default:
-          suppress: true
-    - items:
-        - date: issued
-          form: month-day
-          prefix: ", issued "
-        - date: issued
-          form: year
-          prefix: ", "
-      delimiter: none
-      overrides:
-        patent:
-          suppress: false
-        default:
-          suppress: true
-    - variable: genre
-      prefix: ", "
-      overrides:
-        motion-picture:
-          suppress: false
-        default:
-          suppress: true
+    article-magazine:
     - contributor: author
       form: long
-      prefix: ", directed by "
-      overrides:
-        motion-picture:
-          suppress: false
-        default:
-          suppress: true
+      shorten: *id001
+    - title: primary
+      prefix: ", "
+    - items:
+      - title: parent-serial
+        prefix: ", "
+      - variable: publisher-place
+        wrap: parentheses
+        prefix: " "
+      - number: volume
+        prefix: " "
+      - number: issue
+        prefix: ", no. "
+      - date: issued
+        form: year
+        wrap: parentheses
+        prefix: " "
+      - number: pages
+        prefix: ": "
+      delimiter: ""
+    - variable: doi
+      prefix: ", https://doi.org/"
+    article-newspaper:
+    - contributor: author
+      form: long
+      shorten: *id001
+    - title: primary
+      prefix: ", "
+    - items:
+      - title: parent-serial
+        prefix: ", "
+      - variable: publisher-place
+        wrap: parentheses
+        prefix: " "
+      - number: volume
+        prefix: " "
+      - number: issue
+        prefix: ", no. "
+      - date: issued
+        form: year
+        wrap: parentheses
+        prefix: " "
+      - number: pages
+        prefix: ": "
+      delimiter: ""
+    - variable: doi
+      prefix: ", https://doi.org/"
+    book:
+    - contributor: author
+      form: long
+      shorten: *id001
+    - title: primary
+      prefix: ", "
+    - contributor: translator
+      form: long
+      prefix: ", trans. "
+    - items:
+      - variable: genre
+      - variable: publisher
+      - date: issued
+        form: year
+      delimiter: ", "
+      wrap: parentheses
+      prefix: " "
+    - variable: locator
+      prefix: ", "
+    broadcast:
+    - contributor: author
+      form: long
+      shorten: *id001
+    - title: primary
+      prefix: ", "
+    - items:
+      - title: parent-serial
+        prefix: ", "
+      - variable: publisher-place
+        wrap: parentheses
+        prefix: " "
+      - number: volume
+        prefix: " "
+      - number: issue
+        prefix: ", no. "
+      - date: issued
+        form: year
+        wrap: parentheses
+        prefix: " "
+      - number: pages
+        prefix: ": "
+      delimiter: ""
     - number: number
       prefix: ", episode "
-      overrides:
-        broadcast:
-          suppress: false
-        default:
-          suppress: true
     - date: issued
       form: month-day
       prefix: ", aired "
-      overrides:
-        broadcast:
-          suppress: false
-        default:
-          suppress: true
-    - date: issued
-      form: year
-      prefix: ", "
-      overrides:
-        motion-picture:
-          suppress: false
-        default:
-          suppress: true
     - variable: medium
       prefix: ", "
-      overrides:
-        broadcast:
-          suppress: false
-        motion-picture:
-          suppress: false
-        interview:
-          suppress: false
-        default:
-          suppress: true
+    chapter:
+    - contributor: author
+      form: long
+      shorten: *id001
+    - title: primary
+      prefix: ", "
+    - contributor: translator
+      form: long
+      prefix: ", trans. "
+    - items:
+      - title: parent-monograph
+        prefix: ", in "
+      - contributor: editor
+        form: long
+        prefix: ", ed. "
+      - items: &id002
+        - variable: publisher
+        - date: issued
+          form: year
+        delimiter: ", "
+        wrap: parentheses
+        prefix: " "
+      delimiter: ""
+    - variable: locator
+      prefix: ", "
+    - variable: doi
+      prefix: ", https://doi.org/"
+    dataset:
+    - contributor: author
+      form: long
+      shorten: *id001
+    - title: primary
+      prefix: ", "
+    - items:
+      - variable: genre
+      - variable: publisher
+      - date: issued
+        form: year
+      delimiter: ", "
+      wrap: parentheses
+      prefix: " "
+    - variable: publisher
+      prefix: ", "
+    - variable: url
+      prefix: ", "
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      shorten: *id001
+    - title: primary
+      prefix: ", "
+    - items:
+      - title: parent-monograph
+        prefix: ", in "
+      - title: parent-serial
+        prefix: ", in "
+      - number: volume
+        prefix: ", vol. "
+      - contributor: editor
+        form: long
+        prefix: ", ed. "
+      - items: *id002
+        delimiter: ", "
+        wrap: parentheses
+        prefix: " "
+      delimiter: ""
+    - variable: doi
+      prefix: ", https://doi.org/"
+    interview:
+    - contributor: author
+      form: long
+      shorten: *id001
+    - title: primary
+      prefix: ", "
+    - variable: url
+      prefix: ", "
+    - variable: medium
+      prefix: ", "
     - contributor: interviewer
       form: long
       prefix: ", interview by "
-      overrides:
-        interview:
-          suppress: false
-        default:
-          suppress: true
     - title: parent-monograph
       prefix: ", "
-      overrides:
-        interview:
-          suppress: false
-        default:
-          suppress: true
     - variable: publisher-place
       wrap: parentheses
       prefix: " "
-      overrides:
-        interview:
-          suppress: false
-        default:
-          suppress: true
     - variable: publisher
       prefix: ", "
-      overrides:
-        interview:
-          suppress: false
-        default:
-          suppress: true
-    - contributor: recipient
-      form: long
-      prefix: ", to "
-      overrides:
-        personal-communication:
-          suppress: false
-        default:
-          suppress: true
     - date: issued
       form: month-day
       prefix: ", "
-      overrides:
-        personal-communication:
-          suppress: false
-        interview:
-          suppress: false
-        default:
-          suppress: true
     - date: issued
       form: year
       prefix: ", "
-      overrides:
-        personal-communication:
-          suppress: false
-        interview:
-          suppress: false
-        default:
-          suppress: true
     - variable: locator
       prefix: ", "
-      overrides:
-        book:
-          suppress: false
-        chapter:
-          suppress: false
-        article-journal:
-          suppress: false
-        interview:
-          suppress: false
-        default:
-          suppress: true
+    legal-case:
+    - contributor: author
+      form: long
+      shorten: *id001
+    - title: primary
+      prefix: ", "
+    - items:
+      - number: volume
+      - variable: reporter
+      - number: pages
+      delimiter: " "
+      prefix: ", "
+    - items:
+      - variable: authority
+      - date: issued
+        form: year
+      delimiter: " "
+      wrap: parentheses
+      prefix: " "
+    manuscript:
+    - contributor: author
+      form: long
+      shorten: *id001
+    - title: primary
+      prefix: ", "
+      wrap: quotes
+    - variable: genre
+      prefix: ", "
+    - date: issued
+      form: year
+      prefix: ", "
+    - variable: archive-location
+      prefix: ", "
+    - variable: archive
+      prefix: ", "
+    - items:
+      - number: pages
+        prefix: ": "
+      delimiter: ""
     - variable: doi
       prefix: ", https://doi.org/"
-      overrides:
-        article-journal:
-          suppress: true
-        book:
-          suppress: true
-        report:
-          suppress: true
-        thesis:
-          suppress: true
-        webpage:
-          suppress: true
-        dataset:
-          suppress: true
-        legal-case:
-          suppress: true
-        patent:
-          suppress: true
-        motion-picture:
-          suppress: true
-        broadcast:
-          suppress: true
-        interview:
-          suppress: true
-        personal-communication:
-          suppress: true
+    motion-picture:
+    - contributor: author
+      form: long
+      shorten: *id001
+    - title: primary
+      prefix: ", "
+    - variable: genre
+      prefix: ", "
+    - contributor: author
+      form: long
+      prefix: ", directed by "
+    - date: issued
+      form: year
+      prefix: ", "
+    - variable: medium
+      prefix: ", "
+    paper-conference:
+    - contributor: author
+      form: long
+      shorten: *id001
+    - title: primary
+      prefix: ", "
+    - items:
+      - title: parent-serial
+        prefix: ", "
+      - variable: publisher-place
+        wrap: parentheses
+        prefix: " "
+      - number: volume
+        prefix: " "
+      - number: issue
+        prefix: ", no. "
+      - date: issued
+        form: year
+        wrap: parentheses
+        prefix: " "
+      - number: pages
+        prefix: ": "
+      delimiter: ""
+    - items:
+      - title: parent-monograph
+        prefix: ", in "
+      - title: parent-serial
+        prefix: ", in "
+      - number: volume
+        prefix: ", vol. "
+      - contributor: editor
+        form: long
+        prefix: ", ed. "
+      - items: *id002
+        delimiter: ", "
+        wrap: parentheses
+        prefix: " "
+      delimiter: ""
+    - items:
+      - title: parent-serial
+      - date: issued
+        form: year
+      - number: pages
+      delimiter: ", "
+      prefix: ", "
+    - variable: doi
+      prefix: ", https://doi.org/"
+    patent:
+    - contributor: author
+      form: long
+      shorten: *id001
+    - title: primary
+      prefix: ", "
+    - number: number
+      prefix: ", Patent "
+    - items:
+      - date: issued
+        form: month-day
+        prefix: ", issued "
+      - date: issued
+        form: year
+        prefix: ", "
+      delimiter: none
+    personal-communication:
+    - contributor: author
+      form: long
+      shorten: *id001
+    - title: primary
+      prefix: ", "
+    - variable: archive
+      prefix: ""
+    - date: issued
+      form: month-day
+      prefix: ", "
+    - date: issued
+      form: year
+      prefix: ", "
+    - contributor: recipient
+      form: long
+      prefix: ", to "
+    - date: issued
+      form: month-day
+      prefix: ", "
+    - date: issued
+      form: year
+      prefix: ", "
+    report:
+    - contributor: author
+      form: long
+      shorten: *id001
+    - title: primary
+      prefix: ", "
+    - items:
+      - variable: genre
+      - variable: publisher
+      - date: issued
+        form: year
+      delimiter: ", "
+      wrap: parentheses
+      prefix: " "
+    thesis:
+    - contributor: author
+      form: long
+      shorten: *id001
+    - title: primary
+      prefix: ", "
+    - items:
+      - variable: genre
+      - variable: publisher
+      - date: issued
+        form: year
+      delimiter: ", "
+      wrap: parentheses
+      prefix: " "
+    webpage:
+    - contributor: author
+      form: long
+      shorten: *id001
+    - title: primary
+      prefix: ", "
+    - items:
+      - variable: genre
+      - variable: publisher
+      - date: issued
+        form: year
+      delimiter: ", "
+      wrap: parentheses
+      prefix: " "
+    - variable: url
+      prefix: ", "
+  template:
+  - contributor: author
+    form: long
+    shorten: *id001
+  - title: primary
+    prefix: ", "
+  - items:
+    - title: parent-serial
+      prefix: ", "
+    - variable: publisher-place
+      wrap: parentheses
+      prefix: " "
+    - number: volume
+      prefix: " "
+    - number: issue
+      prefix: ", no. "
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - number: pages
+      prefix: ": "
+    delimiter: ""
+  - items:
+    - title: parent-monograph
+      prefix: ", in "
+    - title: parent-serial
+      prefix: ", in "
+    - number: volume
+      prefix: ", vol. "
+    - contributor: editor
+      form: long
+      prefix: ", ed. "
+    - items: *id002
+      delimiter: ", "
+      wrap: parentheses
+      prefix: " "
+    delimiter: ""
+  - items:
+    - variable: genre
+    - variable: publisher
+    - date: issued
+      form: year
+    delimiter: ", "
+    wrap: parentheses
+    prefix: " "
+  - items:
+    - title: parent-serial
+    - date: issued
+      form: year
+    - number: pages
+    delimiter: ", "
+    prefix: ", "
+  - variable: doi
+    prefix: ", https://doi.org/"
   suffix: .
   multi-cite-delimiter: "; "
 bibliography:

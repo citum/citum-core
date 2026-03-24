@@ -47,14 +47,12 @@ bibliography:
         and-others: et-al
         delimiter-precedes-last: contextual
       delimiter-precedes-last: always
-  template:
+  type-variants:
+    article-magazine:
     - contributor: author
       form: long
-      overrides:
-        personal_communication:
-          prefix: "pp. "
       name-order: given-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 3
     - title: primary
@@ -70,67 +68,155 @@ bibliography:
     - date: issued
       form: year
       prefix: ", "
-      overrides:
-        chapter:
-          suppress: true
-        paper-conference:
-          suppress: true
-        entry-encyclopedia:
-          suppress: true
-    - items:
-        - number: volume
-        - number: issue
-          overrides:
-            article-magazine:
-              suppress: true
-      prefix: ", "
+    - prefix: ", "
+      items:
+      - number: volume
     - variable: publisher-place
       prefix: ", "
     - number: pages
-  type-templates:
+    chapter:
+    - contributor: author
+      form: long
+      name-order: given-first
+      shorten: *id001
+    - title: primary
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - contributor: editor
+      form: verb
+      name-order: family-first
+    - variable: publisher
+      prefix: "; "
+    - prefix: ", "
+      items:
+      - number: volume
+      - number: issue
+    - variable: publisher-place
+      prefix: ", "
+    - number: pages
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: given-first
+      shorten: *id001
+    - title: primary
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - contributor: editor
+      form: verb
+      name-order: family-first
+    - variable: publisher
+      prefix: "; "
+    - prefix: ", "
+      items:
+      - number: volume
+      - number: issue
+    - variable: publisher-place
+      prefix: ", "
+    - number: pages
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: given-first
+      shorten: *id001
+    - title: primary
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - contributor: editor
+      form: verb
+      name-order: family-first
+    - variable: publisher
+      prefix: "; "
+    - prefix: ", "
+      items:
+      - number: volume
+      - number: issue
+    - variable: publisher-place
+      prefix: ", "
+    - number: pages
+    personal_communication:
+    - contributor: author
+      form: long
+      name-order: given-first
+      shorten: *id001
+      prefix: "pp. "
+    - title: primary
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - contributor: editor
+      form: verb
+      name-order: family-first
+    - variable: publisher
+      prefix: "; "
+    - date: issued
+      form: year
+      prefix: ", "
+    - prefix: ", "
+      items:
+      - number: volume
+      - number: issue
+    - variable: publisher-place
+      prefix: ", "
+    - number: pages
     webpage:
-      - number: citation-number
-        suffix: ". "
-      - contributor: author
-        form: long
-        shorten:
-          min: 6
-          use-first: 3
-          and-others: et-al
-          delimiter-precedes-last: always
-      - title: primary
-      - variable: url
-      - date: accessed
-        form: year
-        prefix: "(accessed "
-        suffix: )
+    - number: citation-number
+      suffix: ". "
+    - contributor: author
+      form: long
+      shorten:
+        min: 6
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: always
+    - title: primary
+    - variable: url
+    - date: accessed
+      form: year
+      prefix: "(accessed "
+      suffix: )
     patent:
-      - number: citation-number
-        suffix: ". "
-      - contributor: author
-        form: long
-        shorten:
-          min: 6
-          use-first: 3
-          and-others: et-al
-          delimiter-precedes-last: always
-      - title: primary
-        overrides:
-          book:
-            emph: false
-          graphic:
-            emph: false
-          bill:
-            emph: false
-          report:
-            emph: false
-          song:
-            emph: false
-          legal_case:
-            emph: false
-          legislation:
-            emph: false
-          motion_picture:
-            emph: false
-      - date: issued
-        form: full
+    - number: citation-number
+      suffix: ". "
+    - contributor: author
+      form: long
+      shorten:
+        min: 6
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: always
+    - title: primary
+    - date: issued
+      form: full
+  template:
+  - contributor: author
+    form: long
+    name-order: given-first
+    shorten: *id001
+  - title: primary
+  - title: parent-monograph
+    emph: true
+  - title: parent-serial
+    emph: true
+  - contributor: editor
+    form: verb
+    name-order: family-first
+  - variable: publisher
+    prefix: "; "
+  - date: issued
+    form: year
+    prefix: ", "
+  - prefix: ", "
+    items:
+    - number: volume
+    - number: issue
+  - variable: publisher-place
+    prefix: ", "
+  - number: pages

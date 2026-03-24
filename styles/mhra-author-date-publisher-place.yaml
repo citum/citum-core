@@ -64,30 +64,36 @@ citation:
     contributors:
       name-form: initials
       initialize-with: ". "
-  template:
+  type-variants:
+    personal_communication:
     - contributor: author
       form: long
       name-order: given-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 1
-    - date: issued
-      form: year
-      prefix: " "
-      overrides:
-        personal_communication:
-          suppress: true
     - variable: locator
       prefix: " "
+  template:
+  - contributor: author
+    form: long
+    name-order: given-first
+    shorten: *id001
+  - date: issued
+    form: year
+    prefix: " "
+  - variable: locator
+    prefix: " "
   wrap: parentheses
   delimiter: ". "
   multi-cite-delimiter: "; "
 bibliography:
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id002
         min: 5
         use-first: 1
     - date: issued
@@ -106,25 +112,159 @@ bibliography:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten:
+      shorten: &id003
         min: 4
         use-first: 1
     - variable: publisher
       prefix: " and others ("
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        article-journal:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
-        article-magazine:
-          prefix: "pp. "
-        entry-encyclopedia:
-          prefix: "pp. "
-      prefix: "), "
+      prefix: "pp. "
     - variable: publisher-place
     - variable: doi
     - variable: url
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - date: issued
+      form: year
+      prefix: ". "
+    - title: primary
+      wrap: quotes
+      prefix: ". "
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - number: issue
+      prefix: .
+    - contributor: editor
+      form: verb
+      name-order: given-first
+      shorten: *id003
+    - variable: publisher
+      prefix: " and others ("
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher-place
+    - variable: doi
+    - variable: url
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - date: issued
+      form: year
+      prefix: ". "
+    - title: primary
+      wrap: quotes
+      prefix: ". "
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - number: issue
+      prefix: .
+    - contributor: editor
+      form: verb
+      name-order: given-first
+      shorten: *id003
+    - variable: publisher
+      prefix: " and others ("
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher-place
+    - variable: doi
+    - variable: url
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - date: issued
+      form: year
+      prefix: ". "
+    - title: primary
+      wrap: quotes
+      prefix: ". "
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - number: issue
+      prefix: .
+    - contributor: editor
+      form: verb
+      name-order: given-first
+      shorten: *id003
+    - variable: publisher
+      prefix: " and others ("
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher-place
+    - variable: doi
+    - variable: url
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - date: issued
+      form: year
+      prefix: ". "
+    - title: primary
+      wrap: quotes
+      prefix: ". "
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - number: issue
+      prefix: .
+    - contributor: editor
+      form: verb
+      name-order: given-first
+      shorten: *id003
+    - variable: publisher
+      prefix: " and others ("
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher-place
+    - variable: doi
+    - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id002
+  - date: issued
+    form: year
+    prefix: ". "
+  - title: primary
+    wrap: quotes
+    prefix: ". "
+  - title: parent-monograph
+    emph: true
+  - title: parent-serial
+    emph: true
+  - number: volume
+  - number: issue
+    prefix: .
+  - contributor: editor
+    form: verb
+    name-order: given-first
+    shorten: *id003
+  - variable: publisher
+    prefix: " and others ("
+  - number: pages
+    prefix: "), "
+  - variable: publisher-place
+  - variable: doi
+  - variable: url
   sort: author-date-title

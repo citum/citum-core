@@ -251,35 +251,6 @@ pub fn get_effective_rendering(component: &ProcTemplateComponent) -> Rendering {
     // 2. Layer local template rendering
     effective.merge(component.template_component.rendering());
 
-    // 3. Layer type-specific overrides
-    if let Some(ref_type) = &component.ref_type
-        && let Some(overrides) = component.template_component.overrides()
-    {
-        use citum_schema::template::ComponentOverride;
-
-        // Try explicit match first
-        let mut match_found = false;
-        for (selector, ov) in overrides {
-            if selector.matches(ref_type)
-                && let ComponentOverride::Rendering(r) = ov
-            {
-                effective.merge(r);
-                match_found = true;
-            }
-        }
-
-        // Fallback to default if no specific match found
-        if !match_found {
-            for (selector, ov) in overrides {
-                if selector.matches("default")
-                    && let ComponentOverride::Rendering(r) = ov
-                {
-                    effective.merge(r);
-                }
-            }
-        }
-    }
-
     effective
 }
 
