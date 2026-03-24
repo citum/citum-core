@@ -2,11 +2,14 @@ use crate::reference::types::MultilingualString;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "bindings")]
+use specta::Type;
 use std::fmt;
 
 /// A contributor can be a single string, a structured name, or a list of contributors.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(untagged)]
 pub enum Contributor {
     SimpleName(SimpleName),
@@ -18,6 +21,7 @@ pub enum Contributor {
 /// Holistic multilingual name representation.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 pub struct MultilingualName {
     /// The name in its original script.
@@ -35,6 +39,7 @@ pub struct MultilingualName {
 /// A simple name is just a string, with an optional location.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 pub struct SimpleName {
     pub name: MultilingualString,
     pub location: Option<String>,
@@ -43,6 +48,7 @@ pub struct SimpleName {
 /// A structured name is a name broken down into its constituent parts.
 #[derive(Debug, Deserialize, Serialize, Clone, Default, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 pub struct StructuredName {
     pub given: MultilingualString,
@@ -55,6 +61,7 @@ pub struct StructuredName {
 /// A list of contributors.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 pub struct ContributorList(pub Vec<Contributor>);
 
 impl Contributor {

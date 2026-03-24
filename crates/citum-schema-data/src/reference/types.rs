@@ -9,6 +9,8 @@ use crate::reference::date::EdtfString;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "bindings")]
+use specta::Type;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -25,6 +27,7 @@ pub type FieldLanguageMap = HashMap<String, LangID>;
 /// The `Display` implementation shows the value in its appropriate form.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(untagged)]
 pub enum NumOrStr {
     /// A numeric value.
@@ -49,6 +52,7 @@ impl Display for NumOrStr {
 /// transliterations, and translations.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(untagged)]
 pub enum MultilingualString {
     /// A simple string in a single language.
@@ -65,6 +69,7 @@ pub enum MultilingualString {
 /// multilingual and non-Latin-script contexts.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 pub struct MultilingualComplex {
     /// The text in its original script and language.
@@ -115,6 +120,7 @@ impl Default for MultilingualString {
 /// A monograph, such as a book or a report, is a monolithic work published or produced as a complete entity.
 #[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Monograph {
@@ -130,10 +136,12 @@ pub struct Monograph {
     pub recipient: Option<Contributor>,
     /// Interviewer for interview-style references.
     pub interviewer: Option<Contributor>,
+    #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
     pub publisher: Option<Contributor>,
     #[serde(alias = "URL")]
     pub url: Option<Url>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -156,12 +164,14 @@ pub struct Monograph {
     #[serde(alias = "archive_location")]
     pub archive_location: Option<String>,
     pub keywords: Option<Vec<String>>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     pub original_date: Option<EdtfString>,
     pub original_title: Option<Title>,
 }
 
 #[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
 pub enum MonographType {
@@ -183,6 +193,7 @@ pub enum MonographType {
 /// A collection of works, such as an anthology or proceedings.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Collection {
@@ -193,11 +204,13 @@ pub struct Collection {
     pub short_title: Option<String>,
     pub editor: Option<Contributor>,
     pub translator: Option<Contributor>,
+    #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
     pub publisher: Option<Contributor>,
     pub collection_number: Option<String>,
     #[serde(alias = "URL")]
     pub url: Option<Url>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -211,6 +224,7 @@ pub struct Collection {
 /// Types of collections.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
 pub enum CollectionType {
@@ -223,6 +237,7 @@ pub enum CollectionType {
 /// A component of a larger monograph, such as a chapter in a book.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct CollectionComponent {
@@ -231,11 +246,13 @@ pub struct CollectionComponent {
     pub title: Option<Title>,
     pub author: Option<Contributor>,
     pub translator: Option<Contributor>,
+    #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
     pub parent: Parent<Collection>,
     pub pages: Option<NumOrStr>,
     #[serde(alias = "URL")]
     pub url: Option<Url>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -251,6 +268,7 @@ pub struct CollectionComponent {
 /// Types of monograph components.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
 pub enum MonographComponentType {
@@ -262,6 +280,7 @@ pub enum MonographComponentType {
 /// The parent serial is referenced by its ID.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct SerialComponent {
@@ -270,11 +289,13 @@ pub struct SerialComponent {
     pub title: Option<Title>,
     pub author: Option<Contributor>,
     pub translator: Option<Contributor>,
+    #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
     /// The parent work, such as a magazine or journal.
     pub parent: Parent<Serial>,
     #[serde(alias = "URL")]
     pub url: Option<Url>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -295,6 +316,7 @@ pub struct SerialComponent {
 /// Types of serial components.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 pub enum SerialComponentType {
     Article,
@@ -305,6 +327,7 @@ pub enum SerialComponentType {
 /// A serial publication (journal, magazine, etc.).
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 pub struct Serial {
     pub r#type: SerialType,
@@ -320,6 +343,7 @@ pub struct Serial {
 /// Types of serial publications.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
 pub enum SerialType {
@@ -336,6 +360,7 @@ pub enum SerialType {
 /// A parent reference (either embedded or by ID).
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(untagged)]
 pub enum Parent<T> {
     Embedded(T),
@@ -345,6 +370,7 @@ pub enum Parent<T> {
 /// A parent reference (either Monograph or Serial).
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(untagged)]
 pub enum ParentReference {
     Monograph(Box<Monograph>),
@@ -354,6 +380,7 @@ pub enum ParentReference {
 /// A title can be a single string, a structured title, or a multilingual title.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(untagged)]
 pub enum Title {
     /// A title in a single language.
@@ -373,6 +400,7 @@ pub enum Title {
 /// Where title parts are meaningful, use this struct; Citum processors will not parse title strings.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 pub struct StructuredTitle {
     pub full: Option<String>,
@@ -383,6 +411,7 @@ pub struct StructuredTitle {
 /// The subtitle can either be a string, as is the common case, or a vector of strings.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(untagged)]
 pub enum Subtitle {
     String(String),
@@ -418,6 +447,7 @@ pub enum RefDate {
 /// A legal case (court decision).
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct LegalCase {
@@ -433,9 +463,11 @@ pub struct LegalCase {
     /// First page of case in reporter
     pub page: Option<String>,
     /// Decision date
+    #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
     #[serde(alias = "URL")]
     pub url: Option<Url>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -449,6 +481,7 @@ pub struct LegalCase {
 /// A statute or legislative act.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Statute {
@@ -464,9 +497,11 @@ pub struct Statute {
     /// Section or page number
     pub section: Option<String>,
     /// Enactment or publication date
+    #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
     #[serde(alias = "URL")]
     pub url: Option<Url>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -478,6 +513,7 @@ pub struct Statute {
 /// An international treaty or agreement.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Treaty {
@@ -493,9 +529,11 @@ pub struct Treaty {
     /// Page or treaty number
     pub page: Option<String>,
     /// Signing or ratification date
+    #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
     #[serde(alias = "URL")]
     pub url: Option<Url>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -507,6 +545,7 @@ pub struct Treaty {
 /// A legislative or administrative hearing.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Hearing {
@@ -518,9 +557,11 @@ pub struct Hearing {
     /// Session or congress number
     pub session_number: Option<String>,
     /// Hearing date
+    #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
     #[serde(alias = "URL")]
     pub url: Option<Url>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -532,6 +573,7 @@ pub struct Hearing {
 /// An administrative regulation.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Regulation {
@@ -547,9 +589,11 @@ pub struct Regulation {
     /// Section or page number
     pub section: Option<String>,
     /// Publication or effective date
+    #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
     #[serde(alias = "URL")]
     pub url: Option<Url>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -561,6 +605,7 @@ pub struct Regulation {
 /// A legal brief or filing.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Brief {
@@ -574,9 +619,11 @@ pub struct Brief {
     /// Docket number
     pub docket_number: Option<String>,
     /// Filing date
+    #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
     #[serde(alias = "URL")]
     pub url: Option<Url>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -588,6 +635,7 @@ pub struct Brief {
 /// A classic work (Aristotle, Bible, etc.) with standard citation forms.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Classic {
@@ -604,10 +652,12 @@ pub struct Classic {
     /// Section, book, or chapter in standard reference system
     pub section: Option<String>,
     /// Publication date of this edition (not original)
+    #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
     pub publisher: Option<Contributor>,
     #[serde(alias = "URL")]
     pub url: Option<Url>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -619,6 +669,7 @@ pub struct Classic {
 /// A patent.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Patent {
@@ -634,8 +685,10 @@ pub struct Patent {
     /// Application number
     pub application_number: Option<String>,
     /// Filing date
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     pub filing_date: Option<EdtfString>,
     /// Issue/grant date
+    #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
     /// Jurisdiction (e.g., "US", "EP", "JP")
     pub jurisdiction: Option<String>,
@@ -643,6 +696,7 @@ pub struct Patent {
     pub authority: Option<String>,
     #[serde(alias = "URL")]
     pub url: Option<Url>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -654,6 +708,7 @@ pub struct Patent {
 /// A research dataset.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Dataset {
@@ -663,6 +718,7 @@ pub struct Dataset {
     /// Dataset author(s)/creator(s)
     pub author: Option<Contributor>,
     /// Publication/release date
+    #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
     /// Publisher or repository (e.g., "Zenodo", "Dryad")
     pub publisher: Option<Contributor>,
@@ -678,6 +734,7 @@ pub struct Dataset {
     pub doi: Option<String>,
     #[serde(alias = "URL")]
     pub url: Option<Url>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -689,6 +746,7 @@ pub struct Dataset {
 /// A technical standard or specification.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Standard {
@@ -700,6 +758,7 @@ pub struct Standard {
     /// Standard number (e.g., "ISO 8601", "IEEE 754-2008")
     pub standard_number: String,
     /// Publication date
+    #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
     /// Status (e.g., "published", "draft", "withdrawn")
     pub status: Option<String>,
@@ -707,6 +766,7 @@ pub struct Standard {
     pub publisher: Option<Contributor>,
     #[serde(alias = "URL")]
     pub url: Option<Url>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -718,6 +778,7 @@ pub struct Standard {
 /// Software or source code.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Software {
@@ -727,6 +788,7 @@ pub struct Software {
     /// Author(s)/developer(s)
     pub author: Option<Contributor>,
     /// Release date
+    #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
     /// Publisher or repository (e.g., "GitHub", "Zenodo")
     pub publisher: Option<Contributor>,
@@ -742,6 +804,7 @@ pub struct Software {
     pub doi: Option<String>,
     #[serde(alias = "URL")]
     pub url: Option<Url>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     pub accessed: Option<EdtfString>,
     pub language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]

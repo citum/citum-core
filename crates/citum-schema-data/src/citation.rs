@@ -12,6 +12,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "bindings")]
+use specta::Type;
 
 /// A list of citations to process.
 pub type Citations = Vec<Citation>;
@@ -21,6 +23,7 @@ pub type Citations = Vec<Citation>;
 /// Determines how the author name is rendered relative to the citation.
 #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 pub enum CitationMode {
     /// Author inline in text: "Smith (2020) argues..."
@@ -35,6 +38,7 @@ pub enum CitationMode {
 /// Explicit integral citation name-memory state for one citation item.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 pub enum IntegralNameState {
     /// Render this item as the first integral mention in scope.
@@ -51,6 +55,7 @@ pub enum IntegralNameState {
 /// formatting rules (e.g., short forms after first citation).
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 pub enum Position {
     /// First citation of an item.
@@ -66,6 +71,7 @@ pub enum Position {
 /// A citation containing one or more references.
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 pub struct Citation {
     /// The citation ID (optional, for tracking).
@@ -127,6 +133,7 @@ fn is_false(b: &bool) -> bool {
 /// Locator types for pinpoint citations.
 #[derive(Debug, Clone, Copy, Default, Deserialize, Serialize, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 pub enum LocatorType {
     /// Locator refers to a book within a larger work.
@@ -211,6 +218,7 @@ pub enum LocatorType {
 /// should be singular despite containing a hyphen).
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(untagged)]
 pub enum LocatorValue {
     /// Plain string value with heuristic plural detection.
@@ -270,6 +278,7 @@ impl From<&str> for LocatorValue {
 /// Pairs a locator type with its value, e.g. `{ label: chapter, value: "3" }`.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 pub struct LocatorSegment {
     /// The locator type for this segment.
@@ -293,6 +302,7 @@ impl LocatorSegment {
 /// Simple locators use the single-segment form, while compound locators use
 /// the explicit `segments` wrapper.
 #[derive(Debug, Clone, Serialize, PartialEq)]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(untagged)]
 pub enum CitationLocator {
     /// A single labeled locator.
@@ -392,6 +402,7 @@ impl JsonSchema for CitationLocator {
 /// A single citation item referencing a bibliography entry.
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 pub struct CitationItem {
     /// The reference ID (citekey).

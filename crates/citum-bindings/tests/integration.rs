@@ -24,7 +24,7 @@ const CITATION_JSON: &str = r#"{"id":"c1","items":[{"id":"ITEM-1"}]}"#;
 
 #[test]
 fn render_citation_returns_string() {
-    let result = render_citation(STYLE_YAML, REFS_JSON, CITATION_JSON);
+    let result = render_citation(STYLE_YAML, REFS_JSON, CITATION_JSON, None);
     assert!(result.is_ok(), "render_citation failed: {result:?}");
     assert!(!result.unwrap().is_empty());
 }
@@ -48,7 +48,7 @@ fn validate_style_rejects_invalid_yaml() {
 
 #[test]
 fn render_citation_bad_style_returns_error() {
-    let result = render_citation("not yaml", REFS_JSON, CITATION_JSON);
+    let result = render_citation("not yaml", REFS_JSON, CITATION_JSON, None);
     assert!(result.is_err());
 }
 

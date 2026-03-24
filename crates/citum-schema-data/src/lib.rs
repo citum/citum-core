@@ -9,6 +9,8 @@ use indexmap::IndexMap;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "bindings")]
+use specta::Type;
 use std::collections::HashMap;
 
 /// Citation input model.
@@ -25,6 +27,7 @@ pub use citation::{
 /// A collection of bibliographic references with optional metadata.
 #[derive(Debug, Default, Deserialize, Serialize, Clone)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 pub struct InputBibliography {
     /// Bibliography metadata.
@@ -44,12 +47,14 @@ pub struct InputBibliography {
     pub sets: Option<IndexMap<String, Vec<String>>>,
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(feature = "bindings", specta(type = Option<serde_json::Value>))]
     pub custom: Option<HashMap<String, serde_json::Value>>,
 }
 
 /// Metadata for an input bibliography.
 #[derive(Debug, Default, Deserialize, Serialize, Clone)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 pub struct InputBibliographyInfo {
     /// Human-readable title for the bibliography dataset.

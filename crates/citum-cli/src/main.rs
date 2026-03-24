@@ -237,6 +237,10 @@ enum Commands {
     #[cfg(feature = "schema")]
     Schema(SchemaArgs),
 
+    /// Export language type bindings for Citum schema types
+    #[cfg(feature = "typescript")]
+    Bindings(BindingsArgs),
+
     /// Generate shell completion scripts
     Completions {
         /// The shell to generate completions for
@@ -579,6 +583,14 @@ struct SchemaArgs {
     out_dir: Option<PathBuf>,
 }
 
+#[cfg(feature = "typescript")]
+#[derive(Args, Debug)]
+struct BindingsArgs {
+    /// Output directory for generated type definition files
+    #[arg(short, long)]
+    out_dir: PathBuf,
+}
+
 #[derive(Args, Debug)]
 struct ConvertTypedArgs {
     /// Path to input file
@@ -685,6 +697,8 @@ fn run() -> Result<(), Box<dyn Error>> {
         },
         #[cfg(feature = "schema")]
         Commands::Schema(args) => run_schema(args),
+        #[cfg(feature = "typescript")]
+        Commands::Bindings(args) => run_bindings(args),
         Commands::Completions { shell } => {
             let mut cmd = Cli::command();
             let name = cmd.get_name().to_string();
@@ -754,6 +768,15 @@ fn run_schema(args: SchemaArgs) -> Result<(), Box<dyn Error>> {
     }
 
     Err("Specify a schema type (style, bib, locale, citation, registry) or --out-dir".into())
+}
+
+#[cfg(feature = "typescript")]
+fn run_bindings(args: BindingsArgs) -> Result<(), Box<dyn Error>> {
+    fs::create_dir_all(&args.out_dir)?;
+    let out_path = args.out_dir.join("citum.d.ts");
+    citum_bindings::export_typescript(&out_path).map_err(|e| format!("{e}"))?;
+    println!("TypeScript bindings exported to {}", out_path.display());
+    Ok(())
 }
 
 fn run_styles_list() -> Result<(), Box<dyn Error>> {
