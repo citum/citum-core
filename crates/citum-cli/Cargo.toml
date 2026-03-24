@@ -25,11 +25,13 @@ csl_legacy = { package = "csl-legacy", path = "../csl-legacy" }
 biblatex = "0.11"
 citum_store = { package = "citum_store", path = "../citum_store" }
 citum-pdf = { path = "../citum-pdf", optional = true }
+citum-bindings = { path = "../citum-bindings", optional = true }
 
 [features]
 default = []
 schema = ["dep:schemars", "citum_schema/schema"]
 typst-pdf = ["dep:citum-pdf"]
+typescript = ["dep:citum-bindings", "citum-bindings/typescript"]
 
 [lints]
 workspace = true

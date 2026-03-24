@@ -8,6 +8,7 @@ license.workspace = true
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 schemars = { version = "1.2.1", features = ["derive", "url2", "indexmap2"], optional = true }
+specta = { version = "2.0.0-rc.23", features = ["derive", "serde_json", "indexmap", "url"], optional = true }
 citum_edtf = { package = "citum-edtf", path = "../citum-edtf", features = ["serde"] }
 url = { version = "2.5", features = ["serde"] }
 csl_legacy = { package = "csl-legacy", path = "../csl-legacy", optional = true }
@@ -17,6 +18,7 @@ indexmap = { version = "2", features = ["serde"] }
 default = []
 legacy-convert = ["dep:csl_legacy"]
 schema = ["dep:schemars"]
+bindings = ["dep:specta"]
 
 [lints]
 workspace = true
