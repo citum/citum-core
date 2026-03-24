@@ -1,0 +1,19 @@
+
+test('resolveStyleData basic expansion and aliasing', () => {
+  const yamlPath = path.join(
+    __dirname,
+    '..',
+    'styles',
+    'taylor-and-francis-chicago-author-date.yaml'
+  );
+  const rawStyleData = yaml.load(fs.readFileSync(yamlPath, 'utf8')) || {};
+  const resolved = resolveStyleData(rawStyleData);
+
+  assert.equal(resolved.options['page-range-format'], 'expanded');
+  assert.equal(resolved.options.processing.disambiguate.names, true);
+  assert.equal(resolved.citation.options.contributors.shorten.min, 4);
+  assert.equal(
+    resolved.bibliography['type-variants']['motion-picture'][4].prefix,
+    'Directed by '
+  );
+});

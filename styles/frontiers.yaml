@@ -16,8 +16,8 @@ options:
   processing: !custom
     sort:
       template:
-        - key: author
-        - key: year
+      - key: author
+      - key: year
     group:
       template: [author, year]
     disambiguate:
@@ -51,17 +51,17 @@ citation:
         min: 3
         use-first: 1
   template:
-    - contributor: author
-      form: short
-      shorten:
-        min: 3
-        use-first: 1
-        and-others: et-al
-        delimiter-precedes-last: contextual
-      and: text
-    - date: issued
-      form: year
-    - variable: locator
+  - contributor: author
+    form: short
+    shorten:
+      min: 3
+      use-first: 1
+      and-others: et-al
+      delimiter-precedes-last: contextual
+    and: text
+  - date: issued
+    form: year
+  - variable: locator
   wrap: parentheses
   delimiter: ", "
   multi-cite-delimiter: "; "
@@ -79,11 +79,12 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: ", "
-  template:
+  type-variants:
+    article-magazine:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 6
     - date: issued
@@ -92,22 +93,44 @@ bibliography:
       prefix: " "
     - title: primary
     - items:
-        - contributor: editor
-          form: verb
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - number: volume
-    - number: issue
-      prefix: ", "
-      overrides:
-        article-magazine:
-          suppress: true
     - variable: publisher
     - number: pages
       prefix: "), "
     - variable: doi
     - variable: publisher-place
     - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "
+  - title: primary
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - number: volume
+  - number: issue
+    prefix: ", "
+  - variable: publisher
+  - number: pages
+    prefix: "), "
+  - variable: doi
+  - variable: publisher-place
+  - variable: url

@@ -221,7 +221,7 @@ fn render_citation_html_injects_template_indices_when_requested() {
     let result = dispatch(req).expect("dispatch should succeed");
     let citation = result["result"].as_str().expect("result should be string");
     assert!(
-        citation.contains(r#"class="csln-issued" data-index="1""#),
+        citation.contains(r#"class="csln-issued" data-index="0""#),
         "html citation should annotate the rendered citation component when requested: {citation}"
     );
 }

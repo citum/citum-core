@@ -49,7 +49,8 @@ bibliography:
       delimiter: "; "
       delimiter-precedes-last: always
       sort-separator: ", "
-  template:
+  type-variants:
+    article-journal:
     - number: citation-number
       wrap: parentheses
       suffix: " "
@@ -70,9 +71,6 @@ bibliography:
       name-order: family-first
       suffix: ", Eds."
       prefix: ", "
-      overrides:
-        book:
-          prefix: "; "
     - variable: publisher
       prefix: "; "
     - variable: publisher-place
@@ -80,60 +78,278 @@ bibliography:
     - date: issued
       form: year
       prefix: " "
-      overrides:
-        book:
-          prefix: ", "
-        report:
-          prefix: ", "
-        thesis:
-          prefix: ", "
-        chapter:
-          prefix: ": "
-        paper-conference:
-          prefix: ", "
-    - items:
-        - number: volume
-        - number: issue
-          overrides:
-            article-journal:
-              suppress: true
-            article-magazine:
-              suppress: true
-      prefix: ", "
+    - prefix: ", "
+      items:
+      - number: volume
     - number: pages
       prefix: ", "
-      overrides:
-        chapter:
-          prefix: ", pp "
-        paper-conference:
-          prefix: ", pp "
     - variable: doi
       prefix: ", DOI: "
     - variable: url
-  type-templates:
+    article-magazine:
+    - number: citation-number
+      wrap: parentheses
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+      suffix: "."
+    - title: parent-monograph
+      emph: true
+      prefix: " In "
+    - title: parent-serial
+      emph: true
+      prefix: " "
+    - contributor: editor
+      form: long
+      name-order: family-first
+      suffix: ", Eds."
+      prefix: ", "
+    - variable: publisher
+      prefix: "; "
+    - variable: publisher-place
+      prefix: ": "
+    - date: issued
+      form: year
+      prefix: " "
+    - prefix: ", "
+      items:
+      - number: volume
+    - number: pages
+      prefix: ", "
+    - variable: doi
+      prefix: ", DOI: "
+    - variable: url
+    book:
+    - number: citation-number
+      wrap: parentheses
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+      suffix: "."
+    - title: parent-monograph
+      emph: true
+      prefix: " In "
+    - title: parent-serial
+      emph: true
+      prefix: " "
+    - contributor: editor
+      form: long
+      name-order: family-first
+      suffix: ", Eds."
+      prefix: "; "
+    - variable: publisher
+      prefix: "; "
+    - variable: publisher-place
+      prefix: ": "
+    - date: issued
+      form: year
+      prefix: ", "
+    - prefix: ", "
+      items:
+      - number: volume
+      - number: issue
+    - number: pages
+      prefix: ", "
+    - variable: doi
+      prefix: ", DOI: "
+    - variable: url
+    chapter:
+    - number: citation-number
+      wrap: parentheses
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+      suffix: "."
+    - title: parent-monograph
+      emph: true
+      prefix: " In "
+    - title: parent-serial
+      emph: true
+      prefix: " "
+    - contributor: editor
+      form: long
+      name-order: family-first
+      suffix: ", Eds."
+      prefix: ", "
+    - variable: publisher
+      prefix: "; "
+    - variable: publisher-place
+      prefix: ": "
+    - date: issued
+      form: year
+      prefix: ": "
+    - prefix: ", "
+      items:
+      - number: volume
+      - number: issue
+    - number: pages
+      prefix: ", pp "
+    - variable: doi
+      prefix: ", DOI: "
+    - variable: url
+    paper-conference:
+    - number: citation-number
+      wrap: parentheses
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+      suffix: "."
+    - title: parent-monograph
+      emph: true
+      prefix: " In "
+    - title: parent-serial
+      emph: true
+      prefix: " "
+    - contributor: editor
+      form: long
+      name-order: family-first
+      suffix: ", Eds."
+      prefix: ", "
+    - variable: publisher
+      prefix: "; "
+    - variable: publisher-place
+      prefix: ": "
+    - date: issued
+      form: year
+      prefix: ", "
+    - prefix: ", "
+      items:
+      - number: volume
+      - number: issue
+    - number: pages
+      prefix: ", pp "
+    - variable: doi
+      prefix: ", DOI: "
+    - variable: url
+    report:
+    - number: citation-number
+      wrap: parentheses
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+      suffix: "."
+    - title: parent-monograph
+      emph: true
+      prefix: " In "
+    - title: parent-serial
+      emph: true
+      prefix: " "
+    - contributor: editor
+      form: long
+      name-order: family-first
+      suffix: ", Eds."
+      prefix: ", "
+    - variable: publisher
+      prefix: "; "
+    - variable: publisher-place
+      prefix: ": "
+    - date: issued
+      form: year
+      prefix: ", "
+    - prefix: ", "
+      items:
+      - number: volume
+      - number: issue
+    - number: pages
+      prefix: ", "
+    - variable: doi
+      prefix: ", DOI: "
+    - variable: url
+    thesis:
+    - number: citation-number
+      wrap: parentheses
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+      suffix: "."
+    - title: parent-monograph
+      emph: true
+      prefix: " In "
+    - title: parent-serial
+      emph: true
+      prefix: " "
+    - contributor: editor
+      form: long
+      name-order: family-first
+      suffix: ", Eds."
+      prefix: ", "
+    - variable: publisher
+      prefix: "; "
+    - variable: publisher-place
+      prefix: ": "
+    - date: issued
+      form: year
+      prefix: ", "
+    - prefix: ", "
+      items:
+      - number: volume
+      - number: issue
+    - number: pages
+      prefix: ", "
+    - variable: doi
+      prefix: ", DOI: "
+    - variable: url
     patent:
-      - number: citation-number
-        wrap: parentheses
-      - contributor: author
-        form: long
-        sort-separator: ", "
-      - title: primary
-        overrides:
-          graphic:
-            emph: true
-          motion_picture:
-            emph: true
-          legislation:
-            emph: true
-          report:
-            emph: true
-          legal_case:
-            emph: true
-          song:
-            emph: true
-          bill:
-            emph: true
-          book:
-            emph: true
-      - date: issued
-        form: full
+    - number: citation-number
+      wrap: parentheses
+    - contributor: author
+      form: long
+      sort-separator: ", "
+    - title: primary
+    - date: issued
+      form: full
+  template:
+  - number: citation-number
+    wrap: parentheses
+    suffix: " "
+  - contributor: author
+    form: long
+    name-order: family-first
+  - title: primary
+    prefix: " "
+    suffix: "."
+  - title: parent-monograph
+    emph: true
+    prefix: " In "
+  - title: parent-serial
+    emph: true
+    prefix: " "
+  - contributor: editor
+    form: long
+    name-order: family-first
+    suffix: ", Eds."
+    prefix: ", "
+  - variable: publisher
+    prefix: "; "
+  - variable: publisher-place
+    prefix: ": "
+  - date: issued
+    form: year
+    prefix: " "
+  - prefix: ", "
+    items:
+    - number: volume
+    - number: issue
+  - number: pages
+    prefix: ", "
+  - variable: doi
+    prefix: ", DOI: "
+  - variable: url

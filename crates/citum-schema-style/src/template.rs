@@ -135,24 +135,133 @@ pub enum WrapPunctuation {
     None,
 }
 
-/// Type-specific rendering overrides for components.
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(untagged)]
-pub enum ComponentOverride {
-    /// A full component replacement for specific reference types.
-    Component(Box<TemplateComponent>),
-    /// Simple rendering options override.
-    Rendering(Rendering),
+/// Canonical reference type names recognized by the Citum engine.
+///
+/// Used by [`validate_type_name`] to detect likely typos.
+pub const VALID_TYPE_NAMES: &[&str] = &[
+    "book",
+    "manual",
+    "report",
+    "thesis",
+    "webpage",
+    "post",
+    "interview",
+    "manuscript",
+    "personal-communication",
+    "document",
+    "chapter",
+    "paper-conference",
+    "article-journal",
+    "article-magazine",
+    "article-newspaper",
+    "broadcast",
+    "motion-picture",
+    "collection",
+    "legal-case",
+    "statute",
+    "treaty",
+    "hearing",
+    "regulation",
+    "brief",
+    "classic",
+    "patent",
+    "dataset",
+    "standard",
+    "software",
+    // Special keywords
+    "all",
+    "default",
+];
+
+/// Returns `true` if `s` is a recognized reference type name.
+///
+/// Normalizes underscores to hyphens before comparing, so both
+/// `"article_journal"` and `"article-journal"` are accepted.
+/// Returns `false` for unrecognized names (likely typos).
+pub fn validate_type_name(s: &str) -> bool {
+    let normalized = s.replace('_', "-");
+    VALID_TYPE_NAMES.iter().any(|&known| known == normalized)
 }
 
 /// Selector for reference types in overrides.
 /// Can be a single type string or a list of types.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(untagged)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub enum TypeSelector {
     Single(String),
     Multiple(Vec<String>),
+}
+
+impl Serialize for TypeSelector {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl<'de> Deserialize<'de> for TypeSelector {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct Visitor;
+        impl<'de> serde::de::Visitor<'de> for Visitor {
+            type Value = TypeSelector;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a string or a sequence of strings")
+            }
+
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(v.parse()
+                    .expect("TypeSelector: single-element parse is infallible"))
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                let mut types = Vec::new();
+                while let Some(t) = seq.next_element::<String>()? {
+                    types.push(t);
+                }
+                if types.len() == 1 {
+                    Ok(TypeSelector::Single(types.remove(0)))
+                } else {
+                    Ok(TypeSelector::Multiple(types))
+                }
+            }
+        }
+        deserializer.deserialize_any(Visitor)
+    }
+}
+
+impl std::fmt::Display for TypeSelector {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TypeSelector::Single(s) => write!(f, "{s}"),
+            TypeSelector::Multiple(types) => write!(f, "{}", types.join(",")),
+        }
+    }
+}
+
+impl std::str::FromStr for TypeSelector {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.contains(',') {
+            Ok(TypeSelector::Multiple(
+                s.split(',').map(|t| t.trim().to_string()).collect(),
+            ))
+        } else {
+            Ok(TypeSelector::Single(s.to_string()))
+        }
+    }
 }
 
 impl TypeSelector {
@@ -181,6 +290,27 @@ impl TypeSelector {
             TypeSelector::Multiple(types) => types.iter().any(|t| eq(t)),
         }
     }
+
+    /// Returns any type names in this selector that are not in [`VALID_TYPE_NAMES`].
+    ///
+    /// An empty vec means all names are valid. Callers should emit a
+    /// [`crate::SchemaWarning`] for each returned name.
+    pub fn unknown_type_names(&self) -> Vec<&str> {
+        match self {
+            TypeSelector::Single(s) => {
+                if validate_type_name(s) {
+                    vec![]
+                } else {
+                    vec![s.as_str()]
+                }
+            }
+            TypeSelector::Multiple(types) => types
+                .iter()
+                .filter(|s| !validate_type_name(s))
+                .map(|s| s.as_str())
+                .collect(),
+        }
+    }
 }
 
 /// A template component - the building blocks of citation/bibliography templates.
@@ -196,7 +326,7 @@ pub enum TemplateComponent {
     Title(TemplateTitle),
     Number(TemplateNumber),
     Variable(TemplateVariable),
-    List(TemplateList),
+    Group(TemplateGroup),
     Term(TemplateTerm),
 }
 
@@ -220,14 +350,6 @@ impl TemplateComponent {
     /// that are present on all template component variants.
     pub fn rendering_mut(&mut self) -> &mut Rendering {
         crate::dispatch_component!(self, |inner| &mut inner.rendering)
-    }
-
-    /// Return the type-specific rendering overrides for this component.
-    ///
-    /// Type overrides allow different formatting based on the reference type
-    /// (e.g., suppress publisher for journals).
-    pub fn overrides(&self) -> Option<&HashMap<TypeSelector, ComponentOverride>> {
-        crate::dispatch_component!(self, |inner| inner.overrides.as_ref())
     }
 }
 
@@ -303,9 +425,7 @@ pub struct TemplateContributor {
     /// Structured link options (DOI, URL).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub links: Option<crate::options::LinksConfig>,
-    /// Type-specific rendering overrides.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub overrides: Option<HashMap<TypeSelector, ComponentOverride>>,
+
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
@@ -378,9 +498,7 @@ pub struct TemplateDate {
     /// Structured link options (DOI, URL).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub links: Option<crate::options::LinksConfig>,
-    /// Type-specific rendering overrides.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub overrides: Option<HashMap<TypeSelector, ComponentOverride>>,
+
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
@@ -432,9 +550,7 @@ pub struct TemplateTitle {
     /// Structured link options (DOI, URL).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub links: Option<crate::options::LinksConfig>,
-    /// Type-specific rendering overrides.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub overrides: Option<HashMap<TypeSelector, ComponentOverride>>,
+
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
@@ -480,9 +596,7 @@ pub struct TemplateNumber {
     /// Structured link options (DOI, URL).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub links: Option<crate::options::LinksConfig>,
-    /// Type-specific rendering overrides.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub overrides: Option<HashMap<TypeSelector, ComponentOverride>>,
+
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
@@ -548,9 +662,7 @@ pub struct TemplateVariable {
     /// Structured link options (DOI, URL).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub links: Option<crate::options::LinksConfig>,
-    /// Type-specific rendering overrides. Use `suppress: true` to hide for certain types.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub overrides: Option<HashMap<TypeSelector, ComponentOverride>>,
+
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
@@ -611,27 +723,25 @@ pub struct TemplateTerm {
     pub form: Option<TermForm>,
     #[serde(flatten, default)]
     pub rendering: Rendering,
-    /// Type-specific rendering overrides.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub overrides: Option<HashMap<TypeSelector, ComponentOverride>>,
+
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
 }
 
-/// A list component for grouping multiple items with a delimiter.
+/// A group component for grouping multiple components with a delimiter,
+/// matching CSL 1.0 `<group>` semantics.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Default)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
-pub struct TemplateList {
-    pub items: Vec<TemplateComponent>,
+pub struct TemplateGroup {
+    #[serde(alias = "items")]
+    pub group: Vec<TemplateComponent>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub delimiter: Option<DelimiterPunctuation>,
     #[serde(flatten, default)]
     pub rendering: Rendering,
-    /// Type-specific rendering overrides.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub overrides: Option<HashMap<TypeSelector, ComponentOverride>>,
+
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
@@ -659,17 +769,12 @@ pub enum DelimiterPunctuation {
 
 #[cfg(feature = "schema")]
 impl JsonSchema for DelimiterPunctuation {
-    fn schema_name() -> String {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
         "DelimiterPunctuation".into()
     }
 
-    fn json_schema(_gen: &mut schemars::r#gen::SchemaGenerator) -> schemars::schema::Schema {
-        use schemars::schema::{InstanceType, SchemaObject};
-        SchemaObject {
-            instance_type: Some(InstanceType::String.into()),
-            ..Default::default()
-        }
-        .into()
+    fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({"type": "string"})
     }
 }
 

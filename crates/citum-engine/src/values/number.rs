@@ -134,11 +134,7 @@ impl ComponentValues for TemplateNumber {
 
         value.filter(|s| !s.is_empty()).map(|value| {
             // Resolve effective rendering options
-            let effective_rendering = crate::values::resolve_rendering_overrides(
-                &self.rendering,
-                self.overrides.as_ref(),
-                &reference.ref_type(),
-            );
+            let effective_rendering = &self.rendering;
 
             // Handle label if label_form is specified
             let prefix = if let Some(label_form) = &self.label_form {
@@ -146,7 +142,7 @@ impl ComponentValues for TemplateNumber {
                     &self.number,
                     label_form,
                     &value,
-                    &effective_rendering,
+                    effective_rendering,
                     options,
                     &fmt,
                 )

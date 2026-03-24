@@ -28,84 +28,84 @@ options:
 
 citation:
   template:
-    - items:
-        - number: citation-number
-        - variable: locator
-          prefix: ", "
-      delimiter: none
-      wrap: brackets
+  - delimiter: none
+    wrap: brackets
+    items:
+    - number: citation-number
+    - variable: locator
+      prefix: ", "
   multi-cite-delimiter: ", "
-
 bibliography:
   groups:
-    - id: books
-      heading:
-        localized:
-          ru-RU: Книги и монографии
-          ru: Книги и монографии
-      selector:
+  - id: books
+    heading:
+      localized:
+        ru-RU: Книги и монографии
+        ru: Книги и монографии
+    selector:
+      type:
+      - book
+      - edited-book
+      - chapter
+      - reference-entry
+    sort:
+      template:
+      - key: title
+        ascending: true
+
+  - id: articles
+    heading:
+      localized:
+        ru-RU: Статьи и периодика
+        ru: Статьи и периодика
+    selector:
+      type:
+      - article-journal
+      - article-magazine
+      - article-newspaper
+    sort:
+      template:
+      - key: title
+        ascending: true
+
+  - id: legal
+    heading:
+      localized:
+        ru-RU: Нормативные документы
+        ru: Нормативные документы
+    selector:
+      type:
+      - statute
+      - legal-case
+      - treaty
+      - legislation
+    sort:
+      template:
+      - key: title
+        ascending: true
+
+  - id: other
+    heading:
+      localized:
+        ru-RU: Прочие источники
+        ru: Прочие источники
+    selector:
+      not:
         type:
-          - book
-          - edited-book
-          - chapter
-          - reference-entry
-      sort:
-        template:
-          - key: title
-            ascending: true
+        - book
+        - edited-book
+        - chapter
+        - reference-entry
+        - article-journal
+        - article-magazine
+        - article-newspaper
+        - statute
+        - legal-case
+        - treaty
+        - legislation
 
-    - id: articles
-      heading:
-        localized:
-          ru-RU: Статьи и периодика
-          ru: Статьи и периодика
-      selector:
-        type:
-          - article-journal
-          - article-magazine
-          - article-newspaper
-      sort:
-        template:
-          - key: title
-            ascending: true
-
-    - id: legal
-      heading:
-        localized:
-          ru-RU: Нормативные документы
-          ru: Нормативные документы
-      selector:
-        type:
-          - statute
-          - legal-case
-          - treaty
-          - legislation
-      sort:
-        template:
-          - key: title
-            ascending: true
-
-    - id: other
-      heading:
-        localized:
-          ru-RU: Прочие источники
-          ru: Прочие источники
-      selector:
-        not:
-          type:
-            - book
-            - edited-book
-            - chapter
-            - reference-entry
-            - article-journal
-            - article-magazine
-            - article-newspaper
-            - statute
-            - legal-case
-            - treaty
-            - legislation
-
-  template:
+  type-variants:
+    article-journal:
     - number: citation-number
       prefix: "["
       suffix: "] "
@@ -115,19 +115,7 @@ bibliography:
       name-form: initials
       initialize-with: ". "
     - title: primary
-      overrides:
-        article-journal:
-          suffix: " //"
-        article-magazine:
-          suffix: " //"
-        article-newspaper:
-          suffix: " //"
-        chapter:
-          suffix: " //"
-        reference-entry:
-          suffix: " //"
-        legal-case:
-          suffix: " //"
+      suffix: " //"
     - title: parent-serial
     - title: parent-monograph
     - variable: publisher-place
@@ -141,3 +129,146 @@ bibliography:
       prefix: "№ "
     - number: pages
       prefix: "P. "
+    article-magazine:
+    - number: citation-number
+      prefix: "["
+      suffix: "] "
+    - contributor: author
+      form: long
+      name-order: family-first
+      name-form: initials
+      initialize-with: ". "
+    - title: primary
+      suffix: " //"
+    - title: parent-serial
+    - title: parent-monograph
+    - variable: publisher-place
+      suffix: ":"
+    - variable: publisher
+    - date: issued
+      form: year
+    - number: volume
+      prefix: "Vol. "
+    - number: issue
+      prefix: "№ "
+    - number: pages
+      prefix: "P. "
+    article-newspaper:
+    - number: citation-number
+      prefix: "["
+      suffix: "] "
+    - contributor: author
+      form: long
+      name-order: family-first
+      name-form: initials
+      initialize-with: ". "
+    - title: primary
+      suffix: " //"
+    - title: parent-serial
+    - title: parent-monograph
+    - variable: publisher-place
+      suffix: ":"
+    - variable: publisher
+    - date: issued
+      form: year
+    - number: volume
+      prefix: "Vol. "
+    - number: issue
+      prefix: "№ "
+    - number: pages
+      prefix: "P. "
+    chapter:
+    - number: citation-number
+      prefix: "["
+      suffix: "] "
+    - contributor: author
+      form: long
+      name-order: family-first
+      name-form: initials
+      initialize-with: ". "
+    - title: primary
+      suffix: " //"
+    - title: parent-serial
+    - title: parent-monograph
+    - variable: publisher-place
+      suffix: ":"
+    - variable: publisher
+    - date: issued
+      form: year
+    - number: volume
+      prefix: "Vol. "
+    - number: issue
+      prefix: "№ "
+    - number: pages
+      prefix: "P. "
+    legal-case:
+    - number: citation-number
+      prefix: "["
+      suffix: "] "
+    - contributor: author
+      form: long
+      name-order: family-first
+      name-form: initials
+      initialize-with: ". "
+    - title: primary
+      suffix: " //"
+    - title: parent-serial
+    - title: parent-monograph
+    - variable: publisher-place
+      suffix: ":"
+    - variable: publisher
+    - date: issued
+      form: year
+    - number: volume
+      prefix: "Vol. "
+    - number: issue
+      prefix: "№ "
+    - number: pages
+      prefix: "P. "
+    reference-entry:
+    - number: citation-number
+      prefix: "["
+      suffix: "] "
+    - contributor: author
+      form: long
+      name-order: family-first
+      name-form: initials
+      initialize-with: ". "
+    - title: primary
+      suffix: " //"
+    - title: parent-serial
+    - title: parent-monograph
+    - variable: publisher-place
+      suffix: ":"
+    - variable: publisher
+    - date: issued
+      form: year
+    - number: volume
+      prefix: "Vol. "
+    - number: issue
+      prefix: "№ "
+    - number: pages
+      prefix: "P. "
+  template:
+  - number: citation-number
+    prefix: "["
+    suffix: "] "
+  - contributor: author
+    form: long
+    name-order: family-first
+    name-form: initials
+    initialize-with: ". "
+  - title: primary
+  - title: parent-serial
+  - title: parent-monograph
+  - variable: publisher-place
+    suffix: ":"
+  - variable: publisher
+  - date: issued
+    form: year
+  - number: volume
+    prefix: "Vol. "
+  - number: issue
+    prefix: "№ "
+  - number: pages
+    prefix: "P. "

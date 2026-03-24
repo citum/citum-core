@@ -24,7 +24,7 @@ impl TemplateCompiler {
         _is_numeric: bool,
     ) -> (
         Vec<TemplateComponent>,
-        std::collections::HashMap<citum_schema::template::TypeSelector, Vec<TemplateComponent>>,
+        indexmap::IndexMap<citum_schema::template::TypeSelector, Vec<TemplateComponent>>,
     ) {
         // Compile using the new occurrence-based approach
         // This handles suppress semantics correctly without needing deduplication
@@ -48,7 +48,7 @@ impl TemplateCompiler {
         // default template (and where suppress-only overrides are insufficient).
         //
         // These templates are intentionally scoped to limit migration noise.
-        let type_templates: std::collections::HashMap<
+        let type_templates: indexmap::IndexMap<
             citum_schema::template::TypeSelector,
             Vec<TemplateComponent>,
         > = self.generate_selective_type_templates(nodes, &default_template);
@@ -60,8 +60,7 @@ impl TemplateCompiler {
         &self,
         nodes: &[CslnNode],
         default_template: &[TemplateComponent],
-    ) -> std::collections::HashMap<citum_schema::template::TypeSelector, Vec<TemplateComponent>>
-    {
+    ) -> indexmap::IndexMap<citum_schema::template::TypeSelector, Vec<TemplateComponent>> {
         use citum_schema::template::TypeSelector;
 
         let mut candidates = self.collect_types_with_branches(nodes);
@@ -69,21 +68,10 @@ impl TemplateCompiler {
             candidates.push(ItemType::EntryEncyclopedia);
         }
 
-        candidates.retain(|t| {
-            matches!(
-                t,
-                ItemType::ArticleJournal
-                    | ItemType::Patent
-                    | ItemType::Webpage
-                    | ItemType::EntryEncyclopedia
-                    | ItemType::LegalCase
-                    | ItemType::PersonalCommunication
-            )
-        });
         candidates.sort_by_key(|t| self.item_type_to_string(t));
         candidates.dedup_by_key(|t| self.item_type_to_string(t));
 
-        let mut type_templates = std::collections::HashMap::new();
+        let mut type_templates = indexmap::IndexMap::new();
         for item_type in candidates {
             let mut type_template = self.compile_for_type(nodes, &item_type);
             if type_template.is_empty() {
@@ -188,7 +176,7 @@ impl TemplateCompiler {
 fn component_has_doi(component: &TemplateComponent) -> bool {
     match component {
         TemplateComponent::Variable(variable) => variable.variable == SimpleVariable::Doi,
-        TemplateComponent::List(list) => list.items.iter().any(component_has_doi),
+        TemplateComponent::Group(list) => list.group.iter().any(component_has_doi),
         _ => false,
     }
 }
@@ -200,7 +188,7 @@ fn component_has_article_detail(component: &TemplateComponent) -> bool {
             number.number,
             NumberVariable::Volume | NumberVariable::Issue | NumberVariable::Pages
         ),
-        TemplateComponent::List(list) => list.items.iter().any(component_has_article_detail),
+        TemplateComponent::Group(list) => list.group.iter().any(component_has_article_detail),
         _ => false,
     }
 }

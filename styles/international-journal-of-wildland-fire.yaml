@@ -28,14 +28,14 @@ options:
       shorten-names: false
       render-substitutions: false
       template:
-        - key: year
-          ascending: true
-        - key: author
-          ascending: true
+      - key: year
+        ascending: true
+      - key: author
+        ascending: true
     group:
       template:
-        - year
-        - author
+      - year
+      - author
     disambiguate:
       names: true
       add-givenname: false
@@ -71,18 +71,18 @@ citation:
         delimiter-precedes-last: contextual
       delimiter: ", "
   template:
-    - contributor: author
-      form: short
-      name-order: family-first
-      shorten:
-        min: 3
-        use-first: 1
-        and-others: et-al
-        delimiter-precedes-last: contextual
-    - date: issued
-      form: year
-      prefix: " "
-    - variable: locator
+  - contributor: author
+    form: short
+    name-order: family-first
+    shorten:
+      min: 3
+      use-first: 1
+      and-others: et-al
+      delimiter-precedes-last: contextual
+  - date: issued
+    form: year
+    prefix: " "
+  - variable: locator
   wrap: parentheses
   delimiter: ". "
   multi-cite-delimiter: "; "
@@ -95,7 +95,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
@@ -105,31 +106,100 @@ bibliography:
       prefix: " "
     - title: primary
       prefix: " "
-    - items:
-        - contributor: editor
-          form: verb
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
+    - items: &id001
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - items:
-        - number: volume
-        - number: issue
-          wrap: parentheses
-          overrides: {}
+      - number: volume
+      - number: issue
+        wrap: parentheses
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
       prefix: ", "
     - variable: publisher
       prefix: . (
     - variable: publisher-place
       prefix: ": "
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+      prefix: " "
+    - items: *id001
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher
+      prefix: . (
+    - variable: publisher-place
+      prefix: ": "
+    - variable: doi
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+      prefix: " "
+    - items: *id001
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher
+      prefix: . (
+    - variable: publisher-place
+      prefix: ": "
+    - variable: doi
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "
+  - title: primary
+    prefix: " "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - items:
+    - number: volume
+    - number: issue
+      wrap: parentheses
+  - number: pages
+    prefix: ", "
+  - variable: publisher
+    prefix: . (
+  - variable: publisher-place
+    prefix: ": "
+  - variable: doi

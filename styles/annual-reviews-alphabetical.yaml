@@ -53,11 +53,12 @@ bibliography:
         delimiter-precedes-last: contextual
       delimiter: ", "
       sort-separator: " "
-  template:
+  type-variants:
+    article-magazine:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 5
     - date: issued
@@ -65,65 +66,162 @@ bibliography:
       prefix: " "
     - title: primary
     - items:
-        - number: volume
-          overrides:
-            legal-case:
-              suppress: true
-        - number: issue
-          wrap: parentheses
-          overrides:
-            article-magazine:
-              suppress: true
+      - number: volume
     - variable: publisher-place
     - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            book:
-              prefix: "on "
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
-      overrides:
-        film:
-          suppress: true
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        article-magazine:
-          prefix: "pp. "
-        legal-case:
-          suppress: true
+      prefix: "pp. "
     - variable: publisher
-  type-templates:
+    book:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - date: issued
+      form: year
+      prefix: " "
+    - title: primary
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher-place
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        prefix: "on "
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - number: pages
+    - variable: publisher
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - date: issued
+      form: year
+      prefix: " "
+    - title: primary
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher-place
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher
+    film:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - date: issued
+      form: year
+      prefix: " "
+    - title: primary
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher-place
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - number: pages
+    - variable: publisher
+    legal-case:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - date: issued
+      form: year
+      prefix: " "
+    - title: primary
+    - items:
+      - number: issue
+        wrap: parentheses
+    - variable: publisher-place
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - variable: publisher
     patent:
-      - number: citation-number
-        suffix: ". "
-      - contributor: author
-        form: long
-        sort-separator: " "
-        shorten:
-          min: 7
-          use-first: 5
-          and-others: et-al
-          delimiter-precedes-last: contextual
-      - date: issued
-        form: year
-      - title: primary
+    - number: citation-number
+      suffix: ". "
+    - contributor: author
+      form: long
+      sort-separator: " "
+      shorten:
+        min: 7
+        use-first: 5
+        and-others: et-al
+        delimiter-precedes-last: contextual
+    - date: issued
+      form: year
+    - title: primary
     entry-encyclopedia:
-      - number: citation-number
-        suffix: ". "
-      - contributor: author
-        form: long
-        sort-separator: " "
-        shorten:
-          min: 7
-          use-first: 5
-          and-others: et-al
-          delimiter-precedes-last: contextual
-      - date: issued
-        form: year
-      - title: primary
+    - number: citation-number
+      suffix: ". "
+    - contributor: author
+      form: long
+      sort-separator: " "
+      shorten:
+        min: 7
+        use-first: 5
+        and-others: et-al
+        delimiter-precedes-last: contextual
+    - date: issued
+      form: year
+    - title: primary
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - date: issued
+    form: year
+    prefix: " "
+  - title: primary
+  - items:
+    - number: volume
+    - number: issue
+      wrap: parentheses
+  - variable: publisher-place
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - number: pages
+  - variable: publisher

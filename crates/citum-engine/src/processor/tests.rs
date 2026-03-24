@@ -85,7 +85,6 @@ fn make_style() -> Style {
                         emph: Some(true),
                         ..Default::default()
                     },
-                    overrides: None,
                     ..Default::default()
                 }),
             ]),

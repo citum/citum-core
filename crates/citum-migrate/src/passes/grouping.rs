@@ -1,5 +1,5 @@
 use citum_schema::template::{
-    DelimiterPunctuation, NumberVariable, Rendering, TemplateComponent, TemplateList,
+    DelimiterPunctuation, NumberVariable, Rendering, TemplateComponent, TemplateGroup,
     TemplateNumber, WrapPunctuation,
 };
 
@@ -13,13 +13,12 @@ fn group_vol_issue_both_top_level(
     let max_idx = vol_idx.max(issue_idx);
     components.remove(max_idx);
     components.remove(min_idx);
-    let vol_issue_list = TemplateComponent::List(TemplateList {
-        items: vec![
+    let vol_issue_list = TemplateComponent::Group(TemplateGroup {
+        group: vec![
             TemplateComponent::Number(TemplateNumber {
                 number: NumberVariable::Volume,
                 form: None,
                 rendering: Rendering::default(),
-                overrides: None,
                 ..Default::default()
             }),
             TemplateComponent::Number(TemplateNumber {
@@ -29,13 +28,11 @@ fn group_vol_issue_both_top_level(
                     wrap: Some(WrapPunctuation::Parentheses),
                     ..Default::default()
                 },
-                overrides: None,
                 ..Default::default()
             }),
         ],
         delimiter: Some(vol_issue_delimiter),
         rendering: Rendering::default(),
-        overrides: None,
         ..Default::default()
     });
     components.insert(min_idx, vol_issue_list);
@@ -48,7 +45,7 @@ fn group_vol_issue_issue_at_top(
     vol_issue_delimiter: DelimiterPunctuation,
 ) {
     let list_idx = components.iter().enumerate().find_map(|(idx, c)| {
-        if let TemplateComponent::List(list) = c
+        if let TemplateComponent::Group(list) = c
             && find_volume_in_list(list).is_some()
         {
             return Some(idx);
@@ -57,13 +54,6 @@ fn group_vol_issue_issue_at_top(
     });
 
     if let Some(list_idx) = list_idx {
-        let issue_overrides = if let Some(TemplateComponent::Number(n)) = components.get(issue_idx)
-        {
-            n.overrides.clone()
-        } else {
-            None
-        };
-
         components.remove(issue_idx);
 
         let adjusted_list_idx = if issue_idx < list_idx {
@@ -79,13 +69,12 @@ fn group_vol_issue_issue_at_top(
                 wrap: Some(WrapPunctuation::Parentheses),
                 ..Default::default()
             },
-            overrides: issue_overrides,
             ..Default::default()
         });
 
-        if let Some(TemplateComponent::List(list)) = components.get_mut(adjusted_list_idx)
+        if let Some(TemplateComponent::Group(list)) = components.get_mut(adjusted_list_idx)
             && insert_issue_after_volume(
-                &mut list.items,
+                &mut list.group,
                 issue_with_parens,
                 vol_issue_delimiter.clone(),
             )
@@ -103,7 +92,7 @@ fn group_vol_issue_both_nested(
 ) {
     let issue_exists_nested = find_issue_in_components(components);
     let volume_exists_nested = components.iter().any(|c| {
-        if let TemplateComponent::List(list) = c {
+        if let TemplateComponent::Group(list) = c {
             find_volume_in_list(list).is_some()
         } else {
             false
@@ -118,15 +107,14 @@ fn group_vol_issue_both_nested(
                 wrap: Some(WrapPunctuation::Parentheses),
                 ..Default::default()
             },
-            overrides: None,
             ..Default::default()
         });
 
         for component in components.iter_mut() {
-            if let TemplateComponent::List(list) = component
+            if let TemplateComponent::Group(list) = component
                 && find_volume_in_list(list).is_some()
                 && insert_issue_after_volume(
-                    &mut list.items,
+                    &mut list.group,
                     issue_with_parens.clone(),
                     vol_issue_delimiter.clone(),
                 )
@@ -185,8 +173,8 @@ pub fn find_issue_in_components(components: &[TemplateComponent]) -> bool {
             TemplateComponent::Number(n) if n.number == NumberVariable::Issue => {
                 return true;
             }
-            TemplateComponent::List(list) => {
-                if find_issue_in_components(&list.items) {
+            TemplateComponent::Group(list) => {
+                if find_issue_in_components(&list.group) {
                     return true;
                 }
             }
@@ -212,11 +200,10 @@ pub fn insert_issue_after_volume(
 
         // Create a new List containing [volume, issue] with no delimiter
         // This preserves the outer list's delimiter for other items
-        let vol_issue_group = TemplateComponent::List(TemplateList {
-            items: vec![volume, issue],
+        let vol_issue_group = TemplateComponent::Group(TemplateGroup {
+            group: vec![volume, issue],
             delimiter: Some(delimiter), // No space between volume and issue
             rendering: Rendering::default(),
-            overrides: None,
             ..Default::default()
         });
 
@@ -227,8 +214,8 @@ pub fn insert_issue_after_volume(
 
     // Otherwise, recurse into nested lists
     for item in items.iter_mut() {
-        if let TemplateComponent::List(inner_list) = item
-            && insert_issue_after_volume(&mut inner_list.items, issue.clone(), delimiter.clone())
+        if let TemplateComponent::Group(inner_list) = item
+            && insert_issue_after_volume(&mut inner_list.group, issue.clone(), delimiter.clone())
         {
             return true;
         }
@@ -239,13 +226,13 @@ pub fn insert_issue_after_volume(
 
 /// Check if a List contains a volume variable (recursively).
 #[must_use]
-pub fn find_volume_in_list(list: &TemplateList) -> Option<()> {
-    for item in &list.items {
+pub fn find_volume_in_list(list: &TemplateGroup) -> Option<()> {
+    for item in &list.group {
         match item {
             TemplateComponent::Number(n) if n.number == NumberVariable::Volume => {
                 return Some(());
             }
-            TemplateComponent::List(inner_list) => {
+            TemplateComponent::Group(inner_list) => {
                 if find_volume_in_list(inner_list).is_some() {
                     return Some(());
                 }
@@ -257,9 +244,9 @@ pub fn find_volume_in_list(list: &TemplateList) -> Option<()> {
 }
 
 #[must_use]
-pub fn list_contains_title(list: &TemplateList) -> bool {
-    list.items.iter().any(|c| {
+pub fn list_contains_title(list: &TemplateGroup) -> bool {
+    list.group.iter().any(|c| {
         matches!(c, TemplateComponent::Title(_))
-            || matches!(c, TemplateComponent::List(l) if list_contains_title(l))
+            || matches!(c, TemplateComponent::Group(l) if list_contains_title(l))
     })
 }

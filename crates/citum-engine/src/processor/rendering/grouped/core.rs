@@ -41,6 +41,19 @@ struct GroupItemRenderRequest<'a> {
     delimiter: &'a str,
 }
 
+/// Returns the first type-variant template whose selector matches `ref_type`,
+/// or `None` if there are no variants or none match.
+fn resolve_type_variant(
+    type_variants: Option<
+        &indexmap::IndexMap<citum_schema::template::TypeSelector, citum_schema::Template>,
+    >,
+    ref_type: &str,
+) -> Option<citum_schema::Template> {
+    type_variants?
+        .iter()
+        .find_map(|(selector, template)| selector.matches(ref_type).then(|| template.clone()))
+}
+
 impl Renderer<'_> {
     fn strip_redundant_leading_group_punctuation<'a>(
         &self,
@@ -503,7 +516,11 @@ impl Renderer<'_> {
             .get(&first_item.id)
             .ok_or_else(|| ProcessorError::ReferenceNotFound(first_item.id.clone()))?;
         let first_language = crate::values::effective_item_language(first_ref);
-        let first_template = spec.resolve_template_for_language(first_language.as_deref());
+        let default_template = spec.resolve_template_for_language(first_language.as_deref());
+
+        let ref_type = first_ref.ref_type();
+        let first_template =
+            resolve_type_variant(spec.type_variants.as_ref(), &ref_type).or(default_template);
 
         Ok(GroupRenderState {
             first_item,
@@ -522,7 +539,11 @@ impl Renderer<'_> {
             .get(&item.id)
             .ok_or_else(|| ProcessorError::ReferenceNotFound(item.id.clone()))?;
         let item_language = crate::values::effective_item_language(reference);
-        let item_template = spec.resolve_template_for_language(item_language.as_deref());
+        let default_template = spec.resolve_template_for_language(item_language.as_deref());
+
+        let ref_type = reference.ref_type();
+        let item_template =
+            resolve_type_variant(spec.type_variants.as_ref(), &ref_type).or(default_template);
 
         Ok(ItemRenderState {
             item,
@@ -705,18 +726,8 @@ impl Renderer<'_> {
         let default_template = bib_spec.resolve_template_for_language(item_language.as_deref());
 
         let ref_type = reference.ref_type();
-        let matched_type_template = bib_spec.type_templates.as_ref().and_then(|type_templates| {
-            let mut matched_template = None;
-            for (selector, template) in type_templates {
-                if selector.matches(&ref_type) {
-                    matched_template = Some(template.clone());
-                    break;
-                }
-            }
-            matched_template
-        });
-
-        let template = matched_type_template.or(default_template)?;
+        let template = resolve_type_variant(bib_spec.type_variants.as_ref(), &ref_type)
+            .or(default_template)?;
 
         let template = self.apply_article_journal_bibliography_policy(reference, template);
 
@@ -932,8 +943,8 @@ impl Renderer<'_> {
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
-        let resolved_component = resolve_component_for_ref_type(component, ref_type);
-        let var_key = get_variable_key(&resolved_component);
+        let resolved_component = component;
+        let var_key = get_variable_key(resolved_component);
         if tracker.should_skip(var_key.as_deref()) {
             return None;
         }
@@ -942,15 +953,15 @@ impl Renderer<'_> {
         if values.value.is_empty() {
             return None;
         }
-        self.apply_issued_no_date_fallback(reference, options, &resolved_component, &mut values);
+        self.apply_issued_no_date_fallback(reference, options, resolved_component, &mut values);
         self.apply_entry_link_fallback(reference, options, &mut values);
 
         let item_language =
-            crate::values::effective_component_language(reference, &resolved_component);
+            crate::values::effective_component_language(reference, resolved_component);
         tracker.mark_rendered(var_key, values.substituted_key.as_deref());
 
         Some(ProcTemplateComponent {
-            template_component: resolved_component,
+            template_component: resolved_component.clone(),
             template_index: self.inject_ast_indices.then_some(template_index),
             value: values.value,
             prefix: values.prefix,
@@ -1066,40 +1077,6 @@ impl Renderer<'_> {
         self.render_item_from_template_with_format::<F>(reference, request, item_request.delimiter)
     }
 }
-/// Resolves a template component by applying type-specific overrides.
-fn resolve_component_for_ref_type(
-    component: &TemplateComponent,
-    ref_type: &str,
-) -> TemplateComponent {
-    use citum_schema::template::ComponentOverride;
-
-    let Some(overrides) = component.overrides() else {
-        return component.clone();
-    };
-
-    let mut specific: Option<TemplateComponent> = None;
-    let mut default_fallback: Option<TemplateComponent> = None;
-    let mut type_matched = false;
-
-    for (selector, ov) in overrides {
-        if selector.matches(ref_type) {
-            type_matched = true;
-            if let ComponentOverride::Component(c) = ov {
-                specific = Some((**c).clone());
-            }
-        } else if selector.matches("default")
-            && let ComponentOverride::Component(c) = ov
-        {
-            default_fallback = Some((**c).clone());
-        }
-    }
-
-    if type_matched {
-        specific.unwrap_or_else(|| component.clone())
-    } else {
-        default_fallback.unwrap_or_else(|| component.clone())
-    }
-}
 
 fn filter_article_journal_template_components(
     components: &[TemplateComponent],
@@ -1120,10 +1097,10 @@ fn filter_article_journal_template_component(
     }
 
     match component {
-        TemplateComponent::List(list) => {
+        TemplateComponent::Group(list) => {
             let mut filtered = list.clone();
-            filtered.items = filter_article_journal_template_components(&list.items, mode);
-            (!filtered.items.is_empty()).then_some(TemplateComponent::List(filtered))
+            filtered.group = filter_article_journal_template_components(&list.group, mode);
+            (!filtered.group.is_empty()).then_some(TemplateComponent::Group(filtered))
         }
         _ => Some(component.clone()),
     }

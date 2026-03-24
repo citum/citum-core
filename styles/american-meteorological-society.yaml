@@ -15,7 +15,8 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/cold-spring-harbor-laboratory-press
       rel: template
-    - href: https://www.ametsoc.org/ams/index.cfm/publications/authors/journal-and-bams-authors/formatting-and-manuscript-components/references/
+    - href: 
+        https://www.ametsoc.org/ams/index.cfm/publications/authors/journal-and-bams-authors/formatting-and-manuscript-components/references/
       rel: documentation
 options:
   substitute: editor-translator-title-short
@@ -57,19 +58,19 @@ citation:
         delimiter-precedes-last: contextual
       delimiter: ", "
   template:
-    - contributor: author
-      form: short
-      name-order: family-first
-      shorten:
-        min: 3
-        use-first: 1
-        and-others: et-al
-        delimiter-precedes-last: contextual
-    - date: issued
-      form: year
-      prefix: " "
-    - variable: locator
-      prefix: ", "
+  - contributor: author
+    form: short
+    name-order: family-first
+    shorten:
+      min: 3
+      use-first: 1
+      and-others: et-al
+      delimiter-precedes-last: contextual
+  - date: issued
+    form: year
+    prefix: " "
+  - variable: locator
+    prefix: ", "
   wrap: parentheses
   delimiter: " "
   multi-cite-delimiter: "; "
@@ -88,7 +89,8 @@ bibliography:
       delimiter-precedes-last: always
       delimiter-precedes-et-al: always
       sort-separator: ", "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
@@ -97,11 +99,11 @@ bibliography:
     - title: primary
       prefix: ": "
     - items:
-        - contributor: editor
-          form: verb
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - variable: publisher
@@ -109,6 +111,25 @@ bibliography:
     - number: volume
     - number: pages
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - date: issued
+    form: year
+  - title: primary
+    prefix: ": "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - variable: publisher
+    prefix: ". "
+  - number: volume
+  - number: pages
+  - variable: doi

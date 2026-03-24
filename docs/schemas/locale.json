@@ -1,11 +1,8 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "RawLocale",
-  "description": "Raw locale format for YAML parsing. This is a simpler format that uses string keys for terms.",
+  "description": "Raw locale format for YAML parsing.\nThis is a simpler format that uses string keys for terms.",
   "type": "object",
-  "required": [
-    "locale"
-  ],
   "properties": {
     "date-formats": {
       "description": "Named date format presets: symbolic name → CLDR date pattern (v2 locales only).",
@@ -16,6 +13,7 @@
     },
     "dates": {
       "description": "Date-related terms.",
+      "$ref": "#/$defs/RawDateTerms",
       "default": {
         "am": null,
         "months": {
@@ -27,18 +25,13 @@
         "seasons": [],
         "timezone-utc": null,
         "uncertainty-term": null
-      },
-      "allOf": [
-        {
-          "$ref": "#/definitions/RawDateTerms"
-        }
-      ]
+      }
     },
     "evaluation": {
       "description": "Runtime evaluation options (message syntax, evaluator hints).",
       "anyOf": [
         {
-          "$ref": "#/definitions/EvaluationConfig"
+          "$ref": "#/$defs/EvaluationConfig"
         },
         {
           "type": "null"
@@ -49,7 +42,7 @@
       "description": "Grammar toggles that vary by language.",
       "anyOf": [
         {
-          "$ref": "#/definitions/GrammarOptions"
+          "$ref": "#/$defs/GrammarOptions"
         },
         {
           "type": "null"
@@ -68,7 +61,7 @@
       "type": "string"
     },
     "locale-schema-version": {
-      "description": "Schema version. Absent or \"1\" uses the legacy term-map path. \"2\" activates the new messages/dateFormats/grammarOptions path.",
+      "description": "Schema version. Absent or \"1\" uses the legacy term-map path.\n\"2\" activates the new messages/dateFormats/grammarOptions path.",
       "type": [
         "string",
         "null"
@@ -85,7 +78,7 @@
       "description": "Locale-level number formatting options.",
       "anyOf": [
         {
-          "$ref": "#/definitions/NumberFormats"
+          "$ref": "#/$defs/NumberFormats"
         },
         {
           "type": "null"
@@ -94,34 +87,33 @@
     },
     "roles": {
       "description": "Role terms keyed by role name.",
-      "default": {},
       "type": "object",
       "additionalProperties": {
-        "$ref": "#/definitions/RawRoleTerm"
-      }
+        "$ref": "#/$defs/RawRoleTerm"
+      },
+      "default": {}
     },
     "terms": {
       "description": "General terms keyed by term name.",
-      "default": {},
       "type": "object",
       "additionalProperties": {
-        "$ref": "#/definitions/RawTermValue"
-      }
+        "$ref": "#/$defs/RawTermValue"
+      },
+      "default": {}
     }
   },
-  "definitions": {
+  "required": [
+    "locale"
+  ],
+  "$defs": {
     "EvaluationConfig": {
-      "description": "Runtime evaluation options for a locale.\n\nDeclares which message syntax the `messages` map uses and controls evaluator selection. May grow with additional fields (custom function declarations, evaluator hints) without breaking existing locale files.",
+      "description": "Runtime evaluation options for a locale.\n\nDeclares which message syntax the `messages` map uses and controls\nevaluator selection. May grow with additional fields (custom function\ndeclarations, evaluator hints) without breaking existing locale files.",
       "type": "object",
       "properties": {
         "message-syntax": {
           "description": "Message syntax used in this locale's `messages` map.",
-          "default": "static",
-          "allOf": [
-            {
-              "$ref": "#/definitions/MessageSyntax"
-            }
-          ]
+          "$ref": "#/$defs/MessageSyntax",
+          "default": "static"
         }
       }
     },
@@ -131,62 +123,58 @@
       "properties": {
         "close-inner-quote": {
           "description": "Closing inner (nested) quotation mark character.",
-          "default": "’",
-          "type": "string"
+          "type": "string",
+          "default": "’"
         },
         "close-quote": {
           "description": "Closing outer quotation mark character.",
-          "default": "”",
-          "type": "string"
+          "type": "string",
+          "default": "”"
         },
         "nbsp-before-colon": {
           "description": "Whether to use a non-breaking space before colon/question mark (French style).",
-          "default": false,
-          "type": "boolean"
+          "type": "boolean",
+          "default": false
         },
         "open-inner-quote": {
           "description": "Opening inner (nested) quotation mark character.",
-          "default": "‘",
-          "type": "string"
+          "type": "string",
+          "default": "‘"
         },
         "open-quote": {
           "description": "Opening outer quotation mark character.",
-          "default": "“",
-          "type": "string"
+          "type": "string",
+          "default": "“"
         },
         "page-range-delimiter": {
           "description": "Delimiter between page range endpoints.",
-          "default": "–",
-          "type": "string"
+          "type": "string",
+          "default": "–"
         },
         "punctuation-in-quote": {
           "description": "Whether to place periods/commas inside closing quotation marks (American style).",
-          "default": false,
-          "type": "boolean"
+          "type": "boolean",
+          "default": false
         },
         "serial-comma": {
           "description": "Whether to use a serial (Oxford) comma before the final list item.",
-          "default": false,
-          "type": "boolean"
+          "type": "boolean",
+          "default": false
         }
       }
     },
     "MessageSyntax": {
-      "description": "Message syntax variant active in a locale file.\n\nControls which `MessageEvaluator` implementation the engine selects at locale-load time.",
+      "description": "Message syntax variant active in a locale file.\n\nControls which `MessageEvaluator` implementation the engine selects at\nlocale-load time.",
       "oneOf": [
         {
           "description": "Plain text only; parameterized messages are not evaluated.",
           "type": "string",
-          "enum": [
-            "static"
-          ]
+          "const": "static"
         },
         {
           "description": "ICU Message Format 2 evaluation (requires `Mf2MessageEvaluator`).",
           "type": "string",
-          "enum": [
-            "mf2"
-          ]
+          "const": "mf2"
         }
       ]
     },
@@ -196,20 +184,21 @@
       "properties": {
         "decimal-separator": {
           "description": "Decimal separator (e.g., \".\" for en-US, \",\" for de-DE).",
-          "default": ".",
-          "type": "string"
+          "type": "string",
+          "default": "."
         },
         "minimum-digits": {
           "description": "Minimum digits to display.",
-          "default": 1,
           "type": "integer",
           "format": "uint8",
-          "minimum": 0.0
+          "default": 1,
+          "maximum": 255,
+          "minimum": 0
         },
         "thousands-separator": {
           "description": "Thousands separator (e.g., \",\" for en-US, \".\" for de-DE).",
-          "default": ",",
-          "type": "string"
+          "type": "string",
+          "default": ","
         }
       }
     },
@@ -219,63 +208,59 @@
       "properties": {
         "am": {
           "description": "Localized ante meridiem marker.",
-          "default": null,
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "default": null
         },
         "months": {
           "description": "Localized month names.",
+          "$ref": "#/$defs/RawMonthNames",
           "default": {
             "long": [],
             "short": []
-          },
-          "allOf": [
-            {
-              "$ref": "#/definitions/RawMonthNames"
-            }
-          ]
+          }
         },
         "open-ended-term": {
           "description": "Localized term for open-ended date ranges.",
-          "default": null,
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "default": null
         },
         "pm": {
           "description": "Localized post meridiem marker.",
-          "default": null,
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "default": null
         },
         "seasons": {
           "description": "Localized season names in display order.",
-          "default": [],
           "type": "array",
+          "default": [],
           "items": {
             "type": "string"
           }
         },
         "timezone-utc": {
           "description": "Localized label for UTC.",
-          "default": null,
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "default": null
         },
         "uncertainty-term": {
           "description": "Localized term for uncertain dates.",
-          "default": null,
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "default": null
         }
       }
     },
@@ -285,16 +270,16 @@
       "properties": {
         "long": {
           "description": "Full month names.",
-          "default": [],
           "type": "array",
+          "default": [],
           "items": {
             "type": "string"
           }
         },
         "short": {
           "description": "Abbreviated month names.",
-          "default": [],
           "type": "array",
+          "default": [],
           "items": {
             "type": "string"
           }
@@ -307,51 +292,51 @@
       "properties": {
         "long": {
           "description": "Long-form role term.",
-          "default": null,
           "anyOf": [
             {
-              "$ref": "#/definitions/RawTermValue"
+              "$ref": "#/$defs/RawTermValue"
             },
             {
               "type": "null"
             }
-          ]
+          ],
+          "default": null
         },
         "short": {
           "description": "Short-form role term.",
-          "default": null,
           "anyOf": [
             {
-              "$ref": "#/definitions/RawTermValue"
+              "$ref": "#/$defs/RawTermValue"
             },
             {
               "type": "null"
             }
-          ]
+          ],
+          "default": null
         },
         "verb": {
           "description": "Verb-form role term.",
-          "default": null,
           "anyOf": [
             {
-              "$ref": "#/definitions/RawTermValue"
+              "$ref": "#/$defs/RawTermValue"
             },
             {
               "type": "null"
             }
-          ]
+          ],
+          "default": null
         },
         "verb-short": {
           "description": "Short verb-form role term.",
-          "default": null,
           "anyOf": [
             {
-              "$ref": "#/definitions/RawTermValue"
+              "$ref": "#/$defs/RawTermValue"
             },
             {
               "type": "null"
             }
-          ]
+          ],
+          "default": null
         }
       }
     },
@@ -366,16 +351,12 @@
           "description": "Form-keyed value (for terms with long/short forms).",
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/definitions/RawTermValue"
+            "$ref": "#/$defs/RawTermValue"
           }
         },
         {
           "description": "Singular/plural forms.",
           "type": "object",
-          "required": [
-            "plural",
-            "singular"
-          ],
           "properties": {
             "plural": {
               "description": "Plural form of the term.",
@@ -385,7 +366,11 @@
               "description": "Singular form of the term.",
               "type": "string"
             }
-          }
+          },
+          "required": [
+            "singular",
+            "plural"
+          ]
         }
       ]
     }

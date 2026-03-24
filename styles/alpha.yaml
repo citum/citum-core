@@ -1,4 +1,3 @@
-# yaml-language-server: $schema=./citum.schema.json
 version: '0.10.0'
 info:
   title: Alpha (biblatex-alpha)
@@ -22,8 +21,8 @@ options:
   substitute:
     contributor-role-form: short
     template:
-      - editor
-      - translator
+    - editor
+    - translator
   contributors:
     and: text
     delimiter: ', '
@@ -37,9 +36,9 @@ options:
 citation:
   sort: author-date-title
   template:
-    - number: citation-label
-    - variable: locator
-      prefix: ', '
+  - number: citation-label
+  - variable: locator
+    prefix: ', '
   wrap: brackets
   delimiter: ''
   multi-cite-delimiter: ', '
@@ -51,7 +50,8 @@ bibliography:
       delimiter-precedes-last: contextual
       sort-separator: ', '
       display-as-sort: all
-  template:
+  type-variants:
+    article-journal:
     - number: citation-label
       wrap: brackets
       suffix: ' '
@@ -66,16 +66,56 @@ bibliography:
     - number: volume
     - date: issued
       form: year
-      overrides:
-        article-journal:
-          wrap: parentheses
-          prefix: ' '
-        chapter:
-          suppress: true
+      wrap: parentheses
+      prefix: ' '
     - number: pages
       prefix: ' '
-      overrides:
-        chapter:
-          prefix: 'pp. '
-        paper-conference:
-          prefix: 'pp. '
+    chapter:
+    - number: citation-label
+      wrap: brackets
+      suffix: ' '
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - title: parent-monograph
+    - title: parent-serial
+    - variable: publisher
+    - variable: publisher-place
+    - number: volume
+    - number: pages
+      prefix: 'pp. '
+    paper-conference:
+    - number: citation-label
+      wrap: brackets
+      suffix: ' '
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - title: parent-monograph
+    - title: parent-serial
+    - variable: publisher
+    - variable: publisher-place
+    - number: volume
+    - date: issued
+      form: year
+    - number: pages
+      prefix: 'pp. '
+  template:
+  - number: citation-label
+    wrap: brackets
+    suffix: ' '
+  - contributor: author
+    form: long
+    name-order: family-first
+  - title: primary
+  - title: parent-monograph
+  - title: parent-serial
+  - variable: publisher
+  - variable: publisher-place
+  - number: volume
+  - date: issued
+    form: year
+  - number: pages
+    prefix: ' '

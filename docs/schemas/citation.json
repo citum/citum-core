@@ -1,17 +1,14 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Array_of_Citation",
   "type": "array",
   "items": {
-    "$ref": "#/definitions/Citation"
+    "$ref": "#/$defs/Citation"
   },
-  "definitions": {
+  "$defs": {
     "Citation": {
       "description": "A citation containing one or more references.",
       "type": "object",
-      "required": [
-        "items"
-      ],
       "properties": {
         "id": {
           "description": "The citation ID (optional, for tracking).",
@@ -24,31 +21,27 @@
           "description": "The citation items (references being cited).",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/CitationItem"
+            "$ref": "#/$defs/CitationItem"
           }
         },
         "mode": {
-          "description": "Citation mode: integral (narrative) vs non-integral (parenthetical). Only relevant for author-date styles.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/CitationMode"
-            }
-          ]
+          "description": "Citation mode: integral (narrative) vs non-integral (parenthetical).\nOnly relevant for author-date styles.",
+          "$ref": "#/$defs/CitationMode"
         },
         "note-number": {
-          "description": "Note number for footnote/endnote styles. Assigned by the document processor, not the citation processor.",
+          "description": "Note number for footnote/endnote styles.\nAssigned by the document processor, not the citation processor.",
           "type": [
             "integer",
             "null"
           ],
           "format": "uint32",
-          "minimum": 0.0
+          "minimum": 0
         },
         "position": {
-          "description": "Position of this citation in the document flow. Detected automatically by the processor or set explicitly by the caller.",
+          "description": "Position of this citation in the document flow.\nDetected automatically by the processor or set explicitly by the caller.",
           "anyOf": [
             {
-              "$ref": "#/definitions/Position"
+              "$ref": "#/$defs/Position"
             },
             {
               "type": "null"
@@ -70,17 +63,17 @@
           ]
         },
         "suppress-author": {
-          "description": "Suppress the author name across all items in this citation. Used when the author is already named in the prose: \"Smith argues (2020)\". Applies uniformly to all items — per-item suppression is not supported because mixed-visibility citations are typographically incoherent.",
+          "description": "Suppress the author name across all items in this citation.\nUsed when the author is already named in the prose: \"Smith argues (2020)\".\nApplies uniformly to all items — per-item suppression is not supported\nbecause mixed-visibility citations are typographically incoherent.",
           "type": "boolean"
         }
-      }
+      },
+      "required": [
+        "items"
+      ]
     },
     "CitationItem": {
       "description": "A single citation item referencing a bibliography entry.",
       "type": "object",
-      "required": [
-        "id"
-      ],
       "properties": {
         "id": {
           "description": "The reference ID (citekey).",
@@ -90,7 +83,7 @@
           "description": "Explicit integral name-memory state override for this item.",
           "anyOf": [
             {
-              "$ref": "#/definitions/IntegralNameState"
+              "$ref": "#/$defs/IntegralNameState"
             },
             {
               "type": "null"
@@ -101,7 +94,7 @@
           "description": "Canonical locator value for pinpoint citations.",
           "anyOf": [
             {
-              "$ref": "#/definitions/CitationLocator"
+              "$ref": "#/$defs/CitationLocator"
             },
             {
               "type": "null"
@@ -122,26 +115,29 @@
             "null"
           ]
         }
-      }
+      },
+      "required": [
+        "id"
+      ]
     },
     "CitationLocator": {
       "oneOf": [
         {
-          "$ref": "#/definitions/LocatorSegment"
+          "$ref": "#/$defs/LocatorSegment"
         },
         {
           "type": "object",
-          "required": [
-            "segments"
-          ],
           "properties": {
             "segments": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/LocatorSegment"
+                "$ref": "#/$defs/LocatorSegment"
               }
             }
-          }
+          },
+          "required": [
+            "segments"
+          ]
         }
       ]
     },
@@ -149,18 +145,14 @@
       "description": "Citation mode for author-date styles.\n\nDetermines how the author name is rendered relative to the citation.",
       "oneOf": [
         {
-          "description": "Author inline in text: \"Smith (2020) argues...\" Also known as \"narrative\" or \"in-text\" citations.",
+          "description": "Author inline in text: \"Smith (2020) argues...\"\nAlso known as \"narrative\" or \"in-text\" citations.",
           "type": "string",
-          "enum": [
-            "integral"
-          ]
+          "const": "integral"
         },
         {
-          "description": "Author in parentheses: \"(Smith, 2020)\" The default mode for most citations.",
+          "description": "Author in parentheses: \"(Smith, 2020)\"\nThe default mode for most citations.",
           "type": "string",
-          "enum": [
-            "non-integral"
-          ]
+          "const": "non-integral"
         }
       ]
     },
@@ -170,44 +162,32 @@
         {
           "description": "Render this item as the first integral mention in scope.",
           "type": "string",
-          "enum": [
-            "first"
-          ]
+          "const": "first"
         },
         {
           "description": "Render this item as a subsequent integral mention in scope.",
           "type": "string",
-          "enum": [
-            "subsequent"
-          ]
+          "const": "subsequent"
         }
       ]
     },
     "LocatorSegment": {
       "description": "A single segment of a compound locator.\n\nPairs a locator type with its value, e.g. `{ label: chapter, value: \"3\" }`.",
       "type": "object",
-      "required": [
-        "label",
-        "value"
-      ],
       "properties": {
         "label": {
           "description": "The locator type for this segment.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/LocatorType"
-            }
-          ]
+          "$ref": "#/$defs/LocatorType"
         },
         "value": {
           "description": "The locator value (e.g., \"3\", \"42-45\").",
-          "allOf": [
-            {
-              "$ref": "#/definitions/LocatorValue"
-            }
-          ]
+          "$ref": "#/$defs/LocatorValue"
         }
-      }
+      },
+      "required": [
+        "label",
+        "value"
+      ]
     },
     "LocatorType": {
       "description": "Locator types for pinpoint citations.",
@@ -215,259 +195,187 @@
         {
           "description": "Locator refers to a book within a larger work.",
           "type": "string",
-          "enum": [
-            "book"
-          ]
+          "const": "book"
         },
         {
           "description": "Locator refers to a chapter.",
           "type": "string",
-          "enum": [
-            "chapter"
-          ]
+          "const": "chapter"
         },
         {
           "description": "Locator refers to a clause.",
           "type": "string",
-          "enum": [
-            "clause"
-          ]
+          "const": "clause"
         },
         {
           "description": "Locator refers to a column.",
           "type": "string",
-          "enum": [
-            "column"
-          ]
+          "const": "column"
         },
         {
           "description": "Locator refers to a corollary.",
           "type": "string",
-          "enum": [
-            "corollary"
-          ]
+          "const": "corollary"
         },
         {
           "description": "Locator refers to a definition.",
           "type": "string",
-          "enum": [
-            "definition"
-          ]
+          "const": "definition"
         },
         {
           "description": "Locator refers to a division.",
           "type": "string",
-          "enum": [
-            "division"
-          ]
+          "const": "division"
         },
         {
           "description": "Locator refers to a figure.",
           "type": "string",
-          "enum": [
-            "figure"
-          ]
+          "const": "figure"
         },
         {
           "description": "Locator refers to a folio.",
           "type": "string",
-          "enum": [
-            "folio"
-          ]
+          "const": "folio"
         },
         {
           "description": "Locator refers to a numbered line.",
           "type": "string",
-          "enum": [
-            "line"
-          ]
+          "const": "line"
         },
         {
           "description": "Locator refers to a lemma.",
           "type": "string",
-          "enum": [
-            "lemma"
-          ]
+          "const": "lemma"
         },
         {
           "description": "Locator refers to a note.",
           "type": "string",
-          "enum": [
-            "note"
-          ]
+          "const": "note"
         },
         {
           "description": "Locator refers to a numbered unit.",
           "type": "string",
-          "enum": [
-            "number"
-          ]
+          "const": "number"
         },
         {
           "description": "Locator refers to an opus number.",
           "type": "string",
-          "enum": [
-            "opus"
-          ]
+          "const": "opus"
         },
         {
           "description": "Locator refers to a page.",
           "type": "string",
-          "enum": [
-            "page"
-          ]
+          "const": "page"
         },
         {
           "description": "Locator refers to a paragraph.",
           "type": "string",
-          "enum": [
-            "paragraph"
-          ]
+          "const": "paragraph"
         },
         {
           "description": "Locator refers to a sub-paragraph.",
           "type": "string",
-          "enum": [
-            "subparagraph"
-          ]
+          "const": "subparagraph"
         },
         {
           "description": "Locator refers to a sub-clause.",
           "type": "string",
-          "enum": [
-            "subclause"
-          ]
+          "const": "subclause"
         },
         {
           "description": "Locator refers to a sub-division.",
           "type": "string",
-          "enum": [
-            "subdivision"
-          ]
+          "const": "subdivision"
         },
         {
           "description": "Locator refers to a sub-section.",
           "type": "string",
-          "enum": [
-            "subsection"
-          ]
+          "const": "subsection"
         },
         {
           "description": "Locator refers to a part or division.",
           "type": "string",
-          "enum": [
-            "part"
-          ]
+          "const": "part"
         },
         {
           "description": "Locator refers to a problem.",
           "type": "string",
-          "enum": [
-            "problem"
-          ]
+          "const": "problem"
         },
         {
           "description": "Locator refers to a proposition.",
           "type": "string",
-          "enum": [
-            "proposition"
-          ]
+          "const": "proposition"
         },
         {
           "description": "Locator refers to a recital.",
           "type": "string",
-          "enum": [
-            "recital"
-          ]
+          "const": "recital"
         },
         {
           "description": "Locator refers to a schedule.",
           "type": "string",
-          "enum": [
-            "schedule"
-          ]
+          "const": "schedule"
         },
         {
           "description": "Locator refers to a section.",
           "type": "string",
-          "enum": [
-            "section"
-          ]
+          "const": "section"
         },
         {
           "description": "Locator refers to a surah.",
           "type": "string",
-          "enum": [
-            "surah"
-          ]
+          "const": "surah"
         },
         {
           "description": "Locator refers to a theorem.",
           "type": "string",
-          "enum": [
-            "theorem"
-          ]
+          "const": "theorem"
         },
         {
           "description": "Locator refers to an entry under a headword.",
           "type": "string",
-          "enum": [
-            "sub-verbo"
-          ]
+          "const": "sub-verbo"
         },
         {
           "description": "Locator refers to a supplement.",
           "type": "string",
-          "enum": [
-            "supplement"
-          ]
+          "const": "supplement"
         },
         {
           "description": "Locator refers to a verse.",
           "type": "string",
-          "enum": [
-            "verse"
-          ]
+          "const": "verse"
         },
         {
           "description": "Locator refers to a volume.",
           "type": "string",
-          "enum": [
-            "volume"
-          ]
+          "const": "volume"
         },
         {
           "description": "Locator refers to a periodical volume.",
           "type": "string",
-          "enum": [
-            "volume-periodical"
-          ]
+          "const": "volume-periodical"
         },
         {
           "description": "Locator refers to a monograph volume.",
           "type": "string",
-          "enum": [
-            "volume-book"
-          ]
+          "const": "volume-book"
         },
         {
           "description": "Locator refers to an issue.",
           "type": "string",
-          "enum": [
-            "issue"
-          ]
+          "const": "issue"
         },
         {
           "description": "Locator refers to an algorithm.",
           "type": "string",
-          "enum": [
-            "algorithm"
-          ]
+          "const": "algorithm"
         }
       ]
     },
     "LocatorValue": {
-      "description": "A locator value that supports both plain strings and explicit plurality.\n\nPlain strings use heuristic plural detection (checking for `-`, `–`, `,`, `&`). Use the explicit form to override when the heuristic fails (e.g., \"figure A-3\" should be singular despite containing a hyphen).",
+      "description": "A locator value that supports both plain strings and explicit plurality.\n\nPlain strings use heuristic plural detection (checking for `-`, `–`, `,`, `&`).\nUse the explicit form to override when the heuristic fails (e.g., \"figure A-3\"\nshould be singular despite containing a hyphen).",
       "anyOf": [
         {
           "description": "Plain string value with heuristic plural detection.",
@@ -476,10 +384,6 @@
         {
           "description": "Explicit value with manual plural override.",
           "type": "object",
-          "required": [
-            "plural",
-            "value"
-          ],
           "properties": {
             "plural": {
               "description": "Whether this locator is plural.",
@@ -489,40 +393,36 @@
               "description": "The locator value string.",
               "type": "string"
             }
-          }
+          },
+          "required": [
+            "value",
+            "plural"
+          ]
         }
       ]
     },
     "Position": {
-      "description": "Position of a citation in the document flow.\n\nIndicates where this citation appears relative to previous citations of the same item(s). Used for note-based styles to detect ibid and subsequent citations, and for author-date styles to apply position-specific formatting rules (e.g., short forms after first citation).",
+      "description": "Position of a citation in the document flow.\n\nIndicates where this citation appears relative to previous citations\nof the same item(s). Used for note-based styles to detect ibid and\nsubsequent citations, and for author-date styles to apply position-specific\nformatting rules (e.g., short forms after first citation).",
       "oneOf": [
         {
           "description": "First citation of an item.",
           "type": "string",
-          "enum": [
-            "first"
-          ]
+          "const": "first"
         },
         {
           "description": "Subsequent citation of an item (non-consecutive).",
           "type": "string",
-          "enum": [
-            "subsequent"
-          ]
+          "const": "subsequent"
         },
         {
           "description": "Same item cited immediately before, no locator on either.",
           "type": "string",
-          "enum": [
-            "ibid"
-          ]
+          "const": "ibid"
         },
         {
           "description": "Same item cited immediately before, with different locator.",
           "type": "string",
-          "enum": [
-            "ibid-with-locator"
-          ]
+          "const": "ibid-with-locator"
         }
       ]
     }

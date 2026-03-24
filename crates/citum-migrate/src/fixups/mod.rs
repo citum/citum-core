@@ -16,7 +16,7 @@ pub fn selector_matches_any(selector: &TypeSelector, candidates: &[&str]) -> boo
 /// Normalizes legal-case type templates after migration from legacy CSL.
 pub fn normalize_legal_case_type_template(
     legacy_style: &csl_legacy::model::Style,
-    type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+    type_templates: &mut Option<indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>>,
 ) {
     media::normalize_legal_case_type_template(legacy_style, type_templates);
 }
@@ -24,7 +24,7 @@ pub fn normalize_legal_case_type_template(
 /// Ensures inferred media-oriented type templates exist when legacy signals require them.
 pub fn ensure_inferred_media_type_templates(
     legacy_style: &csl_legacy::model::Style,
-    type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+    type_templates: &mut Option<indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>>,
     bibliography_template: &[TemplateComponent],
 ) {
     media::ensure_inferred_media_type_templates(
@@ -38,7 +38,7 @@ pub fn ensure_inferred_media_type_templates(
 pub fn ensure_personal_communication_omitted(
     legacy_style: &csl_legacy::model::Style,
     citation_template: &[TemplateComponent],
-    type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+    type_templates: &mut Option<indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>>,
 ) {
     media::ensure_personal_communication_omitted(legacy_style, citation_template, type_templates);
 }
@@ -46,7 +46,7 @@ pub fn ensure_personal_communication_omitted(
 /// Ensures inferred patent templates exist when legacy output expects them.
 pub fn ensure_inferred_patent_type_template(
     legacy_style: &csl_legacy::model::Style,
-    type_templates: &mut Option<std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>>,
+    type_templates: &mut Option<indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>>,
     bibliography_template: &[TemplateComponent],
 ) {
     media::ensure_inferred_patent_type_template(

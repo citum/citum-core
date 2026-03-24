@@ -16,7 +16,8 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/ieee
       rel: template
-    - href: https://www.asme.org/publications-submissions/journals/information-for-authors/journal-guidelines/references
+    - href: 
+        https://www.asme.org/publications-submissions/journals/information-for-authors/journal-guidelines/references
       rel: documentation
 options:
   substitute: editor-translator-short
@@ -48,7 +49,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: ", "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
@@ -59,27 +61,117 @@ bibliography:
     - title: parent-monograph
     - title: parent-serial
     - items:
-        - number: volume
-        - number: issue
-          wrap: parentheses
-          overrides: {}
+      - number: volume
+      - number: issue
+        wrap: parentheses
     - variable: url
     - variable: publisher
     - number: pages
-      overrides:
-        article-journal:
-          prefix: "pp. "
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
-        article-magazine:
-          prefix: "pp. "
-        entry-encyclopedia:
-          prefix: "pp. "
+      prefix: "pp. "
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
+    - variable: publisher-place
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+    - title: primary
+      wrap: quotes
+    - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: url
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
       prefix: ". "
     - variable: publisher-place
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+    - title: primary
+      wrap: quotes
+    - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: url
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
+      prefix: ". "
+    - variable: publisher-place
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+    - title: primary
+      wrap: quotes
+    - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: url
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
+      prefix: ". "
+    - variable: publisher-place
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+    - title: primary
+      wrap: quotes
+    - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: url
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
+      prefix: ". "
+    - variable: publisher-place
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - date: issued
+    form: year
+  - title: primary
+    wrap: quotes
+  - title: parent-monograph
+  - title: parent-serial
+  - items:
+    - number: volume
+    - number: issue
+      wrap: parentheses
+  - variable: url
+  - variable: publisher
+  - number: pages
+  - variable: doi
+    prefix: ". "
+  - variable: publisher-place

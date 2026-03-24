@@ -370,33 +370,22 @@ impl CitationLocator {
 
 #[cfg(feature = "schema")]
 impl JsonSchema for CitationLocator {
-    fn schema_name() -> String {
-        "CitationLocator".to_string()
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "CitationLocator".into()
     }
 
-    fn json_schema(
-        schema_generator: &mut schemars::r#gen::SchemaGenerator,
-    ) -> schemars::schema::Schema {
-        use schemars::schema::{InstanceType, ObjectValidation, Schema, SchemaObject, SingleOrVec};
-
-        let single_schema = schema_generator.subschema_for::<LocatorSegment>();
-        let compound_item = schema_generator.subschema_for::<Vec<LocatorSegment>>();
-
-        let compound_schema = Schema::Object(SchemaObject {
-            instance_type: Some(SingleOrVec::Single(Box::new(InstanceType::Object))),
-            object: Some(Box::new(ObjectValidation {
-                properties: [("segments".to_string(), compound_item)]
-                    .into_iter()
-                    .collect(),
-                required: ["segments".to_string()].into_iter().collect(),
-                ..Default::default()
-            })),
-            ..Default::default()
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let single_schema = generator.subschema_for::<LocatorSegment>();
+        let compound_schema = schemars::json_schema!({
+            "type": "object",
+            "properties": {
+                "segments": generator.subschema_for::<Vec<LocatorSegment>>()
+            },
+            "required": ["segments"]
         });
-
-        let mut schema = SchemaObject::default();
-        schema.subschemas().one_of = Some(vec![single_schema, compound_schema]);
-        schema.into()
+        schemars::json_schema!({
+            "oneOf": [single_schema, compound_schema]
+        })
     }
 }
 

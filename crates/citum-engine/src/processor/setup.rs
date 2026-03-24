@@ -54,6 +54,20 @@ impl Processor {
         compound_sets: IndexMap<String, Vec<String>>,
     ) -> Self {
         let style = style.into_resolved();
+        Self::build_processor_pre_resolved(style, bibliography, locale, compound_sets)
+    }
+
+    /// Build a processor from an already-resolved style, skipping preset resolution.
+    ///
+    /// Use this when the style was cloned from a processor that has already
+    /// called `into_resolved()`, to avoid a second resolution pass that would
+    /// re-apply preset defaults and overwrite null-cleared fields.
+    pub(super) fn build_processor_pre_resolved(
+        style: Style,
+        bibliography: Bibliography,
+        locale: Locale,
+        compound_sets: IndexMap<String, Vec<String>>,
+    ) -> Self {
         let (compound_set_by_ref, compound_member_index) =
             Self::build_compound_set_indexes(&compound_sets);
         let mut processor = Processor {

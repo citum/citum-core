@@ -90,17 +90,25 @@ if (fragmentOutput) {
     },
   };
   fragment[section] = { template: result.template };
+  if (result.integral) fragment[section].integral = result.integral;
+  if (result.non_integral) fragment[section].non_integral = result.non_integral;
+
   console.log(JSON.stringify(fragment));
   process.exit(0);
 } else if (jsonOutput) {
   // Full result object as JSON
-  console.log(JSON.stringify({
+  const output = {
     style: styleName,
     section: result.meta.section,
     template: result.template,
     meta: result.meta,
-  }, null, 2));
+  };
+  if (result.integral) output.integral = result.integral;
+  if (result.non_integral) output.non_integral = result.non_integral;
+
+  console.log(JSON.stringify(output, null, 2));
 } else {
+
   // Human-readable YAML template
   console.log(`\n=== Template for: ${styleName} (${section}) ===\n`);
   console.log(result.yaml);

@@ -9,7 +9,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! group selectors. Supports type-based, field-based, and citation status
 //! filtering with negation for fallback groups.
 
-use citum_schema::grouping::{CitedStatus, FieldMatcher, GroupSelector, TypeSelector};
+use citum_schema::TypeSelector;
+use citum_schema::grouping::{CitedStatus, FieldMatcher, GroupSelector};
 use std::collections::HashSet;
 
 use crate::reference::Reference;
@@ -66,11 +67,7 @@ impl<'a> SelectorEvaluator<'a> {
 
     /// Match reference type.
     fn matches_type(reference: &Reference, type_sel: &TypeSelector) -> bool {
-        let ref_type = reference.ref_type();
-        match type_sel {
-            TypeSelector::Single(t) => ref_type == t.as_str(),
-            TypeSelector::Multiple(types) => types.iter().any(|t| ref_type == t.as_str()),
-        }
+        type_sel.matches(&reference.ref_type())
     }
 
     /// Match citation status.

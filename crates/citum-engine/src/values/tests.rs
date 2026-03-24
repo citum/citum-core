@@ -94,7 +94,6 @@ fn test_contributor_values() {
         and: None,
         rendering: Default::default(),
         links: None,
-        overrides: None,
         custom: None,
     };
 
@@ -129,7 +128,6 @@ fn test_date_values() {
         fallback: None,
         rendering: Default::default(),
         links: None,
-        overrides: None,
         custom: None,
     };
 
@@ -180,7 +178,6 @@ fn test_et_al() {
         and: None,
         rendering: Default::default(),
         links: None,
-        overrides: None,
         custom: None,
     };
 
@@ -339,7 +336,6 @@ fn test_et_al_delimiter_never() {
         and: None,
         rendering: Default::default(),
         links: None,
-        overrides: None,
         custom: None,
     };
 
@@ -398,7 +394,6 @@ fn test_et_al_delimiter_always() {
         and: None,
         rendering: Default::default(),
         links: None,
-        overrides: None,
         custom: None,
     };
 
@@ -680,8 +675,8 @@ fn test_template_list_suppression() {
     });
     let hints = ProcHints::default();
 
-    let component = TemplateList {
-        items: vec![
+    let component = TemplateGroup {
+        group: vec![
             TemplateComponent::Variable(TemplateVariable {
                 variable: SimpleVariable::Doi,
                 ..Default::default()
@@ -1547,7 +1542,6 @@ fn test_term_values() {
     let component = TemplateTerm {
         term: GeneralTerm::In,
         form: Some(TermForm::Long),
-        overrides: None,
         custom: None,
         ..Default::default()
     };
@@ -1578,11 +1572,10 @@ fn test_template_list_term_suppression() {
     let reference = make_reference();
     let hints = ProcHints::default();
 
-    let component = TemplateList {
-        items: vec![
+    let component = TemplateGroup {
+        group: vec![
             TemplateComponent::Term(TemplateTerm {
                 term: GeneralTerm::In,
-                overrides: None,
                 custom: None,
                 ..Default::default()
             }),

@@ -42,44 +42,92 @@ bibliography:
       name-form: initials
       initialize-with: .
       delimiter-precedes-last: always
-  template:
+  type-variants:
+    chapter:
     - contributor: author
       form: long
-      overrides:
-        personal_communication:
-          prefix: "pp. "
       name-order: given-first
     - title: primary
       wrap: quotes
-      overrides:
-        patent:
-          suppress: true
     - title: parent-monograph
     - title: parent-serial
     - variable: publisher
     - variable: publisher-place
     - items:
-        - number: volume
-        - number: issue
-          wrap: parentheses
-          overrides: {}
+      - number: volume
+      - number: issue
+        wrap: parentheses
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
+      prefix: "pp. "
     - date: issued
       form: year
       wrap: parentheses
       prefix: " "
-  type-templates:
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: primary
+      wrap: quotes
+    - title: parent-monograph
+    - title: parent-serial
+    - variable: publisher
+    - variable: publisher-place
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - number: pages
+      prefix: "pp. "
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
     patent:
-      - number: citation-number
-      - contributor: author
-        form: long
-        and: text
-      - date: issued
-        form: year
-      - term: no-date
-        form: short
+    - number: citation-number
+    - contributor: author
+      form: long
+      and: text
+    - date: issued
+      form: year
+    - term: no-date
+      form: short
+    personal_communication:
+    - contributor: author
+      form: long
+      name-order: given-first
+      prefix: "pp. "
+    - title: primary
+      wrap: quotes
+    - title: parent-monograph
+    - title: parent-serial
+    - variable: publisher
+    - variable: publisher-place
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - number: pages
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+  template:
+  - contributor: author
+    form: long
+    name-order: given-first
+  - title: primary
+    wrap: quotes
+  - title: parent-monograph
+  - title: parent-serial
+  - variable: publisher
+  - variable: publisher-place
+  - items:
+    - number: volume
+    - number: issue
+      wrap: parentheses
+  - number: pages
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "

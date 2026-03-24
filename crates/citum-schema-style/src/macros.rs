@@ -51,7 +51,7 @@ macro_rules! dispatch_component {
             $crate::template::TemplateComponent::Title($inner) => $action,
             $crate::template::TemplateComponent::Number($inner) => $action,
             $crate::template::TemplateComponent::Variable($inner) => $action,
-            $crate::template::TemplateComponent::List($inner) => $action,
+            $crate::template::TemplateComponent::Group($inner) => $action,
             $crate::template::TemplateComponent::Term($inner) => $action,
         }
     };
@@ -177,13 +177,13 @@ macro_rules! tc_term {
     };
 }
 
-/// Build a list `TemplateComponent` with optional rendering overrides.
+/// Build a group `TemplateComponent` with optional rendering overrides.
 #[macro_export]
-macro_rules! tc_list {
+macro_rules! tc_group {
     ([$($item:expr),* $(,)?] $(, $key:ident = $val:expr)*) => {
-        $crate::template::TemplateComponent::List(
-            $crate::template::TemplateList {
-                items: vec![$($item),*],
+        $crate::template::TemplateComponent::Group(
+            $crate::template::TemplateGroup {
+                group: vec![$($item),*],
                 rendering: $crate::template::Rendering {
                     $( $key: Some($val.into()), )*
                     ..Default::default()

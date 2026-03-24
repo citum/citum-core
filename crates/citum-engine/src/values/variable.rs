@@ -104,6 +104,11 @@ impl ComponentValues for TemplateVariable {
         let value = resolve_variable_value(&self.variable, reference, options);
 
         value.filter(|s: &String| !s.is_empty()).map(|value| {
+            let value = if let Some(tc) = self.rendering.text_case {
+                crate::values::text_case::apply_text_case(&value, tc)
+            } else {
+                value
+            };
             use citum_schema::options::{LinkAnchor, LinkTarget};
             let component_anchor = match self.variable {
                 SimpleVariable::Url => LinkAnchor::Url,

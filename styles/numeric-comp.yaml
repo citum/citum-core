@@ -35,7 +35,8 @@ bibliography:
     contributors:
       delimiter: ", "
       delimiter-precedes-last: never
-  template:
+  type-variants:
+    book:
     - number: citation-number
       wrap: brackets
       suffix: " "
@@ -44,17 +45,7 @@ bibliography:
       name-order: given-first
       and: text
     - title: primary
-      wrap: quotes
-      overrides:
-        article-journal: {}
-        article-magazine: {}
-        article-newspaper: {}
-        book:
-          wrap: none
-        report:
-          wrap: none
-        webpage:
-          wrap: none
+      wrap: none
     - title: parent-serial
       prefix: " In: "
     - title: parent-monograph
@@ -73,21 +64,104 @@ bibliography:
     - variable: doi
       prefix: " doi: "
     - variable: url
-  type-templates:
+    report:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: given-first
+      and: text
+    - title: primary
+      wrap: none
+    - title: parent-serial
+      prefix: " In: "
+    - title: parent-monograph
+      prefix: " In: "
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - variable: publisher
+    - variable: publisher-place
+      prefix: ": "
+    - number: volume
+    - date: issued
+      form: year
+      wrap: parentheses
+    - number: pages
+    - variable: doi
+      prefix: " doi: "
+    - variable: url
+    webpage:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: given-first
+      and: text
+    - title: primary
+      wrap: none
+    - title: parent-serial
+      prefix: " In: "
+    - title: parent-monograph
+      prefix: " In: "
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - variable: publisher
+    - variable: publisher-place
+      prefix: ": "
+    - number: volume
+    - date: issued
+      form: year
+      wrap: parentheses
+    - number: pages
+    - variable: doi
+      prefix: " doi: "
+    - variable: url
     patent:
-      - number: citation-number
-        wrap: brackets
-        suffix: " "
-      - contributor: author
-        form: long
-        name-order: given-first
-        and: text
-      - title: primary
-        wrap: quotes
-      - number: number
-      - contributor: author
-        form: long
-        name-order: given-first
-        and: text
-      - date: issued
-        form: year
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: given-first
+      and: text
+    - title: primary
+      wrap: quotes
+    - number: number
+    - contributor: author
+      form: long
+      name-order: given-first
+      and: text
+    - date: issued
+      form: year
+  template:
+  - number: citation-number
+    wrap: brackets
+    suffix: " "
+  - contributor: author
+    form: long
+    name-order: given-first
+    and: text
+  - title: primary
+    wrap: quotes
+  - title: parent-serial
+    prefix: " In: "
+  - title: parent-monograph
+    prefix: " In: "
+  - contributor: editor
+    form: verb
+    name-order: given-first
+  - variable: publisher
+  - variable: publisher-place
+    prefix: ": "
+  - number: volume
+  - date: issued
+    form: year
+    wrap: parentheses
+  - number: pages
+  - variable: doi
+    prefix: " doi: "
+  - variable: url

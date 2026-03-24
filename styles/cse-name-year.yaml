@@ -1,6 +1,7 @@
 info:
   title: 'CSE Manual: Scientific Style and Format 9th edition (name-year)'
-  description: 'Council of Science Editors style, 9th edition, name-year system: author-date in text, sorted alphabetically.'
+  description: 'Council of Science Editors style, 9th edition, name-year system: author-date in text,
+    sorted alphabetically.'
   fields:
   - biology
   - botany
@@ -52,23 +53,29 @@ citation:
         and-others: et-al
         delimiter-precedes-last: contextual
       delimiter: ", "
-  template:
+  type-variants:
+    article-newspaper:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 3
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-    - date: issued
-      form: year
-      prefix: " "
-      overrides:
-        article-newspaper:
-          suppress: true
-        patent:
-          suppress: true
+    patent:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - date: issued
+    form: year
+    prefix: " "
   wrap: parentheses
   delimiter: ". "
   multi-cite-delimiter: "; "
@@ -86,39 +93,103 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id002
         min: 5
         use-first: 1
     - date: issued
       form: year
       prefix: " "
     - title: primary
-      overrides:
-        webpage:
-          suppress: true
     - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            chapter:
-              prefix: "on "
-          name-order: given-first
-        - title: parent-monograph
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
     - title: parent-serial
     - items:
-        - number: volume
-        - number: issue
-          wrap: parentheses
-          overrides: {}
+      - number: volume
+      - number: issue
+        wrap: parentheses
     - variable: publisher
     - number: pages
       prefix: "; p "
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
     - variable: url
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - date: issued
+      form: year
+      prefix: " "
+    - title: primary
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        prefix: "on "
+      - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "; p "
+    - variable: doi
+    - variable: url
+    webpage:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - date: issued
+      form: year
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "; p "
+    - variable: doi
+    - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id002
+  - date: issued
+    form: year
+    prefix: " "
+  - title: primary
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+  - title: parent-serial
+  - items:
+    - number: volume
+    - number: issue
+      wrap: parentheses
+  - variable: publisher
+  - number: pages
+    prefix: "; p "
+  - variable: doi
+  - variable: url

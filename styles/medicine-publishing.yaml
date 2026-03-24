@@ -43,35 +43,24 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 3
     - title: primary
       prefix: " "
     - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            chapter:
-              prefix: "on "
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
-    - date: issued
-      form: year
-      overrides:
-        article-journal:
-          suppress: true
-        article-magazine:
-          suppress: true
-        entry-encyclopedia:
-          suppress: true
     - number: volume
     - variable: url
     - number: pages
@@ -79,3 +68,96 @@ bibliography:
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - variable: url
+    - number: pages
+      prefix: ": "
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        prefix: "on "
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - date: issued
+      form: year
+    - number: volume
+    - variable: url
+    - number: pages
+      prefix: ": "
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - variable: url
+    - number: pages
+      prefix: ": "
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - title: primary
+    prefix: " "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - date: issued
+    form: year
+  - number: volume
+  - variable: url
+  - number: pages
+    prefix: ": "
+  - variable: publisher-place
+  - variable: publisher
+    prefix: ": "

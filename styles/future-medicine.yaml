@@ -16,13 +16,14 @@ info:
       rel: template
     - href: https://www.futuremedicine.com/authorguide/preparingyourarticle
       rel: documentation
-    - href: https://www.futuremedicine.com/pb-assets/Future-Medicine-Author-Guidelines-1585216135307.pdf
+    - href: 
+        https://www.futuremedicine.com/pb-assets/Future-Medicine-Author-Guidelines-1585216135307.pdf
       rel: documentation
 options:
   substitute:
     contributor-role-form: short
     template:
-      - editor
+    - editor
   processing: numeric
   contributors:
     display-as-sort: all
@@ -54,7 +55,7 @@ options:
     separator: ". "
 citation:
   template:
-    - number: citation-number
+  - number: citation-number
   wrap: brackets
   multi-cite-delimiter: ","
 bibliography:
@@ -70,20 +71,16 @@ bibliography:
         delimiter-precedes-last: contextual
       delimiter-precedes-et-al: never
       sort-separator: " "
-  template:
+  type-variants:
+    article-magazine:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 3
     - title: primary
       prefix: " "
-      overrides:
-        thesis:
-          suppress: true
-        patent:
-          suppress: true
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -92,12 +89,7 @@ bibliography:
     - variable: publisher-place
       prefix: ", "
     - items:
-        - number: volume
-        - number: issue
-          wrap: parentheses
-          overrides:
-            article-magazine:
-              suppress: true
+      - number: volume
     - contributor: editor
       form: verb
       name-order: family-first
@@ -106,34 +98,83 @@ bibliography:
       form: year
       wrap: parentheses
       prefix: " "
-  type-templates:
-    entry-encyclopedia:
-      - number: citation-number
-      - contributor: author
-        form: long
-        sort-separator: " "
-        shorten:
-          min: 7
-          use-first: 3
-          and-others: et-al
-          delimiter-precedes-last: contextual
-      - title: primary
-      - variable: publisher
-      - variable: publisher-place
-      - date: issued
-        form: year
-        wrap: parentheses
     patent:
-      - number: citation-number
-      - contributor: author
-        form: long
-        sort-separator: " "
-        shorten:
-          min: 7
-          use-first: 3
-          and-others: et-al
-          delimiter-precedes-last: contextual
-      - number: number
-      - date: issued
-        form: year
+    - number: citation-number
+    - contributor: author
+      form: long
+      sort-separator: " "
+      shorten:
+        min: 7
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+    - number: number
+    - date: issued
+      form: year
+      wrap: parentheses
+    thesis:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - variable: publisher
+    - variable: publisher-place
+      prefix: ", "
+    - items:
+      - number: volume
+      - number: issue
         wrap: parentheses
+    - contributor: editor
+      form: verb
+      name-order: family-first
+    - number: pages
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    entry-encyclopedia:
+    - number: citation-number
+    - contributor: author
+      form: long
+      sort-separator: " "
+      shorten:
+        min: 7
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+    - title: primary
+    - variable: publisher
+    - variable: publisher-place
+    - date: issued
+      form: year
+      wrap: parentheses
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - title: primary
+    prefix: " "
+  - title: parent-monograph
+    emph: true
+  - title: parent-serial
+    emph: true
+  - variable: publisher
+  - variable: publisher-place
+    prefix: ", "
+  - items:
+    - number: volume
+    - number: issue
+      wrap: parentheses
+  - contributor: editor
+    form: verb
+    name-order: family-first
+  - number: pages
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "

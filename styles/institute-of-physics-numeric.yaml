@@ -11,12 +11,13 @@ info:
     links:
     - href: http://www.zotero.org/styles/institute-of-physics-numeric
       rel: self
-    - href: http://authors.iop.org/atom/help.nsf/7765E7F03B07DE5080257020002E4D9B/$File/IOPWordGuidelines.pdf
+    - href: 
+        http://authors.iop.org/atom/help.nsf/7765E7F03B07DE5080257020002E4D9B/$File/IOPWordGuidelines.pdf
       rel: documentation
 options:
   substitute:
     template:
-      - editor
+    - editor
   processing: numeric
   contributors:
     display-as-sort: all
@@ -55,19 +56,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: never
       sort-separator: " "
-  type-templates:
-    legal-case:
-      - term: anonymous
-        form: short
-        strip-periods: true
-      - date: issued
-        form: year
-      - title: primary
-      - term: volume
-        form: short
-        strip-periods: true
-      - number: volume
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
@@ -80,23 +70,32 @@ bibliography:
     - title: parent-serial
       emph: true
     - number: volume
-      overrides:
-        legal-case:
-          suppress: true
     - number: pages
-      overrides:
-        legal-case:
-          suppress: true
-    - variable: publisher-place
-      overrides:
-        article-journal:
-          suppress: true
-        legal-case:
-          suppress: true
-    - variable: publisher
-      prefix: ": "
-      overrides:
-        article-journal:
-          suppress: true
-        legal-case:
-          suppress: true
+    legal-case:
+    - term: anonymous
+      form: short
+      strip-periods: true
+    - date: issued
+      form: year
+    - title: primary
+    - term: volume
+      form: short
+      strip-periods: true
+    - number: volume
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - date: issued
+    form: year
+  - title: primary
+    prefix: " "
+  - title: parent-monograph
+    emph: true
+  - title: parent-serial
+    emph: true
+  - number: volume
+  - number: pages
+  - variable: publisher-place
+  - variable: publisher
+    prefix: ": "

@@ -14,7 +14,8 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/australian-guide-to-legal-citation
       rel: template
-    - href: https://forums.zotero.org/discussion/4841/new-australian-legal-citation-style/?Focus=20831#Comment_20831
+    - href: 
+        https://forums.zotero.org/discussion/4841/new-australian-legal-citation-style/?Focus=20831#Comment_20831
       rel: documentation
 options:
   substitute: editor-translator-short
@@ -43,21 +44,14 @@ citation:
         delimiter-precedes-last: contextual
       delimiter: ", "
       delimiter-precedes-last: never
-  template:
+  type-variants:
+    entry-encyclopedia:
     - contributor: author
       form: short
       name-order: family-first
     - title: primary
       prefix: ", "
       wrap: quotes
-    - date: issued
-      form: year
-      wrap: parentheses
-      overrides:
-        entry-encyclopedia:
-          suppress: true
-        patent:
-          suppress: true
     - number: volume
     - title: parent-monograph
     - title: parent-serial
@@ -65,11 +59,43 @@ citation:
     - variable: publisher-place
       prefix: ", "
     - variable: url
+    patent:
+    - contributor: author
+      form: short
+      name-order: family-first
+    - title: primary
+      prefix: ", "
+      wrap: quotes
+    - number: volume
+    - title: parent-monograph
+    - title: parent-serial
+    - variable: publisher
+    - variable: publisher-place
+      prefix: ", "
+    - variable: url
+  template:
+  - contributor: author
+    form: short
+    name-order: family-first
+  - title: primary
+    prefix: ", "
+    wrap: quotes
+  - date: issued
+    form: year
+    wrap: parentheses
+  - number: volume
+  - title: parent-monograph
+  - title: parent-serial
+  - variable: publisher
+  - variable: publisher-place
+    prefix: ", "
+  - variable: url
   suffix: .
   delimiter: " "
   multi-cite-delimiter: "; "
   subsequent:
-    template:
+    type-variants:
+      book:
       - contributor: author
         form: short
         name-order: family-first
@@ -77,26 +103,79 @@ citation:
         form: short
         prefix: ", "
         wrap: quotes
-        overrides:
-          book:
-            emph: true
-            quote: false
-          legislation:
-            emph: true
-            quote: false
-          manuscript:
-            emph: true
-            quote: false
-          motion-picture:
-            emph: true
-            quote: false
-          thesis:
-            emph: true
-            quote: false
-          webpage:
-            emph: true
-            quote: false
+        emph: true
+        quote: false
       - variable: locator
         prefix: " at "
+      legislation:
+      - contributor: author
+        form: short
+        name-order: family-first
+      - title: primary
+        form: short
+        prefix: ", "
+        wrap: quotes
+        emph: true
+        quote: false
+      - variable: locator
+        prefix: " at "
+      manuscript:
+      - contributor: author
+        form: short
+        name-order: family-first
+      - title: primary
+        form: short
+        prefix: ", "
+        wrap: quotes
+        emph: true
+        quote: false
+      - variable: locator
+        prefix: " at "
+      motion-picture:
+      - contributor: author
+        form: short
+        name-order: family-first
+      - title: primary
+        form: short
+        prefix: ", "
+        wrap: quotes
+        emph: true
+        quote: false
+      - variable: locator
+        prefix: " at "
+      thesis:
+      - contributor: author
+        form: short
+        name-order: family-first
+      - title: primary
+        form: short
+        prefix: ", "
+        wrap: quotes
+        emph: true
+        quote: false
+      - variable: locator
+        prefix: " at "
+      webpage:
+      - contributor: author
+        form: short
+        name-order: family-first
+      - title: primary
+        form: short
+        prefix: ", "
+        wrap: quotes
+        emph: true
+        quote: false
+      - variable: locator
+        prefix: " at "
+    template:
+    - contributor: author
+      form: short
+      name-order: family-first
+    - title: primary
+      form: short
+      prefix: ", "
+      wrap: quotes
+    - variable: locator
+      prefix: " at "
 bibliography:
   template: []

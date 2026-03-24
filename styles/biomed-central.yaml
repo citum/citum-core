@@ -13,12 +13,13 @@ info:
     links:
     - href: http://www.zotero.org/styles/biomed-central
       rel: self
-    - href: http://bmcbioinformatics.biomedcentral.com/submission-guidelines/preparing-your-manuscript/research-article
+    - href: 
+        http://bmcbioinformatics.biomedcentral.com/submission-guidelines/preparing-your-manuscript/research-article
       rel: documentation
 options:
   substitute:
     template:
-      - editor
+    - editor
   processing: numeric
   contributors: numeric-compact
   dates: numeric
@@ -45,66 +46,159 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
-  type-templates:
-    webpage:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-      - date: issued
-        form: year
-        suffix: ". "
-      - variable: url
-      - date: accessed
-        form: month-day
-        prefix: "Accessed "
-      - date: accessed
-        form: year
-        prefix: " "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 8
         use-first: 6
     - title: primary
       prefix: " "
     - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            chapter:
-              prefix: "on "
-          name-order: given-first
-        - title: parent-monograph
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
     - title: parent-serial
-    - date: issued
-      form: year
-      overrides:
-        article-journal:
-          suppress: true
-        article-magazine:
-          suppress: true
-        entry-encyclopedia:
-          suppress: true
     - number: volume
     - number: issue
       prefix: ":"
-      overrides:
-        article-magazine:
-          suppress: true
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
       prefix: ":"
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+    - title: parent-serial
+    - number: volume
+    - number: pages
+      prefix: ":"
+    - variable: doi
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        prefix: "on "
+      - title: parent-monograph
+    - title: parent-serial
+    - date: issued
+      form: year
+    - number: volume
+    - number: issue
+      prefix: ":"
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+    - title: parent-serial
+    - number: volume
+    - number: issue
+      prefix: ":"
+    - number: pages
+      prefix: ":"
+    - variable: doi
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+    - title: parent-serial
+    - date: issued
+      form: year
+    - number: volume
+    - number: issue
+      prefix: ":"
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    webpage:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - date: issued
+      form: year
+      suffix: ". "
+    - variable: url
+    - date: accessed
+      form: month-day
+      prefix: "Accessed "
+    - date: accessed
+      form: year
+      prefix: " "
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - title: primary
+    prefix: " "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+  - title: parent-serial
+  - date: issued
+    form: year
+  - number: volume
+  - number: issue
+    prefix: ":"
+  - number: pages
+    prefix: ":"
+  - variable: doi
+  - variable: publisher-place
+  - variable: publisher
+    prefix: ": "

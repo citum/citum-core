@@ -72,7 +72,10 @@ impl Processor {
             .options
             .get_or_insert_with(Default::default)
             .integral_names = applied;
-        Some(Self::with_locale_and_compound_sets(
+        // The style cloned from self.style is already resolved — bypass
+        // into_resolved() to prevent a second preset application that would
+        // restore null-cleared fields (e.g. type-variants: ~).
+        Some(Self::build_processor_pre_resolved(
             style,
             self.bibliography.clone(),
             self.locale.clone(),

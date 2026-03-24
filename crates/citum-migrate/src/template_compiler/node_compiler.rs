@@ -167,41 +167,9 @@ impl TemplateCompiler {
                 term: term.term,
                 form: Some(term.form),
                 rendering: self.convert_formatting(&term.formatting),
-                overrides: None,
                 ..Default::default()
             },
         ))
-    }
-
-    /// Build type overrides from `FormattingOptions`.
-    fn build_type_overrides(
-        &self,
-        overrides: &std::collections::HashMap<
-            citum_schema::ItemType,
-            citum_schema::FormattingOptions,
-        >,
-    ) -> Option<
-        std::collections::HashMap<
-            citum_schema::template::TypeSelector,
-            citum_schema::template::ComponentOverride,
-        >,
-    > {
-        if overrides.is_empty() {
-            None
-        } else {
-            Some(
-                overrides
-                    .iter()
-                    .map(|(t, fmt)| {
-                        use citum_schema::template::{ComponentOverride, TypeSelector};
-                        (
-                            TypeSelector::Single(self.item_type_to_string(t)),
-                            ComponentOverride::Rendering(self.convert_formatting(fmt)),
-                        )
-                    })
-                    .collect(),
-            )
-        }
     }
 
     /// Compile a Variable block into the appropriate component.
@@ -223,18 +191,10 @@ impl TemplateCompiler {
 
         // Check if it's a title
         if let Some(title_type) = self.map_variable_to_title(&var.variable) {
-            // Convert overrides from FormattingOptions to Rendering
-            if super::migrate_debug_enabled() {
-                for (t, fmt) in &var.overrides {
-                    eprintln!("  {t:?} -> {fmt:?}");
-                }
-            }
-            let overrides = self.build_type_overrides(&var.overrides);
             return Some(TemplateComponent::Title(TemplateTitle {
                 title: title_type,
                 form: None,
                 rendering: self.convert_formatting(&var.formatting),
-                overrides,
                 ..Default::default()
             }));
         }
@@ -247,9 +207,6 @@ impl TemplateCompiler {
                     label.formatting.strip_periods.or(rendering.strip_periods);
             }
 
-            // Convert overrides from FormattingOptions to Rendering
-            let overrides = self.build_type_overrides(&var.overrides);
-
             // Extract label form if present
             let label_form = var.label.as_ref().map(|l| self.map_label_form(&l.form));
 
@@ -258,7 +215,6 @@ impl TemplateCompiler {
                 form: None,
                 label_form,
                 rendering,
-                overrides,
                 ..Default::default()
             }));
         }
@@ -271,18 +227,13 @@ impl TemplateCompiler {
                 && !matches!(simple_var, SimpleVariable::Locator)
             {
                 // Locator labels are handled by style-level locators config
-                // TODO(csl26-3he9): propagate strip_periods to LocatorConfig.strip_label_periods
-                // during migration; currently requires manual style YAML edit.
                 rendering.strip_periods =
                     label.formatting.strip_periods.or(rendering.strip_periods);
             }
 
-            // Convert overrides from FormattingOptions to Rendering
-            let overrides = self.build_type_overrides(&var.overrides);
             return Some(TemplateComponent::Variable(TemplateVariable {
                 variable: simple_var,
                 rendering,
-                overrides,
                 ..Default::default()
             }));
         }

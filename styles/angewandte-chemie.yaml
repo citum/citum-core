@@ -1,7 +1,3 @@
-# Migrated from biblatex chem-angew
-# Authority: biblatex chem-angew snapshot (tests/snapshots/biblatex/angewandte-chemie.json)
-# Oracle: node scripts/report-core.js (biblatex-derived — do NOT use oracle.js or oracle-yaml.js)
-#
 version: ""
 info:
   title: Angewandte Chemie International Edition
@@ -10,8 +6,8 @@ options:
   substitute:
     contributor-role-form: short
     template:
-      - editor
-      - translator
+    - editor
+    - translator
   processing: numeric
   contributors:
     name-form: initials
@@ -38,7 +34,7 @@ options:
   punctuation-in-quote: true
 citation:
   template:
-    - number: citation-number
+  - number: citation-number
   wrap: brackets
   multi-cite-delimiter: ","
 bibliography:
@@ -48,186 +44,175 @@ bibliography:
       initialize-with: ". "
       delimiter: ", "
       delimiter-precedes-last: always
-  template:
+  type-variants:
+    chapter:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: parent-monograph
+      prefix: " in "
+    - contributor: editor
+      form: long
+      name-order: given-first
+      wrap: parentheses
+      inner-prefix: "Eds.: "
+    - variable: publisher
+    - variable: publisher-place
+    - date: issued
+      form: year
+    - number: pages
+      prefix: "pp. "
+    paper-conference:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: parent-monograph
+      prefix: " in "
+    - date: issued
+      form: year
+    - number: pages
+      prefix: "pp. "
+    article-journal:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: parent-serial
+    - date: issued
+      form: year
+      prefix: " "
+    - number: volume
+    - number: pages
+    - variable: doi
+      prefix: "DOI "
+    article-newspaper:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: parent-serial
+    - date: issued
+      form: year
+      prefix: " "
+    article-magazine:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: parent-serial
+    - date: issued
+      form: year
+      prefix: " "
+    - number: volume
+    - number: pages
+    entry-encyclopedia:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: parent-monograph
+      prefix: " in "
+    - number: volume
+      prefix: "Vol. "
+    - variable: publisher
+    - variable: publisher-place
+    - date: issued
+      form: year
+    - number: pages
+      prefix: "pp. "
+    thesis:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      name-order: given-first
+    - variable: genre
+    - date: issued
+      form: year
+    patent:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      name-order: given-first
+    - contributor: author
+      form: long
+      name-order: given-first
+      wrap: parentheses
+    - number: number
+    - date: issued
+      form: year
+    personal_communication:
     - number: citation-number
       wrap: brackets
     - contributor: author
       form: long
       name-order: given-first
     - title: primary
-    - title: parent-monograph
-    - title: parent-serial
+    - date: issued
+      form: year
+    personal-communication:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: primary
+    - date: issued
+      form: year
+    webpage:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+    - title: primary
+      quote: true
+      wrap: quotes
+    - variable: doi
+      prefix: "DOI "
+    - variable: url
+      prefix: "can be found under "
+    - term: accessed
+      form: long
+    - date: accessed
+      form: year
+    - date: issued
+      form: year
+    - term: no-date
+      form: short
+    legal_case:
+    - number: citation-number
+      wrap: brackets
+    - contributor: author
+      form: long
+    - title: primary
+      emph: true
+    - variable: authority
     - variable: publisher
     - variable: publisher-place
     - date: issued
       form: year
-    - number: volume
-    - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
-  type-templates:
-    # Article types: suppress title, show journal/newspaper/magazine name then year (space-joined)
-    article-journal:
-      - number: citation-number
-        wrap: brackets
-      - contributor: author
-        form: long
-        name-order: given-first
-      - title: parent-serial
-      - date: issued
-        form: year
-        prefix: " "
-      - number: volume
-      - number: pages
-      - variable: doi
-        prefix: "DOI "
-    article-newspaper:
-      - number: citation-number
-        wrap: brackets
-      - contributor: author
-        form: long
-        name-order: given-first
-      - title: parent-serial
-      - date: issued
-        form: year
-        prefix: " "
-    article-magazine:
-      - number: citation-number
-        wrap: brackets
-      - contributor: author
-        form: long
-        name-order: given-first
-      - title: parent-serial
-      - date: issued
-        form: year
-        prefix: " "
-      - number: volume
-      - number: pages
-    # Chapter/conference: suppress title, use "in" connector, format editors
-    chapter:
-      - number: citation-number
-        wrap: brackets
-      - contributor: author
-        form: long
-        name-order: given-first
-      - title: parent-monograph
-        prefix: " in "
-      - contributor: editor
-        form: long
-        name-order: given-first
-        wrap: parentheses
-        inner-prefix: "Eds.: "
-      - variable: publisher
-      - variable: publisher-place
-      - date: issued
-        form: year
-      - number: pages
-        prefix: "pp. "
-    paper-conference:
-      - number: citation-number
-        wrap: brackets
-      - contributor: author
-        form: long
-        name-order: given-first
-      - title: parent-monograph
-        prefix: " in "
-      - date: issued
-        form: year
-      - number: pages
-        prefix: "pp. "
-    entry-encyclopedia:
-      - number: citation-number
-        wrap: brackets
-      - contributor: author
-        form: long
-        name-order: given-first
-      - title: parent-monograph
-        prefix: " in "
-      - number: volume
-        prefix: "Vol. "
-      - variable: publisher
-      - variable: publisher-place
-      - date: issued
-        form: year
-      - number: pages
-        prefix: "pp. "
-    # Thesis: suppress title, show genre (e.g. "PhD thesis") and year only
-    thesis:
-      - number: citation-number
-        wrap: brackets
-      - contributor: author
-        form: long
-        name-order: given-first
-      - variable: genre
-      - date: issued
-        form: year
-    # Patent: author, (author as assignee), patent number, year
-    patent:
-      - number: citation-number
-        wrap: brackets
-      - contributor: author
-        form: long
-        name-order: given-first
-      - contributor: author
-        form: long
-        name-order: given-first
-        wrap: parentheses
-      - number: number
-      - date: issued
-        form: year
-    # Personal communication: render with author, title, year
-    personal_communication:
-      - number: citation-number
-        wrap: brackets
-      - contributor: author
-        form: long
-        name-order: given-first
-      - title: primary
-      - date: issued
-        form: year
-    personal-communication:
-      - number: citation-number
-        wrap: brackets
-      - contributor: author
-        form: long
-        name-order: given-first
-      - title: primary
-      - date: issued
-        form: year
-    webpage:
-      - number: citation-number
-        wrap: brackets
-      - contributor: author
-        form: long
-      - title: primary
-        quote: true
-        wrap: quotes
-      - variable: doi
-        prefix: "DOI "
-      - variable: url
-        prefix: "can be found under "
-      - term: accessed
-        form: long
-      - date: accessed
-        form: year
-      - date: issued
-        form: year
-      - term: no-date
-        form: short
-    legal_case:
-      - number: citation-number
-        wrap: brackets
-      - contributor: author
-        form: long
-      - title: primary
-        emph: true
-      - variable: authority
-      - variable: publisher
-      - variable: publisher-place
-      - date: issued
-        form: year
-        suppress: false
-      - title: parent-serial
+    - title: parent-serial
+  template:
+  - number: citation-number
+    wrap: brackets
+  - contributor: author
+    form: long
+    name-order: given-first
+  - title: primary
+  - title: parent-monograph
+  - title: parent-serial
+  - variable: publisher
+  - variable: publisher-place
+  - date: issued
+    form: year
+  - number: volume
+  - number: pages

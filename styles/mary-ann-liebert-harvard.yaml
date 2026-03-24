@@ -50,19 +50,19 @@ citation:
         and-others: et-al
         delimiter-precedes-last: contextual
   template:
-    - contributor: author
-      form: short
-      name-order: family-first
-      shorten:
-        min: 3
-        use-first: 1
-        and-others: et-al
-        delimiter-precedes-last: contextual
-    - date: issued
-      form: year
-      prefix: ", "
-    - variable: locator
-      prefix: ", "
+  - contributor: author
+    form: short
+    name-order: family-first
+    shorten:
+      min: 3
+      use-first: 1
+      and-others: et-al
+      delimiter-precedes-last: contextual
+  - date: issued
+    form: year
+    prefix: ", "
+  - variable: locator
+    prefix: ", "
   wrap: parentheses
   delimiter: " "
   multi-cite-delimiter: "; "
@@ -79,52 +79,141 @@ bibliography:
         delimiter-precedes-last: contextual
       delimiter-precedes-last: never
       sort-separator: " "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id001
         min: 5
         use-first: 3
     - title: primary
       prefix: " "
-    - items:
-        - contributor: editor
-          form: verb
-          name-order: family-first
-          shorten:
-            min: 4
-            use-first: 3
-        - title: parent-monograph
+    - items: &id002
+      - contributor: editor
+        form: verb
+        name-order: family-first
+        shorten: &id003
+          min: 4
+          use-first: 3
+      - title: parent-monograph
     - title: parent-serial
     - items:
-        - number: volume
-        - number: issue
-          wrap: parentheses
-          overrides: {}
+      - number: volume
+      - number: issue
+        wrap: parentheses
     - variable: publisher
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
       prefix: "; 2006; "
     - variable: publisher-place
       prefix: ": "
-    - date: issued
-      form: year
-      prefix: "; "
-      overrides:
-        chapter:
-          suppress: true
-        article-journal:
-          suppress: true
-        paper-conference:
-          suppress: true
-        article-magazine:
-          suppress: true
-        entry-encyclopedia:
-          suppress: true
     - variable: doi
       prefix: "; "
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items: *id002
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "; 2006; "
+    - variable: publisher-place
+      prefix: ": "
+    - variable: doi
+      prefix: "; "
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items: *id002
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher-place
+      prefix: ": "
+    - variable: doi
+      prefix: "; "
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items: *id002
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "; 2006; "
+    - variable: publisher-place
+      prefix: ": "
+    - variable: doi
+      prefix: "; "
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id001
+    - title: primary
+      prefix: " "
+    - items: *id002
+    - title: parent-serial
+    - items:
+      - number: volume
+      - number: issue
+        wrap: parentheses
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher-place
+      prefix: ": "
+    - variable: doi
+      prefix: "; "
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id001
+  - title: primary
+    prefix: " "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: family-first
+      shorten: *id003
+    - title: parent-monograph
+  - title: parent-serial
+  - items:
+    - number: volume
+    - number: issue
+      wrap: parentheses
+  - variable: publisher
+  - number: pages
+    prefix: "; 2006; "
+  - variable: publisher-place
+    prefix: ": "
+  - date: issued
+    form: year
+    prefix: "; "
+  - variable: doi
+    prefix: "; "

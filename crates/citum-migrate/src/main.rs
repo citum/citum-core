@@ -10,7 +10,7 @@ use citum_migrate::{
         move_group_wrap_to_citation_items, normalize_author_date_inferred_contributors,
         normalize_author_date_locator_citation_component, normalize_contributor_form_to_short,
         normalize_legal_case_type_template, normalize_wrapped_numeric_locator_citation_component,
-        note_citation_template_is_underfit, scrub_inferred_literal_artifacts, selector_matches_any,
+        note_citation_template_is_underfit, scrub_inferred_literal_artifacts,
         should_merge_inferred_type_template,
     },
     passes, preset_detector,
@@ -20,8 +20,7 @@ use citum_migrate::{
 use citum_schema::{
     BibliographySpec, CitationSpec, Style, StyleInfo,
     template::{
-        ComponentOverride, DateVariable, DelimiterPunctuation, NumberVariable, Rendering,
-        SimpleVariable, TemplateComponent, TitleType, TypeSelector, WrapPunctuation,
+        DelimiterPunctuation, NumberVariable, TemplateComponent, TypeSelector, WrapPunctuation,
     },
 };
 use csl_legacy::parser::parse_style;
@@ -30,7 +29,7 @@ use std::fs;
 use std::path::PathBuf;
 
 /// Shorthand for the per-type template map used throughout the migration pipeline.
-type TypeTemplateMap = std::collections::HashMap<TypeSelector, Vec<TemplateComponent>>;
+type TypeTemplateMap = indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>;
 
 /// Output from the XML compilation fallback pipeline.
 type XmlFallback = (
@@ -234,7 +233,7 @@ fn extract_migration_options(
 }
 
 /// Assemble the final Citum Style from compiled output and legacy metadata.
-fn build_final_style(legacy_style: &csl_legacy::model::Style, c: CompiledOutput) -> Style {
+fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOutput) -> Style {
     let citation_scope_options =
         c.citation_contributor_overrides
             .map(|contributors| citum_schema::options::Config {
@@ -254,6 +253,33 @@ fn build_final_style(legacy_style: &csl_legacy::model::Style, c: CompiledOutput)
             .as_ref()
             .and_then(|bib| bib.sort.as_ref()),
     );
+
+    // [PRUNING] Remove bibliography type-variants that are identical to the primary template.
+    if let Some(type_templates) = c.type_templates.as_mut() {
+        type_templates.retain(|_, template| template != &c.new_bib);
+    }
+
+    // [PRUNING] Prune redundant citation modes (e.g. ibid/subsequent if they match base).
+    let subsequent = c
+        .citation_subsequent_override
+        .filter(|t| t != &c.new_cit)
+        .map(|t| {
+            Box::new(CitationSpec {
+                template: Some(t),
+                ..Default::default()
+            })
+        });
+
+    let ibid = c
+        .citation_ibid_override
+        .filter(|t| t != &c.new_cit)
+        .map(|t| {
+            Box::new(CitationSpec {
+                template: Some(t),
+                ..Default::default()
+            })
+        });
+
     Style {
         info: StyleInfo {
             title: Some(legacy_style.info.title.clone()),
@@ -272,25 +298,15 @@ fn build_final_style(legacy_style: &csl_legacy::model::Style, c: CompiledOutput)
             suffix: c.citation_suffix,
             delimiter: c.citation_delimiter,
             multi_cite_delimiter: legacy_style.citation.layout.delimiter.clone(),
-            subsequent: c.citation_subsequent_override.map(|t| {
-                Box::new(CitationSpec {
-                    template: Some(t),
-                    ..Default::default()
-                })
-            }),
-            ibid: c.citation_ibid_override.map(|t| {
-                Box::new(CitationSpec {
-                    template: Some(t),
-                    ..Default::default()
-                })
-            }),
+            subsequent,
+            ibid,
             ..Default::default()
         }),
         bibliography: Some(BibliographySpec {
             options: bibliography_scope_options,
             use_preset: None,
             template: Some(c.new_bib),
-            type_templates: c.type_templates,
+            type_variants: c.type_templates,
             sort: bibliography_sort,
             ..Default::default()
         }),
@@ -743,8 +759,8 @@ fn apply_author_date_bibliography_passes(
 ) {
     // Detect if the style uses space prefix for volume (Elsevier pattern)
     let volume_list_has_space_prefix = new_bib.iter().any(|c| {
-        if let TemplateComponent::List(list) = c {
-            let has_volume = list.items.iter().any(|item| {
+        if let TemplateComponent::Group(list) = c {
+            let has_volume = list.group.iter().any(|item| {
                 matches!(item, TemplateComponent::Number(n) if n.number == NumberVariable::Volume)
             });
             if has_volume {
@@ -1000,7 +1016,7 @@ fn select_and_process_bibliography_template(
                                     )
                                 })
                             })
-                            .collect::<std::collections::HashMap<_, _>>()
+                            .collect::<indexmap::IndexMap<_, _>>()
                     })
                     .filter(|m| !m.is_empty())
             } else {
@@ -1061,191 +1077,34 @@ fn select_citation_template(
     )
 }
 
-fn apply_title_type_overrides(
-    t: &mut TemplateComponent,
-    volume_list_has_space_prefix: bool,
-    style_preset: Option<preset_detector::StylePreset>,
-) {
-    let TemplateComponent::Title(title) = t else {
-        return;
-    };
-    use preset_detector::StylePreset;
-    match title.title {
-        TitleType::Primary => {
-            if matches!(style_preset, Some(StylePreset::Apa)) {
-                let overrides = title.overrides.get_or_insert_with(Default::default);
-                merge_type_rendering(
-                    overrides,
-                    "article-journal",
-                    Rendering {
-                        suffix: Some(". ".to_string()),
-                        ..Default::default()
-                    },
-                );
-            }
-        }
-        TitleType::ParentMonograph => {
-            if matches!(style_preset, Some(StylePreset::Apa)) {
-                let overrides = title.overrides.get_or_insert_with(Default::default);
-                merge_type_rendering(
-                    overrides,
-                    "paper-conference",
-                    Rendering {
-                        suppress: Some(true),
-                        ..Default::default()
-                    },
-                );
-            }
-        }
-        TitleType::ParentSerial => {
-            let is_chicago = matches!(style_preset, Some(StylePreset::Chicago));
-            let suffix = if volume_list_has_space_prefix {
-                None
-            } else if is_chicago {
-                Some(" ".to_string())
-            } else {
-                Some(",".to_string())
-            };
-            let overrides = title.overrides.get_or_insert_with(Default::default);
-            merge_type_rendering(
-                overrides,
-                "article-journal",
-                Rendering {
-                    suffix,
-                    suppress: Some(false),
-                    ..Default::default()
-                },
-            );
-            merge_type_rendering(
-                overrides,
-                "paper-conference",
-                Rendering {
-                    suffix: Some(",".to_string()),
-                    suppress: Some(false),
-                    ..Default::default()
-                },
-            );
-        }
-        _ => {}
-    }
-}
-
+#[allow(
+    clippy::only_used_in_recursion,
+    reason = "params propagated for future type-override logic"
+)]
 fn apply_type_overrides(
     component: &mut TemplateComponent,
     volume_pages_delimiter: Option<DelimiterPunctuation>,
     volume_list_has_space_prefix: bool,
     style_preset: Option<preset_detector::StylePreset>,
 ) {
-    match component {
-        TemplateComponent::Title(_) => {
-            apply_title_type_overrides(component, volume_list_has_space_prefix, style_preset);
-        }
-        // Publisher: suppress for journal articles (journals don't have publishers in bib)
-        TemplateComponent::Variable(v) if v.variable == SimpleVariable::Publisher => {
-            let overrides = v.overrides.get_or_insert_with(Default::default);
-            merge_type_rendering(
-                overrides,
-                "article-journal",
-                Rendering {
-                    suppress: Some(true),
-                    ..Default::default()
-                },
+    if let TemplateComponent::Group(list) = component {
+        for item in &mut list.group {
+            apply_type_overrides(
+                item,
+                volume_pages_delimiter.clone(),
+                volume_list_has_space_prefix,
+                style_preset,
             );
         }
-        // Publisher-place: suppress for journal articles
-        TemplateComponent::Variable(v) if v.variable == SimpleVariable::PublisherPlace => {
-            let overrides = v.overrides.get_or_insert_with(Default::default);
-            merge_type_rendering(
-                overrides,
-                "article-journal",
-                Rendering {
-                    suppress: Some(true),
-                    ..Default::default()
-                },
-            );
-        }
-        // Pages: apply volume-pages delimiter for journal articles
-        TemplateComponent::Number(n) if n.number == NumberVariable::Pages => {
-            if let Some(delim) = volume_pages_delimiter {
-                let overrides = n.overrides.get_or_insert_with(Default::default);
-                merge_type_rendering(
-                    overrides,
-                    "article-journal",
-                    Rendering {
-                        prefix: Some(match delim {
-                            DelimiterPunctuation::Comma => ", ".to_string(),
-                            DelimiterPunctuation::Colon => ":".to_string(),
-                            DelimiterPunctuation::Space => " ".to_string(),
-                            _ => String::new(),
-                        }),
-                        ..Default::default()
-                    },
-                );
-            }
-        }
-        TemplateComponent::List(list) => {
-            for item in &mut list.items {
-                apply_type_overrides(
-                    item,
-                    volume_pages_delimiter.clone(),
-                    volume_list_has_space_prefix,
-                    style_preset,
-                );
-            }
-        }
-        _ => {}
     }
 }
 
 fn relax_inferred_bibliography_date_suppression(template: &mut [TemplateComponent]) {
     for component in template {
-        match component {
-            TemplateComponent::Date(date_component) => {
-                if date_component.date != DateVariable::Issued {
-                    continue;
-                }
-                if let Some(overrides) = date_component.overrides.as_mut() {
-                    for (selector, override_value) in overrides.iter_mut() {
-                        if !selector_matches_any(
-                            selector,
-                            &[
-                                "patent",
-                                "broadcast",
-                                "interview",
-                                "motion_picture",
-                                "webpage",
-                                "legal_case",
-                                "legal-case",
-                            ],
-                        ) {
-                            continue;
-                        }
-                        if let ComponentOverride::Rendering(rendering) = override_value
-                            && rendering.suppress == Some(true)
-                        {
-                            rendering.suppress = Some(false);
-                        }
-                    }
-                }
-            }
-            TemplateComponent::List(list) => {
-                relax_inferred_bibliography_date_suppression(&mut list.items);
-            }
-            _ => {}
+        if let TemplateComponent::Group(list) = component {
+            relax_inferred_bibliography_date_suppression(&mut list.group);
         }
     }
-}
-
-/// Insert a single `Rendering` override keyed by `type_name` into an overrides map.
-fn merge_type_rendering(
-    overrides: &mut std::collections::HashMap<TypeSelector, ComponentOverride>,
-    type_name: &str,
-    rendering: Rendering,
-) {
-    overrides.insert(
-        TypeSelector::Single(type_name.to_string()),
-        ComponentOverride::Rendering(rendering),
-    );
 }
 
 fn apply_preset_extractions(options: &mut citum_schema::options::Config) {
@@ -1284,7 +1143,7 @@ impl TypeSelectorNames for TypeSelector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use citum_schema::template::{Rendering, SimpleVariable, TemplateVariable};
+    use citum_schema::template::{DateVariable, Rendering, SimpleVariable, TemplateVariable};
     use csl_legacy::model::{
         CslNode, Formatting, Group, Layout, Sort as LegacySort, SortKey as LegacySortKey, Text,
     };

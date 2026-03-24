@@ -1,6 +1,7 @@
 info:
   title: Elsevier (numeric, without titles)
-  description: A style for many of Elsevier's journals that does not include article titles in the reference list
+  description: A style for many of Elsevier's journals that does not include article titles in the 
+    reference list
   source:
     csl-id: http://www.zotero.org/styles/elsevier-without-titles
     adapted-by: citum-migrate
@@ -12,7 +13,8 @@ info:
     links:
     - href: http://www.zotero.org/styles/elsevier-without-titles
       rel: self
-    - href: http://www.elsevier.com/journals/the-journal-of-chemical-thermodynamics/0021-9614/guide-for-authors#68000
+    - href: 
+        http://www.elsevier.com/journals/the-journal-of-chemical-thermodynamics/0021-9614/guide-for-authors#68000
       rel: documentation
 options:
   substitute: editor-translator-short
@@ -34,12 +36,10 @@ bibliography:
       initialize-with: .
       delimiter: ", "
       delimiter-precedes-last: always
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
-      overrides:
-        personal_communication:
-          prefix: "pp. "
       name-order: given-first
     - title: parent-monograph
     - title: parent-serial
@@ -49,83 +49,133 @@ bibliography:
       wrap: parentheses
       prefix: " "
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
+      prefix: " "
+    book:
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: parent-monograph
+    - title: parent-serial
+    - number: volume
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - number: pages
       prefix: " "
     - title: primary
-      suppress: true
-      overrides:
-        book:
-          suppress: false
-        chapter:
-          suppress: false
-        paper-conference:
-          suppress: false
     - variable: publisher
-      overrides:
-        entry-encyclopedia:
-          suppress: true
-        report:
-          suppress: true
-        article-journal:
-          suppress: true
     - variable: publisher-place
-      overrides:
-        article-journal:
-          suppress: true
-  type-templates:
     chapter:
-      - contributor: author
-        form: long
-        name-order: given-first
-      - title: parent-monograph
-      - contributor: editor
-        form: verb
-      - variable: publisher
-      - date: issued
-        form: year
-      - number: pages
-        prefix: "pp. "
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: parent-monograph
+    - contributor: editor
+      form: verb
+    - variable: publisher
+    - date: issued
+      form: year
+    - number: pages
+      prefix: "pp. "
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: parent-monograph
+    - title: parent-serial
+    - number: volume
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - number: pages
+      prefix: " "
+    - variable: publisher-place
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: parent-monograph
+    - title: parent-serial
+    - number: volume
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - number: pages
+      prefix: "pp. "
+    - title: primary
+    - variable: publisher
+    - variable: publisher-place
+    personal_communication:
+    - contributor: author
+      form: long
+      name-order: given-first
+      prefix: "pp. "
+    - title: parent-monograph
+    - title: parent-serial
+    - number: volume
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - number: pages
+      prefix: " "
+    - variable: publisher
+    - variable: publisher-place
     report:
-      - contributor: author
-        form: long
-        name-order: given-first
-      - title: primary
-      - variable: publisher
-      - variable: publisher-place
-      - date: issued
-        form: year
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: primary
+    - variable: publisher
+    - variable: publisher-place
+    - date: issued
+      form: year
     thesis:
-      - contributor: author
-        form: long
-        name-order: given-first
-      - title: primary
-      - variable: genre
-      - variable: publisher
-      - date: issued
-        form: year
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: primary
+    - variable: genre
+    - variable: publisher
+    - date: issued
+      form: year
     legal-case:
-      - title: primary
-      - date: issued
-        form: year
+    - title: primary
+    - date: issued
+      form: year
     motion-picture:
-      - contributor: author
-        form: long
-        name-order: given-first
-      - title: primary
-      - date: issued
-        form: year
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: primary
+    - date: issued
+      form: year
     broadcast:
-      - contributor: author
-        form: long
-        name-order: given-first
-      - title: primary
-      - date: issued
-        form: year
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: primary
+    - date: issued
+      form: year
     patent:
-      - number: patent-number
-      - date: issued
-        form: year
+    - number: patent-number
+    - date: issued
+      form: year
+  template:
+  - contributor: author
+    form: long
+    name-order: given-first
+  - title: parent-monograph
+  - title: parent-serial
+  - number: volume
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "
+  - number: pages
+    prefix: " "
+  - variable: publisher
+  - variable: publisher-place

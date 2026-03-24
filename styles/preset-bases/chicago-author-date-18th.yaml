@@ -1,6 +1,7 @@
 info:
   title: Chicago Manual of Style 18th edition (author-date)
-  description: Chicago-style source citations (with Bluebook for legal citations), author-date system
+  description: Chicago-style source citations (with Bluebook for legal citations), author-date 
+    system
   fields:
   - anthropology
   - communications
@@ -39,10 +40,10 @@ options:
       year-suffix: true
     sort:
       template:
-        - key: author
-          ascending: true
-        - key: year
-          ascending: true
+      - key: author
+        ascending: true
+      - key: year
+        ascending: true
   contributors:
     and: text
     shorten:
@@ -78,20 +79,24 @@ citation:
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-  template:
+  type-variants:
+    personal_communication:
     - contributor: author
       form: short
-      shorten:
+      shorten: &id001
         min: 3
         use-first: 1
         and-others: et-al
-    - date: issued
-      form: year
-      overrides:
-        personal_communication:
-          suppress: true
     - variable: locator
       prefix: ", "
+  template:
+  - contributor: author
+    form: short
+    shorten: *id001
+  - date: issued
+    form: year
+  - variable: locator
+    prefix: ", "
   wrap: parentheses
   delimiter: " "
   multi-cite-delimiter: "; "
@@ -104,114 +109,277 @@ bibliography:
         and-others: et-al
         delimiter-precedes-last: contextual
   groups:
-    - id: primary-sources
-      heading:
-        localized:
-          en-US: Primary Sources
-          en: Primary Sources
-          de: Primärquellen
-          de-DE: Primärquellen
-      selector:
+  - id: primary-sources
+    heading:
+      localized:
+        en-US: Primary Sources
+        en: Primary Sources
+        de: Primärquellen
+        de-DE: Primärquellen
+    selector:
+      field:
+        note: primary
+  - id: archival
+    heading:
+      localized:
+        en-US: Archival Sources
+        en: Archival Sources
+        de: Archivalische Quellen
+        de-DE: Archivalische Quellen
+    selector:
+      field:
+        note: archival
+  - id: secondary
+    heading:
+      localized:
+        en-US: Secondary Sources
+        en: Secondary Sources
+        de: Sekundärquellen
+        de-DE: Sekundärquellen
+    selector:
+      not:
         field:
-          note: primary
-    - id: archival
-      heading:
-        localized:
-          en-US: Archival Sources
-          en: Archival Sources
-          de: Archivalische Quellen
-          de-DE: Archivalische Quellen
-      selector:
-        field:
-          note: archival
-    - id: secondary
-      heading:
-        localized:
-          en-US: Secondary Sources
-          en: Secondary Sources
-          de: Sekundärquellen
-          de-DE: Sekundärquellen
-      selector:
-        not:
-          field:
-            note:
-              - primary
-              - archival
-  type-templates:
-    patent:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - date: issued
-        form: year
-      - title: primary
-      - items:
-          - term: patent
-            suffix: " "
-          - number: number
-          - date: issued
-            form: full
-            prefix: ", issued "
-        prefix: ". "
-        delimiter: none
-    personal-communication: []
-  template:
+          note:
+          - primary
+          - archival
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: &id002
         min: 8
         use-first: 3
     - date: issued
       form: year
     - title: primary
       wrap: quotes
-      overrides:
-        book:
-          wrap: none
-        report:
-          wrap: none
-        thesis:
-          wrap: none
-        legal-case:
-          emph: true
-          wrap: none
-        patent:
-          wrap: none
-        motion-picture:
-          wrap: none
-        broadcast:
-          wrap: none
-    - items:
-        - contributor: editor
-          form: verb
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
+    - items: &id003
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - items:
-        - number: volume
-        - number: issue
-          prefix: " ("
-          suffix: ")"
-          overrides:
-            article-magazine:
-              suppress: true
+      - number: volume
+      - number: issue
+        prefix: " ("
+        suffix: ")"
     - number: pages
       prefix: ": "
-      overrides:
-        book:
-          suppress: true
-        report:
-          suppress: true
-        thesis:
-          suppress: true
-        chapter:
-          suppress: true
     - variable: publisher
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
     - variable: url
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - date: issued
+      form: year
+    - title: primary
+      wrap: quotes
+    - items: *id003
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+    - number: pages
+      prefix: ": "
+    - variable: publisher
+    - variable: doi
+    - variable: url
+    book:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - date: issued
+      form: year
+    - title: primary
+      wrap: none
+    - items: *id003
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        prefix: " ("
+        suffix: ")"
+    - variable: publisher
+    - variable: doi
+    - variable: url
+    broadcast:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - date: issued
+      form: year
+    - title: primary
+      wrap: none
+    - items: *id003
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        prefix: " ("
+        suffix: ")"
+    - number: pages
+      prefix: ": "
+    - variable: publisher
+    - variable: doi
+    - variable: url
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - date: issued
+      form: year
+    - title: primary
+      wrap: quotes
+    - items: *id003
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        prefix: " ("
+        suffix: ")"
+    - variable: publisher
+    - variable: doi
+    - variable: url
+    legal-case:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - date: issued
+      form: year
+    - title: primary
+      wrap: none
+      emph: true
+    - items: *id003
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        prefix: " ("
+        suffix: ")"
+    - number: pages
+      prefix: ": "
+    - variable: publisher
+    - variable: doi
+    - variable: url
+    motion-picture:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - date: issued
+      form: year
+    - title: primary
+      wrap: none
+    - items: *id003
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        prefix: " ("
+        suffix: ")"
+    - number: pages
+      prefix: ": "
+    - variable: publisher
+    - variable: doi
+    - variable: url
+    patent:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+    - title: primary
+    - prefix: ". "
+      delimiter: none
+      items:
+      - term: patent
+        suffix: " "
+      - number: number
+      - date: issued
+        form: full
+        prefix: ", issued "
+    report:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - date: issued
+      form: year
+    - title: primary
+      wrap: none
+    - items: *id003
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        prefix: " ("
+        suffix: ")"
+    - variable: publisher
+    - variable: doi
+    - variable: url
+    thesis:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id002
+    - date: issued
+      form: year
+    - title: primary
+      wrap: none
+    - items: *id003
+    - title: parent-serial
+      emph: true
+    - items:
+      - number: volume
+      - number: issue
+        prefix: " ("
+        suffix: ")"
+    - variable: publisher
+    - variable: doi
+    - variable: url
+    personal-communication: []
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten: *id002
+  - date: issued
+    form: year
+  - title: primary
+    wrap: quotes
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - items:
+    - number: volume
+    - number: issue
+      prefix: " ("
+      suffix: ")"
+  - number: pages
+    prefix: ": "
+  - variable: publisher
+  - variable: doi
+  - variable: url

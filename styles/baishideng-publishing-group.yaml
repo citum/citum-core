@@ -13,7 +13,8 @@ info:
       rel: template
     - href: https://www.wjgnet.com/1948-5182/
       rel: documentation
-    - href: https://bsdwebstorage.blob.core.windows.net/bpggerinfo/Guidelines_for_Manuscript_Preparation_and_Submission-Basic_Study.pdf
+    - href: 
+        https://bsdwebstorage.blob.core.windows.net/bpggerinfo/Guidelines_for_Manuscript_Preparation_and_Submission-Basic_Study.pdf
       rel: documentation
     - href: https://www.wjgnet.com/bpg/GerInfo/218
       rel: documentation
@@ -55,49 +56,180 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
     - title: primary
       prefix: " "
     - items:
-        - contributor: editor
-          form: verb
-          overrides:
-            chapter:
-              prefix: "on "
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - number: volume
     - number: issue
       prefix: ": "
-      overrides:
-        article-magazine:
-          suppress: true
     - number: pages
       prefix: ": "
-    - date: issued
-      form: year
-      overrides:
-        article-journal:
-          suppress: true
-        book:
-          suppress: true
-        chapter:
-          suppress: true
-        article-magazine:
-          suppress: true
-        entry-encyclopedia:
-          suppress: true
-        motion_picture:
-          suppress: true
     - variable: doi
       prefix: . [
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
     - variable: url
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - number: pages
+      prefix: ": "
+    - variable: doi
+      prefix: . [
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - variable: url
+    book:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - number: issue
+      prefix: ": "
+    - number: pages
+      prefix: ": "
+    - variable: doi
+      prefix: . [
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - variable: url
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        prefix: "on "
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - number: issue
+      prefix: ": "
+    - number: pages
+      prefix: ": "
+    - variable: doi
+      prefix: . [
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - variable: url
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - number: issue
+      prefix: ": "
+    - number: pages
+      prefix: ": "
+    - variable: doi
+      prefix: . [
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - variable: url
+    motion_picture:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: " "
+    - items:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - number: issue
+      prefix: ": "
+    - number: pages
+      prefix: ": "
+    - variable: doi
+      prefix: . [
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - title: primary
+    prefix: " "
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - number: volume
+  - number: issue
+    prefix: ": "
+  - number: pages
+    prefix: ": "
+  - date: issued
+    form: year
+  - variable: doi
+    prefix: . [
+  - variable: publisher-place
+  - variable: publisher
+    prefix: ": "
+  - variable: url

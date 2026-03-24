@@ -35,7 +35,7 @@ options:
   punctuation-in-quote: true
 citation:
   template:
-    - number: citation-number
+  - number: citation-number
   wrap: brackets
   multi-cite-delimiter: ","
 bibliography:
@@ -46,7 +46,8 @@ bibliography:
       initialize-with: ". "
       delimiter: ", "
       delimiter-precedes-last: always
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
@@ -62,63 +63,129 @@ bibliography:
       prefix: ", No. "
     - date: issued
       form: year
-      overrides:
-        article-magazine:
-          suppress: true
     - number: pages
-      overrides:
-        article-journal:
-          prefix: "pp. "
-        chapter:
-          prefix: "pp. "
-        article-magazine:
-          prefix: "pp. "
-        entry-encyclopedia:
-          prefix: "pp. "
+      prefix: "pp. "
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
+    - variable: publisher-place
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      wrap: quotes
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - variable: publisher
+    - number: volume
+    - number: issue
+      prefix: ", No. "
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
       prefix: ". "
     - variable: publisher-place
-  type-templates:
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      wrap: quotes
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - variable: publisher
+    - number: volume
+    - number: issue
+      prefix: ", No. "
+    - date: issued
+      form: year
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
+      prefix: ". "
+    - variable: publisher-place
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      wrap: quotes
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - variable: publisher
+    - number: volume
+    - number: issue
+      prefix: ", No. "
+    - date: issued
+      form: year
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
+      prefix: ". "
+    - variable: publisher-place
     paper-conference:
-      - contributor: author
-        form: long
-        and: text
-      - title: primary
-        quote: true
-      - title: parent-monograph
-        prefix: "presented at the "
-      - date: issued
-        form: year
+    - contributor: author
+      form: long
+      and: text
+    - title: primary
+      quote: true
+    - title: parent-monograph
+      prefix: "presented at the "
+    - date: issued
+      form: year
     webpage:
-      - contributor: author
-        form: long
-        and: text
-      - title: primary
-        quote: true
-        wrap: quotes
-      - title: parent-serial
-      - variable: publisher
-      - variable: publisher-place
-      - number: volume
-      - number: issue
-      - date: issued
-        form: year
-      - number: pages
-        label-form: short
-      - term: retrieved
-        form: long
-      - date: accessed
-        form: year
-      - variable: url
+    - contributor: author
+      form: long
+      and: text
+    - title: primary
+      quote: true
+      wrap: quotes
+    - title: parent-serial
+    - variable: publisher
+    - variable: publisher-place
+    - number: volume
+    - number: issue
+    - date: issued
+      form: year
+    - number: pages
+      label-form: short
+    - term: retrieved
+      form: long
+    - date: accessed
+      form: year
+    - variable: url
     patent:
-      - contributor: author
-        form: long
-        and: text
-      - title: primary
-        quote: true
-      - number: number
-      - date: issued
-        form: full
+    - contributor: author
+      form: long
+      and: text
+    - title: primary
+      quote: true
+    - number: number
+    - date: issued
+      form: full
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - title: primary
+    wrap: quotes
+  - title: parent-monograph
+    emph: true
+  - title: parent-serial
+    emph: true
+  - variable: publisher
+  - number: volume
+  - number: issue
+    prefix: ", No. "
+  - date: issued
+    form: year
+  - number: pages
+  - variable: doi
+    prefix: ". "
+  - variable: publisher-place

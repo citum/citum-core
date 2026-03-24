@@ -1,6 +1,7 @@
 info:
   title: Elsevier (numeric, with titles)
-  description: A style for many of Elsevier's journals that includes article titles in the reference list
+  description: A style for many of Elsevier's journals that includes article titles in the reference
+    list
   source:
     csl-id: http://www.zotero.org/styles/elsevier-with-titles
     adapted-by: citum-migrate
@@ -14,7 +15,8 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/elsevier-without-titles
       rel: template
-    - href: http://www.elsevier.com/journals/journal-of-hazardous-materials/0304-3894/guide-for-authors#68001
+    - href: 
+        http://www.elsevier.com/journals/journal-of-hazardous-materials/0304-3894/guide-for-authors#68001
       rel: documentation
 options:
   substitute:
@@ -49,7 +51,217 @@ bibliography:
       shorten:
         min: 99
         use-first: 99
-  type-templates:
+  type-variants:
+    all:
+    - number: citation-number
+      wrap: brackets
+      suffix: ""
+    - delimiter: comma
+      items:
+      - contributor: author
+        form: long
+        name-form: initials
+        initialize-with: "."
+      - title: primary
+      - delimiter: comma
+        items:
+        - delimiter: ": "
+          items:
+          - term: in
+          - contributor: editor
+            form: long
+            initialize-with: "."
+        - title: parent-monograph
+        - delimiter: " "
+          items:
+          - title: parent-serial
+          - number: volume
+          - number: pages
+      - number: edition
+      - variable: publisher
+      - variable: publisher-place
+      - date: issued
+        form: year
+      - variable: url
+        links: &id001
+          target: url
+          anchor: component
+      - date: accessed
+        form: month-day
+        prefix: " (accessed "
+      - date: accessed
+        form: year
+        prefix: ", "
+        suffix: ")"
+      - variable: number
+      - variable: doi
+        prefix: ". https://doi.org/"
+        links: &id002
+          target: doi
+          anchor: component
+        suffix: "."
+    article-journal:
+    - number: citation-number
+      wrap: brackets
+      suffix: ""
+    - delimiter: comma
+      items:
+      - contributor: author
+        form: long
+      - title: primary
+      - delimiter: comma
+        items:
+        - delimiter: ": "
+          items:
+          - term: in
+        - title: parent-monograph
+        - delimiter: " "
+          items:
+          - title: parent-serial
+          - number: volume
+          - date: issued
+            form: year
+            wrap: parentheses
+          - number: pages
+      - number: edition
+      - variable: publisher
+      - variable: publisher-place
+      - variable: url
+        links: *id001
+      - date: accessed
+        form: month-day
+        prefix: " (accessed "
+      - date: accessed
+        form: year
+        prefix: ", "
+        suffix: ")"
+      - variable: number
+      - variable: doi
+        prefix: ". https://doi.org/"
+        links: *id002
+        suffix: "."
+    article-magazine:
+    - number: citation-number
+      wrap: brackets
+      suffix: ""
+    - delimiter: comma
+      items:
+      - contributor: author
+        form: long
+      - title: primary
+      - delimiter: comma
+        items:
+        - delimiter: ": "
+          items:
+          - term: in
+          - contributor: editor
+            form: long
+        - title: parent-monograph
+        - delimiter: " "
+          items:
+          - title: parent-serial
+          - number: volume
+          - date: issued
+            form: year
+            wrap: parentheses
+          - number: pages
+      - number: edition
+      - variable: publisher
+      - variable: publisher-place
+      - variable: url
+        links: *id001
+      - date: accessed
+        form: month-day
+        prefix: " (accessed "
+      - date: accessed
+        form: year
+        prefix: ", "
+        suffix: ")"
+      - variable: number
+      - variable: doi
+        prefix: ". https://doi.org/"
+        links: *id002
+        suffix: "."
+    article-newspaper:
+    - number: citation-number
+      wrap: brackets
+      suffix: ""
+    - delimiter: comma
+      items:
+      - contributor: author
+        form: long
+      - title: primary
+      - delimiter: comma
+        items:
+        - delimiter: ": "
+          items:
+          - term: in
+          - contributor: editor
+            form: long
+        - title: parent-monograph
+        - delimiter: " "
+          items:
+          - title: parent-serial
+          - number: volume
+          - number: pages
+      - number: edition
+      - variable: publisher
+      - variable: publisher-place
+      - date: issued
+        form: year
+        wrap: parentheses
+      - variable: url
+        links: *id001
+      - date: accessed
+        form: month-day
+        prefix: " (accessed "
+      - date: accessed
+        form: year
+        prefix: ", "
+        suffix: ")"
+      - variable: number
+      - variable: doi
+        prefix: ". https://doi.org/"
+        links: *id002
+        suffix: "."
+    book:
+    - number: citation-number
+      wrap: brackets
+      suffix: ""
+    - delimiter: comma
+      items:
+      - contributor: author
+        form: long
+      - title: primary
+      - delimiter: comma
+        items:
+        - delimiter: ": "
+          items:
+          - term: in
+        - title: parent-monograph
+        - delimiter: " "
+          items:
+          - title: parent-serial
+          - number: volume
+      - number: edition
+      - variable: publisher
+      - variable: publisher-place
+      - date: issued
+        form: year
+      - variable: url
+        links: *id001
+      - date: accessed
+        form: month-day
+        prefix: " (accessed "
+      - date: accessed
+        form: year
+        prefix: ", "
+        suffix: ")"
+      - variable: number
+      - variable: doi
+        prefix: ". https://doi.org/"
+        links: *id002
+        suffix: "."
     chapter:
     - number: citation-number
       wrap: brackets
@@ -57,33 +269,96 @@ bibliography:
     - contributor: author
       form: long
       suffix: ", "
-      overrides:
-        all:
-          name-form: initials
-          initialize-with: "."
     - title: primary
-    - items:
-        - term: in
-          suffix: ":"
-        - contributor: editor
-          form: long
-          suffix: ", "
-          overrides:
-            all:
-              name-form: initials
-              initialize-with: "."
-        - title: parent-monograph
-      delimiter: " "
+    - delimiter: " "
       prefix: ", "
+      items:
+      - term: in
+        suffix: ":"
+      - contributor: editor
+        form: long
+        suffix: ", "
+      - title: parent-monograph
     - variable: publisher
       prefix: ", "
-    - items:
-        - date: issued
-          form: year
-          suffix: ":"
-        - number: pages
-          prefix: " pp. "
-      delimiter: ""
+    - delimiter: ""
+      prefix: ", "
+      suffix: "."
+      items:
+      - date: issued
+        form: year
+        suffix: ":"
+      - number: pages
+        prefix: " pp. "
+    dataset:
+    - number: citation-number
+      wrap: brackets
+      suffix: ""
+    - delimiter: comma
+      items:
+      - contributor: author
+        form: long
+      - title: primary
+      - delimiter: comma
+        items:
+        - delimiter: ": "
+          items:
+          - term: in
+          - contributor: editor
+            form: long
+        - title: parent-monograph
+        - delimiter: " "
+          items:
+          - title: parent-serial
+          - number: volume
+          - number: pages
+      - number: edition
+      - variable: publisher
+      - variable: publisher-place
+      - date: issued
+        form: year
+        wrap: parentheses
+      - variable: url
+        links: *id001
+        prefix: ". "
+      - date: accessed
+        form: month-day
+        prefix: " (accessed "
+      - date: accessed
+        form: year
+        prefix: ", "
+        suffix: ")"
+      - variable: number
+      - variable: doi
+        prefix: ". https://doi.org/"
+        links: *id002
+        suffix: "."
+    interview:
+    - number: citation-number
+      wrap: brackets
+      suffix: ""
+    - contributor: author
+      form: long
+      suffix: ", "
+    - title: primary
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: ", "
+      suffix: "."
+    - variable: url
+      prefix: " "
+      links:
+        target: url
+        anchor: component
+      suffix: "."
+    legal-case:
+    - number: citation-number
+      wrap: brackets
+      suffix: ""
+    - title: primary
+    - date: issued
+      form: year
       prefix: ", "
       suffix: "."
     paper-conference:
@@ -93,20 +368,46 @@ bibliography:
     - contributor: author
       form: long
       suffix: ", "
-      overrides:
-        all:
-          name-form: initials
-          initialize-with: "."
     - title: primary
     - title: parent-monograph
       prefix: ", in: "
-    - items:
-        - date: issued
-          form: year
-          suffix: ":"
-        - number: pages
-          prefix: " pp. "
-      delimiter: ""
+    - delimiter: ""
+      prefix: ", "
+      suffix: "."
+      items:
+      - date: issued
+        form: year
+        suffix: ":"
+      - number: pages
+        prefix: " pp. "
+    patent:
+    - number: citation-number
+      wrap: brackets
+      suffix: ""
+    - contributor: author
+      form: long
+      suffix: ", "
+    - title: primary
+    - variable: number
+      prefix: ", "
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: "."
+    report:
+    - number: citation-number
+      wrap: brackets
+      suffix: ""
+    - contributor: author
+      form: long
+      suffix: ", "
+    - title: primary
+    - variable: publisher
+      prefix: ", "
+    - variable: publisher-place
+      prefix: ", "
+    - date: issued
+      form: year
       prefix: ", "
       suffix: "."
     thesis:
@@ -116,10 +417,6 @@ bibliography:
     - contributor: author
       form: long
       suffix: ", "
-      overrides:
-        all:
-          name-form: initials
-          initialize-with: "."
     - title: primary
     - variable: genre
       prefix: ", "
@@ -129,6 +426,49 @@ bibliography:
       form: year
       prefix: ", "
       suffix: "."
+    webpage:
+    - number: citation-number
+      wrap: brackets
+      suffix: ""
+    - delimiter: comma
+      items:
+      - contributor: author
+        form: long
+      - title: primary
+      - delimiter: comma
+        items:
+        - delimiter: ": "
+          items:
+          - term: in
+          - contributor: editor
+            form: long
+        - title: parent-monograph
+        - delimiter: " "
+          items:
+          - title: parent-serial
+          - number: volume
+          - number: pages
+      - number: edition
+      - variable: publisher
+      - variable: publisher-place
+      - date: issued
+        form: year
+        wrap: parentheses
+      - variable: url
+        links: *id001
+        prefix: ". "
+      - date: accessed
+        form: month-day
+        prefix: " (accessed "
+      - date: accessed
+        form: year
+        prefix: ", "
+        suffix: ")"
+      - variable: number
+      - variable: doi
+        prefix: ". https://doi.org/"
+        links: *id002
+        suffix: "."
     [webpage, dataset]:
     - number: citation-number
       wrap: brackets
@@ -161,10 +501,6 @@ bibliography:
     - contributor: author
       form: long
       suffix: ", "
-      overrides:
-        all:
-          name-form: initials
-          initialize-with: "."
     - title: primary
     - title: parent-serial
       prefix: ", "
@@ -173,33 +509,6 @@ bibliography:
       wrap: parentheses
       prefix: " "
       suffix: "."
-    legal-case:
-    - number: citation-number
-      wrap: brackets
-      suffix: ""
-    - title: primary
-    - date: issued
-      form: year
-      prefix: ", "
-      suffix: "."
-    patent:
-    - number: citation-number
-      wrap: brackets
-      suffix: ""
-    - contributor: author
-      form: long
-      suffix: ", "
-      overrides:
-        all:
-          name-form: initials
-          initialize-with: "."
-    - title: primary
-    - variable: number
-      prefix: ", "
-    - date: issued
-      form: year
-      prefix: ", "
-      suffix: "."
     motion-picture:
     - number: citation-number
       wrap: brackets
@@ -207,50 +516,7 @@ bibliography:
     - contributor: author
       form: long
       suffix: ", "
-      overrides:
-        all:
-          name-form: initials
-          initialize-with: "."
     - title: primary
-    - date: issued
-      form: year
-      prefix: ", "
-      suffix: "."
-    interview:
-    - number: citation-number
-      wrap: brackets
-      suffix: ""
-    - contributor: author
-      form: long
-      suffix: ", "
-      overrides:
-        all:
-          name-form: initials
-          initialize-with: "."
-    - title: primary
-    - date: issued
-      form: year
-      wrap: parentheses
-      prefix: ", "
-      suffix: "."
-    - variable: url
-      prefix: " "
-      links:
-        target: url
-        anchor: component
-      suffix: "."
-    report:
-    - number: citation-number
-      wrap: brackets
-      suffix: ""
-    - contributor: author
-      form: long
-      suffix: ", "
-    - title: primary
-    - variable: publisher
-      prefix: ", "
-    - variable: publisher-place
-      prefix: ", "
     - date: issued
       form: year
       prefix: ", "
@@ -262,10 +528,6 @@ bibliography:
     - contributor: author
       form: long
       suffix: ", "
-      overrides:
-        all:
-          name-form: initials
-          initialize-with: "."
     - title: primary
     - date: issued
       form: year
@@ -276,102 +538,31 @@ bibliography:
   - number: citation-number
     wrap: brackets
     suffix: ""
-  - items:
+  - delimiter: comma
+    items:
     - contributor: author
       form: long
-      overrides:
-        all:
-          name-form: initials
-          initialize-with: "."
     - title: primary
-    - items:
-      - items:
-          - term: in
-          - contributor: editor
-            form: long
-            overrides:
-              article-journal: { suppress: true }
-              book: { suppress: true }
-              report: { suppress: true }
-              all: { initialize-with: "." }
-        delimiter: ": "
-        overrides:
-          article-journal: { suppress: true }
-          book: { suppress: true }
+    - delimiter: comma
+      items:
+      - delimiter: ": "
+        items:
+        - term: in
+        - contributor: editor
+          form: long
       - title: parent-monograph
-        overrides:
-          chapter:
-            prefix: " "
-          paper-conference:
-            prefix: " in: "
-      - items:
+      - delimiter: " "
+        items:
         - title: parent-serial
         - number: volume
-        - date: issued
-          form: year
-          wrap: parentheses
-          suppress: true
-          overrides:
-            article-journal:
-              suppress: false
-            article-magazine:
-              suppress: false
         - number: pages
-          overrides:
-            chapter:
-              suppress: true
-            book:
-              suppress: true
-            paper-conference:
-              suppress: true
-            legal-case:
-              suppress: true
-        delimiter: " "
-      delimiter: comma
     - number: edition
     - variable: publisher
     - variable: publisher-place
     - date: issued
       form: year
-      overrides:
-        article-journal:
-          suppress: true
-        chapter:
-          suppress: true
-        article-magazine:
-          suppress: true
-        article-newspaper:
-          wrap: parentheses
-        webpage:
-          wrap: parentheses
-        dataset:
-          wrap: parentheses
-        interview:
-          wrap: parentheses
-    - number: pages
-      suppress: true
-      overrides:
-        chapter:
-          suppress: false
-          prefix: ": pp. "
-        paper-conference:
-          suppress: false
-          prefix: ": pp. "
-        legal-case:
-          suppress: true
-    - variable: genre
-      suppress: true
-      overrides:
-        thesis:
-          suppress: false
-          prefix: ", "
     - variable: url
-      overrides:
-        [webpage, dataset, interview]:
-          prefix: ". "
-      links:
-        target: url
-        anchor: component
+      links: *id001
     - date: accessed
       form: month-day
       prefix: " (accessed "
@@ -380,13 +571,7 @@ bibliography:
       prefix: ", "
       suffix: ")"
     - variable: number
-      overrides:
-        patent:
-          prefix: ", "
     - variable: doi
       prefix: ". https://doi.org/"
-      links:
-        target: doi
-        anchor: component
+      links: *id002
       suffix: "."
-    delimiter: comma

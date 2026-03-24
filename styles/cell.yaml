@@ -1,6 +1,7 @@
 info:
   title: Cell
-  description: The Cell journal style, switched to numeric superscript as per the Cell editorial office in Sept. 2022
+  description: The Cell journal style, switched to numeric superscript as per the Cell editorial 
+    office in Sept. 2022
   fields:
   - biology
   source:
@@ -54,21 +55,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: ", "
-  type-templates:
-    dataset:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - date: issued
-        form: year
-        wrap: parentheses
-        prefix: " "
-      - title: primary
-      - variable: publisher
-        wrap: parentheses
-        prefix: ". "
-      - variable: url
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
@@ -77,27 +65,104 @@ bibliography:
       wrap: parentheses
       prefix: " "
     - title: primary
-    - items:
-        - contributor: editor
-          form: verb
-          name-order: given-first
-        - title: parent-monograph
+    - items: &id001
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
     - title: parent-serial
     - number: volume
     - number: issue
       prefix: ", "
-      overrides:
-        article-magazine:
-          suppress: true
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
       prefix: ", "
     - variable: doi
-      overrides:
-        article-journal:
-          prefix: https://doi.org/
+      prefix: https://doi.org/
     - variable: publisher
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+    - items: *id001
+    - title: parent-serial
+    - number: volume
+    - number: pages
+      prefix: ", "
+    - variable: doi
+    - variable: publisher
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+    - items: *id001
+    - title: parent-serial
+    - number: volume
+    - number: issue
+      prefix: ", "
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
+    - variable: publisher
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+    - items: *id001
+    - title: parent-serial
+    - number: volume
+    - number: issue
+      prefix: ", "
+    - number: pages
+      prefix: "pp. "
+    - variable: doi
+    - variable: publisher
+    dataset:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+    - variable: publisher
+      wrap: parentheses
+      prefix: ". "
+    - variable: url
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "
+  - title: primary
+  - items:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+  - title: parent-serial
+  - number: volume
+  - number: issue
+    prefix: ", "
+  - number: pages
+    prefix: ", "
+  - variable: doi
+  - variable: publisher

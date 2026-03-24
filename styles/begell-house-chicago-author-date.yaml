@@ -63,15 +63,15 @@ citation:
         delimiter-precedes-last: contextual
       delimiter: ", "
   template:
-    - contributor: author
-      form: long
-      name-order: given-first
-      shorten:
-        min: 3
-        use-first: 1
-    - date: issued
-      form: year
-      prefix: ", "
+  - contributor: author
+    form: long
+    name-order: given-first
+    shorten:
+      min: 3
+      use-first: 1
+  - date: issued
+    form: year
+    prefix: ", "
   wrap: parentheses
   delimiter: ". "
   multi-cite-delimiter: "; "
@@ -89,7 +89,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: never
       sort-separator: ", "
-  template:
+  type-variants:
+    article-journal:
     - contributor: author
       form: long
       name-order: family-first
@@ -101,109 +102,171 @@ bibliography:
     - number: volume
     - number: issue
       prefix: ", no. "
-      overrides:
-        article-magazine:
-          suppress: true
     - variable: doi
     - variable: publisher
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        article-journal:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
+      prefix: "pp. "
     - variable: publisher-place
     - date: issued
       form: year
-  type-templates:
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - variable: doi
+    - variable: publisher
+    - number: pages
+    - variable: publisher-place
+    - date: issued
+      form: year
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - number: issue
+      prefix: ", no. "
+    - variable: doi
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher-place
+    - date: issued
+      form: year
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - number: volume
+    - number: issue
+      prefix: ", no. "
+    - variable: doi
+    - variable: publisher
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher-place
+    - date: issued
+      form: year
     legal_case:
-      - contributor: author
-        form: long
-        sort-separator: ", "
-        shorten:
-          min: 11
-          use-first: 7
-          and-others: et-al
-          delimiter-precedes-last: always
-        and: text
-      - contributor: recipient
-        form: long
-        delimiter: ", "
-        shorten:
-          min: 11
-          use-first: 7
-          and-others: et-al
-          delimiter-precedes-last: contextual
-        and: text
-      - title: primary
-      - variable: authority
-      - title: parent-serial
-        emph: true
-      - date: issued
-        form: year
-      - term: no-date
-        form: short
+    - contributor: author
+      form: long
+      sort-separator: ", "
+      shorten:
+        min: 11
+        use-first: 7
+        and-others: et-al
+        delimiter-precedes-last: always
+      and: text
+    - contributor: recipient
+      form: long
+      delimiter: ", "
+      shorten:
+        min: 11
+        use-first: 7
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      and: text
+    - title: primary
+    - variable: authority
+    - title: parent-serial
+      emph: true
+    - date: issued
+      form: year
+    - term: no-date
+      form: short
     patent:
-      - contributor: author
-        form: long
-        sort-separator: ", "
-        shorten:
-          min: 11
-          use-first: 7
-          and-others: et-al
-          delimiter-precedes-last: always
-        and: text
-      - contributor: recipient
-        form: long
-        delimiter: ", "
-        shorten:
-          min: 11
-          use-first: 7
-          and-others: et-al
-          delimiter-precedes-last: contextual
-        and: text
-      - title: primary
-      - title: parent-serial
-        emph: true
-      - number: number
-      - term: and
-        form: long
-      - date: issued
-        form: full
-      - term: no-date
-        form: short
+    - contributor: author
+      form: long
+      sort-separator: ", "
+      shorten:
+        min: 11
+        use-first: 7
+        and-others: et-al
+        delimiter-precedes-last: always
+      and: text
+    - contributor: recipient
+      form: long
+      delimiter: ", "
+      shorten:
+        min: 11
+        use-first: 7
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      and: text
+    - title: primary
+    - title: parent-serial
+      emph: true
+    - number: number
+    - term: and
+      form: long
+    - date: issued
+      form: full
+    - term: no-date
+      form: short
     personal_communication:
-      - contributor: author
-        form: long
-        sort-separator: ", "
-        shorten:
-          min: 11
-          use-first: 7
-          and-others: et-al
-          delimiter-precedes-last: always
-        and: text
-      - variable: genre
-      - contributor: recipient
-        form: long
-        delimiter: ", "
-        shorten:
-          min: 11
-          use-first: 7
-          and-others: et-al
-          delimiter-precedes-last: contextual
-        and: text
-      - title: primary
-      - title: parent-serial
-        emph: true
-      - date: issued
-        form: full
-      - term: no-date
-        form: short
+    - contributor: author
+      form: long
+      sort-separator: ", "
+      shorten:
+        min: 11
+        use-first: 7
+        and-others: et-al
+        delimiter-precedes-last: always
+      and: text
+    - variable: genre
+    - contributor: recipient
+      form: long
+      delimiter: ", "
+      shorten:
+        min: 11
+        use-first: 7
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      and: text
+    - title: primary
+    - title: parent-serial
+      emph: true
+    - date: issued
+      form: full
+    - term: no-date
+      form: short
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+  - title: primary
+  - title: parent-monograph
+    emph: true
+  - title: parent-serial
+    emph: true
+  - number: volume
+  - number: issue
+    prefix: ", no. "
+  - variable: doi
+  - variable: publisher
+  - number: pages
+  - variable: publisher-place
+  - date: issued
+    form: year
   sort:
     template:
-      - key: title
-        ascending: true
-      - key: issued
-        ascending: true
+    - key: title
+      ascending: true
+    - key: issued
+      ascending: true

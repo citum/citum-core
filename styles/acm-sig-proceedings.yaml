@@ -85,7 +85,7 @@ bibliography:
     - number: volume
     - number: issue
     - number: pages
-  type-templates:
+  type-variants:
     paper-conference:
       - number: citation-number
         wrap: brackets

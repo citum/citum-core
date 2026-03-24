@@ -1269,11 +1269,11 @@ fn collect_bibliography_spec_requirements(
             );
         }
     }
-    if let Some(type_templates) = &spec.type_templates {
-        for (selector, template) in type_templates {
+    if let Some(type_variants) = &spec.type_variants {
+        for (selector, template) in type_variants {
             collect_template_requirements(
                 template,
-                &format!("{path}.type-templates[{selector:?}]"),
+                &format!("{path}.type-variants[{selector:?}]"),
                 &effective_config,
                 requirements,
             );
@@ -1365,9 +1365,9 @@ fn collect_template_requirements(
                     );
                 }
             }
-            TemplateComponent::List(list) => {
+            TemplateComponent::Group(list) => {
                 collect_template_requirements(
-                    &list.items,
+                    &list.group,
                     &format!("{component_path}.items"),
                     config,
                     requirements,

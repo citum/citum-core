@@ -15,13 +15,14 @@ info:
       rel: self
     - href: http://www.rsc.org/learn-chemistry/resource/download/res00001664/cmp00004956/pdf
       rel: documentation
-    - href: http://www.rsc.org/journals-books-databases/journal-authors-reviewers/prepare-your-article/#format-layout
+    - href: 
+        http://www.rsc.org/journals-books-databases/journal-authors-reviewers/prepare-your-article/#format-layout
       rel: documentation
 options:
   substitute:
     contributor-role-form: short
     template:
-      - editor
+    - editor
   processing: numeric
   contributors:
     name-form: initials
@@ -47,7 +48,7 @@ options:
     separator: ", "
 citation:
   template:
-    - number: citation-number
+  - number: citation-number
   collapse: citation-number
   multi-cite-delimiter: ","
 bibliography:
@@ -57,7 +58,20 @@ bibliography:
       initialize-with: ". "
       delimiter: ", "
       delimiter-precedes-last: never
-  template:
+  type-variants:
+    article-journal:
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: parent-serial
+      emph: true
+    - date: issued
+      form: year
+    - number: volume
+    - number: pages
+    - variable: doi
+      prefix: "DOI:"
+    article-magazine:
     - contributor: author
       form: long
       name-order: given-first
@@ -66,133 +80,185 @@ bibliography:
     - title: parent-serial
       emph: true
     - variable: publisher
-      overrides:
-        chapter:
-          suppress: true
-        paper-conference:
-          suppress: true
-        entry-encyclopedia:
-          suppress: true
     - date: issued
       form: year
     - number: volume
     - number: pages
-      overrides:
-        chapter:
-          prefix: "pp. "
-        paper-conference:
-          prefix: "pp. "
-    - title: primary
+    - variable: publisher-place
+    article-newspaper:
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: parent-monograph
       emph: true
-      overrides:
-        article-journal:
-          suppress: true
-        article-magazine:
-          suppress: true
-        article-newspaper:
-          suppress: true
-        chapter:
-          suppress: true
-        paper-conference:
-          suppress: true
-        thesis:
-          suppress: true
-        dataset:
-          suppress: true
-        standard:
-          suppress: true
-        entry-encyclopedia:
-          suppress: true
-        broadcast:
-          suppress: true
-        interview:
-          suppress: true
-        personal_communication:
-          suppress: true
+    - title: parent-serial
+      emph: true
+    - variable: publisher
+    - date: issued
+      form: year
+    - number: volume
+    - number: pages
+    - variable: publisher-place
+    broadcast:
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - variable: publisher
+    - date: issued
+      form: year
+    - number: volume
+    - number: pages
+    - variable: publisher-place
+    chapter:
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - date: issued
+      form: year
+    - number: volume
+    - number: pages
+      prefix: "pp. "
     - contributor: editor
       form: short
       name-order: given-first
       prefix: ", editors. "
-      suppress: true
-      overrides:
-        chapter:
-          suppress: false
     - variable: publisher-place
-      overrides:
-        dataset:
-          suppress: true
-        standard:
-          suppress: true
-  type-templates:
-    article-journal:
-      - contributor: author
-        form: long
-        name-order: given-first
-      - title: parent-serial
-        emph: true
-      - date: issued
-        form: year
-      - number: volume
-      - number: pages
-      - variable: doi
-        prefix: "DOI:"
     dataset:
-      - items:
-          - number: citation-number
-          - contributor: author
-            form: long
-            name-order: given-first
-            and: text
-        delimiter: none
-      - date: issued
-        form: year
-    standard:
-      - items:
-          - number: citation-number
-          - date: issued
-            form: year
-        delimiter: none
-    webpage:
+    - delimiter: none
+      items:
       - number: citation-number
       - contributor: author
         form: long
+        name-order: given-first
         and: text
-      - title: primary
-      - variable: url
-      - term: accessed
-        form: long
-      - date: accessed
-        form: full
+    - date: issued
+      form: year
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - date: issued
+      form: year
+    - number: volume
+    - number: pages
+    - variable: publisher-place
+    interview:
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - variable: publisher
+    - date: issued
+      form: year
+    - number: volume
+    - number: pages
+    - variable: publisher-place
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - date: issued
+      form: year
+    - number: volume
+    - number: pages
+      prefix: "pp. "
+    - variable: publisher-place
+    personal_communication:
+    - contributor: author
+      form: long
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+    - title: parent-serial
+      emph: true
+    - variable: publisher
+    - date: issued
+      form: year
+    - number: volume
+    - number: pages
+    - variable: publisher-place
+    standard:
+    - delimiter: none
+      items:
+      - number: citation-number
+      - date: issued
+        form: year
     thesis:
-      - items:
-          - number: citation-number
-          - contributor: author
-            form: long
-            name-order: given-first
-        delimiter: none
-      - variable: genre
-      - variable: publisher
-      - date: issued
-        form: year
+    - delimiter: none
+      items:
+      - number: citation-number
+      - contributor: author
+        form: long
+        name-order: given-first
+    - variable: genre
+    - variable: publisher
+    - date: issued
+      form: year
+    webpage:
+    - number: citation-number
+    - contributor: author
+      form: long
+      and: text
+    - title: primary
+    - variable: url
+    - term: accessed
+      form: long
+    - date: accessed
+      form: full
     legal_case:
-      - items:
-          - number: citation-number
-          - title: primary
-            emph: true
-        delimiter: none
-      - date: issued
-        form: year
-      - number: volume
-        prefix: "vol. "
-    patent:
-      - items:
-          - number: citation-number
-          - variable: authority
-        delimiter: none
-      - number: number
-      - title: parent-serial
+    - delimiter: none
+      items:
+      - number: citation-number
+      - title: primary
         emph: true
-      - date: issued
-        form: year
-      - number: volume
-      - number: pages
+    - date: issued
+      form: year
+    - number: volume
+      prefix: "vol. "
+    patent:
+    - delimiter: none
+      items:
+      - number: citation-number
+      - variable: authority
+    - number: number
+    - title: parent-serial
+      emph: true
+    - date: issued
+      form: year
+    - number: volume
+    - number: pages
+  template:
+  - contributor: author
+    form: long
+    name-order: given-first
+  - title: parent-monograph
+    emph: true
+  - title: parent-serial
+    emph: true
+  - variable: publisher
+  - date: issued
+    form: year
+  - number: volume
+  - number: pages
+  - title: primary
+    emph: true
+  - variable: publisher-place

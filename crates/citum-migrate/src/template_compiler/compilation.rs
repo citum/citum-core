@@ -1,6 +1,6 @@
 use super::{
     BranchContext, ComponentOccurrence, CslnNode, IndexMap, TemplateCompiler, TemplateComponent,
-    TemplateList,
+    TemplateGroup,
 };
 
 impl TemplateCompiler {
@@ -139,8 +139,8 @@ impl TemplateCompiler {
             meaningful_delimiter && is_small_structural_group && group_wrap.0.is_none();
 
         if should_be_list && !group_components.is_empty() {
-            let list = TemplateComponent::List(TemplateList {
-                items: group_components,
+            let list = TemplateComponent::Group(TemplateGroup {
+                group: group_components,
                 delimiter: self.map_delimiter(&g.delimiter),
                 rendering: self.convert_formatting(&g.formatting),
                 ..Default::default()
@@ -171,7 +171,7 @@ impl TemplateCompiler {
         let then_context = if c.if_item_type.is_empty() {
             BranchContext::Default
         } else {
-            BranchContext::TypeSpecific(c.if_item_type.clone())
+            BranchContext::Conditional
         };
         self.collect_occurrences(&c.then_branch, inherited_wrap, &then_context, occurrences);
 
@@ -180,7 +180,7 @@ impl TemplateCompiler {
             let else_if_context = if else_if.if_item_type.is_empty() {
                 BranchContext::Default
             } else {
-                BranchContext::TypeSpecific(else_if.if_item_type.clone())
+                BranchContext::Conditional
             };
             self.collect_occurrences(
                 &else_if.children,
@@ -201,12 +201,14 @@ impl TemplateCompiler {
         }
     }
 
-    /// Merge component occurrences with smart suppress semantics.
+    /// Merge component occurrences with suppress semantics for the default template.
     ///
     /// Key logic:
     /// - If component appears in DEFAULT branch → base suppress: false (visible by default)
-    /// - If component ONLY in type-specific branches → base suppress: true + type overrides
-    /// - Collect all type-specific occurrences as overrides with suppress: false
+    /// - If component ONLY in type-specific branches → base suppress: true
+    ///
+    /// Type-specific behavior is handled entirely by `type-variants` at the spec
+    /// level (via `compile_for_type`), not per-component overrides.
     pub(super) fn merge_occurrences(
         &self,
         occurrences: Vec<ComponentOccurrence>,
@@ -220,7 +222,7 @@ impl TemplateCompiler {
         for occurrence in occurrences {
             let key = if let Some(var_key) = self.get_variable_key(&occurrence.component) {
                 var_key
-            } else if let TemplateComponent::List(ref list) = occurrence.component {
+            } else if let TemplateComponent::Group(ref list) = occurrence.component {
                 // Use consistent signature with deduplicate pass
                 format!("list:{}", crate::passes::deduplicate::list_signature(list))
             } else {
@@ -251,49 +253,17 @@ impl TemplateCompiler {
             // Start with the first component as the base
             let mut merged = group[0].component.clone();
 
-            // For Lists, propagate type overrides to each item from all branches
-            if let TemplateComponent::List(ref mut list) = merged {
-                for occurrence in &group {
-                    if let BranchContext::TypeSpecific(types) = &occurrence.context {
-                        self.add_type_overrides_to_list_items(&mut list.items, types);
-                    }
-                }
-            }
-
             if has_default {
                 // Component appears in default branch → visible by default
                 let mut base_rendering = self.get_component_rendering(&merged);
                 base_rendering.suppress = Some(false);
                 self.set_component_rendering(&mut merged, base_rendering);
-
-                // Add type-specific overrides for any TypeSpecific contexts
-                for occurrence in &group {
-                    if let BranchContext::TypeSpecific(types) = &occurrence.context {
-                        for item_type in types {
-                            let type_str = self.item_type_to_string(item_type);
-                            let mut rendering = self.get_component_rendering(&occurrence.component);
-                            rendering.suppress = Some(false); // Explicitly visible for this type
-                            self.add_override_to_component(&mut merged, type_str, rendering);
-                        }
-                    }
-                }
             } else {
                 // Component ONLY in type-specific branches → hidden by default
+                // Type-variants entries (from compile_for_type) handle per-type visibility.
                 let mut base_rendering = self.get_component_rendering(&merged);
                 base_rendering.suppress = Some(true);
-                self.set_component_rendering(&mut merged, base_rendering.clone());
-
-                // Add overrides for each type-specific occurrence
-                for occurrence in &group {
-                    if let BranchContext::TypeSpecific(types) = &occurrence.context {
-                        for item_type in types {
-                            let type_str = self.item_type_to_string(item_type);
-                            let mut rendering = self.get_component_rendering(&occurrence.component);
-                            rendering.suppress = Some(false); // Show for this type
-                            self.add_override_to_component(&mut merged, type_str, rendering);
-                        }
-                    }
-                }
+                self.set_component_rendering(&mut merged, base_rendering);
             }
 
             // Track minimum source_order for this merged component
@@ -312,7 +282,7 @@ impl TemplateCompiler {
                     TemplateComponent::Title(t) => format!("Title({:?})", t.title),
                     TemplateComponent::Number(n) => format!("Number({:?})", n.number),
                     TemplateComponent::Variable(v) => format!("Variable({:?})", v.variable),
-                    TemplateComponent::List(_) => "List".to_string(),
+                    TemplateComponent::Group(_) => "Group".to_string(),
                     _ => "Other".to_string(),
                 };
                 eprintln!("  {comp_type} -> order: {order:?}");
