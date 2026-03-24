@@ -10,7 +10,7 @@ Date: 2026-02-18
 ## What Worked
 
 - Iterative oracle-driven edits found high-yield fixes quickly once mismatches were grouped by type.
-- Type-specific `bibliography.type-templates` provided better precision than broad global overrides.
+- Type-specific `bibliography.type-variants` provided better precision than a single default template.
 - Running full Rust validation gate after processor changes prevented regressions.
 
 ## Main Efficiency Losses
