@@ -89,7 +89,7 @@ citation:
     - title: primary
       wrap: quotes
     - prefix: ", in "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -115,7 +115,7 @@ citation:
     - number: number
       prefix: ", Patent "
     - delimiter: none
-      items:
+      group:
       - date: issued
         form: month-day
         prefix: ", issued "
@@ -124,7 +124,7 @@ citation:
         prefix: ", "
     - delimiter: none
       prefix: ", "
-      items:
+      group:
       - date: issued
         form: month-day
       - date: issued
@@ -143,7 +143,7 @@ citation:
     - title: primary
       wrap: quotes
     - prefix: ", in "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -166,7 +166,7 @@ citation:
     - number: number
       prefix: ", Patent "
     - delimiter: none
-      items:
+      group:
       - date: issued
         form: month-day
         prefix: ", issued "
@@ -175,7 +175,7 @@ citation:
         prefix: ", "
     - delimiter: none
       prefix: ", "
-      items:
+      group:
       - date: issued
         form: month-day
       - date: issued
@@ -194,7 +194,7 @@ citation:
     - title: primary
       wrap: quotes
     - prefix: ", in "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -218,7 +218,7 @@ citation:
     - number: number
       prefix: ", Patent "
     - delimiter: none
-      items:
+      group:
       - date: issued
         form: month-day
         prefix: ", issued "
@@ -227,7 +227,7 @@ citation:
         prefix: ", "
     - delimiter: none
       prefix: ", "
-      items:
+      group:
       - date: issued
         form: month-day
       - date: issued
@@ -246,7 +246,7 @@ citation:
     - title: primary
       wrap: quotes
     - prefix: ", in "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -266,7 +266,7 @@ citation:
     - variable: doi
     - variable: url
     - delimiter: none
-      items:
+      group:
       - date: issued
         form: month-day
         prefix: ", issued "
@@ -275,7 +275,7 @@ citation:
         prefix: ", "
     - delimiter: none
       prefix: ", "
-      items:
+      group:
       - date: issued
         form: month-day
       - date: issued
@@ -289,7 +289,7 @@ citation:
     - title: primary
       wrap: quotes
     - prefix: ", in "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -307,7 +307,7 @@ citation:
     - number: number
       prefix: ", Patent "
     - delimiter: none
-      items:
+      group:
       - date: issued
         form: month-day
         prefix: ", issued "
@@ -316,7 +316,7 @@ citation:
         prefix: ", "
     - delimiter: none
       prefix: ", "
-      items:
+      group:
       - date: issued
         form: month-day
       - date: issued
@@ -335,7 +335,7 @@ citation:
     - title: primary
       wrap: quotes
     - prefix: ", in "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -358,7 +358,7 @@ citation:
     - number: number
       prefix: ", Patent "
     - delimiter: none
-      items:
+      group:
       - date: issued
         form: month-day
         prefix: ", issued "
@@ -367,7 +367,7 @@ citation:
         prefix: ", "
     - delimiter: none
       prefix: ", "
-      items:
+      group:
       - date: issued
         form: month-day
       - date: issued
@@ -386,7 +386,7 @@ citation:
   - title: primary
     wrap: quotes
   - prefix: ", in "
-    items:
+    group:
     - contributor: editor
       form: verb
       name-order: given-first
@@ -408,7 +408,7 @@ citation:
   - number: number
     prefix: ", Patent "
   - delimiter: none
-    items:
+    group:
     - date: issued
       form: month-day
       prefix: ", issued "
@@ -417,7 +417,7 @@ citation:
       prefix: ", "
   - delimiter: none
     prefix: ", "
-    items:
+    group:
     - date: issued
       form: month-day
     - date: issued

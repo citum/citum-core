@@ -125,7 +125,7 @@ bibliography:
     - title: primary
     - delimiter: none
       prefix: ". "
-      items:
+      group:
       - term: patent
         suffix: " "
       - number: number

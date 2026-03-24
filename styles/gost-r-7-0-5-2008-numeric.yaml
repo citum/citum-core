@@ -30,7 +30,7 @@ citation:
   template:
   - delimiter: none
     wrap: brackets
-    items:
+    group:
     - number: citation-number
     - variable: locator
       prefix: ", "

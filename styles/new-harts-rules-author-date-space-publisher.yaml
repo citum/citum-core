@@ -86,7 +86,7 @@ bibliography:
       wrap: quotes
       prefix: " "
     - prefix: ", in "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -121,7 +121,7 @@ bibliography:
       wrap: quotes
       prefix: " "
     - prefix: ", in "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -215,7 +215,7 @@ bibliography:
     wrap: quotes
     prefix: " "
   - prefix: ", in "
-    items:
+    group:
     - contributor: editor
       form: verb
       name-order: given-first

@@ -83,7 +83,7 @@ bibliography:
       prefix: " "
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -110,7 +110,7 @@ bibliography:
       shorten: *id001
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -136,7 +136,7 @@ bibliography:
       shorten: *id001
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -162,7 +162,7 @@ bibliography:
       shorten: *id001
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -192,7 +192,7 @@ bibliography:
       prefix: " "
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -220,7 +220,7 @@ bibliography:
       shorten: *id001
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -250,7 +250,7 @@ bibliography:
       prefix: " "
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -277,7 +277,7 @@ bibliography:
       shorten: *id001
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -303,7 +303,7 @@ bibliography:
       shorten: *id001
     - title: primary
     - prefix: ". In "
-      items:
+      group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -333,7 +333,7 @@ bibliography:
     prefix: " "
   - title: primary
   - prefix: ". In "
-    items:
+    group:
     - contributor: editor
       form: verb
       name-order: given-first

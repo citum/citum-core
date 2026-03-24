@@ -56,7 +56,7 @@ citation:
         use-first: 1
   template:
   - delimiter: space
-    items:
+    group:
     - contributor: author
       form: short
       shorten:

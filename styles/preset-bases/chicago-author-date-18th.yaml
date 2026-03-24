@@ -308,7 +308,7 @@ bibliography:
     - title: primary
     - prefix: ". "
       delimiter: none
-      items:
+      group:
       - term: patent
         suffix: " "
       - number: number
