@@ -146,8 +146,9 @@ Candidate options preset extraction:
 For each style in a wave:
 
 1. Refactor toward shared presets and a smaller base template spine.
-2. Keep only genuine type-specific structural outliers in `type-templates`.
-3. Prefer overrides for punctuation/visibility over duplicated full templates.
+2. Keep only genuine type-specific structural outliers in `type-variants`.
+3. Prefer presets and well-designed generic templates over `type-variants`; use
+   `type-variants` only when a reference type needs a structurally different component set.
 4. Re-run oracle after each refactor commit:
    - `node scripts/oracle.js styles-legacy/<style>.csl --json`
 

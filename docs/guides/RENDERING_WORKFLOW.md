@@ -201,7 +201,7 @@ This project uses a tri-agent specialist model to achieve high-fidelity renderin
 #### Style-Specific Issues (Tier 3/4)
 → Fix in migration logic or style YAML
 - Example: APA uses "Vol." prefix, IEEE doesn't.
-- Check: `../crates/citum-migrate/`, generated YAML overrides.
+- Check: `../crates/citum-migrate/`, generated `type-variants` entries in YAML output.
 
 #### Migration Issues (CSL → YAML conversion wrong)
 → Fix in `../crates/citum-migrate/`

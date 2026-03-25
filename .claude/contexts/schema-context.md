@@ -12,7 +12,7 @@ Working on the **Citum data model** — types, schemas, and the specification it
 | Module | Responsibility |
 |--------|----------------|
 | `style.rs` | Top-level `Style` struct (with `version` field) |
-| `template.rs` | Template components, overrides, contributor/date/title types |
+| `template.rs` | Template components, `type-variants`, contributor/date/title types |
 | `options.rs` | Three-tier options: global → context (citation/bibliography) → template |
 | `locale.rs` | Locale terms, months, contributor roles |
 | `reference.rs` | Reference types and metadata fields |
@@ -25,13 +25,14 @@ Working on the **Citum data model** — types, schemas, and the specification it
 - `#[serde(flatten)]` — inline rendering options (NOT for unknown field capture)
 - `custom: Option<HashMap<String, serde_json::Value>>` — explicit extension fields
 
-## Three-Tier Options
+## Two-Tier Options + Type Variants
 ```
 Global options:        style.options
 Context options:       style.citation.options / style.bibliography.options
-Template overrides:    component-level overrides (per reference type)
+type-variants:         spec-level type-specific templates (citation/bibliography)
 ```
 Context-specific options override global for their context.
+`type-variants` are full template replacements for structural outliers — not option patches.
 
 ## Schema Generation
 ```bash

@@ -1,8 +1,8 @@
 # Template Schema v2 Specification
 
-**Status:** Active (Step 5 deferred to follow-up)
-**Version:** 1.3
-**Date:** 2026-03-23
+**Status:** Active
+**Version:** 1.4
+**Date:** 2026-03-25
 **Supersedes:** (none)
 **Related:** csl26-da9f, csl26-ww2m (impl bean)
 
@@ -35,11 +35,10 @@ pain points (§5).
 - Compact string DSL design as a simplification litmus test (§4).
 - Pain point audit with effort estimates and v2 scope decisions (§5).
 
-**Deferred to follow-up (csl26-96wg):**
+**Completed (Step 5 — landed in `cab0f41`):**
 - Remove per-component `overrides`; fix migration compiler to emit `type-variants` for
-  suppress patterns. Step 5 in the ordering below. Requires fixing
-  `convert-overrides-to-type-variants.py` for `ComponentOverride::Rendering` suppression
-  before bulk-migrating styles.
+  suppress patterns. `ComponentOverride` and the `overrides` field removed from schema.
+  ✅
 
 **Out of scope:**
 - Changing `TemplateComponent` discrimination (untagged serde remains).
@@ -150,14 +149,11 @@ engine code matching on `List` must be updated in the same commit.
 
 ### §2 — Remove `overrides`; Promote `type-variants`
 
-**Decision: Option A (full removal) — confirmed. Implementation DEFERRED to follow-up PR.**
+**Decision: Option A (full removal) — confirmed. Implemented in `cab0f41`.**
 
-> **Note (v1.3):** Steps 1–4 (§1, `type-variants` promotion, TypeSelector validation) landed in
-> PR `spec/template-v2`. The `overrides` removal (Step 5) is scoped OUT of that PR because the
-> `convert-overrides-to-type-variants.py` script does not yet handle `ComponentOverride::Rendering`
-> suppression patterns. `ComponentOverride` and the `overrides` field remain in the schema for
-> now; a follow-up PR will fix the script, run it on all styles (particularly `chicago-notes-18th`),
-> verify fidelity, and then remove the field with `Schema-Bump: major`.
+> **Note (v1.4):** All five steps are complete. `overrides` and `ComponentOverride` were removed
+> from the schema in `cab0f41`. Styles using `overrides` must migrate to `type-variants` at the
+> spec level (see §2.3).
 
 #### 2.1 Current Mechanism
 

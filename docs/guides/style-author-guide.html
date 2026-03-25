@@ -1137,7 +1137,7 @@ options:
                         Reference Types
                     </h2>
                     <p class="text-slate-600 mb-6 leading-relaxed">
-                        References use a <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">class</code> (top-level discriminator) and <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">type</code> (subtype). In style templates, use the <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">type</code> value in <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">overrides</code> keys (e.g., <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">article-journal</code>).
+                        References use a <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">class</code> (top-level discriminator) and <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">type</code> (subtype). In styles, use the <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">type</code> value as keys under <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">type-variants</code> (e.g., <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">article-journal</code>).
                     </p>
 
                     <!-- Reference Types Table -->
@@ -1179,10 +1179,10 @@ options:
                         <div class="flex items-start gap-3">
                             <span class="material-icons text-blue-600 mt-0.5">info</span>
                             <div class="flex-1">
-                                <h4 class="font-semibold text-blue-900 mb-2">Using Type Values in Overrides</h4>
+                                <h4 class="font-semibold text-blue-900 mb-2">Using Type Values in type-variants</h4>
                                 <ul class="text-blue-800 text-sm space-y-1 list-disc list-inside">
-                                    <li>In style <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">overrides:</code> keys, use the <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">type</code> value (e.g., <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">article-journal</code>, <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">book</code>, <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">chapter</code>)</li>
-                                    <li>The special keywords <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">default</code> (fallback) and <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">all</code> (every type) also work as override keys</li>
+                                    <li>In style <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">type-variants:</code> keys, use the <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">type</code> value (e.g., <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">article-journal</code>, <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">book</code>, <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">chapter</code>)</li>
+                                    <li>The special keywords <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">default</code> (fallback) and <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">all</code> (every type) also work as type-variant keys</li>
                                     <li>For serial components, the parent's type is embedded in the reference data under the <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">parent:</code> key</li>
                                 </ul>
                             </div>
@@ -1338,8 +1338,16 @@ options:
     - <span class="text-primary">variable</span>: <span class="text-emerald-400">publisher</span>
       <span class="text-primary">prefix</span>: <span class="text-emerald-400">" "</span>
       <span class="text-primary">suffix</span>: <span class="text-emerald-400">"."</span>
-      <span class="text-primary">overrides</span>:
-        <span class="text-emerald-400">article-journal</span>: { <span class="text-primary">suppress</span>: <span class="text-emerald-400">true</span> }</pre>
+  <span class="text-primary">type-variants</span>:
+    <span class="text-emerald-400">article-journal</span>:
+      <span class="text-primary">template</span>:
+        - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
+        - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
+          <span class="text-primary">prefix</span>: <span class="text-emerald-400">" "</span>
+        - <span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
+          <span class="text-primary">prefix</span>: <span class="text-emerald-400">" "</span>
+          <span class="text-primary">suffix</span>: <span class="text-emerald-400">"."</span>
+        <span class="text-slate-500"># publisher omitted for journal articles</span></pre>
                         </div>
                     </div>
 
@@ -1426,8 +1434,8 @@ options:
                             <li class="flex gap-4">
                                 <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary">6</div>
                                 <div>
-                                    <span class="font-semibold text-slate-900">Iterate with type overrides</span>
-                                    <p class="text-slate-600 text-sm mt-1">Add overrides for specific types to match expected output</p>
+                                    <span class="font-semibold text-slate-900">Add type-variants for structural outliers</span>
+                                    <p class="text-slate-600 text-sm mt-1">Add <code class="text-xs font-mono bg-slate-100 px-1 rounded">type-variants</code> only for types that need a structurally different template; use presets for shared options</p>
                                 </div>
                             </li>
                         </ol>
@@ -1441,8 +1449,8 @@ options:
                                 <div class="flex gap-3">
                                     <span class="material-icons text-amber-600 flex-shrink-0">warning</span>
                                     <div>
-                                        <h4 class="font-semibold text-amber-900">Forgetting type overrides</h4>
-                                        <p class="text-amber-800 text-sm mt-1">Different reference types need different layouts (journals vs books). Use type-templates or overrides to handle these.</p>
+                                        <h4 class="font-semibold text-amber-900">Over-using type-variants</h4>
+                                        <p class="text-amber-800 text-sm mt-1">Only add <code class="text-xs font-mono bg-amber-100 px-1 rounded">type-variants</code> for types that need a genuinely different component set. Use presets and a well-designed generic template for the common case.</p>
                                     </div>
                                 </div>
                             </div>
