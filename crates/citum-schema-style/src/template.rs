@@ -603,6 +603,11 @@ pub struct TemplateNumber {
 }
 
 /// Number variables.
+///
+/// Use `number:` when the value is treated as a number by the style:
+/// numeric labels, numeric-specific formatting, ordinals, roman numerals, or
+/// locator-aware punctuation. Use `variable:` instead when the field should be
+/// passed through as plain text without number formatting semantics.
 #[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -669,6 +674,11 @@ pub struct TemplateVariable {
 }
 
 /// Simple string variables.
+///
+/// Use `variable:` for string passthrough fields, even when the field name is
+/// also present in [`NumberVariable`]. For example, `variable: volume` keeps the
+/// source value as plain text, while `number: volume` opts into numeric
+/// formatting behavior.
 #[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]

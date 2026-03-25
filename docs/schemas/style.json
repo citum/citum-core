@@ -2798,7 +2798,7 @@
       ]
     },
     "NumberVariable": {
-      "description": "Number variables.",
+      "description": "Number variables.\n\nUse `number:` when the value is treated as a number by the style:\nnumeric labels, numeric-specific formatting, ordinals, roman numerals, or\nlocator-aware punctuation. Use `variable:` instead when the field should be\npassed through as plain text without number formatting semantics.",
       "type": "string",
       "enum": [
         "volume",
@@ -3213,7 +3213,7 @@
       ]
     },
     "SimpleVariable": {
-      "description": "Simple string variables.",
+      "description": "Simple string variables.\n\nUse `variable:` for string passthrough fields, even when the field name is\nalso present in [`NumberVariable`]. For example, `variable: volume` keeps the\nsource value as plain text, while `number: volume` opts into numeric\nformatting behavior.",
       "type": "string",
       "enum": [
         "doi",
