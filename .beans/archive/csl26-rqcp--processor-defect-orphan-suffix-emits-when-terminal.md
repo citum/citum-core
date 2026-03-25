@@ -1,11 +1,11 @@
 ---
 # csl26-rqcp
 title: 'Processor defect: orphan suffix emits when terminal template component absent'
-status: todo
+status: completed
 type: bug
 priority: high
 created_at: 2026-03-22T20:21:02Z
-updated_at: 2026-03-22T20:21:02Z
+updated_at: 2026-03-25T21:51:03Z
 ---
 
 ## Summary
@@ -52,3 +52,7 @@ following component is known to produce output, or implement a
 
 Found during style-evolve eval run — ACM migration (2026-03-22).
 
+
+
+## Resolution
+Implemented in commit `001492de` on branch `codex/bean-fixes-rqcp-aljq`. The bibliography renderer now suppresses orphan terminal suffix affixes only when later template positions render empty, and includes a focused regression test for the missing-pages case.
