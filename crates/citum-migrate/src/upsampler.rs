@@ -983,6 +983,17 @@ impl Upsampler {
                     .first()
                     .and_then(|branch| self.upsample_first_node(&branch.children))
             })
+            .or_else(|| {
+                // A bare uncertain-date branch means "emit this only for uncertain dates".
+                // Migration defaults to the common certain-date case, so the absence of an
+                // else branch should compile to no output rather than unconditional output.
+                Some(csln::CslnNode::Group(csln::GroupBlock {
+                    children: vec![],
+                    delimiter: None,
+                    formatting: FormattingOptions::default(),
+                    source_order: None,
+                }))
+            })
     }
 
     fn map_position_choose_fallback(&self, choose: &legacy::Choose) -> Option<csln::CslnNode> {
@@ -1883,6 +1894,33 @@ mod tests {
             .expect("uncertain-date choose should map");
 
         assert_eq!(text_values(std::slice::from_ref(&mapped)), vec!["CERTAIN"]);
+    }
+
+    #[test]
+    fn map_choose_drops_uncertain_date_markers_without_default_branch() {
+        let choose = Choose {
+            if_branch: ChooseBranch {
+                match_mode: None,
+                type_: None,
+                variable: None,
+                is_numeric: None,
+                is_uncertain_date: Some("issued".to_string()),
+                locator: None,
+                position: None,
+                children: vec![literal_text("circa")],
+            },
+            else_if_branches: vec![],
+            else_branch: None,
+        };
+
+        let mapped = Upsampler::new()
+            .map_choose(&choose)
+            .expect("uncertain-date choose should map");
+
+        match mapped {
+            csln::CslnNode::Group(group) => assert!(group.children.is_empty()),
+            other => panic!("expected empty group fallback, got {other:?}"),
+        }
     }
 
     #[test]

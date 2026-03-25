@@ -33,6 +33,16 @@ const TOP_PARENTS = [
   'springer-socpsych-author-date',
   'american-medical-association',
   'taylor-and-francis-chicago-author-date',
+  'springer-mathphys-brackets',
+  'multidisciplinary-digital-publishing-institute',
+  'ieee',
+  'nlm-citation-sequence-superscript',
+  'nlm-citation-sequence',
+  'karger-journals',
+  'institute-of-physics-numeric',
+  'thieme-german',
+  'mary-ann-liebert-vancouver',
+  'biomed-central',
 ];
 
 function parseArgs(argv) {
