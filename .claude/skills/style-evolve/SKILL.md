@@ -248,6 +248,8 @@ styles, fixture JSON, shell scripts).
 
 - `style-maintain` — targeted fixes to existing Citum styles
 - `style-migrate-enhance` — CSL 1.0 batch migration
+- `migrate-research` — autonomous loop improving the `citum-migrate` binary itself
+  (use when multiple styles share the same converter failure pattern)
 - `style-qa` — QA gate
 - `pr-workflow-fast` — PR packaging
 - `jcodemunch` (`~/.claude/skills/jcodemunch/`) — symbol-level engine/schema lookup

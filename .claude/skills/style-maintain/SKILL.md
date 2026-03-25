@@ -47,7 +47,14 @@ Token efficiency matters — diagnose everything before touching any files.
 
 4. **One confirming oracle run.** Verify fidelity improved, bibliography held.
 
-5. **QA gate → commit.**
+5. **Convergence check.** If a scenario still fails with identical output after
+   2 distinct YAML approaches, stop iterating on YAML for that scenario.
+   Re-classify it as `processor-defect` or `legacy-limitation` and route to
+   Co-Evolution (engine fix) or accept the divergence. The cause is almost
+   certainly not in the YAML — further template tweaks waste tokens without
+   progress. See Convergence Detection below.
+
+6. **QA gate → commit.**
    `git add -A && git commit -m "fix(styles): <name> <change>"` — max 5 iterations
    before surfacing to user.
 
@@ -56,6 +63,21 @@ Token efficiency matters — diagnose everything before touching any files.
 2. Shared bibliography spine improvements.
 3. `type-variants` only for true structural outliers.
 4. Processor/schema changes only after planner escalation.
+
+## Convergence Detection
+
+Not every oracle failure is fixable with YAML. These rules prevent wasted iterations:
+
+| Signal | Action |
+|--------|--------|
+| Same scenario fails with identical output after 2 distinct YAML approaches | Re-classify as `processor-defect` or `legacy-limitation`; stop YAML iteration for this scenario |
+| 3 consecutive iterations with zero fidelity gain across all scenarios | Surface to user — the remaining failures are likely all engine/schema gaps |
+| Fix improves one scenario but regresses another | Isolate the regression cause before proceeding; do not accept a net-zero trade |
+| Oracle output matches a registered divergence (`div-XXX`) | Not a failure — record the div-ID and exclude from fix count |
+
+The key insight: when YAML changes don't move the needle, the problem is upstream
+(converter, engine, or schema). Recognizing this early and routing to Co-Evolution
+or filing a bean saves significant tokens and wall-clock time.
 
 ## Co-Evolution (Mandatory — implement-first)
 
@@ -76,11 +98,17 @@ search_symbols("<feature or field name>", repo: "local/citum-core")
 get_symbol("<SymbolName>", repo: "local/citum-core")
 ```
 
-**Step 3 — Attempt the fix. Do not pre-assess tractability.**
+**Step 3 — Hypothesize, then attempt the fix.**
+
+Before writing any Rust, state a one-line hypothesis: what you expect the change to fix
+and why (e.g., "Hypothesis: the volume-pages delimiter is hardcoded to comma; making it
+style-configurable will fix nature and cell scenarios"). This forces articulation of the
+causal model before code — preventing blind trial-and-error on engine internals.
 
 Write the Rust, run `~/.claude/scripts/verify.sh` (or `cargo nextest run`). If green,
-include the fix in the same commit as the style change. Most engine fixes are smaller than
-they look once you're in the code.
+include the fix in the same commit as the style change. After the test run, note whether
+the hypothesis was confirmed, partially confirmed, or refuted — this informs the next
+iteration. Most engine fixes are smaller than they look once you're in the code.
 
 Defer **only** when one of these hard blockers applies:
 - Fix requires new schema YAML fields that need design review (new `info.*` or
