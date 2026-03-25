@@ -8,6 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 pub mod bibliography;
 pub mod contributors;
 pub mod dates;
+pub mod locators;
 pub mod numbers;
 pub mod processing;
 pub mod titles;
@@ -44,13 +45,16 @@ impl OptionsExtractor {
             // 6. Extract page range format
             page_range_format: self::numbers::extract_page_range_format(style),
 
-            // 7. Extract bibliography-specific settings
+            // 7. Extract locator configuration
+            locators: self::locators::extract_locator_config(style),
+
+            // 8. Extract bibliography-specific settings
             bibliography: self::bibliography::extract_bibliography_config(style),
 
-            // 8. Punctuation-in-quote heuristic
+            // 9. Punctuation-in-quote heuristic
             punctuation_in_quote: Self::extract_punctuation_in_quote(style),
 
-            // 9. Volume-pages delimiter
+            // 10. Volume-pages delimiter
             volume_pages_delimiter: {
                 // Collect macros needed for delimiter extraction
                 let mut macros = std::collections::HashSet::new();
