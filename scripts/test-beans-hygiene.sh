@@ -53,6 +53,13 @@ case "${1:-}" in
     fi
     cat "$BEANS_LIST_JSON"
     ;;
+  graphql)
+    if [[ "${2:-}" != "--json" ]]; then
+      echo "unexpected beans args: $*" >&2
+      exit 1
+    fi
+    cat "$BEANS_GRAPHQL_JSON"
+    ;;
   *)
     echo "unsupported beans command: $*" >&2
     exit 1
@@ -78,10 +85,19 @@ commit_file() {
 run_wrapper() {
   local repo=$1
   local beans_json=$2
-  shift 2
+  local graphql_json=""
+  if [[ $# -ge 4 ]]; then
+    graphql_json=$3
+    shift 3
+  else
+    shift 2
+  fi
   (
     cd "$repo"
-    BEANS_LIST_JSON="$beans_json" PATH="$repo/bin:$PATH" "$WRAPPER" "$@"
+    BEANS_LIST_JSON="$beans_json" \
+      BEANS_GRAPHQL_JSON="${graphql_json:-}" \
+      PATH="$repo/bin:$PATH" \
+      "$WRAPPER" "$@"
   )
 }
 
@@ -145,21 +161,46 @@ cat >"$TMP_ROOT/soft-stale.json" <<'EOF'
 [
   {
     "id": "csl26-soft",
-    "title": "Investigate stale bean detection",
+    "title": "Investigate likely stale bean detection",
     "status": "todo",
     "type": "task",
     "priority": "normal",
-    "path": "csl26-soft--investigate-stale-bean-detection.md"
+    "created_at": "2020-03-01T00:00:00Z",
+    "path": "csl26-soft--investigate-likely-stale-bean-detection.md"
   }
 ]
 EOF
 
 repo=$(new_repo soft-stale)
 commit_file "$repo" README.md "baseline" "chore: initial commit"
-commit_file "$repo" notes.txt "done" "Investigate stale bean detection"
+commit_file "$repo" notes.txt "done" $'feat(workflow): likely stale implementation\n\nRefs: csl26-soft'
 soft_output=$(run_wrapper "$repo" "$TMP_ROOT/soft-stale.json" hygiene)
-assert_contains "$soft_output" "Open beans with advisory title-only matches on main:"
-assert_contains "$soft_output" "[unique-title-match]"
+assert_contains "$soft_output" "Open beans with advisory likely-stale matches on main:"
+assert_contains "$soft_output" "[body-id-match]"
+
+cat >"$TMP_ROOT/precreated-soft-stale.json" <<'EOF'
+[
+  {
+    "id": "csl26-soft2",
+    "title": "Investigate stale bean detection",
+    "status": "todo",
+    "type": "task",
+    "priority": "normal",
+    "created_at": "2999-03-02T00:00:00Z",
+    "path": "csl26-soft2--investigate-stale-bean-detection.md"
+  }
+]
+EOF
+
+repo=$(new_repo precreated-soft-stale)
+commit_file "$repo" README.md "baseline" "chore: initial commit"
+commit_file "$repo" notes.txt "done" $'feat(workflow): stale candidate\n\nRefs: csl26-soft2'
+set +e
+precreated_output=$(run_wrapper "$repo" "$TMP_ROOT/precreated-soft-stale.json" hygiene 2>&1)
+precreated_status=$?
+set -e
+[[ "$precreated_status" -eq 0 ]] || fail "expected pre-created stale candidate to be ignored"
+assert_contains "$precreated_output" "No bean hygiene issues found."
 
 cat >"$TMP_ROOT/umbrella-stale.json" <<'EOF'
 [
@@ -334,5 +375,67 @@ set -e
 assert_contains "$combined_output" "ERROR: broken markdown links found"
 assert_contains "$combined_output" "ERROR: bean hygiene failed"
 assert_contains "$combined_output" "hygiene check failed with 2 error(s)"
+
+cat >"$TMP_ROOT/next-list.json" <<'EOF'
+[
+  {
+    "id": "csl26-stal",
+    "title": "Stale ready bean",
+    "status": "todo",
+    "type": "feature",
+    "priority": "normal",
+    "created_at": "2020-03-01T00:00:00Z",
+    "path": "csl26-stal--stale-ready-bean.md"
+  },
+  {
+    "id": "csl26-fresh",
+    "title": "Fresh ready bean",
+    "status": "todo",
+    "type": "feature",
+    "priority": "normal",
+    "created_at": "2020-03-01T00:00:00Z",
+    "path": "csl26-fresh--fresh-ready-bean.md"
+  }
+]
+EOF
+
+cat >"$TMP_ROOT/next-graphql.json" <<'EOF'
+{
+  "beans": [
+    {
+      "id": "csl26-stal",
+      "title": "Stale ready bean",
+      "status": "todo",
+      "type": "feature",
+      "priority": "normal",
+      "parentId": null,
+      "blockingIds": [],
+      "blockedByIds": [],
+      "createdAt": "2020-03-01T00:00:00Z"
+    },
+    {
+      "id": "csl26-fresh",
+      "title": "Fresh ready bean",
+      "status": "todo",
+      "type": "feature",
+      "priority": "normal",
+      "parentId": null,
+      "blockingIds": [],
+      "blockedByIds": [],
+      "createdAt": "2020-03-01T00:00:00Z"
+    }
+  ]
+}
+EOF
+
+repo=$(new_repo next-priority)
+commit_file "$repo" README.md "baseline" "chore: initial commit"
+commit_file "$repo" notes.txt "done" $'feat(workflow): stale ready bean\n\nRefs: csl26-stal'
+next_output=$(run_wrapper "$repo" "$TMP_ROOT/next-list.json" "$TMP_ROOT/next-graphql.json" next)
+assert_contains "$next_output" "Reconciliation candidates:"
+assert_contains "$next_output" "csl26-stal"
+assert_contains "$next_output" "Ready candidates:"
+assert_contains "$next_output" "csl26-fresh"
+assert_contains "$next_output" "Recommendation: start with csl26-stal"
 
 printf 'test-beans-hygiene.sh: ok\n'
