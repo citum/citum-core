@@ -1,11 +1,11 @@
 ---
 # csl26-j007
 title: 'Locator ergonomics: compact syntax and structured values'
-status: todo
+status: completed
 type: feature
 priority: normal
 created_at: 2026-03-05T16:42:31Z
-updated_at: 2026-03-10T21:40:10Z
+updated_at: 2026-03-25T23:23:04Z
 ---
 
 Two related improvements to compound locator input ergonomics, building on csl26-z4t6.
@@ -67,7 +67,11 @@ locators:
 - Requires csl26-z4t6 (compound locators) merged first
 - Orthogonal to csl26-zafv (numeric compound citations)
 
-Needs /dplan session to finalize exact serde strategy and test plan.
+## Summary
 
-## 2026-03-10
-- crates/citum-engine/src/processor/rendering.rs: simplified repeated citation affix/template rendering paths with an internal request struct and added focused grouped/integral regression tests.
+Implemented by `2757aa3c` (`feat(schema): locator ergonomics`).
+
+- added compact locator map input alongside the existing verbose list form
+- added structured `LocatorValue` input with explicit `plural` override
+- updated schema and rendering paths to consume the ergonomic locator forms
+- landed regression coverage for serde round-trips and plural-handling behavior

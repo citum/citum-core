@@ -1,11 +1,11 @@
 ---
 # csl26-zc4m
 title: Implement title text-case semantics
-status: todo
+status: completed
 type: feature
 priority: normal
 created_at: 2026-03-11T21:30:00Z
-updated_at: 2026-03-13T20:15:26Z
+updated_at: 2026-03-25T23:23:04Z
 ---
 
 Follow-up to archived research bean `csl26-wv5o`.
@@ -51,20 +51,12 @@ First implementation slice only:
   for English headline-style logic; do not assume it can satisfy Citum's
   structured-title, `.nocase`, or sentence-variant requirements by itself.
 
-## Todos
+## Summary
 
-- [ ] Define the engine-facing case-protection representation for title spans
-- [ ] Add style/schema support for selecting title text-case variants
-- [ ] Implement structured-title-aware sentence casing for `sentence-apa`
-- [ ] Implement structured-title-aware sentence casing for `sentence-nlm`
-- [ ] Thread language metadata through the title case-transform path
-- [ ] Add tests covering multiple subtitles, protected scientific tokens, and
-      mixed-language title spans
-- [ ] Document any intentionally deferred non-English transform behavior
-- [ ] Evaluate whether the Rust `titlecase` crate is useful as a helper without
-      making it the architectural center of the feature
+Implemented by `6d13aa5b` (`feat(engine): implement title text-case semantics`).
 
-## 2026-03-13
-- crates/citum-engine/src/processor/rendering.rs: DRY (3× multilingual extraction → helper), concision (3 dead methods removed, leading_group_affix via rendering()), idioms (is_some_and, match over unwrap), perf (avoid clone in punctuation_in_quote). 2364→2208 lines.
-- crates/citum-engine/src/processor/rendering.rs: extracted render_integral_explicit_group and render_special_type_items from 306-line render_grouped_citation_with_format; hoisted duplicate group_ids binding; applied then_some idiom
-- crates/citum-engine/src/processor/rendering.rs: extract render_group_item_parts_with_format, lift key_base free fn, simplify resolve_component_for_ref_type single-pass
+- added style-owned title text-case selection in schema and presets
+- implemented structured-title-aware sentence casing for APA-like and NLM-like variants
+- preserved protected spans and Djot `.nocase` behavior through title rendering
+- threaded language-aware fallback through the title case path
+- landed integration coverage for subtitles, protected scientific tokens, and mixed-language spans

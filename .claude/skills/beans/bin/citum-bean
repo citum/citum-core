@@ -6,7 +6,7 @@ set -euo pipefail
 
 BEANS_BIN="beans"
 BEANS_PATH=".beans"
-BEAN_CACHE_VERSION="v1"
+BEAN_CACHE_VERSION="v2"
 
 require_command() {
     local cmd=$1
@@ -73,9 +73,16 @@ main_commit_evidence_json() {
     local cache_file=""
     local cache_tmp=""
     local first=1
-    local token
-    local current_header=""
-    local -a current_files=()
+    local -a commit_args=()
+    local rev
+    local header
+    local sha
+    local epoch
+    local date
+    local subject
+    local body
+    local files_json
+    local rest
 
     if ! command -v git >/dev/null 2>&1; then
         echo "[]"
@@ -105,16 +112,12 @@ main_commit_evidence_json() {
         progress "  scanning main commit history"
     fi
 
-    emit_record() {
-        local sha
-        local date
-        local subject
-        local body
-        local _
-        local files_json
+    if [[ -n "$since" ]]; then
+        commit_args=(--since="$since")
+    fi
 
-        IFS=$'\x1f' read -r sha date subject body _ <<< "$current_header"
-        files_json=$(printf '%s\n' "${current_files[@]}" | jq -Rsc 'split("\n") | map(select(length > 0))')
+    emit_record() {
+        files_json=$(git diff-tree --no-commit-id --name-only -r "$rev" | jq -Rsc 'split("\n") | map(select(length > 0))')
 
         if [[ "$first" -eq 0 ]]; then
             printf ','
@@ -123,65 +126,46 @@ main_commit_evidence_json() {
 
         jq -cn \
             --arg sha "$sha" \
+            --arg epoch "$epoch" \
             --arg date "$date" \
             --arg subject "$subject" \
             --arg body "$body" \
             --argjson files "$files_json" \
-            '{sha: $sha, date: $date, subject: $subject, body: $body, files: $files}'
+            '{sha: $sha, epoch: ($epoch | tonumber), date: $date, subject: $subject, body: $body, files: $files}'
+    }
+
+    generate_records() {
+        printf '['
+        while IFS= read -r rev; do
+            [[ -z "$rev" ]] && continue
+            header=$(git show -s --format='%H%x1f%ct%x1f%cI%x1f%s%x1f%b' "$rev")
+            rest=$header
+            sha=${rest%%$'\x1f'*}
+            rest=${rest#*$'\x1f'}
+            epoch=${rest%%$'\x1f'*}
+            rest=${rest#*$'\x1f'}
+            date=${rest%%$'\x1f'*}
+            rest=${rest#*$'\x1f'}
+            subject=${rest%%$'\x1f'*}
+            rest=${rest#*$'\x1f'}
+            body=$rest
+            emit_record
+        done < <(
+            if [[ "${#commit_args[@]}" -gt 0 ]]; then
+                git rev-list "${commit_args[@]}" main
+            else
+                git rev-list main
+            fi
+        )
+        printf ']'
     }
 
     if [[ -n "$cache_file" ]]; then
         cache_tmp="$cache_file.$$"
-        {
-            printf '['
-            while IFS= read -r -d '' token; do
-                if [[ "$token" == *$'\x1f'* ]]; then
-                    if [[ -n "$current_header" ]]; then
-                        emit_record
-                    fi
-                    current_header="$token"
-                    current_files=()
-                elif [[ -n "$current_header" ]]; then
-                    current_files+=("$token")
-                fi
-            done < <(
-                if [[ -n "$since" ]]; then
-                    git log main --since="$since" -z --format='%H%x1f%cI%x1f%s%x1f%b%x1f' --name-only
-                else
-                    git log main -z --format='%H%x1f%cI%x1f%s%x1f%b%x1f' --name-only
-                fi
-            )
-
-            if [[ -n "$current_header" ]]; then
-                emit_record
-            fi
-            printf ']'
-        } | tee "$cache_tmp"
+        generate_records | tee "$cache_tmp"
         mv "$cache_tmp" "$cache_file"
     else
-        printf '['
-        while IFS= read -r -d '' token; do
-            if [[ "$token" == *$'\x1f'* ]]; then
-                if [[ -n "$current_header" ]]; then
-                    emit_record
-                fi
-                current_header="$token"
-                current_files=()
-            elif [[ -n "$current_header" ]]; then
-                current_files+=("$token")
-            fi
-        done < <(
-            if [[ -n "$since" ]]; then
-                git log main --since="$since" -z --format='%H%x1f%cI%x1f%s%x1f%b%x1f' --name-only
-            else
-                git log main -z --format='%H%x1f%cI%x1f%s%x1f%b%x1f' --name-only
-            fi
-        )
-
-        if [[ -n "$current_header" ]]; then
-            emit_record
-        fi
-        printf ']'
+        generate_records
     fi
 }
 
@@ -227,6 +211,15 @@ build_audit_json() {
         def is_archived: (.path // "" | startswith("archive/"));
         def is_terminal: (.status == "completed" or .status == "scrapped");
         def is_open: (.status == "draft" or .status == "todo" or .status == "in-progress");
+        def parsed_epoch($value):
+            if ($value // "") == "" then null
+            else (try ($value | fromdateiso8601) catch null)
+            end;
+        def is_after_opened($bean; $commit):
+            (parsed_epoch($bean.created_at // $bean.updated_at) as $bean_epoch |
+                if $bean_epoch == null then true
+                else (($commit.epoch // -1) >= $bean_epoch)
+                end);
         def is_canonical_status:
             (.status == "draft"
             or .status == "todo"
@@ -338,6 +331,7 @@ build_audit_json() {
                     $commits[]
                     | select(.touches_non_beans)
                     | select(.subject_text | contains(($bean.id // "") | ascii_downcase))
+                    | select(is_after_opened($bean; .))
                     | {
                         sha,
                         date,
@@ -416,6 +410,7 @@ build_audit_json() {
                         (.subject_text | contains(($bean.id // "") | ascii_downcase) | not)
                         and (.body_text | contains(($bean.id // "") | ascii_downcase))
                     )
+                    | select(is_after_opened($bean; .))
                     | {
                         sha,
                         date,
@@ -425,6 +420,7 @@ build_audit_json() {
                 ] as $body_id_matches
                 | [
                     $commits[]
+                    | select(is_after_opened($bean; .))
                     | select(.subject_norm == $bean.title_norm)
                     | {
                         sha,
@@ -580,7 +576,7 @@ print_audit_text() {
                     ["", "Open umbrella beans whose linked child work is all terminal (hard failure):", render_terminal_linked_groups(.stale_open_umbrella_beans_hard)]
                  else [] end) +
                 (if (.stale_open_beans_soft | length) > 0 then
-                    ["", "Open beans with advisory title-only matches on main:", render_soft_stale_groups(.stale_open_beans_soft)]
+                    ["", "Open beans with advisory likely-stale matches on main:", render_soft_stale_groups(.stale_open_beans_soft)]
                  else [] end)
             ) | join("\n")
         end
@@ -596,11 +592,15 @@ run_next() {
     local ready_json
     local in_progress_json
     local ready_count
+    local audit_json
+    local reconciliation_json
+    local reconciliation_count
     local open_ids_json
     local ranked_json
     local parent_ids
     local parent_map='{}'
     local candidates_json
+    local ordinary_json='[]'
     local first_id
 
     while [[ $# -gt 0 ]]; do
@@ -657,7 +657,77 @@ run_next() {
     ')
     ready_count=$(printf "%s\n" "$ready_json" | jq 'length')
 
-    if [[ "$ready_count" -eq 0 ]]; then
+    if [[ "$json_output" -eq 1 ]]; then
+        audit_json=$(BEAN_PROGRESS=0 build_audit_json "open")
+    else
+        audit_json=$(BEAN_PROGRESS=1 build_audit_json "open")
+    fi
+
+    reconciliation_json=$(jq '
+        def norm_title:
+            (. // ""
+            | ascii_downcase
+            | gsub("[[:space:]]+"; " ")
+            | sub("^ "; "")
+            | sub(" $"; ""));
+        def subject_core:
+            (. // "")
+            | ascii_downcase
+            | sub("^[a-z0-9_-]+(\\([^)]+\\))?!?:[[:space:]]*"; "")
+            | norm_title;
+        def title_aligned(entry):
+            (entry.bean.title | norm_title) as $title
+            | any(
+                entry.evidence[];
+                (.subject | subject_core) as $core
+                | ($core | length) > 0
+                and (($title | contains($core)) or ($core | contains($title)))
+            );
+        def annotate(entry; lane; reason; order):
+            entry.bean + {
+                lane: lane,
+                reconciliation_kind: lane,
+                reason: reason,
+                sort_order: order,
+                leverage: 0,
+                evidence: (entry.evidence // []),
+                evidence_count: ((entry.evidence // []) | length)
+            };
+        (
+            [
+                .stale_open_beans_hard[]
+                | select(.bean.status == "todo")
+                | annotate(.; "hard-stale"; "landed-work-evidence"; 0)
+            ] +
+            [
+                .stale_open_umbrella_beans_hard[]
+                | select(.bean.status == "todo")
+                | .bean + {
+                    lane: "umbrella-stale",
+                    reconciliation_kind: "umbrella-stale",
+                    reason: "linked-child-work-terminal",
+                    sort_order: 1,
+                    leverage: 0,
+                    evidence: (.linked_terminal_beans),
+                    evidence_count: ((.linked_terminal_beans // []) | length)
+                }
+            ] +
+            [
+                .stale_open_beans_soft[]
+                | select(.bean.status == "todo")
+                | select(
+                    .strength == "unique-title-match"
+                    or (.strength == "body-id-match" and title_aligned(.))
+                )
+                | annotate(.; "likely-stale"; .strength; 2)
+            ]
+        )
+        | unique_by(.id)
+        | sort_by(.sort_order, .created_at, .title)
+    ' <<< "$audit_json")
+    reconciliation_count=$(printf "%s\n" "$reconciliation_json" | jq 'length')
+
+    if [[ "$ready_count" -eq 0 && "$reconciliation_count" -eq 0 ]]; then
         if [[ "$json_output" -eq 1 ]]; then
             echo "[]"
         else
@@ -668,12 +738,20 @@ run_next() {
 
     open_ids_json=$(printf "%s\n" "$all_json" | jq '[.[].id]')
 
-    ranked_json=$(printf "%s\n" "$ready_json" | jq --argjson limit "$limit" --argjson open_ids "$open_ids_json" '
+    ordinary_json=$(printf "%s\n" "$ready_json" | jq --argjson open_ids "$open_ids_json" --argjson recon "$reconciliation_json" '
         ($open_ids | map({ key: ., value: true }) | from_entries) as $open |
+        ($recon | map(.id) | map({ key: ., value: true }) | from_entries) as $recon_ids |
         map(
-            . + {
+            select($recon_ids[.id] != true)
+            | . + {
+                lane: "ready",
                 leverage: ([.blockingIds[] | select($open[.] == true)] | length),
-                priority: (.priority // "normal")
+                priority: (.priority // "normal"),
+                reason: (
+                    ["priority=" + (.priority // "normal")] +
+                    (if ([.blockingIds[] | select($open[.] == true)] | length) > 0 then ["unblocks=" + (([.blockingIds[] | select($open[.] == true)] | length) | tostring)] else [] end) +
+                    ["type=" + (.type // "task")]
+                ) | join(", ")
             }
         ) as $items |
         def priority_rank:
@@ -699,7 +777,11 @@ run_next() {
             | map(select((.type // "") == "epic" or (.type // "") == "milestone"))
             | sort_by(priority_rank, (-.leverage), type_rank, .created_at, .title)
         ) as $meta |
-        ($concrete + $meta)[:$limit]
+        ($concrete + $meta)
+    ')
+
+    ranked_json=$(jq -n --argjson recon "$reconciliation_json" --argjson ordinary "$ordinary_json" --argjson limit "$limit" '
+        ($recon + $ordinary)[:$limit]
     ')
 
     parent_ids=$(printf "%s\n" "$ranked_json" | jq -r '.[].parentId // empty' | sort -u | tr '\n' ' ')
@@ -722,12 +804,7 @@ run_next() {
                     then $parents[.parentId]
                     else null
                     end
-                ),
-                reason: (
-                    ["priority=" + (.priority // "normal")] +
-                    (if .leverage > 0 then ["unblocks=" + (.leverage | tostring)] else [] end) +
-                    ["type=" + (.type // "task")]
-                ) | join(", ")
+                )
             }
         )
     ')
@@ -746,14 +823,31 @@ run_next() {
         echo ""
     fi
 
-    printf "%s\n" "$candidates_json" | jq -r '
-        to_entries[]
-        | (.value.leverage // 0) as $leverage
-        | "#\(.key + 1)  \(.value.id)  \(.value.type) · \(.value.priority)" +
-          (if $leverage > 0 then " · unblocks \($leverage)" else "" end) +
-          "\n    \(.value.title)" +
-          (if .value.parent_title then "\n    Parent: \(.value.parent_title)" else "" end)
-    '
+    if [[ "$reconciliation_count" -gt 0 ]]; then
+        echo "Reconciliation candidates:"
+        printf "%s\n" "$candidates_json" | jq -r '
+            map(select(.lane != "ready"))
+            | to_entries[]
+            | "#\(.key + 1)  \(.value.id)  \(.value.type) · \(.value.priority // "normal") · \(.value.reconciliation_kind)" +
+              "\n    \(.value.title)" +
+              "\n    Reason: \(.value.reason)" +
+              (if .value.parent_title then "\n    Parent: \(.value.parent_title)" else "" end)
+        '
+        echo ""
+    fi
+
+    if [[ "$(printf "%s\n" "$ordinary_json" | jq 'length')" -gt 0 ]]; then
+        echo "Ready candidates:"
+        printf "%s\n" "$candidates_json" | jq -r '
+            map(select(.lane == "ready"))
+            | to_entries[]
+            | (.value.leverage // 0) as $leverage
+            | "#\(.key + 1)  \(.value.id)  \(.value.type) · \(.value.priority // "normal")" +
+              (if $leverage > 0 then " · unblocks \($leverage)" else "" end) +
+              "\n    \(.value.title)" +
+              (if .value.parent_title then "\n    Parent: \(.value.parent_title)" else "" end)
+        '
+    fi
 
     first_id=$(printf "%s\n" "$candidates_json" | jq -r '.[0].id')
     echo ""
