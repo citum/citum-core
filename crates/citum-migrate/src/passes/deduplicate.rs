@@ -1,4 +1,7 @@
-use citum_schema::template::TemplateComponent;
+use citum_schema::{
+    locale::GeneralTerm,
+    template::{DateVariable, TemplateComponent},
+};
 use std::collections::HashSet;
 
 /// Deduplicate title components in nested lists.
@@ -28,6 +31,15 @@ pub fn deduplicate_dates_in_lists(components: &mut Vec<TemplateComponent>) {
             deduplicate_dates_in_list(list);
         }
     }
+}
+
+/// Remove explicit `no-date` terms when the same template scope already renders `issued`.
+///
+/// The processor can supply the locale-specific no-date fallback for an empty
+/// issued value, so keeping both the issued component and a literal `no-date`
+/// term in the migrated template causes redundant output.
+pub fn remove_redundant_no_date_terms(components: &mut Vec<TemplateComponent>) {
+    remove_redundant_no_date_terms_in_scope(components);
 }
 
 fn deduplicate_typed_components<T, F>(list: &mut citum_schema::template::TemplateGroup, extract: F)
@@ -82,6 +94,45 @@ fn deduplicate_titles_in_list(list: &mut citum_schema::template::TemplateGroup) 
             None
         }
     });
+}
+
+fn remove_redundant_no_date_terms_in_scope(items: &mut Vec<TemplateComponent>) {
+    let has_issued = items.iter().any(component_contains_issued_date);
+
+    for item in items.iter_mut() {
+        if let TemplateComponent::Group(list) = item {
+            remove_redundant_no_date_terms_in_scope(&mut list.group);
+        }
+    }
+
+    if has_issued {
+        remove_no_date_terms_recursively(items);
+    }
+}
+
+fn component_contains_issued_date(component: &TemplateComponent) -> bool {
+    match component {
+        TemplateComponent::Date(date) => date.date == DateVariable::Issued,
+        TemplateComponent::Group(list) => list.group.iter().any(component_contains_issued_date),
+        _ => false,
+    }
+}
+
+fn is_no_date_term(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Term(term) if term.term == GeneralTerm::NoDate
+    )
+}
+
+fn remove_no_date_terms_recursively(items: &mut Vec<TemplateComponent>) {
+    items.retain(|item| !is_no_date_term(item));
+
+    for item in items.iter_mut() {
+        if let TemplateComponent::Group(list) = item {
+            remove_no_date_terms_recursively(&mut list.group);
+        }
+    }
 }
 
 /// Deduplicate identical nested lists.

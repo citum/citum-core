@@ -10,7 +10,12 @@ impl TemplateCompiler {
     ) -> Vec<TemplateComponent> {
         // DISABLED: Sorting was needed to work around HashMap's random iteration order.
         // Now that we use IndexMap, we preserve the CSL 1.0 layout order naturally.
-        self.compile(nodes)
+        let mut template = self.compile(nodes);
+        crate::passes::deduplicate::deduplicate_numbers_in_lists(&mut template);
+        crate::passes::deduplicate::deduplicate_dates_in_lists(&mut template);
+        crate::passes::deduplicate::remove_redundant_no_date_terms(&mut template);
+        self.fix_duplicate_variables(&mut template);
+        template
     }
 
     /// Compile bibliography with type-specific templates.
@@ -39,6 +44,7 @@ impl TemplateCompiler {
 
         // Deduplicate date components (issued, accessed) in nested lists
         crate::passes::deduplicate::deduplicate_dates_in_lists(&mut default_template);
+        crate::passes::deduplicate::remove_redundant_no_date_terms(&mut default_template);
 
         // Fix duplicate variables (e.g., date appearing both in List and standalone)
         self.fix_duplicate_variables(&mut default_template);
@@ -80,6 +86,7 @@ impl TemplateCompiler {
 
             crate::passes::deduplicate::deduplicate_numbers_in_lists(&mut type_template);
             crate::passes::deduplicate::deduplicate_dates_in_lists(&mut type_template);
+            crate::passes::deduplicate::remove_redundant_no_date_terms(&mut type_template);
             self.fix_duplicate_variables(&mut type_template);
 
             // Post-process legal_case templates: ensure authority variable is
