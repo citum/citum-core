@@ -58,6 +58,11 @@ pub fn render_entry_body_with_format<F: OutputFormat<Output = String>>(
 ) -> String {
     let mut entry_output = String::new();
     let proc_template = &entry.template;
+    let mut pending_component: Option<(
+        usize,
+        &crate::render::component::ProcTemplateComponent,
+        String,
+    )> = None;
 
     // Check locale option for punctuation placement in quotes.
     let punctuation_in_quote = proc_template
@@ -73,51 +78,39 @@ pub fn render_entry_body_with_format<F: OutputFormat<Output = String>>(
         .and_then(|bib| bib.separator.as_deref())
         .unwrap_or(". ");
 
-    for (j, component) in proc_template.iter().enumerate() {
+    for (index, component) in proc_template.iter().enumerate() {
         let rendered = render_component_with_format::<F>(component);
         if rendered.is_empty() {
             continue;
         }
 
-        if j > 0 && !entry_output.is_empty() {
-            let last_char = entry_output.chars().last().unwrap_or(' ');
-            let first_char = first_visible_char(&rendered).unwrap_or(' ');
-            let sep_first_char = default_separator.chars().next().unwrap_or('.');
-            let trimmed_last = last_visible_non_space_char(&entry_output).unwrap_or(' ');
-            let ends_with_punctuation = is_final_punctuation(trimmed_last);
-            let starts_with_separator = matches!(first_char, ',' | ';' | ':' | ' ' | '.' | '(');
-
-            if starts_with_separator {
-                if first_char == '(' && !last_char.is_whitespace() && last_char != '[' {
-                    entry_output.push(' ');
-                }
-            } else if ends_with_punctuation {
-                if !last_char.is_whitespace() {
-                    entry_output.push(' ');
-                }
-            } else if punctuation_in_quote
-                && (last_char == '"' || last_char == '\u{201D}')
-                && sep_first_char == '.'
-            {
-                entry_output.pop();
-                let quote_str = if last_char == '\u{201D}' {
-                    ".\u{201D} "
-                } else {
-                    ".\" "
-                };
-                entry_output.push_str(quote_str);
-            } else if !last_char.is_whitespace() && !first_char.is_whitespace() {
-                entry_output.push_str(default_separator);
-            } else if !last_char.is_whitespace()
-                && first_char.is_whitespace()
-                && default_separator.starts_with('.')
-                && !ends_with_punctuation
-            {
-                entry_output.push('.');
-            }
+        if let Some((_, _, previous)) = pending_component.replace((index, component, rendered)) {
+            append_rendered_component(
+                &mut entry_output,
+                &previous,
+                default_separator,
+                punctuation_in_quote,
+            );
         }
+    }
 
-        let _ = write!(&mut entry_output, "{rendered}");
+    if let Some((last_index, last_component, rendered)) = pending_component {
+        let final_rendered = if last_index + 1 < proc_template.len() {
+            let mut trimmed_component = last_component.clone();
+            let rendering = trimmed_component.template_component.rendering_mut();
+            rendering.suffix = None;
+            rendering.inner_suffix = None;
+            trimmed_component.suffix = None;
+            render_component_with_format::<F>(&trimmed_component)
+        } else {
+            rendered
+        };
+        append_rendered_component(
+            &mut entry_output,
+            &final_rendered,
+            default_separator,
+            punctuation_in_quote,
+        );
     }
 
     let bib_cfg = proc_template
@@ -146,6 +139,53 @@ pub fn render_entry_body_with_format<F: OutputFormat<Output = String>>(
 
     cleanup_dangling_punctuation(&mut entry_output);
     entry_output
+}
+
+fn append_rendered_component(
+    entry_output: &mut String,
+    rendered: &str,
+    default_separator: &str,
+    punctuation_in_quote: bool,
+) {
+    if !entry_output.is_empty() {
+        let last_char = entry_output.chars().last().unwrap_or(' ');
+        let first_char = first_visible_char(rendered).unwrap_or(' ');
+        let sep_first_char = default_separator.chars().next().unwrap_or('.');
+        let trimmed_last = last_visible_non_space_char(entry_output).unwrap_or(' ');
+        let ends_with_punctuation = is_final_punctuation(trimmed_last);
+        let starts_with_separator = matches!(first_char, ',' | ';' | ':' | ' ' | '.' | '(');
+
+        if starts_with_separator {
+            if first_char == '(' && !last_char.is_whitespace() && last_char != '[' {
+                entry_output.push(' ');
+            }
+        } else if ends_with_punctuation {
+            if !last_char.is_whitespace() {
+                entry_output.push(' ');
+            }
+        } else if punctuation_in_quote
+            && (last_char == '"' || last_char == '\u{201D}')
+            && sep_first_char == '.'
+        {
+            entry_output.pop();
+            let quote_str = if last_char == '\u{201D}' {
+                ".\u{201D} "
+            } else {
+                ".\" "
+            };
+            entry_output.push_str(quote_str);
+        } else if !last_char.is_whitespace() && !first_char.is_whitespace() {
+            entry_output.push_str(default_separator);
+        } else if !last_char.is_whitespace()
+            && first_char.is_whitespace()
+            && default_separator.starts_with('.')
+            && !ends_with_punctuation
+        {
+            entry_output.push('.');
+        }
+    }
+
+    let _ = write!(entry_output, "{rendered}");
 }
 
 /// Render processed templates into a final bibliography string using a specific format.
@@ -504,6 +544,65 @@ mod tests {
         let result = refs_to_string(entries);
         // The comma from author's suffix should be preserved
         assert_eq!(result, "Hawking, S., 1988.");
+    }
+
+    #[test]
+    fn test_terminal_component_suffix_suppressed_when_following_component_is_empty() {
+        use citum_schema::options::{BibliographyConfig, Config};
+
+        let config = Config {
+            bibliography: Some(BibliographyConfig {
+                separator: Some(". ".to_string()),
+                entry_suffix: Some(String::new()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        let date = ProcTemplateComponent {
+            template_component: TemplateComponent::Date(citum_schema::template::TemplateDate {
+                date: citum_schema::template::DateVariable::Issued,
+                rendering: Rendering {
+                    suffix: Some(", ".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+            template_index: None,
+            value: "2024".to_string(),
+            prefix: None,
+            suffix: None,
+            ref_type: None,
+            config: Some(config.clone()),
+            url: None,
+            item_language: None,
+            pre_formatted: false,
+        };
+
+        let pages = ProcTemplateComponent {
+            template_component: TemplateComponent::Number(citum_schema::template::TemplateNumber {
+                number: citum_schema::template::NumberVariable::Pages,
+                rendering: Rendering::default(),
+                ..Default::default()
+            }),
+            template_index: None,
+            value: String::new(),
+            prefix: None,
+            suffix: None,
+            ref_type: None,
+            config: Some(config),
+            url: None,
+            item_language: None,
+            pre_formatted: false,
+        };
+
+        let result = refs_to_string(vec![ProcEntry {
+            id: "book-without-pages".to_string(),
+            template: vec![date, pages],
+            metadata: crate::render::format::ProcEntryMetadata::default(),
+        }]);
+
+        assert_eq!(result, "2024");
     }
 
     #[test]
