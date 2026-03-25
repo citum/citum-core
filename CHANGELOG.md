@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.19.0](https://github.com/citum/citum-core/compare/v0.18.0...v0.19.0) - 2026-03-25
+
+### Added
+
+- *(migrate)* extract citation-number collapse
+
+### Fixed
+
+- *(migrate)* co-emit name_form on initialize_with
+- *(release)* schema pre-1.0 major bump guard
+- *(migrate)* drop bare uncertain-date markers
+- *(engine)* suppress orphan bibliography suffix
+
+### Other
+
+- *(specs)* reconcile template-v2 with main
+
 ## [0.18.0](https://github.com/citum/citum-core/compare/v0.17.0...v0.18.0) - 2026-03-25
 
 ### Added
