@@ -122,6 +122,52 @@ From that point forward:
 - `STYLE_SCHEMA_VERSION`, `docs/schemas/*`, and the schema changelog entry in this file move together
 - future schema tags should continue from the automation-produced version line
 
+## Version Pinning Contract (Post-1.0)
+
+Once Citum releases v1.0.0, schema consumers (IDEs, citum-hub, downstream tools) must
+be able to pin to a specific schema version. This section defines how version pinning works.
+
+### Pinning Formats
+
+Consumers specify their required schema version in one of four ways:
+
+| Format | Meaning | Example |
+|--------|---------|---------|
+| `"latest"` | Resolves to the highest published `schema-vX.Y.Z` tag at build/runtime. This is a distribution-layer concern; it does not appear in Rust schema code. | `schema: "latest"` |
+| `"1"` | Major-version pin: matches any `1.x.y` schema. | `schema: "1"` |
+| `"1.2"` | Minor-version pin: matches any `1.2.x` schema. | `schema: "1.2"` |
+| `"1.2.3"` | Full semantic version pin: exact match only. | `schema: "1.2.3"` |
+
+### Resolver Behavior
+
+- **`"latest"`**: Always resolves to the highest published `schema-vX.Y.Z` tag. This is a tool/distribution decision, not a Citum runtime mechanism.
+- **`"1"`**: Accepts `1.0.0`, `1.0.1`, `1.1.0`, `1.2.3`, etc. — any schema in the `1.x` line.
+- **`"1.2"`**: Accepts `1.2.0`, `1.2.1`, `1.2.5`, but rejects `1.1.0` or `2.0.0`.
+- **`"1.2.3"`**: Accepts only that exact version. Rejects `1.2.4` or `1.3.0`.
+
+### Post-1.0 Bump Semantics
+
+Starting from v1.0.0, the schema follows semantic versioning:
+
+- **Patch** (e.g., `1.0.0` → `1.0.1`): Documentation fixes, validator improvements that do not change accepted data.
+- **Minor** (e.g., `1.0.0` → `1.1.0`): New optional fields, new enum variants, additive changes. Existing styles continue to work; old tools can safely ignore new fields.
+- **Major** (e.g., `1.0.0` → `2.0.0`): Required fields, removals, type changes. Existing styles may no longer validate; old tools must upgrade.
+
+### Stability Recommendation
+
+Style authors and tool builders who need predictable schema behavior should pin to a major version:
+
+```
+schema: "1"    # Stable: accepts any 1.x.y; will not jump to 2.x.y without author action
+```
+
+Using `"latest"` is suitable only for development or when tracking the absolute latest features.
+
+### Implementation Note
+
+The actual resolver logic (CLI flags, environment variables, API parameters) is deferred
+to a follow-up task. This section defines the contract; runtime integration comes later.
+
 ## Manual Schema Bump Helper
 
 `scripts/bump.sh` remains the single helper for changing `STYLE_SCHEMA_VERSION`.
