@@ -18,7 +18,7 @@ use citum_migrate::{
     template_resolver,
 };
 use citum_schema::{
-    BibliographySpec, CitationSpec, Style, StyleInfo,
+    BibliographySpec, CitationCollapse, CitationSpec, Style, StyleInfo,
     template::{
         DelimiterPunctuation, NumberVariable, TemplateComponent, TypeSelector, WrapPunctuation,
     },
@@ -232,6 +232,13 @@ fn extract_migration_options(
     )
 }
 
+fn extract_citation_collapse(citation: &csl_legacy::model::Citation) -> Option<CitationCollapse> {
+    match citation.collapse.as_deref() {
+        Some("citation-number") => Some(CitationCollapse::CitationNumber),
+        _ => None,
+    }
+}
+
 /// Assemble the final Citum Style from compiled output and legacy metadata.
 fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOutput) -> Style {
     let citation_scope_options =
@@ -293,6 +300,7 @@ fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOut
             options: citation_scope_options,
             use_preset: None,
             template: Some(c.new_cit),
+            collapse: extract_citation_collapse(&legacy_style.citation),
             wrap: c.citation_wrap,
             prefix: c.citation_prefix,
             suffix: c.citation_suffix,
@@ -1145,7 +1153,8 @@ mod tests {
     use super::*;
     use citum_schema::template::{DateVariable, Rendering, SimpleVariable, TemplateVariable};
     use csl_legacy::model::{
-        CslNode, Formatting, Group, Layout, Sort as LegacySort, SortKey as LegacySortKey, Text,
+        Citation, CslNode, Formatting, Group, Info, Layout, Sort as LegacySort,
+        SortKey as LegacySortKey, Style as LegacyStyle, Text,
     };
 
     fn legacy_sort(keys: &[&str]) -> LegacySort {
@@ -1225,6 +1234,76 @@ mod tests {
         );
 
         assert!(sort.is_some());
+    }
+
+    fn minimal_legacy_style() -> LegacyStyle {
+        LegacyStyle {
+            version: "1.0".to_string(),
+            xmlns: "http://purl.org/net/xbiblio/csl".to_string(),
+            class: "in-text".to_string(),
+            default_locale: None,
+            initialize_with: None,
+            initialize_with_hyphen: None,
+            names_delimiter: None,
+            name_as_sort_order: None,
+            sort_separator: None,
+            delimiter_precedes_last: None,
+            delimiter_precedes_et_al: None,
+            demote_non_dropping_particle: None,
+            and: None,
+            page_range_format: None,
+            info: Info::default(),
+            locale: vec![],
+            macros: vec![],
+            citation: Citation {
+                layout: Layout {
+                    prefix: None,
+                    suffix: None,
+                    delimiter: None,
+                    children: vec![],
+                },
+                sort: None,
+                collapse: None,
+                et_al_min: None,
+                et_al_use_first: None,
+                disambiguate_add_year_suffix: None,
+                disambiguate_add_names: None,
+                disambiguate_add_givenname: None,
+            },
+            bibliography: None,
+        }
+    }
+
+    #[test]
+    fn maps_legacy_citation_number_collapse() {
+        let mut style = minimal_legacy_style();
+        style.citation.collapse = Some("citation-number".to_string());
+
+        let migrated = build_final_style(
+            &style,
+            CompiledOutput {
+                options: citum_schema::options::Config::default(),
+                citation_contributor_overrides: None,
+                bibliography_contributor_overrides: None,
+                new_cit: vec![],
+                new_bib: vec![],
+                type_templates: None,
+                citation_wrap: None,
+                citation_prefix: None,
+                citation_suffix: None,
+                citation_delimiter: None,
+                citation_subsequent_override: None,
+                citation_ibid_override: None,
+            },
+        );
+
+        assert_eq!(
+            migrated
+                .citation
+                .as_ref()
+                .and_then(|citation| citation.collapse.clone()),
+            Some(CitationCollapse::CitationNumber)
+        );
     }
 
     #[test]

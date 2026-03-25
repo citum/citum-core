@@ -238,6 +238,7 @@ mod tests {
                     children: citation_children,
                 },
                 sort: None,
+                collapse: None,
                 et_al_min: None,
                 et_al_use_first: None,
                 disambiguate_add_year_suffix: None,
