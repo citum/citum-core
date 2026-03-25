@@ -7,14 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.18.0](https://github.com/citum/citum-core/compare/citum-server-v0.17.0...citum-server-v0.18.0) - 2026-03-25
+## [0.18.0](https://github.com/citum/citum-core/compare/citum-migrate-v0.17.0...citum-migrate-v0.18.0) - 2026-03-25
 
 ### Added
 
 - *(template-v2)* implement template schema v2
 
-## [0.15.0](https://github.com/citum/citum-core/compare/citum-server-v0.14.0...citum-server-v0.15.0) - 2026-03-19
+### Fixed
 
-### Added
-
-- *(engine)* annotate preview html with template indices
+- *(engine)* split name-form from initialize-with

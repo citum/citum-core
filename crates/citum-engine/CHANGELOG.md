@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.0](https://github.com/citum/citum-core/compare/citum-engine-v0.17.0...citum-engine-v0.18.0) - 2026-03-25
+
+### Added
+
+- *(template-v2)* implement template schema v2
+
+### Fixed
+
+- *(engine)* split name-form from initialize-with
+
 ## [0.16.0](https://github.com/citum/citum-core/compare/citum-engine-v0.15.0...citum-engine-v0.16.0) - 2026-03-22
 
 ### Added
