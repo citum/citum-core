@@ -20,6 +20,7 @@ versioning docs that sit above the operational release automation:
    compatibility.
 2. `docs/architecture/SCHEMA_CHANGELOG.md` — machine-readable record of every
    schema field addition, deprecation, and removal keyed by version.
+3. - [ ] Add "Version Pinning Contract (Post-1.0)" section to docs/reference/SCHEMA_VERSIONING.md
 
 Operational release wiring now lives in `.github/workflows/release-plz.yml` and
 `docs/reference/SCHEMA_VERSIONING.md`:
