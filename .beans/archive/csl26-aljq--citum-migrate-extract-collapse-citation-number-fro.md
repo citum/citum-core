@@ -1,11 +1,11 @@
 ---
 # csl26-aljq
 title: 'citum_migrate: extract collapse: citation-number from CSL'
-status: todo
+status: completed
 type: feature
 priority: high
 created_at: 2026-03-22T20:20:57Z
-updated_at: 2026-03-22T20:20:57Z
+updated_at: 2026-03-25T21:51:03Z
 ---
 
 ## Summary
@@ -55,3 +55,7 @@ In `citum_migrate`: during citation options extraction, check for the
 
 Found during style-evolve eval run — acm-sig-proceedings migration (2026-03-22).
 
+
+
+## Resolution
+Implemented in commit `6bd78b8d` on branch `codex/bean-fixes-rqcp-aljq`. `csl-legacy` now parses `<citation collapse="citation-number">` and migration maps it to `citation.collapse: citation-number`, with parser and migration regression coverage.

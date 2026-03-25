@@ -1,11 +1,11 @@
 ---
 # csl26-aals
 title: 'citum_migrate: extract global et-al shorten to options.contributors'
-status: todo
+status: scrapped
 type: feature
 priority: high
 created_at: 2026-03-22T20:21:01Z
-updated_at: 2026-03-22T20:21:01Z
+updated_at: 2026-03-25T21:51:03Z
 ---
 
 ## Summary
@@ -54,3 +54,7 @@ type-branch `<if>`), emit `options.contributors.shorten` globally.
 
 Found during style-evolve eval run — AMA and ACM migrations (2026-03-22).
 
+
+
+## Disposition
+Scrapped as stale on 2026-03-25 after verification. Live migration of `styles-legacy/american-medical-association.csl` already emits global `options.contributors.shorten` with `min`, `use-first`, and `and-others: et-al`, so the reported defect is already satisfied in the current codebase/output and no code change was required for PR #441.
