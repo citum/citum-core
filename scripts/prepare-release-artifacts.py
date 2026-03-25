@@ -332,13 +332,19 @@ def main(argv: Sequence[str]) -> int:
             )
             return 0
 
-        if len(markers) != 1:
+        if not markers:
             raise ReleasePrepError(
-                "Schema changes were detected but exactly one Schema-Bump footer is required "
-                f"across {target.commit_range}. Found: {format_marker_list(markers) or 'none'}"
+                "Schema changes were detected but no Schema-Bump footer was found "
+                f"across {target.commit_range}."
             )
 
-        marker = markers[0]
+        bump_order = {"patch": 0, "minor": 1, "major": 2}
+        marker = max(markers, key=lambda m: bump_order.get(m.bump, -1))
+        if len(markers) > 1:
+            print(
+                f"Multiple Schema-Bump footers found; using highest severity "
+                f"({marker.bump} from {marker.commit}): {format_marker_list(markers)}"
+            )
         expected_version = bump_version(previous_schema_version, marker.bump)
 
         if schema_version_changed:
