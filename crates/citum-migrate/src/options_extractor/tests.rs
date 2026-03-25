@@ -282,6 +282,29 @@ fn test_extract_article_journal_no_page_doi_fallback() {
 }
 
 #[test]
+fn test_extract_locator_strip_periods_from_citation_layout() {
+    let xml = r#"<style class="in-text">
+        <citation>
+            <layout>
+                <text variable="citation-number"/>
+                <group prefix="(" suffix=")">
+                    <label form="short" strip-periods="true" variable="locator"/>
+                    <text variable="locator"/>
+                </group>
+            </layout>
+        </citation>
+        <bibliography><layout><text variable="title"/></layout></bibliography>
+    </style>"#;
+    let style = parse_csl(xml).unwrap();
+    let config = OptionsExtractor::extract(&style);
+
+    let locators = config
+        .locators
+        .expect("locator config should be extracted from citation layout");
+    assert_eq!(locators.strip_label_periods, Some(true));
+}
+
+#[test]
 fn test_extract_article_journal_no_page_doi_fallback_ignores_additive_doi_patterns() {
     let xml = r#"<style>
         <citation><layout><text variable="title"/></layout></citation>
