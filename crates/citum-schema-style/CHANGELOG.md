@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.0](https://github.com/citum/citum-core/compare/citum-schema-style-v0.17.0...citum-schema-style-v0.18.0) - 2026-03-25
+
+### Added
+
+- *(bindings)* promote wasm api + specta types
+- *(template-v2)* implement template schema v2
+
+### Fixed
+
+- *(scripts)* oracle-yaml test JS and doc fixes
+- *(engine)* split name-form from initialize-with
+
 ## [0.17.0](https://github.com/citum/citum-core/compare/citum-schema-style-v0.16.0...citum-schema-style-v0.17.0) - 2026-03-22
 
 ### Added
