@@ -1,10 +1,11 @@
 ---
 # csl26-q4k2
-title: "Engine bug: initialize-with interaction with name rendering"
-status: todo
+title: 'Engine bug: initialize-with interaction with name rendering'
+status: completed
 type: bug
 priority: high
 created_at: 2026-03-16T20:15:00Z
+updated_at: 2026-03-25T13:12:06Z
 ---
 
 ## Summary
@@ -33,3 +34,7 @@ Review `citum-engine` name formatting logic to distinguish between:
 3. Non-dot initialize-with (initialize with custom separator, e.g., "")
 
 Symbol path: `citum-engine::processor::rendering::name_formatting` or similar
+
+## Summary of Changes
+
+Co-emit `name_form: Initials` in style-level extractor when `initialize_with` is set. Added regression test for style-global initialize-with migration path.
