@@ -30,7 +30,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 use crate::grouping::{GroupSort, GroupSortKey, SortKey as GroupSortKey_};
 use crate::options::{
     AndOptions, ContributorConfig, DateConfig, DelimiterPrecedesLast, DemoteNonDroppingParticle,
-    DisplayAsSort, MonthFormat, ShortenListOptions, Sort, SortKey, SortSpec, Substitute,
+    DisplayAsSort, MonthFormat, NameForm, ShortenListOptions, Sort, SortKey, SortSpec, Substitute,
     SubstituteKey, TitleRendering, TitlesConfig,
 };
 #[cfg(feature = "schema")]
@@ -126,6 +126,7 @@ impl ContributorPreset {
                 delimiter: Some(", ".to_string()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some(". ".to_string()),
+                name_form: Some(NameForm::Initials),
                 shorten: Some(ShortenListOptions {
                     min: 21,
                     use_first: 19,
@@ -145,6 +146,7 @@ impl ContributorPreset {
                 and: Some(AndOptions::None),
                 delimiter: Some(", ".to_string()),
                 initialize_with: Some("".to_string()),
+                name_form: Some(NameForm::Initials),
                 shorten: Some(ShortenListOptions {
                     min: 7,
                     use_first: 6,
@@ -158,6 +160,7 @@ impl ContributorPreset {
                 delimiter: Some(", ".to_string()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some(". ".to_string()),
+                name_form: Some(NameForm::Initials),
                 ..Default::default()
             },
             ContributorPreset::Harvard => ContributorConfig {
@@ -166,6 +169,7 @@ impl ContributorPreset {
                 delimiter: Some(", ".to_string()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some(".".to_string()),
+                name_form: Some(NameForm::Initials),
                 ..Default::default()
             },
             ContributorPreset::Springer => ContributorConfig {
@@ -174,6 +178,7 @@ impl ContributorPreset {
                 delimiter: Some(", ".to_string()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some("".to_string()),
+                name_form: Some(NameForm::Initials),
                 sort_separator: Some(" ".to_string()),
                 shorten: Some(ShortenListOptions {
                     min: 5,
@@ -195,6 +200,7 @@ impl ContributorPreset {
                 delimiter: Some(", ".to_string()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some("".to_string()),
+                name_form: Some(NameForm::Initials),
                 sort_separator: Some(" ".to_string()),
                 demote_non_dropping_particle: Some(DemoteNonDroppingParticle::SortOnly),
                 shorten: Some(ShortenListOptions {
@@ -210,6 +216,7 @@ impl ContributorPreset {
                 delimiter: Some(", ".to_string()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some("".to_string()),
+                name_form: Some(NameForm::Initials),
                 sort_separator: Some(" ".to_string()),
                 demote_non_dropping_particle: Some(DemoteNonDroppingParticle::SortOnly),
                 shorten: Some(ShortenListOptions {
@@ -225,6 +232,7 @@ impl ContributorPreset {
                 delimiter: Some(", ".to_string()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some("".to_string()),
+                name_form: Some(NameForm::Initials),
                 sort_separator: Some(" ".to_string()),
                 demote_non_dropping_particle: Some(DemoteNonDroppingParticle::SortOnly),
                 shorten: Some(ShortenListOptions {
@@ -240,6 +248,7 @@ impl ContributorPreset {
                 delimiter: Some(", ".to_string()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some("".to_string()),
+                name_form: Some(NameForm::Initials),
                 sort_separator: Some(" ".to_string()),
                 demote_non_dropping_particle: Some(DemoteNonDroppingParticle::SortOnly),
                 shorten: Some(ShortenListOptions {
@@ -255,6 +264,7 @@ impl ContributorPreset {
                 delimiter: Some(", ".to_string()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some("".to_string()),
+                name_form: Some(NameForm::Initials),
                 sort_separator: Some(" ".to_string()),
                 demote_non_dropping_particle: Some(DemoteNonDroppingParticle::Never),
                 ..Default::default()
@@ -265,6 +275,7 @@ impl ContributorPreset {
                 delimiter: Some(", ".to_string()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some(".".to_string()),
+                name_form: Some(NameForm::Initials),
                 demote_non_dropping_particle: Some(DemoteNonDroppingParticle::SortOnly),
                 ..Default::default()
             },
@@ -281,6 +292,7 @@ impl ContributorPreset {
                 delimiter: Some(", ".to_string()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Never),
                 initialize_with: Some("".to_string()),
+                name_form: Some(NameForm::Initials),
                 sort_separator: Some(" ".to_string()),
                 demote_non_dropping_particle: Some(DemoteNonDroppingParticle::Never),
                 shorten: Some(ShortenListOptions {
@@ -296,6 +308,7 @@ impl ContributorPreset {
                 delimiter: Some(", ".to_string()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some(".".to_string()),
+                name_form: Some(NameForm::Initials),
                 sort_separator: Some(", ".to_string()),
                 demote_non_dropping_particle: Some(DemoteNonDroppingParticle::SortOnly),
                 ..Default::default()
@@ -306,6 +319,7 @@ impl ContributorPreset {
                 delimiter: Some(", ".to_string()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some(". ".to_string()),
+                name_form: Some(NameForm::Initials),
                 sort_separator: Some(", ".to_string()),
                 demote_non_dropping_particle: Some(DemoteNonDroppingParticle::SortOnly),
                 ..Default::default()
@@ -315,6 +329,7 @@ impl ContributorPreset {
                 and: Some(AndOptions::None),
                 delimiter: Some(", ".to_string()),
                 initialize_with: Some(". ".to_string()),
+                name_form: Some(NameForm::Initials),
                 demote_non_dropping_particle: Some(DemoteNonDroppingParticle::SortOnly),
                 ..Default::default()
             },

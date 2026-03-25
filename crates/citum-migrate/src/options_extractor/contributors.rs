@@ -5,6 +5,11 @@ use citum_schema::options::{
 use csl_legacy::model::{CslNode, Names, Style, Substitute};
 use std::collections::{HashMap, HashSet};
 
+fn apply_initialize_with(config: &mut ContributorConfig, value: String) {
+    config.initialize_with = Some(value);
+    config.name_form = Some(NameForm::Initials);
+}
+
 /// Extracts global contributor configuration from a CSL style.
 ///
 /// Collects name formatting options including "and" text, name display order,
@@ -46,7 +51,7 @@ pub fn extract_contributor_config(style: &Style) -> Option<ContributorConfig> {
     }
 
     if let Some(init) = &style.initialize_with {
-        config.initialize_with = Some(init.clone());
+        apply_initialize_with(&mut config, init.clone());
         has_config = true;
     }
 
@@ -346,11 +351,7 @@ fn extract_from_names(names: &Names) -> Option<ContributorConfig> {
                 has_config = true;
             }
             if let Some(init) = &n.initialize_with {
-                config.initialize_with = Some(init.clone());
-                // When initialize-with is present, explicitly set name-form to Initials.
-                // This decouples the semantic meaning: name-form controls how names are
-                // formatted, initialize-with only controls the separator.
-                config.name_form = Some(NameForm::Initials);
+                apply_initialize_with(&mut config, init.clone());
                 has_config = true;
             }
             if let Some(init_hyphen) = n.initialize_with_hyphen {
