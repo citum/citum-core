@@ -1,10 +1,10 @@
 # Template Schema v2 Specification
 
 **Status:** Active
-**Version:** 1.4
+**Version:** 1.5
 **Date:** 2026-03-25
 **Supersedes:** (none)
-**Related:** csl26-da9f, csl26-ww2m (impl bean)
+**Related:** csl26-da9f, csl26-ww2m, csl26-96wg, csl26-boe8, csl26-8eom, csl26-rrag
 
 ## Purpose
 
@@ -20,25 +20,41 @@ if any template can be expressed in a single line, the model is correct. The
 DSL is a design litmus test and a follow-on authoring affordance, not a primary
 deliverable.
 
-This spec also removes `overrides` (§2), promotes `type-variants` to
-`CitationSpec` (§2), renames `items` to `group` (§1), and catalogs additional
-pain points (§5).
+This spec records the v2 design direction and the current state of `main`.
+On `main` today, `items` has been renamed to `group`, `type-variants` exists
+on citation and bibliography specs, `Style::validate()` exists, and the old
+template-level `ComponentOverride` / per-component `overrides` mechanism is
+already gone.
+
+This spec uses **template overrides** to mean the removed per-component
+template mechanism only. It does **not** refer to other override surfaces such
+as `options.substitute.overrides`, which are still live and represent a
+different concept.
 
 ## Scope
 
-**In scope (this PR — `spec/template-v2`):**
-- Rename the `items` YAML key to `group` (struct rename + serde alias). ✅
-- Add `type-variants` to `CitationSpec`; rename `type-templates` → `type-variants` on
-  `BibliographySpec` (serde alias keeps old key parsing). ✅
-- `TypeSelector` validation + `Style::validate()` returning `Vec<SchemaWarning>`. ✅
+**Landed on `main`:**
+- Rename the `items` YAML key to `group` (struct rename + serde alias).
+- Add `type-variants` to `CitationSpec`.
+- Add `type_variants` to `BibliographySpec`.
+- Add `TypeSelector` validation helpers and `Style::validate()` returning `Vec<SchemaWarning>`.
 - Catalog attributes that move from template components to style-level config (§3).
 - Compact string DSL design as a simplification litmus test (§4).
-- Pain point audit with effort estimates and v2 scope decisions (§5).
+- Pain point audit with effort estimates and ownership decisions (§5).
 
-**Completed (Step 5 — landed in `cab0f41`):**
-- Remove per-component `overrides`; fix migration compiler to emit `type-variants` for
-  suppress patterns. `ComponentOverride` and the `overrides` field removed from schema.
-  ✅
+**Not landed on `main`:**
+- Compact DSL parser implementation.
+- Follow-on design work from the pain-point audit, such as split option schemas
+  and a wrap-owned inner-affix model.
+
+**Reality snapshot (2026-03-25):**
+- `ComponentOverride` and per-component template `overrides` are absent from
+  `crates/`.
+- 15 styles in `styles/` still contain `overrides:`, but those are
+  `options.substitute.overrides`, not template-component overrides.
+- `Style::validate()` and `SchemaWarning` are implemented.
+- This spec no longer claims `BibliographySpec` parses `type-templates` via serde alias,
+  because that alias is not present on `main`.
 
 **Out of scope:**
 - Changing `TemplateComponent` discrimination (untagged serde remains).
@@ -149,11 +165,11 @@ engine code matching on `List` must be updated in the same commit.
 
 ### §2 — Remove `overrides`; Promote `type-variants`
 
-**Decision: Option A (full removal) — confirmed. Implemented in `cab0f41`.**
+**Design target:** Option A (full removal) remains the intended end state.
 
-> **Note (v1.4):** All five steps are complete. `overrides` and `ComponentOverride` were removed
-> from the schema in `cab0f41`. Styles using `overrides` must migrate to `type-variants` at the
-> spec level (see §2.3).
+**Current `main` reality:** `type-variants` is available and the old
+per-component `overrides` / `ComponentOverride` mechanism is already removed
+from the template schema.
 
 #### 2.1 Current Mechanism
 
@@ -213,12 +229,12 @@ template tree:
 
 #### 2.3 Replacement: `type-variants` at the Spec Level
 
-`BibliographySpec` already has `type_templates`. The rename and extension:
+The replacement model is still `type-variants` at the spec level:
 
 | Spec | Before | After |
 |------|--------|-------|
-| `BibliographySpec` | `type_templates` | `type-variants` (alias on old key) |
-| `CitationSpec` | (absent) | `type-variants` (new) |
+| `BibliographySpec` | `type_templates` in older drafts | `type_variants` field on `main` |
+| `CitationSpec` | (absent) | `type_variants` field on `main` |
 
 `type-variants` maps a `TypeSelector` key to `Vec<TemplateComponent>` (the
 `Template` type alias) — the same flat list of components used in the default
@@ -227,7 +243,6 @@ An empty value (`[]`) means suppress entirely for that type.
 
 ```rust
 // BibliographySpec — the value type is Vec<TemplateComponent>, same as Template
-#[serde(alias = "type-templates")]
 pub type_variants: Option<HashMap<TypeSelector, Template>>,
 
 // CitationSpec — new field, same type
@@ -254,7 +269,7 @@ The most common use of `overrides` in existing styles is:
     legal-case: { suppress: true }
 ```
 
-Under Option A, this requires duplicating the full default template into a
+Under the landed removal model, this requires duplicating the full default template into a
 `type-variants` entry that simply omits the suppressed component:
 
 ```yaml
@@ -585,72 +600,86 @@ DSL syntax for it.
 
 ### §5 — Additional Pain Points (Audit)
 
-#### P1 — Stringly-Typed `TypeSelector` (v2: Yes)
+#### P1 — Stringly-Typed `TypeSelector` (Implemented on `main`)
 
 **Problem.** `TypeSelector` accepts any string. Typos (e.g., `article_journal`)
 silently match nothing.
 
-**Fix.** Add `validate_type_name(s: &str) -> bool` against the canonical type
-set. Call from a custom deserializer, emitting a `SchemaWarning` (not error).
+**Current state.** `validate_type_name(s: &str)` exists and `Style::validate()`
+emits `SchemaWarning::UnknownTypeName` for unknown names discovered in
+`type_variants`.
 
 **Effort:** Low.
 
 ---
 
-#### P2 — Two Concepts Named "Type Override" (v2: Moot under Option A)
+#### P2 — Two Concepts Named "Type Override" (Implemented; moot on `main`)
 
 **Problem.** Per-component `overrides` and spec-level `type-variants` both
 expressed "type-specific behavior" with no naming distinction.
 
-**Resolution.** Moot: per-component `overrides` is removed under Option A. The
-naming ambiguity disappears with the field.
+**Resolution.** Moot on `main`: template-level `overrides` is gone, so
+spec-level `type-variants` is now the only template branching surface.
+This does not affect other override concepts such as
+`options.substitute.overrides`.
 
 ---
 
-#### P3 — `CitationSpec.options` Accepts Bibliography-Only Fields (v2: No)
+#### P3 — `CitationSpec.options` Accepts Bibliography-Only Fields (Deferred follow-on: `csl26-8eom`)
 
 **Problem.** `Option<Config>` on both specs includes bibliography-only fields
 that are silently ignored in a citation context.
 
-**Fix.** Introduce `CitationOptions` / `BibliographyOptions`. **Deferred** —
-high effort. Document applicable fields in schema comments as stopgap.
+**Current state.** Still live on `main`.
+
+**Planned resolution.** Introduce `CitationOptions` / `BibliographyOptions`.
+Deferred; tracked by `csl26-8eom`.
 
 ---
 
-#### P4 — Duplicate Variables Across `SimpleVariable` and `NumberVariable` (v2: No)
+#### P4 — Duplicate Variables Across `SimpleVariable` and `NumberVariable` (Partially addressed in docs)
 
 **Problem.** `Volume`, `Number`, etc. appear in both enums; authors cannot
 predict which to use.
 
-**Deferred.** Document the distinction (`number:` for numeric formatting,
-`variable:` for string passthrough) in schema comments.
+**Current state.** Still live in the type model, but this PR documents the
+authoring rule in schema comments and the style author guide:
+use `number:` when numeric formatting or numeric labels matter, and `variable:`
+for string passthrough fields.
+
+**Follow-on.** Keep the underlying model as-is for now; no separate bean is
+needed unless the duplication itself becomes an implementation target.
 
 ---
 
-#### P5 — `inner-prefix`/`inner-suffix` Not Tied to `wrap` (v2: No)
+#### P5 — `inner-prefix`/`inner-suffix` Not Tied to `wrap` (Deferred follow-on: `csl26-rrag`)
 
 **Problem.** Fields silently ignored without `wrap`. GUI cannot enforce the
 dependency.
 
-**Fix.** Fold into `WrapPunctuation` struct variant. **Deferred** — serde
-representation change.
+**Current state.** Still live on `main`.
+
+**Planned resolution.** Fold inner affixes into a wrap-owned structure so the
+dependency is explicit in the data model. Deferred; tracked by `csl26-rrag`.
 
 ---
 
-#### P6 — `ComponentOverride::Component` Cross-Kind Replacement (v2: Moot)
+#### P6 — `ComponentOverride::Component` Cross-Kind Replacement (Implemented; moot on `main`)
 
 **Problem.** Replacing a `contributor` with a `date` override parses silently.
 
-**Resolution.** Moot: `ComponentOverride` is removed under Option A.
+**Resolution.** Moot on `main`: `ComponentOverride` no longer exists in the
+template schema.
 
 ---
 
-#### P7 — No `Style::validate()` Method (v2: Partial)
+#### P7 — No `Style::validate()` Method (Partially implemented on `main`)
 
 **Problem.** All validation is at parse time or silently at render time.
 
-**Fix.** Add `Style::validate(&self) -> Vec<SchemaWarning>`. **Partial v2
-scope:** wire up `TypeSelector` validation from P1 as the first implementation.
+**Current state.** `Style::validate(&self) -> Vec<SchemaWarning>` exists, but
+today it only covers a narrow first slice of schema validation, led by P1's
+unknown type-name warnings.
 
 **Effort:** Medium.
 
@@ -658,18 +687,17 @@ scope:** wire up `TypeSelector` validation from P1 as the first implementation.
 
 ## Implementation Notes
 
-### Ordering of Changes
+### Status Table
 
-1. ✅ `items` → `group` rename (alias covers compat; no bulk pass needed).
-2. ✅ `type-variants` added to `CitationSpec` (new optional field; no breakage).
-3. ✅ `type-templates` → `type-variants` rename on `BibliographySpec` (alias).
-4. ✅ `TypeSelector` validation + `Style::validate()` stub (additive).
-5. **DEFERRED** `overrides` removal + `compile_bibliography_with_types` fix — **must land
-   together** in one commit; see §2.4. Blocked on fixing `convert-overrides-to-type-variants.py`
-   for `ComponentOverride::Rendering` suppression patterns.
-6. Compact DSL parser — follow-on, after §3 config structures are specced.
-
-Step 5 is the only breaking change. All others are additive or alias-covered.
+| Status | Work |
+|--------|------|
+| Landed on `main` | `items` → `group` rename |
+| Landed on `main` | `type-variants` added to `CitationSpec` |
+| Landed on `main` | `type_variants` field present on `BibliographySpec` |
+| Landed on `main` | `TypeSelector` validation helpers + `Style::validate()` initial implementation |
+| Deferred follow-on | Split `CitationOptions` / `BibliographyOptions` (`csl26-8eom`) |
+| Deferred follow-on | Tie inner affixes to wrap model (`csl26-rrag`) |
+| Follow-on design work | Compact DSL parser after §3 config structures are fully specced |
 
 ### Schema Regeneration
 
@@ -689,7 +717,6 @@ Step 5 warrants `Schema-Bump: major` (field removal).
 |--------|------|
 | `TemplateGroup` rename | `crates/citum-schema-style/src/template.rs` |
 | `CitationSpec.type_variants`, `Style::validate` | `crates/citum-schema-style/src/lib.rs` |
-| Remove `ComponentOverride`, `overrides` field | `crates/citum-schema-style/src/template.rs` |
 | Compact DSL parser (follow-on) | `crates/citum-schema-style/src/template_dsl.rs` (new) |
 | Migration output field + suppress pattern | `crates/citum-migrate/src/template_compiler/bibliography.rs` |
 | Citation-level type-variants emission | `crates/citum-migrate/src/template_compiler/compilation.rs` |
@@ -700,19 +727,17 @@ Step 5 warrants `Schema-Bump: major` (field removal).
 
 - [x] `- group:` and `- items:` both parse to `TemplateComponent::Group`.
 - [x] `TemplateGroup` serializes as `group:`, never `items:`.
-- [x] `BibliographySpec.type_variants` and `BibliographySpec.type_templates`
-      both parse without error (alias).
+- [x] `BibliographySpec` exposes `type_variants` on `main`.
 - [x] `CitationSpec.type_variants` accepts a `HashMap<TypeSelector, Template>`
       where `Template = Vec<TemplateComponent>`.
-- [ ] **(Deferred)** Per-component `overrides` field is absent from the schema;
-      a style using it produces a clear parse error pointing to `type-variants`.
-- [ ] **(Deferred)** `compile_bibliography_with_types` generates `type-variants`
-      entries for the suppress pattern without hand-duplication.
+- [x] Per-component `overrides` field is absent from the template schema.
+- [x] `ComponentOverride` is absent from the template schema.
 - [x] `style/apa-7th.yaml` renders all 12 oracle scenarios without regression.
 - [x] `style/chicago-author-date.yaml` renders all 12 oracle scenarios without
       regression.
 - [x] `Style::validate()` emits a `SchemaWarning` for unrecognized type names
       in `TypeSelector`.
+- [x] Schema and author docs explain the current `number:` vs `variable:` split.
 - [ ] (DSL — follow-on) `parse_compact_template("contributor:author/short ; date:issued/year+wrap:parentheses")`
       returns a `Vec<TemplateComponent>` with two elements matching the
       expected YAML AST.
@@ -720,8 +745,9 @@ Step 5 warrants `Schema-Bump: major` (field removal).
       returns a `TemplateGroup` with two children.
 - [ ] (DSL — follow-on) `parse_compact_template("unknown:foo")` returns
       `Err(TemplateDslError::UnknownKind)`.
-- [ ] Schema JSON regenerated; breaking removal tagged `Schema-Bump: major`.
-- [ ] All existing nextest suite passes without regression.
+- [x] Schema JSON regenerated for current doc-comment reality.
+- [ ] **(Future implementation PR)** Breaking removal tagged `Schema-Bump: major`.
+- [ ] **(Future implementation PR)** All existing nextest suite passes without regression.
 - [ ] No new style authored after v2 uses `shorten`, `label`, `fallback`, or
       `links` on a template component (lint or doc convention).
 
@@ -729,7 +755,8 @@ Step 5 warrants `Schema-Bump: major` (field removal).
 
 ## Open Questions
 
-All three previously open questions are resolved:
+All three design questions are resolved, even though not all dependent
+implementation work has landed:
 
 1. **`overrides` disposition:** Option A (full removal) — confirmed.
 2. **DSL separator:** Semicolon (` ; `) — confirmed.
@@ -740,6 +767,12 @@ All three previously open questions are resolved:
 
 ## Changelog
 
+- v1.5 (2026-03-25): Reconciled the spec to `main` reality. Removed incorrect
+  claims that `type-templates` aliasing exists on `main`, linked P3 and P5 to new beans
+  (`csl26-8eom`, `csl26-rrag`), and documented the current `number:` vs
+  `variable:` authoring rule. Corrected the spec after verifying that
+  `ComponentOverride` and template-component `overrides` are already absent
+  from `crates/`. Added `csl26-boe8` as the reconciliation bean.
 - v1.3 (2026-03-23): Marked Active. Steps 1–4 landed in PR `spec/template-v2`
   (Schema-Bump: patch). Step 5 (overrides removal) deferred — noted in Scope,
   §2, Ordering, and Acceptance Criteria. Acceptance criteria checked off for

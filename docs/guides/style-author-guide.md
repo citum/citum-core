@@ -66,6 +66,27 @@ When you choose divergence:
 - Preserve multilingual fallback behavior (original -> transliterated -> translated).
 - Prefer readable, reusable style definitions over one-off hacks.
 
+## `number:` vs `variable:`
+
+Some fields exist in both template enums, especially `volume` and `number`.
+
+Use `number:` when the style wants number-aware behavior:
+
+- numeric formatting such as `ordinal` or `roman`
+- number-specific labels
+- numeric punctuation/layout conventions
+
+Use `variable:` when the field should pass through as plain text with no number
+formatting semantics.
+
+Rule of thumb:
+
+- `number: volume` means "treat this as a number component"
+- `variable: volume` means "emit the value as a plain string"
+
+When in doubt, prefer `number:` for canonical numeric bibliographic fields and
+`variable:` for text-like identifiers or already-formatted strings.
+
 ## Field-Scoped Language Metadata
 
 `language` on a reference means "the item is generally in this language."
