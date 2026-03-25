@@ -20,6 +20,7 @@ FIELD_SEPARATOR = "\x1f"
 RECORD_SEPARATOR = "\x1e"
 SCHEMA_VERSION_RE = re.compile(r'pub const STYLE_SCHEMA_VERSION: &str = "([^"]+)";')
 SCHEMA_BUMP_RE = re.compile(r"^Schema-Bump:\s*(patch|minor|major)\s*$", re.MULTILINE)
+SCHEMA_CORRECT_RE = re.compile(r"^Schema-Correct:\s*(\S+)\s*$", re.MULTILINE)
 
 
 class ReleasePrepError(RuntimeError):
@@ -33,6 +34,15 @@ class SchemaBumpMarker:
     commit: str
     subject: str
     bump: str
+
+
+@dataclass(frozen=True)
+class SchemaCorrectMarker:
+    """A Schema-Correct footer that overrides bump logic with an explicit version."""
+
+    commit: str
+    subject: str
+    version: str
 
 
 @dataclass(frozen=True)
@@ -98,8 +108,13 @@ def bump_version(current: str, bump_type: str) -> str:
         minor += 1
         patch = 0
     elif bump_type == "major":
-        major += 1
-        minor = 0
+        if major == 0:
+            # Pre-1.0: treat breaking changes as minor bumps (mirrors release-plz behaviour).
+            # A 1.0 promotion requires an explicit manual release.
+            minor += 1
+        else:
+            major += 1
+            minor = 0
         patch = 0
     else:
         raise ReleasePrepError(f"Unsupported schema bump type: {bump_type}")
@@ -167,8 +182,10 @@ def sync_schema_dir(source: Path, destination: Path) -> None:
         )
 
 
-def collect_schema_bump_markers(commit_range: str) -> list[SchemaBumpMarker]:
-    """Collect schema bump footers from the unreleased commit range."""
+def collect_schema_bump_markers(
+    commit_range: str,
+) -> tuple[list[SchemaBumpMarker], list[SchemaCorrectMarker]]:
+    """Collect schema bump and correction footers from the unreleased commit range."""
 
     result = run(
         [
@@ -178,25 +195,39 @@ def collect_schema_bump_markers(commit_range: str) -> list[SchemaBumpMarker]:
             commit_range,
         ]
     )
-    markers: list[SchemaBumpMarker] = []
+    bump_markers: list[SchemaBumpMarker] = []
+    correct_markers: list[SchemaCorrectMarker] = []
     records = result.stdout.strip(RECORD_SEPARATOR)
     if not records:
-        return markers
+        return bump_markers, correct_markers
 
     for record in records.split(RECORD_SEPARATOR):
         if not record.strip():
             continue
         commit, subject, body = record.split(FIELD_SEPARATOR, maxsplit=2)
-        matches = SCHEMA_BUMP_RE.findall(body)
-        if len(matches) > 1:
+        bump_matches = SCHEMA_BUMP_RE.findall(body)
+        correct_matches = SCHEMA_CORRECT_RE.findall(body)
+        if len(bump_matches) > 1:
             raise ReleasePrepError(
                 f"Commit {commit[:8]} ({subject}) declares multiple Schema-Bump footers"
             )
-        if matches:
-            markers.append(
-                SchemaBumpMarker(commit=commit[:8], subject=subject, bump=matches[0])
+        if len(correct_matches) > 1:
+            raise ReleasePrepError(
+                f"Commit {commit[:8]} ({subject}) declares multiple Schema-Correct footers"
             )
-    return markers
+        if bump_matches and correct_matches:
+            raise ReleasePrepError(
+                f"Commit {commit[:8]} ({subject}) declares both Schema-Bump and Schema-Correct footers"
+            )
+        if bump_matches:
+            bump_markers.append(
+                SchemaBumpMarker(commit=commit[:8], subject=subject, bump=bump_matches[0])
+            )
+        if correct_matches:
+            correct_markers.append(
+                SchemaCorrectMarker(commit=commit[:8], subject=subject, version=correct_matches[0])
+            )
+    return bump_markers, correct_markers
 
 
 def format_marker_list(markers: Sequence[SchemaBumpMarker]) -> str:
@@ -310,7 +341,7 @@ def main(argv: Sequence[str]) -> int:
         schema_changed = (
             schema_output_drift or schema_files_changed_since_tag or schema_version_changed
         )
-        markers = collect_schema_bump_markers(target.commit_range)
+        markers, correct_markers = collect_schema_bump_markers(target.commit_range)
 
         if not schema_changed:
             if markers:
@@ -329,6 +360,25 @@ def main(argv: Sequence[str]) -> int:
             print(
                 f"No schema release prep needed since {target.baseline_label}; "
                 "generated schemas and STYLE_SCHEMA_VERSION are unchanged."
+            )
+            return 0
+
+        # Schema-Correct: <version> allows an explicit version override — used when
+        # correcting an erroneous prior release rather than bumping forward.
+        if correct_markers:
+            if len(correct_markers) > 1:
+                raise ReleasePrepError(
+                    "Multiple Schema-Correct footers found across range; only one is allowed."
+                )
+            correct = correct_markers[0]
+            if current_schema_version != correct.version:
+                raise ReleasePrepError(
+                    f"Schema-Correct footer specifies {correct.version} but "
+                    f"STYLE_SCHEMA_VERSION is {current_schema_version}."
+                )
+            print(
+                f"Schema version corrected to {correct.version} via Schema-Correct footer "
+                f"from {correct.commit}; skipping forward-bump validation."
             )
             return 0
 
