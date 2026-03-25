@@ -123,6 +123,7 @@ fn test_extract_type_conditional_substitute() {
                 children: vec![author_names],
             },
             sort: None,
+            collapse: None,
             et_al_min: None,
             et_al_use_first: None,
             disambiguate_add_year_suffix: None,

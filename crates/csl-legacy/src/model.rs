@@ -135,6 +135,8 @@ pub struct Citation {
     pub layout: Layout,
     /// Optional sort order applied to cites within a single citation cluster.
     pub sort: Option<Sort>,
+    /// Collapse mode for grouped citations (for example, `"citation-number"`).
+    pub collapse: Option<String>,
     /// Minimum number of names before et-al truncation kicks in.
     pub et_al_min: Option<usize>,
     /// Number of names to show before the et-al term.

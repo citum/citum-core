@@ -68,6 +68,7 @@ pub fn parse_style(node: Node) -> Result<Style, String> {
             delimiter: None,
         },
         sort: None,
+        collapse: None,
         et_al_min: None,
         et_al_use_first: None,
         disambiguate_add_year_suffix: None,
@@ -256,6 +257,9 @@ fn parse_citation(node: Node) -> Result<Citation, String> {
         delimiter: None,
     };
     let mut sort = None;
+    let collapse = node
+        .attribute("collapse")
+        .map(std::string::ToString::to_string);
     let et_al_min = node.attribute("et-al-min").and_then(|s| s.parse().ok());
     let et_al_use_first = node
         .attribute("et-al-use-first")
@@ -283,6 +287,7 @@ fn parse_citation(node: Node) -> Result<Citation, String> {
     Ok(Citation {
         layout,
         sort,
+        collapse,
         et_al_min,
         et_al_use_first,
         disambiguate_add_year_suffix,
@@ -879,6 +884,16 @@ mod tests {
         assert_eq!(style.initialize_with.as_deref(), Some("."));
         assert_eq!(style.names_delimiter.as_deref(), Some("; "));
         assert_eq!(style.and.as_deref(), Some("text"));
+    }
+
+    #[test]
+    fn test_parse_citation_collapse() {
+        let xml = wrap_style("").replace(
+            "<citation><layout/></citation>",
+            "<citation collapse=\"citation-number\"><layout/></citation>",
+        );
+        let style = parse(&xml).unwrap();
+        assert_eq!(style.citation.collapse.as_deref(), Some("citation-number"));
     }
 
     #[test]
