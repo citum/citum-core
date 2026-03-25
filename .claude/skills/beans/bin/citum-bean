@@ -207,10 +207,16 @@ build_audit_json() {
     main_commits_json=$(main_commit_evidence_json "$stale_since")
     progress "  matching open beans against landed work"
 
+    local _tmpall _tmpcommits
+    _tmpall=$(mktemp)
+    _tmpcommits=$(mktemp)
+    printf '%s' "$all_json" > "$_tmpall"
+    printf '%s' "$main_commits_json" > "$_tmpcommits"
+
     jq -n \
         --arg scope "$scope" \
-        --argjson all "$all_json" \
-        --argjson main_commits "$main_commits_json" '
+        --slurpfile all "$_tmpall" \
+        --slurpfile main_commits "$_tmpcommits" '
         def norm_title:
             (. // ""
             | ascii_downcase
@@ -244,7 +250,7 @@ build_audit_json() {
                     })
                 }
             );
-        ($main_commits
+        ($main_commits[0]
             | map(
                 . + {
                     subject_norm: (.subject | norm_title),
@@ -256,7 +262,7 @@ build_audit_json() {
                     )
                 }
             )) as $commits |
-        ($all | map(. + {title_norm: (.title | norm_title)})) as $items |
+        ($all[0] | map(. + {title_norm: (.title | norm_title)})) as $items |
         (if $scope == "open"
             then [$items[] | select(is_archived | not)]
             else $items
@@ -453,6 +459,9 @@ build_audit_json() {
             ]
         }
     '
+    local _jq_exit=$?
+    rm -f "$_tmpall" "$_tmpcommits"
+    return $_jq_exit
 }
 
 audit_has_findings() {
