@@ -57,18 +57,21 @@ if ref_type == "article-journal" {
 
 Good (explicit in style):
 ```yaml
-# Style explicitly declares type-specific behavior
-- title: parent-serial
-  overrides:
+# Style explicitly declares type-specific behavior via type-variants
+bibliography:
+  type-variants:
     article-journal:
-      suffix: ","
+      template:
+        - title: parent-serial
+          suffix: ","
 ```
 
 This makes styles portable, testable, and understandable without reading processor code.
 
 ## 7. Declarative Templates
 
-Replace CSL 1.0's procedural `<choose>/<if>` with flat templates + type overrides:
+Replace CSL 1.0's procedural `<choose>/<if>` with flat templates and spec-level
+`type-variants` for structural outliers:
 ```yaml
 bibliography:
   template:
@@ -79,10 +82,24 @@ bibliography:
       wrap: parentheses
     - title: primary
     - variable: publisher
-      overrides:
-        article-journal:
-          suppress: true  # Journals don't show publisher
+  # type-variants at the spec level — only for genuine structural differences
+  type-variants:
+    article-journal:
+      template:
+        - contributor: author
+          form: long
+        - date: issued
+          form: year
+          wrap: parentheses
+        - title: primary
+        # publisher omitted for journals
 ```
+
+**Prefer presets and lean generic templates over `type-variants`** — the goal is to
+design the base template so it handles ~90% of reference types, reserving `type-variants`
+only for types that need a structurally different component set. Use option presets
+(`options.contributors`, `options.dates`, `options.titles`) and template presets
+(`citation.use-preset`) to share configuration without per-type duplication.
 
 ## 8. Structured Name Input
 

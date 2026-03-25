@@ -60,7 +60,7 @@ When you choose divergence:
 ## Core Principles
 
 - Keep behavior explicit in style YAML.
-- Prefer declarative templates plus type-specific `overrides`.
+- Prefer declarative templates; use `type-variants` only for genuine structural differences.
 - Avoid hidden logic in processor code for style-specific formatting.
 - Keep contributor names structured (`family`/`given` or `literal`).
 - Preserve multilingual fallback behavior (original -> transliterated -> translated).
@@ -356,7 +356,7 @@ Refer to [STYLE_PRESET_ARCHITECTURE.md](../specs/STYLE_PRESET_ARCHITECTURE.md) f
  
 ## Repeated Note Citation Recipes
  
-Use citation position overrides when note styles need distinct rendering for:
+Use citation position entries when note styles need distinct rendering for:
  
 - first cite (`citation.template`)
 - subsequent cites (`citation.subsequent`)
@@ -461,15 +461,24 @@ Target improvements such as:
 
 - Better type coverage.
 - Stronger fallback behavior.
-- Less duplication across templates and overrides.
+- Less duplication across templates and `type-variants`.
 - Cleaner use of shared options and presets.
+
+**Preset-first approach for high SQI without `type-variants`:**
+1. Use option presets (`options.contributors`, `options.dates`, `options.titles`,
+   `options.substitute`) and template presets (`citation.use-preset`) to share
+   configuration across styles without per-type repetition.
+2. Design the generic template to handle the common case cleanly — avoid
+   special-casing types that differ only in a label or one optional field.
+3. Add `type-variants` only when a reference type needs a structurally different
+   component set (different fields, different order).
 
 Do not trade fidelity for a higher SQI score.
 
 ## Common Mistakes
 
 - Putting style-specific punctuation rules into processor code.
-- Solving one style with hardcoded exceptions instead of declarative overrides.
+- Solving one style with hardcoded exceptions instead of using presets or `type-variants`.
 - Duplicating variable rendering when substitution/fallback can do it cleanly.
 - Accepting small oracle regressions for “cleaner” YAML.
 

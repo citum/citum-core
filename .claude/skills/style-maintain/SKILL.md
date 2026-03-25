@@ -1,7 +1,7 @@
 ---
 name: style-maintain
 type: agent-invocable
-description: "Fast targeted maintenance for an existing Citum style. Use for punctuation/layout bugs, missing type overrides, or syntax modernization. Not for migrations or batch waves."
+description: "Fast targeted maintenance for an existing Citum style. Use for punctuation/layout bugs, missing type-variants entries, or syntax modernization. Not for migrations or batch waves."
 model: haiku
 ---
 
@@ -9,7 +9,7 @@ model: haiku
 
 ## Use This Skill When
 - Updating one style for punctuation/layout bugs.
-- Adding a missing type override.
+- Adding a missing `type-variants` entry.
 - Modernizing style syntax without changing rendered output intent.
 
 ## Input Contract
@@ -52,9 +52,9 @@ Token efficiency matters — diagnose everything before touching any files.
    before surfacing to user.
 
 ## Fix Ordering
-1. Component overrides and punctuation/wrap controls.
+1. Component-level type variations and punctuation/wrap controls.
 2. Shared bibliography spine improvements.
-3. `type-templates` only for true structural outliers.
+3. `type-variants` only for true structural outliers.
 4. Processor/schema changes only after planner escalation.
 
 ## Co-Evolution (Mandatory — implement-first)

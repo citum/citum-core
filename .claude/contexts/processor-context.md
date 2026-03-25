@@ -3,7 +3,7 @@
 Working on the citation and bibliography **rendering engine**.
 
 ## Focus Areas
-- Template resolution: matching reference types to templates, applying overrides
+- Template resolution: matching reference types to templates, resolving `type-variants`
 - Name formatting: initials, sort order, et-al, disambiguation
 - Date formatting: EDTF support, date parts, ranges
 - Output formats: HTML, Djot, PlainText (pluggable `OutputFormat` trait)
@@ -20,7 +20,7 @@ Working on the citation and bibliography **rendering engine**.
 - **Declarative Over Procedural**: Flat YAML templates, no `<choose>/<if>` logic.
 - **Oracle Parity**: Output must match `citeproc-js` for supported features.
 - **Zero Magic**: Style behavior is explicit in YAML, never hardcoded in Rust.
-- **Three-tier options**: Global → context-specific (citation/bibliography) → template-level overrides.
+- **Two-tier options + type-variants**: Global → context-specific (citation/bibliography); use `type-variants` for type-specific template selection.
 
 ## Key Binaries & Scripts
 - `cargo run --bin citum -- render refs -b references.json -s styles/apa-7th.yaml` — main rendering entry point
