@@ -157,10 +157,11 @@ impl<'a> Disambiguator<'a> {
     pub fn calculate_hints(&self) -> HashMap<String, ProcHints> {
         let mut hints = HashMap::new();
         let refs: Vec<&Reference> = self.bibliography.values().collect();
-        let cache = self.build_reference_cache(&refs);
+        let flags = self.disambiguation_flags();
+        let needs_title_key = self.group_sort.is_none() && flags.year_suffix;
+        let cache = self.build_reference_cache(&refs, needs_title_key);
         let grouped = self.group_references(&refs, &cache);
         let author_group_lengths = self.author_group_lengths(&refs, &cache);
-        let flags = self.disambiguation_flags();
 
         for (key, group) in grouped {
             self.apply_group_hints(
@@ -200,7 +201,7 @@ impl<'a> Disambiguator<'a> {
         }
     }
 
-    fn build_reference_cache(&self, refs: &[&Reference]) -> ReferenceCache {
+    fn build_reference_cache(&self, refs: &[&Reference], needs_title_key: bool) -> ReferenceCache {
         let mut cache = HashMap::with_capacity(refs.len());
 
         for reference in refs {
@@ -209,7 +210,7 @@ impl<'a> Disambiguator<'a> {
                 .map_or_else(Vec::new, |authors| authors.to_names_vec());
             let author_key = self.build_author_key(&names);
             let group_key = self.build_group_key(reference, &author_key);
-            let title_key = self.group_sort.is_none().then(|| {
+            let title_key = needs_title_key.then(|| {
                 reference
                     .title()
                     .map(|title| title.to_string())
@@ -769,8 +770,13 @@ impl<'a> Disambiguator<'a> {
     }
 
     fn push_lowercased(key: &mut String, value: &str) {
-        for ch in value.chars() {
-            key.extend(ch.to_lowercase());
+        if value.is_ascii() {
+            key.reserve(value.len());
+            for byte in value.bytes() {
+                key.push((byte as char).to_ascii_lowercase());
+            }
+        } else {
+            key.push_str(&value.to_lowercase());
         }
     }
 
@@ -1069,6 +1075,64 @@ mod tests {
             rendered_r2.contains("A. Smith"),
             "expected expanded given name for r2: {rendered_r2}"
         );
+    }
+
+    #[test]
+    fn test_build_reference_cache_skips_title_keys_when_year_suffix_is_unused() {
+        use citum_schema::options::{Disambiguation, Processing, ProcessingCustom};
+
+        let mut bib = Bibliography::new();
+        bib.insert("r1".to_string(), make_ref("r1", "Smith", "John", 2020));
+        let refs: Vec<&Reference> = bib.values().collect();
+        let locale = Locale::en_us();
+
+        let disabled_config = Config {
+            processing: Some(Processing::Custom(ProcessingCustom {
+                disambiguate: Some(Disambiguation {
+                    names: false,
+                    add_givenname: true,
+                    year_suffix: false,
+                }),
+                ..Default::default()
+            })),
+            ..Default::default()
+        };
+        let disabled = Disambiguator::new(&bib, &disabled_config, &locale);
+        let disabled_flags = disabled.disambiguation_flags();
+        let disabled_cache = disabled.build_reference_cache(
+            &refs,
+            disabled.group_sort.is_none() && disabled_flags.year_suffix,
+        );
+        assert!(disabled_cache.values().all(|data| data.title_key.is_none()));
+
+        let enabled_config = Config {
+            processing: Some(Processing::Custom(ProcessingCustom {
+                disambiguate: Some(Disambiguation {
+                    names: false,
+                    add_givenname: false,
+                    year_suffix: true,
+                }),
+                ..Default::default()
+            })),
+            ..Default::default()
+        };
+        let enabled = Disambiguator::new(&bib, &enabled_config, &locale);
+        let enabled_flags = enabled.disambiguation_flags();
+        let enabled_cache = enabled.build_reference_cache(
+            &refs,
+            enabled.group_sort.is_none() && enabled_flags.year_suffix,
+        );
+        assert!(enabled_cache.values().all(|data| data.title_key.is_some()));
+    }
+
+    #[test]
+    fn test_push_lowercased_matches_str_lowercase_for_non_ascii() {
+        let mut key = String::new();
+        let value = "ΟΣ";
+
+        Disambiguator::push_lowercased(&mut key, value);
+
+        assert_eq!(key, value.to_lowercase());
     }
 
     #[test]
