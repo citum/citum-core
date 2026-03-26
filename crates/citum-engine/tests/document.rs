@@ -17,7 +17,9 @@ use citum_engine::{
 };
 use citum_schema::{
     BibliographySpec, Locale, Style, StyleInfo,
-    options::{BibliographyOptions, Config, Disambiguation, Processing, ProcessingCustom},
+    options::{
+        BibliographyOptions, Config, Disambiguation, LocatorPreset, Processing, ProcessingCustom,
+    },
 };
 
 // --- Document Rendering Scenarios ---
@@ -328,8 +330,73 @@ fn given_chicago_note_locator_repeat_when_integral_ibid_is_rendered_then_anchor_
         "integral ibid-with-locator should remain reduced: {output}"
     );
     assert!(
-        output.contains("12"),
-        "integral ibid-with-locator should preserve the locator: {output}"
+        output.contains("Brown (ibid., 12)"),
+        "integral ibid-with-locator should preserve the reduced locator fragment: {output}"
+    );
+}
+
+fn given_page_labels_are_configured_when_integral_ibid_is_rendered_then_the_labeled_page_locator_is_preserved()
+ {
+    let mut style = load_style("styles/chicago-notes.yaml").into_resolved();
+    style.options.get_or_insert_with(Default::default).locators =
+        Some(LocatorPreset::AuthorDate.config());
+    let processor = Processor::new(style, load_example_bibliography());
+    let parser = DjotParser;
+    let document = concat!(
+        "Text.[^n1]\n\n",
+        "[^n1]:\n\n",
+        "  - [+@brown1954, p. 10] argues that...\n",
+        "  - [+@brown1954, p. 12] also argues that...\n",
+    );
+
+    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
+        document,
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    assert!(
+        output.contains("Brown ("),
+        "integral ibid-with-locator should preserve the authored anchor: {output}"
+    );
+    assert!(
+        output.to_lowercase().contains("ibid"),
+        "integral ibid-with-locator should remain reduced: {output}"
+    );
+    assert!(
+        output.contains("p. 12"),
+        "configured page labels should be preserved in reduced manual notes: {output}"
+    );
+}
+
+fn given_chapter_locator_repeat_when_integral_ibid_is_rendered_then_the_labeled_chapter_locator_is_preserved()
+ {
+    let processor = example_document_processor("styles/chicago-notes.yaml");
+    let parser = DjotParser;
+    let document = concat!(
+        "Text.[^n1]\n\n",
+        "[^n1]:\n\n",
+        "  - [+@brown1954, chap. 2] argues that...\n",
+        "  - [+@brown1954, chap. 3] also argues that...\n",
+    );
+
+    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
+        document,
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    assert!(
+        output.contains("Brown ("),
+        "integral ibid-with-locator should preserve the authored anchor: {output}"
+    );
+    assert!(
+        output.to_lowercase().contains("ibid"),
+        "integral ibid-with-locator should remain reduced: {output}"
+    );
+    assert!(
+        output.contains("ch. 3"),
+        "chapter locators should retain their localized label in reduced manual notes: {output}"
     );
 }
 
@@ -759,6 +826,22 @@ mod note_flow {
             "A repeated note citation with a locator should keep both the narrative anchor and the locator.",
         );
         super::given_chicago_note_locator_repeat_when_integral_ibid_is_rendered_then_anchor_and_locator_are_preserved();
+    }
+
+    #[test]
+    fn configured_page_labels_are_preserved_in_manual_note_ibid_with_locator() {
+        announce_behavior(
+            "If locator rendering is configured to show page labels, a repeated manual note should keep the labeled page locator in the reduced ibid text.",
+        );
+        super::given_page_labels_are_configured_when_integral_ibid_is_rendered_then_the_labeled_page_locator_is_preserved();
+    }
+
+    #[test]
+    fn chapter_locator_repeats_keep_the_labeled_locator() {
+        announce_behavior(
+            "A repeated manual note with a chapter locator should keep the chapter label in the reduced ibid text.",
+        );
+        super::given_chapter_locator_repeat_when_integral_ibid_is_rendered_then_the_labeled_chapter_locator_is_preserved();
     }
 
     #[test]

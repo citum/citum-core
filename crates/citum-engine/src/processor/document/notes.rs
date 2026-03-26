@@ -389,14 +389,34 @@ impl Processor {
             let locator = citation
                 .items
                 .first()
-                .and_then(|item| item.locator.as_ref())
-                .map(|locator| {
-                    locator
-                        .segments()
-                        .iter()
-                        .map(|segment| segment.value.value_str())
-                        .collect::<Vec<_>>()
-                        .join(", ")
+                .and_then(|item| item.locator.as_ref().map(|locator| (item, locator)))
+                .map(|(item, locator)| {
+                    let citation_config = self.get_citation_config();
+                    let derived_locator_config;
+                    let locator_config = if let Some(config) = citation_config.locators.as_ref() {
+                        config
+                    } else {
+                        derived_locator_config = if matches!(
+                            citation_config.processing,
+                            Some(citum_schema::options::Processing::Note)
+                        ) {
+                            citum_schema::options::LocatorPreset::Note.config()
+                        } else {
+                            citum_schema::options::LocatorConfig::default()
+                        };
+                        &derived_locator_config
+                    };
+                    let ref_type = self
+                        .bibliography
+                        .get(&item.id)
+                        .map(|reference| reference.ref_type())
+                        .unwrap_or_default();
+                    crate::values::locator::render_locator(
+                        locator,
+                        &ref_type,
+                        locator_config,
+                        &self.locale,
+                    )
                 })
                 .filter(|value| !value.trim().is_empty());
 
