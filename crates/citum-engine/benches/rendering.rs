@@ -86,6 +86,7 @@ fn bench_disambiguation(c: &mut Criterion) {
     let givenname_bib = make_givenname_collision_bibliography();
     let partition_bib = make_partition_collision_bibliography();
     let label_bib = make_label_collision_bibliography();
+    let default_title_sort_bib = make_default_title_sort_collision_bibliography();
 
     let no_collision_config = Config::default();
     let givenname_config = make_custom_config(true, true, true);
@@ -93,6 +94,17 @@ fn bench_disambiguation(c: &mut Criterion) {
     let label_config = Config {
         processing: Some(Processing::Label(LabelConfig {
             preset: LabelPreset::Din,
+            ..Default::default()
+        })),
+        ..Default::default()
+    };
+    let default_title_sort_config = Config {
+        processing: Some(Processing::Custom(ProcessingCustom {
+            disambiguate: Some(Disambiguation {
+                names: false,
+                add_givenname: false,
+                year_suffix: true,
+            }),
             ..Default::default()
         })),
         ..Default::default()
@@ -119,6 +131,13 @@ fn bench_disambiguation(c: &mut Criterion) {
     });
     bench_group.bench_function("Label-mode suffix collisions", |b| {
         let disambiguator = Disambiguator::new(&label_bib, &label_config, &locale);
+        b.iter(|| {
+            black_box(disambiguator.calculate_hints());
+        });
+    });
+    bench_group.bench_function("Default title-order suffix collisions", |b| {
+        let disambiguator =
+            Disambiguator::new(&default_title_sort_bib, &default_title_sort_config, &locale);
         b.iter(|| {
             black_box(disambiguator.calculate_hints());
         });
@@ -157,11 +176,14 @@ fn make_custom_config(names: bool, add_givenname: bool, year_suffix: bool) -> Co
 }
 
 fn make_ref(id: &str, family: &str, given: &str, year: i32) -> Reference {
-    let title = format!("Title {id}");
+    make_ref_with_title(id, family, given, year, &format!("Title {id}"))
+}
+
+fn make_ref_with_title(id: &str, family: &str, given: &str, year: i32, title: &str) -> Reference {
     Reference::Monograph(Box::new(Monograph {
         id: Some(id.to_string()),
         r#type: MonographType::Book,
-        title: Some(Title::Single(title)),
+        title: Some(Title::Single(title.to_string())),
         container_title: None,
         author: Some(Contributor::StructuredName(StructuredName {
             family: MultilingualString::Simple(family.to_string()),
@@ -237,6 +259,21 @@ fn make_label_collision_bibliography() -> Bibliography {
     let mut bib = Bibliography::new();
     for id in ["kuhn1962a", "kuhn1962b"] {
         bib.insert(id.to_string(), make_ref(id, "Kuhn", "Thomas", 1962));
+    }
+    bib
+}
+
+fn make_default_title_sort_collision_bibliography() -> Bibliography {
+    let mut bib = Bibliography::new();
+    for (id, title) in [
+        ("smith2020-zeta", "Zeta title"),
+        ("smith2020-alpha", "Alpha title"),
+        ("smith2020-gamma", "Gamma title"),
+    ] {
+        bib.insert(
+            id.to_string(),
+            make_ref_with_title(id, "Smith", "John", 2020, title),
+        );
     }
     bib
 }

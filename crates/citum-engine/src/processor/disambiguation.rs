@@ -2,6 +2,7 @@ use crate::reference::{Bibliography, Reference};
 use crate::values::ProcHints;
 use citum_schema::options::Config;
 use std::collections::{HashMap, HashSet};
+use std::fmt::Write as _;
 
 use crate::grouping::GroupSorter;
 use citum_schema::grouping::GroupSort;
@@ -65,6 +66,7 @@ struct GroupDisambiguationContext<'a> {
     group: &'a [&'a Reference],
     flags: DisambiguationFlags,
     author_group_lengths: &'a HashMap<String, usize>,
+    cache: &'a ReferenceCache,
 }
 
 #[derive(Clone, Copy)]
@@ -79,6 +81,15 @@ struct HintPlan<'a> {
 enum HintOrder {
     Encountered,
     GroupSorted,
+}
+
+type ReferenceCache = HashMap<usize, CachedReferenceData>;
+
+struct CachedReferenceData {
+    author_key: String,
+    group_key: String,
+    names: Vec<crate::reference::FlatName>,
+    title_key: Option<String>,
 }
 
 impl<'a> Disambiguator<'a> {
@@ -146,9 +157,11 @@ impl<'a> Disambiguator<'a> {
     pub fn calculate_hints(&self) -> HashMap<String, ProcHints> {
         let mut hints = HashMap::new();
         let refs: Vec<&Reference> = self.bibliography.values().collect();
-        let grouped = self.group_references(&refs);
-        let author_group_lengths = self.author_group_lengths(&refs);
         let flags = self.disambiguation_flags();
+        let needs_title_key = self.group_sort.is_none() && flags.year_suffix;
+        let cache = self.build_reference_cache(&refs, needs_title_key);
+        let grouped = self.group_references(&refs, &cache);
+        let author_group_lengths = self.author_group_lengths(&refs, &cache);
 
         for (key, group) in grouped {
             self.apply_group_hints(
@@ -158,6 +171,7 @@ impl<'a> Disambiguator<'a> {
                     group: &group,
                     flags,
                     author_group_lengths: &author_group_lengths,
+                    cache: &cache,
                 },
             );
         }
@@ -187,12 +201,47 @@ impl<'a> Disambiguator<'a> {
         }
     }
 
-    fn author_group_lengths(&self, refs: &[&Reference]) -> HashMap<String, usize> {
+    fn build_reference_cache(&self, refs: &[&Reference], needs_title_key: bool) -> ReferenceCache {
+        let mut cache = HashMap::with_capacity(refs.len());
+
+        for reference in refs {
+            let names = reference
+                .author()
+                .map_or_else(Vec::new, |authors| authors.to_names_vec());
+            let author_key = self.build_author_key(&names);
+            let group_key = self.build_group_key(reference, &author_key);
+            let title_key = needs_title_key.then(|| {
+                reference
+                    .title()
+                    .map(|title| title.to_string())
+                    .unwrap_or_default()
+                    .to_lowercase()
+            });
+
+            cache.insert(
+                Self::reference_cache_key(reference),
+                CachedReferenceData {
+                    author_key,
+                    group_key,
+                    names,
+                    title_key,
+                },
+            );
+        }
+
+        cache
+    }
+
+    fn author_group_lengths(
+        &self,
+        refs: &[&Reference],
+        cache: &ReferenceCache,
+    ) -> HashMap<String, usize> {
         let mut author_group_lengths = HashMap::new();
         for reference in refs {
-            let author_key = self.make_author_key(reference);
+            let author_key = &self.reference_data(reference, cache).author_key;
             if !author_key.is_empty() {
-                *author_group_lengths.entry(author_key).or_insert(0) += 1;
+                *author_group_lengths.entry(author_key.clone()).or_insert(0) += 1;
             }
         }
         author_group_lengths
@@ -239,6 +288,7 @@ impl<'a> Disambiguator<'a> {
             hints,
             context.group[0],
             context.author_group_lengths,
+            context.cache,
             ProcHints::default(),
         );
         true
@@ -266,7 +316,8 @@ impl<'a> Disambiguator<'a> {
             return false;
         }
 
-        let Some((min_names_to_show, partitions)) = self.partition_by_name_expansion(context.group)
+        let Some((min_names_to_show, partitions)) =
+            self.partition_by_name_expansion(context.group, context.cache)
         else {
             return false;
         };
@@ -278,7 +329,7 @@ impl<'a> Disambiguator<'a> {
             }
 
             if context.flags.add_givenname
-                && self.check_givenname_resolution(subgroup, Some(min_names_to_show))
+                && self.check_givenname_resolution(subgroup, context.cache, Some(min_names_to_show))
             {
                 self.apply_resolution(hints, subgroup, context, true, Some(min_names_to_show));
                 continue;
@@ -301,7 +352,9 @@ impl<'a> Disambiguator<'a> {
         hints: &mut HashMap<String, ProcHints>,
         context: &GroupDisambiguationContext<'_>,
     ) -> bool {
-        if !(context.flags.add_givenname && self.check_givenname_resolution(context.group, None)) {
+        if !(context.flags.add_givenname
+            && self.check_givenname_resolution(context.group, context.cache, None))
+        {
             return false;
         }
 
@@ -318,7 +371,8 @@ impl<'a> Disambiguator<'a> {
             return false;
         }
 
-        let Some(min_names_to_show) = self.find_combined_resolution(context.group) else {
+        let Some(min_names_to_show) = self.find_combined_resolution(context.group, context.cache)
+        else {
             return false;
         };
 
@@ -326,14 +380,18 @@ impl<'a> Disambiguator<'a> {
         true
     }
 
-    fn find_combined_resolution(&self, group: &[&Reference]) -> Option<usize> {
+    fn find_combined_resolution(
+        &self,
+        group: &[&Reference],
+        cache: &ReferenceCache,
+    ) -> Option<usize> {
         let max_authors = group
             .iter()
-            .map(|r| r.author().map_or(0, |a| a.to_names_vec().len()))
+            .map(|reference| self.reference_data(reference, cache).names.len())
             .max()
             .unwrap_or(0);
 
-        (2..=max_authors).find(|&n| self.check_givenname_resolution(group, Some(n)))
+        (2..=max_authors).find(|&n| self.check_givenname_resolution(group, cache, Some(n)))
     }
 
     fn apply_resolution(
@@ -355,6 +413,7 @@ impl<'a> Disambiguator<'a> {
                 disamb_condition: false,
             },
             HintOrder::Encountered,
+            context.cache,
         );
     }
 
@@ -363,10 +422,11 @@ impl<'a> Disambiguator<'a> {
         hints: &mut HashMap<String, ProcHints>,
         reference: &Reference,
         author_group_lengths: &HashMap<String, usize>,
+        cache: &ReferenceCache,
         mut hint: ProcHints,
     ) {
         hint.group_length = self
-            .author_group_length(reference, author_group_lengths)
+            .author_group_length(reference, author_group_lengths, cache)
             .unwrap_or(1);
         hints.insert(reference.id().unwrap_or_default(), hint);
     }
@@ -375,9 +435,10 @@ impl<'a> Disambiguator<'a> {
         &self,
         reference: &Reference,
         author_group_lengths: &HashMap<String, usize>,
+        cache: &ReferenceCache,
     ) -> Option<usize> {
-        let author_key = self.make_author_key(reference);
-        author_group_lengths.get(&author_key).copied()
+        let author_key = &self.reference_data(reference, cache).author_key;
+        author_group_lengths.get(author_key).copied()
     }
 
     fn apply_year_suffix(
@@ -415,6 +476,7 @@ impl<'a> Disambiguator<'a> {
                 disamb_condition: true,
             },
             HintOrder::GroupSorted,
+            context.cache,
         );
     }
 
@@ -425,16 +487,35 @@ impl<'a> Disambiguator<'a> {
         author_group_lengths: &HashMap<String, usize>,
         plan: HintPlan<'_>,
         order: HintOrder,
+        cache: &ReferenceCache,
     ) {
         match order {
             HintOrder::Encountered => {
                 for (idx, reference) in group.iter().enumerate() {
-                    self.insert_planned_hint(hints, reference, author_group_lengths, plan, idx + 1);
+                    self.insert_planned_hint(
+                        hints,
+                        reference,
+                        author_group_lengths,
+                        plan,
+                        idx + 1,
+                        cache,
+                    );
                 }
             }
             HintOrder::GroupSorted => {
-                for (idx, reference) in self.sort_group_for_year_suffix(group).iter().enumerate() {
-                    self.insert_planned_hint(hints, reference, author_group_lengths, plan, idx + 1);
+                for (idx, reference) in self
+                    .sort_group_for_year_suffix(group, cache)
+                    .iter()
+                    .enumerate()
+                {
+                    self.insert_planned_hint(
+                        hints,
+                        reference,
+                        author_group_lengths,
+                        plan,
+                        idx + 1,
+                        cache,
+                    );
                 }
             }
         }
@@ -447,11 +528,13 @@ impl<'a> Disambiguator<'a> {
         author_group_lengths: &HashMap<String, usize>,
         plan: HintPlan<'_>,
         group_index: usize,
+        cache: &ReferenceCache,
     ) {
         self.insert_hint(
             hints,
             reference,
             author_group_lengths,
+            cache,
             ProcHints {
                 disamb_condition: plan.disamb_condition,
                 group_index,
@@ -463,24 +546,28 @@ impl<'a> Disambiguator<'a> {
         );
     }
 
-    fn sort_group_for_year_suffix<'b>(&self, group: &[&'b Reference]) -> Vec<&'b Reference> {
+    fn sort_group_for_year_suffix<'b>(
+        &self,
+        group: &[&'b Reference],
+        cache: &ReferenceCache,
+    ) -> Vec<&'b Reference> {
         if let Some(sort_spec) = self.group_sort {
             let sorter = GroupSorter::new(self.locale);
             sorter.sort_references(group.to_vec(), sort_spec)
         } else {
             let mut sorted: Vec<&Reference> = group.to_vec();
             sorted.sort_by(|a, b| {
-                let a_title = a
-                    .title()
-                    .map(|t| t.to_string())
-                    .unwrap_or_default()
-                    .to_lowercase();
-                let b_title = b
-                    .title()
-                    .map(|t| t.to_string())
-                    .unwrap_or_default()
-                    .to_lowercase();
-                a_title.cmp(&b_title)
+                let a_title = self
+                    .reference_data(a, cache)
+                    .title_key
+                    .as_deref()
+                    .unwrap_or_default();
+                let b_title = self
+                    .reference_data(b, cache)
+                    .title_key
+                    .as_deref()
+                    .unwrap_or_default();
+                a_title.cmp(b_title)
             });
             sorted
         }
@@ -491,10 +578,11 @@ impl<'a> Disambiguator<'a> {
     fn partition_by_name_expansion<'b>(
         &self,
         group: &[&'b Reference],
+        cache: &ReferenceCache,
     ) -> Option<(usize, HashMap<String, Vec<&'b Reference>>)> {
         let max_authors = group
             .iter()
-            .map(|r| r.author().map_or(0, |a| a.to_names_vec().len()))
+            .map(|reference| self.reference_data(reference, cache).names.len())
             .max()
             .unwrap_or(0);
 
@@ -502,7 +590,7 @@ impl<'a> Disambiguator<'a> {
             let mut partitions: HashMap<String, Vec<&Reference>> = HashMap::new();
             for reference in group {
                 partitions
-                    .entry(self.make_name_expansion_key(reference, n))
+                    .entry(self.make_name_expansion_key(reference, cache, n))
                     .or_default()
                     .push(*reference);
             }
@@ -515,52 +603,34 @@ impl<'a> Disambiguator<'a> {
         None
     }
 
-    fn make_name_expansion_key(&self, reference: &Reference, n: usize) -> String {
-        if let Some(authors) = reference.author() {
-            let names = authors.to_names_vec();
-            let mut parts = names
-                .iter()
-                .take(n)
-                .map(|name| name.family_or_literal().to_lowercase())
-                .collect::<Vec<_>>();
-
-            if names.len() > n {
-                parts.push("et-al".to_string());
-            }
-
-            parts.join("|")
-        } else {
-            String::new()
-        }
+    fn make_name_expansion_key(
+        &self,
+        reference: &Reference,
+        cache: &ReferenceCache,
+        n: usize,
+    ) -> String {
+        let names = &self.reference_data(reference, cache).names;
+        let mut key = String::new();
+        self.append_name_expansion_key(&mut key, names, n);
+        key
     }
 
     /// Check if expanding to full names resolves ambiguity in the group.
     /// If `min_names` is Some(n), it checks resolution when showing n names.
-    fn check_givenname_resolution(&self, group: &[&Reference], min_names: Option<usize>) -> bool {
+    fn check_givenname_resolution(
+        &self,
+        group: &[&Reference],
+        cache: &ReferenceCache,
+        min_names: Option<usize>,
+    ) -> bool {
         let mut seen = HashSet::new();
         let mut collision = false;
+        let n = min_names.unwrap_or(1);
         for reference in group {
-            if let Some(authors) = reference.author() {
-                let n = min_names.unwrap_or(1);
-                // Create a key for the first n authors with full names
-                let key = authors
-                    .to_names_vec()
-                    .iter()
-                    .take(n)
-                    .map(|n| {
-                        format!(
-                            "{:?}|{:?}|{:?}|{:?}",
-                            n.family, n.given, n.non_dropping_particle, n.dropping_particle
-                        )
-                    })
-                    .collect::<Vec<_>>()
-                    .join("||");
+            let names = &self.reference_data(reference, cache).names;
+            let key = self.make_givenname_resolution_key(names, n);
 
-                if !seen.insert(key) {
-                    collision = true;
-                    break;
-                }
-            } else if !seen.insert(String::new()) {
+            if !seen.insert(key) {
                 collision = true;
                 break;
             }
@@ -572,58 +642,47 @@ impl<'a> Disambiguator<'a> {
     fn group_references<'b>(
         &self,
         references: &[&'b Reference],
+        cache: &ReferenceCache,
     ) -> HashMap<String, Vec<&'b Reference>> {
         let mut groups: HashMap<String, Vec<&'b Reference>> = HashMap::new();
 
         for reference in references {
-            let key = self.make_group_key(reference);
+            let key = self.reference_data(reference, cache).group_key.clone();
             groups.entry(key).or_default().push(*reference);
         }
 
         groups
     }
 
-    /// Create a grouping key for a reference based on its author field.
-    fn make_author_key(&self, reference: &Reference) -> String {
+    fn build_author_key(&self, names: &[crate::reference::FlatName]) -> String {
         let shorten = self
             .config
             .contributors
             .as_ref()
             .and_then(|c| c.shorten.as_ref());
 
-        if let Some(authors) = reference.author() {
-            let names_vec = authors.to_names_vec();
-            if let Some(opts) = shorten {
-                if names_vec.len() >= opts.min as usize {
-                    // Show 'use_first' names in the base citation
-                    names_vec
-                        .iter()
-                        .take(opts.use_first as usize)
-                        .map(|n| n.family_or_literal().to_lowercase())
-                        .collect::<Vec<_>>()
-                        .join(",")
-                        + ",et-al"
-                } else {
-                    names_vec
-                        .iter()
-                        .map(|n| n.family_or_literal().to_lowercase())
-                        .collect::<Vec<_>>()
-                        .join(",")
-                }
-            } else {
-                names_vec
-                    .iter()
-                    .map(|n| n.family_or_literal().to_lowercase())
-                    .collect::<Vec<_>>()
-                    .join(",")
-            }
-        } else {
-            String::new()
+        if names.is_empty() {
+            return String::new();
         }
+
+        let mut key = String::new();
+        if let Some(opts) = shorten
+            && names.len() >= opts.min as usize
+        {
+            self.append_lowercased_families(&mut key, names, opts.use_first as usize, ',');
+            if !key.is_empty() {
+                key.push(',');
+            }
+            key.push_str("et-al");
+            return key;
+        }
+
+        self.append_lowercased_families(&mut key, names, names.len(), ',');
+        key
     }
 
     /// Create a grouping key for a reference based on its base citation form.
-    fn make_group_key(&self, reference: &Reference) -> String {
+    fn build_group_key(&self, reference: &Reference, author_key: &str) -> String {
         // In label mode, group by base label string rather than author-year.
         // This ensures disambiguation happens at the label level (Knu84a/Knu84b)
         // rather than the author-year level.
@@ -632,15 +691,107 @@ impl<'a> Disambiguator<'a> {
             return crate::processor::labels::generate_base_label(reference, &params);
         }
 
-        let author_key = self.make_author_key(reference);
-
+        let mut key = String::with_capacity(author_key.len() + 8);
+        key.push_str(author_key);
+        key.push(':');
         let year = reference
             .issued()
             .and_then(|d| d.year().parse::<i32>().ok())
-            .map(|y| y.to_string())
-            .unwrap_or_default();
+            .map(|y| {
+                let _ = write!(key, "{y}");
+            });
+        if year.is_none() {
+            return key;
+        }
+        key
+    }
 
-        format!("{author_key}:{year}")
+    fn append_lowercased_families(
+        &self,
+        key: &mut String,
+        names: &[crate::reference::FlatName],
+        take: usize,
+        separator: char,
+    ) {
+        for (idx, name) in names.iter().take(take).enumerate() {
+            if idx > 0 {
+                key.push(separator);
+            }
+            Self::push_lowercased(key, name.family_or_literal());
+        }
+    }
+
+    fn append_name_expansion_key(
+        &self,
+        key: &mut String,
+        names: &[crate::reference::FlatName],
+        n: usize,
+    ) {
+        self.append_lowercased_families(key, names, n, '|');
+        if names.len() > n {
+            if !key.is_empty() {
+                key.push('|');
+            }
+            key.push_str("et-al");
+        }
+    }
+
+    fn make_givenname_resolution_key(
+        &self,
+        names: &[crate::reference::FlatName],
+        n: usize,
+    ) -> String {
+        let mut key = String::new();
+
+        for (idx, name) in names.iter().take(n).enumerate() {
+            if idx > 0 {
+                key.push_str("||");
+            }
+            Self::append_optional_part(&mut key, name.family.as_deref());
+            key.push('|');
+            Self::append_optional_part(&mut key, name.given.as_deref());
+            key.push('|');
+            Self::append_optional_part(&mut key, name.non_dropping_particle.as_deref());
+            key.push('|');
+            Self::append_optional_part(&mut key, name.dropping_particle.as_deref());
+        }
+
+        key
+    }
+
+    fn append_optional_part(key: &mut String, value: Option<&str>) {
+        match value {
+            Some(value) => {
+                let _ = write!(key, "{}:", value.len());
+                key.push_str(value);
+            }
+            None => key.push('-'),
+        }
+    }
+
+    fn push_lowercased(key: &mut String, value: &str) {
+        if value.is_ascii() {
+            key.reserve(value.len());
+            for byte in value.bytes() {
+                key.push((byte as char).to_ascii_lowercase());
+            }
+        } else {
+            key.push_str(&value.to_lowercase());
+        }
+    }
+
+    fn reference_cache_key(reference: &Reference) -> usize {
+        std::ptr::from_ref(reference) as usize
+    }
+
+    fn reference_data<'b>(
+        &self,
+        reference: &Reference,
+        cache: &'b ReferenceCache,
+    ) -> &'b CachedReferenceData {
+        cache
+            .get(&Self::reference_cache_key(reference))
+            .expect("disambiguation cache missing reference")
     }
 }
 
@@ -924,6 +1075,64 @@ mod tests {
             rendered_r2.contains("A. Smith"),
             "expected expanded given name for r2: {rendered_r2}"
         );
+    }
+
+    #[test]
+    fn test_build_reference_cache_skips_title_keys_when_year_suffix_is_unused() {
+        use citum_schema::options::{Disambiguation, Processing, ProcessingCustom};
+
+        let mut bib = Bibliography::new();
+        bib.insert("r1".to_string(), make_ref("r1", "Smith", "John", 2020));
+        let refs: Vec<&Reference> = bib.values().collect();
+        let locale = Locale::en_us();
+
+        let disabled_config = Config {
+            processing: Some(Processing::Custom(ProcessingCustom {
+                disambiguate: Some(Disambiguation {
+                    names: false,
+                    add_givenname: true,
+                    year_suffix: false,
+                }),
+                ..Default::default()
+            })),
+            ..Default::default()
+        };
+        let disabled = Disambiguator::new(&bib, &disabled_config, &locale);
+        let disabled_flags = disabled.disambiguation_flags();
+        let disabled_cache = disabled.build_reference_cache(
+            &refs,
+            disabled.group_sort.is_none() && disabled_flags.year_suffix,
+        );
+        assert!(disabled_cache.values().all(|data| data.title_key.is_none()));
+
+        let enabled_config = Config {
+            processing: Some(Processing::Custom(ProcessingCustom {
+                disambiguate: Some(Disambiguation {
+                    names: false,
+                    add_givenname: false,
+                    year_suffix: true,
+                }),
+                ..Default::default()
+            })),
+            ..Default::default()
+        };
+        let enabled = Disambiguator::new(&bib, &enabled_config, &locale);
+        let enabled_flags = enabled.disambiguation_flags();
+        let enabled_cache = enabled.build_reference_cache(
+            &refs,
+            enabled.group_sort.is_none() && enabled_flags.year_suffix,
+        );
+        assert!(enabled_cache.values().all(|data| data.title_key.is_some()));
+    }
+
+    #[test]
+    fn test_push_lowercased_matches_str_lowercase_for_non_ascii() {
+        let mut key = String::new();
+        let value = "ΟΣ";
+
+        Disambiguator::push_lowercased(&mut key, value);
+
+        assert_eq!(key, value.to_lowercase());
     }
 
     #[test]
