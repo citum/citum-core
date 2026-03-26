@@ -253,11 +253,13 @@ impl Processor {
     ) where
         F: OutputFormat<Output = String>,
     {
-        let unassigned: Vec<ProcEntry> = bibliography
-            .iter()
-            .filter(|entry| !assigned.contains(&entry.id))
-            .cloned()
-            .collect();
+        let unassigned = self.merge_compound_entries::<F>(
+            bibliography
+                .iter()
+                .filter(|entry| !assigned.contains(&entry.id))
+                .cloned()
+                .collect(),
+        );
 
         if unassigned.is_empty() {
             return;
@@ -303,12 +305,12 @@ impl Processor {
                 matching_refs
             };
             let local_hints = self.build_group_local_hints(&sorted_refs, group);
-            let entries = self.render_group_entries::<F>(
+            let entries = self.merge_compound_entries::<F>(self.render_group_entries::<F>(
                 bibliography,
                 sorted_refs,
                 group,
                 local_hints.as_ref(),
-            );
+            ));
 
             self.append_rendered_group::<F>(&mut result, group, entries);
         }
@@ -346,20 +348,14 @@ impl Processor {
         F: OutputFormat<Output = String>,
     {
         let processed = self.process_references();
-        let merged_bibliography = self.merge_compound_entries::<F>(processed.bibliography);
+        let bibliography = processed.bibliography;
         let fmt = F::default();
         let cited_ids = self.cited_ids.borrow();
         let evaluator = SelectorEvaluator::new(&cited_ids);
         let sorter = GroupSorter::new(&self.locale);
 
-        let matching_refs: Vec<&Reference> = merged_bibliography
-            .iter()
-            .filter_map(|entry| {
-                self.bibliography
-                    .get(&entry.id)
-                    .filter(|reference| evaluator.matches(reference, &group.selector))
-            })
-            .collect();
+        let matching_refs =
+            self.collect_matching_group_refs(&bibliography, &HashSet::new(), &evaluator, group);
 
         if matching_refs.is_empty() {
             return fmt.finish(String::new());
@@ -371,16 +367,13 @@ impl Processor {
             matching_refs
         };
 
-        let entries: Vec<ProcEntry> = sorted_refs
-            .into_iter()
-            .filter_map(|reference| {
-                let id = reference.id()?;
-                merged_bibliography
-                    .iter()
-                    .find(|entry| entry.id == id)
-                    .cloned()
-            })
-            .collect();
+        let local_hints = self.build_group_local_hints(&sorted_refs, group);
+        let entries = self.merge_compound_entries::<F>(self.render_group_entries::<F>(
+            &bibliography,
+            sorted_refs,
+            group,
+            local_hints.as_ref(),
+        ));
 
         fmt.finish(crate::render::refs_to_string_with_format::<F>(
             entries, None, None,
@@ -390,14 +383,15 @@ impl Processor {
     /// Render the bibliography with grouping for uncited (nocite) items.
     ///
     /// If `style.bibliography.groups` is defined, uses configurable grouping
-    /// with per-group sorting. Otherwise, falls back to hardcoded cited/uncited
-    /// grouping for backward compatibility.
+    /// with per-group sorting. Group selectors apply to individual references
+    /// before compound numeric rows are merged, so each rendered group only
+    /// includes the members that matched its selector. Otherwise, falls back to
+    /// hardcoded cited/uncited grouping for backward compatibility.
     pub fn render_grouped_bibliography_with_format<F>(&self) -> String
     where
         F: OutputFormat<Output = String>,
     {
         let processed = self.process_references();
-        let merged_bibliography = self.merge_compound_entries::<F>(processed.bibliography);
 
         if let Some(groups) = self
             .style
@@ -405,13 +399,18 @@ impl Processor {
             .as_ref()
             .and_then(|bibliography| bibliography.groups.as_ref())
         {
-            return self.render_with_custom_groups::<F>(&merged_bibliography, groups);
+            return self.render_with_custom_groups::<F>(&processed.bibliography, groups);
         }
 
-        self.render_with_legacy_grouping::<F>(&merged_bibliography)
+        self.render_with_legacy_grouping::<F>(
+            &self.merge_compound_entries::<F>(processed.bibliography),
+        )
     }
 
     /// Render frontmatter-defined bibliography groups for document output.
+    ///
+    /// This uses the same pre-merge selector semantics as
+    /// [`Self::render_grouped_bibliography_with_format`].
     pub(crate) fn render_document_bibliography_groups<F>(
         &self,
         groups: &[BibliographyGroup],
