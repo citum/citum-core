@@ -10,6 +10,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! - Name-order sorting (family-given vs given-family for multilingual bibliographies)
 //! - Integration with standard sort keys (author, title, issued)
 
+use std::collections::HashMap;
+
 use citum_schema::grouping::{GroupSort, GroupSortKey, NameSortOrder, SortKey as GroupSortKeyType};
 use citum_schema::locale::Locale;
 
@@ -27,6 +29,39 @@ fn compare_optional_years(a_year: Option<i32>, b_year: Option<i32>) -> std::cmp:
 /// Sorts grouped bibliography entries using group-specific sort rules.
 pub struct GroupSorter<'a> {
     locale: &'a Locale,
+}
+
+struct CachedReference<'a> {
+    reference: &'a Reference,
+    sort_values: Vec<CachedSortValue>,
+}
+
+enum CachedSortValue {
+    RefType { name: String, rank: Option<usize> },
+    OptionalText(Option<String>),
+    Text(String),
+    Issued(Option<i32>),
+}
+
+enum CompiledSortKey<'a> {
+    RefType {
+        ascending: bool,
+        rank_by_type: Option<HashMap<String, usize>>,
+    },
+    Author {
+        ascending: bool,
+        name_order: NameSortOrder,
+    },
+    Title {
+        ascending: bool,
+    },
+    Issued {
+        ascending: bool,
+    },
+    Field {
+        ascending: bool,
+        field_name: &'a str,
+    },
 }
 
 impl<'a> GroupSorter<'a> {
@@ -50,16 +85,23 @@ impl<'a> GroupSorter<'a> {
         mut references: Vec<&'b Reference>,
         sort_spec: &GroupSort,
     ) -> Vec<&'b Reference> {
-        references.sort_by(|a, b| {
-            for sort_key in &sort_spec.template {
-                let cmp = self.compare_by_key_with_context(a, b, sort_key);
-                if cmp != std::cmp::Ordering::Equal {
-                    return cmp;
-                }
-            }
-            std::cmp::Ordering::Equal
-        });
-        references
+        let compiled_keys = self.compile_sort_keys(sort_spec);
+        let mut cached_references = references
+            .drain(..)
+            .map(|reference| CachedReference {
+                reference,
+                sort_values: compiled_keys
+                    .iter()
+                    .map(|sort_key| self.cache_sort_value(reference, sort_key))
+                    .collect(),
+            })
+            .collect::<Vec<_>>();
+
+        cached_references.sort_by(|a, b| Self::compare_cached_references(a, b, &compiled_keys));
+        cached_references
+            .into_iter()
+            .map(|entry| entry.reference)
+            .collect()
     }
 
     /// Compare two references by a single sort key.
@@ -116,6 +158,129 @@ impl<'a> GroupSorter<'a> {
             (Some(_), None) => std::cmp::Ordering::Less, // a in order, b not
             (None, Some(_)) => std::cmp::Ordering::Greater, // b in order, a not
             (None, None) => a_type.cmp(&b_type),         // both not in order, alphabetical
+        }
+    }
+
+    fn compile_sort_keys<'b>(&self, sort_spec: &'b GroupSort) -> Vec<CompiledSortKey<'b>> {
+        sort_spec
+            .template
+            .iter()
+            .map(|sort_key| match &sort_key.key {
+                GroupSortKeyType::RefType => CompiledSortKey::RefType {
+                    ascending: sort_key.ascending,
+                    rank_by_type: sort_key.order.as_ref().map(|order| {
+                        order
+                            .iter()
+                            .enumerate()
+                            .map(|(index, ref_type)| (ref_type.clone(), index))
+                            .collect()
+                    }),
+                },
+                GroupSortKeyType::Author => CompiledSortKey::Author {
+                    ascending: sort_key.ascending,
+                    name_order: sort_key.sort_order.unwrap_or(NameSortOrder::FamilyGiven),
+                },
+                GroupSortKeyType::Title => CompiledSortKey::Title {
+                    ascending: sort_key.ascending,
+                },
+                GroupSortKeyType::Issued => CompiledSortKey::Issued {
+                    ascending: sort_key.ascending,
+                },
+                GroupSortKeyType::Field(field_name) => CompiledSortKey::Field {
+                    ascending: sort_key.ascending,
+                    field_name,
+                },
+            })
+            .collect()
+    }
+
+    fn cache_sort_value(
+        &self,
+        reference: &Reference,
+        sort_key: &CompiledSortKey<'_>,
+    ) -> CachedSortValue {
+        match sort_key {
+            CompiledSortKey::RefType { rank_by_type, .. } => {
+                let ref_type = reference.ref_type();
+                CachedSortValue::RefType {
+                    name: ref_type.clone(),
+                    rank: rank_by_type
+                        .as_ref()
+                        .and_then(|ranks| ranks.get(&ref_type).copied()),
+                }
+            }
+            CompiledSortKey::Author { name_order, .. } => CachedSortValue::OptionalText(
+                self.extract_author_sort_key_opt(reference, *name_order),
+            ),
+            CompiledSortKey::Title { .. } => CachedSortValue::Text(self.title_sort_key(reference)),
+            CompiledSortKey::Issued { .. } => CachedSortValue::Issued(Self::issued_year(reference)),
+            CompiledSortKey::Field { field_name, .. } => {
+                CachedSortValue::Text(Self::field_sort_value(reference, field_name))
+            }
+        }
+    }
+
+    fn compare_cached_references(
+        a: &CachedReference<'_>,
+        b: &CachedReference<'_>,
+        compiled_keys: &[CompiledSortKey<'_>],
+    ) -> std::cmp::Ordering {
+        for (index, sort_key) in compiled_keys.iter().enumerate() {
+            let cmp = Self::compare_cached_value(&a.sort_values[index], &b.sort_values[index]);
+            let cmp = if Self::is_ascending(sort_key) {
+                cmp
+            } else {
+                cmp.reverse()
+            };
+
+            if cmp != std::cmp::Ordering::Equal {
+                return cmp;
+            }
+        }
+
+        std::cmp::Ordering::Equal
+    }
+
+    fn compare_cached_value(a: &CachedSortValue, b: &CachedSortValue) -> std::cmp::Ordering {
+        match (a, b) {
+            (
+                CachedSortValue::RefType {
+                    name: a_name,
+                    rank: a_rank,
+                },
+                CachedSortValue::RefType {
+                    name: b_name,
+                    rank: b_rank,
+                },
+            ) => match (a_rank, b_rank) {
+                (Some(a_idx), Some(b_idx)) => a_idx.cmp(b_idx),
+                (Some(_), None) => std::cmp::Ordering::Less,
+                (None, Some(_)) => std::cmp::Ordering::Greater,
+                (None, None) => a_name.cmp(b_name),
+            },
+            (CachedSortValue::OptionalText(a_text), CachedSortValue::OptionalText(b_text)) => {
+                match (a_text, b_text) {
+                    (Some(a_value), Some(b_value)) => a_value.cmp(b_value),
+                    (Some(_), None) => std::cmp::Ordering::Less,
+                    (None, Some(_)) => std::cmp::Ordering::Greater,
+                    (None, None) => std::cmp::Ordering::Equal,
+                }
+            }
+            (CachedSortValue::Text(a_text), CachedSortValue::Text(b_text)) => a_text.cmp(b_text),
+            (CachedSortValue::Issued(a_year), CachedSortValue::Issued(b_year)) => {
+                compare_optional_years(*a_year, *b_year)
+            }
+            _ => std::cmp::Ordering::Equal,
+        }
+    }
+
+    fn is_ascending(sort_key: &CompiledSortKey<'_>) -> bool {
+        match sort_key {
+            CompiledSortKey::RefType { ascending, .. }
+            | CompiledSortKey::Author { ascending, .. }
+            | CompiledSortKey::Title { ascending }
+            | CompiledSortKey::Issued { ascending }
+            | CompiledSortKey::Field { ascending, .. } => *ascending,
         }
     }
 
@@ -193,40 +358,41 @@ impl<'a> GroupSorter<'a> {
 
     /// Compare by title (with article stripping).
     fn compare_by_title(&self, a: &Reference, b: &Reference) -> std::cmp::Ordering {
-        let a_title = self
-            .locale
-            .strip_sort_articles(&a.title().map(|t| t.to_string()).unwrap_or_default())
-            .to_lowercase();
-        let b_title = self
-            .locale
-            .strip_sort_articles(&b.title().map(|t| t.to_string()).unwrap_or_default())
-            .to_lowercase();
+        let a_title = self.title_sort_key(a);
+        let b_title = self.title_sort_key(b);
         a_title.cmp(&b_title)
     }
 
     /// Compare by issued date.
     fn compare_by_issued(a: &Reference, b: &Reference) -> std::cmp::Ordering {
-        let a_year = a
-            .issued()
-            .and_then(|d| d.year().parse::<i32>().ok())
-            .filter(|year| *year != 0);
-        let b_year = b
-            .issued()
-            .and_then(|d| d.year().parse::<i32>().ok())
-            .filter(|year| *year != 0);
+        let a_year = Self::issued_year(a);
+        let b_year = Self::issued_year(b);
         compare_optional_years(a_year, b_year)
     }
 
     /// Compare by custom field.
     fn compare_by_field(a: &Reference, b: &Reference, field_name: &str) -> std::cmp::Ordering {
+        Self::field_sort_value(a, field_name).cmp(&Self::field_sort_value(b, field_name))
+    }
+
+    fn title_sort_key(&self, reference: &Reference) -> String {
+        self.locale
+            .strip_sort_articles(&reference.title().map(|t| t.to_string()).unwrap_or_default())
+            .to_lowercase()
+    }
+
+    fn issued_year(reference: &Reference) -> Option<i32> {
+        reference
+            .issued()
+            .and_then(|d| d.year().parse::<i32>().ok())
+            .filter(|year| *year != 0)
+    }
+
+    fn field_sort_value(reference: &Reference, field_name: &str) -> String {
         match field_name {
-            "language" => {
-                let a_lang = a.language().unwrap_or_default();
-                let b_lang = b.language().unwrap_or_default();
-                a_lang.cmp(&b_lang)
-            }
+            "language" => reference.language().unwrap_or_default().clone(),
             // Future: support for keywords, custom metadata
-            _ => std::cmp::Ordering::Equal,
+            _ => String::new(),
         }
     }
 }

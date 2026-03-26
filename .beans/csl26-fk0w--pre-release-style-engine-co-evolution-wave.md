@@ -5,7 +5,7 @@ status: in-progress
 type: epic
 priority: normal
 created_at: 2026-03-16T10:34:43Z
-updated_at: 2026-03-16T12:11:27Z
+updated_at: 2026-03-26T19:22:00Z
 ---
 
 Track A: engine fixes for cross-portfolio gaps (volume-pages, DOI suppression, editor name-order). Track B: upgrade outlier styles (springer-physics-brackets, royal-society-of-chemistry, MLA). Track C: promote chicago-author-date from experimental. PR branch: style-evolve-pre-release-wave.
@@ -49,3 +49,7 @@ Track A: engine fixes for cross-portfolio gaps (volume-pages, DOI suppression, e
 
 ## Core Quality Gate
 - 146 styles, all at fidelity 1.0
+
+## Follow-up Tracking
+- The low-risk rendering optimization slice landed under archived child `csl26-3oq0`.
+- Deferred next slice: `csl26-d59c` tracks benchmarked disambiguation hot-path optimization work that was explicitly excluded from `csl26-3oq0`.

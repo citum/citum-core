@@ -7,7 +7,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 use super::Processor;
 use crate::render::ProcEntry;
-use crate::render::bibliography::render_entry_body_with_format;
+use crate::render::bibliography::render_entry_body_components_with_format;
 use crate::render::component::ProcTemplateComponent;
 use crate::render::format::OutputFormat;
 use citum_schema::template::{NumberVariable, TemplateComponent};
@@ -49,19 +49,15 @@ impl Processor {
         entries
             .iter()
             .map(|entry| {
-                let content_entry = ProcEntry {
-                    id: entry.id.clone(),
-                    template: entry
-                        .template
-                        .iter()
-                        .filter(|component| !Self::is_citation_number_label(component))
-                        .cloned()
-                        .collect(),
-                    metadata: entry.metadata.clone(),
-                };
+                let content_components = entry
+                    .template
+                    .iter()
+                    .filter(|component| !Self::is_citation_number_label(component))
+                    .cloned()
+                    .collect::<Vec<_>>();
                 (
                     entry.id.clone(),
-                    render_entry_body_with_format::<F>(&content_entry)
+                    render_entry_body_components_with_format::<F>(&content_components)
                         .trim()
                         .to_string(),
                 )
@@ -89,16 +85,16 @@ impl Processor {
         &self,
         entry: ProcEntry,
         group_ids: &[String],
-        entries_by_id: &HashMap<String, ProcEntry>,
         rendered_strings: &HashMap<String, String>,
         compound_config: &citum_schema::options::bibliography::CompoundNumericConfig,
     ) -> ProcEntry {
-        let mut parts = Vec::new();
+        let mut merged_body = String::new();
+        let mut has_content = false;
 
         for (index, id) in group_ids.iter().enumerate() {
-            if !entries_by_id.contains_key(id) {
+            let Some(rendered) = rendered_strings.get(id) else {
                 continue;
-            }
+            };
 
             let sub_label = match compound_config.sub_label {
                 citum_schema::options::bibliography::SubLabelStyle::Alphabetic => {
@@ -114,9 +110,13 @@ impl Processor {
                 }
             };
 
-            if let Some(rendered) = rendered_strings.get(id) {
-                parts.push(format!("{sub_label} {rendered}"));
+            if has_content {
+                merged_body.push_str(&compound_config.sub_delimiter);
             }
+            has_content = true;
+            merged_body.push_str(&sub_label);
+            merged_body.push(' ');
+            merged_body.push_str(rendered);
         }
 
         let mut merged_template: Vec<_> = entry
@@ -127,7 +127,7 @@ impl Processor {
             .collect();
         merged_template.push(ProcTemplateComponent {
             template_component: TemplateComponent::default(),
-            value: parts.join(&compound_config.sub_delimiter),
+            value: merged_body,
             pre_formatted: true,
             config: entry
                 .template
@@ -162,10 +162,6 @@ impl Processor {
         }
 
         let rendered_strings = Self::render_compound_entry_bodies::<F>(&entries);
-        let entries_by_id: HashMap<String, ProcEntry> = entries
-            .iter()
-            .map(|entry| (entry.id.clone(), entry.clone()))
-            .collect();
         let group_members_present = Self::build_present_group_members(&entries, &ref_to_group);
         let first_present_by_group: HashMap<usize, String> = group_members_present
             .iter()
@@ -193,7 +189,6 @@ impl Processor {
                     result.push(self.build_merged_compound_entry(
                         entry,
                         &compound_groups[&group_number],
-                        &entries_by_id,
                         &rendered_strings,
                         &compound_config,
                     ));

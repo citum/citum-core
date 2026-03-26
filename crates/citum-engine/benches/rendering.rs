@@ -1,16 +1,28 @@
 #![allow(missing_docs, reason = "test")]
 
+use citum_engine::grouping::GroupSorter;
 use citum_engine::processor::disambiguation::Disambiguator;
+use citum_engine::render::plain::PlainText;
 use citum_engine::{
     Bibliography, Citation, CitationItem, Contributor, EdtfString, Locale, Monograph,
     MonographType, MultilingualString, Processor, Reference, StructuredName, Title,
 };
+use citum_schema::grouping::{GroupSort, GroupSortKey, NameSortOrder, SortKey as GroupSortKeyKind};
 use citum_schema::options::{
-    Config, Disambiguation, Group, LabelConfig, LabelPreset, Processing, ProcessingCustom, Sort,
-    SortEntry, SortKey, SortSpec,
+    BibliographyOptions, Config, Disambiguation, Group, LabelConfig, LabelPreset, Processing,
+    ProcessingCustom, Sort, SortEntry, SortKey, SortSpec, bibliography::CompoundNumericConfig,
 };
-use citum_schema::{InputBibliography, Style};
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use citum_schema::{
+    BibliographySpec, InputBibliography, Style, StyleInfo,
+    template::{
+        ContributorRole, NumberVariable, Rendering, SimpleVariable, TemplateComponent,
+        TemplateContributor, TemplateNumber, TemplateTitle, TemplateVariable, TitleType,
+        WrapPunctuation,
+    },
+};
+use criterion::{BatchSize, Criterion, black_box, criterion_group, criterion_main};
+use csl_legacy::csl_json::Reference as LegacyReference;
+use indexmap::IndexMap;
 use std::fs;
 use std::path::PathBuf;
 
@@ -63,6 +75,9 @@ fn bench_rendering(c: &mut Criterion) {
     });
 
     bench_disambiguation(c);
+    bench_group_sorting(c);
+    bench_bibliography_type_variants(c);
+    bench_compound_bibliography(c);
 }
 
 fn bench_disambiguation(c: &mut Criterion) {
@@ -279,6 +294,327 @@ where
         original_title: None,
         ads_bibcode: None,
     }))
+}
+
+fn bench_group_sorting(c: &mut Criterion) {
+    let locale = Locale::en_us();
+    let sorter = GroupSorter::new(&locale);
+    let bibliography = make_group_sort_bibliography();
+    let references: Vec<&Reference> = bibliography.values().collect();
+    let sort_spec = GroupSort {
+        template: vec![
+            GroupSortKey {
+                key: GroupSortKeyKind::RefType,
+                ascending: true,
+                order: Some(vec![
+                    "legal-case".to_string(),
+                    "article-journal".to_string(),
+                    "book".to_string(),
+                ]),
+                sort_order: None,
+            },
+            GroupSortKey {
+                key: GroupSortKeyKind::Author,
+                ascending: true,
+                order: None,
+                sort_order: Some(NameSortOrder::FamilyGiven),
+            },
+            GroupSortKey {
+                key: GroupSortKeyKind::Issued,
+                ascending: false,
+                order: None,
+                sort_order: None,
+            },
+        ],
+    };
+
+    let mut bench_group = c.benchmark_group("GroupSorter::sort_references");
+    bench_group.bench_function("Explicit type order + author", |b| {
+        b.iter_batched(
+            || references.clone(),
+            |refs| black_box(sorter.sort_references(refs, &sort_spec)),
+            BatchSize::SmallInput,
+        );
+    });
+    bench_group.finish();
+}
+
+fn bench_bibliography_type_variants(c: &mut Criterion) {
+    let processor = Processor::new(
+        build_type_variant_bench_style(),
+        make_type_variant_bibliography(),
+    );
+    let reference = processor
+        .bibliography
+        .get("article-no-pages")
+        .expect("type-variant benchmark reference should exist");
+
+    let mut bench_group = c.benchmark_group("Renderer::process_bibliography_entry");
+    bench_group.bench_function("Type variant + article-journal fallback", |b| {
+        b.iter(|| {
+            black_box(processor.process_bibliography_entry_with_format::<PlainText>(reference, 1));
+        });
+    });
+    bench_group.finish();
+}
+
+fn bench_compound_bibliography(c: &mut Criterion) {
+    let processor = Processor::with_compound_sets(
+        build_compound_bench_style(),
+        make_compound_bibliography(),
+        make_compound_sets(),
+    );
+
+    let mut bench_group = c.benchmark_group("Processor::render_bibliography_with_format");
+    bench_group.bench_function("Compound bibliography merge", |b| {
+        b.iter(|| {
+            black_box(processor.render_bibliography_with_format::<PlainText>());
+        });
+    });
+    bench_group.finish();
+}
+
+fn make_group_sort_bibliography() -> Bibliography {
+    let mut bibliography = Bibliography::new();
+    for (id, ref_type, family, title, year) in [
+        ("legal-alpha", "legal-case", "Adams", "Alpha v Beta", 2001),
+        (
+            "journal-gamma",
+            "article-journal",
+            "Gamma",
+            "Gamma Article",
+            2022,
+        ),
+        ("book-epsilon", "book", "Epsilon", "Collected Essays", 1998),
+        (
+            "journal-beta",
+            "article-journal",
+            "Beta",
+            "Beta Article",
+            2021,
+        ),
+        ("legal-delta", "legal-case", "Delta", "Delta v State", 1999),
+        ("book-zeta", "book", "Zeta", "Zeta Monograph", 2005),
+    ] {
+        bibliography.insert(
+            id.to_string(),
+            make_legacy_reference(id, ref_type, family, title, year, None, None, None),
+        );
+    }
+    bibliography
+}
+
+fn build_type_variant_bench_style() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Type Variant Bench".to_string()),
+            id: Some("type-variant-bench".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                article_journal: Some(citum_schema::options::ArticleJournalBibliographyConfig {
+                    no_page_fallback: Some(
+                        citum_schema::options::ArticleJournalNoPageFallback::Doi,
+                    ),
+                }),
+                ..Default::default()
+            }),
+            template: Some(vec![TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                form: None,
+                rendering: Rendering {
+                    prefix: Some("DEFAULT ".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })]),
+            type_variants: Some(IndexMap::from([(
+                "article-journal"
+                    .parse()
+                    .expect("type selector should parse"),
+                vec![
+                    TemplateComponent::Contributor(TemplateContributor {
+                        contributor: ContributorRole::Author,
+                        form: citum_schema::template::ContributorForm::Long,
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Number(TemplateNumber {
+                        number: NumberVariable::Volume,
+                        rendering: Rendering {
+                            prefix: Some(", ".to_string()),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Number(TemplateNumber {
+                        number: NumberVariable::Pages,
+                        rendering: Rendering {
+                            prefix: Some(": ".to_string()),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Variable(TemplateVariable {
+                        variable: SimpleVariable::Doi,
+                        rendering: Rendering {
+                            prefix: Some(" DOI: ".to_string()),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    }),
+                ],
+            )])),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn make_type_variant_bibliography() -> Bibliography {
+    let mut bibliography = Bibliography::new();
+    bibliography.insert(
+        "article-no-pages".to_string(),
+        make_legacy_reference(
+            "article-no-pages",
+            "article-journal",
+            "Smith",
+            "Article Without Pages",
+            2020,
+            Some("12"),
+            None,
+            Some("10.1000/no-pages"),
+        ),
+    );
+    bibliography.insert(
+        "article-with-pages".to_string(),
+        make_legacy_reference(
+            "article-with-pages",
+            "article-journal",
+            "Jones",
+            "Article With Pages",
+            2021,
+            Some("18"),
+            Some("33-40"),
+            Some("10.1000/with-pages"),
+        ),
+    );
+    bibliography
+}
+
+fn build_compound_bench_style() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Compound Bench".to_string()),
+            id: Some("compound-bench".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::Numeric),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                compound_numeric: Some(CompoundNumericConfig {
+                    sub_label_suffix: ")".to_string(),
+                    sub_delimiter: ", ".to_string(),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            template: Some(vec![
+                TemplateComponent::Number(TemplateNumber {
+                    number: NumberVariable::CitationNumber,
+                    rendering: Rendering {
+                        wrap: Some(WrapPunctuation::Brackets),
+                        suffix: Some(" ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+                TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Author,
+                    form: citum_schema::template::ContributorForm::Long,
+                    ..Default::default()
+                }),
+                TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Primary,
+                    form: None,
+                    rendering: Rendering {
+                        prefix: Some(". ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn make_compound_bibliography() -> Bibliography {
+    let mut bibliography = Bibliography::new();
+    for (id, family, title, year) in [
+        ("cmp-a", "Alpha", "Compound Alpha", 2020),
+        ("cmp-b", "Beta", "Compound Beta", 2020),
+        ("cmp-c", "Gamma", "Compound Gamma", 2020),
+        ("solo-d", "Delta", "Standalone Delta", 2021),
+    ] {
+        bibliography.insert(
+            id.to_string(),
+            make_legacy_reference(id, "book", family, title, year, None, None, None),
+        );
+    }
+    bibliography
+}
+
+fn make_compound_sets() -> IndexMap<String, Vec<String>> {
+    IndexMap::from([(
+        "cmp-group".to_string(),
+        vec![
+            "cmp-a".to_string(),
+            "cmp-b".to_string(),
+            "cmp-c".to_string(),
+        ],
+    )])
+}
+
+#[allow(
+    clippy::too_many_arguments,
+    reason = "Benchmark fixtures vary only by a small set of legacy reference fields."
+)]
+fn make_legacy_reference(
+    id: &str,
+    ref_type: &str,
+    family: &str,
+    title: &str,
+    year: i32,
+    volume: Option<&str>,
+    pages: Option<&str>,
+    doi: Option<&str>,
+) -> Reference {
+    let mut value = serde_json::json!({
+        "id": id,
+        "type": ref_type,
+        "title": title,
+        "author": [{"family": family, "given": "Test"}],
+        "issued": {"date-parts": [[year]]},
+    });
+
+    if let Some(volume) = volume {
+        value["volume"] = serde_json::json!(volume);
+    }
+    if let Some(pages) = pages {
+        value["page"] = serde_json::json!(pages);
+    }
+    if let Some(doi) = doi {
+        value["DOI"] = serde_json::json!(doi);
+    }
+
+    let legacy: LegacyReference =
+        serde_json::from_value(value).expect("legacy benchmark reference should parse");
+    legacy.into()
 }
 
 criterion_group!(benches, bench_rendering);
