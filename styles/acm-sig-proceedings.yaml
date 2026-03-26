@@ -102,7 +102,7 @@ bibliography:
       - title: parent-monograph
         emph: true
         suffix: " "
-      - items:
+      - group:
           - variable: publisher-place
           - date: issued
             form: year-month
@@ -126,13 +126,15 @@ bibliography:
       - title: parent-serial
         emph: true
         suffix: " "
-      - number: volume
-        suffix: ", "
-      - number: issue
-        suffix: " "
-      - date: issued
-        form: year-month
-        wrap: parentheses
+      - group:
+          - number: volume
+          - group:
+              - number: issue
+              - date: issued
+                form: year-month
+                wrap: parentheses
+            delimiter: " "
+        delimiter: ", "
         suffix: ", "
       - number: pages
       - variable: doi
