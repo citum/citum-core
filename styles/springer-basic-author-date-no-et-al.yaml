@@ -1,8 +1,6 @@
 info:
   title: Springer - Basic (author-date, no "et al.")
-  description: Springer Author Date Style for the disciplines Medicine, Biomedicine, Life Sciences, 
-    Chemistry, Geosciences, Computer Science, Engineering, Economics. This style is based on Harvard
-    style and recommendations of the Council of Biology Editors.
+  description: Springer Author Date Style for the disciplines Medicine, Biomedicine, Life Sciences, Chemistry, Geosciences, Computer Science, Engineering, Economics. This style is based on Harvard style and recommendations of the Council of Biology Editors.
   source:
     csl-id: http://www.zotero.org/styles/springer-basic-author-date-no-et-al
     adapted-by: citum-migrate
@@ -16,11 +14,9 @@ info:
       rel: self
     - href: http://www.springer.com/cda/content/document/cda_downloaddocument/instruct-authors-e.pdf
       rel: documentation
-    - href: 
-        http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
       rel: documentation
-    - href: 
-        http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
       rel: documentation
 options:
   substitute: editor-translator-short
@@ -55,9 +51,6 @@ options:
     demote-non-dropping-particle: never
     sort-separator: " "
   dates: short
-  bibliography:
-    hanging-indent: true
-    separator: ". "
   punctuation-in-quote: true
 citation:
   options:
@@ -89,6 +82,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    hanging-indent: true
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

@@ -625,15 +625,19 @@ This does not affect other override concepts such as
 
 ---
 
-#### P3 — `CitationSpec.options` Accepts Bibliography-Only Fields (Deferred follow-on: `csl26-8eom`)
+#### P3 — `CitationSpec.options` Accepted Bibliography-Only Fields (Implemented on `main`)
 
 **Problem.** `Option<Config>` on both specs includes bibliography-only fields
 that are silently ignored in a citation context.
 
-**Current state.** Still live on `main`.
+**Current state.** Fixed on `main`.
 
-**Planned resolution.** Introduce `CitationOptions` / `BibliographyOptions`.
-Deferred; tracked by `csl26-8eom`.
+**Resolution.** `CitationSpec.options` and `BibliographySpec.options` now use
+separate nested option schemas. Citation-local options reject
+bibliography-entry fields at parse time, and bibliography-local options reject
+citation-only fields such as locator configuration. Top-level `Style.options`
+now accepts only shared cross-context settings; bibliography-entry controls are
+local to `bibliography.options`.
 
 ---
 
@@ -695,7 +699,7 @@ unknown type-name warnings.
 | Landed on `main` | `type-variants` added to `CitationSpec` |
 | Landed on `main` | `type_variants` field present on `BibliographySpec` |
 | Landed on `main` | `TypeSelector` validation helpers + `Style::validate()` initial implementation |
-| Deferred follow-on | Split `CitationOptions` / `BibliographyOptions` (`csl26-8eom`) |
+| Landed on `main` | Split `CitationOptions` / `BibliographyOptions` (`csl26-8eom`) |
 | Deferred follow-on | Tie inner affixes to wrap model (`csl26-rrag`) |
 | Follow-on design work | Compact DSL parser after §3 config structures are fully specced |
 

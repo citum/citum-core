@@ -56,10 +56,6 @@ options:
     uncertainty-marker: "?"
     approximation-marker: "ca. "
     range-delimiter: –
-  bibliography:
-    hanging-indent: true
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   options:
@@ -96,6 +92,9 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: ", "
+    hanging-indent: true
+    entry-suffix: .
+    separator: ". "
   type-variants:
     chapter:
     - contributor: author

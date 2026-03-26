@@ -49,10 +49,6 @@ options:
     serial:
       emph: true
   page-range-format: minimal
-  bibliography:
-    hanging-indent: false
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   template:
@@ -74,6 +70,9 @@ bibliography:
       delimiter-precedes-last: always
       delimiter-precedes-et-al: never
       sort-separator: " "
+    hanging-indent: false
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

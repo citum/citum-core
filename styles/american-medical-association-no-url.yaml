@@ -42,9 +42,6 @@ options:
     range-delimiter: –
   titles: humanities
   page-range-format: expanded
-  bibliography:
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   template:
@@ -62,6 +59,8 @@ bibliography:
         use-first: 3
         and-others: et-al
         delimiter-precedes-last: contextual
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

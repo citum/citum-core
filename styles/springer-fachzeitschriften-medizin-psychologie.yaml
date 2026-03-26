@@ -1,7 +1,6 @@
 info:
   title: Springer - Fachzeitschriften Medizin Psychologie (Deutsch)
-  description: Springer Basic style (German, numeric, brackets, alphabetical) for Springer journals 
-    in medicine and psychology.
+  description: Springer Basic style (German, numeric, brackets, alphabetical) for Springer journals in medicine and psychology.
   fields:
   - medicine
   - psychology
@@ -17,11 +16,9 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/springer-basic-brackets-no-et-al-alphabetical
       rel: template
-    - href: 
-        http://static.springer.com/sgw/documents/135255/application/pdf/Musterbeitrag_Uebersichten_Leitthema_Schwerpunkt.pdf
+    - href: http://static.springer.com/sgw/documents/135255/application/pdf/Musterbeitrag_Uebersichten_Leitthema_Schwerpunkt.pdf
       rel: documentation
-    - href: 
-        http://static.springer.com/sgw/documents/69331/application/pdf/Leitfaden_Uebersichten_Leitthemen_Schwerpunkt.pdf
+    - href: http://static.springer.com/sgw/documents/69331/application/pdf/Leitfaden_Uebersichten_Leitthemen_Schwerpunkt.pdf
       rel: documentation
 options:
   substitute:
@@ -43,8 +40,6 @@ options:
     demote-non-dropping-particle: sort-only
     sort-separator: " "
   dates: long
-  bibliography:
-    separator: ". "
 citation:
   use-preset: numeric-citation
   wrap: brackets
@@ -63,6 +58,7 @@ bibliography:
       delimiter-precedes-last: always
       delimiter-precedes-et-al: never
       sort-separator: " "
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

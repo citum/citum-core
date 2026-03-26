@@ -23,9 +23,6 @@ options:
   dates: long
   titles: journal-emphasis
   page-range-format: expanded
-  bibliography:
-    entry-suffix: .
-    separator: ", "
 citation:
   use-preset: numeric-citation
   wrap: brackets
@@ -44,6 +41,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    entry-suffix: .
+    separator: ", "
   type-variants:
     chapter:
     - contributor: author

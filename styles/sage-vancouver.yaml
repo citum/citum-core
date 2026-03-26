@@ -1,7 +1,6 @@
 info:
   title: SAGE - NLM/Vancouver
-  description: Vancouver superscript style modified to italicize journal names strip periods for use
-    in SAGE journals
+  description: Vancouver superscript style modified to italicize journal names strip periods for use in SAGE journals
   fields:
   - medicine
   source:
@@ -22,9 +21,6 @@ options:
   contributors: numeric-medium
   dates: long
   titles: humanities
-  bibliography:
-    entry-suffix: .
-    separator: ". "
 citation:
   use-preset: numeric-citation
   multi-cite-delimiter: ","
@@ -42,6 +38,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

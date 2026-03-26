@@ -29,9 +29,6 @@ options:
   dates: long
   titles: humanities
   page-range-format: expanded
-  bibliography:
-    entry-suffix: .
-    separator: ", "
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
@@ -46,6 +43,8 @@ bibliography:
       delimiter: "; "
       delimiter-precedes-last: always
       sort-separator: ", "
+    entry-suffix: .
+    separator: ", "
   type-variants:
     article-magazine:
     - contributor: author

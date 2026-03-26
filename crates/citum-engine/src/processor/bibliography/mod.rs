@@ -30,14 +30,17 @@ pub(crate) struct RenderedBibliographyGroup {
 }
 
 impl Processor {
-    /// Create a renderer with compound data from processor state.
-    fn make_renderer(&self) -> Renderer<'_> {
-        Renderer::new(
+    /// Create a bibliography renderer with effective shared and bibliography-only config.
+    fn with_bibliography_renderer<T>(&self, render: impl FnOnce(Renderer<'_>) -> T) -> T {
+        let bibliography_shared_config = self.get_bibliography_config();
+        let bibliography_config = self.get_bibliography_options().into_owned();
+        let renderer = Renderer::new(
             RendererResources {
                 style: &self.style,
                 bibliography: &self.bibliography,
                 locale: &self.locale,
-                config: self.get_config(),
+                config: &bibliography_shared_config,
+                bibliography_config: Some(bibliography_config),
             },
             &self.hints,
             &self.citation_numbers,
@@ -48,7 +51,9 @@ impl Processor {
             },
             self.show_semantics,
             self.inject_ast_indices,
-        )
+        );
+
+        render(renderer)
     }
 
     /// Process sorted references and apply subsequent-author substitution.
@@ -66,11 +71,8 @@ impl Processor {
         let mut bibliography = Vec::new();
         let mut previous_reference: Option<&Reference> = None;
 
-        let substitute = self
-            .get_config()
-            .bibliography
-            .as_ref()
-            .and_then(|config| config.subsequent_author_substitute.as_ref());
+        let bibliography_options = self.get_bibliography_options();
+        let substitute = bibliography_options.subsequent_author_substitute.as_ref();
 
         for (index, reference) in sorted_refs.enumerate() {
             let ref_id = reference.id().unwrap_or_default();
@@ -86,11 +88,12 @@ impl Processor {
                     && let Some(previous) = previous_reference
                     && self.contributors_match(previous, reference)
                 {
-                    let renderer = self.make_renderer();
-                    renderer.apply_author_substitution_with_format::<F>(
-                        &mut processed,
-                        substitute_string,
-                    );
+                    self.with_bibliography_renderer(|renderer| {
+                        renderer.apply_author_substitution_with_format::<F>(
+                            &mut processed,
+                            substitute_string,
+                        );
+                    });
                 }
 
                 bibliography.push(ProcEntry {
@@ -110,7 +113,7 @@ impl Processor {
     /// Returns sorted and formatted bibliography entries. For numeric styles,
     /// citations must have been processed first to assign citation numbers.
     pub fn process_references(&self) -> ProcessedReferences {
-        self.initialize_numeric_citation_numbers();
+        self.initialize_numeric_bibliography_numbers();
         let sorted_refs = self.sort_references(self.bibliography.values().collect());
         let bibliography = self.process_sorted_refs::<_, crate::render::plain::PlainText>(
             sorted_refs.iter().copied(),
@@ -129,8 +132,9 @@ impl Processor {
         reference: &Reference,
         entry_number: usize,
     ) -> Option<ProcTemplate> {
-        let renderer = self.make_renderer();
-        renderer.process_bibliography_entry(reference, entry_number)
+        self.with_bibliography_renderer(|renderer| {
+            renderer.process_bibliography_entry(reference, entry_number)
+        })
     }
 
     /// Process a bibliography entry with specific format.
@@ -142,8 +146,9 @@ impl Processor {
     where
         F: OutputFormat<Output = String>,
     {
-        let renderer = self.make_renderer();
-        renderer.process_bibliography_entry_with_format::<F>(reference, entry_number)
+        self.with_bibliography_renderer(|renderer| {
+            renderer.process_bibliography_entry_with_format::<F>(reference, entry_number)
+        })
     }
 
     /// Check whether primary contributors match between two references.
@@ -158,8 +163,9 @@ impl Processor {
     ///
     /// Used for subsequent author substitution (e.g., "———").
     pub fn apply_author_substitution(&self, proc: &mut ProcTemplate, substitute: &str) {
-        let renderer = self.make_renderer();
-        renderer.apply_author_substitution(proc, substitute);
+        self.with_bibliography_renderer(|renderer| {
+            renderer.apply_author_substitution(proc, substitute);
+        });
     }
 
     /// Render the bibliography to a string using a specific format.
@@ -178,7 +184,7 @@ impl Processor {
         F: OutputFormat<Output = String>,
         I: IntoIterator<Item = String>,
     {
-        self.initialize_numeric_citation_numbers();
+        self.initialize_numeric_bibliography_numbers();
         let selected: HashSet<String> = item_ids.into_iter().collect();
         let sorted_refs = self.sort_references(self.bibliography.values().collect());
 

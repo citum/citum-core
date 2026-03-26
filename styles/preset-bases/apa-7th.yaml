@@ -59,9 +59,6 @@ options:
     name-mode: primary
     preferred-script: Latn
   page-range-format: expanded
-  bibliography:
-    hanging-indent: true
-    separator: ". "
   punctuation-in-quote: true
 citation:
   options:
@@ -392,6 +389,9 @@ citation:
         form: year
       - variable: locator
 bibliography:
+  options:
+    hanging-indent: true
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

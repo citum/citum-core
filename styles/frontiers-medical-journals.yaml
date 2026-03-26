@@ -34,8 +34,6 @@ options:
     sort-separator: " "
   dates: long
   titles: humanities
-  bibliography:
-    separator: ". "
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
@@ -54,6 +52,7 @@ bibliography:
         delimiter-precedes-last: contextual
       delimiter-precedes-last: always
       sort-separator: " "
+    separator: ". "
   type-variants:
     article-magazine:
     - contributor: author

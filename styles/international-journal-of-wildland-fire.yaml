@@ -55,9 +55,6 @@ options:
     sort-separator: " "
   dates: long
   titles: journal-emphasis
-  bibliography:
-    hanging-indent: true
-    separator: ". "
   punctuation-in-quote: true
 citation:
   options:
@@ -95,6 +92,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    hanging-indent: true
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

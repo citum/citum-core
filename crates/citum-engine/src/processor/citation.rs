@@ -174,6 +174,7 @@ impl Processor {
                 bibliography: &self.bibliography,
                 locale: &self.locale,
                 config: &citation_config,
+                bibliography_config: Some(self.get_bibliography_options().into_owned()),
             },
             &self.hints,
             &self.citation_numbers,

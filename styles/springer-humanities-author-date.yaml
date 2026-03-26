@@ -1,7 +1,6 @@
 info:
   title: Springer - Humanities (author-date)
-  description: Style for Springer's humanities journals - the journals do look slightly different 
-    from each other, but this should work quite closely
+  description: Style for Springer's humanities journals - the journals do look slightly different from each other, but this should work quite closely
   fields:
   - humanities
   source:
@@ -13,8 +12,7 @@ info:
     links:
     - href: http://www.zotero.org/styles/springer-humanities-author-date
       rel: self
-    - href: 
-        http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
       rel: documentation
 options:
   processing: !custom
@@ -44,10 +42,6 @@ options:
     sort-separator: ", "
   dates: long
   titles: humanities
-  bibliography:
-    hanging-indent: true
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   options:
@@ -84,6 +78,9 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: ", "
+    hanging-indent: true
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

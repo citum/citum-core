@@ -36,10 +36,6 @@ options:
   dates: long
   titles: humanities
   page-range-format: minimal
-  bibliography:
-    hanging-indent: true
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   options:
@@ -93,6 +89,9 @@ bibliography:
       delimiter-precedes-last: always
       delimiter-precedes-et-al: never
       sort-separator: " "
+    hanging-indent: true
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

@@ -1,8 +1,6 @@
 info:
   title: Springer - Basic (author-date)
-  description: Springer Author Date Style for the disciplines Medicine, Biomedicine, Life Sciences, 
-    Chemistry, Geosciences, Computer Science, Engineering, Economics. This style is based on Harvard
-    style and recommendations of the Council of Biology Editors.
+  description: Springer Author Date Style for the disciplines Medicine, Biomedicine, Life Sciences, Chemistry, Geosciences, Computer Science, Engineering, Economics. This style is based on Harvard style and recommendations of the Council of Biology Editors.
   source:
     csl-id: http://www.zotero.org/styles/springer-basic-author-date
     adapted-by: citum-migrate
@@ -16,11 +14,9 @@ info:
       rel: self
     - href: http://www.springer.com/cda/content/document/cda_downloaddocument/instruct-authors-e.pdf
       rel: documentation
-    - href: 
-        http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
       rel: documentation
-    - href: 
-        http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
       rel: documentation
 options:
   processing: !custom
@@ -38,10 +34,6 @@ options:
   substitute: editor-translator-short
   contributors: numeric-all-authors
   dates: short
-  bibliography:
-    hanging-indent: true
-    entry-suffix: ""
-    separator: ". "
   punctuation-in-quote: true
 citation:
   options:
@@ -67,6 +59,10 @@ citation:
   delimiter: ", "
   multi-cite-delimiter: "; "
 bibliography:
+  options:
+    hanging-indent: true
+    entry-suffix: ""
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

@@ -17,7 +17,7 @@ use citum_engine::{
 };
 use citum_schema::{
     BibliographySpec, Locale, Style, StyleInfo,
-    options::{BibliographyConfig, Config, Disambiguation, Processing, ProcessingCustom},
+    options::{BibliographyOptions, Config, Disambiguation, Processing, ProcessingCustom},
 };
 
 // --- Document Rendering Scenarios ---
@@ -34,14 +34,14 @@ fn given_simple_author_date_document_when_rendered_as_html_then_a_bibliography_h
         templates: None,
         options: Some(Config {
             processing: Some(Processing::AuthorDate),
-            bibliography: Some(BibliographyConfig {
-                entry_suffix: Some(".".to_string()),
-                ..Default::default()
-            }),
             ..Default::default()
         }),
         citation: None,
         bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                entry_suffix: Some(".".to_string()),
+                ..Default::default()
+            }),
             template: Some(vec![
                 citum_schema::tc_contributor!(Author, Long),
                 citum_schema::tc_date!(Issued, Year),
@@ -106,14 +106,14 @@ fn given_simple_author_date_document_when_rendered_as_djot_then_html_tags_are_no
         templates: None,
         options: Some(Config {
             processing: Some(Processing::AuthorDate),
-            bibliography: Some(BibliographyConfig {
-                entry_suffix: Some(".".to_string()),
-                ..Default::default()
-            }),
             ..Default::default()
         }),
         citation: None,
         bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                entry_suffix: Some(".".to_string()),
+                ..Default::default()
+            }),
             template: Some(vec![
                 citum_schema::tc_contributor!(Author, Long),
                 citum_schema::tc_date!(Issued, Year),
@@ -564,6 +564,18 @@ fn given_group_local_disambiguation_when_rendering_multilingual_groups_then_year
  {
     let mut style = load_style("styles/experimental/multilingual-academic.yaml");
     style
+        .options
+        .get_or_insert_with(Default::default)
+        .processing = Some(Processing::Custom(ProcessingCustom {
+        disambiguate: Some(Disambiguation {
+            year_suffix: false,
+            ..Default::default()
+        }),
+        ..Default::default()
+    }));
+    style
+        .bibliography
+        .get_or_insert_with(Default::default)
         .options
         .get_or_insert_with(Default::default)
         .processing = Some(Processing::Custom(ProcessingCustom {

@@ -16,8 +16,7 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/ieee
       rel: template
-    - href: 
-        https://www.asme.org/publications-submissions/journals/information-for-authors/journal-guidelines/references
+    - href: https://www.asme.org/publications-submissions/journals/information-for-authors/journal-guidelines/references
       rel: documentation
 options:
   substitute: editor-translator-short
@@ -32,9 +31,6 @@ options:
     sort-separator: ", "
   dates: short
   titles: journal-emphasis
-  bibliography:
-    entry-suffix: .
-    separator: ", "
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
@@ -49,6 +45,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: ", "
+    entry-suffix: .
+    separator: ", "
   type-variants:
     article-journal:
     - contributor: author

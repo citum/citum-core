@@ -21,8 +21,6 @@ options:
   processing: numeric
   contributors: numeric-compact
   dates: long
-  bibliography:
-    separator: ". "
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
@@ -42,6 +40,7 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

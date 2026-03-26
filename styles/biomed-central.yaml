@@ -13,8 +13,7 @@ info:
     links:
     - href: http://www.zotero.org/styles/biomed-central
       rel: self
-    - href: 
-        http://bmcbioinformatics.biomedcentral.com/submission-guidelines/preparing-your-manuscript/research-article
+    - href: http://bmcbioinformatics.biomedcentral.com/submission-guidelines/preparing-your-manuscript/research-article
       rel: documentation
 options:
   substitute:
@@ -24,9 +23,6 @@ options:
   contributors: numeric-compact
   dates: numeric
   page-range-format: minimal
-  bibliography:
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
@@ -46,6 +42,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

@@ -15,8 +15,7 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/cold-spring-harbor-laboratory-press
       rel: template
-    - href: 
-        https://www.ametsoc.org/ams/index.cfm/publications/authors/journal-and-bams-authors/formatting-and-manuscript-components/references/
+    - href: https://www.ametsoc.org/ams/index.cfm/publications/authors/journal-and-bams-authors/formatting-and-manuscript-components/references/
       rel: documentation
 options:
   substitute: editor-translator-title-short
@@ -37,12 +36,6 @@ options:
   dates: long
   titles: humanities
   page-range-format: expanded
-  bibliography:
-    subsequent-author-substitute: ——
-    subsequent-author-substitute-rule: partial-each
-    hanging-indent: true
-    entry-suffix: .
-    separator: ", "
 citation:
   options:
     processing:
@@ -89,6 +82,11 @@ bibliography:
       delimiter-precedes-last: always
       delimiter-precedes-et-al: always
       sort-separator: ", "
+    subsequent-author-substitute: ——
+    subsequent-author-substitute-rule: partial-each
+    hanging-indent: true
+    entry-suffix: .
+    separator: ", "
   type-variants:
     article-journal:
     - contributor: author

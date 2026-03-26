@@ -1,7 +1,6 @@
 info:
   title: Medicina Clínica (Español)
-  description: Style for Medicina Clinica (and most Spanish Elsevier journals that follow an adapted
-    Vancouver style)
+  description: Style for Medicina Clinica (and most Spanish Elsevier journals that follow an adapted Vancouver style)
   fields:
   - medicine
   source:
@@ -23,9 +22,6 @@ options:
   contributors: numeric-compact
   dates: long
   page-range-format: minimal
-  bibliography:
-    entry-suffix: .
-    separator: ". "
 citation:
   use-preset: numeric-citation
   multi-cite-delimiter: ","
@@ -43,6 +39,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

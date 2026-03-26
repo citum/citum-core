@@ -37,11 +37,6 @@ options:
     name-mode: primary
     preferred-script: Latn
   page-range-format: minimal-two
-  bibliography:
-    subsequent-author-substitute: ———
-    hanging-indent: true
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   options:
@@ -80,6 +75,10 @@ bibliography:
         delimiter-precedes-last: contextual
       delimiter-precedes-last: always
       delimiter-precedes-et-al: always
+    subsequent-author-substitute: ———
+    hanging-indent: true
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

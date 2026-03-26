@@ -1,7 +1,6 @@
 info:
   title: 'NLM Style Guide (Vancouver): Citing Medicine 2nd edition (name-year)'
-  description: 'Citing Medicine: The NLM Style Guide for Authors, Editors, and Publishers, 2nd edition
-    (2015), based on ANSI/NISO Z39.29-2005 (R2010); name-year system.'
+  description: 'Citing Medicine: The NLM Style Guide for Authors, Editors, and Publishers, 2nd edition (2015), based on ANSI/NISO Z39.29-2005 (R2010); name-year system.'
   fields:
   - medicine
   source:
@@ -68,10 +67,6 @@ options:
     approximation-marker: "ca. "
     range-delimiter: –
   page-range-format: minimal
-  bibliography:
-    hanging-indent: true
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   options:
@@ -110,6 +105,9 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    hanging-indent: true
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

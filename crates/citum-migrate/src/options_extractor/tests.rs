@@ -270,11 +270,10 @@ fn test_extract_article_journal_no_page_doi_fallback() {
         </bibliography>
     </style>"#;
     let style = parse_csl(xml).unwrap();
-    let config = OptionsExtractor::extract(&style);
+    let bibliography = super::bibliography::extract_bibliography_config(&style);
 
     assert_eq!(
-        config
-            .bibliography
+        bibliography
             .and_then(|bibliography| bibliography.article_journal)
             .and_then(|article_journal| article_journal.no_page_fallback),
         Some(ArticleJournalNoPageFallback::Doi)
@@ -329,11 +328,10 @@ fn test_extract_article_journal_no_page_doi_fallback_ignores_additive_doi_patter
         </bibliography>
     </style>"#;
     let style = parse_csl(xml).unwrap();
-    let config = OptionsExtractor::extract(&style);
+    let bibliography = super::bibliography::extract_bibliography_config(&style);
 
     assert!(
-        config
-            .bibliography
+        bibliography
             .and_then(|bibliography| bibliography.article_journal)
             .and_then(|article_journal| article_journal.no_page_fallback)
             .is_none()

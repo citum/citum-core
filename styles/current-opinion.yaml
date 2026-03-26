@@ -10,8 +10,7 @@ info:
     links:
     - href: http://www.zotero.org/styles/current-opinion
       rel: self
-    - href: 
-        http://www.elsevier.com/journals/current-opinion-in-biotechnology/0958-1669/guide-for-authors
+    - href: http://www.elsevier.com/journals/current-opinion-in-biotechnology/0958-1669/guide-for-authors
       rel: documentation
 options:
   substitute: editor-translator-short
@@ -19,9 +18,6 @@ options:
   contributors: numeric-large
   dates: long
   titles: journal-emphasis
-  bibliography:
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
@@ -41,6 +37,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    entry-suffix: .
+    separator: ". "
   type-variants:
     chapter:
     - contributor: author

@@ -15,8 +15,7 @@ info:
       rel: self
     - href: http://www.rsc.org/learn-chemistry/resource/download/res00001664/cmp00004956/pdf
       rel: documentation
-    - href: 
-        http://www.rsc.org/journals-books-databases/journal-authors-reviewers/prepare-your-article/#format-layout
+    - href: http://www.rsc.org/journals-books-databases/journal-authors-reviewers/prepare-your-article/#format-layout
       rel: documentation
 options:
   substitute:
@@ -41,11 +40,6 @@ options:
       emph: true
     periodical:
       emph: true
-  bibliography:
-    article-journal:
-      no-page-fallback: doi
-    entry-suffix: .
-    separator: ", "
 citation:
   template:
   - number: citation-number
@@ -58,6 +52,10 @@ bibliography:
       initialize-with: ". "
       delimiter: ", "
       delimiter-precedes-last: never
+    article-journal:
+      no-page-fallback: doi
+    entry-suffix: .
+    separator: ", "
   type-variants:
     article-journal:
     - contributor: author

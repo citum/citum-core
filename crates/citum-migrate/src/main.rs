@@ -51,6 +51,7 @@ struct CliArgs {
 struct CompiledOutput {
     options: citum_schema::options::Config,
     citation_contributor_overrides: Option<citum_schema::options::ContributorConfig>,
+    bibliography_options: Option<citum_schema::BibliographyOptions>,
     bibliography_contributor_overrides: Option<citum_schema::options::ContributorConfig>,
     new_cit: Vec<TemplateComponent>,
     new_bib: Vec<TemplateComponent>,
@@ -205,12 +206,26 @@ fn extract_migration_options(
     legacy_style: &csl_legacy::model::Style,
 ) -> (
     citum_schema::options::Config,
+    Option<citum_schema::BibliographyOptions>,
     Option<citum_schema::options::ContributorConfig>,
     Option<citum_schema::options::ContributorConfig>,
     bool,
 ) {
     let mut options = OptionsExtractor::extract(legacy_style);
     apply_preset_extractions(&mut options);
+    let bibliography_options =
+        citum_migrate::options_extractor::bibliography::extract_bibliography_config(legacy_style)
+            .map(|config| citum_schema::BibliographyOptions {
+                article_journal: config.article_journal,
+                subsequent_author_substitute: config.subsequent_author_substitute,
+                subsequent_author_substitute_rule: config.subsequent_author_substitute_rule,
+                hanging_indent: config.hanging_indent,
+                entry_suffix: config.entry_suffix,
+                separator: config.separator,
+                suppress_period_after_url: config.suppress_period_after_url,
+                compound_numeric: config.compound_numeric,
+                ..Default::default()
+            });
     let citation_contributor_overrides =
         citum_migrate::options_extractor::contributors::extract_citation_contributor_overrides(
             legacy_style,
@@ -226,6 +241,7 @@ fn extract_migration_options(
 
     (
         options,
+        bibliography_options,
         citation_contributor_overrides,
         bibliography_contributor_overrides,
         citation_has_scope_shorten,
@@ -243,16 +259,17 @@ fn extract_citation_collapse(citation: &csl_legacy::model::Citation) -> Option<C
 fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOutput) -> Style {
     let citation_scope_options =
         c.citation_contributor_overrides
-            .map(|contributors| citum_schema::options::Config {
+            .map(|contributors| citum_schema::CitationOptions {
                 contributors: Some(contributors),
                 ..Default::default()
             });
-    let bibliography_scope_options =
-        c.bibliography_contributor_overrides
-            .map(|contributors| citum_schema::options::Config {
-                contributors: Some(contributors),
-                ..Default::default()
-            });
+    let mut bibliography_scope_options = c.bibliography_options.take().unwrap_or_default();
+    if let Some(contributors) = c.bibliography_contributor_overrides.take() {
+        bibliography_scope_options.contributors = Some(contributors);
+    }
+    let bibliography_scope_options = (bibliography_scope_options
+        != citum_schema::BibliographyOptions::default())
+    .then_some(bibliography_scope_options);
     let bibliography_sort = resolve_migrated_bibliography_sort(
         c.options.processing.as_ref(),
         legacy_style
@@ -340,6 +357,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 0. Extract global options (new Citum Config)
     let (
         mut options,
+        mut bibliography_options,
         citation_contributor_overrides,
         bibliography_contributor_overrides,
         citation_has_scope_shorten,
@@ -378,7 +396,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             &mut type_templates,
         );
 
-    override_bibliography_options_if_inferred(&resolved, &legacy_style, &mut options);
+    override_bibliography_options_if_inferred(&resolved, &legacy_style, &mut bibliography_options);
 
     let (citation_wrap, citation_prefix, citation_suffix, citation_delimiter) =
         resolve_citation_metadata(&resolved, &legacy_style, &options, &mut new_cit);
@@ -389,6 +407,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         CompiledOutput {
             options,
             citation_contributor_overrides,
+            bibliography_options,
             bibliography_contributor_overrides,
             new_cit,
             new_bib,
@@ -551,7 +570,7 @@ fn record_template_placements_if_enabled(
 fn override_bibliography_options_if_inferred(
     resolved: &template_resolver::ResolvedTemplates,
     legacy_style: &csl_legacy::model::Style,
-    options: &mut citum_schema::options::Config,
+    options: &mut Option<citum_schema::BibliographyOptions>,
 ) {
     // Override bibliography options with inferred values when available.
     // The XML options extractor often gets the wrong delimiter because it reads group
@@ -567,13 +586,13 @@ fn override_bibliography_options_if_inferred(
         if allow_bib_punctuation_override {
             if let Some(ref delim) = resolved_bib.delimiter {
                 eprintln!("  Overriding bibliography separator: {delim:?}");
-                let bib_cfg = options.bibliography.get_or_insert_with(Default::default);
+                let bib_cfg = options.get_or_insert_with(Default::default);
                 bib_cfg.separator = Some(delim.clone());
             }
 
             if let Some(ref suffix) = resolved_bib.entry_suffix {
                 eprintln!("  Overriding bibliography entry suffix: {suffix:?}");
-                let bib_cfg = options.bibliography.get_or_insert_with(Default::default);
+                let bib_cfg = options.get_or_insert_with(Default::default);
                 bib_cfg.entry_suffix = Some(suffix.clone());
             }
         } else {
@@ -1283,6 +1302,7 @@ mod tests {
             &style,
             CompiledOutput {
                 options: citum_schema::options::Config::default(),
+                bibliography_options: None,
                 citation_contributor_overrides: None,
                 bibliography_contributor_overrides: None,
                 new_cit: vec![],

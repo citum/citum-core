@@ -26,15 +26,6 @@ options:
     delimiter: ", "
     delimiter-precedes-last: always
     demote-non-dropping-particle: sort-only
-  bibliography:
-    entry-suffix: .
-    separator: ". "
-    compound-numeric:
-      collapse-subentries: true
-      sub-label: alphabetic
-      sub-label-suffix: ")"
-      sub-delimiter: " "
-      subentry: true
 citation:
   use-preset: numeric-citation
   wrap: parentheses
@@ -46,6 +37,14 @@ bibliography:
       initialize-with: ". "
       delimiter: ", "
       delimiter-precedes-last: always
+    entry-suffix: .
+    separator: ". "
+    compound-numeric:
+      collapse-subentries: true
+      sub-label: alphabetic
+      sub-label-suffix: ")"
+      sub-delimiter: " "
+      subentry: true
   type-variants:
     article-journal:
     - number: citation-number

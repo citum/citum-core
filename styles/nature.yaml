@@ -32,9 +32,6 @@ options:
     sort-separator: ", "
   dates: long
   titles: humanities
-  bibliography:
-    entry-suffix: .
-    separator: ". "
 citation:
   use-preset: numeric-citation
   collapse: citation-number
@@ -53,6 +50,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: never
       sort-separator: ", "
+    entry-suffix: .
+    separator: ". "
   type-variants:
     report:
     - contributor: author

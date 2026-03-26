@@ -46,9 +46,6 @@ options:
       emph: true
     serial:
       emph: true
-  bibliography:
-    entry-suffix: .
-    separator: ". "
 citation:
   template:
   - number: citation-number
@@ -67,6 +64,8 @@ bibliography:
         delimiter-precedes-last: contextual
       delimiter-precedes-last: always
       sort-separator: " "
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

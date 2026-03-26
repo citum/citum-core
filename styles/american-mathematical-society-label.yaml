@@ -47,9 +47,6 @@ options:
       emph: true
     serial:
       emph: true
-  bibliography:
-    entry-suffix: .
-    separator: ', '
 citation:
   sort: author-date-title
   template:
@@ -64,6 +61,8 @@ bibliography:
       delimiter: ', '
       delimiter-precedes-last: always
       sort-separator: ', '
+    entry-suffix: .
+    separator: ', '
   type-variants:
     article-journal:
     - number: citation-label

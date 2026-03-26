@@ -1,11 +1,11 @@
 ---
 # csl26-8eom
 title: Split citation and bibliography option schemas
-status: todo
+status: completed
 type: feature
 priority: normal
 created_at: 2026-03-25T20:45:08Z
-updated_at: 2026-03-25T20:45:08Z
+updated_at: 2026-03-26T10:58:38Z
 ---
 
 Split the shared `Config` surface used by `CitationSpec.options` and

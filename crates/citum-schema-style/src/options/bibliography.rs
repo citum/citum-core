@@ -100,12 +100,12 @@ pub enum SubLabelStyle {
 }
 
 /// Default bibliography component separator.
-fn default_separator() -> Option<String> {
+pub(crate) fn default_separator() -> Option<String> {
     Some(". ".to_string())
 }
 
 /// Skip serializing separator when it is the default value.
-fn is_default_separator(v: &Option<String>) -> bool {
+pub(crate) fn is_default_separator(v: &Option<String>) -> bool {
     v.as_deref() == Some(". ")
 }
 

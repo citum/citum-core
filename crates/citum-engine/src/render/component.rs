@@ -3,7 +3,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-use citum_schema::options::Config;
+use citum_schema::options::{Config, bibliography::BibliographyConfig};
 use citum_schema::template::{Rendering, TemplateComponent, TitleType, WrapPunctuation};
 
 /// A processed template component with its rendered value.
@@ -25,6 +25,8 @@ pub struct ProcTemplateComponent {
     pub ref_type: Option<String>,
     /// Optional global configuration.
     pub config: Option<Config>,
+    /// Optional bibliography-only configuration.
+    pub bibliography_config: Option<BibliographyConfig>,
     /// Effective language for this rendered component.
     pub item_language: Option<String>,
     /// Whether the value is already pre-formatted (e.g. from a List or substitution).

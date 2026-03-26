@@ -23,9 +23,6 @@ options:
   dates: short
   titles: humanities
   page-range-format: minimal
-  bibliography:
-    entry-suffix: .
-    separator: ". "
 citation:
   use-preset: numeric-citation
   multi-cite-delimiter: ","
@@ -43,6 +40,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

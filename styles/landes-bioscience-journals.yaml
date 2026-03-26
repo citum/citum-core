@@ -1,7 +1,6 @@
 info:
   title: Landes Bioscience Journals
-  description: Vancouver style adapted for Landes Bioscience Journals (et al for 10+ authors, only
-    year, space after semicolon
+  description: Vancouver style adapted for Landes Bioscience Journals (et al for 10+ authors, only year, space after semicolon
   fields:
   - medicine
   source:
@@ -25,9 +24,6 @@ options:
   contributors: numeric-large
   dates: short
   page-range-format: minimal
-  bibliography:
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
@@ -46,6 +42,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    entry-suffix: .
+    separator: ". "
   type-variants:
     chapter:
     - contributor: author

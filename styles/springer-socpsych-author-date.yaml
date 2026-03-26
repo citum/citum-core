@@ -1,7 +1,6 @@
 info:
   title: Springer - SocPsych (author-date)
-  description: This style corresponds to 'Springer SocPsych' in the pdf document 'Key Style Points' 
-    at this url
+  description: This style corresponds to 'Springer SocPsych' in the pdf document 'Key Style Points' at this url
   fields:
   - psychology
   source:
@@ -19,11 +18,9 @@ info:
       rel: template
     - href: http://www.springer.com/cda/content/document/cda_downloaddocument/instruct-authors-e.pdf
       rel: documentation
-    - href: 
-        http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
       rel: documentation
-    - href: 
-        http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
       rel: documentation
 options:
   processing: author-date
@@ -44,9 +41,6 @@ options:
     sort-separator: ", "
   dates: long
   titles: humanities
-  bibliography:
-    hanging-indent: true
-    separator: ": "
   punctuation-in-quote: true
   volume-pages-delimiter: comma
 citation:
@@ -74,6 +68,9 @@ citation:
   delimiter: ", "
   multi-cite-delimiter: "; "
 bibliography:
+  options:
+    hanging-indent: true
+    separator: ": "
   type-variants:
     article-journal:
     - contributor: author

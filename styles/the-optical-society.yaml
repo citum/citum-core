@@ -25,9 +25,6 @@ options:
   contributors: physics-numeric
   dates: long
   titles: humanities
-  bibliography:
-    entry-suffix: .
-    separator: ", "
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
@@ -40,6 +37,8 @@ bibliography:
       name-form: initials
       initialize-with: ". "
       delimiter: ", "
+    entry-suffix: .
+    separator: ", "
   type-variants:
     chapter:
     - contributor: author

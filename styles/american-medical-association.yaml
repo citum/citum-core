@@ -39,10 +39,6 @@ options:
   dates: long
   titles: humanities
   page-range-format: expanded
-  bibliography:
-    entry-suffix: .
-    hanging-indent: false
-    separator: ". "
   punctuation-in-quote: true
 citation:
   template:
@@ -54,6 +50,10 @@ citation:
   multi-cite-delimiter: ","
   collapse: citation-number
 bibliography:
+  options:
+    entry-suffix: .
+    hanging-indent: false
+    separator: ". "
   type-variants:
     [article-journal, article-magazine]:
     - contributor: author

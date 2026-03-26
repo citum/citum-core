@@ -1,5 +1,6 @@
 use super::*;
 use crate::{Citation, CitationItem, Reference};
+use citum_schema::BibliographyOptions;
 use citum_schema::options::{
     AndOptions, ContributorConfig, DisplayAsSort, LabelConfig, LabelPreset, NameForm, Processing,
     ShortenListOptions,
@@ -3112,13 +3113,16 @@ fn test_annotate_positions_multi_source_previous_note_invalidates_ibid() {
 #[test]
 fn test_compound_numeric_number_assignment() {
     use citum_schema::options::bibliography::CompoundNumericConfig;
-    use citum_schema::options::{BibliographyConfig, Config, Processing};
+    use citum_schema::options::{Config, Processing};
     use indexmap::IndexMap;
 
     let style = Style {
         options: Some(Config {
             processing: Some(Processing::Numeric),
-            bibliography: Some(BibliographyConfig {
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
                 compound_numeric: Some(CompoundNumericConfig::default()),
                 ..Default::default()
             }),
@@ -3208,14 +3212,14 @@ info:
   id: test-compound-numeric
 options:
   processing: numeric
-  bibliography:
+bibliography:
+  options:
     compound-numeric:
       sub-label: alphabetic
       sub-label-suffix: ")"
       sub-delimiter: ", "
     entry-suffix: .
     separator: ". "
-bibliography:
   template:
     - number: citation-number
       wrap: brackets
@@ -3305,7 +3309,7 @@ bibliography:
 fn test_compound_numeric_citation_subentry_disabled() {
     use citum_schema::CitationSpec;
     use citum_schema::options::bibliography::CompoundNumericConfig;
-    use citum_schema::options::{BibliographyConfig, Config, Processing};
+    use citum_schema::options::{Config, Processing};
     use citum_schema::template::{NumberVariable, TemplateNumber};
     use indexmap::IndexMap;
 
@@ -3320,7 +3324,10 @@ fn test_compound_numeric_citation_subentry_disabled() {
         }),
         options: Some(Config {
             processing: Some(Processing::Numeric),
-            bibliography: Some(BibliographyConfig {
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
                 compound_numeric: Some(CompoundNumericConfig {
                     subentry: false,
                     ..Default::default()
@@ -3384,13 +3391,16 @@ fn test_compound_numeric_citation_subentry_disabled() {
 #[test]
 fn test_compound_numeric_integral_citation_sub_label() {
     use citum_schema::options::bibliography::CompoundNumericConfig;
-    use citum_schema::options::{BibliographyConfig, Config, Processing};
+    use citum_schema::options::{Config, Processing};
     use indexmap::IndexMap;
 
     let style = Style {
         options: Some(Config {
             processing: Some(Processing::Numeric),
-            bibliography: Some(BibliographyConfig {
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
                 compound_numeric: Some(CompoundNumericConfig::default()),
                 ..Default::default()
             }),
@@ -3483,10 +3493,10 @@ info:
   id: test-compound-dedup
 options:
   processing: numeric
-  bibliography:
+bibliography:
+  options:
     compound-numeric: {}
     entry-suffix: .
-bibliography:
   template:
     - number: citation-number
       wrap: brackets
@@ -3562,11 +3572,11 @@ info:
   id: test-compound-html
 options:
   processing: numeric
-  bibliography:
+bibliography:
+  options:
     compound-numeric: {}
     entry-suffix: .
     separator: ". "
-bibliography:
   template:
     - number: citation-number
       wrap: brackets
@@ -3635,13 +3645,13 @@ info:
   id: test-compound-selection
 options:
   processing: numeric
-  bibliography:
+bibliography:
+  options:
     compound-numeric:
       sub-label: alphabetic
       sub-label-suffix: ")"
     entry-suffix: .
     separator: ". "
-bibliography:
   template:
     - number: citation-number
       wrap: brackets
@@ -3717,7 +3727,7 @@ bibliography:
 fn test_compound_numeric_citation_subentry_collapse_disabled() {
     use citum_schema::CitationSpec;
     use citum_schema::options::bibliography::CompoundNumericConfig;
-    use citum_schema::options::{BibliographyConfig, Config, Processing};
+    use citum_schema::options::{Config, Processing};
     use citum_schema::template::{NumberVariable, TemplateNumber};
     use indexmap::IndexMap;
 
@@ -3734,7 +3744,10 @@ fn test_compound_numeric_citation_subentry_collapse_disabled() {
         }),
         options: Some(Config {
             processing: Some(Processing::Numeric),
-            bibliography: Some(BibliographyConfig {
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
                 compound_numeric: Some(CompoundNumericConfig {
                     subentry: true,
                     collapse_subentries: false,
@@ -3798,7 +3811,7 @@ fn test_compound_numeric_citation_subentry_collapse_disabled() {
 fn test_compound_numeric_citation_subentry_collapse_enabled() {
     use citum_schema::CitationSpec;
     use citum_schema::options::bibliography::CompoundNumericConfig;
-    use citum_schema::options::{BibliographyConfig, Config, Processing};
+    use citum_schema::options::{Config, Processing};
     use citum_schema::template::{NumberVariable, TemplateNumber};
     use indexmap::IndexMap;
 
@@ -3815,7 +3828,10 @@ fn test_compound_numeric_citation_subentry_collapse_enabled() {
         }),
         options: Some(Config {
             processing: Some(Processing::Numeric),
-            bibliography: Some(BibliographyConfig {
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
                 compound_numeric: Some(CompoundNumericConfig {
                     subentry: true,
                     collapse_subentries: true,

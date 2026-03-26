@@ -1,7 +1,6 @@
 info:
   title: ASA Style Guide 6th/7th edition
-  description: The ASA style following the 6th/7th edition of the Style Guide (reference formatting 
-    is the same for both editions).
+  description: The ASA style following the 6th/7th edition of the Style Guide (reference formatting is the same for both editions).
   fields:
   - sociology
   source:
@@ -44,10 +43,6 @@ options:
   dates: numeric
   titles: humanities
   page-range-format: chicago
-  bibliography:
-    hanging-indent: true
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   options:
@@ -91,6 +86,9 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: ", "
+    hanging-indent: true
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-magazine:
     - contributor: author

@@ -31,8 +31,6 @@ options:
     sort-separator: " "
   dates: numeric
   page-range-format: expanded
-  bibliography:
-    separator: ". "
 citation:
   use-preset: numeric-citation
   wrap: brackets
@@ -50,6 +48,7 @@ bibliography:
         delimiter-precedes-last: contextual
       delimiter-precedes-last: always
       sort-separator: " "
+    separator: ". "
   type-variants:
     article-magazine:
     - contributor: author

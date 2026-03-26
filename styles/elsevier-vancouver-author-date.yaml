@@ -1,7 +1,6 @@
 info:
   title: Elsevier - NLM/Vancouver (name-year)
-  description: A style for some Elsevier journals, resembles Vancouver style, but using author-date 
-    format
+  description: A style for some Elsevier journals, resembles Vancouver style, but using author-date format
   source:
     csl-id: http://www.zotero.org/styles/elsevier-vancouver-author-date
     adapted-by: citum-migrate
@@ -13,8 +12,7 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/elsevier-vancouver
       rel: template
-    - href: 
-        https://www.elsevier.com/journals/clinical-neurophysiology/1388-2457/guide-for-authors#68000
+    - href: https://www.elsevier.com/journals/clinical-neurophysiology/1388-2457/guide-for-authors#68000
       rel: documentation
 options:
   substitute:
@@ -43,9 +41,6 @@ options:
   contributors: numeric-compact
   dates: long
   page-range-format: minimal
-  bibliography:
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   options:
@@ -76,6 +71,8 @@ citation:
 bibliography:
   options:
     contributors: numeric-compact
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

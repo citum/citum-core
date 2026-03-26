@@ -1208,7 +1208,7 @@ fn collect_citation_spec_requirements(
 ) {
     let effective_config = spec.options.as_ref().map_or_else(
         || base_config.clone(),
-        |options| Config::merged(base_config, options),
+        |options| options.merged_with(base_config),
     );
 
     if let Some(template) = spec.resolve_template() {
@@ -1271,7 +1271,7 @@ fn collect_bibliography_spec_requirements(
 ) {
     let effective_config = spec.options.as_ref().map_or_else(
         || base_config.clone(),
-        |options| Config::merged(base_config, options),
+        |options| options.merged_with(base_config),
     );
 
     if let Some(template) = spec.resolve_template() {

@@ -28,9 +28,6 @@ options:
     demote-non-dropping-particle: sort-only
   dates: long
   titles: humanities
-  bibliography:
-    entry-suffix: .
-    separator: ", "
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
@@ -42,6 +39,8 @@ bibliography:
       name-form: initials
       initialize-with: .
       delimiter-precedes-last: always
+    entry-suffix: .
+    separator: ", "
   type-variants:
     chapter:
     - contributor: author

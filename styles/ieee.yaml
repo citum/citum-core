@@ -13,8 +13,7 @@ info:
     links:
     - href: http://www.zotero.org/styles/ieee
       rel: self
-    - href: 
-        https://journals.ieeeauthorcenter.ieee.org/your-role-in-article-production/ieee-editorial-style-manual/
+    - href: https://journals.ieeeauthorcenter.ieee.org/your-role-in-article-production/ieee-editorial-style-manual/
       rel: documentation
   short-name: "IEEE"
 options:
@@ -26,8 +25,6 @@ options:
     demote-non-dropping-particle: sort-only
   dates: short
   titles: humanities
-  bibliography:
-    separator: ", "
   punctuation-in-quote: true
 citation:
   template:
@@ -44,6 +41,7 @@ bibliography:
       name-form: initials
       initialize-with: ". "
       delimiter-precedes-last: never
+    separator: ", "
   type-variants:
     article-journal:
     - delimiter: ""

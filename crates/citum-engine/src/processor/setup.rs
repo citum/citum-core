@@ -18,7 +18,7 @@ use crate::reference::{Bibliography, CitationItem, Reference};
 use crate::values::ProcHints;
 use citum_schema::Style;
 use citum_schema::locale::Locale;
-use citum_schema::options::Config;
+use citum_schema::options::{Config, bibliography::BibliographyConfig};
 use indexmap::IndexMap;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
@@ -138,6 +138,15 @@ impl Processor {
             })
     }
 
+    fn is_numeric_bibliography_style(&self) -> bool {
+        self.get_bibliography_config()
+            .processing
+            .as_ref()
+            .is_some_and(|processing| {
+                matches!(processing, citum_schema::options::Processing::Numeric)
+            })
+    }
+
     fn resolved_bibliography_sort(&self) -> Option<citum_schema::grouping::GroupSort> {
         if let Some(sort_spec) = self
             .style
@@ -148,7 +157,7 @@ impl Processor {
             return Some(sort_spec.resolve());
         }
 
-        self.get_config()
+        self.get_bibliography_config()
             .processing
             .as_ref()
             .and_then(citum_schema::options::Processing::default_bibliography_sort)
@@ -169,22 +178,54 @@ impl Processor {
             return;
         }
 
+        self.initialize_numeric_numbers(self.sort_citation_number_order());
+    }
+
+    /// Initialize numeric bibliography numbers from resolved bibliography order.
+    pub(crate) fn initialize_numeric_bibliography_numbers(&self) {
+        if !self.is_numeric_bibliography_style() {
+            return;
+        }
+
+        self.initialize_numeric_numbers(self.sort_bibliography_number_order());
+    }
+
+    fn initialize_numeric_numbers(&self, ordered_ids: Vec<String>) {
         if !self.citation_numbers.borrow().is_empty() {
             return;
         }
 
-        let ordered_ids: Vec<String> = if let Some(sort_spec) = self.resolved_bibliography_sort() {
+        self.initialize_numeric_citation_numbers_from_ordered_ids(ordered_ids);
+    }
+
+    fn sort_citation_number_order(&self) -> Vec<String> {
+        if let Some(sort_spec) = self
+            .style
+            .bibliography
+            .as_ref()
+            .and_then(|bibliography| bibliography.sort.as_ref())
+        {
             let sorter = crate::grouping::GroupSorter::new(&self.locale);
-            sorter
-                .sort_references(self.bibliography.values().collect(), &sort_spec)
+            return sorter
+                .sort_references(self.bibliography.values().collect(), &sort_spec.resolve())
                 .into_iter()
                 .filter_map(citum_schema::reference::InputReference::id)
-                .collect()
-        } else {
-            self.bibliography.keys().cloned().collect()
-        };
+                .collect();
+        }
 
-        self.initialize_numeric_citation_numbers_from_ordered_ids(ordered_ids);
+        let bibliography_config = self.get_bibliography_config();
+        Sorter::new(&bibliography_config, &self.locale)
+            .sort_references(self.bibliography.values().collect())
+            .into_iter()
+            .filter_map(citum_schema::reference::InputReference::id)
+            .collect()
+    }
+
+    fn sort_bibliography_number_order(&self) -> Vec<String> {
+        self.sort_references(self.bibliography.values().collect())
+            .into_iter()
+            .filter_map(citum_schema::reference::InputReference::id)
+            .collect()
     }
 
     /// Assign numeric citation numbers from a pre-resolved reference order.
@@ -194,12 +235,7 @@ impl Processor {
             return;
         }
 
-        let compound_config = self
-            .get_config()
-            .bibliography
-            .as_ref()
-            .and_then(|bibliography| bibliography.compound_numeric.as_ref())
-            .cloned();
+        let compound_config = self.get_bibliography_options().compound_numeric.clone();
 
         if compound_config.is_some() {
             let mut set_first_seen: IndexMap<String, usize> = IndexMap::new();
@@ -370,16 +406,14 @@ impl Processor {
             .as_ref()
             .and_then(|citation| citation.options.as_ref())
         {
-            Some(citation_options) => {
-                std::borrow::Cow::Owned(Config::merged(base, citation_options))
-            }
+            Some(citation_options) => std::borrow::Cow::Owned(citation_options.merged_with(base)),
             None => std::borrow::Cow::Borrowed(base),
         }
     }
 
-    /// Return merged config for bibliography rendering.
+    /// Return merged shared config for bibliography rendering.
     ///
-    /// Combines global style options with bibliography-specific overrides.
+    /// Combines global shared style options with bibliography-local shared overrides.
     pub fn get_bibliography_config(&self) -> std::borrow::Cow<'_, Config> {
         let base = self.get_config();
         match self
@@ -389,9 +423,24 @@ impl Processor {
             .and_then(|bibliography| bibliography.options.as_ref())
         {
             Some(bibliography_options) => {
-                std::borrow::Cow::Owned(Config::merged(base, bibliography_options))
+                std::borrow::Cow::Owned(bibliography_options.merged_with(base))
             }
             None => std::borrow::Cow::Borrowed(base),
+        }
+    }
+
+    /// Return effective bibliography-only configuration.
+    pub fn get_bibliography_options(&self) -> std::borrow::Cow<'_, BibliographyConfig> {
+        match self
+            .style
+            .bibliography
+            .as_ref()
+            .and_then(|bibliography| bibliography.options.as_ref())
+        {
+            Some(bibliography_options) => {
+                std::borrow::Cow::Owned(bibliography_options.to_bibliography_config())
+            }
+            None => std::borrow::Cow::Owned(BibliographyConfig::default()),
         }
     }
 
@@ -404,7 +453,8 @@ impl Processor {
             return sorter.sort_references(references, &sort_spec);
         }
 
-        let sorter = Sorter::new(self.get_config(), &self.locale);
+        let bibliography_config = self.get_bibliography_config();
+        let sorter = Sorter::new(&bibliography_config, &self.locale);
         sorter.sort_references(references)
     }
 

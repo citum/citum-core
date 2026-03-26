@@ -29,9 +29,6 @@ options:
   dates: long
   titles: journal-emphasis
   page-range-format: expanded
-  bibliography:
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
@@ -47,6 +44,8 @@ bibliography:
         and-others: et-al
         delimiter-precedes-last: contextual
       delimiter-precedes-last: always
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-magazine:
     - contributor: author

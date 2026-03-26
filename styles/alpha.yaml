@@ -30,9 +30,6 @@ options:
     sort-separator: ', '
     display-as-sort: all
   titles: humanities
-  bibliography:
-    entry-suffix: .
-    separator: ', '
 citation:
   sort: author-date-title
   template:
@@ -50,6 +47,8 @@ bibliography:
       delimiter-precedes-last: contextual
       sort-separator: ', '
       display-as-sort: all
+    entry-suffix: .
+    separator: ', '
   type-variants:
     article-journal:
     - number: citation-label

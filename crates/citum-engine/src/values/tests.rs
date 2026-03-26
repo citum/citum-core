@@ -70,6 +70,7 @@ fn test_contributor_values() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -110,6 +111,7 @@ fn test_date_values() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -144,6 +146,7 @@ fn test_et_al() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -306,6 +309,7 @@ fn test_et_al_delimiter_never() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -364,6 +368,7 @@ fn test_et_al_delimiter_always() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -660,6 +665,7 @@ fn test_template_list_suppression() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -710,6 +716,7 @@ fn test_et_al_use_last() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -763,6 +770,7 @@ fn test_et_al_use_last_overlap() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -809,6 +817,7 @@ fn test_title_hyperlink() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -856,6 +865,7 @@ fn test_title_hyperlink_url_fallback() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -901,6 +911,7 @@ fn test_title_values_smarten_leading_single_quotes() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -941,6 +952,7 @@ fn test_title_values_smarten_starting_apostrophe() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -984,6 +996,7 @@ fn test_title_values_smarten_french_apostrophes() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1025,6 +1038,7 @@ fn test_title_values_smarten_double_quotes() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1061,6 +1075,7 @@ fn test_title_values_flip_flop_outer_single_inner_double_quotes() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1097,6 +1112,7 @@ fn test_title_values_flip_flop_outer_double_inner_single_quotes() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1133,6 +1149,7 @@ fn test_title_values_preserve_ambiguous_double_quotes() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1169,6 +1186,7 @@ fn test_title_values_render_djot_markup_as_preformatted() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1206,6 +1224,7 @@ fn test_title_values_smarten_djot_text_leaves() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1243,6 +1262,7 @@ fn test_title_values_smarten_djot_double_quotes() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1280,6 +1300,7 @@ fn test_title_values_inline_link_suppresses_outer_title_link() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1327,6 +1348,7 @@ fn test_variable_hyperlink() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1385,6 +1407,7 @@ fn test_role_label_preset_applies_to_translator_component() {
 
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1430,6 +1453,7 @@ fn test_translator_substitute_uses_locale_aware_role_label() {
 
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1496,6 +1520,7 @@ fn test_role_specific_name_order_applies_in_substitute_path() {
 
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1527,6 +1552,7 @@ fn test_term_values() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1559,6 +1585,7 @@ fn test_template_list_term_suppression() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1600,6 +1627,7 @@ fn test_date_fallback() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1655,6 +1683,7 @@ fn test_strip_periods_global_config() {
 
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1698,6 +1727,7 @@ fn test_strip_periods_component_override() {
 
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1745,6 +1775,7 @@ fn test_strip_periods_no_strip_by_default() {
 
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1789,6 +1820,7 @@ fn test_should_strip_periods_precedence() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -1820,6 +1852,7 @@ fn test_should_strip_periods_precedence() {
     let config_none = Config::default();
     let options_none = RenderOptions {
         config: &config_none,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -2038,6 +2071,7 @@ fn title_value_with_config(title_str: &str, ref_type: &str, config: &Config) -> 
     let locale = make_locale();
     let options = RenderOptions {
         config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -2196,6 +2230,7 @@ fn test_text_case_structured_title_sentence_apa() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -2255,6 +2290,7 @@ fn test_text_case_structured_title_sentence_nlm() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -2308,6 +2344,7 @@ fn test_text_case_non_english_falls_back_to_as_is() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,
@@ -2352,6 +2389,7 @@ fn test_text_case_template_level_override() {
     let locale = make_locale();
     let options = RenderOptions {
         config: &config,
+        bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
         mode: citum_schema::citation::CitationMode::NonIntegral,

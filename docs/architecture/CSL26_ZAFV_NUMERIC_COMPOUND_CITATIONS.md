@@ -36,7 +36,7 @@ Each set ID maps to an ordered list of reference IDs.
 
 ### Style Opt-In
 
-Compound behavior only activates when style enables `options.bibliography.compound-numeric`.
+Compound behavior only activates when style enables `bibliography.options.compound-numeric`.
 
 `CompoundNumericConfig` controls citation addressing behavior and sub-label formatting:
 

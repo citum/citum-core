@@ -32,8 +32,6 @@ options:
   dates: short
   titles: humanities
   page-range-format: chicago
-  bibliography:
-    separator: ". "
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
@@ -53,6 +51,7 @@ bibliography:
         delimiter-precedes-last: contextual
       delimiter: ", "
       sort-separator: " "
+    separator: ". "
   type-variants:
     article-magazine:
     - contributor: author

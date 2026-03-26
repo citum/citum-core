@@ -30,8 +30,6 @@ options:
     demote-non-dropping-particle: sort-only
   dates: long
   titles: journal-emphasis
-  bibliography:
-    separator: ", "
   punctuation-in-quote: true
 citation:
   template:
@@ -46,6 +44,7 @@ bibliography:
       initialize-with: ". "
       delimiter: ", "
       delimiter-precedes-last: always
+    separator: ", "
   type-variants:
     article-journal:
     - contributor: author

@@ -34,8 +34,6 @@ options:
     sort-separator: ", "
   dates: long
   titles: journal-emphasis
-  bibliography:
-    separator: ", "
 citation:
   template:
   - delimiter: none
@@ -59,6 +57,7 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: never
       sort-separator: ", "
+    separator: ", "
   type-variants:
     article-journal:
     - contributor: author

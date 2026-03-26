@@ -18,8 +18,6 @@ options:
       emph: true
     periodical:
       emph: true
-  bibliography:
-    separator: ". "
   punctuation-in-quote: true
 citation:
   template:
@@ -34,6 +32,7 @@ bibliography:
     contributors:
       delimiter: ", "
       sort-separator: ", "
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

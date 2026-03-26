@@ -65,10 +65,6 @@ options:
       emph: true
     serial:
       emph: true
-  bibliography:
-    hanging-indent: true
-    entry-suffix: .
-    separator: ". "
 citation:
   options:
     contributors:
@@ -110,6 +106,9 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: never
       sort-separator: " "
+    hanging-indent: true
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-magazine:
     - contributor: author

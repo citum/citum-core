@@ -38,11 +38,6 @@ options:
     periodical: {}
     serial:
       text-case: as-is
-  bibliography:
-    entry-suffix: .
-    separator: ", "
-    compound-numeric:
-      collapse-subentries: true
 citation:
   use-preset: numeric-citation
   wrap: brackets
@@ -54,6 +49,10 @@ bibliography:
       initialize-with: ". "
       delimiter: ", "
       delimiter-precedes-last: never
+    entry-suffix: .
+    separator: ", "
+    compound-numeric:
+      collapse-subentries: true
   type-variants:
     article-journal:
     - number: citation-number
