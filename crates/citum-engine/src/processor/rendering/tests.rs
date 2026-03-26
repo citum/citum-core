@@ -344,6 +344,43 @@ fn grouped_author_date_strips_leading_affix_from_tail_components() {
 }
 
 #[test]
+fn grouped_author_date_preserves_later_item_prefixes() {
+    let mut bibliography = Bibliography::new();
+    bibliography.insert(
+        "item1".to_string(),
+        make_reference("item1", "book", Some(("Kuhn", "Thomas")), 1962, "Book A"),
+    );
+    bibliography.insert(
+        "item2".to_string(),
+        make_reference("item2", "book", Some(("Kuhn", "Thomas")), 1963, "Book B"),
+    );
+    let processor = Processor::new(grouped_author_date_style(), bibliography);
+
+    let citation = Citation {
+        items: vec![
+            CitationItem {
+                id: "item1".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "item2".to_string(),
+                prefix: Some("see".to_string()),
+                ..Default::default()
+            },
+        ],
+        mode: CitationMode::NonIntegral,
+        ..Default::default()
+    };
+
+    assert_eq!(
+        processor
+            .process_citation(&citation)
+            .expect("grouped citation should preserve later item prefixes"),
+        "(Kuhn, 1962, see 1963)"
+    );
+}
+
+#[test]
 fn grouping_helper_matches_citation_wide_preserve_behavior() {
     let style = grouped_author_date_style();
     let config = style.options.clone().unwrap_or_default();

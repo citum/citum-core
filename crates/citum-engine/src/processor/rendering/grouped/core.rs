@@ -177,7 +177,6 @@ impl Renderer<'_> {
         F: crate::render::format::OutputFormat<Output = String>,
     {
         let fmt = F::default();
-        let first_item = group[0];
         let component_delimiter = spec.delimiter.as_deref().unwrap_or(" ");
         let item_join_delim = spec.multi_cite_delimiter.as_deref().unwrap_or(", ");
         let mut group_items_str = Vec::new();
@@ -195,8 +194,14 @@ impl Renderer<'_> {
                     position,
                     delimiter: component_delimiter,
                 },
-            ) {
-                group_items_str.push(item_str);
+            ) && !item_str.is_empty()
+            {
+                group_items_str.push(self.affix_content(
+                    &fmt,
+                    item_str,
+                    item.prefix.as_deref(),
+                    item.suffix.as_deref(),
+                ));
                 all_ids.push(item.id.clone());
             }
         }
@@ -206,15 +211,7 @@ impl Renderer<'_> {
         }
 
         let combined_str = group_items_str.join(item_join_delim);
-        Ok(self
-            .build_citation_chunk(
-                &fmt,
-                all_ids,
-                combined_str,
-                first_item.prefix.as_deref(),
-                first_item.suffix.as_deref(),
-            )
-            .map(|(ids, content)| fmt.citation(ids, content)))
+        Ok(Some(fmt.citation(all_ids, combined_str)))
     }
 
     /// This preserves per-item output when grouping rules require items to stay
@@ -467,7 +464,7 @@ impl Renderer<'_> {
     {
         let mut item_parts = Vec::new();
         let mut group_delimiter: Option<String> = None;
-        for item in group {
+        for (index, item) in group.iter().enumerate() {
             let state = self.resolve_item_render_state(item, params.spec)?;
             let (filtered_template, leading_affix) = filter_author_from_template(&state.template);
             if group_delimiter.is_none() {
@@ -493,13 +490,8 @@ impl Renderer<'_> {
                 },
             ) && !item_str.is_empty()
             {
-                let suffix = item.suffix.as_deref().unwrap_or("");
-                if suffix.is_empty() {
-                    item_parts.push(item_str);
-                } else {
-                    let spaced_suffix = Self::ensure_suffix_spacing(suffix);
-                    item_parts.push(fmt.affix("", item_str, &spaced_suffix));
-                }
+                let prefix = (index > 0).then_some(item.prefix.as_deref()).flatten();
+                item_parts.push(self.affix_content(fmt, item_str, prefix, item.suffix.as_deref()));
             }
         }
         Ok((item_parts, group_delimiter))

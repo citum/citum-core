@@ -139,13 +139,16 @@ impl Processor {
         }
     }
 
-    fn render_group_entries(
+    fn render_group_entries<F>(
         &self,
         bibliography: &[ProcEntry],
         sorted_refs: Vec<&Reference>,
         group: &BibliographyGroup,
         local_hints: Option<&HashMap<String, ProcHints>>,
-    ) -> Vec<ProcEntry> {
+    ) -> Vec<ProcEntry>
+    where
+        F: OutputFormat<Output = String>,
+    {
         if local_hints.is_none() && group.template.is_none() {
             return sorted_refs
                 .into_iter()
@@ -160,6 +163,7 @@ impl Processor {
         let effective_style = self.effective_group_style(group);
         let bibliography_config = self.get_bibliography_config();
         let bibliography_options = self.get_bibliography_options().into_owned();
+        let substitute = bibliography_options.subsequent_author_substitute.clone();
         let renderer = Renderer::new(
             RendererResources {
                 style: &effective_style,
@@ -179,17 +183,41 @@ impl Processor {
             self.inject_ast_indices,
         );
 
-        sorted_refs
-            .into_iter()
-            .enumerate()
-            .map(|(index, reference)| ProcEntry {
-                id: reference.id().unwrap_or_default(),
-                template: renderer
-                    .process_bibliography_entry(reference, index + 1)
-                    .unwrap_or_default(),
-                metadata: self.extract_metadata(reference),
-            })
-            .collect()
+        let mut entries = Vec::new();
+        let mut previous_reference: Option<&Reference> = None;
+
+        for (index, reference) in sorted_refs.into_iter().enumerate() {
+            let ref_id = reference.id().unwrap_or_default();
+            let entry_number = self
+                .citation_numbers
+                .borrow()
+                .get(&ref_id)
+                .copied()
+                .unwrap_or(index + 1);
+
+            if let Some(mut processed) =
+                renderer.process_bibliography_entry(reference, entry_number)
+            {
+                if let Some(substitute_string) = substitute.as_deref()
+                    && let Some(previous) = previous_reference
+                    && self.contributors_match(previous, reference)
+                {
+                    renderer.apply_author_substitution_with_format::<F>(
+                        &mut processed,
+                        substitute_string,
+                    );
+                }
+
+                entries.push(ProcEntry {
+                    id: ref_id,
+                    template: processed,
+                    metadata: self.extract_metadata(reference),
+                });
+                previous_reference = Some(reference);
+            }
+        }
+
+        entries
     }
 
     fn append_rendered_group<F>(
@@ -275,8 +303,12 @@ impl Processor {
                 matching_refs
             };
             let local_hints = self.build_group_local_hints(&sorted_refs, group);
-            let entries =
-                self.render_group_entries(bibliography, sorted_refs, group, local_hints.as_ref());
+            let entries = self.render_group_entries::<F>(
+                bibliography,
+                sorted_refs,
+                group,
+                local_hints.as_ref(),
+            );
 
             self.append_rendered_group::<F>(&mut result, group, entries);
         }

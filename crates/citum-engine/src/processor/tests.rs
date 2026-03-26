@@ -2533,6 +2533,122 @@ fn test_bibliography_per_group_disambiguation() {
     );
 }
 
+#[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "regression test exercises grouped rerender numbering and substitution together"
+)]
+fn test_grouped_numeric_bibliography_rerender_preserves_numbers_and_substitution() {
+    use citum_schema::grouping::{BibliographyGroup, FieldMatcher, GroupHeading, GroupSelector};
+
+    let mut style = make_style();
+    let group_template = vec![
+        TemplateComponent::Number(TemplateNumber {
+            number: NumberVariable::CitationNumber,
+            form: None,
+            rendering: Rendering {
+                wrap: Some(WrapPunctuation::Brackets),
+                suffix: Some(" ".to_string()),
+                ..Default::default()
+            },
+            ..Default::default()
+        }),
+        TemplateComponent::Contributor(TemplateContributor {
+            contributor: ContributorRole::Author,
+            form: ContributorForm::Long,
+            name_order: None,
+            delimiter: None,
+            and: None,
+            rendering: Rendering::default(),
+            ..Default::default()
+        }),
+    ];
+    style.options.as_mut().unwrap().processing = Some(Processing::Numeric);
+    style.bibliography = Some(BibliographySpec {
+        options: Some(BibliographyOptions {
+            subsequent_author_substitute: Some("———".to_string()),
+            ..Default::default()
+        }),
+        template: Some(group_template.clone()),
+        groups: Some(vec![BibliographyGroup {
+            id: "grouped".to_string(),
+            heading: Some(GroupHeading::Literal {
+                literal: "Grouped".to_string(),
+            }),
+            selector: GroupSelector {
+                field: Some({
+                    let mut map = HashMap::new();
+                    map.insert(
+                        "note".to_string(),
+                        FieldMatcher::Exact("grouped".to_string()),
+                    );
+                    map
+                }),
+                ..Default::default()
+            },
+            sort: None,
+            template: Some(group_template),
+            disambiguate: None,
+        }]),
+        ..Default::default()
+    });
+
+    let mut bib = Bibliography::new();
+    bib.insert(
+        "adams1999".to_string(),
+        Reference::from(LegacyReference {
+            id: "adams1999".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("Alpha".to_string()),
+            author: Some(vec![Name::new("Adams", "Amy")]),
+            issued: Some(DateVariable::year(1999)),
+            note: Some("other".to_string()),
+            ..Default::default()
+        }),
+    );
+    bib.insert(
+        "smith2001".to_string(),
+        Reference::from(LegacyReference {
+            id: "smith2001".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("Beta".to_string()),
+            author: Some(vec![Name::new("Smith", "John")]),
+            issued: Some(DateVariable::year(2001)),
+            note: Some("grouped".to_string()),
+            ..Default::default()
+        }),
+    );
+    bib.insert(
+        "smith2002".to_string(),
+        Reference::from(LegacyReference {
+            id: "smith2002".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("Gamma".to_string()),
+            author: Some(vec![Name::new("Smith", "John")]),
+            issued: Some(DateVariable::year(2002)),
+            note: Some("grouped".to_string()),
+            ..Default::default()
+        }),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result =
+        processor.render_grouped_bibliography_with_format::<crate::render::plain::PlainText>();
+
+    assert!(
+        result.contains("[2] Smith, John"),
+        "group rerender should preserve global bibliography number 2: {result}"
+    );
+    assert!(
+        result.contains("[3] ———"),
+        "group rerender should preserve substitution on the repeated author line: {result}"
+    );
+    assert!(
+        result.contains("[1] Adams, Amy"),
+        "ungrouped entries should keep their global bibliography numbers: {result}"
+    );
+}
+
 /// Tests the behavior of `test_group_heading_localized_uses_processor_locale`.
 #[test]
 fn test_group_heading_localized_uses_processor_locale() {
@@ -4063,6 +4179,87 @@ fn test_grouped_integral_citation_renders_all_items() {
     assert!(
         result.contains("1962") && result.contains("1970"),
         "integral grouped citation should render all items in group, got: {result}"
+    );
+}
+
+#[test]
+fn test_grouped_integral_citation_preserves_later_item_prefixes() {
+    use citum_schema::citation::CitationMode;
+
+    let mut style = make_style();
+    style.citation = Some(CitationSpec {
+        template: Some(vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                form: ContributorForm::Short,
+                name_order: None,
+                delimiter: None,
+                rendering: Rendering::default(),
+                ..Default::default()
+            }),
+            TemplateComponent::Date(TemplateDate {
+                date: TDateVar::Issued,
+                form: DateForm::Year,
+                rendering: Rendering::default(),
+                ..Default::default()
+            }),
+        ]),
+        integral: Some(Box::new(CitationSpec {
+            template: Some(vec![
+                TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Author,
+                    form: ContributorForm::Short,
+                    name_order: None,
+                    delimiter: None,
+                    rendering: Rendering::default(),
+                    ..Default::default()
+                }),
+                TemplateComponent::Date(TemplateDate {
+                    date: TDateVar::Issued,
+                    form: DateForm::Year,
+                    rendering: Rendering::default(),
+                    ..Default::default()
+                }),
+            ]),
+            ..Default::default()
+        })),
+        ..Default::default()
+    });
+
+    let mut bib = make_bibliography();
+    bib.insert(
+        "kuhn1970".to_string(),
+        Reference::from(LegacyReference {
+            id: "kuhn1970".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("The Structure of Scientific Revolutions, 2nd ed.".to_string()),
+            author: Some(vec![Name::new("Kuhn", "Thomas S.")]),
+            issued: Some(DateVariable::year(1970)),
+            ..Default::default()
+        }),
+    );
+
+    let processor = Processor::new(style, bib);
+    let citation = Citation {
+        mode: CitationMode::Integral,
+        items: vec![
+            CitationItem {
+                id: "kuhn1962".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "kuhn1970".to_string(),
+                prefix: Some("see".to_string()),
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+
+    let result = processor.process_citation(&citation).unwrap();
+    assert!(
+        result.contains("see"),
+        "integral grouped citation should preserve later item prefixes, got: {result}"
     );
 }
 
