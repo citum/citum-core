@@ -229,6 +229,79 @@ fn build_article_journal_no_page_fallback_style() -> Style {
     }
 }
 
+fn build_inline_article_journal_detail_group_style() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Inline Article Journal Detail Group Test".to_string()),
+            id: Some("inline-article-journal-detail-group-test".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                TemplateComponent::Contributor(citum_schema::template::TemplateContributor {
+                    contributor: citum_schema::template::ContributorRole::Author,
+                    form: citum_schema::template::ContributorForm::Long,
+                    rendering: Rendering {
+                        suffix: Some(". ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+                TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::ParentSerial,
+                    rendering: Rendering {
+                        emph: Some(true),
+                        suffix: Some(". ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+                TemplateComponent::Group(TemplateGroup {
+                    group: vec![
+                        TemplateComponent::Number(TemplateNumber {
+                            number: NumberVariable::Volume,
+                            ..Default::default()
+                        }),
+                        TemplateComponent::Group(TemplateGroup {
+                            group: vec![
+                                TemplateComponent::Number(TemplateNumber {
+                                    number: NumberVariable::Issue,
+                                    ..Default::default()
+                                }),
+                                TemplateComponent::Date(TemplateDate {
+                                    date: DateVariable::Issued,
+                                    form: DateForm::YearMonth,
+                                    rendering: Rendering {
+                                        wrap: Some(
+                                            citum_schema::template::WrapPunctuation::Parentheses,
+                                        ),
+                                        ..Default::default()
+                                    },
+                                    ..Default::default()
+                                }),
+                            ],
+                            delimiter: Some(DelimiterPunctuation::Space),
+                            ..Default::default()
+                        }),
+                        TemplateComponent::Number(TemplateNumber {
+                            number: NumberVariable::Pages,
+                            rendering: Rendering {
+                                prefix: Some("pp. ".to_string()),
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        }),
+                    ],
+                    delimiter: Some(DelimiterPunctuation::Comma),
+                    ..Default::default()
+                }),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
 fn bibliography_html_injects_sparse_indices_from_type_template() {
     let style_yaml = r#"
 info:
@@ -346,6 +419,8 @@ fn assert_list_preview_inherits_parent_index(use_type_template: bool) {
 
 fn make_article_journal_with_detail(
     id: &str,
+    issued: &str,
+    issue: Option<&str>,
     pages: Option<&str>,
     doi: Option<&str>,
 ) -> InputReference {
@@ -361,7 +436,7 @@ fn make_article_journal_with_detail(
             non_dropping_particle: None,
         })),
         translator: None,
-        issued: EdtfString("2024".to_string()),
+        issued: EdtfString(issued.to_string()),
         parent: Parent::Embedded(Serial {
             r#type: SerialType::AcademicJournal,
             title: Some(Title::Single("Journal of Fallbacks".to_string())),
@@ -379,7 +454,7 @@ fn make_article_journal_with_detail(
         ads_bibcode: None,
         pages: pages.map(str::to_string),
         volume: Some(NumOrStr::Str("12".to_string())),
-        issue: Some(NumOrStr::Str("3".to_string())),
+        issue: issue.map(|value| NumOrStr::Str(value.to_string())),
         genre: None,
         medium: None,
         keywords: None,
@@ -934,6 +1009,8 @@ fn article_journal_with_pages_keeps_standard_detail_block() {
         "article-with-pages".to_string(),
         make_article_journal_with_detail(
             "article-with-pages",
+            "2024",
+            Some("3"),
             Some("101-109"),
             Some("10.1234/fallback"),
         ),
@@ -954,7 +1031,13 @@ fn page_less_article_journal_swaps_detail_block_for_doi() {
     let mut bib = indexmap::IndexMap::new();
     bib.insert(
         "article-without-pages".to_string(),
-        make_article_journal_with_detail("article-without-pages", None, Some("10.1234/fallback")),
+        make_article_journal_with_detail(
+            "article-without-pages",
+            "2024",
+            Some("3"),
+            None,
+            Some("10.1234/fallback"),
+        ),
     );
 
     let processor = Processor::new(style, bib);
@@ -964,6 +1047,56 @@ fn page_less_article_journal_swaps_detail_block_for_doi() {
     assert!(result.contains("DOI:10.1234/fallback"));
     assert!(!result.contains("2024"));
     assert!(!result.contains("pp."));
+}
+
+#[test]
+fn nested_inline_article_journal_detail_group_renders_issue_and_parenthesized_year_month() {
+    let style = build_inline_article_journal_detail_group_style();
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "article-inline-detail".to_string(),
+        make_article_journal_with_detail(
+            "article-inline-detail",
+            "2024-01",
+            Some("3"),
+            Some("1-12"),
+            None,
+        ),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert!(
+        result.contains("12, 3 (January 2024), pp. 1–12"),
+        "expected nested inline detail group rendering, got {result}"
+    );
+}
+
+#[test]
+fn nested_inline_article_journal_detail_group_suppresses_missing_issue_without_extra_spacing() {
+    let style = build_inline_article_journal_detail_group_style();
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "article-inline-detail-no-issue".to_string(),
+        make_article_journal_with_detail(
+            "article-inline-detail-no-issue",
+            "2024-01",
+            None,
+            Some("1-12"),
+            None,
+        ),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert!(
+        result.contains("12, (January 2024), pp. 1–12"),
+        "expected clean suppression around missing issue, got {result}"
+    );
 }
 
 fn royal_society_of_chemistry_restores_legacy_page_less_doi_behavior() {

@@ -1,6 +1,6 @@
 use citum_schema::template::{
-    DelimiterPunctuation, NumberVariable, Rendering, TemplateComponent, TemplateGroup,
-    TemplateNumber, WrapPunctuation,
+    DateForm, DateVariable, DelimiterPunctuation, NumberVariable, Rendering, TemplateComponent,
+    TemplateGroup, TemplateNumber, WrapPunctuation,
 };
 
 fn group_vol_issue_both_top_level(
@@ -36,6 +36,33 @@ fn group_vol_issue_both_top_level(
         ..Default::default()
     });
     components.insert(min_idx, vol_issue_list);
+}
+
+fn group_vol_issue_and_date_top_level(
+    components: &mut Vec<TemplateComponent>,
+    vol_idx: usize,
+    issue_idx: usize,
+    date_idx: usize,
+) {
+    let date = normalize_inline_detail_component(components.remove(date_idx));
+    let issue = normalize_inline_detail_component(components.remove(issue_idx));
+    let volume = normalize_inline_detail_component(components.remove(vol_idx));
+
+    let issue_date_group = TemplateComponent::Group(TemplateGroup {
+        group: vec![issue, date],
+        delimiter: Some(DelimiterPunctuation::Space),
+        rendering: Rendering::default(),
+        ..Default::default()
+    });
+
+    let detail_group = TemplateComponent::Group(TemplateGroup {
+        group: vec![volume, issue_date_group],
+        delimiter: Some(DelimiterPunctuation::Comma),
+        rendering: Rendering::default(),
+        ..Default::default()
+    });
+
+    components.insert(vol_idx, detail_group);
 }
 
 fn group_vol_issue_issue_at_top(
@@ -125,6 +152,7 @@ fn group_vol_issue_both_nested(
     }
 }
 
+/// Group adjacent volume and issue detail for migrated article-journal output.
 pub fn group_volume_and_issue(
     components: &mut Vec<TemplateComponent>,
     options: &citum_schema::options::Config,
@@ -153,6 +181,20 @@ pub fn group_volume_and_issue(
         |c| matches!(c, TemplateComponent::Number(n) if n.number == NumberVariable::Volume),
     );
 
+    let issue_date_pos = issue_pos.and_then(|issue_idx| {
+        components
+            .get(issue_idx + 1)
+            .and_then(|component| is_adjacent_year_month_date(component).then_some(issue_idx + 1))
+    });
+
+    if let (Some(vol_idx), Some(issue_idx), Some(date_idx)) = (vol_pos, issue_pos, issue_date_pos)
+        && vol_idx < issue_idx
+        && issue_idx < date_idx
+    {
+        group_vol_issue_and_date_top_level(components, vol_idx, issue_idx, date_idx);
+        return;
+    }
+
     if let (Some(vol_idx), Some(issue_idx)) = (vol_pos, issue_pos) {
         group_vol_issue_both_top_level(components, vol_idx, issue_idx, vol_issue_delimiter);
         return;
@@ -165,7 +207,37 @@ pub fn group_volume_and_issue(
     }
 }
 
-/// Check if issue exists anywhere in nested components.
+fn is_adjacent_year_month_date(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Date(date)
+            if date.date == DateVariable::Issued && date.form == DateForm::YearMonth
+    )
+}
+
+fn normalize_inline_detail_component(mut component: TemplateComponent) -> TemplateComponent {
+    match &mut component {
+        TemplateComponent::Number(number) => {
+            number.rendering.prefix = None;
+            number.rendering.suffix = None;
+        }
+        TemplateComponent::Date(date) => {
+            if date.rendering.wrap.is_none()
+                && date.rendering.prefix.as_deref() == Some("(")
+                && date.rendering.suffix.as_deref() == Some(")")
+            {
+                date.rendering.wrap = Some(WrapPunctuation::Parentheses);
+            }
+            date.rendering.prefix = None;
+            date.rendering.suffix = None;
+        }
+        _ => {}
+    }
+
+    component
+}
+
+/// Return whether an issue number exists anywhere in nested components.
 #[must_use]
 pub fn find_issue_in_components(components: &[TemplateComponent]) -> bool {
     for component in components {
@@ -184,7 +256,8 @@ pub fn find_issue_in_components(components: &[TemplateComponent]) -> bool {
     false
 }
 
-/// Insert issue component after volume, handling nested lists.
+/// Insert an issue component after volume, recursing through nested groups.
+///
 /// Returns true if successfully inserted.
 pub fn insert_issue_after_volume(
     items: &mut Vec<TemplateComponent>,
@@ -224,7 +297,7 @@ pub fn insert_issue_after_volume(
     false
 }
 
-/// Check if a List contains a volume variable (recursively).
+/// Return whether a group contains a volume variable, recursively.
 #[must_use]
 pub fn find_volume_in_list(list: &TemplateGroup) -> Option<()> {
     for item in &list.group {
@@ -243,6 +316,7 @@ pub fn find_volume_in_list(list: &TemplateGroup) -> Option<()> {
     None
 }
 
+/// Return whether a group contains any title component, recursively.
 #[must_use]
 pub fn list_contains_title(list: &TemplateGroup) -> bool {
     list.group.iter().any(|c| {
