@@ -1,9 +1,21 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "release-plz command to run"
+        required: true
+        default: release-pr
+        type: choice
+        options:
+          - release-pr
+          - release
+      ref:
+        description: "Git ref to release from"
+        required: false
+        default: main
+        type: string
 
 permissions:
   pull-requests: write
@@ -13,224 +25,24 @@ jobs:
   release-plz:
     name: Release-plz
     runs-on: ubuntu-latest
+    concurrency:
+      group: release-plz-${{ github.event.inputs.command || 'release-pr' }}
+      cancel-in-progress: false
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          ref: ${{ github.event.inputs.ref || 'main' }}
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install cargo-binstall
-        uses: cargo-bins/cargo-binstall@1800853f2578f8c34492ec76154caef8e163fbca # v1.17.7
-
-      - name: Install release-plz
-        shell: bash
-        run: |
-          cargo-binstall \
-            release-plz@0.3.157 \
-            --force \
-            --strategies=crate-meta-data,compile \
-            --no-confirm
-
-      - name: Configure git user from GitHub token
-        uses: release-plz/git-config@59144859caf016f8b817a2ac9b051578729173c4
+      - name: Run release-plz
+        uses: release-plz/action@49c995b2442b0f60dd4aab07a164cc00643471fc # v0.5.128
+        with:
+          command: ${{ github.event.inputs.command || 'release-pr' }}
+          config: .release-plz.toml
+          verbose: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Prepare released manifest snapshot
-        id: released_manifest
-        shell: bash
-        run: |
-          latest_tag=$(git tag --sort=version:refname -l 'v*' | tail -n 1)
-          if [[ -z "${latest_tag}" ]]; then
-            echo "::error::No root release tag matching v* was found."
-            exit 1
-          fi
-
-          snapshot_dir="${RUNNER_TEMP}/release-plz-registry-manifest"
-          git worktree add --detach "${snapshot_dir}" "${latest_tag}"
-          echo "tag=${latest_tag}" >> "${GITHUB_OUTPUT}"
-          echo "manifest_path=${snapshot_dir}/Cargo.toml" >> "${GITHUB_OUTPUT}"
-          echo "Using released manifest from ${latest_tag}"
-
-      - name: Prepare release artifacts
-        shell: bash
-        run: |
-          python3 scripts/prepare-release-artifacts.py \
-            --previous-tag "${{ steps.released_manifest.outputs.tag }}"
-
-      - name: Run release-plz release-pr
-        id: release_pr
-        shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          stderr_file=$(mktemp)
-          if ! release_pr_output=$(release-plz release-pr \
-            --git-token "${GITHUB_TOKEN}" \
-            --repo-url "https://github.com/${GITHUB_REPOSITORY}" \
-            --config .release-plz.toml \
-            --registry-manifest-path "${{ steps.released_manifest.outputs.manifest_path }}" \
-            --forge github \
-            -v \
-            -o json 2>"${stderr_file}"); then
-            echo "::group::release-plz release-pr stderr"
-            cat "${stderr_file}"
-            echo "::endgroup::"
-            if grep -q "422" "${stderr_file}"; then
-              echo "::error::release-plz release-pr failed with HTTP 422. See stderr above."
-            fi
-            rm -f "${stderr_file}"
-            exit 1
-          fi
-
-          rm -f "${stderr_file}"
-          echo "release_pr_output: ${release_pr_output}"
-          prs=$(echo "${release_pr_output}" | jq -c .prs)
-          echo "prs=${prs}" >> "${GITHUB_OUTPUT}"
-          if [[ "$(echo "${prs}" | jq 'length')" == "0" ]]; then
-            echo "::warning::release-plz created no release PRs for this push."
-          fi
-
-      - name: Rewrite release PR bodies for code-track wording
-        if: ${{ steps.release_pr.outputs.prs != '' && steps.release_pr.outputs.prs != '[]' }}
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PRS_JSON: ${{ steps.release_pr.outputs.prs }}
-          PREVIOUS_TAG: ${{ steps.released_manifest.outputs.tag }}
-        run: |
-          schema_version=$(python3 - <<'PY'
-          import pathlib
-          import re
-
-          content = pathlib.Path("crates/citum-schema-style/src/lib.rs").read_text(encoding="utf-8")
-          match = re.search(r'pub const STYLE_SCHEMA_VERSION: &str = "([^"]+)";', content)
-          if match is None:
-              raise SystemExit("Could not determine STYLE_SCHEMA_VERSION")
-          print(match.group(1))
-          PY
-          )
-
-          while IFS= read -r pr_json; do
-            [[ -z "${pr_json}" ]] && continue
-
-            pr_number=$(echo "${pr_json}" | jq -r '.number')
-            current_body=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${pr_number}" --jq '.body')
-
-            payload_file=$(mktemp)
-            PR_JSON="${pr_json}" \
-            CURRENT_BODY="${current_body}" \
-            PREVIOUS_TAG="${PREVIOUS_TAG}" \
-            SCHEMA_VERSION="${schema_version}" \
-            python3 - "${payload_file}" <<'PY'
-          import json
-          import os
-          import pathlib
-          import re
-          import subprocess
-          import sys
-
-          pr = json.loads(os.environ["PR_JSON"])
-          current_body = os.environ["CURRENT_BODY"]
-          previous_tag = os.environ["PREVIOUS_TAG"]
-          schema_version = os.environ["SCHEMA_VERSION"]
-
-          previous_schema_source = subprocess.run(
-              [
-                  "git",
-                  "show",
-                  f"{previous_tag}:crates/citum-schema-style/src/lib.rs",
-              ],
-              check=True,
-              capture_output=True,
-              text=True,
-          ).stdout
-          match = re.search(
-              r'pub const STYLE_SCHEMA_VERSION: &str = "([^"]+)";',
-              previous_schema_source,
-          )
-          if match is None:
-              raise SystemExit(
-                  f"Could not determine STYLE_SCHEMA_VERSION from {previous_tag}"
-              )
-          previous_schema_version = match.group(1)
-
-          releases = pr.get("releases", [])
-          if not releases:
-              raise SystemExit("release-plz returned a PR without releases")
-
-          previous_version = previous_tag[1:] if previous_tag.startswith("v") else previous_tag
-          target_versions = sorted({release["version"] for release in releases})
-          if len(target_versions) == 1:
-              heading = f"## Code release: workspace crates {previous_version} -> {target_versions[0]}"
-          else:
-              heading = "## Code release: workspace crate updates"
-
-          details_index = current_body.find("<details>")
-          tail = current_body[details_index:].strip() if details_index != -1 else ""
-          if not tail:
-              tail = (
-                  "---\n"
-                  "This PR was generated with "
-                  "[release-plz](https://github.com/release-plz/release-plz/)."
-              )
-
-          package_names = ", ".join(f"`{release['package_name']}`" for release in releases)
-          if previous_schema_version == schema_version:
-              schema_summary = (
-                  "Schema format version remains unchanged at "
-                  f"`{schema_version}`."
-              )
-          else:
-              schema_summary = (
-                  "Schema format version bumps from "
-                  f"`{previous_schema_version}` to `{schema_version}`. "
-                  "This PR also refreshes `docs/schemas/*` and the schema changelog."
-              )
-          body = "\n\n".join(
-              [
-                  heading,
-                  (
-                      "This PR bumps the Rust workspace package version for the code-release "
-                      "track. All synchronized workspace crates move together, including "
-                      "implementation crates whose names begin with `citum-schema`."
-                  ),
-                  schema_summary,
-                  (
-                      "Affected workspace crates: "
-                      f"{package_names}."
-                  ),
-                  tail,
-              ]
-          ).strip()
-
-          pathlib.Path(sys.argv[1]).write_text(json.dumps({"body": body}), encoding="utf-8")
-          PY
-
-            gh api "repos/${GITHUB_REPOSITORY}/pulls/${pr_number}" \
-              --method PATCH \
-              --input "${payload_file}" >/dev/null
-            rm -f "${payload_file}"
-          done < <(echo "${PRS_JSON}" | jq -c '.[]')
-
-      - name: Run release-plz release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: |
-          release_output=$(release-plz release \
-            --git-token "${GITHUB_TOKEN}" \
-            --config .release-plz.toml \
-            --forge github \
-            -v \
-            -o json)
-          echo "release_output: ${release_output}"
-
-      - name: Clean up released manifest snapshot
-        if: always()
-        shell: bash
-        run: |
-          git worktree remove --force "${RUNNER_TEMP}/release-plz-registry-manifest"

@@ -7,8 +7,8 @@
 # Do not publish to crates.io (project-specific decision)
 publish = false
 
-# Allow dirty working directory (CI artifact handling)
-allow_dirty = true
+# This repository releases from git tags instead of the cargo registry.
+git_only = true
 
 # Treat feature work on 0.x as a minor release, matching repo policy.
 features_always_increment_minor = true
@@ -16,8 +16,46 @@ features_always_increment_minor = true
 # During high-churn development, only feature commits should open release PRs.
 release_commits = "^feat[(:]"
 
-# Disable per-package releases - we want a single workspace release
+# Only release when the manual release PR is merged, not on every commit to main.
+release_always = false
+
+# Disable per-package releases - we want a single workspace release.
 git_release_enable = false
+
+pr_name = "chore: release{% if version %} v{{ version }}{% endif %}"
+pr_body = """
+{% macro changelog_details(releases) %}
+{%- for release in releases %}
+{%- if release.title and release.changelog %}
+{% if releases | length > 1 %}## `{{ release.package }}`{% endif %}
+<blockquote>
+
+## {{ release.title }}
+
+{{ release.changelog }}
+</blockquote>
+{% endif %}
+{%- endfor %}
+{% endmacro %}
+{% set changes = self::changelog_details(releases=releases) %}
+## Code release
+
+This PR bumps the Rust workspace package version for the code-release track. All synchronized workspace crates move together, including implementation crates whose names begin with `citum-schema`.
+
+{% for release in releases %}
+* `{{ release.package }}`: {% if release.previous_version and release.previous_version != release.next_version %}{{ release.previous_version }} -> {% endif %}{{ release.next_version }}{% if release.semver_check == "incompatible" %} (⚠ API breaking changes){% elif release.semver_check == "compatible" %} (✓ API compatible changes){% endif %}
+{% endfor %}
+
+Schema versioning is validated in normal PRs and is not mutated by this workflow. Any `STYLE_SCHEMA_VERSION` or `docs/schemas/*` changes must already be committed before opening this release PR.
+
+{% if changes %}
+<details><summary><i><b>Changelog</b></i></summary><p>
+{{ changes }}
+</p></details>
+{% endif %}
+---
+This PR was generated with [release-plz](https://github.com/release-plz/release-plz/).
+"""
 
 # Track all workspace crates in one synchronized release group so
 # dependency-crate features still trigger the top-level citum release PR.
