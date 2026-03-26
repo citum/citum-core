@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare schema/version artifacts before opening a release-plz PR."""
+"""Validate committed schema artifacts and version metadata."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ SCHEMA_CORRECT_RE = re.compile(r"^Schema-Correct:\s*(\S+)\s*$", re.MULTILINE)
 
 
 class ReleasePrepError(RuntimeError):
-    """Raised when release preparation cannot proceed safely."""
+    """Raised when schema release validation cannot proceed safely."""
 
 
 @dataclass(frozen=True)
@@ -165,23 +165,6 @@ def read_schema_dir_contents_at_ref(ref: str) -> dict[str, str]:
     return contents
 
 
-def sync_schema_dir(source: Path, destination: Path) -> None:
-    """Replace committed schema files with freshly generated output."""
-
-    destination.mkdir(parents=True, exist_ok=True)
-    existing = {path.name for path in destination.glob("*.json")}
-    incoming = {path.name for path in source.glob("*.json")}
-
-    for stale_name in existing - incoming:
-        (destination / stale_name).unlink()
-
-    for schema_file in source.glob("*.json"):
-        (destination / schema_file.name).write_text(
-            schema_file.read_text(encoding="utf-8"),
-            encoding="utf-8",
-        )
-
-
 def collect_schema_bump_markers(
     commit_range: str,
 ) -> tuple[list[SchemaBumpMarker], list[SchemaCorrectMarker]]:
@@ -236,29 +219,12 @@ def format_marker_list(markers: Sequence[SchemaBumpMarker]) -> str:
     return ", ".join(f"{marker.commit} ({marker.bump})" for marker in markers)
 
 
-def apply_schema_bump(bump_type: str) -> None:
-    """Run the schema bump helper in CI-friendly update-only mode."""
-
-    run(
-        [
-            str(REPO_ROOT / "scripts/bump.sh"),
-            "schema",
-            bump_type,
-            "--yes",
-            "--no-validate",
-            "--no-commit",
-            "--no-tag",
-        ],
-        capture_output=False,
-    )
-
-
 def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     """Parse command-line arguments."""
 
     parser = argparse.ArgumentParser(
-        prog="prepare-release-artifacts.py",
-        description="Regenerate release artifacts before release-plz opens a PR.",
+        prog="validate-schema-release.py",
+        description="Validate committed schema artifacts against the current source tree.",
     )
     baseline_group = parser.add_mutually_exclusive_group(required=True)
     baseline_group.add_argument(
@@ -282,7 +248,7 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Preview the release prep decision without mutating tracked files.",
+        help="Accepted for backward compatibility. Validation is always non-mutating.",
     )
     parser.add_argument(
         "--allow-orphan-footer",
@@ -297,7 +263,7 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
 
 
 def resolve_validation_target(args: argparse.Namespace) -> ValidationTarget:
-    """Resolve the baseline ref and commit range for this invocation."""
+    """Resolve the baseline ref and commit range for this validation run."""
 
     baseline_ref = args.previous_tag or args.baseline_ref
     if baseline_ref is None:
@@ -315,7 +281,7 @@ def resolve_validation_target(args: argparse.Namespace) -> ValidationTarget:
 
 
 def main(argv: Sequence[str]) -> int:
-    """Prepare schema artifacts and schema-version metadata."""
+    """Validate committed schema artifacts and schema-version metadata."""
 
     try:
         args = parse_args(argv)
@@ -334,8 +300,12 @@ def main(argv: Sequence[str]) -> int:
             schema_output_drift = generated_schema_output != current_schema_output
             schema_files_changed_since_tag = generated_schema_output != previous_schema_output
 
-            if not args.dry_run and schema_output_drift:
-                sync_schema_dir(generated_schema_dir, SCHEMA_DIR)
+        if schema_output_drift:
+            raise ReleasePrepError(
+                "Committed docs/schemas/* do not match freshly generated schemas. "
+                "Run `cargo run --bin citum --features schema -- schema --out-dir docs/schemas` "
+                "and commit the updated files."
+            )
 
         schema_version_changed = current_schema_version != previous_schema_version
         schema_changed = (
@@ -348,7 +318,7 @@ def main(argv: Sequence[str]) -> int:
                 if args.allow_orphan_footer and len(markers) == 1:
                     marker = markers[0]
                     print(
-                        "No schema release prep needed for the validated range; "
+                        "No schema release validation change needed for the validated range; "
                         "allowing rescue footer "
                         f"{marker.bump} from {marker.commit}."
                     )
@@ -358,7 +328,7 @@ def main(argv: Sequence[str]) -> int:
                     f"did not change: {format_marker_list(markers)}"
                 )
             print(
-                f"No schema release prep needed since {target.baseline_label}; "
+                f"No schema release validation changes since {target.baseline_label}; "
                 "generated schemas and STYLE_SCHEMA_VERSION are unchanged."
             )
             return 0
@@ -396,41 +366,15 @@ def main(argv: Sequence[str]) -> int:
                 f"({marker.bump} from {marker.commit}): {format_marker_list(markers)}"
             )
         expected_version = bump_version(previous_schema_version, marker.bump)
-
-        if schema_version_changed:
-            if current_schema_version != expected_version:
-                raise ReleasePrepError(
-                    "STYLE_SCHEMA_VERSION already changed, but it does not match the declared "
-                    f"Schema-Bump footer. Expected {expected_version}, found "
-                    f"{current_schema_version}."
-                )
-            print(
-                "Schema version already matches the declared Schema-Bump footer; "
-                "keeping the existing version constant."
+        if current_schema_version != expected_version:
+            raise ReleasePrepError(
+                "Schema changes were detected, but STYLE_SCHEMA_VERSION does not match the "
+                f"declared Schema-Bump footer. Expected {expected_version}, found "
+                f"{current_schema_version}. Commit the schema version bump before release."
             )
-        else:
-            if args.dry_run:
-                print(
-                    "Schema changes detected; dry-run would bump STYLE_SCHEMA_VERSION "
-                    f"from {previous_schema_version} to {expected_version} "
-                    f"using footer {marker.bump} from {marker.commit}."
-                )
-                return 0
-
-            apply_schema_bump(marker.bump)
-            current_schema_version = read_current_schema_version()
-            if current_schema_version != expected_version:
-                raise ReleasePrepError(
-                    "Schema bump helper completed, but STYLE_SCHEMA_VERSION did not land on the "
-                    f"expected version {expected_version}."
-                )
-            with tempfile.TemporaryDirectory(prefix="citum-schemas-") as tmp_dir:
-                generated_schema_dir = Path(tmp_dir) / "schemas"
-                export_schemas(generated_schema_dir)
-                sync_schema_dir(generated_schema_dir, SCHEMA_DIR)
 
         print(
-            "Prepared schema release artifacts: "
+            "Schema release metadata validated: "
             f"STYLE_SCHEMA_VERSION {previous_schema_version} -> {current_schema_version}, "
             f"Schema-Bump footer {marker.bump} from {marker.commit}."
         )

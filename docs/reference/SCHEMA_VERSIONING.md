@@ -9,8 +9,8 @@ Citum keeps code and schema versioning separate:
 
 | Track | What | Source of truth | Automation |
 |-------|------|-----------------|------------|
-| **Code** | Rust workspace crates | `Cargo.toml` workspace version | `release-plz` |
-| **Schema** | Citum schema format exposed by `citum_schema::SCHEMA_VERSION` | `STYLE_SCHEMA_VERSION` in `crates/citum-schema-style/src/lib.rs` | release-prep + `scripts/bump.sh` |
+| **Code** | Rust workspace crates | `Cargo.toml` workspace version | manual `release-plz` workflow dispatch |
+| **Schema** | Citum schema format exposed by `citum_schema::SCHEMA_VERSION` | `STYLE_SCHEMA_VERSION` in `crates/citum-schema-style/src/lib.rs` | PR-time validation + `scripts/bump.sh` |
 
 Why the split:
 
@@ -37,26 +37,26 @@ workspace crates so the top-level release PR reflects the full release.
 
 Code releases are prepared by `.github/workflows/release-plz.yml`.
 
-1. The workflow looks up the latest root `v*` tag.
-2. `scripts/prepare-release-artifacts.py` runs before `release-plz release-pr`.
+1. A maintainer manually dispatches the workflow on `main`.
+2. The workflow runs `release-plz` in `git_only` mode.
 3. `release-plz` updates `Cargo.toml`, `Cargo.lock`, crate changelogs, and the root `CHANGELOG.md`.
-4. The workflow rewrites the release PR body so it explicitly calls out the current schema version and whether it changed.
+4. `release-plz` opens or updates the release PR body directly from `.release-plz.toml`.
 
 Do not use `scripts/bump.sh` for code versions or `v*` tags.
 
 ### Schema Releases
 
-Schema release prep now happens in the same workflow that prepares the code release PR.
+Schema versioning is decoupled from the code release workflow.
 
-`scripts/prepare-release-artifacts.py` does the following:
+`scripts/validate-schema-release.py` does the following:
 
-1. Regenerates `docs/schemas/*` with `cargo run --bin citum --features schema -- schema --out-dir docs/schemas`.
-2. Detects whether the generated schema files changed, or whether `STYLE_SCHEMA_VERSION` already changed since the last root `v*` tag.
-3. Scans unreleased commits for exactly one `Schema-Bump:` footer.
-4. If schema files changed and the schema version did not already move, runs `./scripts/bump.sh schema <patch|minor|major> --yes --no-validate --no-commit --no-tag`.
-5. Regenerates `docs/schemas/*` again after the version bump so the committed JSON schemas match the new default schema version.
+1. Regenerates `docs/schemas/*` in a temporary directory.
+2. Fails if the generated schemas differ from the committed `docs/schemas/*`.
+3. Detects whether the schema files or `STYLE_SCHEMA_VERSION` changed since the baseline ref.
+4. Scans the commit range for exactly one valid `Schema-Bump:` footer when schema changes are present.
+5. Verifies that the committed `STYLE_SCHEMA_VERSION` already matches the declared bump.
 
-If schema files changed but no valid footer is present, the release workflow fails before opening or updating the release PR.
+If schema files changed but no valid footer is present, CI fails before merge.
 
 Pull requests to `main` now run the same validation logic against the PR base
 commit in dry-run mode. That means schema-affecting PRs fail in CI before merge
@@ -79,10 +79,11 @@ Rules:
 
 - Exactly one `Schema-Bump:` footer must appear across the unreleased commit range when schema changes are present.
 - Pull requests to `main` use the same rule against the PR commit range (`base..HEAD`), so the footer is enforced before merge as well as at release time.
+- Pull requests to `main` must commit the matching `STYLE_SCHEMA_VERSION` and `docs/schemas/*` updates in the same PR as the schema change.
 - A rescue PR may carry one valid footer even when that PR does not itself change schema artifacts, as long as the merge is intended to unblock an existing schema-changing unreleased range on `main`.
 - No footer is required when schema files and `STYLE_SCHEMA_VERSION` are unchanged.
 - If a PR is squash-merged, preserve the footer in the squash commit body.
-- The release prep script treats generated-schema drift in `docs/schemas` as the canonical signal that the schema changed.
+- The schema validation script treats generated-schema drift in `docs/schemas` as the canonical signal that the schema changed.
 
 ### Choosing Patch, Minor, Or Major
 
@@ -182,7 +183,7 @@ Interactive usage:
 Automation usage:
 
 ```bash
-./scripts/bump.sh schema minor --yes --no-validate --no-commit --no-tag
+./scripts/bump.sh schema minor --yes --no-validate
 ```
 
 The helper updates:
@@ -199,7 +200,7 @@ CI validates:
 
 1. all schema-generating code still produces the checked-in `docs/schemas/*`
 2. pull requests with schema changes include exactly one valid `Schema-Bump:` footer in their commit range
-3. the release-prep step can derive a valid schema bump decision from release-range commit metadata
+3. pull requests with schema changes commit the matching `STYLE_SCHEMA_VERSION`
 4. `citum check` and auxiliary validation scripts read from the same canonical schema directory
 
 ## Schema Changelog
