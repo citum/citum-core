@@ -2705,6 +2705,36 @@ fn test_group_heading_term_resolves_from_locale() {
     assert!(output.contains("# and"));
 }
 
+#[test]
+fn test_grouped_bibliography_html_uses_html_headings() {
+    use crate::render::html::Html;
+    use citum_schema::grouping::{BibliographyGroup, GroupHeading, GroupSelector};
+
+    let mut style = make_style();
+    style.bibliography.as_mut().unwrap().groups = Some(vec![BibliographyGroup {
+        id: "all".to_string(),
+        heading: Some(GroupHeading::Literal {
+            literal: "Sources".to_string(),
+        }),
+        selector: GroupSelector::default(),
+        sort: None,
+        template: None,
+        disambiguate: None,
+    }]);
+
+    let processor = Processor::new(style, make_bibliography());
+    let output = processor.render_grouped_bibliography_with_format::<Html>();
+
+    assert!(
+        output.contains("<h2>Sources</h2>"),
+        "grouped HTML bibliography should render HTML headings: {output}"
+    );
+    assert!(
+        !output.contains("# Sources"),
+        "grouped HTML bibliography should not emit Markdown headings: {output}"
+    );
+}
+
 /// Tests the behavior of `test_position_detection_first`.
 #[test]
 fn test_position_detection_first() {

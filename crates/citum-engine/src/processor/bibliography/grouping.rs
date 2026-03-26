@@ -237,7 +237,7 @@ impl Processor {
             .as_ref()
             .and_then(|group_heading| self.resolve_group_heading(group_heading))
         {
-            result.push_str(&format!("# {heading}\n\n"));
+            result.push_str(&self.render_group_heading::<F>(&heading));
         }
 
         result.push_str(&crate::render::refs_to_string_with_format::<F>(
@@ -465,5 +465,16 @@ impl Processor {
             year: reference.issued().map(|issued| issued.year().clone()),
             title: reference.title().map(|title| title.to_string()),
         }
+    }
+
+    fn render_group_heading<F>(&self, heading: &str) -> String
+    where
+        F: OutputFormat<Output = String>,
+    {
+        if std::any::type_name::<F>() == std::any::type_name::<crate::render::html::Html>() {
+            return format!("<h2>{heading}</h2>\n\n");
+        }
+
+        format!("# {heading}\n\n")
     }
 }
