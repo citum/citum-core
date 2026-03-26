@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 mod common;
 use common::*;
 
-use citum_engine::{Processor, render::html::Html};
+use citum_engine::{Processor, render::html::Html, render::plain::PlainText};
 use citum_schema::{
     BibliographySpec, CitationSpec, Style, StyleInfo,
     options::{
@@ -1156,6 +1156,83 @@ fn page_less_article_journal_swaps_detail_block_for_doi() {
     assert!(!result.contains("pp."));
 }
 
+fn type_variant_article_journal_fallback_preserves_variant_precedence() {
+    let style_yaml = r#"
+info:
+  title: Type Variant Regression
+  id: type-variant-regression
+bibliography:
+  options:
+    article-journal:
+      no-page-fallback: doi
+  template:
+    - title: primary
+      prefix: "DEFAULT "
+  type-variants:
+    article-journal:
+      - contributor: author
+        form: long
+      - number: volume
+        prefix: ", "
+      - number: pages
+        prefix: ": "
+      - variable: doi
+        prefix: " DOI: "
+"#;
+    let style: Style = serde_yaml::from_str(style_yaml).expect("style should parse");
+
+    let without_pages: csl_legacy::csl_json::Reference =
+        serde_json::from_value(serde_json::json!({
+            "id": "without-pages",
+            "type": "article-journal",
+            "title": "Fallback Title",
+            "author": [{"family": "Smith", "given": "Jane"}],
+            "issued": {"date-parts": [[2020]]},
+            "volume": "12",
+            "DOI": "10.1000/no-pages"
+        }))
+        .expect("no-pages fixture should parse");
+    let with_pages: csl_legacy::csl_json::Reference = serde_json::from_value(serde_json::json!({
+        "id": "with-pages",
+        "type": "article-journal",
+        "title": "Detailed Title",
+        "author": [{"family": "Jones", "given": "Alex"}],
+        "issued": {"date-parts": [[2021]]},
+        "volume": "18",
+        "page": "33-40",
+        "DOI": "10.1000/with-pages"
+    }))
+    .expect("with-pages fixture should parse");
+
+    let mut bibliography = indexmap::IndexMap::new();
+    bibliography.insert("without-pages".to_string(), without_pages.into());
+    bibliography.insert("with-pages".to_string(), with_pages.into());
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_selected_bibliography_with_format::<PlainText, _>([
+        "without-pages".to_string(),
+        "with-pages".to_string(),
+    ]);
+
+    assert!(
+        rendered.contains("Smith DOI: 10.1000/no-pages"),
+        "DOI fallback should keep the type-variant output: {rendered}"
+    );
+    assert!(
+        rendered.contains("Alex Jones, 18: 33–40"),
+        "page-bearing articles should retain the detail block from the type variant: {rendered}"
+    );
+    assert!(
+        !rendered.contains("DEFAULT Fallback Title")
+            && !rendered.contains("DEFAULT Detailed Title"),
+        "matching type variants must take precedence over the default bibliography template: {rendered}"
+    );
+    assert!(
+        !rendered.contains("10.1000/with-pages"),
+        "standard-detail mode should still suppress DOI when pages are present: {rendered}"
+    );
+}
+
 fn bibliography_local_entry_links_apply_on_the_default_render_path() {
     let style = build_bibliography_entry_link_style();
     let reference = InputReference::Monograph(Box::new(Monograph {
@@ -1478,6 +1555,14 @@ mod article_journal_no_page_fallback {
             "A bibliography article-journal entry without pages should swap its normal year-volume-pages detail block for DOI output when the style opts in.",
         );
         super::page_less_article_journal_swaps_detail_block_for_doi();
+    }
+
+    #[test]
+    fn matching_type_variants_keep_precedence_when_article_journal_fallbacks_apply() {
+        announce_behavior(
+            "A matching article-journal type variant should keep precedence over the default bibliography template even when the no-page DOI fallback toggles between detail and DOI output.",
+        );
+        super::type_variant_article_journal_fallback_preserves_variant_precedence();
     }
 
     #[test]

@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::fmt::Write;
 
 use crate::io::{AnnotationFormat, AnnotationStyle, ParagraphBreak};
-use crate::render::component::{ProcEntry, render_component_with_format};
+use crate::render::component::{ProcEntry, ProcTemplateComponent, render_component_with_format};
 use crate::render::format::OutputFormat;
 use crate::render::plain::PlainText;
 use crate::render::rich_text::{render_djot_inline, render_org_inline};
@@ -56,8 +56,15 @@ pub fn refs_to_string(proc_entries: Vec<ProcEntry>) -> String {
 pub fn render_entry_body_with_format<F: OutputFormat<Output = String>>(
     entry: &ProcEntry,
 ) -> String {
+    render_entry_body_components_with_format::<F>(&entry.template)
+}
+
+/// Render processed bibliography components without outer entry/bibliography wrappers.
+#[must_use]
+pub(crate) fn render_entry_body_components_with_format<F: OutputFormat<Output = String>>(
+    proc_template: &[ProcTemplateComponent],
+) -> String {
     let mut entry_output = String::new();
-    let proc_template = &entry.template;
     let mut pending_component: Option<(
         usize,
         &crate::render::component::ProcTemplateComponent,

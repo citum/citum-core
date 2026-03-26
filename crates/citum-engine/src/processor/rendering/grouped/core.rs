@@ -13,6 +13,7 @@ use citum_schema::{
     reference::NumOrStr,
     template::{DateVariable, NumberVariable, SimpleVariable, TemplateComponent},
 };
+use std::borrow::Cow;
 
 #[derive(Clone, Copy)]
 enum ArticleJournalBibliographyMode {
@@ -23,13 +24,13 @@ enum ArticleJournalBibliographyMode {
 struct GroupRenderState<'a> {
     first_item: &'a crate::reference::CitationItem,
     first_ref: &'a Reference,
-    template: Vec<TemplateComponent>,
+    template: Cow<'a, [TemplateComponent]>,
 }
 
 struct ItemRenderState<'a> {
     item: &'a crate::reference::CitationItem,
     reference: &'a Reference,
-    template: Vec<TemplateComponent>,
+    template: Cow<'a, [TemplateComponent]>,
 }
 
 struct GroupItemRenderRequest<'a> {
@@ -43,15 +44,15 @@ struct GroupItemRenderRequest<'a> {
 
 /// Returns the first type-variant template whose selector matches `ref_type`,
 /// or `None` if there are no variants or none match.
-fn resolve_type_variant(
+fn resolve_type_variant<'a>(
     type_variants: Option<
-        &indexmap::IndexMap<citum_schema::template::TypeSelector, citum_schema::Template>,
+        &'a indexmap::IndexMap<citum_schema::template::TypeSelector, citum_schema::Template>,
     >,
     ref_type: &str,
-) -> Option<citum_schema::Template> {
+) -> Option<&'a [TemplateComponent]> {
     type_variants?
         .iter()
-        .find_map(|(selector, template)| selector.matches(ref_type).then(|| template.clone()))
+        .find_map(|(selector, template)| selector.matches(ref_type).then_some(template.as_slice()))
 }
 
 impl Renderer<'_> {
@@ -508,16 +509,19 @@ impl Renderer<'_> {
             .get(&first_item.id)
             .ok_or_else(|| ProcessorError::ReferenceNotFound(first_item.id.clone()))?;
         let first_language = crate::values::effective_item_language(first_ref);
-        let default_template = spec.resolve_template_for_language(first_language.as_deref());
+        let default_template = spec
+            .resolve_template_for_language(first_language.as_deref())
+            .map(Cow::Owned);
 
         let ref_type = first_ref.ref_type();
-        let first_template =
-            resolve_type_variant(spec.type_variants.as_ref(), &ref_type).or(default_template);
+        let first_template = resolve_type_variant(spec.type_variants.as_ref(), &ref_type)
+            .map(Cow::Borrowed)
+            .or(default_template);
 
         Ok(GroupRenderState {
             first_item,
             first_ref,
-            template: first_template.unwrap_or_default(),
+            template: first_template.unwrap_or(Cow::Borrowed(&[])),
         })
     }
 
@@ -531,16 +535,19 @@ impl Renderer<'_> {
             .get(&item.id)
             .ok_or_else(|| ProcessorError::ReferenceNotFound(item.id.clone()))?;
         let item_language = crate::values::effective_item_language(reference);
-        let default_template = spec.resolve_template_for_language(item_language.as_deref());
+        let default_template = spec
+            .resolve_template_for_language(item_language.as_deref())
+            .map(Cow::Owned);
 
         let ref_type = reference.ref_type();
-        let item_template =
-            resolve_type_variant(spec.type_variants.as_ref(), &ref_type).or(default_template);
+        let item_template = resolve_type_variant(spec.type_variants.as_ref(), &ref_type)
+            .map(Cow::Borrowed)
+            .or(default_template);
 
         Ok(ItemRenderState {
             item,
             reference,
-            template: item_template.unwrap_or_default(),
+            template: item_template.unwrap_or(Cow::Borrowed(&[])),
         })
     }
 
@@ -715,20 +722,21 @@ impl Renderer<'_> {
         let bib_spec = self.style.bibliography.as_ref()?;
 
         let item_language = crate::values::effective_item_language(reference);
-        let default_template = bib_spec.resolve_template_for_language(item_language.as_deref());
+        let default_template = bib_spec
+            .resolve_template_for_language(item_language.as_deref())
+            .map(Cow::Owned);
 
         let ref_type = reference.ref_type();
         let template = resolve_type_variant(bib_spec.type_variants.as_ref(), &ref_type)
+            .map(Cow::Borrowed)
             .or(default_template)?;
 
         let template = self.apply_article_journal_bibliography_policy(reference, template);
 
-        let template_ref = &template;
-
         self.process_template_request_with_format::<F>(
             reference,
             TemplateRenderRequest {
-                template: template_ref,
+                template: template.as_ref(),
                 context: RenderContext::Bibliography,
                 mode: citum_schema::citation::CitationMode::NonIntegral,
                 suppress_author: false,
@@ -849,16 +857,23 @@ impl Renderer<'_> {
         }
     }
 
-    fn apply_article_journal_bibliography_policy(
+    fn apply_article_journal_bibliography_policy<'a>(
         &self,
         reference: &Reference,
-        template: Vec<TemplateComponent>,
-    ) -> Vec<TemplateComponent> {
+        template: Cow<'a, [TemplateComponent]>,
+    ) -> Cow<'a, [TemplateComponent]> {
         let Some(mode) = self.article_journal_bibliography_mode(reference) else {
             return template;
         };
 
-        filter_article_journal_template_components(&template, mode)
+        if !article_journal_template_needs_filter(template.as_ref(), mode) {
+            return template;
+        }
+
+        Cow::Owned(filter_article_journal_template_components(
+            template.as_ref(),
+            mode,
+        ))
     }
 
     fn article_journal_bibliography_mode(
@@ -1096,6 +1111,31 @@ fn filter_article_journal_template_component(
             (!filtered.group.is_empty()).then_some(TemplateComponent::Group(filtered))
         }
         _ => Some(component.clone()),
+    }
+}
+
+fn article_journal_template_needs_filter(
+    components: &[TemplateComponent],
+    mode: ArticleJournalBibliographyMode,
+) -> bool {
+    components
+        .iter()
+        .any(|component| article_journal_component_needs_filter(component, mode))
+}
+
+fn article_journal_component_needs_filter(
+    component: &TemplateComponent,
+    mode: ArticleJournalBibliographyMode,
+) -> bool {
+    if should_suppress_article_journal_component(component, mode) {
+        return true;
+    }
+
+    match component {
+        TemplateComponent::Group(group) => {
+            article_journal_template_needs_filter(&group.group, mode)
+        }
+        _ => false,
     }
 }
 
