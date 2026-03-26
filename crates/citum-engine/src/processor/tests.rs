@@ -169,6 +169,147 @@ fn insert_book_reference(
     );
 }
 
+fn make_selected_bibliography_group() -> citum_schema::grouping::BibliographyGroup {
+    use citum_schema::grouping::{BibliographyGroup, FieldMatcher, GroupHeading, GroupSelector};
+
+    BibliographyGroup {
+        id: "selected".to_string(),
+        heading: Some(GroupHeading::Literal {
+            literal: "Selected".to_string(),
+        }),
+        selector: GroupSelector {
+            field: Some(HashMap::from([(
+                "note".to_string(),
+                FieldMatcher::Exact("selected".to_string()),
+            )])),
+            ..Default::default()
+        },
+        sort: None,
+        template: None,
+        disambiguate: None,
+    }
+}
+
+fn make_grouped_compound_selection_style() -> Style {
+    use citum_schema::options::bibliography::CompoundNumericConfig;
+
+    Style {
+        info: StyleInfo {
+            title: Some("Grouped Compound Selection".to_string()),
+            id: Some("grouped-compound-selection".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::Numeric),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                compound_numeric: Some(CompoundNumericConfig {
+                    sub_label_suffix: ")".to_string(),
+                    sub_delimiter: ", ".to_string(),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            template: Some(vec![
+                TemplateComponent::Number(TemplateNumber {
+                    number: NumberVariable::CitationNumber,
+                    form: None,
+                    rendering: Rendering {
+                        wrap: Some(WrapPunctuation::Brackets),
+                        suffix: Some(" ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+                TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Author,
+                    form: ContributorForm::Long,
+                    name_order: None,
+                    delimiter: None,
+                    and: None,
+                    rendering: Rendering::default(),
+                    ..Default::default()
+                }),
+                TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Primary,
+                    form: None,
+                    rendering: Rendering {
+                        prefix: Some(". ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+            ]),
+            groups: Some(vec![make_selected_bibliography_group()]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn make_grouped_compound_selection_processor(leader_note: &str, sibling_note: &str) -> Processor {
+    use indexmap::IndexMap;
+
+    let style = make_grouped_compound_selection_style();
+    let mut bibliography = Bibliography::new();
+    bibliography.insert(
+        "ref-a".to_string(),
+        Reference::from(LegacyReference {
+            id: "ref-a".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("Leader Article".to_string()),
+            author: Some(vec![Name::new("Smith", "Alice")]),
+            issued: Some(DateVariable::year(2020)),
+            note: Some(leader_note.to_string()),
+            ..Default::default()
+        }),
+    );
+    bibliography.insert(
+        "ref-b".to_string(),
+        Reference::from(LegacyReference {
+            id: "ref-b".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("Sibling Article".to_string()),
+            author: Some(vec![Name::new("Jones", "Bob")]),
+            issued: Some(DateVariable::year(2021)),
+            note: Some(sibling_note.to_string()),
+            ..Default::default()
+        }),
+    );
+    bibliography.insert(
+        "ref-c".to_string(),
+        Reference::from(LegacyReference {
+            id: "ref-c".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("Standalone Article".to_string()),
+            author: Some(vec![Name::new("Brown", "Cara")]),
+            issued: Some(DateVariable::year(2022)),
+            note: Some("other".to_string()),
+            ..Default::default()
+        }),
+    );
+
+    let mut sets = IndexMap::new();
+    sets.insert(
+        "group-1".to_string(),
+        vec!["ref-a".to_string(), "ref-b".to_string()],
+    );
+
+    Processor::with_compound_sets(style, bibliography, sets)
+}
+
+fn extract_selected_group_body(output: &str) -> String {
+    let heading = "# Selected\n\n";
+    let start = output
+        .find(heading)
+        .unwrap_or_else(|| panic!("missing selected heading in output: {output}"));
+    let body = &output[start + heading.len()..];
+    let end = body.find("\n\n[").unwrap_or(body.len());
+    body[..end].trim().to_string()
+}
+
 fn render_integral_multi_cite(
     base_multi_cite_delimiter: Option<&str>,
     integral_multi_cite_delimiter: Option<&str>,
@@ -3447,6 +3588,103 @@ bibliography:
     assert!(
         !standalone.contains("a)"),
         "Standalone should not have sub-labels"
+    );
+}
+
+#[test]
+fn test_grouped_compound_bibliography_leader_only_match_stays_singleton() {
+    let processor = make_grouped_compound_selection_processor("selected", "other");
+    let output =
+        processor.render_grouped_bibliography_with_format::<crate::render::plain::PlainText>();
+    let selected_body = extract_selected_group_body(&output);
+
+    assert!(
+        selected_body.contains("Leader Article"),
+        "leader should render inside the selected group: {output}"
+    );
+    assert!(
+        !selected_body.contains("Sibling Article"),
+        "non-matching sibling should not leak into the selected group: {output}"
+    );
+    assert!(
+        output.contains("Sibling Article"),
+        "non-matching sibling should remain in the unassigned output: {output}"
+    );
+    assert!(
+        !output.contains("a)") && !output.contains("b)"),
+        "singleton split entries should not render compound sub-labels: {output}"
+    );
+}
+
+#[test]
+fn test_grouped_compound_bibliography_non_leader_match_renders_selected_member() {
+    let processor = make_grouped_compound_selection_processor("other", "selected");
+    let output =
+        processor.render_grouped_bibliography_with_format::<crate::render::plain::PlainText>();
+    let selected_body = extract_selected_group_body(&output);
+
+    assert!(
+        selected_body.contains("Sibling Article"),
+        "non-leader match should still render in the selected group: {output}"
+    );
+    assert!(
+        !selected_body.contains("Leader Article"),
+        "leader should not leak into the selected group when it does not match: {output}"
+    );
+    assert!(
+        output.contains("Leader Article"),
+        "non-matching leader should remain in the unassigned output: {output}"
+    );
+    assert!(
+        !output.contains("a)") && !output.contains("b)"),
+        "singleton split entries should not render compound sub-labels: {output}"
+    );
+}
+
+#[test]
+fn test_grouped_compound_bibliography_matching_members_merge_within_group() {
+    let processor = make_grouped_compound_selection_processor("selected", "selected");
+    let output =
+        processor.render_grouped_bibliography_with_format::<crate::render::plain::PlainText>();
+    let selected_body = extract_selected_group_body(&output);
+
+    assert!(
+        selected_body.contains("Leader Article") && selected_body.contains("Sibling Article"),
+        "both matching members should remain in the selected group: {output}"
+    );
+    assert!(
+        selected_body.contains("a)") && selected_body.contains("b)"),
+        "matching members should still merge into one compound row: {output}"
+    );
+    assert_eq!(
+        selected_body.matches("[1]").count(),
+        1,
+        "merged selected group should keep a single shared citation number: {output}"
+    );
+}
+
+#[test]
+fn test_document_bibliography_block_selects_members_before_compound_merge() {
+    let processor = make_grouped_compound_selection_processor("other", "selected");
+    let rendered = processor.render_document_bibliography_block::<crate::render::plain::PlainText>(
+        &make_selected_bibliography_group(),
+    );
+
+    assert_eq!(rendered.heading.as_deref(), Some("Selected"));
+    assert!(
+        rendered.body.contains("Sibling Article"),
+        "document bibliography block should render the matching subentry: {}",
+        rendered.body
+    );
+    assert!(
+        !rendered.body.contains("Leader Article"),
+        "document bibliography block should not leak non-matching siblings: {}",
+        rendered.body
+    );
+    assert!(
+        !rendered.body.contains("a)") && !rendered.body.contains("b)"),
+        "document bibliography block should keep split entries as singletons: {}",
+        rendered.body
     );
 }
 
