@@ -30,9 +30,6 @@ options:
     demote-non-dropping-particle: sort-only
     sort-separator: " "
   dates: numeric
-  bibliography:
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   options:
@@ -79,6 +76,8 @@ bibliography:
         delimiter-precedes-last: contextual
       delimiter-precedes-last: never
       sort-separator: " "
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

@@ -1,7 +1,6 @@
 info:
   title: Springer - Physics (author-date)
-  description: This style is similar to American Physical Society (APS) and is used by a number of 
-    Springer publications.
+  description: This style is similar to American Physical Society (APS) and is used by a number of Springer publications.
   fields:
   - physics
   source:
@@ -17,11 +16,9 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/american-physics-society
       rel: template
-    - href: 
-        http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
       rel: documentation
-    - href: 
-        http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
       rel: documentation
 options:
   substitute:
@@ -67,9 +64,6 @@ options:
       emph: true
     periodical:
       emph: true
-  bibliography:
-    entry-suffix: .
-    separator: ", "
   punctuation-in-quote: true
 citation:
   options:
@@ -102,6 +96,8 @@ bibliography:
       shorten:
         min: 99
         use-first: 99
+    entry-suffix: .
+    separator: ", "
   type-variants:
     article-journal:
     - contributor: author

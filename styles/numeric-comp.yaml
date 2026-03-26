@@ -21,11 +21,6 @@ options:
       min: 4
       use-first: 1
   titles: scientific
-  bibliography:
-    entry-suffix: .
-    separator: ". "
-    compound-numeric:
-      collapse-subentries: true
 citation:
   use-preset: numeric-citation
   wrap: brackets
@@ -35,6 +30,10 @@ bibliography:
     contributors:
       delimiter: ", "
       delimiter-precedes-last: never
+    entry-suffix: .
+    separator: ". "
+    compound-numeric:
+      collapse-subentries: true
   type-variants:
     book:
     - number: citation-number

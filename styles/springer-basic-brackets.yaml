@@ -1,8 +1,6 @@
 info:
   title: Springer - Basic (numeric, brackets)
-  description: Springer Numbered Style for the disciplines Medicine, Biomedicine, Life Sciences, 
-    Chemistry, Geosciences, Computer Science, Engineering, Economics. This style is based on Harvard
-    style and recommendations of the Council of Biology Editors.
+  description: Springer Numbered Style for the disciplines Medicine, Biomedicine, Life Sciences, Chemistry, Geosciences, Computer Science, Engineering, Economics. This style is based on Harvard style and recommendations of the Council of Biology Editors.
   source:
     csl-id: http://www.zotero.org/styles/springer-basic-brackets
     adapted-by: citum-migrate
@@ -18,11 +16,9 @@ info:
       rel: template
     - href: http://www.springer.com/cda/content/document/cda_downloaddocument/instruct-authors-e.pdf
       rel: documentation
-    - href: 
-        http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
       rel: documentation
-    - href: 
-        http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
       rel: documentation
 options:
   substitute:
@@ -43,8 +39,6 @@ options:
       min: 5
       use-first: 3
   dates: long
-  bibliography:
-    separator: '. '
   punctuation-in-quote: true
 
 citation:
@@ -53,6 +47,8 @@ citation:
   wrap: brackets
   multi-cite-delimiter: ', '
 bibliography:
+  options:
+    separator: '. '
   type-variants:
     article-journal:
     - contributor: author

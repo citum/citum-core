@@ -18,11 +18,7 @@ impl Processor {
     pub(super) fn compound_numeric_config(
         &self,
     ) -> Option<citum_schema::options::bibliography::CompoundNumericConfig> {
-        self.get_config()
-            .bibliography
-            .as_ref()
-            .and_then(|bibliography| bibliography.compound_numeric.as_ref())
-            .cloned()
+        self.get_bibliography_options().compound_numeric.clone()
     }
 
     pub(super) fn is_citation_number_label(component: &ProcTemplateComponent) -> bool {

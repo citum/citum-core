@@ -61,9 +61,6 @@ options:
       emph: true
     serial:
       emph: true
-  bibliography:
-    entry-suffix: .
-    separator: ", "
   punctuation-in-quote: true
 citation:
   options:
@@ -101,6 +98,8 @@ bibliography:
         and-others: et-al
         delimiter-precedes-last: contextual
       delimiter-precedes-last: never
+    entry-suffix: .
+    separator: ", "
   type-variants:
     article-journal:
     - contributor: author

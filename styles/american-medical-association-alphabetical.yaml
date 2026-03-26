@@ -1,7 +1,6 @@
 info:
   title: AMA Manual of Style 11th edition (sorted alphabetically)
-  description: 'AMA Manual of Style: A Guide for Authors and Editors (11th ed.), with alphabetically sorted
-    bibliography.'
+  description: 'AMA Manual of Style: A Guide for Authors and Editors (11th ed.), with alphabetically sorted bibliography.'
   fields:
   - medicine
   source:
@@ -43,8 +42,6 @@ options:
     range-delimiter: –
   titles: humanities
   page-range-format: expanded
-  bibliography:
-    separator: ". "
   punctuation-in-quote: true
 citation:
   template:
@@ -62,6 +59,7 @@ bibliography:
         use-first: 3
         and-others: et-al
         delimiter-precedes-last: contextual
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

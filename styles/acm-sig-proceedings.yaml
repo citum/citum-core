@@ -39,9 +39,6 @@ options:
       and-others: et-al
   dates: short
   titles: humanities
-  bibliography:
-    entry-suffix: .
-    separator: " "
 citation:
   use-preset: numeric-citation
   collapse: citation-number
@@ -49,8 +46,8 @@ citation:
 bibliography:
   sort:
     template:
-      - key: author
-      - key: title
+    - key: author
+    - key: title
   options:
     contributors:
       and: text
@@ -64,7 +61,31 @@ bibliography:
         min: 3
         use-first: 1
         and-others: et-al
+    entry-suffix: .
+    separator: " "
   template:
+  - number: citation-number
+    wrap: brackets
+    suffix: " "
+  - contributor: author
+    form: long
+    name-order: family-first
+    suffix: " "
+  - date: issued
+    form: year
+    suffix: ". "
+  - title: primary
+  - title: parent-monograph
+    emph: true
+  - title: parent-serial
+    emph: true
+  - variable: publisher
+  - variable: publisher-place
+  - number: volume
+  - number: issue
+  - number: pages
+  type-variants:
+    paper-conference:
     - number: citation-number
       wrap: brackets
       suffix: " "
@@ -76,173 +97,151 @@ bibliography:
       form: year
       suffix: ". "
     - title: primary
+      suffix: ". "
     - title: parent-monograph
       emph: true
+      suffix: " "
+    - group:
+      - variable: publisher-place
+      - date: issued
+        form: year-month
+      delimiter: ", "
+      wrap: parentheses
+      suffix: ", "
+    - number: pages
+    article-journal:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: " "
+    - date: issued
+      form: year
+      suffix: ". "
+    - title: primary
+      suffix: ". "
     - title: parent-serial
       emph: true
-    - variable: publisher
-    - variable: publisher-place
-    - number: volume
-    - number: issue
+      suffix: " "
+    - group:
+      - number: volume
+      - group:
+        - number: issue
+        - date: issued
+          form: year-month
+          wrap: parentheses
+        delimiter: " "
+      delimiter: ", "
+      suffix: ", "
     - number: pages
-  type-variants:
-    paper-conference:
-      - number: citation-number
-        wrap: brackets
-        suffix: " "
-      - contributor: author
-        form: long
-        name-order: family-first
-        suffix: " "
-      - date: issued
-        form: year
-        suffix: ". "
-      - title: primary
-        suffix: ". "
-      - title: parent-monograph
-        emph: true
-        suffix: " "
-      - group:
-          - variable: publisher-place
-          - date: issued
-            form: year-month
-        delimiter: ", "
-        wrap: parentheses
-        suffix: ", "
-      - number: pages
-    article-journal:
-      - number: citation-number
-        wrap: brackets
-        suffix: " "
-      - contributor: author
-        form: long
-        name-order: family-first
-        suffix: " "
-      - date: issued
-        form: year
-        suffix: ". "
-      - title: primary
-        suffix: ". "
-      - title: parent-serial
-        emph: true
-        suffix: " "
-      - group:
-          - number: volume
-          - group:
-              - number: issue
-              - date: issued
-                form: year-month
-                wrap: parentheses
-            delimiter: " "
-        delimiter: ", "
-        suffix: ", "
-      - number: pages
-      - variable: doi
-        prefix: ". https://doi.org/"
+    - variable: doi
+      prefix: ". https://doi.org/"
     patent:
-      - number: citation-number
-        wrap: brackets
-        suffix: " "
-      - contributor: author
-        form: long
-        name-order: family-first
-        suffix: " "
-      - date: issued
-        form: year
-        suffix: ". "
-      - title: primary
-        suffix: ". "
-      - variable: number
-        suffix: ". "
-      - date: issued
-        form: full
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: " "
+    - date: issued
+      form: year
+      suffix: ". "
+    - title: primary
+      suffix: ". "
+    - variable: number
+      suffix: ". "
+    - date: issued
+      form: full
     thesis:
-      - number: citation-number
-        wrap: brackets
-        suffix: " "
-      - contributor: author
-        form: long
-        name-order: family-first
-        suffix: " "
-      - date: issued
-        form: year
-        suffix: ". "
-      - title: primary
-        emph: true
-        suffix: ". "
-      - variable: archive-location
-        prefix: "Doctoral Thesis #"
-        suffix: ". "
-      - variable: publisher
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: " "
+    - date: issued
+      form: year
+      suffix: ". "
+    - title: primary
+      emph: true
+      suffix: ". "
+    - variable: archive-location
+      prefix: "Doctoral Thesis #"
+      suffix: ". "
+    - variable: publisher
     report:
-      - number: citation-number
-        wrap: brackets
-        suffix: " "
-      - contributor: author
-        form: long
-        name-order: family-first
-        suffix: " "
-      - date: issued
-        form: year
-        suffix: ". "
-      - title: primary
-        emph: true
-        suffix: ". "
-      - variable: number
-        prefix: "Technical Report #"
-        suffix: ". "
-      - variable: publisher
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: " "
+    - date: issued
+      form: year
+      suffix: ". "
+    - title: primary
+      emph: true
+      suffix: ". "
+    - variable: number
+      prefix: "Technical Report #"
+      suffix: ". "
+    - variable: publisher
     webpage:
-      - number: citation-number
-        wrap: brackets
-        suffix: " "
-      - title: primary
-        suffix: ":"
-      - date: issued
-        form: year
-        prefix: " "
-        suffix: ". "
-      - variable: url
-        emph: true
-        suffix: ". "
-      - date: accessed
-        form: year-month-day
-        prefix: "Accessed: "
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
+    - title: primary
+      suffix: ":"
+    - date: issued
+      form: year
+      prefix: " "
+      suffix: ". "
+    - variable: url
+      emph: true
+      suffix: ". "
+    - date: accessed
+      form: year-month-day
+      prefix: "Accessed: "
     chapter:
-      - number: citation-number
-        wrap: brackets
-        suffix: " "
-      - contributor: author
-        form: long
-        name-order: family-first
-        suffix: " "
-      - date: issued
-        form: year
-        suffix: ". "
-      - title: primary
-        suffix: ". "
-      - title: parent-monograph
-        emph: true
-        suffix: ". "
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        suffix: ". "
-      - variable: publisher
-        suffix: ". "
-      - number: pages
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: " "
+    - date: issued
+      form: year
+      suffix: ". "
+    - title: primary
+      suffix: ". "
+    - title: parent-monograph
+      emph: true
+      suffix: ". "
+    - contributor: editor
+      form: verb
+      name-order: given-first
+      suffix: ". "
+    - variable: publisher
+      suffix: ". "
+    - number: pages
     book:
-      - number: citation-number
-        wrap: brackets
-        suffix: " "
-      - contributor: author
-        form: long
-        name-order: family-first
-        suffix: " "
-      - date: issued
-        form: year
-        suffix: ". "
-      - title: primary
-        emph: true
-        suffix: ". "
-      - variable: publisher
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: " "
+    - date: issued
+      form: year
+      suffix: ". "
+    - title: primary
+      emph: true
+      suffix: ". "
+    - variable: publisher

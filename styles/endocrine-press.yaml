@@ -36,9 +36,6 @@ options:
     approximation-marker: "ca. "
     range-delimiter: –
   titles: humanities
-  bibliography:
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   template:
@@ -54,6 +51,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

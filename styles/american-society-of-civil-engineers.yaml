@@ -42,10 +42,6 @@ options:
     demote-non-dropping-particle: sort-only
   dates: long
   titles: humanities
-  bibliography:
-    hanging-indent: true
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
   volume-pages-delimiter: colon
 citation:
@@ -78,6 +74,9 @@ bibliography:
       name-form: initials
       initialize-with: ". "
       delimiter-precedes-last: always
+    hanging-indent: true
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

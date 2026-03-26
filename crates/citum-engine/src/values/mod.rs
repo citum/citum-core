@@ -34,7 +34,7 @@ mod tests;
 
 use crate::reference::Reference;
 use citum_schema::locale::Locale;
-use citum_schema::options::Config;
+use citum_schema::options::{Config, bibliography::BibliographyConfig};
 use citum_schema::reference::types::Title;
 use citum_schema::template::{TemplateComponent, TitleType};
 
@@ -461,6 +461,8 @@ pub enum RenderContext {
 pub struct RenderOptions<'a> {
     /// Effective configuration after style and default resolution.
     pub config: &'a Config,
+    /// Effective bibliography-only configuration when rendering bibliography behavior.
+    pub bibliography_config: Option<BibliographyConfig>,
     /// Locale used for term lookup and locale-sensitive formatting.
     pub locale: &'a Locale,
     /// Whether the current render target is a citation or bibliography.

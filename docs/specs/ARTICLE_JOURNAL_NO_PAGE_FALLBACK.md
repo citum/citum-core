@@ -39,13 +39,13 @@ Out of scope:
 
 ### New option
 
-Add a new structured bibliography option under `options.bibliography`.
+Add a new structured bibliography option under `bibliography.options`.
 
 Draft shape:
 
 ```yaml
-options:
-  bibliography:
+bibliography:
+  options:
     article-journal:
       no-page-fallback: doi
 ```

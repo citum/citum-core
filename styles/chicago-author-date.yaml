@@ -1,8 +1,7 @@
 preset: chicago-author-date-18th
 info:
   title: Chicago Manual of Style 18th edition (author-date)
-  description: Chicago-style source citations (with Bluebook for legal citations), author-date 
-    system
+  description: Chicago-style source citations (with Bluebook for legal citations), author-date system
   fields:
   - anthropology
   - communications
@@ -67,10 +66,6 @@ options:
     serial:
       emph: true
   page-range-format: chicago16
-  bibliography:
-    hanging-indent: true
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   options:
@@ -109,6 +104,9 @@ bibliography:
         use-first: 3
         and-others: et-al
         delimiter-precedes-last: contextual
+    hanging-indent: true
+    entry-suffix: .
+    separator: ". "
   groups:
   - id: primary-sources
     heading:

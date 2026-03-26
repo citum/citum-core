@@ -60,9 +60,6 @@ options:
     name-mode: primary
     preferred-script: Latn
   page-range-format: expanded
-  bibliography:
-    hanging-indent: true
-    separator: ". "
   punctuation-in-quote: true
 citation:
   options:
@@ -72,12 +69,12 @@ citation:
   non-integral:
     wrap: parentheses
     type-variants:
-      article-journal, article-magazine, article-newspaper, book, broadcast, chapter, dataset, entry-encyclopedia, interview, motion-picture, paper-conference, patent, report, software, standard, thesis, webpage:
-      - contributor: author
-        form: short
-      - date: issued
-        form: year
-      - variable: locator
+      ? article-journal, article-magazine, article-newspaper, book, broadcast, chapter, dataset, entry-encyclopedia, interview, motion-picture, paper-conference, patent, report, software, standard, thesis, webpage
+      : - contributor: author
+          form: short
+        - date: issued
+          form: year
+        - variable: locator
       legal-case:
       - title: primary
         form: short
@@ -110,15 +107,15 @@ citation:
       contributors:
         and: text
     type-variants:
-      article-journal, article-magazine, article-newspaper, book, broadcast, chapter, dataset, entry-encyclopedia, interview, motion-picture, paper-conference, patent, report, software, standard, thesis, webpage:
-      - contributor: author
-        form: short
-      - delimiter: ", "
-        wrap: parentheses
-        group:
-        - date: issued
-          form: year
-        - variable: locator
+      ? article-journal, article-magazine, article-newspaper, book, broadcast, chapter, dataset, entry-encyclopedia, interview, motion-picture, paper-conference, patent, report, software, standard, thesis, webpage
+      : - contributor: author
+          form: short
+        - delimiter: ", "
+          wrap: parentheses
+          group:
+          - date: issued
+            form: year
+          - variable: locator
       legal-case:
       - title: primary
         form: short
@@ -153,6 +150,9 @@ citation:
         form: year
       - variable: locator
 bibliography:
+  options:
+    hanging-indent: true
+    separator: ". "
   type-variants:
     "article-journal, article-magazine":
     - contributor: author
@@ -165,9 +165,9 @@ bibliography:
       prefix: " "
     - title: primary
       emph: true
-    - items: &id001
-        - variable: genre
-        - variable: medium
+    - items:
+      - variable: genre
+      - variable: medium
       delimiter: "; "
       wrap: brackets
       prefix: " "
@@ -177,30 +177,30 @@ bibliography:
     - contributor: translator
       form: long
       name-order: given-first
-      label: &id002 {term: translator, form: short, placement: suffix}
+      label: &id001 {term: translator, form: short, placement: suffix}
       wrap: parentheses
       prefix: " "
     - delimiter: ", "
       group:
       - title: parent-serial
         emph: true
-      - items: &id003
-          - number: volume
-            emph: true
-          - number: issue
-            wrap: parentheses
+      - items:
+        - number: volume
+          emph: true
+        - number: issue
+          wrap: parentheses
         delimiter: ""
     - number: pages
       prefix: ", "
       suffix: "."
     - variable: doi
       prefix: "https://doi.org/"
-    - items: &id004
-        - date: accessed
-          form: year-month-day
-          prefix: "Retrieved "
-          suffix: ", from"
-        - variable: url
+    - items:
+      - date: accessed
+        form: year-month-day
+        prefix: "Retrieved "
+        suffix: ", from"
+      - variable: url
       delimiter: " "
       prefix: " "
     article-newspaper:
@@ -364,7 +364,7 @@ bibliography:
   - contributor: translator
     form: long
     name-order: given-first
-    label: *id002
+    label: *id001
     wrap: parentheses
     prefix: " "
   - contributor: editor

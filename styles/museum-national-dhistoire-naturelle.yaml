@@ -64,8 +64,6 @@ options:
       emph: true
     serial:
       emph: true
-  bibliography:
-    separator: ". "
 citation:
   options:
     contributors:
@@ -95,6 +93,7 @@ bibliography:
       initialize-with: .
       delimiter-precedes-last: never
       sort-separator: " "
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

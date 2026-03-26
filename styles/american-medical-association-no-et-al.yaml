@@ -37,9 +37,6 @@ options:
     range-delimiter: –
   titles: humanities
   page-range-format: expanded
-  bibliography:
-    hanging-indent: false
-    separator: ". "
   punctuation-in-quote: true
 citation:
   template:
@@ -50,6 +47,9 @@ citation:
       wrap: parentheses
   multi-cite-delimiter: ","
 bibliography:
+  options:
+    hanging-indent: false
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

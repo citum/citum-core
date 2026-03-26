@@ -16,8 +16,7 @@ info:
       rel: template
     - href: https://www.futuremedicine.com/authorguide/preparingyourarticle
       rel: documentation
-    - href: 
-        https://www.futuremedicine.com/pb-assets/Future-Medicine-Author-Guidelines-1585216135307.pdf
+    - href: https://www.futuremedicine.com/pb-assets/Future-Medicine-Author-Guidelines-1585216135307.pdf
       rel: documentation
 options:
   substitute:
@@ -50,9 +49,6 @@ options:
       emph: true
     periodical:
       emph: true
-  bibliography:
-    entry-suffix: .
-    separator: ". "
 citation:
   template:
   - number: citation-number
@@ -71,6 +67,8 @@ bibliography:
         delimiter-precedes-last: contextual
       delimiter-precedes-et-al: never
       sort-separator: " "
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-magazine:
     - contributor: author

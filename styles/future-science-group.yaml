@@ -12,8 +12,7 @@ info:
     links:
     - href: http://www.zotero.org/styles/future-science-group
       rel: self
-    - href: 
-        https://www.futuremedicine.com/pb-assets/Nanomedicine%20Author%20Guidelines-1540302236583.pdf
+    - href: https://www.futuremedicine.com/pb-assets/Nanomedicine%20Author%20Guidelines-1540302236583.pdf
       rel: documentation
 options:
   substitute: editor-long
@@ -21,9 +20,6 @@ options:
   contributors: numeric-tight
   dates: short
   titles: journal-emphasis
-  bibliography:
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
@@ -43,6 +39,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    entry-suffix: .
+    separator: ". "
   type-variants:
     book:
     - contributor: author

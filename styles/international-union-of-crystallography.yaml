@@ -47,10 +47,6 @@ options:
     serial:
       emph: true
   page-range-format: expanded
-  bibliography:
-    hanging-indent: true
-    entry-suffix: .
-    separator: " "
   punctuation-in-quote: true
 citation:
   options:
@@ -81,6 +77,9 @@ bibliography:
       name-form: initials
       initialize-with: ". "
       delimiter-precedes-last: never
+    hanging-indent: true
+    entry-suffix: .
+    separator: " "
   type-variants:
     article-journal:
     - contributor: author

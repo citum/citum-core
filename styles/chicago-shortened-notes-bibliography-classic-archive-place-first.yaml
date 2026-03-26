@@ -1,10 +1,6 @@
 info:
-  title: Chicago Manual of Style 18th edition (shortened notes and bibliography, classic variants, 
-    archival references with place first)
-  description: 'Chicago-style source citations (with Bluebook for legal citations), shortened author-title
-    notes and bibliography system, with classic variants: 3-em dash for repeated names (CMOS18 13.113),
-    chapter page numbers (CMOS18 14.8), and place of publication (CMOS18 14.30); archival references with
-    place first (CMOS18 14.205)'
+  title: Chicago Manual of Style 18th edition (shortened notes and bibliography, classic variants, archival references with place first)
+  description: 'Chicago-style source citations (with Bluebook for legal citations), shortened author-title notes and bibliography system, with classic variants: 3-em dash for repeated names (CMOS18 13.113), chapter page numbers (CMOS18 14.8), and place of publication (CMOS18 14.30); archival references with place first (CMOS18 14.205)'
   fields:
   - anthropology
   - communications
@@ -19,16 +15,14 @@ info:
   - sociology
   - theology
   source:
-    csl-id: 
-      http://www.zotero.org/styles/chicago-shortened-notes-bibliography-classic-archive-place-first
+    csl-id: http://www.zotero.org/styles/chicago-shortened-notes-bibliography-classic-archive-place-first
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
     - name: Andrew Dunning
       uri: https://orcid.org/0000-0003-0464-5036
     links:
-    - href: 
-        http://www.zotero.org/styles/chicago-shortened-notes-bibliography-classic-archive-place-first
+    - href: http://www.zotero.org/styles/chicago-shortened-notes-bibliography-classic-archive-place-first
       rel: self
     - href: http://www.zotero.org/styles/chicago-notes-bibliography
       rel: template
@@ -56,11 +50,6 @@ options:
     serial:
       emph: true
   page-range-format: chicago16
-  bibliography:
-    subsequent-author-substitute: ———
-    hanging-indent: true
-    entry-suffix: .
-    separator: ", "
   punctuation-in-quote: true
 citation:
   options:
@@ -101,6 +90,10 @@ bibliography:
         use-first: 3
         and-others: et-al
         delimiter-precedes-last: contextual
+    subsequent-author-substitute: ———
+    hanging-indent: true
+    entry-suffix: .
+    separator: ", "
   type-variants:
     article-journal:
     - contributor: author

@@ -1,8 +1,6 @@
 info:
   title: Chicago Manual of Style 18th edition (author-date, classic variants)
-  description: 'Chicago-style source citations (with Bluebook for legal citations), author-date system,
-    with classic variants: 3-em dash for repeated names (CMOS18 13.113), chapter page numbers (CMOS18
-    14.8), and place of publication (CMOS18 14.30)'
+  description: 'Chicago-style source citations (with Bluebook for legal citations), author-date system, with classic variants: 3-em dash for repeated names (CMOS18 13.113), chapter page numbers (CMOS18 14.8), and place of publication (CMOS18 14.30)'
   fields:
   - anthropology
   - communications
@@ -55,11 +53,6 @@ options:
     periodical:
       emph: true
   page-range-format: chicago16
-  bibliography:
-    subsequent-author-substitute: ———
-    hanging-indent: true
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   options:
@@ -100,6 +93,10 @@ bibliography:
         use-first: 3
         and-others: et-al
         delimiter-precedes-last: contextual
+    subsequent-author-substitute: ———
+    hanging-indent: true
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

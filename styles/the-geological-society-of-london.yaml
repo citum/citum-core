@@ -1,7 +1,6 @@
 info:
   title: The Geological Society of London
-  description: Parent style for the Journals and Books published by The Geological Society (London);
-    details provided by publisher
+  description: Parent style for the Journals and Books published by The Geological Society (London); details provided by publisher
   fields:
   - geology
   source:
@@ -15,8 +14,7 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/antarctic-science
       rel: template
-    - href: 
-        https://www.geolsoc.org.uk/~/media/Files/GSL/shared/pdfs/Publications/AuthorInfo_Text.pdf
+    - href: https://www.geolsoc.org.uk/~/media/Files/GSL/shared/pdfs/Publications/AuthorInfo_Text.pdf
       rel: documentation
 options:
   substitute: editor-translator-short
@@ -53,10 +51,6 @@ options:
   dates: long
   titles: humanities
   page-range-format: expanded
-  bibliography:
-    hanging-indent: true
-    entry-suffix: .
-    separator: ", "
 citation:
   options:
     contributors:
@@ -96,6 +90,9 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: never
       sort-separator: ", "
+    hanging-indent: true
+    entry-suffix: .
+    separator: ", "
   type-variants:
     article-journal:
     - contributor: author

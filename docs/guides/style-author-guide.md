@@ -202,6 +202,84 @@ bibliography:
 See `styles/experimental/locale-specific-bibliography-layouts.yaml` for a
 complete end-to-end example that uses `tests/fixtures/multilingual/multilingual-cjk.json`.
 
+### Nested option scopes
+
+Think of style options as three layers:
+
+- `options` sets shared defaults for the whole style.
+- `citation.options` overrides only citation-relevant fields.
+- `bibliography.options` overrides only bibliography-relevant fields.
+
+Global `options` is now limited to shared settings that make sense across
+citation and bibliography rendering. Bibliography-entry controls such as
+`separator`, `entry-suffix`, `hanging-indent`, and similar bibliography-only
+behavior must live under `bibliography.options`.
+
+Shared settings can still live at the top level:
+
+```yaml
+options:
+  contributors:
+    shorten: {min: 3, use-first: 1}
+```
+
+That same kind of shared setting can also be overridden locally where it makes
+sense:
+
+```yaml
+citation:
+  options:
+    contributors:
+      shorten: {min: 4, use-first: 2}
+```
+
+Bibliography-entry controls are different. They are valid only inside
+`bibliography.options`, and they are never valid globally or inside
+`citation.options`:
+
+```yaml
+bibliography:
+  options:
+    separator: ", "
+```
+
+```yaml
+options:
+  bibliography:
+    separator: ", "
+```
+
+```yaml
+citation:
+  options:
+    separator: ", "
+```
+
+Use `citation.options` for citation-local overrides such as:
+
+```yaml
+citation:
+  options:
+    contributors:
+      shorten: {min: 3, use-first: 1}
+    locators:
+      form: short
+```
+
+Use `bibliography.options` for bibliography-local overrides such as:
+
+```yaml
+bibliography:
+  options:
+    entry-suffix: "."
+    separator: ", "
+    suppress-period-after-url: true
+```
+
+Do not put bibliography-entry controls under `citation.options`, and do not put
+citation-only fields such as `locators`, `notes`, or `integral-names` under
+`bibliography.options`.
+
 ## Practical Workflow
 
 1. Start from a nearby style in `/styles`.

@@ -1,7 +1,6 @@
 info:
   title: Elsevier (numeric, without titles)
-  description: A style for many of Elsevier's journals that does not include article titles in the 
-    reference list
+  description: A style for many of Elsevier's journals that does not include article titles in the reference list
   source:
     csl-id: http://www.zotero.org/styles/elsevier-without-titles
     adapted-by: citum-migrate
@@ -13,17 +12,13 @@ info:
     links:
     - href: http://www.zotero.org/styles/elsevier-without-titles
       rel: self
-    - href: 
-        http://www.elsevier.com/journals/the-journal-of-chemical-thermodynamics/0021-9614/guide-for-authors#68000
+    - href: http://www.elsevier.com/journals/the-journal-of-chemical-thermodynamics/0021-9614/guide-for-authors#68000
       rel: documentation
 options:
   substitute: editor-translator-short
   processing: numeric
   contributors: numeric-given-dot
   dates: long
-  bibliography:
-    entry-suffix: .
-    separator: ", "
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
@@ -36,6 +31,8 @@ bibliography:
       initialize-with: .
       delimiter: ", "
       delimiter-precedes-last: always
+    entry-suffix: .
+    separator: ", "
   type-variants:
     article-journal:
     - contributor: author

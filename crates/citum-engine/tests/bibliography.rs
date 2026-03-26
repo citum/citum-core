@@ -13,9 +13,9 @@ use citum_schema::{
     BibliographySpec, CitationSpec, Style, StyleInfo,
     options::{
         AndOptions, ArticleJournalBibliographyConfig, ArticleJournalNoPageFallback,
-        BibliographyConfig, Config, ContributorConfig, DelimiterPrecedesLast,
-        DemoteNonDroppingParticle, DisplayAsSort, Processing, ProcessingCustom, Sort, SortKey,
-        SortSpec,
+        BibliographyOptions, Config, ContributorConfig, DelimiterPrecedesLast,
+        DemoteNonDroppingParticle, DisplayAsSort, LinkAnchor, LinkTarget, LinksConfig, Processing,
+        ProcessingCustom, Sort, SortKey, SortSpec,
     },
     reference::{
         Contributor, EdtfString, InputReference, Monograph, MonographType, NumOrStr, Parent,
@@ -27,6 +27,7 @@ use citum_schema::{
         TemplateVariable, TitleForm, TitleType,
     },
 };
+use url::Url;
 
 // --- Helper Functions ---
 
@@ -166,17 +167,15 @@ fn build_article_journal_no_page_fallback_style() -> Style {
             id: Some("article-journal-fallback-test".to_string()),
             ..Default::default()
         },
-        options: Some(Config {
-            bibliography: Some(BibliographyConfig {
+        options: Some(Config::default()),
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
                 article_journal: Some(ArticleJournalBibliographyConfig {
                     no_page_fallback: Some(ArticleJournalNoPageFallback::Doi),
                 }),
                 separator: Some(", ".to_string()),
                 ..Default::default()
             }),
-            ..Default::default()
-        }),
-        bibliography: Some(BibliographySpec {
             template: Some(vec![
                 TemplateComponent::Title(TemplateTitle {
                     title: TitleType::ParentSerial,
@@ -222,6 +221,115 @@ fn build_article_journal_no_page_fallback_style() -> Style {
                     },
                     ..Default::default()
                 }),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn build_bibliography_entry_link_style() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Bibliography Entry Link Test".to_string()),
+            id: Some("bibliography-entry-link-test".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                links: Some(LinksConfig {
+                    url: Some(true),
+                    target: Some(LinkTarget::Url),
+                    anchor: Some(LinkAnchor::Entry),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            template: Some(vec![citum_schema::tc_title!(Primary)]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn build_bibliography_local_note_sort_style() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Bibliography Local Note Sort Test".to_string()),
+            id: Some("bibliography-local-note-sort-test".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::Numeric),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                processing: Some(Processing::Note),
+                ..Default::default()
+            }),
+            template: Some(vec![
+                citum_schema::tc_contributor!(Author, Long),
+                citum_schema::tc_title!(Primary, prefix = ". "),
+                citum_schema::tc_date!(Issued, Year, prefix = " "),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn build_bibliography_local_numeric_style() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Bibliography Local Numeric Test".to_string()),
+            id: Some("bibliography-local-numeric-test".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::AuthorDate),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                processing: Some(Processing::Numeric),
+                ..Default::default()
+            }),
+            template: Some(vec![
+                citum_schema::tc_number!(CitationNumber, suffix = ". "),
+                citum_schema::tc_contributor!(Author, Long),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn build_numeric_citation_style_with_bibliography_local_note_sort() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Numeric Citation Local Note Sort Test".to_string()),
+            id: Some("numeric-citation-local-note-sort-test".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::Numeric),
+            ..Default::default()
+        }),
+        citation: Some(CitationSpec {
+            template: Some(vec![citum_schema::tc_number!(CitationNumber)]),
+            wrap: Some(citum_schema::template::WrapPunctuation::Brackets),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                processing: Some(Processing::Note),
+                ..Default::default()
+            }),
+            template: Some(vec![
+                citum_schema::tc_number!(CitationNumber, suffix = ". "),
+                citum_schema::tc_contributor!(Author, Long),
+                citum_schema::tc_title!(Primary, prefix = ". "),
             ]),
             ..Default::default()
         }),
@@ -498,11 +606,6 @@ fn make_style_with_substitute(substitute: Option<String>) -> Style {
         templates: None,
         options: Some(Config {
             processing: Some(Processing::AuthorDate),
-            bibliography: Some(BibliographyConfig {
-                subsequent_author_substitute: substitute,
-                entry_suffix: Some(".".to_string()),
-                ..Default::default()
-            }),
             contributors: Some(ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::First),
                 ..Default::default()
@@ -511,7 +614,11 @@ fn make_style_with_substitute(substitute: Option<String>) -> Style {
         }),
         citation: None,
         bibliography: Some(BibliographySpec {
-            options: None,
+            options: Some(BibliographyOptions {
+                subsequent_author_substitute: substitute,
+                entry_suffix: Some(".".to_string()),
+                ..Default::default()
+            }),
             template: Some(vec![
                 citum_schema::tc_contributor!(Author, Long),
                 citum_schema::tc_date!(Issued, Year),
@@ -839,10 +946,6 @@ fn magic_subsequent_author_substitute_reuses_the_full_author_group() {
         },
         options: Some(Config {
             processing: Some(Processing::AuthorDate),
-            bibliography: Some(BibliographyConfig {
-                subsequent_author_substitute: Some("———".to_string()),
-                ..Default::default()
-            }),
             contributors: Some(ContributorConfig {
                 and: Some(AndOptions::Text),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Never),
@@ -851,6 +954,10 @@ fn magic_subsequent_author_substitute_reuses_the_full_author_group() {
             ..Default::default()
         }),
         bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                subsequent_author_substitute: Some("———".to_string()),
+                ..Default::default()
+            }),
             template: Some(vec![
                 citum_schema::tc_contributor!(Author, Long),
                 citum_schema::tc_title!(Primary, prefix = ", "),
@@ -1047,6 +1154,109 @@ fn page_less_article_journal_swaps_detail_block_for_doi() {
     assert!(result.contains("DOI:10.1234/fallback"));
     assert!(!result.contains("2024"));
     assert!(!result.contains("pp."));
+}
+
+fn bibliography_local_entry_links_apply_on_the_default_render_path() {
+    let style = build_bibliography_entry_link_style();
+    let reference = InputReference::Monograph(Box::new(Monograph {
+        id: Some("linked-book".to_string()),
+        r#type: MonographType::Book,
+        title: Some(Title::Single("Linked Book".to_string())),
+        author: None,
+        editor: None,
+        translator: None,
+        recipient: None,
+        interviewer: None,
+        issued: EdtfString("2024".to_string()),
+        publisher: None,
+        container_title: None,
+        url: Some(Url::parse("https://example.com/linked-book").expect("valid url")),
+        accessed: None,
+        language: None,
+        field_languages: Default::default(),
+        note: None,
+        isbn: None,
+        doi: None,
+        edition: None,
+        report_number: None,
+        collection_number: None,
+        genre: None,
+        medium: None,
+        archive: None,
+        archive_location: None,
+        keywords: None,
+        original_date: None,
+        original_title: None,
+        ads_bibcode: None,
+    }));
+    let bib = citum_schema::bib_map!["linked-book" => reference];
+
+    let processor = Processor::new(style, bib);
+    let rendered = processor.render_bibliography_with_format::<Html>();
+
+    assert!(
+        rendered.contains(r#"href="https://example.com/linked-book""#),
+        "bibliography-local entry link should be applied on the default path: {rendered}"
+    );
+}
+
+fn bibliography_local_processing_changes_default_bibliography_sort() {
+    let style = build_bibliography_local_note_sort_style();
+    let bib = citum_schema::bib_map![
+        "book-b" => make_book("book-b", "Zimmer", "Zed", 2021, "Later Book"),
+        "book-a" => make_book("book-a", "Adams", "Amy", 2020, "Earlier Book")
+    ];
+
+    let processor = Processor::new(style, bib);
+    let rendered = processor.render_bibliography();
+
+    assert!(
+        rendered.find("Amy Adams").unwrap() < rendered.find("Zed Zimmer").unwrap(),
+        "bibliography-local processing should drive default bibliography sort: {rendered}"
+    );
+}
+
+fn bibliography_local_numeric_processing_assigns_bibliography_numbers() {
+    let style = build_bibliography_local_numeric_style();
+    let bib = citum_schema::bib_map![
+        "book-a" => make_book("book-a", "Smith", "John", 2020, "Title A"),
+        "book-b" => make_book("book-b", "Brown", "Beth", 2021, "Title B")
+    ];
+
+    let processor = Processor::new(style, bib);
+    let rendered = processor.render_bibliography();
+
+    assert!(
+        rendered.contains("1. John Smith"),
+        "bibliography-local numeric processing should assign bibliography numbers: {rendered}"
+    );
+    assert!(
+        rendered.contains("2. Beth Brown"),
+        "bibliography-local numeric processing should assign bibliography numbers: {rendered}"
+    );
+}
+
+fn numeric_citations_follow_bibliography_local_sort_when_assigning_numbers() {
+    let style = build_numeric_citation_style_with_bibliography_local_note_sort();
+    let bib = citum_schema::bib_map![
+        "book-b" => make_book("book-b", "Zimmer", "Zed", 2021, "Later Book"),
+        "book-a" => make_book("book-a", "Adams", "Amy", 2020, "Earlier Book")
+    ];
+
+    let processor = Processor::new(style, bib);
+    let citation = processor
+        .process_citation(&citum_schema::cite!("book-b"))
+        .expect("citation should render");
+    let bibliography = processor.render_bibliography();
+
+    assert_eq!(
+        citation, "[2]",
+        "citation numbering should follow bibliography-local sort order"
+    );
+    assert!(
+        bibliography.find("1. Amy Adams").unwrap() < bibliography.find("2. Zed Zimmer").unwrap(),
+        "bibliography numbering should stay aligned with citation numbering: {bibliography}"
+    );
 }
 
 #[test]
@@ -1288,6 +1498,42 @@ mod numeric_styles {
             "A numeric bibliography should reuse the citation number assigned during citation rendering.",
         );
         super::numeric_bibliography_uses_assigned_citation_numbers();
+    }
+
+    #[test]
+    fn bibliography_local_numeric_processing_assigns_numbers_on_the_default_path() {
+        announce_behavior(
+            "Bibliography-local numeric processing should assign citation numbers on the default bibliography render path even when the top-level style is not numeric.",
+        );
+        super::bibliography_local_numeric_processing_assigns_bibliography_numbers();
+    }
+
+    #[test]
+    fn numeric_citations_follow_the_bibliography_local_sort_order() {
+        announce_behavior(
+            "Numeric citation numbering should stay aligned with bibliography-local sort rules when the bibliography overrides the processing family.",
+        );
+        super::numeric_citations_follow_bibliography_local_sort_when_assigning_numbers();
+    }
+}
+
+mod local_overrides {
+    use super::announce_behavior;
+
+    #[test]
+    fn bibliography_local_entry_links_apply_on_the_default_render_path() {
+        announce_behavior(
+            "Bibliography-local shared overrides should apply on the default bibliography render path.",
+        );
+        super::bibliography_local_entry_links_apply_on_the_default_render_path();
+    }
+
+    #[test]
+    fn bibliography_local_processing_can_change_the_default_sort_order() {
+        announce_behavior(
+            "Bibliography-local processing should control the default bibliography sort order when no explicit bibliography sort is declared.",
+        );
+        super::bibliography_local_processing_changes_default_bibliography_sort();
     }
 }
 

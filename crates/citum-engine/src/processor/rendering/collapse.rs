@@ -83,8 +83,7 @@ impl Renderer<'_> {
         chunks: Vec<(Vec<String>, String)>,
     ) -> Vec<(Vec<String>, String)> {
         let Some(compound) = self
-            .config
-            .bibliography
+            .bibliography_config
             .as_ref()
             .and_then(|b| b.compound_numeric.as_ref())
         else {

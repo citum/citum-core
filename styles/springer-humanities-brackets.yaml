@@ -1,7 +1,6 @@
 info:
   title: Springer - Humanities (numeric, brackets)
-  description: Style for Springer's humanities journals - the journals do look slightly different 
-    from each other, but this should work quite closely
+  description: Style for Springer's humanities journals - the journals do look slightly different from each other, but this should work quite closely
   fields:
   - humanities
   source:
@@ -47,9 +46,6 @@ options:
       emph: true
     serial:
       emph: true
-  bibliography:
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   template:
@@ -68,6 +64,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: ", "
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

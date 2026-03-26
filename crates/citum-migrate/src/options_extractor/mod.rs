@@ -48,13 +48,10 @@ impl OptionsExtractor {
             // 7. Extract locator configuration
             locators: self::locators::extract_locator_config(style),
 
-            // 8. Extract bibliography-specific settings
-            bibliography: self::bibliography::extract_bibliography_config(style),
-
-            // 9. Punctuation-in-quote heuristic
+            // 8. Punctuation-in-quote heuristic
             punctuation_in_quote: Self::extract_punctuation_in_quote(style),
 
-            // 10. Volume-pages delimiter
+            // 9. Volume-pages delimiter
             volume_pages_delimiter: {
                 // Collect macros needed for delimiter extraction
                 let mut macros = std::collections::HashSet::new();

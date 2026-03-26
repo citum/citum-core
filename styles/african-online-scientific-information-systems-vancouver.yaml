@@ -39,8 +39,6 @@ options:
     uncertainty-marker: "?"
     approximation-marker: "ca. "
     range-delimiter: –
-  bibliography:
-    separator: ". "
 citation:
   template:
   - number: citation-number
@@ -59,6 +57,7 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    separator: ". "
   type-variants:
     chapter:
     - contributor: author

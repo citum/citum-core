@@ -19,10 +19,6 @@ options:
   substitute: editor-translator-title-long
   contributors: numeric-medium
   dates: numeric
-  bibliography:
-    hanging-indent: false
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   options:
@@ -78,6 +74,9 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    hanging-indent: false
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

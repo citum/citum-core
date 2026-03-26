@@ -17,11 +17,9 @@ info:
       rel: template
     - href: http://www.springer.com/cda/content/document/cda_downloaddocument/instruct-authors-e.pdf
       rel: documentation
-    - href: 
-        http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
       rel: documentation
-    - href: 
-        http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
       rel: documentation
 options:
   substitute:
@@ -47,8 +45,6 @@ options:
     sort-separator: ", "
   dates: long
   titles: humanities
-  bibliography:
-    separator: ". "
   punctuation-in-quote: true
   volume-pages-delimiter: comma
 citation:
@@ -69,6 +65,7 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: ", "
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

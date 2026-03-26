@@ -1,7 +1,6 @@
 info:
   title: Chicago Manual of Style 17th edition (notes and bibliography)
-  description: Chicago-style source citations (with Bluebook for legal citations), notes and 
-    bibliography system, 17th edition
+  description: Chicago-style source citations (with Bluebook for legal citations), notes and bibliography system, 17th edition
   fields:
   - anthropology
   - communications
@@ -53,11 +52,6 @@ options:
     serial:
       emph: true
   page-range-format: chicago16
-  bibliography:
-    subsequent-author-substitute: ———
-    hanging-indent: true
-    entry-suffix: .
-    separator: ", "
   punctuation-in-quote: true
 citation:
   options:
@@ -217,6 +211,10 @@ bibliography:
         use-first: 7
         and-others: et-al
         delimiter-precedes-last: contextual
+    subsequent-author-substitute: ———
+    hanging-indent: true
+    entry-suffix: .
+    separator: ", "
   type-variants:
     article-journal:
     - contributor: author

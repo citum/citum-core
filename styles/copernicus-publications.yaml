@@ -40,9 +40,6 @@ options:
     delimiter: ", "
     demote-non-dropping-particle: sort-only
   dates: long
-  bibliography:
-    entry-suffix: .
-    separator: ", "
   punctuation-in-quote: true
 citation:
   options:
@@ -76,6 +73,8 @@ bibliography:
         use-first: 99
         and-others: et-al
         delimiter-precedes-last: contextual
+    entry-suffix: .
+    separator: ", "
   type-variants:
     article-journal:
     - contributor: author

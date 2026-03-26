@@ -36,10 +36,6 @@ options:
   dates: long
   titles: humanities
   page-range-format: expanded
-  bibliography:
-    hanging-indent: true
-    entry-suffix: .
-    separator: ", "
   punctuation-in-quote: true
   volume-pages-delimiter: comma
 citation:
@@ -75,6 +71,9 @@ bibliography:
       display-as-sort: all
       name-form: initials
       initialize-with: .
+    hanging-indent: true
+    entry-suffix: .
+    separator: ", "
   type-variants:
     book:
     - contributor: author

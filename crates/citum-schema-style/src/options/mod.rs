@@ -110,9 +110,6 @@ pub struct Config {
     /// Page range formatting (expanded, minimal, chicago).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page_range_format: Option<PageRangeFormat>,
-    /// Bibliography-specific settings.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub bibliography: Option<BibliographyConfig>,
     /// Hyperlink configuration.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub links: Option<LinksConfig>,
@@ -135,6 +132,166 @@ pub struct Config {
     /// Integral citation name-memory behavior.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub integral_names: Option<IntegralNameConfig>,
+    /// Custom user-defined fields for extensions.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub custom: Option<HashMap<String, serde_json::Value>>,
+}
+
+/// Citation-local option overrides.
+#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct CitationOptions {
+    /// Substitution rules for missing data.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub substitute: Option<SubstituteConfig>,
+    /// Processing mode (author-date, numeric, etc.).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub processing: Option<Processing>,
+    /// Localization settings.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub localize: Option<Localize>,
+    /// Multilingual rendering defaults.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub multilingual: Option<MultilingualConfig>,
+    /// Contributor formatting defaults.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_contributor_config",
+        default
+    )]
+    #[cfg_attr(feature = "schema", schemars(with = "Option<ContributorConfigEntry>"))]
+    pub contributors: Option<ContributorConfig>,
+    /// Date formatting defaults.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_date_config",
+        default
+    )]
+    #[cfg_attr(feature = "schema", schemars(with = "Option<DateConfigEntry>"))]
+    pub dates: Option<DateConfig>,
+    /// Title formatting defaults.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_titles_config",
+        default
+    )]
+    #[cfg_attr(feature = "schema", schemars(with = "Option<TitlesConfigEntry>"))]
+    pub titles: Option<crate::options::titles::TitlesConfig>,
+    /// Locator rendering configuration.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_locator_config",
+        default
+    )]
+    #[cfg_attr(feature = "schema", schemars(with = "Option<LocatorConfigEntry>"))]
+    pub locators: Option<LocatorConfig>,
+    /// Page range formatting (expanded, minimal, chicago).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_range_format: Option<PageRangeFormat>,
+    /// Hyperlink configuration.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub links: Option<LinksConfig>,
+    /// Whether to place periods/commas inside quotation marks.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub punctuation_in_quote: bool,
+    /// Delimiter between volume/issue and pages for serial sources.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub volume_pages_delimiter: Option<DelimiterPunctuation>,
+    /// Strip trailing periods from terms, labels, and abbreviated dates.
+    #[serde(skip_serializing_if = "Option::is_none", rename = "strip-periods")]
+    pub strip_periods: Option<bool>,
+    /// Document-level note marker placement and punctuation movement rules.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub notes: Option<NoteConfig>,
+    /// Integral citation name-memory behavior.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub integral_names: Option<IntegralNameConfig>,
+    /// Custom user-defined fields for extensions.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub custom: Option<HashMap<String, serde_json::Value>>,
+}
+
+/// Bibliography-local option overrides.
+#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct BibliographyOptions {
+    /// Substitution rules for missing data.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub substitute: Option<SubstituteConfig>,
+    /// Processing mode (author-date, numeric, etc.).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub processing: Option<Processing>,
+    /// Localization settings.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub localize: Option<Localize>,
+    /// Multilingual rendering defaults.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub multilingual: Option<MultilingualConfig>,
+    /// Contributor formatting defaults.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_contributor_config",
+        default
+    )]
+    #[cfg_attr(feature = "schema", schemars(with = "Option<ContributorConfigEntry>"))]
+    pub contributors: Option<ContributorConfig>,
+    /// Date formatting defaults.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_date_config",
+        default
+    )]
+    #[cfg_attr(feature = "schema", schemars(with = "Option<DateConfigEntry>"))]
+    pub dates: Option<DateConfig>,
+    /// Title formatting defaults.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_titles_config",
+        default
+    )]
+    #[cfg_attr(feature = "schema", schemars(with = "Option<TitlesConfigEntry>"))]
+    pub titles: Option<crate::options::titles::TitlesConfig>,
+    /// Page range formatting (expanded, minimal, chicago).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_range_format: Option<PageRangeFormat>,
+    /// Article-journal-specific bibliography policies.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub article_journal: Option<ArticleJournalBibliographyConfig>,
+    /// String to substitute for repeating authors.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subsequent_author_substitute: Option<String>,
+    /// Rule for when to apply the substitute.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subsequent_author_substitute_rule: Option<SubsequentAuthorSubstituteRule>,
+    /// Whether to use a hanging indent.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hanging_indent: Option<bool>,
+    /// Suffix appended to each bibliography entry.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub entry_suffix: Option<String>,
+    /// Separator between bibliography components.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub separator: Option<String>,
+    /// Whether to suppress the trailing period after URLs/DOIs.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub suppress_period_after_url: bool,
+    /// Configuration for compound numeric bibliography entries.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub compound_numeric: Option<bibliography::CompoundNumericConfig>,
+    /// Hyperlink configuration.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub links: Option<LinksConfig>,
+    /// Whether to place periods/commas inside quotation marks.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub punctuation_in_quote: bool,
+    /// Delimiter between volume/issue and pages for serial sources.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub volume_pages_delimiter: Option<DelimiterPunctuation>,
+    /// Strip trailing periods from terms, labels, and abbreviated dates.
+    #[serde(skip_serializing_if = "Option::is_none", rename = "strip-periods")]
+    pub strip_periods: Option<bool>,
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
@@ -284,7 +441,6 @@ impl Config {
             titles,
             locators,
             page_range_format,
-            bibliography,
             links,
             volume_pages_delimiter,
             locale_override,
@@ -314,6 +470,86 @@ impl Config {
         let mut result = base.clone();
         result.merge(override_config);
         result
+    }
+}
+
+impl CitationOptions {
+    /// Convert citation-local overrides into the runtime config shape.
+    #[must_use]
+    pub fn to_config(&self) -> Config {
+        Config {
+            substitute: self.substitute.clone(),
+            processing: self.processing.clone(),
+            locale_override: None,
+            localize: self.localize.clone(),
+            multilingual: self.multilingual.clone(),
+            contributors: self.contributors.clone(),
+            dates: self.dates.clone(),
+            titles: self.titles.clone(),
+            locators: self.locators.clone(),
+            page_range_format: self.page_range_format.clone(),
+            links: self.links.clone(),
+            punctuation_in_quote: self.punctuation_in_quote,
+            volume_pages_delimiter: self.volume_pages_delimiter.clone(),
+            strip_periods: self.strip_periods,
+            notes: self.notes.clone(),
+            integral_names: self.integral_names.clone(),
+            custom: self.custom.clone(),
+        }
+    }
+
+    /// Merge citation-local overrides over a base config.
+    #[must_use]
+    pub fn merged_with(&self, base: &Config) -> Config {
+        Config::merged(base, &self.to_config())
+    }
+}
+
+impl BibliographyOptions {
+    /// Convert bibliography-entry overrides into bibliography-only runtime config.
+    #[must_use]
+    pub fn to_bibliography_config(&self) -> BibliographyConfig {
+        BibliographyConfig {
+            article_journal: self.article_journal.clone(),
+            subsequent_author_substitute: self.subsequent_author_substitute.clone(),
+            subsequent_author_substitute_rule: self.subsequent_author_substitute_rule.clone(),
+            hanging_indent: self.hanging_indent,
+            entry_suffix: self.entry_suffix.clone(),
+            separator: self.separator.clone(),
+            suppress_period_after_url: self.suppress_period_after_url,
+            custom: None,
+            compound_numeric: self.compound_numeric.clone(),
+        }
+    }
+
+    /// Convert bibliography-local overrides into the runtime config shape.
+    #[must_use]
+    pub fn to_config(&self) -> Config {
+        Config {
+            substitute: self.substitute.clone(),
+            processing: self.processing.clone(),
+            locale_override: None,
+            localize: self.localize.clone(),
+            multilingual: self.multilingual.clone(),
+            contributors: self.contributors.clone(),
+            dates: self.dates.clone(),
+            titles: self.titles.clone(),
+            locators: None,
+            page_range_format: self.page_range_format.clone(),
+            links: self.links.clone(),
+            punctuation_in_quote: self.punctuation_in_quote,
+            volume_pages_delimiter: self.volume_pages_delimiter.clone(),
+            strip_periods: self.strip_periods,
+            notes: None,
+            integral_names: None,
+            custom: self.custom.clone(),
+        }
+    }
+
+    /// Merge bibliography-local overrides over a base config.
+    #[must_use]
+    pub fn merged_with(&self, base: &Config) -> Config {
+        Config::merged(base, &self.to_config())
     }
 }
 
@@ -605,5 +841,65 @@ locale-override: en-US-chicago
         // Both fields preserved
         assert_eq!(merged.processing, Some(Processing::AuthorDate));
         assert!(merged.punctuation_in_quote);
+    }
+
+    #[test]
+    fn test_citation_options_merge_overrides_citation_fields_only() {
+        let base = Config {
+            processing: Some(Processing::AuthorDate),
+            ..Default::default()
+        };
+
+        let overrides = CitationOptions {
+            strip_periods: Some(true),
+            locators: Some(LocatorConfig::default()),
+            ..Default::default()
+        };
+
+        let merged = overrides.merged_with(&base);
+        assert_eq!(merged.processing, Some(Processing::AuthorDate));
+        assert!(merged.strip_periods.unwrap_or(false));
+        assert!(merged.locators.is_some());
+    }
+
+    #[test]
+    fn test_bibliography_options_merge_projects_shared_fields_only() {
+        let base = Config {
+            processing: Some(Processing::AuthorDate),
+            ..Default::default()
+        };
+
+        let overrides = BibliographyOptions {
+            entry_suffix: Some(".".to_string()),
+            separator: Some(", ".to_string()),
+            suppress_period_after_url: true,
+            ..Default::default()
+        };
+
+        let merged = overrides.merged_with(&base);
+        assert_eq!(merged.processing, Some(Processing::AuthorDate));
+        assert!(merged.locators.is_none());
+        assert!(merged.notes.is_none());
+        let bibliography = overrides.to_bibliography_config();
+        assert_eq!(bibliography.entry_suffix.as_deref(), Some("."));
+        assert_eq!(bibliography.separator.as_deref(), Some(", "));
+        assert!(bibliography.suppress_period_after_url);
+    }
+
+    #[test]
+    fn test_bibliography_options_merge_leaves_shared_base_when_only_shared_overrides_exist() {
+        let base = Config {
+            processing: Some(Processing::AuthorDate),
+            ..Default::default()
+        };
+
+        let overrides = BibliographyOptions {
+            contributors: Some(ContributorConfig::default()),
+            ..Default::default()
+        };
+
+        let merged = overrides.merged_with(&base);
+        assert_eq!(merged.processing, Some(Processing::AuthorDate));
+        assert!(merged.contributors.is_some());
     }
 }

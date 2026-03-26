@@ -20,10 +20,6 @@ options:
     name-mode: transliterated
     preferred-script: Latn
   page-range-format: minimal
-  bibliography:
-    entry-suffix: .
-    separator: ''
-
 citation:
   use-preset: numeric-citation
   wrap: brackets
@@ -31,42 +27,45 @@ citation:
   delimiter: ''
 
 bibliography:
+  options:
+    entry-suffix: .
+    separator: ''
   template:
-    - number: citation-number
-      wrap: brackets
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: family-first
-      suffix: "."
-    - title: primary
-      prefix: " "
-      suffix: "."
-    - title: parent-monograph
-      emph: true
-      prefix: " "
-    - title: parent-serial
-      emph: true
-      prefix: " "
-    - contributor: editor
-      form: long
-      name-order: given-first
-      prefix: " "
-    - variable: publisher-place
-      prefix: " "
-    - variable: publisher
-      prefix: ": "
-      suffix: "."
-    - number: volume
-      prefix: " Vol. "
-    - number: issue
-      prefix: "No. "
-    - number: pages
-      prefix: ", p. "
-    - date: issued
-      form: year
-      prefix: " "
-    - variable: doi
-      prefix: " https://doi.org/"
-    - variable: url
-      prefix: " "
+  - number: citation-number
+    wrap: brackets
+    suffix: " "
+  - contributor: author
+    form: long
+    name-order: family-first
+    suffix: "."
+  - title: primary
+    prefix: " "
+    suffix: "."
+  - title: parent-monograph
+    emph: true
+    prefix: " "
+  - title: parent-serial
+    emph: true
+    prefix: " "
+  - contributor: editor
+    form: long
+    name-order: given-first
+    prefix: " "
+  - variable: publisher-place
+    prefix: " "
+  - variable: publisher
+    prefix: ": "
+    suffix: "."
+  - number: volume
+    prefix: " Vol. "
+  - number: issue
+    prefix: "No. "
+  - number: pages
+    prefix: ", p. "
+  - date: issued
+    form: year
+    prefix: " "
+  - variable: doi
+    prefix: " https://doi.org/"
+  - variable: url
+    prefix: " "

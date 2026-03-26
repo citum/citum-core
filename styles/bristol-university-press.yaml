@@ -13,8 +13,7 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/harvard-university-of-birmingham
       rel: template
-    - href: 
-        https://bristoluniversitypressdigital.com/view/journals/evp/evp-overview.xml?tab_body=instructions-for-authors
+    - href: https://bristoluniversitypressdigital.com/view/journals/evp/evp-overview.xml?tab_body=instructions-for-authors
       rel: documentation
 options:
   locators: note
@@ -39,9 +38,6 @@ options:
     sort-separator: ", "
   dates: long
   titles: humanities
-  bibliography:
-    entry-suffix: .
-    separator: ", "
 citation:
   options:
     processing:
@@ -91,6 +87,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: never
       sort-separator: ", "
+    entry-suffix: .
+    separator: ", "
   type-variants:
     article-journal:
     - contributor: author

@@ -109,15 +109,16 @@ impl Processor {
             .sort
             .as_ref()
             .map(citum_schema::GroupSortEntry::resolve);
+        let bibliography_config = self.get_bibliography_config();
         let disambiguator = if let Some(sort) = resolved_sort.as_ref() {
             Disambiguator::with_group_sort(
                 &group_bibliography,
-                self.get_config(),
+                &bibliography_config,
                 &self.locale,
                 sort,
             )
         } else {
-            Disambiguator::new(&group_bibliography, self.get_config(), &self.locale)
+            Disambiguator::new(&group_bibliography, &bibliography_config, &self.locale)
         };
 
         Some(disambiguator.calculate_hints())
@@ -158,12 +159,14 @@ impl Processor {
         let hints = local_hints.unwrap_or(&self.hints);
         let effective_style = self.effective_group_style(group);
         let bibliography_config = self.get_bibliography_config();
+        let bibliography_options = self.get_bibliography_options().into_owned();
         let renderer = Renderer::new(
             RendererResources {
                 style: &effective_style,
                 bibliography: &self.bibliography,
                 locale: &self.locale,
                 config: &bibliography_config,
+                bibliography_config: Some(bibliography_options),
             },
             hints,
             &self.citation_numbers,
@@ -409,8 +412,10 @@ impl Processor {
     }
 
     pub(super) fn extract_metadata(&self, reference: &Reference) -> ProcEntryMetadata {
+        let bibliography_config = self.get_bibliography_config();
         let options = RenderOptions {
-            config: self.get_config(),
+            config: &bibliography_config,
+            bibliography_config: Some(self.get_bibliography_options().into_owned()),
             locale: &self.locale,
             context: RenderContext::Bibliography,
             mode: citum_schema::citation::CitationMode::NonIntegral,

@@ -49,11 +49,6 @@ options:
     serial:
       emph: true
   page-range-format: minimal-two
-  bibliography:
-    subsequent-author-substitute: ——
-    subsequent-author-substitute-rule: partial-first
-    hanging-indent: true
-    separator: ": "
 citation:
   options:
     contributors:
@@ -465,6 +460,11 @@ citation:
   delimiter: ", "
   multi-cite-delimiter: "; "
 bibliography:
+  options:
+    subsequent-author-substitute: ——
+    subsequent-author-substitute-rule: partial-first
+    hanging-indent: true
+    separator: ": "
   type-variants:
     article-journal:
     - contributor: author

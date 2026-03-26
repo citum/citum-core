@@ -813,6 +813,7 @@ impl Renderer<'_> {
         let ref_type = reference.ref_type();
         let options = RenderOptions {
             config: self.config,
+            bibliography_config: self.bibliography_config.clone(),
             locale: self.locale,
             context,
             mode,
@@ -877,8 +878,7 @@ impl Renderer<'_> {
         }
 
         let fallback = self
-            .config
-            .bibliography
+            .bibliography_config
             .as_ref()?
             .article_journal
             .as_ref()?
@@ -969,6 +969,7 @@ impl Renderer<'_> {
             url: values.url,
             ref_type: Some(ref_type.to_string()),
             config: Some(options.config.clone()),
+            bibliography_config: options.bibliography_config.clone(),
             item_language,
             pre_formatted: values.pre_formatted,
         })

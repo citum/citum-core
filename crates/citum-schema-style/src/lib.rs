@@ -67,8 +67,8 @@ pub use legacy::{
     TextDecoration, Variable, VariableBlock, VerticalAlign,
 };
 pub use locale::Locale;
-pub use options::Config;
 pub use options::TextCase;
+pub use options::{BibliographyOptions, CitationOptions, Config};
 pub use presets::{ContributorPreset, DatePreset, SortPreset, SubstitutePreset, TitlePreset};
 pub use registry::{RegistryEntry, StyleRegistry};
 pub use style_preset::StylePreset;
@@ -481,7 +481,7 @@ pub enum NoteStartTextCase {
 pub struct CitationSpec {
     /// Citation-specific option overrides merged over the style config.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub options: Option<Config>,
+    pub options: Option<CitationOptions>,
     /// Reference to an embedded template preset.
     /// If both `use_preset` and `template` are present, `template` takes precedence.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -768,7 +768,7 @@ impl CitationSpec {
 pub struct BibliographySpec {
     /// Bibliography-specific option overrides merged over the style config.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub options: Option<Config>,
+    pub options: Option<BibliographyOptions>,
     /// Reference to an embedded template preset.
     /// If both `use_preset` and `template` are present, `template` takes precedence.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1522,5 +1522,80 @@ citation:
             "type_variants should be None after null override, got: {:?}",
             citation.type_variants.as_ref().map(|tv| tv.keys().count())
         );
+    }
+
+    #[test]
+    fn citation_options_parse_valid_citation_fields() {
+        let yaml = r#"
+citation:
+  options:
+    contributors:
+      shorten: {min: 3, use-first: 1}
+    links:
+      doi: true
+"#;
+
+        let style = Style::from_yaml_str(yaml).expect("citation options should parse");
+        let options = style
+            .citation
+            .and_then(|citation| citation.options)
+            .expect("citation options should exist");
+        assert!(options.contributors.is_some());
+        assert_eq!(options.links.and_then(|links| links.doi), Some(true));
+    }
+
+    #[test]
+    fn citation_options_reject_bibliography_only_fields() {
+        let yaml = r#"
+citation:
+  options:
+    entry-suffix: "."
+"#;
+
+        let err = Style::from_yaml_str(yaml).expect_err("citation entry-suffix must fail");
+        assert!(err.to_string().contains("entry-suffix"));
+    }
+
+    #[test]
+    fn bibliography_options_parse_valid_bibliography_fields() {
+        let yaml = r#"
+bibliography:
+  options:
+    entry-suffix: "."
+    separator: ", "
+"#;
+
+        let style = Style::from_yaml_str(yaml).expect("bibliography options should parse");
+        let options = style
+            .bibliography
+            .and_then(|bibliography| bibliography.options)
+            .expect("bibliography options should exist");
+        assert_eq!(options.entry_suffix.as_deref(), Some("."));
+        assert_eq!(options.separator.as_deref(), Some(", "));
+    }
+
+    #[test]
+    fn bibliography_options_reject_citation_only_fields() {
+        let yaml = r#"
+bibliography:
+  options:
+    locators:
+      form: short
+"#;
+
+        let err = Style::from_yaml_str(yaml).expect_err("bibliography locators must fail");
+        assert!(err.to_string().contains("locators"));
+    }
+
+    #[test]
+    fn top_level_options_reject_bibliography_only_fields() {
+        let yaml = r#"
+options:
+  bibliography:
+    entry-suffix: "."
+"#;
+
+        let err = Style::from_yaml_str(yaml).expect_err("top-level bibliography config must fail");
+        assert!(err.to_string().contains("bibliography"));
     }
 }

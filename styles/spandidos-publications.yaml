@@ -18,7 +18,7 @@ info:
 options:
   substitute:
     template:
-      - editor
+    - editor
   processing: numeric
   contributors:
     display-as-sort: all
@@ -34,9 +34,6 @@ options:
     demote-non-dropping-particle: sort-only
     sort-separator: " "
   dates: long
-  bibliography:
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
@@ -56,27 +53,29 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: never
       sort-separator: " "
+    entry-suffix: .
+    separator: ". "
   template:
-    - contributor: author
-      form: long
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten:
+      min: 8
+      use-first: 3
+  - title: primary
+    prefix: ": "
+  - items:
+    - contributor: editor
+      form: verb
       name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-      prefix: ": "
-    - items:
-        - contributor: editor
-          form: verb
-          name-order: family-first
-        - title: parent-monograph
-    - title: parent-serial
-    - number: volume
-    - variable: publisher
-    - number: pages
-      prefix: ", pp"
-    - variable: publisher-place
-      prefix: ", "
-    - date: issued
-      form: year
-      prefix: ", "
+    - title: parent-monograph
+  - title: parent-serial
+  - number: volume
+  - variable: publisher
+  - number: pages
+    prefix: ", pp"
+  - variable: publisher-place
+    prefix: ", "
+  - date: issued
+    form: year
+    prefix: ", "

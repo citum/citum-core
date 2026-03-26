@@ -35,9 +35,6 @@ options:
   dates:
     month: long
   page-range-format: minimal
-  bibliography:
-    entry-suffix: .
-    separator: ''
   punctuation-in-quote: true
 
 citation:
@@ -46,6 +43,9 @@ citation:
   multi-cite-delimiter: ','
   delimiter: ''
 bibliography:
+  options:
+    entry-suffix: .
+    separator: ''
   type-variants:
     article-journal:
     - number: citation-number

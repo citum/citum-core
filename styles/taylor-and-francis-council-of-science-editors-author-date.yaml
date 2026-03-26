@@ -1,7 +1,6 @@
 info:
   title: Taylor & Francis - Council of Science Editors (author-date)
-  description: The Council of Science Editors style for T&F journals as per guidelines (version 2.0,
-    18 Jan 2018).
+  description: The Council of Science Editors style for T&F journals as per guidelines (version 2.0, 18 Jan 2018).
   fields:
   - science
   source:
@@ -44,9 +43,6 @@ options:
     demote-non-dropping-particle: sort-only
     sort-separator: " "
   dates: short
-  bibliography:
-    hanging-indent: false
-    separator: ". "
   punctuation-in-quote: true
 citation:
   options:
@@ -85,6 +81,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    hanging-indent: false
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

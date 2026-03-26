@@ -48,10 +48,6 @@ options:
     serial:
       emph: true
   page-range-format: chicago
-  bibliography:
-    hanging-indent: true
-    entry-suffix: .
-    separator: ", "
   punctuation-in-quote: true
 citation:
   options:
@@ -89,6 +85,9 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: never
       sort-separator: ", "
+    hanging-indent: true
+    entry-suffix: .
+    separator: ", "
   type-variants:
     article-journal:
     - contributor: author

@@ -1,7 +1,6 @@
 version: ""
 info:
-  title: "New Hart's Rules: The Oxford Style Guide 2nd edition (author-date, bracketed date with space,
-    publisher)"
+  title: "New Hart's Rules: The Oxford Style Guide 2nd edition (author-date, bracketed date with space, publisher)"
   id: http://www.zotero.org/styles/new-harts-rules-author-date-space-publisher
   default-locale: en-GB
 options:
@@ -40,10 +39,6 @@ options:
     periodical:
       emph: true
   page-range-format: minimal
-  bibliography:
-    hanging-indent: true
-    entry-suffix: .
-    separator: ", "
 citation:
   type-variants:
     personal_communication:
@@ -70,6 +65,10 @@ citation:
   delimiter: " "
   multi-cite-delimiter: "; "
 bibliography:
+  options:
+    hanging-indent: true
+    entry-suffix: .
+    separator: ", "
   type-variants:
     article-journal:
     - contributor: author

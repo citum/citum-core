@@ -28,9 +28,6 @@ options:
       emph: false
     periodical:
       emph: false
-  bibliography:
-    entry-suffix: .
-    separator: ", "
   punctuation-in-quote: true
 citation:
   template:
@@ -44,6 +41,8 @@ bibliography:
       initialize-with: ". "
       delimiter: ", "
       delimiter-precedes-last: always
+    entry-suffix: .
+    separator: ", "
   type-variants:
     chapter:
     - number: citation-number

@@ -1,7 +1,6 @@
 info:
   title: Oxford University Standard for Citation of Legal Authorities 4th edition
-  description: 'Oxford University Standard for Citation of Legal Authorities, notes system. For a Zotero
-    group showing data entry: https://zotero.org/groups/2205533/collections/AC7ETLN4'
+  description: 'Oxford University Standard for Citation of Legal Authorities, notes system. For a Zotero group showing data entry: https://zotero.org/groups/2205533/collections/AC7ETLN4'
   fields:
   - law
   source:
@@ -52,9 +51,6 @@ options:
       emph: true
     periodical:
       emph: true
-  bibliography:
-    subsequent-author-substitute: ——
-    separator: " "
 citation:
   options:
     contributors:
@@ -141,6 +137,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: never
       sort-separator: " "
+    subsequent-author-substitute: ——
+    separator: " "
   type-variants:
     dataset:
     - contributor: author

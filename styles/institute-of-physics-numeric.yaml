@@ -11,8 +11,7 @@ info:
     links:
     - href: http://www.zotero.org/styles/institute-of-physics-numeric
       rel: self
-    - href: 
-        http://authors.iop.org/atom/help.nsf/7765E7F03B07DE5080257020002E4D9B/$File/IOPWordGuidelines.pdf
+    - href: http://authors.iop.org/atom/help.nsf/7765E7F03B07DE5080257020002E4D9B/$File/IOPWordGuidelines.pdf
       rel: documentation
 options:
   substitute:
@@ -35,8 +34,6 @@ options:
   dates: long
   titles: humanities
   page-range-format: minimal
-  bibliography:
-    separator: " "
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
@@ -56,6 +53,7 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: never
       sort-separator: " "
+    separator: " "
   type-variants:
     article-journal:
     - contributor: author

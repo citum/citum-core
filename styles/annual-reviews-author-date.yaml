@@ -63,9 +63,6 @@ options:
     serial:
       emph: true
   page-range-format: chicago
-  bibliography:
-    hanging-indent: true
-    separator: ". "
   punctuation-in-quote: true
 citation:
   options:
@@ -105,6 +102,8 @@ bibliography:
         delimiter-precedes-last: contextual
       delimiter: ", "
       sort-separator: " "
+    hanging-indent: true
+    separator: ". "
   type-variants:
     article-magazine:
     - contributor: author

@@ -1,15 +1,6 @@
 info:
   title: DIN 1505-2 (alphanumeric, Deutsch) - standard superseded by ISO-690
-  description: "Style following DIN 1505-2, using the alphanumeric citation keys, for other media types
-    on additional standards \n      Hinweise zur Benutzung: \n      * Zitieren von Gesetzen: \n      \
-    \  - hier müssen manuell §, Abs und S. zur Seitenangabe beim Zitieren eingetragen werden \n      \
-    \  - im Kurzbeleg wird der Kurztitel verwendet, dafür keine Autoren eintragen! \n        - als Jahresangabe
-    wird 'Datum des Inkrafttretens' herangezogen, Verwenden nur bei Verweis auf nicht z.Z. gültige Gesetze,
-    z.B. (idF. v. 12.12.1972) \n       * Zitieren von Normen und Standards - nicht vollständig nach DIN
-    1505\n        - Nutzen Sie den Typ 'Bericht' - als Abhilfe, da es keinen Typ 'Standard' gibt.\n  \
-    \      - als Autor die Kurzbezeichnung inkl. Nummer und Jahr eingeben (z.B. VDI 2222-1997), Vorname
-    leer, Jahr leer\n        - als Titel den ausführlichen Titel bei Bedarf (z.B. VDI Richtlinie 2222
-    Blatt 1 - Konstruktionsmethodik - Methodisches Entwickeln von Lösungsprinzipien)"
+  description: "Style following DIN 1505-2, using the alphanumeric citation keys, for other media types on additional standards \n      Hinweise zur Benutzung: \n      * Zitieren von Gesetzen: \n        - hier müssen manuell §, Abs und S. zur Seitenangabe beim Zitieren eingetragen werden \n        - im Kurzbeleg wird der Kurztitel verwendet, dafür keine Autoren eintragen! \n        - als Jahresangabe wird 'Datum des Inkrafttretens' herangezogen, Verwenden nur bei Verweis auf nicht z.Z. gültige Gesetze, z.B. (idF. v. 12.12.1972) \n       * Zitieren von Normen und Standards - nicht vollständig nach DIN 1505\n        - Nutzen Sie den Typ 'Bericht' - als Abhilfe, da es keinen Typ 'Standard' gibt.\n        - als Autor die Kurzbezeichnung inkl. Nummer und Jahr eingeben (z.B. VDI 2222-1997), Vorname leer, Jahr leer\n        - als Titel den ausführlichen Titel bei Bedarf (z.B. VDI Richtlinie 2222 Blatt 1 - Konstruktionsmethodik - Methodisches Entwickeln von Lösungsprinzipien)"
   source:
     csl-id: http://www.zotero.org/styles/din-1505-2-alphanumeric
     adapted-by: citum-migrate
@@ -58,8 +49,6 @@ options:
       emph: true
     serial:
       emph: true
-  bibliography:
-    separator: " : "
 citation:
   template:
   - number: citation-label
@@ -80,6 +69,7 @@ bibliography:
       delimiter: " ; "
       delimiter-precedes-last: always
       sort-separator: ", "
+    separator: " : "
   type-variants:
     article-journal:
     - contributor: author

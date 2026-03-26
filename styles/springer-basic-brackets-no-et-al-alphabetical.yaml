@@ -20,8 +20,6 @@ options:
     delimiter-precedes-last: always
     sort-separator: " "
   dates: short
-  bibliography:
-    separator: ". "
   punctuation-in-quote: true
 citation:
   template:
@@ -37,6 +35,7 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    separator: ". "
   type-variants:
     chapter:
     - contributor: author

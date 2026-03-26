@@ -42,9 +42,6 @@ options:
     sort-separator: ", "
   dates: numeric
   titles: humanities
-  bibliography:
-    hanging-indent: true
-    separator: ". "
   punctuation-in-quote: true
   volume-pages-delimiter: comma
 citation:
@@ -99,6 +96,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: ", "
+    hanging-indent: true
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

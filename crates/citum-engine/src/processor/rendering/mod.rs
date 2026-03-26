@@ -9,7 +9,7 @@ use crate::reference::{Bibliography, Reference};
 use crate::values::{ProcHints, RenderContext, RenderOptions};
 use citum_schema::citation::CitationLocator;
 use citum_schema::locale::Locale;
-use citum_schema::options::Config;
+use citum_schema::options::{Config, bibliography::BibliographyConfig};
 use citum_schema::template::TemplateComponent;
 use indexmap::IndexMap;
 use std::cell::RefCell;
@@ -28,6 +28,8 @@ pub struct Renderer<'a> {
     pub locale: &'a Locale,
     /// The active configuration options.
     pub config: &'a Config,
+    /// The active bibliography-only configuration.
+    pub bibliography_config: Option<BibliographyConfig>,
     /// Pre-calculated hints for optimization.
     pub hints: &'a HashMap<String, ProcHints>,
     /// Shared state for citation numbers (used in numeric styles).
@@ -130,6 +132,8 @@ pub struct RendererResources<'a> {
     pub locale: &'a Locale,
     /// The active configuration options.
     pub config: &'a Config,
+    /// The active bibliography-only configuration.
+    pub bibliography_config: Option<BibliographyConfig>,
 }
 
 impl<'a> Renderer<'a> {
@@ -147,6 +151,7 @@ impl<'a> Renderer<'a> {
             bibliography: resources.bibliography,
             locale: resources.locale,
             config: resources.config,
+            bibliography_config: resources.bibliography_config,
             hints,
             citation_numbers,
             compound_set_by_ref: compound.set_by_ref,
@@ -175,8 +180,7 @@ impl<'a> Renderer<'a> {
 
     fn citation_sub_label_for_ref(&self, ref_id: &str) -> Option<String> {
         let compound = self
-            .config
-            .bibliography
+            .bibliography_config
             .as_ref()
             .and_then(|b| b.compound_numeric.as_ref())?;
         let set_id = self.compound_set_by_ref.get(ref_id)?;
@@ -231,8 +235,7 @@ impl<'a> Renderer<'a> {
             return false;
         }
 
-        self.config
-            .bibliography
+        self.bibliography_config
             .as_ref()
             .and_then(|b| b.compound_numeric.as_ref())
             .is_some_and(|c| c.subentry && c.collapse_subentries)
@@ -377,6 +380,7 @@ impl<'a> Renderer<'a> {
     ) -> RenderOptions<'b> {
         RenderOptions {
             config: self.config,
+            bibliography_config: self.bibliography_config.clone(),
             locale: self.locale,
             context: RenderContext::Citation,
             mode,

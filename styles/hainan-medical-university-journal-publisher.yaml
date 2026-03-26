@@ -35,9 +35,6 @@ options:
     sort-separator: " "
   dates: short
   titles: humanities
-  bibliography:
-    entry-suffix: .
-    separator: ". "
 citation:
   use-preset: numeric-citation
   wrap: brackets
@@ -56,6 +53,8 @@ bibliography:
       delimiter-precedes-last: always
       delimiter-precedes-et-al: always
       sort-separator: " "
+    entry-suffix: .
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

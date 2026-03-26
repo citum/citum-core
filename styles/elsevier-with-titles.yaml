@@ -1,7 +1,6 @@
 info:
   title: Elsevier (numeric, with titles)
-  description: A style for many of Elsevier's journals that includes article titles in the reference
-    list
+  description: A style for many of Elsevier's journals that includes article titles in the reference list
   source:
     csl-id: http://www.zotero.org/styles/elsevier-with-titles
     adapted-by: citum-migrate
@@ -15,8 +14,7 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/elsevier-without-titles
       rel: template
-    - href: 
-        http://www.elsevier.com/journals/journal-of-hazardous-materials/0304-3894/guide-for-authors#68001
+    - href: http://www.elsevier.com/journals/journal-of-hazardous-materials/0304-3894/guide-for-authors#68001
       rel: documentation
 options:
   substitute:
@@ -37,9 +35,6 @@ options:
     periodical: {}
     serial:
       text-case: as-is
-  bibliography:
-    entry-suffix: .
-    separator: ""
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
@@ -51,6 +46,8 @@ bibliography:
       shorten:
         min: 99
         use-first: 99
+    entry-suffix: .
+    separator: ""
   type-variants:
     all:
     - number: citation-number

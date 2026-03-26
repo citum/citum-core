@@ -10,8 +10,8 @@ options:
   processing: !custom
     sort:
       template:
-        - key: author
-        - key: year
+      - key: author
+      - key: year
     group:
       template: [author, year]
     disambiguate:
@@ -21,8 +21,8 @@ options:
   substitute:
     contributor-role-form: short
     template:
-      - translator
-      - title
+    - translator
+    - title
   contributors:
     name-form: initials
     initialize-with: .
@@ -34,10 +34,6 @@ options:
     title-mode: combined
     name-mode: transliterated
     preferred-script: Latn
-  bibliography:
-    hanging-indent: false
-    separator: ". "
-
 citation:
   options:
     contributors:
@@ -46,51 +42,54 @@ citation:
         use-first: 1
   sort: author-date-title
   template:
-    - contributor: author
-      form: short
-      shorten:
-        min: 3
-        use-first: 1
-    - date: issued
-      form: year
-    - variable: locator
+  - contributor: author
+    form: short
+    shorten:
+      min: 3
+      use-first: 1
+  - date: issued
+    form: year
+  - variable: locator
   wrap: parentheses
   delimiter: ", "
   multi-cite-delimiter: "; "
 
 bibliography:
+  options:
+    hanging-indent: false
+    separator: ". "
   template:
-    - contributor: author
-      form: long
-      name-order: family-first
-      suffix: "."
-    - date: issued
-      form: year
-      wrap: parentheses
-      prefix: " "
-    - title: primary
-      prefix: " "
-      suffix: "."
-    - title: parent-monograph
-      emph: true
-      prefix: " "
-    - title: parent-serial
-      emph: true
-      prefix: " "
-    - contributor: editor
-      form: long
-      name-order: given-first
-      prefix: " "
-    - variable: publisher-place
-      prefix: " "
-    - variable: publisher
-      prefix: ": "
-      suffix: "."
-    - number: volume
-      prefix: " Vol. "
-    - number: pages
-      prefix: ", p. "
-    - variable: doi
-      prefix: " https://doi.org/"
-    - variable: url
-      prefix: " "
+  - contributor: author
+    form: long
+    name-order: family-first
+    suffix: "."
+  - date: issued
+    form: year
+    wrap: parentheses
+    prefix: " "
+  - title: primary
+    prefix: " "
+    suffix: "."
+  - title: parent-monograph
+    emph: true
+    prefix: " "
+  - title: parent-serial
+    emph: true
+    prefix: " "
+  - contributor: editor
+    form: long
+    name-order: given-first
+    prefix: " "
+  - variable: publisher-place
+    prefix: " "
+  - variable: publisher
+    prefix: ": "
+    suffix: "."
+  - number: volume
+    prefix: " Vol. "
+  - number: pages
+    prefix: ", p. "
+  - variable: doi
+    prefix: " https://doi.org/"
+  - variable: url
+    prefix: " "

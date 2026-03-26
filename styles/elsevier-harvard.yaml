@@ -14,8 +14,7 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/ecology-letters
       rel: template
-    - href: 
-        http://www.elsevier.com/journals/biological-conservation/0006-3207/guide-for-authors#68000
+    - href: http://www.elsevier.com/journals/biological-conservation/0006-3207/guide-for-authors#68000
       rel: documentation
   short-name: "Elsevier Harvard"
 options:
@@ -47,10 +46,6 @@ options:
       omit:
       - editor
   dates: numeric
-  bibliography:
-    hanging-indent: true
-    separator: ". "
-    entry-suffix: "."
   punctuation-in-quote: true
   volume-pages-delimiter: comma
 citation:
@@ -123,6 +118,9 @@ bibliography:
     substitute:
       template:
       - translator
+    hanging-indent: true
+    separator: ". "
+    entry-suffix: "."
   type-variants:
     [article-journal, article-magazine]:
     - contributor: author

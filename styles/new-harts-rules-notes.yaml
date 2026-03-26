@@ -57,10 +57,6 @@ options:
     serial:
       emph: true
   page-range-format: minimal
-  bibliography:
-    hanging-indent: true
-    entry-suffix: .
-    separator: " "
 citation:
   options:
     contributors:
@@ -328,6 +324,10 @@ citation:
   delimiter: ", "
   multi-cite-delimiter: "; "
 bibliography:
+  options:
+    hanging-indent: true
+    entry-suffix: .
+    separator: " "
   type-variants:
     article-journal:
     - contributor: author

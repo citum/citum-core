@@ -23,8 +23,6 @@ options:
   dates: long
   titles: humanities
   page-range-format: minimal
-  bibliography:
-    separator: ". "
 citation:
   use-preset: numeric-citation
   wrap: brackets
@@ -43,6 +41,7 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    separator: ". "
   type-variants:
     article-journal:
     - contributor: author

@@ -138,86 +138,6 @@
         }
       ]
     },
-    "BibliographyConfig": {
-      "description": "Bibliography-specific configuration.",
-      "type": "object",
-      "properties": {
-        "article-journal": {
-          "description": "Article-journal-specific bibliography policies.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/ArticleJournalBibliographyConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "compound-numeric": {
-          "description": "Configuration for compound numeric bibliography entries.\nWhen present, enables grouping of references by input bibliography `sets`.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/CompoundNumericConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "custom": {
-          "description": "Custom user-defined fields for extensions.",
-          "type": [
-            "object",
-            "null"
-          ],
-          "additionalProperties": true
-        },
-        "entry-suffix": {
-          "description": "Suffix appended to each bibliography entry (e.g., `\".\"`).\nExtracted from CSL 1.0 `<layout suffix=\".\">` attribute.\nIf `None`, no suffix is appended.",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "hanging-indent": {
-          "description": "Whether to use a hanging indent.",
-          "type": [
-            "boolean",
-            "null"
-          ]
-        },
-        "separator": {
-          "description": "Separator between bibliography components (e.g., `\". \"` for Chicago/APA, `\", \"` for Elsevier).\nExtracted from CSL 1.0 group delimiter attribute.\nDefaults to `\". \"`.",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "subsequent-author-substitute": {
-          "description": "String to substitute for repeating authors (e.g., \"———\").",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "subsequent-author-substitute-rule": {
-          "description": "Rule for when to apply the substitute.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/SubsequentAuthorSubstituteRule"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "suppress-period-after-url": {
-          "description": "Whether to suppress the trailing period after URLs/DOIs.\nDefault behavior is to add a period (Chicago, MLA style).\nSet to true to suppress the period (APA 7th, Bluebook style).",
-          "type": "boolean"
-        }
-      },
-      "additionalProperties": false
-    },
     "BibliographyGroup": {
       "description": "A bibliography group with selector, optional heading, and per-group sorting.\n\nGroups allow styles to divide bibliographies into labeled sections with\ndistinct sorting rules. Items match the first group whose selector evaluates\nto true (first-match semantics).\n\n# Examples\n\n```yaml\ngroups:\n  - id: vietnamese\n    heading:\n      localized:\n        vi: \"Tài liệu tiếng Việt\"\n        en-US: \"Vietnamese Sources\"\n    selector:\n      field:\n        language: vi\n    sort:\n      template:\n        - key: author\n          sort-order: given-family\n```",
       "type": "object",
@@ -279,6 +199,207 @@
         "selector"
       ]
     },
+    "BibliographyOptions": {
+      "description": "Bibliography-local option overrides.",
+      "type": "object",
+      "properties": {
+        "article-journal": {
+          "description": "Article-journal-specific bibliography policies.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArticleJournalBibliographyConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "compound-numeric": {
+          "description": "Configuration for compound numeric bibliography entries.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CompoundNumericConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contributors": {
+          "description": "Contributor formatting defaults.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContributorConfigEntry"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "custom": {
+          "description": "Custom user-defined fields for extensions.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "dates": {
+          "description": "Date formatting defaults.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DateConfigEntry"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "entry-suffix": {
+          "description": "Suffix appended to each bibliography entry.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hanging-indent": {
+          "description": "Whether to use a hanging indent.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "links": {
+          "description": "Hyperlink configuration.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LinksConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "localize": {
+          "description": "Localization settings.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Localize"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "multilingual": {
+          "description": "Multilingual rendering defaults.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MultilingualConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "page-range-format": {
+          "description": "Page range formatting (expanded, minimal, chicago).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PageRangeFormat"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "processing": {
+          "description": "Processing mode (author-date, numeric, etc.).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Processing"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "punctuation-in-quote": {
+          "description": "Whether to place periods/commas inside quotation marks.",
+          "type": "boolean"
+        },
+        "separator": {
+          "description": "Separator between bibliography components.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "strip-periods": {
+          "description": "Strip trailing periods from terms, labels, and abbreviated dates.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "subsequent-author-substitute": {
+          "description": "String to substitute for repeating authors.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "subsequent-author-substitute-rule": {
+          "description": "Rule for when to apply the substitute.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SubsequentAuthorSubstituteRule"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "substitute": {
+          "description": "Substitution rules for missing data.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SubstituteConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "suppress-period-after-url": {
+          "description": "Whether to suppress the trailing period after URLs/DOIs.",
+          "type": "boolean"
+        },
+        "titles": {
+          "description": "Title formatting defaults.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TitlesConfigEntry"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "volume-pages-delimiter": {
+          "description": "Delimiter between volume/issue and pages for serial sources.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
     "BibliographySpec": {
       "description": "Bibliography specification.",
       "type": "object",
@@ -315,7 +436,7 @@
           "description": "Bibliography-specific option overrides merged over the style config.",
           "anyOf": [
             {
-              "$ref": "#/$defs/Config"
+              "$ref": "#/$defs/BibliographyOptions"
             },
             {
               "type": "null"
@@ -505,6 +626,175 @@
         }
       ]
     },
+    "CitationOptions": {
+      "description": "Citation-local option overrides.",
+      "type": "object",
+      "properties": {
+        "contributors": {
+          "description": "Contributor formatting defaults.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContributorConfigEntry"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "custom": {
+          "description": "Custom user-defined fields for extensions.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "dates": {
+          "description": "Date formatting defaults.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DateConfigEntry"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "integral-names": {
+          "description": "Integral citation name-memory behavior.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IntegralNameConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "links": {
+          "description": "Hyperlink configuration.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LinksConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "localize": {
+          "description": "Localization settings.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Localize"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "locators": {
+          "description": "Locator rendering configuration.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocatorConfigEntry"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "multilingual": {
+          "description": "Multilingual rendering defaults.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MultilingualConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notes": {
+          "description": "Document-level note marker placement and punctuation movement rules.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NoteConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "page-range-format": {
+          "description": "Page range formatting (expanded, minimal, chicago).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PageRangeFormat"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "processing": {
+          "description": "Processing mode (author-date, numeric, etc.).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Processing"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "punctuation-in-quote": {
+          "description": "Whether to place periods/commas inside quotation marks.",
+          "type": "boolean"
+        },
+        "strip-periods": {
+          "description": "Strip trailing periods from terms, labels, and abbreviated dates.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "substitute": {
+          "description": "Substitution rules for missing data.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SubstituteConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "titles": {
+          "description": "Title formatting defaults.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TitlesConfigEntry"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "volume-pages-delimiter": {
+          "description": "Delimiter between volume/issue and pages for serial sources.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
     "CitationSpec": {
       "description": "Citation specification.",
       "type": "object",
@@ -600,7 +890,7 @@
           "description": "Citation-specific option overrides merged over the style config.",
           "anyOf": [
             {
-              "$ref": "#/$defs/Config"
+              "$ref": "#/$defs/CitationOptions"
             },
             {
               "type": "null"
@@ -742,17 +1032,6 @@
       "description": "Top-level style configuration.",
       "type": "object",
       "properties": {
-        "bibliography": {
-          "description": "Bibliography-specific settings.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/BibliographyConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
         "contributors": {
           "description": "Contributor formatting defaults. Accepts a preset name (e.g., \"apa\")\nor explicit configuration.",
           "anyOf": [

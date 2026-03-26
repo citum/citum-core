@@ -16,8 +16,6 @@ options:
     delimiter-precedes-last: always
     demote-non-dropping-particle: never
   dates: long
-  bibliography:
-    hanging-indent: true
   multilingual:
     title-mode: combined
     name-mode: primary
@@ -36,55 +34,57 @@ citation:
       contributors:
         name-form: family-only
   template:
-    - contributor: author
-      form: long
-      name-order: given-first
-      suffix: ", "
-    - title: primary
-      emph: true
-      suffix: ", "
-    - title: parent-monograph
-      emph: true
-      suffix: ", "
-    - title: parent-serial
-      emph: true
-      suffix: ", "
-    - variable: publisher-place
-      suffix: ": "
-    - variable: publisher
-      suffix: ", "
-    - date: issued
-      form: year
-      suffix: "."
-    - variable: locator
-      prefix: " "
-      suffix: "."
+  - contributor: author
+    form: long
+    name-order: given-first
+    suffix: ", "
+  - title: primary
+    emph: true
+    suffix: ", "
+  - title: parent-monograph
+    emph: true
+    suffix: ", "
+  - title: parent-serial
+    emph: true
+    suffix: ", "
+  - variable: publisher-place
+    suffix: ": "
+  - variable: publisher
+    suffix: ", "
+  - date: issued
+    form: year
+    suffix: "."
+  - variable: locator
+    prefix: " "
+    suffix: "."
 
 bibliography:
+  options:
+    hanging-indent: true
   template:
-    - contributor: author
-      form: long
-      name-order: given-first
-      suffix: ". "
-    - title: primary
-      emph: true
-      suffix: ". "
-    - title: parent-monograph
-      emph: true
-      suffix: ". "
-    - title: parent-serial
-      emph: true
-      suffix: ". "
-    - variable: publisher-place
-      suffix: ": "
-    - variable: publisher
-      suffix: ", "
-    - date: issued
-      form: year
-      suffix: "."
-    - number: pages
-      prefix: " P. "
-    - variable: doi
-      prefix: " https://doi.org/"
-    - variable: url
-      prefix: " "
+  - contributor: author
+    form: long
+    name-order: given-first
+    suffix: ". "
+  - title: primary
+    emph: true
+    suffix: ". "
+  - title: parent-monograph
+    emph: true
+    suffix: ". "
+  - title: parent-serial
+    emph: true
+    suffix: ". "
+  - variable: publisher-place
+    suffix: ": "
+  - variable: publisher
+    suffix: ", "
+  - date: issued
+    form: year
+    suffix: "."
+  - number: pages
+    prefix: " P. "
+  - variable: doi
+    prefix: " https://doi.org/"
+  - variable: url
+    prefix: " "

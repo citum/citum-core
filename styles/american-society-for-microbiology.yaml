@@ -26,9 +26,6 @@ options:
     demote-non-dropping-particle: never
     sort-separator: " "
   dates: long
-  bibliography:
-    entry-suffix: .
-    separator: ". "
   punctuation-in-quote: true
   volume-pages-delimiter: colon
 citation:
@@ -45,6 +42,8 @@ bibliography:
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: " "
+    entry-suffix: .
+    separator: ". "
   type-variants:
     chapter:
     - contributor: author

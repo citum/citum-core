@@ -73,8 +73,7 @@ pub fn render_entry_body_with_format<F: OutputFormat<Output = String>>(
     // Get the bibliography separator from the config, defaulting to ". "
     let default_separator = proc_template
         .first()
-        .and_then(|c| c.config.as_ref())
-        .and_then(|cfg| cfg.bibliography.as_ref())
+        .and_then(|c| c.bibliography_config.as_ref())
         .and_then(|bib| bib.separator.as_deref())
         .unwrap_or(". ");
 
@@ -115,8 +114,7 @@ pub fn render_entry_body_with_format<F: OutputFormat<Output = String>>(
 
     let bib_cfg = proc_template
         .first()
-        .and_then(|c| c.config.as_ref())
-        .and_then(|cfg| cfg.bibliography.as_ref());
+        .and_then(|c| c.bibliography_config.as_ref());
     let entry_suffix = bib_cfg.and_then(|bib| bib.entry_suffix.as_deref());
     match entry_suffix {
         Some(suffix) if !suffix.is_empty() => {
@@ -333,12 +331,10 @@ mod tests {
     fn test_bibliography_separator_suppression() {
         use citum_schema::options::{BibliographyConfig, Config};
 
-        let config = Config {
-            bibliography: Some(BibliographyConfig {
-                separator: Some(". ".to_string()),
-                entry_suffix: Some(String::new()),
-                ..Default::default()
-            }),
+        let config = Config::default();
+        let bibliography_config = BibliographyConfig {
+            separator: Some(". ".to_string()),
+            entry_suffix: Some(String::new()),
             ..Default::default()
         };
 
@@ -356,6 +352,7 @@ mod tests {
             suffix: None,
             ref_type: None,
             config: Some(config.clone()),
+            bibliography_config: Some(bibliography_config.clone()),
             url: None,
             item_language: None,
             pre_formatted: false,
@@ -378,6 +375,7 @@ mod tests {
             suffix: None,
             ref_type: None,
             config: Some(config),
+            bibliography_config: Some(bibliography_config),
             url: None,
             item_language: None,
             pre_formatted: false,
@@ -396,12 +394,10 @@ mod tests {
     fn test_no_suppression_after_parenthesis() {
         use citum_schema::options::{BibliographyConfig, Config};
 
-        let config = Config {
-            bibliography: Some(BibliographyConfig {
-                separator: Some(", ".to_string()),
-                entry_suffix: Some(String::new()),
-                ..Default::default()
-            }),
+        let config = Config::default();
+        let bibliography_config = BibliographyConfig {
+            separator: Some(", ".to_string()),
+            entry_suffix: Some(String::new()),
             ..Default::default()
         };
 
@@ -422,6 +418,7 @@ mod tests {
             suffix: None,
             ref_type: None,
             config: Some(config.clone()),
+            bibliography_config: Some(bibliography_config.clone()),
             url: None,
             item_language: None,
             pre_formatted: false,
@@ -439,6 +436,7 @@ mod tests {
             suffix: None,
             ref_type: None,
             config: Some(config),
+            bibliography_config: Some(bibliography_config),
             url: None,
             item_language: None,
             pre_formatted: false,
@@ -485,12 +483,10 @@ mod tests {
 
         // Elsevier Harvard: author component has suffix `, ` and date has suffix `.`
         // Expected: "Hawking, S., 1988." (comma from author suffix preserved)
-        let config = Config {
-            bibliography: Some(BibliographyConfig {
-                separator: Some(". ".to_string()),
-                entry_suffix: Some(".".to_string()),
-                ..Default::default()
-            }),
+        let config = Config::default();
+        let bibliography_config = BibliographyConfig {
+            separator: Some(". ".to_string()),
+            entry_suffix: Some(".".to_string()),
             ..Default::default()
         };
 
@@ -511,6 +507,7 @@ mod tests {
             suffix: None,
             ref_type: None,
             config: Some(config.clone()),
+            bibliography_config: Some(bibliography_config.clone()),
             url: None,
             item_language: None,
             pre_formatted: false,
@@ -531,6 +528,7 @@ mod tests {
             suffix: None,
             ref_type: None,
             config: Some(config),
+            bibliography_config: Some(bibliography_config),
             url: None,
             item_language: None,
             pre_formatted: false,
@@ -550,12 +548,10 @@ mod tests {
     fn test_terminal_component_suffix_suppressed_when_following_component_is_empty() {
         use citum_schema::options::{BibliographyConfig, Config};
 
-        let config = Config {
-            bibliography: Some(BibliographyConfig {
-                separator: Some(". ".to_string()),
-                entry_suffix: Some(String::new()),
-                ..Default::default()
-            }),
+        let config = Config::default();
+        let bibliography_config = BibliographyConfig {
+            separator: Some(". ".to_string()),
+            entry_suffix: Some(String::new()),
             ..Default::default()
         };
 
@@ -574,6 +570,7 @@ mod tests {
             suffix: None,
             ref_type: None,
             config: Some(config.clone()),
+            bibliography_config: Some(bibliography_config.clone()),
             url: None,
             item_language: None,
             pre_formatted: false,
@@ -591,6 +588,7 @@ mod tests {
             suffix: None,
             ref_type: None,
             config: Some(config),
+            bibliography_config: Some(bibliography_config),
             url: None,
             item_language: None,
             pre_formatted: false,
@@ -614,11 +612,11 @@ mod tests {
         };
 
         let config = Config {
-            bibliography: Some(BibliographyConfig {
-                separator: Some(". ".to_string()),
-                entry_suffix: Some(String::new()),
-                ..Default::default()
-            }),
+            ..Default::default()
+        };
+        let bibliography_config = BibliographyConfig {
+            separator: Some(". ".to_string()),
+            entry_suffix: Some(String::new()),
             ..Default::default()
         };
 
@@ -637,6 +635,7 @@ mod tests {
             suffix: None,
             ref_type: Some("article-journal".to_string()),
             config: Some(config.clone()),
+            bibliography_config: Some(bibliography_config.clone()),
             url: None,
             item_language: None,
             pre_formatted: false,
@@ -658,6 +657,7 @@ mod tests {
             suffix: None,
             ref_type: Some("article-journal".to_string()),
             config: Some(config.clone()),
+            bibliography_config: Some(bibliography_config.clone()),
             url: None,
             item_language: None,
             pre_formatted: false,
@@ -678,6 +678,7 @@ mod tests {
             suffix: None,
             ref_type: Some("article-journal".to_string()),
             config: Some(config),
+            bibliography_config: Some(bibliography_config),
             url: None,
             item_language: None,
             pre_formatted: false,
@@ -729,6 +730,7 @@ mod tests {
                 ref_type: None,
                 config: None,
                 url: None,
+                bibliography_config: None,
                 item_language: None,
                 pre_formatted: false,
             }],

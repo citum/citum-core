@@ -1,7 +1,6 @@
 info:
   title: MHRA Style Guide 4th edition (notes, place of publication, without URLs)
-  description: MHRA source citations, notes system, with place of publication (MHRA 7.3), without 
-    URLs
+  description: MHRA source citations, notes system, with place of publication (MHRA 7.3), without URLs
   fields:
   - history
   - humanities
@@ -50,11 +49,6 @@ options:
     serial:
       emph: true
   page-range-format: minimal-two
-  bibliography:
-    subsequent-author-substitute: ——
-    subsequent-author-substitute-rule: partial-first
-    hanging-indent: true
-    separator: ": "
 citation:
   options:
     contributors:
@@ -414,6 +408,11 @@ citation:
   delimiter: ", "
   multi-cite-delimiter: "; "
 bibliography:
+  options:
+    subsequent-author-substitute: ——
+    subsequent-author-substitute-rule: partial-first
+    hanging-indent: true
+    separator: ": "
   type-variants:
     article-journal:
     - contributor: author
