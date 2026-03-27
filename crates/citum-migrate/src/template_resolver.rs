@@ -312,13 +312,28 @@ fn parse_fragment(
     section: TemplateSection,
     min_confidence: f64,
 ) -> Option<ResolvedTemplateSection> {
-    let fragment: InferredFragment = match serde_json::from_str(text) {
-        Ok(f) => f,
+    let sanitized = match serde_json::from_str::<serde_json::Value>(text) {
+        Ok(mut value) => {
+            strip_deprecated_overrides(&mut value);
+            value
+        }
         Err(e) => {
-            eprintln!("  [template_resolver] Failed to parse cache JSON: {e}");
+            eprintln!("  [template_resolver] Failed to parse fragment JSON: {e}");
             eprintln!(
                 "  [template_resolver] First 200 chars: {}",
-                &text[..text.len().min(200)]
+                preview_text(text, 200)
+            );
+            return None;
+        }
+    };
+
+    let fragment: InferredFragment = match serde_json::from_value(sanitized) {
+        Ok(f) => f,
+        Err(e) => {
+            eprintln!("  [template_resolver] Failed to parse fragment JSON: {e}");
+            eprintln!(
+                "  [template_resolver] First 200 chars: {}",
+                preview_text(text, 200)
             );
             return None;
         }
@@ -360,6 +375,35 @@ fn parse_fragment(
         entry_suffix,
         wrap,
     })
+}
+
+fn strip_deprecated_overrides(value: &mut serde_json::Value) {
+    match value {
+        serde_json::Value::Object(map) => {
+            map.remove("overrides");
+            for nested in map.values_mut() {
+                strip_deprecated_overrides(nested);
+            }
+        }
+        serde_json::Value::Array(items) => {
+            for item in items {
+                strip_deprecated_overrides(item);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn preview_text(text: &str, limit: usize) -> &str {
+    if text.len() <= limit {
+        return text;
+    }
+
+    let mut end = limit;
+    while !text.is_char_boundary(end) {
+        end -= 1;
+    }
+    &text[..end]
 }
 
 /// Run the Node.js template inferrer and cache the result.
@@ -466,6 +510,40 @@ mod tests {
 
         let resolved = parse_fragment(json, TemplateSection::Citation, 0.70).unwrap();
         assert_eq!(resolved.template.len(), 2);
+    }
+
+    #[test]
+    fn test_fragment_with_deprecated_component_overrides_still_parses() {
+        let json = r#"{
+            "meta": { "style": "test", "confidence": 0.90 },
+            "citation": {
+                "template": [
+                    {
+                        "contributor": "author",
+                        "form": "long",
+                        "overrides": {
+                            "legal_case": { "suppress": true }
+                        }
+                    },
+                    {
+                        "variable": "doi",
+                        "overrides": {
+                            "article-journal": { "prefix": "https://doi.org/" }
+                        }
+                    }
+                ]
+            }
+        }"#;
+
+        let resolved = parse_fragment(json, TemplateSection::Citation, 0.70).unwrap();
+        assert_eq!(resolved.template.len(), 2);
+    }
+
+    #[test]
+    fn test_preview_text_respects_utf8_boundaries() {
+        let text = "alpha-é-beta";
+        let preview = preview_text(text, 7);
+        assert_eq!(preview, "alpha-");
     }
 
     #[test]

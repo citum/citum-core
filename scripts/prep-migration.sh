@@ -92,27 +92,35 @@ BIB_JSON="$TEMP_DIR/bibliography.json"
 CITE_LOG="$TEMP_DIR/infer-citation.log"
 BIB_LOG="$TEMP_DIR/infer-bibliography.log"
 
+write_empty_fragment() {
+    local section="$1"
+    local destination="$2"
+    cat > "$destination" <<EOF
+{"$section":{"template":[]}}
+EOF
+}
+
 if [ "$AGENT_MODE" = false ]; then echo "-> Extracting base options (citum-migrate)..."; fi
 cargo run -q --bin citum-migrate -- "$STYLE_PATH" > "$BASE_YAML"
 
 if [ "$AGENT_MODE" = false ]; then echo "-> Inferring citation template..."; fi
 if ! node scripts/infer-template.js "$STYLE_PATH" --section=citation --fragment > "$CITE_JSON" 2> "$CITE_LOG"; then
-    echo "❌ Citation template inference failed for $STYLE_NAME" >&2
+    echo "⚠️  Citation template inference failed for $STYLE_NAME; keeping XML-compiled citation template" >&2
     if [ -f "$CITE_LOG" ]; then
         echo "--- citation inference log ---" >&2
         tail -n 80 "$CITE_LOG" >&2
     fi
-    exit 2
+    write_empty_fragment "citation" "$CITE_JSON"
 fi
 
 if [ "$AGENT_MODE" = false ]; then echo "-> Inferring bibliography template..."; fi
 if ! node scripts/infer-template.js "$STYLE_PATH" --section=bibliography --fragment > "$BIB_JSON" 2> "$BIB_LOG"; then
-    echo "❌ Bibliography template inference failed for $STYLE_NAME" >&2
+    echo "⚠️  Bibliography template inference failed for $STYLE_NAME; keeping XML-compiled bibliography template" >&2
     if [ -f "$BIB_LOG" ]; then
         echo "--- bibliography inference log ---" >&2
         tail -n 80 "$BIB_LOG" >&2
     fi
-    exit 2
+    write_empty_fragment "bibliography" "$BIB_JSON"
 fi
 
 if [ "$AGENT_MODE" = false ]; then echo "-> Merging into Citum style..."; fi
