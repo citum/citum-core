@@ -30,15 +30,6 @@ options:
   substitute:
     contributor-role-form: short
     template: []
-    overrides:
-      event performance speech: []
-      classic performance: []
-      webpage: []
-      software webpage: []
-      song: []
-      standard: []
-      manuscript: []
-      broadcast: []
   processing: note
   contributors:
     and: text
