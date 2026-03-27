@@ -229,16 +229,7 @@ fn base_media_template_from_bibliography(
     }) {
         template.push(author_component);
     }
-    if let Some(issued_component) = bibliography_template.iter().find_map(|component| {
-        if let TemplateComponent::Date(date_component) = component
-            && date_component.date == DateVariable::Issued
-        {
-            return Some(component.clone());
-        }
-        None
-    }) {
-        template.push(issued_component);
-    }
+    // Title precedes date in patent/media bibliography entries (author → title → year).
     if let Some(title_component) = bibliography_template.iter().find_map(|component| {
         if let TemplateComponent::Title(title_component) = component
             && title_component.title == TitleType::Primary
@@ -248,6 +239,16 @@ fn base_media_template_from_bibliography(
         None
     }) {
         template.push(title_component);
+    }
+    if let Some(issued_component) = bibliography_template.iter().find_map(|component| {
+        if let TemplateComponent::Date(date_component) = component
+            && date_component.date == DateVariable::Issued
+        {
+            return Some(component.clone());
+        }
+        None
+    }) {
+        template.push(issued_component);
     }
     template
 }

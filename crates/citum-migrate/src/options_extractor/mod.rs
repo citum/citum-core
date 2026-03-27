@@ -16,7 +16,7 @@ pub mod titles;
 #[cfg(test)]
 mod tests;
 
-use citum_schema::options::{Config, SubstituteConfig};
+use citum_schema::options::{Config, Substitute, SubstituteConfig};
 use csl_legacy::model::Style;
 
 /// Extracts global configuration options from a CSL 1.0 style.
@@ -33,8 +33,18 @@ impl OptionsExtractor {
             contributors: self::contributors::extract_contributor_config(style),
 
             // 3. Extract substitute patterns
-            substitute: self::contributors::extract_substitute_pattern(style)
-                .map(SubstituteConfig::Explicit),
+            substitute: self::contributors::extract_substitute_pattern(style).map(|sub| {
+                // When the CSL substitute chain uses macro references that the
+                // extractor cannot follow (e.g. APA's complex macro-based
+                // fallback), the template comes back empty. Fall back to the
+                // standard default (editor → title → translator) rather than
+                // emitting an inert empty template.
+                if sub.template.is_empty() && sub.overrides.is_empty() {
+                    SubstituteConfig::Explicit(Substitute::default())
+                } else {
+                    SubstituteConfig::Explicit(sub)
+                }
+            }),
 
             // 4. Extract date configuration
             dates: self::dates::extract_date_config(style),
