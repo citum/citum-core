@@ -62,7 +62,7 @@ function renderWithCiteprocJs(stylePath) {
   return { citations, bibliography };
 }
 
-function renderWithCslnProcessor(stylePath) {
+function renderWithCitumProcessor(stylePath) {
   const projectRoot = path.resolve(__dirname, '..');
   const absStylePath = path.resolve(stylePath);
 
@@ -85,7 +85,7 @@ function renderWithCslnProcessor(stylePath) {
   const testCitations = Object.keys(testItems).map(id => ({ id, items: [{ id }] }));
   fs.writeFileSync(tempCiteFile, JSON.stringify(testCitations, null, 2));
 
-  // Run csln render refs
+  // Run citum render refs
   let output;
   try {
     output = execSync(
@@ -136,26 +136,26 @@ function normalizeText(text) {
     .trim();
 }
 
-function compare(oracle, csln, label) {
+function compare(oracle, citum, label) {
   if (!oracle) {
     console.log(`  ⚠️  ${label} - Oracle returned undefined`);
     return false;
   }
-  if (!csln) {
+  if (!citum) {
     console.log(`  ⚠️  ${label} - Citum returned undefined`);
     return false;
   }
 
   const oracleNorm = normalizeText(oracle);
-  const cslnNorm = normalizeText(csln);
+  const citumNorm = normalizeText(citum);
 
-  if (oracleNorm === cslnNorm) {
+  if (oracleNorm === citumNorm) {
     console.log(`  ✅ ${label}`);
     return true;
   } else {
     console.log(`  ❌ ${label}`);
     console.log(`     Oracle: ${oracleNorm}`);
-    console.log(`     Citum:   ${cslnNorm}`);
+    console.log(`     Citum:   ${citumNorm}`);
     return false;
   }
 }
@@ -194,9 +194,9 @@ console.log('Rendering with citeproc-js (oracle)...');
 const oracle = renderWithCiteprocJs(stylePath);
 
 console.log('Migrating and rendering with Citum...');
-const csln = renderWithCslnProcessor(stylePath);
+const citum = renderWithCitumProcessor(stylePath);
 
-if (!csln) {
+if (!citum) {
   console.log('\n❌ Citum rendering failed\n');
   process.exit(1);
 }
@@ -206,7 +206,7 @@ let citationsMatch = 0;
 let citationsTotal = 0;
 Object.keys(testItems).forEach(id => {
   citationsTotal++;
-  if (compare(oracle.citations[id], csln.citations[id], id)) {
+  if (compare(oracle.citations[id], citum.citations[id], id)) {
     citationsMatch++;
   }
 });
@@ -214,7 +214,7 @@ Object.keys(testItems).forEach(id => {
 console.log('\n--- BIBLIOGRAPHY ---');
 let bibMatch = 0;
 const oracleBibNorm = oracle.bibliography.filter(b => b).map(b => normalizeText(b));
-const cslnBibNorm = csln.bibliography.filter(b => b).map(b => normalizeText(b));
+const citumBibNorm = citum.bibliography.filter(b => b).map(b => normalizeText(b));
 
 // Match entries by best similarity rather than positional comparison.
 // When Citum produces fewer entries (unsupported reference types), positional
@@ -222,8 +222,8 @@ const cslnBibNorm = csln.bibliography.filter(b => b).map(b => normalizeText(b));
 const usedOracle = new Set();
 const matched = [];
 
-for (let ci = 0; ci < cslnBibNorm.length; ci++) {
-  const cEntry = cslnBibNorm[ci];
+for (let ci = 0; ci < citumBibNorm.length; ci++) {
+  const cEntry = citumBibNorm[ci];
   let bestIdx = -1;
   let bestScore = 0;
   for (let oi = 0; oi < oracleBibNorm.length; oi++) {
@@ -236,20 +236,20 @@ for (let ci = 0; ci < cslnBibNorm.length; ci++) {
   }
   if (bestIdx >= 0) {
     usedOracle.add(bestIdx);
-    matched.push({ oracle: oracleBibNorm[bestIdx], csln: cEntry });
+    matched.push({ oracle: oracleBibNorm[bestIdx], citum: cEntry });
   }
 }
 
 // Add unmatched oracle entries
 for (let oi = 0; oi < oracleBibNorm.length; oi++) {
   if (!usedOracle.has(oi)) {
-    matched.push({ oracle: oracleBibNorm[oi], csln: null });
+    matched.push({ oracle: oracleBibNorm[oi], citum: null });
   }
 }
 
 const bibTotal = matched.length;
 for (let i = 0; i < bibTotal; i++) {
-  const { oracle: oEntry, csln: cEntry } = matched[i];
+  const { oracle: oEntry, citum: cEntry } = matched[i];
   // Truncate label from oracle entry for readability
   const label = oEntry.substring(0, 40).replace(/\s+$/, '') + (oEntry.length > 40 ? '...' : '');
   if (compare(oEntry, cEntry, label)) {

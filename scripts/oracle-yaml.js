@@ -224,7 +224,7 @@ function loadFixtures(refsFixture, citationsFixture) {
   return { refsData, testItems, testCitations };
 }
 
-function renderWithCslnYaml(yamlPath, refsFixture, citationsFixture) {
+function renderWithCitumYaml(yamlPath, refsFixture, citationsFixture) {
   const absYamlPath = path.resolve(yamlPath);
   const output = execFileSync(
     'cargo',
@@ -299,23 +299,23 @@ function renderWithCiteprocJs(cslPath, refsFixture, citationsFixture) {
   return { citations, bibliography: bibResult ? bibResult[1] : [] };
 }
 
-function matchBibliographyEntries(oracleBib, cslnBib) {
+function matchBibliographyEntries(oracleBib, citumBib) {
   const pairs = [];
-  const usedCsln = new Set();
+  const usedCitum = new Set();
 
   for (const oracleEntry of oracleBib) {
     const oracleNorm = normalizeText(oracleEntry).toLowerCase();
     let bestMatch = null;
     let bestScore = 0;
 
-    for (let i = 0; i < cslnBib.length; i++) {
-      if (usedCsln.has(i)) continue;
-      const cslnNorm = normalizeText(cslnBib[i]).toLowerCase();
+    for (let i = 0; i < citumBib.length; i++) {
+      if (usedCitum.has(i)) continue;
+      const citumNorm = normalizeText(citumBib[i]).toLowerCase();
       const oracleWords = new Set(oracleNorm.split(/\s+/).filter((word) => word.length > 3));
-      const cslnWords = new Set(cslnNorm.split(/\s+/).filter((word) => word.length > 3));
+      const citumWords = new Set(citumNorm.split(/\s+/).filter((word) => word.length > 3));
       let score = 0;
       for (const word of oracleWords) {
-        if (cslnWords.has(word)) score += 1;
+        if (citumWords.has(word)) score += 1;
       }
       if (score > bestScore) {
         bestScore = score;
@@ -324,16 +324,16 @@ function matchBibliographyEntries(oracleBib, cslnBib) {
     }
 
     if (bestMatch !== null && bestScore > 2) {
-      pairs.push({ oracle: oracleEntry, csln: cslnBib[bestMatch], score: bestScore });
-      usedCsln.add(bestMatch);
+      pairs.push({ oracle: oracleEntry, citum: citumBib[bestMatch], score: bestScore });
+      usedCitum.add(bestMatch);
     } else {
-      pairs.push({ oracle: oracleEntry, csln: null, score: 0 });
+      pairs.push({ oracle: oracleEntry, citum: null, score: 0 });
     }
   }
 
-  for (let i = 0; i < cslnBib.length; i++) {
-    if (!usedCsln.has(i)) {
-      pairs.push({ oracle: null, csln: cslnBib[i], score: 0 });
+  for (let i = 0; i < citumBib.length; i++) {
+    if (!usedCitum.has(i)) {
+      pairs.push({ oracle: null, citum: citumBib[i], score: 0 });
     }
   }
 
@@ -342,33 +342,33 @@ function matchBibliographyEntries(oracleBib, cslnBib) {
 
 function runDirectComparison(options, stylePlan) {
   const { refsFixture, citationsFixture } = stylePlan.baseRun;
-  const cslnResult = renderWithCslnYaml(options.yamlPath, refsFixture, citationsFixture);
+  const citumResult = renderWithCitumYaml(options.yamlPath, refsFixture, citationsFixture);
   const citeprocResult = renderWithCiteprocJs(stylePlan.legacyCslPath, refsFixture, citationsFixture);
   const citationResults = [];
   const bibResults = [];
 
-  for (const [citationId, cslnCitation] of Object.entries(cslnResult.citations)) {
+  for (const [citationId, citumCitation] of Object.entries(citumResult.citations)) {
     const oracleCitation = citeprocResult.citations[citationId];
     if (!oracleCitation) continue;
-    const comparison = compareText(oracleCitation, cslnCitation, {
+    const comparison = compareText(oracleCitation, citumCitation, {
       caseSensitive: options.caseSensitive,
     });
     citationResults.push({
       itemId: citationId,
       oracle: comparison.expected,
-      csln: comparison.actual,
+      citum: comparison.actual,
       match: comparison.match,
       caseMismatch: comparison.caseMismatch,
     });
   }
 
-  for (const pair of matchBibliographyEntries(citeprocResult.bibliography, cslnResult.bibliography)) {
-    const comparison = pair.oracle && pair.csln
-      ? compareText(pair.oracle, pair.csln, { caseSensitive: options.caseSensitive })
+  for (const pair of matchBibliographyEntries(citeprocResult.bibliography, citumResult.bibliography)) {
+    const comparison = pair.oracle && pair.citum
+      ? compareText(pair.oracle, pair.citum, { caseSensitive: options.caseSensitive })
       : null;
     bibResults.push({
       oracle: comparison ? comparison.expected : pair.oracle,
-      csln: comparison ? comparison.actual : pair.csln,
+      citum: comparison ? comparison.actual : pair.citum,
       match: Boolean(comparison?.match),
       caseMismatch: Boolean(comparison?.caseMismatch),
       score: pair.score,
@@ -384,7 +384,7 @@ function runDirectComparison(options, stylePlan) {
       entries: citationResults.map((entry) => ({
         id: entry.itemId,
         oracle: entry.oracle,
-        csln: entry.csln,
+        citum: entry.citum,
         match: entry.match,
       })),
     },
@@ -450,7 +450,7 @@ function summarizeResults(results) {
       citations: (results.citations?.entries || []).map((entry) => ({
         itemId: entry.id || entry.itemId,
         oracle: entry.oracle,
-        csln: entry.csln,
+        citum: entry.citum,
         match: entry.match,
       })),
       bibliography: results.bibliography?.entries || [],
@@ -468,7 +468,7 @@ function renderText(summary, verbose) {
     for (const entry of failedCitations) {
       output += `  ✗ ${entry.itemId}\n`;
       output += `    Expected: ${String(entry.oracle).substring(0, 60)}...\n`;
-      output += `    Got:      ${String(entry.csln).substring(0, 60)}...\n`;
+      output += `    Got:      ${String(entry.citum).substring(0, 60)}...\n`;
     }
   }
 
@@ -479,7 +479,7 @@ function renderText(summary, verbose) {
     for (const entry of failedBibliography) {
       output += '  ✗ Entry\n';
       output += `    Expected: ${String(entry.oracle).substring(0, 60)}...\n`;
-      output += `    Got:      ${entry.csln ? String(entry.csln).substring(0, 60) : '(missing)'}\n`;
+      output += `    Got:      ${entry.citum ? String(entry.citum).substring(0, 60) : '(missing)'}\n`;
     }
   }
 

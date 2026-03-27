@@ -34,7 +34,7 @@ const {
   findRefDataForEntry,
   textSimilarity,
 } = require('./oracle-utils');
-const { renderWithCslnProcessor } = require('./oracle');
+const { renderWithCitumProcessor } = require('./oracle');
 const { attachRegisteredDivergenceAdjustments } = require('./lib/oracle-divergences');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
@@ -149,14 +149,14 @@ function extractLocatorNumber(text) {
   return m ? m[1] : null;
 }
 
-function equivalentCitationText(oracleText, cslnText, citationId, options = {}) {
-  if (options.caseSensitive !== false && compareText(oracleText, cslnText, options).caseMismatch) {
+function equivalentCitationText(oracleText, citumText, citationId, options = {}) {
+  if (options.caseSensitive !== false && compareText(oracleText, citumText, options).caseMismatch) {
     return false;
   }
-  if (!STRICT_CITATION_IDS.has(citationId)) return equivalentText(oracleText, cslnText, options);
+  if (!STRICT_CITATION_IDS.has(citationId)) return equivalentText(oracleText, citumText, options);
 
   const oN = normalizeText(oracleText);
-  const cN = normalizeText(cslnText);
+  const cN = normalizeText(citumText);
   if (hasEtAl(oN) && !hasEtAl(cN)) return false;
   if (extractYearSuffixes(oN).length > 0 && extractYearSuffixes(cN).length === 0) return false;
   if (citationId === 'disambiguate-add-names-et-al') {
@@ -176,15 +176,15 @@ function equivalentCitationText(oracleText, cslnText, citationId, options = {}) 
 /**
  * Pair bibliography entries by text similarity (greedy best-match).
  */
-function matchBibliographyEntries(oracleBib, cslnBib) {
+function matchBibliographyEntries(oracleBib, citumBib) {
   const pairs = [];
   const usedO = new Set();
   const usedC = new Set();
   const candidates = [];
 
   for (let oi = 0; oi < oracleBib.length; oi++) {
-    for (let ci = 0; ci < cslnBib.length; ci++) {
-      const score = textSimilarity(oracleBib[oi], cslnBib[ci]);
+    for (let ci = 0; ci < citumBib.length; ci++) {
+      const score = textSimilarity(oracleBib[oi], citumBib[ci]);
       if (score >= 0.20) candidates.push({ oi, ci, score });
     }
   }
@@ -193,13 +193,13 @@ function matchBibliographyEntries(oracleBib, cslnBib) {
     if (usedO.has(c.oi) || usedC.has(c.ci)) continue;
     usedO.add(c.oi);
     usedC.add(c.ci);
-    pairs.push({ oracle: oracleBib[c.oi], csln: cslnBib[c.ci], score: c.score });
+    pairs.push({ oracle: oracleBib[c.oi], citum: citumBib[c.ci], score: c.score });
   }
   for (let oi = 0; oi < oracleBib.length; oi++) {
-    if (!usedO.has(oi)) pairs.push({ oracle: oracleBib[oi], csln: null, score: 0 });
+    if (!usedO.has(oi)) pairs.push({ oracle: oracleBib[oi], citum: null, score: 0 });
   }
-  for (let ci = 0; ci < cslnBib.length; ci++) {
-    if (!usedC.has(ci)) pairs.push({ oracle: null, csln: cslnBib[ci], score: 0 });
+  for (let ci = 0; ci < citumBib.length; ci++) {
+    if (!usedC.has(ci)) pairs.push({ oracle: null, citum: citumBib[ci], score: 0 });
   }
   return pairs;
 }
@@ -242,9 +242,9 @@ function run() {
   const testCitations = JSON.parse(fs.readFileSync(opts.citationsFixture, 'utf8'));
 
   // 3. Render with Citum
-  const csln = renderWithCslnProcessor(opts.stylePath, refsData, testItems, testCitations);
-  if (!csln || csln.error) {
-    const reason = csln?.error ?? 'Processor execution error';
+  const citum = renderWithCitumProcessor(opts.stylePath, refsData, testItems, testCitations);
+  if (!citum || citum.error) {
+    const reason = citum?.error ?? 'Processor execution error';
     if (opts.jsonOutput) {
       process.stdout.write(JSON.stringify({
         error: 'Citum rendering failed', reason,
@@ -260,7 +260,7 @@ function run() {
   const styleName = path.basename(opts.stylePath, '.csl');
 
   // 4. Diff
-  const pairs = matchBibliographyEntries(snapshot.bibliography, csln.bibliography);
+  const pairs = matchBibliographyEntries(snapshot.bibliography, citum.bibliography);
 
   const rawResults = {
     style: styleName,
@@ -274,7 +274,7 @@ function run() {
   };
 
   for (const cite of testCitations) {
-    const comparison = compareText(snapshot.citations[cite.id] || '', csln.citations[cite.id] || '', {
+    const comparison = compareText(snapshot.citations[cite.id] || '', citum.citations[cite.id] || '', {
       caseSensitive: opts.caseSensitive,
     });
     const match = equivalentCitationText(comparison.expected, comparison.actual, cite.id, {
@@ -284,7 +284,7 @@ function run() {
     rawResults.citations.entries.push({
       id: cite.id,
       oracle: comparison.expected,
-      csln: comparison.actual,
+      citum: comparison.actual,
       match,
       caseMismatch: comparison.caseMismatch,
     });
@@ -302,7 +302,7 @@ function run() {
     const entryResult = {
       index: i + 1,
       oracle: pair.oracle ? normalizeText(pair.oracle) : null,
-      csln: pair.csln ? normalizeText(pair.csln) : null,
+      citum: pair.citum ? normalizeText(pair.citum) : null,
       match: false,
       caseMismatch: false,
       components: {},
@@ -313,15 +313,15 @@ function run() {
     if (!pair.oracle) {
       entryResult.issues.push({ issue: 'extra_entry', detail: 'Entry in Citum but not oracle' });
       rawResults.bibliography.failed++;
-    } else if (!pair.csln) {
+    } else if (!pair.citum) {
       entryResult.issues.push({ issue: 'missing_entry', detail: 'Entry in oracle but not Citum' });
       rawResults.bibliography.failed++;
     } else {
-      const comparison = compareText(pair.oracle, pair.csln, {
+      const comparison = compareText(pair.oracle, pair.citum, {
         caseSensitive: opts.caseSensitive,
       });
       entryResult.oracle = comparison.expected;
-      entryResult.csln = comparison.actual;
+      entryResult.citum = comparison.actual;
       entryResult.caseMismatch = comparison.caseMismatch;
       if (comparison.match) {
         entryResult.match = true;
@@ -331,7 +331,7 @@ function run() {
         const refData = findRefDataForEntry(pair.oracle, testItems);
         if (refData) {
           const oComp = parseComponents(pair.oracle, refData);
-          const cComp = parseComponents(pair.csln, refData);
+          const cComp = parseComponents(pair.citum, refData);
           const differences = [];
           const matches = [];
           const keys = ['contributors', 'year', 'title', 'containerTitle', 'volume',
@@ -352,9 +352,9 @@ function run() {
           entryResult.components = { differences, matches };
 
           const oOrder = analyzeOrdering(pair.oracle, refData);
-          const cOrder = analyzeOrdering(pair.csln, refData);
+          const cOrder = analyzeOrdering(pair.citum, refData);
           if (JSON.stringify(oOrder) !== JSON.stringify(cOrder)) {
-            entryResult.ordering = { oracle: oOrder, csln: cOrder };
+            entryResult.ordering = { oracle: oOrder, citum: cOrder };
             rawResults.orderingIssues++;
           }
           entryResult.issues = [...differences];
@@ -373,7 +373,7 @@ function run() {
   const results = attachRegisteredDivergenceAdjustments(
     rawResults,
     snapshot.bibliography,
-    csln.bibliographyOrderIds || [],
+    citum.bibliographyOrderIds || [],
     testItems,
     testCitations
   );
@@ -387,7 +387,7 @@ function run() {
     process.stderr.write(`Bibliography: ${results.bibliography.passed}/${results.bibliography.total}\n`);
     if (opts.verbose) {
       for (const e of results.citations.entries.filter((e) => !e.match)) {
-        process.stderr.write(`  [FAIL] ${e.id}\n    oracle: ${e.oracle}\n    csln:   ${e.csln}\n`);
+        process.stderr.write(`  [FAIL] ${e.id}\n    oracle: ${e.oracle}\n    citum:  ${e.citum}\n`);
       }
     }
   }

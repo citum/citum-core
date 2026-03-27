@@ -27,26 +27,26 @@ function buildNumericLabelMap(orderIds) {
   return new Map(orderIds.map((id, index) => [id, index + 1]));
 }
 
-function detectDiv004OrderDifference(oracleBibliography, cslnOrderIds, testItems, divergenceRule) {
-  if (!divergenceRule || !Array.isArray(oracleBibliography) || !Array.isArray(cslnOrderIds)) {
+function detectDiv004OrderDifference(oracleBibliography, citumOrderIds, testItems, divergenceRule) {
+  if (!divergenceRule || !Array.isArray(oracleBibliography) || !Array.isArray(citumOrderIds)) {
     return null;
   }
 
   const oracleOrderIds = buildReferenceOrderIds(oracleBibliography, testItems);
-  if (oracleOrderIds.length === 0 || oracleOrderIds.length !== cslnOrderIds.length) {
+  if (oracleOrderIds.length === 0 || oracleOrderIds.length !== citumOrderIds.length) {
     return null;
   }
 
   const oracleSet = new Set(oracleOrderIds);
-  const cslnSet = new Set(cslnOrderIds);
-  if (oracleSet.size !== cslnSet.size || oracleSet.size !== oracleOrderIds.length) {
+  const citumSet = new Set(citumOrderIds);
+  if (oracleSet.size !== citumSet.size || oracleSet.size !== oracleOrderIds.length) {
     return null;
   }
   for (const id of oracleSet) {
-    if (!cslnSet.has(id)) return null;
+    if (!citumSet.has(id)) return null;
   }
 
-  if (arraysEqual(oracleOrderIds, cslnOrderIds)) {
+  if (arraysEqual(oracleOrderIds, citumOrderIds)) {
     return null;
   }
 
@@ -57,11 +57,11 @@ function detectDiv004OrderDifference(oracleBibliography, cslnOrderIds, testItems
 
   const anonymousSet = new Set(anonymousIds);
   const oracleNamed = oracleOrderIds.filter((id) => !anonymousSet.has(id));
-  const cslnNamed = cslnOrderIds.filter((id) => !anonymousSet.has(id));
+  const citumNamed = citumOrderIds.filter((id) => !anonymousSet.has(id));
   const oracleAnonymous = oracleOrderIds.filter((id) => anonymousSet.has(id));
-  const cslnAnonymous = cslnOrderIds.filter((id) => anonymousSet.has(id));
+  const citumAnonymous = citumOrderIds.filter((id) => anonymousSet.has(id));
 
-  if (!arraysEqual(oracleNamed, cslnNamed) || !arraysEqual(oracleAnonymous, cslnAnonymous)) {
+  if (!arraysEqual(oracleNamed, citumNamed) || !arraysEqual(oracleAnonymous, citumAnonymous)) {
     return null;
   }
 
@@ -71,7 +71,7 @@ function detectDiv004OrderDifference(oracleBibliography, cslnOrderIds, testItems
     tags: divergenceRule.tags || [],
     note: divergenceRule.note || null,
     oracleOrderIds,
-    cslnOrderIds,
+    citumOrderIds,
     anonymousIds,
   };
 }
@@ -95,21 +95,21 @@ function explainCitationMismatchFromDiv004(citationEntry, citationFixture, diver
   }
 
   const oracleLabelMap = buildNumericLabelMap(divergenceInfo.oracleOrderIds);
-  const cslnLabelMap = buildNumericLabelMap(divergenceInfo.cslnOrderIds);
+  const citumLabelMap = buildNumericLabelMap(divergenceInfo.citumOrderIds);
   const itemIds = (citationFixture.items || [])
     .map((item) => item.id)
-    .filter((id) => oracleLabelMap.has(id) && cslnLabelMap.has(id));
+    .filter((id) => oracleLabelMap.has(id) && citumLabelMap.has(id));
 
   if (itemIds.length === 0) {
     return null;
   }
 
   const oracleLabels = itemIds.map((id) => oracleLabelMap.get(id));
-  const cslnLabels = itemIds.map((id) => cslnLabelMap.get(id));
+  const citumLabels = itemIds.map((id) => citumLabelMap.get(id));
   const maskedOracle = maskNumericCitationLabels(citationEntry.oracle, oracleLabels);
-  const maskedCsln = maskNumericCitationLabels(citationEntry.csln, cslnLabels);
+  const maskedCitum = maskNumericCitationLabels(citationEntry.citum, citumLabels);
 
-  if (maskedOracle !== maskedCsln) {
+  if (maskedOracle !== maskedCitum) {
     return null;
   }
 
@@ -118,7 +118,7 @@ function explainCitationMismatchFromDiv004(citationEntry, citationFixture, diver
     tag: 'sort-derived-numeric-citation-label',
     itemIds,
     oracleLabels,
-    cslnLabels,
+    citumLabels,
   };
 }
 
@@ -173,12 +173,12 @@ function buildAdjustedOracleResult(rawResults, testCitations, divergenceInfo) {
   };
 }
 
-function attachRegisteredDivergenceAdjustments(rawResults, oracleBibliography, cslnOrderIds, testItems, testCitations) {
+function attachRegisteredDivergenceAdjustments(rawResults, oracleBibliography, citumOrderIds, testItems, testCitations) {
   const hasCitationFailures = (rawResults?.citations?.failed || 0) > 0;
   const hasBibliographyFailures = (rawResults?.bibliography?.failed || 0) > 0;
   const shouldInspectOrderDifference = (
     hasCitationFailures || hasBibliographyFailures
-  ) && Array.isArray(cslnOrderIds) && cslnOrderIds.length > 0;
+  ) && Array.isArray(citumOrderIds) && citumOrderIds.length > 0;
 
   if (!shouldInspectOrderDifference) {
     return {
@@ -192,7 +192,7 @@ function attachRegisteredDivergenceAdjustments(rawResults, oracleBibliography, c
   const divergenceRule = resolveRegisteredDivergence(policy, DIV_004_ID);
   const divergenceInfo = detectDiv004OrderDifference(
     oracleBibliography,
-    cslnOrderIds,
+    citumOrderIds,
     testItems,
     divergenceRule
   );
@@ -202,7 +202,7 @@ function attachRegisteredDivergenceAdjustments(rawResults, oracleBibliography, c
     bibliographyOrder: divergenceInfo
       ? {
           oracleOrderIds: divergenceInfo.oracleOrderIds,
-          cslnOrderIds: divergenceInfo.cslnOrderIds,
+          citumOrderIds: divergenceInfo.citumOrderIds,
           appliedDivergence: divergenceInfo.divergenceId,
         }
       : null,

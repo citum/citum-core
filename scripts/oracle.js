@@ -142,7 +142,7 @@ function cleanupOracleTempWorkspace(workspace) {
 /**
  * Compare two component sets and identify differences.
  */
-function compareComponents(oracleComp, cslnComp, refData) {
+function compareComponents(oracleComp, citumComp, refData) {
   const differences = [];
   const matches = [];
 
@@ -152,15 +152,15 @@ function compareComponents(oracleComp, cslnComp, refData) {
 
   for (const key of keys) {
     const oracle = oracleComp[key];
-    const csln = cslnComp[key];
+    const citum = citumComp[key];
 
     // Skip if neither has this component
-    if (!oracle.found && !csln.found) continue;
+    if (!oracle.found && !citum.found) continue;
 
-    if (oracle.found && csln.found) {
+    if (oracle.found && citum.found) {
       // Both have it - check if values match
-      if (oracle.value === csln.value ||
-        (typeof oracle.value === 'boolean' && oracle.value === csln.value)) {
+      if (oracle.value === citum.value ||
+        (typeof oracle.value === 'boolean' && oracle.value === citum.value)) {
         matches.push({ component: key, status: 'match' });
       } else {
         // Values differ
@@ -168,22 +168,22 @@ function compareComponents(oracleComp, cslnComp, refData) {
           component: key,
           issue: 'value_mismatch',
           expected: oracle.value,
-          found: csln.value,
+          found: citum.value,
           detail: 'Value differs between oracle and Citum',
         });
       }
-    } else if (oracle.found && !csln.found) {
+    } else if (oracle.found && !citum.found) {
       differences.push({
         component: key,
         issue: 'missing',
         expected: oracle.value,
         detail: `Missing in Citum output`
       });
-    } else if (!oracle.found && csln.found) {
+    } else if (!oracle.found && citum.found) {
       differences.push({
         component: key,
         issue: 'extra',
-        found: csln.value,
+        found: citum.value,
         detail: `Extra in Citum output (not in oracle)`
       });
     }
@@ -195,15 +195,15 @@ function compareComponents(oracleComp, cslnComp, refData) {
 /**
  * Compare component ordering between oracle and Citum.
  */
-function compareOrdering(oracleOrder, cslnOrder) {
+function compareOrdering(oracleOrder, citumOrder) {
   const issues = [];
 
   // Check if orders match
-  if (JSON.stringify(oracleOrder) !== JSON.stringify(cslnOrder)) {
+  if (JSON.stringify(oracleOrder) !== JSON.stringify(citumOrder)) {
     issues.push({
       issue: 'ordering',
       expected: oracleOrder,
-      found: cslnOrder,
+      found: citumOrder,
       detail: `Component order differs`
     });
   }
@@ -267,7 +267,7 @@ function buildMigrateCommand(absStylePath, migrateOptions = {}) {
   return parts.join(' ');
 }
 
-function renderWithCslnProcessor(stylePath, refsData, testItems, testCitations, cliOptions = {}) {
+function renderWithCitumProcessor(stylePath, refsData, testItems, testCitations, cliOptions = {}) {
   const projectRoot = path.resolve(__dirname, '..');
   const styleName = path.basename(stylePath, '.csl');
   const stylesDir = path.join(projectRoot, 'styles');
@@ -277,17 +277,17 @@ function renderWithCslnProcessor(stylePath, refsData, testItems, testCitations, 
 
   try {
     // 1. Try to find a hand-authored style first
-    let cslnStylePath = null;
+    let citumStylePath = null;
     if (!forceMigrate && fs.existsSync(stylesDir)) {
       const files = fs.readdirSync(stylesDir);
       const exactMatch = `${styleName}.yaml`;
 
       // Prefer exact filename matches before any prefix matching.
       if (files.includes(exactMatch)) {
-        cslnStylePath = path.join(stylesDir, exactMatch);
+        citumStylePath = path.join(stylesDir, exactMatch);
       }
 
-      if (!cslnStylePath) {
+      if (!citumStylePath) {
         // Look for exact match or base name match (e.g. apa-7th matches apa)
         const baseName = styleName.replace(/-\d+th$/, '').replace(/-\d+$/, '');
         const found = files.find(f =>
@@ -295,7 +295,7 @@ function renderWithCslnProcessor(stylePath, refsData, testItems, testCitations, 
           (f.startsWith(`${styleName}-`) || f.startsWith(`${baseName}-`))
         );
         if (found) {
-          cslnStylePath = path.join(stylesDir, found);
+          citumStylePath = path.join(stylesDir, found);
         }
       }
     }
@@ -303,7 +303,7 @@ function renderWithCslnProcessor(stylePath, refsData, testItems, testCitations, 
     fs.writeFileSync(workspace.refsFile, JSON.stringify(refsDataForProcessor(refsData), null, 2));
     fs.writeFileSync(workspace.citationsFile, JSON.stringify(testCitations, null, 2));
 
-    if (!cslnStylePath) {
+    if (!citumStylePath) {
       // 2. Fall back to migration
       const absStylePath = path.resolve(stylePath);
       let migratedYaml;
@@ -318,13 +318,13 @@ function renderWithCslnProcessor(stylePath, refsData, testItems, testCitations, 
         return null;
       }
       fs.writeFileSync(workspace.styleFile, migratedYaml);
-      cslnStylePath = workspace.styleFile;
+      citumStylePath = workspace.styleFile;
     }
 
     let output;
     try {
       output = execSync(
-        `cargo run -q --bin citum -- render refs -b "${workspace.refsFile}" -s "${cslnStylePath}" -c "${workspace.citationsFile}" --mode both --show-keys`,
+        `cargo run -q --bin citum -- render refs -b "${workspace.refsFile}" -s "${citumStylePath}" -c "${workspace.citationsFile}" --mode both --show-keys`,
         { cwd: projectRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
       );
     } catch (e) {
@@ -375,8 +375,8 @@ function renderWithCslnProcessor(stylePath, refsData, testItems, testCitations, 
   }
 }
 
-function equivalentText(oracleText, cslnText, options = {}) {
-  return compareText(oracleText, cslnText, options).match;
+function equivalentText(oracleText, citumText, options = {}) {
+  return compareText(oracleText, citumText, options).match;
 }
 
 function extractYearSuffixes(text) {
@@ -402,43 +402,43 @@ function extractLocatorNumber(text) {
   return match ? match[1] : null;
 }
 
-function equivalentDisambiguationProbe(oracleText, cslnText, citationId) {
+function equivalentDisambiguationProbe(oracleText, citumText, citationId) {
   const oracleNorm = normalizeText(oracleText);
-  const cslnNorm = normalizeText(cslnText);
+  const citumNorm = normalizeText(citumText);
 
   const oracleSuffixCount = extractYearSuffixes(oracleNorm).length;
-  const cslnSuffixCount = extractYearSuffixes(cslnNorm).length;
+  const citumSuffixCount = extractYearSuffixes(citumNorm).length;
   const oracleHasEtAl = hasEtAl(oracleNorm);
-  const cslnHasEtAl = hasEtAl(cslnNorm);
+  const citumHasEtAl = hasEtAl(citumNorm);
 
-  if (oracleHasEtAl && !cslnHasEtAl) return false;
-  if (oracleSuffixCount > 0 && cslnSuffixCount === 0) return false;
+  if (oracleHasEtAl && !citumHasEtAl) return false;
+  if (oracleSuffixCount > 0 && citumSuffixCount === 0) return false;
 
   if (citationId === 'disambiguate-add-names-et-al') {
     if (oracleHasEtAl || oracleSuffixCount > 0) {
-      const cslnParts = splitCitationCluster(cslnNorm);
-      if (cslnParts.length < 2) return false;
-      if (new Set(cslnParts).size !== cslnParts.length) return false;
+      const citumParts = splitCitationCluster(citumNorm);
+      if (citumParts.length < 2) return false;
+      if (new Set(citumParts).size !== citumParts.length) return false;
     }
   }
 
   if (citationId === 'et-al-with-locator') {
     const oracleLocator = extractLocatorNumber(oracleNorm);
-    const cslnLocator = extractLocatorNumber(cslnNorm);
-    if (oracleLocator && oracleLocator !== cslnLocator) return false;
+    const citumLocator = extractLocatorNumber(citumNorm);
+    if (oracleLocator && oracleLocator !== citumLocator) return false;
   }
 
   return true;
 }
 
-function equivalentCitationText(oracleText, cslnText, citationId, options = {}) {
-  if (options.caseSensitive !== false && compareText(oracleText, cslnText, options).caseMismatch) {
+function equivalentCitationText(oracleText, citumText, citationId, options = {}) {
+  if (options.caseSensitive !== false && compareText(oracleText, citumText, options).caseMismatch) {
     return false;
   }
   if (STRICT_CITATION_IDS.has(citationId)) {
-    return equivalentDisambiguationProbe(oracleText, cslnText, citationId);
+    return equivalentDisambiguationProbe(oracleText, citumText, citationId);
   }
-  return equivalentText(oracleText, cslnText, options);
+  return equivalentText(oracleText, citumText, options);
 }
 
 function collectCitationTypes(citation, testItems) {
@@ -458,18 +458,18 @@ function collectCitationTypes(citation, testItems) {
  * Match bibliography entries between oracle and Citum by finding best matches.
  * Uses contributor names and titles to pair entries.
  */
-function matchBibliographyEntries(oracleBib, cslnBib) {
+function matchBibliographyEntries(oracleBib, citumBib) {
   const pairs = [];
   const usedOracle = new Set();
-  const usedCsln = new Set();
+  const usedCitum = new Set();
   const candidates = [];
 
   // Build all candidate pairings with similarity score.
   for (let oi = 0; oi < oracleBib.length; oi++) {
-    for (let ci = 0; ci < cslnBib.length; ci++) {
+    for (let ci = 0; ci < citumBib.length; ci++) {
       const score = textSimilarity(
         normalizeText(oracleBib[oi]),
-        normalizeText(cslnBib[ci])
+        normalizeText(citumBib[ci])
       );
       // Keep weak matches out to avoid accidental cross-pairing.
       if (score >= 0.20) {
@@ -481,12 +481,12 @@ function matchBibliographyEntries(oracleBib, cslnBib) {
   // Global greedy assignment (highest-similarity edges first).
   candidates.sort((a, b) => b.score - a.score);
   for (const candidate of candidates) {
-    if (usedOracle.has(candidate.oi) || usedCsln.has(candidate.ci)) continue;
+    if (usedOracle.has(candidate.oi) || usedCitum.has(candidate.ci)) continue;
     usedOracle.add(candidate.oi);
-    usedCsln.add(candidate.ci);
+    usedCitum.add(candidate.ci);
     pairs.push({
       oracle: oracleBib[candidate.oi],
-      csln: cslnBib[candidate.ci],
+      citum: citumBib[candidate.ci],
       score: candidate.score,
     });
   }
@@ -494,14 +494,14 @@ function matchBibliographyEntries(oracleBib, cslnBib) {
   // Add unmatched oracle entries.
   for (let oi = 0; oi < oracleBib.length; oi++) {
     if (!usedOracle.has(oi)) {
-      pairs.push({ oracle: oracleBib[oi], csln: null, score: 0 });
+      pairs.push({ oracle: oracleBib[oi], citum: null, score: 0 });
     }
   }
 
   // Add unmatched Citum entries.
-  for (let ci = 0; ci < cslnBib.length; ci++) {
-    if (!usedCsln.has(ci)) {
-      pairs.push({ oracle: null, csln: cslnBib[ci], score: 0 });
+  for (let ci = 0; ci < citumBib.length; ci++) {
+    if (!usedCitum.has(ci)) {
+      pairs.push({ oracle: null, citum: citumBib[ci], score: 0 });
     }
   }
 
@@ -542,20 +542,20 @@ function runOracle(cliOptions = parseArgs()) {
     console.log('Migrating and rendering with Citum...');
   }
 
-  const csln = renderWithCslnProcessor(stylePath, refsData, testItems, testCitations, cliOptions);
+  const citum = renderWithCitumProcessor(stylePath, refsData, testItems, testCitations, cliOptions);
 
-  if (!csln || csln.error) {
+  if (!citum || citum.error) {
     if (jsonOutput) {
       console.log(JSON.stringify({
         error: 'Citum rendering failed',
-        reason: csln && csln.error ? csln.error : 'Processor execution error or migration output invalid',
+        reason: citum && citum.error ? citum.error : 'Processor execution error or migration output invalid',
         style: styleName
       }));
     } else {
       console.error('❌ Citum Rendering Failed\n');
       console.error(`Style: ${styleName}`);
-      if (csln && csln.error) {
-        console.error(`Reason: ${csln.error}\n`);
+      if (citum && citum.error) {
+        console.error(`Reason: ${citum.error}\n`);
       } else {
         console.error('Reason: Processor execution error or invalid migration output\n');
       }
@@ -573,7 +573,7 @@ function runOracle(cliOptions = parseArgs()) {
   }
 
   // Analyze bibliography
-  const pairs = matchBibliographyEntries(oracle.bibliography, csln.bibliography);
+  const pairs = matchBibliographyEntries(oracle.bibliography, citum.bibliography);
 
   const rawResults = {
     style: styleName,
@@ -597,7 +597,7 @@ function runOracle(cliOptions = parseArgs()) {
   // Check citations
   for (const cite of testCitations) {
     const id = cite.id;
-    const comparison = compareText(oracle.citations[id] || '', csln.citations[id] || '', {
+    const comparison = compareText(oracle.citations[id] || '', citum.citations[id] || '', {
       caseSensitive: cliOptions.caseSensitive,
     });
     const match = STRICT_CITATION_IDS.has(id)
@@ -613,7 +613,7 @@ function runOracle(cliOptions = parseArgs()) {
     rawResults.citations.entries.push({
       id,
       oracle: comparison.expected,
-      csln: comparison.actual,
+      citum: comparison.actual,
       match,
       caseMismatch: comparison.caseMismatch,
     });
@@ -636,7 +636,7 @@ function runOracle(cliOptions = parseArgs()) {
     const entryResult = {
       index: i + 1,
       oracle: pair.oracle ? normalizeText(pair.oracle) : null,
-      csln: pair.csln ? normalizeText(pair.csln) : null,
+      citum: pair.citum ? normalizeText(pair.citum) : null,
       match: false,
       caseMismatch: false,
       components: {},
@@ -647,16 +647,16 @@ function runOracle(cliOptions = parseArgs()) {
     if (!pair.oracle) {
       entryResult.issues.push({ issue: 'extra_entry', detail: 'Entry in Citum but not oracle' });
       rawResults.bibliography.failed++;
-    } else if (!pair.csln) {
+    } else if (!pair.citum) {
       entryResult.issues.push({ issue: 'missing_entry', detail: 'Entry in oracle but not Citum' });
       rawResults.bibliography.failed++;
     } else {
       // Both exist - compare
-      const comparison = compareText(pair.oracle, pair.csln, {
+      const comparison = compareText(pair.oracle, pair.citum, {
         caseSensitive: cliOptions.caseSensitive,
       });
       entryResult.oracle = comparison.expected;
-      entryResult.csln = comparison.actual;
+      entryResult.citum = comparison.actual;
       entryResult.caseMismatch = comparison.caseMismatch;
 
       if (comparison.match) {
@@ -671,19 +671,19 @@ function runOracle(cliOptions = parseArgs()) {
         // Parse components (only if reference data found)
         if (refData) {
           const oracleComp = parseComponents(pair.oracle, refData);
-          const cslnComp = parseComponents(pair.csln, refData);
+          const citumComp = parseComponents(pair.citum, refData);
 
           // Compare components
-          const { differences, matches } = compareComponents(oracleComp, cslnComp, refData);
+          const { differences, matches } = compareComponents(oracleComp, citumComp, refData);
           entryResult.components = { differences, matches };
 
           // Analyze ordering
           const oracleOrder = analyzeOrdering(pair.oracle, refData);
-          const cslnOrder = analyzeOrdering(pair.csln, refData);
-          const orderIssues = compareOrdering(oracleOrder, cslnOrder);
+          const citumOrder = analyzeOrdering(pair.citum, refData);
+          const orderIssues = compareOrdering(oracleOrder, citumOrder);
 
           if (orderIssues.length > 0) {
-            entryResult.ordering = { oracle: oracleOrder, csln: cslnOrder };
+            entryResult.ordering = { oracle: oracleOrder, citum: citumOrder };
             rawResults.orderingIssues++;
           }
 
@@ -707,7 +707,7 @@ function runOracle(cliOptions = parseArgs()) {
   const results = attachRegisteredDivergenceAdjustments(
     rawResults,
     oracle.bibliography,
-    csln.bibliographyOrderIds || [],
+    citum.bibliographyOrderIds || [],
     testItems,
     testCitations
   );
@@ -750,19 +750,19 @@ function runOracle(cliOptions = parseArgs()) {
         for (const entry of failedCitations) {
           console.log(`  [${entry.id}]`);
           console.log(`    Oracle: ${entry.oracle}`);
-          console.log(`    Citum:   ${entry.csln}`);
+          console.log(`    Citum:   ${entry.citum}`);
         }
       }
 
       // Bibliography failures
       for (const entry of results.bibliography.entries) {
-        if (!entry.match && entry.oracle && entry.csln) {
+        if (!entry.match && entry.oracle && entry.citum) {
           console.log(`\nEntry ${entry.index}:`);
           console.log(`  Oracle: ${entry.oracle}`);
-          console.log(`  Citum:   ${entry.csln}`);
+          console.log(`  Citum:   ${entry.citum}`);
           if (entry.ordering) {
             console.log(`  Order Oracle: ${entry.ordering.oracle.join(' → ')}`);
-            console.log(`  Order Citum:   ${entry.ordering.csln.join(' → ')}`);
+            console.log(`  Order Citum:   ${entry.ordering.citum.join(' → ')}`);
           }
           for (const issue of entry.issues) {
             console.log(`  Issue: ${issue.component || issue.issue}: ${issue.detail || ''}`);
@@ -791,6 +791,6 @@ module.exports = {
   loadFixtures,
   normalizeFixtureItems,
   refsDataForProcessor,
-  renderWithCslnProcessor,
+  renderWithCitumProcessor,
   runOracle,
 };

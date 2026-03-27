@@ -2413,7 +2413,7 @@ ${tableRows}
 function getComparisonEntryTexts(entry) {
   return {
     benchmark: entry?.oracle ?? entry?.expected ?? '',
-    citum: entry?.csln ?? entry?.actual ?? '',
+    citum: entry?.citum ?? entry?.actual ?? '',
   };
 }
 
