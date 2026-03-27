@@ -686,10 +686,152 @@ fn postprocess_inferred_bibliography(
             }
             relax_inferred_bibliography_date_suppression(template);
         }
+        repair_inferred_bibliography_type_templates(new_bib, type_templates);
     }
     normalize_legal_case_type_template(legacy_style, type_templates);
     ensure_inferred_media_type_templates(legacy_style, type_templates, new_bib);
     ensure_inferred_patent_type_template(legacy_style, type_templates, new_bib);
+}
+
+fn repair_inferred_bibliography_type_templates(
+    default_template: &[TemplateComponent],
+    type_templates: &mut TypeTemplateMap,
+) {
+    let base_title = default_template
+        .iter()
+        .find(|component| component_is_primary_title(component))
+        .cloned();
+    let base_publisher = default_template
+        .iter()
+        .find(|component| component_is_publisher(component))
+        .cloned();
+
+    for (selector, template) in type_templates.iter_mut() {
+        let type_names = selector.type_names();
+
+        if should_inherit_primary_title(&type_names)
+            && !template.iter().any(component_is_primary_title)
+            && let Some(base_title) = base_title.clone()
+        {
+            let insert_at = template
+                .iter()
+                .position(|component| {
+                    component_is_container_title(component) || component_is_in_term(component)
+                })
+                .or_else(|| {
+                    template
+                        .iter()
+                        .rposition(|component| {
+                            component_is_author(component) || component_is_issued_date(component)
+                        })
+                        .map(|index| index + 1)
+                })
+                .unwrap_or(0);
+            template.insert(insert_at, base_title);
+        }
+
+        if should_inherit_publisher(&type_names)
+            && !template.iter().any(component_is_publisher)
+            && let Some(base_publisher) = base_publisher.clone()
+        {
+            let insert_at = template
+                .iter()
+                .rposition(component_is_publisher_place)
+                .map(|index| index + 1)
+                .or_else(|| {
+                    template
+                        .iter()
+                        .rposition(component_is_primary_title)
+                        .map(|index| index + 1)
+                })
+                .unwrap_or(template.len());
+            template.insert(insert_at, base_publisher);
+        }
+    }
+}
+
+fn should_inherit_primary_title(type_names: &[String]) -> bool {
+    type_names.iter().any(|type_name| {
+        matches!(
+            type_name.as_str(),
+            "article-magazine"
+                | "article-newspaper"
+                | "book"
+                | "broadcast"
+                | "motion_picture"
+                | "motion-picture"
+                | "report"
+        )
+    })
+}
+
+fn should_inherit_publisher(type_names: &[String]) -> bool {
+    type_names.iter().any(|type_name| {
+        matches!(
+            type_name.as_str(),
+            "book" | "motion_picture" | "motion-picture" | "report" | "thesis"
+        )
+    })
+}
+
+fn component_is_primary_title(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Title(title)
+            if title.title == citum_schema::template::TitleType::Primary
+    )
+}
+
+fn component_is_container_title(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Title(title)
+            if matches!(
+                title.title,
+                citum_schema::template::TitleType::ParentMonograph
+                    | citum_schema::template::TitleType::ParentSerial
+            )
+    )
+}
+
+fn component_is_author(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Contributor(contributor)
+            if contributor.contributor == citum_schema::template::ContributorRole::Author
+    )
+}
+
+fn component_is_issued_date(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Date(date)
+            if date.date == citum_schema::template::DateVariable::Issued
+    )
+}
+
+fn component_is_in_term(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Term(term)
+            if term.term == citum_schema::locale::GeneralTerm::In
+    )
+}
+
+fn component_is_publisher(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Variable(variable)
+            if variable.variable == citum_schema::template::SimpleVariable::Publisher
+    )
+}
+
+fn component_is_publisher_place(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Variable(variable)
+            if variable.variable == citum_schema::template::SimpleVariable::PublisherPlace
+    )
 }
 
 fn validate_and_normalize_inferred_citations(
@@ -1170,7 +1312,12 @@ impl TypeSelectorNames for TypeSelector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use citum_schema::template::{DateVariable, Rendering, SimpleVariable, TemplateVariable};
+    use citum_schema::locale::GeneralTerm;
+    use citum_schema::template::{
+        ContributorRole, DateVariable, Rendering, SimpleVariable, TemplateComponent,
+        TemplateContributor, TemplateDate, TemplateTerm, TemplateTitle, TemplateVariable,
+        TitleType, TypeSelector,
+    };
     use csl_legacy::model::{
         Citation, CslNode, Formatting, Group, Info, Layout, Sort as LegacySort,
         SortKey as LegacySortKey, Style as LegacyStyle, Text,
@@ -1187,6 +1334,133 @@ mod tests {
                 })
                 .collect(),
         }
+    }
+
+    #[test]
+    fn inferred_type_variants_recover_missing_primary_title() {
+        let default_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            TemplateComponent::Date(TemplateDate {
+                date: DateVariable::Issued,
+                ..Default::default()
+            }),
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            }),
+        ];
+
+        let mut type_templates = indexmap::IndexMap::from([(
+            TypeSelector::Single("article-newspaper".to_string()),
+            vec![
+                TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Author,
+                    ..Default::default()
+                }),
+                TemplateComponent::Date(TemplateDate {
+                    date: DateVariable::Issued,
+                    ..Default::default()
+                }),
+                TemplateComponent::Term(TemplateTerm {
+                    term: GeneralTerm::In,
+                    ..Default::default()
+                }),
+            ],
+        )]);
+
+        repair_inferred_bibliography_type_templates(&default_template, &mut type_templates);
+
+        let variant = type_templates
+            .get(&TypeSelector::Single("article-newspaper".to_string()))
+            .expect("article-newspaper variant should exist");
+
+        assert!(
+            variant.iter().any(component_is_primary_title),
+            "underfit inferred type variants should inherit the base primary title"
+        );
+        let title_index = variant
+            .iter()
+            .position(component_is_primary_title)
+            .expect("title should be present");
+        let in_index = variant
+            .iter()
+            .position(component_is_in_term)
+            .expect("in term should be present");
+        assert!(
+            title_index < in_index,
+            "recovered title should appear before container-introducing terms"
+        );
+    }
+
+    #[test]
+    fn inferred_type_variants_recover_missing_publisher() {
+        let default_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            TemplateComponent::Date(TemplateDate {
+                date: DateVariable::Issued,
+                ..Default::default()
+            }),
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            }),
+            TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::PublisherPlace,
+                ..Default::default()
+            }),
+            TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::Publisher,
+                ..Default::default()
+            }),
+        ];
+
+        let mut type_templates = indexmap::IndexMap::from([(
+            TypeSelector::Single("book".to_string()),
+            vec![
+                TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Author,
+                    ..Default::default()
+                }),
+                TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Primary,
+                    ..Default::default()
+                }),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::PublisherPlace,
+                    ..Default::default()
+                }),
+            ],
+        )]);
+
+        repair_inferred_bibliography_type_templates(&default_template, &mut type_templates);
+
+        let variant = type_templates
+            .get(&TypeSelector::Single("book".to_string()))
+            .expect("book variant should exist");
+
+        assert!(
+            variant.iter().any(component_is_publisher),
+            "monographic inferred type variants should inherit the base publisher"
+        );
+        let publisher_place_index = variant
+            .iter()
+            .position(component_is_publisher_place)
+            .expect("publisher-place should be present");
+        let publisher_index = variant
+            .iter()
+            .position(component_is_publisher)
+            .expect("publisher should be present");
+        assert_eq!(
+            publisher_index,
+            publisher_place_index + 1,
+            "publisher should follow publisher-place after repair"
+        );
     }
 
     #[test]
