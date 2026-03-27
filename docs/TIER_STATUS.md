@@ -23,13 +23,13 @@
 | american-medical-association | 293 | 18/18 | 33/33 ✅ | 100% fidelity |
 | nature | 182 | 18/18 | 33/33 ✅ | 100% fidelity |
 | cell | 95 | 18/18 | 33/33 ✅ | 100% fidelity |
-| chicago-author-date | — | 18/18 | 32/32 ✅ | 100% fidelity |
+| chicago-author-date | ✅ Production | 18/18 | 32/32 ✅ | 100% fidelity |
 
 **Strict 100% citation match (top 10):** 10/10 styles
 **Strict 100% bibliography match (top 10):** 10/10 styles
 
 Current maintained portfolio status:
-- `node scripts/report-core.js` reports `146` styles at fidelity `1.0`.
+- `node scripts/report-core.js` reports `147` styles at fidelity `1.0`.
 - Case-aware scoring is now the default oracle mode.
 - `report-core` exposes `caseMismatchesOverall` and per-style `caseMismatches`.
 - Title/text-case regressions across shipped core styles are reduced to `0`.
@@ -51,6 +51,7 @@ coverage for the highest-impact parent set.
 | elsevier-harvard | ✅ Production | 12/12 | 32/32 |
 | springer-basic-author-date | ✅ Production | 12/12 | 32/32 |
 | taylor-and-francis-chicago-author-date | ✅ Production | 12/12 | 31/31 |
+| chicago-author-date | ✅ Production | 18/18 | 32/32 |
 
 ### Numeric (Tier 2 — Active)
 
@@ -97,7 +98,7 @@ Wave aggregate:
 | landes-bioscience-journals | 12/12 | 31/32 | Citation template normalized |
 | taylor-and-francis-council-of-science-editors-author-date | 12/12 | 31/32 | Disambiguation + locator citation pass |
 | bmj | 12/12 | 31/32 | Citation template normalized |
-| springer-physics-brackets | 12/12 | 11/32 | Citation fixed; bibliography still major outlier |
+| springer-physics-brackets | ✅ Production | 18/18 citations, 33/33 bibliography |
 | frontiers | 12/12 | 32/32 | Full strict match after citation disambiguation tuning |
 | baishideng-publishing-group | 12/12 | 31/32 | Citation template normalized |
 | royal-society-of-chemistry | 12/12 | 15/33 | Citation fixed; bibliography still major outlier |
@@ -153,7 +154,7 @@ style-local fidelity cleanup rather than missing `position` support.
 
 | Style | Status | Notes |
 |-------|--------|-------|
-| modern-language-association | 🔄 In Progress | Being authored via `/style-evolve` (legacy `/styleauthor` alias supported) |
+| modern-language-association | ✅ Production | 18/18 citations, 33/33 bibliography |
 
 ## Embedded Styles (Built into Binary)
 

@@ -157,7 +157,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: given-first
-    - title: primary
+    - title: parent-serial
     - date: issued
       form: year
       wrap: parentheses

@@ -5,7 +5,7 @@ status: in-progress
 type: epic
 priority: normal
 created_at: 2026-03-16T10:34:43Z
-updated_at: 2026-03-26T19:22:00Z
+updated_at: 2026-03-27T20:14:04Z
 ---
 
 Track A: engine fixes for cross-portfolio gaps (volume-pages, DOI suppression, editor name-order). Track B: upgrade outlier styles (springer-physics-brackets, royal-society-of-chemistry, MLA). Track C: promote chicago-author-date from experimental. PR branch: style-evolve-pre-release-wave.
@@ -53,3 +53,14 @@ Track A: engine fixes for cross-portfolio gaps (volume-pages, DOI suppression, e
 ## Follow-up Tracking
 - The low-risk rendering optimization slice landed under archived child `csl26-3oq0`.
 - Deferred next slice: `csl26-d59c` tracks benchmarked disambiguation hot-path optimization work that was explicitly excluded from `csl26-3oq0`.
+
+## Session 2026-03-27
+
+**Completed:**
+1. **springer-physics-brackets**: Fixed broadcast type-variant — changed `title: primary` → `title: parent-serial` in bibliography. Renders container-title (show name) instead of episode title. Now 33/33 bibliography, fidelity 1.0.
+2. **modern-language-association (MLA)**: Fixed interview type-variant — suppressed auto `(Interviewer)` label via `role.omit`, changed prefix from `. Interview by ` to `Interview by ` (triggers punctuation-in-quote), changed date form to `day-month-abbr-year`, added URL and medium variables. Now 33/33 bibliography (was 32/33).
+3. **chicago-author-date**: Promoted to Production in TIER_STATUS.md — core fixture 100% fidelity (18/18 citations, 32/32 bibliography). Added to author-date production table.
+
+**Quality gate:** 147 styles at fidelity 1.0 (up from 146).
+
+**Branch:** style-evolve-pre-release-wave
