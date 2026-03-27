@@ -8,7 +8,7 @@ target/
 **/*.cbor
 .DS_Store
 csl.json
-csln.json
+citum.json
 flattened_*.json
 tests/*.csl
 scripts/node_modules/
@@ -43,7 +43,7 @@ temp_*.csl
 migrated_*.yaml
 *.yaml.bk
 
-bindings/latex/libcsln_processor.dylib
+bindings/latex/libcitum_processor.dylib
 
 # Benchmark baselines (local-only performance tracking)
 .bench-baselines/

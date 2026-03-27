@@ -1124,8 +1124,8 @@ options:
     }
 
     #[test]
-    fn test_csln_first_yaml() {
-        // Test parsing the actual csln-first.yaml file structure
+    fn test_citum_first_yaml() {
+        // Test parsing the actual citum-first.yaml file structure
         let yaml = r#"
 info:
   title: APA

@@ -13,7 +13,7 @@ Working on the citation and bibliography **rendering engine**.
 ## Key Crates
 | Crate | Role |
 |-------|------|
-| `citum_engine` | Rendering engine (consumed via `csln` CLI) |
+| `citum_engine` | Rendering engine (consumed via `citum` CLI) |
 | `citum_schema` | Types consumed by the processor (Style, Template, Locale) |
 
 ## Core Principles

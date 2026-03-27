@@ -61,7 +61,7 @@ These checks are **mandatory** for all `.rs` files, `Cargo.toml`, and `Cargo.loc
 Follow [Conventional Commits](https://www.conventionalcommits.org/) format:
 - **Format**: `type(scope): lowercase subject`
 - **Length**: 50 character subject, 72 character body wrap
-- **References**: Include issue references (e.g., `Refs: csln#64`)
+- **References**: Include issue references (e.g., `Refs: csl26-xxxx` or `Refs: #123`)
 - **No Co-Authored-By**: Do not include co-author footers
 
 Enable the repository commit hook to enforce this automatically:

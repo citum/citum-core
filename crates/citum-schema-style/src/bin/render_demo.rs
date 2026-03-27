@@ -7,8 +7,8 @@ use std::fs;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. Load the Migrated Style
-    let json = fs::read_to_string("csln.json")
-        .expect("Please run 'cargo run --bin citum-migrate' first to generate csln.json");
+    let json = fs::read_to_string("citum.json")
+        .expect("Please run 'cargo run --bin citum-migrate' first to generate citum.json");
     let style: CslnStyle = serde_json::from_str(&json)?;
 
     println!("Loaded Style: {}", style.info.title);
