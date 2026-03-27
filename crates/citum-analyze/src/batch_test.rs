@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //!
 //! Runs CSL 1.0 → Citum migration on all styles and reports success rates.
 //!
-//! Usage: `csln_batch_test` <`styles_dir`> [--verbose] [--sample N]
+//! Usage: `citum_batch_test` <`styles_dir`> [--verbose] [--sample N]
 
 use std::collections::HashMap;
 use std::env;
@@ -25,7 +25,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 2 {
-        eprintln!("Usage: csln_batch_test <styles_dir> [--verbose] [--sample N]");
+        eprintln!("Usage: citum_batch_test <styles_dir> [--verbose] [--sample N]");
         eprintln!();
         eprintln!("Options:");
         eprintln!("  --verbose    Show individual style results");
@@ -193,7 +193,7 @@ fn test_style(path: &Path) -> TestResult {
     }
 
     // Step 3: Write to temp file and run processor
-    let temp_path = std::env::temp_dir().join("csln_batch_test.yaml");
+    let temp_path = std::env::temp_dir().join("citum_batch_test.yaml");
     if let Err(e) = fs::write(&temp_path, yaml_content.as_bytes()) {
         return TestResult::ProcessorFailed(format!("write error: {e}"));
     }

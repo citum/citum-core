@@ -36,7 +36,7 @@ Context-specific options override global for their context.
 
 ## Schema Generation
 ```bash
-cargo run --bin citum -- schema > csln.schema.json
+cargo run --bin citum -- schema > citum.schema.json
 ```
 
 ## Reference Docs

@@ -34,7 +34,7 @@ Token efficiency matters — diagnose everything before touching any files.
 1. **Single oracle call, all failures at once.**
    Run `node scripts/oracle.js styles-legacy/<name>.csl --verbose` (or the correct
    oracle per the routing table below). The `--verbose` flag prints every failure with
-   oracle vs. CSLN side-by-side. Read all failures before writing a single line of YAML.
+   oracle vs. Citum side-by-side. Read all failures before writing a single line of YAML.
    Do not use `report-core.js` for upgrade tasks — it's a portfolio tool, not a diff tool.
 
 2. **Classify all failures before fixing any.**

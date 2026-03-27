@@ -137,7 +137,7 @@ test('citation-only note styles do not advertise bibliography verification scope
 
 test('comparison text helper supports both live-oracle and native-snapshot entry shapes', () => {
   assert.deepEqual(
-    getComparisonEntryTexts({ oracle: 'benchmark text', csln: 'citum text' }),
+    getComparisonEntryTexts({ oracle: 'benchmark text', citum: 'citum text' }),
     { benchmark: 'benchmark text', citum: 'citum text' }
   );
   assert.deepEqual(

@@ -14,7 +14,7 @@ A clear and concise description of the bug.
 
 **Style:** (e.g., APA 7th, Chicago Notes)
 
-**Input CSL/CSLN:**
+**Input CSL/Citum:**
 ```yaml
 # Paste relevant style snippet or citation data
 ```
