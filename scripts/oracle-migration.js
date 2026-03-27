@@ -157,7 +157,7 @@ function renderWithCiteprocJs(stylePath) {
     return { citations, bibliography };
 }
 
-function renderWithCsln(stylePath) {
+function renderWithCitum(stylePath) {
     const styleName = path.basename(stylePath, '.csl');
     const stylesDir = path.join(__dirname, '..', 'styles');
     const styleCandidates = [
@@ -165,26 +165,26 @@ function renderWithCsln(stylePath) {
         `${styleName}-7th.yaml`,
         `${styleName}-author-date.yaml`,
     ];
-    let cslnStylePath = null;
+    let citumStylePath = null;
     for (const candidate of styleCandidates) {
         const full = path.join(stylesDir, candidate);
         if (fs.existsSync(full)) {
-            cslnStylePath = full;
+            citumStylePath = full;
             break;
         }
     }
-    if (!cslnStylePath) {
+    if (!citumStylePath) {
         const files = fs.readdirSync(stylesDir);
         const found = files.find(f =>
             f.endsWith('.yaml') &&
             (f === `${styleName}.yaml` || f.startsWith(`${styleName}-`))
         );
         if (found) {
-            cslnStylePath = path.join(stylesDir, found);
+            citumStylePath = path.join(stylesDir, found);
         }
     }
 
-    if (!cslnStylePath) {
+    if (!citumStylePath) {
         console.error(`❌ Citum style not found for legacy style: ${styleName}`);
         console.error('\nRun prep-migration.sh first to generate the Citum style.');
         process.exit(2);
@@ -199,7 +199,7 @@ function renderWithCsln(stylePath) {
 
     try {
         const output = execSync(
-            `cargo run -q --bin citum -- render refs -b ${tmpFixture} -s ${cslnStylePath} -c ${tmpCitations} --mode both --show-keys`,
+            `cargo run -q --bin citum -- render refs -b ${tmpFixture} -s ${citumStylePath} -c ${tmpCitations} --mode both --show-keys`,
             { encoding: 'utf8', cwd: path.join(__dirname, '..') }
         );
 
@@ -243,35 +243,35 @@ function renderWithCsln(stylePath) {
     }
 }
 
-function compareOutputs(oracle, csln) {
+function compareOutputs(oracle, citum) {
     let citationMatches = 0;
     let bibliographyMatches = 0;
     const mismatches = [];
 
     // Build maps for Citum outputs (indexed by ID)
-    const cslnCiteMap = new Map();
-    csln.citations.forEach(cite => {
-        cslnCiteMap.set(cite.id, normalizeText(cite.text));
+    const citumCiteMap = new Map();
+    citum.citations.forEach(cite => {
+        citumCiteMap.set(cite.id, normalizeText(cite.text));
     });
 
-    const cslnBibMap = new Map();
-    csln.bibliography.forEach(bib => {
-        cslnBibMap.set(bib.id, normalizeText(bib.text));
+    const citumBibMap = new Map();
+    citum.bibliography.forEach(bib => {
+        citumBibMap.set(bib.id, normalizeText(bib.text));
     });
 
     // Compare citations by ID
     for (const oracleCite of oracle.citations) {
         const oracleText = normalizeText(oracleCite.text);
-        const cslnText = cslnCiteMap.get(oracleCite.id) || '';
+        const citumText = citumCiteMap.get(oracleCite.id) || '';
 
-        if (oracleText === cslnText) {
+        if (oracleText === citumText) {
             citationMatches++;
         } else {
             mismatches.push({
                 type: 'citation',
                 id: oracleCite.id,
                 oracle: oracleText,
-                csln: cslnText
+                citum: citumText
             });
         }
     }
@@ -279,16 +279,16 @@ function compareOutputs(oracle, csln) {
     // Compare bibliography by ID
     for (const oracleBib of oracle.bibliography) {
         const oracleText = normalizeText(oracleBib.text);
-        const cslnText = cslnBibMap.get(oracleBib.id) || '';
+        const citumText = citumBibMap.get(oracleBib.id) || '';
 
-        if (oracleText === cslnText) {
+        if (oracleText === citumText) {
             bibliographyMatches++;
         } else {
             mismatches.push({
                 type: 'bibliography',
                 id: oracleBib.id,
                 oracle: oracleText,
-                csln: cslnText
+                citum: citumText
             });
         }
     }
@@ -320,10 +320,10 @@ console.error('Rendering with citeproc-js...');
 const oracle = renderWithCiteprocJs(stylePath);
 
 console.error('Rendering with Citum...');
-const csln = renderWithCsln(stylePath);
+const citum = renderWithCitum(stylePath);
 
 console.error('Comparing outputs...\n');
-const results = compareOutputs(oracle, csln);
+const results = compareOutputs(oracle, citum);
 
 if (jsonOutput) {
     console.log(JSON.stringify(results, null, 2));
@@ -348,15 +348,15 @@ if (jsonOutput) {
             };
 
             const oracleLines = wrap(mm.oracle, 50);
-            const cslnLines = wrap(mm.csln, 50);
+            const citumLines = wrap(mm.citum, 50);
 
             console.log(`│ ORACLE  │ ${oracleLines[0].padEnd(50)} │`);
             for (let i = 1; i < oracleLines.length; i++) console.log(`│         │ ${oracleLines[i].padEnd(50)} │`);
 
             console.log(`├─────────┼────────────────────────────────────────────────────┤`);
 
-            console.log(`│ Citum    │ ${cslnLines[0].padEnd(50)} │`);
-            for (let i = 1; i < cslnLines.length; i++) console.log(`│         │ ${cslnLines[i].padEnd(50)} │`);
+            console.log(`│ Citum    │ ${citumLines[0].padEnd(50)} │`);
+            for (let i = 1; i < citumLines.length; i++) console.log(`│         │ ${citumLines[i].padEnd(50)} │`);
 
             console.log(`└─────────┴────────────────────────────────────────────────────┘\n`);
         });

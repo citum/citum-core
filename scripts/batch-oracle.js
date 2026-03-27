@@ -130,9 +130,9 @@ function renderWithCiteprocJs(stylePath) {
   return { citations, bibliography };
 }
 
-function renderWithCslnProcessor(stylePath) {
+function renderWithCitumProcessor(stylePath) {
   const absStylePath = path.resolve(stylePath);
-  
+
   // Migrate CSL to Citum
   let migratedYaml;
   try {
@@ -143,13 +143,13 @@ function renderWithCslnProcessor(stylePath) {
   } catch (e) {
     return { error: 'migration', message: (e.stderr || e.message).slice(0, 200) };
   }
-  
+
   const tempFile = path.join(projectRoot, '.migrated-temp.yaml');
   fs.writeFileSync(tempFile, migratedYaml);
   const tempCiteFile = path.join(projectRoot, '.migrated-citations.json');
   const testCitations = Object.keys(testItems).map(id => ({ id, items: [{ id }] }));
   fs.writeFileSync(tempCiteFile, JSON.stringify(testCitations, null, 2));
-  
+
   let output;
   try {
     output = execSync(
@@ -164,11 +164,11 @@ function renderWithCslnProcessor(stylePath) {
 
   fs.rmSync(tempFile, { force: true });
   fs.rmSync(tempCiteFile, { force: true });
-  
+
   const lines = output.split('\n');
   const citations = {};
   const bibliography = [];
-  
+
   let section = null;
   for (const line of lines) {
     if (line.includes('CITATIONS')) {
@@ -184,7 +184,7 @@ function renderWithCslnProcessor(stylePath) {
       bibliography.push(line.trim());
     }
   }
-  
+
   return { citations, bibliography };
 }
 
@@ -204,43 +204,43 @@ function testStyle(stylePath) {
   }
   
   // Render with Citum
-  const csln = renderWithCslnProcessor(stylePath);
-  
-  if (csln.error) {
+  const citum = renderWithCitumProcessor(stylePath);
+
+  if (citum.error) {
     return {
       style: styleName,
-      status: csln.error + '_error',
-      message: csln.message
+      status: citum.error + '_error',
+      message: citum.message
     };
   }
-  
+
   // Compare
   let citationMatches = 0;
   let citationMismatches = [];
   Object.keys(testItems).forEach(id => {
     const oNorm = normalizeText(oracle.citations[id]);
-    const cNorm = normalizeText(csln.citations[id]);
+    const cNorm = normalizeText(citum.citations[id]);
     if (oNorm === cNorm) {
       citationMatches++;
     } else {
-      citationMismatches.push({ id, oracle: oNorm, csln: cNorm });
+      citationMismatches.push({ id, oracle: oNorm, citum: cNorm });
     }
   });
-  
+
   let bibMatches = 0;
   let bibMismatches = [];
   const oracleBib = oracle.bibliography.map(b => normalizeText(b)).sort();
-  const cslnBib = csln.bibliography.map(b => normalizeText(b)).sort();
-  const bibTotal = Math.max(oracleBib.length, cslnBib.length);
-  
+  const citumBib = citum.bibliography.map(b => normalizeText(b)).sort();
+  const bibTotal = Math.max(oracleBib.length, citumBib.length);
+
   for (let i = 0; i < bibTotal; i++) {
     const o = oracleBib[i] || '(missing)';
-    const c = cslnBib[i] || '(missing)';
+    const c = citumBib[i] || '(missing)';
     if (o === c) {
       bibMatches++;
     } else {
       if (bibMismatches.length < 2) { // Only keep first 2 samples
-        bibMismatches.push({ oracle: o, csln: c });
+        bibMismatches.push({ oracle: o, citum: c });
       }
     }
   }
@@ -370,7 +370,7 @@ if (mismatches.length > 0) {
       const s = m.samples.citations[0];
       console.log(`  Citation ${s.id}:`);
       console.log(`    Oracle: ${s.oracle}`);
-      console.log(`    Citum:   ${s.csln}`);
+      console.log(`    Citum:   ${s.citum}`);
     }
   }
 }

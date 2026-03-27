@@ -183,7 +183,7 @@ test('registered divergence adjustments convert sort-derived numeric label drift
       total: 1,
       passed: 0,
       failed: 1,
-      entries: [{ id: 'cite-1', oracle: '[1]', csln: '[2]', match: false }],
+      entries: [{ id: 'cite-1', oracle: '[1]', citum: '[2]', match: false }],
     },
     bibliography: {
       total: 2,
@@ -238,13 +238,13 @@ test('registered divergence adjustments skip order inspection without failures',
       total: 1,
       passed: 1,
       failed: 0,
-      entries: [{ id: 'cite-1', oracle: '[1]', csln: '[1]', match: true }],
+      entries: [{ id: 'cite-1', oracle: '[1]', citum: '[1]', match: true }],
     },
     bibliography: {
       total: 1,
       passed: 1,
       failed: 0,
-      entries: [{ oracle: 'Alpha.', csln: 'Alpha.', match: true }],
+      entries: [{ oracle: 'Alpha.', citum: 'Alpha.', match: true }],
     },
   };
 
