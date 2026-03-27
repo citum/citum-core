@@ -25,13 +25,6 @@ info:
 options:
   substitute:
     template: []
-    overrides:
-      classic: []
-      event performance speech: []
-      software webpage: []
-      manuscript: []
-      standard: []
-      song: []
   processing:
     disambiguate:
       names: true

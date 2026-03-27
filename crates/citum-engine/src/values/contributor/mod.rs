@@ -108,6 +108,10 @@ fn format_contributor_names(
             .as_ref()?
             .effective_role_name_order(&component.contributor)
     });
+    let effective_shorten = component
+        .shorten
+        .as_ref()
+        .or_else(|| options.config.contributors.as_ref()?.shorten.as_ref());
 
     // Priority chain for name_form:
     // 1. component.name_form (TemplateContributor-level override - highest priority)
@@ -118,7 +122,7 @@ fn format_contributor_names(
     let name_overrides = names::NamesOverrides {
         name_order: effective_name_order,
         sort_separator: component.sort_separator.as_ref(),
-        shorten: component.shorten.as_ref(),
+        shorten: effective_shorten,
         and: component.and.as_ref(),
         initialize_with: effective_rendering.initialize_with.as_ref(),
         name_form: effective_name_form,

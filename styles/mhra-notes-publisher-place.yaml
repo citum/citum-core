@@ -30,11 +30,6 @@ options:
   substitute:
     contributor-role-form: short
     template: []
-    overrides:
-      software webpage: []
-      standard: []
-      song: []
-      manuscript: []
   processing: note
   contributors:
     and: text

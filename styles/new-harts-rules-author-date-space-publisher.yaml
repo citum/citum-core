@@ -7,14 +7,6 @@ options:
   locators: note
   substitute:
     template: []
-    overrides:
-      standard: []
-      webpage: []
-      software webpage: []
-      manuscript: []
-      classic: []
-      song: []
-      event performance speech: []
   processing:
     disambiguate:
       names: true

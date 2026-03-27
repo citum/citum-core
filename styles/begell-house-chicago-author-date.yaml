@@ -15,8 +15,6 @@ info:
 options:
   substitute:
     template: []
-    overrides:
-      webpage post-weblog: []
   processing:
     disambiguate:
       names: true

@@ -10,7 +10,7 @@ use common::*;
 
 use citum_engine::{Processor, render::html::Html};
 use citum_schema::{
-    CitationSpec, Style, StyleInfo,
+    CitationOptions, CitationSpec, Style, StyleInfo,
     citation::{Citation, CitationItem, CitationMode, IntegralNameState},
     grouping::{GroupSort, GroupSortEntry, GroupSortKey, SortKey as GroupSortKeyType},
     options::{
@@ -591,6 +591,64 @@ fn subsequent_et_al_configuration_uses_the_subsequent_form_on_repeat() {
         et_al_min: Some(3),
         et_al_use_first: Some(1),
     });
+}
+
+fn citation_scoped_contributor_shorten_applies_without_component_override() {
+    let item = make_book_multi_author(
+        "REF-1",
+        vec![
+            ("Doe", "John"),
+            ("Smith", "Jane"),
+            ("Jones", "Alex"),
+            ("Brown", "Casey"),
+        ],
+        2020,
+        "Scoped Shorten",
+    );
+    let mut bibliography = indexmap::IndexMap::new();
+    bibliography.insert("REF-1".to_string(), item);
+
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Scoped contributor shorten".to_string()),
+            id: Some("scoped-contributor-shorten".to_string()),
+            ..Default::default()
+        },
+        citation: Some(CitationSpec {
+            options: Some(CitationOptions {
+                contributors: Some(ContributorConfig {
+                    shorten: Some(ShortenListOptions {
+                        min: 4,
+                        use_first: 1,
+                        and_others: citum_schema::options::AndOtherOptions::Text,
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            template: Some(vec![citum_schema::tc_contributor!(Author, Long)]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor
+        .process_citation(&Citation {
+            items: vec![CitationItem {
+                id: "REF-1".to_string(),
+                ..Default::default()
+            }],
+            mode: CitationMode::NonIntegral,
+            ..Default::default()
+        })
+        .expect("citation should render");
+
+    assert!(
+        rendered.contains("Doe et al"),
+        "citation-scoped shorten should apply without component override, got: {rendered}"
+    );
 }
 
 /// Test conditional disambiguation with identical author-year pairs.
@@ -1411,6 +1469,18 @@ mod disambiguation {
             "Year suffix generation should continue past z without resetting or truncating.",
         );
         super::disambiguation_suffixes_continue_past_z();
+    }
+}
+
+mod contributor_scoping {
+    use super::announce_behavior;
+
+    #[test]
+    fn citation_scoped_shorten_applies_without_component_override() {
+        announce_behavior(
+            "Citation-scoped contributor shortening should apply even when the template contributor has no explicit shorten block.",
+        );
+        super::citation_scoped_contributor_shorten_applies_without_component_override();
     }
 }
 
