@@ -45,6 +45,9 @@ bibliography:
     separator: ". "
   type-variants:
     article-journal:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
     - contributor: author
       form: long
       name-order: family-first
@@ -71,6 +74,9 @@ bibliography:
       prefix: "DOI: "
     - variable: url
     chapter:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
     - contributor: author
       form: long
       name-order: family-first
@@ -101,6 +107,9 @@ bibliography:
       prefix: "DOI: "
     - variable: url
   template:
+  - number: citation-number
+    wrap: brackets
+    suffix: " "
   - contributor: author
     form: long
     name-order: family-first

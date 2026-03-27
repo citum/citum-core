@@ -51,6 +51,9 @@ bibliography:
     separator: ". "
   type-variants:
     article-magazine:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
     - contributor: author
       form: long
       name-order: family-first
@@ -78,6 +81,9 @@ bibliography:
     - variable: publisher
       prefix: ": "
     chapter:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
     - contributor: author
       form: long
       name-order: family-first
@@ -108,6 +114,9 @@ bibliography:
     - variable: publisher
       prefix: ": "
     dataset:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
     - contributor: author
       form: long
       name-order: family-first
@@ -135,6 +144,9 @@ bibliography:
     - variable: doi
     - variable: publisher-place
     legal-case:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
     - contributor: author
       form: long
       name-order: family-first
@@ -158,6 +170,9 @@ bibliography:
     - variable: publisher
       prefix: ": "
     webpage:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
     - contributor: author
       form: long
       name-order: family-first
@@ -192,6 +207,9 @@ bibliography:
     - variable: publisher
       prefix: ": "
   template:
+  - number: citation-number
+    wrap: brackets
+    suffix: " "
   - contributor: author
     form: long
     name-order: family-first
