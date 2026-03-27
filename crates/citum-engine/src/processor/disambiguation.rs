@@ -694,15 +694,13 @@ impl<'a> Disambiguator<'a> {
         let mut key = String::with_capacity(author_key.len() + 8);
         key.push_str(author_key);
         key.push(':');
-        let year = reference
+        let Some(year) = reference
             .issued()
             .and_then(|d| d.year().parse::<i32>().ok())
-            .map(|y| {
-                let _ = write!(key, "{y}");
-            });
-        if year.is_none() {
+        else {
             return key;
-        }
+        };
+        let _ = write!(key, "{year}");
         key
     }
 
