@@ -6,6 +6,10 @@ info:
   short-name: "MHRA"
   edition: "4th edition"
 options:
+  locators:
+    default-label-form: short
+    range-format: expanded
+    fallback-delimiter: ", "
   substitute:
     contributor-role-form: short
     template: []
@@ -37,6 +41,10 @@ citation:
   options:
     contributors:
       delimiter-precedes-last: contextual
+      shorten:
+        min: 4
+        use-first: 1
+        and-others: text
   subsequent:
     options:
       contributors:
@@ -55,7 +63,7 @@ citation:
       form: long
       name-order: given-first
       shorten: &id001
-        min: 8
+        min: 4
         use-first: 1
     - title: primary
       wrap: quotes
@@ -79,7 +87,11 @@ citation:
       form: year
       wrap: parentheses
       prefix: " "
+    - variable: locator
+      wrap: parentheses
+      prefix: ", "
     - variable: doi
+      prefix: "doi:"
     article-magazine:
     - contributor: author
       form: long
@@ -420,16 +432,21 @@ bibliography:
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-    - date: issued
-      form: year
-      prefix: " "
     - title: primary
-      wrap: quotes
     - number: number
+      prefix: ", Patent "
+    - delimiter: none
+      group:
+      - date: issued
+        form: month-day
+        prefix: ", issued "
+      - date: issued
+        form: year
+        prefix: ", "
     personal_communication: []
     personal-communication: []
     interview:
-    - contributor: author
+    - contributor: interviewer
       form: long
       name-order: family-first
       shorten:
@@ -437,15 +454,32 @@ bibliography:
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-    - date: issued
-      form: year
-      prefix: " "
     - title: primary
       wrap: quotes
-    - contributor: interviewer
+    - contributor: author
       form: long
+      prefix: ", interview with "
+    - date: issued
+      form: month-day
+      prefix: ", "
     - variable: medium
+      prefix: ", "
     - variable: url
+    book:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten: *id003
+    - title: primary
+    - contributor: translator
+      form: long
+      prefix: ", trans. by "
+    - variable: publisher
+      prefix: " ("
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: ")"
     motion_picture:
     - contributor: author
       form: long

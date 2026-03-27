@@ -23,6 +23,10 @@ info:
     - href: https://www.mhra.org.uk/style/
       rel: documentation
 options:
+  locators:
+    default-label-form: short
+    range-format: expanded
+    fallback-delimiter: ", "
   substitute:
     contributor-role-form: short
     template: []
@@ -53,6 +57,10 @@ citation:
   options:
     contributors:
       delimiter-precedes-last: contextual
+      shorten:
+        min: 4
+        use-first: 1
+        and-others: text
   subsequent:
     options:
       contributors:
@@ -71,7 +79,7 @@ citation:
       form: long
       name-order: given-first
       shorten: &id001
-        min: 8
+        min: 4
         use-first: 1
     - title: primary
       wrap: quotes
@@ -94,6 +102,9 @@ citation:
       form: year
       wrap: parentheses
       prefix: " "
+    - variable: locator
+      wrap: parentheses
+      prefix: ", "
     - number: pages
       prefix: "pp. "
     - number: number
@@ -585,27 +596,39 @@ bibliography:
       prefix: " "
     - number: pages
       prefix: "pp. "
+    interview:
+    - contributor: interviewer
+      form: long
+      name-order: family-first
+      shorten: *id003
+    - title: primary
+      wrap: quotes
+    - contributor: author
+      form: long
+      prefix: ", interview with "
+    - date: issued
+      form: month-day
+      prefix: ", "
+    - variable: medium
+      prefix: ", "
     patent:
     - contributor: author
       form: long
       name-order: family-first
       shorten: *id003
     - title: primary
-      wrap: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: given-first
-      shorten: *id004
-    - variable: publisher-place
-      prefix: " ("
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
+    - number: number
+      prefix: ", Patent "
+    - delimiter: none
+      group:
+      - date: issued
+        form: month-day
+        prefix: ", issued "
+      - date: issued
+        form: year
+        prefix: ", "
+    personal_communication: []
+    personal-communication: []
   template:
   - contributor: author
     form: long
