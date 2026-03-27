@@ -39,6 +39,7 @@ options:
       and-others: et-al
       delimiter-precedes-last: contextual
     demote-non-dropping-particle: display-and-sort
+  locators: note
   dates:
     month: long
     uncertainty-marker: "?"
@@ -94,7 +95,7 @@ citation:
       form: long
       name-order: given-first
       shorten: &id001
-        min: 8
+        min: 4
         use-first: 1
     - title: primary
       wrap: quotes
