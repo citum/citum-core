@@ -116,6 +116,20 @@ function preserveLocatorComponentFromBase(baseCitationTemplate, mergedCitationTe
     mergedCitationTemplate.push(locatorComponent);
 }
 
+function stripDeprecatedOverrides(template) {
+    if (!Array.isArray(template)) return;
+    for (const component of template) {
+        if (!component || typeof component !== 'object') continue;
+        delete component.overrides;
+        if (Array.isArray(component.group)) {
+            stripDeprecatedOverrides(component.group);
+        }
+        if (Array.isArray(component.items)) {
+            stripDeprecatedOverrides(component.items);
+        }
+    }
+}
+
 try {
     // 1. Load Base YAML (from citum-migrate)
     if (!fs.existsSync(basePath)) throw new Error(`Base YAML not found: ${basePath}`);
@@ -140,6 +154,7 @@ try {
     const hasInferredCitationTemplate =
         Array.isArray(citationTemplate) && citationTemplate.length > 0;
     if (hasInferredCitationTemplate) {
+        stripDeprecatedOverrides(citationTemplate);
         if (!baseData.citation) baseData.citation = {};
         baseData.citation.template = citationTemplate;
         preserveLocatorComponentFromBase(baseCitationTemplate, baseData.citation.template);
@@ -185,6 +200,7 @@ try {
     const hasInferredBibliographyTemplate =
         Array.isArray(bibliographyTemplate) && bibliographyTemplate.length > 0;
     if (hasInferredBibliographyTemplate) {
+        stripDeprecatedOverrides(bibliographyTemplate);
         if (!baseData.bibliography) baseData.bibliography = {};
         baseData.bibliography.template = bibliographyTemplate;
     }
