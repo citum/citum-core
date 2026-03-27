@@ -68,7 +68,7 @@ citation:
       form: long
       name-order: given-first
       and: text
-      shorten: &id001
+      shorten:
         min: 8
         use-first: 1
     - title: primary
@@ -83,7 +83,9 @@ citation:
     form: long
     name-order: given-first
     and: text
-    shorten: *id001
+    shorten:
+      min: 8
+      use-first: 1
   - title: primary
     wrap: quotes
     prefix: ", "
@@ -144,7 +146,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id002
+      shorten:
         min: 5
         use-first: 1
     - title: primary
@@ -160,7 +162,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id002
+      shorten:
+        min: 5
+        use-first: 1
     - title: primary
       wrap: quotes
       prefix: ", "
@@ -227,7 +231,9 @@ bibliography:
   - contributor: author
     form: long
     name-order: family-first
-    shorten: *id002
+    shorten:
+      min: 5
+      use-first: 1
   - title: primary
     wrap: quotes
     prefix: ", "

@@ -59,7 +59,7 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " 2019 "
-    - items: &id001
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -83,7 +83,12 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " 2019 "
-    - items: *id001
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - number: volume
@@ -104,7 +109,12 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " 2019 "
-    - items: *id001
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - number: volume
@@ -125,7 +135,7 @@ bibliography:
     name-order: family-first
   - title: primary
     prefix: " 2019 "
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first

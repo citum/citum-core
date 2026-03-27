@@ -46,7 +46,7 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " "
-    - items: &id001
+    - group:
       - contributor: editor
         form: verb
         name-order: family-first
@@ -70,7 +70,12 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " "
-    - items: *id001
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: family-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - number: volume
@@ -91,7 +96,12 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " "
-    - items: *id001
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: family-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - number: volume
@@ -112,7 +122,7 @@ bibliography:
     name-order: family-first
   - title: primary
     prefix: " "
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: family-first

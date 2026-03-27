@@ -91,7 +91,7 @@ citation:
     - contributor: author
       form: long
       name-order: given-first
-      shorten: &id001
+      shorten:
         min: 3
         use-first: 1
     - title: primary
@@ -103,7 +103,7 @@ citation:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten: &id002
+      shorten:
         min: 4
         use-first: 1
     - variable: publisher-place
@@ -137,7 +137,9 @@ citation:
   - contributor: author
     form: long
     name-order: given-first
-    shorten: *id001
+    shorten:
+      min: 3
+      use-first: 1
   - title: primary
     wrap: quotes
   - title: parent-monograph
@@ -147,7 +149,9 @@ citation:
   - contributor: editor
     form: verb
     name-order: given-first
-    shorten: *id002
+    shorten:
+      min: 4
+      use-first: 1
   - variable: publisher-place
     prefix: " ("
   - variable: publisher
@@ -205,7 +209,7 @@ bibliography:
       min: 8
       use-first: 3
   - title: primary
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first

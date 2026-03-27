@@ -108,7 +108,7 @@ bibliography:
       form: year
     - title: primary
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -128,7 +128,7 @@ bibliography:
     form: year
   - title: primary
     emph: true
-  - items:
+  - group:
     - number: volume
     - number: issue
       wrap: parentheses

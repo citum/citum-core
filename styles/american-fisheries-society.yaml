@@ -114,7 +114,7 @@ bibliography:
       prefix: "in "
     - variable: publisher
       prefix: ", editor. "
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -180,7 +180,7 @@ bibliography:
     prefix: " in "
   - variable: publisher
     prefix: ", editor. "
-  - items:
+  - group:
     - number: volume
     - number: issue
       wrap: parentheses

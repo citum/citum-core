@@ -111,7 +111,7 @@ bibliography:
     prefix: " "
   - title: primary
     prefix: " "
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: family-first

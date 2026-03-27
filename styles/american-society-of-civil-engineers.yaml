@@ -86,7 +86,7 @@ bibliography:
       form: year
       prefix: " "
     - title: primary
-    - items: &id001
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -94,7 +94,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
     - number: pages
@@ -112,10 +112,15 @@ bibliography:
       form: year
       prefix: " "
     - title: primary
-    - items: *id001
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
     - number: pages
       prefix: ": "
@@ -131,7 +136,7 @@ bibliography:
     form: year
     prefix: " "
   - title: primary
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first
@@ -139,7 +144,7 @@ bibliography:
       emph: true
   - title: parent-serial
     emph: true
-  - items:
+  - group:
     - number: volume
     - number: issue
   - number: pages

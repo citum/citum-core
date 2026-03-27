@@ -2,31 +2,31 @@ info:
   title: MHRA Style Guide 4th edition (notes, place of publication, without URLs)
   description: MHRA source citations, notes system, with place of publication (MHRA 7.3), without URLs
   fields:
-  - history
-  - humanities
-  - linguistics
-  - literature
-  - philosophy
-  - theology
+    - history
+    - humanities
+    - linguistics
+    - literature
+    - philosophy
+    - theology
   source:
     csl-id: http://www.zotero.org/styles/mhra-notes-publisher-place-no-url
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Andrew Dunning
-      uri: https://orcid.org/0000-0003-0464-5036
+      - name: Andrew Dunning
+        uri: https://orcid.org/0000-0003-0464-5036
     links:
-    - href: http://www.zotero.org/styles/mhra-notes-publisher-place-no-url
-      rel: self
-    - href: http://www.zotero.org/styles/mhra-notes
-      rel: template
-    - href: https://www.mhra.org.uk/style/
-      rel: documentation
+      - href: http://www.zotero.org/styles/mhra-notes-publisher-place-no-url
+        rel: self
+      - href: http://www.zotero.org/styles/mhra-notes
+        rel: template
+      - href: https://www.mhra.org.uk/style/
+        rel: documentation
 options:
   locators:
     default-label-form: short
     range-format: expanded
-    fallback-delimiter: ", "
+    fallback-delimiter: ', '
   substitute:
     contributor-role-form: short
     template: []
@@ -37,8 +37,8 @@ options:
     demote-non-dropping-particle: display-and-sort
   dates:
     month: long
-    uncertainty-marker: "?"
-    approximation-marker: "ca. "
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
     range-delimiter: –
   titles:
     monograph:
@@ -61,263 +61,334 @@ citation:
       contributors:
         name-form: family-only
     template:
-    - contributor: author
-      form: short
-    - title: primary
-      form: short
-      wrap: quotes
-    - variable: locator
-      prefix: ", "
+      - contributor: author
+        form: short
+      - title: primary
+        form: short
+        wrap: quotes
+      - variable: locator
+        prefix: ', '
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: given-first
-      shorten: &id001
-        min: 4
-        use-first: 1
-    - title: primary
-      wrap: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: given-first
-      shorten: &id002
-        min: 4
-        use-first: 1
-    - variable: publisher-place
-      prefix: " ("
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - date: issued
-      form: year
-      wrap: parentheses
-      prefix: " "
-    - variable: locator
-      wrap: parentheses
-      prefix: ", "
-    - number: pages
-      prefix: "pp. "
-    - number: number
-      prefix: ", Patent "
-    - delimiter: none
-      group:
-      - date: issued
-        form: month-day
-        prefix: ", issued "
+      - contributor: author
+        form: long
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - title: primary
+        wrap: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - variable: publisher-place
+        prefix: ' ('
+      - variable: publisher
+        prefix: ': '
+      - number: volume
       - date: issued
         form: year
-        prefix: ", "
-    - delimiter: none
-      prefix: ", "
-      group:
-      - date: issued
-        form: month-day
-      - date: issued
-        form: year
-        prefix: ", "
-    - variable: medium
-      prefix: ", "
-    - contributor: interviewer
-      form: long
-      prefix: ", interview by "
+        wrap: parentheses
+        prefix: ' '
+      - variable: locator
+        wrap: parentheses
+        prefix: ', '
+      - number: pages
+        prefix: 'pp. '
+      - number: number
+        prefix: ', Patent '
+      - delimiter: none
+        group:
+          - date: issued
+            form: month-day
+            prefix: ', issued '
+          - date: issued
+            form: year
+            prefix: ', '
+      - delimiter: none
+        prefix: ', '
+        group:
+          - date: issued
+            form: month-day
+          - date: issued
+            form: year
+            prefix: ', '
+      - variable: medium
+        prefix: ', '
+      - contributor: interviewer
+        form: long
+        prefix: ', interview by '
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: given-first
-      shorten: *id001
-    - title: primary
-      wrap: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: given-first
-      shorten: *id002
-    - variable: publisher-place
-      prefix: " ("
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - date: issued
-      form: year
-      wrap: parentheses
-      prefix: " "
-    - number: pages
-      prefix: "pp. "
-    - number: number
-      prefix: ", Patent "
-    - delimiter: none
-      group:
-      - date: issued
-        form: month-day
-        prefix: ", issued "
+      - contributor: author
+        form: long
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - title: primary
+        wrap: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - variable: publisher-place
+        prefix: ' ('
+      - variable: publisher
+        prefix: ': '
+      - number: volume
       - date: issued
         form: year
-        prefix: ", "
-    - delimiter: none
-      prefix: ", "
-      group:
-      - date: issued
-        form: month-day
-      - date: issued
-        form: year
-        prefix: ", "
-    - variable: medium
-      prefix: ", "
-    - contributor: interviewer
-      form: long
-      prefix: ", interview by "
+        wrap: parentheses
+        prefix: ' '
+      - number: pages
+        prefix: 'pp. '
+      - number: number
+        prefix: ', Patent '
+      - delimiter: none
+        group:
+          - date: issued
+            form: month-day
+            prefix: ', issued '
+          - date: issued
+            form: year
+            prefix: ', '
+      - delimiter: none
+        prefix: ', '
+        group:
+          - date: issued
+            form: month-day
+          - date: issued
+            form: year
+            prefix: ', '
+      - variable: medium
+        prefix: ', '
+      - contributor: interviewer
+        form: long
+        prefix: ', interview by '
     chapter:
-    - contributor: author
-      form: long
-      name-order: given-first
-      shorten: *id001
-    - title: primary
-      wrap: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: given-first
-      shorten: *id002
-    - variable: publisher-place
-      prefix: " ("
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - date: issued
-      form: year
-      wrap: parentheses
-      prefix: " "
-    - number: pages
-      prefix: "pp. "
-    - number: number
-      prefix: ", Patent "
-    - delimiter: none
-      group:
-      - date: issued
-        form: month-day
-        prefix: ", issued "
+      - contributor: author
+        form: long
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - title: primary
+        wrap: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - variable: publisher-place
+        prefix: ' ('
+      - variable: publisher
+        prefix: ': '
+      - number: volume
       - date: issued
         form: year
-        prefix: ", "
-    - delimiter: none
-      prefix: ", "
-      group:
-      - date: issued
-        form: month-day
-      - date: issued
-        form: year
-        prefix: ", "
-    - variable: medium
-      prefix: ", "
-    - contributor: interviewer
-      form: long
-      prefix: ", interview by "
+        wrap: parentheses
+        prefix: ' '
+      - number: pages
+        prefix: 'pp. '
+      - number: number
+        prefix: ', Patent '
+      - delimiter: none
+        group:
+          - date: issued
+            form: month-day
+            prefix: ', issued '
+          - date: issued
+            form: year
+            prefix: ', '
+      - delimiter: none
+        prefix: ', '
+        group:
+          - date: issued
+            form: month-day
+          - date: issued
+            form: year
+            prefix: ', '
+      - variable: medium
+        prefix: ', '
+      - contributor: interviewer
+        form: long
+        prefix: ', interview by '
     default:
-    - contributor: author
-      form: long
-      name-order: given-first
-      shorten: *id001
-    - title: primary
-      wrap: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: given-first
-      shorten: *id002
-    - variable: publisher-place
-      prefix: " ("
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - date: issued
-      form: year
-      wrap: parentheses
-      prefix: " "
-    - number: pages
-    - delimiter: none
-      group:
-      - date: issued
-        form: month-day
-        prefix: ", issued "
+      - contributor: author
+        form: long
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - title: primary
+        wrap: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - variable: publisher-place
+        prefix: ' ('
+      - variable: publisher
+        prefix: ': '
+      - number: volume
       - date: issued
         form: year
-        prefix: ", "
-    - delimiter: none
-      prefix: ", "
-      group:
-      - date: issued
-        form: month-day
-      - date: issued
-        form: year
-        prefix: ", "
+        wrap: parentheses
+        prefix: ' '
+      - number: pages
+      - delimiter: none
+        group:
+          - date: issued
+            form: month-day
+            prefix: ', issued '
+          - date: issued
+            form: year
+            prefix: ', '
+      - delimiter: none
+        prefix: ', '
+        group:
+          - date: issued
+            form: month-day
+          - date: issued
+            form: year
+            prefix: ', '
     entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: given-first
-      shorten: *id001
-    - title: primary
-      wrap: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: given-first
-      shorten: *id002
-    - variable: publisher-place
-      prefix: " ("
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - date: issued
-      form: year
-      wrap: parentheses
-      prefix: " "
-    - number: pages
-      prefix: "pp. "
-    - number: number
-      prefix: ", Patent "
-    - delimiter: none
-      group:
-      - date: issued
-        form: month-day
-        prefix: ", issued "
+      - contributor: author
+        form: long
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - title: primary
+        wrap: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - variable: publisher-place
+        prefix: ' ('
+      - variable: publisher
+        prefix: ': '
+      - number: volume
       - date: issued
         form: year
-        prefix: ", "
-    - delimiter: none
-      prefix: ", "
-      group:
-      - date: issued
-        form: month-day
-      - date: issued
-        form: year
-        prefix: ", "
-    - variable: medium
-      prefix: ", "
-    - contributor: interviewer
-      form: long
-      prefix: ", interview by "
+        wrap: parentheses
+        prefix: ' '
+      - number: pages
+        prefix: 'pp. '
+      - number: number
+        prefix: ', Patent '
+      - delimiter: none
+        group:
+          - date: issued
+            form: month-day
+            prefix: ', issued '
+          - date: issued
+            form: year
+            prefix: ', '
+      - delimiter: none
+        prefix: ', '
+        group:
+          - date: issued
+            form: month-day
+          - date: issued
+            form: year
+            prefix: ', '
+      - variable: medium
+        prefix: ', '
+      - contributor: interviewer
+        form: long
+        prefix: ', interview by '
     paper-conference:
+      - contributor: author
+        form: long
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - title: primary
+        wrap: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - variable: publisher-place
+        prefix: ' ('
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - date: issued
+        form: year
+        wrap: parentheses
+        prefix: ' '
+      - number: pages
+        prefix: 'pp. '
+      - number: number
+        prefix: ', Patent '
+      - delimiter: none
+        group:
+          - date: issued
+            form: month-day
+            prefix: ', issued '
+          - date: issued
+            form: year
+            prefix: ', '
+      - delimiter: none
+        prefix: ', '
+        group:
+          - date: issued
+            form: month-day
+          - date: issued
+            form: year
+            prefix: ', '
+      - variable: medium
+        prefix: ', '
+      - contributor: interviewer
+        form: long
+        prefix: ', interview by '
+  template:
     - contributor: author
       form: long
       name-order: given-first
-      shorten: *id001
+      shorten:
+        min: 4
+        use-first: 1
     - title: primary
       wrap: quotes
     - title: parent-monograph
@@ -327,104 +398,289 @@ citation:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten: *id002
+      shorten:
+        min: 4
+        use-first: 1
     - variable: publisher-place
-      prefix: " ("
+      prefix: ' ('
     - variable: publisher
-      prefix: ": "
+      prefix: ': '
     - number: volume
     - date: issued
       form: year
       wrap: parentheses
-      prefix: " "
+      prefix: ' '
     - number: pages
-      prefix: "pp. "
     - number: number
-      prefix: ", Patent "
+      prefix: ', Patent '
     - delimiter: none
       group:
-      - date: issued
-        form: month-day
-        prefix: ", issued "
-      - date: issued
-        form: year
-        prefix: ", "
+        - date: issued
+          form: month-day
+          prefix: ', issued '
+        - date: issued
+          form: year
+          prefix: ', '
     - delimiter: none
-      prefix: ", "
+      prefix: ', '
       group:
-      - date: issued
-        form: month-day
-      - date: issued
-        form: year
-        prefix: ", "
+        - date: issued
+          form: month-day
+        - date: issued
+          form: year
+          prefix: ', '
     - variable: medium
-      prefix: ", "
+      prefix: ', '
     - contributor: interviewer
       form: long
-      prefix: ", interview by "
-  template:
-  - contributor: author
-    form: long
-    name-order: given-first
-    shorten: *id001
-  - title: primary
-    wrap: quotes
-  - title: parent-monograph
-    emph: true
-  - title: parent-serial
-    emph: true
-  - contributor: editor
-    form: verb
-    name-order: given-first
-    shorten: *id002
-  - variable: publisher-place
-    prefix: " ("
-  - variable: publisher
-    prefix: ": "
-  - number: volume
-  - date: issued
-    form: year
-    wrap: parentheses
-    prefix: " "
-  - number: pages
-  - number: number
-    prefix: ", Patent "
-  - delimiter: none
-    group:
-    - date: issued
-      form: month-day
-      prefix: ", issued "
-    - date: issued
-      form: year
-      prefix: ", "
-  - delimiter: none
-    prefix: ", "
-    group:
-    - date: issued
-      form: month-day
-    - date: issued
-      form: year
-      prefix: ", "
-  - variable: medium
-    prefix: ", "
-  - contributor: interviewer
-    form: long
-    prefix: ", interview by "
+      prefix: ', interview by '
   suffix: .
-  delimiter: ", "
-  multi-cite-delimiter: "; "
+  delimiter: ', '
+  multi-cite-delimiter: '; '
 bibliography:
   options:
     subsequent-author-substitute: ——
     subsequent-author-substitute-rule: partial-first
     hanging-indent: true
-    separator: ": "
+    separator: ': '
   type-variants:
     article-journal:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - title: primary
+        wrap: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - variable: publisher-place
+        prefix: ' ('
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - date: issued
+        form: year
+        prefix: ' '
+      - number: pages
+        prefix: 'pp. '
+    article-magazine:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - title: primary
+        wrap: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - variable: publisher-place
+        prefix: ' ('
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - date: issued
+        form: year
+        prefix: ' '
+      - number: pages
+        prefix: 'pp. '
+    article-newspaper:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - title: primary
+        wrap: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - variable: publisher-place
+        prefix: ' ('
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - number: pages
+    chapter:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - title: primary
+        wrap: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - variable: publisher-place
+        prefix: ' ('
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - date: issued
+        form: year
+        prefix: ' '
+      - number: pages
+        prefix: 'pp. '
+    dataset:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - title: primary
+        wrap: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - variable: publisher-place
+        prefix: ' ('
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - number: pages
+    entry-encyclopedia:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - title: primary
+        wrap: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - variable: publisher-place
+        prefix: ' ('
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - date: issued
+        form: year
+        prefix: ' '
+      - number: pages
+        prefix: 'pp. '
+    paper-conference:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - title: primary
+        wrap: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - variable: publisher-place
+        prefix: ' ('
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - date: issued
+        form: year
+        prefix: ' '
+      - number: pages
+        prefix: 'pp. '
+    interview:
+      - contributor: interviewer
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - title: primary
+        wrap: quotes
+      - contributor: author
+        form: long
+        prefix: ', interview with '
+      - date: issued
+        form: month-day
+        prefix: ', '
+      - variable: medium
+        prefix: ', '
+    patent:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - title: primary
+      - number: number
+        prefix: ', Patent '
+      - delimiter: none
+        group:
+          - date: issued
+            form: month-day
+            prefix: ', issued '
+          - date: issued
+            form: year
+            prefix: ', '
+    personal_communication: []
+    personal-communication: []
+  template:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id003
+      shorten:
         min: 5
         use-first: 1
     - title: primary
@@ -436,215 +692,15 @@ bibliography:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten: &id004
+      shorten:
         min: 4
         use-first: 1
     - variable: publisher-place
-      prefix: " ("
+      prefix: ' ('
     - variable: publisher
-      prefix: ": "
+      prefix: ': '
     - number: volume
     - date: issued
       form: year
-      prefix: " "
+      prefix: ' '
     - number: pages
-      prefix: "pp. "
-    article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten: *id003
-    - title: primary
-      wrap: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: given-first
-      shorten: *id004
-    - variable: publisher-place
-      prefix: " ("
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - date: issued
-      form: year
-      prefix: " "
-    - number: pages
-      prefix: "pp. "
-    article-newspaper:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten: *id003
-    - title: primary
-      wrap: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: given-first
-      shorten: *id004
-    - variable: publisher-place
-      prefix: " ("
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
-    chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten: *id003
-    - title: primary
-      wrap: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: given-first
-      shorten: *id004
-    - variable: publisher-place
-      prefix: " ("
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - date: issued
-      form: year
-      prefix: " "
-    - number: pages
-      prefix: "pp. "
-    dataset:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten: *id003
-    - title: primary
-      wrap: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: given-first
-      shorten: *id004
-    - variable: publisher-place
-      prefix: " ("
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
-    entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten: *id003
-    - title: primary
-      wrap: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: given-first
-      shorten: *id004
-    - variable: publisher-place
-      prefix: " ("
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - date: issued
-      form: year
-      prefix: " "
-    - number: pages
-      prefix: "pp. "
-    paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten: *id003
-    - title: primary
-      wrap: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: given-first
-      shorten: *id004
-    - variable: publisher-place
-      prefix: " ("
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - date: issued
-      form: year
-      prefix: " "
-    - number: pages
-      prefix: "pp. "
-    interview:
-    - contributor: interviewer
-      form: long
-      name-order: family-first
-      shorten: *id003
-    - title: primary
-      wrap: quotes
-    - contributor: author
-      form: long
-      prefix: ", interview with "
-    - date: issued
-      form: month-day
-      prefix: ", "
-    - variable: medium
-      prefix: ", "
-    patent:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten: *id003
-    - title: primary
-    - number: number
-      prefix: ", Patent "
-    - delimiter: none
-      group:
-      - date: issued
-        form: month-day
-        prefix: ", issued "
-      - date: issued
-        form: year
-        prefix: ", "
-    personal_communication: []
-    personal-communication: []
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten: *id003
-  - title: primary
-    wrap: quotes
-  - title: parent-monograph
-    emph: true
-  - title: parent-serial
-    emph: true
-  - contributor: editor
-    form: verb
-    name-order: given-first
-    shorten: *id004
-  - variable: publisher-place
-    prefix: " ("
-  - variable: publisher
-    prefix: ": "
-  - number: volume
-  - date: issued
-    form: year
-    prefix: " "
-  - number: pages

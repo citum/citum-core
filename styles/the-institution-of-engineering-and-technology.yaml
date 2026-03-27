@@ -63,7 +63,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id001
+      shorten:
         min: 8
         use-first: 3
     - title: primary
@@ -87,7 +87,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       wrap: quotes
       prefix: ": "
@@ -109,7 +111,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       wrap: quotes
       prefix: ": "
@@ -131,7 +135,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       wrap: quotes
       prefix: ": "
@@ -153,7 +159,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       wrap: quotes
       prefix: ": "
@@ -175,7 +183,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       wrap: quotes
       prefix: ": "
@@ -195,7 +205,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       wrap: quotes
       prefix: ": "
@@ -233,7 +245,9 @@ bibliography:
   - contributor: author
     form: long
     name-order: family-first
-    shorten: *id001
+    shorten:
+      min: 8
+      use-first: 3
   - title: primary
     wrap: quotes
     prefix: ": "

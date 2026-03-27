@@ -115,7 +115,7 @@ bibliography:
       wrap: parentheses
       prefix: " "
     - title: primary
-    - items: &id001
+    - group:
       - contributor: editor
         form: verb
         name-order: family-first
@@ -138,7 +138,12 @@ bibliography:
       wrap: parentheses
       prefix: " "
     - title: primary
-    - items: *id001
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: family-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
     - number: volume
@@ -156,7 +161,7 @@ bibliography:
     wrap: parentheses
     prefix: " "
   - title: primary
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: family-first

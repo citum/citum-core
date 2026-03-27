@@ -56,7 +56,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id001
+      shorten:
         min: 5
         use-first: 1
     - title: primary
@@ -68,7 +68,7 @@ bibliography:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten: &id002
+      shorten:
         min: 4
         use-first: 1
     - variable: publisher-place
@@ -87,7 +87,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 5
+        use-first: 1
     - title: primary
       wrap: quotes
     - title: parent-monograph
@@ -97,7 +99,9 @@ bibliography:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten: *id002
+      shorten:
+        min: 4
+        use-first: 1
     - variable: publisher-place
       prefix: " ("
     - variable: publisher
@@ -114,7 +118,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 5
+        use-first: 1
     - title: primary
       wrap: quotes
     - title: parent-monograph
@@ -124,7 +130,9 @@ bibliography:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten: *id002
+      shorten:
+        min: 4
+        use-first: 1
     - variable: publisher-place
       prefix: " ("
     - variable: publisher
@@ -137,7 +145,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 5
+        use-first: 1
     - title: primary
       wrap: quotes
     - title: parent-monograph
@@ -147,7 +157,9 @@ bibliography:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten: *id002
+      shorten:
+        min: 4
+        use-first: 1
     - variable: publisher-place
       prefix: " ("
     - variable: publisher
@@ -164,7 +176,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 5
+        use-first: 1
     - title: primary
       wrap: quotes
     - title: parent-monograph
@@ -174,7 +188,9 @@ bibliography:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten: *id002
+      shorten:
+        min: 4
+        use-first: 1
     - variable: publisher-place
       prefix: " ("
     - variable: publisher
@@ -187,7 +203,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 5
+        use-first: 1
     - title: primary
       wrap: quotes
     - title: parent-monograph
@@ -197,7 +215,9 @@ bibliography:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten: *id002
+      shorten:
+        min: 4
+        use-first: 1
     - variable: publisher-place
       prefix: " ("
     - variable: publisher
@@ -214,7 +234,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 5
+        use-first: 1
     - title: primary
       wrap: quotes
     - title: parent-monograph
@@ -224,7 +246,9 @@ bibliography:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten: *id002
+      shorten:
+        min: 4
+        use-first: 1
     - variable: publisher-place
       prefix: " ("
     - variable: publisher
@@ -299,7 +323,9 @@ bibliography:
   - contributor: author
     form: long
     name-order: family-first
-    shorten: *id001
+    shorten:
+      min: 5
+      use-first: 1
   - title: primary
     wrap: quotes
   - title: parent-monograph
@@ -309,7 +335,9 @@ bibliography:
   - contributor: editor
     form: verb
     name-order: given-first
-    shorten: *id002
+    shorten:
+      min: 4
+      use-first: 1
   - variable: publisher-place
     prefix: " ("
   - variable: publisher

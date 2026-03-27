@@ -92,7 +92,7 @@ citation:
         form: short
         emph: true
         quote: false
-      - items:
+      - group:
         - date: issued
           form: year
         - variable: locator

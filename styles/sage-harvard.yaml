@@ -114,7 +114,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id001
+      shorten:
         min: 5
         use-first: 3
     - date: issued
@@ -123,18 +123,18 @@ bibliography:
       prefix: " "
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: &id002
+        shorten:
           min: 4
           use-first: 3
       - title: parent-monograph
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
     - variable: publisher
     - number: pages
@@ -145,24 +145,28 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 5
+        use-first: 3
     - date: issued
       form: year
       wrap: parentheses
       prefix: " "
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: *id002
+        shorten:
+          min: 4
+          use-first: 3
         prefix: "on "
       - title: parent-monograph
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -175,23 +179,27 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 5
+        use-first: 3
     - date: issued
       form: year
       wrap: parentheses
       prefix: " "
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: *id002
+        shorten:
+          min: 4
+          use-first: 3
       - title: parent-monograph
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -244,23 +252,27 @@ bibliography:
   - contributor: author
     form: long
     name-order: family-first
-    shorten: *id001
+    shorten:
+      min: 5
+      use-first: 3
   - date: issued
     form: year
     wrap: parentheses
     prefix: " "
   - title: primary
     prefix: " "
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten: *id002
+      shorten:
+        min: 4
+        use-first: 3
     - title: parent-monograph
       emph: true
   - title: parent-serial
     emph: true
-  - items:
+  - group:
     - number: volume
     - number: issue
       wrap: parentheses

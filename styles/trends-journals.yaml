@@ -59,7 +59,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id001
+      shorten:
         min: 3
         use-first: 1
     - date: issued
@@ -75,7 +75,7 @@ bibliography:
     - contributor: editor
       form: verb
       name-order: family-first
-      shorten: &id002
+      shorten:
         min: 4
         use-first: 1
     - number: volume
@@ -86,7 +86,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 3
+        use-first: 1
     - date: issued
       form: year
       wrap: parentheses
@@ -100,7 +102,9 @@ bibliography:
     - contributor: editor
       form: verb
       name-order: family-first
-      shorten: *id002
+      shorten:
+        min: 4
+        use-first: 1
     - number: volume
     - variable: publisher
     - number: pages
@@ -125,7 +129,9 @@ bibliography:
   - contributor: author
     form: long
     name-order: family-first
-    shorten: *id001
+    shorten:
+      min: 3
+      use-first: 1
   - date: issued
     form: year
     wrap: parentheses
@@ -139,7 +145,9 @@ bibliography:
   - contributor: editor
     form: verb
     name-order: family-first
-    shorten: *id002
+    shorten:
+      min: 4
+      use-first: 1
   - number: volume
   - variable: publisher
   - number: pages

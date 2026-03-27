@@ -165,7 +165,7 @@ bibliography:
       prefix: " "
     - title: primary
       emph: true
-    - items:
+    - group:
       - variable: genre
       - variable: medium
       delimiter: "; "
@@ -177,14 +177,14 @@ bibliography:
     - contributor: translator
       form: long
       name-order: given-first
-      label: &id001 {term: translator, form: short, placement: suffix}
+      label: {term: translator, form: short, placement: suffix}
       wrap: parentheses
       prefix: " "
     - delimiter: ", "
       group:
       - title: parent-serial
         emph: true
-      - items:
+      - group:
         - number: volume
           emph: true
         - number: issue
@@ -195,7 +195,7 @@ bibliography:
       suffix: "."
     - variable: doi
       prefix: "https://doi.org/"
-    - items:
+    - group:
       - date: accessed
         form: year-month-day
         prefix: "Retrieved "
@@ -364,7 +364,7 @@ bibliography:
   - contributor: translator
     form: long
     name-order: given-first
-    label: *id001
+    label: {term: translator, form: short, placement: suffix}
     wrap: parentheses
     prefix: " "
   - contributor: editor

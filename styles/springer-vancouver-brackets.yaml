@@ -68,7 +68,7 @@ bibliography:
         delimiter-precedes-last: always
     - title: primary
     - title: parent-serial
-    - items:
+    - group:
       - variable: publisher-place
         suffix: ': '
       - variable: publisher
@@ -87,7 +87,7 @@ bibliography:
     - contributor: author
       form: long
     - title: primary
-    - items:
+    - group:
       - contributor: editor
         form: long
         label: {term: editor, form: long, placement: suffix}
@@ -119,7 +119,7 @@ bibliography:
     thesis:
     - contributor: author
       form: long
-    - items:
+    - group:
       - title: primary
       - variable: genre
         wrap: brackets
@@ -159,7 +159,7 @@ bibliography:
       form: long
     - title: primary
     - title: parent-serial
-    - items:
+    - group:
       - date: issued
         form: year
       - date: issued
@@ -173,7 +173,7 @@ bibliography:
       form: long
     - title: primary
     - title: parent-serial
-    - items:
+    - group:
       - date: issued
         form: year
         suffix: ' '

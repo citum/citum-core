@@ -79,7 +79,7 @@ citation:
     personal_communication:
     - contributor: author
       form: short
-      shorten: &id001
+      shorten:
         min: 3
         use-first: 1
         and-others: et-al
@@ -88,7 +88,10 @@ citation:
   template:
   - contributor: author
     form: short
-    shorten: *id001
+    shorten:
+      min: 3
+      use-first: 1
+      and-others: et-al
   - date: issued
     form: year
   - variable: locator
@@ -146,14 +149,14 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id002
+      shorten:
         min: 8
         use-first: 3
     - date: issued
       form: year
     - title: primary
       wrap: quotes
-    - items: &id003
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -161,7 +164,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         prefix: " ("
@@ -176,15 +179,22 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id002
+      shorten:
+        min: 8
+        use-first: 3
     - date: issued
       form: year
     - title: primary
       wrap: quotes
-    - items: *id003
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
     - number: pages
       prefix: ": "
@@ -195,15 +205,22 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id002
+      shorten:
+        min: 8
+        use-first: 3
     - date: issued
       form: year
     - title: primary
       wrap: none
-    - items: *id003
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         prefix: " ("
@@ -215,15 +232,22 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id002
+      shorten:
+        min: 8
+        use-first: 3
     - date: issued
       form: year
     - title: primary
       wrap: none
-    - items: *id003
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         prefix: " ("
@@ -237,15 +261,22 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id002
+      shorten:
+        min: 8
+        use-first: 3
     - date: issued
       form: year
     - title: primary
       wrap: quotes
-    - items: *id003
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         prefix: " ("
@@ -257,16 +288,23 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id002
+      shorten:
+        min: 8
+        use-first: 3
     - date: issued
       form: year
     - title: primary
       wrap: none
       emph: true
-    - items: *id003
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         prefix: " ("
@@ -280,15 +318,22 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id002
+      shorten:
+        min: 8
+        use-first: 3
     - date: issued
       form: year
     - title: primary
       wrap: none
-    - items: *id003
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         prefix: " ("
@@ -318,15 +363,22 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id002
+      shorten:
+        min: 8
+        use-first: 3
     - date: issued
       form: year
     - title: primary
       wrap: none
-    - items: *id003
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         prefix: " ("
@@ -338,15 +390,22 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id002
+      shorten:
+        min: 8
+        use-first: 3
     - date: issued
       form: year
     - title: primary
       wrap: none
-    - items: *id003
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         prefix: " ("
@@ -359,12 +418,14 @@ bibliography:
   - contributor: author
     form: long
     name-order: family-first
-    shorten: *id002
+    shorten:
+      min: 8
+      use-first: 3
   - date: issued
     form: year
   - title: primary
     wrap: quotes
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first
@@ -372,7 +433,7 @@ bibliography:
       emph: true
   - title: parent-serial
     emph: true
-  - items:
+  - group:
     - number: volume
     - number: issue
       prefix: " ("

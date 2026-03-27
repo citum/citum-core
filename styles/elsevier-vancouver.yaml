@@ -60,7 +60,7 @@ bibliography:
         delimiter-precedes-last: always
     - title: primary
       suffix: '. '
-    - items:
+    - group:
       - title: parent-serial
       - date: issued
         form: year
@@ -84,7 +84,7 @@ bibliography:
       suffix: '. '
     - title: primary
       suffix: '. '
-    - items:
+    - group:
       - title: parent-serial
       - date: issued
         form: year
@@ -102,7 +102,7 @@ bibliography:
       suffix: '. '
     - title: primary
       suffix: '. '
-    - items:
+    - group:
       - title: parent-serial
       - date: issued
         form: year
@@ -177,7 +177,7 @@ bibliography:
       suffix: '. '
     - title: primary
       suffix: '. '
-    - items:
+    - group:
       - title: parent-serial
       - date: issued
         form: year

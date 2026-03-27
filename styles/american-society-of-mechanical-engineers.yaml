@@ -58,7 +58,7 @@ bibliography:
       wrap: quotes
     - title: parent-monograph
     - title: parent-serial
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -79,7 +79,7 @@ bibliography:
       wrap: quotes
     - title: parent-monograph
     - title: parent-serial
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -100,7 +100,7 @@ bibliography:
       wrap: quotes
     - title: parent-monograph
     - title: parent-serial
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -121,7 +121,7 @@ bibliography:
       wrap: quotes
     - title: parent-monograph
     - title: parent-serial
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -142,7 +142,7 @@ bibliography:
       wrap: quotes
     - title: parent-monograph
     - title: parent-serial
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -163,7 +163,7 @@ bibliography:
     wrap: quotes
   - title: parent-monograph
   - title: parent-serial
-  - items:
+  - group:
     - number: volume
     - number: issue
       wrap: parentheses

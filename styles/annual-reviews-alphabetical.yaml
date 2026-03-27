@@ -57,17 +57,17 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id001
+      shorten:
         min: 8
         use-first: 5
     - date: issued
       form: year
       prefix: " "
     - title: primary
-    - items:
+    - group:
       - number: volume
     - variable: publisher-place
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -82,17 +82,19 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 5
     - date: issued
       form: year
       prefix: " "
     - title: primary
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
     - variable: publisher-place
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -107,17 +109,19 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 5
     - date: issued
       form: year
       prefix: " "
     - title: primary
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
     - variable: publisher-place
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -132,17 +136,19 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 5
     - date: issued
       form: year
       prefix: " "
     - title: primary
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
     - variable: publisher-place
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -154,16 +160,18 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 5
     - date: issued
       form: year
       prefix: " "
     - title: primary
-    - items:
+    - group:
       - number: issue
         wrap: parentheses
     - variable: publisher-place
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -204,17 +212,19 @@ bibliography:
   - contributor: author
     form: long
     name-order: family-first
-    shorten: *id001
+    shorten:
+      min: 8
+      use-first: 5
   - date: issued
     form: year
     prefix: " "
   - title: primary
-  - items:
+  - group:
     - number: volume
     - number: issue
       wrap: parentheses
   - variable: publisher-place
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first

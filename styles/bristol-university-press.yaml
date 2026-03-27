@@ -1,28 +1,25 @@
 info:
   title: Bristol University Press
   fields:
-  - humanities
+    - humanities
   source:
     csl-id: http://www.zotero.org/styles/bristol-university-press
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Patrick O'Brien
+      - name: Patrick O'Brien
     links:
-    - href: http://www.zotero.org/styles/bristol-university-press
-      rel: self
-    - href: http://www.zotero.org/styles/harvard-university-of-birmingham
-      rel: template
-    - href: https://bristoluniversitypressdigital.com/view/journals/evp/evp-overview.xml?tab_body=instructions-for-authors
-      rel: documentation
+      - href: http://www.zotero.org/styles/bristol-university-press
+        rel: self
+      - href: http://www.zotero.org/styles/harvard-university-of-birmingham
+        rel: template
+      - href: https://bristoluniversitypressdigital.com/view/journals/evp/evp-overview.xml?tab_body=instructions-for-authors
+        rel: documentation
 options:
   locators: note
   substitute:
     contributor-role-form: short
     template: []
-    overrides:
-      webpage:
-      - title
   contributors:
     display-as-sort: all
     name-form: initials
@@ -32,10 +29,10 @@ options:
       use-first: 6
       and-others: et-al
       delimiter-precedes-last: contextual
-    delimiter: ", "
+    delimiter: ', '
     delimiter-precedes-last: never
     demote-non-dropping-particle: sort-only
-    sort-separator: ", "
+    sort-separator: ', '
   dates: long
   titles: humanities
 citation:
@@ -47,31 +44,31 @@ citation:
         year-suffix: true
     contributors:
       name-form: initials
-      initialize-with: ". "
+      initialize-with: '. '
       shorten:
         min: 3
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
       delimiter-precedes-last: never
   template:
-  - contributor: author
-    form: short
-    name-order: family-first
-    shorten:
-      min: 3
-      use-first: 1
-      and-others: et-al
-      delimiter-precedes-last: contextual
-  - date: issued
-    form: year
-    prefix: ", "
-  - variable: locator
-    prefix: ":"
+    - contributor: author
+      form: short
+      name-order: family-first
+      shorten:
+        min: 3
+        use-first: 1
+        and-others: et-al
+        delimiter-precedes-last: contextual
+    - date: issued
+      form: year
+      prefix: ', '
+    - variable: locator
+      prefix: ':'
   wrap: parentheses
-  delimiter: " "
-  multi-cite-delimiter: "; "
+  delimiter: ' '
+  multi-cite-delimiter: '; '
 bibliography:
   sort: author-date-title
   options:
@@ -84,13 +81,37 @@ bibliography:
         use-first: 6
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
       delimiter-precedes-last: never
-      sort-separator: ", "
+      sort-separator: ', '
     entry-suffix: .
-    separator: ", "
+    separator: ', '
   type-variants:
     article-journal:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - date: issued
+        form: year
+        wrap: parentheses
+        prefix: ' '
+      - title: primary
+        prefix: ' '
+      - title: parent-serial
+        emph: true
+      - delimiter: ''
+        group:
+          - number: volume
+          - number: issue
+            wrap: parentheses
+      - number: pages
+        prefix: ': '
+      - variable: doi
+        prefix: ', doi: doi.org/'
+  template:
     - contributor: author
       form: long
       name-order: family-first
@@ -100,42 +121,18 @@ bibliography:
     - date: issued
       form: year
       wrap: parentheses
-      prefix: " "
+      prefix: ' '
     - title: primary
-      prefix: " "
+      prefix: ' '
+    - title: parent-monograph
+      emph: true
     - title: parent-serial
       emph: true
-    - delimiter: ""
-      group:
-      - number: volume
-      - number: issue
-        wrap: parentheses
+    - group:
+        - number: volume
+        - number: issue
+          wrap: parentheses
+    - variable: publisher
     - number: pages
-      prefix: ": "
-    - variable: doi
-      prefix: ", doi: doi.org/"
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten:
-      min: 8
-      use-first: 6
-  - date: issued
-    form: year
-    wrap: parentheses
-    prefix: " "
-  - title: primary
-    prefix: " "
-  - title: parent-monograph
-    emph: true
-  - title: parent-serial
-    emph: true
-  - items:
-    - number: volume
-    - number: issue
-      wrap: parentheses
-  - variable: publisher
-  - number: pages
-    prefix: ", pp "
-  - variable: url
+      prefix: ', pp '
+    - variable: url

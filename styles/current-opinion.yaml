@@ -46,7 +46,7 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: ": "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: family-first
@@ -65,7 +65,7 @@ bibliography:
     name-order: family-first
   - title: primary
     prefix: ": "
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: family-first
