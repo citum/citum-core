@@ -120,7 +120,7 @@ bibliography:
     name-order: given-first
   - variable: publisher
     prefix: ": "
-  - items:
+  - group:
     - number: volume
     - number: issue
   - number: pages

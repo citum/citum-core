@@ -104,7 +104,7 @@ bibliography:
       prefix: " "
     - title: primary
       prefix: ". — "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -112,7 +112,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items: &id001
+    - group:
       - number: volume
       - number: issue
     - variable: publisher
@@ -129,7 +129,7 @@ bibliography:
       prefix: " "
     - title: primary
       prefix: ". — "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -138,7 +138,9 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items: *id001
+    - group:
+      - number: volume
+      - number: issue
     - variable: publisher
     - number: pages
       prefix: "pp. "
@@ -153,7 +155,7 @@ bibliography:
       prefix: " "
     - title: primary
       prefix: ". — "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -161,7 +163,9 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items: *id001
+    - group:
+      - number: volume
+      - number: issue
     - variable: publisher
     - number: pages
       prefix: "pp. "
@@ -176,7 +180,7 @@ bibliography:
       prefix: " "
     - title: primary
       prefix: ". — "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -184,7 +188,9 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items: *id001
+    - group:
+      - number: volume
+      - number: issue
     - variable: publisher
     - number: pages
       prefix: "pp. "
@@ -199,7 +205,7 @@ bibliography:
     prefix: " "
   - title: primary
     prefix: ". — "
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first
@@ -207,7 +213,7 @@ bibliography:
       emph: true
   - title: parent-serial
     emph: true
-  - items:
+  - group:
     - number: volume
     - number: issue
   - variable: publisher

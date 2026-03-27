@@ -47,7 +47,7 @@ citation:
         and-others: et-al
         delimiter-precedes-et-al: never
   template:
-  - items:
+  - group:
     - contributor: author
       form: family-only
     - title: primary
@@ -84,15 +84,15 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id001
+      shorten:
         min: 3
         use-first: 1
     - title: primary
-    - items: &id002
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: &id003
+        shorten:
           min: 4
           use-first: 1
       - title: parent-monograph
@@ -119,9 +119,19 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 3
+        use-first: 1
     - title: primary
-    - items: *id002
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - title: parent-monograph
+        emph: true
     - contributor: translator
       form: verb
       name-order: given-first
@@ -144,9 +154,19 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 3
+        use-first: 1
     - title: primary
-    - items: *id002
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - title: parent-monograph
+        emph: true
     - contributor: translator
       form: verb
       name-order: given-first
@@ -169,9 +189,19 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 3
+        use-first: 1
     - title: primary
-    - items: *id002
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - title: parent-monograph
+        emph: true
     - contributor: translator
       form: verb
       name-order: given-first
@@ -194,9 +224,19 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 3
+        use-first: 1
     - title: primary
-    - items: *id002
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - title: parent-monograph
+        emph: true
     - contributor: translator
       form: verb
       name-order: given-first
@@ -274,13 +314,17 @@ bibliography:
   - contributor: author
     form: long
     name-order: family-first
-    shorten: *id001
+    shorten:
+      min: 3
+      use-first: 1
   - title: primary
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten: *id003
+      shorten:
+        min: 4
+        use-first: 1
     - title: parent-monograph
       emph: true
   - contributor: translator

@@ -87,7 +87,7 @@ citation:
     - contributor: author
       form: long
       name-order: given-first
-      shorten: &id001
+      shorten:
         min: 8
         use-first: 3
     - title: primary
@@ -125,7 +125,9 @@ citation:
     - contributor: author
       form: long
       name-order: given-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       wrap: quotes
     - title: parent-monograph
@@ -158,7 +160,9 @@ citation:
   - contributor: author
     form: long
     name-order: given-first
-    shorten: *id001
+    shorten:
+      min: 8
+      use-first: 3
   - title: primary
     wrap: quotes
   - title: parent-monograph

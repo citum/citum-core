@@ -52,7 +52,7 @@ bibliography:
         form: long
         and: text
         name-order: given-first
-        shorten: &id001
+        shorten:
           min: 8
           use-first: 1
     - title: primary
@@ -85,7 +85,9 @@ bibliography:
         form: long
         and: text
         name-order: given-first
-        shorten: *id001
+        shorten:
+          min: 8
+          use-first: 1
     - title: primary
       wrap: quotes
     - title: parent-monograph
@@ -116,7 +118,9 @@ bibliography:
         form: long
         and: text
         name-order: given-first
-        shorten: *id001
+        shorten:
+          min: 8
+          use-first: 1
     - title: primary
       wrap: none
     - title: parent-monograph
@@ -147,7 +151,9 @@ bibliography:
         form: long
         and: text
         name-order: given-first
-        shorten: *id001
+        shorten:
+          min: 8
+          use-first: 1
     - title: primary
       wrap: none
     - title: parent-monograph
@@ -177,7 +183,9 @@ bibliography:
         form: long
         and: text
         name-order: given-first
-        shorten: *id001
+        shorten:
+          min: 8
+          use-first: 1
     - title: primary
       wrap: quotes
     - title: parent-monograph
@@ -208,7 +216,9 @@ bibliography:
         form: long
         and: text
         name-order: given-first
-        shorten: *id001
+        shorten:
+          min: 8
+          use-first: 1
     - title: primary
       wrap: none
     - title: parent-monograph
@@ -238,7 +248,9 @@ bibliography:
         form: long
         and: text
         name-order: given-first
-        shorten: *id001
+        shorten:
+          min: 8
+          use-first: 1
     - title: primary
       wrap: none
     - title: parent-monograph
@@ -269,7 +281,9 @@ bibliography:
         form: long
         and: text
         name-order: given-first
-        shorten: *id001
+        shorten:
+          min: 8
+          use-first: 1
     - title: primary
       wrap: none
     - title: parent-monograph
@@ -299,7 +313,9 @@ bibliography:
         form: long
         and: text
         name-order: given-first
-        shorten: *id001
+        shorten:
+          min: 8
+          use-first: 1
     - title: primary
       wrap: quotes
     - title: parent-monograph
@@ -346,7 +362,9 @@ bibliography:
         form: long
         and: text
         name-order: given-first
-        shorten: *id001
+        shorten:
+          min: 8
+          use-first: 1
         prefix: "pp. "
     - title: primary
       wrap: quotes
@@ -377,7 +395,9 @@ bibliography:
         form: long
         and: text
         name-order: given-first
-        shorten: *id001
+        shorten:
+          min: 8
+          use-first: 1
     - title: primary
       wrap: none
     - title: parent-monograph
@@ -407,7 +427,9 @@ bibliography:
         form: long
         and: text
         name-order: given-first
-        shorten: *id001
+        shorten:
+          min: 8
+          use-first: 1
     - title: primary
       wrap: none
       emph: true
@@ -439,7 +461,9 @@ bibliography:
       form: long
       and: text
       name-order: given-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 1
   - title: primary
     wrap: quotes
   - title: parent-monograph

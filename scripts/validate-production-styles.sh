@@ -59,6 +59,7 @@ main() {
   local style
   local failed=0
   local output
+  local lint_status=0
 
   while IFS= read -r style; do
     [[ -n "$style" ]] && styles+=("$style")
@@ -85,7 +86,12 @@ main() {
     printf '%s\n' "$output"
   done
 
-  if (( failed != 0 )); then
+  info "Linting style structure"
+  if ! node "$ROOT_DIR/scripts/style-structure-lint.js" "${styles[@]}"; then
+    lint_status=1
+  fi
+
+  if (( failed != 0 || lint_status != 0 )); then
     error "Production style validation failed."
     exit 1
   fi

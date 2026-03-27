@@ -74,7 +74,7 @@ jobs:
             --allow-orphan-footer \
             --dry-run
 
-      - name: Validate production styles
+      - name: Validate production styles and structure
         run: ./scripts/validate-production-styles.sh
 
       - name: Check testing infrastructure contracts

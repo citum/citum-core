@@ -51,21 +51,21 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id001
+      shorten:
         min: 8
         use-first: 3
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: &id002
+        shorten:
           min: 4
           use-first: 3
       - title: parent-monograph
     - title: parent-serial
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -78,17 +78,21 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: *id002
+        shorten:
+          min: 4
+          use-first: 3
       - title: parent-monograph
     - title: parent-serial
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -101,17 +105,21 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: *id002
+        shorten:
+          min: 4
+          use-first: 3
       - title: parent-monograph
     - title: parent-serial
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -124,20 +132,24 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: *id002
+        shorten:
+          min: 4
+          use-first: 3
         prefix: "on "
       - title: parent-monograph
     - title: parent-serial
     - date: issued
       form: year
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -151,17 +163,21 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: *id002
+        shorten:
+          min: 4
+          use-first: 3
       - title: parent-monograph
     - title: parent-serial
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -174,19 +190,23 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: *id002
+        shorten:
+          min: 4
+          use-first: 3
       - title: parent-monograph
     - title: parent-serial
     - date: issued
       form: year
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -200,19 +220,23 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: *id002
+        shorten:
+          min: 4
+          use-first: 3
       - title: parent-monograph
     - title: parent-serial
     - date: issued
       form: year
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -226,17 +250,21 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: *id002
+        shorten:
+          min: 4
+          use-first: 3
       - title: parent-monograph
     - title: parent-serial
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -249,19 +277,23 @@ bibliography:
   - contributor: author
     form: long
     name-order: family-first
-    shorten: *id001
+    shorten:
+      min: 8
+      use-first: 3
   - title: primary
     prefix: " "
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten: *id002
+      shorten:
+        min: 4
+        use-first: 3
     - title: parent-monograph
   - title: parent-serial
   - date: issued
     form: year
-  - items:
+  - group:
     - number: volume
     - number: issue
       wrap: parentheses

@@ -68,7 +68,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id001
+      shorten:
         min: 5
         use-first: 3
         and-others: text
@@ -148,7 +148,10 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 5
+        use-first: 3
+        and-others: text
     - date: issued
       form: year
       wrap: parentheses
@@ -299,7 +302,10 @@ bibliography:
   - contributor: author
     form: long
     name-order: family-first
-    shorten: *id001
+    shorten:
+      min: 5
+      use-first: 3
+      and-others: text
   - contributor: editor
     form: long
     name-order: family-first

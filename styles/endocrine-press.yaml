@@ -60,7 +60,7 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -68,7 +68,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -84,7 +84,7 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -92,7 +92,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -108,7 +108,7 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -117,7 +117,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -133,7 +133,7 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -141,7 +141,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -157,7 +157,7 @@ bibliography:
     name-order: family-first
   - title: primary
     prefix: " "
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first
@@ -167,7 +167,7 @@ bibliography:
     emph: true
   - date: issued
     form: year
-  - items:
+  - group:
     - number: volume
     - number: issue
       wrap: parentheses

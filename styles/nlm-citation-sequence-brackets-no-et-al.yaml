@@ -64,13 +64,13 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
       - title: parent-monograph
     - title: parent-serial
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -85,13 +85,13 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
       - title: parent-monograph
     - title: parent-serial
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -106,13 +106,13 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
       - title: parent-monograph
     - title: parent-serial
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -127,7 +127,7 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -136,7 +136,7 @@ bibliography:
     - title: parent-serial
     - date: issued
       form: year
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -152,13 +152,13 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
       - title: parent-monograph
     - title: parent-serial
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -173,7 +173,7 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -181,7 +181,7 @@ bibliography:
     - title: parent-serial
     - date: issued
       form: year
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -197,7 +197,7 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -205,7 +205,7 @@ bibliography:
     - title: parent-serial
     - date: issued
       form: year
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -221,13 +221,13 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
       - title: parent-monograph
     - title: parent-serial
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -242,7 +242,7 @@ bibliography:
     name-order: family-first
   - title: primary
     prefix: " "
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first
@@ -250,7 +250,7 @@ bibliography:
   - title: parent-serial
   - date: issued
     form: year
-  - items:
+  - group:
     - number: volume
     - number: issue
       wrap: parentheses

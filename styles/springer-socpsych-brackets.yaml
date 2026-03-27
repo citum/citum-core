@@ -71,7 +71,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id001
+      shorten:
         min: 8
         use-first: 7
     - date: issued
@@ -88,7 +88,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -104,7 +104,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 7
     - title: primary
     - prefix: ". In "
       group:
@@ -115,7 +117,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -130,7 +132,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 7
     - title: primary
     - prefix: ". In "
       group:
@@ -141,7 +145,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -156,7 +160,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 7
     - title: primary
     - prefix: ". In "
       group:
@@ -167,7 +173,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -182,7 +188,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 7
     - date: issued
       form: year
       wrap: parentheses
@@ -198,7 +206,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -214,7 +222,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 7
     - title: primary
     - prefix: ". In "
       group:
@@ -225,7 +235,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -240,7 +250,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 7
     - date: issued
       form: year
       wrap: parentheses
@@ -255,7 +267,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -271,7 +283,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 7
     - title: primary
     - prefix: ". In "
       group:
@@ -282,7 +296,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -297,7 +311,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 7
     - title: primary
     - prefix: ". In "
       group:
@@ -308,7 +324,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -323,7 +339,9 @@ bibliography:
   - contributor: author
     form: long
     name-order: family-first
-    shorten: *id001
+    shorten:
+      min: 8
+      use-first: 7
   - date: issued
     form: year
     wrap: parentheses
@@ -338,7 +356,7 @@ bibliography:
       emph: true
   - title: parent-serial
     emph: true
-  - items:
+  - group:
     - number: volume
     - number: issue
       wrap: parentheses

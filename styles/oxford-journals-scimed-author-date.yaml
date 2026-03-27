@@ -97,16 +97,16 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id001
+      shorten:
         min: 5
         use-first: 3
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: &id002
+        shorten:
           min: 4
           use-first: 3
       - title: parent-monograph
@@ -123,14 +123,18 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 5
+        use-first: 3
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: *id002
+        shorten:
+          min: 4
+          use-first: 3
       - title: parent-monograph
         emph: true
     - title: parent-serial
@@ -145,14 +149,18 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 5
+        use-first: 3
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: *id002
+        shorten:
+          min: 4
+          use-first: 3
         prefix: "on "
       - title: parent-monograph
         emph: true
@@ -171,14 +179,18 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 5
+        use-first: 3
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: *id002
+        shorten:
+          min: 4
+          use-first: 3
       - title: parent-monograph
         emph: true
     - title: parent-serial
@@ -193,14 +205,18 @@ bibliography:
   - contributor: author
     form: long
     name-order: family-first
-    shorten: *id001
+    shorten:
+      min: 5
+      use-first: 3
   - title: primary
     prefix: " "
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten: *id002
+      shorten:
+        min: 4
+        use-first: 3
     - title: parent-monograph
       emph: true
   - title: parent-serial

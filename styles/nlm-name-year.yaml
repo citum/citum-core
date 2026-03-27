@@ -113,12 +113,12 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id001
+      shorten:
         min: 8
         use-first: 6
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -127,7 +127,7 @@ bibliography:
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -138,10 +138,12 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 6
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -150,7 +152,7 @@ bibliography:
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -161,10 +163,12 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 6
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -173,7 +177,7 @@ bibliography:
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -184,10 +188,12 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 6
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -200,7 +206,7 @@ bibliography:
     - date: issued
       form: year
       prefix: "; "
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -211,10 +217,12 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 6
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -223,7 +231,7 @@ bibliography:
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -234,10 +242,12 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 6
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -249,7 +259,7 @@ bibliography:
     - date: issued
       form: year
       prefix: "; "
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -260,10 +270,12 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 6
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -275,7 +287,7 @@ bibliography:
     - date: issued
       form: year
       prefix: "; "
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -286,10 +298,12 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 6
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -298,7 +312,7 @@ bibliography:
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -309,10 +323,12 @@ bibliography:
   - contributor: author
     form: long
     name-order: family-first
-    shorten: *id001
+    shorten:
+      min: 8
+      use-first: 6
   - title: primary
     prefix: " "
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first
@@ -324,7 +340,7 @@ bibliography:
   - date: issued
     form: year
     prefix: "; "
-  - items:
+  - group:
     - number: volume
     - number: issue
       wrap: parentheses

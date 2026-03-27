@@ -2,41 +2,41 @@ info:
   title: 'CSE Manual: Scientific Style and Format 9th edition (name-year)'
   description: 'Council of Science Editors style, 9th edition, name-year system: author-date in text, sorted alphabetically.'
   fields:
-  - biology
-  - botany
-  - chemistry
-  - geology
-  - medicine
-  - science
-  - zoology
+    - biology
+    - botany
+    - chemistry
+    - geology
+    - medicine
+    - science
+    - zoology
   source:
     csl-id: http://www.zotero.org/styles/cse-name-year
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Patrick O'Brien
+      - name: Patrick O'Brien
     links:
-    - href: http://www.zotero.org/styles/cse-name-year
-      rel: self
-    - href: http://www.zotero.org/styles/cse-citation-sequence
-      rel: template
-    - href: https://www.csemanual.org/Tools/CSE-Citation-Quick-Guide.html
-      rel: documentation
+      - href: http://www.zotero.org/styles/cse-name-year
+        rel: self
+      - href: http://www.zotero.org/styles/cse-citation-sequence
+        rel: template
+      - href: https://www.csemanual.org/Tools/CSE-Citation-Quick-Guide.html
+        rel: documentation
 options:
   substitute: editor-translator-title-long
   contributors:
     display-as-sort: all
     name-form: initials
-    initialize-with: ""
+    initialize-with: ''
     shorten:
       min: 5
       use-first: 1
       and-others: et-al
       delimiter-precedes-last: contextual
-    delimiter: ", "
+    delimiter: ', '
     delimiter-precedes-last: always
     demote-non-dropping-particle: sort-only
-    sort-separator: " "
+    sort-separator: ' '
   dates: numeric
   punctuation-in-quote: true
 citation:
@@ -49,145 +49,144 @@ citation:
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
   type-variants:
     article-newspaper:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten: &id001
-        min: 3
-        use-first: 1
-        and-others: et-al
-        delimiter-precedes-last: contextual
+      - contributor: author
+        form: long
+        name-order: family-first
     patent:
+      - contributor: author
+        form: long
+        name-order: family-first
+  template:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten: *id001
-  - date: issued
-    form: year
-    prefix: " "
+    - date: issued
+      form: year
+      prefix: ' '
   wrap: parentheses
-  delimiter: ". "
-  multi-cite-delimiter: "; "
+  delimiter: '. '
+  multi-cite-delimiter: '; '
 bibliography:
   options:
     contributors:
       display-as-sort: all
       name-form: initials
-      initialize-with: ""
+      initialize-with: ''
       shorten:
         min: 5
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
       delimiter-precedes-last: always
-      sort-separator: " "
-    separator: ". "
+      sort-separator: ' '
+    separator: '. '
   type-variants:
     article-journal:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - date: issued
+        form: year
+        prefix: ' '
+      - title: primary
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+      - title: parent-serial
+      - group:
+          - number: volume
+          - number: issue
+            wrap: parentheses
+      - variable: publisher
+      - number: pages
+        prefix: '; p '
+      - variable: doi
+        prefix: https://doi.org/
+      - variable: url
+    chapter:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - date: issued
+        form: year
+        prefix: ' '
+      - title: primary
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+            prefix: 'on '
+          - title: parent-monograph
+      - title: parent-serial
+      - group:
+          - number: volume
+          - number: issue
+            wrap: parentheses
+      - variable: publisher
+      - number: pages
+        prefix: '; p '
+      - variable: doi
+      - variable: url
+    webpage:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - date: issued
+        form: year
+        prefix: ' '
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+      - title: parent-serial
+      - group:
+          - number: volume
+          - number: issue
+            wrap: parentheses
+      - variable: publisher
+      - number: pages
+        prefix: '; p '
+      - variable: doi
+      - variable: url
+  template:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id002
+      shorten:
         min: 5
         use-first: 1
     - date: issued
       form: year
-      prefix: " "
+      prefix: ' '
     - title: primary
-    - items:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
+    - group:
+        - contributor: editor
+          form: verb
+          name-order: given-first
+        - title: parent-monograph
     - title: parent-serial
-    - items:
-      - number: volume
-      - number: issue
-        wrap: parentheses
+    - group:
+        - number: volume
+        - number: issue
+          wrap: parentheses
     - variable: publisher
     - number: pages
-      prefix: "; p "
-    - variable: doi
-      prefix: https://doi.org/
-    - variable: url
-    chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten: *id002
-    - date: issued
-      form: year
-      prefix: " "
-    - title: primary
-    - items:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
-    - title: parent-serial
-    - items:
-      - number: volume
-      - number: issue
-        wrap: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "; p "
+      prefix: '; p '
     - variable: doi
     - variable: url
-    webpage:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten: *id002
-    - date: issued
-      form: year
-      prefix: " "
-    - items:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - items:
-      - number: volume
-      - number: issue
-        wrap: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "; p "
-    - variable: doi
-    - variable: url
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten: *id002
-  - date: issued
-    form: year
-    prefix: " "
-  - title: primary
-  - items:
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - title: parent-monograph
-  - title: parent-serial
-  - items:
-    - number: volume
-    - number: issue
-      wrap: parentheses
-  - variable: publisher
-  - number: pages
-    prefix: "; p "
-  - variable: doi
-  - variable: url

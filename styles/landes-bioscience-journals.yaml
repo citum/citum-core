@@ -51,7 +51,7 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -74,7 +74,7 @@ bibliography:
     name-order: family-first
   - title: primary
     prefix: " "
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first

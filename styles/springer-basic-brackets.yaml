@@ -54,7 +54,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id001
+      shorten:
         min: 5
         use-first: 3
         and-others: et-al
@@ -106,7 +106,10 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 5
+        use-first: 3
+        and-others: et-al
     - date: issued
       form: year
       wrap: parentheses
@@ -139,7 +142,10 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 5
+        use-first: 3
+        and-others: et-al
     - contributor: editor
       form: long
       name-order: family-first
@@ -287,7 +293,10 @@ bibliography:
   - contributor: author
     form: long
     name-order: family-first
-    shorten: *id001
+    shorten:
+      min: 5
+      use-first: 3
+      and-others: et-al
   - contributor: editor
     form: long
     name-order: family-first

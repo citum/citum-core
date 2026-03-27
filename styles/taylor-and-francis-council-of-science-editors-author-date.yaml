@@ -92,13 +92,13 @@ bibliography:
       form: year
       prefix: " "
     - title: primary
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
       - title: parent-monograph
     - title: parent-serial
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -117,14 +117,14 @@ bibliography:
       form: year
       prefix: " "
     - title: primary
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
         prefix: "on "
       - title: parent-monograph
     - title: parent-serial
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -142,13 +142,13 @@ bibliography:
       form: year
       prefix: " "
     - title: primary
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
       - title: parent-monograph
     - title: parent-serial
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -166,13 +166,13 @@ bibliography:
     form: year
     prefix: " "
   - title: primary
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first
     - title: parent-monograph
   - title: parent-serial
-  - items:
+  - group:
     - number: volume
     - number: issue
       wrap: parentheses

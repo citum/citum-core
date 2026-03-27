@@ -105,7 +105,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id001
+      shorten:
         min: 5
         use-first: 1
     - date: issued
@@ -120,7 +120,7 @@ bibliography:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: &id002
+        shorten:
           min: 4
           use-first: 1
       - title: parent-monograph
@@ -130,7 +130,7 @@ bibliography:
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -143,7 +143,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 5
+        use-first: 1
     - date: issued
       form: year
       wrap: parentheses
@@ -156,7 +158,9 @@ bibliography:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: *id002
+        shorten:
+          min: 4
+          use-first: 1
       - title: parent-monograph
         emph: true
     - title: parent-serial
@@ -164,7 +168,7 @@ bibliography:
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
-    - items:
+    - group:
       - number: volume
     - number: pages
       prefix: "pp. "
@@ -174,7 +178,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 5
+        use-first: 1
     - date: issued
       form: year
       wrap: parentheses
@@ -187,7 +193,9 @@ bibliography:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: *id002
+        shorten:
+          min: 4
+          use-first: 1
         prefix: "in "
       - title: parent-monograph
         emph: true
@@ -196,7 +204,7 @@ bibliography:
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -208,7 +216,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 5
+        use-first: 1
     - date: issued
       form: year
       wrap: parentheses
@@ -221,7 +231,9 @@ bibliography:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten: *id002
+        shorten:
+          min: 4
+          use-first: 1
       - title: parent-monograph
         emph: true
     - title: parent-serial
@@ -229,7 +241,7 @@ bibliography:
     - variable: publisher-place
     - variable: publisher
       prefix: ": "
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -241,7 +253,9 @@ bibliography:
   - contributor: author
     form: long
     name-order: family-first
-    shorten: *id001
+    shorten:
+      min: 5
+      use-first: 1
   - date: issued
     form: year
     wrap: parentheses
@@ -254,7 +268,9 @@ bibliography:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten: *id002
+      shorten:
+        min: 4
+        use-first: 1
     - title: parent-monograph
       emph: true
   - title: parent-serial
@@ -262,7 +278,7 @@ bibliography:
   - variable: publisher-place
   - variable: publisher
     prefix: ": "
-  - items:
+  - group:
     - number: volume
     - number: issue
       wrap: parentheses

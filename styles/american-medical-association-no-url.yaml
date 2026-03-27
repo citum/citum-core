@@ -66,12 +66,12 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id001
+      shorten:
         min: 8
         use-first: 3
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -79,7 +79,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -90,10 +90,12 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -101,7 +103,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -112,10 +114,12 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -123,7 +127,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -134,10 +138,12 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -146,7 +152,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -157,10 +163,12 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -168,7 +176,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -179,10 +187,12 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -190,7 +200,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -201,10 +211,12 @@ bibliography:
   - contributor: author
     form: long
     name-order: family-first
-    shorten: *id001
+    shorten:
+      min: 8
+      use-first: 3
   - title: primary
     prefix: " "
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first
@@ -214,7 +226,7 @@ bibliography:
     emph: true
   - date: issued
     form: year
-  - items:
+  - group:
     - number: volume
     - number: issue
       wrap: parentheses

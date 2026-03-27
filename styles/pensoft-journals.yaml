@@ -107,7 +107,7 @@ bibliography:
       prefix: " "
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -134,7 +134,7 @@ bibliography:
       prefix: " "
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -158,7 +158,7 @@ bibliography:
       prefix: " "
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -206,7 +206,7 @@ bibliography:
     prefix: " "
   - title: primary
     prefix: " "
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first

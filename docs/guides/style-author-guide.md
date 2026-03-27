@@ -66,6 +66,20 @@ When you choose divergence:
 - Preserve multilingual fallback behavior (original -> transliterated -> translated).
 - Prefer readable, reusable style definitions over one-off hacks.
 
+## Deterministic Structure Rules
+
+Production styles are checked by `node scripts/style-structure-lint.js`.
+
+- Anonymous generated YAML anchors such as `&id001` and `*id001` are not accepted in committed styles.
+- Legacy `items:` group blocks must be authored as `group:`.
+- Do not keep inert `substitute.overrides` under `template: []`; that shape is explicit dead config.
+- Do not repeat the same component-level `shorten` block when a safe higher-scope `contributors.shorten` setting can express the same behavior.
+- Do not keep `type-variants` that are byte-for-byte identical to the section base template.
+
+SQI still rewards maintainability improvements, but these structure rules are enforced separately from SQI scoring.
+
+If a repeated pattern cannot be expressed cleanly with current option scope or presets, treat that as a preset or tooling gap to fix. Do not leave duplication behind as the final style shape.
+
 ## `number:` vs `variable:`
 
 Some fields exist in both template enums, especially `volume` and `number`.

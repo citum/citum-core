@@ -97,7 +97,7 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -105,7 +105,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
     - number: pages
       prefix: ":"
@@ -120,7 +120,7 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -128,7 +128,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -145,7 +145,7 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -153,7 +153,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -170,7 +170,7 @@ bibliography:
   - date: issued
     form: year
   - title: primary
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first
@@ -178,7 +178,7 @@ bibliography:
       emph: true
   - title: parent-serial
     emph: true
-  - items:
+  - group:
     - number: volume
     - number: issue
       wrap: parentheses

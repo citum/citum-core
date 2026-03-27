@@ -11,6 +11,8 @@ Use SQI to improve style maintainability only after fidelity is correct.
 
 Never accept an SQI gain that causes a fidelity regression.
 
+SQI is not the structural lint. Deterministic style-shape rules such as anonymous-anchor rejection and dead-config detection are enforced separately by `scripts/style-structure-lint.js`.
+
 ## What SQI Measures
 
 SQI is computed per style from four subscores:

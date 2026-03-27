@@ -41,7 +41,7 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -65,7 +65,7 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -104,7 +104,7 @@ bibliography:
   - date: issued
     form: year
   - title: primary
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first

@@ -48,7 +48,7 @@ bibliography:
     - title: primary
       prefix: " "
     - variable: publisher-place
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -120,7 +120,7 @@ bibliography:
   - title: primary
     prefix: " "
   - variable: publisher-place
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first

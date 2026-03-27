@@ -74,7 +74,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: &id001
+      shorten:
         min: 8
         use-first: 3
     - title: primary
@@ -86,7 +86,7 @@ bibliography:
     - variable: publisher
     - variable: publisher-place
       prefix: ", "
-    - items:
+    - group:
       - number: volume
     - contributor: editor
       form: verb
@@ -114,7 +114,9 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -122,7 +124,7 @@ bibliography:
     - variable: publisher
     - variable: publisher-place
       prefix: ", "
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -154,7 +156,9 @@ bibliography:
   - contributor: author
     form: long
     name-order: family-first
-    shorten: *id001
+    shorten:
+      min: 8
+      use-first: 3
   - title: primary
     prefix: " "
   - title: parent-monograph
@@ -164,7 +168,7 @@ bibliography:
   - variable: publisher
   - variable: publisher-place
     prefix: ", "
-  - items:
+  - group:
     - number: volume
     - number: issue
       wrap: parentheses

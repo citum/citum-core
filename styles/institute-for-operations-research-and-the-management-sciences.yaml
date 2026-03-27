@@ -91,7 +91,7 @@ bibliography:
       prefix: " "
     - title: primary
       prefix: " "
-    - items:
+    - group:
       - contributor: editor
         form: verb
         name-order: given-first
@@ -100,7 +100,7 @@ bibliography:
         emph: true
     - title: parent-serial
       emph: true
-    - items:
+    - group:
       - number: volume
       - number: issue
         wrap: parentheses
@@ -119,7 +119,7 @@ bibliography:
     prefix: " "
   - title: primary
     prefix: " "
-  - items:
+  - group:
     - contributor: editor
       form: verb
       name-order: given-first
@@ -127,7 +127,7 @@ bibliography:
       emph: true
   - title: parent-serial
     emph: true
-  - items:
+  - group:
     - number: volume
     - number: issue
       wrap: parentheses
