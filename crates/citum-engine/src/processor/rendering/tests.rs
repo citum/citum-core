@@ -226,6 +226,32 @@ fn test_substituted_contributor_keys_block_contextual_duplicate_components() {
 }
 
 #[test]
+fn test_substituted_title_keys_preserve_primary_title_base() {
+    let mut tracker = TemplateComponentTracker::default();
+    let short_title = TemplateComponent::Title(TemplateTitle {
+        title: TitleType::Primary,
+        form: Some(TitleForm::Short),
+        ..Default::default()
+    });
+    let long_title = TemplateComponent::Title(TemplateTitle {
+        title: TitleType::Primary,
+        form: Some(TitleForm::Long),
+        ..Default::default()
+    });
+
+    let short_key = get_variable_key(&short_title).expect("short title should have a key");
+    let long_key = get_variable_key(&long_title).expect("long title should have a key");
+
+    assert_eq!(short_key, "title:Primary:Short");
+    assert_eq!(long_key, "title:Primary:Long");
+
+    tracker.mark_rendered(None, Some("title:Primary"));
+
+    assert!(tracker.should_skip(Some(&short_key)));
+    assert!(tracker.should_skip(Some(&long_key)));
+}
+
+#[test]
 fn test_strip_author_component_nested_list() {
     let nested = TemplateComponent::Group(TemplateGroup {
         group: vec![

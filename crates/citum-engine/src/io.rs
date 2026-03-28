@@ -9,6 +9,7 @@ use std::path::Path;
 
 use citum_schema::InputBibliography;
 use citum_schema::reference::InputReference;
+use citum_schema::reference::conversion::input_reference_from_legacy_edited_book;
 use csl_legacy::csl_json::Reference as LegacyReference;
 use indexmap::IndexMap;
 
@@ -240,13 +241,75 @@ fn loaded_from_input_bibliography(
     Ok(LoadedBibliography { references, sets })
 }
 
+fn loaded_from_hybrid_json_array(
+    references: &[serde_json::Value],
+    sets: Option<IndexMap<String, Vec<String>>>,
+) -> Result<LoadedBibliography, ProcessorError> {
+    let mut bib = IndexMap::new();
+    for value in references.iter().cloned() {
+        let reference = parse_hybrid_json_reference(value)?;
+        if let Some(id) = reference.id() {
+            bib.insert(id.clone(), reference);
+        }
+    }
+    let sets = validate_compound_sets(sets, &bib)?;
+    Ok(LoadedBibliography {
+        references: bib,
+        sets,
+    })
+}
+
+fn parse_hybrid_json_reference(value: serde_json::Value) -> Result<InputReference, ProcessorError> {
+    if let Ok(reference) = serde_json::from_value::<InputReference>(value.clone()) {
+        return Ok(reference);
+    }
+
+    let class = value
+        .get("class")
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or_default()
+        .to_string();
+    let ref_type = value
+        .get("type")
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or_default()
+        .to_string();
+    let legacy = serde_json::from_value::<LegacyReference>(value)
+        .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
+
+    if class == "collection" && ref_type == "edited-book" {
+        return Ok(input_reference_from_legacy_edited_book(legacy));
+    }
+
+    Ok(InputReference::from(legacy))
+}
+
 /// Parse JSON bibliography bytes into a `LoadedBibliography`.
 ///
 /// Supports CSL-JSON, Citum JSON, wrapped legacy format, and `IndexMap` variants.
 fn parse_json_bibliography(bytes: &[u8]) -> Result<LoadedBibliography, ProcessorError> {
     // Check for syntax errors first
-    let _: serde_json::Value = serde_json::from_slice(bytes)
+    let value: serde_json::Value = serde_json::from_slice(bytes)
         .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
+
+    if let Some(references) = value.as_array() {
+        return loaded_from_hybrid_json_array(references, None);
+    }
+
+    if let Some(object) = value.as_object()
+        && let Some(references) = object
+            .get("references")
+            .and_then(serde_json::Value::as_array)
+    {
+        let sets = object
+            .get("sets")
+            .filter(|value| !value.is_null())
+            .cloned()
+            .map(serde_json::from_value)
+            .transpose()
+            .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
+        return loaded_from_hybrid_json_array(references, sets);
+    }
 
     let mut bib = IndexMap::new();
 
@@ -584,6 +647,85 @@ issued: "2020"
         let sets = loaded.sets.expect("sets should be present");
         assert!(sets.contains_key("empty"));
         assert_eq!(sets.get("single"), Some(&vec!["ref-a".to_string()]));
+    }
+
+    #[test]
+    /// Parse a JSON array of native Citum references before falling back to CSL-JSON.
+    fn parse_json_vec_input_references() {
+        let json = r#"[
+  {
+    "class": "collection",
+    "id": "edited-book-1",
+    "type": "edited-book",
+    "title": "Edited Book",
+    "editor": [{"family": "Miller", "given": "Ruth"}],
+    "issued": "2022"
+  }
+]"#;
+        let result =
+            parse_json_bibliography(json.as_bytes()).expect("should parse native Citum JSON vec");
+        assert_eq!(result.references.len(), 1);
+        let reference = result
+            .references
+            .get("edited-book-1")
+            .expect("reference should be preserved");
+        assert_eq!(reference.ref_type(), "book");
+        assert!(matches!(reference, Reference::Collection(_)));
+        assert!(result.sets.is_none());
+    }
+
+    #[test]
+    /// Parse hybrid JSON fixtures that combine Citum `class` tags with CSL-JSON contributor/date shapes.
+    fn parse_json_hybrid_edited_book_reference() {
+        let json = r#"[
+  {
+    "id": "edited-book-1",
+    "class": "collection",
+    "type": "edited-book",
+    "title": "Edited Book",
+    "editor": [{"family": "Miller", "given": "Ruth"}],
+    "issued": {"date-parts": [[2022]]},
+    "publisher": "Example Press",
+    "publisher-place": "Chicago"
+  }
+]"#;
+        let result =
+            parse_json_bibliography(json.as_bytes()).expect("should parse hybrid Citum/CSL JSON");
+        let reference = result
+            .references
+            .get("edited-book-1")
+            .expect("reference should be preserved");
+        assert_eq!(reference.ref_type(), "book");
+        assert!(matches!(reference, Reference::Collection(_)));
+    }
+
+    #[test]
+    /// Preserve URLs when hybrid edited-book JSON falls back through the legacy loader.
+    fn parse_json_hybrid_edited_book_preserves_url() {
+        let json = r#"[
+  {
+    "id": "edited-book-1",
+    "class": "collection",
+    "type": "edited-book",
+    "title": "Edited Book",
+    "editor": [{"family": "Miller", "given": "Ruth"}],
+    "issued": {"date-parts": [[2022]]},
+    "publisher": "Example Press",
+    "publisher-place": "Chicago",
+    "URL": "https://example.com/edited-book"
+  }
+]"#;
+        let result =
+            parse_json_bibliography(json.as_bytes()).expect("should parse hybrid Citum/CSL JSON");
+        let reference = result
+            .references
+            .get("edited-book-1")
+            .expect("reference should be preserved");
+
+        assert_eq!(
+            reference.url().as_ref().map(url::Url::as_str),
+            Some("https://example.com/edited-book")
+        );
     }
 
     #[test]

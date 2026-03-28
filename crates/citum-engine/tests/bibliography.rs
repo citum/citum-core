@@ -160,6 +160,38 @@ fn build_container_title_short_style(title_type: TitleType) -> Style {
     }
 }
 
+fn build_group_with_suppressed_child_style() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Grouped Suppression Test".to_string()),
+            id: Some("grouped-suppression-test".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Group(TemplateGroup {
+                group: vec![
+                    TemplateComponent::Variable(TemplateVariable {
+                        variable: SimpleVariable::Url,
+                        rendering: Rendering {
+                            suppress: Some(true),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Title(TemplateTitle {
+                        title: TitleType::Primary,
+                        ..Default::default()
+                    }),
+                ],
+                delimiter: Some(DelimiterPunctuation::Slash),
+                ..Default::default()
+            })]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
 fn build_article_journal_no_page_fallback_style() -> Style {
     Style {
         info: StyleInfo {
@@ -845,6 +877,71 @@ fn container_title_short_prefers_explicit_short_field() {
     );
 }
 
+#[test]
+fn legal_case_parent_serial_uses_reporter_as_container_title() {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Legal Reporter Parent Serial Test".to_string()),
+            id: Some("legal-reporter-parent-serial-test".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Group(TemplateGroup {
+                group: vec![
+                    TemplateComponent::Title(TemplateTitle {
+                        title: TitleType::ParentSerial,
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Number(TemplateNumber {
+                        number: NumberVariable::Volume,
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Number(TemplateNumber {
+                        number: NumberVariable::Pages,
+                        ..Default::default()
+                    }),
+                ],
+                delimiter: Some(DelimiterPunctuation::Slash),
+                ..Default::default()
+            })]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_value(serde_json::json!({
+        "id": "ITEM-LEGAL-1",
+        "type": "legal_case",
+        "title": "Brown v. Board of Education",
+        "authority": "U.S. Supreme Court",
+        "volume": "347",
+        "container-title": "U.S. Reports",
+        "page": "483",
+        "issued": { "date-parts": [[1954, 5, 17]] }
+    }))
+    .expect("legal case fixture should parse");
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert("ITEM-LEGAL-1".to_string(), legacy.into());
+
+    let processor = Processor::new(style, bib);
+    assert_eq!(processor.render_bibliography(), "U.S. Reports/347/483");
+}
+
+fn suppressed_group_children_do_not_leave_stray_delimiters() {
+    let style = build_group_with_suppressed_child_style();
+    let mut reference = make_book("grouped", "Smith", "Jane", 2024, "Grouped Title");
+    if let InputReference::Monograph(book) = &mut reference {
+        book.url = Some(Url::parse("https://example.com/grouped").expect("url should parse"));
+    }
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert("grouped".to_string(), reference);
+
+    let processor = Processor::new(style, bib);
+    assert_eq!(processor.render_bibliography(), "Grouped Title");
+}
+
 fn sorting_multiple_keys_applies_secondary_ordering_within_author_groups() {
     let style = build_sorted_style(vec![
         SortSpec {
@@ -1489,6 +1586,14 @@ mod title_short_resolution {
             "An explicit container-title-short field should take precedence over the long container title.",
         );
         super::container_title_short_prefers_explicit_short_field();
+    }
+
+    #[test]
+    fn suppressed_group_children_do_not_leave_stray_delimiters() {
+        announce_behavior(
+            "Suppressed children inside grouped bibliography components should not leave stray delimiters.",
+        );
+        super::suppressed_group_children_do_not_leave_stray_delimiters();
     }
 }
 

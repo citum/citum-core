@@ -14,5 +14,6 @@
   { "id": "hn-said", "items": [{ "id": "said1978" }] },
   { "id": "hn-benjamin", "items": [{ "id": "benjamin1936-ch", "locator": { "label": "page", "value": "220" } }] },
   { "id": "hn-gibbon", "items": [{ "id": "gibbon1776", "locator": { "label": "page", "value": "145" } }] },
+  { "id": "hn-edited-book", "items": [{ "id": "burke2010-ed" }] },
   { "id": "hn-multi-note", "items": [{ "id": "auerbach1953" }, { "id": "grafton1999-ch" }] }
 ]

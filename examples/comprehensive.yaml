@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/bib.json
+# yaml-language-server: $schema=https://docs.citum.org/schemas/bib.json
 # Comprehensive Citum Test Bibliography
 # Uses proper Citum reference types with correct field requirements
 info:
@@ -55,7 +55,22 @@ references:
         name: Academic Press
     pages: "45-67"
 
-  # 4. Monograph with original-date and keywords
+  # 4. Standalone edited book
+  - id: miller2022
+    class: collection
+    type: edited-book
+    title: Handbook of Environmental Futures
+    editor:
+      - family: Miller
+        given: Ruth A.
+      - family: Okafor
+        given: Daniel
+    issued: "2022"
+    publisher:
+      name: Cambridge University Press
+      location: Cambridge
+
+  # 5. Monograph with original-date and keywords
   - id: foucault_discipline
     class: monograph
     type: book
@@ -75,7 +90,7 @@ references:
       - translation
       - philosophy
 
-  # 5. Missing references from complex-citations.yaml
+  # 6. Missing references from complex-citations.yaml
   - id: brown1954
     class: monograph
     type: book

@@ -12,6 +12,7 @@ use citum_engine::{
 use citum_schema::locale::{GeneralTerm, RawLocale, TermForm, types::LocaleOverride};
 use citum_schema::options::{Config, Processing};
 use citum_schema::reference::InputReference;
+use citum_schema::reference::conversion::input_reference_from_legacy_edited_book;
 use citum_schema::template::{
     ContributorForm, ContributorRole, LabelForm as TemplateLabelForm, NumberVariable,
     RoleLabelForm, TemplateComponent,
@@ -2009,7 +2010,9 @@ fn infer_refs_output_format(path: &Path) -> RefsFormat {
 fn detect_json_refs_format(path: &Path) -> Result<RefsFormat, Box<dyn Error>> {
     let bytes = fs::read(path)?;
     let value: serde_json::Value = serde_json::from_slice(&bytes)?;
-    let is_csl_array = value.as_array().is_some_and(|items| {
+    let array = value.as_array();
+    let is_citum_array = array.is_some_and(|items| items.iter().any(|v| v.get("class").is_some()));
+    let is_csl_array = array.is_some_and(|items| {
         items.iter().any(|v| {
             v.get("id").is_some()
                 && v.get("type").is_some()
@@ -2017,7 +2020,7 @@ fn detect_json_refs_format(path: &Path) -> Result<RefsFormat, Box<dyn Error>> {
         })
     });
     let is_citum_object = value.get("references").is_some();
-    if is_csl_array && !is_citum_object {
+    if is_csl_array && !is_citum_array && !is_citum_object {
         Ok(RefsFormat::CslJson)
     } else {
         Ok(RefsFormat::CitumJson)
@@ -2035,7 +2038,7 @@ fn load_input_bibliography(
         }
         RefsFormat::CitumJson => {
             let bytes = fs::read(path)?;
-            deserialize_any(&bytes, "json")
+            load_citum_json_bibliography(&bytes)
         }
         RefsFormat::CitumCbor => {
             let bytes = fs::read(path)?;
@@ -2045,6 +2048,75 @@ fn load_input_bibliography(
         RefsFormat::Biblatex => load_biblatex_bibliography(path),
         RefsFormat::Ris => load_ris_bibliography(path),
     }
+}
+
+fn load_citum_json_bibliography(bytes: &[u8]) -> Result<InputBibliography, Box<dyn Error>> {
+    let value: serde_json::Value = serde_json::from_slice(bytes)?;
+
+    if let Ok(input) = serde_json::from_value::<InputBibliography>(value.clone()) {
+        return Ok(input);
+    }
+
+    if let Some(references) = value.as_array() {
+        return Ok(InputBibliography {
+            references: load_hybrid_json_references(references)?,
+            ..Default::default()
+        });
+    }
+
+    if let Some(object) = value.as_object()
+        && let Some(references) = object
+            .get("references")
+            .and_then(serde_json::Value::as_array)
+    {
+        return Ok(InputBibliography {
+            references: load_hybrid_json_references(references)?,
+            sets: object
+                .get("sets")
+                .filter(|value| !value.is_null())
+                .cloned()
+                .map(serde_json::from_value)
+                .transpose()?
+                .unwrap_or_default(),
+            ..Default::default()
+        });
+    }
+
+    deserialize_any(bytes, "json")
+}
+
+fn load_hybrid_json_references(
+    references: &[serde_json::Value],
+) -> Result<Vec<InputReference>, Box<dyn Error>> {
+    references
+        .iter()
+        .cloned()
+        .map(load_hybrid_json_reference)
+        .collect()
+}
+
+fn load_hybrid_json_reference(value: serde_json::Value) -> Result<InputReference, Box<dyn Error>> {
+    if let Ok(reference) = serde_json::from_value::<InputReference>(value.clone()) {
+        return Ok(reference);
+    }
+
+    let class = value
+        .get("class")
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or_default()
+        .to_string();
+    let ref_type = value
+        .get("type")
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or_default()
+        .to_string();
+    let legacy = serde_json::from_value::<csl_legacy::csl_json::Reference>(value)?;
+
+    if class == "collection" && ref_type == "edited-book" {
+        return Ok(input_reference_from_legacy_edited_book(legacy));
+    }
+
+    Ok(InputReference::from(legacy))
 }
 
 fn write_output_bibliography(
@@ -3320,6 +3392,53 @@ sets:
         let _ = std::fs::remove_file(bib_a);
         let _ = std::fs::remove_file(bib_b);
         let _ = std::fs::remove_dir(base);
+    }
+
+    #[test]
+    fn test_load_citum_json_bibliography_keeps_standalone_edited_book_as_book_type() {
+        let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../tests/fixtures/references-humanities-note.json");
+        let bytes = std::fs::read(&fixture).expect("fixture should be readable");
+
+        let bibliography =
+            load_citum_json_bibliography(&bytes).expect("fixture should parse as native Citum");
+        let edited_book = bibliography
+            .references
+            .iter()
+            .find(|reference| reference.id().as_deref() == Some("burke2010-ed"))
+            .expect("edited book fixture should exist");
+
+        assert_eq!(edited_book.ref_type(), "book");
+    }
+
+    #[test]
+    fn test_load_citum_json_bibliography_preserves_hybrid_edited_book_url() {
+        let bytes = br#"[
+  {
+    "id": "edited-book-1",
+    "class": "collection",
+    "type": "edited-book",
+    "title": "Edited Book",
+    "editor": [{"family": "Miller", "given": "Ruth"}],
+    "issued": {"date-parts": [[2022]]},
+    "publisher": "Example Press",
+    "publisher-place": "Chicago",
+    "URL": "https://example.com/edited-book"
+  }
+]"#;
+
+        let bibliography =
+            load_citum_json_bibliography(bytes).expect("hybrid JSON should parse as native Citum");
+        let edited_book = bibliography
+            .references
+            .iter()
+            .find(|reference| reference.id().as_deref() == Some("edited-book-1"))
+            .expect("edited book fixture should exist");
+
+        assert_eq!(
+            edited_book.url().as_ref().map(url::Url::as_str),
+            Some("https://example.com/edited-book")
+        );
     }
 
     #[test]

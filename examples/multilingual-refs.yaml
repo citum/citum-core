@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/bib.json
+# yaml-language-server: $schema=https://docs.citum.org/schemas/bib.json
 # Multilingual Bibliography Examples
 # Demonstrates MultilingualString titles and MultilingualName contributors
 # Use with: citum render refs -b examples/multilingual-refs.yaml -s styles/experimental/multilingual-academic.yaml

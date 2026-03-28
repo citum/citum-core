@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/citations.json
+# yaml-language-server: $schema=https://docs.citum.org/schemas/citation.json
 # Complex Citation Scenarios for Citum
 # Test these with: csln process examples/comprehensive.yaml styles/apa-7th.yaml -c examples/complex-citations.yaml
 

@@ -306,6 +306,7 @@
         "book",
         "chapter",
         "dataset",
+        "edited-book",
         "report",
         "software",
         "thesis",
@@ -339,6 +340,7 @@
       ],
       "citation_scenarios": [
         "same-author same-year disambiguation",
+        "editor-led edited-book",
         "no-date citation",
         "locator citation",
         "corporate author cluster",
@@ -420,6 +422,7 @@
         "article-journal",
         "book",
         "chapter",
+        "edited-book",
         "entry-encyclopedia",
         "interview",
         "manuscript",
@@ -445,12 +448,14 @@
         "article-journal",
         "book",
         "chapter",
+        "edited-book",
         "entry-encyclopedia",
         "interview",
         "manuscript",
         "personal_communication"
       ],
       "citation_scenarios": [
+        "edited-book note citation",
         "single full note citations",
         "note locator citations",
         "multiple citations in one note"

@@ -19,13 +19,14 @@ strsim = "0.10"
 walkdir = "2.4"
 schemars = { version = "1.2.1", features = ["indexmap2"], optional = true }
 indexmap = "2.2.3"
-citum_schema = { package = "citum-schema", path = "../citum-schema" }
+citum_schema = { package = "citum-schema", path = "../citum-schema", features = ["legacy-convert"] }
 citum_engine = { package = "citum-engine", path = "../citum-engine" }
 csl_legacy = { package = "csl-legacy", path = "../csl-legacy" }
 biblatex = "0.11"
 citum_store = { package = "citum_store", path = "../citum_store" }
 citum-pdf = { path = "../citum-pdf", optional = true }
 citum-bindings = { path = "../citum-bindings", optional = true }
+url = { version = "2.5", features = ["serde"] }
 
 [features]
 default = []
