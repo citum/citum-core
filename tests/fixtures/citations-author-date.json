@@ -11,5 +11,6 @@
   { "id": "ad-many-authors", "items": [{ "id": "twenty-authors2023" }] },
   { "id": "ad-jane-smith", "items": [{ "id": "smith2020c" }] },
   { "id": "ad-indirect", "items": [{ "id": "garcia2019-indirect" }] },
-  { "id": "ad-editor-book", "items": [{ "id": "ipcc2023" }] }
+  { "id": "ad-editor-book", "items": [{ "id": "ipcc2023" }] },
+  { "id": "ad-edited-book", "items": [{ "id": "miller2022-ed" }] }
 ]

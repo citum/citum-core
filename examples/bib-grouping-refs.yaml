@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://bdarcus.github.io/csl26/schemas/bib.json
+# yaml-language-server: $schema=https://docs.citum.org/schemas/bib.json
 # Bibliography grouping example for Chicago author-date style.
 # Demonstrates primary/archival/secondary sections with localized headings.
 # Use with: citum render refs -b examples/bib-grouping-refs.yaml -s styles/chicago-author-date.yaml

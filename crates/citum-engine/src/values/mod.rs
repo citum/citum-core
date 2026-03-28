@@ -215,6 +215,14 @@ pub fn effective_component_language(
                         citum_schema::reference::Parent::Embedded(parent) => parent.title.clone(),
                         citum_schema::reference::Parent::Id(_) => None,
                     },
+                    Reference::LegalCase(case) => case
+                        .reporter
+                        .as_ref()
+                        .map(|reporter| Title::Single(reporter.clone())),
+                    Reference::Treaty(treaty) => treaty
+                        .reporter
+                        .as_ref()
+                        .map(|reporter| Title::Single(reporter.clone())),
                     _ => None,
                 },
                 _ => reference.title(),

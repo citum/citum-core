@@ -204,5 +204,18 @@
     "issued": { "date-parts": [[2023]] },
     "publisher": "Intergovernmental Panel on Climate Change",
     "publisher-place": "Geneva"
+  },
+  {
+    "id": "miller2022-ed",
+    "class": "collection",
+    "type": "edited-book",
+    "title": "Handbook of Environmental Futures",
+    "editor": [
+      { "family": "Miller", "given": "Ruth A." },
+      { "family": "Okafor", "given": "Daniel" }
+    ],
+    "issued": { "date-parts": [[2022]] },
+    "publisher": "Cambridge University Press",
+    "publisher-place": "Cambridge"
   }
 ]

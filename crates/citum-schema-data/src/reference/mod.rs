@@ -371,6 +371,7 @@ impl InputReference {
         None
     }
 
+    /// Return the container-style title for parent works, reporters, or codes.
     pub fn container_title(&self) -> Option<Title> {
         match self {
             InputReference::Monograph(r) => r.container_title.clone(),
@@ -388,6 +389,8 @@ impl InputReference {
                     Parent::Id(_) => None,
                 }
             }
+            InputReference::LegalCase(r) => r.reporter.clone().map(Title::Single),
+            InputReference::Treaty(r) => r.reporter.clone().map(Title::Single),
             _ => None,
         }
     }

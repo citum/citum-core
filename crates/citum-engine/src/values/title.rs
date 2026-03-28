@@ -276,12 +276,13 @@ impl ComponentValues for TemplateTitle {
             TitleType::Primary => reference.title(),
             TitleType::ParentSerial => match reference {
                 Reference::SerialComponent(r) => match &r.parent {
-                    Parent::Embedded(p) => p.title.as_ref(),
+                    Parent::Embedded(p) => p.title.clone(),
                     _ => None,
                 },
+                Reference::LegalCase(r) => r.reporter.clone().map(Title::Single),
+                Reference::Treaty(r) => r.reporter.clone().map(Title::Single),
                 _ => None,
-            }
-            .cloned(),
+            },
             TitleType::ParentMonograph => match reference {
                 Reference::Monograph(r) => r.container_title.clone(),
                 Reference::CollectionComponent(r) => match &r.parent {

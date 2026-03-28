@@ -185,5 +185,18 @@
     "publisher": "Strahan and Cadell",
     "publisher-place": "London",
     "number-of-volumes": "6"
+  },
+  {
+    "id": "burke2010-ed",
+    "class": "collection",
+    "type": "edited-book",
+    "title": "Rethinking Historical Method",
+    "editor": [
+      { "family": "Burke", "given": "Peter" },
+      { "family": "Chartier", "given": "Roger" }
+    ],
+    "issued": { "date-parts": [[2010]] },
+    "publisher": "University of Chicago Press",
+    "publisher-place": "Chicago"
   }
 ]

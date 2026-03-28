@@ -2,10 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const yaml = require('js-yaml');
-const Ajv = require('ajv');
+const Ajv2020 = require('ajv/dist/2020');
 const addFormats = require('ajv-formats');
 
-const ajv = new Ajv({ allErrors: true, strict: false });
+const ajv = new Ajv2020({ allErrors: true, strict: false });
 addFormats(ajv);
 ajv.addFormat('uint8', true);
 ajv.addFormat('uint32', true);
@@ -167,9 +167,9 @@ fs.readdirSync(examplesDir).forEach(file => {
     if (file.includes('cite') || file.includes('citation')) {
       if (!validate(path.join(examplesDir, file), 'citation')) allValid = false;
     } else if (file.includes('bib') || file.includes('ref')) {
-      if (!validateWithCli('bibliography', '--bibliography', path.join(examplesDir, file))) {
-        allValid = false;
-      }
+      const filePath = path.join(examplesDir, file);
+      if (!validate(filePath, 'bib')) allValid = false;
+      if (!validateWithCli('bibliography', '--bibliography', filePath)) allValid = false;
     } else if (file.includes('style')) {
       if (!validate(path.join(examplesDir, file), 'style')) allValid = false;
     }

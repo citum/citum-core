@@ -224,6 +224,59 @@ fn from_collection_component_ref(
     }))
 }
 
+/// Convert a legacy CSL edited book into the standalone Citum collection shape.
+#[must_use]
+pub fn input_reference_from_legacy_edited_book(
+    legacy: csl_legacy::csl_json::Reference,
+) -> InputReference {
+    let csl_legacy::csl_json::Reference {
+        id,
+        title,
+        editor,
+        translator,
+        issued,
+        publisher,
+        publisher_place,
+        collection_number,
+        url,
+        accessed,
+        language,
+        note,
+        isbn,
+        extra,
+        ..
+    } = legacy;
+
+    InputReference::Collection(Box::new(Collection {
+        id: Some(id),
+        r#type: CollectionType::EditedBook,
+        title: title.map(Title::Single),
+        short_title: extra
+            .get("shortTitle")
+            .and_then(serde_json::Value::as_str)
+            .map(str::to_string),
+        editor: editor.map(Contributor::from),
+        translator: translator.map(Contributor::from),
+        issued: issued
+            .map(EdtfString::from)
+            .unwrap_or(EdtfString(String::new())),
+        publisher: publisher.map(|name| {
+            Contributor::SimpleName(SimpleName {
+                name: name.into(),
+                location: publisher_place.clone(),
+            })
+        }),
+        collection_number: collection_number.map(|value| value.to_string()),
+        url: url.as_deref().and_then(|value| Url::parse(value).ok()),
+        accessed: accessed.map(EdtfString::from),
+        language,
+        field_languages: HashMap::new(),
+        note,
+        isbn,
+        keywords: None,
+    }))
+}
+
 fn from_serial_component_ref(
     legacy: csl_legacy::csl_json::Reference,
     ctx: RefContext,

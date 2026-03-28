@@ -950,6 +950,18 @@ impl Renderer<'_> {
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
+        if let TemplateComponent::Group(group) = component {
+            return self.render_group_component_with_format::<F>(
+                reference,
+                ref_type,
+                options,
+                hint,
+                template_index,
+                group,
+                tracker,
+            );
+        }
+
         let resolved_component = component;
         let var_key = get_variable_key(resolved_component);
         if tracker.should_skip(var_key.as_deref()) {
@@ -979,6 +991,78 @@ impl Renderer<'_> {
             bibliography_config: options.bibliography_config.clone(),
             item_language,
             pre_formatted: values.pre_formatted,
+        })
+    }
+
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "Nested group rendering reuses the same tracker and template metadata."
+    )]
+    fn render_group_component_with_format<F>(
+        &self,
+        reference: &Reference,
+        ref_type: &str,
+        options: &RenderOptions<'_>,
+        hint: &ProcHints,
+        template_index: usize,
+        group: &citum_schema::template::TemplateGroup,
+        tracker: &mut TemplateComponentTracker,
+    ) -> Option<ProcTemplateComponent>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let delimiter = group
+            .delimiter
+            .as_ref()
+            .unwrap_or(&citum_schema::template::DelimiterPunctuation::Comma)
+            .to_string_with_space();
+        let fmt = F::default();
+        let mut has_meaningful_content = false;
+        let mut values = Vec::new();
+
+        for item in &group.group {
+            let Some(rendered) = self.render_template_component_with_format::<F>(
+                reference,
+                ref_type,
+                options,
+                hint,
+                template_index,
+                item,
+                tracker,
+            ) else {
+                continue;
+            };
+            let rendered_str = crate::render::render_component_with_format_and_renderer::<F>(
+                &rendered,
+                &fmt,
+                options.show_semantics,
+            );
+            if rendered_str.is_empty() {
+                continue;
+            }
+            if !is_term_only_component(item) {
+                has_meaningful_content = true;
+            }
+            values.push(rendered_str);
+        }
+
+        if values.is_empty() || !has_meaningful_content {
+            return None;
+        }
+
+        let group_component = TemplateComponent::Group(group.clone());
+        Some(ProcTemplateComponent {
+            template_component: group_component.clone(),
+            template_index: self.inject_ast_indices.then_some(template_index),
+            value: fmt.join(values, &delimiter),
+            prefix: None,
+            suffix: None,
+            url: None,
+            ref_type: Some(ref_type.to_string()),
+            config: Some(options.config.clone()),
+            bibliography_config: options.bibliography_config.clone(),
+            item_language: crate::values::effective_component_language(reference, &group_component),
+            pre_formatted: true,
         })
     }
 
@@ -1135,6 +1219,14 @@ fn article_journal_component_needs_filter(
         TemplateComponent::Group(group) => {
             article_journal_template_needs_filter(&group.group, mode)
         }
+        _ => false,
+    }
+}
+
+fn is_term_only_component(component: &TemplateComponent) -> bool {
+    match component {
+        TemplateComponent::Term(_) => true,
+        TemplateComponent::Group(group) => group.group.iter().all(is_term_only_component),
         _ => false,
     }
 }

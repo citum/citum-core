@@ -403,6 +403,7 @@ dependencies = [
  "serde_json",
  "serde_yaml_ng",
  "strsim 0.10.0",
+ "url",
  "walkdir",
 ]
 

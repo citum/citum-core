@@ -606,7 +606,14 @@ pub fn get_variable_key(component: &TemplateComponent) -> Option<String> {
         TemplateComponent::Variable(v) => {
             make_key("variable", &v.variable, context_suffix(&v.rendering))
         }
-        TemplateComponent::Title(t) => make_key("title", &t.title, context_suffix(&t.rendering)),
+        TemplateComponent::Title(t) => {
+            let form_part = t.form.as_ref().map_or(String::new(), |f| format!(":{f:?}"));
+            Some(format!(
+                "title:{:?}{form_part}{}",
+                t.title,
+                context_suffix(&t.rendering)
+            ))
+        }
         TemplateComponent::Number(n) => make_key("number", &n.number, context_suffix(&n.rendering)),
         TemplateComponent::Group(_) => None,
         _ => None,
