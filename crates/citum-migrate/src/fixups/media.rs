@@ -70,6 +70,7 @@ pub(super) fn normalize_legal_case_type_template(
         }
 
         let mut seen_locator = false;
+        let mut seen_volume_number = false;
         let mut has_issued = false;
         let mut has_parent_serial = false;
         let mut has_reporter = false;
@@ -80,7 +81,8 @@ pub(super) fn normalize_legal_case_type_template(
                     || matches!(term.term, citum_schema::locale::GeneralTerm::At)
                     || matches!(term.term, citum_schema::locale::GeneralTerm::NoDate)
                     || matches!(term.term, citum_schema::locale::GeneralTerm::Section)
-                    || matches!(term.term, citum_schema::locale::GeneralTerm::Accessed))
+                    || matches!(term.term, citum_schema::locale::GeneralTerm::Accessed)
+                    || matches!(term.term, citum_schema::locale::GeneralTerm::In))
             {
                 return false;
             }
@@ -97,10 +99,19 @@ pub(super) fn normalize_legal_case_type_template(
                 }
             }
 
-            if let TemplateComponent::Title(title_component) = component
-                && title_component.title == TitleType::ParentSerial
-            {
-                has_parent_serial = true;
+            if let TemplateComponent::Title(title_component) = component {
+                // Legal case names are not quoted; strip quote flags from primary title.
+                if title_component.title == TitleType::Primary {
+                    title_component.rendering.quote = None;
+                    title_component.rendering.wrap = None;
+                }
+                // Book-chapter parent-monograph pattern does not apply to legal cases.
+                if title_component.title == TitleType::ParentMonograph {
+                    return false;
+                }
+                if title_component.title == TitleType::ParentSerial {
+                    has_parent_serial = true;
+                }
             }
 
             if let TemplateComponent::Variable(variable) = component
@@ -123,7 +134,8 @@ pub(super) fn normalize_legal_case_type_template(
                 if variable.variable == SimpleVariable::Page {
                     has_page = true;
                 }
-                if style_is_elsevier_harvard && variable.variable == SimpleVariable::Authority {
+                // Authority is not rendered in legal case entries for any style.
+                if variable.variable == SimpleVariable::Authority {
                     return false;
                 }
             }
@@ -131,6 +143,11 @@ pub(super) fn normalize_legal_case_type_template(
             if let TemplateComponent::Number(number_component) = component
                 && number_component.number == citum_schema::template::NumberVariable::Volume
             {
+                if seen_volume_number {
+                    // Remove duplicate volume from book-chapter in-container pattern.
+                    return false;
+                }
+                seen_volume_number = true;
                 number_component.rendering.suppress = Some(false);
             }
 
