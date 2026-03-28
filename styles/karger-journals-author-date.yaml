@@ -1,115 +1,83 @@
+version: ''
 info:
   title: Karger journals (author-date)
-  description: Harvard style for journals published by Karger
-  fields:
-  - science
-  source:
-    csl-id: http://www.zotero.org/styles/karger-journals-author-date
-    adapted-by: citum-migrate
-    license: http://creativecommons.org/licenses/by-sa/3.0/
-    original-authors:
-    - name: Sebastian Karcher
-    links:
-    - href: http://www.zotero.org/styles/karger-journals-author-date
-      rel: self
-    - href: http://www.karger.com/Journal/Guidelines/224213#04
-      rel: documentation
+  id: http://www.zotero.org/styles/karger-journals-author-date
+  default-locale: en-US
 options:
   substitute:
     contributor-role-form: long
     template:
     - editor
     - title
-  processing:
+  processing: !custom
     disambiguate:
       names: false
       add-givenname: false
       year-suffix: true
   contributors:
     display-as-sort: all
-    name-form: initials
-    initialize-with: ""
+    initialize-with: ''
     shorten:
       min: 7
       use-first: 6
       and-others: et-al
       delimiter-precedes-last: contextual
-    delimiter: ", "
+    and: none
     delimiter-precedes-last: always
     demote-non-dropping-particle: sort-only
-    sort-separator: " "
+    sort-separator: ' '
+    name-form: initials
   dates:
     month: short
-    uncertainty-marker: "?"
-    approximation-marker: "ca. "
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
     range-delimiter: –
+    show-seconds: false
+    show-timezone: false
   punctuation-in-quote: true
 citation:
   options:
     contributors:
+      display-as-sort: all
+      initialize-with: ''
       shorten:
         min: 3
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
+      delimiter-precedes-last: always
+      sort-separator: ' '
+      name-form: initials
   template:
   - contributor: author
-    form: short
+    form: long
+    name-order: family-first
     shorten:
       min: 3
       use-first: 1
-  - date: issued
-    form: year
-    prefix: ", "
+      and-others: et-al
+      delimiter-precedes-last: contextual
   - variable: locator
-    prefix: ", "
+    prefix: ', '
   wrap: brackets
-  delimiter: ", "
-  multi-cite-delimiter: "; "
+  delimiter: '. '
+  multi-cite-delimiter: '; '
 bibliography:
   options:
     contributors:
       display-as-sort: all
-      name-form: initials
-      initialize-with: ""
+      initialize-with: ''
       shorten:
         min: 7
         use-first: 6
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
       delimiter-precedes-last: always
-      sort-separator: " "
+      sort-separator: ' '
+      name-form: initials
     hanging-indent: true
     entry-suffix: .
-    separator: ". "
-  type-variants:
-    chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: ": "
-    - variable: publisher-place
-      prefix: ", "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
-    - title: parent-serial
-    - number: volume
-    - variable: publisher
-    - date: issued
-      form: year
-      prefix: ", "
-    - number: pages
-      prefix: ", pp "
-    - variable: url
+    separator: '. '
   template:
   - contributor: author
     form: long
@@ -117,22 +85,79 @@ bibliography:
     shorten:
       min: 8
       use-first: 6
+      and-others: et-al
+      delimiter-precedes-last: contextual
   - title: primary
-    prefix: ": "
-  - variable: publisher-place
-    prefix: ", "
-  - group:
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - title: parent-monograph
+    prefix: ': '
+  - title: parent-monograph
   - title: parent-serial
   - number: volume
+  - variable: publisher-place
   - variable: publisher
+    prefix: ', '
   - date: issued
     form: year
-    prefix: ", "
+    prefix: ', '
   - number: pages
-    prefix: ", pp "
+    prefix: ', pp '
   - variable: url
-  sort: author-date-title
+  type-variants:
+    article-magazine:
+    - contributor: author
+      form: long
+      sort-separator: ' '
+      shorten:
+        min: 7
+        use-first: 6
+        and-others: et-al
+        delimiter-precedes-last: always
+    - title: primary
+    - title: parent-serial
+      prefix: '. '
+      strip-periods: true
+    - date: issued
+      form: year
+    - number: volume
+    - number: pages
+      prefix: ':'
+    legal_case:
+    - contributor: author
+      form: long
+      sort-separator: ' '
+      shorten:
+        min: 7
+        use-first: 6
+        and-others: et-al
+        delimiter-precedes-last: always
+    - title: primary
+    - term: edition
+      form: short
+      strip-periods: true
+    - number: edition
+    - variable: publisher-place
+    - variable: publisher
+    - date: issued
+      form: year
+      suppress: false
+    - title: parent-serial
+    patent:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 6
+        and-others: et-al
+        delimiter-precedes-last: contextual
+    - title: primary
+      prefix: ': '
+    - date: issued
+      form: year
+      prefix: ', '
+  sort:
+    template:
+    - key: author
+      ascending: true
+    - key: issued
+      ascending: true
+
