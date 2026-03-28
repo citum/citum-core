@@ -102,29 +102,6 @@ citation:
         prefix: ', '
       - number: pages
         prefix: 'pp. '
-      - number: number
-        prefix: ', Patent '
-      - delimiter: none
-        group:
-          - date: issued
-            form: month-day
-            prefix: ', issued '
-          - date: issued
-            form: year
-            prefix: ', '
-      - delimiter: none
-        prefix: ', '
-        group:
-          - date: issued
-            form: month-day
-          - date: issued
-            form: year
-            prefix: ', '
-      - variable: medium
-        prefix: ', '
-      - contributor: interviewer
-        form: long
-        prefix: ', interview by '
     article-magazine:
       - contributor: author
         form: long
@@ -155,29 +132,6 @@ citation:
         prefix: ' '
       - number: pages
         prefix: 'pp. '
-      - number: number
-        prefix: ', Patent '
-      - delimiter: none
-        group:
-          - date: issued
-            form: month-day
-            prefix: ', issued '
-          - date: issued
-            form: year
-            prefix: ', '
-      - delimiter: none
-        prefix: ', '
-        group:
-          - date: issued
-            form: month-day
-          - date: issued
-            form: year
-            prefix: ', '
-      - variable: medium
-        prefix: ', '
-      - contributor: interviewer
-        form: long
-        prefix: ', interview by '
     chapter:
       - contributor: author
         form: long
@@ -208,29 +162,6 @@ citation:
         prefix: ' '
       - number: pages
         prefix: 'pp. '
-      - number: number
-        prefix: ', Patent '
-      - delimiter: none
-        group:
-          - date: issued
-            form: month-day
-            prefix: ', issued '
-          - date: issued
-            form: year
-            prefix: ', '
-      - delimiter: none
-        prefix: ', '
-        group:
-          - date: issued
-            form: month-day
-          - date: issued
-            form: year
-            prefix: ', '
-      - variable: medium
-        prefix: ', '
-      - contributor: interviewer
-        form: long
-        prefix: ', interview by '
     default:
       - contributor: author
         form: long
@@ -260,22 +191,6 @@ citation:
         wrap: parentheses
         prefix: ' '
       - number: pages
-      - delimiter: none
-        group:
-          - date: issued
-            form: month-day
-            prefix: ', issued '
-          - date: issued
-            form: year
-            prefix: ', '
-      - delimiter: none
-        prefix: ', '
-        group:
-          - date: issued
-            form: month-day
-          - date: issued
-            form: year
-            prefix: ', '
     entry-encyclopedia:
       - contributor: author
         form: long
@@ -306,29 +221,6 @@ citation:
         prefix: ' '
       - number: pages
         prefix: 'pp. '
-      - number: number
-        prefix: ', Patent '
-      - delimiter: none
-        group:
-          - date: issued
-            form: month-day
-            prefix: ', issued '
-          - date: issued
-            form: year
-            prefix: ', '
-      - delimiter: none
-        prefix: ', '
-        group:
-          - date: issued
-            form: month-day
-          - date: issued
-            form: year
-            prefix: ', '
-      - variable: medium
-        prefix: ', '
-      - contributor: interviewer
-        form: long
-        prefix: ', interview by '
     paper-conference:
       - contributor: author
         form: long
@@ -359,29 +251,6 @@ citation:
         prefix: ' '
       - number: pages
         prefix: 'pp. '
-      - number: number
-        prefix: ', Patent '
-      - delimiter: none
-        group:
-          - date: issued
-            form: month-day
-            prefix: ', issued '
-          - date: issued
-            form: year
-            prefix: ', '
-      - delimiter: none
-        prefix: ', '
-        group:
-          - date: issued
-            form: month-day
-          - date: issued
-            form: year
-            prefix: ', '
-      - variable: medium
-        prefix: ', '
-      - contributor: interviewer
-        form: long
-        prefix: ', interview by '
     legal_case:
       - title: primary
         wrap: quotes
@@ -430,7 +299,6 @@ citation:
         prefix: ", "
       - variable: medium
         prefix: ", "
-      - variable: url
   template:
     - contributor: author
       form: long
@@ -462,27 +330,6 @@ citation:
     - number: pages
     - number: number
       prefix: ', Patent '
-    - delimiter: none
-      group:
-        - date: issued
-          form: month-day
-          prefix: ', issued '
-        - date: issued
-          form: year
-          prefix: ', '
-    - delimiter: none
-      prefix: ', '
-      group:
-        - date: issued
-          form: month-day
-        - date: issued
-          form: year
-          prefix: ', '
-    - variable: medium
-      prefix: ', '
-    - contributor: interviewer
-      form: long
-      prefix: ', interview by '
   suffix: .
   delimiter: ', '
   multi-cite-delimiter: '; '
