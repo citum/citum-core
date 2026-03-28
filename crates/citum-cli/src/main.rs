@@ -292,11 +292,18 @@ enum RenderCommands {
         long_about = "Directly render a set of references and/or citations from files.\n\n\
                       This command is useful for inspecting how a style renders\n\
                       specific entries or testing bibliography grouping logic.\n\n\
+                      INPUT FORMATS (--bibliography):\n  \
+                      The --bibliography flag accepts:\n    \
+                      - Citum YAML (.yaml, .yml) — native Citum reference format\n    \
+                      - Citum JSON (.json)        — native Citum reference format (auto-detected by content)\n    \
+                      - Citum CBOR (.cbor)        — native Citum reference format (binary)\n    \
+                      - CSL-JSON (.json)          — legacy CSL-JSON (auto-detected by content)\n    \
+                      Use 'citum convert refs' to convert BibLaTeX or RIS files first.\n\n\
                       EXAMPLES:\n  \
                       Render bibliography entries (APA 7th style):\n    \
                       citum render refs -b refs.json -s apa-7th\n\n  \
                       Render specific citations with keys:\n    \
-                      citum render refs -b refs.json -s apa-7th -m cite\n\
+                      citum render refs -b refs.json -s apa-7th -m cite\n    \
                       -k Doe2020,Smith2021\n\n  \
                       Output as JSON with human-readable rendered text:\n    \
                       citum render refs -b refs.json -s apa-7th --json"
@@ -307,6 +314,26 @@ enum RenderCommands {
 #[derive(Subcommand)]
 enum ConvertCommands {
     /// Convert bibliography/reference files
+    #[command(
+        about = "Convert bibliography/reference files",
+        long_about = "Convert bibliography/reference files between formats.\n\n\
+                      INPUT FORMATS (--from):\n  \
+                      citum-yaml    Citum native YAML (.yaml or .yml)\n  \
+                      citum-json    Citum native JSON (.json; content-sniffed when --from is omitted)\n  \
+                      citum-cbor    Citum native CBOR (.cbor)\n  \
+                      csl-json      Legacy CSL-JSON (.json; content-sniffed when --from is omitted)\n  \
+                      biblatex      BibLaTeX .bib file\n  \
+                      ris           RIS (.ris) file\n\n\
+                      OUTPUT FORMATS (--to):\n  \
+                      Same variants as --from. Default output format is citum-yaml.\n\n\
+                      EXAMPLES:\n  \
+                      Convert BibLaTeX to Citum YAML:\n    \
+                      citum convert refs thesis.bib -o refs.yaml\n\n  \
+                      Convert RIS to Citum YAML:\n    \
+                      citum convert refs export.ris -o refs.yaml\n\n  \
+                      Convert CSL-JSON to Citum YAML:\n    \
+                      citum convert refs legacy.json --from csl-json -o refs.yaml"
+    )]
     Refs(ConvertRefsArgs),
     /// Convert style files between YAML/JSON/CBOR
     Style(ConvertTypedArgs),
@@ -613,11 +640,11 @@ struct ConvertRefsArgs {
     #[arg(short = 'o', long)]
     output: PathBuf,
 
-    /// Input format override
+    /// Input format (auto-detected from extension; .json inputs are content-sniffed to distinguish citum-json from csl-json)
     #[arg(long, value_enum)]
     from: Option<RefsFormat>,
 
-    /// Output format override
+    /// Output format (auto-detected from extension if omitted; defaults to citum-yaml)
     #[arg(long, value_enum)]
     to: Option<RefsFormat>,
 }
@@ -2162,7 +2189,7 @@ fn load_biblatex_bibliography(path: &Path) -> Result<InputBibliography, Box<dyn 
         biblatex::Bibliography::parse(&src).map_err(|e| format!("BibLaTeX parse error: {e}"))?;
     let references = bibliography
         .iter()
-        .map(|entry| InputReference::from(input_reference_from_biblatex(entry)))
+        .map(input_reference_from_biblatex)
         .collect();
     Ok(InputBibliography {
         references,
@@ -2175,7 +2202,7 @@ fn load_ris_bibliography(path: &Path) -> Result<InputBibliography, Box<dyn Error
     parse_ris(&src)
 }
 
-fn input_reference_from_biblatex(entry: &biblatex::Entry) -> csl_legacy::csl_json::Reference {
+fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
     use csl_legacy::csl_json::{DateVariable, Name, Reference, StringOrNumber};
 
     let field_str = |key: &str| {
@@ -2238,7 +2265,7 @@ fn input_reference_from_biblatex(entry: &biblatex::Entry) -> csl_legacy::csl_jso
             let year = date.get(0..4)?.parse::<i32>().ok()?;
             Some(DateVariable::year(year))
         });
-    r
+    InputReference::from(r)
 }
 
 fn input_reference_to_csl_json(reference: &InputReference) -> csl_legacy::csl_json::Reference {
