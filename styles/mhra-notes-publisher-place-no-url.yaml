@@ -76,6 +76,7 @@ citation:
         shorten:
           min: 4
           use-first: 1
+          and-others: text
       - title: primary
         wrap: quotes
       - title: parent-monograph
@@ -92,16 +93,21 @@ citation:
         prefix: ' ('
       - variable: publisher
         prefix: ': '
-      - number: volume
+      - group:
+          - number: volume
+          - number: issue
+            prefix: '.'
+        delimiter: ""
       - date: issued
         form: year
         wrap: parentheses
         prefix: ' '
-      - variable: locator
-        wrap: parentheses
-        prefix: ', '
       - number: pages
         prefix: 'pp. '
+        show-with-locator: true
+      - variable: locator
+        wrap: parentheses
+        prefix: ' '
     article-magazine:
       - contributor: author
         form: long
@@ -132,6 +138,7 @@ citation:
         prefix: ' '
       - number: pages
         prefix: 'pp. '
+        show-with-locator: true
     chapter:
       - contributor: author
         form: long
@@ -162,6 +169,7 @@ citation:
         prefix: ' '
       - number: pages
         prefix: 'pp. '
+        show-with-locator: true
     default:
       - contributor: author
         form: long
@@ -191,6 +199,7 @@ citation:
         wrap: parentheses
         prefix: ' '
       - number: pages
+        show-with-locator: true
     entry-encyclopedia:
       - contributor: author
         form: long
@@ -221,6 +230,7 @@ citation:
         prefix: ' '
       - number: pages
         prefix: 'pp. '
+        show-with-locator: true
     paper-conference:
       - contributor: author
         form: long
@@ -251,6 +261,7 @@ citation:
         prefix: ' '
       - number: pages
         prefix: 'pp. '
+        show-with-locator: true
     legal_case:
       - title: primary
         wrap: quotes

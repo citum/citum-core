@@ -591,6 +591,10 @@ pub struct TemplateNumber {
     pub form: Option<NumberForm>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub label_form: Option<LabelForm>,
+    /// When `true`, show this pages component even when a locator is present in a note-style citation.
+    /// By default, pages are suppressed in note-style citations when a locator is present.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub show_with_locator: Option<bool>,
     #[serde(flatten)]
     pub rendering: Rendering,
     /// Structured link options (DOI, URL).
