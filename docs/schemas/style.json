@@ -77,7 +77,7 @@
     "version": {
       "description": "Style schema version.",
       "type": "string",
-      "default": "0.13.0"
+      "default": "0.13.1"
     }
   },
   "additionalProperties": false,
@@ -4625,6 +4625,13 @@
         },
         "quote": {
           "description": "Render in quotes.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "show-with-locator": {
+          "description": "When `true`, show this pages component even when a locator is present in a note-style citation.\nBy default, pages are suppressed in note-style citations when a locator is present.",
           "type": [
             "boolean",
             "null"

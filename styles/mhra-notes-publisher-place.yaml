@@ -90,6 +90,7 @@ citation:
           use-first: 1
       - number: pages
         prefix: 'pp. '
+        show-with-locator: true
       - variable: url
       - variable: publisher-place
       - variable: publisher
@@ -125,6 +126,7 @@ citation:
           use-first: 1
       - number: pages
         prefix: 'pp. '
+        show-with-locator: true
       - variable: url
       - variable: publisher-place
       - variable: publisher
@@ -156,6 +158,7 @@ citation:
           use-first: 1
       - number: pages
         prefix: 'pp. '
+        show-with-locator: true
       - variable: url
       - variable: publisher-place
       - variable: publisher
@@ -186,6 +189,7 @@ citation:
           min: 4
           use-first: 1
       - number: pages
+        show-with-locator: true
       - variable: url
       - variable: publisher-place
       - variable: publisher
@@ -212,6 +216,7 @@ citation:
           min: 4
           use-first: 1
       - number: pages
+        show-with-locator: true
       - variable: url
       - variable: publisher-place
       - variable: publisher
@@ -243,6 +248,7 @@ citation:
           use-first: 1
       - number: pages
         prefix: 'pp. '
+        show-with-locator: true
       - variable: url
       - variable: publisher-place
       - variable: publisher
@@ -274,6 +280,7 @@ citation:
           use-first: 1
       - number: pages
         prefix: 'pp. '
+        show-with-locator: true
       - variable: url
       - variable: publisher-place
       - variable: publisher

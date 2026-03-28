@@ -68,6 +68,7 @@ citation:
         prefix: " "
       - number: pages
         prefix: ", pp. "
+        show-with-locator: true
       - variable: locator
         wrap: parentheses
         prefix: " "
@@ -88,6 +89,7 @@ citation:
         prefix: " "
       - number: pages
         prefix: ", pp. "
+        show-with-locator: true
       - variable: doi
         prefix: ", doi:"
     chapter:
@@ -107,6 +109,7 @@ citation:
         prefix: " ("
       - number: pages
         prefix: "pp. "
+        show-with-locator: true
       - number: volume
       - variable: url
       - date: issued
@@ -130,6 +133,7 @@ citation:
       - variable: publisher
         prefix: " ("
       - number: pages
+        show-with-locator: true
       - number: volume
       - variable: url
       - variable: doi
@@ -150,6 +154,7 @@ citation:
         prefix: " ("
       - number: pages
         prefix: "pp. "
+        show-with-locator: true
       - number: volume
       - variable: url
       - date: issued
@@ -171,6 +176,7 @@ citation:
         prefix: ", "
       - number: pages
         prefix: ", pp. "
+        show-with-locator: true
       - variable: doi
         prefix: ", doi:"
     patent:
@@ -219,6 +225,7 @@ citation:
     - variable: publisher
       prefix: " ("
     - number: pages
+      show-with-locator: true
     - number: volume
     - variable: url
     - date: issued

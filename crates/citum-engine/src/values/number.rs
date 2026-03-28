@@ -14,18 +14,20 @@ fn resolve_number_value(
     reference: &Reference,
     hints: &ProcHints,
     options: &RenderOptions<'_>,
+    show_with_locator: bool,
 ) -> Option<String> {
     match number {
         NumberVariable::Volume => reference.volume().map(|v| v.to_string()),
         NumberVariable::Issue => reference.issue().map(|v| v.to_string()),
         NumberVariable::Pages => {
-            if options.context == crate::values::RenderContext::Citation
+            let suppress = !show_with_locator
+                && options.context == crate::values::RenderContext::Citation
                 && options.locator_raw.is_some()
                 && matches!(
                     options.config.processing,
                     Some(citum_schema::options::Processing::Note)
-                )
-            {
+                );
+            if suppress {
                 None
             } else {
                 reference.pages().map(|p| {
@@ -130,7 +132,13 @@ impl ComponentValues for TemplateNumber {
     ) -> Option<ProcValues<F::Output>> {
         let fmt = F::default();
 
-        let value = resolve_number_value(&self.number, reference, hints, options);
+        let value = resolve_number_value(
+            &self.number,
+            reference,
+            hints,
+            options,
+            self.show_with_locator.unwrap_or(false),
+        );
 
         value.filter(|s| !s.is_empty()).map(|value| {
             // Resolve effective rendering options

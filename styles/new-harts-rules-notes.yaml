@@ -75,52 +75,21 @@ citation:
           and-others: et-al
       - title: primary
         wrap: quotes
-      - prefix: ', in '
-        group:
-          - contributor: editor
-            form: verb
-            name-order: given-first
-            shorten:
-              min: 4
-              use-first: 1
-          - title: parent-monograph
-            emph: true
       - title: parent-serial
         emph: true
-      - number: pages
-      - variable: publisher-place
       - number: volume
-        prefix: ), 2/
+        prefix: ', '
+      - number: issue
+        prefix: /
       - date: issued
         form: year
         wrap: parentheses
         prefix: ' '
+      - number: pages
+        prefix: ', '
       - variable: doi
         prefix: https://doi.org/
       - variable: url
-      - number: number
-        prefix: ', Patent '
-      - delimiter: none
-        group:
-          - date: issued
-            form: month-day
-            prefix: ', issued '
-          - date: issued
-            form: year
-            prefix: ', '
-      - delimiter: none
-        prefix: ', '
-        group:
-          - date: issued
-            form: month-day
-          - date: issued
-            form: year
-            prefix: ', '
-      - variable: medium
-        prefix: ', '
-      - contributor: interviewer
-        form: long
-        prefix: ', interview by '
     chapter:
       - contributor: author
         form: long
@@ -145,38 +114,20 @@ citation:
       - title: parent-serial
         emph: true
       - number: pages
-      - variable: publisher-place
+      - wrap: parentheses
+        prefix: ' '
+        group:
+          - variable: publisher-place
       - number: volume
-        prefix: ), 2/
+        prefix: ', '
+      - number: issue
+        prefix: /
       - date: issued
         form: year
         wrap: parentheses
         prefix: ' '
       - variable: doi
       - variable: url
-      - number: number
-        prefix: ', Patent '
-      - delimiter: none
-        group:
-          - date: issued
-            form: month-day
-            prefix: ', issued '
-          - date: issued
-            form: year
-            prefix: ', '
-      - delimiter: none
-        prefix: ', '
-        group:
-          - date: issued
-            form: month-day
-          - date: issued
-            form: year
-            prefix: ', '
-      - variable: medium
-        prefix: ', '
-      - contributor: interviewer
-        form: long
-        prefix: ', interview by '
     default:
       - contributor: author
         form: long
@@ -274,8 +225,9 @@ citation:
       - variable: medium
         prefix: ', '
       - contributor: interviewer
-        form: long
-        prefix: ', interview by '
+        form: verb
+        name-order: given-first
+        prefix: ', '
   template:
     - contributor: author
       form: long
@@ -329,8 +281,9 @@ citation:
     - variable: medium
       prefix: ', '
     - contributor: interviewer
-      form: long
-      prefix: ', interview by '
+      form: verb
+      name-order: given-first
+      prefix: ', '
   suffix: .
   delimiter: ', '
   multi-cite-delimiter: '; '
@@ -349,25 +302,16 @@ bibliography:
           use-first: 1
       - title: primary
         wrap: quotes
-      - variable: publisher-place
-        prefix: ' ('
-      - number: volume
-        prefix: ), 2/
-      - group:
-          - contributor: editor
-            form: verb
-            name-order: given-first
-            shorten:
-              min: 4
-              use-first: 1
-          - title: parent-monograph
-            emph: true
       - title: parent-serial
         emph: true
+      - number: volume
+        prefix: ', '
       - date: issued
         form: year
+        wrap: parentheses
         prefix: ' '
       - number: pages
+        prefix: ', '
       - variable: doi
         prefix: https://doi.org/
       - variable: url
@@ -380,10 +324,6 @@ bibliography:
           use-first: 1
       - title: primary
         wrap: quotes
-      - variable: publisher-place
-        prefix: ' ('
-      - number: volume
-        prefix: ), 2/
       - group:
           - contributor: editor
             form: verb
@@ -394,12 +334,20 @@ bibliography:
             prefix: 'in '
           - title: parent-monograph
             emph: true
+      - wrap: parentheses
+        prefix: ' '
+        group:
+          - variable: publisher-place
+      - number: volume
+        prefix: ', '
+      - number: issue
+        prefix: /
       - title: parent-serial
         emph: true
       - date: issued
         form: year
+        wrap: parentheses
         prefix: ' '
-      - number: pages
       - variable: doi
       - variable: url
     interview:
@@ -411,24 +359,32 @@ bibliography:
           use-first: 1
       - title: primary
         wrap: quotes
-      - variable: publisher-place
-        prefix: ' ('
-      - number: volume
-        prefix: ), 2/
-      - group:
-          - contributor: editor
-            form: verb
-            name-order: given-first
-            shorten:
-              min: 4
-              use-first: 1
-          - title: parent-monograph
-            emph: true
-      - title: parent-serial
-        emph: true
-      - number: pages
-      - variable: doi
+      - contributor: interviewer
+        form: long
+        prefix: ', interview by '
+      - date: issued
+        form: day-month-abbr-year
+        prefix: ', '
+      - variable: medium
+        prefix: ' ['
+        suffix: ']'
       - variable: url
+        prefix: ', '
+    patent:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - title: primary
+      - variable: number
+        prefix: ', Patent '
+      - date: issued
+        form: day-month-abbr-year
+        prefix: ', issued '
+    personal_communication: []
+    personal-communication: []
   template:
     - contributor: author
       form: long
