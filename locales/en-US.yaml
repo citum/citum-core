@@ -146,6 +146,8 @@ roles:
     long:
       singular: guest
       plural: guests
+    # CSL singular "with guest" / plural "with guests"; plural dispatch deferred to MF2 wiring
+    verb: with guest
   host:
     long:
       singular: host
@@ -164,6 +166,7 @@ roles:
     long:
       singular: interviewer
       plural: interviewers
+    # CSL upstream has "interview by" (typo); Citum uses grammatically correct "interviewed by"
     verb: interviewed by
   narrator:
     long:
