@@ -763,6 +763,9 @@ messages:
     when one {çeviren}
     when * {çevirenler}
   role.translator.verb: "çeviren"
+  role.guest.label: "konuk"
+  role.guest.label-long: "konuk"
+  role.guest.verb: "konuk olarak"
   # Compositional patterns
   pattern.page-range: "{$start}–{$end}"
   pattern.retrieved-from: "erişim adresi: {$url}"

@@ -702,6 +702,7 @@ impl Locale {
         let prefix = match role {
             ContributorRole::Editor => "role.editor",
             ContributorRole::Translator => "role.translator",
+            ContributorRole::Guest => "role.guest",
             _ => return None,
         };
 
@@ -709,16 +710,19 @@ impl Locale {
             TermForm::Long => Some(match prefix {
                 "role.editor" => "role.editor.label-long",
                 "role.translator" => "role.translator.label-long",
+                "role.guest" => "role.guest.label-long",
                 _ => return None,
             }),
             TermForm::Short => Some(match prefix {
                 "role.editor" => "role.editor.label",
                 "role.translator" => "role.translator.label",
+                "role.guest" => "role.guest.label",
                 _ => return None,
             }),
             TermForm::Verb | TermForm::VerbShort => Some(match prefix {
                 "role.editor" => "role.editor.verb",
                 "role.translator" => "role.translator.verb",
+                "role.guest" => "role.guest.verb",
                 _ => return None,
             }),
             TermForm::Symbol => None,

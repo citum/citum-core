@@ -137,6 +137,7 @@ fn from_monograph_ref(
         translator: legacy.translator.map(Contributor::from),
         recipient: legacy.recipient.map(Contributor::from),
         interviewer: legacy.interviewer.map(Contributor::from),
+        guest: None,
         issued: ctx.issued,
         publisher: legacy.publisher.map(|n| {
             Contributor::SimpleName(SimpleName {
@@ -429,6 +430,7 @@ fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         translator: legacy.translator.map(Contributor::from),
         recipient: legacy.recipient.map(Contributor::from),
         interviewer: legacy.interviewer.map(Contributor::from),
+        guest: None,
         issued: ctx.issued,
         publisher: legacy.publisher.map(|n| {
             Contributor::SimpleName(SimpleName {

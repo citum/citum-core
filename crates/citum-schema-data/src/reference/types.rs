@@ -136,6 +136,8 @@ pub struct Monograph {
     pub recipient: Option<Contributor>,
     /// Interviewer for interview-style references.
     pub interviewer: Option<Contributor>,
+    /// Guest for interview or podcast-style references.
+    pub guest: Option<Contributor>,
     #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
     pub publisher: Option<Contributor>,

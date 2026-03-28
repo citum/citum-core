@@ -145,6 +145,14 @@ impl InputReference {
         }
     }
 
+    /// Return the guest.
+    pub fn guest(&self) -> Option<Contributor> {
+        match self {
+            InputReference::Monograph(r) => r.guest.clone(),
+            _ => None,
+        }
+    }
+
     /// Return the publisher.
     pub fn publisher(&self) -> Option<Contributor> {
         match self {

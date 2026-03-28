@@ -874,6 +874,18 @@ messages:
     when one {translator}
     when * {translators}
   role.translator.verb: "translated by"
+  role.guest.label: |
+    .match {$count :plural}
+    when one {guest}
+    when * {guests}
+  role.guest.label-long: |
+    .match {$count :plural}
+    when one {guest}
+    when * {guests}
+  role.guest.verb: |
+    .match {$count :plural}
+    when one {with guest}
+    when * {with guests}
   # Compositional patterns
   pattern.page-range: "{$start}–{$end}"
   pattern.retrieved-from: "retrieved from {$url}"

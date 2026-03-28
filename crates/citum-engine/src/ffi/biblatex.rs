@@ -200,6 +200,7 @@ fn biblatex_monograph(
         translator: None,
         recipient: None,
         interviewer: None,
+        guest: None,
         issued: ctx.issued,
         publisher: ctx.publisher,
         url: field_str("url").and_then(|u| Url::parse(&u).ok()),

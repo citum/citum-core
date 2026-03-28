@@ -175,6 +175,7 @@ impl ComponentValues for TemplateContributor {
             ContributorRole::Translator => reference.translator(),
             ContributorRole::Recipient => reference.recipient(),
             ContributorRole::Interviewer => reference.interviewer(),
+            ContributorRole::Guest => reference.guest(),
             _ => None,
         };
 
