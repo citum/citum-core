@@ -2,7 +2,7 @@
 # Comprehensive Citum Test Bibliography
 # Uses proper Citum reference types with correct field requirements
 info:
-  description: Citum Test Bibliography
+  description: Comprehensive Citum reference examples
 references:
   # 1. Monograph (Book)
   - id: kuhn1962
@@ -39,21 +39,28 @@ references:
   - id: smith2010
     class: collection-component
     type: chapter
-    title: The Future of Citum
+    title: The Role of Deliberate Practice
     author:
-      - family: Smith
-        given: Alice
-    issued: "2010"
+      - family: Ericsson
+        given: K. Anders
+    issued: "2006"
     parent:
       type: edited-book
-      title: Modern Citation Systems
+      title: The Cambridge Handbook of Expertise and Expert Performance
       editor:
-        - family: Jones
-          given: Bob
-      issued: "2010"
+        - family: Ericsson
+          given: K. Anders
+        - family: Charness
+          given: Neil
+        - family: Feltovich
+          given: Paul J.
+        - family: Hoffman
+          given: Robert R.
+      issued: "2006"
       publisher:
-        name: Academic Press
-    pages: "45-67"
+        name: Cambridge University Press
+        location: Cambridge
+    pages: "683-703"
 
   # 4. Standalone edited book
   - id: miller2022
@@ -94,18 +101,19 @@ references:
   - id: brown1954
     class: monograph
     type: book
-    title: Another Book
+    title: Methods of Surveying and Measuring Vegetation
     author:
       - family: Brown
-        given: Mary
+        given: Dorothy
     issued: "1954"
     publisher:
-      name: Oxford University Press
+      name: Commonwealth Agricultural Bureaux
+      location: Farnham Royal
 
   - id: who2020
     class: monograph
     type: book
-    title: Global Status Report
+    title: "World Health Statistics 2020: Monitoring Health for the SDGs"
     author:
       name: World Health Organization
     issued: "2020"

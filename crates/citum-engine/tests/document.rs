@@ -194,15 +194,15 @@ fn given_example_mla_document_when_rendered_as_plain_text_then_integral_name_mem
         DocumentFormat::Plain,
     );
 
-    assert!(output.contains("First narrative mention: John Smith (10)"));
+    assert!(output.contains("First narrative mention: Anthony D. Smith (10)"));
     assert!(output.contains("Later in the same chapter: Smith (12) narrows"));
     assert!(output.contains("Integral with locator: Thomas S. Kuhn (10) argues"));
     assert!(output.contains(
-        "[^narrative-note]: Before the prose introduces him, John Smith (3) already appears in a note."
+        "[^narrative-note]: Before the prose introduces him, Anthony D. Smith (3) already appears in a note."
     ));
     assert!(output.contains("Suppress author with locator: (10)."));
     assert!(output.contains("# Chapter Two"));
-    assert!(output.contains("so John Smith (14)"));
+    assert!(output.contains("so Anthony D. Smith (14)"));
 }
 
 fn given_example_apa_document_when_rendered_as_plain_text_then_integral_citations_include_locators()
@@ -246,7 +246,7 @@ fn given_example_chicago_note_document_when_rendered_as_plain_text_then_integral
         "manual note should preserve the authored anchor: {output}"
     );
     assert!(
-        output.contains("_A Great Book_, 3"),
+        output.contains("_Nationalism: Theory, Ideology, History_, 3"),
         "manual note should preserve the reduced note content and locator: {output}"
     );
     assert_eq!(
@@ -587,7 +587,7 @@ fn given_markdown_integral_note_citation_when_rendered_with_a_note_style_then_a_
         "note-style markdown integral citation did not anchor correctly: {output}"
     );
     assert!(
-        output.contains("[^citum-auto-1]: Smith, _A Great Book_."),
+        output.contains("[^citum-auto-1]: Smith, _Nationalism: Theory, Ideology, History_."),
         "generated note missing for markdown citation: {output}"
     );
 }

@@ -28,18 +28,18 @@
   "smith2010": {
     "id": "smith2010",
     "type": "book",
-    "title": "A Great Book",
-    "author": [{ "family": "Smith", "given": "John" }],
+    "title": "Nationalism: Theory, Ideology, History",
+    "author": [{ "family": "Smith", "given": "Anthony D." }],
     "issued": { "date-parts": [[2010]] },
-    "publisher": "Academic Press"
+    "publisher": "Polity"
   },
   "brown1954": {
     "id": "brown1954",
     "type": "book",
-    "title": "Another Book",
-    "author": [{ "family": "Brown", "given": "Mary" }],
+    "title": "Methods of Surveying and Measuring Vegetation",
+    "author": [{ "family": "Brown", "given": "Dorothy" }],
     "issued": { "date-parts": [[1954]] },
-    "publisher": "Oxford University Press"
+    "publisher": "Commonwealth Agricultural Bureaux"
   },
   "doe2020": {
     "id": "doe2020",
