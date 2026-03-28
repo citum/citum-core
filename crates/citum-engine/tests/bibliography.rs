@@ -1511,10 +1511,87 @@ fn editor_author_substitute_omits_verb_role_label_in_bibliography() {
         ..Default::default()
     });
 
-    let bib = citum_engine::io::load_bibliography(
-        &project_root().join("../citum-hub-rewrite/resources/fixtures/references-author-date.json"),
-    )
-    .expect("hub author-date fixture should load");
+    let bib = citum_schema::bib_map![
+        "ancient-tale" => InputReference::Monograph(Box::new(Monograph {
+            id: Some("ancient-tale".to_string()),
+            r#type: MonographType::Book,
+            title: Some(Title::Single("The Ancient Tale".to_string())),
+            author: None,
+            editor: Some(Contributor::StructuredName(StructuredName {
+                given: "Jacob".into(),
+                family: "Grimm".into(),
+                ..Default::default()
+            })),
+            translator: None,
+            recipient: None,
+            interviewer: None,
+            guest: None,
+            issued: EdtfString("1850".to_string()),
+            publisher: None,
+            container_title: None,
+            url: None,
+            accessed: None,
+            language: None,
+            field_languages: Default::default(),
+            note: None,
+            isbn: None,
+            doi: None,
+            edition: None,
+            report_number: None,
+            collection_number: None,
+            genre: None,
+            medium: None,
+            archive: None,
+            archive_location: None,
+            keywords: None,
+            original_date: None,
+            original_title: None,
+            ads_bibcode: None,
+        })),
+        "ipcc2023" => InputReference::Monograph(Box::new(Monograph {
+            id: Some("ipcc2023".to_string()),
+            r#type: MonographType::Book,
+            title: Some(Title::Single("Climate Change 2023: Synthesis Report".to_string())),
+            author: None,
+            editor: Some(Contributor::ContributorList(citum_schema::reference::ContributorList(vec![
+                Contributor::StructuredName(StructuredName {
+                    given: "Hoesung".into(),
+                    family: "Lee".into(),
+                    ..Default::default()
+                }),
+                Contributor::StructuredName(StructuredName {
+                    given: "Jose".into(),
+                    family: "Romero".into(),
+                    ..Default::default()
+                }),
+            ]))),
+            translator: None,
+            recipient: None,
+            interviewer: None,
+            guest: None,
+            issued: EdtfString("2023".to_string()),
+            publisher: None,
+            container_title: None,
+            url: None,
+            accessed: None,
+            language: None,
+            field_languages: Default::default(),
+            note: None,
+            isbn: None,
+            doi: None,
+            edition: None,
+            report_number: None,
+            collection_number: None,
+            genre: None,
+            medium: None,
+            archive: None,
+            archive_location: None,
+            keywords: None,
+            original_date: None,
+            original_title: None,
+            ads_bibcode: None,
+        })),
+    ];
     let processor = Processor::new(style, bib);
     let result = processor
         .render_selected_bibliography_with_format::<citum_engine::render::plain::PlainText, _>(
@@ -1526,7 +1603,7 @@ fn editor_author_substitute_omits_verb_role_label_in_bibliography() {
         "editor substitute should render as the effective author without a verb label: {result}"
     );
     assert!(
-        result.contains("Lee, H., & Romero, J. (2023). _Climate Change 2023: Synthesis Report_."),
+        result.contains("Lee, H., & Romero, J. (2023). _Climate Change 2023: Synthesis Report_"),
         "multi-editor substitute should render as names only when occupying the author slot: {result}"
     );
     assert!(
