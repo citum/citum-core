@@ -488,6 +488,50 @@ fn legacy_style_mentions_motion_picture_term(style: &csl_legacy::model::Style) -
         })
 }
 
+fn legacy_style_uses_number_variable(style: &csl_legacy::model::Style) -> bool {
+    fn node_uses_number_variable(node: &CslNode) -> bool {
+        match node {
+            CslNode::Number(number) => number.variable == "number",
+            CslNode::Text(text) => text.variable.as_ref().is_some_and(|var| var == "number"),
+            CslNode::Group(group) => group.children.iter().any(node_uses_number_variable),
+            CslNode::Choose(choose) => {
+                choose
+                    .if_branch
+                    .children
+                    .iter()
+                    .any(node_uses_number_variable)
+                    || choose
+                        .else_if_branches
+                        .iter()
+                        .any(|branch| branch.children.iter().any(node_uses_number_variable))
+                    || choose
+                        .else_branch
+                        .as_ref()
+                        .is_some_and(|children| children.iter().any(node_uses_number_variable))
+            }
+            _ => false,
+        }
+    }
+
+    style
+        .macros
+        .iter()
+        .any(|macro_def| macro_def.children.iter().any(node_uses_number_variable))
+        || style
+            .citation
+            .layout
+            .children
+            .iter()
+            .any(node_uses_number_variable)
+        || style.bibliography.as_ref().is_some_and(|bibliography| {
+            bibliography
+                .layout
+                .children
+                .iter()
+                .any(node_uses_number_variable)
+        })
+}
+
 pub(super) fn ensure_inferred_patent_type_template(
     legacy_style: &csl_legacy::model::Style,
     type_templates: &mut Option<indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>>,
@@ -500,9 +544,7 @@ pub(super) fn ensure_inferred_patent_type_template(
 
     let mut patent_template = base_media_template_from_bibliography(bibliography_template);
 
-    let style_id = legacy_style.info.id.to_lowercase();
-    let suppress_patent_number_for_style = style_id.contains("springer-socpsych-author-date");
-    if !suppress_patent_number_for_style {
+    if legacy_style_uses_number_variable(legacy_style) {
         patent_template.push(TemplateComponent::Number(
             citum_schema::template::TemplateNumber {
                 number: citum_schema::template::NumberVariable::Number,
