@@ -1,240 +1,175 @@
+version: ''
 info:
   title: Thieme-German (Deutsch)
-  description: Modified version of the "Vancouver Bracket" for Thieme Journals
-  fields:
-  - medicine
-  source:
-    csl-id: http://www.zotero.org/styles/thieme-german
-    adapted-by: citum-migrate
-    license: http://creativecommons.org/licenses/by-sa/3.0/
-    original-authors:
-    - name: Sebastian Karcher
-    links:
-    - href: http://www.zotero.org/styles/thieme-german
-      rel: self
-    - href: http://www.thieme.de/de/autorenlounge/fuer-zeitschriftenautoren-1789.htm
-      rel: documentation
+  id: http://www.zotero.org/styles/thieme-german
+  default-locale: de-DE
 options:
-  substitute: editor-translator-short
+  substitute:
+    contributor-role-form: short
+    template:
+    - editor
+    - translator
   processing: numeric
   contributors:
     display-as-sort: all
-    name-form: initials
-    initialize-with: ""
+    initialize-with: ''
     shorten:
       min: 4
       use-first: 3
       and-others: et-al
       delimiter-precedes-last: contextual
+    and: none
     delimiter-precedes-last: always
     demote-non-dropping-particle: sort-only
-    sort-separator: " "
-  dates: numeric
+    sort-separator: ' '
+    name-form: initials
+  dates:
+    month: numeric
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
+    range-delimiter: –
+    show-seconds: false
+    show-timezone: false
   page-range-format: expanded
 citation:
-  use-preset: numeric-citation
+  template:
+  - number: citation-number
   wrap: brackets
-  multi-cite-delimiter: ","
+  multi-cite-delimiter: ','
+  collapse: citation-number
 bibliography:
   options:
     contributors:
       display-as-sort: all
-      name-form: initials
-      initialize-with: ""
+      initialize-with: ''
       shorten:
         min: 4
         use-first: 3
         and-others: et-al
         delimiter-precedes-last: contextual
+      delimiter: null
       delimiter-precedes-last: always
-      sort-separator: " "
-    separator: ". "
-  type-variants:
-    article-magazine:
-    - number: citation-number
-      wrap: brackets
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-    - title: parent-serial
-    - number: volume
-    - date: issued
-      form: year
-    - number: pages
-      prefix: ". 2013: "
-    - variable: doi
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    chapter:
-    - number: citation-number
-      wrap: brackets
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
-        prefix: "on "
-      - title: parent-monograph
-    - title: parent-serial
-    - number: volume
-    - number: issue
-      prefix: ": "
-    - date: issued
-      form: year
-    - number: pages
-      prefix: ". 2013: "
-    - variable: doi
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    dataset:
-    - number: citation-number
-      wrap: brackets
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-    - title: parent-serial
-    - number: volume
-    - number: issue
-      prefix: ": "
-    - date: issued
-      form: year
-    - number: pages
-      prefix: ". 2013: "
-    - variable: doi
-    - variable: publisher-place
-    legal-case:
-    - number: citation-number
-      wrap: brackets
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-    - title: parent-serial
-    - date: issued
-      form: year
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    webpage:
-    - number: citation-number
-      wrap: brackets
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-    - title: parent-serial
-    - number: volume
-    - number: issue
-      prefix: ": "
-    - date: issued
-      form: year
-    - number: pages
-      prefix: ". 2013: "
-    - variable: doi
-    - variable: url
-      prefix: "; Im Internet: "
-    - date: accessed
-      form: full
-      prefix: "; Stand: "
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
+      sort-separator: ' '
+      name-form: initials
+    separator: '. '
   template:
-  - number: citation-number
-    wrap: brackets
-    suffix: " "
   - contributor: author
     form: long
     name-order: family-first
     shorten:
       min: 8
       use-first: 3
+      and-others: et-al
+      delimiter-precedes-last: contextual
   - title: primary
-    prefix: " "
+    prefix: ' '
   - group:
     - contributor: editor
       form: verb
-      name-order: given-first
       shorten:
         min: 4
         use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
     - title: parent-monograph
   - title: parent-serial
   - number: volume
   - number: issue
-    prefix: ": "
+    prefix: ': '
   - date: issued
     form: year
   - number: pages
-    prefix: ". 2013: "
+    prefix: ': '
   - variable: doi
   - variable: publisher-place
   - variable: publisher
-    prefix: ": "
+    prefix: ': '
+  type-variants:
+    article-journal:
+    - number: citation-number
+      quote: false
+      wrap: brackets
+      strip-periods: false
+    - contributor: author
+      form: long
+      sort-separator: ' '
+      shorten:
+        min: 4
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: always
+    - title: primary
+    - title: parent-serial
+      strip-periods: true
+    - date: issued
+      form: year
+      suffix: ;
+    - number: volume
+    - number: pages
+      prefix: ': '
+    - variable: doi
+      prefix: 'doi:'
+    legal_case:
+    - number: citation-number
+      quote: false
+      wrap: brackets
+      strip-periods: false
+    - contributor: author
+      form: long
+      sort-separator: ' '
+      shorten:
+        min: 4
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: always
+    - title: primary
+    - number: edition
+    - term: edition
+      form: short
+    - variable: publisher-place
+    - variable: publisher
+    - date: issued
+      form: year
+      suppress: false
+    - title: parent-serial
+    webpage:
+    - number: citation-number
+      quote: false
+      wrap: brackets
+      strip-periods: false
+    - contributor: author
+      form: long
+      sort-separator: ' '
+      shorten:
+        min: 4
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: always
+    - title: primary
+    - title: parent-serial
+      strip-periods: true
+    - date: issued
+      form: year
+      suffix: ;
+    - number: volume
+    - number: pages
+      prefix: ': '
+    - variable: url
+    - term: accessed
+      form: long
+    - date: accessed
+      form: full
+    patent:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+    - title: primary
+      prefix: ' '
+    - date: issued
+      form: year
+
