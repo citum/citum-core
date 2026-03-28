@@ -1483,6 +1483,110 @@ fn test_translator_substitute_uses_locale_aware_role_label() {
 }
 
 #[test]
+fn test_editor_substitute_suppresses_verb_prefix_role_label() {
+    let mut config = make_config();
+    let locale = make_locale();
+    let hints = ProcHints::default();
+
+    config.substitute = Some(SubstituteConfig::Preset(
+        citum_schema::presets::SubstitutePreset::Standard,
+    ));
+
+    if let Some(ref mut contributors) = config.contributors {
+        contributors.role = Some(RoleOptions {
+            preset: Some(RoleLabelPreset::VerbPrefix),
+            ..Default::default()
+        });
+    }
+
+    let reference = Reference::from(LegacyReference {
+        id: "editor-substitute".to_string(),
+        ref_type: "book".to_string(),
+        editor: Some(vec![Name::new("Grimm", "Jacob")]),
+        ..Default::default()
+    });
+
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let component = TemplateContributor {
+        contributor: ContributorRole::Author,
+        form: ContributorForm::Long,
+        links: None,
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "Grimm, Jacob");
+    assert_eq!(values.prefix, None);
+    assert_eq!(values.suffix, None);
+    assert_eq!(
+        values.substituted_key,
+        Some("contributor:Editor".to_string())
+    );
+}
+
+#[test]
+fn test_editor_component_keeps_verb_prefix_role_label() {
+    let mut config = make_config();
+    let locale = make_locale();
+    let hints = ProcHints::default();
+
+    if let Some(ref mut contributors) = config.contributors {
+        contributors.role = Some(RoleOptions {
+            preset: Some(RoleLabelPreset::VerbPrefix),
+            ..Default::default()
+        });
+    }
+
+    let reference = Reference::from(LegacyReference {
+        id: "editor-component".to_string(),
+        ref_type: "book".to_string(),
+        editor: Some(vec![Name::new("Grimm", "Jacob")]),
+        ..Default::default()
+    });
+
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let component = TemplateContributor {
+        contributor: ContributorRole::Editor,
+        form: ContributorForm::Long,
+        links: None,
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "Grimm, Jacob");
+    assert_eq!(values.prefix, Some("edited by ".to_string()));
+    assert_eq!(values.suffix, None);
+}
+
+#[test]
 fn test_role_specific_name_order_applies_in_substitute_path() {
     let mut config = make_config();
     let locale = make_locale();

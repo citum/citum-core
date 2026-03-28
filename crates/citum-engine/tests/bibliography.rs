@@ -707,6 +707,122 @@ fn make_particle_book(
     }))
 }
 
+fn make_editor_only_book(
+    id: &str,
+    title: &str,
+    year: &str,
+    family: &str,
+    given: &str,
+) -> InputReference {
+    InputReference::Monograph(Box::new(Monograph {
+        id: Some(id.to_string()),
+        r#type: MonographType::Book,
+        title: Some(Title::Single(title.to_string())),
+        author: None,
+        editor: Some(Contributor::StructuredName(StructuredName {
+            given: given.into(),
+            family: family.into(),
+            ..Default::default()
+        })),
+        translator: None,
+        recipient: None,
+        interviewer: None,
+        guest: None,
+        issued: EdtfString(year.to_string()),
+        publisher: None,
+        container_title: None,
+        url: None,
+        accessed: None,
+        language: None,
+        field_languages: Default::default(),
+        note: None,
+        isbn: None,
+        doi: None,
+        edition: None,
+        report_number: None,
+        collection_number: None,
+        genre: None,
+        medium: None,
+        archive: None,
+        archive_location: None,
+        keywords: None,
+        original_date: None,
+        original_title: None,
+        ads_bibcode: None,
+    }))
+}
+
+fn make_multi_editor_only_book(
+    id: &str,
+    title: &str,
+    year: &str,
+    editors: Vec<(&str, &str)>,
+) -> InputReference {
+    let editors = editors
+        .into_iter()
+        .map(|(family, given)| {
+            Contributor::StructuredName(StructuredName {
+                given: given.into(),
+                family: family.into(),
+                ..Default::default()
+            })
+        })
+        .collect();
+
+    InputReference::Monograph(Box::new(Monograph {
+        id: Some(id.to_string()),
+        r#type: MonographType::Book,
+        title: Some(Title::Single(title.to_string())),
+        author: None,
+        editor: Some(Contributor::ContributorList(
+            citum_schema::reference::ContributorList(editors),
+        )),
+        translator: None,
+        recipient: None,
+        interviewer: None,
+        guest: None,
+        issued: EdtfString(year.to_string()),
+        publisher: None,
+        container_title: None,
+        url: None,
+        accessed: None,
+        language: None,
+        field_languages: Default::default(),
+        note: None,
+        isbn: None,
+        doi: None,
+        edition: None,
+        report_number: None,
+        collection_number: None,
+        genre: None,
+        medium: None,
+        archive: None,
+        archive_location: None,
+        keywords: None,
+        original_date: None,
+        original_title: None,
+        ads_bibcode: None,
+    }))
+}
+
+fn make_editor_substitute_bibliography() -> indexmap::IndexMap<String, InputReference> {
+    citum_schema::bib_map![
+        "ancient-tale" => make_editor_only_book(
+            "ancient-tale",
+            "The Ancient Tale",
+            "1850",
+            "Grimm",
+            "Jacob",
+        ),
+        "ipcc2023" => make_multi_editor_only_book(
+            "ipcc2023",
+            "Climate Change 2023: Synthesis Report",
+            "2023",
+            vec![("Lee", "Hoesung"), ("Romero", "Jose")],
+        ),
+    ]
+}
+
 fn make_name_particle_style(display_as_sort: DisplayAsSort) -> Style {
     Style {
         info: StyleInfo {
@@ -1499,6 +1615,37 @@ fn royal_society_of_chemistry_restores_legacy_page_less_doi_behavior() {
 
     assert!(result.contains("DOI:10.1234/example"));
     assert!(!result.contains("pp."));
+}
+
+#[test]
+fn editor_author_substitute_omits_verb_role_label_in_bibliography() {
+    let mut style = load_style("styles/apa-7th.yaml");
+    let config = style.options.get_or_insert_with(Default::default);
+    let contributors = config.contributors.get_or_insert_with(Default::default);
+    contributors.role = Some(citum_schema::options::contributors::RoleOptions {
+        preset: Some(citum_schema::options::contributors::RoleLabelPreset::VerbPrefix),
+        ..Default::default()
+    });
+
+    let bib = make_editor_substitute_bibliography();
+    let processor = Processor::new(style, bib);
+    let result = processor
+        .render_selected_bibliography_with_format::<citum_engine::render::plain::PlainText, _>(
+            vec!["ancient-tale".to_string(), "ipcc2023".to_string()],
+        );
+
+    assert!(
+        result.contains("Grimm, J. (1850). _The Ancient Tale_"),
+        "editor substitute should render as the effective author without a verb label: {result}"
+    );
+    assert!(
+        result.contains("Lee, H., & Romero, J. (2023). _Climate Change 2023: Synthesis Report_"),
+        "multi-editor substitute should render as names only when occupying the author slot: {result}"
+    );
+    assert!(
+        !result.contains("edited by Jacob Grimm") && !result.contains("edited by Hoesung Lee"),
+        "verb-prefix labels should not survive when editors substitute into the author slot: {result}"
+    );
 }
 
 mod sorting {
