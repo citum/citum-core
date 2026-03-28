@@ -77,7 +77,7 @@
     "version": {
       "description": "Style schema version.",
       "type": "string",
-      "default": "0.13.1"
+      "default": "0.14.0"
     }
   },
   "additionalProperties": false,
@@ -1486,6 +1486,11 @@
           "description": "String-backed enum variant.",
           "type": "string",
           "const": "interviewee"
+        },
+        {
+          "description": "String-backed enum variant.",
+          "type": "string",
+          "const": "guest"
         },
         {
           "description": "String-backed enum variant.",

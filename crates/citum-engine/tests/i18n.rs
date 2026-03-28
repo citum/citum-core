@@ -143,6 +143,7 @@ fn make_german_translator_reference() -> InputReference {
         })),
         recipient: None,
         interviewer: None,
+        guest: None,
         issued: EdtfString("2024".to_string()),
         publisher: None,
         url: None,
@@ -628,6 +629,7 @@ fn given_translated_numeric_integral_citations_when_rendered_then_the_translated
                 translator: None,
                 recipient: None,
                 interviewer: None,
+                guest: None,
                 issued: citum_schema::reference::EdtfString("1869".to_string()),
                 publisher: None,
                 url: None,
@@ -681,6 +683,7 @@ fn given_field_language_overrides_when_resolving_the_effective_field_language_th
         translator: None,
         recipient: None,
         interviewer: None,
+        guest: None,
         issued: EdtfString("2024".to_string()),
         publisher: None,
         url: None,
@@ -726,6 +729,7 @@ fn given_no_item_language_when_resolving_the_effective_item_language_then_the_mu
         translator: None,
         recipient: None,
         interviewer: None,
+        guest: None,
         issued: EdtfString("2024".to_string()),
         publisher: None,
         url: None,
@@ -794,6 +798,7 @@ fn given_localized_citation_templates_when_the_item_language_matches_then_the_lo
             translator: None,
             recipient: None,
             interviewer: None,
+            guest: None,
             issued: EdtfString("2024".to_string()),
             publisher: Some(Contributor::SimpleName(
                 citum_schema::reference::SimpleName {
@@ -833,6 +838,7 @@ fn given_localized_citation_templates_when_the_item_language_matches_then_the_lo
             translator: None,
             recipient: None,
             interviewer: None,
+            guest: None,
             issued: EdtfString("2024".to_string()),
             publisher: Some(Contributor::SimpleName(
                 citum_schema::reference::SimpleName {
@@ -920,6 +926,7 @@ fn given_localized_bibliography_templates_when_only_the_multilingual_title_has_a
             translator: None,
             recipient: None,
             interviewer: None,
+            guest: None,
             issued: EdtfString("2024".to_string()),
             publisher: None,
             url: None,

@@ -1223,6 +1223,17 @@
             "null"
           ]
         },
+        "guest": {
+          "description": "Guest for interview or podcast-style references.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Contributor"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "id": {
           "type": [
             "string",

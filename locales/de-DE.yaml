@@ -744,6 +744,18 @@ messages:
   role.editor.label: "Hrsg."
   role.editor.label-long: "Herausgeber"
   role.editor.verb: "herausgegeben von"
+  role.guest.label: |
+    .match {$count :plural}
+    when one {Gast}
+    when * {Gäste}
+  role.guest.label-long: |
+    .match {$count :plural}
+    when one {Gast}
+    when * {Gäste}
+  role.guest.verb: |
+    .match {$count :plural}
+    when one {mit Gast}
+    when * {mit Gästen}
   pattern.retrieved-from: "abgerufen von {$url}"
   date.open-ended: "heute"
 

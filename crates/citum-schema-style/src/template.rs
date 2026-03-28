@@ -470,6 +470,7 @@ crate::str_enum! {
         Recipient = "recipient",
         Interviewer = "interviewer",
         Interviewee = "interviewee",
+        Guest = "guest",
         Inventor = "inventor",
         Counsel = "counsel",
         Composer = "composer",

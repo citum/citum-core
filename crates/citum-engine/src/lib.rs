@@ -75,6 +75,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //!     translator: None,
 //!     recipient: None,
 //!     interviewer: None,
+//!     guest: None,
 //!     issued: EdtfString("1962".to_string()),
 //!     publisher: None,
 //!     url: None,
