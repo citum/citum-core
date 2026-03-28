@@ -707,6 +707,122 @@ fn make_particle_book(
     }))
 }
 
+fn make_editor_only_book(
+    id: &str,
+    title: &str,
+    year: &str,
+    family: &str,
+    given: &str,
+) -> InputReference {
+    InputReference::Monograph(Box::new(Monograph {
+        id: Some(id.to_string()),
+        r#type: MonographType::Book,
+        title: Some(Title::Single(title.to_string())),
+        author: None,
+        editor: Some(Contributor::StructuredName(StructuredName {
+            given: given.into(),
+            family: family.into(),
+            ..Default::default()
+        })),
+        translator: None,
+        recipient: None,
+        interviewer: None,
+        guest: None,
+        issued: EdtfString(year.to_string()),
+        publisher: None,
+        container_title: None,
+        url: None,
+        accessed: None,
+        language: None,
+        field_languages: Default::default(),
+        note: None,
+        isbn: None,
+        doi: None,
+        edition: None,
+        report_number: None,
+        collection_number: None,
+        genre: None,
+        medium: None,
+        archive: None,
+        archive_location: None,
+        keywords: None,
+        original_date: None,
+        original_title: None,
+        ads_bibcode: None,
+    }))
+}
+
+fn make_multi_editor_only_book(
+    id: &str,
+    title: &str,
+    year: &str,
+    editors: Vec<(&str, &str)>,
+) -> InputReference {
+    let editors = editors
+        .into_iter()
+        .map(|(family, given)| {
+            Contributor::StructuredName(StructuredName {
+                given: given.into(),
+                family: family.into(),
+                ..Default::default()
+            })
+        })
+        .collect();
+
+    InputReference::Monograph(Box::new(Monograph {
+        id: Some(id.to_string()),
+        r#type: MonographType::Book,
+        title: Some(Title::Single(title.to_string())),
+        author: None,
+        editor: Some(Contributor::ContributorList(
+            citum_schema::reference::ContributorList(editors),
+        )),
+        translator: None,
+        recipient: None,
+        interviewer: None,
+        guest: None,
+        issued: EdtfString(year.to_string()),
+        publisher: None,
+        container_title: None,
+        url: None,
+        accessed: None,
+        language: None,
+        field_languages: Default::default(),
+        note: None,
+        isbn: None,
+        doi: None,
+        edition: None,
+        report_number: None,
+        collection_number: None,
+        genre: None,
+        medium: None,
+        archive: None,
+        archive_location: None,
+        keywords: None,
+        original_date: None,
+        original_title: None,
+        ads_bibcode: None,
+    }))
+}
+
+fn make_editor_substitute_bibliography() -> indexmap::IndexMap<String, InputReference> {
+    citum_schema::bib_map![
+        "ancient-tale" => make_editor_only_book(
+            "ancient-tale",
+            "The Ancient Tale",
+            "1850",
+            "Grimm",
+            "Jacob",
+        ),
+        "ipcc2023" => make_multi_editor_only_book(
+            "ipcc2023",
+            "Climate Change 2023: Synthesis Report",
+            "2023",
+            vec![("Lee", "Hoesung"), ("Romero", "Jose")],
+        ),
+    ]
+}
+
 fn make_name_particle_style(display_as_sort: DisplayAsSort) -> Style {
     Style {
         info: StyleInfo {
@@ -1511,87 +1627,7 @@ fn editor_author_substitute_omits_verb_role_label_in_bibliography() {
         ..Default::default()
     });
 
-    let bib = citum_schema::bib_map![
-        "ancient-tale" => InputReference::Monograph(Box::new(Monograph {
-            id: Some("ancient-tale".to_string()),
-            r#type: MonographType::Book,
-            title: Some(Title::Single("The Ancient Tale".to_string())),
-            author: None,
-            editor: Some(Contributor::StructuredName(StructuredName {
-                given: "Jacob".into(),
-                family: "Grimm".into(),
-                ..Default::default()
-            })),
-            translator: None,
-            recipient: None,
-            interviewer: None,
-            guest: None,
-            issued: EdtfString("1850".to_string()),
-            publisher: None,
-            container_title: None,
-            url: None,
-            accessed: None,
-            language: None,
-            field_languages: Default::default(),
-            note: None,
-            isbn: None,
-            doi: None,
-            edition: None,
-            report_number: None,
-            collection_number: None,
-            genre: None,
-            medium: None,
-            archive: None,
-            archive_location: None,
-            keywords: None,
-            original_date: None,
-            original_title: None,
-            ads_bibcode: None,
-        })),
-        "ipcc2023" => InputReference::Monograph(Box::new(Monograph {
-            id: Some("ipcc2023".to_string()),
-            r#type: MonographType::Book,
-            title: Some(Title::Single("Climate Change 2023: Synthesis Report".to_string())),
-            author: None,
-            editor: Some(Contributor::ContributorList(citum_schema::reference::ContributorList(vec![
-                Contributor::StructuredName(StructuredName {
-                    given: "Hoesung".into(),
-                    family: "Lee".into(),
-                    ..Default::default()
-                }),
-                Contributor::StructuredName(StructuredName {
-                    given: "Jose".into(),
-                    family: "Romero".into(),
-                    ..Default::default()
-                }),
-            ]))),
-            translator: None,
-            recipient: None,
-            interviewer: None,
-            guest: None,
-            issued: EdtfString("2023".to_string()),
-            publisher: None,
-            container_title: None,
-            url: None,
-            accessed: None,
-            language: None,
-            field_languages: Default::default(),
-            note: None,
-            isbn: None,
-            doi: None,
-            edition: None,
-            report_number: None,
-            collection_number: None,
-            genre: None,
-            medium: None,
-            archive: None,
-            archive_location: None,
-            keywords: None,
-            original_date: None,
-            original_title: None,
-            ads_bibcode: None,
-        })),
-    ];
+    let bib = make_editor_substitute_bibliography();
     let processor = Processor::new(style, bib);
     let result = processor
         .render_selected_bibliography_with_format::<citum_engine::render::plain::PlainText, _>(
