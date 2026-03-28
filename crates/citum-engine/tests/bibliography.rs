@@ -1501,6 +1501,40 @@ fn royal_society_of_chemistry_restores_legacy_page_less_doi_behavior() {
     assert!(!result.contains("pp."));
 }
 
+#[test]
+fn editor_author_substitute_omits_verb_role_label_in_bibliography() {
+    let mut style = load_style("styles/apa-7th.yaml");
+    let config = style.options.get_or_insert_with(Default::default);
+    let contributors = config.contributors.get_or_insert_with(Default::default);
+    contributors.role = Some(citum_schema::options::contributors::RoleOptions {
+        preset: Some(citum_schema::options::contributors::RoleLabelPreset::VerbPrefix),
+        ..Default::default()
+    });
+
+    let bib = citum_engine::io::load_bibliography(
+        &project_root().join("../citum-hub-rewrite/resources/fixtures/references-author-date.json"),
+    )
+    .expect("hub author-date fixture should load");
+    let processor = Processor::new(style, bib);
+    let result = processor
+        .render_selected_bibliography_with_format::<citum_engine::render::plain::PlainText, _>(
+            vec!["ancient-tale".to_string(), "ipcc2023".to_string()],
+        );
+
+    assert!(
+        result.contains("Grimm, J. (1850). _The Ancient Tale_"),
+        "editor substitute should render as the effective author without a verb label: {result}"
+    );
+    assert!(
+        result.contains("Lee, H., & Romero, J. (2023). _Climate Change 2023: Synthesis Report_."),
+        "multi-editor substitute should render as names only when occupying the author slot: {result}"
+    );
+    assert!(
+        !result.contains("edited by Jacob Grimm") && !result.contains("edited by Hoesung Lee"),
+        "verb-prefix labels should not survive when editors substitute into the author slot: {result}"
+    );
+}
+
 mod sorting {
     use super::announce_behavior;
 

@@ -44,6 +44,7 @@ pub(super) fn resolve_multilingual_for_contrib(
 
 /// Resolve substitute-path role labels for a rendered fallback contributor.
 fn resolve_substitute_role_labels<F: OutputFormat<Output = String>>(
+    component: &TemplateContributor,
     role: &ContributorRole,
     names_count: usize,
     options: &RenderOptions<'_>,
@@ -73,15 +74,24 @@ fn resolve_substitute_role_labels<F: OutputFormat<Output = String>>(
         });
 
     preset
-        .map(|selected| {
-            super::labels::resolve_role_label_preset::<F>(
+        .and_then(|selected| {
+            if component.contributor == ContributorRole::Author
+                && matches!(
+                    selected,
+                    RoleLabelPreset::VerbPrefix | RoleLabelPreset::VerbShortPrefix
+                )
+            {
+                return None;
+            }
+
+            Some(super::labels::resolve_role_label_preset::<F>(
                 role,
                 selected,
                 names_count,
                 effective_rendering,
                 options,
                 fmt,
-            )
+            ))
         })
         .unwrap_or((None, None))
 }
@@ -132,6 +142,7 @@ fn resolve_named_substitute<F: OutputFormat<Output = String>>(
     let formatted =
         super::names::format_names(&names_vec, &component.form, options, &name_overrides, hints);
     let (prefix, suffix) = resolve_substitute_role_labels::<F>(
+        component,
         &role,
         names_vec.len(),
         options,
