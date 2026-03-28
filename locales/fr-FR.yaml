@@ -144,9 +144,8 @@ roles:
     long:
       singular: invité
       plural: invités
-    verb:
-      singular: avec pour invité
-      plural: avec pour invités
+    # SingularPlural YAML variant silently fails; plain string until MF2 routing is wired for guest
+    verb: avec pour invité
     verb-short: ac pr inv.
   host:
     long:
