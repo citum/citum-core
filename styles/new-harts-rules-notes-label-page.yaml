@@ -334,6 +334,37 @@ citation:
       - contributor: interviewer
         form: long
         prefix: ', interview by '
+    legal_case:
+      - title: primary
+        wrap: quotes
+      - title: parent-serial
+        emph: true
+      - date: issued
+        form: year
+        prefix: ", "
+      - number: volume
+        form: roman
+        prefix: ", "
+      - number: pages
+        prefix: ", p. "
+    patent:
+      - contributor: author
+        form: long
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - title: primary
+      - number: number
+        prefix: ", Patent "
+      - delimiter: none
+        group:
+          - date: issued
+            form: month-day
+            prefix: ", issued "
+          - date: issued
+            form: year
+            prefix: ", "
     paper-conference:
       - contributor: author
         form: long
@@ -607,6 +638,58 @@ bibliography:
         prefix: 'pp. '
       - variable: doi
       - variable: url
+    legal_case:
+      - title: primary
+        wrap: quotes
+      - title: parent-serial
+        emph: true
+      - date: issued
+        form: year
+        prefix: ', '
+      - number: volume
+        form: roman
+        prefix: ', '
+      - number: pages
+        prefix: ', p. '
+    patent:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - title: primary
+      - number: number
+        prefix: ', Patent '
+      - delimiter: none
+        group:
+          - date: issued
+            form: month-day
+            prefix: ', issued '
+          - date: issued
+            form: year
+            prefix: ', '
+    book:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - title: primary
+      - contributor: translator
+        form: long
+        prefix: ', trans. by '
+      - variable: publisher-place
+        prefix: ' ('
+      - variable: publisher
+        prefix: ': '
+      - date: issued
+        form: year
+        prefix: ', '
+        suffix: ')'
+    personal_communication: []
+    personal-communication: []
   template:
     - contributor: author
       form: long

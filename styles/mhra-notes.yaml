@@ -173,6 +173,36 @@ citation:
         prefix: ", pp. "
       - variable: doi
         prefix: ", doi:"
+    patent:
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: primary
+      - number: number
+        prefix: ", Patent "
+      - delimiter: none
+        group:
+          - date: issued
+            form: month-day
+            prefix: ", issued "
+          - date: issued
+            form: year
+            prefix: ", "
+    interview:
+      - contributor: interviewer
+        form: long
+        name-order: given-first
+      - title: primary
+        wrap: quotes
+      - contributor: author
+        form: long
+        prefix: ", interview with "
+      - date: issued
+        form: month-day
+        prefix: ", "
+      - variable: medium
+        prefix: ", "
+      - variable: url
   template:
     - contributor: author
       form: long
