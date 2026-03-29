@@ -2,7 +2,7 @@ use crate::reference::InputReference;
 use crate::reference::contributor::{Contributor, ContributorList, SimpleName, StructuredName};
 use crate::reference::date::EdtfString;
 use crate::reference::types::{
-    Collection, CollectionComponent, CollectionType, Dataset, LegalCase, Monograph,
+    ArchiveInfo, Collection, CollectionComponent, CollectionType, Dataset, LegalCase, Monograph,
     MonographComponentType, MonographType, NumOrStr, Parent, Patent, Serial, SerialComponent,
     SerialComponentType, SerialType, Software, Standard, Statute, Title, Treaty,
 };
@@ -46,6 +46,18 @@ fn format_interviewer_note(names: &[csl_legacy::csl_json::Name]) -> Option<Strin
     } else {
         Some(format!("{}, Interviewer", formatted.join(", ")))
     }
+}
+
+fn archive_info_from_legacy_flat(legacy: &csl_legacy::csl_json::Reference) -> Option<ArchiveInfo> {
+    if legacy.archive.is_none() && legacy.archive_location.is_none() {
+        return None;
+    }
+
+    Some(ArchiveInfo {
+        name: legacy.archive.clone().map(Into::into),
+        location: legacy.archive_location.clone(),
+        ..Default::default()
+    })
 }
 
 /// Pre-extracted common fields shared by all reference conversion functions.
@@ -127,6 +139,8 @@ fn from_monograph_ref(
         MonographType::Book
     };
 
+    let archive_info = archive_info_from_legacy_flat(&legacy);
+
     InputReference::Monograph(Box::new(Monograph {
         id: ctx.id,
         r#type,
@@ -160,6 +174,8 @@ fn from_monograph_ref(
         medium: legacy.medium,
         archive: legacy.archive,
         archive_location: legacy.archive_location,
+        archive_info,
+        eprint: None,
         keywords: None,
         original_date: None,
         original_title: legacy.original_title.map(Title::Single),
@@ -220,6 +236,8 @@ fn from_collection_component_ref(
         doi: ctx.doi,
         genre: legacy.genre,
         medium: legacy.medium,
+        archive_info: None,
+        eprint: None,
         keywords: None,
     }))
 }
@@ -343,6 +361,8 @@ fn from_serial_component_ref(
             }),
         genre,
         medium: legacy.medium,
+        archive_info: None,
+        eprint: None,
         keywords: None,
     }))
 }
@@ -473,6 +493,8 @@ fn from_dataset_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) ->
 }
 
 fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
+    let archive_info = archive_info_from_legacy_flat(&legacy);
+
     InputReference::Monograph(Box::new(Monograph {
         id: ctx.id,
         r#type: MonographType::Document,
@@ -506,6 +528,8 @@ fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         medium: legacy.medium,
         archive: legacy.archive,
         archive_location: legacy.archive_location,
+        archive_info,
+        eprint: None,
         keywords: None,
         original_date: None,
         original_title: legacy.original_title.map(Title::Single),

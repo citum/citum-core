@@ -117,6 +117,69 @@ impl Default for MultilingualString {
     }
 }
 
+/// Structured archival location metadata for unpublished and archival material.
+///
+/// Models the hierarchical location of an item within an archive, following
+/// common archival description standards (DACS, ISAD(G), EAD).
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(rename_all = "kebab-case")]
+pub struct ArchiveInfo {
+    /// Name of the archive or repository holding the material.
+    ///
+    /// Uses `MultilingualString` to support international institution names
+    /// (e.g., 国立国会図書館 / National Diet Library).
+    pub name: Option<MultilingualString>,
+    /// Geographic location (city/country) of the archive.
+    ///
+    /// Parallel to `SimpleName.location`; both carry geographic-place semantics.
+    pub place: Option<String>,
+    /// Name of the collection within the archive.
+    pub collection: Option<String>,
+    /// Identifier for the collection (call number, accession number, etc.).
+    pub collection_id: Option<String>,
+    /// Name of the series within the collection.
+    pub series: Option<String>,
+    /// Box number within the collection. Bare identifier — engine adds locale label.
+    ///
+    /// Uses raw identifier syntax `r#box`, which serde serializes as `"box"` transparently.
+    pub r#box: Option<String>,
+    /// Folder number within the box. Bare identifier — engine adds locale label.
+    pub folder: Option<String>,
+    /// Item identifier within the folder. Bare identifier — engine adds locale label.
+    pub item: Option<String>,
+    /// Display override for the archival location (shelfmark, call number, or complex location string).
+    ///
+    /// When present, overrides the structured fields for display. Acts as the legacy
+    /// `archive_location` fallback for complex shelfmarks that don't fit the structured model.
+    pub location: Option<String>,
+    /// URL for the archival item (e.g. digitized finding aid or item page).
+    pub url: Option<Url>,
+}
+
+/// Preprint server identifier following the biblatex eprint model.
+///
+/// Used on all three reference classes (Monograph, CollectionComponent, SerialComponent)
+/// because journal articles routinely carry arXiv or similar identifiers.
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(rename_all = "kebab-case")]
+pub struct EprintInfo {
+    /// The identifier on the preprint server (e.g. "2301.00001").
+    pub id: String,
+    /// The preprint server name in canonical lowercase form.
+    ///
+    /// Producers may supply mixed-case values such as "arXiv" or "SSRN";
+    /// implementations should treat the field case-insensitively and compare
+    /// or normalize on the lowercase form.
+    pub server: String,
+    /// Subject class or category used by the server (e.g. "cs.CL").
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub class: Option<String>,
+}
+
 /// A monograph, such as a book or a report, is a monolithic work published or produced as a complete entity.
 #[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
@@ -165,6 +228,10 @@ pub struct Monograph {
     /// Archive location, shelfmark, or call number for unpublished material.
     #[serde(alias = "archive_location")]
     pub archive_location: Option<String>,
+    /// Structured archival location metadata. When present, preferred over legacy `archive` and `archive_location`.
+    pub archive_info: Option<ArchiveInfo>,
+    /// Preprint server identifier.
+    pub eprint: Option<EprintInfo>,
     pub keywords: Option<Vec<String>>,
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     pub original_date: Option<EdtfString>,
@@ -188,6 +255,12 @@ pub enum MonographType {
     Interview,
     /// An unpublished manuscript or archival document.
     Manuscript,
+    /// A preprint hosted on a preprint server (arXiv, bioRxiv, SSRN, etc.).
+    ///
+    /// The preprint server has a custodial relationship with the work (hosting and
+    /// preservation), not an editorial one. This parallels an archived manuscript
+    /// held by a repository.
+    Preprint,
     PersonalCommunication,
     Document,
 }
@@ -264,6 +337,10 @@ pub struct CollectionComponent {
     pub doi: Option<String>,
     pub genre: Option<String>,
     pub medium: Option<String>,
+    /// Structured archival location metadata.
+    pub archive_info: Option<ArchiveInfo>,
+    /// Preprint server identifier.
+    pub eprint: Option<EprintInfo>,
     pub keywords: Option<Vec<String>>,
 }
 
@@ -312,6 +389,10 @@ pub struct SerialComponent {
     pub issue: Option<NumOrStr>,
     pub genre: Option<String>,
     pub medium: Option<String>,
+    /// Structured archival location metadata.
+    pub archive_info: Option<ArchiveInfo>,
+    /// Preprint server identifier.
+    pub eprint: Option<EprintInfo>,
     pub keywords: Option<Vec<String>>,
 }
 

@@ -10,6 +10,7 @@ use std::path::Path;
 use citum_schema::InputBibliography;
 use citum_schema::reference::InputReference;
 use citum_schema::reference::conversion::input_reference_from_legacy_edited_book;
+use citum_schema::reference::types::{ArchiveInfo, EprintInfo};
 use csl_legacy::csl_json::Reference as LegacyReference;
 use indexmap::IndexMap;
 
@@ -259,6 +260,56 @@ fn loaded_from_hybrid_json_array(
     })
 }
 
+fn apply_hybrid_json_extensions(
+    mut reference: InputReference,
+    value: &serde_json::Value,
+) -> Result<InputReference, ProcessorError> {
+    let archive_info = value
+        .get("archive-info")
+        .filter(|raw| !raw.is_null())
+        .cloned()
+        .map(serde_json::from_value::<ArchiveInfo>)
+        .transpose()
+        .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
+    let eprint = value
+        .get("eprint")
+        .filter(|raw| !raw.is_null())
+        .cloned()
+        .map(serde_json::from_value::<EprintInfo>)
+        .transpose()
+        .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
+
+    match &mut reference {
+        InputReference::Monograph(record) => {
+            if archive_info.is_some() {
+                record.archive_info = archive_info;
+            }
+            if eprint.is_some() {
+                record.eprint = eprint;
+            }
+        }
+        InputReference::CollectionComponent(record) => {
+            if archive_info.is_some() {
+                record.archive_info = archive_info;
+            }
+            if eprint.is_some() {
+                record.eprint = eprint;
+            }
+        }
+        InputReference::SerialComponent(record) => {
+            if archive_info.is_some() {
+                record.archive_info = archive_info;
+            }
+            if eprint.is_some() {
+                record.eprint = eprint;
+            }
+        }
+        _ => {}
+    }
+
+    Ok(reference)
+}
+
 fn parse_hybrid_json_reference(value: serde_json::Value) -> Result<InputReference, ProcessorError> {
     if let Ok(reference) = serde_json::from_value::<InputReference>(value.clone()) {
         return Ok(reference);
@@ -274,14 +325,16 @@ fn parse_hybrid_json_reference(value: serde_json::Value) -> Result<InputReferenc
         .and_then(serde_json::Value::as_str)
         .unwrap_or_default()
         .to_string();
-    let legacy = serde_json::from_value::<LegacyReference>(value)
+    let legacy = serde_json::from_value::<LegacyReference>(value.clone())
         .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
 
-    if class == "collection" && ref_type == "edited-book" {
-        return Ok(input_reference_from_legacy_edited_book(legacy));
-    }
+    let reference = if class == "collection" && ref_type == "edited-book" {
+        input_reference_from_legacy_edited_book(legacy)
+    } else {
+        InputReference::from(legacy)
+    };
 
-    Ok(InputReference::from(legacy))
+    apply_hybrid_json_extensions(reference, &value)
 }
 
 /// Parse JSON bibliography bytes into a `LoadedBibliography`.

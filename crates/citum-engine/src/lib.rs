@@ -92,6 +92,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //!     medium: None,
 //!     archive: None,
 //!     archive_location: None,
+//!     archive_info: None,
+//!     eprint: None,
 //!     keywords: None,
 //!     original_date: None,
 //!     original_title: None,

@@ -272,7 +272,7 @@ bibliography:
     - date: issued
       form: day-month-abbr-year
       prefix: ". "
-    - variable: archive
+    - variable: archive-name
       prefix: ", "
     - variable: archive-location
       prefix: ", "
@@ -290,7 +290,7 @@ bibliography:
     - date: issued
       form: day-month-abbr-year
       prefix: ". "
-    - variable: archive
+    - variable: archive-name
       prefix: ", "
     interview:
     - contributor: author

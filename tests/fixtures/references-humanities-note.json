@@ -96,8 +96,11 @@
     "type": "manuscript",
     "title": "The Community Rule (1QS)",
     "issued": { "date-parts": [[-100]] },
-    "archive": "Israel Antiquities Authority",
-    "archive_location": "Shrine of the Book, Jerusalem",
+    "archive-info": {
+      "name": "Israel Antiquities Authority",
+      "location": "Shrine of the Book",
+      "place": "Jerusalem"
+    },
     "genre": "Manuscript scroll",
     "note": "Dead Sea Scrolls collection"
   },
@@ -108,8 +111,10 @@
     "title": "The Watsons",
     "author": [{ "family": "Austen", "given": "Jane" }],
     "issued": { "date-parts": [[1805]] },
-    "archive": "Bodleian Library",
-    "archive_location": "MS. Eng. e. 3764",
+    "archive-info": {
+      "name": "Bodleian Library",
+      "location": "MS. Eng. e. 3764"
+    },
     "genre": "Holograph manuscript"
   },
   {

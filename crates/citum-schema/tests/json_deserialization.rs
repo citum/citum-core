@@ -52,6 +52,53 @@ fn test_input_reference_url_alias() {
 }
 
 #[test]
+fn test_input_reference_archive_info_and_eprint_fields() {
+    let json = r#"{
+        "class": "monograph",
+        "type": "book",
+        "title": "Test Book",
+        "issued": "2023",
+        "archive-info": {
+            "name": "Houghton Library",
+            "location": "Box 14, Folder 3",
+            "url": "https://example.com/archive"
+        },
+        "eprint": {
+            "server": "arXiv",
+            "id": "2301.00001",
+            "class": "cs.AI"
+        }
+    }"#;
+
+    let reference: InputReference = serde_json::from_str(json).expect("reference should parse");
+    if let InputReference::Monograph(m) = reference {
+        let archive_info = m.archive_info.expect("archive info should exist");
+        assert_eq!(
+            archive_info
+                .name
+                .expect("archive name should exist")
+                .to_string(),
+            "Houghton Library"
+        );
+        assert_eq!(archive_info.location, Some("Box 14, Folder 3".to_string()));
+        assert_eq!(
+            archive_info
+                .url
+                .expect("archive url should exist")
+                .to_string(),
+            "https://example.com/archive"
+        );
+
+        let eprint = m.eprint.expect("eprint should exist");
+        assert_eq!(eprint.server, "arXiv");
+        assert_eq!(eprint.id, "2301.00001");
+        assert_eq!(eprint.class, Some("cs.AI".to_string()));
+    } else {
+        panic!("Expected Monograph");
+    }
+}
+
+#[test]
 fn test_input_bibliography_sets_round_trip() {
     let json = r#"{
         "references": [

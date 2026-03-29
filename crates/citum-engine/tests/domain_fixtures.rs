@@ -9,6 +9,7 @@ use citum_engine::Processor;
 use citum_engine::io::load_bibliography;
 use citum_schema::Style;
 use citum_schema::citation::{Citation, CitationItem, CitationLocator, LocatorType};
+use citum_schema::reference::{InputReference, MultilingualString};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -189,6 +190,10 @@ fn test_humanities_note_fixture_preserves_archive_and_interview_fields() {
     let bibliography =
         load_bibliography(&root.join("tests/fixtures/references-humanities-note.json"))
             .expect("humanities-note fixture should parse");
+    let manuscript_ref = bibliography
+        .get("dead-sea-scrolls")
+        .cloned()
+        .expect("manuscript fixture should exist");
 
     let processor = Processor::new(style, bibliography);
     let manuscript = processor
@@ -204,10 +209,27 @@ fn test_humanities_note_fixture_preserves_archive_and_interview_fields() {
         .process_citation(&single_item_citation("derrida-letter"))
         .expect("personal communication citation should render");
 
+    let InputReference::Monograph(manuscript_record) = manuscript_ref else {
+        panic!("dead-sea-scrolls should deserialize as a monograph");
+    };
+    let archive_info = manuscript_record
+        .archive_info
+        .as_ref()
+        .expect("manuscript fixture should preserve structured archive info");
+
     assert!(
-        manuscript.contains("Shrine of the Book, Jerusalem")
-            && manuscript.contains("Israel Antiquities Authority"),
-        "manuscript citation should include archive location and archive name"
+        matches!(
+            archive_info.name.as_ref(),
+            Some(MultilingualString::Simple(name)) if name == "Israel Antiquities Authority"
+        ) && archive_info.location.as_deref() == Some("Shrine of the Book")
+            && archive_info.place.as_deref() == Some("Jerusalem"),
+        "manuscript fixture should preserve structured archive name, location, and place"
+    );
+    assert!(
+        manuscript.contains("The Community Rule (1QS)")
+            && manuscript.contains("Manuscript scroll")
+            && manuscript.contains("-100"),
+        "manuscript citation should continue rendering the manuscript reference"
     );
     assert!(
         interview.contains("interview by Alessandro Fontana")

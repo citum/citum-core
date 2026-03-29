@@ -14,12 +14,14 @@ use citum_schema::{
     options::{
         AndOptions, ArticleJournalBibliographyConfig, ArticleJournalNoPageFallback,
         BibliographyOptions, Config, ContributorConfig, DelimiterPrecedesLast,
-        DemoteNonDroppingParticle, DisplayAsSort, LinkAnchor, LinkTarget, LinksConfig, Processing,
-        ProcessingCustom, Sort, SortKey, SortSpec,
+        DemoteNonDroppingParticle, DisplayAsSort, LinkAnchor, LinkTarget, LinksConfig,
+        MultilingualConfig, MultilingualMode, Processing, ProcessingCustom, Sort, SortKey,
+        SortSpec,
     },
     reference::{
         Contributor, EdtfString, InputReference, Monograph, MonographType, NumOrStr, Parent,
         Serial, SerialComponent, SerialComponentType, SerialType, StructuredName, Title,
+        types::{ArchiveInfo, EprintInfo, MultilingualComplex, MultilingualString},
     },
     template::{
         DateForm, DateVariable, DelimiterPunctuation, NumberVariable, Rendering, SimpleVariable,
@@ -27,6 +29,7 @@ use citum_schema::{
         TemplateVariable, TitleForm, TitleType,
     },
 };
+use std::collections::HashMap;
 use url::Url;
 
 // --- Helper Functions ---
@@ -442,6 +445,206 @@ fn build_inline_article_journal_detail_group_style() -> Style {
     }
 }
 
+fn build_archive_eprint_style() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Archive and Eprint Test".to_string()),
+            id: Some("archive-eprint-test".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                citum_schema::tc_title!(Primary, suffix = ". "),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::ArchiveName,
+                    ..Default::default()
+                }),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::ArchiveCollection,
+                    rendering: Rendering {
+                        prefix: Some(", ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::ArchiveLocation,
+                    rendering: Rendering {
+                        prefix: Some(", ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::ArchivePlace,
+                    rendering: Rendering {
+                        prefix: Some(", ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::ArchiveUrl,
+                    rendering: Rendering {
+                        prefix: Some(", ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::EprintServer,
+                    rendering: Rendering {
+                        prefix: Some(", ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::EprintId,
+                    rendering: Rendering {
+                        prefix: Some(":".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::EprintClass,
+                    rendering: Rendering {
+                        prefix: Some(" [".to_string()),
+                        suffix: Some("]".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn build_multilingual_archive_name_style() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Multilingual Archive Name Test".to_string()),
+            id: Some("multilingual-archive-name-test".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            multilingual: Some(MultilingualConfig {
+                name_mode: Some(MultilingualMode::Transliterated),
+                preferred_script: Some("Latn".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::ArchiveName,
+                ..Default::default()
+            })]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn make_archive_eprint_reference() -> InputReference {
+    InputReference::Monograph(Box::new(Monograph {
+        id: Some("archive-eprint-ref".to_string()),
+        r#type: MonographType::Preprint,
+        title: Some(Title::Single("Archive-Aware Preprint".to_string())),
+        container_title: None,
+        author: None,
+        editor: None,
+        translator: None,
+        recipient: None,
+        interviewer: None,
+        guest: None,
+        issued: EdtfString("2026-02".to_string()),
+        publisher: None,
+        url: Some(Url::parse("https://arxiv.org/abs/2602.01234").expect("url should parse")),
+        accessed: None,
+        language: None,
+        field_languages: Default::default(),
+        note: None,
+        isbn: None,
+        doi: None,
+        edition: None,
+        report_number: None,
+        collection_number: None,
+        genre: None,
+        medium: None,
+        archive: None,
+        archive_location: None,
+        archive_info: Some(ArchiveInfo {
+            name: Some(MultilingualString::Simple("Houghton Library".to_string())),
+            place: Some("Cambridge, MA".to_string()),
+            collection: Some("Ada Lovelace Papers".to_string()),
+            location: Some("MS Am 1280, Box 12, Folder 4".to_string()),
+            url: Some(Url::parse("https://example.com/archive").expect("url should parse")),
+            ..Default::default()
+        }),
+        eprint: Some(EprintInfo {
+            id: "2602.01234".to_string(),
+            server: "arxiv".to_string(),
+            class: Some("cs.DL".to_string()),
+        }),
+        keywords: None,
+        original_date: None,
+        original_title: None,
+        ads_bibcode: None,
+    }))
+}
+
+fn make_multilingual_archive_name_reference() -> InputReference {
+    InputReference::Monograph(Box::new(Monograph {
+        id: Some("archive-name-ref".to_string()),
+        r#type: MonographType::Document,
+        title: Some(Title::Single("Repository Record".to_string())),
+        container_title: None,
+        author: None,
+        editor: None,
+        translator: None,
+        recipient: None,
+        interviewer: None,
+        guest: None,
+        issued: EdtfString("2024".to_string()),
+        publisher: None,
+        url: None,
+        accessed: None,
+        language: None,
+        field_languages: Default::default(),
+        note: None,
+        isbn: None,
+        doi: None,
+        edition: None,
+        report_number: None,
+        collection_number: None,
+        genre: None,
+        medium: None,
+        archive: None,
+        archive_location: None,
+        archive_info: Some(ArchiveInfo {
+            name: Some(MultilingualString::Complex(MultilingualComplex {
+                original: "東京国立博物館".to_string(),
+                lang: Some("ja".to_string()),
+                transliterations: HashMap::from([(
+                    "ja-Latn-hepburn".to_string(),
+                    "Tokyo National Museum".to_string(),
+                )]),
+                translations: HashMap::new(),
+            })),
+            ..Default::default()
+        }),
+        eprint: None,
+        keywords: None,
+        original_date: None,
+        original_title: None,
+        ads_bibcode: None,
+    }))
+}
+
 fn bibliography_html_injects_sparse_indices_from_type_template() {
     let style_yaml = r#"
 info:
@@ -597,6 +800,8 @@ fn make_article_journal_with_detail(
         issue: issue.map(|value| NumOrStr::Str(value.to_string())),
         genre: None,
         medium: None,
+        archive_info: None,
+        eprint: None,
         keywords: None,
     }))
 }
@@ -698,6 +903,8 @@ fn make_particle_book(
         collection_number: None,
         genre: None,
         medium: None,
+        archive_info: None,
+        eprint: None,
         archive: None,
         archive_location: None,
         keywords: None,
@@ -743,6 +950,8 @@ fn make_editor_only_book(
         collection_number: None,
         genre: None,
         medium: None,
+        archive_info: None,
+        eprint: None,
         archive: None,
         archive_location: None,
         keywords: None,
@@ -796,6 +1005,8 @@ fn make_multi_editor_only_book(
         collection_number: None,
         genre: None,
         medium: None,
+        archive_info: None,
+        eprint: None,
         archive: None,
         archive_location: None,
         keywords: None,
@@ -1474,6 +1685,8 @@ fn bibliography_local_entry_links_apply_on_the_default_render_path() {
         collection_number: None,
         genre: None,
         medium: None,
+        archive_info: None,
+        eprint: None,
         archive: None,
         archive_location: None,
         keywords: None,
@@ -1646,6 +1859,76 @@ fn editor_author_substitute_omits_verb_role_label_in_bibliography() {
         !result.contains("edited by Jacob Grimm") && !result.contains("edited by Hoesung Lee"),
         "verb-prefix labels should not survive when editors substitute into the author slot: {result}"
     );
+}
+
+#[test]
+fn given_archive_info_and_eprint_when_rendering_bibliography_then_new_variables_resolve() {
+    let style = build_archive_eprint_style();
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "archive-eprint-ref".to_string(),
+        make_archive_eprint_reference(),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert_eq!(
+        result,
+        "Archive-Aware Preprint. Houghton Library, Ada Lovelace Papers, MS Am 1280, Box 12, Folder 4, Cambridge, MA, https://example.com/archive, arxiv:2602.01234 [cs.DL]"
+    );
+}
+
+#[test]
+fn given_multilingual_archive_name_when_rendering_then_name_mode_controls_archive_name() {
+    let style = build_multilingual_archive_name_style();
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "archive-name-ref".to_string(),
+        make_multilingual_archive_name_reference(),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert_eq!(result, "Tokyo National Museum");
+}
+
+#[test]
+fn given_legacy_archive_fields_when_converting_then_archive_info_is_hydrated() {
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_value(serde_json::json!({
+        "id": "ITEM-ARCHIVE-1",
+        "type": "manuscript",
+        "title": "Commonplace Book",
+        "issued": { "date-parts": [[1720]] },
+        "archive": "Bodleian Library",
+        "archive_location": "MS Bodl. Or. 579, fol. 23r"
+    }))
+    .expect("legacy reference should parse");
+
+    let reference: InputReference = legacy.into();
+    if let InputReference::Monograph(m) = reference {
+        assert_eq!(m.archive, Some("Bodleian Library".to_string()));
+        assert_eq!(
+            m.archive_location,
+            Some("MS Bodl. Or. 579, fol. 23r".to_string())
+        );
+
+        let archive_info = m.archive_info.expect("archive info should be hydrated");
+        assert_eq!(
+            archive_info
+                .name
+                .expect("archive name should exist")
+                .to_string(),
+            "Bodleian Library"
+        );
+        assert_eq!(
+            archive_info.location,
+            Some("MS Bodl. Or. 579, fol. 23r".to_string())
+        );
+    } else {
+        panic!("Expected Monograph");
+    }
 }
 
 mod sorting {

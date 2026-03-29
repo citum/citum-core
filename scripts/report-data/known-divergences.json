@@ -14,5 +14,12 @@
   "springer-basic-brackets": [],
   "springer-socpsych-author-date": [],
   "american-medical-association": [],
+  "chicago-notes": [
+    {
+      "feature": "structured-archival-manuscript-detail",
+      "description": "Chicago notes now renders structured archival manuscript details from `archive-info` in note citations. citeproc-js does not surface the same repository tail, so the verification layer records this as an intentional divergence.",
+      "intentional": true
+    }
+  ],
   "taylor-and-francis-chicago-author-date": []
 }

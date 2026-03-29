@@ -15,6 +15,7 @@ const {
 const {
   attachRegisteredDivergenceAdjustments,
   detectDiv004OrderDifference,
+  explainCitationMismatchFromDiv005,
 } = require('./lib/oracle-divergences');
 const { loadVerificationPolicy, resolveRegisteredDivergence } = require('./lib/verification-policy');
 
@@ -230,6 +231,43 @@ test('registered divergence adjustments convert sort-derived numeric label drift
     adjusted.adjusted.citations.entries[0].appliedDivergence?.divergenceId,
     'div-004'
   );
+});
+
+test('div-005 recognizes structured archival manuscript detail as an intentional citation divergence', () => {
+  const policy = loadVerificationPolicy();
+  const divergenceRule = resolveRegisteredDivergence(policy, 'div-005');
+  const entry = {
+    id: 'hn-dead-sea-scrolls',
+    oracle: '“The Community Rule (1QS),” Manuscript scroll, 100 BC',
+    citum: '“The Community Rule (1QS)”, Manuscript scroll, -100, Shrine of the Book, Israel Antiquities Authority, Jerusalem',
+    match: false,
+  };
+  const citationFixture = {
+    id: 'hn-dead-sea-scrolls',
+    items: [{ id: 'dead-sea-scrolls' }],
+  };
+  const testItems = {
+    'dead-sea-scrolls': {
+      id: 'dead-sea-scrolls',
+      type: 'manuscript',
+      issued: { 'date-parts': [[-100]] },
+      'archive-info': {
+        name: 'Israel Antiquities Authority',
+        location: 'Shrine of the Book',
+        place: 'Jerusalem',
+      },
+    },
+  };
+
+  const adjustment = explainCitationMismatchFromDiv005(
+    entry,
+    citationFixture,
+    testItems,
+    divergenceRule
+  );
+
+  assert.equal(adjustment?.divergenceId, 'div-005');
+  assert.deepEqual(adjustment?.itemIds, ['dead-sea-scrolls']);
 });
 
 test('registered divergence adjustments skip order inspection without failures', () => {
