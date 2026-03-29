@@ -53,7 +53,7 @@
       "type": "object",
       "properties": {
         "box": {
-          "description": "Box number within the collection. Bare identifier — engine adds locale label.\n\nUses raw identifier syntax `r#box`, which serde serializes as `\"box\"` transparently.",
+          "description": "Box number within the collection.\n\nUses raw identifier syntax `r#box`, which serde serializes as `\"box\"` transparently.",
           "type": [
             "string",
             "null"
@@ -74,14 +74,14 @@
           ]
         },
         "folder": {
-          "description": "Folder number within the box. Bare identifier — engine adds locale label.",
+          "description": "Folder number within the box.",
           "type": [
             "string",
             "null"
           ]
         },
         "item": {
-          "description": "Item identifier within the folder. Bare identifier — engine adds locale label.",
+          "description": "Item identifier within the folder.",
           "type": [
             "string",
             "null"

@@ -404,6 +404,33 @@
                         </div>
                     </div>
 
+                    <div class="mb-8 bg-emerald-50 border border-emerald-200 rounded-lg p-5">
+                        <div class="flex items-start gap-3">
+                            <span class="material-icons text-emerald-600 mt-0.5">inventory_2</span>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-emerald-900 mb-1">Archival variables: prefer structured hierarchy</h4>
+                                <p class="text-emerald-800 text-sm mb-3">
+                                    For archival and unpublished materials, treat
+                                    <code class="font-mono bg-emerald-100 px-1 rounded">archive-info.box</code>,
+                                    <code class="font-mono bg-emerald-100 px-1 rounded">archive-info.folder</code>,
+                                    <code class="font-mono bg-emerald-100 px-1 rounded">archive-info.item</code>,
+                                    and related hierarchy fields as the canonical input model.
+                                    Ask for <code class="font-mono bg-emerald-100 px-1 rounded">archive-box</code>,
+                                    <code class="font-mono bg-emerald-100 px-1 rounded">archive-folder</code>, and
+                                    <code class="font-mono bg-emerald-100 px-1 rounded">archive-item</code> directly
+                                    when your style needs labeled container parts.
+                                </p>
+                                <p class="text-emerald-800 text-sm">
+                                    Reserve <code class="font-mono bg-emerald-100 px-1 rounded">archive-location</code>
+                                    for legacy data and for shelfmarks that cannot be decomposed into structured fields.
+                                    See the checked-in archival example on
+                                    <a href="../examples.html#archival-eprints" class="underline hover:text-emerald-700">Examples</a>
+                                    for the canonical pattern.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Info Fields -->
                     <div class="bg-white border border-slate-200 rounded-lg p-6 space-y-4">
                         <h3 class="text-lg font-semibold text-slate-900">Info Fields</h3>
