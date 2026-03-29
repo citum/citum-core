@@ -16,8 +16,11 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use url::Url;
 
+/// Unique identifier for a reference item.
 pub type RefID = String;
+/// BCP 47 language tag (e.g., `"en"`, `"de"`, `"ja"`).
 pub type LangID = String;
+/// Maps field names to their language tags for multilingual references.
 pub type FieldLanguageMap = HashMap<String, LangID>;
 
 /// A value that could be either a number or a string.
@@ -187,11 +190,14 @@ pub struct EprintInfo {
 #[serde(rename_all = "kebab-case")]
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Monograph {
+    /// Unique identifier for this reference.
     pub id: Option<RefID>,
     pub r#type: MonographType,
+    /// Title of the monographic work.
     pub title: Option<Title>,
     /// Parent or container title for monographic interviews and similar sources.
     pub container_title: Option<Title>,
+    /// Author(s) of the work.
     pub author: Option<Contributor>,
     pub editor: Option<Contributor>,
     pub translator: Option<Contributor>,
@@ -221,7 +227,11 @@ pub struct Monograph {
     pub edition: Option<String>,
     pub report_number: Option<String>,
     pub collection_number: Option<String>,
+    /// Free-text genre descriptor using kebab-case canonical forms (e.g., `"phd-thesis"`, `"short-film"`).
+    /// See `docs/reference/GENRE_AND_MEDIUM_VALUES.md` for canonical values and `docs/policies/ENUM_VOCABULARY_POLICY.md`.
     pub genre: Option<String>,
+    /// Free-text medium descriptor using kebab-case canonical forms (e.g., `"film"`, `"television"`).
+    /// See `docs/reference/GENRE_AND_MEDIUM_VALUES.md` for canonical values and `docs/policies/ENUM_VOCABULARY_POLICY.md`.
     pub medium: Option<String>,
     /// Archive or repository name for unpublished material.
     pub archive: Option<String>,
@@ -238,18 +248,25 @@ pub struct Monograph {
     pub original_title: Option<Title>,
 }
 
+/// Discriminates monograph subtypes for style-directed formatting.
 #[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
 pub enum MonographType {
+    /// A book or monograph (default).
     #[default]
     Book,
+    /// A technical manual or user guide.
     Manual,
+    /// A technical or institutional report.
     Report,
+    /// An academic thesis or dissertation.
     Thesis,
+    /// A webpage or standalone web document.
     Webpage,
+    /// A standalone post (e.g., social media, forum).
     Post,
     /// An interview treated as a standalone monographic source.
     Interview,
@@ -261,7 +278,9 @@ pub enum MonographType {
     /// preservation), not an editorial one. This parallels an archived manuscript
     /// held by a repository.
     Preprint,
+    /// A letter, email, or other personal communication.
     PersonalCommunication,
+    /// A generic standalone document that does not fit a more specific subtype.
     Document,
 }
 
@@ -296,16 +315,20 @@ pub struct Collection {
     pub keywords: Option<Vec<String>>,
 }
 
-/// Types of collections.
+/// Discriminates collection subtypes for style-directed formatting.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
 pub enum CollectionType {
+    /// A curated anthology of independent works (e.g., short stories, essays).
     Anthology,
+    /// Published proceedings of a conference or symposium.
     Proceedings,
+    /// A book assembled from contributions by multiple authors under an editor.
     EditedBook,
+    /// An edited volume that may span multiple books or a series.
     EditedVolume,
 }
 
@@ -344,14 +367,16 @@ pub struct CollectionComponent {
     pub keywords: Option<Vec<String>>,
 }
 
-/// Types of monograph components.
+/// Discriminates monograph-component subtypes for style-directed formatting.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
 pub enum MonographComponentType {
+    /// A chapter within a book or edited volume.
     Chapter,
+    /// A document component that does not fit a more specific subtype.
     Document,
 }
 
@@ -396,14 +421,17 @@ pub struct SerialComponent {
     pub keywords: Option<Vec<String>>,
 }
 
-/// Types of serial components.
+/// Discriminates serial-component subtypes for style-directed formatting.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 pub enum SerialComponentType {
+    /// A peer-reviewed or editorial article in a journal, magazine, or newspaper.
     Article,
+    /// A post within an online serial (blog, news site, social feed).
     Post,
+    /// A review published in a serial (book review, film review, etc.).
     Review,
 }
 
@@ -807,7 +835,8 @@ pub struct Dataset {
     pub publisher: Option<Contributor>,
     /// Version number
     pub version: Option<String>,
-    /// File format (e.g., "CSV", "NetCDF", "HDF5")
+    /// File format. Prefer IANA media types (e.g., `"text/csv"`) or common
+    /// abbreviations (e.g., `"NetCDF"`, `"HDF5"`) where no IANA type exists.
     pub format: Option<String>,
     /// Dataset size (e.g., "2.4 GB", "150,000 records")
     pub size: Option<String>,
@@ -843,7 +872,8 @@ pub struct Standard {
     /// Publication date
     #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
-    /// Status (e.g., "published", "draft", "withdrawn")
+    /// Publication status. Canonical controlled-vocabulary values: `"published"`, `"draft"`, `"withdrawn"`.
+    /// See `docs/policies/ENUM_VOCABULARY_POLICY.md` for matching rules.
     pub status: Option<String>,
     /// Publisher (usually same as authority)
     pub publisher: Option<Contributor>,
@@ -879,7 +909,8 @@ pub struct Software {
     pub version: Option<String>,
     /// Repository URL
     pub repository: Option<String>,
-    /// License (e.g., "MIT", "GPL-3.0", "Apache-2.0")
+    /// SPDX license identifier preferred (e.g., `"MIT"`, `"GPL-3.0-only"`, `"Apache-2.0"`).
+    /// See <https://spdx.org/licenses/> for the authoritative identifier list.
     pub license: Option<String>,
     /// Platform (e.g., "Windows", "macOS", "Linux", "cross-platform")
     pub platform: Option<String>,

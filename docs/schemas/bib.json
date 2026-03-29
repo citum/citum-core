@@ -634,13 +634,28 @@
       ]
     },
     "CollectionType": {
-      "description": "Types of collections.",
-      "type": "string",
-      "enum": [
-        "anthology",
-        "proceedings",
-        "edited-book",
-        "edited-volume"
+      "description": "Discriminates collection subtypes for style-directed formatting.",
+      "oneOf": [
+        {
+          "description": "A curated anthology of independent works (e.g., short stories, essays).",
+          "type": "string",
+          "const": "anthology"
+        },
+        {
+          "description": "Published proceedings of a conference or symposium.",
+          "type": "string",
+          "const": "proceedings"
+        },
+        {
+          "description": "A book assembled from contributions by multiple authors under an editor.",
+          "type": "string",
+          "const": "edited-book"
+        },
+        {
+          "description": "An edited volume that may span multiple books or a series.",
+          "type": "string",
+          "const": "edited-volume"
+        }
       ]
     },
     "Contributor": {
@@ -705,7 +720,7 @@
           }
         },
         "format": {
-          "description": "File format (e.g., \"CSV\", \"NetCDF\", \"HDF5\")",
+          "description": "File format. Prefer IANA media types (e.g., `\"text/csv\"`) or common\nabbreviations (e.g., `\"NetCDF\"`, `\"HDF5\"`) where no IANA type exists.",
           "type": [
             "string",
             "null"
@@ -1302,6 +1317,7 @@
           ]
         },
         "author": {
+          "description": "Author(s) of the work.",
           "anyOf": [
             {
               "$ref": "#/$defs/Contributor"
@@ -1368,6 +1384,7 @@
           }
         },
         "genre": {
+          "description": "Free-text genre descriptor using kebab-case canonical forms (e.g., `\"phd-thesis\"`, `\"short-film\"`).\nSee `docs/reference/GENRE_AND_MEDIUM_VALUES.md` for canonical values and `docs/policies/ENUM_VOCABULARY_POLICY.md`.",
           "type": [
             "string",
             "null"
@@ -1385,6 +1402,7 @@
           ]
         },
         "id": {
+          "description": "Unique identifier for this reference.",
           "type": [
             "string",
             "null"
@@ -1426,6 +1444,7 @@
           ]
         },
         "medium": {
+          "description": "Free-text medium descriptor using kebab-case canonical forms (e.g., `\"film\"`, `\"television\"`).\nSee `docs/reference/GENRE_AND_MEDIUM_VALUES.md` for canonical values and `docs/policies/ENUM_VOCABULARY_POLICY.md`.",
           "type": [
             "string",
             "null"
@@ -1485,6 +1504,7 @@
           ]
         },
         "title": {
+          "description": "Title of the monographic work.",
           "anyOf": [
             {
               "$ref": "#/$defs/Title"
@@ -1521,27 +1541,52 @@
       ]
     },
     "MonographComponentType": {
-      "description": "Types of monograph components.",
-      "type": "string",
-      "enum": [
-        "chapter",
-        "document"
+      "description": "Discriminates monograph-component subtypes for style-directed formatting.",
+      "oneOf": [
+        {
+          "description": "A chapter within a book or edited volume.",
+          "type": "string",
+          "const": "chapter"
+        },
+        {
+          "description": "A document component that does not fit a more specific subtype.",
+          "type": "string",
+          "const": "document"
+        }
       ]
     },
     "MonographType": {
+      "description": "Discriminates monograph subtypes for style-directed formatting.",
       "oneOf": [
         {
+          "description": "A book or monograph (default).",
           "type": "string",
-          "enum": [
-            "book",
-            "manual",
-            "report",
-            "thesis",
-            "webpage",
-            "post",
-            "personal-communication",
-            "document"
-          ]
+          "const": "book"
+        },
+        {
+          "description": "A technical manual or user guide.",
+          "type": "string",
+          "const": "manual"
+        },
+        {
+          "description": "A technical or institutional report.",
+          "type": "string",
+          "const": "report"
+        },
+        {
+          "description": "An academic thesis or dissertation.",
+          "type": "string",
+          "const": "thesis"
+        },
+        {
+          "description": "A webpage or standalone web document.",
+          "type": "string",
+          "const": "webpage"
+        },
+        {
+          "description": "A standalone post (e.g., social media, forum).",
+          "type": "string",
+          "const": "post"
         },
         {
           "description": "An interview treated as a standalone monographic source.",
@@ -1557,6 +1602,16 @@
           "description": "A preprint hosted on a preprint server (arXiv, bioRxiv, SSRN, etc.).\n\nThe preprint server has a custodial relationship with the work (hosting and\npreservation), not an editorial one. This parallels an archived manuscript\nheld by a repository.",
           "type": "string",
           "const": "preprint"
+        },
+        {
+          "description": "A letter, email, or other personal communication.",
+          "type": "string",
+          "const": "personal-communication"
+        },
+        {
+          "description": "A generic standalone document that does not fit a more specific subtype.",
+          "type": "string",
+          "const": "document"
         }
       ]
     },
@@ -2142,12 +2197,23 @@
       ]
     },
     "SerialComponentType": {
-      "description": "Types of serial components.",
-      "type": "string",
-      "enum": [
-        "article",
-        "post",
-        "review"
+      "description": "Discriminates serial-component subtypes for style-directed formatting.",
+      "oneOf": [
+        {
+          "description": "A peer-reviewed or editorial article in a journal, magazine, or newspaper.",
+          "type": "string",
+          "const": "article"
+        },
+        {
+          "description": "A post within an online serial (blog, news site, social feed).",
+          "type": "string",
+          "const": "post"
+        },
+        {
+          "description": "A review published in a serial (book review, film review, etc.).",
+          "type": "string",
+          "const": "review"
+        }
       ]
     },
     "SerialType": {
@@ -2245,7 +2311,7 @@
           ]
         },
         "license": {
-          "description": "License (e.g., \"MIT\", \"GPL-3.0\", \"Apache-2.0\")",
+          "description": "SPDX license identifier preferred (e.g., `\"MIT\"`, `\"GPL-3.0-only\"`, `\"Apache-2.0\"`).\nSee <https://spdx.org/licenses/> for the authoritative identifier list.",
           "type": [
             "string",
             "null"
@@ -2386,7 +2452,7 @@
           "type": "string"
         },
         "status": {
-          "description": "Status (e.g., \"published\", \"draft\", \"withdrawn\")",
+          "description": "Publication status. Canonical controlled-vocabulary values: `\"published\"`, `\"draft\"`, `\"withdrawn\"`.\nSee `docs/policies/ENUM_VOCABULARY_POLICY.md` for matching rules.",
           "type": [
             "string",
             "null"

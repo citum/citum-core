@@ -1,9 +1,9 @@
 # Type Addition Policy
 
 **Status:** Active Policy
-**Version:** 1.0
-**Date:** 2026-02-14
-**Related:** TYPE_SYSTEM_ARCHITECTURE.md
+**Version:** 1.1
+**Date:** 2026-03-29
+**Related:** TYPE_SYSTEM_ARCHITECTURE.md, ENUM_VOCABULARY_POLICY.md
 
 ## Purpose
 
@@ -292,17 +292,21 @@ Add a new top-level type when **ALL** of the following are true:
 **Structural types (parent-child relationship):**
 
 | Citum Type | Rationale |
-|-----------|-----------|
+|---|---|
 | SerialComponent(Article) | ✅ Journal is semantic parent, metadata reused |
 | SerialComponent(Post) | ✅ Blog/Magazine is parent |
 | SerialComponent(Review) | ✅ Journal is parent |
-| CollectionComponent(Chapter) | ✅ Book is semantic parent |
-| CollectionComponent(Document) | ✅ Conference proceedings is parent |
+| CollectionComponent(Chapter) | ✅ Book/edited volume is semantic parent |
+| CollectionComponent(Document) | ✅ Conference proceedings or collection is parent |
+| Collection(Anthology) | ✅ Edited collection of independent works |
+| Collection(Proceedings) | ✅ Conference proceedings container |
+| Collection(EditedBook) | ✅ Edited book container |
+| Collection(EditedVolume) | ✅ Edited volume container |
 
 **Flat types (no parent or locator parent):**
 
 | Citum Type | Rationale |
-|-----------|-----------|
+|---|---|
 | LegalCase | ✅ Passes 4-factor test |
 | Statute | ✅ Passes 4-factor test |
 | Treaty | ✅ Passes 4-factor test |
@@ -310,25 +314,33 @@ Add a new top-level type when **ALL** of the following are true:
 | Regulation | ✅ Regulatory context, unique fields |
 | Brief | ✅ Legal filing context |
 | Classic | ✅ Standard citation forms (Aristotle, Bible) |
+| Patent | ✅ Distinct identity, unique fields (patent-number, jurisdiction) |
+| Dataset | ✅ Distinct artifact, unique fields (format, size, repository) |
+| Standard | ✅ Distinct artifact, unique fields (standard-number, status) |
+| Software | ✅ Distinct artifact, unique fields (version, repository, license) |
 | Monograph(Book) | ✅ Monolithic work, no parent |
 | Monograph(Report) | ✅ Monolithic work |
 | Monograph(Thesis) | ✅ Academic work, institution is not parent |
 | Monograph(Webpage) | ✅ Web content, site is not semantic parent |
+| Monograph(Interview) | ✅ Standalone interview source |
+| Monograph(Manuscript) | ✅ Unpublished/archival document |
+| Monograph(Preprint) | ✅ Preprint server is custodial, not editorial |
+| Monograph(PersonalCommunication) | ✅ Letters, emails; no meaningful parent |
+| Monograph(Document) | ✅ Generic standalone document |
 
 **Policy compliance:** All current types conform to the 4-factor test or structural efficiency rationale.
 
 ## Future Type Candidates
 
-Monitor these emerging reference types for potential addition:
+Monitor these reference types for potential addition:
 
 | Type | Status | Factors | Action |
-|------|--------|---------|--------|
-| Dataset | High priority | ✅✅✅✅ | Validate against APA/Nature/DataCite |
-| Software | Medium | ✅⚠️✅✅ | Style guidelines emerging (FORCE11) |
-| Preprint | Low | ⚠️⚠️❌⚠️ | Monitor, use SerialComponent for now |
-| Standard | Medium | ✅✅✅✅ | ISO, ANSI standards (unique fields) |
-| Performance | Low | ✅⚠️✅✅ | Music/theater domain, niche |
-| Artwork | Low | ✅⚠️✅✅ | Art history domain, niche |
+|---|---|---|---|
+| Performance | Low | ✅⚠️✅✅ | Music/theater domain, niche styles |
+| Artwork | Low | ✅⚠️✅✅ | Art history domain, niche styles |
+| Map | Low | ✅⚠️✅✅ | Cartographic works, geographic/historical contexts |
+
+**Previously listed candidates now implemented:** Dataset (v1.1), Software (v1.1), Standard (v1.1). Preprint was added as `MonographType::Preprint` rather than a flat type, since the preprint server relationship is custodial rather than editorial.
 
 ## References
 
@@ -338,6 +350,13 @@ Monitor these emerging reference types for potential addition:
 - CLAUDE.md - Citum design principles
 
 ## Changelog
+
+**v1.1 (2026-03-29):**
+- Updated audit tables to reflect implemented types (Patent, Dataset, Standard, Software, MonographType subtypes)
+- Updated future candidates (removed implemented types)
+- Added Collection types to structural audit table
+- Added cross-reference to ENUM_VOCABULARY_POLICY.md
+- Fixed table alignment
 
 **v1.0 (2026-02-14):**
 - Initial policy based on legal citations architectural analysis
