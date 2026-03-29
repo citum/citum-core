@@ -130,3 +130,78 @@ pub struct ProcEntryMetadata {
     /// Rendered title string.
     pub title: Option<String>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(Default, Clone)]
+    struct DummyFormat;
+
+    impl OutputFormat for DummyFormat {
+        type Output = String;
+        fn text(&self, s: &str) -> Self::Output {
+            s.to_string()
+        }
+        fn join(&self, items: Vec<Self::Output>, delimiter: &str) -> Self::Output {
+            items.join(delimiter)
+        }
+        fn finish(&self, output: Self::Output) -> String {
+            output
+        }
+        fn emph(&self, content: Self::Output) -> Self::Output {
+            format!("emph({content})")
+        }
+        fn strong(&self, content: Self::Output) -> Self::Output {
+            format!("strong({content})")
+        }
+        fn small_caps(&self, content: Self::Output) -> Self::Output {
+            format!("sc({content})")
+        }
+        fn quote(&self, content: Self::Output) -> Self::Output {
+            format!("quote({content})")
+        }
+        fn affix(&self, prefix: &str, content: Self::Output, suffix: &str) -> Self::Output {
+            format!("{prefix}{content}{suffix}")
+        }
+        fn inner_affix(&self, prefix: &str, content: Self::Output, suffix: &str) -> Self::Output {
+            format!("{prefix}{content}{suffix}")
+        }
+        fn wrap_punctuation(&self, _wrap: &WrapPunctuation, content: Self::Output) -> Self::Output {
+            content
+        }
+        fn semantic(&self, class: &str, content: Self::Output) -> Self::Output {
+            format!("sem[{class}]({content})")
+        }
+        fn link(&self, url: &str, content: Self::Output) -> Self::Output {
+            format!("link[{url}]({content})")
+        }
+    }
+
+    #[test]
+    fn test_default_methods() {
+        let fmt = DummyFormat;
+        assert_eq!(
+            fmt.semantic_with_attributes("test", "content".to_string(), &[]),
+            "sem[test](content)"
+        );
+        assert_eq!(
+            fmt.citation(vec!["id1".to_string()], "content".to_string()),
+            "content"
+        );
+        assert_eq!(fmt.format_id("id1"), "id1");
+        assert_eq!(
+            fmt.bibliography(vec!["entry1".to_string(), "entry2".to_string()]),
+            "entry1\n\nentry2"
+        );
+        assert_eq!(
+            fmt.entry(
+                "id1",
+                "content".to_string(),
+                None,
+                &ProcEntryMetadata::default()
+            ),
+            "content"
+        );
+    }
+}

@@ -58,3 +58,50 @@ fn push_segment(segments: &mut Vec<ConsecutiveSegment>, start: u32, end: u32) {
         segments.push(ConsecutiveSegment::Range { start, end });
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_consecutive_segments() {
+        for (input, expected) in [
+            (&[][..], vec![]),
+            (&[1][..], vec![ConsecutiveSegment::Single(1)]),
+            (
+                &[1, 2, 3][..],
+                vec![ConsecutiveSegment::Range { start: 1, end: 3 }],
+            ),
+            (
+                &[1, 3, 5][..],
+                vec![
+                    ConsecutiveSegment::Single(1),
+                    ConsecutiveSegment::Single(3),
+                    ConsecutiveSegment::Single(5),
+                ],
+            ),
+            (
+                &[1, 2, 4, 5, 6, 8][..],
+                vec![
+                    ConsecutiveSegment::Range { start: 1, end: 2 },
+                    ConsecutiveSegment::Range { start: 4, end: 6 },
+                    ConsecutiveSegment::Single(8),
+                ],
+            ),
+            (
+                &[1, 1, 2, 2, 3][..],
+                vec![ConsecutiveSegment::Range { start: 1, end: 3 }],
+            ),
+            (
+                &[3, 2, 1][..],
+                vec![
+                    ConsecutiveSegment::Single(3),
+                    ConsecutiveSegment::Single(2),
+                    ConsecutiveSegment::Single(1),
+                ],
+            ),
+        ] {
+            assert_eq!(consecutive_segments(input), expected);
+        }
+    }
+}
