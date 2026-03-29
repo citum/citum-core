@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../citum.schema.json
+info:
+  title: "Archival and Eprint Demo Style"
+  id: "archive-eprint-demo"
+
+bibliography:
+  template:
+    - title: primary
+      suffix: ". "
+    - variable: archive-name
+    - variable: archive-collection
+      prefix: ", "
+    - variable: archive-location
+      prefix: ", "
+    - variable: archive-place
+      prefix: ", "
+    - variable: archive-url
+      prefix: ", "
+    - variable: eprint-server
+      prefix: ", "
+    - variable: eprint-id
+      prefix: ":"
+    - variable: eprint-class
+      prefix: " ["
+      suffix: "]"

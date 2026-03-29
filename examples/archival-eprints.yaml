@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://docs.citum.org/schemas/bib.json
+---
+references:
+  - id: dead-sea-scrolls-demo
+    class: monograph
+    type: manuscript
+    title: "The Community Rule (1QS)"
+    issued: "-100"
+    genre: "Manuscript scroll"
+    archive-info:
+      name: "Israel Antiquities Authority"
+      location: "Shrine of the Book"
+      place: "Jerusalem"
+
+  - id: archive-aware-preprint
+    class: monograph
+    type: preprint
+    title: "Archive-Aware Preprint"
+    issued: "2026-02"
+    url: "https://arxiv.org/abs/2602.01234"
+    archive-info:
+      name: "Houghton Library"
+      collection: "Ada Lovelace Papers"
+      location: "MS Am 1280, Box 12, Folder 4"
+      place: "Cambridge, MA"
+      url: "https://example.com/archive"
+    eprint:
+      id: "2602.01234"
+      server: "arxiv"
+      class: "cs.DL"
