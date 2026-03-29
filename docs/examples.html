@@ -613,6 +613,14 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                     Legacy flat <code class="text-xs bg-slate-100 px-1 rounded">archive</code> and
                     <code class="text-xs bg-slate-100 px-1 rounded">archive_location</code> fields still load for
                     compatibility, but new inputs should use <code class="text-xs bg-slate-100 px-1 rounded">archive-info</code>.
+                    Within <code class="text-xs bg-slate-100 px-1 rounded">archive-info</code>, structured hierarchy
+                    fields such as <code class="text-xs bg-slate-100 px-1 rounded">collection-id</code>,
+                    <code class="text-xs bg-slate-100 px-1 rounded">series</code>,
+                    <code class="text-xs bg-slate-100 px-1 rounded">box</code>,
+                    <code class="text-xs bg-slate-100 px-1 rounded">folder</code>, and
+                    <code class="text-xs bg-slate-100 px-1 rounded">item</code> are canonical;
+                    <code class="text-xs bg-slate-100 px-1 rounded">location</code> is the display-override and
+                    legacy-fallback escape hatch for shelfmarks that cannot be decomposed cleanly.
                 </p>
             </div>
 
@@ -645,7 +653,11 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
     <span class="text-primary">archive-info</span>:
       <span class="text-primary">name</span>: <span class="text-emerald-400">"Houghton Library"</span>
       <span class="text-primary">collection</span>: <span class="text-emerald-400">"Ada Lovelace Papers"</span>
-      <span class="text-primary">location</span>: <span class="text-emerald-400">"MS Am 1280, Box 12, Folder 4"</span>
+      <span class="text-primary">collection-id</span>: <span class="text-emerald-400">"MS Am 1280"</span>
+      <span class="text-primary">series</span>: <span class="text-emerald-400">"Correspondence"</span>
+      <span class="text-primary">box</span>: <span class="text-emerald-400">"12"</span>
+      <span class="text-primary">folder</span>: <span class="text-emerald-400">"4"</span>
+      <span class="text-primary">item</span>: <span class="text-emerald-400">"7"</span>
       <span class="text-primary">place</span>: <span class="text-emerald-400">"Cambridge, MA"</span>
       <span class="text-primary">url</span>: <span class="text-emerald-400">"https://example.com/archive"</span>
     <span class="text-primary">eprint</span>:
@@ -674,12 +686,14 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                             Archive + Eprint Demo Output
                         </div>
                         <div class="font-mono text-sm text-slate-900 break-all">
-                            Archive-Aware Preprint. Houghton Library, Ada Lovelace Papers, MS Am 1280, Box 12, Folder 4, Cambridge, MA, https://example.com/archive, arxiv:2602.01234 [cs.DL]
+                            Archive-Aware Preprint. Houghton Library, Ada Lovelace Papers, MS Am 1280, Series Correspondence, Box 12, Folder 4, Item 7, Cambridge, MA, https://example.com/archive, arxiv:2602.01234 [cs.DL]
                         </div>
                         <div class="text-xs text-slate-500 mt-1">
                             Verified with the checked-in demo style that surfaces
                             <code class="text-xs bg-slate-100 px-1 rounded">archive-*</code> and
-                            <code class="text-xs bg-slate-100 px-1 rounded">eprint-*</code> variables directly.
+                            <code class="text-xs bg-slate-100 px-1 rounded">eprint-*</code> variables directly from
+                            the structured hierarchy, without collapsing them into a precomposed
+                            <code class="text-xs bg-slate-100 px-1 rounded">location</code> string.
                         </div>
                     </div>
                 </div>

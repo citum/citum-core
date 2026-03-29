@@ -21,7 +21,11 @@ references:
     archive-info:
       name: "Houghton Library"
       collection: "Ada Lovelace Papers"
-      location: "MS Am 1280, Box 12, Folder 4"
+      collection-id: "MS Am 1280"
+      series: "Correspondence"
+      box: "12"
+      folder: "4"
+      item: "7"
       place: "Cambridge, MA"
       url: "https://example.com/archive"
     eprint:

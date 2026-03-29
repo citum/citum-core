@@ -10,8 +10,16 @@ bibliography:
     - variable: archive-name
     - variable: archive-collection
       prefix: ", "
-    - variable: archive-location
+    - variable: archive-collection-id
       prefix: ", "
+    - variable: archive-series
+      prefix: ", Series "
+    - variable: archive-box
+      prefix: ", Box "
+    - variable: archive-folder
+      prefix: ", Folder "
+    - variable: archive-item
+      prefix: ", Item "
     - variable: archive-place
       prefix: ", "
     - variable: archive-url
