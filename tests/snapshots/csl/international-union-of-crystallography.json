@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-14T00:08:27.799Z",
+  "generated_at": "2026-03-29T23:44:09.888Z",
   "style": "international-union-of-crystallography",
-  "fixture_hash": "566bd9d8e110a046",
+  "fixture_hash": "51c95c2c6d288eec",
   "csl_hash": "156b027fa940b922",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -28,7 +28,7 @@
   "bibliography": [
     "  <div class=\"csl-entry\">Bengio, Y. (2023). The Future of Artificial Intelligence.</div>\n",
     "  <div class=\"csl-entry\">Brown v. Board of Education (1954).</div>\n",
-    "  <div class=\"csl-entry\">Chen, W. (2019). Neural Networks for Natural Language Understanding. PhD thesis. Stanford University.</div>\n",
+    "  <div class=\"csl-entry\">Chen, W. (2019). Neural Networks for Natural Language Understanding. phd-thesis. Stanford University.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. A. (2006). Vol. <i>The Cambridge Handbook of Expertise and Expert Performance</i>, edited by K. A. Ericsson, N. Charness, P. J. Feltovich &#38; R. R. Hoffman. pp. 683–703. Cambridge University Press.</div>\n",
     "  <div class=\"csl-entry\">Forthcoming, A. Foundations of Declarative Bibliography Cambridge: University Press.</div>\n",
     "  <div class=\"csl-entry\">Garcia, M. (2019<i>a</i>). <i>Annual Review of Climate Science</i> <b>4</b>, 81–104.</div>\n",

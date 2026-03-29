@@ -227,7 +227,7 @@ fn test_humanities_note_fixture_preserves_archive_and_interview_fields() {
     );
     assert!(
         manuscript.contains("The Community Rule (1QS)")
-            && manuscript.contains("Manuscript scroll")
+            && manuscript.contains("manuscript-scroll")
             && manuscript.contains("101 BC"),
         "manuscript citation should continue rendering the manuscript reference"
     );
@@ -292,16 +292,16 @@ fn test_taylor_and_francis_author_date_wrapper_preserves_media_and_translation_d
 
     assert!(
         rendered_bib.contains("The Arrival of a Train at La Ciotat Station")
-            && rendered_bib.contains("Short film")
+            && rendered_bib.contains("short-film")
             && rendered_bib.contains("Directed by Louis Lumière"),
         "motion pictures should retain genre and director detail"
     );
     assert!(
         rendered_bib.contains("The Future of Artificial Intelligence")
             && rendered_bib.contains("Interview by Stephen Colbert")
-            && rendered_bib.contains("Video interview")
+            && rendered_bib.contains("video-interview")
             && rendered_bib.contains("https://example.com/interview"),
-        "interviews should retain interviewer, medium, and url detail"
+        "interviews should retain interviewer, genre, and url detail"
     );
     assert!(
         rendered_bib.contains("Metamorphosis")

@@ -106,7 +106,7 @@
       "issued": "2020",
       "publisher": "World Health Organization",
       "publisher-place": "Geneva",
-      "genre": "Technical report"
+      "genre": "technical-report"
     },
     {
       "id": "park2017-thesis",
@@ -116,7 +116,7 @@
       "author": [{ "family": "Park", "given": "S.-J." }],
       "issued": "2017",
       "publisher": "University of Groningen",
-      "genre": "PhD thesis"
+      "genre": "phd-thesis"
     },
     {
       "id": "irino2009-dataset",

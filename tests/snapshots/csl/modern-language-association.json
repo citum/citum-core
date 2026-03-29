@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-14T00:08:50.413Z",
+  "generated_at": "2026-03-29T23:44:20.281Z",
   "style": "modern-language-association",
-  "fixture_hash": "566bd9d8e110a046",
+  "fixture_hash": "51c95c2c6d288eec",
   "csl_hash": "65eb5e29e50a53ae",
   "citations": {
     "single-item": "(Kuhn, “The Structure of Scientific Revolutions”)",
@@ -26,9 +26,9 @@
     "no-date-single": "(Forthcoming)"
   },
   "bibliography": [
-    "  <div class=\"csl-entry\">Bengio, Yoshua. “The Future of Artificial Intelligence.” Interview by Stephen Colbert. 10 Nov. 2023, https://example.com/interview. Video interview.</div>\n",
+    "  <div class=\"csl-entry\">Bengio, Yoshua. “The Future of Artificial Intelligence.” Interview by Stephen Colbert, Video-interview. 10 Nov. 2023, https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\"><i>Brown v. Board of Education</i>. <i>U.S. Reports</i>, vol. 347, 17 May 1954, p. 483.</div>\n",
-    "  <div class=\"csl-entry\">Chen, Wei. <i>Neural Networks for Natural Language Understanding</i>. 2019. Stanford University, PhD thesis.</div>\n",
+    "  <div class=\"csl-entry\">Chen, Wei. <i>Neural Networks for Natural Language Understanding</i>. 2019. Stanford University, phd-thesis.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. Anders. “The Role of Deliberate Practice.” <i>The Cambridge Handbook of Expertise and Expert Performance</i>, edited by K. Anders Ericsson et al., Cambridge University Press, 2006, pp. 683–703.</div>\n",
     "  <div class=\"csl-entry\">Forthcoming, A. <i>Foundations of Declarative Bibliography</i>. University Press.</div>\n",
     "  <div class=\"csl-entry\">Garcia, Maria. “Methods for Probabilistic Climate Attribution.” <i>Annual Review of Climate Science</i>, vol. 4, 2019, pp. 81–104, https://doi.org/10.5555/arcs.2019.4.81.</div>\n",
@@ -39,7 +39,7 @@
     "  <div class=\"csl-entry\">Kuhn, Thomas S. “Scientific Paradigms and Normal Science.” <i>Philosophy of Science</i>, vol. 37, no. 1, 1970, pp. 1–13, https://doi.org/10.1086/288273.</div>\n",
     "  <div class=\"csl-entry\">———. “The Structure of Scientific Revolutions.” <i>International Encyclopedia of Unified Science</i> [Chicago], vol. 2, no. 2, 1962, https://doi.org/10.1234/example.</div>\n",
     "  <div class=\"csl-entry\">LeCun, Yann, et al. “Deep Learning.” <i>Nature</i>, vol. 521, 2015, pp. 436–44, https://doi.org/10.1038/nature14539.</div>\n",
-    "  <div class=\"csl-entry\">Lumière, Louis. <i>The Arrival of a Train at La Ciotat Station</i>. Short film. Directed by Louis Lumière, 1896. Film.</div>\n",
+    "  <div class=\"csl-entry\">Lumière, Louis. <i>The Arrival of a Train at La Ciotat Station</i>. Short-film. Directed by Louis Lumière, 1896. Film.</div>\n",
     "  <div class=\"csl-entry\">Mikolov, Tomas, et al. “Distributed Representations of Words and Phrases.” <i>Proceedings of NIPS 2013</i>, 2013, pp. 3111–19.</div>\n",
     "  <div class=\"csl-entry\">NASA Goddard Institute for Space Studies. “Global Temperature Anomalies 1880-2023.” NASA, 2024, https://data.giss.nasa.gov/gistemp/.</div>\n",
     "  <div class=\"csl-entry\">Reis, Harry T., and Charles M. Judd, editors. <i>Handbook of Research Methods in Social Psychology</i>. Cambridge University Press, 2000.</div>\n",
@@ -54,7 +54,7 @@
     "  <div class=\"csl-entry\">State of JS Team. <i>The State of JavaScript 2023</i>. 2023, https://stateofjs.com/2023.</div>\n",
     "  <div class=\"csl-entry\">“The Role of Theory in Research.” <i>Journal of Theoretical Psychology</i>, vol. 28, no. 3, 2018, pp. 201–15.</div>\n",
     "  <div class=\"csl-entry\">Thompson, Alexander. “The Art of Minimalism in Modern Design.” <i>Wired</i>, vol. 31, no. 6, June 2023, pp. 42–49.</div>\n",
-    "  <div class=\"csl-entry\">United Nations Environment Programme. <i>State of the World’s Biodiversity</i>. Assessment report. Edited by Sandra Díaz, UNEP, 2019.</div>\n",
+    "  <div class=\"csl-entry\">United Nations Environment Programme. <i>State of the World’s Biodiversity</i>. Assessment-report. Edited by Sandra Díaz, UNEP, 2019.</div>\n",
     "  <div class=\"csl-entry\">Vasari, Giorgio. “Renaissance Art and Culture.” <i>Encyclopedia of World History</i>, vol. 5, Oxford University Press, 2022, pp. 234–56.</div>\n",
     "  <div class=\"csl-entry\">Vaswani, Ashish, et al. “Attention Is All You Need.” <i>Advances in Neural Information Processing Systems</i>, vol. 30, 2017, pp. 5998–6008.</div>\n",
     "  <div class=\"csl-entry\">Weinberg, Gerald M., and Daniel P. Freedman. <i>The Psychology of Computer Programming</i>. Silver Anniversary Edition, Van Nostrand Reinhold, 1971.</div>\n",

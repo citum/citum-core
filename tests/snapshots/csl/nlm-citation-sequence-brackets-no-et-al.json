@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-14T00:09:23.962Z",
+  "generated_at": "2026-03-29T23:44:25.431Z",
   "style": "nlm-citation-sequence-brackets-no-et-al",
-  "fixture_hash": "566bd9d8e110a046",
+  "fixture_hash": "51c95c2c6d288eec",
   "csl_hash": "b85149c7b1a0ffaa",
   "citations": {
     "single-item": "[1]",
@@ -36,7 +36,7 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">8. </div><div class=\"csl-right-inline\">Kuhn TS. Scientific Paradigms and Normal Science. Philosophy of Science. 1970;37(1):1–13.</div>\n   </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">9. </div><div class=\"csl-right-inline\">Smith J, Anderson M. Climate Change and Extreme Weather Events. Nature Climate Change. 2020;10:850–5.</div>\n   </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">10. </div><div class=\"csl-right-inline\">Smith J, Williams R. Machine Learning for Climate Prediction. Environmental Research Letters. 2020;15(11):114042.</div>\n   </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">11. </div><div class=\"csl-right-inline\">Chen W. Neural Networks for Natural Language Understanding [PhD thesis]. Stanford University; 2019.</div>\n   </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">11. </div><div class=\"csl-right-inline\">Chen W. Neural Networks for Natural Language Understanding [phd-thesis]. Stanford University; 2019.</div>\n   </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">12. </div><div class=\"csl-right-inline\">Mikolov T, Sutskever I, Chen K, Corrado G, Dean J. Distributed Representations of Words and Phrases. In: Proceedings of NIPS 2013. 2013. p. 3111–9.</div>\n   </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">13. </div><div class=\"csl-right-inline\">State of JS Team. The State of JavaScript 2023 [Internet]. 2023 [cited 2024 Jan 15]. Available from: https://stateofjs.com/2023</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">14. </div><div class=\"csl-right-inline\">Reis HT, Judd CM, editors. Handbook of Research Methods in Social Psychology. Cambridge: Cambridge University Press; 2000.</div>\n   </div>\n",

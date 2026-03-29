@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "generated_by": "citeproc-js@2.4.63",
+  "generated_at": "2026-03-29T23:43:30.627Z",
+  "style": "bluebook-inline",
+  "fixture_hash": "51c95c2c6d288eec",
+  "csl_hash": "d7b0b838dc45d552",
+  "citations": {
+    "single-item": "Thomas S. Kuhn, <i>The Structure of Scientific Revolutions</i>, 2 <span style=\"font-variant:small-caps;\">International Encyclopedia of Unified Science</span>  (1962)",
+    "multi-item": "Thomas S. Kuhn, <i>The Structure of Scientific Revolutions</i>, 2 <span style=\"font-variant:small-caps;\">International Encyclopedia of Unified Science</span>  (1962); see also <span style=\"font-variant:small-caps;\">Stephen Hawking</span>, <span style=\"font-variant:small-caps;\">A Brief History of Time</span> (Bantam Dell Publishing Group) (1988)",
+    "with-locator": "Thomas S. Kuhn, <i>The Structure of Scientific Revolutions</i>, 2 <span style=\"font-variant:small-caps;\">International Encyclopedia of Unified Science</span> , 23 (1962)",
+    "multi-item-with-locators": "Thomas S. Kuhn, <i>The Structure of Scientific Revolutions</i>, 2 <span style=\"font-variant:small-caps;\">International Encyclopedia of Unified Science</span> , 10 (1962); see also Yann LeCun et al., <i>Deep Learning</i>, 521 <span style=\"font-variant:small-caps;\">Nature</span> 436–444, 440 (2015)",
+    "suppress-author": "<i>The Structure of Scientific Revolutions</i>, 2 <span style=\"font-variant:small-caps;\">International Encyclopedia of Unified Science</span>  (1962)",
+    "locator-section-with-suffix": "<span style=\"font-variant:small-caps;\">Stephen Hawking</span>, <span style=\"font-variant:small-caps;\">A Brief History of Time</span> 12 (Bantam Dell Publishing Group) (1988), esp. discussion",
+    "suppress-author-with-locator": "<i>The Structure of Scientific Revolutions</i>, 2 <span style=\"font-variant:small-caps;\">International Encyclopedia of Unified Science</span> , 44 (1962)",
+    "multi-item-with-prefix": "Thomas S. Kuhn, <i>The Structure of Scientific Revolutions</i>, 2 <span style=\"font-variant:small-caps;\">International Encyclopedia of Unified Science</span> , 44 (1962); cf. Yann LeCun et al., <i>Deep Learning</i>, 521 <span style=\"font-variant:small-caps;\">Nature</span> 436–444, 437 (2015)",
+    "single-with-prefix-and-suffix": "see Ashish Vaswani et al., <i>Attention Is All You Need</i>, 30 <span style=\"font-variant:small-caps;\">Advances in Neural Information Processing Systems</span> 5998–6008 (2017), and references therein",
+    "et-al-single-long-list": "John Smith et al., <i>Adaptive Climate Risk Modeling in Coastal Cities</i>, 12 <span style=\"font-variant:small-caps;\">Journal of Climate Analytics</span> 101–119 (2021)",
+    "disambiguate-add-names-et-al": "John Smith et al., <i>Adaptive Climate Risk Modeling in Coastal Cities</i>, 12 <span style=\"font-variant:small-caps;\">Journal of Climate Analytics</span> 101–119 (2021); John Smith et al., <i>Adaptive Climate Risk Modeling for Inland Regions</i>, 12 <span style=\"font-variant:small-caps;\">Journal of Climate Analytics</span> 201–219 (2021)",
+    "disambiguate-year-suffix": "Maria Garcia, <i>Methods for Robust Climate Attribution</i>, 4 <span style=\"font-variant:small-caps;\">Annual Review of Climate Science</span> 55–80 (2019); Maria Garcia, <i>Methods for Probabilistic Climate Attribution</i>, 4 <span style=\"font-variant:small-caps;\">Annual Review of Climate Science</span> 81–104 (2019)",
+    "et-al-with-locator": "John Smith et al., <i>Adaptive Climate Risk Modeling for Inland Regions</i>, 12 <span style=\"font-variant:small-caps;\">Journal of Climate Analytics</span> 201–219, 205 (2021)",
+    "chapter-single": "<i>The Role of Deliberate Practice</i>,  <i>in</i> <span style=\"font-variant:small-caps;\">The Cambridge Handbook of Expertise and Expert Performance</span> 683–703",
+    "report-single": "<span style=\"font-variant:small-caps;\">World Bank</span>, <span style=\"font-variant:small-caps;\">World Development Report 2023</span> (World Bank Group) (2023)",
+    "thesis-single": "<span style=\"font-variant:small-caps;\">Neural Networks for Natural Language Understanding</span>",
+    "webpage-single": "<span style=\"font-variant:small-caps;\">The State of JavaScript 2023</span>, https://stateofjs.com/2023 (last visited Jan 15, 2024)",
+    "no-date-single": "<span style=\"font-variant:small-caps;\">A. Forthcoming</span>, <span style=\"font-variant:small-caps;\">Foundations of Declarative Bibliography</span> (University Press)"
+  },
+  "bibliography": []
+}
