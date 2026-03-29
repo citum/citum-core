@@ -273,6 +273,9 @@ pub struct DateTerms {
     /// UTC timezone term (e.g., "UTC").
     #[serde(skip_serializing_if = "Option::is_none")]
     pub timezone_utc: Option<String>,
+    /// Era suffix for year zero and negative years (e.g., "BC").
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub before_era: Option<String>,
 }
 
 impl DateTerms {
@@ -291,6 +294,7 @@ impl DateTerms {
             am: Some("AM".into()),
             pm: Some("PM".into()),
             timezone_utc: Some("UTC".into()),
+            before_era: Some("BC".into()),
         }
     }
 }
@@ -636,6 +640,14 @@ mod tests {
         assert_eq!(date_terms.seasons[1], "Summer");
         assert_eq!(date_terms.seasons[2], "Autumn");
         assert_eq!(date_terms.seasons[3], "Winter");
+    }
+
+    /// Test that DateTerms::en_us() provides a default era suffix for historical years.
+    #[test]
+    fn test_date_terms_en_us_before_era() {
+        let date_terms = DateTerms::en_us();
+
+        assert_eq!(date_terms.before_era.as_deref(), Some("BC"));
     }
 
     /// Test that MonthNames::en_us() provides standard English month names.

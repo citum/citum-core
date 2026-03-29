@@ -637,7 +637,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
     <span class="text-primary">class</span>: <span class="text-emerald-400">monograph</span>
     <span class="text-primary">type</span>: <span class="text-emerald-400">manuscript</span>
     <span class="text-primary">title</span>: <span class="text-emerald-400">"The Community Rule (1QS)"</span>
-    <span class="text-primary">issued</span>: <span class="text-emerald-400">"-100"</span>
+    <span class="text-primary">issued</span>: <span class="text-emerald-400">"-0099"</span>
     <span class="text-primary">genre</span>: <span class="text-emerald-400">"Manuscript scroll"</span>
     <span class="text-primary">archive-info</span>:
       <span class="text-primary">name</span>: <span class="text-emerald-400">"Israel Antiquities Authority"</span>
@@ -671,14 +671,17 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 <div class="grid gap-4">
                     <div class="border-l-4 border-primary pl-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
-                            Chicago Notes Manuscript Citation
+                            Historical Manuscript Demo Output
                         </div>
                         <div class="font-mono text-sm text-slate-900">
-                            “The Community Rule (1QS)”, Manuscript scroll, -100, Shrine of the Book, Israel Antiquities Authority, Jerusalem.
+                            The Community Rule (1QS). Manuscript scroll, 100 BC, Israel Antiquities Authority, Shrine of the Book, Jerusalem
                         </div>
                         <div class="text-xs text-slate-500 mt-1">
-                            Verified with the current <code class="text-xs bg-slate-100 px-1 rounded">chicago-notes</code>
-                            style against checked-in humanities-note fixture data.
+                            Verified with the checked-in
+                            <code class="text-xs bg-slate-100 px-1 rounded">archive-eprint-demo-style</code>
+                            so the examples page reflects current branch behavior. The example uses valid EDTF
+                            astronomical year numbering, where <code class="text-xs bg-slate-100 px-1 rounded">-0099</code>
+                            renders as <code class="text-xs bg-slate-100 px-1 rounded">100 BC</code>.
                         </div>
                     </div>
                     <div class="border-l-4 border-emerald-500 pl-4">
@@ -686,7 +689,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                             Archive + Eprint Demo Output
                         </div>
                         <div class="font-mono text-sm text-slate-900 break-all">
-                            Archive-Aware Preprint. Houghton Library, Ada Lovelace Papers, MS Am 1280, Series Correspondence, Box 12, Folder 4, Item 7, Cambridge, MA, https://example.com/archive, arxiv:2602.01234 [cs.DL]
+                            Archive-Aware Preprint. February 2026, Houghton Library, Ada Lovelace Papers, MS Am 1280, Series Correspondence, Box 12, Folder 4, Item 7, Cambridge, MA, https://example.com/archive, arxiv:2602.01234 [cs.DL]
                         </div>
                         <div class="text-xs text-slate-500 mt-1">
                             Verified with the checked-in demo style that surfaces
@@ -1001,6 +1004,11 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                     Citum supports native <strong class="text-slate-900">EDTF (Extended Date/Time Format)</strong>
                     for handling complex historical ranges, uncertain or approximate dates,
                     and seasons.
+                </p>
+                <p class="text-slate-600 leading-relaxed mt-3">
+                    Historical EDTF years use astronomical numbering, so
+                    <code class="text-xs bg-slate-100 px-1 rounded">-0099</code> means
+                    <code class="text-xs bg-slate-100 px-1 rounded">100 BC</code>.
                 </p>
             </div>
 

@@ -5,7 +5,7 @@
 
 use crate::reference::{EdtfString, Reference};
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
-use citum_edtf::{Day, Edtf, MonthOrSeason, Timezone};
+use citum_edtf::{Day, Edtf, MonthOrSeason, Timezone, UnspecifiedYear, Year};
 use citum_schema::locale::{GeneralTerm, TermForm};
 use citum_schema::options::dates::TimeFormat;
 use citum_schema::reference::RefDate;
@@ -36,12 +36,46 @@ fn extract_month(date: &EdtfString, months: &[String]) -> String {
     }
 }
 
-fn extract_range_end(date: &EdtfString, months: &[String]) -> Option<String> {
+fn format_display_year(year: &Year, before_era: Option<&str>) -> String {
+    if year.unspecified != UnspecifiedYear::None {
+        return year.to_string();
+    }
+
+    if year.value <= 0 {
+        let historical_year = 1 - year.value;
+        if let Some(term) = before_era.filter(|term| !term.is_empty()) {
+            format!("{historical_year} {term}")
+        } else {
+            historical_year.to_string()
+        }
+    } else {
+        year.value.to_string()
+    }
+}
+
+fn extract_display_year(date: &EdtfString, before_era: Option<&str>) -> String {
+    match date.parse() {
+        RefDate::Edtf(edtf) => match edtf {
+            Edtf::Date(date) => format_display_year(&date.year, before_era),
+            Edtf::Interval(interval) => format_display_year(&interval.start.year, before_era),
+            Edtf::IntervalFrom(date) | Edtf::IntervalTo(date) => {
+                format_display_year(&date.year, before_era)
+            }
+        },
+        RefDate::Literal(_) => String::new(),
+    }
+}
+
+fn extract_range_end(
+    date: &EdtfString,
+    months: &[String],
+    before_era: Option<&str>,
+) -> Option<String> {
     match date.parse() {
         RefDate::Edtf(edtf) => match edtf {
             Edtf::Interval(interval) => {
                 let end = &interval.end;
-                let year = end.year.value.to_string();
+                let year = format_display_year(&end.year, before_era);
                 let month = match end.month_or_season {
                     Some(MonthOrSeason::Month(m)) => Some(m),
                     _ => None,
@@ -65,7 +99,7 @@ fn extract_range_end(date: &EdtfString, months: &[String]) -> Option<String> {
             }
             Edtf::IntervalFrom(_date) => None, // Open-ended
             Edtf::IntervalTo(date) => {
-                let year = date.year.value.to_string();
+                let year = format_display_year(&date.year, before_era);
                 Some(year)
             }
             _ => None,
@@ -140,11 +174,12 @@ fn format_range_start(
     form: &DateForm,
     locale: &citum_schema::locale::Locale,
 ) -> String {
+    let before_era = locale.dates.before_era.as_deref();
     match form {
-        DateForm::Year => date.year(),
+        DateForm::Year => extract_display_year(date, before_era),
         DateForm::YearMonth => {
             let month = extract_month(date, &locale.dates.months.long);
-            let year = date.year();
+            let year = extract_display_year(date, before_era);
             if month.is_empty() {
                 year
             } else {
@@ -160,7 +195,7 @@ fn format_range_start(
             }
         }
         DateForm::Full => {
-            let year = date.year();
+            let year = extract_display_year(date, before_era);
             let month = extract_month(date, &locale.dates.months.long);
             let day = date.day();
             match (month.is_empty(), day) {
@@ -170,7 +205,7 @@ fn format_range_start(
             }
         }
         DateForm::YearMonthDay => {
-            let year = date.year();
+            let year = extract_display_year(date, before_era);
             let month = extract_month(date, &locale.dates.months.long);
             let day = date.day();
             match (month.is_empty(), day) {
@@ -180,7 +215,7 @@ fn format_range_start(
             }
         }
         DateForm::DayMonthAbbrYear => {
-            let year = date.year();
+            let year = extract_display_year(date, before_era);
             let month = extract_month(date, &locale.dates.months.short);
             let day = date.day();
             match (month.is_empty(), day) {
@@ -212,7 +247,11 @@ fn format_date_range(
             // No open-ended term available - return start date only
             Some(start)
         }
-    } else if let Some(end) = extract_range_end(date, &locale.dates.months.long) {
+    } else if let Some(end) = extract_range_end(
+        date,
+        &locale.dates.months.long,
+        locale.dates.before_era.as_deref(),
+    ) {
         // Closed range with end date
         // U+2013 en-dash is the Unicode standard range delimiter (not language-specific)
         let delimiter = date_config.map_or("–", |c| c.range_delimiter.as_str());
@@ -280,13 +319,14 @@ fn format_single_date(
     locale: &citum_schema::locale::Locale,
     date_config: Option<&citum_schema::options::dates::DateConfig>,
 ) -> Option<String> {
+    let before_era = locale.dates.before_era.as_deref();
     match form {
         DateForm::Year => {
-            let year = date.year();
+            let year = extract_display_year(date, before_era);
             if year.is_empty() { None } else { Some(year) }
         }
         DateForm::YearMonth => {
-            let year = date.year();
+            let year = extract_display_year(date, before_era);
             if year.is_empty() {
                 return None;
             }
@@ -309,7 +349,7 @@ fn format_single_date(
             }
         }
         DateForm::Full => {
-            let year = date.year();
+            let year = extract_display_year(date, before_era);
             if year.is_empty() {
                 return None;
             }
@@ -342,7 +382,7 @@ fn format_single_date(
             }
         }
         DateForm::YearMonthDay => {
-            let year = date.year();
+            let year = extract_display_year(date, before_era);
             if year.is_empty() {
                 return None;
             }
@@ -355,7 +395,7 @@ fn format_single_date(
             }
         }
         DateForm::DayMonthAbbrYear => {
-            let year = date.year();
+            let year = extract_display_year(date, before_era);
             if year.is_empty() {
                 return None;
             }

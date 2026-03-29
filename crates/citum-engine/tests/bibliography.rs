@@ -30,6 +30,7 @@ use citum_schema::{
     },
 };
 use std::collections::HashMap;
+use std::fs;
 use url::Url;
 
 // --- Helper Functions ---
@@ -642,6 +643,50 @@ fn make_multilingual_archive_name_reference() -> InputReference {
     }))
 }
 
+fn make_historical_archive_reference() -> InputReference {
+    InputReference::Monograph(Box::new(Monograph {
+        id: Some("dead-sea-scrolls-demo".to_string()),
+        r#type: MonographType::Manuscript,
+        title: Some(Title::Single("The Community Rule (1QS)".to_string())),
+        container_title: None,
+        author: None,
+        editor: None,
+        translator: None,
+        recipient: None,
+        interviewer: None,
+        guest: None,
+        issued: EdtfString("-0099".to_string()),
+        publisher: None,
+        url: None,
+        accessed: None,
+        language: None,
+        field_languages: Default::default(),
+        note: None,
+        isbn: None,
+        doi: None,
+        edition: None,
+        report_number: None,
+        collection_number: None,
+        genre: Some("Manuscript scroll".to_string()),
+        medium: None,
+        archive: None,
+        archive_location: None,
+        archive_info: Some(ArchiveInfo {
+            name: Some(MultilingualString::Simple(
+                "Israel Antiquities Authority".to_string(),
+            )),
+            location: Some("Shrine of the Book".to_string()),
+            place: Some("Jerusalem".to_string()),
+            ..Default::default()
+        }),
+        eprint: None,
+        keywords: None,
+        original_date: None,
+        original_title: None,
+        ads_bibcode: None,
+    }))
+}
+
 fn bibliography_html_injects_sparse_indices_from_type_template() {
     let style_yaml = r#"
 info:
@@ -684,6 +729,34 @@ bibliography:
     assert!(
         !rendered.contains(r#"data-index="1""#),
         "missing DOI output should preserve sparse template indices: {rendered}"
+    );
+}
+
+#[test]
+fn checked_in_archive_demo_style_renders_historical_manuscript_with_bc_suffix() {
+    announce_behavior(
+        "The checked-in archival demo style renders historical manuscript years with a BC suffix.",
+    );
+
+    let style_path = format!(
+        "{}/../../examples/archive-eprint-demo-style.yaml",
+        env!("CARGO_MANIFEST_DIR")
+    );
+    let style_yaml = fs::read_to_string(style_path).expect("demo style should load");
+    let style: Style = serde_yaml::from_str(&style_yaml).expect("demo style should parse");
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "dead-sea-scrolls-demo".to_string(),
+        make_historical_archive_reference(),
+    );
+
+    let rendered = Processor::new(style, bib).render_bibliography();
+    assert!(
+        rendered.contains(
+            "The Community Rule (1QS). Manuscript scroll, 100 BC, Israel Antiquities Authority, Shrine of the Book, Jerusalem"
+        ),
+        "historical manuscript output should match the checked-in docs example: {rendered}"
     );
 }
 

@@ -7,7 +7,14 @@ bibliography:
   template:
     - title: primary
       suffix: ". "
+    - variable: genre
+      suffix: ", "
+    - date: issued
+      form: year-month
+      suffix: ", "
     - variable: archive-name
+    - variable: archive-location
+      prefix: ", "
     - variable: archive-collection
       prefix: ", "
     - variable: archive-collection-id
