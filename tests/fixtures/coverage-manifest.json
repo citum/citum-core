@@ -432,13 +432,13 @@
       "rendering_risks": [
         "note-style type routing",
         "translator and interviewer handling",
-        "archive citation coverage"
+        "structured archival metadata coverage"
       ],
       "used_by": [
         "scripts/report-core.js"
       ],
       "ci_status": "required",
-      "notes": "Expanded humanities-note family reference corpus for Chicago and MLA-style note testing."
+      "notes": "Expanded humanities-note family reference corpus for Chicago and MLA-style note testing, including structured archival metadata."
     },
     {
       "fixture": "tests/fixtures/citations-humanities-note.json",

@@ -342,7 +342,136 @@ impl InputReference {
     /// Return the archive shelfmark or repository location.
     pub fn archive_location(&self) -> Option<String> {
         match self {
-            InputReference::Monograph(r) => r.archive_location.clone(),
+            InputReference::Monograph(r) => r
+                .archive_location
+                .clone()
+                .or_else(|| r.archive_info.as_ref()?.location.clone()),
+            InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.location.clone(),
+            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.location.clone(),
+            _ => None,
+        }
+    }
+
+    /// Return the archive name from structured ArchiveInfo.
+    pub fn archive_name(&self) -> Option<crate::reference::types::MultilingualString> {
+        match self {
+            InputReference::Monograph(r) => r.archive_info.as_ref()?.name.clone(),
+            InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.name.clone(),
+            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.name.clone(),
+            _ => None,
+        }
+    }
+
+    /// Return the archive geographic place from structured ArchiveInfo.
+    pub fn archive_place(&self) -> Option<String> {
+        match self {
+            InputReference::Monograph(r) => r.archive_info.as_ref()?.place.clone(),
+            InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.place.clone(),
+            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.place.clone(),
+            _ => None,
+        }
+    }
+
+    /// Return the archive collection name from structured ArchiveInfo.
+    pub fn archive_collection(&self) -> Option<String> {
+        match self {
+            InputReference::Monograph(r) => r.archive_info.as_ref()?.collection.clone(),
+            InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.collection.clone(),
+            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.collection.clone(),
+            _ => None,
+        }
+    }
+
+    /// Return the archive collection identifier from structured ArchiveInfo.
+    pub fn archive_collection_id(&self) -> Option<String> {
+        match self {
+            InputReference::Monograph(r) => r.archive_info.as_ref()?.collection_id.clone(),
+            InputReference::CollectionComponent(r) => {
+                r.archive_info.as_ref()?.collection_id.clone()
+            }
+            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.collection_id.clone(),
+            _ => None,
+        }
+    }
+
+    /// Return the archive series from structured ArchiveInfo.
+    pub fn archive_series(&self) -> Option<String> {
+        match self {
+            InputReference::Monograph(r) => r.archive_info.as_ref()?.series.clone(),
+            InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.series.clone(),
+            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.series.clone(),
+            _ => None,
+        }
+    }
+
+    /// Return the archive box number from structured ArchiveInfo.
+    pub fn archive_box(&self) -> Option<String> {
+        match self {
+            InputReference::Monograph(r) => r.archive_info.as_ref()?.r#box.clone(),
+            InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.r#box.clone(),
+            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.r#box.clone(),
+            _ => None,
+        }
+    }
+
+    /// Return the archive folder from structured ArchiveInfo.
+    pub fn archive_folder(&self) -> Option<String> {
+        match self {
+            InputReference::Monograph(r) => r.archive_info.as_ref()?.folder.clone(),
+            InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.folder.clone(),
+            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.folder.clone(),
+            _ => None,
+        }
+    }
+
+    /// Return the archive item identifier from structured ArchiveInfo.
+    pub fn archive_item(&self) -> Option<String> {
+        match self {
+            InputReference::Monograph(r) => r.archive_info.as_ref()?.item.clone(),
+            InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.item.clone(),
+            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.item.clone(),
+            _ => None,
+        }
+    }
+
+    /// Return the archive URL from structured ArchiveInfo.
+    pub fn archive_url(&self) -> Option<Url> {
+        match self {
+            InputReference::Monograph(r) => r.archive_info.as_ref()?.url.clone(),
+            InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.url.clone(),
+            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.url.clone(),
+            _ => None,
+        }
+    }
+
+    /// Return the eprint identifier.
+    pub fn eprint_id(&self) -> Option<String> {
+        match self {
+            InputReference::Monograph(r) => r.eprint.as_ref().map(|e| e.id.clone()),
+            InputReference::CollectionComponent(r) => r.eprint.as_ref().map(|e| e.id.clone()),
+            InputReference::SerialComponent(r) => r.eprint.as_ref().map(|e| e.id.clone()),
+            _ => None,
+        }
+    }
+
+    /// Return the eprint server name.
+    pub fn eprint_server(&self) -> Option<String> {
+        match self {
+            InputReference::Monograph(r) => r.eprint.as_ref().map(|e| e.server.clone()),
+            InputReference::CollectionComponent(r) => r.eprint.as_ref().map(|e| e.server.clone()),
+            InputReference::SerialComponent(r) => r.eprint.as_ref().map(|e| e.server.clone()),
+            _ => None,
+        }
+    }
+
+    /// Return the eprint subject class.
+    pub fn eprint_class(&self) -> Option<String> {
+        match self {
+            InputReference::Monograph(r) => r.eprint.as_ref().and_then(|e| e.class.clone()),
+            InputReference::CollectionComponent(r) => {
+                r.eprint.as_ref().and_then(|e| e.class.clone())
+            }
+            InputReference::SerialComponent(r) => r.eprint.as_ref().and_then(|e| e.class.clone()),
             _ => None,
         }
     }
@@ -663,6 +792,7 @@ impl InputReference {
                 MonographType::Post => "post".to_string(),
                 MonographType::Interview => "interview".to_string(),
                 MonographType::Manuscript => "manuscript".to_string(),
+                MonographType::Preprint => "preprint".to_string(),
                 MonographType::PersonalCommunication => "personal-communication".to_string(),
                 MonographType::Document => {
                     if r.medium

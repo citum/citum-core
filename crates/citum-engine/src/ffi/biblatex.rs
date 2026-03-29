@@ -67,6 +67,8 @@ fn build_inbook_reference(ctx: BibRefContext<'_>) -> InputReference {
         doi: field_str("doi"),
         genre: field_str("type"),
         medium: None,
+        archive_info: None,
+        eprint: None,
         keywords: None,
     }))
 }
@@ -104,6 +106,8 @@ fn build_article_reference(ctx: BibRefContext<'_>) -> InputReference {
         issue: field_str("number").map(NumOrStr::Str),
         genre: field_str("type"),
         medium: None,
+        archive_info: None,
+        eprint: None,
         keywords: None,
     }))
 }
@@ -226,6 +230,8 @@ fn biblatex_monograph(
         medium: None,
         archive: None,
         archive_location: None,
+        archive_info: None,
+        eprint: None,
         keywords: None,
         original_date: None,
         original_title: None,

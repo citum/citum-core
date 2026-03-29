@@ -196,7 +196,7 @@ rather than display strings (e.g., `"Box 12"`).
   it directly.
 - `place` is always a separate geographic field, never part of the shelfmark.
 - `url` is a preservation or repository URL. v1 does not define automatic
-  precedence between the reference-level `url` and `archive.url`; styles that
+  precedence between the reference-level `url` and `archive-info.url`; styles that
   want the archival link must render `archive-url` explicitly.
 
 ### Archival Examples
@@ -209,11 +209,11 @@ type: manuscript
 title: "Letter from Margaret Fuller to Ralph Waldo Emerson"
 issued: 1846-05-11
 genre: letter
-archive:
+archive-info:
   name: Houghton Library
   place: "Cambridge, MA"
   collection: Emerson Family Papers
-  collection_id: MS Am 1280
+  collection-id: MS Am 1280
   series: Correspondence
   box: "12"
   folder: "4"
@@ -228,11 +228,11 @@ type: document
 title: "Mill Yard Workers at Noon"
 issued: 1937
 genre: photograph
-archive:
+archive-info:
   name: Wisconsin Historical Society
   place: "Madison, WI"
   collection: Industrial Photography Collection
-  collection_id: PH 4021
+  collection-id: PH 4021
   box: "3"
   folder: "12"
   item: "Photo 18"
@@ -246,7 +246,7 @@ type: manuscript
 title: "Commonplace Book"
 issued: "1720~"
 genre: manuscript
-archive:
+archive-info:
   name: Bodleian Library
   place: "Oxford, UK"
   location: "MS Bodl. Or. 579, fol. 23r"
@@ -288,7 +288,11 @@ pub struct EprintInfo {
     /// Server-specific identifier (e.g. "2301.00001", "3556000").
     pub id: String,
 
-    /// Preprint server name, lowercase (e.g. "arxiv", "ssrn", "biorxiv").
+    /// Preprint server name in canonical lowercase form
+    /// (e.g. "arxiv", "ssrn", "biorxiv").
+    /// Producers MAY supply mixed-case values such as "arXiv" or "SSRN";
+    /// implementations MUST treat this field as case-insensitive and compare
+    /// or normalize on the lowercase form.
     pub server: String,
 
     /// Optional subject-area classification or server-specific class
@@ -353,11 +357,8 @@ before implementation is treated as complete.
 
 ### Schema Placement
 
-`archive: Option<ArchiveInfo>` is added to:
-
-- `Monograph`
-- `CollectionComponent`
-- `SerialComponent`
+`archive_info: Option<ArchiveInfo>` is added to `Monograph`, `CollectionComponent`,
+and `SerialComponent`, and serialized as `archive-info`:
 
 `eprint: Option<EprintInfo>` is added to the same three structs. This follows
 the biblatex precedent of placing `eprint` on all entry types: journal articles
@@ -376,16 +377,16 @@ New variants for template use:
 
 | Variable name          | Resolves to            |
 |------------------------|------------------------|
-| `archive-name`         | `archive.name`         |
-| `archive-location`     | `archive.location`     |
-| `archive-place`        | `archive.place`        |
-| `archive-collection`   | `archive.collection`   |
-| `archive-collection-id`| `archive.collection_id`|
-| `archive-series`       | `archive.series`       |
-| `archive-box`          | `archive.box`          |
-| `archive-folder`       | `archive.folder`       |
-| `archive-item`         | `archive.item`         |
-| `archive-url`          | `archive.url`          |
+| `archive-name`         | `archive-info.name`          |
+| `archive-location`     | `archive-info.location`      |
+| `archive-place`        | `archive-info.place`         |
+| `archive-collection`   | `archive-info.collection`    |
+| `archive-collection-id`| `archive-info.collection-id` |
+| `archive-series`       | `archive-info.series`        |
+| `archive-box`          | `archive-info.box`           |
+| `archive-folder`       | `archive-info.folder`        |
+| `archive-item`         | `archive-info.item`          |
+| `archive-url`          | `archive-info.url`           |
 | `eprint-id`            | `eprint.id`            |
 | `eprint-server`        | `eprint.server`        |
 | `eprint-class`         | `eprint.class`         |
@@ -461,8 +462,8 @@ archive_location: "Box 14, Folder 3"
 
 Default migration target:
 
-- legacy `archive` -> `archive.name`
-- legacy `archive_location` -> `archive.location`
+- legacy `archive` -> `archive-info.name`
+- legacy `archive_location` -> `archive-info.location`
 
 This spec intentionally does not introduce heuristic remapping from legacy
 `archive_location` values into `archive.place`. If such heuristics are ever
@@ -507,7 +508,7 @@ The following are intentionally not decided in this revision:
 - [ ] Structured hierarchy fields (`collection_id`, `series`, `box`,
       `folder`, `item`) are the canonical representation; `location` is
       documented as a display override / legacy fallback.
-- [ ] The spec documents `archive.url` as a distinct preservation URL and
+- [ ] The spec documents `archive-info.url` as a distinct preservation URL and
       states that v1 styles must request it explicitly.
 - [ ] The spec includes at least one structured archival example with
       repository, collection, series, box, folder, and item details.
@@ -530,15 +531,15 @@ schema regeneration, and integration tests.
 ## Changelog
 
 - 2026-03-29: PR review pass. Dropped spec version number. Changed
-  `archive.name` to `MultilingualString` for i18n consistency with
+  `ArchiveInfo.name` to `MultilingualString` for i18n consistency with
   `SimpleName`/`Title`. Added design rationale for Contributor parallel.
   Fixed `r#box` doc comment. Added full Chicago style file paths. Documented
   genre localization limitation as a known gap.
-- v1.3 (2026-03-28): Reverted `container` back to `box`. Structured field
+- 2026-03-28: Reverted `container` back to `box`. Structured field
   values are bare identifiers (e.g., `"12"`), so the field name carries the
   semantic label for locale-aware rendering. Rust keyword handled via
   `#[serde(rename = "box")]`. Non-box containers use `location` override.
-- v1.2 (2026-03-28): Architectural review pass. Renamed `box` to `container`
+- 2026-03-28: Architectural review pass. Renamed `box` to `container`
   (Rust reserved keyword; aligns with DACS/ISAD(G) terminology). Added `series`
   to the hierarchy. Made structured fields canonical with `location` as display
   override. Expanded `eprint` placement to all three reference classes
@@ -547,7 +548,7 @@ schema regeneration, and integration tests.
   `name` as repository/archive name. Documented `genre` as material-type
   mechanism. Added legacy-migration example. Added Chicago edition
   clarification.
-- v1.1 (2026-03-28): Broadened the archival model, added structured hierarchy
+- 2026-03-28: Broadened the archival model, added structured hierarchy
   fields, clarified archive URL/place semantics, and documented the preprint
   policy mismatch without making code decisions final.
-- v1.0 (2026-03-28): Initial draft.
+- 2026-03-28: Initial draft.

@@ -86,7 +86,7 @@ families:
       - repeated-note position flow
       - repeated-author handling
       - translator and editor containers
-      - archive and manuscript references
+      - structured archival and manuscript references
       - ibid vs no-ibid styles
       - multiple citations in one note
     fixture_sets:

@@ -27,6 +27,8 @@ fn test_serial_component_with_parent_id() {
         issue: None,
         genre: None,
         medium: None,
+        archive_info: None,
+        eprint: None,
         keywords: None,
         ads_bibcode: None,
     };
@@ -57,6 +59,8 @@ fn test_collection_component_with_parent_id() {
         doi: None,
         genre: None,
         medium: None,
+        archive_info: None,
+        eprint: None,
         keywords: None,
     };
 

@@ -48,6 +48,87 @@
     "references"
   ],
   "$defs": {
+    "ArchiveInfo": {
+      "description": "Structured archival location metadata for unpublished and archival material.\n\nModels the hierarchical location of an item within an archive, following\ncommon archival description standards (DACS, ISAD(G), EAD).",
+      "type": "object",
+      "properties": {
+        "box": {
+          "description": "Box number within the collection. Bare identifier — engine adds locale label.\n\nUses raw identifier syntax `r#box`, which serde serializes as `\"box\"` transparently.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "collection": {
+          "description": "Name of the collection within the archive.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "collection-id": {
+          "description": "Identifier for the collection (call number, accession number, etc.).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "folder": {
+          "description": "Folder number within the box. Bare identifier — engine adds locale label.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "item": {
+          "description": "Item identifier within the folder. Bare identifier — engine adds locale label.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "location": {
+          "description": "Display override for the archival location (shelfmark, call number, or complex location string).\n\nWhen present, overrides the structured fields for display. Acts as the legacy\n`archive_location` fallback for complex shelfmarks that don't fit the structured model.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "description": "Name of the archive or repository holding the material.\n\nUses `MultilingualString` to support international institution names\n(e.g., 国立国会図書館 / National Diet Library).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MultilingualString"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "place": {
+          "description": "Geographic location (city/country) of the archive.\n\nParallel to `SimpleName.location`; both carry geographic-place semantics.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "series": {
+          "description": "Name of the series within the collection.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "URL for the archival item (e.g. digitized finding aid or item page).",
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uri"
+        }
+      }
+    },
     "Brief": {
       "description": "A legal brief or filing.",
       "type": "object",
@@ -416,6 +497,17 @@
             }
           ]
         },
+        "archive-info": {
+          "description": "Structured archival location metadata.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArchiveInfo"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "author": {
           "anyOf": [
             {
@@ -430,6 +522,17 @@
           "type": [
             "string",
             "null"
+          ]
+        },
+        "eprint": {
+          "description": "Preprint server identifier.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EprintInfo"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "field-languages": {
@@ -697,6 +800,31 @@
     "EdtfString": {
       "description": "An EDTF string.",
       "type": "string"
+    },
+    "EprintInfo": {
+      "description": "Preprint server identifier following the biblatex eprint model.\n\nUsed on all three reference classes (Monograph, CollectionComponent, SerialComponent)\nbecause journal articles routinely carry arXiv or similar identifiers.",
+      "type": "object",
+      "properties": {
+        "class": {
+          "description": "Subject class or category used by the server (e.g. \"cs.CL\").",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "description": "The identifier on the preprint server (e.g. \"2301.00001\").",
+          "type": "string"
+        },
+        "server": {
+          "description": "The preprint server name in canonical lowercase form.\n\nProducers may supply mixed-case values such as \"arXiv\" or \"SSRN\";\nimplementations should treat the field case-insensitively and compare\nor normalize on the lowercase form.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "server"
+      ]
     },
     "Hearing": {
       "description": "A legislative or administrative hearing.",
@@ -1155,6 +1283,17 @@
             "null"
           ]
         },
+        "archive-info": {
+          "description": "Structured archival location metadata. When present, preferred over legacy `archive` and `archive_location`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArchiveInfo"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "archive-location": {
           "description": "Archive location, shelfmark, or call number for unpublished material.",
           "type": [
@@ -1205,6 +1344,17 @@
           "anyOf": [
             {
               "$ref": "#/$defs/Contributor"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "eprint": {
+          "description": "Preprint server identifier.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EprintInfo"
             },
             {
               "type": "null"
@@ -1402,6 +1552,11 @@
           "description": "An unpublished manuscript or archival document.",
           "type": "string",
           "const": "manuscript"
+        },
+        {
+          "description": "A preprint hosted on a preprint server (arXiv, bioRxiv, SSRN, etc.).\n\nThe preprint server has a custodial relationship with the work (hosting and\npreservation), not an editorial one. This parallels an archived manuscript\nheld by a repository.",
+          "type": "string",
+          "const": "preprint"
         }
       ]
     },
@@ -1833,6 +1988,17 @@
             "null"
           ]
         },
+        "archive-info": {
+          "description": "Structured archival location metadata.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArchiveInfo"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "author": {
           "anyOf": [
             {
@@ -1847,6 +2013,17 @@
           "type": [
             "string",
             "null"
+          ]
+        },
+        "eprint": {
+          "description": "Preprint server identifier.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EprintInfo"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "field-languages": {

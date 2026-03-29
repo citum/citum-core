@@ -11,9 +11,8 @@ Copy this template when creating a new spec:
 # [Feature Name] Specification
 
 **Status:** Draft | Active | Superseded
-**Version:** 1.0
 **Date:** YYYY-MM-DD
-**Supersedes:** (path, if any)
+**Supersedes:** (optional path, if any)
 **Related:** (policy, bean, or issue)
 
 ## Purpose
@@ -33,7 +32,7 @@ In scope. Explicitly out of scope.
 - [ ] Verifiable condition 2
 
 ## Changelog
-- v1.0 (DATE): Initial version.
+- DATE: Initial version.
 ```
 
 ## Workflow

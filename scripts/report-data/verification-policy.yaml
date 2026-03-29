@@ -16,6 +16,16 @@ divergences:
     note: Missing-name works sort by title under author-based sorting. Adjusted
       verification excludes mismatches caused solely by this registered
       divergence while preserving raw citeproc deltas in reports.
+  div-005:
+    scopes:
+      - citation
+    tags:
+      - citeproc-legacy-archive-gap
+      - structured-archival-manuscript-detail
+    note: Citeproc-js does not surface the structured archival manuscript
+      metadata that Citum now renders for note-style manuscript citations.
+      Adjusted verification treats those archival-tail additions as intentional
+      while preserving raw citeproc deltas in reports.
 
 styles:
   numeric-comp:

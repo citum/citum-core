@@ -346,9 +346,13 @@ citation:
     - date: issued
       form: year
       prefix: ", "
+    - variable: archive-collection
+      prefix: ", "
     - variable: archive-location
       prefix: ", "
-    - variable: archive
+    - variable: archive-name
+      prefix: ", "
+    - variable: archive-place
       prefix: ", "
     - items:
       - number: pages

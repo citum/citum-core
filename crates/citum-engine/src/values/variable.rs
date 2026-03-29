@@ -27,6 +27,19 @@ fn container_title_short(reference: &Reference) -> Option<String> {
     }
 }
 
+fn resolve_archive_name(reference: &Reference, options: &RenderOptions<'_>) -> Option<String> {
+    let archive_name = reference.archive_name()?;
+    let multilingual = options.config.multilingual.as_ref();
+
+    Some(crate::values::resolve_multilingual_string(
+        &archive_name,
+        multilingual.and_then(|ml| ml.name_mode.as_ref()),
+        multilingual.and_then(|ml| ml.preferred_transliteration.as_deref()),
+        multilingual.and_then(|ml| ml.preferred_script.as_ref()),
+        options.locale.locale.as_str(),
+    ))
+}
+
 /// Resolve the raw value string for a simple variable from a reference.
 fn resolve_variable_value(
     variable: &SimpleVariable,
@@ -46,6 +59,18 @@ fn resolve_variable_value(
         SimpleVariable::Note => reference.note(),
         SimpleVariable::Archive => reference.archive(),
         SimpleVariable::ArchiveLocation => reference.archive_location(),
+        SimpleVariable::ArchiveName => resolve_archive_name(reference, options),
+        SimpleVariable::ArchivePlace => reference.archive_place(),
+        SimpleVariable::ArchiveCollection => reference.archive_collection(),
+        SimpleVariable::ArchiveCollectionId => reference.archive_collection_id(),
+        SimpleVariable::ArchiveSeries => reference.archive_series(),
+        SimpleVariable::ArchiveBox => reference.archive_box(),
+        SimpleVariable::ArchiveFolder => reference.archive_folder(),
+        SimpleVariable::ArchiveItem => reference.archive_item(),
+        SimpleVariable::ArchiveUrl => reference.archive_url().map(|url| url.to_string()),
+        SimpleVariable::EprintId => reference.eprint_id(),
+        SimpleVariable::EprintServer => reference.eprint_server(),
+        SimpleVariable::EprintClass => reference.eprint_class(),
         SimpleVariable::Authority => reference.authority(),
         SimpleVariable::Reporter => reference.reporter(),
         SimpleVariable::Page => reference.pages().map(|v| v.to_string()),

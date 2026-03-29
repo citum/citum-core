@@ -125,6 +125,18 @@ test('verification policy exposes registered divergence metadata for div-004', (
   assert.match(divergence.note, /Missing-name works sort by title/);
 });
 
+test('verification policy exposes registered divergence metadata for div-005', () => {
+  const policy = loadVerificationPolicy();
+  const divergence = resolveRegisteredDivergence(policy, 'div-005');
+
+  assert.deepEqual(divergence.scopes, ['citation']);
+  assert.deepEqual(divergence.tags, [
+    'citeproc-legacy-archive-gap',
+    'structured-archival-manuscript-detail',
+  ]);
+  assert.match(divergence.note, /structured archival manuscript metadata/);
+});
+
 test('citation-only note styles do not advertise bibliography verification scopes', () => {
   const styles = loadStyleMap();
   const policy = loadVerificationPolicy();
