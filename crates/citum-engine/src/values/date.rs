@@ -36,7 +36,112 @@ fn extract_month(date: &EdtfString, months: &[String]) -> String {
     }
 }
 
-fn format_display_year(year: &Year, before_era: Option<&str>) -> String {
+/// Compute the delta for unspecified year ranges.
+fn unspecified_year_delta(u: &UnspecifiedYear) -> i64 {
+    match u {
+        UnspecifiedYear::None => 0,
+        UnspecifiedYear::One => 9,
+        UnspecifiedYear::Two => 99,
+        UnspecifiedYear::Three => 999,
+        UnspecifiedYear::Four => 9999,
+    }
+}
+
+/// Format a year with era-aware rendering.
+fn format_display_year(
+    year: &Year,
+    date_terms: &citum_schema::locale::DateTerms,
+    era_labels: &citum_schema::options::dates::EraLabels,
+    _neg_unspecified: &citum_schema::options::dates::NegativeUnspecifiedYears,
+    range_delimiter: &str,
+) -> String {
+    // Handle positive unspecified years: normalize 'u' to 'X'
+    if year.unspecified != UnspecifiedYear::None && year.value > 0 {
+        let mut s = year.value.to_string();
+        let unspec_count = match year.unspecified {
+            UnspecifiedYear::One => 1,
+            UnspecifiedYear::Two => 2,
+            UnspecifiedYear::Three => 3,
+            UnspecifiedYear::Four => 4,
+            _ => 0,
+        };
+        for _ in 0..unspec_count {
+            if let Some(last) = s.pop()
+                && last != '0'
+            {
+                s.push('X');
+            }
+        }
+        if s.len() < year.value.to_string().len() {
+            let diff = year.value.to_string().len() - s.len();
+            for _ in 0..diff {
+                s.push('X');
+            }
+        }
+        return s;
+    }
+
+    // Handle negative unspecified years: compute historical range
+    if year.unspecified != UnspecifiedYear::None && year.value <= 0 {
+        let delta = unspecified_year_delta(&year.unspecified);
+        let astronomical_min = year.value - delta;
+        let astronomical_max = year.value;
+        let historical_end = 1 - astronomical_max;
+        let historical_start = 1 - astronomical_min;
+
+        let era_term = match era_labels {
+            citum_schema::options::dates::EraLabels::Default => {
+                date_terms.before_era.as_deref().unwrap_or("")
+            }
+            citum_schema::options::dates::EraLabels::BcAd => date_terms.bc.as_deref().unwrap_or(""),
+            citum_schema::options::dates::EraLabels::BceCe => {
+                date_terms.bce.as_deref().unwrap_or("")
+            }
+        };
+
+        if era_term.is_empty() {
+            format!("{historical_start}{range_delimiter}{historical_end}")
+        } else {
+            format!("{historical_start}{range_delimiter}{historical_end} {era_term}")
+        }
+    } else if year.value <= 0 {
+        // Fully specified negative year
+        let historical_year = 1 - year.value;
+        let era_term = match era_labels {
+            citum_schema::options::dates::EraLabels::Default => {
+                date_terms.before_era.as_deref().unwrap_or("")
+            }
+            citum_schema::options::dates::EraLabels::BcAd => date_terms.bc.as_deref().unwrap_or(""),
+            citum_schema::options::dates::EraLabels::BceCe => {
+                date_terms.bce.as_deref().unwrap_or("")
+            }
+        };
+
+        if era_term.is_empty() {
+            historical_year.to_string()
+        } else {
+            format!("{historical_year} {era_term}")
+        }
+    } else {
+        // Positive year
+        let era_term = match era_labels {
+            citum_schema::options::dates::EraLabels::Default => "",
+            citum_schema::options::dates::EraLabels::BcAd => date_terms.ad.as_deref().unwrap_or(""),
+            citum_schema::options::dates::EraLabels::BceCe => {
+                date_terms.ce.as_deref().unwrap_or("")
+            }
+        };
+
+        if era_term.is_empty() {
+            year.value.to_string()
+        } else {
+            format!("{} {}", year.value, era_term)
+        }
+    }
+}
+
+/// Legacy format_display_year for backwards compatibility.
+fn format_display_year_legacy(year: &Year, before_era: Option<&str>) -> String {
     if year.unspecified != UnspecifiedYear::None {
         return year.to_string();
     }
@@ -53,13 +158,16 @@ fn format_display_year(year: &Year, before_era: Option<&str>) -> String {
     }
 }
 
-fn extract_display_year(date: &EdtfString, before_era: Option<&str>) -> String {
+#[allow(dead_code, reason = "kept for backwards compatibility")]
+fn extract_display_year_legacy(date: &EdtfString, before_era: Option<&str>) -> String {
     match date.parse() {
         RefDate::Edtf(edtf) => match edtf {
-            Edtf::Date(date) => format_display_year(&date.year, before_era),
-            Edtf::Interval(interval) => format_display_year(&interval.start.year, before_era),
+            Edtf::Date(date) => format_display_year_legacy(&date.year, before_era),
+            Edtf::Interval(interval) => {
+                format_display_year_legacy(&interval.start.year, before_era)
+            }
             Edtf::IntervalFrom(date) | Edtf::IntervalTo(date) => {
-                format_display_year(&date.year, before_era)
+                format_display_year_legacy(&date.year, before_era)
             }
         },
         RefDate::Literal(_) => String::new(),
@@ -69,13 +177,22 @@ fn extract_display_year(date: &EdtfString, before_era: Option<&str>) -> String {
 fn extract_range_end(
     date: &EdtfString,
     months: &[String],
-    before_era: Option<&str>,
+    date_terms: &citum_schema::locale::DateTerms,
+    era_labels: &citum_schema::options::dates::EraLabels,
+    neg_unspecified: &citum_schema::options::dates::NegativeUnspecifiedYears,
+    range_delimiter: &str,
 ) -> Option<String> {
     match date.parse() {
         RefDate::Edtf(edtf) => match edtf {
             Edtf::Interval(interval) => {
                 let end = &interval.end;
-                let year = format_display_year(&end.year, before_era);
+                let year = format_display_year(
+                    &end.year,
+                    date_terms,
+                    era_labels,
+                    neg_unspecified,
+                    range_delimiter,
+                );
                 let month = match end.month_or_season {
                     Some(MonthOrSeason::Month(m)) => Some(m),
                     _ => None,
@@ -99,7 +216,13 @@ fn extract_range_end(
             }
             Edtf::IntervalFrom(_date) => None, // Open-ended
             Edtf::IntervalTo(date) => {
-                let year = format_display_year(&date.year, before_era);
+                let year = format_display_year(
+                    &date.year,
+                    date_terms,
+                    era_labels,
+                    neg_unspecified,
+                    range_delimiter,
+                );
                 Some(year)
             }
             _ => None,
@@ -173,13 +296,50 @@ fn format_range_start(
     date: &EdtfString,
     form: &DateForm,
     locale: &citum_schema::locale::Locale,
+    date_config: Option<&citum_schema::options::dates::DateConfig>,
 ) -> String {
-    let before_era = locale.dates.before_era.as_deref();
+    let default_era = citum_schema::options::dates::EraLabels::Default;
+    let default_neg_unspec = citum_schema::options::dates::NegativeUnspecifiedYears::default();
+    let era_labels = date_config.map(|c| &c.era_labels).unwrap_or(&default_era);
+    let neg_unspecified = date_config
+        .map(|c| &c.negative_unspecified_years)
+        .unwrap_or(&default_neg_unspec);
+    let range_delimiter = date_config.map_or("–", |c| c.range_delimiter.as_str());
+
+    let extract_year = |d: &EdtfString| -> String {
+        match d.parse() {
+            RefDate::Edtf(edtf) => match edtf {
+                Edtf::Date(date) => format_display_year(
+                    &date.year,
+                    &locale.dates,
+                    era_labels,
+                    neg_unspecified,
+                    range_delimiter,
+                ),
+                Edtf::Interval(interval) => format_display_year(
+                    &interval.start.year,
+                    &locale.dates,
+                    era_labels,
+                    neg_unspecified,
+                    range_delimiter,
+                ),
+                Edtf::IntervalFrom(date) | Edtf::IntervalTo(date) => format_display_year(
+                    &date.year,
+                    &locale.dates,
+                    era_labels,
+                    neg_unspecified,
+                    range_delimiter,
+                ),
+            },
+            RefDate::Literal(_) => String::new(),
+        }
+    };
+
     match form {
-        DateForm::Year => extract_display_year(date, before_era),
+        DateForm::Year => extract_year(date),
         DateForm::YearMonth => {
             let month = extract_month(date, &locale.dates.months.long);
-            let year = extract_display_year(date, before_era);
+            let year = extract_year(date);
             if month.is_empty() {
                 year
             } else {
@@ -195,7 +355,7 @@ fn format_range_start(
             }
         }
         DateForm::Full => {
-            let year = extract_display_year(date, before_era);
+            let year = extract_year(date);
             let month = extract_month(date, &locale.dates.months.long);
             let day = date.day();
             match (month.is_empty(), day) {
@@ -205,7 +365,7 @@ fn format_range_start(
             }
         }
         DateForm::YearMonthDay => {
-            let year = extract_display_year(date, before_era);
+            let year = extract_year(date);
             let month = extract_month(date, &locale.dates.months.long);
             let day = date.day();
             match (month.is_empty(), day) {
@@ -215,7 +375,7 @@ fn format_range_start(
             }
         }
         DateForm::DayMonthAbbrYear => {
-            let year = extract_display_year(date, before_era);
+            let year = extract_year(date);
             let month = extract_month(date, &locale.dates.months.short);
             let day = date.day();
             match (month.is_empty(), day) {
@@ -234,14 +394,20 @@ fn format_date_range(
     locale: &citum_schema::locale::Locale,
     date_config: Option<&citum_schema::options::dates::DateConfig>,
 ) -> Option<String> {
+    let era_labels = date_config
+        .map(|c| &c.era_labels)
+        .unwrap_or(&citum_schema::options::dates::EraLabels::Default);
+    let neg_unspecified = date_config
+        .map(|c| &c.negative_unspecified_years)
+        .unwrap_or(&citum_schema::options::dates::NegativeUnspecifiedYears::Range);
+    let delimiter = date_config.map_or("–", |c| c.range_delimiter.as_str());
+
     if date.is_open_range() {
         // Open-ended range (e.g., "1990/..")
         if let Some(end_marker) = date_config
             .and_then(|c| c.open_range_marker.as_deref())
             .or(locale.dates.open_ended_term.as_deref())
         {
-            // U+2013 en-dash is the Unicode standard range delimiter (not language-specific)
-            let delimiter = date_config.map_or("–", |c| c.range_delimiter.as_str());
             Some(format!("{start}{delimiter}{end_marker}"))
         } else {
             // No open-ended term available - return start date only
@@ -250,11 +416,12 @@ fn format_date_range(
     } else if let Some(end) = extract_range_end(
         date,
         &locale.dates.months.long,
-        locale.dates.before_era.as_deref(),
+        &locale.dates,
+        era_labels,
+        neg_unspecified,
+        delimiter,
     ) {
         // Closed range with end date
-        // U+2013 en-dash is the Unicode standard range delimiter (not language-specific)
-        let delimiter = date_config.map_or("–", |c| c.range_delimiter.as_str());
         Some(format!("{start}{delimiter}{end}"))
     } else {
         Some(start)
@@ -313,20 +480,60 @@ fn compute_disamb_suffix<F: crate::render::format::OutputFormat<Output = String>
 }
 
 /// Format a single date (non-range) according to the given form.
+#[allow(
+    clippy::too_many_lines,
+    reason = "date formatting handles 6 form variants"
+)]
 fn format_single_date(
     date: &EdtfString,
     form: &DateForm,
     locale: &citum_schema::locale::Locale,
     date_config: Option<&citum_schema::options::dates::DateConfig>,
 ) -> Option<String> {
-    let before_era = locale.dates.before_era.as_deref();
+    let default_era = citum_schema::options::dates::EraLabels::Default;
+    let default_neg_unspec = citum_schema::options::dates::NegativeUnspecifiedYears::default();
+    let era_labels = date_config.map(|c| &c.era_labels).unwrap_or(&default_era);
+    let neg_unspecified = date_config
+        .map(|c| &c.negative_unspecified_years)
+        .unwrap_or(&default_neg_unspec);
+    let range_delimiter = date_config.map_or("–", |c| c.range_delimiter.as_str());
+
+    let extract_year = |d: &EdtfString| -> String {
+        match d.parse() {
+            RefDate::Edtf(edtf) => match edtf {
+                Edtf::Date(dt) => format_display_year(
+                    &dt.year,
+                    &locale.dates,
+                    era_labels,
+                    neg_unspecified,
+                    range_delimiter,
+                ),
+                Edtf::Interval(interval) => format_display_year(
+                    &interval.start.year,
+                    &locale.dates,
+                    era_labels,
+                    neg_unspecified,
+                    range_delimiter,
+                ),
+                Edtf::IntervalFrom(dt) | Edtf::IntervalTo(dt) => format_display_year(
+                    &dt.year,
+                    &locale.dates,
+                    era_labels,
+                    neg_unspecified,
+                    range_delimiter,
+                ),
+            },
+            RefDate::Literal(_) => String::new(),
+        }
+    };
+
     match form {
         DateForm::Year => {
-            let year = extract_display_year(date, before_era);
+            let year = extract_year(date);
             if year.is_empty() { None } else { Some(year) }
         }
         DateForm::YearMonth => {
-            let year = extract_display_year(date, before_era);
+            let year = extract_year(date);
             if year.is_empty() {
                 return None;
             }
@@ -349,7 +556,7 @@ fn format_single_date(
             }
         }
         DateForm::Full => {
-            let year = extract_display_year(date, before_era);
+            let year = extract_year(date);
             if year.is_empty() {
                 return None;
             }
@@ -382,7 +589,7 @@ fn format_single_date(
             }
         }
         DateForm::YearMonthDay => {
-            let year = extract_display_year(date, before_era);
+            let year = extract_year(date);
             if year.is_empty() {
                 return None;
             }
@@ -395,7 +602,7 @@ fn format_single_date(
             }
         }
         DateForm::DayMonthAbbrYear => {
-            let year = extract_display_year(date, before_era);
+            let year = extract_year(date);
             if year.is_empty() {
                 return None;
             }
@@ -465,7 +672,7 @@ impl ComponentValues for TemplateDate {
 
         let formatted = if date.is_range() {
             // Handle date ranges
-            let start = format_range_start(&date, &effective_form, locale);
+            let start = format_range_start(&date, &effective_form, locale, date_config);
             format_date_range(start, &date, locale, date_config)
         } else {
             // Single date (not a range)
@@ -611,5 +818,193 @@ mod time_tests {
         };
         let result = format_time(time, &TimeFormat::Hour24, false, false, None, None, None);
         assert_eq!(result, "14:30");
+    }
+}
+
+#[cfg(test)]
+mod era_tests {
+    use super::*;
+    use citum_edtf::{UnspecifiedYear, Year};
+    use citum_schema::locale::DateTerms;
+    use citum_schema::options::dates::{EraLabels, NegativeUnspecifiedYears};
+
+    fn en_terms() -> DateTerms {
+        DateTerms::en_us()
+    }
+
+    #[test]
+    fn positive_year_default_no_suffix() {
+        let year = Year {
+            value: 54,
+            unspecified: UnspecifiedYear::None,
+        };
+        let result = format_display_year(
+            &year,
+            &en_terms(),
+            &EraLabels::Default,
+            &NegativeUnspecifiedYears::Range,
+            "–",
+        );
+        assert_eq!(result, "54");
+    }
+
+    #[test]
+    fn positive_year_bc_ad() {
+        let year = Year {
+            value: 54,
+            unspecified: UnspecifiedYear::None,
+        };
+        let result = format_display_year(
+            &year,
+            &en_terms(),
+            &EraLabels::BcAd,
+            &NegativeUnspecifiedYears::Range,
+            "–",
+        );
+        assert_eq!(result, "54 AD");
+    }
+
+    #[test]
+    fn positive_year_bce_ce() {
+        let year = Year {
+            value: 54,
+            unspecified: UnspecifiedYear::None,
+        };
+        let result = format_display_year(
+            &year,
+            &en_terms(),
+            &EraLabels::BceCe,
+            &NegativeUnspecifiedYears::Range,
+            "–",
+        );
+        assert_eq!(result, "54 CE");
+    }
+
+    #[test]
+    fn negative_year_default() {
+        let year = Year {
+            value: -43,
+            unspecified: UnspecifiedYear::None,
+        };
+        let result = format_display_year(
+            &year,
+            &en_terms(),
+            &EraLabels::Default,
+            &NegativeUnspecifiedYears::Range,
+            "–",
+        );
+        assert_eq!(result, "44 BC");
+    }
+
+    #[test]
+    fn negative_year_bc_ad() {
+        let year = Year {
+            value: -43,
+            unspecified: UnspecifiedYear::None,
+        };
+        let result = format_display_year(
+            &year,
+            &en_terms(),
+            &EraLabels::BcAd,
+            &NegativeUnspecifiedYears::Range,
+            "–",
+        );
+        assert_eq!(result, "44 BC");
+    }
+
+    #[test]
+    fn negative_year_bce_ce() {
+        let year = Year {
+            value: -43,
+            unspecified: UnspecifiedYear::None,
+        };
+        let result = format_display_year(
+            &year,
+            &en_terms(),
+            &EraLabels::BceCe,
+            &NegativeUnspecifiedYears::Range,
+            "–",
+        );
+        assert_eq!(result, "44 BCE");
+    }
+
+    #[test]
+    fn positive_unspecified_ones() {
+        let year = Year {
+            value: 1990,
+            unspecified: UnspecifiedYear::One,
+        };
+        let result = format_display_year(
+            &year,
+            &en_terms(),
+            &EraLabels::Default,
+            &NegativeUnspecifiedYears::Range,
+            "–",
+        );
+        assert_eq!(result, "199X");
+    }
+
+    #[test]
+    fn positive_unspecified_two() {
+        let year = Year {
+            value: 1900,
+            unspecified: UnspecifiedYear::Two,
+        };
+        let result = format_display_year(
+            &year,
+            &en_terms(),
+            &EraLabels::Default,
+            &NegativeUnspecifiedYears::Range,
+            "–",
+        );
+        assert_eq!(result, "19XX");
+    }
+
+    #[test]
+    fn negative_unspecified_range() {
+        let year = Year {
+            value: -90,
+            unspecified: UnspecifiedYear::One,
+        };
+        let result = format_display_year(
+            &year,
+            &en_terms(),
+            &EraLabels::Default,
+            &NegativeUnspecifiedYears::Range,
+            "–",
+        );
+        assert_eq!(result, "100–91 BC");
+    }
+
+    #[test]
+    fn negative_unspecified_century() {
+        let year = Year {
+            value: 0,
+            unspecified: UnspecifiedYear::Two,
+        };
+        let result = format_display_year(
+            &year,
+            &en_terms(),
+            &EraLabels::Default,
+            &NegativeUnspecifiedYears::Range,
+            "–",
+        );
+        assert_eq!(result, "100–1 BC");
+    }
+
+    #[test]
+    fn backwards_compat_negative_year() {
+        let year = Year {
+            value: -99,
+            unspecified: UnspecifiedYear::None,
+        };
+        let result = format_display_year(
+            &year,
+            &en_terms(),
+            &EraLabels::Default,
+            &NegativeUnspecifiedYears::Range,
+            "–",
+        );
+        assert_eq!(result, "100 BC");
     }
 }

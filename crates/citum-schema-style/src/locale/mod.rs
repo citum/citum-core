@@ -913,6 +913,10 @@ impl Locale {
             pm: raw.dates.pm,
             timezone_utc: raw.dates.timezone_utc,
             before_era: raw.dates.before_era,
+            ad: raw.dates.ad,
+            bc: raw.dates.bc,
+            bce: raw.dates.bce,
+            ce: raw.dates.ce,
         };
         locale.punctuation_in_quote = punctuation_in_quote;
         // Set locale-specific articles based on language

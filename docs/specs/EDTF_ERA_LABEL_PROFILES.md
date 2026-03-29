@@ -1,6 +1,6 @@
 # EDTF Era Label Profiles Specification
 
-**Status:** Draft
+**Status:** Active
 **Date:** 2026-03-29
 **Related:** `.beans/csl26-v8n2--edtf-historical-era-rendering-follow-ups.md`, `docs/specs/EDTF_HISTORICAL_ERA_RENDERING.md`, `docs/architecture/PRIOR_ART.md`
 
@@ -8,7 +8,7 @@
 
 Define the next display-layer follow-on to historical EDTF rendering: optional positive-era labeling, profile-driven era term selection, and end-user-safe rendering for EDTF years with unspecified digits. This specification extends the shipped negative-year behavior without changing EDTF parsing or broadening accepted input syntax.
 
-This draft is purely descriptive. It does not change runtime behavior in this PR; it defines the intended next implementation slice for review.
+This specification is descriptive of the era-label-profile and unspecified-year behavior implemented in the engine; it originated as the intended next implementation slice for review and now documents the shipped behavior.
 
 ## Scope
 

@@ -77,7 +77,7 @@
     "version": {
       "description": "Style schema version.",
       "type": "string",
-      "default": "0.15.2"
+      "default": "0.15.3"
     }
   },
   "additionalProperties": false,
@@ -1563,8 +1563,18 @@
           ],
           "additionalProperties": true
         },
+        "era-labels": {
+          "description": "Era label profile controlling which era suffixes are shown.",
+          "$ref": "#/$defs/EraLabels",
+          "default": "default"
+        },
         "month": {
           "$ref": "#/$defs/MonthFormat"
+        },
+        "negative-unspecified-years": {
+          "description": "How negative EDTF years with unspecified digits are rendered.",
+          "$ref": "#/$defs/NegativeUnspecifiedYears",
+          "default": "range"
         },
         "open-range-marker": {
           "description": "Marker for open-ended ranges (e.g., \"–present\"). None uses locale default.",
@@ -1740,6 +1750,26 @@
         "all",
         "first",
         "none"
+      ]
+    },
+    "EraLabels": {
+      "description": "Era label profile for date rendering.",
+      "oneOf": [
+        {
+          "description": "Preserve current behavior: negative years use locale `before-era`, positive years unlabeled.",
+          "type": "string",
+          "const": "default"
+        },
+        {
+          "description": "Negative years use locale `bc`, positive years use locale `ad`.",
+          "type": "string",
+          "const": "bc-ad"
+        },
+        {
+          "description": "Negative years use locale `bce`, positive years use locale `ce`.",
+          "type": "string",
+          "const": "bce-ce"
+        }
       ]
     },
     "FieldMatcher": {
@@ -2962,6 +2992,21 @@
           "description": "Given name first (Vietnamese convention).\nExample: \"Nguyễn Văn A\" → \"Nguyễn\" sorts before \"Trần\"",
           "type": "string",
           "const": "given-family"
+        }
+      ]
+    },
+    "NegativeUnspecifiedYears": {
+      "description": "Rendering policy for negative EDTF years with unspecified digits.",
+      "oneOf": [
+        {
+          "description": "Render as explicit historical ranges (e.g., `-009u` → `100–91 BC`).",
+          "type": "string",
+          "const": "range"
+        },
+        {
+          "description": "Reserved for future prose-oriented output; falls back to `range` if selected.",
+          "type": "string",
+          "const": "fuzzy"
         }
       ]
     },
