@@ -738,11 +738,10 @@ fn checked_in_archive_demo_style_renders_historical_manuscript_with_bc_suffix() 
         "The checked-in archival demo style renders historical manuscript years with a BC suffix.",
     );
 
-    let style_path = format!(
-        "{}/../../examples/archive-eprint-demo-style.yaml",
-        env!("CARGO_MANIFEST_DIR")
-    );
-    let style_yaml = fs::read_to_string(style_path).expect("demo style should load");
+    let style_path = project_root()
+        .join("examples")
+        .join("archive-eprint-demo-style.yaml");
+    let style_yaml = fs::read_to_string(&style_path).expect("demo style should load");
     let style: Style = serde_yaml::from_str(&style_yaml).expect("demo style should parse");
 
     let mut bib = indexmap::IndexMap::new();
