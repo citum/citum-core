@@ -276,6 +276,18 @@ pub struct DateTerms {
     /// Era suffix for year zero and negative years (e.g., "BC").
     #[serde(skip_serializing_if = "Option::is_none")]
     pub before_era: Option<String>,
+    /// Era suffix for positive years in BC/AD profile (e.g., "AD").
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ad: Option<String>,
+    /// Era suffix for negative years in BC/AD profile (e.g., "BC").
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bc: Option<String>,
+    /// Era suffix for negative years in BCE/CE profile (e.g., "BCE").
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bce: Option<String>,
+    /// Era suffix for positive years in BCE/CE profile (e.g., "CE").
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ce: Option<String>,
 }
 
 impl DateTerms {
@@ -295,6 +307,10 @@ impl DateTerms {
             pm: Some("PM".into()),
             timezone_utc: Some("UTC".into()),
             before_era: Some("BC".into()),
+            ad: Some("AD".into()),
+            bc: Some("BC".into()),
+            bce: Some("BCE".into()),
+            ce: Some("CE".into()),
         }
     }
 }
@@ -642,12 +658,16 @@ mod tests {
         assert_eq!(date_terms.seasons[3], "Winter");
     }
 
-    /// Test that DateTerms::en_us() provides a default era suffix for historical years.
+    /// Test that DateTerms::en_us() provides era suffixes for historical years.
     #[test]
     fn test_date_terms_en_us_before_era() {
         let date_terms = DateTerms::en_us();
 
         assert_eq!(date_terms.before_era.as_deref(), Some("BC"));
+        assert_eq!(date_terms.ad.as_deref(), Some("AD"));
+        assert_eq!(date_terms.bc.as_deref(), Some("BC"));
+        assert_eq!(date_terms.bce.as_deref(), Some("BCE"));
+        assert_eq!(date_terms.ce.as_deref(), Some("CE"));
     }
 
     /// Test that MonthNames::en_us() provides standard English month names.

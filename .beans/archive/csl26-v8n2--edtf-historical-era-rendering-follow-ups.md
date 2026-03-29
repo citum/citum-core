@@ -1,11 +1,11 @@
 ---
 # csl26-v8n2
 title: EDTF historical era rendering follow-ups
-status: in-progress
+status: completed
 type: feature
 priority: high
 created_at: 2026-03-29T14:10:00Z
-updated_at: 2026-03-29T15:25:00Z
+updated_at: 2026-03-29T15:30:48Z
 ---
 
 Track the remaining EDTF historical/date rendering work around the new negative-year era rendering slice. Current shipped spec: `docs/specs/EDTF_HISTORICAL_ERA_RENDERING.md`. Draft review spec: `docs/specs/EDTF_ERA_LABEL_PROFILES.md`.
@@ -37,3 +37,12 @@ This bean covers:
 - Are the defaults backwards-compatible with the shipped historical-era slice?
 - Are unspecified BCE years rendered without exposing EDTF internals?
 - Is the locale/style boundary clear enough to implement in a follow-on PR?
+
+## Summary of Changes
+
+- Added `EraLabels` (default/bc-ad/bce-ce) and `NegativeUnspecifiedYears` (range/fuzzy) enums to `DateConfig`
+- Added `ad`, `bc`, `bce`, `ce` era suffix fields to `DateTerms` and `RawDateTerms`
+- Engine `format_display_year` now renders era-label profiles, normalizes positive unspecified years (u→X), and computes historical ranges for negative unspecified years
+- Spec `docs/specs/EDTF_ERA_LABEL_PROFILES.md` updated to Active
+- JSON schemas regenerated (patch bump)
+- Commit: ecaf3dc4

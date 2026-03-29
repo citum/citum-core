@@ -15,8 +15,12 @@
       "description": "Date-related terms.",
       "$ref": "#/$defs/RawDateTerms",
       "default": {
+        "ad": null,
         "am": null,
+        "bc": null,
+        "bce": null,
         "before-era": null,
+        "ce": null,
         "months": {
           "long": [],
           "short": []
@@ -207,6 +211,14 @@
       "description": "Raw date terms for YAML parsing.",
       "type": "object",
       "properties": {
+        "ad": {
+          "description": "Localized era suffix for positive years in BC/AD profile (e.g., \"AD\").",
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
         "am": {
           "description": "Localized ante meridiem marker.",
           "type": [
@@ -215,8 +227,32 @@
           ],
           "default": null
         },
+        "bc": {
+          "description": "Localized era suffix for negative years in BC/AD profile (e.g., \"BC\").",
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "bce": {
+          "description": "Localized era suffix for negative years in BCE/CE profile (e.g., \"BCE\").",
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
         "before-era": {
           "description": "Localized era suffix for year zero and negative years.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "ce": {
+          "description": "Localized era suffix for positive years in BCE/CE profile (e.g., \"CE\").",
           "type": [
             "string",
             "null"

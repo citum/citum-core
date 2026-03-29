@@ -20,6 +20,32 @@ pub enum TimeFormat {
     Hour24,
 }
 
+/// Era label profile for date rendering.
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum EraLabels {
+    /// Preserve current behavior: negative years use locale `before-era`, positive years unlabeled.
+    #[default]
+    Default,
+    /// Negative years use locale `bc`, positive years use locale `ad`.
+    BcAd,
+    /// Negative years use locale `bce`, positive years use locale `ce`.
+    BceCe,
+}
+
+/// Rendering policy for negative EDTF years with unspecified digits.
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum NegativeUnspecifiedYears {
+    /// Render as explicit historical ranges (e.g., `-009u` → `100–91 BC`).
+    #[default]
+    Range,
+    /// Reserved for future prose-oriented output; falls back to `range` if selected.
+    Fuzzy,
+}
+
 /// Date config: either a preset name or explicit configuration.
 ///
 /// Allows styles to write `dates: long` as shorthand, or provide
@@ -80,6 +106,12 @@ pub struct DateConfig {
     /// Whether to include timezone in time display (default: false).
     #[serde(default)]
     pub show_timezone: bool,
+    /// Era label profile controlling which era suffixes are shown.
+    #[serde(default)]
+    pub era_labels: EraLabels,
+    /// How negative EDTF years with unspecified digits are rendered.
+    #[serde(default)]
+    pub negative_unspecified_years: NegativeUnspecifiedYears,
 }
 
 fn default_range_delimiter() -> String {
@@ -98,6 +130,8 @@ impl Default for DateConfig {
             time_format: None,
             show_seconds: false,
             show_timezone: false,
+            era_labels: EraLabels::default(),
+            negative_unspecified_years: NegativeUnspecifiedYears::default(),
         }
     }
 }

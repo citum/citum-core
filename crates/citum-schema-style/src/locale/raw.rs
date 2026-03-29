@@ -78,6 +78,18 @@ pub struct RawDateTerms {
     /// Localized era suffix for year zero and negative years.
     #[serde(default)]
     pub before_era: Option<String>,
+    /// Localized era suffix for positive years in BC/AD profile (e.g., "AD").
+    #[serde(default)]
+    pub ad: Option<String>,
+    /// Localized era suffix for negative years in BC/AD profile (e.g., "BC").
+    #[serde(default)]
+    pub bc: Option<String>,
+    /// Localized era suffix for negative years in BCE/CE profile (e.g., "BCE").
+    #[serde(default)]
+    pub bce: Option<String>,
+    /// Localized era suffix for positive years in BCE/CE profile (e.g., "CE").
+    #[serde(default)]
+    pub ce: Option<String>,
 }
 
 /// Raw month names for YAML parsing.
