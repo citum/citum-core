@@ -316,3 +316,86 @@ pub fn format_chicago(start: u32, end: u32) -> String {
     // Same hundreds: use minimal-two style
     format_minimal(&start_str, &end_str, 2)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use citum_schema::options::PageRangeFormat;
+
+    #[test]
+    fn test_format_chicago() {
+        for (start, end, expected) in [
+            (3, 10, "10"),
+            (71, 72, "72"),
+            (96, 117, "117"),
+            (107, 108, "08"),
+            (321, 328, "28"),
+            (1536, 1538, "38"),
+            (107, 208, "208"),
+            (321, 428, "428"),
+        ] {
+            assert_eq!(format_chicago(start, end), expected);
+        }
+    }
+
+    #[test]
+    fn test_format_minimal() {
+        for (start, end, min_digits, expected) in [
+            ("100", "105", 1, "5"),
+            ("100", "105", 2, "05"),
+            ("1536", "1538", 1, "8"),
+            ("1536", "1538", 2, "38"),
+            ("1536", "1538", 4, "1538"),
+            ("12", "15", 1, "5"),
+            ("12", "15", 2, "15"),
+            ("10", "150", 1, "150"),
+        ] {
+            assert_eq!(format_minimal(start, end, min_digits), expected);
+        }
+    }
+
+    #[test]
+    fn test_format_page_range() {
+        for (input, format, expected) in [
+            ("10-15", None, "10–15"),
+            ("10–15", None, "10–15"),
+            ("321-328", None, "321–328"),
+            ("10-15", Some(PageRangeFormat::Expanded), "10–15"),
+            ("42-45", Some(PageRangeFormat::Expanded), "42–45"),
+            ("107-108", Some(PageRangeFormat::Chicago), "107–08"),
+            ("71-72", Some(PageRangeFormat::Chicago), "71–72"),
+            ("321-328", Some(PageRangeFormat::Chicago), "321–28"),
+            ("321-428", Some(PageRangeFormat::Chicago), "321–428"),
+            ("1536-1538", Some(PageRangeFormat::Chicago), "1536–38"),
+            ("100-105", Some(PageRangeFormat::Minimal), "100–5"),
+            ("321-328", Some(PageRangeFormat::Minimal), "321–8"),
+            ("42-45", Some(PageRangeFormat::Minimal), "42–5"),
+            ("12-17", Some(PageRangeFormat::Minimal), "12–7"),
+            ("100-105", Some(PageRangeFormat::MinimalTwo), "100–05"),
+            ("42-45", Some(PageRangeFormat::MinimalTwo), "42–45"),
+            ("10", Some(PageRangeFormat::Chicago), "10"),
+            ("10-5", Some(PageRangeFormat::Chicago), "10–5"),
+            ("X-Y", Some(PageRangeFormat::Chicago), "X–Y"),
+            ("10-15-20", Some(PageRangeFormat::Chicago), "10–15–20"),
+        ] {
+            assert_eq!(format_page_range(input, format.as_ref()), expected);
+        }
+    }
+
+    #[test]
+    fn test_check_plural() {
+        for (value, expected) in [
+            ("1-10", true),
+            ("1–10", true),
+            ("1, 3", true),
+            ("1 & 3", true),
+            ("1", false),
+            ("IV", false),
+        ] {
+            assert_eq!(
+                check_plural(value, &citum_schema::citation::LocatorType::Page),
+                expected
+            );
+        }
+    }
+}

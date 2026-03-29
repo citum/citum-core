@@ -180,3 +180,107 @@ impl Renderer<'_> {
         collapsed
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::reference::Bibliography;
+    use crate::values::ProcHints;
+    use citum_schema::locale::Locale;
+    use citum_schema::options::Config;
+    use citum_schema::options::bibliography::BibliographyConfig;
+    use indexmap::IndexMap;
+    use std::cell::RefCell;
+    use std::collections::HashMap;
+
+    #[allow(clippy::too_many_arguments, reason = "test helper")]
+    fn make_renderer<'a>(
+        style: &'a citum_schema::Style,
+        bib: &'a Bibliography,
+        loc: &'a Locale,
+        cfg: &'a Config,
+        hints: &'a HashMap<String, ProcHints>,
+        citation_numbers: &'a RefCell<HashMap<String, usize>>,
+        compound_set_by_ref: &'a HashMap<String, String>,
+        compound_member_index: &'a HashMap<String, usize>,
+        compound_sets: &'a IndexMap<String, Vec<String>>,
+        bibliography_config: Option<BibliographyConfig>,
+    ) -> Renderer<'a> {
+        Renderer {
+            style,
+            bibliography: bib,
+            locale: loc,
+            config: cfg,
+            bibliography_config,
+            hints,
+            citation_numbers,
+            compound_set_by_ref,
+            compound_member_index,
+            compound_sets,
+            show_semantics: false,
+            inject_ast_indices: false,
+            filtered_to_original_index: RefCell::new(None),
+        }
+    }
+
+    #[test]
+    fn test_collapse_numeric() {
+        let style = citum_schema::Style::default();
+        let bib = Bibliography::default();
+        let loc = Locale::default();
+        let cfg = Config::default();
+        let hints = HashMap::new();
+
+        let mut nums = HashMap::new();
+        nums.insert("A".to_string(), 1);
+        nums.insert("B".to_string(), 2);
+        nums.insert("C".to_string(), 3);
+        nums.insert("D".to_string(), 4);
+        let citation_numbers = RefCell::new(nums);
+        let empty_map_string = HashMap::new();
+        let empty_map_usize = HashMap::new();
+        let empty_index = IndexMap::new();
+
+        let renderer = make_renderer(
+            &style,
+            &bib,
+            &loc,
+            &cfg,
+            &hints,
+            &citation_numbers,
+            &empty_map_string,
+            &empty_map_usize,
+            &empty_index,
+            None,
+        );
+
+        let cases = [
+            (
+                vec![
+                    (vec!["A".to_string()], "1".to_string()),
+                    (vec!["B".to_string()], "2".to_string()),
+                    (vec!["C".to_string()], "3".to_string()),
+                ],
+                vec![(
+                    vec!["A".to_string(), "B".to_string(), "C".to_string()],
+                    "1–3".to_string(),
+                )],
+            ),
+            (
+                vec![
+                    (vec!["A".to_string()], "1".to_string()),
+                    (vec!["B".to_string()], "2".to_string()),
+                    (vec!["D".to_string()], "4".to_string()),
+                ],
+                vec![
+                    (vec!["A".to_string(), "B".to_string()], "1–2".to_string()),
+                    (vec!["D".to_string()], "4".to_string()),
+                ],
+            ),
+        ];
+
+        for (chunks, expected) in cases {
+            assert_eq!(renderer.collapse_numeric_citation_chunks(chunks), expected);
+        }
+    }
+}

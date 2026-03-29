@@ -101,3 +101,80 @@ impl OutputFormat for Djot {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_djot_emph() {
+        let fmt = Djot;
+
+        for (input, expected) in [("", ""), ("text", "_text_")] {
+            assert_eq!(fmt.emph(input.to_string()), expected);
+        }
+    }
+
+    #[test]
+    fn test_djot_strong() {
+        let fmt = Djot;
+
+        for (input, expected) in [("", ""), ("text", "*text*")] {
+            assert_eq!(fmt.strong(input.to_string()), expected);
+        }
+    }
+
+    #[test]
+    fn test_djot_small_caps() {
+        let fmt = Djot;
+
+        for (input, expected) in [("", ""), ("text", "[text]{.small-caps}")] {
+            assert_eq!(fmt.small_caps(input.to_string()), expected);
+        }
+    }
+
+    #[test]
+    fn test_djot_quote() {
+        let fmt = Djot;
+
+        for (input, expected) in [("", ""), ("text", "\u{201C}text\u{201D}")] {
+            assert_eq!(fmt.quote(input.to_string()), expected);
+        }
+    }
+
+    #[test]
+    fn test_djot_semantic() {
+        let fmt = Djot;
+
+        for (input, class, expected) in [("", "author", ""), ("text", "author", "[text]{.author}")]
+        {
+            assert_eq!(fmt.semantic(class, input.to_string()), expected);
+        }
+    }
+
+    #[test]
+    fn test_djot_link() {
+        let fmt = Djot;
+
+        for (input, url, expected) in [
+            ("", "https://example.com", ""),
+            ("text", "https://example.com", "[text](https://example.com)"),
+        ] {
+            assert_eq!(fmt.link(url, input.to_string()), expected);
+        }
+    }
+
+    #[test]
+    fn test_djot_wrap_punctuation() {
+        let fmt = Djot;
+
+        for (wrap, input, expected) in [
+            (WrapPunctuation::Parentheses, "text", "(text)"),
+            (WrapPunctuation::Brackets, "text", "[text]"),
+            (WrapPunctuation::Quotes, "text", "\u{201C}text\u{201D}"),
+            (WrapPunctuation::None, "text", "text"),
+        ] {
+            assert_eq!(fmt.wrap_punctuation(&wrap, input.to_string()), expected);
+        }
+    }
+}
