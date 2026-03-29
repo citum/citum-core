@@ -343,9 +343,10 @@ impl InputReference {
     pub fn archive_location(&self) -> Option<String> {
         match self {
             InputReference::Monograph(r) => r
-                .archive_location
-                .clone()
-                .or_else(|| r.archive_info.as_ref()?.location.clone()),
+                .archive_info
+                .as_ref()
+                .and_then(|info| info.location.clone())
+                .or_else(|| r.archive_location.clone()),
             InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.location.clone(),
             InputReference::SerialComponent(r) => r.archive_info.as_ref()?.location.clone(),
             _ => None,
