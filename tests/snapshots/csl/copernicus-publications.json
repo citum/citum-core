@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-14T00:08:03.662Z",
+  "generated_at": "2026-03-29T23:43:59.240Z",
   "style": "copernicus-publications",
-  "fixture_hash": "566bd9d8e110a046",
+  "fixture_hash": "51c95c2c6d288eec",
   "csl_hash": "ff7c6ec5ba378f68",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -29,7 +29,7 @@
     "  <div class=\"csl-entry\">Anon: Brown v. Board of Education, U.S. Reports, 347, 483, 1954.</div>\n",
     "  <div class=\"csl-entry\">Anon: The Role of Theory in Research, Journal of Theoretical Psychology, 28, 201–215, 2018.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y.: The Future of Artificial Intelligence, 2023.</div>\n",
-    "  <div class=\"csl-entry\">Chen, W.: Neural Networks for Natural Language Understanding, PhD thesis, Stanford University, 2019.</div>\n",
+    "  <div class=\"csl-entry\">Chen, W.: Neural Networks for Natural Language Understanding, phd-thesis, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. A.: The Role of Deliberate Practice, in: The Cambridge Handbook of Expertise and Expert Performance, edited by: Ericsson, K. A., Charness, N., Feltovich, P. J., and Hoffman, R. R., Cambridge University Press, 683–703, 2006.</div>\n",
     "  <div class=\"csl-entry\">Forthcoming, A.: Foundations of Declarative Bibliography, University Press, Cambridge, n.d.</div>\n",
     "  <div class=\"csl-entry\">Garcia, M.: Methods for Probabilistic Climate Attribution, Annual Review of Climate Science, 4, 81–104, https://doi.org/10.5555/arcs.2019.4.81, 2019a.</div>\n",

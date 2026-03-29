@@ -158,7 +158,7 @@ bibliography:
         form: month-day
       - date: issued
         form: year
-    - variable: medium
+    - variable: genre
     - variable: url
       suffix: "."
     motion-picture:

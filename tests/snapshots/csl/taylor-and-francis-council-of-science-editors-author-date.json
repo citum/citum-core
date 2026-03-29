@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-14T00:09:31.176Z",
+  "generated_at": "2026-03-29T23:44:36.097Z",
   "style": "taylor-and-francis-council-of-science-editors-author-date",
-  "fixture_hash": "566bd9d8e110a046",
+  "fixture_hash": "51c95c2c6d288eec",
   "csl_hash": "b2f2fc72589410f5",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -28,7 +28,7 @@
   "bibliography": [
     "  <div class=\"csl-entry\">Bengio Y. 2023. The Future of Artificial Intelligence [Internet]. https://example.com/interview</div>\n",
     "  <div class=\"csl-entry\">Brown v. Board of Education. 1954. [place unknown].</div>\n",
-    "  <div class=\"csl-entry\">Chen W. 2019. Neural Networks for Natural Language Understanding [PhD thesis]. [place unknown]: Stanford University.</div>\n",
+    "  <div class=\"csl-entry\">Chen W. 2019. Neural Networks for Natural Language Understanding [phd-thesis]. [place unknown]: Stanford University.</div>\n",
     "  <div class=\"csl-entry\">Ericsson KA. 2006. The Role of Deliberate Practice. In: Ericsson KA, Charness N, Feltovich PJ, Hoffman RR, editors. The Cambridge Handbook of Expertise and Expert Performance. [place unknown]: Cambridge University Press; p. 683–703.</div>\n",
     "  <div class=\"csl-entry\">Forthcoming A. Foundations of Declarative Bibliography. Cambridge: University Press.</div>\n",
     "  <div class=\"csl-entry\">Garcia M. 2019a. Methods for Robust Climate Attribution. Annual Review of Climate Science. 4:55–80. https://doi.org/10.5555/arcs.2019.4.55</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-14T00:09:44.995Z",
+  "generated_at": "2026-03-29T23:44:34.704Z",
   "style": "springer-physics-brackets",
-  "fixture_hash": "566bd9d8e110a046",
+  "fixture_hash": "51c95c2c6d288eec",
   "csl_hash": "863583d0c2968d4e",
   "citations": {
     "single-item": "[1]",
@@ -36,7 +36,7 @@
     "  <div class=\"csl-entry\">8. T. S. Kuhn, Philosophy of Science <b>37</b>, 1 (1970).</div>\n",
     "  <div class=\"csl-entry\">9. J. Smith and M. Anderson, Nature Climate Change <b>10</b>, 850 (2020).</div>\n",
     "  <div class=\"csl-entry\">10. J. Smith and R. Williams, Environmental Research Letters <b>15</b>, 114042 (2020).</div>\n",
-    "  <div class=\"csl-entry\">11. W. Chen, Neural Networks for Natural Language Understanding, PhD thesis, Stanford University, 2019.</div>\n",
+    "  <div class=\"csl-entry\">11. W. Chen, Neural Networks for Natural Language Understanding, phd-thesis, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\">12. T. Mikolov, I. Sutskever, K. Chen, G. Corrado, and J. Dean, in <i>Proceedings of NIPS 2013</i> (2013), pp. 3111–3119.</div>\n",
     "  <div class=\"csl-entry\">13. State of JS Team, (2023).</div>\n",
     "  <div class=\"csl-entry\">14. H. T. Reis and C. M. Judd, editors , <i>Handbook of Research Methods in Social Psychology</i> (Cambridge University Press, Cambridge, 2000).</div>\n",

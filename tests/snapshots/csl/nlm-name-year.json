@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-14T00:09:25.430Z",
+  "generated_at": "2026-03-29T23:44:25.505Z",
   "style": "nlm-name-year",
-  "fixture_hash": "566bd9d8e110a046",
+  "fixture_hash": "51c95c2c6d288eec",
   "csl_hash": "f63db70511866a52",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -28,7 +28,7 @@
   "bibliography": [
     "  <div class=\"csl-entry\">Bengio Y. The Future of Artificial Intelligence [Internet]. 2023. Available from: https://example.com/interview</div>\n",
     "  <div class=\"csl-entry\">Brown v. Board of Education. Vol. 347, U.S. Reports. 1954. p. 483. </div>\n",
-    "  <div class=\"csl-entry\">Chen W. Neural Networks for Natural Language Understanding [PhD thesis]. Stanford University; 2019. </div>\n",
+    "  <div class=\"csl-entry\">Chen W. Neural Networks for Natural Language Understanding [phd-thesis]. Stanford University; 2019. </div>\n",
     "  <div class=\"csl-entry\">Ericsson KA. The Role of Deliberate Practice. In: Ericsson KA, Charness N, Feltovich PJ, Hoffman RR, editors. The Cambridge Handbook of Expertise and Expert Performance. Cambridge University Press; 2006. p. 683–703. </div>\n",
     "  <div class=\"csl-entry\">Forthcoming A. Foundations of Declarative Bibliography. Cambridge: University Press; </div>\n",
     "  <div class=\"csl-entry\">Garcia M. Methods for Probabilistic Climate Attribution. Annual Review of Climate Science. 2019a;4:81–104. </div>\n",

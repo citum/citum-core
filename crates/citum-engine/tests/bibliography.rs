@@ -667,7 +667,7 @@ fn make_historical_archive_reference() -> InputReference {
         edition: None,
         report_number: None,
         collection_number: None,
-        genre: Some("Manuscript scroll".to_string()),
+        genre: Some("manuscript-scroll".to_string()),
         medium: None,
         archive: None,
         archive_location: None,
@@ -753,7 +753,7 @@ fn checked_in_archive_demo_style_renders_historical_manuscript_with_bc_suffix() 
     let rendered = Processor::new(style, bib).render_bibliography();
     assert!(
         rendered.contains(
-            "The Community Rule (1QS). Manuscript scroll, 100 BC, Israel Antiquities Authority, Shrine of the Book, Jerusalem"
+            "The Community Rule (1QS). manuscript-scroll, 100 BC, Israel Antiquities Authority, Shrine of the Book, Jerusalem"
         ),
         "historical manuscript output should match the checked-in docs example: {rendered}"
     );

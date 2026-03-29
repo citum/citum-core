@@ -94,7 +94,7 @@
     "issued": { "date-parts": [[2020]] },
     "publisher": "World Health Organization",
     "publisher-place": "Geneva",
-    "genre": "Technical report"
+    "genre": "technical-report"
   },
   "park2017-thesis": {
     "id": "park2017-thesis",
@@ -103,7 +103,7 @@
     "title": "Structural characterization of peroxisomal membrane proteins",
     "issued": { "date-parts": [[2017]] },
     "publisher": "University of Groningen",
-    "genre": "PhD thesis"
+    "genre": "phd-thesis"
   },
   "irino2009-dataset": {
     "id": "irino2009-dataset",

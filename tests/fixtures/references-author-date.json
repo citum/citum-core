@@ -63,7 +63,7 @@
     "issued": { "date-parts": [[2023]] },
     "publisher": "UNEP",
     "publisher-place": "Nairobi",
-    "genre": "Annual report"
+    "genre": "annual-report"
   },
   {
     "id": "chen2018-thesis",
@@ -73,7 +73,7 @@
     "author": [{ "family": "Chen", "given": "Wei" }],
     "issued": { "date-parts": [[2018]] },
     "publisher": "Stanford University",
-    "genre": "PhD dissertation"
+    "genre": "phd-thesis"
   },
   {
     "id": "noaa2024-web",

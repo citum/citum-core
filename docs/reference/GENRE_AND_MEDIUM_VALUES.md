@@ -8,10 +8,9 @@
 
 `genre` and `medium` are free-text `Option<String>` fields on reference types.
 Both fields use **kebab-case canonical identifiers** as their stored form.
-Matching at the application layer should be case-insensitive, and new
-integrations SHOULD perform case-normalization before comparison.
+The engine defensively normalizes to ASCII lowercase + kebab-case at accessor time
+(supporting legacy producers); integrations SHOULD emit canonical forms directly.
 Producers SHOULD emit the canonical forms listed here.
-(Full case-insensitive normalization is tracked in bean csl26-qqfa.)
 
 Canonical values are advisory, not exhaustive. Any value may be stored. Styles
 that branch on `genre` or `medium` should handle unrecognised values gracefully
@@ -60,25 +59,6 @@ feature film).
 | `sound-recording` | Sound recording | Audio recording of music or speech |
 | `patent` | Patent | Use with `Patent` type; `genre` for sub-type (e.g., design patent) |
 | `standard` | Standard | Use with `Standard` type |
-
-### Fixture values (not yet normalized)
-
-The following values appear in test fixtures and have not yet been migrated to
-kebab-case canonical form. They will be normalized in a future data migration
-pass (tracked as bean csl26-qqfa).
-
-| Current fixture value | Field | Canonical target |
-|---|---|---|
-| `"PhD thesis"` | `genre` | `"phd-thesis"` |
-| `"PhD dissertation"` | `genre` | `"phd-thesis"` |
-| `"Technical report"` | `genre` | `"technical-report"` |
-| `"Annual report"` | `genre` | `"annual-report"` |
-| `"Assessment report"` | `genre` | `"assessment-report"` |
-| `"Short film"` | `genre` | `"short-film"` |
-| `"Manuscript scroll"` | `genre` | `"manuscript-scroll"` |
-| `"Holograph manuscript"` | `genre` | `"holograph-manuscript"` |
-| `"Letter"` | `genre` | `"letter"` |
-| `"Video interview"` | `medium` | move to `genre: "video-interview"`; set `medium` to appropriate channel |
 
 ---
 
@@ -132,6 +112,8 @@ documentary watched on a streaming service).
 ---
 
 ## Localization
+
+Fixture values are stored in canonical kebab-case form; the engine defensively applies ASCII lowercase + kebab conversion at accessor time.
 
 The canonical keys in this table serve as locale-map keys. A future
 `locale/en/vocab.yaml` would provide:

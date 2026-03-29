@@ -321,12 +321,30 @@ impl InputReference {
         }
     }
 
-    /// Return the genre/type as string.
+    /// Normalize genre/medium values to canonical kebab-case (defensive fallback for legacy producers).
+    ///
+    /// Converts to ASCII lowercase and replaces whitespace/underscores with dashes.
+    fn normalize_genre_medium(s: &str) -> String {
+        let lower = s.to_ascii_lowercase();
+        lower
+            .split(|c: char| c.is_whitespace() || c == '_')
+            .filter(|p| !p.is_empty())
+            .collect::<Vec<_>>()
+            .join("-")
+    }
+
+    /// Return the genre/type as string, normalized to canonical kebab-case.
     pub fn genre(&self) -> Option<String> {
         match self {
-            InputReference::Monograph(r) => r.genre.clone(),
-            InputReference::CollectionComponent(r) => r.genre.clone(),
-            InputReference::SerialComponent(r) => r.genre.clone(),
+            InputReference::Monograph(r) => {
+                r.genre.as_ref().map(|g| Self::normalize_genre_medium(g))
+            }
+            InputReference::CollectionComponent(r) => {
+                r.genre.as_ref().map(|g| Self::normalize_genre_medium(g))
+            }
+            InputReference::SerialComponent(r) => {
+                r.genre.as_ref().map(|g| Self::normalize_genre_medium(g))
+            }
             _ => None,
         }
     }
@@ -477,12 +495,18 @@ impl InputReference {
         }
     }
 
-    /// Return the medium.
+    /// Return the medium, normalized to canonical kebab-case.
     pub fn medium(&self) -> Option<String> {
         match self {
-            InputReference::Monograph(r) => r.medium.clone(),
-            InputReference::CollectionComponent(r) => r.medium.clone(),
-            InputReference::SerialComponent(r) => r.medium.clone(),
+            InputReference::Monograph(r) => {
+                r.medium.as_ref().map(|m| Self::normalize_genre_medium(m))
+            }
+            InputReference::CollectionComponent(r) => {
+                r.medium.as_ref().map(|m| Self::normalize_genre_medium(m))
+            }
+            InputReference::SerialComponent(r) => {
+                r.medium.as_ref().map(|m| Self::normalize_genre_medium(m))
+            }
             _ => None,
         }
     }
@@ -854,5 +878,24 @@ impl InputReference {
             InputReference::Standard(_) => "standard".to_string(),
             InputReference::Software(_) => "software".to_string(),
         }
+    }
+}
+
+#[cfg(test)]
+mod normalize_tests {
+    use super::InputReference;
+
+    fn norm(s: &str) -> String {
+        InputReference::normalize_genre_medium(s)
+    }
+
+    #[test]
+    fn test_normalize_genre_medium() {
+        assert_eq!(norm("Technical report"), "technical-report");
+        assert_eq!(norm("PhD thesis"), "phd-thesis");
+        assert_eq!(norm("Short film"), "short-film");
+        assert_eq!(norm("video-interview"), "video-interview");
+        assert_eq!(norm("film"), "film");
+        assert_eq!(norm("Annual report"), "annual-report");
     }
 }

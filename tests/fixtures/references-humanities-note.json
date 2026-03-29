@@ -101,7 +101,7 @@
       "location": "Shrine of the Book",
       "place": "Jerusalem"
     },
-    "genre": "Manuscript scroll",
+    "genre": "manuscript-scroll",
     "note": "Dead Sea Scrolls collection"
   },
   {
@@ -115,7 +115,7 @@
       "name": "Bodleian Library",
       "location": "MS. Eng. e. 3764"
     },
-    "genre": "Holograph manuscript"
+    "genre": "holograph-manuscript"
   },
   {
     "id": "foucault-interview",
@@ -138,7 +138,7 @@
     "author": [{ "family": "Derrida", "given": "Jacques" }],
     "issued": { "date-parts": [[1971, 3, 15]] },
     "recipient": [{ "family": "de Man", "given": "Paul" }],
-    "genre": "Letter",
+    "genre": "letter",
     "archive": "University of California, Irvine, Critical Theory Archive"
   },
   {

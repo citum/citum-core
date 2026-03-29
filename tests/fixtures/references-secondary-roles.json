@@ -84,7 +84,7 @@
       { "family": "Walker", "given": "Alice" }
     ],
     "issued": { "date-parts": [[1983, 5, 12]] },
-    "genre": "Letter"
+    "genre": "letter"
   },
   {
     "id": "sr-plural-translators",
