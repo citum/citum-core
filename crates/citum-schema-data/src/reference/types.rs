@@ -141,13 +141,13 @@ pub struct ArchiveInfo {
     pub collection_id: Option<String>,
     /// Name of the series within the collection.
     pub series: Option<String>,
-    /// Box number within the collection. Bare identifier — engine adds locale label.
+    /// Box number within the collection.
     ///
     /// Uses raw identifier syntax `r#box`, which serde serializes as `"box"` transparently.
     pub r#box: Option<String>,
-    /// Folder number within the box. Bare identifier — engine adds locale label.
+    /// Folder number within the box.
     pub folder: Option<String>,
-    /// Item identifier within the folder. Bare identifier — engine adds locale label.
+    /// Item identifier within the folder.
     pub item: Option<String>,
     /// Display override for the archival location (shelfmark, call number, or complex location string).
     ///

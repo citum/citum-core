@@ -455,72 +455,65 @@ fn build_archive_eprint_style() -> Style {
         bibliography: Some(BibliographySpec {
             template: Some(vec![
                 citum_schema::tc_title!(Primary, suffix = ". "),
-                TemplateComponent::Variable(TemplateVariable {
-                    variable: SimpleVariable::ArchiveName,
-                    ..Default::default()
-                }),
-                TemplateComponent::Variable(TemplateVariable {
-                    variable: SimpleVariable::ArchiveCollection,
-                    rendering: Rendering {
-                        prefix: Some(", ".to_string()),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                }),
-                TemplateComponent::Variable(TemplateVariable {
-                    variable: SimpleVariable::ArchiveLocation,
-                    rendering: Rendering {
-                        prefix: Some(", ".to_string()),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                }),
-                TemplateComponent::Variable(TemplateVariable {
-                    variable: SimpleVariable::ArchivePlace,
-                    rendering: Rendering {
-                        prefix: Some(", ".to_string()),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                }),
-                TemplateComponent::Variable(TemplateVariable {
-                    variable: SimpleVariable::ArchiveUrl,
-                    rendering: Rendering {
-                        prefix: Some(", ".to_string()),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                }),
-                TemplateComponent::Variable(TemplateVariable {
-                    variable: SimpleVariable::EprintServer,
-                    rendering: Rendering {
-                        prefix: Some(", ".to_string()),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                }),
-                TemplateComponent::Variable(TemplateVariable {
-                    variable: SimpleVariable::EprintId,
-                    rendering: Rendering {
-                        prefix: Some(":".to_string()),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                }),
-                TemplateComponent::Variable(TemplateVariable {
-                    variable: SimpleVariable::EprintClass,
-                    rendering: Rendering {
-                        prefix: Some(" [".to_string()),
-                        suffix: Some("]".to_string()),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                }),
+                variable_component(SimpleVariable::ArchiveName, None, None),
+                variable_component(SimpleVariable::ArchiveCollection, Some(", "), None),
+                variable_component(SimpleVariable::ArchiveCollectionId, Some(", "), None),
+                variable_component(SimpleVariable::ArchiveSeries, Some(", Series "), None),
+                variable_component(SimpleVariable::ArchiveBox, Some(", Box "), None),
+                variable_component(SimpleVariable::ArchiveFolder, Some(", Folder "), None),
+                variable_component(SimpleVariable::ArchiveItem, Some(", Item "), None),
+                variable_component(SimpleVariable::ArchiveLocation, Some(", "), None),
+                variable_component(SimpleVariable::ArchivePlace, Some(", "), None),
+                variable_component(SimpleVariable::ArchiveUrl, Some(", "), None),
+                variable_component(SimpleVariable::EprintServer, Some(", "), None),
+                variable_component(SimpleVariable::EprintId, Some(":"), None),
+                variable_component(SimpleVariable::EprintClass, Some(" ["), Some("]")),
             ]),
             ..Default::default()
         }),
         ..Default::default()
     }
+}
+
+fn build_archive_location_fallback_style() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Archive Location Fallback Test".to_string()),
+            id: Some("archive-location-fallback-test".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                citum_schema::tc_title!(Primary, suffix = ". "),
+                variable_component(SimpleVariable::ArchiveName, None, None),
+                variable_component(SimpleVariable::ArchiveCollection, Some(", "), None),
+                variable_component(SimpleVariable::ArchiveLocation, Some(", "), None),
+                variable_component(SimpleVariable::ArchivePlace, Some(", "), None),
+                variable_component(SimpleVariable::ArchiveUrl, Some(", "), None),
+                variable_component(SimpleVariable::EprintServer, Some(", "), None),
+                variable_component(SimpleVariable::EprintId, Some(":"), None),
+                variable_component(SimpleVariable::EprintClass, Some(" ["), Some("]")),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn variable_component(
+    variable: SimpleVariable,
+    prefix: Option<&str>,
+    suffix: Option<&str>,
+) -> TemplateComponent {
+    TemplateComponent::Variable(TemplateVariable {
+        variable,
+        rendering: Rendering {
+            prefix: prefix.map(str::to_string),
+            suffix: suffix.map(str::to_string),
+            ..Default::default()
+        },
+        ..Default::default()
+    })
 }
 
 fn build_multilingual_archive_name_style() -> Style {
@@ -581,7 +574,11 @@ fn make_archive_eprint_reference() -> InputReference {
             name: Some(MultilingualString::Simple("Houghton Library".to_string())),
             place: Some("Cambridge, MA".to_string()),
             collection: Some("Ada Lovelace Papers".to_string()),
-            location: Some("MS Am 1280, Box 12, Folder 4".to_string()),
+            collection_id: Some("MS Am 1280".to_string()),
+            series: Some("Correspondence".to_string()),
+            r#box: Some("12".to_string()),
+            folder: Some("4".to_string()),
+            item: Some("7".to_string()),
             url: Some(Url::parse("https://example.com/archive").expect("url should parse")),
             ..Default::default()
         }),
@@ -1869,6 +1866,35 @@ fn given_archive_info_and_eprint_when_rendering_bibliography_then_new_variables_
         "archive-eprint-ref".to_string(),
         make_archive_eprint_reference(),
     );
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert_eq!(
+        result,
+        "Archive-Aware Preprint. Houghton Library, Ada Lovelace Papers, MS Am 1280, Series Correspondence, Box 12, Folder 4, Item 7, Cambridge, MA, https://example.com/archive, arxiv:2602.01234 [cs.DL]"
+    );
+}
+
+#[test]
+fn given_archive_location_override_when_rendering_bibliography_then_legacy_fallback_still_works() {
+    let style = build_archive_location_fallback_style();
+    let mut bib = indexmap::IndexMap::new();
+    let mut reference = make_archive_eprint_reference();
+
+    let InputReference::Monograph(monograph) = &mut reference else {
+        panic!("archive test fixture should be a monograph");
+    };
+    monograph.id = Some("archive-eprint-location-ref".to_string());
+    monograph.archive_info = Some(ArchiveInfo {
+        name: Some(MultilingualString::Simple("Houghton Library".to_string())),
+        place: Some("Cambridge, MA".to_string()),
+        collection: Some("Ada Lovelace Papers".to_string()),
+        location: Some("MS Am 1280, Box 12, Folder 4".to_string()),
+        url: Some(Url::parse("https://example.com/archive").expect("url should parse")),
+        ..Default::default()
+    });
+    bib.insert("archive-eprint-location-ref".to_string(), reference);
 
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography();
