@@ -48,9 +48,10 @@ to make sure the document should be a spec rather than architecture or policy.
 3. Set Status to `Active` in the same commit as the first implementation.
 4. Reference the spec path in the bean description.
 
-## Active Specs
+## Specs
 
 | File | Feature |
 |------|---------|
 | [`ANNOTATED_BIBLIOGRAPHY.md`](./ANNOTATED_BIBLIOGRAPHY.md) | Document-scoped annotation overlay for bibliography rendering |
+| [`ARCHIVAL_UNPUBLISHED_SUPPORT.md`](./ARCHIVAL_UNPUBLISHED_SUPPORT.md) | ArchiveInfo/EprintInfo structs; Preprint type; archive_location semantic fix |
 | [`LOCALE_MESSAGES.md`](./LOCALE_MESSAGES.md) | ICU MF1 parameterized message system replacing flat YAML term files |
