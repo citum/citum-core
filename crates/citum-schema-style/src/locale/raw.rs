@@ -75,6 +75,9 @@ pub struct RawDateTerms {
     /// Localized label for UTC.
     #[serde(default)]
     pub timezone_utc: Option<String>,
+    /// Localized era suffix for year zero and negative years.
+    #[serde(default)]
+    pub before_era: Option<String>,
 }
 
 /// Raw month names for YAML parsing.

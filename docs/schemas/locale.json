@@ -16,6 +16,7 @@
       "$ref": "#/$defs/RawDateTerms",
       "default": {
         "am": null,
+        "before-era": null,
         "months": {
           "long": [],
           "short": []
@@ -208,6 +209,14 @@
       "properties": {
         "am": {
           "description": "Localized ante meridiem marker.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "before-era": {
+          "description": "Localized era suffix for year zero and negative years.",
           "type": [
             "string",
             "null"

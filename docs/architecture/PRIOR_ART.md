@@ -237,7 +237,7 @@ Features:
 - Open ranges: `1990/..` (ongoing)
 - Precision levels: year, month, day
 
-**Citum**: Already prioritized in CLAUDE.md. Continue this approach.
+**Citum**: See `docs/specs/EDTF_HISTORICAL_ERA_RENDERING.md` for the current historical-era rendering contract and tracked follow-up work.
 
 ---
 

@@ -17,7 +17,7 @@
 | CSL 1.0 Parser | ✅ Complete | 2,844 styles | Full XML parsing capability |
 | Citum Schema | ✅ Complete | - | Style, Template, Options, Locale types |
 | Type System | ✅ Designed | - | Hybrid model with 4-factor test policy |
-| EDTF Dates | ✅ Complete | - | Range/uncertainty handling |
+| EDTF Dates | ✅ Operational | - | Range/uncertainty handling shipped; historical-era rendering specified in `docs/specs/EDTF_HISTORICAL_ERA_RENDERING.md`; broader era policy remains follow-up |
 
 ### Migration Pipeline (Operational ✅)
 

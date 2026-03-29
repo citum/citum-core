@@ -211,6 +211,7 @@ pub struct Collection {
    - Ranges: `2020/2021`
    - Uncertainty: `2020?`, `2020~`
    - Seasons: `2020-21` (spring)
+   - Historical years: use valid astronomical EDTF years; see `docs/specs/EDTF_HISTORICAL_ERA_RENDERING.md`
 
 2. **Name Parsing**: The `biblatex` crate parses names into `Person` structs with family/given/prefix/suffix parts.
 

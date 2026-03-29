@@ -228,7 +228,7 @@ fn test_humanities_note_fixture_preserves_archive_and_interview_fields() {
     assert!(
         manuscript.contains("The Community Rule (1QS)")
             && manuscript.contains("Manuscript scroll")
-            && manuscript.contains("-100"),
+            && manuscript.contains("101 BC"),
         "manuscript citation should continue rendering the manuscript reference"
     );
     assert!(

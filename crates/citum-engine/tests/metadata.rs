@@ -300,6 +300,69 @@ fn test_date_rendering_range() {
 }
 
 #[test]
+fn test_date_rendering_negative_year() {
+    announce_behavior("Negative EDTF years render historical years with a locale era suffix.");
+    let style = build_date_style(DateForm::Year);
+
+    let mut bib = indexmap::IndexMap::new();
+    let mut item = make_book("item1", "Smith", "J", 2020, "Title");
+    if let citum_schema::reference::InputReference::Monograph(m) = &mut item {
+        m.issued = citum_schema::reference::EdtfString("-0099".to_string());
+    }
+    bib.insert("item1".to_string(), item);
+
+    let processor = Processor::new(style, bib);
+    assert_eq!(
+        processor
+            .process_citation(&citum_schema::cite!("item1"))
+            .unwrap(),
+        "100 BC"
+    );
+}
+
+#[test]
+fn test_date_rendering_negative_full_date() {
+    announce_behavior("Negative full dates render the historical BC year with month and day.");
+    let style = build_date_style(DateForm::Full);
+
+    let mut bib = indexmap::IndexMap::new();
+    let mut item = make_book("item1", "Smith", "J", 2020, "Title");
+    if let citum_schema::reference::InputReference::Monograph(m) = &mut item {
+        m.issued = citum_schema::reference::EdtfString("-0043-03-15".to_string());
+    }
+    bib.insert("item1".to_string(), item);
+
+    let processor = Processor::new(style, bib);
+    assert_eq!(
+        processor
+            .process_citation(&citum_schema::cite!("item1"))
+            .unwrap(),
+        "March 15, 44 BC"
+    );
+}
+
+#[test]
+fn test_date_rendering_negative_range() {
+    announce_behavior("Historical date ranges render BC years at both ends of the interval.");
+    let style = build_date_style(DateForm::Year);
+
+    let mut bib = indexmap::IndexMap::new();
+    let mut item = make_book("item1", "Smith", "J", 2020, "Title");
+    if let citum_schema::reference::InputReference::Monograph(m) = &mut item {
+        m.issued = citum_schema::reference::EdtfString("-0099/-0043".to_string());
+    }
+    bib.insert("item1".to_string(), item);
+
+    let processor = Processor::new(style, bib);
+    assert_eq!(
+        processor
+            .process_citation(&citum_schema::cite!("item1"))
+            .unwrap(),
+        "100 BC–44 BC"
+    );
+}
+
+#[test]
 fn test_date_rendering_open_range() {
     announce_behavior(
         "An open date range renders with an en dash followed by a locale present term.",
