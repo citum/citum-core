@@ -52,6 +52,7 @@ to make sure the document should be a spec rather than architecture or policy.
 | File | Feature |
 |------|---------|
 | [`ANNOTATED_BIBLIOGRAPHY.md`](./ANNOTATED_BIBLIOGRAPHY.md) | Document-scoped annotation overlay for bibliography rendering |
+| [`EDTF_ERA_LABEL_PROFILES.md`](./EDTF_ERA_LABEL_PROFILES.md) | Draft follow-on for era label profiles and unspecified historical-year display |
 | [`ARCHIVAL_UNPUBLISHED_SUPPORT.md`](./ARCHIVAL_UNPUBLISHED_SUPPORT.md) | ArchiveInfo/EprintInfo structs; Preprint type; archive_location semantic fix |
 | [`EDTF_HISTORICAL_ERA_RENDERING.md`](./EDTF_HISTORICAL_ERA_RENDERING.md) | Locale-backed rendering of valid historical EDTF years |
 | [`LOCALE_MESSAGES.md`](./LOCALE_MESSAGES.md) | ICU MF1 parameterized message system replacing flat YAML term files |
