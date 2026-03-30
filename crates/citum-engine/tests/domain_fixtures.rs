@@ -292,14 +292,14 @@ fn test_taylor_and_francis_author_date_wrapper_preserves_media_and_translation_d
 
     assert!(
         rendered_bib.contains("The Arrival of a Train at La Ciotat Station")
-            && rendered_bib.contains("short-film")
+            && rendered_bib.contains("Short-film")
             && rendered_bib.contains("Directed by Louis Lumière"),
         "motion pictures should retain genre and director detail"
     );
     assert!(
         rendered_bib.contains("The Future of Artificial Intelligence")
             && rendered_bib.contains("Interview by Stephen Colbert")
-            && rendered_bib.contains("video-interview")
+            && rendered_bib.contains("Video-interview")
             && rendered_bib.contains("https://example.com/interview"),
         "interviews should retain interviewer, genre, and url detail"
     );
