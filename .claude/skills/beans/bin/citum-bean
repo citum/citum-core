@@ -116,54 +116,33 @@ main_commit_evidence_json() {
         commit_args=(--since="$since")
     fi
 
-    emit_record() {
-        local body_tmp=""
-        files_json=$(git diff-tree --no-commit-id --name-only -r "$rev" | jq -Rsc 'split("\n") | map(select(length > 0))')
-
-        if [[ "$first" -eq 0 ]]; then
-            printf ','
-        fi
-        first=0
-
-        body_tmp=$(mktemp)
-        trap '[[ -n "$body_tmp" ]] && rm -f "$body_tmp"' RETURN
-        printf '%s' "$body" > "$body_tmp"
-        jq -cn \
-            --arg sha "$sha" \
-            --arg epoch "$epoch" \
-            --arg date "$date" \
-            --arg subject "$subject" \
-            --rawfile body "$body_tmp" \
-            --argjson files "$files_json" \
-            '{sha: $sha, epoch: ($epoch | tonumber), date: $date, subject: $subject, body: $body, files: $files}'
-        trap - RETURN
-        rm -f "$body_tmp"
-    }
-
     generate_records() {
-        printf '['
-        while IFS= read -r rev; do
-            [[ -z "$rev" ]] && continue
-            header=$(git show -s --format='%H%x1f%ct%x1f%cI%x1f%s%x1f%b' "$rev")
-            rest=$header
-            sha=${rest%%$'\x1f'*}
-            rest=${rest#*$'\x1f'}
-            epoch=${rest%%$'\x1f'*}
-            rest=${rest#*$'\x1f'}
-            date=${rest%%$'\x1f'*}
-            rest=${rest#*$'\x1f'}
-            subject=${rest%%$'\x1f'*}
-            rest=${rest#*$'\x1f'}
-            body=$rest
-            emit_record
-        done < <(
-            if [[ "${#commit_args[@]}" -gt 0 ]]; then
-                git rev-list "${commit_args[@]}" main
-            else
-                git rev-list main
-            fi
-        )
-        printf ']'
+        git log "${commit_args[@]}" --name-only --format="@@COMMIT@@%H%x1f%ct%x1f%cI%x1f%s%x1f%b" main | \
+        python3 -c '
+import sys, json
+
+commits = []
+current = None
+for line in sys.stdin:
+    if line.startswith("@@COMMIT@@"):
+        if current:
+            commits.append(current)
+        parts = line[10:].rstrip("\n").split("\x1f", 4)
+        if len(parts) == 5:
+            current = {
+                "sha": parts[0],
+                "epoch": int(parts[1]),
+                "date": parts[2],
+                "subject": parts[3],
+                "body": parts[4],
+                "files": []
+            }
+    elif current and line.strip():
+        current["files"].append(line.strip())
+if current:
+    commits.append(current)
+print(json.dumps(commits))
+'
     }
 
     if [[ -n "$cache_file" ]]; then
