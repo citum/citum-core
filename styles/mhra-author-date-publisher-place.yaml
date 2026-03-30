@@ -70,7 +70,8 @@ citation:
       prefix: ' '
     - variable: locator
       prefix: ' '
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: '. '
   multi-cite-delimiter: '; '
 bibliography:
@@ -91,7 +92,8 @@ bibliography:
         form: year
         prefix: '. '
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
         prefix: '. '
       - title: parent-monograph
         emph: true
@@ -124,7 +126,8 @@ bibliography:
         form: year
         prefix: '. '
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
         prefix: '. '
       - title: parent-monograph
         emph: true
@@ -157,7 +160,8 @@ bibliography:
         form: year
         prefix: '. '
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
         prefix: '. '
       - title: parent-monograph
         emph: true
@@ -190,7 +194,8 @@ bibliography:
         form: year
         prefix: '. '
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
         prefix: '. '
       - title: parent-monograph
         emph: true
@@ -223,7 +228,8 @@ bibliography:
         form: year
         prefix: '. '
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
         prefix: '. '
       - title: parent-monograph
         emph: true
@@ -256,7 +262,8 @@ bibliography:
       form: year
       prefix: '. '
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
       prefix: '. '
     - title: parent-monograph
       emph: true

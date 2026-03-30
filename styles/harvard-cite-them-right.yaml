@@ -83,7 +83,8 @@ citation:
     prefix: ", "
   - variable: locator
     prefix: ", "
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: ". "
   multi-cite-delimiter: "; "
 bibliography:
@@ -110,10 +111,12 @@ bibliography:
         use-first: 1
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
       prefix: " "
     - prefix: ", in "
       group:
@@ -133,7 +136,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - number: pages
       prefix: "pp. "
     - variable: doi
@@ -148,10 +152,12 @@ bibliography:
         use-first: 1
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
       prefix: " "
     - prefix: ", in "
       group:
@@ -183,10 +189,12 @@ bibliography:
         use-first: 1
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
       prefix: " "
     - prefix: ", in "
       group:
@@ -207,7 +215,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - number: pages
       prefix: "pp. "
     - variable: doi
@@ -221,10 +230,12 @@ bibliography:
         use-first: 1
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
       prefix: " "
     - prefix: ", in "
       group:
@@ -244,7 +255,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - number: pages
       prefix: "pp. "
     - variable: doi
@@ -258,10 +270,12 @@ bibliography:
       use-first: 1
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "
   - title: primary
-    wrap: quotes
+    wrap:
+      punctuation: quotes
     prefix: " "
   - prefix: ", in "
     group:
@@ -281,7 +295,8 @@ bibliography:
   - group:
     - number: volume
     - number: issue
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
   - number: pages
   - variable: doi
   - variable: url

@@ -86,7 +86,8 @@ citation:
     prefix: " "
   - variable: locator
     prefix: " "
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: ". "
   multi-cite-delimiter: ", "
 bibliography:
@@ -154,7 +155,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - number: pages
       prefix: ":"
     - variable: publisher-place
@@ -182,7 +184,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - number: pages
       prefix: "pp. "
     - variable: publisher-place
@@ -210,7 +213,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - number: pages
       prefix: "pp. "
     - variable: publisher-place
@@ -238,7 +242,8 @@ bibliography:
   - group:
     - number: volume
     - number: issue
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
   - number: pages
     prefix: ":"
   - variable: publisher-place

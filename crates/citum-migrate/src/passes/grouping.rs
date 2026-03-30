@@ -1,6 +1,6 @@
 use citum_schema::template::{
     DateForm, DateVariable, DelimiterPunctuation, NumberVariable, Rendering, TemplateComponent,
-    TemplateGroup, TemplateNumber, WrapPunctuation,
+    TemplateGroup, TemplateNumber, WrapConfig, WrapPunctuation,
 };
 
 fn group_vol_issue_both_top_level(
@@ -25,7 +25,11 @@ fn group_vol_issue_both_top_level(
                 number: NumberVariable::Issue,
                 form: None,
                 rendering: Rendering {
-                    wrap: Some(WrapPunctuation::Parentheses),
+                    wrap: Some(WrapConfig {
+                        punctuation: WrapPunctuation::Parentheses,
+                        inner_prefix: None,
+                        inner_suffix: None,
+                    }),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -93,7 +97,11 @@ fn group_vol_issue_issue_at_top(
             number: NumberVariable::Issue,
             form: None,
             rendering: Rendering {
-                wrap: Some(WrapPunctuation::Parentheses),
+                wrap: Some(WrapConfig {
+                    punctuation: WrapPunctuation::Parentheses,
+                    inner_prefix: None,
+                    inner_suffix: None,
+                }),
                 ..Default::default()
             },
             ..Default::default()
@@ -131,7 +139,11 @@ fn group_vol_issue_both_nested(
             number: NumberVariable::Issue,
             form: None,
             rendering: Rendering {
-                wrap: Some(WrapPunctuation::Parentheses),
+                wrap: Some(WrapConfig {
+                    punctuation: WrapPunctuation::Parentheses,
+                    inner_prefix: None,
+                    inner_suffix: None,
+                }),
                 ..Default::default()
             },
             ..Default::default()
@@ -226,7 +238,12 @@ fn normalize_inline_detail_component(mut component: TemplateComponent) -> Templa
                 && date.rendering.prefix.as_deref() == Some("(")
                 && date.rendering.suffix.as_deref() == Some(")")
             {
-                date.rendering.wrap = Some(WrapPunctuation::Parentheses);
+                use citum_schema::template::WrapConfig;
+                date.rendering.wrap = Some(WrapConfig {
+                    punctuation: WrapPunctuation::Parentheses,
+                    inner_prefix: None,
+                    inner_suffix: None,
+                });
             }
             date.rendering.prefix = None;
             date.rendering.suffix = None;

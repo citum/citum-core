@@ -61,5 +61,6 @@ bibliography:
     - title: primary
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "

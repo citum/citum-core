@@ -85,7 +85,6 @@ impl OutputFormat for Latex {
             WrapPunctuation::Parentheses => format!("({content})"),
             WrapPunctuation::Brackets => format!("[{content}]"),
             WrapPunctuation::Quotes => self.quote(content),
-            WrapPunctuation::None => content,
         }
     }
 

@@ -61,7 +61,7 @@ fn make_author_date_style() -> Style {
                     ..Default::default()
                 }),
             ]),
-            wrap: Some(WrapPunctuation::Parentheses),
+            wrap: Some(WrapPunctuation::Parentheses.into()),
             ..Default::default()
         }),
         bibliography: Some(BibliographySpec {
@@ -192,7 +192,7 @@ fn make_integral_name_style(scope: IntegralNameScope, contexts: IntegralNameCont
                 })]),
                 ..Default::default()
             })),
-            wrap: Some(WrapPunctuation::Parentheses),
+            wrap: Some(WrapPunctuation::Parentheses.into()),
             ..Default::default()
         }),
         bibliography: Some(BibliographySpec {
@@ -487,7 +487,7 @@ fn test_repro_djot_rendering() {
                 }),
             ]),
             delimiter: Some(", ".to_string()),
-            wrap: Some(WrapPunctuation::Parentheses),
+            wrap: Some(WrapPunctuation::Parentheses.into()),
             integral: Some(Box::new(citum_schema::CitationSpec {
                 template: Some(vec![
                     TemplateComponent::Contributor(TemplateContributor {
@@ -502,7 +502,7 @@ fn test_repro_djot_rendering() {
                             ..Default::default()
                         })],
                         rendering: Rendering {
-                            wrap: Some(WrapPunctuation::Parentheses),
+                            wrap: Some(WrapPunctuation::Parentheses.into()),
                             ..Default::default()
                         },
                         delimiter: None,

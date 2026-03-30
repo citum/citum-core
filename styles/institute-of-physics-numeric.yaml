@@ -40,7 +40,8 @@ options:
 citation:
   template:
   - number: citation-number
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   multi-cite-delimiter: ','
   collapse: citation-number
 bibliography:
@@ -75,7 +76,8 @@ bibliography:
   type-variants:
     legal_case:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       sort-separator: ' '

@@ -49,7 +49,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //!                 ..Default::default()
 //!             }),
 //!         ]),
-//!         wrap: Some(WrapPunctuation::Parentheses),
+//!         wrap: Some(WrapPunctuation::Parentheses.into()),
 //!         ..Default::default()
 //!     }),
 //!     ..Default::default()

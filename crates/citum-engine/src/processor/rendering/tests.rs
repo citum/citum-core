@@ -58,7 +58,7 @@ fn grouped_author_date_style() -> Style {
                     ..Default::default()
                 }),
             ]),
-            wrap: Some(WrapPunctuation::Parentheses),
+            wrap: Some(WrapPunctuation::Parentheses.into()),
             ..Default::default()
         }),
         ..Default::default()
@@ -103,7 +103,7 @@ fn integral_name_style() -> Style {
                     date: citum_schema::template::DateVariable::Issued,
                     form: DateForm::Year,
                     rendering: Rendering {
-                        wrap: Some(WrapPunctuation::Parentheses),
+                        wrap: Some(WrapPunctuation::Parentheses.into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -144,7 +144,7 @@ fn legal_case_style() -> Style {
                     ..Default::default()
                 }),
             ]),
-            wrap: Some(WrapPunctuation::Parentheses),
+            wrap: Some(WrapPunctuation::Parentheses.into()),
             multi_cite_delimiter: Some("; ".to_string()),
             ..Default::default()
         }),
@@ -677,7 +677,7 @@ fn test_type_specific_rendering() {
                 links: None,
                 custom: None,
             })]),
-            wrap: Some(WrapPunctuation::Parentheses),
+            wrap: Some(WrapPunctuation::Parentheses.into()),
             ..Default::default()
         }),
         ..Default::default()
@@ -745,7 +745,7 @@ fn test_bibliography_type_specific_rendering() {
                 date: citum_schema::template::DateVariable::Issued,
                 form: DateForm::Year,
                 rendering: Rendering {
-                    wrap: Some(WrapPunctuation::Parentheses),
+                    wrap: Some(WrapPunctuation::Parentheses.into()),
                     prefix: Some(" ".to_string()),
                     ..Default::default()
                 },
@@ -765,7 +765,7 @@ fn test_bibliography_type_specific_rendering() {
                 form: ContributorForm::Long,
                 name_order: Some(NameOrder::FamilyFirst),
                 rendering: Rendering {
-                    wrap: Some(WrapPunctuation::Parentheses),
+                    wrap: Some(WrapPunctuation::Parentheses.into()),
                     prefix: Some(" ".to_string()),
                     ..Default::default()
                 },

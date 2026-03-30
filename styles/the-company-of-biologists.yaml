@@ -85,7 +85,8 @@ citation:
     prefix: ", "
   - variable: locator
     prefix: " "
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: ". "
   multi-cite-delimiter: "; "
 bibliography:
@@ -112,7 +113,8 @@ bibliography:
       name-order: family-first
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
     - group:
@@ -135,7 +137,8 @@ bibliography:
       name-order: family-first
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
     - group:
@@ -158,7 +161,8 @@ bibliography:
     name-order: family-first
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "
   - title: primary
   - group:

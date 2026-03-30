@@ -105,7 +105,8 @@ citation:
       - title: parent-serial
         prefix: ", "
       - variable: publisher-place
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: " "
       - number: volume
         prefix: " "
@@ -113,7 +114,8 @@ citation:
         prefix: ", no. "
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: " "
       - number: pages
         prefix: ": "
@@ -130,7 +132,8 @@ citation:
       - title: parent-serial
         prefix: ", "
       - variable: publisher-place
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: " "
       - number: volume
         prefix: " "
@@ -138,7 +141,8 @@ citation:
         prefix: ", no. "
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: " "
       - number: pages
         prefix: ": "
@@ -155,7 +159,8 @@ citation:
       - title: parent-serial
         prefix: ", "
       - variable: publisher-place
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: " "
       - number: volume
         prefix: " "
@@ -163,7 +168,8 @@ citation:
         prefix: ", no. "
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: " "
       - number: pages
         prefix: ": "
@@ -185,7 +191,8 @@ citation:
       - date: issued
         form: year
       delimiter: ", "
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - variable: locator
       prefix: ", "
@@ -199,7 +206,8 @@ citation:
       - title: parent-serial
         prefix: ", "
       - variable: publisher-place
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: " "
       - number: volume
         prefix: " "
@@ -207,7 +215,8 @@ citation:
         prefix: ", no. "
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: " "
       - number: pages
         prefix: ": "
@@ -239,7 +248,8 @@ citation:
         - date: issued
           form: year
         delimiter: ", "
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: " "
       delimiter: ""
     - variable: locator
@@ -258,7 +268,8 @@ citation:
       - date: issued
         form: year
       delimiter: ", "
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - variable: publisher
       prefix: ", "
@@ -282,7 +293,8 @@ citation:
         prefix: ", ed. "
       - items: *id002
         delimiter: ", "
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: " "
       delimiter: ""
     - variable: doi
@@ -303,7 +315,8 @@ citation:
     - title: parent-monograph
       prefix: ", "
     - variable: publisher-place
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - variable: publisher
       prefix: ", "
@@ -332,7 +345,8 @@ citation:
       - date: issued
         form: year
       delimiter: " "
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     manuscript:
     - contributor: author
@@ -340,7 +354,8 @@ citation:
       shorten: *id001
     - title: primary
       prefix: ", "
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - variable: genre
       prefix: ", "
     - date: issued
@@ -386,7 +401,8 @@ citation:
       - title: parent-serial
         prefix: ", "
       - variable: publisher-place
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: " "
       - number: volume
         prefix: " "
@@ -394,7 +410,8 @@ citation:
         prefix: ", no. "
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: " "
       - number: pages
         prefix: ": "
@@ -411,7 +428,8 @@ citation:
         prefix: ", ed. "
       - items: *id002
         delimiter: ", "
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: " "
       delimiter: ""
     - items:
@@ -474,7 +492,8 @@ citation:
       - date: issued
         form: year
       delimiter: ", "
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     thesis:
     - contributor: author
@@ -488,7 +507,8 @@ citation:
       - date: issued
         form: year
       delimiter: ", "
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     webpage:
     - contributor: author
@@ -502,7 +522,8 @@ citation:
       - date: issued
         form: year
       delimiter: ", "
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - variable: url
       prefix: ", "
@@ -516,7 +537,8 @@ citation:
     - title: parent-serial
       prefix: ", "
     - variable: publisher-place
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - number: volume
       prefix: " "
@@ -524,7 +546,8 @@ citation:
       prefix: ", no. "
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - number: pages
       prefix: ": "
@@ -541,7 +564,8 @@ citation:
       prefix: ", ed. "
     - items: *id002
       delimiter: ", "
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     delimiter: ""
   - items:
@@ -550,7 +574,8 @@ citation:
     - date: issued
       form: year
     delimiter: ", "
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "
   - items:
     - title: parent-serial

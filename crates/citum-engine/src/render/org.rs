@@ -72,7 +72,6 @@ impl OutputFormat for OrgOutputFormat {
             WrapPunctuation::Parentheses => format!("({content})"),
             WrapPunctuation::Brackets => format!("[{content}]"),
             WrapPunctuation::Quotes => format!("\u{201C}{content}\u{201D}"),
-            WrapPunctuation::None => content,
         }
     }
 

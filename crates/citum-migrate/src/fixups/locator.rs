@@ -104,14 +104,21 @@ fn apply_wrapped_locator_formatting(
     template: &mut [TemplateComponent],
     wrap: &WrapPunctuation,
 ) -> bool {
+    use citum_schema::template::WrapConfig;
+
     let mut changed = false;
     for component in template {
         match component {
             TemplateComponent::Variable(variable)
                 if variable.variable == SimpleVariable::Locator =>
             {
-                if variable.rendering.wrap.as_ref() != Some(wrap) {
-                    variable.rendering.wrap = Some(wrap.clone());
+                let wrap_config = WrapConfig {
+                    punctuation: wrap.clone(),
+                    inner_prefix: None,
+                    inner_suffix: None,
+                };
+                if variable.rendering.wrap.as_ref() != Some(&wrap_config) {
+                    variable.rendering.wrap = Some(wrap_config);
                     changed = true;
                 }
                 if variable.rendering.prefix.is_some() {
@@ -350,15 +357,23 @@ pub(super) fn move_group_wrap_to_citation_items(
 }
 
 fn apply_wrap_to_component(component: &mut TemplateComponent, wrap: WrapPunctuation) {
+    use citum_schema::template::WrapConfig;
+
+    let wrap_config = WrapConfig {
+        punctuation: wrap,
+        inner_prefix: None,
+        inner_suffix: None,
+    };
+
     match component {
         TemplateComponent::Number(n) => {
             if n.rendering.wrap.is_none() {
-                n.rendering.wrap = Some(wrap);
+                n.rendering.wrap = Some(wrap_config);
             }
         }
         TemplateComponent::Group(list) => {
             if list.rendering.wrap.is_none() {
-                list.rendering.wrap = Some(wrap);
+                list.rendering.wrap = Some(wrap_config);
             }
         }
         _ => {}

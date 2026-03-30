@@ -46,7 +46,8 @@ citation:
     group:
     - number: citation-number
     - variable: locator
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
   multi-cite-delimiter: ","
   collapse: citation-number
 bibliography:
@@ -72,7 +73,8 @@ bibliography:
         suffix: ";"
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
       - number: pages
         prefix: ":"
     - variable: doi
@@ -184,7 +186,8 @@ bibliography:
       - number: pages
         prefix: ", "
     - delimiter: " "
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       group:
       - variable: authority
       - date: issued

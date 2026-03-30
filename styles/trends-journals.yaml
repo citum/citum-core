@@ -38,7 +38,8 @@ options:
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   multi-cite-delimiter: ","
 bibliography:
   options:
@@ -64,7 +65,8 @@ bibliography:
         use-first: 1
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       prefix: " "
@@ -91,7 +93,8 @@ bibliography:
         use-first: 1
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       prefix: " "
@@ -123,7 +126,8 @@ bibliography:
       and: text
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - title: primary
   template:
   - contributor: author
@@ -134,7 +138,8 @@ bibliography:
       use-first: 1
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "
   - title: primary
     prefix: " "

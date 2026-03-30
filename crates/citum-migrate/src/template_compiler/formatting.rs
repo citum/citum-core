@@ -21,21 +21,31 @@ impl TemplateCompiler {
 
     /// Convert `FormattingOptions` to Rendering.
     pub(super) fn convert_formatting(&self, fmt: &FormattingOptions) -> Rendering {
+        use citum_schema::template::{WrapConfig, WrapPunctuation};
+
         // Infer wrap from prefix/suffix patterns
-        let (mut wrap, remaining_prefix, remaining_suffix) =
+        let (mut wrap_punct, remaining_prefix, remaining_suffix) =
             Self::infer_wrap_from_affixes(&fmt.prefix, &fmt.suffix);
 
         // quotes="true" in CSL maps to wrap: quotes in Citum
         if fmt.quotes == Some(true) {
-            wrap = Some(citum_schema::template::WrapPunctuation::Quotes);
+            wrap_punct = Some(WrapPunctuation::Quotes);
         }
 
         // If wrap is detected, remaining affixes are INNER.
         // If no wrap, affixes are OUTER (default prefix/suffix).
-        let (prefix, suffix, inner_prefix, inner_suffix) = if wrap.is_some() {
-            (None, None, remaining_prefix, remaining_suffix)
+        let (prefix, suffix, wrap) = if let Some(punct) = wrap_punct {
+            (
+                None,
+                None,
+                Some(WrapConfig {
+                    punctuation: punct,
+                    inner_prefix: remaining_prefix,
+                    inner_suffix: remaining_suffix,
+                }),
+            )
         } else {
-            (remaining_prefix, remaining_suffix, None, None)
+            (remaining_prefix, remaining_suffix, None)
         };
 
         Rendering {
@@ -55,8 +65,6 @@ impl TemplateCompiler {
             quote: fmt.quotes,
             prefix,
             suffix,
-            inner_prefix,
-            inner_suffix,
             wrap,
             suppress: None,
             initialize_with: None,
@@ -133,31 +141,22 @@ impl TemplateCompiler {
             Option<String>,
         ),
     ) {
-        let (wrap, prefix, suffix) = group_wrap;
+        use citum_schema::template::WrapConfig;
+
+        let (wrap_punct, prefix, suffix) = group_wrap;
 
         // Helper to apply rendering
         let apply = |rendering: &mut Rendering| {
-            if rendering.wrap.is_none() && wrap.is_some() {
-                rendering.wrap = wrap.clone();
+            if rendering.wrap.is_none() && wrap_punct.is_some() {
+                rendering.wrap = wrap_punct.clone().map(|punct| WrapConfig {
+                    punctuation: punct,
+                    inner_prefix: prefix.clone(),
+                    inner_suffix: suffix.clone(),
+                });
             }
 
-            // If wrap is being applied (or was already present and we are merging inner content),
-            // then prefix/suffix should go to inner_prefix/inner_suffix.
-            // If no wrap involved, they go to prefix/suffix.
-            // Note: This logic assumes group_wrap comes from infer_wrap_from_affixes,
-            // so if wrap is Some, prefix/suffix are "remaining" (inner).
-            // If wrap is None, prefix/suffix are just outer.
-
-            if wrap.is_some() {
-                // Applying a wrap -> affixes are inner
-                if rendering.inner_prefix.is_none() && prefix.is_some() {
-                    rendering.inner_prefix = prefix.clone();
-                }
-                if rendering.inner_suffix.is_none() && suffix.is_some() {
-                    rendering.inner_suffix = suffix.clone();
-                }
-            } else {
-                // No wrap -> affixes are outer
+            // If no wrap is being applied, affixes are outer.
+            if wrap_punct.is_none() {
                 if rendering.prefix.is_none() && prefix.is_some() {
                     rendering.prefix = prefix.clone();
                 }

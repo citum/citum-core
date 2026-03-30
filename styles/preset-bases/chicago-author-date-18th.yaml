@@ -92,7 +92,8 @@ citation:
     form: year
   - variable: locator
     prefix: ", "
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: " "
   multi-cite-delimiter: "; "
 bibliography:
@@ -151,7 +152,8 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - items: &id003
       - contributor: editor
         form: verb
@@ -179,7 +181,8 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - items: *id003
     - title: parent-serial
       emph: true
@@ -198,7 +201,6 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: none
     - items: *id003
     - title: parent-serial
       emph: true
@@ -218,7 +220,6 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: none
     - items: *id003
     - title: parent-serial
       emph: true
@@ -240,7 +241,8 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - items: *id003
     - title: parent-serial
       emph: true
@@ -260,7 +262,6 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: none
       emph: true
     - items: *id003
     - title: parent-serial
@@ -283,7 +284,6 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: none
     - items: *id003
     - title: parent-serial
       emph: true
@@ -321,7 +321,6 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: none
     - items: *id003
     - title: parent-serial
       emph: true
@@ -341,7 +340,6 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: none
     - items: *id003
     - title: parent-serial
       emph: true
@@ -362,7 +360,8 @@ bibliography:
   - date: issued
     form: year
   - title: primary
-    wrap: quotes
+    wrap:
+      punctuation: quotes
   - items:
     - contributor: editor
       form: verb

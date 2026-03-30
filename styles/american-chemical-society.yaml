@@ -180,7 +180,8 @@ bibliography:
     - variable: url
     patent:
     - number: citation-number
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - contributor: author
       form: long
       sort-separator: ", "

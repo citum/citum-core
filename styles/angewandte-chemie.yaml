@@ -32,7 +32,8 @@ options:
 citation:
   template:
   - number: citation-number
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   multi-cite-delimiter: ","
 bibliography:
   options:
@@ -46,7 +47,8 @@ bibliography:
   type-variants:
     chapter:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       name-order: given-first
@@ -55,8 +57,9 @@ bibliography:
     - contributor: editor
       form: long
       name-order: given-first
-      wrap: parentheses
-      inner-prefix: "Eds.: "
+      wrap:
+        punctuation: parentheses
+        inner-prefix: "Eds.: "
     - variable: publisher
     - variable: publisher-place
     - date: issued
@@ -65,7 +68,8 @@ bibliography:
       prefix: "pp. "
     paper-conference:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       name-order: given-first
@@ -77,7 +81,8 @@ bibliography:
       prefix: "pp. "
     article-journal:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       name-order: given-first
@@ -91,7 +96,8 @@ bibliography:
       prefix: "DOI "
     article-newspaper:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       name-order: given-first
@@ -101,7 +107,8 @@ bibliography:
       prefix: " "
     article-magazine:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       name-order: given-first
@@ -113,7 +120,8 @@ bibliography:
     - number: pages
     entry-encyclopedia:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       name-order: given-first
@@ -129,7 +137,8 @@ bibliography:
       prefix: "pp. "
     thesis:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       name-order: given-first
@@ -138,20 +147,23 @@ bibliography:
       form: year
     patent:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       name-order: given-first
     - contributor: author
       form: long
       name-order: given-first
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: number
     - date: issued
       form: year
     personal_communication:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       name-order: given-first
@@ -160,7 +172,8 @@ bibliography:
       form: year
     personal-communication:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       name-order: given-first
@@ -169,12 +182,14 @@ bibliography:
       form: year
     webpage:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
     - title: primary
       quote: true
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - variable: doi
       prefix: "DOI "
     - variable: url
@@ -189,7 +204,8 @@ bibliography:
       form: short
     legal_case:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
     - title: primary
@@ -202,7 +218,8 @@ bibliography:
     - title: parent-serial
   template:
   - number: citation-number
-    wrap: brackets
+    wrap:
+      punctuation: brackets
   - contributor: author
     form: long
     name-order: given-first

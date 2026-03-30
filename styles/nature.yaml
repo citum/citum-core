@@ -73,7 +73,8 @@ bibliography:
     - number: pages
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: ", "
     article-journal+arxiv:
     - contributor: author
@@ -89,7 +90,8 @@ bibliography:
       prefix: " https://doi.org/"
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: ", "
   template:
   - contributor: author
@@ -115,5 +117,6 @@ bibliography:
     prefix: ", "
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: ", "

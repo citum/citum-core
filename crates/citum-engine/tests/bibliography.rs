@@ -48,7 +48,7 @@ fn build_numeric_style() -> Style {
         }),
         citation: Some(CitationSpec {
             template: Some(vec![citum_schema::tc_number!(CitationNumber)]),
-            wrap: Some(citum_schema::template::WrapPunctuation::Brackets),
+            wrap: Some(citum_schema::template::WrapPunctuation::Brackets.into()),
             ..Default::default()
         }),
         bibliography: Some(BibliographySpec {
@@ -354,7 +354,7 @@ fn build_numeric_citation_style_with_bibliography_local_note_sort() -> Style {
         }),
         citation: Some(CitationSpec {
             template: Some(vec![citum_schema::tc_number!(CitationNumber)]),
-            wrap: Some(citum_schema::template::WrapPunctuation::Brackets),
+            wrap: Some(citum_schema::template::WrapPunctuation::Brackets.into()),
             ..Default::default()
         }),
         bibliography: Some(BibliographySpec {
@@ -417,7 +417,8 @@ fn build_inline_article_journal_detail_group_style() -> Style {
                                     form: DateForm::YearMonth,
                                     rendering: Rendering {
                                         wrap: Some(
-                                            citum_schema::template::WrapPunctuation::Parentheses,
+                                            citum_schema::template::WrapPunctuation::Parentheses
+                                                .into(),
                                         ),
                                         ..Default::default()
                                     },

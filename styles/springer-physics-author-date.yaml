@@ -84,7 +84,8 @@ citation:
   - date: issued
     form: year
     prefix: ""
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: " "
   multi-cite-delimiter: "; "
 bibliography:
@@ -109,7 +110,8 @@ bibliography:
     - number: volume
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: pages
       prefix: ", "
     article-magazine:
@@ -123,7 +125,8 @@ bibliography:
     - variable: publisher
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: pages
       prefix: ", "
     article-newspaper:
@@ -137,7 +140,8 @@ bibliography:
     - variable: publisher
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: pages
       prefix: ", "
     broadcast:
@@ -150,7 +154,8 @@ bibliography:
     - number: volume
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: pages
       prefix: ", "
     chapter:
@@ -164,7 +169,8 @@ bibliography:
     - variable: publisher
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: pages
       prefix: ", pp. "
     dataset:
@@ -177,7 +183,8 @@ bibliography:
     - number: volume
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: pages
       prefix: ", "
     entry-encyclopedia:
@@ -190,7 +197,8 @@ bibliography:
     - number: volume
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: pages
       prefix: ", "
     interview:
@@ -203,7 +211,8 @@ bibliography:
     - number: volume
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: pages
       prefix: ", "
     paper-conference:
@@ -218,7 +227,8 @@ bibliography:
     - variable: publisher
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: pages
       prefix: ", pp. "
     personal_communication:
@@ -233,7 +243,8 @@ bibliography:
     - variable: publisher
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: pages
       prefix: ", "
     webpage:
@@ -247,7 +258,8 @@ bibliography:
     - variable: publisher
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: pages
       prefix: ", "
     legal_case:
@@ -288,7 +300,8 @@ bibliography:
   - variable: publisher
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
   - number: pages
     prefix: ", "
   sort: author-date-title

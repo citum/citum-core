@@ -64,7 +64,8 @@ citation:
     - date: issued
       form: year
   - variable: locator
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: ", "
   multi-cite-delimiter: "; "
 bibliography:
@@ -98,7 +99,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: doi
       prefix: https://doi.org/
     - variable: url
@@ -125,7 +127,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: doi
     - variable: url
     article-newspaper:
@@ -151,7 +154,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: doi
     - variable: url
     broadcast:
@@ -177,7 +181,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: doi
     - variable: url
     chapter:
@@ -204,12 +209,14 @@ bibliography:
     - variable: publisher
     - number: pages
       prefix: "pp. "
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - variable: publisher-place
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: doi
     - variable: url
     interview:
@@ -235,7 +242,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: doi
     - variable: url
     paper-conference:
@@ -261,12 +269,14 @@ bibliography:
     - variable: publisher
     - number: pages
       prefix: "pp. "
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - variable: publisher-place
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: doi
     - variable: url
     patent:
@@ -292,7 +302,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: doi
     - variable: url
     personal_communication:
@@ -318,7 +329,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: doi
     - variable: url
     legal-case:
@@ -330,7 +342,8 @@ bibliography:
       suffix: " "
     - number: pages
     - delimiter: " "
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
       group:
       - variable: authority
@@ -362,6 +375,7 @@ bibliography:
   - group:
     - number: volume
     - number: issue
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
   - variable: doi
   - variable: url

@@ -59,7 +59,8 @@ citation:
       delimiter-precedes-last: contextual
   - variable: locator
     prefix: ', '
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   delimiter: '. '
   multi-cite-delimiter: '; '
 bibliography:

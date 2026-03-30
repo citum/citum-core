@@ -43,7 +43,8 @@ options:
 citation:
   template:
   - number: citation-number
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   multi-cite-delimiter: ", "
 bibliography:
   options:
@@ -62,7 +63,8 @@ bibliography:
       name-order: family-first
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       prefix: " "
@@ -88,7 +90,8 @@ bibliography:
       name-order: family-first
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       prefix: " "
@@ -111,7 +114,8 @@ bibliography:
       name-order: family-first
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       prefix: " "
@@ -137,7 +141,8 @@ bibliography:
     name-order: family-first
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "
   - title: primary
     prefix: " "

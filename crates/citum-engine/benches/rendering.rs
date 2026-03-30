@@ -569,7 +569,7 @@ fn build_compound_bench_style() -> Style {
                 TemplateComponent::Number(TemplateNumber {
                     number: NumberVariable::CitationNumber,
                     rendering: Rendering {
-                        wrap: Some(WrapPunctuation::Brackets),
+                        wrap: Some(WrapPunctuation::Brackets.into()),
                         suffix: Some(" ".to_string()),
                         ..Default::default()
                     },

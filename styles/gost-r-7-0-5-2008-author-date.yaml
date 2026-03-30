@@ -37,7 +37,8 @@ citation:
       prefix: ", "
     - variable: locator
       prefix: ", с. "
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   multi-cite-delimiter: "; "
 
 bibliography:

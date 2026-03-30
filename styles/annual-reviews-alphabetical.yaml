@@ -35,7 +35,8 @@ options:
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   multi-cite-delimiter: ", "
 bibliography:
   sort: author-date-title
@@ -92,7 +93,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: publisher-place
     - group:
       - contributor: editor
@@ -119,7 +121,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: publisher-place
     - group:
       - contributor: editor
@@ -146,7 +149,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: publisher-place
     - group:
       - contributor: editor
@@ -169,7 +173,8 @@ bibliography:
     - title: primary
     - group:
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: publisher-place
     - group:
       - contributor: editor
@@ -222,7 +227,8 @@ bibliography:
   - group:
     - number: volume
     - number: issue
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
   - variable: publisher-place
   - group:
     - contributor: editor

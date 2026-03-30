@@ -38,7 +38,8 @@ options:
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   multi-cite-delimiter: ','
 bibliography:
   options:
@@ -51,7 +52,8 @@ bibliography:
   type-variants:
     all:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ""
     - delimiter: comma
       group:
@@ -99,7 +101,8 @@ bibliography:
         suffix: "."
     article-journal:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ""
     - delimiter: comma
       group:
@@ -118,7 +121,8 @@ bibliography:
           - number: volume
           - date: issued
             form: year
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
           - number: pages
       - number: edition
       - variable: publisher
@@ -143,7 +147,8 @@ bibliography:
         suffix: "."
     article-magazine:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ""
     - delimiter: comma
       group:
@@ -164,7 +169,8 @@ bibliography:
           - number: volume
           - date: issued
             form: year
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
           - number: pages
       - number: edition
       - variable: publisher
@@ -189,7 +195,8 @@ bibliography:
         suffix: "."
     article-newspaper:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ""
     - delimiter: comma
       group:
@@ -214,7 +221,8 @@ bibliography:
       - variable: publisher-place
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
       - variable: url
         links:
           target: url
@@ -235,7 +243,8 @@ bibliography:
         suffix: "."
     book:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ""
     - delimiter: comma
       group:
@@ -277,7 +286,8 @@ bibliography:
         suffix: "."
     chapter:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ""
     - contributor: author
       form: long
@@ -305,7 +315,8 @@ bibliography:
         prefix: " pp. "
     dataset:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ""
     - delimiter: comma
       group:
@@ -330,7 +341,8 @@ bibliography:
       - variable: publisher-place
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
       - variable: url
         links:
           target: url
@@ -352,7 +364,8 @@ bibliography:
         suffix: "."
     interview:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ""
     - contributor: author
       form: long
@@ -360,7 +373,8 @@ bibliography:
     - title: primary
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: ", "
       suffix: "."
     - variable: url
@@ -371,7 +385,8 @@ bibliography:
       suffix: "."
     legal-case:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ""
     - title: primary
     - date: issued
@@ -380,7 +395,8 @@ bibliography:
       suffix: "."
     paper-conference:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ""
     - contributor: author
       form: long
@@ -399,7 +415,8 @@ bibliography:
         prefix: " pp. "
     patent:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ""
     - contributor: author
       form: long
@@ -413,7 +430,8 @@ bibliography:
       suffix: "."
     report:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ""
     - contributor: author
       form: long
@@ -429,7 +447,8 @@ bibliography:
       suffix: "."
     thesis:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ""
     - contributor: author
       form: long
@@ -445,7 +464,8 @@ bibliography:
       suffix: "."
     webpage:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ""
     - delimiter: comma
       group:
@@ -470,7 +490,8 @@ bibliography:
       - variable: publisher-place
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
       - variable: url
         links:
           target: url
@@ -492,7 +513,8 @@ bibliography:
         suffix: "."
     [webpage, dataset]:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ""
     - contributor: author
       form: long
@@ -500,7 +522,8 @@ bibliography:
     - title: primary
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: ", "
       suffix: "."
     - variable: url
@@ -517,7 +540,8 @@ bibliography:
       suffix: ")."
     [article-newspaper, broadcast]:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ""
     - contributor: author
       form: long
@@ -527,12 +551,14 @@ bibliography:
       prefix: ", "
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
       suffix: "."
     motion-picture:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ""
     - contributor: author
       form: long
@@ -544,7 +570,8 @@ bibliography:
       suffix: "."
     personal-communication:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ""
     - contributor: author
       form: long
@@ -552,12 +579,14 @@ bibliography:
     - title: primary
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: ", "
       suffix: "."
   template:
   - number: citation-number
-    wrap: brackets
+    wrap:
+      punctuation: brackets
     suffix: ""
   - delimiter: comma
     group:

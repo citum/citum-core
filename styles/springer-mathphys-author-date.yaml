@@ -68,7 +68,8 @@ citation:
     - date: issued
       form: year
   - variable: locator
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: ", "
   multi-cite-delimiter: "; "
 bibliography:
@@ -98,7 +99,8 @@ bibliography:
     - variable: publisher
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     chapter:
     - contributor: author
@@ -116,7 +118,8 @@ bibliography:
     - variable: publisher
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     paper-conference:
     - contributor: author
@@ -134,7 +137,8 @@ bibliography:
     - variable: publisher
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
   template:
   - contributor: author
@@ -151,5 +155,6 @@ bibliography:
   - variable: publisher
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "

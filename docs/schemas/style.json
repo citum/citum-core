@@ -77,7 +77,7 @@
     "version": {
       "description": "Style schema version.",
       "type": "string",
-      "default": "0.17.0"
+      "default": "0.17.1"
     }
   },
   "additionalProperties": false,
@@ -971,7 +971,7 @@
           "description": "Wrap the entire citation in punctuation. Preferred over prefix/suffix.",
           "anyOf": [
             {
-              "$ref": "#/$defs/WrapPunctuation"
+              "$ref": "#/$defs/WrapConfig"
             },
             {
               "type": "null"
@@ -4139,20 +4139,6 @@
             "null"
           ]
         },
-        "inner-prefix": {
-          "description": "Text to prepend inside the wrap.",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "inner-suffix": {
-          "description": "Text to append inside the wrap.",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
         "label": {
           "description": "Optional role label configuration (e.g., \"eds.\" for editors).",
           "anyOf": [
@@ -4276,10 +4262,10 @@
           ]
         },
         "wrap": {
-          "description": "Punctuation to wrap the value in (e.g., parentheses).",
+          "description": "Wrapping punctuation and optional inner affixes (text inside the wrap).",
           "anyOf": [
             {
-              "$ref": "#/$defs/WrapPunctuation"
+              "$ref": "#/$defs/WrapConfig"
             },
             {
               "type": "null"
@@ -4330,20 +4316,6 @@
         },
         "initialize-with": {
           "description": "Override name initialization (e.g., \". \" or \"\").",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "inner-prefix": {
-          "description": "Text to prepend inside the wrap.",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "inner-suffix": {
-          "description": "Text to append inside the wrap.",
           "type": [
             "string",
             "null"
@@ -4432,10 +4404,10 @@
           ]
         },
         "wrap": {
-          "description": "Punctuation to wrap the value in (e.g., parentheses).",
+          "description": "Wrapping punctuation and optional inner affixes (text inside the wrap).",
           "anyOf": [
             {
-              "$ref": "#/$defs/WrapPunctuation"
+              "$ref": "#/$defs/WrapConfig"
             },
             {
               "type": "null"
@@ -4486,20 +4458,6 @@
         },
         "initialize-with": {
           "description": "Override name initialization (e.g., \". \" or \"\").",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "inner-prefix": {
-          "description": "Text to prepend inside the wrap.",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "inner-suffix": {
-          "description": "Text to append inside the wrap.",
           "type": [
             "string",
             "null"
@@ -4577,10 +4535,10 @@
           ]
         },
         "wrap": {
-          "description": "Punctuation to wrap the value in (e.g., parentheses).",
+          "description": "Wrapping punctuation and optional inner affixes (text inside the wrap).",
           "anyOf": [
             {
-              "$ref": "#/$defs/WrapPunctuation"
+              "$ref": "#/$defs/WrapConfig"
             },
             {
               "type": "null"
@@ -4624,20 +4582,6 @@
         },
         "initialize-with": {
           "description": "Override name initialization (e.g., \". \" or \"\").",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "inner-prefix": {
-          "description": "Text to prepend inside the wrap.",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "inner-suffix": {
-          "description": "Text to append inside the wrap.",
           "type": [
             "string",
             "null"
@@ -4746,10 +4690,10 @@
           ]
         },
         "wrap": {
-          "description": "Punctuation to wrap the value in (e.g., parentheses).",
+          "description": "Wrapping punctuation and optional inner affixes (text inside the wrap).",
           "anyOf": [
             {
-              "$ref": "#/$defs/WrapPunctuation"
+              "$ref": "#/$defs/WrapConfig"
             },
             {
               "type": "null"
@@ -4834,20 +4778,6 @@
             "null"
           ]
         },
-        "inner-prefix": {
-          "description": "Text to prepend inside the wrap.",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "inner-suffix": {
-          "description": "Text to append inside the wrap.",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
         "name-form": {
           "description": "Override name form (e.g., initials, full, family-only).",
           "anyOf": [
@@ -4924,10 +4854,10 @@
           ]
         },
         "wrap": {
-          "description": "Punctuation to wrap the value in (e.g., parentheses).",
+          "description": "Wrapping punctuation and optional inner affixes (text inside the wrap).",
           "anyOf": [
             {
-              "$ref": "#/$defs/WrapPunctuation"
+              "$ref": "#/$defs/WrapConfig"
             },
             {
               "type": "null"
@@ -4978,20 +4908,6 @@
         },
         "initialize-with": {
           "description": "Override name initialization (e.g., \". \" or \"\").",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "inner-prefix": {
-          "description": "Text to prepend inside the wrap.",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "inner-suffix": {
-          "description": "Text to append inside the wrap.",
           "type": [
             "string",
             "null"
@@ -5083,10 +4999,10 @@
           "$ref": "#/$defs/TitleType"
         },
         "wrap": {
-          "description": "Punctuation to wrap the value in (e.g., parentheses).",
+          "description": "Wrapping punctuation and optional inner affixes (text inside the wrap).",
           "anyOf": [
             {
-              "$ref": "#/$defs/WrapPunctuation"
+              "$ref": "#/$defs/WrapConfig"
             },
             {
               "type": "null"
@@ -5120,20 +5036,6 @@
         },
         "initialize-with": {
           "description": "Override name initialization (e.g., \". \" or \"\").",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "inner-prefix": {
-          "description": "Text to prepend inside the wrap.",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "inner-suffix": {
-          "description": "Text to append inside the wrap.",
           "type": [
             "string",
             "null"
@@ -5225,10 +5127,10 @@
           "$ref": "#/$defs/SimpleVariable"
         },
         "wrap": {
-          "description": "Punctuation to wrap the value in (e.g., parentheses).",
+          "description": "Wrapping punctuation and optional inner affixes (text inside the wrap).",
           "anyOf": [
             {
-              "$ref": "#/$defs/WrapPunctuation"
+              "$ref": "#/$defs/WrapConfig"
             },
             {
               "type": "null"
@@ -5610,14 +5512,40 @@
         }
       ]
     },
+    "WrapConfig": {
+      "description": "Wrapping punctuation and optional inner affixes applied around a rendered value.\n\nCombines the wrap punctuation with optional text that appears inside the wrap\n(between the wrap character and the rendered content).",
+      "type": "object",
+      "properties": {
+        "inner-prefix": {
+          "description": "Text inserted after the opening wrap character but before the content.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "inner-suffix": {
+          "description": "Text inserted after the content but before the closing wrap character.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "punctuation": {
+          "description": "The wrapping punctuation style.",
+          "$ref": "#/$defs/WrapPunctuation"
+        }
+      },
+      "required": [
+        "punctuation"
+      ]
+    },
     "WrapPunctuation": {
       "description": "Punctuation to wrap a component in.",
       "type": "string",
       "enum": [
         "parentheses",
         "brackets",
-        "quotes",
-        "none"
+        "quotes"
       ]
     }
   }

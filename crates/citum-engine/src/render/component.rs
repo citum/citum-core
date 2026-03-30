@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
 use citum_schema::options::{Config, bibliography::BibliographyConfig};
-use citum_schema::template::{Rendering, TemplateComponent, TitleType, WrapPunctuation};
+use citum_schema::template::{Rendering, TemplateComponent, TitleType};
 
 /// A processed template component with its rendered value.
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -137,9 +137,16 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
 
     let prefix = rendering.prefix.as_deref().unwrap_or_default();
     let suffix = rendering.suffix.as_deref().unwrap_or_default();
-    let inner_prefix = rendering.inner_prefix.as_deref().unwrap_or_default();
-    let inner_suffix = rendering.inner_suffix.as_deref().unwrap_or_default();
-    let wrap = rendering.wrap.as_ref().unwrap_or(&WrapPunctuation::None);
+    let inner_prefix = rendering
+        .wrap
+        .as_ref()
+        .and_then(|w| w.inner_prefix.as_deref())
+        .unwrap_or_default();
+    let inner_suffix = rendering
+        .wrap
+        .as_ref()
+        .and_then(|w| w.inner_suffix.as_deref())
+        .unwrap_or_default();
 
     let mut output = if component.pre_formatted {
         // If already pre-formatted (e.g. from a List), don't escape again.
@@ -193,8 +200,8 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
     }
 
     // 4. Wrap
-    if *wrap != WrapPunctuation::None {
-        output = fmt.wrap_punctuation(wrap, output);
+    if let Some(wrap_config) = rendering.wrap.as_ref() {
+        output = fmt.wrap_punctuation(&wrap_config.punctuation, output);
     }
 
     // 5. Outer affixes

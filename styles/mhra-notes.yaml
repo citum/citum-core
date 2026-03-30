@@ -49,7 +49,8 @@ citation:
         form: short
       - title: primary
         form: short
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - variable: locator
         prefix: ", "
   type-variants:
@@ -58,19 +59,22 @@ citation:
         form: long
         name-order: given-first
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-serial
         emph: true
       - number: volume
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: " "
       - number: pages
         prefix: ", pp. "
         show-with-locator: true
       - variable: locator
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: " "
       - variable: doi
         prefix: ", doi:"
@@ -79,13 +83,15 @@ citation:
         form: long
         name-order: given-first
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-serial
         emph: true
       - number: volume
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: " "
       - number: pages
         prefix: ", pp. "
@@ -97,7 +103,8 @@ citation:
         form: long
         name-order: given-first
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -114,7 +121,8 @@ citation:
       - variable: url
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: " "
       - variable: doi
     dataset:
@@ -122,7 +130,8 @@ citation:
         form: long
         name-order: given-first
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -142,7 +151,8 @@ citation:
         form: long
         name-order: given-first
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -159,7 +169,8 @@ citation:
       - variable: url
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: " "
       - variable: doi
     paper-conference:
@@ -167,7 +178,8 @@ citation:
         form: long
         name-order: given-first
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - number: volume
@@ -199,7 +211,8 @@ citation:
         form: long
         name-order: given-first
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - contributor: author
         form: long
         prefix: ", interview with "
@@ -214,7 +227,8 @@ citation:
       form: long
       name-order: given-first
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -230,7 +244,8 @@ citation:
     - variable: url
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - variable: doi
   suffix: .
@@ -253,7 +268,8 @@ bibliography:
         form: long
         name-order: family-first
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-serial
         emph: true
       - number: volume
@@ -269,7 +285,8 @@ bibliography:
         form: long
         name-order: family-first
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-serial
         emph: true
       - number: volume
@@ -285,7 +302,8 @@ bibliography:
         form: long
         name-order: family-first
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-serial
         emph: true
       - number: volume
@@ -297,7 +315,8 @@ bibliography:
         form: long
         name-order: family-first
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -320,7 +339,8 @@ bibliography:
         form: long
         name-order: family-first
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -339,7 +359,8 @@ bibliography:
         form: long
         name-order: family-first
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -362,7 +383,8 @@ bibliography:
         form: long
         name-order: family-first
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - number: volume
@@ -395,7 +417,8 @@ bibliography:
         form: long
         name-order: family-first
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - contributor: author
         form: long
         prefix: ", interview with "
@@ -427,7 +450,8 @@ bibliography:
         form: year
         prefix: " "
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - variable: genre
       - variable: medium
       - contributor: director
@@ -438,7 +462,8 @@ bibliography:
       form: long
       name-order: family-first
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial

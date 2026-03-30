@@ -65,7 +65,8 @@ citation:
         form: short
       - title: primary
         form: short
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - variable: locator
         prefix: ', '
   type-variants:
@@ -78,7 +79,8 @@ citation:
           use-first: 1
           and-others: text
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -100,13 +102,15 @@ citation:
         delimiter: ""
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - number: pages
         prefix: 'pp. '
         show-with-locator: true
       - variable: locator
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
     article-magazine:
       - contributor: author
@@ -116,7 +120,8 @@ citation:
           min: 4
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -134,7 +139,8 @@ citation:
       - number: volume
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - number: pages
         prefix: 'pp. '
@@ -147,7 +153,8 @@ citation:
           min: 4
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -165,7 +172,8 @@ citation:
       - number: volume
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - number: pages
         prefix: 'pp. '
@@ -178,7 +186,8 @@ citation:
           min: 4
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -196,7 +205,8 @@ citation:
       - number: volume
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - number: pages
         show-with-locator: true
@@ -208,7 +218,8 @@ citation:
           min: 4
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -226,7 +237,8 @@ citation:
       - number: volume
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - number: pages
         prefix: 'pp. '
@@ -239,7 +251,8 @@ citation:
           min: 4
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -257,14 +270,16 @@ citation:
       - number: volume
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - number: pages
         prefix: 'pp. '
         show-with-locator: true
     legal_case:
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-serial
         emph: true
       - date: issued
@@ -301,7 +316,8 @@ citation:
           min: 4
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - contributor: author
         form: long
         prefix: ", interview with "
@@ -318,7 +334,8 @@ citation:
         min: 4
         use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -336,7 +353,8 @@ citation:
     - number: volume
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: ' '
     - number: pages
     - number: number
@@ -359,7 +377,8 @@ bibliography:
           min: 5
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -388,7 +407,8 @@ bibliography:
           min: 5
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -417,7 +437,8 @@ bibliography:
           min: 5
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -442,7 +463,8 @@ bibliography:
           min: 5
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -471,7 +493,8 @@ bibliography:
           min: 5
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -496,7 +519,8 @@ bibliography:
           min: 5
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -525,7 +549,8 @@ bibliography:
           min: 5
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-monograph
         emph: true
       - title: parent-serial
@@ -554,7 +579,8 @@ bibliography:
           min: 5
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - contributor: author
         form: long
         prefix: ', interview with '
@@ -583,7 +609,8 @@ bibliography:
             prefix: ', '
     legal_case:
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-serial
         emph: true
       - date: issued
@@ -623,7 +650,8 @@ bibliography:
         min: 5
         use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial

@@ -64,7 +64,8 @@ citation:
     prefix: " "
   - variable: locator
     prefix: ", "
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: " "
   multi-cite-delimiter: "; "
 bibliography:

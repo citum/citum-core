@@ -67,7 +67,8 @@ citation:
       shorten: {min: 3, use-first: 1}
   sort: author-date-title
   non-integral:
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     type-variants:
       ? article-journal, article-magazine, article-newspaper, book, broadcast, chapter, dataset, entry-encyclopedia, interview, motion-picture, paper-conference, patent, report, software, standard, thesis, webpage
       : - contributor: author
@@ -111,7 +112,8 @@ citation:
       : - contributor: author
           form: short
         - delimiter: ", "
-          wrap: parentheses
+          wrap:
+            punctuation: parentheses
           group:
           - date: issued
             form: year
@@ -122,7 +124,8 @@ citation:
         emph: true
         quote: false
       - delimiter: ", "
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         group:
         - date: issued
           form: year
@@ -133,7 +136,8 @@ citation:
         name-order: given-first
         suffix: ", personal communication"
       - delimiter: ", "
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         group:
         - date: issued
           form: year-month-day
@@ -144,7 +148,8 @@ citation:
     - title: primary
       form: short
     - delimiter: ", "
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       group:
       - date: issued
         form: year
@@ -161,7 +166,8 @@ bibliography:
       name-order: family-first
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       emph: true
@@ -171,16 +177,19 @@ bibliography:
       - variable: medium
         text-case: capitalize-first
       delimiter: "; "
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       prefix: " "
     - number: edition
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - contributor: translator
       form: long
       name-order: given-first
       label: {term: translator, form: short, placement: suffix}
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - delimiter: ", "
       group:
@@ -190,7 +199,8 @@ bibliography:
         - number: volume
           emph: true
         - number: issue
-          wrap: parentheses
+          wrap:
+            punctuation: parentheses
         delimiter: ""
     - number: pages
       prefix: ", "
@@ -212,7 +222,8 @@ bibliography:
       suffix: "."
     - date: issued
       form: year-month-day
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       emph: false
@@ -227,7 +238,8 @@ bibliography:
       suffix: "."
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       emph: false
@@ -244,7 +256,8 @@ bibliography:
         - title: parent-monograph
           emph: true
         - delimiter: ", "
-          wrap: parentheses
+          wrap:
+            punctuation: parentheses
           group:
           - number: collection-number
             prefix: "Vol. "
@@ -260,7 +273,8 @@ bibliography:
       suffix: "."
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       emph: false
@@ -277,7 +291,8 @@ bibliography:
       suffix: "."
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       emph: false
@@ -288,7 +303,8 @@ bibliography:
       - title: parent-serial
         emph: true
       - delimiter: ", "
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         group:
         - number: volume
           prefix: "Vol. "
@@ -304,7 +320,8 @@ bibliography:
       suffix: "."
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       emph: true
@@ -320,7 +337,8 @@ bibliography:
       suffix: "."
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       emph: true
@@ -328,7 +346,8 @@ bibliography:
       form: long
       name-order: family-first
       label: {term: interviewer, form: long, placement: suffix}
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - variable: publisher
       prefix: ". "
@@ -342,12 +361,14 @@ bibliography:
     name-order: family-first
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "
   - title: primary
     emph: true
   - delimiter: "; "
-    wrap: brackets
+    wrap:
+      punctuation: brackets
     prefix: " "
     group:
       - variable: genre
@@ -355,10 +376,12 @@ bibliography:
       - variable: medium
         text-case: capitalize-first
   - number: edition
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "
   - delimiter: ""
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "
     group:
     - term: volume
@@ -369,7 +392,8 @@ bibliography:
     form: long
     name-order: given-first
     label: {term: translator, form: short, placement: suffix}
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "
   - contributor: editor
     form: long
@@ -387,7 +411,8 @@ bibliography:
       - number: volume
         emph: true
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
   - number: pages
     prefix: ", "
     suffix: "."

@@ -92,7 +92,8 @@ citation:
         min: 8
         use-first: 3
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -108,7 +109,8 @@ citation:
     - number: volume
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - variable: doi
       prefix: https://doi.org/
@@ -130,7 +132,8 @@ citation:
         min: 8
         use-first: 3
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -146,7 +149,8 @@ citation:
     - number: volume
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - variable: doi
     - delimiter: none
@@ -165,7 +169,8 @@ citation:
       min: 8
       use-first: 3
   - title: primary
-    wrap: quotes
+    wrap:
+      punctuation: quotes
   - title: parent-monograph
     emph: true
   - title: parent-serial
@@ -181,7 +186,8 @@ citation:
   - number: volume
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "
   - variable: doi
   - number: number

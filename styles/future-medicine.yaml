@@ -52,7 +52,8 @@ options:
 citation:
   template:
   - number: citation-number
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   multi-cite-delimiter: ","
 bibliography:
   options:
@@ -94,7 +95,8 @@ bibliography:
     - number: pages
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     patent:
     - number: citation-number
@@ -109,7 +111,8 @@ bibliography:
     - number: number
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     thesis:
     - contributor: author
       form: long
@@ -127,14 +130,16 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - contributor: editor
       form: verb
       name-order: family-first
     - number: pages
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     entry-encyclopedia:
     - number: citation-number
@@ -151,7 +156,8 @@ bibliography:
     - variable: publisher-place
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
   template:
   - contributor: author
     form: long
@@ -171,12 +177,14 @@ bibliography:
   - group:
     - number: volume
     - number: issue
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
   - contributor: editor
     form: verb
     name-order: family-first
   - number: pages
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "

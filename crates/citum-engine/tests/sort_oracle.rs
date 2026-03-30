@@ -119,7 +119,7 @@ fn test_numeric_sort_by_citation_order() {
             }),
             citation: Some(CitationSpec {
                 template: Some(vec![citum_schema::tc_number!(CitationNumber)]),
-                wrap: Some(citum_schema::template::WrapPunctuation::Brackets),
+                wrap: Some(citum_schema::template::WrapPunctuation::Brackets.into()),
                 ..Default::default()
             }),
             bibliography: Some(BibliographySpec {
@@ -240,7 +240,7 @@ fn test_numeric_style_volume_issue_independence() {
             }),
             citation: Some(CitationSpec {
                 template: Some(vec![citum_schema::tc_number!(CitationNumber)]),
-                wrap: Some(citum_schema::template::WrapPunctuation::Brackets),
+                wrap: Some(citum_schema::template::WrapPunctuation::Brackets.into()),
                 ..Default::default()
             }),
             bibliography: Some(BibliographySpec {

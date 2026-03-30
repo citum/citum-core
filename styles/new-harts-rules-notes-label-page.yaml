@@ -61,7 +61,8 @@ citation:
         form: short
       - title: primary
         form: short
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - variable: locator
         prefix: ', '
   type-variants:
@@ -74,7 +75,8 @@ citation:
           use-first: 1
           and-others: et-al
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - prefix: ', in '
         group:
           - contributor: editor
@@ -94,7 +96,8 @@ citation:
         prefix: ), 2/
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - variable: doi
         prefix: https://doi.org/
@@ -108,7 +111,8 @@ citation:
           use-first: 1
           and-others: et-al
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - prefix: ', in '
         group:
           - contributor: editor
@@ -128,7 +132,8 @@ citation:
         prefix: ), 2/
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - variable: doi
       - variable: url
@@ -141,7 +146,8 @@ citation:
           use-first: 1
           and-others: et-al
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - prefix: ', in '
         group:
           - contributor: editor
@@ -162,7 +168,8 @@ citation:
         prefix: ), 2/
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - variable: doi
       - variable: url
@@ -175,7 +182,8 @@ citation:
           use-first: 1
           and-others: et-al
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - prefix: ', in '
         group:
           - contributor: editor
@@ -194,7 +202,8 @@ citation:
         prefix: ), 2/
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - variable: doi
       - variable: url
@@ -207,7 +216,8 @@ citation:
           use-first: 1
           and-others: et-al
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - prefix: ', in '
         group:
           - contributor: editor
@@ -228,7 +238,8 @@ citation:
       - variable: url
     legal_case:
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-serial
         emph: true
       - date: issued
@@ -266,7 +277,8 @@ citation:
           use-first: 1
           and-others: et-al
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - prefix: ', in '
         group:
           - contributor: editor
@@ -286,7 +298,8 @@ citation:
         prefix: ), 2/
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - variable: doi
       - variable: url
@@ -299,7 +312,8 @@ citation:
         use-first: 1
         and-others: et-al
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - prefix: ', in '
       group:
         - contributor: editor
@@ -318,7 +332,8 @@ citation:
       prefix: ), 2/
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: ' '
     - variable: doi
     - variable: url
@@ -341,7 +356,8 @@ bibliography:
           min: 5
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - variable: publisher-place
         prefix: ' ('
       - number: volume
@@ -373,7 +389,8 @@ bibliography:
           min: 5
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - variable: publisher-place
         prefix: ' ('
       - number: volume
@@ -404,7 +421,8 @@ bibliography:
           min: 5
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - variable: publisher-place
         prefix: ' ('
       - number: volume
@@ -436,7 +454,8 @@ bibliography:
           min: 5
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - variable: publisher-place
         prefix: ' ('
       - number: volume
@@ -463,7 +482,8 @@ bibliography:
           min: 5
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - variable: publisher-place
         prefix: ' ('
       - number: volume
@@ -488,7 +508,8 @@ bibliography:
       - variable: url
     legal_case:
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-serial
         emph: true
       - date: issued
@@ -546,7 +567,8 @@ bibliography:
         min: 5
         use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - variable: publisher-place
       prefix: ' ('
     - number: volume

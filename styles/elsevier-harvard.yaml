@@ -81,7 +81,8 @@ citation:
   - date: issued
     form: year
   - variable: locator
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: ", "
   multi-cite-delimiter: "; "
   integral:
@@ -97,7 +98,8 @@ citation:
           form: year
         - variable: locator
         delimiter: ", "
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     template:
     - contributor: author
       form: short
@@ -108,7 +110,8 @@ citation:
         delimiter-precedes-last: contextual
       and: text
     - delimiter: ", "
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       group:
       - date: issued
         form: year
@@ -215,7 +218,8 @@ bibliography:
       suffix: "."
     - title: primary
     - variable: genre
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
       suffix: "."
     - variable: publisher
@@ -293,7 +297,8 @@ bibliography:
       suffix: "."
     - title: primary
     - variable: genre
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
       suffix: "."
     - delimiter: ", "

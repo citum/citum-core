@@ -54,7 +54,8 @@ bibliography:
     - variable: url
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: pages
       prefix: "pp. "
     dataset:
@@ -83,7 +84,8 @@ bibliography:
     - variable: url
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: pages
       prefix: "pp. "
     interview:
@@ -112,7 +114,8 @@ bibliography:
     - variable: url
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: pages
       prefix: "pp. "
     personal_communication:
@@ -131,7 +134,8 @@ bibliography:
       prefix: "), "
     software:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       name-order: given-first
@@ -139,10 +143,12 @@ bibliography:
       emph: true
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     patent:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       shorten:
@@ -170,6 +176,7 @@ bibliography:
   - variable: url
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
   - number: pages
     prefix: "), "

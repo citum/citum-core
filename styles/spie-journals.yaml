@@ -65,20 +65,23 @@ bibliography:
         min: 8
         use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
     - title: parent-serial
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - number: pages
       prefix: "pp. "
     - variable: publisher
     - variable: publisher-place
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - variable: doi
       prefix: " ["
@@ -90,20 +93,23 @@ bibliography:
         min: 8
         use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
     - title: parent-serial
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - number: pages
       prefix: "pp. "
     - variable: publisher
     - variable: publisher-place
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - variable: doi
       prefix: " ["
@@ -115,20 +121,23 @@ bibliography:
         min: 8
         use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
     - title: parent-serial
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - number: pages
       prefix: "pp. "
     - variable: publisher
     - variable: publisher-place
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - variable: doi
       prefix: " ["
@@ -144,13 +153,15 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - number: pages
     - variable: publisher
     - variable: publisher-place
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - variable: doi
       prefix: " ["
@@ -162,20 +173,23 @@ bibliography:
         min: 8
         use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
     - title: parent-serial
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - number: pages
       prefix: "pp. "
     - variable: publisher
     - variable: publisher-place
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - variable: doi
       prefix: " ["
@@ -188,19 +202,22 @@ bibliography:
         use-first: 1
       prefix: "pp. "
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
     - title: parent-serial
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - number: pages
     - variable: publisher
     - variable: publisher-place
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - variable: doi
       prefix: " ["
@@ -217,7 +234,8 @@ bibliography:
       and: text
     - title: primary
       quote: true
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - date: issued
       form: year
     - variable: url
@@ -235,19 +253,22 @@ bibliography:
       min: 8
       use-first: 1
   - title: primary
-    wrap: quotes
+    wrap:
+      punctuation: quotes
   - title: parent-monograph
   - title: parent-serial
   - group:
     - number: volume
     - number: issue
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
   - number: pages
   - variable: publisher
   - variable: publisher-place
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "
   - variable: doi
     prefix: " ["

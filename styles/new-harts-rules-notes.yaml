@@ -61,7 +61,8 @@ citation:
         form: short
       - title: primary
         form: short
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - variable: locator
         prefix: ', '
   type-variants:
@@ -74,7 +75,8 @@ citation:
           use-first: 1
           and-others: et-al
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-serial
         emph: true
       - number: volume
@@ -83,7 +85,8 @@ citation:
         prefix: /
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - number: pages
         prefix: ', '
@@ -99,7 +102,8 @@ citation:
           use-first: 1
           and-others: et-al
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - prefix: ', in '
         group:
           - contributor: editor
@@ -124,7 +128,8 @@ citation:
         prefix: /
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - variable: doi
       - variable: url
@@ -137,7 +142,8 @@ citation:
           use-first: 1
           and-others: et-al
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - prefix: ', in '
         group:
           - contributor: editor
@@ -156,7 +162,8 @@ citation:
         prefix: ), 2/
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - variable: doi
       - variable: url
@@ -185,7 +192,8 @@ citation:
           use-first: 1
           and-others: et-al
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - prefix: ', in '
         group:
           - contributor: editor
@@ -237,7 +245,8 @@ citation:
         use-first: 1
         and-others: et-al
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - prefix: ', in '
       group:
         - contributor: editor
@@ -256,7 +265,8 @@ citation:
       prefix: ), 2/
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: ' '
     - variable: doi
     - variable: url
@@ -301,14 +311,16 @@ bibliography:
           min: 5
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - title: parent-serial
         emph: true
       - number: volume
         prefix: ', '
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - number: pages
         prefix: ', '
@@ -323,7 +335,8 @@ bibliography:
           min: 5
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - group:
           - contributor: editor
             form: verb
@@ -346,7 +359,8 @@ bibliography:
         emph: true
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - variable: doi
       - variable: url
@@ -358,7 +372,8 @@ bibliography:
           min: 5
           use-first: 1
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - contributor: interviewer
         form: long
         prefix: ', interview by '
@@ -393,7 +408,8 @@ bibliography:
         min: 5
         use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - variable: publisher-place
       prefix: ' ('
     - number: volume

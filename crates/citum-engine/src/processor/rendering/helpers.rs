@@ -29,13 +29,17 @@ pub fn strip_author_component(component: &TemplateComponent) -> Option<TemplateC
 /// Extract the leading affix used to separate grouped authors from item details.
 pub fn leading_group_affix(component: &TemplateComponent) -> Option<String> {
     let r = component.rendering();
-    let own_affix = r.prefix.clone().or(r.inner_prefix.clone()).or_else(|| {
-        if let TemplateComponent::Group(inner) = component {
-            inner.group.first().and_then(leading_group_affix)
-        } else {
-            None
-        }
-    });
+    let own_affix = r
+        .prefix
+        .clone()
+        .or_else(|| r.wrap.as_ref().and_then(|w| w.inner_prefix.clone()))
+        .or_else(|| {
+            if let TemplateComponent::Group(inner) = component {
+                inner.group.first().and_then(leading_group_affix)
+            } else {
+                None
+            }
+        });
 
     own_affix.filter(|value| !value.is_empty())
 }
@@ -49,7 +53,9 @@ pub fn leading_group_affix(component: &TemplateComponent) -> Option<String> {
 pub fn strip_leading_group_affixes(component: &mut TemplateComponent) {
     let r = component.rendering_mut();
     r.prefix = None;
-    r.inner_prefix = None;
+    if let Some(ref mut wrap_config) = r.wrap {
+        wrap_config.inner_prefix = None;
+    }
     if let TemplateComponent::Group(inner) = component
         && let Some(first) = inner.group.first_mut()
     {

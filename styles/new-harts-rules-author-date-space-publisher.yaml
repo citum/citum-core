@@ -47,7 +47,8 @@ citation:
       prefix: ''
     - variable: locator
       prefix: ': '
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: ' '
   multi-cite-delimiter: '; '
   options:
@@ -71,10 +72,12 @@ bibliography:
           use-first: 1
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
         prefix: ' '
       - prefix: ', in '
         group:
@@ -108,10 +111,12 @@ bibliography:
           use-first: 1
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - title: primary
-        wrap: quotes
+        wrap:
+          punctuation: quotes
         prefix: ' '
       - prefix: ', in '
         group:
@@ -149,10 +154,12 @@ bibliography:
       - date: issued
         form: year
         prefix: ' '
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
       - title: primary
         prefix: ' '
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - number: number
     interview:
       - contributor: author
@@ -166,10 +173,12 @@ bibliography:
       - date: issued
         form: year
         prefix: ' '
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
       - title: primary
         prefix: ' '
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - contributor: interviewer
         form: long
       - variable: medium
@@ -187,10 +196,12 @@ bibliography:
       - date: issued
         form: year
         prefix: ' '
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
       - title: primary
         prefix: ' '
-        wrap: quotes
+        wrap:
+          punctuation: quotes
       - variable: genre
       - variable: medium
       - contributor: director
@@ -206,10 +217,12 @@ bibliography:
         use-first: 1
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: ' '
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
       prefix: ' '
     - prefix: ', in '
       group:

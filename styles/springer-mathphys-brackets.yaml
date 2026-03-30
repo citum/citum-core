@@ -35,7 +35,8 @@ options:
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   multi-cite-delimiter: ", "
 bibliography:
   options:
@@ -63,7 +64,8 @@ bibliography:
     - variable: url
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - variable: doi
       prefix: https://doi.org/
@@ -83,7 +85,8 @@ bibliography:
     - variable: url
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - variable: doi
     paper-conference:
@@ -102,7 +105,8 @@ bibliography:
     - variable: url
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - variable: doi
     entry-encyclopedia:
@@ -130,6 +134,7 @@ bibliography:
   - variable: url
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "
   - variable: doi

@@ -39,7 +39,8 @@ citation:
       and-others: text
   - title: primary
     prefix: ", "
-    wrap: quotes
+    wrap:
+      punctuation: quotes
   - variable: locator
     prefix: ", "
   suffix: .
@@ -60,7 +61,8 @@ bibliography:
         min: 5
         use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -91,7 +93,8 @@ bibliography:
         min: 5
         use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -122,7 +125,8 @@ bibliography:
         min: 5
         use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -149,7 +153,8 @@ bibliography:
         min: 5
         use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -180,7 +185,8 @@ bibliography:
         min: 5
         use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -207,7 +213,8 @@ bibliography:
         min: 5
         use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -238,7 +245,8 @@ bibliography:
         min: 5
         use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -291,7 +299,8 @@ bibliography:
       form: year
       prefix: " "
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - variable: genre
     - variable: medium
     - contributor: director
@@ -302,7 +311,8 @@ bibliography:
       form: long
       name-order: family-first
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - contributor: author
       form: long
       prefix: ", interview with "
@@ -327,7 +337,8 @@ bibliography:
       min: 5
       use-first: 1
   - title: primary
-    wrap: quotes
+    wrap:
+      punctuation: quotes
   - title: parent-monograph
     emph: true
   - title: parent-serial

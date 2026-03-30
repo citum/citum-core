@@ -66,7 +66,8 @@ citation:
     - date: issued
       form: year
       prefix: ' '
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: '. '
   multi-cite-delimiter: '; '
 bibliography:
@@ -105,7 +106,8 @@ bibliography:
       - group:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
       - variable: publisher
       - number: pages
         prefix: '; p '
@@ -133,7 +135,8 @@ bibliography:
       - group:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
       - variable: publisher
       - number: pages
         prefix: '; p '
@@ -158,7 +161,8 @@ bibliography:
       - group:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
       - variable: publisher
       - number: pages
         prefix: '; p '
@@ -184,7 +188,8 @@ bibliography:
     - group:
         - number: volume
         - number: issue
-          wrap: parentheses
+          wrap:
+            punctuation: parentheses
     - variable: publisher
     - number: pages
       prefix: '; p '

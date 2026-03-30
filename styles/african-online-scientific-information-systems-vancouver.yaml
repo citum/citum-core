@@ -78,7 +78,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: url
     - variable: publisher-place
     - variable: publisher
@@ -103,7 +104,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: url
     - variable: publisher-place
     - variable: publisher
@@ -128,7 +130,8 @@ bibliography:
   - group:
     - number: volume
     - number: issue
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
   - variable: url
   - variable: publisher-place
   - variable: publisher
