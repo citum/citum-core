@@ -13,6 +13,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 /// Form for term lookup.
 ///
@@ -484,6 +485,25 @@ pub struct EvaluationConfig {
     /// Message syntax used in this locale's `messages` map.
     #[serde(default)]
     pub message_syntax: MessageSyntax,
+}
+
+/// Vocabulary maps for genre and medium display text.
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+pub struct VocabMap {
+    /// Genre canonical key → display string.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub genre: HashMap<String, String>,
+    /// Medium canonical key → display string.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub medium: HashMap<String, String>,
+}
+
+impl VocabMap {
+    /// Returns true if both maps are empty.
+    pub fn is_empty(&self) -> bool {
+        self.genre.is_empty() && self.medium.is_empty()
+    }
 }
 
 /// Partial patch applied on top of a base [`crate::locale::Locale`] for style-specific overrides.

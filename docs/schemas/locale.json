@@ -105,6 +105,17 @@
         "$ref": "#/$defs/RawTermValue"
       },
       "default": {}
+    },
+    "vocab": {
+      "description": "Vocabulary maps for genre and medium display text.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RawVocab"
+        },
+        {
+          "type": "null"
+        }
+      ]
     }
   },
   "required": [
@@ -418,6 +429,26 @@
           ]
         }
       ]
+    },
+    "RawVocab": {
+      "description": "Raw vocab maps for genre and medium display text.",
+      "type": "object",
+      "properties": {
+        "genre": {
+          "description": "Genre canonical key → display string.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "medium": {
+          "description": "Medium canonical key → display string.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
     }
   }
 }

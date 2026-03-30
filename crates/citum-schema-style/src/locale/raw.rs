@@ -47,6 +47,21 @@ pub struct RawLocale {
     /// Backwards-compatibility aliases: old CSL term key → new message ID.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub legacy_term_aliases: HashMap<String, String>,
+    /// Vocabulary maps for genre and medium display text.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vocab: Option<RawVocab>,
+}
+
+/// Raw vocab maps for genre and medium display text.
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+pub struct RawVocab {
+    /// Genre canonical key → display string.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub genre: HashMap<String, String>,
+    /// Medium canonical key → display string.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub medium: HashMap<String, String>,
 }
 
 /// Raw date terms for YAML parsing.
