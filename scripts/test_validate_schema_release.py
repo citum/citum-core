@@ -187,6 +187,54 @@ class ValidationOnlyTests(unittest.TestCase):
         self.assertEqual(result, 1)
         export_schemas.assert_called_once()
 
+    @mock.patch.object(prep, "collect_schema_bump_markers")
+    @mock.patch.object(prep, "read_schema_dir_contents")
+    @mock.patch.object(prep, "export_schemas")
+    @mock.patch.object(prep, "read_schema_dir_contents_at_ref")
+    @mock.patch.object(prep, "read_current_schema_version")
+    @mock.patch.object(prep, "read_schema_version_at_ref")
+    @mock.patch.object(prep, "resolve_validation_target")
+    @mock.patch.object(prep, "parse_args")
+    def test_main_fails_when_schema_version_does_not_match_footer(
+        self,
+        parse_args: mock.Mock,
+        resolve_validation_target: mock.Mock,
+        read_schema_version_at_ref: mock.Mock,
+        read_current_schema_version: mock.Mock,
+        read_schema_dir_contents_at_ref: mock.Mock,
+        export_schemas: mock.Mock,
+        read_schema_dir_contents: mock.Mock,
+        collect_schema_bump_markers: mock.Mock,
+    ) -> None:
+        parse_args.return_value = argparse.Namespace(
+            previous_tag=None,
+            baseline_ref="abc1234",
+            commit_range="abc1234..HEAD",
+            dry_run=True,
+            allow_orphan_footer=True,
+        )
+        resolve_validation_target.return_value = prep.ValidationTarget(
+            baseline_ref="abc1234",
+            baseline_label="baseline abc1234",
+            commit_range="abc1234..HEAD",
+        )
+        read_schema_version_at_ref.return_value = "0.16.0"
+        read_current_schema_version.return_value = "0.16.0"
+        read_schema_dir_contents_at_ref.return_value = {"locale.json": "before"}
+        read_schema_dir_contents.side_effect = [
+            {"locale.json": "after"},
+            {"locale.json": "after"},
+        ]
+        collect_schema_bump_markers.return_value = (
+            [prep.SchemaBumpMarker(commit="a8660e87", subject="feat(locale): vocab layer", bump="patch")],
+            [],
+        )
+
+        result = prep.main([])
+
+        self.assertEqual(result, 1)
+        export_schemas.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()
