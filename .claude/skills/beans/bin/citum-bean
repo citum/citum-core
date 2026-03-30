@@ -117,17 +117,27 @@ main_commit_evidence_json() {
     fi
 
     generate_records() {
-        git log "${commit_args[@]}" --name-only --format="@@COMMIT@@%H%x1f%ct%x1f%cI%x1f%s%x1f%b" main | \
+        git log "${commit_args[@]}" --name-only --format="@@COMMIT@@%H%x1f%ct%x1f%cI%x1f%s%x1f%b@@BODYEND@@" main | \
         python3 -c '
 import sys, json
 
 commits = []
 current = None
+body_extra = []
+in_files = False
+
 for line in sys.stdin:
-    if line.startswith("@@COMMIT@@"):
-        if current:
+    raw = line.rstrip("\n")
+    if raw.startswith("@@COMMIT@@"):
+        if current is not None:
+            if body_extra:
+                current["body"] = current["body"] + "\n" + "\n".join(body_extra)
             commits.append(current)
-        parts = line[10:].rstrip("\n").split("\x1f", 4)
+        body_extra = []
+        in_files = False
+        # @@BODYEND@@ may appear on the same line as @@COMMIT@@ (empty body)
+        header = raw.partition("@@BODYEND@@")[0]
+        parts = header[10:].split("\x1f", 4)
         if len(parts) == 5:
             current = {
                 "sha": parts[0],
@@ -137,9 +147,29 @@ for line in sys.stdin:
                 "body": parts[4],
                 "files": []
             }
-    elif current and line.strip():
-        current["files"].append(line.strip())
-if current:
+            if "@@BODYEND@@" in raw:
+                in_files = True
+        else:
+            current = None
+    elif current is None:
+        continue
+    elif "@@BODYEND@@" in raw:
+        # Final body continuation line containing the sentinel
+        body_part = raw.replace("@@BODYEND@@", "").strip()
+        if body_part:
+            body_extra.append(body_part)
+        if body_extra:
+            current["body"] = current["body"] + "\n" + "\n".join(body_extra)
+            body_extra = []
+        in_files = True
+    elif in_files and raw.strip():
+        current["files"].append(raw.strip())
+    elif not in_files and raw.strip():
+        body_extra.append(raw.strip())
+
+if current is not None:
+    if body_extra:
+        current["body"] = current["body"] + "\n" + "\n".join(body_extra)
     commits.append(current)
 print(json.dumps(commits))
 '
