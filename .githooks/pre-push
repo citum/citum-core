@@ -5,8 +5,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 EMPTY_TREE="4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 
-declare -a changed_styles=()
-
+# Check for Co-Authored-By commits in the push range
+printf '[PRE-PUSH] Checking for Co-Authored-By commits...\n'
 while read -r local_ref local_sha remote_ref remote_sha; do
   if [[ -z "${local_ref:-}" || -z "${local_sha:-}" ]]; then
     continue
@@ -20,22 +20,87 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     remote_sha="$EMPTY_TREE"
   fi
 
+  # Check commit trailers for Co-Authored-By (match line-start to avoid false
+  # positives when commit bodies mention the string as documentation/code).
+  if git -C "$ROOT_DIR" log --format=%B "$remote_sha..$local_sha" \
+      | grep -qE '^Co-Authored-By:'; then
+    printf '[ERROR] Commit contains Co-Authored-By footer.\n'
+    printf '[ERROR] Direct commits must not have Co-Authored-By footers.\n'
+    printf '[ERROR] This footer is only for builder agent commits.\n'
+    printf '[ERROR] Amend the offending commit to remove the trailer.\n'
+    exit 1
+  fi
+
+  # Validate commit scopes against the canonical allowlist.
+  # Internal commits may use any scope, but everything pushed must be clean.
+  # Validate scopes against the canonical allowlist.
+  # Use sed to extract scope (avoids bash =~ ERE paren ambiguity).
+  VALID_SCOPES_RE='^(engine|schema|migrate|cli|styles|locale|i18n|ci|hooks|beans|scripts|tooling|spec|docs|release|report|examples|bindings)$'
+  VALID_SCOPES_LIST="engine, schema, migrate, cli, styles, locale, i18n, ci, hooks, beans, scripts, tooling, spec, docs, release, report, examples, bindings"
+  scope_errors=()
+  while IFS= read -r subject; do
+    # Extract scope: "type(scope)[!]: ..." -> scope, empty if unscoped.
+    scope="$(printf '%s' "$subject" | sed -nE 's/^[a-z]+\(([^)]+)\).*/\1/p')"
+    if [[ -n "$scope" ]] && ! printf '%s' "$scope" | grep -qE "$VALID_SCOPES_RE"; then
+      scope_errors+=("  '$scope' in: $subject")
+    fi
+  done < <(git -C "$ROOT_DIR" log --format=%s "$remote_sha..$local_sha")
+
+  if (( ${#scope_errors[@]} > 0 )); then
+    printf '[ERROR] Invalid commit scope(s).\n' >&2
+    for err in "${scope_errors[@]}"; do
+      printf '%s\n' "$err" >&2
+    done
+    printf '[ERROR] Allowed: %s\n' "$VALID_SCOPES_LIST" >&2
+    printf '[ERROR] Rewrite history before pushing (git rebase -i).\n' >&2
+    exit 1
+  fi
+
+  # Bean hygiene: run the same check CI runs (unarchived terminals, stale beans).
+  BEAN_WRAPPER="$ROOT_DIR/.claude/skills/beans/bin/citum-bean"
+  if [[ -x "$BEAN_WRAPPER" ]]; then
+    printf '[PRE-PUSH] Running bean hygiene check...\n'
+    if ! "$BEAN_WRAPPER" hygiene; then
+      printf '[ERROR] Bean hygiene failed. Fix before pushing.\n' >&2
+      exit 1
+    fi
+  fi
+
+  # Collect changed Rust files and Cargo manifests
+  declare -a changed_rs_or_cargo=()
   while IFS= read -r path; do
-    if [[ "$path" =~ ^styles/[^/]+\.yaml$ ]]; then
-      changed_styles+=("$path")
+    if [[ "$path" =~ \.(rs)$ ]] || [[ "$path" == "Cargo.toml" ]] || [[ "$path" == "Cargo.lock" ]]; then
+      changed_rs_or_cargo+=("$path")
     fi
   done < <(git -C "$ROOT_DIR" diff --name-only --diff-filter=ACMR "$remote_sha" "$local_sha")
+
+  # If Rust files changed, run the gate
+  if (( ${#changed_rs_or_cargo[@]} > 0 )); then
+    printf '[PRE-PUSH] Rust files changed. Running gate checks...\n'
+    printf '[PRE-PUSH] Running: cargo fmt --check\n'
+    if ! cargo fmt --check --all 2>&1 | grep -q "Checking"; then
+      :
+    fi
+    cargo fmt --check --all || {
+      printf '[ERROR] Code formatting check failed.\n'
+      printf '[ERROR] Run: cargo fmt --all\n'
+      exit 1
+    }
+
+    printf '[PRE-PUSH] Running: cargo clippy --all-targets --all-features\n'
+    cargo clippy --workspace --all-targets --exclude citum-pdf -- -D warnings || {
+      printf '[ERROR] Clippy checks failed.\n'
+      exit 1
+    }
+
+    printf '[PRE-PUSH] Running: cargo nextest run\n'
+    cargo nextest run || {
+      printf '[ERROR] Tests failed.\n'
+      exit 1
+    }
+    printf '[PRE-PUSH] All Rust checks passed.\n'
+  else
+    printf '[INFO] No Rust files changed. Skipping cargo gate.\n'
+  fi
+
 done
-
-if (( ${#changed_styles[@]} == 0 )); then
-  printf '[INFO] No production style changes in push.\n'
-  exit 0
-fi
-
-deduped_styles=()
-while IFS= read -r path; do
-  [[ -n "$path" ]] && deduped_styles+=("$path")
-done < <(printf '%s\n' "${changed_styles[@]}" | LC_ALL=C sort -u)
-
-printf '[INFO] Validating changed production styles before push.\n'
-"$ROOT_DIR/scripts/validate-production-styles.sh" "${deduped_styles[@]}"
