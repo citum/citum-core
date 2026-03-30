@@ -29,7 +29,8 @@ options:
 citation:
   template:
   - delimiter: none
-    wrap: brackets
+    wrap:
+      punctuation: brackets
     group:
     - number: citation-number
     - variable: locator

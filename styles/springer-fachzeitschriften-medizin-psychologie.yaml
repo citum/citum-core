@@ -42,7 +42,8 @@ options:
   dates: long
 citation:
   use-preset: numeric-citation
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   multi-cite-delimiter: ", "
 bibliography:
   options:
@@ -69,7 +70,8 @@ bibliography:
         use-first: 3
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       prefix: " "
@@ -98,7 +100,8 @@ bibliography:
         use-first: 3
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       prefix: " "
@@ -124,7 +127,8 @@ bibliography:
         use-first: 3
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       prefix: " "
@@ -157,7 +161,8 @@ bibliography:
         delimiter-precedes-last: always
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - title: primary
       suffix: ". "
     - variable: url
@@ -176,7 +181,8 @@ bibliography:
       use-first: 3
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "
   - title: primary
     prefix: " "

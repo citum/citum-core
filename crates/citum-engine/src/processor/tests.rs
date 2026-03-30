@@ -54,7 +54,7 @@ fn make_style() -> Style {
                     ..Default::default()
                 }),
             ]),
-            wrap: Some(WrapPunctuation::Parentheses),
+            wrap: Some(WrapPunctuation::Parentheses.into()),
             ..Default::default()
         }),
         bibliography: Some(BibliographySpec {
@@ -73,7 +73,7 @@ fn make_style() -> Style {
                     date: TDateVar::Issued,
                     form: DateForm::Year,
                     rendering: Rendering {
-                        wrap: Some(WrapPunctuation::Parentheses),
+                        wrap: Some(WrapPunctuation::Parentheses.into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -217,7 +217,7 @@ fn make_grouped_compound_selection_style() -> Style {
                     number: NumberVariable::CitationNumber,
                     form: None,
                     rendering: Rendering {
-                        wrap: Some(WrapPunctuation::Brackets),
+                        wrap: Some(WrapPunctuation::Brackets.into()),
                         suffix: Some(" ".to_string()),
                         ..Default::default()
                     },
@@ -523,7 +523,7 @@ fn test_process_citation_treats_trimmed_none_delimiter_as_empty() {
                 ..Default::default()
             }),
         ]),
-        wrap: Some(WrapPunctuation::Parentheses),
+        wrap: Some(WrapPunctuation::Parentheses.into()),
         delimiter: Some(" none ".to_string()),
         ..Default::default()
     });
@@ -569,7 +569,7 @@ fn test_citation_locator_label_renders_term() {
                 ..Default::default()
             }),
         ]),
-        wrap: Some(WrapPunctuation::Parentheses),
+        wrap: Some(WrapPunctuation::Parentheses.into()),
         delimiter: Some(", ".to_string()),
         ..Default::default()
     });
@@ -620,7 +620,7 @@ fn test_citation_locator_label_renders_term_with_loaded_locale() {
                 ..Default::default()
             }),
         ]),
-        wrap: Some(WrapPunctuation::Parentheses),
+        wrap: Some(WrapPunctuation::Parentheses.into()),
         delimiter: Some(", ".to_string()),
         ..Default::default()
     });
@@ -674,7 +674,7 @@ fn test_citation_locator_can_suppress_label() {
                 ..Default::default()
             }),
         ]),
-        wrap: Some(WrapPunctuation::Parentheses),
+        wrap: Some(WrapPunctuation::Parentheses.into()),
         delimiter: Some(", ".to_string()),
         ..Default::default()
     });
@@ -735,7 +735,7 @@ fn test_citation_locator_can_strip_label_periods() {
                 ..Default::default()
             }),
         ]),
-        wrap: Some(WrapPunctuation::Parentheses),
+        wrap: Some(WrapPunctuation::Parentheses.into()),
         delimiter: Some(", ".to_string()),
         ..Default::default()
     });
@@ -1403,7 +1403,7 @@ fn test_numeric_citation_numbers_with_repeated_refs() {
 
     let style = Style {
         citation: Some(CitationSpec {
-            wrap: Some(citum_schema::template::WrapPunctuation::Brackets),
+            wrap: Some(citum_schema::template::WrapPunctuation::Brackets.into()),
             template: Some(vec![TemplateComponent::Number(TemplateNumber {
                 number: NumberVariable::CitationNumber,
                 ..Default::default()
@@ -1489,7 +1489,7 @@ fn test_numeric_citation_numbers_follow_registry_order() {
 
     let style = Style {
         citation: Some(CitationSpec {
-            wrap: Some(citum_schema::template::WrapPunctuation::Brackets),
+            wrap: Some(citum_schema::template::WrapPunctuation::Brackets.into()),
             template: Some(vec![TemplateComponent::Number(TemplateNumber {
                 number: NumberVariable::CitationNumber,
                 ..Default::default()
@@ -1611,7 +1611,7 @@ fn test_label_mode_does_not_group_by_author() {
             number: NumberVariable::CitationLabel,
             ..Default::default()
         })]),
-        wrap: Some(WrapPunctuation::Brackets),
+        wrap: Some(WrapPunctuation::Brackets.into()),
         ..Default::default()
     });
 
@@ -2041,7 +2041,7 @@ fn test_numeric_non_integral_citation_number() {
                 ..Default::default()
             },
         )]),
-        wrap: Some(WrapPunctuation::Brackets),
+        wrap: Some(WrapPunctuation::Brackets.into()),
         ..Default::default()
     });
 
@@ -2082,7 +2082,7 @@ fn test_numeric_citation_number_collapse_enabled() {
                 ..Default::default()
             },
         )]),
-        wrap: Some(WrapPunctuation::Brackets),
+        wrap: Some(WrapPunctuation::Brackets.into()),
         multi_cite_delimiter: Some(",".to_string()),
         collapse: Some(citum_schema::CitationCollapse::CitationNumber),
         ..Default::default()
@@ -2141,7 +2141,7 @@ fn test_numeric_citation_number_collapse_skips_affixed_items() {
                 ..Default::default()
             },
         )]),
-        wrap: Some(WrapPunctuation::Brackets),
+        wrap: Some(WrapPunctuation::Brackets.into()),
         multi_cite_delimiter: Some(",".to_string()),
         collapse: Some(citum_schema::CitationCollapse::CitationNumber),
         ..Default::default()
@@ -2196,7 +2196,7 @@ fn test_numeric_citation_numbers_follow_bibliography_sort() {
                 ..Default::default()
             },
         )]),
-        wrap: Some(WrapPunctuation::Brackets),
+        wrap: Some(WrapPunctuation::Brackets.into()),
         ..Default::default()
     });
     style.bibliography = Some(BibliographySpec {
@@ -2367,7 +2367,7 @@ fn test_label_integral_citation_uses_author_text() {
                 ..Default::default()
             }),
         ]),
-        wrap: Some(WrapPunctuation::Brackets),
+        wrap: Some(WrapPunctuation::Brackets.into()),
         ..Default::default()
     });
 
@@ -2508,9 +2508,9 @@ fn test_integral_locator_does_not_duplicate_group_delimiter() {
                 ..Default::default()
             }),
         ]),
-        wrap: Some(WrapPunctuation::Parentheses),
+        wrap: Some(WrapPunctuation::Parentheses.into()),
         integral: Some(Box::new(CitationSpec {
-            wrap: Some(WrapPunctuation::None),
+            wrap: None,
             ..Default::default()
         })),
         ..Default::default()
@@ -2688,7 +2688,7 @@ fn test_grouped_numeric_bibliography_rerender_preserves_numbers_and_substitution
             number: NumberVariable::CitationNumber,
             form: None,
             rendering: Rendering {
-                wrap: Some(WrapPunctuation::Brackets),
+                wrap: Some(WrapPunctuation::Brackets.into()),
                 suffix: Some(" ".to_string()),
                 ..Default::default()
             },
@@ -3699,7 +3699,7 @@ fn test_compound_numeric_citation_subentry_disabled() {
 
     let style = Style {
         citation: Some(CitationSpec {
-            wrap: Some(WrapPunctuation::Brackets),
+            wrap: Some(WrapPunctuation::Brackets.into()),
             template: Some(vec![TemplateComponent::Number(TemplateNumber {
                 number: NumberVariable::CitationNumber,
                 ..Default::default()
@@ -4117,7 +4117,7 @@ fn test_compound_numeric_citation_subentry_collapse_disabled() {
 
     let style = Style {
         citation: Some(CitationSpec {
-            wrap: Some(WrapPunctuation::Brackets),
+            wrap: Some(WrapPunctuation::Brackets.into()),
             template: Some(vec![TemplateComponent::Number(TemplateNumber {
                 number: NumberVariable::CitationNumber,
                 ..Default::default()
@@ -4201,7 +4201,7 @@ fn test_compound_numeric_citation_subentry_collapse_enabled() {
 
     let style = Style {
         citation: Some(CitationSpec {
-            wrap: Some(WrapPunctuation::Brackets),
+            wrap: Some(WrapPunctuation::Brackets.into()),
             template: Some(vec![TemplateComponent::Number(TemplateNumber {
                 number: NumberVariable::CitationNumber,
                 ..Default::default()
@@ -4386,7 +4386,7 @@ fn test_grouped_integral_citation_renders_all_items() {
                 ..Default::default()
             }),
         ]),
-        wrap: Some(WrapPunctuation::Parentheses),
+        wrap: Some(WrapPunctuation::Parentheses.into()),
         // Explicit integral template (should be used for grouped cites in integral mode)
         integral: Some(Box::new(CitationSpec {
             template: Some(vec![
@@ -4563,7 +4563,7 @@ fn test_label_integral_citation_includes_label() {
                 ..Default::default()
             }),
         ]),
-        wrap: Some(WrapPunctuation::Brackets),
+        wrap: Some(WrapPunctuation::Brackets.into()),
         ..Default::default()
     });
 

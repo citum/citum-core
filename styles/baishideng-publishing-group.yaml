@@ -37,7 +37,8 @@ options:
   titles: journal-emphasis
 citation:
   use-preset: numeric-citation
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   multi-cite-delimiter: ","
 bibliography:
   options:

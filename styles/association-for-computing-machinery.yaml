@@ -24,7 +24,8 @@ citation:
   - number: citation-number
   - variable: locator
     prefix: ":"
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   delimiter: ""
   multi-cite-delimiter: ", "
 bibliography:
@@ -92,7 +93,8 @@ bibliography:
     - number: number
     legal_case:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - date: issued
       form: year
       suffix: ". "

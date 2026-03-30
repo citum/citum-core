@@ -34,7 +34,8 @@ options:
 citation:
   template:
   - number: citation-number
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   multi-cite-delimiter: ','
   collapse: citation-number
 bibliography:
@@ -88,7 +89,8 @@ bibliography:
     article-journal:
     - number: citation-number
       quote: false
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       strip-periods: false
     - contributor: author
       form: long
@@ -112,7 +114,8 @@ bibliography:
     legal_case:
     - number: citation-number
       quote: false
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       strip-periods: false
     - contributor: author
       form: long
@@ -135,7 +138,8 @@ bibliography:
     webpage:
     - number: citation-number
       quote: false
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       strip-periods: false
     - contributor: author
       form: long

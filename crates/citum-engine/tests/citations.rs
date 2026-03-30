@@ -36,7 +36,7 @@ fn build_numeric_style() -> Style {
         }),
         citation: Some(CitationSpec {
             template: Some(vec![citum_schema::tc_number!(CitationNumber)]),
-            wrap: Some(citum_schema::template::WrapPunctuation::Brackets),
+            wrap: Some(citum_schema::template::WrapPunctuation::Brackets.into()),
             ..Default::default()
         }),
         ..Default::default()

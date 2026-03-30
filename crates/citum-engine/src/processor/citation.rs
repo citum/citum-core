@@ -15,7 +15,7 @@ use crate::error::ProcessorError;
 use crate::reference::Citation;
 use citum_schema::NoteStartTextCase;
 use citum_schema::locale::{GeneralTerm, Locale, TermForm};
-use citum_schema::template::{DelimiterPunctuation, WrapPunctuation};
+use citum_schema::template::DelimiterPunctuation;
 
 fn capitalize_first(value: &str) -> String {
     let mut chars = value.chars();
@@ -276,10 +276,6 @@ impl Processor {
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
-        let wrap = effective_spec
-            .wrap
-            .as_ref()
-            .unwrap_or(&WrapPunctuation::None);
         let spec_prefix = effective_spec.prefix.as_deref().unwrap_or("");
         let spec_suffix = effective_spec.suffix.as_deref().unwrap_or("");
 
@@ -292,8 +288,15 @@ impl Processor {
             } else {
                 output
             }
-        } else if *wrap != WrapPunctuation::None {
-            fmt.wrap_punctuation(wrap, output)
+        } else if let Some(wrap) = effective_spec.wrap.as_ref() {
+            let inner_prefix = wrap.inner_prefix.as_deref().unwrap_or("");
+            let inner_suffix = wrap.inner_suffix.as_deref().unwrap_or("");
+            let inner_wrapped = if !inner_prefix.is_empty() || !inner_suffix.is_empty() {
+                fmt.inner_affix(inner_prefix, output, inner_suffix)
+            } else {
+                output
+            };
+            fmt.wrap_punctuation(&wrap.punctuation, inner_wrapped)
         } else if !spec_prefix.is_empty() || !spec_suffix.is_empty() {
             fmt.affix(spec_prefix, output, spec_suffix)
         } else {

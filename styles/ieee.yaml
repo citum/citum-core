@@ -29,7 +29,8 @@ options:
 citation:
   template:
   - delimiter: none
-    wrap: brackets
+    wrap:
+      punctuation: brackets
     group:
     - number: citation-number
     - variable: locator
@@ -47,7 +48,8 @@ bibliography:
     - delimiter: ""
       group:
       - number: citation-number
-        wrap: brackets
+        wrap:
+          punctuation: brackets
       - contributor: author
         form: long
         and: text
@@ -56,7 +58,8 @@ bibliography:
           min: 8
           use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -80,7 +83,8 @@ bibliography:
     - delimiter: ""
       group:
       - number: citation-number
-        wrap: brackets
+        wrap:
+          punctuation: brackets
       - contributor: author
         form: long
         and: text
@@ -89,7 +93,8 @@ bibliography:
           min: 8
           use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -113,7 +118,8 @@ bibliography:
     - delimiter: ""
       group:
       - number: citation-number
-        wrap: brackets
+        wrap:
+          punctuation: brackets
       - contributor: author
         form: long
         and: text
@@ -122,7 +128,6 @@ bibliography:
           min: 8
           use-first: 1
     - title: primary
-      wrap: none
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -146,7 +151,8 @@ bibliography:
     - delimiter: ""
       group:
       - number: citation-number
-        wrap: brackets
+        wrap:
+          punctuation: brackets
       - contributor: author
         form: long
         and: text
@@ -155,7 +161,6 @@ bibliography:
           min: 8
           use-first: 1
     - title: primary
-      wrap: none
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -178,7 +183,8 @@ bibliography:
     - delimiter: ""
       group:
       - number: citation-number
-        wrap: brackets
+        wrap:
+          punctuation: brackets
       - contributor: author
         form: long
         and: text
@@ -187,7 +193,8 @@ bibliography:
           min: 8
           use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -211,7 +218,8 @@ bibliography:
     - delimiter: ""
       group:
       - number: citation-number
-        wrap: brackets
+        wrap:
+          punctuation: brackets
       - contributor: author
         form: long
         and: text
@@ -220,7 +228,6 @@ bibliography:
           min: 8
           use-first: 1
     - title: primary
-      wrap: none
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -243,7 +250,8 @@ bibliography:
     - delimiter: ""
       group:
       - number: citation-number
-        wrap: brackets
+        wrap:
+          punctuation: brackets
       - contributor: author
         form: long
         and: text
@@ -252,7 +260,6 @@ bibliography:
           min: 8
           use-first: 1
     - title: primary
-      wrap: none
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -276,7 +283,8 @@ bibliography:
     - delimiter: ""
       group:
       - number: citation-number
-        wrap: brackets
+        wrap:
+          punctuation: brackets
       - contributor: author
         form: long
         and: text
@@ -285,7 +293,6 @@ bibliography:
           min: 8
           use-first: 1
     - title: primary
-      wrap: none
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -308,7 +315,8 @@ bibliography:
     - delimiter: ""
       group:
       - number: citation-number
-        wrap: brackets
+        wrap:
+          punctuation: brackets
       - contributor: author
         form: long
         and: text
@@ -317,7 +325,8 @@ bibliography:
           min: 8
           use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -339,7 +348,8 @@ bibliography:
     - variable: url
     patent:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       shorten:
@@ -350,14 +360,16 @@ bibliography:
       and: text
     - title: primary
       quote: true
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - date: issued
       form: full
     personal_communication:
     - delimiter: ""
       group:
       - number: citation-number
-        wrap: brackets
+        wrap:
+          punctuation: brackets
       - contributor: author
         form: long
         and: text
@@ -367,7 +379,8 @@ bibliography:
           use-first: 1
         prefix: "pp. "
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -390,7 +403,8 @@ bibliography:
     - delimiter: ""
       group:
       - number: citation-number
-        wrap: brackets
+        wrap:
+          punctuation: brackets
       - contributor: author
         form: long
         and: text
@@ -399,7 +413,6 @@ bibliography:
           min: 8
           use-first: 1
     - title: primary
-      wrap: none
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -422,7 +435,8 @@ bibliography:
     - delimiter: ""
       group:
       - number: citation-number
-        wrap: brackets
+        wrap:
+          punctuation: brackets
       - contributor: author
         form: long
         and: text
@@ -431,7 +445,6 @@ bibliography:
           min: 8
           use-first: 1
     - title: primary
-      wrap: none
       emph: true
     - title: parent-monograph
       emph: true
@@ -456,7 +469,8 @@ bibliography:
   - delimiter: ""
     group:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       and: text
@@ -465,7 +479,8 @@ bibliography:
         min: 8
         use-first: 1
   - title: primary
-    wrap: quotes
+    wrap:
+      punctuation: quotes
   - title: parent-monograph
     emph: true
   - title: parent-serial

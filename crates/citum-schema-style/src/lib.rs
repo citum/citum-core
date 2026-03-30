@@ -74,14 +74,14 @@ pub use registry::{RegistryEntry, StyleRegistry};
 pub use style_preset::StylePreset;
 pub use template::{
     Rendering, TemplateComponent, TemplateContributor, TemplateDate, TemplateGroup, TemplateNumber,
-    TemplateTerm, TemplateTitle, TemplateVariable, TypeSelector, WrapPunctuation,
+    TemplateTerm, TemplateTitle, TemplateVariable, TypeSelector, WrapConfig, WrapPunctuation,
 };
 
 /// A named template (reusable sequence of components).
 pub type Template = Vec<TemplateComponent>;
 
 /// Canonical Citum style schema version used when `Style.version` is omitted.
-pub const STYLE_SCHEMA_VERSION: &str = "0.17.0";
+pub const STYLE_SCHEMA_VERSION: &str = "0.17.1";
 
 /// A non-fatal validation warning emitted by [`Style::validate`].
 #[derive(Debug, Clone, PartialEq)]
@@ -501,7 +501,7 @@ pub struct CitationSpec {
     pub type_variants: Option<IndexMap<template::TypeSelector, Template>>,
     /// Wrap the entire citation in punctuation. Preferred over prefix/suffix.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub wrap: Option<template::WrapPunctuation>,
+    pub wrap: Option<template::WrapConfig>,
     /// Prefix for the citation (use only when `wrap` doesn't suffice, e.g., " (" or "[Ref ").
     #[serde(skip_serializing_if = "Option::is_none")]
     pub prefix: Option<String>,
@@ -1184,7 +1184,11 @@ bibliography:
             template::TemplateComponent::Date(d) => {
                 assert_eq!(
                     d.rendering.wrap,
-                    Some(template::WrapPunctuation::Parentheses)
+                    Some(template::WrapConfig {
+                        punctuation: template::WrapPunctuation::Parentheses,
+                        inner_prefix: None,
+                        inner_suffix: None,
+                    })
                 );
             }
             _ => panic!("Expected Date"),

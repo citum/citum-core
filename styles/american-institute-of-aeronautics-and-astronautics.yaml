@@ -34,7 +34,8 @@ options:
 citation:
   template:
   - number: citation-number
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   multi-cite-delimiter: ","
 bibliography:
   options:
@@ -51,7 +52,8 @@ bibliography:
       form: long
       name-order: family-first
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -72,7 +74,8 @@ bibliography:
       form: long
       name-order: family-first
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -91,7 +94,8 @@ bibliography:
       form: long
       name-order: family-first
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -112,7 +116,8 @@ bibliography:
       form: long
       name-order: family-first
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
       emph: true
     - title: parent-serial
@@ -144,7 +149,8 @@ bibliography:
       and: text
     - title: primary
       quote: true
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-serial
     - variable: publisher
     - variable: publisher-place
@@ -173,7 +179,8 @@ bibliography:
     form: long
     name-order: family-first
   - title: primary
-    wrap: quotes
+    wrap:
+      punctuation: quotes
   - title: parent-monograph
     emph: true
   - title: parent-serial

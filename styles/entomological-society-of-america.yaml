@@ -50,7 +50,8 @@ citation:
       form: year
       prefix: ' '
     - variable: locator
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: '. '
   multi-cite-delimiter: ', '
 bibliography:
@@ -94,7 +95,8 @@ bibliography:
       - group:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
       - variable: publisher
       - number: pages
       - variable: doi
@@ -121,7 +123,8 @@ bibliography:
       - group:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
       - variable: publisher
       - number: pages
       - variable: doi
@@ -151,7 +154,8 @@ bibliography:
       - group:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
       - variable: publisher
       - number: pages
         prefix: 'pp. '
@@ -181,7 +185,8 @@ bibliography:
       - group:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
       - variable: publisher
       - number: pages
         prefix: 'pp. '
@@ -211,7 +216,8 @@ bibliography:
       - group:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
       - variable: publisher
       - number: pages
         prefix: 'pp. '
@@ -238,7 +244,8 @@ bibliography:
       - group:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
       - variable: publisher
       - number: pages
       - variable: doi
@@ -267,7 +274,8 @@ bibliography:
     - group:
         - number: volume
         - number: issue
-          wrap: parentheses
+          wrap:
+            punctuation: parentheses
     - variable: publisher
     - number: pages
     - variable: doi

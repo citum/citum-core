@@ -65,7 +65,8 @@ bibliography:
     separator: " "
   template:
   - number: citation-number
-    wrap: brackets
+    wrap:
+      punctuation: brackets
     suffix: " "
   - contributor: author
     form: long
@@ -87,7 +88,8 @@ bibliography:
   type-variants:
     paper-conference:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: " "
     - contributor: author
       form: long
@@ -106,12 +108,14 @@ bibliography:
       - date: issued
         form: year-month
       delimiter: ", "
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       suffix: ", "
     - number: pages
     article-journal:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: " "
     - contributor: author
       form: long
@@ -131,7 +135,8 @@ bibliography:
         - number: issue
         - date: issued
           form: year-month
-          wrap: parentheses
+          wrap:
+            punctuation: parentheses
         delimiter: " "
       delimiter: ", "
       suffix: ", "
@@ -140,7 +145,8 @@ bibliography:
       prefix: ". https://doi.org/"
     patent:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: " "
     - contributor: author
       form: long
@@ -157,7 +163,8 @@ bibliography:
       form: full
     thesis:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: " "
     - contributor: author
       form: long
@@ -175,7 +182,8 @@ bibliography:
     - variable: publisher
     report:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: " "
     - contributor: author
       form: long
@@ -193,7 +201,8 @@ bibliography:
     - variable: publisher
     webpage:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: " "
     - title: primary
       suffix: ":"
@@ -209,7 +218,8 @@ bibliography:
       prefix: "Accessed: "
     chapter:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: " "
     - contributor: author
       form: long
@@ -232,7 +242,8 @@ bibliography:
     - number: pages
     book:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: " "
     - contributor: author
       form: long

@@ -318,7 +318,7 @@ fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOut
             use_preset: None,
             template: Some(c.new_cit),
             collapse: extract_citation_collapse(&legacy_style.citation),
-            wrap: c.citation_wrap,
+            wrap: c.citation_wrap.map(Into::into),
             prefix: c.citation_prefix,
             suffix: c.citation_suffix,
             delimiter: c.citation_delimiter,

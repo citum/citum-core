@@ -5,7 +5,7 @@ use citum_schema::{
     options::Config,
     template::{
         DateForm, DateVariable, NumberVariable, Rendering, TemplateComponent, TemplateDate,
-        TemplateGroup, TemplateNumber, WrapPunctuation,
+        TemplateGroup, TemplateNumber, WrapConfig, WrapPunctuation,
     },
 };
 
@@ -29,7 +29,11 @@ fn assert_normalized_year_month_date(component: Option<&TemplateComponent>) {
         Some(TemplateComponent::Date(date))
             if date.date == DateVariable::Issued
                 && date.form == DateForm::YearMonth
-                && date.rendering.wrap == Some(WrapPunctuation::Parentheses)
+                && date.rendering.wrap == Some(WrapConfig {
+                    punctuation: WrapPunctuation::Parentheses,
+                    inner_prefix: None,
+                    inner_suffix: None,
+                })
                 && date.rendering.prefix.is_none()
                 && date.rendering.suffix.is_none()
     ));

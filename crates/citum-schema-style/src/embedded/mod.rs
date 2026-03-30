@@ -77,7 +77,7 @@ mod tests {
     use crate::options::AndOptions;
     use crate::template::{
         ContributorForm, ContributorRole, DateForm, DateVariable, NumberVariable,
-        TemplateComponent, WrapPunctuation,
+        TemplateComponent, WrapConfig, WrapPunctuation,
     };
 
     #[test]
@@ -121,7 +121,14 @@ mod tests {
         // Check second component is date with parentheses
         match &template[1] {
             TemplateComponent::Date(d) => {
-                assert_eq!(d.rendering.wrap, Some(WrapPunctuation::Parentheses));
+                assert_eq!(
+                    d.rendering.wrap,
+                    Some(WrapConfig {
+                        punctuation: WrapPunctuation::Parentheses,
+                        inner_prefix: None,
+                        inner_suffix: None,
+                    })
+                );
             }
             _ => panic!("Second component should be Date"),
         }
@@ -135,7 +142,14 @@ mod tests {
         match &template[0] {
             TemplateComponent::Number(n) => {
                 assert_eq!(n.number, NumberVariable::CitationNumber);
-                assert_eq!(n.rendering.wrap, Some(WrapPunctuation::Brackets));
+                assert_eq!(
+                    n.rendering.wrap,
+                    Some(WrapConfig {
+                        punctuation: WrapPunctuation::Brackets,
+                        inner_prefix: None,
+                        inner_suffix: None,
+                    })
+                );
             }
             _ => panic!("Vancouver citation should be a Number component"),
         }

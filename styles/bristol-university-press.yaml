@@ -66,7 +66,8 @@ citation:
       prefix: ', '
     - variable: locator
       prefix: ':'
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: ' '
   multi-cite-delimiter: '; '
 bibliography:
@@ -96,7 +97,8 @@ bibliography:
           use-first: 6
       - date: issued
         form: year
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - title: primary
         prefix: ' '
@@ -106,7 +108,8 @@ bibliography:
         group:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
       - number: pages
         prefix: ': '
       - variable: doi
@@ -120,7 +123,8 @@ bibliography:
         use-first: 6
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: ' '
     - title: primary
       prefix: ' '
@@ -131,7 +135,8 @@ bibliography:
     - group:
         - number: volume
         - number: issue
-          wrap: parentheses
+          wrap:
+            punctuation: parentheses
     - variable: publisher
     - number: pages
       prefix: ', pp '

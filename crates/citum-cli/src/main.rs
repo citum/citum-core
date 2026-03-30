@@ -3476,7 +3476,7 @@ sets:
                     number: NumberVariable::CitationNumber,
                     ..Default::default()
                 })]),
-                wrap: Some(WrapPunctuation::Brackets),
+                wrap: Some(WrapPunctuation::Brackets.into()),
                 ..Default::default()
             }),
             bibliography: Some(citum_schema::BibliographySpec {

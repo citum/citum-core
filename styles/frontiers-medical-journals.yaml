@@ -37,7 +37,8 @@ options:
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   multi-cite-delimiter: ","
 bibliography:
   options:
@@ -73,7 +74,8 @@ bibliography:
       prefix: ": "
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: volume
       prefix: " "
     - number: pages
@@ -100,7 +102,8 @@ bibliography:
       prefix: ": "
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: volume
       prefix: " "
     - number: issue
@@ -128,7 +131,8 @@ bibliography:
       prefix: ": "
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: volume
       prefix: " "
     - number: issue
@@ -156,7 +160,8 @@ bibliography:
     prefix: ": "
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
   - number: volume
     prefix: " "
   - number: issue

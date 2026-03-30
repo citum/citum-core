@@ -60,7 +60,8 @@ bibliography:
       name-order: family-first
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
     - group:
@@ -83,7 +84,8 @@ bibliography:
       name-order: family-first
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
     - group:
@@ -103,7 +105,8 @@ bibliography:
       name-order: family-first
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
     - group:
@@ -125,7 +128,8 @@ bibliography:
       name-order: family-first
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
     - group:
@@ -147,11 +151,13 @@ bibliography:
       name-order: family-first
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
     - variable: publisher
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: ". "
     - variable: url
   template:
@@ -160,7 +166,8 @@ bibliography:
     name-order: family-first
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "
   - title: primary
   - group:

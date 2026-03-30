@@ -96,7 +96,8 @@ citation:
     form: year
   - variable: locator
     prefix: ", "
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: " "
   multi-cite-delimiter: "; "
 bibliography:
@@ -155,7 +156,8 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - group:
       - contributor: editor
         form: verb
@@ -185,7 +187,8 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - group:
       - contributor: editor
         form: verb
@@ -211,7 +214,6 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: none
     - group:
       - contributor: editor
         form: verb
@@ -238,7 +240,6 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: none
     - group:
       - contributor: editor
         form: verb
@@ -267,7 +268,8 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - group:
       - contributor: editor
         form: verb
@@ -294,7 +296,6 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: none
       emph: true
     - group:
       - contributor: editor
@@ -324,7 +325,6 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: none
     - group:
       - contributor: editor
         form: verb
@@ -369,7 +369,6 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: none
     - group:
       - contributor: editor
         form: verb
@@ -396,7 +395,6 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: none
     - group:
       - contributor: editor
         form: verb
@@ -424,7 +422,8 @@ bibliography:
   - date: issued
     form: year
   - title: primary
-    wrap: quotes
+    wrap:
+      punctuation: quotes
   - group:
     - contributor: editor
       form: verb

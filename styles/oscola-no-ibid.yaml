@@ -73,7 +73,8 @@ citation:
         min: 8
         use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
       prefix: ", "
     - number: volume
     - title: parent-monograph
@@ -88,11 +89,13 @@ citation:
       min: 8
       use-first: 1
   - title: primary
-    wrap: quotes
+    wrap:
+      punctuation: quotes
     prefix: ", "
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
   - number: volume
   - title: parent-monograph
   - title: parent-serial
@@ -116,7 +119,8 @@ citation:
       name-order: given-first
     - title: primary
       form: short
-      wrap: quotes
+      wrap:
+        punctuation: quotes
       prefix: ", "
     - variable: locator
       prefix: " "
@@ -145,7 +149,8 @@ bibliography:
         min: 5
         use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
       prefix: ", "
     - variable: publisher
       prefix: " ("
@@ -161,7 +166,8 @@ bibliography:
         min: 5
         use-first: 1
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
       prefix: ", "
     - variable: publisher
       prefix: " ("
@@ -176,11 +182,13 @@ bibliography:
       name-order: given-first
       prefix: ", Interview with "
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
       prefix: ", "
     - date: issued
       form: full
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - variable: url
       prefix: " &#60;"
@@ -206,7 +214,8 @@ bibliography:
       and: text
     - title: primary
       quote: true
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - date: issued
       form: full
     legal_case:
@@ -214,13 +223,15 @@ bibliography:
       emph: true
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - number: volume
     - title: parent-serial
     - number: number
     - variable: authority
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
   template:
   - contributor: author
@@ -230,7 +241,8 @@ bibliography:
       min: 5
       use-first: 1
   - title: primary
-    wrap: quotes
+    wrap:
+      punctuation: quotes
     prefix: ", "
   - variable: publisher
     prefix: " ("

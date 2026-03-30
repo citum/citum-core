@@ -89,7 +89,8 @@ citation:
     prefix: ", "
   - variable: locator
     prefix: " "
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: ". "
   multi-cite-delimiter: "; "
 bibliography:
@@ -119,7 +120,8 @@ bibliography:
         use-first: 3
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       prefix: " "
@@ -150,7 +152,8 @@ bibliography:
         use-first: 3
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       prefix: " "
@@ -169,7 +172,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: publisher
     - number: pages
       prefix: "pp. "
@@ -184,7 +188,8 @@ bibliography:
         use-first: 3
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       prefix: " "
@@ -202,7 +207,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: publisher
     - number: pages
       prefix: "pp. "
@@ -257,7 +263,8 @@ bibliography:
       use-first: 3
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "
   - title: primary
     prefix: " "
@@ -275,7 +282,8 @@ bibliography:
   - group:
     - number: volume
     - number: issue
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
   - variable: publisher
   - number: pages
     prefix: ", "

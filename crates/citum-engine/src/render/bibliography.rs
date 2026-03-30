@@ -105,7 +105,9 @@ pub(crate) fn render_entry_body_components_with_format<F: OutputFormat<Output = 
             let mut trimmed_component = last_component.clone();
             let rendering = trimmed_component.template_component.rendering_mut();
             rendering.suffix = None;
-            rendering.inner_suffix = None;
+            if let Some(ref mut wrap_config) = rendering.wrap {
+                wrap_config.inner_suffix = None;
+            }
             trimmed_component.suffix = None;
             render_component_with_format::<F>(&trimmed_component)
         } else {
@@ -332,7 +334,7 @@ fn cleanup_dangling_punctuation(output: &mut String) {
 mod tests {
     use super::*;
     use crate::render::component::ProcTemplateComponent;
-    use citum_schema::template::{Rendering, TemplateComponent};
+    use citum_schema::template::{Rendering, TemplateComponent, WrapConfig, WrapPunctuation};
 
     #[test]
     fn test_bibliography_separator_suppression() {
@@ -413,7 +415,11 @@ mod tests {
                 citum_schema::template::TemplateContributor {
                     contributor: citum_schema::template::ContributorRole::Editor,
                     rendering: Rendering {
-                        wrap: Some(citum_schema::template::WrapPunctuation::Parentheses),
+                        wrap: Some(WrapConfig {
+                            punctuation: WrapPunctuation::Parentheses,
+                            inner_prefix: None,
+                            inner_suffix: None,
+                        }),
                         ..Default::default()
                     },
                     ..Default::default()

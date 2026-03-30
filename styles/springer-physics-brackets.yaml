@@ -29,7 +29,8 @@ options:
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   multi-cite-delimiter: ","
 bibliography:
   options:
@@ -50,7 +51,8 @@ bibliography:
     - number: pages
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     book:
     - contributor: author
       form: long
@@ -66,7 +68,8 @@ bibliography:
     - variable: publisher-place
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     chapter:
     - contributor: author
       form: long
@@ -95,7 +98,8 @@ bibliography:
     - variable: publisher-place
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     personal_communication:
     - contributor: author
       form: long
@@ -110,7 +114,8 @@ bibliography:
     - variable: publisher-place
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     report:
     - contributor: author
       form: long
@@ -120,7 +125,8 @@ bibliography:
     - variable: publisher-place
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     thesis:
     - contributor: author
       form: long
@@ -134,7 +140,8 @@ bibliography:
     - title: primary
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: pages
       prefix: ", p. "
     patent:
@@ -144,7 +151,8 @@ bibliography:
     - number: patent-number
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     motion-picture:
     - contributor: author
       form: long
@@ -152,7 +160,8 @@ bibliography:
     - title: primary
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     broadcast:
     - contributor: author
       form: long
@@ -160,7 +169,8 @@ bibliography:
     - title: parent-serial
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
   template:
   - contributor: author
     form: long
@@ -174,4 +184,5 @@ bibliography:
   - variable: publisher-place
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses

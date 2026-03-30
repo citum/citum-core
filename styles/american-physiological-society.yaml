@@ -26,7 +26,8 @@ options:
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   multi-cite-delimiter: ", "
 bibliography:
   options:

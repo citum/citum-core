@@ -69,7 +69,6 @@ impl OutputFormat for Djot {
             WrapPunctuation::Parentheses => format!("({content})"),
             WrapPunctuation::Brackets => format!("[{content}]"),
             WrapPunctuation::Quotes => format!("\u{201C}{content}\u{201D}"),
-            WrapPunctuation::None => content,
         }
     }
 
@@ -172,7 +171,6 @@ mod tests {
             (WrapPunctuation::Parentheses, "text", "(text)"),
             (WrapPunctuation::Brackets, "text", "[text]"),
             (WrapPunctuation::Quotes, "text", "\u{201C}text\u{201D}"),
-            (WrapPunctuation::None, "text", "text"),
         ] {
             assert_eq!(fmt.wrap_punctuation(&wrap, input.to_string()), expected);
         }

@@ -31,7 +31,8 @@ citation:
     form: year
   - variable: locator
     prefix: ", "
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: " "
   multi-cite-delimiter: "; "
 bibliography:
@@ -42,7 +43,8 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - contributor: translator
       form: long
       name-order: given-first
@@ -51,7 +53,8 @@ bibliography:
     - number: volume
       prefix: " "
     - number: issue
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: pages
       prefix: ": "
     - variable: doi
@@ -87,7 +90,8 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
       suffix: "."
     - contributor: translator
       form: long
@@ -125,7 +129,8 @@ bibliography:
     - number: volume
       prefix: " "
     - number: issue
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: pages
       prefix: ": "
     - variable: publisher-place
@@ -147,7 +152,8 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - contributor: interviewer
       form: long
       name-order: given-first
@@ -200,7 +206,8 @@ bibliography:
   - number: volume
     prefix: " "
   - number: issue
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
   - number: pages
     prefix: ": "
   - variable: publisher-place

@@ -31,7 +31,8 @@ options:
 citation:
   template:
   - number: citation-number
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   multi-cite-delimiter: ", "
 bibliography:
   options:
@@ -95,7 +96,8 @@ bibliography:
       form: year
     - title: primary
     - variable: version
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: number
       prefix: ". "
     - title: parent-serial
@@ -116,7 +118,8 @@ bibliography:
       form: year
     - title: primary
     - variable: version
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
     - number: number
       prefix: ". "
     - title: parent-serial

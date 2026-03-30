@@ -36,7 +36,8 @@ citation:
   - number: citation-label
   - variable: locator
     prefix: ', '
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   delimiter: ''
   multi-cite-delimiter: ', '
 bibliography:
@@ -52,7 +53,8 @@ bibliography:
   type-variants:
     article-journal:
     - number: citation-label
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ' '
     - contributor: author
       form: long
@@ -65,13 +67,15 @@ bibliography:
     - number: volume
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: ' '
     - number: pages
       prefix: ' '
     chapter:
     - number: citation-label
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ' '
     - contributor: author
       form: long
@@ -86,7 +90,8 @@ bibliography:
       prefix: 'pp. '
     paper-conference:
     - number: citation-label
-      wrap: brackets
+      wrap:
+        punctuation: brackets
       suffix: ' '
     - contributor: author
       form: long
@@ -103,7 +108,8 @@ bibliography:
       prefix: 'pp. '
   template:
   - number: citation-label
-    wrap: brackets
+    wrap:
+      punctuation: brackets
     suffix: ' '
   - contributor: author
     form: long

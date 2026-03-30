@@ -50,7 +50,8 @@ citation:
   - date: issued
     form: year
   - variable: locator
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: ", "
   multi-cite-delimiter: "; "
 
@@ -65,7 +66,8 @@ bibliography:
     suffix: "."
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "
   - title: primary
     prefix: " "

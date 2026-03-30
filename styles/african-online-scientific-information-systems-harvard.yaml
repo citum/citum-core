@@ -84,7 +84,8 @@ citation:
     prefix: " "
   - variable: locator
     prefix: " "
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: ". "
   multi-cite-delimiter: "; "
 bibliography:
@@ -111,7 +112,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: publisher-place
     - title: parent-monograph
       emph: true
@@ -131,7 +133,8 @@ bibliography:
   - group:
     - number: volume
     - number: issue
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
   - variable: publisher-place
   - title: parent-monograph
     emph: true

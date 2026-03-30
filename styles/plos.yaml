@@ -24,7 +24,8 @@ options:
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   multi-cite-delimiter: ","
 bibliography:
   options:

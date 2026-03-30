@@ -73,5 +73,6 @@ bibliography:
       emph: true
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "

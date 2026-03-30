@@ -34,7 +34,8 @@ options:
   punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   multi-cite-delimiter: ","
 bibliography:
   options:
@@ -55,13 +56,15 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
     - title: parent-serial
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: url
     - variable: publisher
     - number: pages
@@ -76,13 +79,15 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
     - title: parent-serial
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: url
     - variable: publisher
     - number: pages
@@ -97,13 +102,15 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
     - title: parent-serial
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: url
     - variable: publisher
     - number: pages
@@ -118,13 +125,15 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
     - title: parent-serial
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: url
     - variable: publisher
     - number: pages
@@ -139,13 +148,15 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - title: parent-monograph
     - title: parent-serial
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: url
     - variable: publisher
     - number: pages
@@ -160,13 +171,15 @@ bibliography:
   - date: issued
     form: year
   - title: primary
-    wrap: quotes
+    wrap:
+      punctuation: quotes
   - title: parent-monograph
   - title: parent-serial
   - group:
     - number: volume
     - number: issue
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
   - variable: url
   - variable: publisher
   - number: pages

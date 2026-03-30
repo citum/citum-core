@@ -73,7 +73,8 @@ citation:
       prefix: ', '
     - variable: locator
       prefix: ', '
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: '. '
   multi-cite-delimiter: '; '
 bibliography:
@@ -116,7 +117,8 @@ bibliography:
       - group:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
       - number: pages
         prefix: ', '
       - variable: publisher-place
@@ -145,7 +147,8 @@ bibliography:
       - group:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
       - number: pages
         prefix: ', '
       - variable: publisher-place
@@ -173,7 +176,8 @@ bibliography:
       - group:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
       - number: pages
         prefix: ', '
       - variable: publisher-place
@@ -201,7 +205,8 @@ bibliography:
       - group:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
       - number: pages
         prefix: ', '
       - variable: publisher-place
@@ -233,10 +238,12 @@ bibliography:
       - group:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
       - number: pages
         prefix: 'pp. '
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
       - variable: publisher-place
       - variable: publisher
         prefix: ': '
@@ -265,7 +272,8 @@ bibliography:
       - group:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
       - number: pages
         prefix: 'pp. '
       - variable: publisher-place
@@ -279,12 +287,14 @@ bibliography:
         name-order: family-first
       - date: issued
         form: year-month-day
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - title: primary
         prefix: '. '
       - variable: medium
-        wrap: brackets
+        wrap:
+          punctuation: brackets
         prefix: ' '
       - variable: url
         prefix: '. Retrieved from '
@@ -311,10 +321,12 @@ bibliography:
       - group:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
       - number: pages
         prefix: 'pp. '
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
       - variable: publisher-place
       - variable: publisher
         prefix: ': '
@@ -327,7 +339,8 @@ bibliography:
         and: symbol
       - date: issued
         form: year-month-day
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
         prefix: ' '
       - number: number
         prefix: '. '
@@ -351,7 +364,8 @@ bibliography:
       - group:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
       - number: pages
         prefix: ', '
       - variable: publisher-place
@@ -382,7 +396,8 @@ bibliography:
     - group:
         - number: volume
         - number: issue
-          wrap: parentheses
+          wrap:
+            punctuation: parentheses
     - number: pages
       prefix: ', '
     - variable: publisher-place

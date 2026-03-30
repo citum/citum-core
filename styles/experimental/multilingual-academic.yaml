@@ -59,7 +59,8 @@ bibliography:
       form: long
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       emph: true

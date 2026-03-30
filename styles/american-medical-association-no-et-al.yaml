@@ -44,7 +44,8 @@ citation:
     group:
     - number: citation-number
     - variable: locator
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
   multi-cite-delimiter: ","
 bibliography:
   options:
@@ -68,7 +69,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: publisher
     - number: pages
       prefix: "; 2006:"
@@ -91,7 +93,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: publisher
     - number: pages
       prefix: "; 2006:"
@@ -114,7 +117,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: publisher
     - number: pages
       prefix: "; 2006:"
@@ -138,7 +142,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: publisher
     - number: pages
       prefix: "; 2006:"
@@ -161,7 +166,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: publisher
     - number: pages
       prefix: "; 2006:"
@@ -184,7 +190,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     - variable: publisher
     - number: pages
       prefix: "; 2006:"
@@ -209,7 +216,8 @@ bibliography:
   - group:
     - number: volume
     - number: issue
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
   - variable: publisher
   - number: pages
     prefix: "; 2006:"

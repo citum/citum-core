@@ -25,7 +25,8 @@ options:
   page-range-format: expanded
 citation:
   use-preset: numeric-citation
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   multi-cite-delimiter: ","
 bibliography:
   options:
@@ -53,7 +54,8 @@ bibliography:
         use-first: 3
     - date: issued
       form: year
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - title: primary
       prefix: " "
@@ -83,7 +85,8 @@ bibliography:
       use-first: 3
   - date: issued
     form: year
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     prefix: " "
   - title: primary
     prefix: " "

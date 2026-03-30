@@ -50,7 +50,7 @@ use std::collections::HashMap;
 /// Rather than nesting under a `rendering:` key.
 #[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", default, deny_unknown_fields)]
+#[serde(rename_all = "kebab-case", default)]
 pub struct Rendering {
     /// Text-case transform to apply to the rendered value.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -73,15 +73,9 @@ pub struct Rendering {
     /// Text to append to the rendered value (outside any wrap).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suffix: Option<String>,
-    /// Text to prepend inside the wrap.
+    /// Wrapping punctuation and optional inner affixes (text inside the wrap).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub inner_prefix: Option<String>,
-    /// Text to append inside the wrap.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub inner_suffix: Option<String>,
-    /// Punctuation to wrap the value in (e.g., parentheses).
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub wrap: Option<WrapPunctuation>,
+    pub wrap: Option<WrapConfig>,
     /// If true, suppress this component entirely (render as empty string).
     /// Useful for type-specific overrides like suppressing publisher for journals.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -112,8 +106,6 @@ impl Rendering {
             small_caps,
             prefix,
             suffix,
-            inner_prefix,
-            inner_suffix,
             wrap,
             suppress,
             initialize_with,
@@ -128,11 +120,113 @@ impl Rendering {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum WrapPunctuation {
+    #[default]
     Parentheses,
     Brackets,
     Quotes,
-    #[default]
-    None,
+}
+
+/// Wrapping punctuation and optional inner affixes applied around a rendered value.
+///
+/// Combines the wrap punctuation with optional text that appears inside the wrap
+/// (between the wrap character and the rendered content).
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub struct WrapConfig {
+    /// The wrapping punctuation style.
+    pub punctuation: WrapPunctuation,
+    /// Text inserted after the opening wrap character but before the content.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inner_prefix: Option<String>,
+    /// Text inserted after the content but before the closing wrap character.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inner_suffix: Option<String>,
+}
+
+impl<'de> serde::Deserialize<'de> for WrapConfig {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct WrapConfigVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for WrapConfigVisitor {
+            type Value = WrapConfig;
+
+            fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                write!(
+                    f,
+                    "a wrap punctuation string or a mapping with a 'punctuation' key"
+                )
+            }
+
+            fn visit_str<E: serde::de::Error>(self, v: &str) -> Result<WrapConfig, E> {
+                let punctuation = match v {
+                    "parentheses" => WrapPunctuation::Parentheses,
+                    "brackets" => WrapPunctuation::Brackets,
+                    "quotes" => WrapPunctuation::Quotes,
+                    other => {
+                        return Err(E::unknown_variant(
+                            other,
+                            &["parentheses", "brackets", "quotes"],
+                        ));
+                    }
+                };
+                Ok(WrapConfig {
+                    punctuation,
+                    inner_prefix: None,
+                    inner_suffix: None,
+                })
+            }
+
+            fn visit_map<A: serde::de::MapAccess<'de>>(
+                self,
+                mut map: A,
+            ) -> Result<WrapConfig, A::Error> {
+                let mut punctuation: Option<WrapPunctuation> = None;
+                let mut inner_prefix: Option<String> = None;
+                let mut inner_suffix: Option<String> = None;
+
+                while let Some(key) = map.next_key::<String>()? {
+                    match key.as_str() {
+                        "punctuation" => {
+                            punctuation = Some(map.next_value()?);
+                        }
+                        "inner-prefix" => {
+                            inner_prefix = Some(map.next_value()?);
+                        }
+                        "inner-suffix" => {
+                            inner_suffix = Some(map.next_value()?);
+                        }
+                        other => {
+                            return Err(serde::de::Error::unknown_field(
+                                other,
+                                &["punctuation", "inner-prefix", "inner-suffix"],
+                            ));
+                        }
+                    }
+                }
+
+                let punctuation =
+                    punctuation.ok_or_else(|| serde::de::Error::missing_field("punctuation"))?;
+                Ok(WrapConfig {
+                    punctuation,
+                    inner_prefix,
+                    inner_suffix,
+                })
+            }
+        }
+
+        deserializer.deserialize_any(WrapConfigVisitor)
+    }
+}
+
+impl From<WrapPunctuation> for WrapConfig {
+    fn from(punctuation: WrapPunctuation) -> Self {
+        WrapConfig {
+            punctuation,
+            inner_prefix: None,
+            inner_suffix: None,
+        }
+    }
 }
 
 /// Canonical reference type names recognized by the Citum engine.
@@ -919,7 +1013,14 @@ form: long
 
         match &components[1] {
             TemplateComponent::Date(d) => {
-                assert_eq!(d.rendering.wrap, Some(WrapPunctuation::Parentheses));
+                assert_eq!(
+                    d.rendering.wrap,
+                    Some(WrapConfig {
+                        punctuation: WrapPunctuation::Parentheses,
+                        inner_prefix: None,
+                        inner_suffix: None,
+                    })
+                );
             }
             _ => panic!("Expected Date"),
         }
@@ -934,7 +1035,14 @@ wrap: parentheses
 "#;
         let comp: TemplateContributor = serde_yaml::from_str(yaml).unwrap();
         assert_eq!(comp.contributor, ContributorRole::Publisher);
-        assert_eq!(comp.rendering.wrap, Some(WrapPunctuation::Parentheses));
+        assert_eq!(
+            comp.rendering.wrap,
+            Some(WrapConfig {
+                punctuation: WrapPunctuation::Parentheses,
+                inner_prefix: None,
+                inner_suffix: None,
+            })
+        );
     }
 
     #[test]

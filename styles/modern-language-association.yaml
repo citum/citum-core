@@ -52,7 +52,8 @@ citation:
       form: family-only
     - title: primary
       disambiguate-only: true
-      wrap: quotes
+      wrap:
+        punctuation: quotes
       prefix: ", "
   - variable: locator
   integral:
@@ -61,8 +62,10 @@ citation:
       form: long
       name-order: given-first
     - variable: locator
-      wrap: parentheses
-  wrap: parentheses
+      wrap:
+        punctuation: parentheses
+  wrap:
+    punctuation: parentheses
   multi-cite-delimiter: "; "
 bibliography:
   options:

@@ -39,7 +39,8 @@ options:
 
 citation:
   use-preset: numeric-citation
-  wrap: brackets
+  wrap:
+    punctuation: brackets
   multi-cite-delimiter: ','
   delimiter: ''
 bibliography:
@@ -49,7 +50,8 @@ bibliography:
   type-variants:
     article-journal:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       suffix: '. '
@@ -78,7 +80,8 @@ bibliography:
         anchor: component
     article-magazine:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       suffix: '. '
@@ -96,7 +99,8 @@ bibliography:
       delimiter: none
     article-newspaper:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       suffix: '. '
@@ -110,7 +114,8 @@ bibliography:
       delimiter: none
     book:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       suffix: '. '
@@ -129,7 +134,8 @@ bibliography:
       form: year
     broadcast:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       suffix: '. '
@@ -141,7 +147,8 @@ bibliography:
       form: year
     chapter:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       suffix: '. '
@@ -161,7 +168,8 @@ bibliography:
       prefix: ', p. '
     dataset:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       suffix: '. '
@@ -171,7 +179,8 @@ bibliography:
       form: year
     entry-encyclopedia:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       suffix: '. '
@@ -189,7 +198,8 @@ bibliography:
       delimiter: none
     interview:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       suffix: '. '
@@ -199,7 +209,8 @@ bibliography:
       form: year
     paper-conference:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       suffix: '. '
@@ -214,7 +225,8 @@ bibliography:
       prefix: 'p. '
     personal-communication:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       suffix: '. '
@@ -224,7 +236,8 @@ bibliography:
       form: year
     report:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       suffix: '. '
@@ -238,7 +251,8 @@ bibliography:
       form: year
     legal-case:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - title: primary
       suffix: '. '
     - number: volume
@@ -248,7 +262,8 @@ bibliography:
       form: year
     webpage:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       suffix: '. '
@@ -264,7 +279,8 @@ bibliography:
       suffix: ')'
     patent:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       suffix: '. '
@@ -276,7 +292,8 @@ bibliography:
       form: year
     thesis:
     - number: citation-number
-      wrap: brackets
+      wrap:
+        punctuation: brackets
     - contributor: author
       form: long
       suffix: '. '
@@ -290,7 +307,8 @@ bibliography:
       form: year
   template:
   - number: citation-number
-    wrap: brackets
+    wrap:
+      punctuation: brackets
   - contributor: author
     form: long
     suffix: '. '

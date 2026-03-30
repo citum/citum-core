@@ -80,7 +80,8 @@ citation:
     prefix: " "
   - variable: locator
     prefix: " "
-  wrap: parentheses
+  wrap:
+    punctuation: parentheses
   delimiter: ". "
   multi-cite-delimiter: "; "
 bibliography:
@@ -117,7 +118,8 @@ bibliography:
     - group:
       - number: volume
       - number: issue
-        wrap: parentheses
+        wrap:
+          punctuation: parentheses
     legal_case:
     - contributor: author
       form: long
@@ -127,9 +129,10 @@ bibliography:
       form: year
     - term: no-date
       form: short
-      inner-prefix: " "
-      inner-suffix: .
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
+        inner-prefix: " "
+        inner-suffix: .
     - title: primary
     - variable: authority
     - contributor: editor
@@ -155,9 +158,10 @@ bibliography:
       form: year
     - term: no-date
       form: short
-      inner-prefix: " "
-      inner-suffix: .
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
+        inner-prefix: " "
+        inner-suffix: .
     - title: primary
     - variable: genre
     - variable: publisher
@@ -183,5 +187,6 @@ bibliography:
   - group:
     - number: volume
     - number: issue
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
   sort: author-date-title

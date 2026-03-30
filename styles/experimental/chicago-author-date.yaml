@@ -43,7 +43,8 @@ citation:
         min: 3
         use-first: 1
   non-integral:
-    wrap: parentheses
+    wrap:
+      punctuation: parentheses
     delimiter: ", "
     template:
     - delimiter: space
@@ -61,7 +62,8 @@ citation:
     - contributor: author
       form: short
     - delimiter: ", "
-      wrap: parentheses
+      wrap:
+        punctuation: parentheses
       group:
       - date: issued
         form: year
@@ -89,7 +91,8 @@ bibliography:
         suffix: "."
     - title: primary
       suffix: "."
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - delimiter: space
       suffix: "."
       group:
@@ -107,7 +110,8 @@ bibliography:
         - items:
           - number: volume
           - number: issue
-            wrap: parentheses
+            wrap:
+              punctuation: parentheses
           delimiter: space
         - number: pages
           prefix: ": "
@@ -127,7 +131,8 @@ bibliography:
       fallback: *id001
     - title: primary
       suffix: "."
-      wrap: quotes
+      wrap:
+        punctuation: quotes
     - delimiter: space
       suffix: "."
       group:
@@ -177,7 +182,8 @@ bibliography:
         group:
         - number: volume
         - number: issue
-          wrap: parentheses
+          wrap:
+            punctuation: parentheses
       - number: pages
         prefix: ": "
   - delimiter: period

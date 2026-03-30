@@ -917,7 +917,7 @@ mod tests {
                     citum_schema::tc_contributor!(Author, Short),
                     citum_schema::tc_date!(Issued, Year, prefix = ", "),
                 ]),
-                wrap: Some(WrapPunctuation::Parentheses),
+                wrap: Some(WrapPunctuation::Parentheses.into()),
                 ..Default::default()
             }),
             bibliography: Some(BibliographySpec {
