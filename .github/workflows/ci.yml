@@ -10,15 +10,9 @@ on:
       - 'docs/**'
 
 jobs:
-  core:
-    name: Core Checks
+  checks:
+    name: Hygiene Checks
     runs-on: ubuntu-latest
-    env:
-      CARGO_TERM_COLOR: always
-      CARGO_TARGET_DIR: /tmp/citum-target
-      CARGO_PROFILE_DEV_DEBUG: "0"
-      CARGO_PROFILE_DEV_CODEGEN_UNITS: "256"
-      RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,11 +25,6 @@ jobs:
             -o /tmp/beans.tar.gz
           tar -xzf /tmp/beans.tar.gz -C /tmp
           sudo install -m 0755 /tmp/beans /usr/local/bin/beans
-      
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -46,12 +35,6 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
-
-      - name: Install mold linker
-        run: sudo apt-get update && sudo apt-get install -y mold
-
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
 
       - name: Install script dependencies
         run: npm install --prefix scripts
@@ -89,6 +72,31 @@ jobs:
       - name: Run schema release validation regression tests
         run: python3 -m unittest scripts/test_validate_schema_release.py
 
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_TARGET_DIR: /tmp/citum-target
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_DEV_CODEGEN_UNITS: "256"
+      RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Install mold linker
+        run: sudo apt-get update && sudo apt-get install -y mold
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
       - name: Check formatting
         run: cargo fmt --all -- --check
 
@@ -98,8 +106,36 @@ jobs:
       - name: Enforce public API docs
         run: cargo doc --no-deps --workspace --exclude citum-pdf
 
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_TARGET_DIR: /tmp/citum-target
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_DEV_CODEGEN_UNITS: "256"
+      RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install mold linker
+        run: sudo apt-get update && sudo apt-get install -y mold
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
       - name: Run tests
-        run: cargo test --verbose
+        run: cargo nextest run
 
       - name: Verify JSON schemas are up to date
         run: |
