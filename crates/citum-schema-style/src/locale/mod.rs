@@ -26,7 +26,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 pub use types::*;
 
 /// A list of month names (12 elements for Jan-Dec).
@@ -87,6 +87,9 @@ pub struct Locale {
     /// Backwards-compatibility aliases: old term key → new message ID.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub legacy_term_aliases: HashMap<String, String>,
+    /// Vocabulary maps for genre and medium display text.
+    #[serde(default, skip_serializing_if = "VocabMap::is_empty")]
+    pub vocab: VocabMap,
     /// Message evaluator implementation (not serialized; set during load).
     #[serde(skip, default = "default_evaluator")]
     #[cfg_attr(feature = "schema", schemars(skip))]
@@ -96,6 +99,62 @@ pub struct Locale {
 /// Default message evaluator (MF2).
 fn default_evaluator() -> Arc<dyn MessageEvaluator> {
     Arc::new(Mf2MessageEvaluator)
+}
+
+#[derive(Deserialize)]
+struct EmbeddedVocabDocument {
+    #[serde(default)]
+    vocab: Option<raw::RawVocab>,
+}
+
+/// Extract one top-level YAML section while preserving its nested indentation.
+fn extract_top_level_yaml_section(yaml: &str, key: &str) -> Option<String> {
+    let header = format!("{key}:");
+    let mut collected = Vec::new();
+    let mut in_section = false;
+
+    for line in yaml.lines() {
+        let trimmed = line.trim_end_matches('\r');
+        let is_top_level =
+            !trimmed.is_empty() && !trimmed.starts_with(' ') && !trimmed.starts_with('\t');
+
+        if in_section {
+            if is_top_level {
+                break;
+            }
+            collected.push(trimmed);
+            continue;
+        }
+
+        if trimmed == header {
+            in_section = true;
+            collected.push(trimmed);
+        }
+    }
+
+    if collected.is_empty() {
+        None
+    } else {
+        Some(collected.join("\n"))
+    }
+}
+
+/// Curated en-US genre and medium labels from the embedded locale asset.
+fn embedded_en_us_vocab() -> &'static VocabMap {
+    static EN_US_VOCAB: OnceLock<VocabMap> = OnceLock::new();
+
+    EN_US_VOCAB.get_or_init(|| {
+        crate::embedded::get_locale_bytes("en-US")
+            .and_then(|bytes| std::str::from_utf8(bytes).ok())
+            .and_then(|yaml| extract_top_level_yaml_section(yaml, "vocab"))
+            .and_then(|vocab_yaml| serde_yaml::from_str::<EmbeddedVocabDocument>(&vocab_yaml).ok())
+            .and_then(|document| document.vocab)
+            .map(|document| VocabMap {
+                genre: document.genre,
+                medium: document.medium,
+            })
+            .unwrap_or_default()
+    })
 }
 
 impl Default for Locale {
@@ -115,6 +174,7 @@ impl Default for Locale {
             number_formats: NumberFormats::default(),
             grammar_options: GrammarOptions::default(),
             legacy_term_aliases: HashMap::default(),
+            vocab: VocabMap::default(),
             evaluator: default_evaluator(),
         }
     }
@@ -137,6 +197,7 @@ impl fmt::Debug for Locale {
             .field("number_formats", &self.number_formats)
             .field("grammar_options", &self.grammar_options)
             .field("legacy_term_aliases", &self.legacy_term_aliases)
+            .field("vocab", &self.vocab)
             .field("evaluator", &"<MessageEvaluator>")
             .finish()
     }
@@ -320,6 +381,26 @@ fn en_us_locator_terms() -> HashMap<LocatorType, LocatorTerm> {
     locators
 }
 
+/// Convert a kebab-case key to a human-readable display string.
+///
+/// Splits on `-`, capitalizes the first character of the first word, and joins with spaces.
+fn kebab_to_display(key: &str) -> String {
+    let mut words = key.split('-');
+    let mut result = String::new();
+    if let Some(first) = words.next() {
+        let mut chars = first.chars();
+        if let Some(c) = chars.next() {
+            result.extend(c.to_uppercase());
+            result.push_str(chars.as_str());
+        }
+        for word in words {
+            result.push(' ');
+            result.push_str(word);
+        }
+    }
+    result
+}
+
 impl Locale {
     /// Create a new English (US) locale with default terms.
     pub fn en_us() -> Self {
@@ -351,6 +432,7 @@ impl Locale {
                 page_range_delimiter: "\u{2013}".into(),
             },
             legacy_term_aliases: HashMap::new(),
+            vocab: embedded_en_us_vocab().clone(),
             evaluator: Arc::new(Mf2MessageEvaluator),
         }
     }
@@ -384,6 +466,28 @@ impl Locale {
             }
         }
         s
+    }
+
+    /// Look up display text for a genre canonical key.
+    ///
+    /// Falls back to a readable form of the key if no translation found.
+    pub fn lookup_genre(&self, key: &str) -> String {
+        self.vocab
+            .genre
+            .get(key)
+            .cloned()
+            .unwrap_or_else(|| kebab_to_display(key))
+    }
+
+    /// Look up display text for a medium canonical key.
+    ///
+    /// Falls back to a readable form of the key if no translation found.
+    pub fn lookup_medium(&self, key: &str) -> String {
+        self.vocab
+            .medium
+            .get(key)
+            .cloned()
+            .unwrap_or_else(|| kebab_to_display(key))
     }
 
     /// Get default articles for a locale based on language code.
@@ -928,6 +1032,12 @@ impl Locale {
         locale.messages = raw.messages;
         locale.date_formats = raw.date_formats;
         locale.legacy_term_aliases = raw.legacy_term_aliases;
+
+        // Merge vocab overrides into the embedded en-US defaults.
+        if let Some(raw_vocab) = raw.vocab {
+            locale.vocab.genre.extend(raw_vocab.genre);
+            locale.vocab.medium.extend(raw_vocab.medium);
+        }
 
         // Merge grammar_options: use raw value if present, otherwise derive from locale ID
         if let Some(go) = raw.grammar_options {
@@ -1539,5 +1649,98 @@ locale: en-US
             locale.resolved_role_term(&ContributorRole::Editor, true, TermForm::Long),
             Some("editors".to_string())
         );
+    }
+
+    #[test]
+    fn test_lookup_genre_known_key() {
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: en-US
+vocab:
+  genre:
+    phd-thesis: "PhD thesis"
+"#,
+        )
+        .unwrap();
+        assert_eq!(locale.lookup_genre("phd-thesis"), "PhD thesis");
+    }
+
+    #[test]
+    fn test_lookup_medium_known_key() {
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: en-US
+vocab:
+  medium:
+    television: "Television"
+"#,
+        )
+        .unwrap();
+        assert_eq!(locale.lookup_medium("television"), "Television");
+    }
+
+    #[test]
+    fn test_lookup_genre_fallback() {
+        let locale = Locale::en_us();
+        // Unknown key → title-case first word + spaces
+        assert_eq!(locale.lookup_genre("unknown-key"), "Unknown key");
+    }
+
+    #[test]
+    fn test_en_us_locale_uses_embedded_vocab() {
+        let locale = Locale::en_us();
+
+        assert_eq!(locale.lookup_genre("phd-thesis"), "PhD thesis");
+        assert_eq!(locale.lookup_medium("audio-cd"), "Audio CD");
+    }
+
+    #[test]
+    fn test_from_yaml_str_inherits_embedded_vocab_defaults() {
+        let locale = Locale::from_yaml_str("locale: en-US\n").unwrap();
+
+        assert_eq!(locale.lookup_genre("phd-thesis"), "PhD thesis");
+    }
+
+    #[test]
+    fn test_partial_genre_vocab_override_preserves_medium_defaults() {
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: en-US
+vocab:
+  genre:
+    phd-thesis: "Doctoral dissertation"
+"#,
+        )
+        .unwrap();
+
+        assert_eq!(locale.lookup_genre("phd-thesis"), "Doctoral dissertation");
+        assert_eq!(locale.lookup_medium("audio-cd"), "Audio CD");
+    }
+
+    #[test]
+    fn test_partial_medium_vocab_override_preserves_genre_defaults() {
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: en-US
+vocab:
+  medium:
+    television: "Broadcast television"
+"#,
+        )
+        .unwrap();
+
+        assert_eq!(locale.lookup_medium("television"), "Broadcast television");
+        assert_eq!(locale.lookup_genre("phd-thesis"), "PhD thesis");
+    }
+
+    #[test]
+    fn test_kebab_to_display_single_word() {
+        assert_eq!(kebab_to_display("video"), "Video");
+    }
+
+    #[test]
+    fn test_kebab_to_display_multiple_words() {
+        assert_eq!(kebab_to_display("phd-thesis"), "Phd thesis");
+        assert_eq!(kebab_to_display("audio-cd"), "Audio cd");
     }
 }
