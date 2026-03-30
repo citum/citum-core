@@ -167,7 +167,9 @@ bibliography:
       emph: true
     - group:
       - variable: genre
+        text-case: capitalize-first
       - variable: medium
+        text-case: capitalize-first
       delimiter: "; "
       wrap: brackets
       prefix: " "
@@ -348,8 +350,10 @@ bibliography:
     wrap: brackets
     prefix: " "
     group:
-    - variable: genre
-    - variable: medium
+      - variable: genre
+        text-case: capitalize-first
+      - variable: medium
+        text-case: capitalize-first
   - number: edition
     wrap: parentheses
     prefix: " "

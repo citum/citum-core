@@ -159,6 +159,7 @@ bibliography:
       - date: issued
         form: year
     - variable: genre
+      text-case: capitalize-first
     - variable: url
       suffix: "."
     motion-picture:
@@ -169,6 +170,7 @@ bibliography:
       form: year
     - title: primary
     - variable: genre
+      text-case: capitalize-first
     - contributor: author
       form: long
       name-order: given-first

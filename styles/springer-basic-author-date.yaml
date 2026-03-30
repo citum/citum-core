@@ -196,6 +196,7 @@ bibliography:
       prefix: ". "
       group:
       - variable: genre
+        text-case: capitalize-first
       - variable: publisher
     webpage:
     - contributor: author
