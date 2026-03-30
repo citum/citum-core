@@ -134,6 +134,7 @@
       "type": "object",
       "properties": {
         "accessed": {
+          "description": "Date the URL was accessed.",
           "anyOf": [
             {
               "$ref": "#/$defs/EdtfString"
@@ -169,12 +170,14 @@
           ]
         },
         "field-languages": {
+          "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "id": {
+          "description": "Unique identifier for this reference.",
           "type": [
             "string",
             "null"
@@ -185,6 +188,7 @@
           "$ref": "#/$defs/EdtfString"
         },
         "keywords": {
+          "description": "Keywords or subject tags.",
           "type": [
             "array",
             "null"
@@ -194,12 +198,14 @@
           }
         },
         "language": {
+          "description": "BCP 47 language of the document.",
           "type": [
             "string",
             "null"
           ]
         },
         "note": {
+          "description": "Freeform note.",
           "type": [
             "string",
             "null"
@@ -217,6 +223,7 @@
           ]
         },
         "url": {
+          "description": "URL for the brief.",
           "type": [
             "string",
             "null"
@@ -233,6 +240,7 @@
       "type": "object",
       "properties": {
         "accessed": {
+          "description": "Date the URL was accessed.",
           "anyOf": [
             {
               "$ref": "#/$defs/EdtfString"
@@ -254,7 +262,7 @@
           ]
         },
         "editor": {
-          "description": "Editor or translator",
+          "description": "Editor of this edition",
           "anyOf": [
             {
               "$ref": "#/$defs/Contributor"
@@ -265,12 +273,14 @@
           ]
         },
         "field-languages": {
+          "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "id": {
+          "description": "Unique identifier for this reference.",
           "type": [
             "string",
             "null"
@@ -281,6 +291,7 @@
           "$ref": "#/$defs/EdtfString"
         },
         "keywords": {
+          "description": "Keywords or subject tags.",
           "type": [
             "array",
             "null"
@@ -290,18 +301,21 @@
           }
         },
         "language": {
+          "description": "BCP 47 language of the work.",
           "type": [
             "string",
             "null"
           ]
         },
         "note": {
+          "description": "Freeform note.",
           "type": [
             "string",
             "null"
           ]
         },
         "publisher": {
+          "description": "Publisher of this edition",
           "anyOf": [
             {
               "$ref": "#/$defs/Contributor"
@@ -330,6 +344,7 @@
           ]
         },
         "translator": {
+          "description": "Translator of this edition",
           "anyOf": [
             {
               "$ref": "#/$defs/Contributor"
@@ -340,6 +355,7 @@
           ]
         },
         "url": {
+          "description": "URL for the work.",
           "type": [
             "string",
             "null"
@@ -363,6 +379,7 @@
       "type": "object",
       "properties": {
         "accessed": {
+          "description": "Date the URL was accessed.",
           "anyOf": [
             {
               "$ref": "#/$defs/EdtfString"
@@ -373,12 +390,14 @@
           ]
         },
         "collection-number": {
+          "description": "Collection or series number.",
           "type": [
             "string",
             "null"
           ]
         },
         "editor": {
+          "description": "Editor(s) of the collection.",
           "anyOf": [
             {
               "$ref": "#/$defs/Contributor"
@@ -389,27 +408,32 @@
           ]
         },
         "field-languages": {
+          "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "id": {
+          "description": "Unique identifier for this reference.",
           "type": [
             "string",
             "null"
           ]
         },
         "isbn": {
+          "description": "ISBN identifier.",
           "type": [
             "string",
             "null"
           ]
         },
         "issued": {
+          "description": "Publication date.",
           "$ref": "#/$defs/EdtfString"
         },
         "keywords": {
+          "description": "Keywords or subject tags.",
           "type": [
             "array",
             "null"
@@ -419,18 +443,21 @@
           }
         },
         "language": {
+          "description": "BCP 47 language of the collection.",
           "type": [
             "string",
             "null"
           ]
         },
         "note": {
+          "description": "Freeform note.",
           "type": [
             "string",
             "null"
           ]
         },
         "publisher": {
+          "description": "Publisher of the collection.",
           "anyOf": [
             {
               "$ref": "#/$defs/Contributor"
@@ -448,6 +475,7 @@
           ]
         },
         "title": {
+          "description": "Title of the collection.",
           "anyOf": [
             {
               "$ref": "#/$defs/Title"
@@ -458,6 +486,7 @@
           ]
         },
         "translator": {
+          "description": "Translator(s) of the collection.",
           "anyOf": [
             {
               "$ref": "#/$defs/Contributor"
@@ -468,9 +497,11 @@
           ]
         },
         "type": {
+          "description": "Collection subtype for style-directed formatting.",
           "$ref": "#/$defs/CollectionType"
         },
         "url": {
+          "description": "URL for the collection.",
           "type": [
             "string",
             "null"
@@ -488,6 +519,7 @@
       "type": "object",
       "properties": {
         "accessed": {
+          "description": "Date the URL was accessed.",
           "anyOf": [
             {
               "$ref": "#/$defs/EdtfString"
@@ -509,6 +541,7 @@
           ]
         },
         "author": {
+          "description": "Author(s) of the component.",
           "anyOf": [
             {
               "$ref": "#/$defs/Contributor"
@@ -519,6 +552,7 @@
           ]
         },
         "doi": {
+          "description": "DOI identifier.",
           "type": [
             "string",
             "null"
@@ -536,27 +570,32 @@
           ]
         },
         "field-languages": {
+          "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "genre": {
+          "description": "Free-text genre descriptor.",
           "type": [
             "string",
             "null"
           ]
         },
         "id": {
+          "description": "Unique identifier for this reference.",
           "type": [
             "string",
             "null"
           ]
         },
         "issued": {
+          "description": "Publication date.",
           "$ref": "#/$defs/EdtfString"
         },
         "keywords": {
+          "description": "Keywords or subject tags.",
           "type": [
             "array",
             "null"
@@ -566,24 +605,28 @@
           }
         },
         "language": {
+          "description": "BCP 47 language of the component.",
           "type": [
             "string",
             "null"
           ]
         },
         "medium": {
+          "description": "Free-text medium descriptor.",
           "type": [
             "string",
             "null"
           ]
         },
         "note": {
+          "description": "Freeform note.",
           "type": [
             "string",
             "null"
           ]
         },
         "pages": {
+          "description": "Page range within the parent collection.",
           "anyOf": [
             {
               "$ref": "#/$defs/NumOrStr"
@@ -594,9 +637,11 @@
           ]
         },
         "parent": {
+          "description": "The parent collection.",
           "$ref": "#/$defs/Parent"
         },
         "title": {
+          "description": "Title of the component.",
           "anyOf": [
             {
               "$ref": "#/$defs/Title"
@@ -607,6 +652,7 @@
           ]
         },
         "translator": {
+          "description": "Translator(s) of the component.",
           "anyOf": [
             {
               "$ref": "#/$defs/Contributor"
@@ -617,9 +663,11 @@
           ]
         },
         "type": {
+          "description": "Component subtype for style-directed formatting.",
           "$ref": "#/$defs/MonographComponentType"
         },
         "url": {
+          "description": "URL for the component.",
           "type": [
             "string",
             "null"
@@ -687,6 +735,7 @@
       "type": "object",
       "properties": {
         "accessed": {
+          "description": "Date the URL was accessed.",
           "anyOf": [
             {
               "$ref": "#/$defs/EdtfString"
@@ -708,12 +757,14 @@
           ]
         },
         "doi": {
+          "description": "DOI identifier.",
           "type": [
             "string",
             "null"
           ]
         },
         "field-languages": {
+          "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
@@ -727,6 +778,7 @@
           ]
         },
         "id": {
+          "description": "Unique identifier for this reference.",
           "type": [
             "string",
             "null"
@@ -737,6 +789,7 @@
           "$ref": "#/$defs/EdtfString"
         },
         "keywords": {
+          "description": "Keywords or subject tags.",
           "type": [
             "array",
             "null"
@@ -746,12 +799,14 @@
           }
         },
         "language": {
+          "description": "BCP 47 language of the dataset.",
           "type": [
             "string",
             "null"
           ]
         },
         "note": {
+          "description": "Freeform note.",
           "type": [
             "string",
             "null"
@@ -794,6 +849,7 @@
           ]
         },
         "url": {
+          "description": "URL for the dataset.",
           "type": [
             "string",
             "null"
@@ -846,6 +902,7 @@
       "type": "object",
       "properties": {
         "accessed": {
+          "description": "Date the URL was accessed.",
           "anyOf": [
             {
               "$ref": "#/$defs/EdtfString"
@@ -863,12 +920,14 @@
           ]
         },
         "field-languages": {
+          "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "id": {
+          "description": "Unique identifier for this reference.",
           "type": [
             "string",
             "null"
@@ -879,6 +938,7 @@
           "$ref": "#/$defs/EdtfString"
         },
         "keywords": {
+          "description": "Keywords or subject tags.",
           "type": [
             "array",
             "null"
@@ -888,12 +948,14 @@
           }
         },
         "language": {
+          "description": "BCP 47 language of the document.",
           "type": [
             "string",
             "null"
           ]
         },
         "note": {
+          "description": "Freeform note.",
           "type": [
             "string",
             "null"
@@ -918,6 +980,7 @@
           ]
         },
         "url": {
+          "description": "URL for the hearing record.",
           "type": [
             "string",
             "null"
@@ -1169,6 +1232,7 @@
       "type": "object",
       "properties": {
         "accessed": {
+          "description": "Date the URL was accessed.",
           "anyOf": [
             {
               "$ref": "#/$defs/EdtfString"
@@ -1183,18 +1247,21 @@
           "type": "string"
         },
         "doi": {
+          "description": "DOI identifier.",
           "type": [
             "string",
             "null"
           ]
         },
         "field-languages": {
+          "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "id": {
+          "description": "Unique identifier for this reference.",
           "type": [
             "string",
             "null"
@@ -1205,6 +1272,7 @@
           "$ref": "#/$defs/EdtfString"
         },
         "keywords": {
+          "description": "Keywords or subject tags.",
           "type": [
             "array",
             "null"
@@ -1214,12 +1282,14 @@
           }
         },
         "language": {
+          "description": "BCP 47 language of the document.",
           "type": [
             "string",
             "null"
           ]
         },
         "note": {
+          "description": "Freeform note.",
           "type": [
             "string",
             "null"
@@ -1251,6 +1321,7 @@
           ]
         },
         "url": {
+          "description": "URL for the case.",
           "type": [
             "string",
             "null"
@@ -1275,6 +1346,7 @@
       "type": "object",
       "properties": {
         "accessed": {
+          "description": "Date the URL was accessed.",
           "anyOf": [
             {
               "$ref": "#/$defs/EdtfString"
@@ -1328,6 +1400,7 @@
           ]
         },
         "collection-number": {
+          "description": "Collection or series number.",
           "type": [
             "string",
             "null"
@@ -1345,18 +1418,21 @@
           ]
         },
         "doi": {
+          "description": "DOI identifier.",
           "type": [
             "string",
             "null"
           ]
         },
         "edition": {
+          "description": "Edition descriptor.",
           "type": [
             "string",
             "null"
           ]
         },
         "editor": {
+          "description": "Editor(s) of the work.",
           "anyOf": [
             {
               "$ref": "#/$defs/Contributor"
@@ -1378,6 +1454,7 @@
           ]
         },
         "field-languages": {
+          "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
@@ -1420,15 +1497,18 @@
           ]
         },
         "isbn": {
+          "description": "ISBN identifier.",
           "type": [
             "string",
             "null"
           ]
         },
         "issued": {
+          "description": "Publication date.",
           "$ref": "#/$defs/EdtfString"
         },
         "keywords": {
+          "description": "Keywords or subject tags.",
           "type": [
             "array",
             "null"
@@ -1438,6 +1518,7 @@
           }
         },
         "language": {
+          "description": "BCP 47 language of the work.",
           "type": [
             "string",
             "null"
@@ -1451,12 +1532,14 @@
           ]
         },
         "note": {
+          "description": "Freeform note.",
           "type": [
             "string",
             "null"
           ]
         },
         "original-date": {
+          "description": "Original publication date (for reprints or translations).",
           "anyOf": [
             {
               "$ref": "#/$defs/EdtfString"
@@ -1467,6 +1550,7 @@
           ]
         },
         "original-title": {
+          "description": "Original title (for translations).",
           "anyOf": [
             {
               "$ref": "#/$defs/Title"
@@ -1477,6 +1561,7 @@
           ]
         },
         "publisher": {
+          "description": "Publisher of the work.",
           "anyOf": [
             {
               "$ref": "#/$defs/Contributor"
@@ -1498,6 +1583,7 @@
           ]
         },
         "report-number": {
+          "description": "Report number for technical reports.",
           "type": [
             "string",
             "null"
@@ -1515,6 +1601,7 @@
           ]
         },
         "translator": {
+          "description": "Translator(s) of the work.",
           "anyOf": [
             {
               "$ref": "#/$defs/Contributor"
@@ -1525,9 +1612,11 @@
           ]
         },
         "type": {
+          "description": "Monograph subtype for style-directed formatting.",
           "$ref": "#/$defs/MonographType"
         },
         "url": {
+          "description": "URL for the work.",
           "type": [
             "string",
             "null"
@@ -1714,9 +1803,11 @@
       "description": "A parent reference (either embedded or by ID).",
       "anyOf": [
         {
+          "description": "The parent is embedded inline.",
           "$ref": "#/$defs/Collection"
         },
         {
+          "description": "The parent is referenced by its ID.",
           "type": "string"
         }
       ]
@@ -1725,9 +1816,11 @@
       "description": "A parent reference (either embedded or by ID).",
       "anyOf": [
         {
+          "description": "The parent is embedded inline.",
           "$ref": "#/$defs/Serial"
         },
         {
+          "description": "The parent is referenced by its ID.",
           "type": "string"
         }
       ]
@@ -1737,6 +1830,7 @@
       "type": "object",
       "properties": {
         "accessed": {
+          "description": "Date the URL was accessed.",
           "anyOf": [
             {
               "$ref": "#/$defs/EdtfString"
@@ -1783,6 +1877,7 @@
           ]
         },
         "field-languages": {
+          "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
@@ -1800,6 +1895,7 @@
           ]
         },
         "id": {
+          "description": "Unique identifier for this reference.",
           "type": [
             "string",
             "null"
@@ -1817,6 +1913,7 @@
           ]
         },
         "keywords": {
+          "description": "Keywords or subject tags.",
           "type": [
             "array",
             "null"
@@ -1826,12 +1923,14 @@
           }
         },
         "language": {
+          "description": "BCP 47 language of the document.",
           "type": [
             "string",
             "null"
           ]
         },
         "note": {
+          "description": "Freeform note.",
           "type": [
             "string",
             "null"
@@ -1853,6 +1952,7 @@
           ]
         },
         "url": {
+          "description": "URL for the patent.",
           "type": [
             "string",
             "null"
@@ -1870,6 +1970,7 @@
       "type": "object",
       "properties": {
         "accessed": {
+          "description": "Date the URL was accessed.",
           "anyOf": [
             {
               "$ref": "#/$defs/EdtfString"
@@ -1894,12 +1995,14 @@
           ]
         },
         "field-languages": {
+          "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "id": {
+          "description": "Unique identifier for this reference.",
           "type": [
             "string",
             "null"
@@ -1910,6 +2013,7 @@
           "$ref": "#/$defs/EdtfString"
         },
         "keywords": {
+          "description": "Keywords or subject tags.",
           "type": [
             "array",
             "null"
@@ -1919,12 +2023,14 @@
           }
         },
         "language": {
+          "description": "BCP 47 language of the document.",
           "type": [
             "string",
             "null"
           ]
         },
         "note": {
+          "description": "Freeform note.",
           "type": [
             "string",
             "null"
@@ -1949,6 +2055,7 @@
           ]
         },
         "url": {
+          "description": "URL for the regulation.",
           "type": [
             "string",
             "null"
@@ -1972,6 +2079,7 @@
       "type": "object",
       "properties": {
         "editor": {
+          "description": "Editor(s) of the serial.",
           "anyOf": [
             {
               "$ref": "#/$defs/Contributor"
@@ -1982,12 +2090,14 @@
           ]
         },
         "issn": {
+          "description": "ISSN identifier.",
           "type": [
             "string",
             "null"
           ]
         },
         "publisher": {
+          "description": "Publisher of the serial.",
           "anyOf": [
             {
               "$ref": "#/$defs/Contributor"
@@ -2005,6 +2115,7 @@
           ]
         },
         "title": {
+          "description": "Title of the serial.",
           "anyOf": [
             {
               "$ref": "#/$defs/Title"
@@ -2015,6 +2126,7 @@
           ]
         },
         "type": {
+          "description": "Serial subtype for style-directed formatting.",
           "$ref": "#/$defs/SerialType"
         }
       },
@@ -2027,6 +2139,7 @@
       "type": "object",
       "properties": {
         "accessed": {
+          "description": "Date the URL was accessed.",
           "anyOf": [
             {
               "$ref": "#/$defs/EdtfString"
@@ -2055,6 +2168,7 @@
           ]
         },
         "author": {
+          "description": "Author(s) of the component.",
           "anyOf": [
             {
               "$ref": "#/$defs/Contributor"
@@ -2065,6 +2179,7 @@
           ]
         },
         "doi": {
+          "description": "DOI identifier.",
           "type": [
             "string",
             "null"
@@ -2082,24 +2197,28 @@
           ]
         },
         "field-languages": {
+          "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "genre": {
+          "description": "Free-text genre descriptor.",
           "type": [
             "string",
             "null"
           ]
         },
         "id": {
+          "description": "Unique identifier for this reference.",
           "type": [
             "string",
             "null"
           ]
         },
         "issue": {
+          "description": "Issue number of the parent serial.",
           "anyOf": [
             {
               "$ref": "#/$defs/NumOrStr"
@@ -2110,9 +2229,11 @@
           ]
         },
         "issued": {
+          "description": "Publication date.",
           "$ref": "#/$defs/EdtfString"
         },
         "keywords": {
+          "description": "Keywords or subject tags.",
           "type": [
             "array",
             "null"
@@ -2122,24 +2243,28 @@
           }
         },
         "language": {
+          "description": "BCP 47 language of the component.",
           "type": [
             "string",
             "null"
           ]
         },
         "medium": {
+          "description": "Free-text medium descriptor.",
           "type": [
             "string",
             "null"
           ]
         },
         "note": {
+          "description": "Freeform note.",
           "type": [
             "string",
             "null"
           ]
         },
         "pages": {
+          "description": "Page range within the parent serial issue.",
           "type": [
             "string",
             "null"
@@ -2150,6 +2275,7 @@
           "$ref": "#/$defs/Parent2"
         },
         "title": {
+          "description": "Title of the component.",
           "anyOf": [
             {
               "$ref": "#/$defs/Title"
@@ -2160,6 +2286,7 @@
           ]
         },
         "translator": {
+          "description": "Translator(s) of the component.",
           "anyOf": [
             {
               "$ref": "#/$defs/Contributor"
@@ -2170,9 +2297,11 @@
           ]
         },
         "type": {
+          "description": "Component subtype for style-directed formatting.",
           "$ref": "#/$defs/SerialComponentType"
         },
         "url": {
+          "description": "URL for the component.",
           "type": [
             "string",
             "null"
@@ -2180,6 +2309,7 @@
           "format": "uri"
         },
         "volume": {
+          "description": "Volume number of the parent serial.",
           "anyOf": [
             {
               "$ref": "#/$defs/NumOrStr"
@@ -2218,16 +2348,47 @@
     },
     "SerialType": {
       "description": "Types of serial publications.",
-      "type": "string",
-      "enum": [
-        "academic-journal",
-        "blog",
-        "magazine",
-        "newspaper",
-        "newsletter",
-        "proceedings",
-        "podcast",
-        "broadcast-program"
+      "oneOf": [
+        {
+          "description": "An academic peer-reviewed journal.",
+          "type": "string",
+          "const": "academic-journal"
+        },
+        {
+          "description": "A blog or personal website updated periodically.",
+          "type": "string",
+          "const": "blog"
+        },
+        {
+          "description": "A general-interest magazine.",
+          "type": "string",
+          "const": "magazine"
+        },
+        {
+          "description": "A newspaper.",
+          "type": "string",
+          "const": "newspaper"
+        },
+        {
+          "description": "A newsletter.",
+          "type": "string",
+          "const": "newsletter"
+        },
+        {
+          "description": "A conference proceedings serial.",
+          "type": "string",
+          "const": "proceedings"
+        },
+        {
+          "description": "A podcast.",
+          "type": "string",
+          "const": "podcast"
+        },
+        {
+          "description": "A broadcast program (radio, television).",
+          "type": "string",
+          "const": "broadcast-program"
+        }
       ]
     },
     "SimpleName": {
@@ -2253,6 +2414,7 @@
       "type": "object",
       "properties": {
         "accessed": {
+          "description": "Date the URL was accessed.",
           "anyOf": [
             {
               "$ref": "#/$defs/EdtfString"
@@ -2274,18 +2436,21 @@
           ]
         },
         "doi": {
+          "description": "DOI identifier.",
           "type": [
             "string",
             "null"
           ]
         },
         "field-languages": {
+          "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "id": {
+          "description": "Unique identifier for this reference.",
           "type": [
             "string",
             "null"
@@ -2296,6 +2461,7 @@
           "$ref": "#/$defs/EdtfString"
         },
         "keywords": {
+          "description": "Keywords or subject tags.",
           "type": [
             "array",
             "null"
@@ -2305,6 +2471,7 @@
           }
         },
         "language": {
+          "description": "BCP 47 language of the software documentation.",
           "type": [
             "string",
             "null"
@@ -2318,6 +2485,7 @@
           ]
         },
         "note": {
+          "description": "Freeform note.",
           "type": [
             "string",
             "null"
@@ -2360,6 +2528,7 @@
           ]
         },
         "url": {
+          "description": "URL for the software.",
           "type": [
             "string",
             "null"
@@ -2383,6 +2552,7 @@
       "type": "object",
       "properties": {
         "accessed": {
+          "description": "Date the URL was accessed.",
           "anyOf": [
             {
               "$ref": "#/$defs/EdtfString"
@@ -2400,12 +2570,14 @@
           ]
         },
         "field-languages": {
+          "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "id": {
+          "description": "Unique identifier for this reference.",
           "type": [
             "string",
             "null"
@@ -2416,6 +2588,7 @@
           "$ref": "#/$defs/EdtfString"
         },
         "keywords": {
+          "description": "Keywords or subject tags.",
           "type": [
             "array",
             "null"
@@ -2425,12 +2598,14 @@
           }
         },
         "language": {
+          "description": "BCP 47 language of the document.",
           "type": [
             "string",
             "null"
           ]
         },
         "note": {
+          "description": "Freeform note.",
           "type": [
             "string",
             "null"
@@ -2470,6 +2645,7 @@
           ]
         },
         "url": {
+          "description": "URL for the standard.",
           "type": [
             "string",
             "null"
@@ -2487,6 +2663,7 @@
       "type": "object",
       "properties": {
         "accessed": {
+          "description": "Date the URL was accessed.",
           "anyOf": [
             {
               "$ref": "#/$defs/EdtfString"
@@ -2511,12 +2688,14 @@
           ]
         },
         "field-languages": {
+          "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "id": {
+          "description": "Unique identifier for this reference.",
           "type": [
             "string",
             "null"
@@ -2527,6 +2706,7 @@
           "$ref": "#/$defs/EdtfString"
         },
         "keywords": {
+          "description": "Keywords or subject tags.",
           "type": [
             "array",
             "null"
@@ -2536,12 +2716,14 @@
           }
         },
         "language": {
+          "description": "BCP 47 language of the document.",
           "type": [
             "string",
             "null"
           ]
         },
         "note": {
+          "description": "Freeform note.",
           "type": [
             "string",
             "null"
@@ -2566,6 +2748,7 @@
           ]
         },
         "url": {
+          "description": "URL for the statute.",
           "type": [
             "string",
             "null"
@@ -2623,15 +2806,18 @@
       "type": "object",
       "properties": {
         "full": {
+          "description": "Full rendered title string (optional override).",
           "type": [
             "string",
             "null"
           ]
         },
         "main": {
+          "description": "Main title component.",
           "type": "string"
         },
         "sub": {
+          "description": "Subtitle component.",
           "$ref": "#/$defs/Subtitle"
         }
       },
@@ -2644,9 +2830,11 @@
       "description": "The subtitle can either be a string, as is the common case, or a vector of strings.",
       "anyOf": [
         {
+          "description": "A single subtitle string.",
           "type": "string"
         },
         {
+          "description": "Multiple subtitle strings.",
           "type": "array",
           "items": {
             "type": "string"
@@ -2724,6 +2912,7 @@
       "type": "object",
       "properties": {
         "accessed": {
+          "description": "Date the URL was accessed.",
           "anyOf": [
             {
               "$ref": "#/$defs/EdtfString"
@@ -2745,12 +2934,14 @@
           ]
         },
         "field-languages": {
+          "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "id": {
+          "description": "Unique identifier for this reference.",
           "type": [
             "string",
             "null"
@@ -2761,6 +2952,7 @@
           "$ref": "#/$defs/EdtfString"
         },
         "keywords": {
+          "description": "Keywords or subject tags.",
           "type": [
             "array",
             "null"
@@ -2770,12 +2962,14 @@
           }
         },
         "language": {
+          "description": "BCP 47 language of the document.",
           "type": [
             "string",
             "null"
           ]
         },
         "note": {
+          "description": "Freeform note.",
           "type": [
             "string",
             "null"
@@ -2807,6 +3001,7 @@
           ]
         },
         "url": {
+          "description": "URL for the treaty.",
           "type": [
             "string",
             "null"

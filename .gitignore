@@ -51,3 +51,7 @@ bindings/latex/libcitum_processor.dylib
 # Claude worktrees (local development)
 .claude/worktrees/
 .git-rewrite/
+
+# Python bytecode
+__pycache__/
+*.pyc
