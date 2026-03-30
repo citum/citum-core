@@ -13,7 +13,11 @@ import subprocess
 import tempfile
 from pathlib import Path
 import filecmp
-import difflib
+import re
+
+
+STYLE_SCHEMA_LIB = Path("crates/citum-schema-style/src/lib.rs")
+SCHEMA_BUMP_RE = re.compile(r"^Schema-Bump:\s*(patch|minor|major)\s*$", re.MULTILINE)
 
 
 def get_root_dir():
@@ -32,16 +36,111 @@ def get_root_dir():
 
 def schema_files_staged():
     """Check if any citum-schema* files are staged."""
+    staged_files = get_staged_files()
+    for f in staged_files:
+        if "crates/citum-schema" in f and f.endswith(".rs"):
+            return True
+    return False
+
+
+def get_staged_files() -> list[str]:
+    """Return the currently staged file list."""
     result = subprocess.run(
         ["git", "diff", "--cached", "--name-only"],
         capture_output=True,
         text=True,
     )
-    staged_files = result.stdout.splitlines()
-    for f in staged_files:
-        if "crates/citum-schema" in f and f.endswith(".rs"):
-            return True
-    return False
+    return result.stdout.splitlines()
+
+
+def schema_artifacts_staged(staged_files: list[str]) -> bool:
+    """Return true when staged files include schema artifacts or version metadata."""
+    schema_lib = STYLE_SCHEMA_LIB.as_posix()
+    return any(
+        path.startswith("docs/schemas/") or path == schema_lib for path in staged_files
+    )
+
+
+def clear_handoff_file(root: Path) -> None:
+    """Remove the schema bump handoff file if it exists."""
+    handoff_file = root / ".git" / "SCHEMA_BUMP"
+    if handoff_file.exists():
+        handoff_file.unlink()
+
+
+def read_schema_version_from_text(content: str) -> str:
+    """Extract STYLE_SCHEMA_VERSION from file content."""
+    match = re.search(
+        r'pub const STYLE_SCHEMA_VERSION: &str = "([^"]+)";',
+        content,
+    )
+    if match is None:
+        raise RuntimeError("Could not determine STYLE_SCHEMA_VERSION")
+    return match.group(1)
+
+
+def read_schema_version_from_index(root: Path) -> str:
+    """Read the staged STYLE_SCHEMA_VERSION from the git index."""
+    result = subprocess.run(
+        ["git", "show", f":{STYLE_SCHEMA_LIB.as_posix()}"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return read_schema_version_from_text(result.stdout)
+
+
+def read_schema_version_at_ref(root: Path, ref: str) -> str:
+    """Read STYLE_SCHEMA_VERSION from a git ref."""
+    result = subprocess.run(
+        ["git", "show", f"{ref}:{STYLE_SCHEMA_LIB.as_posix()}"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return read_schema_version_from_index(root)
+    return read_schema_version_from_text(result.stdout)
+
+
+def bump_version(current: str, bump_type: str) -> str:
+    """Return the semantic version after applying the bump type."""
+    major_s, minor_s, patch_s = current.split(".")
+    major, minor, patch = int(major_s), int(minor_s), int(patch_s)
+    if bump_type == "patch":
+        patch += 1
+    elif bump_type == "minor":
+        minor += 1
+        patch = 0
+    elif bump_type == "major":
+        if major == 0:
+            minor += 1
+        else:
+            major += 1
+            minor = 0
+        patch = 0
+    else:
+        raise RuntimeError(f"Unsupported schema bump type: {bump_type}")
+    return f"{major}.{minor}.{patch}"
+
+
+def validate_staged_schema_version(root: Path, bump_type: str) -> int:
+    """Ensure the staged STYLE_SCHEMA_VERSION matches the declared bump."""
+    previous_version = read_schema_version_at_ref(root, "HEAD")
+    staged_version = read_schema_version_from_index(root)
+    expected_version = bump_version(previous_version, bump_type)
+
+    if staged_version != expected_version:
+        sys.stderr.write(
+            "Error: schema changes were staged, but STYLE_SCHEMA_VERSION does not "
+            f"match Schema-Bump: {bump_type}. Expected {expected_version}, found "
+            f"{staged_version}.\nRun ./scripts/bump.sh schema {bump_type} and "
+            "stage the result before committing.\n"
+        )
+        return 1
+    return 0
 
 
 def infer_bump_type(old_dir: Path, new_dir: Path) -> str:
@@ -115,6 +214,7 @@ def pre_commit_hook():
 
     # Only run if schema files are staged
     if not schema_files_staged():
+        clear_handoff_file(root)
         return 0
 
     schemas_dir = root / "docs" / "schemas"
@@ -135,6 +235,7 @@ def pre_commit_hook():
 
         # Check for changes
         if not schemas_differ(schemas_dir, tmpdir_path):
+            clear_handoff_file(root)
             sys.stdout.write("[schema-check] Schemas up to date.\n")
             return 0
 
@@ -179,16 +280,27 @@ def commit_msg_hook(msg_file_path):
         return 0
 
     msg_content = msg_file.read_text()
+    staged_files = get_staged_files()
+    schema_change_staged = schema_artifacts_staged(staged_files)
+    handoff_file = root / ".git" / "SCHEMA_BUMP"
+    footer_match = SCHEMA_BUMP_RE.search(msg_content)
 
-    # Check if Schema-Bump footer already exists
-    if "Schema-Bump:" in msg_content:
+    if footer_match:
+        if schema_change_staged and validate_staged_schema_version(root, footer_match.group(1)) != 0:
+            return 1
+        if handoff_file.exists():
+            clear_handoff_file(root)
         return 0
 
-    # Check for handoff file from pre-commit
-    handoff_file = root / ".git" / "SCHEMA_BUMP"
     if handoff_file.exists():
+        if not schema_change_staged:
+            clear_handoff_file(root)
+            return 0
+
         bump_type = handoff_file.read_text().strip()
-        handoff_file.unlink()
+
+        if validate_staged_schema_version(root, bump_type) != 0:
+            return 1
 
         # Append footer to message
         if not msg_content.endswith("\n"):
@@ -196,6 +308,7 @@ def commit_msg_hook(msg_file_path):
         msg_content += f"\nSchema-Bump: {bump_type}\n"
 
         msg_file.write_text(msg_content)
+        handoff_file.unlink()
         sys.stdout.write(f"[schema-check] Added Schema-Bump: {bump_type}\n")
 
         if bump_type == "major":
@@ -207,16 +320,7 @@ def commit_msg_hook(msg_file_path):
 
         return 0
 
-    # Check if docs/schemas/ is staged but no footer exists
-    result = subprocess.run(
-        ["git", "diff", "--cached", "--name-only"],
-        capture_output=True,
-        text=True,
-    )
-    staged_files = result.stdout.splitlines()
-    schema_files_staged = any(f.startswith("docs/schemas/") for f in staged_files)
-
-    if schema_files_staged:
+    if any(f.startswith("docs/schemas/") for f in staged_files):
         sys.stderr.write(
             "Error: docs/schemas/ staged but no Schema-Bump footer.\n"
             "Add Schema-Bump: patch|minor|major to commit message.\n"

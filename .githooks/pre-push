@@ -17,7 +17,22 @@ while read -r local_ref local_sha remote_ref remote_sha; do
   fi
 
   if [[ "$remote_sha" =~ ^0+$ ]]; then
-    remote_sha="$EMPTY_TREE"
+    # New branch: only validate commits not already reachable from origin/main,
+    # so the scope allowlist doesn't retroactively fail pre-allowlist history.
+    remote_sha="$(git -C "$ROOT_DIR" merge-base "$local_sha" "refs/remotes/origin/main" 2>/dev/null || echo "$EMPTY_TREE")"
+  fi
+
+  schema_baseline="$(git -C "$ROOT_DIR" merge-base "$local_sha" "refs/remotes/origin/main" 2>/dev/null || echo "$remote_sha")"
+  if [[ -n "$schema_baseline" && ! "$schema_baseline" =~ ^0+$ ]]; then
+    printf '[PRE-PUSH] Validating schema release contract against origin/main...\n'
+    python3 "$ROOT_DIR/scripts/validate-schema-release.py" \
+      --baseline-ref "$schema_baseline" \
+      --commit-range "$schema_baseline..$local_sha" \
+      --allow-orphan-footer \
+      --dry-run || {
+        printf '[ERROR] Schema release validation failed for the push range.\n' >&2
+        exit 1
+      }
   fi
 
   # Check commit trailers for Co-Authored-By (match line-start to avoid false
