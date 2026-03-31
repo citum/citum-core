@@ -13,7 +13,7 @@ Implement the schema and migration additions specified in docs/specs/CHICAGO_18_
 ## Batches
 
 - [ ] Batch 1: Multivolume / serial enrichment fields (volume_title, part_number, part_title, supplement_number, chapter_number)
-- [ ] Batch 2: Event top-level type (title, location, date, genre, distributor, organizer, performer, narrator, producer)
+- [ ] Batch 2: Event top-level type (title, location, date, genre, network, organizer, performer, narrator, producer)
 - [ ] Batch 3: Status / meta fields (extend status; add available_date, dimensions, scale)
 - [ ] Batch 4: Contributor roles (narrator, compiler, producer, composer, performer, host)
 - [ ] Batch 5: Review relation — reviewed: Option<Box<InputReference>> on SerialComponent and Monograph; extend section to SerialComponent

@@ -21,7 +21,7 @@ schema extensions.
 **In scope:**
 - New fields on existing reference types (Monograph, SerialComponent, etc.)
 - New top-level `Event` reference type
-- New `WorkRelation` relational model for `reviewed` and `original`
+- New `WorkRelation` relational model for `reviewed`, `original`, and `series`
 - New contributor roles
 - Extension of `status` to more types (with i18n support)
 - New genre values for existing types
@@ -61,6 +61,13 @@ Running `scripts/coverage-analysis.py` on the Chicago 18th test corpus (403 item
 A new top-level `InputReference::Event` variant for conferences, performances,
 broadcasts, and recordings.
 
+**Rationale for Event over Monograph:**
+Events are semantically distinct from monographs (books/reports) in that they are 
+primarily *episodes in time* rather than *physical or digital works*. While a 
+monograph is "published", an event is "held" or "performed". Chicago 18th and APA 8th 
+increasingly treat these as first-class entities with specific roles (organizer, 
+performer) and locators (venue, network).
+
 ```rust
 /// Event metadata for conferences, performances, broadcasts, and recordings.
 pub struct Event {
@@ -76,7 +83,7 @@ pub struct Event {
     pub date: Option<EdtfString>,
     /// Event genre (e.g., "conference", "performance", "broadcast", "talk").
     pub genre: Option<String>,
-    /// Broadcaster or network.
+    /// Broadcaster, network, or streaming platform.
     pub network: Option<String>,
     /// Performer(s) or presenter(s).
     pub performer: Option<Contributor>,
@@ -103,7 +110,7 @@ pub struct Event {
 | `available-date` | 11 | `available_date: Option<EdtfString>` | `Monograph`, `SerialComponent`, `Event` |
 | `dimensions` (size) | 20 | `size: Option<String>` | Physical dimensions (maps, art) |
 | `dimensions` (time) | 7 | `duration: Option<String>` | ISO 8601 duration (e.g., `PT1H30M`) |
-| `references` | 5 | `references: Option<String>` | `Monograph`, `SerialComponent`, `Event` (appended bib note) |
+| `references` | 5 | `references: Option<String>` | Appended bibliography note (not for annotations) |
 
 #### Batch 4: Contributor Roles
 
@@ -148,10 +155,22 @@ pub enum WorkRelation {
 }
 ```
 
+**YAML Example (Reviewed Work):**
+```yaml
+id: smith2026
+type: article
+title: A Review of The Great Gatsby
+author: Jane Smith
+reviewed:
+  type: book
+  title: The Great Gatsby
+  author: F. Scott Fitzgerald
+```
+
 **Relation Invariants:**
 - **Short Names:** Fields are named `reviewed`, `original`, and `series`.
 - **YAML Transparency:** Because of `#[serde(untagged)]`, the "work" wrapper 
-  disappears in YAML/JSON (e.g., `reviewed: { type: book, title: ... }`).
+  disappears in YAML/JSON.
 - **No Cycles:** A work cannot be its own `original` or `reviewed` subject.
 - **Non-Locating:** Relations are semantic links, not locator paths.
 - **Identity:** Resolution via `id` is an engine-level optimization; embedded 
@@ -201,6 +220,7 @@ These CSL types map to Citum genres or the new `Event` type:
 
 ## Changelog
 
+- 2026-03-31: Refined CSL variable parsing; added YAML examples; rationalized Event type.
 - 2026-03-30: Standardized `WorkRelation` to untagged enum; fixed table naming inconsistencies.
 - 2026-03-30: Refined Event model, added WorkRelation invariants, added i18n status and ISO duration.
 - 2026-03-30: Updated to reflect Event as a top-level type and relational review model.
