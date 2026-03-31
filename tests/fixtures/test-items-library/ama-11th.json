@@ -1,0 +1,4398 @@
+{
+  "items": [
+    {
+      "id": "6188419/ULUJS22K",
+      "type": "book",
+      "call-number": "HQ767.9 .L37 2011",
+      "citation-key": "lareauUnequalChildhoodsClass2011",
+      "edition": "2",
+      "ISBN": "978-0-520-27142-5",
+      "language": "en",
+      "number-of-pages": "461",
+      "publisher": "University of California Press",
+      "publisher-place": "Berkeley",
+      "shortTitle": "Unequal childhoods",
+      "source": "Library of Congress ISBN",
+      "title": "Unequal childhoods: class, race, and family life, with an update a decade later",
+      "title-short": "Unequal childhoods",
+      "author": [
+        {
+          "family": "Lareau",
+          "given": "Annette"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2011
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/MINIEB3W",
+      "type": "broadcast",
+      "abstract": "March 05, 2019 edition of the weekly JAMA Editors' Summary",
+      "citation-key": "bauchner2019",
+      "language": "en",
+      "license": "AMA11 3.14.2",
+      "note": "genre: editor’s audio summary\ncontainer-title: JAMA",
+      "URL": "https://edhub.ama-assn.org/jn-learning/audio-player/17356045",
+      "author": [
+        {
+          "family": "Bauchner",
+          "given": "Howard C."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            12,
+            13
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2019",
+            3,
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/3PBZW97H",
+      "type": "motion_picture",
+      "abstract": "Once a body is in motion, it tends to stay on motion. Celebrex provides up to 24 hours of arthritis relief. This commercial says moving is easier with the medication, which can be taken with or without food.",
+      "citation-key": "CelebrexCommercialBody2014",
+      "language": "en",
+      "license": "AMA11 3.14.5",
+      "medium": "transcript",
+      "note": "status: last aired",
+      "publisher": "Pfizer. Advertisement by Kaplan Thaler Group",
+      "source": "www.ispot.tv",
+      "title": "Celebrex commercial. Body in motion",
+      "URL": "https://www.ispot.tv/ad/7V7z/celebrex-body-in-motion",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            12,
+            13
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2014",
+            9,
+            18
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/VJ6UMJ7C",
+      "type": "broadcast",
+      "abstract": "When Christy Hammett's son Francis started day care, he wasn't interested in interacting with the other kids. She and three parents keenly remember the moment their child was diagnosed with autism.",
+      "citation-key": "FamiliesDescribeHow2016",
+      "container-title": "Weekend Edition Saturday",
+      "language": "en",
+      "license": "AMA11 3.14.5",
+      "medium": "transcript",
+      "publisher": "National Public Radio",
+      "source": "NPR",
+      "title": "Families describe how they felt hearing about an autism diagnosis",
+      "URL": "http://www.npr.org/2016/01/15/463221381/families-describe-how-they-felt-hearing-about-an-autism-diagnosis",
+      "accessed": {
+        "date-parts": [
+          [
+            2016,
+            10,
+            20
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2016",
+            1,
+            16
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/F793YR4H",
+      "type": "article-journal",
+      "citation-key": "castanheiraDetectionMcr1Escherichia2016",
+      "container-title": "Antimicrobial Agents and Chemotherapy",
+      "DOI": "10.1128/AAC.01267-16",
+      "ISSN": "0066-4804, 1098-6596",
+      "issue": "9",
+      "journalAbbreviation": "Antimicrob Agents Chemother",
+      "language": "en",
+      "license": "AMA11 3.3",
+      "page": "5623-5624",
+      "source": "DOI.org (Crossref)",
+      "title": "Detection of <i>mcr-1</i> among Escherichia coli Clinical Isolates Collected Worldwide as Part of the SENTRY Antimicrobial Surveillance Program in 2014 and 2015",
+      "URL": "https://journals.asm.org/doi/10.1128/AAC.01267-16",
+      "volume": "60",
+      "author": [
+        {
+          "family": "Castanheira",
+          "given": "Mariana"
+        },
+        {
+          "family": "Griffin",
+          "given": "Michelle A."
+        },
+        {
+          "family": "Deshpande",
+          "given": "Lalitagauri M."
+        },
+        {
+          "family": "Mendes",
+          "given": "Rodrigo E."
+        },
+        {
+          "family": "Jones",
+          "given": "Ronald N."
+        },
+        {
+          "family": "Flamm",
+          "given": "Robert K."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            12,
+            13
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2016"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/CEQMV4H8",
+      "type": "broadcast",
+      "abstract": "The faces of heroin include the young, middle-to-upper class and suburban. What was once thought of as an inner-city problem is now a national epidemic",
+      "citation-key": "HeroinHeartland2015",
+      "container-title": "60 Minutes",
+      "language": "en-US",
+      "license": "AMA11 3.14.5",
+      "medium": "transcript",
+      "publisher": "CBS television",
+      "title": "Heroin in the heartland",
+      "URL": "https://www.cbsnews.com/news/heroin-in-the-heartland-60-minutes/",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            12,
+            13
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            11,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/RCER7ETK",
+      "type": "article-journal",
+      "abstract": "PROBLEM/CONDITION: Since the first U.S. infant conceived with Assisted Reproductive Technology (ART) was born in 1981, both the use of advanced technologies to overcome infertility and the number of fertility clinics providing ART services have increased steadily in the United States. ART includes fertility treatments in which eggs or embryos are handled in the laboratory (i.e., in vitro fertilization [IVF] and related procedures). Because more than one embryo might be transferred during a procedure, women who undergo ART procedures, compared with those who conceive naturally, are more likely to deliver multiple birth infants. Multiple births pose substantial risks to both mothers and infants, including obstetric complications, preterm delivery, and low birthweight infants. This report provides state-specific information for the United States (including Puerto Rico) on ART procedures performed in 2012 and compares infant outcomes that occurred in 2012 (resulting from ART procedures performed in 2011 and 2012) with outcomes for all infants born in the United States in 2012.\nPERIOD COVERED: 2012.\nDESCRIPTION OF SYSTEM: In 1996, CDC began collecting data on ART procedures performed in fertility clinics in the United States, as mandated by the Fertility Clinic Success Rate and Certification Act of 1992 (FCSRCA) (Public Law 102-493). Data are collected through the National ART Surveillance System, a web-based data collecting system developed by CDC. This report includes data from 52 reporting areas (the 50 states, the District of Columbia [DC], and Puerto Rico).\nRESULTS: In 2012, a total of 157,635 ART procedures performed in 456 U.S. fertility clinics were reported to CDC. These procedures resulted in 51,261 live-birth deliveries and 65,151 infants. The largest numbers of ART procedures were performed among residents of six states: California (20,241), New York (19,618), Illinois (10,449), Texas (10,281), Massachusetts (9,754), and New Jersey (8,590). These six states also had the highest number of live-birth deliveries as a result of ART procedures, and together they accounted for 50.1% of all ART procedures performed, 48.3% of all infants born from ART, and 48.3% of all ART multiple live-birth deliveries. Nationally, the total number of ART procedures performed per 1 million women of reproductive age (15-44 years), which is a proxy indicator of ART use, was 2,483. This indicator of ART use exceeded the national ratio in 13 reporting areas (California, Connecticut, Delaware, Hawaii, Illinois, Maryland, Massachusetts, New Hampshire, New Jersey, New York, Rhode Island, Virginia, and DC) and was more than twice the national ratio in three reporting areas (Massachusetts, New Jersey, and DC). Nationally, among ART cycles with patients using fresh embryos from their own eggs, in which at least one embryo was transferred, the average number of embryos transferred increased with the increasing age of the woman (1.9 among women aged <35 years, 2.2 among women aged 35-40 years, and 2.7 among women aged >40 years). The percentage of elective single-embryo transfer (eSET) procedures varied substantially between reporting areas for all ages. Among women aged <35 years, who are typically considered to be good candidates for eSET procedures, the national eSET rate was 15.3% (range: 2.1% in Oklahoma to 60.4% in Delaware). Overall, ART contributed to 1.5% of all infants born in the United States (range: 0.2% in Puerto Rico to 4.7% in Massachusetts) with the highest rates (≥3.0% of all infants born) observed in four reporting areas (Connecticut, Massachusetts, New Jersey, and DC). Infants conceived with ART comprised 19.6% of all multiple-birth infants (range: 5.5% in Maine to 39.3% in Massachusetts), 19.2% of all twin infants (range: 4.4% in Puerto Rico to 39.1% in Massachusetts), and 29.6% of all triplet or higher order infants (range: 0 in West Virginia to 69.7% in Idaho). Among infants conceived with ART, 43.6% were born in multiple-birth deliveries (range: 18.7% in Delaware to 56.0% in Idaho), compared with only 3.4% among all infants born in the general population (range: 2.1% in Puerto Rico to 4.5% in New Jersey). Approximately 41% of ART-conceived infants were twin infants, and 2% were triplet and higher order infants. Nationally, infants conceived with ART comprised 5.7% of all low birthweight (<2,500 grams) infants (range: 0.8% in Puerto Rico to 15.3% in Massachusetts) and 5.8% of all very low birthweight (<1,500 grams) infants (range: 0 in West Virginia to 15.1% in New Jersey). Overall, among ART-conceived infants, 30.2% were low birthweight (range: 18.8% in DC to 45.1% in New Mexico), compared with 8.0% among all infants (range: 5.6% in Alaska to 11.6% in Mississippi and Puerto Rico); 5.5% of ART infants were very low birthweight (range: 0 in West Virginia to 12.9% in Puerto Rico), compared with 1.4% among all infants (range: 0.9% in Alaska and Idaho to 2.1% in Mississippi). ART-conceived infants comprised 4.6% of all preterm (<37 weeks) infants (range: 0.7% in Puerto Rico to 13.4% in Massachusetts) and 5.2% of all very preterm (<32 weeks) infants (range: 1.0% in Puerto Rico to 14.9% in Vermont). Overall, among infants conceived with ART, 34.9% were born preterm (range: 20.8% in Delaware and DC to 49.4% in Puerto Rico), compared with 11.6% among all infants born in the general population (range: 8.7% in Vermont to 17.1% in Mississippi); 6.5% of ART infants were born very preterm (range: 3.3% in Nevada to 14.8% in South Dakota), compared with 1.9% among all infants born in the general population (range: 1.1% in Vermont to 2.9% in Mississippi). The percentage of infants conceived with ART who were low birthweight varied from 9.3% (range: 4.1% in South Carolina to 20.9% in Puerto Rico) among singletons, to 55.2% (range: 41.5% in New Hampshire to 83.3% in South Dakota) among twins, and 95.3% (range: 85.2% in Oklahoma to 100% in several reporting areas) among triplets or higher-order multiples; comparable percentages for all infants were 6.3% (range: 4.5% in Alaska to 10.3% in Puerto Rico), 55.4% (range: 46.0% in Alaska to 69.0% in Puerto Rico), and 91.6% (range: 80.6% in Missouri to 100% in several reporting areas), respectively. The percentage of ART infants who were preterm varied from 13.2% (range: 9.4% in West Virginia to 25.4% in North Dakota) among singletons, to 61.0% (range: 47.8% in DC to 80.0% in Maine and West Virginia) among twins, and 97.7% (range: 92.7% in Massachusetts to 100% in several reporting areas) among triplets or higher-order multiples; comparable percentages for all infants were 9.9% (range: 7.3% in Vermont to 15.8% in Puerto Rico), 56.8% (range: 47.2% in Connecticut to 67.2% in Puerto Rico), and 92.6% (range: 36.4% in Oregon to 96.8% in Ohio), respectively.\nINTERPRETATION: The percentage of infants conceived with ART varied considerably by reporting area. In most reporting areas, multiples from ART comprised a substantial proportion of all twin, triplet, and higher-order infants born, and the rates of low birthweight and preterm infants were disproportionately higher among ART infants than in the birth population overall. Among women aged <35 years, eSET procedures warrant consideration because these patients might have extra embryos available for cryopreservation, which is a good predictor of embryo quality, and might have a more favorable prognosis for a live birth than older patients. However, on average, two embryos were transferred per cycle in ART procedures among women aged <35 years, influencing the overall multiple-birth rates in the United States. Compared with ART singletons, ART twins were approximately four and a half times more likely to be born preterm, and approximately six times more likely to be born with low birthweight. Singleton infants conceived with ART had slightly higher rates of preterm delivery and low birthweight than all singleton infants born in the United States. ART use per population unit was geographically varied, with 12 states showing ART use above the national rate. Of the four states (Illinois, Massachusetts, New Jersey, and Rhode Island) with comprehensive statewide-mandated health insurance coverage for ART procedures (e.g., coverage for at least four cycles of in vitro fertilization), two states (Massachusetts and New Jersey) had rates of ART use exceeding twice the national level. This type of mandated insurance has been associated with greater use of ART and might account for some of the difference in per capita ART use observed among states.\nPUBLIC HEALTH ACTIONS: Reducing the number of embryos transferred per ART procedure and increasing use of eSET, when clinically appropriate (typically age <35 years), might reduce multiple births and related adverse consequences of ART. Improved patient education and counseling on the maternal and infant health risks of having twins are needed given that twins account for the majority of ART-conceived multiple births. Although ART contributes to increasing rates of multiple births, it does not explain all of the increases. Other explanations for multiple births not investigated in this report might include age-related factors and the role of non-ART fertility treatments, and warrant further study.",
+      "citation-key": "sunderamAssistedReproductiveTechnology2015a",
+      "container-title": "Morbidity and Mortality Weekly Report. Surveillance Summaries",
+      "ISSN": "1545-8636",
+      "journalAbbreviation": "MMWR Surveill Summ",
+      "language": "eng",
+      "license": "AMA11 3.11.3",
+      "note": "supplement-number: 6",
+      "page": "1-29",
+      "PMID": "26270152",
+      "source": "PubMed",
+      "title": "Assisted reproductive technology surveillance—United States, 2012",
+      "volume": "64",
+      "author": [
+        {
+          "family": "Sunderam",
+          "given": "Saswati"
+        },
+        {
+          "family": "Kissin",
+          "given": "Dmitry M."
+        },
+        {
+          "family": "Crawford",
+          "given": "Sara B."
+        },
+        {
+          "family": "Folger",
+          "given": "Suzanne G."
+        },
+        {
+          "family": "Jamieson",
+          "given": "Denise J."
+        },
+        {
+          "family": "Warner",
+          "given": "Lee"
+        },
+        {
+          "family": "Barfield",
+          "given": "Wanda D."
+        },
+        {
+          "family": "Centers for Disease Control and Prevention (CDC)",
+          "given": ""
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            8,
+            14
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/87XJVU3W",
+      "type": "article-journal",
+      "citation-key": "davisAssociationAppleConsumption2015",
+      "container-title": "JAMA Internal Medicine",
+      "DOI": "10.1001/jamainternmed.2014.5466",
+      "ISSN": "2168-6106",
+      "issue": "5",
+      "journalAbbreviation": "JAMA Intern Med",
+      "language": "en",
+      "license": "AMA11 3.3",
+      "page": "777",
+      "shortTitle": "Association between apple consumption and physician visits",
+      "source": "DOI.org (Crossref)",
+      "title": "Association between apple consumption and physician visits: appealing the conventional wisdom that an apple a day keeps the doctor away",
+      "title-short": "Association between apple consumption and physician visits",
+      "URL": "http://archinte.jamanetwork.com/article.aspx?doi=10.1001/jamainternmed.2014.5466",
+      "volume": "175",
+      "author": [
+        {
+          "family": "Davis",
+          "given": "Matthew A."
+        },
+        {
+          "family": "Bynum",
+          "given": "Julie P. W."
+        },
+        {
+          "family": "Sirovich",
+          "given": "Brenda E."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            12,
+            13
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            5,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/VNL83HUS",
+      "type": "book",
+      "call-number": "LC4705 .B87 2012",
+      "citation-key": "burnsRTIApplications2012",
+      "collection-title": "The Guilford practical intervention in the schools series",
+      "ISBN": "978-1-4625-0914-0",
+      "license": "AMA11 3.12.6",
+      "note": "volume-title: Assessment, analysis, and decision making",
+      "number-of-volumes": "2",
+      "publisher": "Guilford Press",
+      "publisher-place": "New York",
+      "source": "Library of Congress ISBN",
+      "title": "RTI applications",
+      "volume": "2",
+      "author": [
+        {
+          "family": "Burns",
+          "given": "Matthew K."
+        },
+        {
+          "family": "Riley-Tillman",
+          "given": "T. Chris"
+        },
+        {
+          "family": "VanDerHeyden",
+          "given": "Amanda Mathany"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2012
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/IR42KXYH",
+      "type": "motion_picture",
+      "citation-key": "AssociationIncomeLife2016",
+      "dimensions": "4 min 53 sec",
+      "language": "en",
+      "license": "AMA11 3.14.4",
+      "publisher": "JAMA",
+      "title": "Association between income and life expectancy in the United States",
+      "URL": "https://edhub.ama-assn.org/jn-learning/video-player/12647873",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            12,
+            13
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2016",
+            4,
+            10
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/7ZAI2LI5",
+      "type": "motion_picture",
+      "abstract": "Video (obtained under otomicroscopy) demonstrates the sampling technique for this study after toileting of the external auditory canal (EAC).",
+      "citation-key": "MiddleEarAspiration2016",
+      "dimensions": "31 sec",
+      "language": "en",
+      "license": "AMA11 3.14.4",
+      "note": "container-title: JAMA Otolaryngology–Head & Neck Surgery",
+      "title": "Middle ear aspiration",
+      "URL": "https://edhub.ama-assn.org/jn-learning/video-player/13673838",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            12,
+            13
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2016",
+            11,
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/A8RPJALM",
+      "type": "interview",
+      "abstract": "Interview with Charles Harding, AB, author of Breast Cancer Screening, Incidence, and Mortality Across US Counties, and Joann G. Elmore, MD, MPH, author of Effect of Screening Mammography on Cancer Incidence and Mortality",
+      "citation-key": "hardingBreastCancerScreening2015",
+      "language": "en",
+      "license": "AMA11 3.14.2",
+      "note": "container-title: JAMA Internal Medicine\ncontainer-title-short: JAMA Intern Med",
+      "title": "Breast cancer screening, incidence, and mortality across US counties",
+      "URL": "https://edhub.ama-assn.org/jn-learning/audio-player/11054180",
+      "author": [
+        {
+          "family": "Harding",
+          "given": "Charles"
+        },
+        {
+          "family": "Elmore",
+          "given": "Joann G."
+        }
+      ],
+      "interviewer": [
+        {
+          "family": "Bellandi",
+          "given": "Deanna"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            12,
+            13
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2015",
+            7,
+            6
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/ZE4WWJJU",
+      "type": "broadcast",
+      "abstract": "On this episode of The Show About Science, Nate takes the show on the road to the Peggy Notebaert Nature Museum in Chicago to visit the Butterfly Haven there. Later in the episode, he interviews Do…",
+      "citation-key": "nateButterflies2016",
+      "language": "en",
+      "license": "AMA11 3.14.2",
+      "note": "container-title: The show about science",
+      "number": "20",
+      "title": "Butterflies",
+      "URL": "https://theshowaboutscience.com/2016/10/11/020-butterflies-with-doug-taron/",
+      "author": [
+        {
+          "family": "Nate",
+          "given": ""
+        }
+      ],
+      "guest": [
+        {
+          "family": "Taron",
+          "given": "Doug"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            12,
+            13
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2016,
+            10,
+            12
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/5YUH6A3K",
+      "type": "article-journal",
+      "abstract": "ABSTRACT\n            \n              Carbapenem-resistant\n              Enterobacteriaceae\n              (CRE) usually infect patients with significant comorbidities and health care exposures. We present a case of a pregnant woman who developed community-acquired pyelonephritis caused by KPC-producing\n              Klebsiella pneumoniae\n              . Despite antibiotic treatment, she experienced spontaneous prolonged rupture of membranes, with eventual delivery of a healthy infant. This report demonstrates the challenge that CRE may pose to the effective treatment of common infections in obstetric patients, with potentially harmful consequences to maternal and neonatal health.",
+      "citation-key": "khatriCommunityacquiredPyelonephritisPregnancy2015",
+      "container-title": "Antimicrobial Agents and Chemotherapy",
+      "DOI": "10.1128/AAC.00553-15",
+      "ISSN": "0066-4804, 1098-6596",
+      "issue": "8",
+      "journalAbbreviation": "Antimicrob Agents Chemother",
+      "language": "en",
+      "license": "AMA11 3.9.3",
+      "page": "4375-4378",
+      "source": "DOI.org (Crossref)",
+      "title": "Community-acquired pyelonephritis in pregnancy caused by KPC-producing klebsiella pneumoniae",
+      "URL": "https://journals.asm.org/doi/10.1128/AAC.00553-15",
+      "volume": "59",
+      "author": [
+        {
+          "family": "Khatri",
+          "given": "Asma"
+        },
+        {
+          "family": "Naeger Murphy",
+          "given": "Nina"
+        },
+        {
+          "family": "Wiest",
+          "given": "Peter"
+        },
+        {
+          "family": "Osborn",
+          "given": "Melissa"
+        },
+        {
+          "family": "Garber",
+          "given": "Kathleen"
+        },
+        {
+          "family": "Hecker",
+          "given": "Michelle"
+        },
+        {
+          "family": "Hurless",
+          "given": "Kelly"
+        },
+        {
+          "family": "Rudin",
+          "given": "Susan D."
+        },
+        {
+          "family": "Jacobs",
+          "given": "Michael R."
+        },
+        {
+          "family": "Kalayjian",
+          "given": "Robert C."
+        },
+        {
+          "family": "Salata",
+          "given": "Robert A."
+        },
+        {
+          "family": "Van Duin",
+          "given": "David"
+        },
+        {
+          "family": "Perez",
+          "given": "Federico"
+        },
+        {
+          "family": "Bonomo",
+          "given": "Robert A."
+        },
+        {
+          "family": "Paterson",
+          "given": "David L."
+        },
+        {
+          "family": "Harris",
+          "given": "Patrick N. A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2015"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/PCL5ANJP",
+      "type": "article-journal",
+      "citation-key": "rayCasePwaveMimicry2015",
+      "container-title": "JAMA Internal Medicine",
+      "DOI": "10.1001/jamainternmed.2015.3342",
+      "ISSN": "2168-6106",
+      "issue": "10",
+      "journalAbbreviation": "JAMA Intern Med",
+      "language": "en",
+      "license": "AMA11 3.9.2.2",
+      "page": "1693",
+      "shortTitle": "A case of P-wave mimicry",
+      "source": "DOI.org (Crossref)",
+      "title": "A case of P-wave mimicry: <i>cherchez le P</i>",
+      "title-short": "A case of P-wave mimicry",
+      "URL": "http://archinte.jamanetwork.com/article.aspx?doi=10.1001/jamainternmed.2015.3342",
+      "volume": "175",
+      "author": [
+        {
+          "family": "Ray",
+          "given": "Jordan C."
+        },
+        {
+          "family": "Kusumoto",
+          "given": "Fred"
+        },
+        {
+          "family": "Goldschlager",
+          "given": "Nora"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            10,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/EY3AIJ6P",
+      "type": "article-journal",
+      "citation-key": "anonymousCareCantGet2012",
+      "container-title": "BMJ",
+      "DOI": "10.1136/bmj.e4511",
+      "ISSN": "1756-1833",
+      "journalAbbreviation": "BMJ",
+      "language": "en",
+      "license": "AMA11 3.7.2",
+      "note": "number: e4511",
+      "section": "Views & reviews",
+      "source": "DOI.org (Crossref)",
+      "title": "Care can't get better until complaints are heard",
+      "URL": "https://www.bmj.com/lookup/doi/10.1136/bmj.e4511",
+      "volume": "345",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2012,
+            7,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/RRTFSEYK",
+      "type": "article-journal",
+      "citation-key": "guggenheimRoleEducationalExposure2015",
+      "container-title": "JAMA Ophthalmology",
+      "DOI": "10.1001/jamaophthalmol.2015.3556",
+      "ISSN": "2168-6165",
+      "issue": "12",
+      "journalAbbreviation": "JAMA Ophthalmol",
+      "language": "en",
+      "license": "AMA11 3.7.2",
+      "page": "1408-1414",
+      "source": "DOI.org (Crossref)",
+      "title": "Role of educational exposure in the association between myopia and birth order",
+      "URL": "http://archopht.jamanetwork.com/article.aspx?doi=10.1001/jamaophthalmol.2015.3556",
+      "volume": "133",
+      "author": [
+        {
+          "family": "Guggenheim",
+          "given": "Jeremy A."
+        },
+        {
+          "family": "Williams",
+          "given": "Cathy"
+        },
+        {
+          "family": "for the UK Biobank Eye and Vision Consortium",
+          "given": ""
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            12,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/7BRVMUZ9",
+      "type": "article-journal",
+      "citation-key": "writingcommitteeforthediabeticretinopathyclinicalresearchnetworkPanretinalPhotocoagulationVs2015",
+      "container-title": "JAMA",
+      "DOI": "10.1001/jama.2015.15217",
+      "ISSN": "0098-7484",
+      "issue": "20",
+      "journalAbbreviation": "JAMA",
+      "language": "en",
+      "license": "AMA11 3.7.2",
+      "page": "2137",
+      "shortTitle": "Panretinal photocoagulation vs intravitreous ranibizumab for proliferative diabetic retinopathy",
+      "source": "DOI.org (Crossref)",
+      "title": "Panretinal photocoagulation vs intravitreous ranibizumab for proliferative diabetic retinopathy: a randomized clinical trial",
+      "title-short": "Panretinal photocoagulation vs intravitreous ranibizumab for proliferative diabetic retinopathy",
+      "URL": "http://jama.jamanetwork.com/article.aspx?doi=10.1001/jama.2015.15217",
+      "volume": "314",
+      "author": [
+        {
+          "family": "Writing Committee for the Diabetic Retinopathy Clinical Research Network",
+          "given": ""
+        },
+        {
+          "family": "Gross",
+          "given": "Jeffrey G."
+        },
+        {
+          "family": "Glassman",
+          "given": "Adam R."
+        },
+        {
+          "family": "Jampol",
+          "given": "Lee M."
+        },
+        {
+          "family": "Inusah",
+          "given": "Seidu"
+        },
+        {
+          "family": "Aiello",
+          "given": "Lloyd Paul"
+        },
+        {
+          "family": "Antoszyk",
+          "given": "Andrew N."
+        },
+        {
+          "family": "Baker",
+          "given": "Carl W."
+        },
+        {
+          "family": "Berger",
+          "given": "Brian B."
+        },
+        {
+          "family": "Bressler",
+          "given": "Neil M."
+        },
+        {
+          "family": "Browning",
+          "given": "David"
+        },
+        {
+          "family": "Elman",
+          "given": "Michael J."
+        },
+        {
+          "family": "Ferris",
+          "given": "Frederick L."
+        },
+        {
+          "family": "Friedman",
+          "given": "Scott M."
+        },
+        {
+          "family": "Marcus",
+          "given": "Dennis M."
+        },
+        {
+          "family": "Melia",
+          "given": "Michele"
+        },
+        {
+          "family": "Stockdale",
+          "given": "Cynthia R."
+        },
+        {
+          "family": "Sun",
+          "given": "Jennifer K."
+        },
+        {
+          "family": "Beck",
+          "given": "Roy W."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            11,
+            24
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/CI54JQ5D",
+      "type": "article-journal",
+      "citation-key": "gerdingAdministrationSporesNontoxigenic2015",
+      "container-title": "JAMA",
+      "DOI": "10.1001/jama.2015.3725",
+      "ISSN": "0098-7484",
+      "issue": "17",
+      "journalAbbreviation": "JAMA",
+      "language": "en",
+      "license": "AMA11 3.9.3",
+      "page": "1719",
+      "shortTitle": "Administration of spores of nontoxigenic <i>clostridium difficile</i> strain M3 for prevention of recurrent <i>C difficile</i> infection",
+      "source": "DOI.org (Crossref)",
+      "title": "Administration of spores of nontoxigenic <i>clostridium difficile</i> strain M3 for prevention of recurrent <i>C difficile</i> infection: a randomized clinical trial",
+      "title-short": "Administration of spores of nontoxigenic <i>clostridium difficile</i> strain M3 for prevention of recurrent <i>C difficile</i> infection",
+      "URL": "http://jama.jamanetwork.com/article.aspx?doi=10.1001/jama.2015.3725",
+      "volume": "313",
+      "author": [
+        {
+          "family": "Gerding",
+          "given": "Dale N."
+        },
+        {
+          "family": "Meyer",
+          "given": "Thomas"
+        },
+        {
+          "family": "Lee",
+          "given": "Christine"
+        },
+        {
+          "family": "Cohen",
+          "given": "Stuart H."
+        },
+        {
+          "family": "Murthy",
+          "given": "Uma K."
+        },
+        {
+          "family": "Poirier",
+          "given": "Andre"
+        },
+        {
+          "family": "Van Schooneveld",
+          "given": "Trevor C."
+        },
+        {
+          "family": "Pardi",
+          "given": "Darrell S."
+        },
+        {
+          "family": "Ramos",
+          "given": "Antonio"
+        },
+        {
+          "family": "Barron",
+          "given": "Michelle A."
+        },
+        {
+          "family": "Chen",
+          "given": "Hongzi"
+        },
+        {
+          "family": "Villano",
+          "given": "Stephen"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            5,
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/HMJTAJCD",
+      "type": "article-journal",
+      "citation-key": "IncorrectPercentagesAbstract2017",
+      "container-title": "JAMA Oncology",
+      "DOI": "10.1001/jamaoncol.2017.4368",
+      "ISSN": "2374-2437",
+      "issue": "12",
+      "journalAbbreviation": "JAMA Oncol",
+      "language": "en",
+      "license": "AMA11 3.7.2",
+      "page": "1742",
+      "section": "Correction",
+      "source": "DOI.org (Crossref)",
+      "title": "Incorrect percentages in the abstract",
+      "URL": "http://oncology.jamanetwork.com/article.aspx?doi=10.1001/jamaoncol.2017.4368",
+      "volume": "3",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2017,
+            12,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/PFHVHBBG",
+      "type": "chapter",
+      "abstract": "Abstract\n            The References chapter of the 11th edition of the AMA Manual of Style contains detailed guidance on what should be included in a reference and how references should be styled and formatted. Sample references to both books and journals, in print and online, include formats for sometimes complex citations that include non-English words and phrases, names of organisms, discontinuous pagination, journals without volume or issue numbers, a special department of a journal, discussants, online comments, special collections, package inserts, patents, conference proceedings, personal communications, material submitted but not yet accepted or published, and transcripts. Many examples of how to cite social media and other electronic resources, including podcasts, apps and interactive games, preprints, databases, and data repositories, are included. New recommendations: a DOI should be included for journal references if available, and it is no longer necessary to include the publisher’s location in references to books.",
+      "citation-key": "fischerReferences2020",
+      "container-title": "AMA Manual of Style",
+      "DOI": "10.1093/jama/9780190246556.003.0003",
+      "edition": "11",
+      "ISBN": "978-0-19-024655-6 978-0-19-750782-7",
+      "language": "en",
+      "page": "59-112",
+      "publisher": "Oxford University Press",
+      "publisher-place": "New York",
+      "source": "DOI.org (Crossref)",
+      "title": "References",
+      "URL": "https://academic.oup.com/amamanualofstyle/book/27941/chapter/207563234",
+      "author": [
+        {
+          "family": "Fischer",
+          "given": "Lauren"
+        },
+        {
+          "family": "Frank",
+          "given": "Paul"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2020,
+            2,
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/46ITV6LN",
+      "type": "article-journal",
+      "citation-key": "wangAssociationMaternalPrepregnancy2016",
+      "container-title": "JAMA Pediatrics",
+      "DOI": "10.1001/jamapediatrics.2016.0845",
+      "ISSN": "2168-6203",
+      "issue": "8",
+      "journalAbbreviation": "JAMA Pediatr",
+      "language": "en",
+      "license": "AMA11 3.11.1",
+      "note": "number: e160845",
+      "source": "DOI.org (Crossref)",
+      "title": "Association between maternal prepregnancy body mass index and plasma folate concentrations with child metabolic health",
+      "URL": "http://archpedi.jamanetwork.com/article.aspx?doi=10.1001/jamapediatrics.2016.0845",
+      "volume": "170",
+      "author": [
+        {
+          "family": "Wang",
+          "given": "Guoying"
+        },
+        {
+          "family": "Hu",
+          "given": "Frank B."
+        },
+        {
+          "family": "Mistry",
+          "given": "Kamila B."
+        },
+        {
+          "family": "Zhang",
+          "given": "Cuilin"
+        },
+        {
+          "family": "Ren",
+          "given": "Fazheng"
+        },
+        {
+          "family": "Huo",
+          "given": "Yong"
+        },
+        {
+          "family": "Paige",
+          "given": "David"
+        },
+        {
+          "family": "Bartell",
+          "given": "Tami"
+        },
+        {
+          "family": "Hong",
+          "given": "Xiumei"
+        },
+        {
+          "family": "Caruso",
+          "given": "Deanna"
+        },
+        {
+          "family": "Ji",
+          "given": "Zhicheng"
+        },
+        {
+          "family": "Chen",
+          "given": "Zhu"
+        },
+        {
+          "family": "Ji",
+          "given": "Yuelong"
+        },
+        {
+          "family": "Pearson",
+          "given": "Colleen"
+        },
+        {
+          "family": "Ji",
+          "given": "Hongkai"
+        },
+        {
+          "family": "Zuckerman",
+          "given": "Barry"
+        },
+        {
+          "family": "Cheng",
+          "given": "Tina L."
+        },
+        {
+          "family": "Wang",
+          "given": "Xiaobin"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2016,
+            8,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/YIF27DGE",
+      "type": "article-journal",
+      "citation-key": "obamaUnitedStatesHealth2016",
+      "container-title": "JAMA",
+      "DOI": "10.1001/jama.2016.9797",
+      "ISSN": "0098-7484",
+      "issue": "5",
+      "journalAbbreviation": "JAMA",
+      "language": "en",
+      "license": "AMA11 3.11.1",
+      "page": "525–532",
+      "shortTitle": "United states health care reform",
+      "source": "DOI.org (Crossref)",
+      "title": "United States health care reform: progress to date and next steps",
+      "title-short": "United states health care reform",
+      "URL": "http://jama.jamanetwork.com/article.aspx?doi=10.1001/jama.2016.9797",
+      "volume": "316",
+      "author": [
+        {
+          "family": "Obama",
+          "given": "Barack"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2016,
+            8,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/PN7GICE5",
+      "type": "article-journal",
+      "citation-key": "frazerLegislativeSmokingBans2016",
+      "container-title": "Cochrane Database of Systematic Reviews",
+      "DOI": "10.1002/14651858.CD005992.pub3",
+      "ISSN": "14651858",
+      "issue": "2",
+      "language": "en",
+      "license": "AMA11 3.11.4",
+      "note": "number: CD005992",
+      "source": "DOI.org (Crossref)",
+      "title": "Legislative smoking bans for reducing harms from secondhand smoke exposure, smoking prevalence and tobacco consumption",
+      "URL": "http://doi.wiley.com/10.1002/14651858.CD005992.pub3",
+      "volume": "2016",
+      "author": [
+        {
+          "family": "Frazer",
+          "given": "Kate"
+        },
+        {
+          "family": "Callinan",
+          "given": "Joanne E"
+        },
+        {
+          "family": "McHugh",
+          "given": "Jack"
+        },
+        {
+          "family": "Van Baarsel",
+          "given": "Susan"
+        },
+        {
+          "family": "Clarke",
+          "given": "Anna"
+        },
+        {
+          "family": "Doherty",
+          "given": "Kirsten"
+        },
+        {
+          "family": "Kelleher",
+          "given": "Cecily"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Cochrane Tobacco Addiction Group",
+          "given": ""
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2016,
+            2,
+            4
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/Z6PC6EQ8",
+      "type": "article-journal",
+      "citation-key": "vanderkamEffectShorttermSupplementation2016",
+      "container-title": "PLOS Medicine",
+      "DOI": "10.1371/journal.pmed.1001951",
+      "ISSN": "1549-1676",
+      "issue": "2",
+      "journalAbbreviation": "PLoS Med",
+      "language": "en",
+      "license": "AMA11 3.11.4",
+      "note": "number: e1001951",
+      "shortTitle": "Effect of short-term supplementation with ready-to-use therapeutic food or micronutrients for children after illness for prevention of malnutrition",
+      "source": "DOI.org (Crossref)",
+      "title": "Effect of short-term supplementation with ready-to-use therapeutic food or micronutrients for children after illness for prevention of malnutrition: a randomised controlled trial in Uganda",
+      "title-short": "Effect of short-term supplementation with ready-to-use therapeutic food or micronutrients for children after illness for prevention of malnutrition",
+      "URL": "https://dx.plos.org/10.1371/journal.pmed.1001951",
+      "volume": "13",
+      "author": [
+        {
+          "family": "van der Kam",
+          "given": "Saskia"
+        },
+        {
+          "family": "Roll",
+          "given": "Stephanie"
+        },
+        {
+          "family": "Swarthout",
+          "given": "Todd"
+        },
+        {
+          "family": "Edyegu-Otelu",
+          "given": "Grace"
+        },
+        {
+          "family": "Matsumoto",
+          "given": "Akiko"
+        },
+        {
+          "family": "Kasujja",
+          "given": "Francis Xavier"
+        },
+        {
+          "family": "Casademont",
+          "given": "Cristian"
+        },
+        {
+          "family": "Shanks",
+          "given": "Leslie"
+        },
+        {
+          "family": "Salse-Ubach",
+          "given": "Nuria"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Tumwine",
+          "given": "James K."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2016,
+            2,
+            9
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/YJNK9WXQ",
+      "type": "article-journal",
+      "abstract": "BACKGROUND AND OBJECTIVES:\n              Because physicians’ practices could be modified to reduce missed opportunities for human papillomavirus (HPV) vaccination, our goal was to: (1) describe self-reported practices regarding recommending the HPV vaccine; (2) estimate the frequency of parental deferral of HPV vaccination; and (3)identify characteristics associated with not discussing it.\n            \n            \n              METHODS:\n              A national survey among pediatricians and family physicians (FP) was conducted between October 2013 and January 2014. Using multivariable analysis, characteristics associated with not discussing HPV vaccination were examined.\n            \n            \n              RESULTS:\n              Response rates were 82% for pediatricians (364 of 442) and 56% for FP (218 of 387). For 11-12 year-old girls, 60% of pediatricians and 59% of FP strongly recommend HPV vaccine; for boys,52% and 41% ostrongly recommen. More than one-half reported ≥25% of parents deferred HPV vaccination. At the 11-12 year well visit, 84% of pediatricians and 75% of FP frequently/always discuss HPV vaccination. Compared with physicians who frequently/always discuss , those who occasionally/rarely discuss(18%) were more likely to be FP (adjusted odds ratio [aOR]: 2.0 [95% confidence interval (CI): 1.1–3.5), be male (aOR: 1.8 [95% CI: 1.1–3.1]), disagree that parents will accept HPV vaccine if discussed with other vaccines (aOR: 2.3 [95% CI: 1.3–4.2]), report that 25% to 49% (aOR: 2.8 [95% CI: 1.1–6.8]) or ≥50% (aOR: 7.8 [95% CI: 3.4–17.6]) of parents defer, and express concern about waning immunity (aOR: 3.4 [95% CI: 1.8–6.4]).\n            \n            \n              CONCLUSIONS:\n              Addressing physicians’ perceptions about parental acceptance of HPV vaccine, the possible advantages of discussing HPV vaccination with other recommended vaccines, and concerns about waning immunity could lead to increased vaccination rates.",
+      "citation-key": "allisonPrimaryCarePhysicians2016",
+      "container-title": "Pediatrics",
+      "DOI": "10.1542/peds.2015-2488",
+      "ISSN": "0031-4005, 1098-4275",
+      "issue": "2",
+      "language": "en",
+      "license": "AMA11 3.11.4",
+      "note": "number: e20152488",
+      "source": "DOI.org (Crossref)",
+      "title": "Primary care physicians’ perspectives about HPV vaccine",
+      "URL": "https://publications.aap.org/pediatrics/article/137/2/e20152488/52710/Primary-Care-Physicians-Perspectives-About-HPV",
+      "volume": "137",
+      "author": [
+        {
+          "family": "Allison",
+          "given": "Mandy A."
+        },
+        {
+          "family": "Hurley",
+          "given": "Laura P."
+        },
+        {
+          "family": "Markowitz",
+          "given": "Lauri"
+        },
+        {
+          "family": "Crane",
+          "given": "Lori A."
+        },
+        {
+          "family": "Brtnikova",
+          "given": "Michaela"
+        },
+        {
+          "family": "Beaty",
+          "given": "Brenda L."
+        },
+        {
+          "family": "Snow",
+          "given": "Megan"
+        },
+        {
+          "family": "Cory",
+          "given": "Janine"
+        },
+        {
+          "family": "Stokley",
+          "given": "Shannon"
+        },
+        {
+          "family": "Roark",
+          "given": "Jill"
+        },
+        {
+          "family": "Kempe",
+          "given": "Allison"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2016,
+            2,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/ZK7KTHZU",
+      "type": "article-journal",
+      "citation-key": "faninProgressChallengesDiagnosis2016",
+      "container-title": "Muscle & Nerve",
+      "DOI": "10.1002/mus.25367",
+      "ISSN": "0148639X",
+      "journalAbbreviation": "Muscle Nerve",
+      "language": "en",
+      "license": "AMA11 3.11.3",
+      "shortTitle": "Progress and challenges in diagnosis of dysferlinopathy",
+      "source": "DOI.org (Crossref)",
+      "title": "Progress and challenges in diagnosis of dysferlinopathy: dysferlinopathy diagnosis",
+      "title-short": "Progress and challenges in diagnosis of dysferlinopathy",
+      "URL": "https://onlinelibrary.wiley.com/doi/10.1002/mus.25367",
+      "author": [
+        {
+          "family": "Fanin",
+          "given": "Marina"
+        },
+        {
+          "family": "Angelini",
+          "given": "Corrado"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2016",
+            8,
+            8
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/SZD5GQAA",
+      "type": "article-journal",
+      "citation-key": "jacksonPrenatalDiagnosisSyndrome2017",
+      "container-title": "Human Mutation",
+      "DOI": "10.1002/humu.23242",
+      "ISSN": "10597794",
+      "issue": "7",
+      "journalAbbreviation": "Human Mutation",
+      "language": "en",
+      "license": "AMA11 3.10",
+      "page": "749-749",
+      "shortTitle": "Prenatal diagnosis",
+      "source": "DOI.org (Crossref)",
+      "title": "Prenatal diagnosis: Down syndrome or more?",
+      "title-short": "Prenatal diagnosis",
+      "URL": "https://onlinelibrary.wiley.com/doi/10.1002/humu.23242",
+      "volume": "38",
+      "author": [
+        {
+          "family": "Jackson",
+          "given": "Laird G."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2017"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/JFQ7LR4R",
+      "type": "article-journal",
+      "citation-key": "tamburiniMicrobiomeEarlyLife2016",
+      "container-title": "Nature Medicine",
+      "DOI": "10.1038/nm.4142",
+      "ISSN": "1078-8956, 1546-170X",
+      "journalAbbreviation": "Nat Med",
+      "language": "en",
+      "license": "AMA11 3.11.4",
+      "shortTitle": "Microbiome in early life",
+      "source": "DOI.org (Crossref)",
+      "title": "The microbiome in early life: implications for health outcomes",
+      "title-short": "Microbiome in early life",
+      "URL": "https://www.nature.com/articles/nm.4142",
+      "author": [
+        {
+          "family": "Tamburini",
+          "given": "Sabrina"
+        },
+        {
+          "family": "Shen",
+          "given": "Nan"
+        },
+        {
+          "family": "Wu",
+          "given": "Han Chih"
+        },
+        {
+          "family": "Clemente",
+          "given": "Jose C"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2016",
+            7,
+            7
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/JNRSPCXP",
+      "type": "article-journal",
+      "citation-key": "metcalfeContralateralMastectomySurvival2014",
+      "container-title": "BMJ",
+      "DOI": "10.1136/bmj.g226",
+      "ISSN": "1756-1833",
+      "issue": "feb11 9",
+      "journalAbbreviation": "BMJ",
+      "language": "en",
+      "license": "AMA11 3.11.4",
+      "page": "g226-g226",
+      "shortTitle": "Contralateral mastectomy and survival after breast cancer in carriers of BRCA1 and BRCA2 mutations",
+      "source": "DOI.org (Crossref)",
+      "title": "Contralateral mastectomy and survival after breast cancer in carriers of BRCA1 and BRCA2 mutations: retrospective analysis",
+      "title-short": "Contralateral mastectomy and survival after breast cancer in carriers of BRCA1 and BRCA2 mutations",
+      "URL": "https://www.bmj.com/lookup/doi/10.1136/bmj.g226",
+      "volume": "348",
+      "author": [
+        {
+          "family": "Metcalfe",
+          "given": "K."
+        },
+        {
+          "family": "Gershman",
+          "given": "S."
+        },
+        {
+          "family": "Ghadirian",
+          "given": "P."
+        },
+        {
+          "family": "Lynch",
+          "given": "H. T."
+        },
+        {
+          "family": "Snyder",
+          "given": "C."
+        },
+        {
+          "family": "Tung",
+          "given": "N."
+        },
+        {
+          "family": "Kim-Sing",
+          "given": "C."
+        },
+        {
+          "family": "Eisen",
+          "given": "A."
+        },
+        {
+          "family": "Foulkes",
+          "given": "W. D."
+        },
+        {
+          "family": "Rosen",
+          "given": "B."
+        },
+        {
+          "family": "Sun",
+          "given": "P."
+        },
+        {
+          "family": "Narod",
+          "given": "S. A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2014,
+            2,
+            11
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/ALN7TM3J",
+      "type": "article-journal",
+      "citation-key": "quirozBrainImagingBlood2015",
+      "container-title": "JAMA Neurology",
+      "DOI": "10.1001/jamaneurol.2015.1099",
+      "ISSN": "2168-6149",
+      "issue": "8",
+      "journalAbbreviation": "JAMA Neurol",
+      "language": "en",
+      "license": "AMA11 3.11.3",
+      "page": "912",
+      "shortTitle": "Brain imaging and blood biomarker abnormalities in children with autosomal dominant alzheimer disease",
+      "source": "DOI.org (Crossref)",
+      "title": "Brain imaging and blood biomarker abnormalities in children with autosomal dominant alzheimer disease: a cross-sectional study",
+      "title-short": "Brain imaging and blood biomarker abnormalities in children with autosomal dominant alzheimer disease",
+      "URL": "http://archneur.jamanetwork.com/article.aspx?doi=10.1001/jamaneurol.2015.1099",
+      "volume": "72",
+      "author": [
+        {
+          "family": "Quiroz",
+          "given": "Yakeel T."
+        },
+        {
+          "family": "Schultz",
+          "given": "Aaron P."
+        },
+        {
+          "family": "Chen",
+          "given": "Kewei"
+        },
+        {
+          "family": "Protas",
+          "given": "Hillary D."
+        },
+        {
+          "family": "Brickhouse",
+          "given": "Michael"
+        },
+        {
+          "family": "Fleisher",
+          "given": "Adam S."
+        },
+        {
+          "family": "Langbaum",
+          "given": "Jessica B."
+        },
+        {
+          "family": "Thiyyagura",
+          "given": "Pradeep"
+        },
+        {
+          "family": "Fagan",
+          "given": "Anne M."
+        },
+        {
+          "family": "Shah",
+          "given": "Aarti R."
+        },
+        {
+          "family": "Muniz",
+          "given": "Martha"
+        },
+        {
+          "family": "Arboleda-Velasquez",
+          "given": "Joseph F."
+        },
+        {
+          "family": "Munoz",
+          "given": "Claudia"
+        },
+        {
+          "family": "Garcia",
+          "given": "Gloria"
+        },
+        {
+          "family": "Acosta-Baena",
+          "given": "Natalia"
+        },
+        {
+          "family": "Giraldo",
+          "given": "Margarita"
+        },
+        {
+          "family": "Tirado",
+          "given": "Victoria"
+        },
+        {
+          "family": "Ramírez",
+          "given": "Dora L."
+        },
+        {
+          "family": "Tariot",
+          "given": "Pierre N."
+        },
+        {
+          "family": "Dickerson",
+          "given": "Bradford C."
+        },
+        {
+          "family": "Sperling",
+          "given": "Reisa A."
+        },
+        {
+          "family": "Lopera",
+          "given": "Francisco"
+        },
+        {
+          "family": "Reiman",
+          "given": "Eric M."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            8,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/5CEGSJA6",
+      "type": "article-journal",
+      "citation-key": "champigneulleWhatOutcomeCancer2015",
+      "container-title": "Resuscitation",
+      "DOI": "10.1016/j.resuscitation.2015.04.011",
+      "ISSN": "03009572",
+      "journalAbbreviation": "Resuscitation",
+      "language": "en",
+      "license": "AMA11 3.10",
+      "page": "38-44",
+      "shortTitle": "What is the outcome of cancer patients admitted to the ICU after cardiac arrest?",
+      "source": "DOI.org (Crossref)",
+      "title": "What is the outcome of cancer patients admitted to the ICU after cardiac arrest? Results from a multicenter study",
+      "title-short": "What is the outcome of cancer patients admitted to the ICU after cardiac arrest?",
+      "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0300957215001641",
+      "volume": "92",
+      "author": [
+        {
+          "family": "Champigneulle",
+          "given": "B."
+        },
+        {
+          "family": "Merceron",
+          "given": "S."
+        },
+        {
+          "family": "Lemiale",
+          "given": "V."
+        },
+        {
+          "family": "Geri",
+          "given": "G."
+        },
+        {
+          "family": "Mokart",
+          "given": "D."
+        },
+        {
+          "family": "Bruneel",
+          "given": "F."
+        },
+        {
+          "family": "Vincent",
+          "given": "F."
+        },
+        {
+          "family": "Perez",
+          "given": "P."
+        },
+        {
+          "family": "Mayaux",
+          "given": "J."
+        },
+        {
+          "family": "Cariou",
+          "given": "A."
+        },
+        {
+          "family": "Azoulay",
+          "given": "E."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2015"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/5Q5KMXY9",
+      "type": "article-journal",
+      "citation-key": "muschDiscussingDrivingConcerns2013",
+      "container-title": "JAMA Ophthalmology",
+      "DOI": "10.1001/2013.jamaophthalmol.106",
+      "ISSN": "2168-6165",
+      "issue": "2",
+      "journalAbbreviation": "JAMA Ophthalmol",
+      "language": "en",
+      "license": "AMA11 3.10",
+      "part-number": "2",
+      "part-title": "Vision care providers' approaches to assessment",
+      "page": "213",
+      "shortTitle": "Discussing driving concerns with older patients",
+      "source": "DOI.org (Crossref)",
+      "title": "Discussing driving concerns with older patients",
+      "title-short": "Discussing driving concerns with older patients",
+      "URL": "http://archopht.jamanetwork.com/article.aspx?doi=10.1001/2013.jamaophthalmol.106",
+      "volume": "131",
+      "author": [
+        {
+          "family": "Musch",
+          "given": "David C."
+        },
+        {
+          "family": "Janz",
+          "given": "Nancy K."
+        },
+        {
+          "family": "Leinberger",
+          "given": "Rebecca L."
+        },
+        {
+          "family": "Niziol",
+          "given": "Leslie M."
+        },
+        {
+          "family": "Gillespie",
+          "given": "Brenda W."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013,
+            2,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/SJINEALD",
+      "type": "article-journal",
+      "citation-key": "PlanProtectWorld2015",
+      "container-title": "The Lancet",
+      "DOI": "10.1016/S0140-6736(15)61225-9",
+      "ISSN": "01406736",
+      "issue": "9989",
+      "journalAbbreviation": "Lancet",
+      "language": "en",
+      "license": "AMA11 3.11.11",
+      "note": "genre: editorial",
+      "page": "103",
+      "source": "DOI.org (Crossref)",
+      "title": "A plan to protect the world—and save WHO",
+      "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0140673615612259",
+      "volume": "386",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2015"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/FG585S64",
+      "type": "article-journal",
+      "citation-key": "atkinsConfirmingTimingPhasebased2018",
+      "container-title": "Journal of Medical Economics",
+      "DOI": "10.1080/13696998.2017.1391818",
+      "ISSN": "1369-6998, 1941-837X",
+      "issue": "2",
+      "journalAbbreviation": "Journal of Medical Economics",
+      "language": "en",
+      "license": "AMA11 3.11.4.1",
+      "page": "212-217",
+      "shortTitle": "Confirming the timing of phase-based costing in oncology studies",
+      "source": "DOI.org (Crossref)",
+      "title": "Confirming the timing of phase-based costing in oncology studies: a case example in advanced melanoma",
+      "title-short": "Confirming the timing of phase-based costing in oncology studies",
+      "URL": "https://www.tandfonline.com/doi/full/10.1080/13696998.2017.1391818",
+      "volume": "21",
+      "author": [
+        {
+          "family": "Atkins",
+          "given": "Michael"
+        },
+        {
+          "family": "Coutinho",
+          "given": "Anna D."
+        },
+        {
+          "family": "Nunna",
+          "given": "Sasikiran"
+        },
+        {
+          "family": "Gupte-Singh",
+          "given": "Komal"
+        },
+        {
+          "family": "Eaddy",
+          "given": "Michael"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2018,
+            2,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/DX2JP9DA",
+      "type": "article-journal",
+      "abstract": "ABSTRACT\n            \n              Human cytomegalovirus (HCMV) infects peripheral blood monocytes and triggers biological changes that promote viral dissemination and persistence. We have shown that HCMV induces a proinflammatory state in infected monocytes, resulting in enhanced monocyte motility and transendothelial migration, prolonged monocyte survival, and differentiation toward a long-lived M1-like macrophage phenotype. Our data indicate that HCMV triggers these changes, in the absence of\n              de novo\n              viral gene expression and replication, through engagement and activation of epidermal growth factor receptor (EGFR) and integrins on the surface of monocytes. We previously identified that HCMV induces the upregulation of multiple proinflammatory gene ontologies, with the interferon-associated gene ontology exhibiting the highest percentage of upregulated genes. However, the function of the HCMV-induced interferon (IFN)-stimulated genes (ISGs) in infected monocytes remained unclear. We now show that HCMV induces the enhanced expression and activation of a key ISG transcriptional regulator, signal transducer and activator of transcription (STAT1), via an IFN-independent but EGFR- and integrin-dependent signaling pathway. Furthermore, we identified a biphasic activation of STAT1 that likely promotes two distinct phases of STAT1-mediated transcriptional activity. Moreover, our data show that STAT1 is required for efficient early HCMV-induced enhanced monocyte motility and later for HCMV-induced monocyte-to-macrophage differentiation and for the regulation of macrophage polarization, suggesting that STAT1 may serve as a molecular convergence point linking the biological changes that occur at early and later times postinfection. Taken together, our results suggest that HCMV reroutes the biphasic activation of a traditionally antiviral gene product through an EGFR- and integrin-dependent pathway in order to help promote the proviral activation and polarization of infected monocytes.\n            \n            \n              IMPORTANCE\n              HCMV promotes multiple functional changes in infected monocytes that are required for viral spread and persistence, including their enhanced motility and differentiation/polarization toward a proinflammatory M1 macrophage. We now show that HCMV utilizes the traditionally IFN-associated gene product, STAT1, to promote these changes. Our data suggest that HCMV utilizes EGFR- and integrin-dependent (but IFN-independent) signaling pathways to induce STAT1 activation, which may allow the virus to specifically dictate the biological activity of STAT1 during infection. Our data indicate that HCMV utilizes two phases of STAT1 activation, which we argue molecularly links the biological changes that occur following initial binding to those that continue to occur days to weeks following infection. Furthermore, our findings may highlight a unique mechanism for how HCMV avoids the antiviral response during infection by hijacking the function of a critical component of the IFN response pathway.",
+      "citation-key": "collins-mcmillenHumanCytomegalovirusUtilizes2017",
+      "container-title": "Journal of Virology",
+      "DOI": "10.1128/JVI.00622-17",
+      "ISSN": "0022-538X, 1098-5514",
+      "issue": "24",
+      "journalAbbreviation": "J Virol",
+      "language": "en",
+      "license": "AMA11 3.11.4.1",
+      "page": "e00622-17",
+      "source": "DOI.org (Crossref)",
+      "title": "Human cytomegalovirus utilizes a nontraditional signal transducer and activator of transcription 1 activation cascade via signaling through epidermal growth factor receptor and integrins to efficiently promote the motility, differentiation, and polarization of infected monocytes",
+      "URL": "https://journals.asm.org/doi/10.1128/JVI.00622-17",
+      "volume": "91",
+      "author": [
+        {
+          "family": "Collins-McMillen",
+          "given": "Donna"
+        },
+        {
+          "family": "Stevenson",
+          "given": "Emily V."
+        },
+        {
+          "family": "Kim",
+          "given": "Jung Heon"
+        },
+        {
+          "family": "Lee",
+          "given": "Byeong-Jae"
+        },
+        {
+          "family": "Cieply",
+          "given": "Stephen J."
+        },
+        {
+          "family": "Nogalski",
+          "given": "Maciej T."
+        },
+        {
+          "family": "Chan",
+          "given": "Gary C."
+        },
+        {
+          "family": "Frost",
+          "given": "Robert W."
+        },
+        {
+          "family": "Spohn",
+          "given": "Caroline R."
+        },
+        {
+          "family": "Yurochko",
+          "given": "Andrew D."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Frueh",
+          "given": "Klaus"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2017,
+            12,
+            15
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/AADSL5AN",
+      "type": "article-journal",
+      "abstract": "Background.\n              Mobile health and digital medicine technologies are becoming increasingly used by individuals with common, chronic diseases to monitor their health. Numerous devices, sensors, and apps are available to patients and consumers–some of which have been shown to lead to improved health management and health outcomes. However, no randomized controlled trials have been conducted which examine health care costs, and most have failed to provide study participants with a truly comprehensive monitoring system.\n              Methods.\n              We conducted a prospective randomized controlled trial of adults who had submitted a 2012 health insurance claim associated with hypertension, diabetes, and/or cardiac arrhythmia. The intervention involved receipt of one or more mobile devices that corresponded to their condition(s) (hypertension: Withings Blood Pressure Monitor; diabetes: Sanofi iBGStar Blood Glucose Meter; arrhythmia: AliveCor Mobile ECG) and an iPhone with linked tracking applications for a period of 6 months; the control group received a standard disease management program. Moreover, intervention study participants received access to an online health management system which provided participants detailed device tracking information over the course of the study. This was a monitoring system designed by leveraging collaborations with device manufacturers, a connected health leader, health care provider, and employee wellness program–making it both unique and inclusive. We hypothesized that health resource utilization with respect to health insurance claims may be influenced by the monitoring intervention. We also examined health-self management.\n              Results & Conclusions.\n              There was little evidence of differences in health care costs or utilization as a result of the intervention. Furthermore, we found evidence that the control and intervention groups were equivalent with respect to most health care utilization outcomes. This result suggests there are not large short-term increases or decreases in health care costs or utilization associated with monitoring chronic health conditions using mobile health or digital medicine technologies. Among secondary outcomes there was some evidence of improvement in health self-management which was characterized by a decrease in the propensity to view health status as due to chance factors in the intervention group.",
+      "citation-key": "blossProspectiveRandomizedTrial2016",
+      "container-title": "PeerJ",
+      "DOI": "10.7717/peerj.1554",
+      "ISSN": "2167-8359",
+      "language": "en",
+      "license": "AMA11 3.11.4.1",
+      "page": "e1554",
+      "source": "DOI.org (Crossref)",
+      "title": "A prospective randomized trial examining health care utilization in individuals using multiple smartphone-enabled biosensors",
+      "URL": "https://peerj.com/articles/1554",
+      "volume": "4",
+      "author": [
+        {
+          "family": "Bloss",
+          "given": "Cinnamon S."
+        },
+        {
+          "family": "Wineinger",
+          "given": "Nathan E."
+        },
+        {
+          "family": "Peters",
+          "given": "Melissa"
+        },
+        {
+          "family": "Boeldt",
+          "given": "Debra L."
+        },
+        {
+          "family": "Ariniello",
+          "given": "Lauren"
+        },
+        {
+          "family": "Kim",
+          "given": "Ju Young"
+        },
+        {
+          "family": "Sheard",
+          "given": "Judith"
+        },
+        {
+          "family": "Komatireddy",
+          "given": "Ravi"
+        },
+        {
+          "family": "Barrett",
+          "given": "Paddy"
+        },
+        {
+          "family": "Topol",
+          "given": "Eric J."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2016,
+            1,
+            14
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/JD3EHAGB",
+      "type": "article",
+      "abstract": "ABSTRACT\n          \n            Background\n            Mobile health and digital medicine technologies are becoming increasingly used by individuals with common, chronic diseases to monitor their health. Numerous devices, sensors, and apps are available to patients and consumers – some of which have been shown to lead to improved health management and health outcomes. However, no randomized controlled trials have been conducted which examine health care costs, and most have failed to provide study participants with a truly comprehensive monitoring system.\n          \n          \n            Methods\n            We conducted a prospective randomized controlled trial of adults who had submitted a 2012 health insurance claim associated with hypertension, diabetes, and/or cardiac arrhythmia. The intervention involved receipt of one or more mobile devices that corresponded to their condition(s) and an iPhone with linked tracking applications for a period of 6 months; the control group received a standard disease management program. Moreover, intervention study participants received access to an online health management system which provided participants detailed device tracking information over the course of the study. This was a monitoring system designed by leveraging collaborations with device manufacturers, a connected health leader, health care provider, and employee wellness program – making it both unique and inclusive. We hypothesized that health resource utilization with respect to health insurance claims may be influenced by the monitoring intervention. We also examined health-self management.\n          \n          \n            Results & Conclusions\n            There was little evidence of differences in health care costs or utilization as a result of the intervention. Furthermore, we found evidence that the control and intervention groups were equivalent with respect to most health care utilization outcomes. This result suggests there are not large short-term increases or decreases in health care costs or utilization associated with monitoring chronic health conditions using mobile health or digital medicine technologies. Among secondary outcomes there was some evidence of improvement in health self-management which was characterized by a decrease in the propensity to view health status as due to chance factors in the intervention group.\n          \n          \n            Disclosure of Funding\n            This research is funded in part by a NIH/NCATS flagship Clinical and Translational Science Award Grant (1UL1 TR001114), Qualcomm Foundation Scripps Health Digital Medicine Research Grant, and Scripps Health’s Division of Innovation and Human Capital and Division of Scripps Genomic Medicine. Support for the study is also provided by HealthComp Third Party Administrator, Sanofi, AliveCor, and Accenture.\n            \n              Trial Registration: clinicaltrials.gov Identifier\n              NCT01975428",
+      "citation-key": "blossProspectiveRandomizedTrial2015",
+      "DOI": "10.1101/029983",
+      "language": "en",
+      "license": "AMA11 3.11.4.1",
+      "publisher": "Clinical Trials",
+      "source": "DOI.org (Crossref)",
+      "title": "A prospective randomized trial examining health care utilization in individuals using multiple smartphone-enabled biosensors",
+      "URL": "http://biorxiv.org/lookup/doi/10.1101/029983",
+      "author": [
+        {
+          "family": "Bloss",
+          "given": "Cinnamon S."
+        },
+        {
+          "family": "Wineinger",
+          "given": "Nathan E."
+        },
+        {
+          "family": "Peters",
+          "given": "Melissa"
+        },
+        {
+          "family": "Boeldt",
+          "given": "Debra L."
+        },
+        {
+          "family": "Ariniello",
+          "given": "Lauren"
+        },
+        {
+          "family": "Kim",
+          "given": "Ju Young"
+        },
+        {
+          "family": "Sheard",
+          "given": "Judy"
+        },
+        {
+          "family": "Komatireddy",
+          "given": "Ravi"
+        },
+        {
+          "family": "Barrett",
+          "given": "Paddy"
+        },
+        {
+          "family": "Topol",
+          "given": "Eric J."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            10,
+            28
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/HM8CPV8U",
+      "type": "article-journal",
+      "citation-key": "50thCongressEuropean2015",
+      "container-title": "European Surgical Research",
+      "DOI": "10.1159/000381839",
+      "ISSN": "0014-312X, 1421-9921",
+      "journalAbbreviation": "Eur Surg Res",
+      "language": "en",
+      "license": "AMA11 3.11.9",
+      "note": "supplement-number: 1",
+      "page": "1-167",
+      "shortTitle": "The 50th Congress of the European Society for Surgical Research. June 10-13, 2015, Liverpool, United Kingdom",
+      "source": "DOI.org (Crossref)",
+      "title": "The 50th Congress of the European Society for Surgical Research. June 10-13, 2015, Liverpool, United Kingdom: Abstract",
+      "title-short": "The 50th Congress of the European Society for Surgical Research. June 10-13, 2015, Liverpool, United Kingdom",
+      "URL": "https://karger.com/article/doi/10.1159/000381839",
+      "volume": "55",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2015
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/YVMWLGEE",
+      "type": "article-journal",
+      "citation-key": "macsweeneyWhatFunctionAuditory2015",
+      "container-title": "Brain",
+      "DOI": "10.1093/brain/awv197",
+      "ISSN": "0006-8950, 1460-2156",
+      "issue": "9",
+      "journalAbbreviation": "Brain",
+      "language": "en",
+      "license": "AMA11 3.11.7",
+      "page": "2468-2470",
+      "source": "DOI.org (Crossref)",
+      "title": "What is the function of auditory cortex without auditory input?",
+      "URL": "https://academic.oup.com/brain/article-lookup/doi/10.1093/brain/awv197",
+      "volume": "138",
+      "author": [
+        {
+          "family": "MacSweeney",
+          "given": "Mairéad"
+        },
+        {
+          "family": "Cardin",
+          "given": "Velia"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2015"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/LCIHG2Y2",
+      "type": "article-journal",
+      "citation-key": "busterDermatologicHealthDisparities2012",
+      "container-title": "Dermatologic Clinics",
+      "DOI": "10.1016/j.det.2011.08.002",
+      "ISSN": "07338635",
+      "issue": "1",
+      "journalAbbreviation": "Dermatologic Clinics",
+      "language": "en",
+      "license": "AMA11 3.11.5",
+      "page": "53-59",
+      "source": "DOI.org (Crossref)",
+      "title": "Dermatologic health disparities",
+      "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0733863511001380",
+      "volume": "30",
+      "author": [
+        {
+          "family": "Buster",
+          "given": "Kesha J."
+        },
+        {
+          "family": "Stevens",
+          "given": "Erica I."
+        },
+        {
+          "family": "Elmets",
+          "given": "Craig A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2012"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/HIQ6LJ7R",
+      "type": "dataset",
+      "abstract": "The richness of biodiversity in the tropics compared to high latitude\n parts of the world forms one of the most globally conspicuous patterns in\n biology, and yet few hypotheses aim to explain this phenomenon in terms of\n explicit micro-evolutionary mechanisms of speciation and extinction. We\n link population genetic processes of selection and adaptation to\n speciation and extinction by way of their interaction with environmental\n factors to drive global scale macro-ecological patterns. High latitude\n regions are both cradle and grave with respect to species diversification.\n In particular, we point to a conceptual equivalence of ‘environmental\n harshness’ and ‘hard selection’ as eco-evolutionary drivers of local\n adaptation and ecological speciation. By describing how ecological\n speciation likely occurs more readily at high latitudes, with such nascent\n species especially prone to extinction by fusion, we derive the ephemeral\n ecological speciation hypothesis as an integrative mechanistic explanation\n for latitudinal gradients in species turnover and the net accumulation of\n biodiversity.",
+      "citation-key": "cutterDataEphemeralEcological2016",
+      "DOI": "10.5061/DRYAD.734V9",
+      "language": "en",
+      "license": "AMA11 3.11.4.2.2",
+      "note": "Artwork Size: 6058651 bytes\nPages: 6058651 bytes",
+      "publisher": "Dryad",
+      "shortTitle": "Data from",
+      "source": "DOI.org (Datacite)",
+      "title": "Data from: Ephemeral ecological speciation and the latitudinal biodiversity gradient",
+      "title-short": "Data from",
+      "URL": "https://datadryad.org/dataset/doi:10.5061/dryad.734v9",
+      "version": "1",
+      "author": [
+        {
+          "family": "Cutter",
+          "given": "Asher D."
+        },
+        {
+          "family": "Gray",
+          "given": "Jeremy C."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2016,
+            8,
+            17
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/7DHNCPZF",
+      "type": "article-journal",
+      "abstract": "Planarians regenerate all body parts after injury, including the central nervous system (CNS). We capitalized on this distinctive trait and completed a gene expression-guided functional screen to identify factors that regulate diverse aspects of neural regeneration in Schmidtea mediterranea. Our screen revealed molecules that influence neural cell fates, support the formation of a major connective hub, and promote reestablishment of chemosensory behavior. We also identified genes that encode signaling molecules with roles in head regeneration, including some that are produced in a previously uncharacterized parenchymal population of cells. Finally, we explored genes downregulated during planarian regeneration and characterized, for the first time, glial cells in the planarian CNS that respond to injury by repressing several transcripts. Collectively, our studies revealed diverse molecules and cell types that underlie an animal’s ability to regenerate its brain.\n          , \n            Animals differ in the extent to which they can regenerate missing body parts after injury. Humans regenerate poorly after many injuries, especially when the brain becomes damaged after stroke, disease or trauma. On the other hand, planarians – small worms that live in fresh water – regenerate exceptionally well. A whole planarian can regenerate from small pieces of tissue.\n            The ability of planarians to regenerate their nervous system relies on stem cells called neoblasts, which can migrate through the body and divide to replace lost cells. However, the specific mechanisms responsible for regenerating nervous tissue are largely unknown. Roberts-Galbraith et al. carried out a screen to identify genes that tell planarians whether to regenerate a new brain, what cells to make and how to arrange them.\n            The study revealed over thirty genes that allow planarians to regenerate their brains after their heads have been amputated. These genes play several different roles in the animal. Some of the genes help neoblasts to make decisions about what kinds of cells they should become. One gene is needed to make an important connection in the planarian brain after injury. Another helps to restore the ability of the planarian to sense its food. The experiments also show that some key genes are switched on in a new cell type that might produce signals to support regeneration.\n            Lastly, Roberts-Galbraith et al. found that the planarian nervous system contains cells called glia. Previous studies have shown that many of the cells in the human brain are glia and that these cells help nerve cells to survive and work properly. The discovery of glia in planarians means that it will be possible to use these worms to study how glia support brain regeneration and how glia themselves are replaced after injury. In the long term, this work might lead to discoveries that shed light on how tissue regeneration could be improved in humans.",
+      "citation-key": "roberts-galbraithFunctionalGenomicsScreen2016",
+      "container-title": "eLife",
+      "DOI": "10.7554/eLife.17002",
+      "ISSN": "2050-084X",
+      "language": "en",
+      "license": "AMA11 3.11.4.1",
+      "note": "number: e17002",
+      "source": "DOI.org (Crossref)",
+      "title": "A functional genomics screen in planarians reveals regulators of whole-brain regeneration",
+      "URL": "https://elifesciences.org/articles/17002",
+      "volume": "5",
+      "author": [
+        {
+          "family": "Roberts-Galbraith",
+          "given": "Rachel H"
+        },
+        {
+          "family": "Brubacher",
+          "given": "John L"
+        },
+        {
+          "family": "Newmark",
+          "given": "Phillip A"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2016,
+            9,
+            9
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/K5NF4Q45",
+      "type": "article-journal",
+      "citation-key": "schopferNoticeRetractionReplacement2016",
+      "container-title": "JAMA Internal Medicine",
+      "DOI": "10.1001/jamainternmed.2016.5831",
+      "ISSN": "2168-6106",
+      "issue": "11",
+      "journalAbbreviation": "JAMA Intern Med",
+      "language": "en",
+      "license": "AMA11 3.11.15",
+      "page": "1726",
+      "shortTitle": "Notice of Retraction and Replacement. Schopfer DW, et al. Cardiac Rehabilitation Use Among Veterans With Ischemic Heart Disease. <i>JAMA Intern Med</i> . 2014;174(10)",
+      "source": "DOI.org (Crossref)",
+      "title": "Notice of Retraction and Replacement. Schopfer DW, et al. Cardiac Rehabilitation Use Among Veterans With Ischemic Heart Disease. <i>JAMA Intern Med</i> . 2014;174(10):1687-1689",
+      "title-short": "Notice of Retraction and Replacement. Schopfer DW, et al. Cardiac Rehabilitation Use Among Veterans With Ischemic Heart Disease. <i>JAMA Intern Med</i> . 2014;174(10)",
+      "URL": "http://archinte.jamanetwork.com/article.aspx?doi=10.1001/jamainternmed.2016.5831",
+      "volume": "176",
+      "author": [
+        {
+          "family": "Schopfer",
+          "given": "David W."
+        },
+        {
+          "family": "Takemoto",
+          "given": "Steven"
+        },
+        {
+          "family": "Allsup",
+          "given": "Kelly"
+        },
+        {
+          "family": "Helfrich",
+          "given": "Christian D."
+        },
+        {
+          "family": "Ho",
+          "given": "P. Michael"
+        },
+        {
+          "family": "Forman",
+          "given": "Daniel E."
+        },
+        {
+          "family": "Whooley",
+          "given": "Mary A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2016,
+            11,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/W4UHG2WG",
+      "type": "article-journal",
+      "citation-key": "maedlerExpressionConcernLow2016",
+      "container-title": "Diabetes",
+      "DOI": "10.2337/db16-ec08a",
+      "ISSN": "0012-1797, 1939-327X",
+      "issue": "8",
+      "journalAbbreviation": "Diabetes",
+      "language": "en",
+      "license": "AMA11 3.11.15",
+      "page": "2462-2462",
+      "shortTitle": "Expression of Concern. Low Concentration of Interleukin-1β Induces FLICE-Inhibitory Protein–Mediated β-Cell Proliferation in Human Pancreatic Islets. Diabetes 2006;55",
+      "source": "DOI.org (Crossref)",
+      "title": "Expression of Concern. Low Concentration of Interleukin-1β Induces FLICE-Inhibitory Protein–Mediated β-Cell Proliferation in Human Pancreatic Islets. Diabetes 2006;55:2713–2722; DOI: 10.2337/db05-1430",
+      "title-short": "Expression of Concern. Low Concentration of Interleukin-1β Induces FLICE-Inhibitory Protein–Mediated β-Cell Proliferation in Human Pancreatic Islets. Diabetes 2006;55",
+      "URL": "http://diabetes.diabetesjournals.org/lookup/doi/10.2337/db16-ec08a",
+      "volume": "65",
+      "author": [
+        {
+          "family": "Maedler",
+          "given": "Kathrin"
+        },
+        {
+          "family": "Schumann",
+          "given": "Desiree M."
+        },
+        {
+          "family": "Sauter",
+          "given": "Nadine"
+        },
+        {
+          "family": "Ellingsgaard",
+          "given": "Helga"
+        },
+        {
+          "family": "Bosco",
+          "given": "Domenico"
+        },
+        {
+          "family": "Baertschiger",
+          "given": "Reto"
+        },
+        {
+          "family": "Iwakura",
+          "given": "Yoichiro"
+        },
+        {
+          "family": "Oberholzer",
+          "given": "José"
+        },
+        {
+          "family": "Wollheim",
+          "given": "Claes B."
+        },
+        {
+          "family": "Gauthier",
+          "given": "Benoit R."
+        },
+        {
+          "family": "Donath",
+          "given": "Marc Y."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2016"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/2BTJEGYD",
+      "type": "article-journal",
+      "citation-key": "kingwellNoticeRetractionAhimastos2015",
+      "container-title": "JAMA",
+      "DOI": "10.1001/jama.2015.16678",
+      "ISSN": "0098-7484",
+      "issue": "24",
+      "journalAbbreviation": "JAMA",
+      "language": "en",
+      "license": "AMA11 3.11.15",
+      "page": "2692",
+      "shortTitle": "Notice of Retraction",
+      "source": "DOI.org (Crossref)",
+      "title": "Notice of Retraction: Ahimastos AA, et al. Effect of Perindopril on Large Artery Stiffness and Aortic Root Diameter in Patients With Marfan Syndrome: A Randomized Controlled Trial. <i>JAMA</i> . 2007;298(13):1539-1547.",
+      "title-short": "Notice of Retraction",
+      "URL": "http://jama.jamanetwork.com/article.aspx?doi=10.1001/jama.2015.16678",
+      "volume": "314",
+      "author": [
+        {
+          "family": "Kingwell",
+          "given": "Bronwyn A."
+        },
+        {
+          "family": "Aggarwal",
+          "given": "Anuradha"
+        },
+        {
+          "family": "D’Orsa",
+          "given": "Kellie M."
+        },
+        {
+          "family": "Formosa",
+          "given": "Melissa F."
+        },
+        {
+          "family": "White",
+          "given": "Anthony J."
+        },
+        {
+          "family": "Savarirayan",
+          "given": "Ravi"
+        },
+        {
+          "family": "Dart",
+          "given": "Anthony M."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            12,
+            22
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/UF98SN7L",
+      "type": "article-journal",
+      "citation-key": "bevansLocalFlapsFacial2015",
+      "container-title": "JAMA Facial Plastic Surgery",
+      "DOI": "10.1001/jamafacial.2014.1440",
+      "ISSN": "2168-6076, 2168-6092",
+      "issue": "2",
+      "journalAbbreviation": "JAMA Facial Plast Surg",
+      "language": "en",
+      "license": "AMA11 3.11.11",
+      "page": "151-151",
+      "source": "DOI.org (Crossref)",
+      "title": "Local flaps in facial reconstruction",
+      "URL": "https://www.liebertpub.com/doi/10.1001/jamafacial.2014.1440",
+      "volume": "17",
+      "author": [
+        {
+          "family": "Bevans",
+          "given": "Scott E."
+        },
+        {
+          "family": "Larrabee",
+          "given": "Wayne F."
+        }
+      ],
+      "reviewed-author": [
+        {
+          "family": "Baker",
+          "given": "Shan R."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2015"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/3TQAJ8PN",
+      "type": "article-journal",
+      "citation-key": "orourkeCardiovascularDiseaseWorldwide2015",
+      "container-title": "JAMA",
+      "DOI": "10.1001/jama.2015.14994",
+      "ISSN": "0098-7484",
+      "issue": "18",
+      "journalAbbreviation": "JAMA",
+      "language": "en",
+      "license": "AMA11 3.11.11",
+      "note": "genre: JAMA infographic",
+      "page": "1905",
+      "source": "DOI.org (Crossref)",
+      "title": "Cardiovascular disease worldwide, 1990–2013",
+      "URL": "http://jama.jamanetwork.com/article.aspx?doi=10.1001/jama.2015.14994",
+      "volume": "314",
+      "author": [
+        {
+          "family": "O’Rourke",
+          "given": "Kevin"
+        },
+        {
+          "family": "VanderZanden",
+          "given": "Amelia"
+        },
+        {
+          "family": "Shepard",
+          "given": "Dawn"
+        },
+        {
+          "family": "Leach-Kemon",
+          "given": "Katherine"
+        },
+        {
+          "family": "Institute for Health Metrics and Evaluation",
+          "given": ""
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            11,
+            10
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/4ZTC45X7",
+      "type": "article-journal",
+      "citation-key": "rossOpenAccessPlatforms2016",
+      "container-title": "JAMA",
+      "DOI": "10.1001/jama.2016.8794",
+      "ISSN": "0098-7484",
+      "issue": "6",
+      "journalAbbreviation": "JAMA",
+      "language": "en",
+      "license": "AMA11 3.11.11",
+      "note": "genre: letter",
+      "page": "666",
+      "source": "DOI.org (Crossref)",
+      "title": "Open access platforms for sharing clinical trial data",
+      "URL": "http://jama.jamanetwork.com/article.aspx?doi=10.1001/jama.2016.8794",
+      "volume": "316",
+      "author": [
+        {
+          "family": "Ross",
+          "given": "Joseph S."
+        },
+        {
+          "family": "Krumholz",
+          "given": "Harlan M."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2016,
+            8,
+            9
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/8ZE6XUZ6",
+      "type": "article-journal",
+      "citation-key": "lopesNoticeRetractionReplacement2015",
+      "container-title": "JAMA Psychiatry",
+      "DOI": "10.1001/jamapsychiatry.2015.0673",
+      "ISSN": "2168-622X",
+      "issue": "12",
+      "journalAbbreviation": "JAMA Psychiatry",
+      "language": "en",
+      "license": "AMA11 3.11.15",
+      "page": "1258",
+      "shortTitle": "Notice of Retraction and Replacement. Lopes et al. Gamma ventral capsulotomy for obsessive-compulsive disorder",
+      "source": "DOI.org (Crossref)",
+      "title": "Notice of Retraction and Replacement. Lopes et al. Gamma ventral capsulotomy for obsessive-compulsive disorder: a randomized clinical trial. <i>JAMA Psychiatry</i> . 2014;71(9):1066-1076",
+      "title-short": "Notice of Retraction and Replacement. Lopes et al. Gamma ventral capsulotomy for obsessive-compulsive disorder",
+      "URL": "http://archpsyc.jamanetwork.com/article.aspx?doi=10.1001/jamapsychiatry.2015.0673",
+      "volume": "72",
+      "author": [
+        {
+          "family": "Lopes",
+          "given": "Antonio C."
+        },
+        {
+          "family": "Greenberg",
+          "given": "Benjamin D."
+        },
+        {
+          "family": "Pereira",
+          "given": "Carlos A. B."
+        },
+        {
+          "family": "Norén",
+          "given": "Georg"
+        },
+        {
+          "family": "Miguel",
+          "given": "Euripedes C."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            12,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/VEEF3Y5R",
+      "type": "article-journal",
+      "citation-key": "ErrorsTextTables2015",
+      "container-title": "JAMA Psychiatry",
+      "DOI": "10.1001/jamapsychiatry.2015.0077",
+      "ISSN": "2168-622X",
+      "issue": "12",
+      "journalAbbreviation": "JAMA Psychiatry",
+      "language": "en",
+      "license": "AMA11 3.11.14",
+      "page": "1259",
+      "source": "DOI.org (Crossref)",
+      "title": "Errors in Text and Tables 2 and 3",
+      "URL": "http://archpsyc.jamanetwork.com/article.aspx?doi=10.1001/jamapsychiatry.2015.0077",
+      "volume": "72",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            12,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/P3K79VQT",
+      "type": "article-journal",
+      "citation-key": "galeAssociationMentalDisorders2012",
+      "container-title": "Archives of General Psychiatry",
+      "DOI": "10.1001/archgenpsychiatry.2011.2000",
+      "ISSN": "0003-990X",
+      "issue": "8",
+      "journalAbbreviation": "Arch Gen Psychiatry",
+      "language": "en",
+      "license": "AMA11 3.11.14",
+      "page": "823",
+      "source": "DOI.org (Crossref)",
+      "title": "Association of mental disorders in early adulthood and later psychiatric hospital admissions and mortality in a cohort study of more than 1 million men",
+      "URL": "http://archpsyc.jamanetwork.com/article.aspx?doi=10.1001/archgenpsychiatry.2011.2000",
+      "volume": "69",
+      "author": [
+        {
+          "family": "Gale",
+          "given": "Catharine R."
+        },
+        {
+          "family": "Batty",
+          "given": "G. David"
+        },
+        {
+          "family": "Osborn",
+          "given": "David P. J."
+        },
+        {
+          "family": "Tynelius",
+          "given": "Per"
+        },
+        {
+          "family": "Whitley",
+          "given": "Elise"
+        },
+        {
+          "family": "Rasmussen",
+          "given": "Finn"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2012,
+            8,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/FXFRG3HU",
+      "type": "article-journal",
+      "citation-key": "harrisCunninghamDaxCollection2014",
+      "container-title": "JAMA Psychiatry",
+      "DOI": "10.1001/jamapsychiatry.2013.2771",
+      "ISSN": "2168-622X",
+      "issue": "12",
+      "journalAbbreviation": "JAMA Psychiatry",
+      "language": "en",
+      "license": "AMA11 3.11.11",
+      "page": "1316",
+      "section": "Art and images in psychiatry",
+      "source": "DOI.org (Crossref)",
+      "title": "Cunningham Dax Collection",
+      "URL": "http://archpsyc.jamanetwork.com/article.aspx?doi=10.1001/jamapsychiatry.2013.2771",
+      "volume": "71",
+      "author": [
+        {
+          "family": "Harris",
+          "given": "James C."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2014,
+            12,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/EP23JWD6",
+      "type": "article-newspaper",
+      "abstract": "Music therapists can meet the spiritual, psychological and aesthetic needs of the afflicted by producing sounds testifying to the fact that beauty continues to exist in the world.",
+      "citation-key": "gubarWhenMusicBest2019",
+      "container-title": "The New York Times",
+      "ISSN": "0362-4331",
+      "language": "en-US",
+      "license": "AMA11 3.13.1",
+      "section": "Well",
+      "source": "NYTimes.com",
+      "title": "When music is the best medicine",
+      "URL": "https://www.nytimes.com/2019/09/26/well/live/music-therapy-cancer.html",
+      "author": [
+        {
+          "family": "Gubar",
+          "given": "Susan"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2019,
+            9,
+            30
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2019,
+            9,
+            26
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/PFYCQX75",
+      "type": "book",
+      "call-number": "RC280.N4 P76 2015",
+      "citation-key": "christiansenProgressiveNeuroblastomaInnovation2015",
+      "collection-number": "20",
+      "collection-title": "Pediatric and adolescent medicine",
+      "DOI": "10.1159/isbn.978-3-318-05497-2",
+      "ISBN": "978-3-318-05496-5",
+      "language": "en",
+      "license": "AMA11 3.12.6",
+      "number-of-pages": "192",
+      "publisher": "Karger",
+      "publisher-place": "Basel",
+      "shortTitle": "Progressive neuroblastoma",
+      "source": "Library of Congress ISBN",
+      "title": "Progressive neuroblastoma: innovation and novel therapeutic strategies",
+      "title-short": "Progressive neuroblastoma",
+      "URL": "https://karger.com/book/doi/10.1159/isbn.978-3-318-05497-2",
+      "editor": [
+        {
+          "family": "Christiansen",
+          "given": "Holger"
+        },
+        {
+          "family": "Christiansen",
+          "given": "Nina Merete"
+        }
+      ],
+      "collection-editor": [
+        {
+          "family": "Kiess",
+          "given": "Wieland"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2015
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/8J8MUGBA",
+      "type": "book",
+      "call-number": "616.079",
+      "citation-key": "paulFundamentalImmunology2013",
+      "edition": "7",
+      "ISBN": "978-1-4511-1783-7",
+      "language": "en",
+      "license": "AMA11 3.12.11",
+      "publisher": "Lippincott Williams & Wilkins",
+      "publisher-place": "Philadelphia",
+      "source": "BnF ISBN",
+      "title": "Fundamental immunology",
+      "editor": [
+        {
+          "family": "Paul",
+          "given": "William E."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/TWKDM7IF",
+      "type": "article-journal",
+      "citation-key": "fitzmauriceGlobalBurdenCancer2015",
+      "container-title": "JAMA Oncology",
+      "DOI": "10.1001/jamaoncol.2015.0735",
+      "ISSN": "2374-2437",
+      "issue": "4",
+      "journalAbbreviation": "JAMA Oncol",
+      "language": "en",
+      "license": "AMA11 3.7.2",
+      "page": "505",
+      "source": "DOI.org (Crossref)",
+      "title": "The global burden of cancer 2013",
+      "URL": "http://oncology.jamanetwork.com/article.aspx?doi=10.1001/jamaoncol.2015.0735",
+      "volume": "1",
+      "author": [
+        {
+          "family": "Fitzmaurice",
+          "given": "Christina"
+        },
+        {
+          "family": "Dicker",
+          "given": "Daniel"
+        },
+        {
+          "family": "Pain",
+          "given": "Amanda"
+        },
+        {
+          "family": "Hamavid",
+          "given": "Hannah"
+        },
+        {
+          "family": "Moradi-Lakeh",
+          "given": "Maziar"
+        },
+        {
+          "family": "MacIntyre",
+          "given": "Michael F."
+        },
+        {
+          "family": "Allen",
+          "given": "Christine"
+        },
+        {
+          "family": "Hansen",
+          "given": "Gillian"
+        },
+        {
+          "family": "Woodbrook",
+          "given": "Rachel"
+        },
+        {
+          "family": "Wolfe",
+          "given": "Charles"
+        },
+        {
+          "family": "Hamadeh",
+          "given": "Randah R."
+        },
+        {
+          "family": "Moore",
+          "given": "Ami"
+        },
+        {
+          "family": "Werdecker",
+          "given": "Andrea"
+        },
+        {
+          "family": "Gessner",
+          "given": "Bradford D."
+        },
+        {
+          "family": "Te Ao",
+          "given": "Braden"
+        },
+        {
+          "family": "McMahon",
+          "given": "Brian"
+        },
+        {
+          "family": "Karimkhani",
+          "given": "Chante"
+        },
+        {
+          "family": "Yu",
+          "given": "Chuanhua"
+        },
+        {
+          "family": "Cooke",
+          "given": "Graham S."
+        },
+        {
+          "family": "Schwebel",
+          "given": "David C."
+        },
+        {
+          "family": "Carpenter",
+          "given": "David O."
+        },
+        {
+          "family": "Pereira",
+          "given": "David M."
+        },
+        {
+          "family": "Nash",
+          "given": "Denis"
+        },
+        {
+          "family": "Kazi",
+          "given": "Dhruv S."
+        },
+        {
+          "family": "De Leo",
+          "given": "Diego"
+        },
+        {
+          "family": "Plass",
+          "given": "Dietrich"
+        },
+        {
+          "family": "Ukwaja",
+          "given": "Kingsley N."
+        },
+        {
+          "family": "Thurston",
+          "given": "George D."
+        },
+        {
+          "family": "Yun Jin",
+          "given": "Kim"
+        },
+        {
+          "family": "Simard",
+          "given": "Edgar P."
+        },
+        {
+          "family": "Mills",
+          "given": "Edward"
+        },
+        {
+          "family": "Park",
+          "given": "Eun-Kee"
+        },
+        {
+          "family": "Catalá-López",
+          "given": "Ferrán"
+        },
+        {
+          "family": "deVeber",
+          "given": "Gabrielle"
+        },
+        {
+          "family": "Gotay",
+          "given": "Carolyn"
+        },
+        {
+          "family": "Khan",
+          "given": "Gulfaraz"
+        },
+        {
+          "family": "Hosgood",
+          "given": "H. Dean"
+        },
+        {
+          "family": "Santos",
+          "given": "Itamar S."
+        },
+        {
+          "family": "Leasher",
+          "given": "Janet L."
+        },
+        {
+          "family": "Singh",
+          "given": "Jasvinder"
+        },
+        {
+          "family": "Leigh",
+          "given": "James"
+        },
+        {
+          "family": "Jonas",
+          "given": "Jost B."
+        },
+        {
+          "family": "Sanabria",
+          "given": "Juan"
+        },
+        {
+          "family": "Beardsley",
+          "given": "Justin"
+        },
+        {
+          "family": "Jacobsen",
+          "given": "Kathryn H."
+        },
+        {
+          "family": "Takahashi",
+          "given": "Ken"
+        },
+        {
+          "family": "Franklin",
+          "given": "Richard C."
+        },
+        {
+          "family": "Ronfani",
+          "given": "Luca"
+        },
+        {
+          "family": "Montico",
+          "given": "Marcella"
+        },
+        {
+          "family": "Naldi",
+          "given": "Luigi"
+        },
+        {
+          "family": "Tonelli",
+          "given": "Marcello"
+        },
+        {
+          "family": "Geleijnse",
+          "given": "Johanna"
+        },
+        {
+          "family": "Petzold",
+          "given": "Max"
+        },
+        {
+          "family": "Shrime",
+          "given": "Mark G"
+        },
+        {
+          "family": "Younis",
+          "given": "Mustafa"
+        },
+        {
+          "family": "Yonemoto",
+          "given": "Naohiro"
+        },
+        {
+          "family": "Breitborde",
+          "given": "Nicholas"
+        },
+        {
+          "family": "Yip",
+          "given": "Paul"
+        },
+        {
+          "family": "Pourmalek",
+          "given": "Farshad"
+        },
+        {
+          "family": "Lotufo",
+          "given": "Paulo A."
+        },
+        {
+          "family": "Esteghamati",
+          "given": "Alireza"
+        },
+        {
+          "family": "Hankey",
+          "given": "Graeme J."
+        },
+        {
+          "family": "Ali",
+          "given": "Raghib"
+        },
+        {
+          "family": "Lunevicius",
+          "given": "Raimundas"
+        },
+        {
+          "family": "Malekzadeh",
+          "given": "Reza"
+        },
+        {
+          "family": "Dellavalle",
+          "given": "Robert"
+        },
+        {
+          "family": "Weintraub",
+          "given": "Robert"
+        },
+        {
+          "family": "Lucas",
+          "given": "Robyn"
+        },
+        {
+          "family": "Hay",
+          "given": "Roderick"
+        },
+        {
+          "family": "Rojas-Rueda",
+          "given": "David"
+        },
+        {
+          "family": "Westerman",
+          "given": "Ronny"
+        },
+        {
+          "family": "Sepanlou",
+          "given": "Sadaf G."
+        },
+        {
+          "family": "Nolte",
+          "given": "Sandra"
+        },
+        {
+          "family": "Patten",
+          "given": "Scott"
+        },
+        {
+          "family": "Weichenthal",
+          "given": "Scott"
+        },
+        {
+          "family": "Abera",
+          "given": "Semaw Ferede"
+        },
+        {
+          "family": "Fereshtehnejad",
+          "given": "Seyed-Mohammad"
+        },
+        {
+          "family": "Shiue",
+          "given": "Ivy"
+        },
+        {
+          "family": "Driscoll",
+          "given": "Tim"
+        },
+        {
+          "family": "Vasankari",
+          "given": "Tommi"
+        },
+        {
+          "family": "Alsharif",
+          "given": "Ubai"
+        },
+        {
+          "family": "Rahimi-Movaghar",
+          "given": "Vafa"
+        },
+        {
+          "family": "Vlassov",
+          "given": "Vasiliy V."
+        },
+        {
+          "family": "Marcenes",
+          "given": "W. S."
+        },
+        {
+          "family": "Mekonnen",
+          "given": "Wubegzier"
+        },
+        {
+          "family": "Melaku",
+          "given": "Yohannes Adama"
+        },
+        {
+          "family": "Yano",
+          "given": "Yuichiro"
+        },
+        {
+          "family": "Artaman",
+          "given": "Al"
+        },
+        {
+          "family": "Campos",
+          "given": "Ismael"
+        },
+        {
+          "family": "MacLachlan",
+          "given": "Jennifer"
+        },
+        {
+          "family": "Mueller",
+          "given": "Ulrich"
+        },
+        {
+          "family": "Kim",
+          "given": "Daniel"
+        },
+        {
+          "family": "Trillini",
+          "given": "Matias"
+        },
+        {
+          "family": "Eshrati",
+          "given": "Babak"
+        },
+        {
+          "family": "Williams",
+          "given": "Hywel C."
+        },
+        {
+          "family": "Shibuya",
+          "given": "Kenji"
+        },
+        {
+          "family": "Dandona",
+          "given": "Rakhi"
+        },
+        {
+          "family": "Murthy",
+          "given": "Kinnari"
+        },
+        {
+          "family": "Cowie",
+          "given": "Benjamin"
+        },
+        {
+          "family": "Amare",
+          "given": "Azmeraw T."
+        },
+        {
+          "family": "Antonio",
+          "given": "Carl Abelardo"
+        },
+        {
+          "family": "Castañeda-Orjuela",
+          "given": "Carlos"
+        },
+        {
+          "family": "Van Gool",
+          "given": "Coen H."
+        },
+        {
+          "family": "Violante",
+          "given": "Francesco"
+        },
+        {
+          "family": "Oh",
+          "given": "In-Hwan"
+        },
+        {
+          "family": "Deribe",
+          "given": "Kedede"
+        },
+        {
+          "family": "Soreide",
+          "given": "Kjetil"
+        },
+        {
+          "family": "Knibbs",
+          "given": "Luke"
+        },
+        {
+          "family": "Kereselidze",
+          "given": "Maia"
+        },
+        {
+          "family": "Green",
+          "given": "Mark"
+        },
+        {
+          "family": "Cardenas",
+          "given": "Rosario"
+        },
+        {
+          "family": "Roy",
+          "given": "Nobhojit"
+        },
+        {
+          "family": "Tillmann",
+          "given": "Taavi"
+        },
+        {
+          "family": "Li",
+          "given": "Yongmei"
+        },
+        {
+          "family": "Krueger",
+          "given": "Hans"
+        },
+        {
+          "family": "Monasta",
+          "given": "Lorenzo"
+        },
+        {
+          "family": "Dey",
+          "given": "Subhojit"
+        },
+        {
+          "family": "Sheikhbahaei",
+          "given": "Sara"
+        },
+        {
+          "family": "Hafezi-Nejad",
+          "given": "Nima"
+        },
+        {
+          "family": "Kumar",
+          "given": "G. Anil"
+        },
+        {
+          "family": "Sreeramareddy",
+          "given": "Chandrashekhar T."
+        },
+        {
+          "family": "Dandona",
+          "given": "Lalit"
+        },
+        {
+          "family": "Wang",
+          "given": "Haidong"
+        },
+        {
+          "family": "Vollset",
+          "given": "Stein Emil"
+        },
+        {
+          "family": "Mokdad",
+          "given": "Ali"
+        },
+        {
+          "family": "Salomon",
+          "given": "Joshua A."
+        },
+        {
+          "family": "Lozano",
+          "given": "Rafael"
+        },
+        {
+          "family": "Vos",
+          "given": "Theo"
+        },
+        {
+          "family": "Forouzanfar",
+          "given": "Mohammad"
+        },
+        {
+          "family": "Lopez",
+          "given": "Alan"
+        },
+        {
+          "family": "Murray",
+          "given": "Christopher"
+        },
+        {
+          "family": "Naghavi",
+          "given": "Mohsen"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            7,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/65LSM4VB",
+      "type": "article-journal",
+      "citation-key": "huangInterpretableRulebasedDiagnostic2015",
+      "container-title": "BMC Bioinformatics",
+      "DOI": "10.1186/1471-2105-16-S1-S5",
+      "ISSN": "1471-2105",
+      "issue": "S1",
+      "journalAbbreviation": "BMC Bioinformatics",
+      "language": "en",
+      "license": "AMA11 3.13.9.1",
+      "page": "S5",
+      "source": "DOI.org (Crossref)",
+      "title": "An interpretable rule-based diagnostic classification of diabetic nephropathy among type 2 diabetes patients",
+      "URL": "https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-16-S1-S5",
+      "volume": "16",
+      "author": [
+        {
+          "family": "Huang",
+          "given": "Guan-Mau"
+        },
+        {
+          "family": "Huang",
+          "given": "Kai-Yao"
+        },
+        {
+          "family": "Lee",
+          "given": "Tzong-Yi"
+        },
+        {
+          "family": "Weng",
+          "given": "Julia Tzu-Ya"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2015"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/33QUWVDT",
+      "type": "article-journal",
+      "citation-key": "NoticeDuplicatePublication2008",
+      "container-title": "Archives of Internal Medicine",
+      "DOI": "10.1001/archinte.168.18.2046-b",
+      "ISSN": "0003-9926",
+      "issue": "18",
+      "journalAbbreviation": "Arch Intern Med",
+      "language": "en",
+      "license": "AMA11 3.11.16",
+      "page": "2046",
+      "shortTitle": "Notice of Duplicate Publication",
+      "source": "DOI.org (Crossref)",
+      "title": "Notice of Duplicate Publication: “Potentially Harmful Effect of a Testosterone Dietary Supplement on Prostate Cancer Growth and Metastasis” (Arch Intern Med. 2008;168[2]:235-236)",
+      "title-short": "Notice of Duplicate Publication",
+      "URL": "http://archinte.jamanetwork.com/article.aspx?doi=10.1001/archinte.168.18.2046-b",
+      "volume": "168",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2008,
+            10,
+            13
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/TPITXKPH",
+      "type": "chapter",
+      "call-number": "616.079",
+      "citation-key": "kwonImmunologyHumanImmunodeficiency2013",
+      "container-title": "Fundamental immunology",
+      "edition": "7",
+      "ISBN": "978-1-4511-1783-7",
+      "language": "en",
+      "license": "AMA11 3.12.10",
+      "note": "chapter-number: 42",
+      "publisher": "Lippincott Williams & Wilkins",
+      "publisher-place": "Philadelphia",
+      "source": "BnF ISBN",
+      "title": "Immunology of human immunodeficiency virus infection",
+      "editor": [
+        {
+          "family": "Paul",
+          "given": "William E."
+        }
+      ],
+      "author": [
+        {
+          "family": "Kwon",
+          "given": "Douglas S."
+        },
+        {
+          "family": "Walter",
+          "given": "Bruce D."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/MHQKL283",
+      "type": "article-journal",
+      "abstract": "Progressive multifocal leukoencephalopathy is a neurodegenerative disease caused by demyelination in the brain. The demyelination is due to infection of oligodendroglial cells by polyomavirus JC, a circular DNA virus. The virus resides as an archetype form in uroepithelial cells and bone marrow of more than 70% of adults, in whom it seldom causes overt symptoms. The JC viral form infecting the brain differs from the archetype. This viral form contains two deletions and a duplication in the non-coding control region that are thought to be derived from the archetype. These rearrangements are necessary for neurovirulence. This review considers how these rearrangements occur in the context of transit to the brain and adaptation to infect glial cells.",
+      "citation-key": "johnsonOrderlyStepsProgression2015",
+      "container-title": "Brain Disorders & Therapy",
+      "DOI": "10.4172/2168-975X.S2-003",
+      "ISSN": "2168-975X",
+      "journalAbbreviation": "Brain Disord Ther",
+      "language": "eng",
+      "license": "AMA11 3.11.9",
+      "note": "supplement-number: 2",
+      "page": "2003",
+      "PMID": "27274953",
+      "PMCID": "PMC4890968",
+      "source": "PubMed",
+      "title": "Orderly steps in progression of JC virus to virulence in the brain",
+      "URL": "http://www.omicsgroup.org/journals/orderly-steps-in-progression-of-jc-virus-to-virulence-in-the-brain-2168-975X-S2-003.php?aid=57826",
+      "volume": "4",
+      "author": [
+        {
+          "family": "Johnson",
+          "given": "Edward M."
+        },
+        {
+          "family": "Wortman",
+          "given": "Margaret J."
+        },
+        {
+          "family": "Lundberg",
+          "given": "Patric S."
+        },
+        {
+          "family": "Daniel",
+          "given": "Dianne C."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            8
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/IKJEQZYN",
+      "type": "article-journal",
+      "citation-key": "leeAgaroseGelElectrophoresis2012",
+      "container-title": "Journal of Visualized Experiments",
+      "DOI": "10.3791/3923",
+      "ISSN": "1940-087X",
+      "issue": "62",
+      "journalAbbreviation": "J Vis Exp",
+      "language": "en",
+      "license": "AMA11 3.14.4",
+      "note": "number: e3923",
+      "source": "DOI.org (Crossref)",
+      "title": "Agarose gel electrophoresis for the separation of DNA fragments",
+      "URL": "https://app.jove.com/t/3923",
+      "author": [
+        {
+          "family": "Lee",
+          "given": "Pei Yun"
+        },
+        {
+          "family": "Costumbrado",
+          "given": "John"
+        },
+        {
+          "family": "Hsu",
+          "given": "Chih-Yuan"
+        },
+        {
+          "family": "Kim",
+          "given": "Yong Hoon"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2012,
+            4,
+            20
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/SR2USHX9",
+      "type": "article-journal",
+      "citation-key": "wexlerSnapshotUSGlobal2014",
+      "container-title": "JAMA",
+      "DOI": "10.1001/jama.2014.3890",
+      "ISSN": "0098-7484",
+      "issue": "16",
+      "journalAbbreviation": "JAMA",
+      "language": "en",
+      "license": "AMA11 3.14.4",
+      "page": "1601",
+      "source": "DOI.org (Crossref)",
+      "title": "A snapshot of US global health funding",
+      "URL": "http://jama.jamanetwork.com/article.aspx?doi=10.1001/jama.2014.3890",
+      "volume": "311",
+      "author": [
+        {
+          "family": "Wexler",
+          "given": "Adam"
+        },
+        {
+          "family": "Valentine",
+          "given": "Alison"
+        },
+        {
+          "family": "Kates",
+          "given": "Jennifer"
+        },
+        {
+          "family": "Jankiewicz",
+          "given": "Anne"
+        },
+        {
+          "family": "Rousseau",
+          "given": "David"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2014,
+            4,
+            23
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/YXZVHL8L",
+      "type": "manuscript",
+      "archive": "Royal College of Surgeons of England",
+      "archive_location": "MS0189/1/3",
+      "citation-key": "hunterAccountDissectionsMorbid1757",
+      "license": "AMA11 3.13.5",
+      "note": "archive-place: London\narchive_collection: Archives\npage: 30–32",
+      "title": "An account of the dissections of morbid bodies",
+      "author": [
+        {
+          "family": "Hunter",
+          "given": "John"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1757
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/BNXTV4HG",
+      "type": "article-journal",
+      "abstract": "Medical imaging is becoming a vital component of war on cancer. Tremendous amounts of medical image data are captured and recorded in a digital format during cancer care and cancer research. Facing such an unprecedented volume of image data with heterogeneous image modalities, it is necessary to develop effective and efficient content-based medical image retrieval systems for cancer clinical practice and research. While substantial progress has been made in different areas of content-based image retrieval (CBIR) research, direct applications of existing CBIR techniques to the medical images produced unsatisfactory results, because of the unique characteristics of medical images. In this paper, we develop a new multimodal medical image retrieval approach based on the recent advances in the statistical graphic model and deep learning. Specifically, we first investigate a new extended probabilistic Latent Semantic Analysis model to integrate the visual and textual information from medical images to bridge the semantic gap. We then develop a new deep Boltzmann machine-based multimodal learning model to learn the joint density model from multimodal information in order to derive the missing modality. Experimental results with large volume of real-world medical images have shown that our new approach is a promising solution for the next-generation medical imaging indexing and retrieval system.",
+      "citation-key": "caoMedicalImageRetrieval2014",
+      "container-title": "Cancer Informatics",
+      "DOI": "10.4137/CIN.S14053",
+      "ISSN": "1176-9351, 1176-9351",
+      "journalAbbreviation": "Cancer Inf.",
+      "language": "fr",
+      "license": "AMA11 3.11.9",
+      "note": "supplement-number: 3\nvolume-title: Computational advances in cancer informatics (B)",
+      "page": "125-136",
+      "PMID": "26309389",
+      "PMCID": "PMC4533857",
+      "shortTitle": "Medical image retrieval",
+      "source": "DOI.org (Crossref)",
+      "title": "Medical image retrieval: a multimodal approach",
+      "title-short": "Medical image retrieval",
+      "URL": "http://journals.sagepub.com/doi/10.4137/CIN.S14053",
+      "volume": "13",
+      "author": [
+        {
+          "family": "Cao",
+          "given": "Yu"
+        },
+        {
+          "family": "Steffey",
+          "given": "Shawn"
+        },
+        {
+          "family": "He",
+          "given": "Jianbiao"
+        },
+        {
+          "family": "Xiao",
+          "given": "Degui"
+        },
+        {
+          "family": "Tao",
+          "given": "Cui"
+        },
+        {
+          "family": "Chen",
+          "given": "Ping"
+        },
+        {
+          "family": "Müller",
+          "given": "Henning"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2014
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/SPLZSIVK",
+      "type": "article-journal",
+      "citation-key": "saebMobilePhoneSensor2015",
+      "container-title": "Journal of Medical Internet Research",
+      "DOI": "10.2196/jmir.4273",
+      "ISSN": "1438-8871",
+      "issue": "7",
+      "journalAbbreviation": "J Med Internet Res",
+      "language": "en",
+      "license": "AMA11 3.11.4",
+      "note": "number: e175",
+      "shortTitle": "Mobile phone sensor correlates of depressive symptom severity in daily-life behavior",
+      "source": "DOI.org (Crossref)",
+      "title": "Mobile phone sensor correlates of depressive symptom severity in daily-life behavior: an exploratory study",
+      "title-short": "Mobile phone sensor correlates of depressive symptom severity in daily-life behavior",
+      "URL": "http://www.jmir.org/2015/7/e175/",
+      "volume": "17",
+      "author": [
+        {
+          "family": "Saeb",
+          "given": "Sohrab"
+        },
+        {
+          "family": "Zhang",
+          "given": "Mi"
+        },
+        {
+          "family": "Karr",
+          "given": "Christopher J"
+        },
+        {
+          "family": "Schueller",
+          "given": "Stephen M"
+        },
+        {
+          "family": "Corden",
+          "given": "Marya E"
+        },
+        {
+          "family": "Kording",
+          "given": "Konrad P"
+        },
+        {
+          "family": "Mohr",
+          "given": "David C"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            7,
+            15
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/L7QD4VWP",
+      "type": "article-journal",
+      "abstract": "OBJECTIVE: Laparoscopic radical cystoprostatectomy is a complicated operation. The objective of this study is to present our technique and results of laparoscopic radical cystoprostatectomy.\nMATERIAL AND METHOD: A 72-year-old Thai male presented with gross hematuria. Cystoscope was performed. Large bladder tumor near right ureteric orifice was observed. Then, transurethral resection of bladder tumor was performed. His tumor pathology was muscle invasive high grade urothelial carcinoma with clinical staging T2N0M0. Laparoscopic radical cystoprostatectomy was then conducted with bilateral pelvic nodes dissection and ileal conduit.\nRESULTS: Operation period was eight hours. Blood loss was 500 ml. In pathological results, tumor invaded bladder muscle into perivesical tissue. Tumor margin was free. Lymph nodes were positive for malignancy 5/7 for right side and 0/4 for left side. Pathological staging was T3aN1M0. After post-operative period, the patient was discharged from hospital uneventfully.\nCONCLUSION: Laparoscopic radical cystoprostatectomy in Maha Chakri Sirindhorn Medical Center is minimal invasive, feasible and safe. However, a longer follow-up period regarding long-term cancer control as well as functional and technical aspects will be required.",
+      "citation-key": "viriyasiripongLaparoscopicRadicalCystoprostatectomy2015",
+      "container-title": "Journal of the Medical Association of Thailand",
+      "ISSN": "0125-2208",
+      "issue": "11",
+      "journalAbbreviation": "J Med Assoc Thai",
+      "language": "eng",
+      "license": "AMA11 3.11.9",
+      "note": "supplement-number: 10",
+      "page": "S154-S157",
+      "PMID": "27276850",
+      "shortTitle": "Laparoscopic radical cystoprostatectomy, surgical technique and result",
+      "source": "PubMed",
+      "title": "Laparoscopic radical cystoprostatectomy, surgical technique and result: a case report",
+      "title-short": "Laparoscopic radical cystoprostatectomy, surgical technique and result",
+      "volume": "98",
+      "author": [
+        {
+          "family": "Viriyasiripong",
+          "given": "Sarayuth"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            11
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/9DZB3RBI",
+      "type": "article-journal",
+      "citation-key": "rubbert-rothDifferenzialdiagnostikFruehenPolyarthritis2015",
+      "container-title": "DMW - Deutsche Medizinische Wochenschrift",
+      "DOI": "10.1055/s-0041-103627",
+      "ISSN": "0012-0472, 1439-4413",
+      "issue": "15",
+      "journalAbbreviation": "Dtsch med Wochenschr",
+      "language": "de",
+      "license": "AMA11 3.9.2.2",
+      "page": "1125-1130",
+      "source": "DOI.org (Crossref)",
+      "title": "Differenzialdiagnostik der frühen Polyarthritis",
+      "URL": "http://www.thieme-connect.de/DOI/DOI?10.1055/s-0041-103627",
+      "volume": "140",
+      "author": [
+        {
+          "family": "Rubbert-Roth",
+          "given": "Andrea"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            7,
+            31
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/NSBQ68QL",
+      "type": "article-journal",
+      "citation-key": "kurowskiImpactPreseasonConcussion2015",
+      "container-title": "Journal of Trauma and Acute Care Surgery",
+      "DOI": "10.1097/TA.0000000000000675",
+      "ISSN": "2163-0755",
+      "issue": "3",
+      "language": "en",
+      "license": "AMA11 3.11.9",
+      "note": "supplement-number: 1",
+      "page": "S21-S28",
+      "source": "DOI.org (Crossref)",
+      "title": "Impact of preseason concussion education on knowledge, attitudes, and behaviors of high school athletes",
+      "URL": "https://journals.lww.com/01586154-201509001-00005",
+      "volume": "79",
+      "author": [
+        {
+          "family": "Kurowski",
+          "given": "Brad G."
+        },
+        {
+          "family": "Pomerantz",
+          "given": "Wendy J."
+        },
+        {
+          "family": "Schaiper",
+          "given": "Courtney"
+        },
+        {
+          "family": "Ho",
+          "given": "Mona"
+        },
+        {
+          "family": "Gittelman",
+          "given": "Michael A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2015"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/T9THZRSZ",
+      "type": "article-journal",
+      "abstract": "Background\n              Magnetic resonance diffusion-weighted imaging and perfusion-weighted imaging are able to identify ischaemic ‘footprints’ in transient ischaemic attack. Computed tomography perfusion (CTP) may be useful for patient triage and subsequent management. To date, less than 100 cases have been reported, and none have compared computed tomography perfusion to perfusion-weighted imaging (PWI). We sought to define the yield of computed tomography perfusion for the evaluation of transient ischaemic attack.\n            \n            \n              Methods\n              \n                Consecutive patients with a discharge diagnosis of possible or definite transient ischaemic event who underwent computed tomography perfusion were included in this study. The presence of an ischaemic lesion was assessed on non-contrast computed tomography, automatically deconvolved CTP\n                TMax\n                (Time till the residue function reaches its maximum), and when available on diffusion-weighted imaging and PWI\n                TMax\n                maps.\n              \n            \n            \n              Results\n              \n                Thirty-four patients were included and 17 underwent magnetic resonance imaging. Median delay between onset and computed tomography perfusion was 4.4 h (Interquartile range [IQR]: 1.9-9.6), and between computed tomography perfusion and magnetic resonance imaging was 11 h (Interquartile range: 3.8-22). Noncontrast computed tomography was negative in all cases, while CTP\n                TMax\n                identified an ischaemic lesion in 12/34 patients (35%). In the subgroup of patients with multimodal magnetic resonance imaging, an ischaemic lesion was found in six (35%) patients using CTP\n                TMax\n                versus nine (53%) on magnetic resonance imaging (five diffusion-weighted imaging, nine perfusion-weighted imaging). The additional yield of CTP\n                TMax\n                over computed tomography angiography was significant in the evaluation of transient ischaemic attack (12 vs. 3, McNemar, P = 0.004).\n              \n            \n            \n              Conclusions\n              \n                CTP\n                TMax\n                found an ischaemic lesion in one-third of acute transient ischaemic attack patients. Computed tomography perfusion may be an acceptable substitute when magnetic resonance imaging is unavailable or contraindicated, and has additional yield over computed tomography angiography. Further studies evaluating the outcome of patients with computed tomography perfusion lesions in transient ischaemic attack are justified at this time.",
+      "citation-key": "kleinmanYieldCTPerfusion2015",
+      "container-title": "International Journal of Stroke",
+      "DOI": "10.1111/j.1747-4949.2012.00941.x",
+      "ISSN": "1747-4930, 1747-4949",
+      "journalAbbreviation": "International Journal of Stroke",
+      "language": "en",
+      "license": "AMA11 3.11.9",
+      "note": "supplement-number: A100",
+      "page": "25-29",
+      "source": "DOI.org (Crossref)",
+      "title": "Yield of CT perfusion for the evaluation of transient ischaemic attack",
+      "URL": "https://journals.sagepub.com/doi/10.1111/j.1747-4949.2012.00941.x",
+      "volume": "10",
+      "author": [
+        {
+          "family": "Kleinman",
+          "given": "Jonathan T."
+        },
+        {
+          "family": "Mlynash",
+          "given": "Michael"
+        },
+        {
+          "family": "Zaharchuk",
+          "given": "Greg"
+        },
+        {
+          "family": "Ogdie",
+          "given": "Alyshia A."
+        },
+        {
+          "family": "Straka",
+          "given": "Matus"
+        },
+        {
+          "family": "Lansberg",
+          "given": "Maarten G."
+        },
+        {
+          "family": "Schwartz",
+          "given": "Neil E."
+        },
+        {
+          "family": "Singh",
+          "given": "Paul"
+        },
+        {
+          "family": "Kemp",
+          "given": "Stephanie"
+        },
+        {
+          "family": "Bammer",
+          "given": "Roland"
+        },
+        {
+          "family": "Albers",
+          "given": "Gregory W."
+        },
+        {
+          "family": "Olivot",
+          "given": "Jean-Marc"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2015"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/3F3WHIQY",
+      "type": "article-journal",
+      "citation-key": "ahnKoreasThyroidcancerEpidemic2014",
+      "container-title": "New England Journal of Medicine",
+      "DOI": "10.1056/NEJMp1409841",
+      "ISSN": "0028-4793, 1533-4406",
+      "issue": "19",
+      "journalAbbreviation": "N Engl J Med",
+      "language": "en",
+      "license": "AMA11 3.10",
+      "page": "1765-1767",
+      "source": "DOI.org (Crossref)",
+      "title": "Korea's thyroid-cancer “epidemic” — screening and overdiagnosis",
+      "URL": "http://www.nejm.org/doi/10.1056/NEJMp1409841",
+      "volume": "371",
+      "author": [
+        {
+          "family": "Ahn",
+          "given": "Hyeong Sik"
+        },
+        {
+          "family": "Kim",
+          "given": "Hyun Jung"
+        },
+        {
+          "family": "Welch",
+          "given": "H. Gilbert"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2014,
+            11,
+            6
+          ]
+        ]
+      }
+    }
+  ]
+}

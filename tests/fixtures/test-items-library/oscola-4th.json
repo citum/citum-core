@@ -1,0 +1,864 @@
+{
+  "items": [
+    {
+      "id": "6188419/QW7KWARV",
+      "type": "book",
+      "citation-key": "zweigertIntroductionComparativeLaw1998",
+      "edition": "3",
+      "ISBN": "978-0-19-826860-4 978-0-19-826859-8",
+      "language": "eng",
+      "license": "OSCOLA4 3.2.2",
+      "number-of-pages": "714",
+      "publisher": "Clarendon Press",
+      "publisher-place": "Oxford",
+      "source": "K10plus ISBN",
+      "title": "An introduction to comparative law",
+      "author": [
+        {
+          "family": "Zweigert",
+          "given": "Konrad"
+        },
+        {
+          "family": "Kötz",
+          "given": "Hein"
+        }
+      ],
+      "translator": [
+        {
+          "family": "Weir",
+          "given": "Tony"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1998
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/8QNNEC34",
+      "type": "book",
+      "citation-key": "hartConceptLaw1994",
+      "collection-title": "Clarendon law series",
+      "edition": "2",
+      "ISBN": "978-0-19-964470-4 978-0-19-964469-8",
+      "language": "en",
+      "license": "OSCOLA4 1.1.3",
+      "publisher": "Clarendon Press",
+      "publisher-place": "Oxford",
+      "source": "BnF ISBN",
+      "title": "The concept of law",
+      "author": [
+        {
+          "family": "Hart",
+          "given": "H. L. A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1994
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/WG6RGZA9",
+      "type": "book",
+      "abstract": "Abstract\n            The fourth edition of Andrew Burrows' seminal work Remedies for Torts, Breach of Contract, and Equitable Wrongs (previously Remedies for Torts and Breach of Contract), updates and extends coverage of judicial remedies for civil wrongs in English law. Since the release of the previous edition in 2004, the scope of discussion in the book has developed to include many contemporary case studies. Examples of these include Morris-Garner v One Step Ltd on negotiating damages, Milner v Carnival on quantum of mental distress damages, Forsyth Grant v Allen on restitution for torts, to name but a few, as well as crucial Supreme Court decisions on penalty clauses (Cavendish v Makdessi) and injunctions (LauritzenCool, Araci v Fallon and Coventry v Lawrence). In addition to comprehensive updating to take account of new developments in the law, this book includes two new chapters. Unique to the fourth edition, the first explores damages under the Human Rights Act of 1998; the second examines negotiating damages. Remedies for Torts, Breach of Contract, and Equitable Wrongs by leading scholar Andrew Burrows is a popular work amongst students and practitioners due to its broad coverage, factual detail, insightful application of academic context and enduring subject matter.",
+      "citation-key": "burrowsRemediesTortsBreach2019",
+      "DOI": "10.1093/oso/9780198705932.001.0001",
+      "edition": "4",
+      "ISBN": "978-0-19-870593-2 978-0-19-192729-4",
+      "language": "en",
+      "license": "OSCOLA4 3.2.1",
+      "publisher": "Oxford University Press",
+      "publisher-place": "Oxford",
+      "source": "DOI.org (Crossref)",
+      "title": "Remedies for torts, breach of contract, and equitable wrongs",
+      "URL": "https://academic.oup.com/oxford-law-pro/book/41082",
+      "author": [
+        {
+          "family": "Burrows",
+          "given": "Andrew"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            11
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2019,
+            6,
+            18
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/GVBX84HS",
+      "type": "book",
+      "abstract": "This text is the second of a two volume treatise on the law of non-contractual obligations. It is the result of an attempt to discover the common elements of the law of torts of all the member states of the European Union",
+      "citation-key": "vonbarCommonEuropeanLaw2000",
+      "ISBN": "978-0-19-829839-7 978-0-19-168543-9",
+      "language": "en",
+      "license": "OSCOLA4 3.2.1",
+      "note": "DOI: 10.1093/acprof:oso/9780198298397.001.0001\nvolume-title: Damage and damages, liability for and without personal misconduct, causality, and defences\navailable-date: 1998/2000",
+      "number-of-pages": "1",
+      "number-of-volumes": "2",
+      "publisher": "Clarendon Press",
+      "publisher-place": "Oxford",
+      "shortTitle": "The common European law of torts",
+      "source": "K10plus ISBN",
+      "title": "The common European law of torts",
+      "title-short": "The common European law of torts",
+      "URL": "https://academic.oup.com/book/34701",
+      "volume": "2",
+      "author": [
+        {
+          "family": "von Bar",
+          "given": "Christian"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2000
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/XCTFZ8FV",
+      "type": "chapter",
+      "citation-key": "cartwrightFictionReasonableMan2009",
+      "container-title": "<span class=\"nocase\">Ex libris Hans Nieuwenhuis: opstellen aangeboden aan J. H. Nieuwenhuis, hoogleraar burgerlijk recht aan de Universiteit Leiden, bij zijn emeritaat</span>",
+      "ISBN": "978-90-13-06922-8",
+      "language": "en",
+      "license": "OSCOLA4 3.2.3",
+      "page": "142–154",
+      "publisher": "Kluwer",
+      "publisher-place": "Deventer",
+      "source": "K10plus ISBN",
+      "title": "The fiction of the “reasonable man”",
+      "editor": [
+        {
+          "family": "Castermans",
+          "given": "A. G."
+        },
+        {
+          "family": "Nieuwenhuis",
+          "given": "J. H."
+        }
+      ],
+      "author": [
+        {
+          "family": "Cartwright",
+          "given": "John"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2009
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/27A24UY7",
+      "type": "book",
+      "call-number": "340.1",
+      "citation-key": "horderOxfordEssaysJurisprudence2000",
+      "DOI": "10.1093/oso/9780198268581.001.0001",
+      "ISBN": "978-0-19-826858-1",
+      "language": "en",
+      "license": "OSCOLA4 3.2.2",
+      "publisher": "Oxford University Press",
+      "publisher-place": "Oxford",
+      "shortTitle": "Oxford essays in jurisprudence",
+      "source": "BnF ISBN",
+      "title": "Oxford essays in jurisprudence: fourth series",
+      "title-short": "Oxford essays in jurisprudence",
+      "author": [
+        {
+          "family": "Horder",
+          "given": "Jeremy"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2000
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/DNSHABUL",
+      "type": "article-journal",
+      "citation-key": "craigTheoryPureTheory2005",
+      "container-title": "Public Law",
+      "journalAbbreviation": "Public Law",
+      "language": "en",
+      "license": "OSCOLA4 3.3.1",
+      "page": "440-447",
+      "title": "Theory, \"pure theory\" and values in public law",
+      "author": [
+        {
+          "family": "Craig",
+          "given": "Paul"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            "2005"
+          ]
+        ],
+        "season": "Autumn"
+      }
+    },
+    {
+      "id": "6188419/M6T9LRPN",
+      "type": "chapter",
+      "citation-key": "pilaValueAuthorshipDigital2010",
+      "container-title": "World wide research: reshaping the sciences and humanities",
+      "DOI": "10.7551/mitpress/9780262014397.003.0025",
+      "ISBN": "978-0-262-01439-7",
+      "language": "en",
+      "license": "OSCOLA4 3.2.3",
+      "note": "chapter-number: 7.2",
+      "page": "218-222",
+      "publisher": "MIT Press",
+      "publisher-place": "Cambridge, MA",
+      "shortTitle": "Value of authorship in the digital environment",
+      "source": "DOI.org (Crossref)",
+      "title": "The value of authorship in the digital environment: producing and protecting scientific information",
+      "title-short": "Value of authorship in the digital environment",
+      "URL": "https://academic.oup.com/mit-press-scholarship-online/book/14316/chapter/168238455",
+      "editor": [
+        {
+          "family": "Dutton",
+          "given": "William H."
+        },
+        {
+          "family": "Jeffreys",
+          "given": "Paul W."
+        }
+      ],
+      "author": [
+        {
+          "family": "Pila",
+          "given": "Justine"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2010,
+            5,
+            21
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/TNZFF8WI",
+      "type": "book",
+      "citation-key": "jonesGoffJonesLaw2009a",
+      "edition": "7",
+      "ISBN": "978-0-414-04125-7",
+      "language": "en",
+      "license": "OSCOLA4 3.2.1",
+      "note": "supplement-number: 1\nOCLC: 432992872",
+      "publisher": "Sweet & Maxwell",
+      "publisher-place": "London",
+      "shortTitle": "Goff and Jones",
+      "source": "Open WorldCat",
+      "title": "Goff and Jones: the law of restitution",
+      "title-short": "Goff and Jones",
+      "author": [
+        {
+          "family": "Jones",
+          "given": "Gareth H."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2009
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/5RCJ534P",
+      "type": "article",
+      "abstract": "'Public reason' in Rawls's stipulated usage signifies propositions that can legitimately be used in deliberating on and deciding fundamental issues of political life and legislation because they are propositions which all citizens may reasonably be expected to endorse: their use is therefore fair (respects the moral principle of reciprocity) and preserves the public peace which is at risk from contests between comprehensive doctrines, contests exemplified by wars of religion. This attractive set of suggestions is ruined by irresoluable ambiguities, truncation of reason's resources and of public discourse just when they are most needed, and incipient capitulation to some radical injustices.  But public reason may nonetheless be an opportune phrase for conveying the gist of four permanently valid theses in the classical political thought that develops from Socrates/Plato to Aquinas and beyond.  That tradition has been significantly modified by recognition that a human right to immunity of religious beliefs and acts from coercion extends - precisely by reason of the importance of finding and adhering to the truth about the divine source of reality and value - to mistaken as well as correct religious beliefs and practices.  That immunity is subject to limitations necessary to preserve public order; likewise, a religion's legitimacy as a source of reasons for public actions is dependent on its willingness to foster genuine public discourse.  Analogously, a political or legal philosophy's rational warrant is dependent on the compatibility of its theses with the worth of authentic discourse and the support they give to institutions, including the rule of law, which favour such discourse.  Habermas's account of discourse ethics fails by overlooking some truths about discourse, truth and friendship that Plato made clear in Gorgias.  And (the rule of) law, too, is most adequately understood as a product and articulation of public reason.",
+      "citation-key": "finnisPublicReason2006a",
+      "DOI": "10.2139/ssrn.955815",
+      "genre": "SSRN Scholarly Paper",
+      "language": "en",
+      "license": "OSCOLA4 3.3.5",
+      "number": "955815",
+      "publisher": "Social Science Research Network",
+      "publisher-place": "Rochester, NY",
+      "source": "papers.ssrn.com",
+      "title": "On 'public reason'",
+      "URL": "https://papers.ssrn.com/abstract=955815",
+      "author": [
+        {
+          "family": "Finnis",
+          "given": "John"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2006,
+            4,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/6E9UU328",
+      "type": "article-journal",
+      "abstract": "This Essay states the general case against judicial review of legislation clearly and in a way that is uncluttered by discussions of particular decisions or the history of its emergence in particular systems of constitutional law. The Essay criticizes judicial review on two main grounds. First, it argues that there is no reason to suppose that rights are better protected by this practice than they would be by democratic legislatures. Second, it argues that, quite apart from the outcomes it generates, judicial review is democratically illegitimate. The second argument is familiar; the first argument less so. However, the case against judicial review is not absolute or unconditional. In this Essay, it is premised on a number of conditions, including that the society in question has good working democratic institutions and that most of its citizens take rights seriously (even if they may disagree about what rights they have). The Essay ends by considering what follows from the failure of these conditions.",
+      "citation-key": "waldronCoreCaseJudicial2006",
+      "container-title": "The Yale Law Journal",
+      "DOI": "10.2307/20455656",
+      "ISSN": "0044-0094",
+      "issue": "6",
+      "journalAbbreviation": "Yale Law J.",
+      "language": "en",
+      "license": "OSCOLA4 3.3.1",
+      "page": "1346-1406",
+      "publisher": "The Yale Law Journal Company, Inc.",
+      "source": "JSTOR",
+      "title": "The core of the case against judicial review",
+      "URL": "https://www.jstor.org/stable/20455656",
+      "volume": "115",
+      "author": [
+        {
+          "family": "Waldron",
+          "given": "Jeremy"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2006
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/V2UKH3QH",
+      "type": "article-newspaper",
+      "abstract": "Ian Loader: The Casey report is an example of rhetoric that suggests total protection against crime can be a reasonable expectation",
+      "citation-key": "loaderGreatVictimThis2008a",
+      "container-title": "The Guardian",
+      "ISSN": "0261-3077",
+      "language": "en-GB",
+      "license": "OSCOLA4 3.4.9",
+      "publisher-place": "London",
+      "section": "Opinion",
+      "source": "The Guardian",
+      "title": "The great victim of this get-tough hyperactivity is Labour",
+      "URL": "https://www.theguardian.com/commentisfree/2008/jun/19/justice.ukcrime",
+      "author": [
+        {
+          "family": "Loader",
+          "given": "Ian"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2008,
+            6,
+            18
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/G7VWU4QC",
+      "type": "article-journal",
+      "abstract": "Since the mid¬1990s the Internet’s World¬Wide¬Web has provided the necessary technical platform to enable free access to computerised legal information. Prior to the web there were many online legal information systems, and numerous legal information products distributed on CD¬ROM, but there was no significant provision of free access to legal information anywhere in the world. Both government and private sector online legal publishers charged for access. The web provided the key element required for free public access – a low cost distribution mechanism. For publishers it was close to a ‘no cost’ distribution mechanism if they were not required to pay for outgoing bandwidth.The ease of use of graphical browsers from around 1994, and the web’s use of hypertext as its principal access mechanism (at that time) meant that the web provided a simple and relatively consistent means by which legal information could be both provided and accessed, an attractive alternative to the proprietary, expensive and training¬intensive search engines on which commercial online services largely relied. The development of free access Internet law services was based on these factors.",
+      "citation-key": "greenleafGlobalDevelopmentFree2010",
+      "container-title": "European Journal of Law and Technology",
+      "ISSN": "2042-115X",
+      "issue": "1",
+      "journalAbbreviation": "Eur. J. Law Technol.",
+      "language": "en",
+      "license": "OSCOLA4 3.3.4",
+      "note": "volume-title: Legal informatics",
+      "source": "ejlt.org",
+      "title": "The global development of free access to legal information",
+      "URL": "https://ejlt.org/index.php/ejlt/article/view/17",
+      "volume": "1",
+      "author": [
+        {
+          "family": "Greenleaf",
+          "given": "Graham"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Leith",
+          "given": "Philip"
+        },
+        {
+          "family": "Paliwala",
+          "given": "Abdul"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2010,
+            3,
+            17
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/FSL7T7GP",
+      "type": "entry-encyclopedia",
+      "abstract": "Legal positivism is the thesis that the existence and content of lawdepends on social facts and not on its merits. The English jurist JohnAustin (1790-1859) formulated it thus: “The existence of law isone thing; its merit and demerit another. Whether it be or be not isone enquiry; whether it be or be not conformable to an assumedstandard, is a different enquiry.” (1832, p. 157) The positivistthesis does not say that law's merits are unintelligible, unimportant,or peripheral to the philosophy of law. It says that they do notdetermine whether laws or legal systems exist. Whether asociety has a legal system depends on the presence of certainstructures of governance, not on the extent to which it satisfiesideals of justice, democracy, or the rule of law. What laws are inforce in that system depends on what social standards its officialsrecognize as authoritative; for example, legislative enactments,judicial decisions, or social customs. The fact that a policy would bejust, wise, efficient, or prudent is never sufficient reason forthinking that it is actually the law, and the fact that it is unjust,unwise, inefficient or imprudent is never sufficient reason fordoubting it. According to positivism, law is a matter of what has beenposited (ordered, decided, practiced, tolerated, etc.); as we might sayin a more modern idiom, positivism is the view that law is a socialconstruction. Austin thought the thesis “simple andglaring.” While it is probably the dominant view amonganalytically inclined philosophers of law, it is also the subject ofcompeting interpretations together with persistent criticisms andmisunderstandings., (IP) It is not necessarily the case that there is a connectionbetween law and morality.",
+      "citation-key": "greenLegalPositivism2009",
+      "container-title": "The Stanford Encyclopedia of Philosophy",
+      "edition": "Fall edn",
+      "language": "en",
+      "license": "OSCOLA4 3.2.6",
+      "source": "Stanford Encyclopedia of Philosophy",
+      "title": "Legal positivism",
+      "URL": "http://plato.stanford.edu/archives/fall2009/entries/legal-positivism/",
+      "author": [
+        {
+          "family": "Green",
+          "given": "Leslie"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2013,
+            11,
+            6
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2009
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/I3AGE7U7",
+      "type": "book",
+      "citation-key": "ParkersLawConduct",
+      "edition": "issue 29",
+      "language": "en",
+      "license": "OSCOLA4 3.2.7",
+      "title": "Parker’s Law and Conduct of Elections",
+      "volume": "1"
+    },
+    {
+      "id": "6188419/I8Q35RT6",
+      "type": "bill",
+      "citation-key": "PresumptionDeathAct2009",
+      "language": "en",
+      "license": "OSCOLA4 2.4.8",
+      "title": "Presumption of Death Act (Northern Ireland)",
+      "issued": {
+        "date-parts": [
+          [
+            2009
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/CIEST772",
+      "type": "bill",
+      "citation-key": "ConsolidatedFundHC2008",
+      "language": "la",
+      "license": "OSCOLA4 2.4.5",
+      "number": "5",
+      "title": "Consolidated Fund HC Bill",
+      "issued": {
+        "date-parts": [
+          [
+            2008
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/7IIMDS7H",
+      "type": "legal_case",
+      "authority": "UKHL",
+      "citation-key": "CorrIBCVehicles",
+      "container-title": "AC",
+      "language": "en",
+      "license": "OSCOLA4 2.1.1",
+      "number": "13",
+      "page": "884",
+      "shortTitle": "Corr",
+      "title": "Corr v IBC Vehicles Ltd",
+      "title-short": "Corr",
+      "volume": "[2008] 1"
+    },
+    {
+      "id": "6188419/I43BAVX6",
+      "type": "book",
+      "citation-key": "homeofficeReportRoyalCommission1953",
+      "edition": "Cmd 8932",
+      "language": "en",
+      "license": "OSCOLA4 3.4.3",
+      "title": "Report of the royal commission on capital punishment",
+      "author": [
+        {
+          "family": "Home Office",
+          "given": ""
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1953
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/E6C2JHV5",
+      "type": "thesis",
+      "citation-key": "herbergInjunctiveReliefWrongful1989",
+      "genre": "DPhil Thesis",
+      "language": "en",
+      "license": "OSCOLA4 3.4.7",
+      "publisher": "University of Oxford",
+      "publisher-place": "Oxford",
+      "title": "Injunctive relief for wrongful termination of employment",
+      "author": [
+        {
+          "family": "Herberg",
+          "given": "Javan William"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1989
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/WG82V2RM",
+      "type": "report",
+      "abstract": "'Public reason' in Rawls's stipulated usage signifies propositions that can legitimately be used in deliberating on and deciding fundamental issues of political life and legislation because they are propositions which all citizens may reasonably be expected to endorse: their use is therefore fair (respects the moral principle of reciprocity) and preserves the public peace which is at risk from contests between comprehensive doctrines, contests exemplified by wars of religion. This attractive set of suggestions is ruined by irresoluable ambiguities, truncation of reason's resources and of public discourse just when they are most needed, and incipient capitulation to some radical injustices.  But public reason may nonetheless be an opportune phrase for conveying the gist of four permanently valid theses in the classical political thought that develops from Socrates/Plato to Aquinas and beyond.  That tradition has been significantly modified by recognition that a human right to immunity of religious beliefs and acts from coercion extends - precisely by reason of the importance of finding and adhering to the truth about the divine source of reality and value - to mistaken as well as correct religious beliefs and practices.  That immunity is subject to limitations necessary to preserve public order; likewise, a religion's legitimacy as a source of reasons for public actions is dependent on its willingness to foster genuine public discourse.  Analogously, a political or legal philosophy's rational warrant is dependent on the compatibility of its theses with the worth of authentic discourse and the support they give to institutions, including the rule of law, which favour such discourse.  Habermas's account of discourse ethics fails by overlooking some truths about discourse, truth and friendship that Plato made clear in Gorgias.  And (the rule of) law, too, is most adequately understood as a product and articulation of public reason.",
+      "citation-key": "finnisPublicReason2006",
+      "DOI": "10.2139/ssrn.955815",
+      "genre": "Oxford Legal Studies Research Paper",
+      "language": "en",
+      "license": "OSCOLA4 3.3.5",
+      "number": "1/2007",
+      "source": "papers.ssrn.com",
+      "title": "On 'public reason'",
+      "URL": "http://papers.ssrn.com/abstract=955815",
+      "author": [
+        {
+          "family": "Finnis",
+          "given": "John"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2013,
+            11,
+            6
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2006,
+            4,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/YMBTPD46",
+      "type": "speech",
+      "citation-key": "mcfarlaneRemedyingRelianceFuture2006",
+      "event-title": "Obligations III conference",
+      "language": "en",
+      "license": "OSCOLA4 3.4.6",
+      "publisher-place": "Brisbane",
+      "title": "Remedying reliance: the future development of promissory and proprietary estoppel in English law",
+      "author": [
+        {
+          "family": "McFarlane",
+          "given": "Ben"
+        },
+        {
+          "family": "Nolan",
+          "given": "Donal"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            "2006",
+            7
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/JLPZK7CN",
+      "type": "personal_communication",
+      "citation-key": "brown2009",
+      "genre": "letter",
+      "language": "en",
+      "license": "OSCOLA4 3.4.11",
+      "author": [
+        {
+          "family": "Brown",
+          "given": "Gordon"
+        }
+      ],
+      "recipient": [
+        {
+          "family": "Lady Ashton",
+          "given": ""
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            "2009",
+            11,
+            20
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/SLGXJJZ4",
+      "type": "legal_case",
+      "authority": "HL",
+      "citation-key": "BarrettEnfieldLBC1999",
+      "container-title": "BMLR",
+      "language": "en",
+      "license": "OSCOLA4 2.1.1",
+      "page": "1",
+      "shortTitle": "Barrett",
+      "title": "Barrett v Enfield LBC",
+      "title-short": "Barrett",
+      "volume": "49",
+      "issued": {
+        "date-parts": [
+          [
+            1999
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/XBMULGTC",
+      "type": "legal_case",
+      "authority": "HL",
+      "citation-key": "BarrettEnfieldLBC",
+      "container-title": "AC",
+      "language": "en",
+      "license": "OSCOLA4 2.1.1",
+      "page": "550",
+      "shortTitle": "Barrett",
+      "title": "Barrett v Enfield LBC",
+      "title-short": "Barrett",
+      "volume": "[2001] 2"
+    },
+    {
+      "id": "6188419/VPR359DP",
+      "type": "webpage",
+      "citation-key": "coleVirtualFriendFires2009",
+      "container-title": "Naked Law",
+      "language": "en",
+      "license": "OSCOLA4 3.4.8",
+      "title": "Virtual friend fires employee",
+      "URL": "http://www.nakedlaw.com/2009/05/index.html",
+      "author": [
+        {
+          "family": "Cole",
+          "given": "Sarah"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2013,
+            11,
+            6
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2009",
+            5,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/IBD5CJFK",
+      "type": "legislation",
+      "citation-key": "PenaltiesDisorderlyBehaviour2004",
+      "language": "en",
+      "license": "OSCOLA4 2.5.1",
+      "number": "SI 2004/3166",
+      "title": "Penalties for Disorderly Behaviour (Amendment of Minimum Age) Order",
+      "issued": {
+        "date-parts": [
+          [
+            2004
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/47IA2RV4",
+      "type": "legislation",
+      "citation-key": "ShippingTradingInterests1995",
+      "language": "en",
+      "license": "OSCOLA4 2.4.1",
+      "title": "Shipping and Trading Interests (Protection) Act",
+      "issued": {
+        "date-parts": [
+          [
+            1995
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/QZHBPNVH",
+      "type": "interview",
+      "citation-key": "honore2007",
+      "language": "en",
+      "license": "OSCOLA4 3.4.10",
+      "author": [
+        {
+          "family": "Honoré",
+          "given": "Tony"
+        }
+      ],
+      "interviewer": [
+        {
+          "family": "Endicott",
+          "given": "Timothy"
+        },
+        {
+          "family": "Gardner",
+          "given": "John"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            "2007",
+            7,
+            17
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/XFQZ5JPU",
+      "type": "document",
+      "title": "WestLaw UK",
+      "URL": "https://uk.westlaw.com/Document/ID0F030B0E72111DA9D198AF4F85CA028/View/FullText.html?ppcid=354ee77020174b19bbe3b5508ab9ab03",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            9
+          ]
+        ]
+      }
+    }
+  ]
+}

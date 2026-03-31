@@ -1,0 +1,4974 @@
+{
+  "items": [
+    {
+      "id": "6188419/H8JVDDLP",
+      "type": "article-magazine",
+      "citation-key": "druckerReallyReinventingGovernment1995",
+      "container-title": "Atlantic Monthly",
+      "issue": "2",
+      "language": "en",
+      "license": "NHR 18.3.2",
+      "page": "49–61",
+      "title": "Really reinventing government",
+      "URL": "https://www.theatlantic.com/past/politics/polibig/reallyre.htm",
+      "volume": "275",
+      "author": [
+        {
+          "family": "Drucker",
+          "given": "Peter"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            21
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "1995",
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/AN9G9JVW",
+      "type": "article-journal",
+      "citation-key": "turmelHistoireLangelologieTemps1898",
+      "container-title": "Revue d'histoire et de littérature religieuses",
+      "journalAbbreviation": "Rev. hist. litt. relig.",
+      "language": "fr",
+      "license": "NHR 18.2.2",
+      "page": "289–308, 407–434, 533–552",
+      "shortTitle": "Histoire de l’angélologie",
+      "title": "Histoire de l’angélologie des temps ­apostoliques à la fin du Vᵉ siècle",
+      "title-short": "Histoire de l’angélologie",
+      "URL": "https://gallica.bnf.fr/ark:/12148/bpt6k36441q",
+      "volume": "3",
+      "author": [
+        {
+          "family": "Turmel",
+          "given": "J., [P. Coulange]"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1898
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/DZLDXGY9",
+      "type": "broadcast",
+      "abstract": "What used to be thought of as a symptom of a speech disorder might now be a hot trend in vocal style among rock stars and young women. Christie Nicholson reports",
+      "citation-key": "nicholsonQuirkSpeechMay2011",
+      "language": "en",
+      "license": "NHR 18.8.5",
+      "medium": "podcast",
+      "note": "container-title: Scientific American",
+      "title": "A quirk of speech may become a new vocal style",
+      "URL": "https://www.scientificamerican.com/podcast/episode/a-quirk-of-speech-may-become-a-new-11-12-17/",
+      "author": [
+        {
+          "family": "Nicholson",
+          "given": "Christie"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2011,
+            12,
+            17
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/NDKAH8S3",
+      "type": "book",
+      "call-number": "HD70.G7 M328 1994",
+      "citation-key": "stewartManagingBritainGermany1994",
+      "ISBN": "978-0-312-12237-9",
+      "language": "en",
+      "license": "NHR 18.2.2",
+      "number-of-pages": "226",
+      "publisher": "Anglo-German Foundation for the Study of Industrial Society",
+      "publisher-place": "London",
+      "source": "Library of Congress ISBN",
+      "title": "Managing in Britain and Germany",
+      "editor": [
+        {
+          "family": "Stewart",
+          "given": "Rosemary"
+        },
+        {
+          "family": "Barsoux",
+          "given": "Jean-Louis"
+        },
+        {
+          "family": "Kieser",
+          "given": "Alfred"
+        },
+        {
+          "family": "Ganter,",
+          "given": "Hans-Dieter"
+        },
+        {
+          "family": "Walgenbach",
+          "given": "Peter"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1994
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/FY6JEVKU",
+      "type": "book",
+      "abstract": "The thoroughly revised edition of this classic text describes the art of manipulative physiotherapy as delineated by G.D. Maitland - a unique approach based on procedures for thorough assessment and reassessment of patients. The 6th edition has been extensively revised, presenting an integrated contemporary and evidence-based model of manipulative physiotherapy. Updated and expanded coverage throughout reflects advances in knowledge and the role of manipulative physiotherapy within contemporary clinical practice. New highlights include an improved layout, new photographs, and an accompanying CD-ROM that includes video clips of all relevant examination and treatment techniques",
+      "citation-key": "maitlandMaitlandsVertebralManipulation2005",
+      "edition": "7",
+      "ISBN": "978-0-7506-8806-2",
+      "language": "en",
+      "license": "NHR 17.3.2",
+      "note": "OCLC: 63114101",
+      "publisher": "Butterworth–Heinemann",
+      "publisher-place": "Edinburgh",
+      "source": "Open WorldCat",
+      "title": "Maitland's vertebral manipulation",
+      "editor": [
+        {
+          "family": "Maitland",
+          "given": "G. D."
+        },
+        {
+          "family": "Hengeveld",
+          "given": "Elly"
+        },
+        {
+          "family": "Banks",
+          "given": "Kevin"
+        },
+        {
+          "family": "English",
+          "given": "Kay"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2005
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/GRHS6N3Y",
+      "type": "book",
+      "citation-key": "watson-wattThreeStepsVictory1957",
+      "language": "en",
+      "license": "NHR 18.2.1",
+      "note": "Open Library ID: OL23819017M",
+      "number-of-pages": "480",
+      "publisher": "Odhams Press",
+      "publisher-place": "London",
+      "shortTitle": "Three steps to victory",
+      "source": "The Open Library",
+      "title": "Three steps to victory: a personal account by radar's greatest pioneer",
+      "title-short": "Three steps to victory",
+      "author": [
+        {
+          "family": "Watson-Watt",
+          "given": "Robert Alexander"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1957
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/UNZKS5MJ",
+      "type": "book",
+      "citation-key": "hornsby-smithRomanCatholicOpinion1979",
+      "ISBN": "978-0-907928-00-3",
+      "language": "en",
+      "license": "NHR 18.1.3",
+      "note": "OCLC: 7125956",
+      "publisher": "University of Surrey",
+      "publisher-place": "Guildford",
+      "shortTitle": "Roman Catholic opinion",
+      "source": "Open WorldCat",
+      "title": "Roman Catholic opinion: a study of Roman Catholics in England and Wales in the 1970s",
+      "title-short": "Roman Catholic opinion",
+      "author": [
+        {
+          "family": "Hornsby-Smith",
+          "given": "Michael P."
+        },
+        {
+          "family": "Lee",
+          "given": "Raymond M."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1979
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/65TYF5ZG",
+      "type": "book",
+      "call-number": "HV6762.G7 R65 1986",
+      "citation-key": "rogersTracingMissingPersons1986",
+      "ISBN": "978-0-7190-1901-2",
+      "language": "en",
+      "license": "NHR 18.1.3",
+      "number-of-pages": "188",
+      "publisher": "Manchester University Press",
+      "publisher-place": "Manchester",
+      "shortTitle": "Tracing missing persons",
+      "source": "Library of Congress ISBN",
+      "title": "Tracing missing persons: an introduction to agencies, methods, and sources in England and Wales",
+      "title-short": "Tracing missing persons",
+      "author": [
+        {
+          "family": "Rogers",
+          "given": "Colin D."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1986
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/CS5BZMXA",
+      "type": "book",
+      "citation-key": "rogersFamilyTreeDetective2009",
+      "edition": "4",
+      "ISBN": "978-0-7190-7126-3",
+      "language": "en",
+      "license": "NHR 18.1.3",
+      "note": "OCLC: 437790713",
+      "publisher": "Manchester University Press",
+      "publisher-place": "Manchester",
+      "shortTitle": "The family tree detective",
+      "source": "Open WorldCat",
+      "title": "The family tree detective: a manual for tracing your ancestors in England and Wales",
+      "title-short": "The family tree detective",
+      "author": [
+        {
+          "family": "Rogers",
+          "given": "Colin D."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2009
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/BDT5KS2Z",
+      "type": "book",
+      "call-number": "HM291 .B22 1988",
+      "citation-key": "baileyPessimism1988",
+      "ISBN": "978-0-415-00247-9 978-0-415-00248-6",
+      "language": "la",
+      "license": "NHR 18.1.2",
+      "number-of-pages": "187",
+      "publisher": "Routledge",
+      "publisher-place": "London",
+      "source": "Library of Congress ISBN",
+      "title": "Pessimism",
+      "author": [
+        {
+          "family": "Bailey",
+          "given": "Joe"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1988
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/5XRYYSTF",
+      "type": "chapter",
+      "call-number": "DR2082 .M35 1998",
+      "citation-key": "malcolmAustrianInvasionGreat1998",
+      "container-title": "Kosovo: a short history",
+      "ISBN": "978-0-8147-5598-3",
+      "language": "en",
+      "license": "NHR 18.2.6",
+      "page": "139–162",
+      "publisher": "New York University Press",
+      "publisher-place": "New York",
+      "source": "Library of Congress ISBN",
+      "title": "The Austrian invasion and the \"Great Migration\" of the Serbs, 1689–1690",
+      "author": [
+        {
+          "family": "Malcolm",
+          "given": "Noel"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1998
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/4D279Z4C",
+      "type": "book",
+      "abstract": "Bibliography: p. 403-410",
+      "citation-key": "schweitzerQuestHistoricalJesus1910",
+      "language": "en",
+      "license": "NHR 18.2.3",
+      "number-of-pages": "436",
+      "publisher": "Adam and Charles Black",
+      "shortTitle": "Quest of the historical Jesus",
+      "title": "The quest of the historical Jesus: a critical study of its progress from Reimarus to Wrede",
+      "title-short": "Quest of the historical Jesus",
+      "URL": "https://hdl.handle.net/2027/coo.31924029311986",
+      "author": [
+        {
+          "family": "Schweitzer",
+          "given": "Albert"
+        }
+      ],
+      "translator": [
+        {
+          "family": "Montgomery",
+          "given": "William"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1910
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/UNGY7K6J",
+      "type": "book",
+      "call-number": "PR6001.U4 Z47 1990",
+      "citation-key": "bucknellAudenMapAll1990",
+      "collection-number": "1",
+      "collection-title": "Auden studies",
+      "ISBN": "978-0-19-812964-6",
+      "language": "en",
+      "license": "NHR 18.2.3",
+      "number-of-pages": "245",
+      "publisher": "Clarendon Press",
+      "publisher-place": "Oxford",
+      "shortTitle": "'Map of all my youth'",
+      "source": "Library of Congress ISBN",
+      "title": "W. H. Auden, 'The map of all my youth': early works, friends, and influences",
+      "title-short": "'Map of all my youth'",
+      "editor": [
+        {
+          "family": "Bucknell",
+          "given": "Katherine"
+        },
+        {
+          "family": "Jenkins",
+          "given": "Nicholas"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1990
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/MJKAXHC3",
+      "type": "book",
+      "citation-key": "StoriesNature1822",
+      "language": "en",
+      "license": "NHR 18.2.2",
+      "number-of-pages": "xvii, [3], 254, [1] p.",
+      "publisher": "T. and J. Allman",
+      "publisher-place": "London",
+      "source": "HathiTrust",
+      "title": "Stories after nature",
+      "URL": "https://catalog.hathitrust.org/Record/009403693",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1822
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/N5S8J5A7",
+      "type": "book",
+      "citation-key": "wellsStoriesNature1891",
+      "language": "en",
+      "license": "NHR 18.2.2",
+      "number-of-pages": "xvii, [3], 254, [1] p.",
+      "publisher": "Lawrence and Bullen",
+      "publisher-place": "London",
+      "source": "HathiTrust",
+      "title": "Stories after nature",
+      "URL": "https://catalog.hathitrust.org/Record/009403693",
+      "author": [
+        {
+          "family": "Wells",
+          "given": "Charles"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1891
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/WR4DZPXQ",
+      "type": "chapter",
+      "citation-key": "ashtonDualism1991",
+      "container-title": "Understanding the fourth Gospel",
+      "ISBN": "978-0-19-826461-3",
+      "language": "la",
+      "license": "NHR 18.2.6",
+      "page": "205–237",
+      "publisher": "Clarendon Press",
+      "publisher-place": "Oxford",
+      "source": "K10plus ISBN",
+      "title": "Dualism",
+      "author": [
+        {
+          "family": "Ashton",
+          "given": "John"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1991
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/4KZLDLK3",
+      "type": "report",
+      "citation-key": "nissanmotorcorporationNissanJidosha30nen1965",
+      "language": "ja",
+      "license": "NHR 18.2.5",
+      "note": "Translated title: A 30-year\nhistory of Nissan Motors",
+      "title": "Nissan Jidosha 30nen shi",
+      "author": [
+        {
+          "family": "Nissan Motor Corporation",
+          "given": ""
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1965
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/ZVHGPY6X",
+      "type": "book",
+      "citation-key": "tschicholdTypographischeGestaltung1955",
+      "language": "de",
+      "license": "NHR 18.2.5",
+      "publisher-place": "Basle",
+      "title": "Typographische Gestaltung",
+      "author": [
+        {
+          "family": "Tschichold",
+          "given": "Jan"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1955
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/PM2KZL3E",
+      "type": "book",
+      "call-number": "25835 d.192",
+      "citation-key": "tschicholdAsymmetricTypography1967",
+      "language": "it",
+      "license": "NHR 18.2.5",
+      "publisher": "Faber",
+      "publisher-place": "London",
+      "source": "solo.bodleian.ox.ac.uk",
+      "title": "Asymmetric typography",
+      "author": [
+        {
+          "family": "Tschichold",
+          "given": "Jan"
+        }
+      ],
+      "translator": [
+        {
+          "family": "McLean",
+          "given": "Ruari"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1967
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/FFRV9JGL",
+      "type": "book",
+      "call-number": "PC71 .E2",
+      "citation-key": "sampsonEarlyRomanceTexts1980",
+      "ISBN": "978-0-521-22260-0",
+      "language": "en",
+      "license": "NHR 18.2.3",
+      "number-of-pages": "339",
+      "publisher": "Cambridge University Press",
+      "publisher-place": "Cambridge",
+      "shortTitle": "Early Romance texts",
+      "source": "Library of Congress ISBN",
+      "title": "Early Romance texts: an anthology",
+      "title-short": "Early Romance texts",
+      "editor": [
+        {
+          "family": "Sampson",
+          "given": "Rodney"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1980
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/MGPJGR2I",
+      "type": "book",
+      "citation-key": "dennistonGreekParticles1954a",
+      "edition": "2",
+      "ISBN": "978-0-19-814307-9",
+      "language": "en",
+      "license": "NHR 18.2.12",
+      "number-of-pages": "660",
+      "publisher": "Clarendon Press",
+      "publisher-place": "Oxford",
+      "source": "K10plus ISBN",
+      "title": "The Greek particles",
+      "author": [
+        {
+          "family": "Denniston",
+          "given": "J. D."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1954
+          ]
+        ]
+      },
+      "original-date": {
+        "date-parts": [
+          [
+            1934
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/UN6FBRYX",
+      "type": "book",
+      "call-number": "PN6080 .O95 1999",
+      "citation-key": "knowlesOxfordDictionaryQuotations1999a",
+      "edition": "5",
+      "ISBN": "978-0-19-860173-9",
+      "language": "en",
+      "license": "NHR 18.2.12",
+      "number-of-pages": "1136",
+      "publisher": "Oxford University Press",
+      "publisher-place": "Oxford",
+      "source": "Library of Congress ISBN",
+      "title": "The Oxford dictionary of quotations",
+      "editor": [
+        {
+          "family": "Knowles",
+          "given": "Elizabeth"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1999
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/GIQYNZVP",
+      "type": "book",
+      "call-number": "KD532 .B34 2019",
+      "citation-key": "bakerIntroductionEnglishLegal2019",
+      "DOI": "10.1093/oso/9780198812609.001.0001",
+      "edition": "5",
+      "ISBN": "978-0-19-881260-9 978-0-19-881261-6",
+      "language": "en",
+      "license": "NHR 18.2.12",
+      "number-of-pages": "637",
+      "publisher": "Oxford University Press",
+      "publisher-place": "Oxford",
+      "source": "Library of Congress ISBN",
+      "title": "An introduction to English legal history",
+      "author": [
+        {
+          "family": "Baker",
+          "given": "John H."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2019
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/FGZGUY45",
+      "type": "book",
+      "citation-key": "vanderstraetenMusiqueAuxPaysBas1872a",
+      "language": "fr",
+      "license": "NHR 18.2.7",
+      "note": "available-date: 1867/1888",
+      "number-of-volumes": "8",
+      "publisher": "G.-A. van Trigt",
+      "publisher-place": "Brussels",
+      "source": "HathiTrust",
+      "title": "La musique aux Pays-Bas avant le XIXᵉ siècle",
+      "URL": "https://catalog.hathitrust.org/Record/001977287",
+      "volume": "2",
+      "author": [
+        {
+          "family": "Vander Straeten",
+          "given": "Edmond"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1872
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/SIG924JA",
+      "type": "book",
+      "citation-key": "vanderstraetenMusiqueAuxPaysBas1867a",
+      "language": "fr",
+      "license": "NHR 18.2.7",
+      "note": "issued: 1867/1888",
+      "number-of-volumes": "8",
+      "publisher-place": "Brussels",
+      "source": "HathiTrust",
+      "title": "La musique aux Pays-Bas avant le XIXᵉ siècle",
+      "URL": "https://catalog.hathitrust.org/Record/001977287",
+      "author": [
+        {
+          "family": "Vander Straeten",
+          "given": "Edmond"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/9ILNFCLM",
+      "type": "book",
+      "call-number": "M. adds. 111 e.255/107",
+      "citation-key": "allenKnackKnowKnave1964",
+      "edition": "facs. edn",
+      "language": "en",
+      "license": "NHR 18.2.13",
+      "number-of-pages": "59",
+      "original-publisher-place": "London",
+      "publisher": "Malone Society Reprints",
+      "publisher-place": "Oxford",
+      "source": "solo.bodleian.ox.ac.uk",
+      "title": "A knack to know a knave",
+      "author": [
+        {
+          "family": "Allen",
+          "given": "Edward"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1964
+          ]
+        ]
+      },
+      "original-date": {
+        "date-parts": [
+          [
+            1594
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/CT8S2CX6",
+      "type": "book",
+      "citation-key": "dennistonGreekParticles1954",
+      "edition": "2",
+      "ISBN": "978-0-19-814307-9",
+      "language": "en",
+      "license": "NHR 18.2.12",
+      "number-of-pages": "660",
+      "publisher": "Clarendon Press",
+      "publisher-place": "Oxford",
+      "source": "K10plus ISBN",
+      "title": "The Greek particles",
+      "author": [
+        {
+          "family": "Denniston",
+          "given": "J. D."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1954
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/9ZKNAQZM",
+      "type": "book",
+      "call-number": "1744 d.121/6",
+      "citation-key": "marchettodapadovaPomerium1961",
+      "collection-number": "6",
+      "collection-title": "Corpus scriptorum de musica",
+      "language": "it",
+      "license": "NHR 18.2.9",
+      "number-of-pages": "218",
+      "publisher": "American Institute of Musicology",
+      "source": "solo.bodleian.ox.ac.uk",
+      "title": "Pomerium",
+      "author": [
+        {
+          "family": "Marchetto da Padova",
+          "given": ""
+        }
+      ],
+      "editor": [
+        {
+          "family": "Vecchi",
+          "given": "Joseph"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1961
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/397DHF27",
+      "type": "book",
+      "call-number": "E169.1 E162 .F539 1989 vol. 1",
+      "citation-key": "fischerAmericaCulturalHistory1989",
+      "ISBN": "978-0-19-503794-4",
+      "language": "en",
+      "license": "NHR 18.2.7",
+      "note": "volume-title: Albion's seed: four British folkways in America",
+      "number-of-pages": "946",
+      "publisher": "Oxford University Press",
+      "publisher-place": "New York",
+      "source": "Library of Congress ISBN",
+      "title": "America: a cultural history",
+      "volume": "1",
+      "author": [
+        {
+          "family": "Fischer",
+          "given": "David Hackett"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1989
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/4LZCUV6Z",
+      "type": "chapter",
+      "call-number": "N6915 .A73 1993",
+      "citation-key": "shearmanVaticanStanzeFunctions1993",
+      "container-title": "Art and politics in Renaissance Italy: British Academy lectures",
+      "ISBN": "978-0-19-726126-2",
+      "language": "en",
+      "license": "NHR 18.2.6",
+      "page": "185–240",
+      "publisher": "Published for the British Academy by Oxford University Press",
+      "publisher-place": "Oxford",
+      "source": "Library of Congress ISBN",
+      "title": "The Vatican Stanze: functions and decoration",
+      "author": [
+        {
+          "family": "Shearman",
+          "given": "John"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Holmes",
+          "given": "George"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1993
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/6ZX236WQ",
+      "type": "article-journal",
+      "abstract": "In a brilliant chapter in the ‘Cambridge Modern History’ the late Professor Maitland, dealing with the circumstances of the passage of Elizabeth's Act of Uniformity through the House of Lords, remarks: ‘Unfortunately, at an exciting moment there is a gap, perhaps a significant gap, in the official record, and we cease to know what lords were present in the House.’ This is a summary of a more detailed examination contributed by Maitland to the English Historical Review which reads as follows:—‘It is well known that the Journal of the House of Lords becomes suddenly silent at the most exciting moment of this momentous session. It leaps from Saturday, April 22, to Monday, May 1; in other words, it leaps over the days on which the Supremacy Bill (No. 3) and the Uniformity Bill were receiving the assent of the House of Lords. Is this due to accident or is it due to fraud? The question springs to our lips, for we have every reason to believe that the journal ought to have recorded the fact that not one lord spiritual voted for these bills, and that every prelate who was present voted against them. This fact might indeed be notorious; but notoriety is not evidence, and in the then state of constitutional doctrine the Queen's ministers may have wished to deprive their adversaries of the means of “averring by matter of record” that the first estate of the realm was no party to the religious settlement. With some slight hope that the handwriting might be more eloquent than print, I obtained permission to see the original journal. It made no disclosure. In the first place, the work is so neat and regular that it looks, not like a journal kept day by day, but like a fair text made at the end of the session from notes that had been taken as the session proceeded. In the second place, the practice was to devote one page—or rather one side of a page—to every day, whether there was much or little to record. The session of Saturday, April 22, is described on the back of a page and ends with an adjournment to the next Tuesday; the session of Monday, May 1, is described on the front of the next page. Even if the book were unbound it would, I fear, reveal no more; for, as we apparently have to deal with a clean text made at the end of the session, any inference that we might be disposed to draw from the distribution of quires and sheets would be highly precarious, and “This may or may not have been an accident” would have to be our last word.’",
+      "citation-key": "pollardAuthenticityLordsJournals1914",
+      "collection-title": "3rd ser.",
+      "container-title": "Transactions of the Royal Historical Society",
+      "DOI": "10.2307/3678446",
+      "ISSN": "0080-4401, 1474-0648",
+      "journalAbbreviation": "Trans. R. Hist. Soc.",
+      "language": "en",
+      "license": "NHR 18.3.2",
+      "page": "17-39",
+      "publisher": "Cambridge University Press",
+      "source": "JSTOR",
+      "title": "The authenticity of the \"Lords' Journals\" in the sixteenth century",
+      "URL": "https://www.jstor.org/stable/3678446",
+      "volume": "8",
+      "author": [
+        {
+          "family": "Pollard",
+          "given": "A. F."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "1914"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/29CW7ECN",
+      "type": "book",
+      "citation-key": "hareWindBlowsDeath1987",
+      "ISBN": "978-0-571-13995-8",
+      "language": "en",
+      "license": "NHR 18.2.13",
+      "note": "original-title: When the wind blows",
+      "number-of-pages": "254",
+      "original-publisher-place": "London",
+      "publisher": "Faber and Faber",
+      "publisher-place": "London",
+      "source": "K10plus ISBN",
+      "title": "The wind blows death",
+      "author": [
+        {
+          "family": "Hare",
+          "given": "Cyril"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1987
+          ]
+        ]
+      },
+      "original-date": {
+        "date-parts": [
+          [
+            1949
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/MGPWMNYG",
+      "type": "book",
+      "citation-key": "smithCompleatHousewifeAccomplished1994",
+      "edition": "facs. edn",
+      "ISBN": "978-1-85891-121-2",
+      "language": "en",
+      "license": "NHR 18.2.13",
+      "note": "OCLC: 60225375",
+      "original-publisher-place": "16th edn, London",
+      "publisher": "Studio Editions",
+      "publisher-place": "London",
+      "source": "Open WorldCat",
+      "title": "The compleat housewife, or, accomplished gentlewoman’s companion",
+      "author": [
+        {
+          "family": "Smith",
+          "given": "Eliza"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1994
+          ]
+        ]
+      },
+      "original-date": {
+        "date-parts": [
+          [
+            1758
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/PGDZGE2C",
+      "type": "article-magazine",
+      "citation-key": "jamesMissBraddon1865",
+      "container-title": "The Nation",
+      "language": "it",
+      "license": "NHR 18.3.2",
+      "title": "Miss Braddon",
+      "author": [
+        {
+          "family": "James",
+          "given": "Henry"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            "1865",
+            11,
+            9
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/N5MJKEXZ",
+      "type": "article-magazine",
+      "citation-key": "downingSpitfireLegend2000",
+      "container-title": "History Today",
+      "issue": "9",
+      "language": "en",
+      "license": "NHR 18.3.2",
+      "page": "19–25",
+      "title": "The Spitfire legend",
+      "URL": "https://www.historytoday.com/archive/spitfire-legend",
+      "volume": "50",
+      "author": [
+        {
+          "family": "Downing",
+          "given": "Taylor"
+        },
+        {
+          "family": "Johnston",
+          "given": "Andrew"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2000",
+            9,
+            9
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/QK7NUMFK",
+      "type": "book",
+      "call-number": "TX740 .S31413 1987",
+      "citation-key": "sarrauTapasAppetizers1987",
+      "ISBN": "978-0-671-62555-9",
+      "language": "es",
+      "license": "NHR 18.2.14",
+      "note": "original-title: Tapas y aperitivos",
+      "number-of-pages": "192",
+      "original-publisher-place": "Madrid",
+      "publisher": "Simon and Schuster",
+      "publisher-place": "New York",
+      "source": "Library of Congress ISBN",
+      "title": "Tapas and appetizers",
+      "author": [
+        {
+          "family": "Sarrau",
+          "given": "José"
+        }
+      ],
+      "translator": [
+        {
+          "family": "Piemonte Slesinger",
+          "given": "Francesca"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1987
+          ]
+        ]
+      },
+      "original-date": {
+        "date-parts": [
+          [
+            1975
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/RIE8VDG2",
+      "type": "book",
+      "citation-key": "martorellTirantBlanc1984",
+      "ISBN": "978-0-333-38326-1",
+      "language": "es",
+      "license": "NHR 18.2.14",
+      "number-of-pages": "642",
+      "publisher": "Macmillan",
+      "publisher-place": "London",
+      "source": "K10plus ISBN",
+      "title": "Tirant lo Blanc",
+      "author": [
+        {
+          "family": "Martorell",
+          "given": "Joanot"
+        }
+      ],
+      "translator": [
+        {
+          "family": "Rosenthal",
+          "given": "David"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1984
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/2F78W6HR",
+      "type": "book",
+      "citation-key": "lowerRichardLowersVindicatio1983",
+      "edition": "facs. edn with introduction",
+      "ISBN": "978-0-9501528-7-5",
+      "language": "en",
+      "license": "NHR 18.2.13",
+      "note": "original-title: <span class=\"nocase\">Diatribæ Thomæ Willisii Doct. Med. & Profess. Oxon. De febribus Vindicatio adversus Edmundum De Meara Ormoniensem Hibernum M.D.</span>",
+      "number-of-pages": "314",
+      "original-publisher-place": "London",
+      "publisher": "Sandford",
+      "publisher-place": "Oxford",
+      "shortTitle": "Vindicatio",
+      "source": "K10plus ISBN",
+      "title": "Richard Lower's 'Vindicatio': a defence of the experimental method",
+      "title-short": "Vindicatio",
+      "author": [
+        {
+          "family": "Lower",
+          "given": "Richard"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Dewhurst",
+          "given": "Kenneth"
+        }
+      ],
+      "translator": [
+        {
+          "family": "Dewhurst",
+          "given": "Kenneth"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1983
+          ]
+        ]
+      },
+      "original-date": {
+        "date-parts": [
+          [
+            1665
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/5JWYB5FC",
+      "type": "book",
+      "citation-key": "southernSaintAnselmPortrait1991a",
+      "edition": "rev. repr.",
+      "ISBN": "978-0-521-43818-6 978-0-521-36262-7",
+      "language": "en",
+      "license": "NHR 18.2.13",
+      "number-of-pages": "493",
+      "publisher": "Cambridge University Press",
+      "publisher-place": "Cambridge",
+      "shortTitle": "Saint Anselm",
+      "source": "K10plus ISBN",
+      "title": "Saint Anselm: a portrait in a landscape",
+      "title-short": "Saint Anselm",
+      "author": [
+        {
+          "family": "Southern",
+          "given": "Richard W."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1991
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/F4YEAJVF",
+      "type": "book",
+      "citation-key": "joachimoffiorePsalteriumDecemCordarum1983a",
+      "edition": "facs. edn",
+      "ISBN": "978-3-8102-0200-0",
+      "language": "la",
+      "license": "NHR 18.2.13",
+      "number-of-pages": "226",
+      "original-publisher-place": "Venice",
+      "publisher": "Minerva",
+      "publisher-place": "Frankfurt am Main",
+      "source": "K10plus ISBN",
+      "title": "Psalterium decem cordarum",
+      "author": [
+        {
+          "family": "Joachim of Fiore",
+          "given": ""
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1983
+          ]
+        ]
+      },
+      "original-date": {
+        "date-parts": [
+          [
+            1527
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/AJAQ4BXI",
+      "type": "article-journal",
+      "abstract": "C. V. Palisca, Humanism in Italian Renaissance Musical Thought.Allan Atlas, Music at the Aragonese Court of Naples.Winifred Maynard, Elizabethan Lyric Poetry and Its Music.Charles L. Stinger, The Renaissance in Rome.Christiane Klapisch‐Zuber, Women, Family, and Ritual in Renaissance Italy.Ann G. Carmichael, Plague and the Poor in Renaissance Florence.Ronald Lightbown, Mantegna.John Pope‐Hennessy, Cellini.T. H. L. Parker, Calvin's Old Testament Commentaries. The Medical Renaissance of the Sixteenth Century, edited by A. Wear, R. K. French and I. M. Lonie.La littérature de la Renaissance. Literature and the Arts in the Reign of Francis I. Essays presented to C. A. Mayer, edited by Pauline M. Smith and I. D. McFarlane.Margaret M. McGowan, Ideal Forms in the Age of Ronsard.Maria Dowling, Humanism in the Age of Henry VIII. The History of the University of Oxford, Volume III: The Collegiate University, edited by James McConica.Roy Strong, Henry Prince of Wales and England's Lost Renaissance.David Howarth, Lord Arundel and His Circle.Charles Martindale, John Milton and the Transformation of Ancient Epic.Mindele Anne Treip, ‘Descend from Heav'n Urania’: Milton's Paradise Lost and Raphael's Cycle in the Stanza della Segnatura",
+      "citation-key": "ames-lewisMantegna1987",
+      "container-title": "Renaissance Studies",
+      "DOI": "10.1111/j.1477-4658.1987.tb00131.x",
+      "ISSN": "0269-1213, 1477-4658",
+      "issue": "2",
+      "journalAbbreviation": "Renaiss. Stud.",
+      "language": "en",
+      "license": "NHR 18.3.5",
+      "note": "event-place: Oxford\nevent-date: 1986",
+      "page": "273–279",
+      "publisher": "Wiley",
+      "source": "Crossref",
+      "title": "Mantegna",
+      "URL": "https://onlinelibrary.wiley.com/doi/10.1111/j.1477-4658.1987.tb00131.x",
+      "volume": "1",
+      "author": [
+        {
+          "family": "Ames-Lewis",
+          "given": "Francis"
+        }
+      ],
+      "reviewed-author": [
+        {
+          "family": "Lightbown",
+          "given": "Ronald"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "1987"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/9Q4RHRPK",
+      "type": "book",
+      "call-number": "P121 .L9 1981",
+      "citation-key": "lyonsLanguageLinguisticsIntroduction1981",
+      "ISBN": "978-0-521-23034-6 978-0-521-29775-2",
+      "language": "la",
+      "license": "NHR 18.5",
+      "number-of-pages": "356",
+      "publisher": "Cambridge University Press",
+      "publisher-place": "Cambridge",
+      "shortTitle": "Language and linguistics",
+      "source": "Library of Congress ISBN",
+      "title": "Language and linguistics: an introduction",
+      "title-short": "Language and linguistics",
+      "author": [
+        {
+          "family": "Lyons",
+          "given": "John"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1981
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/Q4TQ9SB3",
+      "type": "book",
+      "call-number": "HQ1206 .L36 1975",
+      "citation-key": "lakoffLanguageWomansPlace1975",
+      "ISBN": "978-0-06-090389-3",
+      "language": "en",
+      "license": "NHR 18.5",
+      "number-of-pages": "83",
+      "publisher": "Harper & Row",
+      "publisher-place": "New York",
+      "source": "Library of Congress ISBN",
+      "title": "Language and woman's place",
+      "author": [
+        {
+          "family": "Lakoff",
+          "given": "Robin Tolmach"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1975
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/2H5B3LM4",
+      "type": "thesis",
+      "citation-key": "hillDivinityMaximalGreatness2001",
+      "genre": "PhD thesis",
+      "language": "en",
+      "license": "NHR 18.4",
+      "publisher": "King's College, London",
+      "source": "librarysearch.kcl.ac.uk",
+      "title": "Divinity and maximal greatness",
+      "author": [
+        {
+          "family": "Hill",
+          "given": "Daniel James"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2001
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/KUW8PMM9",
+      "type": "article-newspaper",
+      "citation-key": "porterLionLaboratory1995",
+      "container-title": "TLS",
+      "ISSN": "0307-661X",
+      "issue": "4807",
+      "language": "en",
+      "license": "NHR 18.3.5",
+      "note": "reviewed-title: The private science of Louis Pasteur\nevent-place: Princeton\nevent-date: 1995",
+      "page": "3-4",
+      "source": "The Times Literary Supplement Historical Archive",
+      "title": "Lion of the laboratory",
+      "URL": "https://link.gale.com/apps/doc/EX1200478750/TLSH",
+      "author": [
+        {
+          "family": "Porter",
+          "given": "Roy"
+        }
+      ],
+      "reviewed-author": [
+        {
+          "family": "Geison",
+          "given": "Gerald L."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1995,
+            6,
+            16
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/MML37Z2I",
+      "type": "article-magazine",
+      "citation-key": "puttermanSonoluminescenceSoundLight1995",
+      "container-title": "Scientific American",
+      "DOI": "10.1038/scientificamerican0295-46",
+      "ISSN": "0036-8733",
+      "issue": "2",
+      "language": "en",
+      "license": "NHR 18.3.3",
+      "page": "46-51",
+      "publisher": "Springer Science and Business Media LLC",
+      "shortTitle": "Sonoluminescence",
+      "source": "Crossref",
+      "title": "Sonoluminescence: sound into light",
+      "title-short": "Sonoluminescence",
+      "URL": "https://www.scientificamerican.com/article/sonoluminescence-sound-into-light",
+      "volume": "272",
+      "author": [
+        {
+          "family": "Putterman",
+          "given": "Seth J."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "1995"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/U5L5PY54",
+      "type": "article-newspaper",
+      "citation-key": "leeEnglandHauntedFamiliar1995",
+      "container-title": "The Times",
+      "ISSN": "0140-0460",
+      "issue": "65301",
+      "language": "en",
+      "license": "NHR 18.3.3",
+      "page": "44",
+      "source": "The Times Digital Archive",
+      "title": "England haunted by familiar failings",
+      "URL": "https://link.gale.com/apps/doc/IF0502132830/TTDA",
+      "author": [
+        {
+          "family": "Lee",
+          "given": "Alan"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1995,
+            6,
+            23
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/MVEWFK8A",
+      "type": "article-journal",
+      "citation-key": "nealeMasculinitySpectacle1983",
+      "container-title": "Screen",
+      "DOI": "10.1093/screen/24.6.2",
+      "ISSN": "1460-2474, 0036-9543",
+      "issue": "6",
+      "journalAbbreviation": "Screen",
+      "language": "en",
+      "license": "NHR 18.3.3",
+      "page": "2-17",
+      "publisher": "Oxford University Press (OUP)",
+      "source": "Crossref",
+      "title": "Masculinity as spectacle",
+      "URL": "http://academic.oup.com/screen/article/24/6/2/1653405/Masculinity-as-Spectacle",
+      "volume": "24",
+      "author": [
+        {
+          "family": "Neale",
+          "given": "Steve"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1983,
+            11,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/BIACYDBQ",
+      "type": "article-journal",
+      "abstract": "‘Thereare important differences between Aristotle's account of homonymy and synonymy on the one hand, and Speusippus' on the other; in particular, Aristotle treated homonymy and synonymy as properties of things, whereas Speusippus treated them as properties of words. Despite this difference, in certain significant passages Aristotle fell under the influence of Speusippus and used die words “homonymous” and “synonymous” in their Speusippan senses.’",
+      "citation-key": "barnesHomonymyAristotleSpeusippus1971",
+      "collection-title": "new ser.",
+      "container-title": "The Classical Quarterly",
+      "DOI": "10.1017/s0009838800028809",
+      "ISSN": "0009-8388, 1471-6844",
+      "issue": "1",
+      "journalAbbreviation": "Class. Q.",
+      "language": "en",
+      "license": "NHR 18.3.3",
+      "page": "65-80",
+      "publisher": "Cambridge University Press (CUP)",
+      "source": "Crossref",
+      "title": "Homonymy in Aristotle and Speusippus",
+      "URL": "https://www.cambridge.org/core/product/identifier/S0009838800028809/type/journal_article",
+      "volume": "21",
+      "author": [
+        {
+          "family": "Barnes",
+          "given": "Jonathan"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "1971"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/I9LT63J3",
+      "type": "article-journal",
+      "citation-key": "moodyMichaelDavittBritish1953",
+      "collection-title": "5th ser.",
+      "container-title": "Transactions of the Royal Historical Society",
+      "DOI": "10.2307/3678709",
+      "ISSN": "0080-4401",
+      "journalAbbreviation": "Trans. R. Hist. Soc.",
+      "language": "en",
+      "license": "NHR 18.3.3",
+      "page": "53-76",
+      "publisher": "Cambridge University Press",
+      "source": "JSTOR",
+      "title": "Michael Davitt and the British Labour movement, 1882–1906",
+      "URL": "https://www.jstor.org/stable/3678709",
+      "volume": "3",
+      "author": [
+        {
+          "family": "Moody",
+          "given": "T. W."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1953
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/PHSBJ7CQ",
+      "type": "interview",
+      "abstract": "First Broadcast - June 1960. \n \nHancock appears on the BBC's Face to Face, a half-hour in-depth interview programme conducted by John",
+      "citation-key": "freemanTonyHancockFace2009",
+      "language": "en",
+      "license": "NHR 18.7.3",
+      "medium": "video",
+      "note": "event-title: televised by the BBC\nevent-date: 7 February 1960\nstatus: uploaded",
+      "publisher": "YouTube",
+      "source": "YouTube",
+      "title": "Tony Hancock Face to Face interview Part 01",
+      "URL": "https://www.youtube.com/watch?v=lnkovGeASzE",
+      "interviewer": [
+        {
+          "family": "Freeman",
+          "given": "John"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2009,
+            3,
+            17
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/6PJMH6VB",
+      "type": "song",
+      "citation-key": "theorlandoconsortPhilippeVitryArs1991",
+      "language": "en",
+      "license": "NHR 18.7.2",
+      "medium": "incl. sleeve notes by Daniel Leech-Wilkinson, ‘Philippe de Vitry and the 14th-Century Motet’",
+      "note": "number: CD-SAR 49",
+      "publisher": "Amon Ra",
+      "title": "Philippe de Vitry and the Ars nova",
+      "author": [
+        {
+          "family": "The Orlando Consort",
+          "given": ""
+        }
+      ],
+      "composer": [
+        {
+          "family": "Vitry",
+          "given": "Philippe de"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1991
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/XNYR7HGM",
+      "type": "song",
+      "abstract": "View credits, reviews, tracks and shop for the 1959 Vinyl release of \"Kind Of Blue\" on Discogs.",
+      "citation-key": "davisWhat1997",
+      "language": "en",
+      "license": "NHR 18.7.2",
+      "medium": "CD",
+      "note": "event-date: 1959\nnumber: CK 64935\ncontainer-title: Kind of blue",
+      "publisher": "Columbia",
+      "source": "www.discogs.com",
+      "title": "So what",
+      "author": [
+        {
+          "family": "Davis",
+          "given": "Miles"
+        },
+        {
+          "family": "Adderly",
+          "given": "Julian"
+        },
+        {
+          "family": "Chambers",
+          "given": "Paul"
+        },
+        {
+          "family": "Cobb",
+          "given": "James"
+        },
+        {
+          "family": "Coltrane",
+          "given": "John"
+        },
+        {
+          "family": "Evans",
+          "given": "Bill"
+        },
+        {
+          "family": "Kelly",
+          "given": "Wynton"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1997
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/7MKFJ7H9",
+      "type": "manuscript",
+      "archive": "Biblioteca Nazionale Centrale",
+      "archive_location": "cod. II.II.289",
+      "citation-key": "zotero-item-66706",
+      "language": "en",
+      "license": "NHR 18.6.4",
+      "note": "archive-place: Florence"
+    },
+    {
+      "id": "6188419/IISTFG98",
+      "type": "song",
+      "citation-key": "lightninhopkinsCompleteAladdinRecordings",
+      "language": "en",
+      "license": "NHR 18.7.2",
+      "medium": "2-vol. CD set",
+      "note": "number: CDP-7-96843-2",
+      "publisher": "EMI Blues Series",
+      "title": "The complete Aladdin recordings",
+      "author": [
+        {
+          "family": "Lightnin’ Hopkins",
+          "given": ""
+        }
+      ]
+    },
+    {
+      "id": "6188419/8RBHR4IR",
+      "type": "song",
+      "abstract": "View credits, reviews, tracks and shop for the 1991 CD release of \"The Four String Quartets / Duo For Violin & Piano\" on Discogs.",
+      "citation-key": "juilliardstringquartetFourStringQuartets1991",
+      "language": "en",
+      "license": "NHR 18.7.2",
+      "note": "number: S2K 47229",
+      "publisher": "Sony",
+      "source": "www.discogs.com",
+      "title": "The Four String Quartets",
+      "composer": [
+        {
+          "family": "Carter",
+          "given": "Elliott"
+        }
+      ],
+      "author": [
+        {
+          "family": "Juilliard String Quartet",
+          "given": ""
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1991
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/MZPAZMZW",
+      "type": "manuscript",
+      "archive": "Bibliothèque Nationale de France",
+      "archive_location": "Français 146",
+      "citation-key": "zotero-item-66704",
+      "language": "en",
+      "license": "NHR 18.6.5",
+      "note": "archive-place: Paris\narchive_collection: Département des Manuscrits"
+    },
+    {
+      "id": "6188419/TSY7WTXQ",
+      "type": "manuscript",
+      "archive": "Bodleian Library",
+      "archive_location": "MS Rawlinson D. 520",
+      "citation-key": "zotero-item-66705",
+      "language": "en",
+      "license": "NHR 18.6.5",
+      "note": "archive-place: Oxford"
+    },
+    {
+      "id": "6188419/QLDZWZGM",
+      "type": "manuscript",
+      "archive": "Bibliothèque Municipale",
+      "archive_location": "MS 393",
+      "citation-key": "zotero-item-66707",
+      "language": "en",
+      "license": "NHR 18.6.4",
+      "note": "archive-place: Valenciennes"
+    },
+    {
+      "id": "6188419/NKWY8XHM",
+      "type": "book",
+      "call-number": "P325 .L959 1981",
+      "citation-key": "lyonsLanguageMeaningContext1981",
+      "ISBN": "978-0-00-635923-4",
+      "language": "la",
+      "license": "NHR 18.5",
+      "number-of-pages": "256",
+      "publisher": "Fontana",
+      "publisher-place": "London",
+      "source": "Library of Congress ISBN",
+      "title": "Language, meaning, and context",
+      "author": [
+        {
+          "family": "Lyons",
+          "given": "John"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1981
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/7RQDU6WY",
+      "type": "book",
+      "citation-key": "beckfordVathek1823",
+      "edition": "4",
+      "language": "en",
+      "license": "NHR 18.8.5",
+      "medium": "online facsimile",
+      "publisher-place": "London",
+      "title": "Vathek",
+      "URL": "https://beckford.c18.net/wbvathek1823.html",
+      "author": [
+        {
+          "family": "Beckford",
+          "given": "William"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1823
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/D4IT78GY",
+      "type": "interview",
+      "abstract": "Tan Twan Eng’s first novel was long-listed for the Man Booker Prize, his second was shortlisted and then won the Man Asian Literary Prize. To say that his work over the past five years has received praise and attention would be something of an understatement. Likened to Ishiguro and Ondaatje, his work explores the point",
+      "citation-key": "twanengHaveNoAlternative2013",
+      "language": "en-GB",
+      "license": "NHR 18.8.5",
+      "note": "container-title: The Spectator",
+      "shortTitle": "Tan Twan Eng interview",
+      "title": "I have no alternative but to write in English",
+      "title-short": "Tan Twan Eng interview",
+      "URL": "https://www.spectator.co.uk/article/tan-twan-eng-interview-i-have-no-alternative-but-to-write-in-english/",
+      "interviewer": [
+        {
+          "family": "McEwen",
+          "given": "Stephen"
+        }
+      ],
+      "author": [
+        {
+          "family": "Twan Eng",
+          "given": "Tan"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2013,
+            11,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013,
+            5,
+            20
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/B892UN2H",
+      "type": "webpage",
+      "abstract": "Police are to investigate failures in an Essex hospital's cancer treatment service after reports of bullying by managers and delayed treatment.",
+      "citation-key": "ColchesterGeneralHospital2013",
+      "container-title": "BBC News",
+      "language": "en-GB",
+      "license": "NHR 18.8.5",
+      "shortTitle": "Colchester General Hospital",
+      "title": "Colchester General Hospital: Police probe cancer treatment",
+      "title-short": "Colchester General Hospital",
+      "URL": "https://www.bbc.com/news/uk-england-essex-24819973",
+      "accessed": {
+        "date-parts": [
+          [
+            2013,
+            11,
+            5
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013,
+            11,
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/3MRFA2EB",
+      "type": "article-journal",
+      "citation-key": "liForeverLoveHitherto2013",
+      "container-title": "PLoS ONE",
+      "DOI": "10.1371/journal.pone.0078188",
+      "ISSN": "1932-6203",
+      "issue": "11",
+      "journalAbbreviation": "PLOS One",
+      "language": "en",
+      "license": "NHR 18.8.5",
+      "note": "number: e78188",
+      "publisher": "Public Library of Science (PLoS)",
+      "shortTitle": "Forever love",
+      "source": "Crossref",
+      "title": "Forever love: the hitherto earliest record of copulating insects from the Middle Jurassic of China",
+      "title-short": "Forever love",
+      "URL": "https://dx.plos.org/10.1371/journal.pone.0078188",
+      "volume": "8",
+      "author": [
+        {
+          "family": "Li",
+          "given": "Shu"
+        },
+        {
+          "family": "Shih",
+          "given": "Chungkun"
+        },
+        {
+          "family": "Wang",
+          "given": "Chen"
+        },
+        {
+          "family": "Pang",
+          "given": "Hong"
+        },
+        {
+          "family": "Ren",
+          "given": "Dong"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Nascimento",
+          "given": "Fabio S."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013,
+            11,
+            6
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/LRX8LG6T",
+      "type": "article-magazine",
+      "abstract": "Tan Twan Eng’s first novel was long-listed for the Man Booker Prize, his second was shortlisted and then won the Man Asian Literary Prize. To say that his work over the past five years has received praise and attention would be something of an understatement. Likened to Ishiguro and Ondaatje, his work explores the point",
+      "citation-key": "mcewenTanTwanEng2013",
+      "container-title": "The Spectator",
+      "language": "en-GB",
+      "license": "NHR 18.8.5",
+      "shortTitle": "Tan Twan Eng interview",
+      "title": "Tan Twan Eng interview: ‘I have no alternative but to write in English’",
+      "title-short": "Tan Twan Eng interview",
+      "URL": "https://www.spectator.co.uk/article/tan-twan-eng-interview-i-have-no-alternative-but-to-write-in-english/",
+      "author": [
+        {
+          "family": "McEwen",
+          "given": "Stephen"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2013,
+            11,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013,
+            5,
+            20
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/8A2JXSBJ",
+      "type": "webpage",
+      "abstract": "During the 1960s, the USA and the Soviet Union competed for supremacy in space. But there was another contestant in the space race – a science club from a university in Lebanon.",
+      "citation-key": "hooperLebanonsForgottenSpace2013",
+      "container-title": "BBC News Magazine",
+      "language": "en-GB",
+      "license": "NHR 18.8.5",
+      "title": "Lebanon’s forgotten space programme",
+      "URL": "https://www.bbc.com/news/magazine-24735423",
+      "author": [
+        {
+          "family": "Hooper",
+          "given": "Richard"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2013,
+            11,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013,
+            11,
+            14
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/B6UJ3W69",
+      "type": "webpage",
+      "abstract": "The BBC's Sanjoy Majumder reports from inside the Satish Dhawan Space Centre as India successfully launches a spacecraft to Mars.",
+      "citation-key": "IndiasMarsMission2013",
+      "container-title": "BBC News",
+      "language": "en-GB",
+      "license": "NHR 18.8.5",
+      "note": "medium: video",
+      "title": "Inside India's Mars mission HQ",
+      "URL": "https://www.bbc.com/news/av/world-24826253",
+      "accessed": {
+        "date-parts": [
+          [
+            2013,
+            11,
+            5
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2013",
+            11,
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/TWG3SMBF",
+      "type": "article-journal",
+      "citation-key": "liuRegulationCompetitionTaiwanese2012",
+      "container-title": "Journal of Health Economics",
+      "DOI": "10.1016/j.jhealeco.2012.03.003",
+      "ISSN": "0167-6296",
+      "issue": "3",
+      "journalAbbreviation": "J. Health Econ.",
+      "language": "en",
+      "license": "NHR 18.8.5",
+      "page": "471-483",
+      "publisher": "Elsevier BV",
+      "source": "Crossref",
+      "title": "Regulation and competition in the Taiwanese pharmaceutical market under national health insurance",
+      "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0167629612000318",
+      "volume": "31",
+      "author": [
+        {
+          "family": "Liu",
+          "given": "Ya-Ming"
+        },
+        {
+          "family": "Yang",
+          "given": "Yea-Huei Kao"
+        },
+        {
+          "family": "Hsieh",
+          "given": "Chee-Ruey"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2012"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/BD5QYUM4",
+      "type": "article-journal",
+      "citation-key": "druinRoleChildrenDesign2002",
+      "container-title": "Behaviour & Information Technology",
+      "DOI": "10.1080/01449290110108659",
+      "ISSN": "0144-929X, 1362-3001",
+      "issue": "1",
+      "journalAbbreviation": "Behav. Inf. Technol.",
+      "language": "en",
+      "license": "NHR 18.8.5",
+      "page": "1-25",
+      "publisher": "Informa UK Limited",
+      "source": "Crossref",
+      "title": "The role of children in the design of new technology",
+      "URL": "http://www.tandfonline.com/doi/abs/10.1080/01449290110108659",
+      "volume": "21",
+      "author": [
+        {
+          "family": "Druin",
+          "given": "Allison"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2002"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/8EJGMW5Y",
+      "type": "interview",
+      "abstract": "Writer Fay Weldon joins Kirsty Young to choose her Desert Island Discs.",
+      "citation-key": "weldon2010",
+      "language": "en-GB",
+      "license": "NHR 18.7.3",
+      "medium": "podcast",
+      "note": "container-title: Desert island discs",
+      "publisher": "BBC Radio 4",
+      "URL": "https://www.bbc.co.uk/programmes/b00s8djk",
+      "author": [
+        {
+          "family": "Weldon",
+          "given": "Fay"
+        }
+      ],
+      "interviewer": [
+        {
+          "family": "Young",
+          "given": "Kirsty"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2010",
+            5,
+            14
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/3FKT78MW",
+      "type": "broadcast",
+      "abstract": "Grayson Perry discusses the painful yet rewarding process of becoming an artist.",
+      "citation-key": "perryFoundMyselfArt2013",
+      "container-title": "Playing to the Gallery",
+      "language": "en-GB",
+      "license": "NHR 18.8.5",
+      "note": "event-title: The Reith Lectures",
+      "number": "4",
+      "publisher": "BBC Radio 4",
+      "title": "I found myself in the art world",
+      "URL": "https://www.bbc.co.uk/programmes/b03g9mn1",
+      "author": [
+        {
+          "family": "Perry",
+          "given": "Grayson"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2013",
+            11,
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/RR2RS99S",
+      "type": "graphic",
+      "archive": "Manchester Art Gallery",
+      "archive_location": "1935.573",
+      "citation-key": "clarkeExportsCoalIrish1926",
+      "dimensions": "1020 × 1525 mm",
+      "language": "en-GB",
+      "license": "NHR 18.8.5",
+      "medium": "lithograph on paper",
+      "note": "genre: poster\nissued: 1926/1934",
+      "title": "Exports of Coal to the Irish Free State",
+      "URL": "https://artuk.org/discover/artworks/exports-of-coal-to-the-irish-free-state-257277",
+      "author": [
+        {
+          "family": "Clarke",
+          "given": "Margaret"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/MLUMWEEC",
+      "type": "motion_picture",
+      "abstract": "II -    • Arthur Rubinstein - Rachmaninoff Piano Con...  \nChicago Symphony Orchestra\nFritz Reiner, conductor",
+      "citation-key": "rubinsteinRachmaninoffPianoConcerto2011",
+      "dimensions": "10:15",
+      "language": "en",
+      "license": "NHR 18.8.5",
+      "note": "genre: video\nevent-date: 9 Jan. 1956\nstatus: uploaded\ncontainer-title: YouTube",
+      "source": "YouTube",
+      "title": "Rachmaninoff Piano Concerto No. 2, Op. 18, I Moderato. Allegro (Fritz Reiner)",
+      "URL": "https://www.youtube.com/watch?v=0Vv0Sy9FJrc",
+      "author": [
+        {
+          "family": "Rubinstein",
+          "given": "Arthur"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2011,
+            11,
+            8
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/MXKN3UXK",
+      "type": "speech",
+      "citation-key": "yousafzaiMakingWishAction2013",
+      "event-title": "UN Web TV",
+      "genre": "webcast",
+      "language": "en",
+      "license": "NHR 18.8.5",
+      "title": "Making a wish for action on global education: Malala Yousafzai addresses Youth Assembly at UN on her 16th Birthday, 12 July 2013",
+      "URL": "https://webtv.un.org/en/asset/k0d/k0ds3pg45t",
+      "author": [
+        {
+          "family": "Yousafzai",
+          "given": "Malala"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2015,
+            2,
+            15
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2013",
+            7,
+            12
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/J768WFDE",
+      "type": "entry-encyclopedia",
+      "abstract": "Gunpowder Plot, conspiracy of English Roman Catholics to blow up Parliament and James I, his queen, and his eldest son on November 5, 1605.",
+      "citation-key": "GunpowderPlot2025",
+      "container-title": "Encyclopaedia Britannica",
+      "language": "en",
+      "license": "NHR 18.8.5",
+      "note": "status: last updated",
+      "title": "Gunpowder Plot",
+      "URL": "https://www.britannica.com/event/Gunpowder-Plot",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2025,
+            6,
+            7
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/Q2JA9GD5",
+      "type": "graphic",
+      "archive": "Church of St Erfyl",
+      "citation-key": "ChristGoodShepherd1870",
+      "language": "en",
+      "license": "NHR 18.8.5",
+      "medium": "stained-glass window",
+      "note": "issued: 1870?\narchive-place: Llanerfyl, Powys",
+      "source": "Imaging the Bible in Wales Database",
+      "title": "Christ the Good Shepherd",
+      "URL": "https://imagingthebible.llgc.org.uk/object/1884",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/3J3SE6ZY",
+      "type": "broadcast",
+      "abstract": "A BAFTA award-winning BBC series with John Berger, which rapidly became regarded as one of the most influential art programmes ever made. In the first programme, Berger examines the impact of photography on our appreciation of art from the past.",
+      "citation-key": "bergerWaysSeeing1972",
+      "dimensions": "30:04",
+      "language": "en",
+      "license": "NHR 18.8.5",
+      "note": "author: Berger || John",
+      "number": "1",
+      "publisher": "BBC",
+      "source": "YouTube",
+      "title": "Ways of Seeing",
+      "URL": "https://www.youtube.com/watch?v=P-4LwAuTw7k",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1972
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/GTF9HGZ3",
+      "type": "post-weblog",
+      "abstract": "This mesmerizing video has received over 21 million views, and is spreading rapidly through social media. The baby is 10 month-old Mary Lynne Leroux, who weeps as her mother Amanda sings My Heart Can't Tell You No, a song most recently popularized by Sara Evans.",
+      "citation-key": "tanWhyDoesThis2013",
+      "container-title": "OUPblog",
+      "language": "en",
+      "license": "NHR 18.8.5",
+      "note": "medium: including video",
+      "title": "Why does this baby cry when her mother sings?",
+      "URL": "https://blog.oup.com/2013/11/why-does-this-baby-cry-when-her-mother-sings-viral-video/",
+      "author": [
+        {
+          "family": "Tan",
+          "given": "Siu-Lan"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013,
+            11,
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/KJUH9J8K",
+      "type": "entry-encyclopedia",
+      "abstract": "Oxford University Press (OUP) is the publishing house of the University of Oxford. It is the largest university press in the world. Its first book was printed in Oxford in 1478, with the Press officially granted the legal right to print books by decree in 1586. It is the second-oldest university press after Cambridge University Press, which was founded in 1534.\nIt is a department of the University of Oxford. It is governed by a group of 15 academics, the Delegates of the Press, appointed by the vice-chancellor of the University of Oxford. The Delegates of the Press are led by the Secretary to the Delegates, who serves as OUP's chief executive and as its major representative on other university bodies. Oxford University Press has had a similar governance structure since the 17th century. The press is located on Walton Street, Oxford, opposite Somerville College, in the inner suburb of Jericho.\nFor the last 400 years, OUP has focused primarily on the publication of pedagogical texts. It continues this tradition today by publishing academic journals, dictionaries, English language resources, bibliographies, books on Indology, music, classics, literature, and history, as well as Bibles and atlases.\nOUP has offices around the world, primarily in locations that were once part of the British Empire.",
+      "citation-key": "OxfordUniversityPress2025",
+      "container-title": "Wikipedia",
+      "language": "en",
+      "license": "NHR 18.8.5",
+      "note": "status: last modified\nPage Version ID: 1298437056",
+      "source": "Wikipedia",
+      "title": "Oxford University Press",
+      "URL": "https://en.wikipedia.org/w/index.php?title=Oxford_University_Press&oldid=1298437056",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/PFNS2498",
+      "type": "webpage",
+      "citation-key": "allabyFeathersLavaLamps2013",
+      "container-title": "Oxford Reference",
+      "language": "en",
+      "license": "NHR 18.8.5",
+      "title": "Feathers and lava lamps",
+      "URL": "https://www.oxfordreference.com/page/107",
+      "author": [
+        {
+          "family": "Allaby",
+          "given": "Michael"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2013,
+            11,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/EZ4V5KN6",
+      "type": "software",
+      "abstract": "Welcome to Simogo! We are a small videogame developer in Malmö, Sweden. We’re driven by the curiosity to explore interesting and surprising ideas. We create all kinds of games, for all kinds of platforms.",
+      "citation-key": "Device6",
+      "license": "NHR 18.8.5",
+      "medium": "iPhone and iPad",
+      "note": "medium: mobile application",
+      "publisher": "Simogo",
+      "title": "Device 6",
+      "URL": "https://simogo.com/work/device-6/",
+      "version": "1.1",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/9G7TEP4F",
+      "type": "software",
+      "abstract": "‎The Waste Land brings alive the most revolutionary poem of the last hundred years for a 21st Century audience. A wealth of interactive features illuminate T. S. Eliot's greatest work.\n\nThis digital edition carefully respects the typography and integrity of the original yet offers spectacular new way…",
+      "citation-key": "eliot|t.s.WasteLand2013",
+      "license": "NHR 18.8.5",
+      "medium": "iPad",
+      "note": "author: Eliot | T. S.",
+      "publisher": "Touch Press",
+      "publisher-place": "London",
+      "title": "The Waste Land",
+      "URL": "https://apps.apple.com/gb/app/the-waste-land/id427434046",
+      "version": "1.1.1",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/2VDEURWB",
+      "type": "post",
+      "citation-key": "obamaTomorrowVeteransDay2013",
+      "container-title": "Facebook",
+      "genre": "photograph",
+      "language": "en",
+      "license": "NHR 18.8.5",
+      "title": "Tomorrow is Veterans Day",
+      "URL": "https://www.facebook.com/photo.php?fbid=10151936988101749",
+      "author": [
+        {
+          "family": "Obama",
+          "given": "Barack"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2013",
+            11,
+            10
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/RBXNFEA4",
+      "type": "book",
+      "call-number": "23654 e.196-201",
+      "citation-key": "gibbonDeclineFallRoman1974a",
+      "collection-number": "434",
+      "collection-title": "Everyman's library",
+      "language": "en",
+      "license": "NHR 18.2.13",
+      "number-of-volumes": "6",
+      "original-publisher-place": "London",
+      "publisher": "Dent",
+      "publisher-place": "London",
+      "source": "solo.bodleian.ox.ac.uk",
+      "title": "Decline and fall of the Roman empire",
+      "author": [
+        {
+          "family": "Gibbon",
+          "given": "Edward"
+        }
+      ],
+      "contributor": [
+        {
+          "family": "Dawson",
+          "given": "Christopher"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1974
+          ]
+        ]
+      },
+      "original-date": {
+        "date-parts": [
+          [
+            1910
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/884LA72E",
+      "type": "book",
+      "call-number": "PN147 .N42 2005",
+      "citation-key": "ritterNewHartsRules2005",
+      "ISBN": "978-0-19-861041-0",
+      "language": "en",
+      "license": "NHR 18.2.10",
+      "number-of-pages": "417",
+      "publisher": "Oxford University Press",
+      "publisher-place": "Oxford",
+      "source": "Library of Congress ISBN",
+      "title": "New Hart's rules",
+      "URL": "https://archive.org/details/newhartsrules00rmri",
+      "editor": [
+        {
+          "family": "Ritter",
+          "given": "Robert M."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2005
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/ZL8YJKFC",
+      "type": "book",
+      "citation-key": "fitzpatrickMMRAutismWhat2004",
+      "DOI": "10.4324/9780203299494",
+      "ISBN": "978-0-203-29949-4",
+      "language": "en",
+      "license": "NHR 17.4",
+      "publisher": "Routledge",
+      "publisher-place": "London",
+      "shortTitle": "MMR and autism",
+      "source": "Crossref",
+      "title": "MMR and autism: what parents need to know",
+      "title-short": "MMR and autism",
+      "URL": "https://www.taylorfrancis.com/books/9781134355921",
+      "author": [
+        {
+          "family": "Fitzpatrick",
+          "given": "Michael"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2004,
+            8,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/GE4ZFCYJ",
+      "type": "report",
+      "citation-key": "unitednationsWorldPopulationProspects2011",
+      "language": "en-US",
+      "license": "NHR 18.8.5",
+      "note": "medium: CD-ROM",
+      "publisher": "United Nations Department of Economic and Social Affairs, Population Division",
+      "publisher-place": "New York",
+      "shortTitle": "World population prospects",
+      "source": "www.un.org",
+      "title": "World population prospects: the 2010 revision",
+      "title-short": "World population prospects",
+      "URL": "https://www.un.org/en/development/desa/publications/world-population-prospects-the-2010-revision.html",
+      "author": [
+        {
+          "family": "United Nations",
+          "given": ""
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2011
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/SBZIZ97N",
+      "type": "report",
+      "abstract": "The fourth edition of the United Nations World Water Development Report (UN WWDR), ‘Managing Water under Uncertainty and Risk’ is a comprehensive review of the world’s freshwater resources and seeks to demonstrate, among other messages, that water underpins all aspects of development, and that a coordinated approach to managing and allocating water is critical. The Report underlines that in order to meet multiple goals water needs to be an intrinsic element in decision-making across the whole development spectrum. It was launched at the 6th World Water Forum in Marseille by Irina Bokova, UNESCO Director General, and Michel Jarraud, UN-Water Chair. About UN WWDR4 :The UN WWDR4 aims to encourage all stakeholders both in and out of the ‘water box water managers, leaders in government, civil society and businesses to engage early in decision making processes to improve the quality and acceptance of decisions and the probability of successful implementation. It highlights that more responsible action by all water users has enormous potential to lead to better outcomes but requires political, social, economic and technical responses at all levels of government, businesses and communities, from local to international. What’s new In the UN World Water Development Report (WWDR) series, the UN WWDR4 represents a milestone. While providing a comprehensive assessment of the world’s water resources it also introduces a strong thematic element. Building on the UN WWDR3 in the recognition of the externalities, the UN WWDR4 elaborates on the interactions between water and the drivers of change. The UN WWDR4 describes the major changes, uncertainties, and risks taking place in the world and their links to water resources. It gives account of the status and the trends related to water supplies, uses, management, institutions and financing; highlights regional hotspots, and addresses issues such as gender equality, water-related disasters, health and the role of ecosystems",
+      "citation-key": "unescoUnitedNationsWorld2012",
+      "ISBN": "978-92-3-104235-5 978-92-3-001045-4",
+      "language": "en",
+      "license": "NHR 18.8.5",
+      "note": "volume: 1\nvolume-title: Managing water under uncertainty and risk",
+      "publisher": "UNESCO",
+      "publisher-place": "Paris",
+      "shortTitle": "The united nations world water development report 4",
+      "source": "United Nations Digital Library System",
+      "title": "The United Nations world water development report 4",
+      "title-short": "The united nations world water development report 4",
+      "URL": "https://digitallibrary.un.org/record/3892696",
+      "author": [
+        {
+          "family": "UNESCO",
+          "given": ""
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2012
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/VPT6SSQI",
+      "type": "chapter",
+      "citation-key": "cobbanCollegesHallsHostels1988",
+      "container-title": "The medieval English universities: Oxford and Cambridge to c.1500",
+      "DOI": "10.4324/9781315238357",
+      "ISBN": "978-1-315-23835-7",
+      "language": "en",
+      "license": "NHR 17.2.3",
+      "note": "OCLC: 993640765\nchapter-number: 4",
+      "page": "111–160",
+      "publisher": "Routledge",
+      "publisher-place": "London",
+      "source": "Open WorldCat",
+      "title": "Colleges, halls and hostels",
+      "author": [
+        {
+          "family": "Cobban",
+          "given": "Alan B."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1988
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/HXPT98RF",
+      "type": "book",
+      "call-number": "F1034.2 .M36 1997",
+      "citation-key": "mcrobertsMisconceivingCanadaStruggle1997",
+      "ISBN": "978-0-19-541233-8",
+      "language": "en",
+      "license": "NHR 17.2.5",
+      "number-of-pages": "395",
+      "publisher": "Oxford University Press",
+      "publisher-place": "Toronto",
+      "shortTitle": "Misconceiving Canada",
+      "source": "Library of Congress ISBN",
+      "title": "Misconceiving Canada: the struggle for national unity",
+      "title-short": "Misconceiving Canada",
+      "author": [
+        {
+          "family": "McRoberts",
+          "given": "Kenneth"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1997
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/X2EMCNVP",
+      "type": "manuscript",
+      "archive": "Bearsden and Milngavie District Libraries",
+      "archive_location": "box 19/d",
+      "citation-key": "1949",
+      "genre": "Bearsden Ladies’ Club minutes",
+      "language": "en",
+      "license": "NHR 18.6.3",
+      "issued": {
+        "date-parts": [
+          [
+            "1949",
+            6,
+            12
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/GA5Z4HFD",
+      "type": "manuscript",
+      "archive": "British Library",
+      "archive_location": "Add. MS 23116",
+      "citation-key": "smith1912",
+      "genre": "travel diaries",
+      "language": "en",
+      "license": "NHR 18.6.3",
+      "note": "issued: 1912/1917",
+      "author": [
+        {
+          "family": "Smith",
+          "given": "Francis"
+        }
+      ]
+    },
+    {
+      "id": "6188419/8BKRCIE9",
+      "type": "manuscript",
+      "archive": "Balliol College",
+      "archive_location": "MS 288",
+      "citation-key": "chaundlerCollocutiones",
+      "language": "la",
+      "license": "NHR 18.6.2",
+      "note": "archive-place: Oxford",
+      "title": "Collocutiones",
+      "author": [
+        {
+          "family": "Chaundler",
+          "given": "Thomas"
+        }
+      ]
+    },
+    {
+      "id": "6188419/A5VSJYEI",
+      "type": "manuscript",
+      "archive": "Cheshire Record Office",
+      "archive_location": "E311",
+      "citation-key": "1798",
+      "genre": "exchequer accounts",
+      "language": "en",
+      "license": "NHR 18.6.2",
+      "issued": {
+        "date-parts": [
+          [
+            "1798",
+            12
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/BJ7GR352",
+      "type": "article-journal",
+      "citation-key": "unwinStructuralChangeEstonian1994",
+      "container-title": "Geography",
+      "DOI": "10.1080/20436564.1994.12452450",
+      "ISSN": "0016-7487, 2043-6564",
+      "issue": "3",
+      "journalAbbreviation": "Geography",
+      "language": "en",
+      "license": "NHR 17.3.2",
+      "page": "246-261",
+      "publisher": "Informa UK Limited",
+      "shortTitle": "Structural Change in Estonian Agriculture",
+      "source": "Crossref",
+      "title": "Structural Change in Estonian Agriculture: from Command Economy to Privatisation",
+      "title-short": "Structural Change in Estonian Agriculture",
+      "URL": "https://www.tandfonline.com/doi/full/10.1080/20436564.1994.12452450",
+      "volume": "79",
+      "author": [
+        {
+          "family": "Unwin",
+          "given": "Tim"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "1994"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/KHHZZV4T",
+      "type": "book",
+      "call-number": "RM666.C266 G75 1997",
+      "citation-key": "grinspoonMarihuanaForbiddenMedicine1997",
+      "edition": "rev. and exp. ed",
+      "ISBN": "978-0-300-07085-9 978-0-300-07086-6",
+      "language": "en",
+      "license": "NHR 17.3.1",
+      "number-of-pages": "296",
+      "publisher": "Yale University Press",
+      "publisher-place": "New Haven",
+      "source": "Library of Congress ISBN",
+      "title": "Marihuana, the forbidden medicine",
+      "author": [
+        {
+          "family": "Grinspoon",
+          "given": "Lester"
+        },
+        {
+          "family": "Bakalar",
+          "given": "James B."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1997
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/3GT8Z3W7",
+      "type": "chapter",
+      "call-number": "BR746 .B5 1992",
+      "citation-key": "bedeHistoriaEcclesiasticaGentis1969",
+      "collection-title": "Oxford medieval texts",
+      "container-title": "Bede's ecclesiastical history of the English people",
+      "DOI": "10.1093/actrade/9780198221739.book.1",
+      "ISBN": "978-0-19-822173-9",
+      "language": "en",
+      "license": "NHR 17.2.6",
+      "note": "type: classic",
+      "publisher": "Clarendon Press",
+      "publisher-place": "Oxford",
+      "shortTitle": "<span class=\"nocase\">Historia ecclesiastica</span>",
+      "source": "Library of Congress ISBN",
+      "title": "<span class=\"nocase\">Historia ecclesiastica gentis Anglorum</span>",
+      "title-short": "<span class=\"nocase\">Historia ecclesiastica</span>",
+      "author": [
+        {
+          "family": "Bede",
+          "given": ""
+        }
+      ],
+      "editor": [
+        {
+          "family": "Colgrave",
+          "given": "Bertram"
+        },
+        {
+          "family": "Mynors",
+          "given": "R. A. B."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Colgrave",
+          "given": "Bertram"
+        },
+        {
+          "family": "Mynors",
+          "given": "R. A. B."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1969
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/XV3SMXYL",
+      "type": "article-journal",
+      "citation-key": "kalavalaFingertipUnitPractical2007",
+      "container-title": "Journal of Dermatological Treatment",
+      "DOI": "10.1080/09546630701441723",
+      "ISSN": "0954-6634, 1471-1753",
+      "issue": "5",
+      "journalAbbreviation": "J. Dermatol. Treat.",
+      "language": "en",
+      "license": "NHR 17.3.1",
+      "page": "319-320",
+      "publisher": "Informa UK Limited",
+      "shortTitle": "The fingertip unit",
+      "source": "Crossref",
+      "title": "The fingertip unit: A practical guide to topical therapy in children",
+      "title-short": "The fingertip unit",
+      "URL": "https://www.tandfonline.com/doi/full/10.1080/09546630701441723",
+      "volume": "18",
+      "author": [
+        {
+          "family": "Kalavala",
+          "given": "Manjunatha"
+        },
+        {
+          "family": "Mills",
+          "given": "Caroline M."
+        },
+        {
+          "family": "Long",
+          "given": "Colin C."
+        },
+        {
+          "family": "Finlay",
+          "given": "Andrew Y."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2007,
+            1,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/VK78WMJV",
+      "type": "article-journal",
+      "citation-key": "stookeySocialStructurePolitics1974",
+      "container-title": "Middle East Journal",
+      "ISSN": "0026-3141",
+      "issue": "3",
+      "journalAbbreviation": "Middle East J.",
+      "language": "en",
+      "license": "NHR 17.3",
+      "part-number": "1",
+      "page": "248-260",
+      "publisher": "Middle East Institute",
+      "source": "JSTOR",
+      "title": "Social structure and politics in the Yemen Arab Republic",
+      "URL": "https://jstor.org/stable/4325252",
+      "volume": "28",
+      "author": [
+        {
+          "family": "Stookey",
+          "given": "Robert W."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "1974"
+          ]
+        ],
+        "season": "Summer"
+      }
+    },
+    {
+      "id": "6188419/S6AXI5QT",
+      "type": "article-journal",
+      "citation-key": "stookeySocialStructurePolitics1974a",
+      "container-title": "Middle East Journal",
+      "ISSN": "0026-3141",
+      "issue": "4",
+      "journalAbbreviation": "Middle East J.",
+      "language": "en",
+      "license": "NHR 17.3",
+      "part-number": "2",
+      "part-title": "The political system",
+      "page": "409-418",
+      "publisher": "Middle East Institute",
+      "source": "JSTOR",
+      "title": "Social structure and politics in the Yemen Arab Republic",
+      "URL": "https://jstor.org/stable/4325288",
+      "volume": "28",
+      "author": [
+        {
+          "family": "Stookey",
+          "given": "Robert W."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "1974"
+          ]
+        ],
+        "season": "Autumn"
+      }
+    },
+    {
+      "id": "6188419/YL3ZNAAH",
+      "type": "book",
+      "call-number": "BX2592 .K56 1971",
+      "citation-key": "knowlesMedievalReligiousHouses1971",
+      "edition": "2",
+      "ISBN": "0-582-11230-3",
+      "language": "en",
+      "license": "NHR 17.2.3",
+      "number-of-pages": "565",
+      "publisher": "Longman",
+      "publisher-place": "London",
+      "shortTitle": "Medieval religious houses",
+      "source": "toroprod.library.utoronto.ca Library Catalog",
+      "title": "Medieval religious houses: England and Wales",
+      "title-short": "Medieval religious houses",
+      "author": [
+        {
+          "family": "Knowles",
+          "given": "David"
+        },
+        {
+          "family": "Hadcock",
+          "given": "R. Neville"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1971
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/4F48RVGI",
+      "type": "book",
+      "call-number": "HC260.5 .M64 1983",
+      "citation-key": "mokyrWhyIrelandStarved1983",
+      "DOI": "10.4324/9781315019765",
+      "ISBN": "978-0-04-941010-7",
+      "language": "en",
+      "license": "NHR 17.2.4",
+      "number-of-pages": "330",
+      "publisher": "Allen & Unwin",
+      "publisher-place": "London",
+      "shortTitle": "Why Ireland starved",
+      "source": "Library of Congress ISBN",
+      "title": "Why Ireland starved: a quantitative and analytical history of the Irish economy, 1800–1850",
+      "title-short": "Why Ireland starved",
+      "author": [
+        {
+          "family": "Mokyr",
+          "given": "Joel"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1983
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/9QACM4XV",
+      "type": "book",
+      "citation-key": "whitelockEnglishHistoricalDocuments1979",
+      "edition": "2",
+      "ISBN": "978-0-413-32490-0 978-0-19-520101-7",
+      "language": "en",
+      "license": "NHR 17.2.5",
+      "note": "volume-title: <span class=\"nocase\">c.500–1042</span>\navailable-date: 1953/2011",
+      "number-of-pages": "952",
+      "publisher": "Eyre Methuen",
+      "publisher-place": "London",
+      "source": "BnF ISBN",
+      "title": "English historical documents",
+      "volume": "1",
+      "editor": [
+        {
+          "family": "Whitelock",
+          "given": "Dorothy"
+        }
+      ],
+      "collection-editor": [
+        {
+          "family": "Douglas",
+          "given": "David C."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1979
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/IECXPNAS",
+      "type": "book",
+      "citation-key": "faithEnglishPeasantryGrowth1999",
+      "collection-title": "Studies in the early history of Britain",
+      "ISBN": "978-0-7185-0204-1",
+      "language": "en",
+      "license": "NHR 17.2.5",
+      "number-of-pages": "304",
+      "publisher": "Leicester University Press",
+      "publisher-place": "London",
+      "shortTitle": "English peasantry",
+      "source": "K10plus ISBN",
+      "title": "The English peasantry and the growth of lordship",
+      "title-short": "English peasantry",
+      "author": [
+        {
+          "family": "Faith",
+          "given": "Rosamond"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1999
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/HQPAKNMJ",
+      "type": "personal_communication",
+      "citation-key": "peterson",
+      "language": "en",
+      "license": "NHR 17.3.2",
+      "author": [
+        {
+          "family": "Peterson",
+          "given": "Agneta"
+        }
+      ]
+    },
+    {
+      "id": "6188419/6NU6ICMJ",
+      "type": "article-journal",
+      "citation-key": "brownStudyLanguageCognition1954",
+      "container-title": "The Journal of Abnormal and Social Psychology",
+      "DOI": "10.1037/h0057814",
+      "ISSN": "0096-851X",
+      "issue": "3",
+      "journalAbbreviation": "J. Abnorm. Soc. Psychol.",
+      "language": "en",
+      "license": "NHR 17.3.2",
+      "page": "454-462",
+      "publisher": "American Psychological Association (APA)",
+      "source": "Crossref",
+      "title": "A study in language and cognition",
+      "URL": "https://doi.apa.org/doi/10.1037/h0057814",
+      "volume": "49",
+      "author": [
+        {
+          "family": "Brown",
+          "given": "Roger W."
+        },
+        {
+          "family": "Lenneberg",
+          "given": "Eric H."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "1954"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/4GGY75VE",
+      "type": "chapter",
+      "call-number": "RD768 .P48 2002",
+      "citation-key": "magareyExaminationCervicalThoracic2002",
+      "container-title": "Physical Therapy of the Cervical and Thoracic Spine",
+      "DOI": "10.1016/b978-0-443-06564-4.50010-4",
+      "edition": "3",
+      "ISBN": "978-0-443-06564-4",
+      "language": "en",
+      "license": "NHR 17.3.2",
+      "note": "chapter-number: 7",
+      "page": "105-137",
+      "publisher": "Churchill Livingstone",
+      "publisher-place": "New York",
+      "source": "Crossref",
+      "title": "Examination of the cervical and thoracic spine",
+      "URL": "https://linkinghub.elsevier.com/retrieve/pii/B9780443065644500104",
+      "author": [
+        {
+          "family": "Magarey",
+          "given": "Mary E."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Grant",
+          "given": "Ruth"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2002
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/68EJUBVG",
+      "type": "book",
+      "call-number": "337.1",
+      "citation-key": "balassaTheoryEconomicIntegration1961",
+      "DOI": "10.4324/9780203805183",
+      "ISBN": "978-0-415-67910-7",
+      "language": "en",
+      "license": "NHR 17.3.2",
+      "publisher": "Allen and Unwin",
+      "publisher-place": "London",
+      "source": "BnF ISBN",
+      "title": "The theory of economic integration",
+      "author": [
+        {
+          "family": "Balassa",
+          "given": "Bela A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1961
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/GK5BWBZC",
+      "type": "report",
+      "abstract": "Vietnam - Transition to the market (English)",
+      "citation-key": "VietnamTransitionMarket1993",
+      "genre": "Working Paper",
+      "language": "en",
+      "license": "NHR 17.3.2",
+      "number": "26306",
+      "publisher": "World Bank",
+      "publisher-place": "Washington, DC",
+      "title": "Vietnam: transition to the market",
+      "URL": "http://documents.worldbank.org/curated/en/577081492717048780",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1993,
+            9,
+            30
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/8KYQKEIV",
+      "type": "book",
+      "call-number": "HV6322.3.C7 C66 2008",
+      "citation-key": "comisionnacionaldereparacionyreconciliacionTrujilloTragediaQue2008",
+      "ISBN": "978-958-42-1964-0",
+      "language": "es",
+      "license": "NHR 17.3.2",
+      "note": "Translated title: Trujilla: a tragedy without end",
+      "number-of-pages": "301",
+      "publisher": "Planeta",
+      "publisher-place": "Bogotá",
+      "shortTitle": "Trujillo, una tragedia que no cesa",
+      "source": "Library of Congress ISBN",
+      "title": "Trujillo, una tragedia que no cesa: primer informe de Memoria Histórica de la Comisión Nacional de Reparación y Reconciliación",
+      "title-short": "Trujillo, una tragedia que no cesa",
+      "URL": "https://centrodememoriahistorica.gov.co/trujillo-una-tragedia-que-no-cesa/",
+      "author": [
+        {
+          "family": "Comisión Nacional de Reparación y Reconciliación",
+          "given": ""
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2008
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/W98THYPK",
+      "type": "article-journal",
+      "citation-key": "jessopRegionalEconomicBlocs1995",
+      "container-title": "American Behavioral Scientist",
+      "DOI": "10.1177/0002764295038005003",
+      "ISSN": "0002-7642, 1552-3381",
+      "issue": "5",
+      "journalAbbreviation": "Am. Behav. Sci.",
+      "language": "en",
+      "license": "NHR 17.3.2",
+      "page": "674-715",
+      "publisher": "SAGE Publications",
+      "shortTitle": "Regional Economic Blocs, Cross-Border Cooperation, and Local Economic Strategies in Postsocialism",
+      "source": "Crossref",
+      "title": "Regional Economic Blocs, Cross-Border Cooperation, and Local Economic Strategies in Postsocialism: Politics, Policies, and Prospects",
+      "title-short": "Regional Economic Blocs, Cross-Border Cooperation, and Local Economic Strategies in Postsocialism",
+      "URL": "https://journals.sagepub.com/doi/10.1177/0002764295038005003",
+      "volume": "38",
+      "author": [
+        {
+          "family": "Jessop",
+          "given": "Bob"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "1995"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/PZ7CFMDC",
+      "type": "article-journal",
+      "citation-key": "jessopRegulationApproachGovernance1995",
+      "container-title": "Economy and Society",
+      "DOI": "10.1080/03085149500000013",
+      "ISSN": "0308-5147, 1469-5766",
+      "issue": "3",
+      "journalAbbreviation": "Econ. Soc.",
+      "language": "en",
+      "license": "NHR 17.3.2",
+      "page": "307-333",
+      "publisher": "Informa UK Limited",
+      "shortTitle": "The regulation approach, governance and post-Fordism",
+      "source": "Crossref",
+      "title": "The regulation approach, governance and post-Fordism: alternative perspectives on economic and political change?",
+      "title-short": "The regulation approach, governance and post-Fordism",
+      "URL": "http://www.tandfonline.com/doi/abs/10.1080/03085149500000013",
+      "volume": "24",
+      "author": [
+        {
+          "family": "Jessop",
+          "given": "Bob"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "1995"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/3YHHCFER",
+      "type": "article-journal",
+      "citation-key": "ripsSemanticDistanceVerification1973",
+      "container-title": "Journal of Verbal Learning and Verbal Behavior",
+      "DOI": "10.1016/s0022-5371(73)80056-8",
+      "ISSN": "0022-5371",
+      "issue": "1",
+      "journalAbbreviation": "J. Verbal Learn. Verbal Behav.",
+      "language": "en",
+      "license": "NHR 17.3.2",
+      "page": "1-20",
+      "publisher": "Elsevier BV",
+      "source": "Crossref",
+      "title": "Semantic distance and the verification of semantic relations",
+      "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0022537173800568",
+      "volume": "12",
+      "author": [
+        {
+          "family": "Rips",
+          "given": "Lance J."
+        },
+        {
+          "family": "Shoben",
+          "given": "Edward J."
+        },
+        {
+          "family": "Smith",
+          "given": "Edward E."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "1973"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/LJLRE4HE",
+      "type": "report",
+      "abstract": "This chapter discusses principles and consequences of the common agricultural policy (CAP) of the European Community (EC). It shows that agricultural pricing policies aimed at supporting farm incomes were already in place in EC member countries before the inception of the CAP; indeed, in the presence of these policies, the CAP was a logical consequence of the extension of the common market to the agricultural sector. Thus, the flaws of the CAP can be traced back to national policies and attitudes toward agriculture. Recognition of the burden of agricultural support on the rest of the economy, as well as the growing budgetary costs, has elicited a greater public interest in the CAP. Equally, the trade frictions caused by export subsidies have underlined the CAP's international implications. For these reasons, the member states appear more determined than hitherto to bring agricultural expenditure under control. Given the wider effects of the CAP both on EC economies and the international community, it is to be hoped that current efforts at reform will be successful",
+      "citation-key": "rosenblattCommonAgriculturalPolicy1988",
+      "DOI": "10.5089/9781557750365.084",
+      "genre": "Occasional Paper",
+      "ISBN": "978-1-55775-036-5",
+      "language": "en",
+      "license": "NHR 17.3.2",
+      "number": "62",
+      "publisher": "International Monetary Fund",
+      "publisher-place": "Washington, DC",
+      "shortTitle": "The Common Agricultural Policy of the European Community",
+      "source": "K10plus ISBN",
+      "title": "The Common Agricultural Policy of the European Community: principles and consequences",
+      "title-short": "The Common Agricultural Policy of the European Community",
+      "URL": "http://archive.org/details/isbn_155775036",
+      "author": [
+        {
+          "family": "Rosenblatt",
+          "given": "Julius"
+        },
+        {
+          "family": "Mayer",
+          "given": "Thomas"
+        },
+        {
+          "family": "Bartholdy",
+          "given": "Kasper"
+        },
+        {
+          "family": "Demekas",
+          "given": "Dimitrios"
+        },
+        {
+          "family": "Gupta",
+          "given": "Sanjeev"
+        },
+        {
+          "family": "Lipschitz",
+          "given": "Leslie"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            "1988",
+            11
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/VUD6RRFS",
+      "type": "book",
+      "call-number": "QP301 .N53 2011",
+      "citation-key": "niemanExerciseTestingPrescription2011",
+      "edition": "7",
+      "ISBN": "978-0-07-337648-6",
+      "language": "en",
+      "license": "NHR 17.4",
+      "number-of-pages": "652",
+      "publisher": "McGraw-Hill",
+      "publisher-place": "Boston",
+      "shortTitle": "Exercise testing and prescription",
+      "source": "Library of Congress ISBN",
+      "title": "Exercise testing and prescription: a health-related approach",
+      "title-short": "Exercise testing and prescription",
+      "author": [
+        {
+          "family": "Nieman",
+          "given": "David C."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2011
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/KS43GU9Y",
+      "type": "book",
+      "call-number": "A.4.32/16",
+      "citation-key": "asloanAsloanManuscriptMiscellany1923",
+      "collection-number": "new ser., 14",
+      "collection-title": "Scottish Text Society",
+      "language": "en",
+      "license": "NHR 18.2.11",
+      "note": "issued: 1923/1925",
+      "number-of-volumes": "2",
+      "publisher": "Printed for the Society by W. Blackwood",
+      "publisher-place": "Edinburgh",
+      "shortTitle": "The Asloan manuscript",
+      "source": "solo.bodleian.ox.ac.uk",
+      "title": "The Asloan manuscript: a miscellany in prose and verse",
+      "title-short": "The Asloan manuscript",
+      "author": [
+        {
+          "family": "Asloan",
+          "given": "John"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Craigie",
+          "given": "William A."
+        }
+      ]
+    },
+    {
+      "id": "6188419/4E4N9PU9",
+      "type": "book",
+      "call-number": "Top.A1/39-42",
+      "citation-key": "smithPlacenamesGloucestershire1964",
+      "collection-number": "38–41",
+      "collection-title": "English Place-Name Society",
+      "language": "en",
+      "license": "NHR 18.2.8",
+      "note": "issued: 1964/1965",
+      "number-of-volumes": "4",
+      "publisher": "Cambridge University Press",
+      "publisher-place": "Cambridge",
+      "source": "solo.bodleian.ox.ac.uk",
+      "title": "The place-names of Gloucestershire",
+      "author": [
+        {
+          "family": "Smith",
+          "given": "A. H."
+        }
+      ]
+    },
+    {
+      "id": "6188419/RREXHH4A",
+      "type": "article-journal",
+      "abstract": "What can you say about a twenty-five-year-old girl who died?\" The classicist Erich Segal managed to wring 131 pages (and who knows how many millions of dollars) out of the short life of his fictional creation Jennifer Cavilleri, the heroine of Love Story. My subject is a real girl, the painter Irene di Spilimbergo, whose death at the age of twenty-one in 1559 evoked a tribute much more substantial, although probably not so lucrative for its editor, Dionigi Atanagi: a memorial volume containing 279 Italian and 102 Latin poems, a few anonymous but most written by 143 named contributors.",
+      "citation-key": "schutteIreneDiSpilimbergo1991",
+      "container-title": "Renaissance Quarterly",
+      "DOI": "10.2307/2862405",
+      "ISSN": "0034-4338, 1935-0236",
+      "issue": "1",
+      "journalAbbreviation": "Renaiss. Q.",
+      "language": "en",
+      "license": "NHR 18.3.1",
+      "page": "42-61",
+      "shortTitle": "Irene di spilimbergo",
+      "source": "Cambridge University Press",
+      "title": "<span class=\"nocase\">Irene di Spilimbergo</span>: the image of a creative woman in late renaissance Italy",
+      "title-short": "Irene di spilimbergo",
+      "URL": "https://www.cambridge.org/core/journals/renaissance-quarterly/article/abs/irene-di-spilimbergo-the-image-of-a-creative-woman-in-late-renaissance-italy/AEC73DF919D36C6892F4DA73A5C50EFD",
+      "volume": "44",
+      "author": [
+        {
+          "family": "Schutte",
+          "given": "Anne Jacobson"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1991,
+            4
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/QY5Y7YCS",
+      "type": "book",
+      "call-number": "EO.631.A.57",
+      "citation-key": "schreiberNoteFaustTranslations1930",
+      "language": "en",
+      "license": "NHR 18.2.11",
+      "note": "issued: 1930?",
+      "number-of-pages": "11",
+      "publisher": "J. Cape & H. Smith",
+      "publisher-place": "New York",
+      "source": "HathiTrust",
+      "title": "A note on Faust translations",
+      "URL": "https://catalog.hathitrust.org/Record/001196146",
+      "author": [
+        {
+          "family": "Schreiber",
+          "given": "Carl F."
+        }
+      ]
+    },
+    {
+      "id": "6188419/G6699GP5",
+      "type": "book",
+      "citation-key": "bischoffLatinPalaeographyAntiquity1990",
+      "DOI": "10.1017/CBO9780511809927",
+      "ISBN": "978-0-521-36726-4 978-0-521-36473-7 978-0-511-80992-7",
+      "language": "en",
+      "license": "NHR 18.2.14",
+      "publisher": "Cambridge University Press",
+      "publisher-place": "Cambridge",
+      "shortTitle": "Latin Palaeography",
+      "source": "DOI.org (Crossref)",
+      "title": "Latin Palaeography: Antiquity and the Middle Ages",
+      "title-short": "Latin Palaeography",
+      "URL": "https://www.cambridge.org/core/product/identifier/9780511809927/type/book",
+      "author": [
+        {
+          "family": "Bischoff",
+          "given": "Bernhard"
+        }
+      ],
+      "translator": [
+        {
+          "family": "Cróinin",
+          "given": "Daibhm O."
+        },
+        {
+          "family": "Ganz",
+          "given": "David"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1990,
+            3,
+            30
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/BYK87YLF",
+      "type": "book",
+      "call-number": "DA779 .S8 1970",
+      "citation-key": "AngloScottishRelations117413281970",
+      "collection-title": "Oxford medieval texts",
+      "ISBN": "978-0-19-822215-6",
+      "language": "en",
+      "license": "NHR 18.2.8",
+      "note": "editor-translator: Stones || E. L. G.",
+      "number-of-pages": "380",
+      "publisher": "Clarendon Press",
+      "publisher-place": "Oxford",
+      "shortTitle": "Anglo-Scottish relations",
+      "source": "Library of Congress ISBN",
+      "title": "Anglo-Scottish relations, 1174–1328: some selected documents",
+      "title-short": "Anglo-Scottish relations",
+      "issued": {
+        "date-parts": [
+          [
+            1970
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/N3J7YLBN",
+      "type": "book",
+      "abstract": "26",
+      "call-number": "AAQ-5641",
+      "citation-key": "wardCambridgeHistoryEnglish1915",
+      "language": "en",
+      "license": "NHR 18.2.7",
+      "note": "volume-title: The nineteenth century\npart-number: 1\navailable-date: 1907/1927",
+      "number-of-pages": "594",
+      "number-of-volumes": "15",
+      "publisher": "Cambridge University Press",
+      "publisher-place": "Cambridge",
+      "source": "Internet Archive",
+      "title": "The Cambridge history of English literature",
+      "URL": "http://archive.org/details/cambridgehisto12warduoft",
+      "volume": "12",
+      "editor": [
+        {
+          "family": "Ward",
+          "given": "A. W."
+        },
+        {
+          "family": "Waller",
+          "given": "A. R."
+        }
+      ],
+      "collection-editor": [
+        {
+          "family": "Ward",
+          "given": "A. W."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1915
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/M3VV8I2Y",
+      "type": "book",
+      "citation-key": "griggHistoryTimes1993",
+      "ISBN": "978-0-7230-0610-7",
+      "language": "en",
+      "license": "NHR 18.2.5",
+      "note": "volume-title: The Thomson years: 1966–1981\navailable-date: 1935/2024",
+      "number-of-pages": "632",
+      "publisher": "Office of the Times",
+      "publisher-place": "London",
+      "source": "K10plus ISBN",
+      "title": "The history of 'The Times'",
+      "volume": "6",
+      "author": [
+        {
+          "family": "Grigg",
+          "given": "John A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1993
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/BGZL9S8Y",
+      "type": "book",
+      "citation-key": "amnestyinternationalPrisonersVoiceAsylumseekers1994",
+      "ISBN": "978-1-873328-11-8",
+      "language": "en",
+      "license": "NHR 18.2.4",
+      "number-of-pages": "69",
+      "publisher": "Amnesty International, British Section",
+      "publisher-place": "London",
+      "shortTitle": "Prisoners without a voice",
+      "source": "K10plus ISBN",
+      "title": "Prisoners without a voice: asylum-seekers detained in the United Kingdom",
+      "title-short": "Prisoners without a voice",
+      "URL": "http://archive.org/details/prisonerswithout0000duns",
+      "author": [
+        {
+          "family": "Amnesty International",
+          "given": ""
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1994
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/KYW7ZL32",
+      "type": "book",
+      "citation-key": "humeTreatiseHumanNature1981",
+      "DOI": "10.1093/actrade/9780198245872.book.1",
+      "edition": "2",
+      "ISBN": "978-0-19-824587-2 978-0-19-824588-9",
+      "language": "en",
+      "license": "NHR 18.2.3",
+      "number-of-pages": "743",
+      "publisher": "Clarendon Press",
+      "publisher-place": "Oxford",
+      "source": "K10plus ISBN",
+      "title": "A treatise of human nature",
+      "author": [
+        {
+          "family": "Hume",
+          "given": "David"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Norton",
+          "given": "David Fate"
+        },
+        {
+          "family": "Norton",
+          "given": "Mary J."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1981
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/9ECPKHSI",
+      "type": "chapter",
+      "citation-key": "ashworthBeliefIntentCriminal1987",
+      "container-title": "Oxford essays in jurisprudence, third series",
+      "ISBN": "978-0-19-825507-9",
+      "language": "la",
+      "license": "NHR 18.2.3",
+      "note": "Num Pages: 267",
+      "page": "6–25",
+      "publisher": "Clarendon Press",
+      "publisher-place": "Oxford",
+      "source": "K10plus ISBN",
+      "title": "Belief, intent, and criminal liability",
+      "editor": [
+        {
+          "family": "Eekelaar",
+          "given": "John"
+        },
+        {
+          "family": "Bell",
+          "given": "John"
+        }
+      ],
+      "author": [
+        {
+          "family": "Ashworth",
+          "given": "Andrew"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1987
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/5Z9CR9N3",
+      "type": "book",
+      "citation-key": "glorieuxAuxOriginesSorbonne1965",
+      "collection-number": "53",
+      "collection-title": "Etudes de philosophie medievale",
+      "language": "fr",
+      "license": "NHR 18.2.7",
+      "note": "volume-title: Robert de Sorbon: l'homme, le collège, les documents",
+      "number-of-pages": "352",
+      "number-of-volumes": "2",
+      "publisher": "J. Vrin",
+      "publisher-place": "Paris",
+      "source": "Google Books",
+      "title": "Aux origines de la Sorbonne",
+      "volume": "1",
+      "author": [
+        {
+          "family": "Glorieux",
+          "given": "Palémon"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1965
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/6RNXHQ8I",
+      "type": "chapter",
+      "citation-key": "gill2001",
+      "container-title": "The complete works of Christopher Marlowe",
+      "ISBN": "978-0-19-811878-7",
+      "language": "en",
+      "license": "NHR 18.2.6",
+      "note": "genre: introduction\nvolume-title: Translations\ncontainer-title-short: Complete works of Christopher Marlowe",
+      "original-publisher-place": "Oxford",
+      "page": "ix–xvi",
+      "publisher": "Clarendon Press",
+      "publisher-place": "Oxford",
+      "source": "K10plus ISBN",
+      "volume": "1",
+      "author": [
+        {
+          "family": "Gill",
+          "given": "Roma"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2001
+          ]
+        ]
+      },
+      "original-date": {
+        "date-parts": [
+          [
+            1987
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/CD4HY687",
+      "type": "book",
+      "abstract": "Source: Digital Library of India\n\nScanning Centre: C-DAC, Noida\nSource Library: Lbs National Academy Of Administration\nDate Accessioned: 6/19/2015 15:08\nThe Digital Library of India was a project under the auspices of the Government of India.",
+      "citation-key": "metzHundredYearsBritish1938",
+      "language": "en",
+      "license": "NHR 18.2.5",
+      "note": "original-title: Die philosophischen Strömungen der Gegenwart in Grossbritannien",
+      "original-publisher": "F. Meiner",
+      "original-publisher-place": "Leipzig",
+      "publisher": "George Allen and Unwin",
+      "publisher-place": "London",
+      "source": "Internet Archive",
+      "title": "A hundred years of British philosophy",
+      "URL": "http://archive.org/details/dli.ernet.977",
+      "author": [
+        {
+          "family": "Metz",
+          "given": "Rudolf"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Muirhead",
+          "given": "J. H."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Harvey",
+          "given": "J. W."
+        },
+        {
+          "family": "Jessop",
+          "given": "T. E."
+        },
+        {
+          "family": "Sturt",
+          "given": "Henry"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1938
+          ]
+        ]
+      },
+      "original-date": {
+        "date-parts": [
+          [
+            1935
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/8NIDVDTX",
+      "type": "book",
+      "citation-key": "shelleyLettersPercyBysshe1964",
+      "ISBN": "978-0-19-871972-4",
+      "language": "en",
+      "license": "NHR 18.2.3",
+      "note": "OCLC: 948806995",
+      "number-of-volumes": "2",
+      "publisher": "Clarendon Press",
+      "publisher-place": "Oxford",
+      "shortTitle": "Letters of Percy Bysshe Shelley",
+      "source": "Open WorldCat",
+      "title": "Letters of Percy Bysshe Shelley",
+      "title-short": "Letters of Percy Bysshe Shelley",
+      "author": [
+        {
+          "family": "Shelley",
+          "given": "Percy Bysshe"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Jones",
+          "given": "F. L."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1964
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/Q6HTKLPA",
+      "type": "book",
+      "citation-key": "dibdinPicadorBookCrime1993",
+      "ISBN": "978-0-330-32556-1",
+      "language": "en",
+      "license": "NHR 18.2.3",
+      "number-of-pages": "432",
+      "publisher": "Picador",
+      "publisher-place": "London",
+      "source": "K10plus ISBN",
+      "title": "The Picador book of crime writing",
+      "editor": [
+        {
+          "family": "Dibdin",
+          "given": "Michael"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1993
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/WMSJRBE5",
+      "type": "book",
+      "citation-key": "coulangeLifeDevil1929",
+      "language": "en",
+      "license": "NHR 18.2.2",
+      "publisher": "Alfred A. Knopf",
+      "publisher-place": "London",
+      "source": "Internet Archive",
+      "title": "The life of the devil",
+      "URL": "http://archive.org/details/dli.ministry.16314",
+      "author": [
+        {
+          "family": "Coulange",
+          "given": "Louis, [J. Turmel]"
+        }
+      ],
+      "translator": [
+        {
+          "family": "Guest",
+          "given": "Stephen Haden"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1929
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/P5JCIX5F",
+      "type": "book",
+      "citation-key": "joukovskyOrpheeSesDisciples1970",
+      "ISBN": "978-2-600-02813-4",
+      "language": "fr",
+      "license": "NHR 18.2.2",
+      "note": "Google-Books-ID: ljq65n6mj5wC",
+      "number-of-pages": "180",
+      "publisher": "Librairie Droz",
+      "publisher-place": "Geneva",
+      "source": "Google Books",
+      "title": "Orphée et ses disciples dans la poésie franc̜aise et néolatine du XVIᵉ siècle",
+      "author": [
+        {
+          "family": "Joukovsky",
+          "given": "Françoise"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1970
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/AYIR9Z7T",
+      "type": "article-journal",
+      "citation-key": "joukovsky-michaGuerreDieuxGeants1967",
+      "container-title": "Bibliothèque d'Humanisme et Renaissance",
+      "ISSN": "0006-1999",
+      "issue": "1",
+      "journalAbbreviation": "Bibl. Humanisme Renaiss.",
+      "language": "fr",
+      "license": "NHR 18.2.2",
+      "page": "55-92",
+      "publisher": "Librairie Droz",
+      "source": "JSTOR",
+      "title": "La Guerre des dieux et des géants chez les poètes français du XVIᵉ siècle (1500–1585)",
+      "URL": "https://www.jstor.org/stable/41610250",
+      "volume": "29",
+      "author": [
+        {
+          "family": "Joukovsky-Micha",
+          "given": "Françoise"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1967
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/ENP4GEAI",
+      "type": "book",
+      "call-number": "D629.G7 B25 1978",
+      "citation-key": "bagnoldDiaryDates1978",
+      "edition": "2",
+      "ISBN": "978-0-86068-036-9",
+      "language": "en",
+      "license": "NHR 18.2.1",
+      "number-of-pages": "127",
+      "publisher": "Virago",
+      "publisher-place": "London",
+      "source": "Library of Congress ISBN",
+      "title": "A diary without dates",
+      "author": [
+        {
+          "family": "Bagnold",
+          "given": "Enid"
+        }
+      ],
+      "contributor": [
+        {
+          "family": "Dickens",
+          "given": "Monica"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1978
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/59QEX8QD",
+      "type": "article-journal",
+      "citation-key": "hornsby-smithTypologyEnglishCatholics1982",
+      "container-title": "Sociological Review",
+      "DOI": "10.1111/j.1467-954X.1982.tb00662.x",
+      "ISSN": "1467-954X",
+      "issue": "3",
+      "journalAbbreviation": "Sociol. Rev.",
+      "language": "en",
+      "license": "NHR 18.1.3",
+      "note": "_eprint: https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1467-954X.1982.tb00662.x",
+      "page": "433-459",
+      "source": "Wiley Online Library",
+      "title": "A typology of English Catholics",
+      "URL": "https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1467-954X.1982.tb00662.x",
+      "volume": "30",
+      "author": [
+        {
+          "family": "Hornsby-Smith",
+          "given": "Michael P."
+        },
+        {
+          "family": "Lee",
+          "given": "Raymond M."
+        },
+        {
+          "family": "Turcan",
+          "given": "Kathryn A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1982
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/423V9WEX",
+      "type": "book",
+      "citation-key": "kingTastePrisonCustodial1976",
+      "ISBN": "978-0-7100-8407-1",
+      "language": "en",
+      "license": "NHR 18.2.2",
+      "number-of-pages": "100",
+      "publisher": "Routledge & Kegan Paul",
+      "publisher-place": "London",
+      "shortTitle": "A taste of prison",
+      "source": "K10plus ISBN",
+      "title": "A taste of prison: custodial conditons for trial and remand prisoners",
+      "title-short": "A taste of prison",
+      "author": [
+        {
+          "family": "King",
+          "given": "Roy D."
+        },
+        {
+          "family": "Morgan",
+          "given": "Rodney"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1976
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/PPN7F6FN",
+      "type": "book",
+      "abstract": "468 p. : 23 cm",
+      "call-number": "535367",
+      "citation-key": "demausWilliamTyndaleBiography1886",
+      "edition": "new edn",
+      "language": "en",
+      "license": "NHR 18.2.1",
+      "number-of-pages": "504",
+      "publisher": "Religious Tract Society",
+      "publisher-place": "London",
+      "shortTitle": "William Tyndale, a biography",
+      "source": "Internet Archive",
+      "title": "William Tyndale, a biography: a contribution to the early history of the English Bible",
+      "title-short": "William Tyndale, a biography",
+      "URL": "http://archive.org/details/williamtyndalebi00dema",
+      "author": [
+        {
+          "family": "Demaus",
+          "given": "Robert"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Lovett",
+          "given": "Richard"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1886
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/GXF5FHJA",
+      "type": "book",
+      "call-number": "30",
+      "citation-key": "hornsby-smithRomanCatholicsEngland1987",
+      "ISBN": "978-0-521-30313-2",
+      "language": "en",
+      "license": "NHR 18.1.3",
+      "publisher": "Cambridge University Press",
+      "publisher-place": "Cambridge",
+      "shortTitle": "Roman Catholics in England",
+      "source": "BnF ISBN",
+      "title": "Roman Catholics in England: studies in social structure since the Second World War",
+      "title-short": "Roman Catholics in England",
+      "author": [
+        {
+          "family": "Hornsby-Smith",
+          "given": "Michael P."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1987
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/XUYT6VNT",
+      "type": "article-journal",
+      "abstract": "Remarkably little is known about the processes and extent of educational and occupational assimilation, convergence of social mobility experiences and patterns of intermarriage of England's largest immigrant community, the Irish. In this paper assimilation is regarded as a process in which both cultural and structural differences between the immigrant group and the indigenous population are progressively reduced over an extended period of time. Using nationally representative data from the General Household Surveys of 1979 and 1980, first and second generation immigrants from the Republic of Ireland and Northern Ireland were compared with a control sample of 'English', with all analyses run separately for men and women. It is concluded that, while there is generally a substantial measure of assimilation of the Irish in England by the second generation, there are important differences between immigrants from the Republic of Ireland and Northern Ireland - the former showing much higher levels of educational and occupational achievement by the second generation.",
+      "citation-key": "hornsby-smithAssimilationIrishImmigrants1988",
+      "container-title": "British Journal of Sociology",
+      "DOI": "10.2307/590499",
+      "ISSN": "0007-1315",
+      "issue": "4",
+      "journalAbbreviation": "Br. J. Sociol.",
+      "language": "en",
+      "license": "NHR 18.1.3",
+      "page": "519-544",
+      "publisher": "[Wiley, London School of Economics and Political Science, London School of Economics]",
+      "source": "JSTOR",
+      "title": "The assimilation of Irish immigrants in England",
+      "URL": "https://www.jstor.org/stable/590499",
+      "volume": "39",
+      "author": [
+        {
+          "family": "Hornsby-Smith",
+          "given": "Michael P."
+        },
+        {
+          "family": "Dale",
+          "given": "Angela"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            3,
+            28
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1988
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/M3Y8Z9MZ",
+      "type": "book",
+      "call-number": "BX1493.2 .H668 1991",
+      "citation-key": "hornsby-smithRomanCatholicBeliefs1991",
+      "DOI": "10.1017/CBO9780511520839",
+      "ISBN": "978-0-521-36327-3",
+      "language": "en",
+      "license": "NHR 18.1.3",
+      "number-of-pages": "265",
+      "publisher": "Cambridge University Press",
+      "publisher-place": "Cambridge",
+      "shortTitle": "Roman Catholic beliefs in England",
+      "source": "Library of Congress ISBN",
+      "title": "Roman Catholic beliefs in England: customary Catholicism and transformations of religious authority",
+      "title-short": "Roman Catholic beliefs in England",
+      "URL": "https://www.cambridge.org/core/product/identifier/9780511520839/type/book",
+      "author": [
+        {
+          "family": "Hornsby-Smith",
+          "given": "Michael P."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1991,
+            3,
+            21
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/JRTKATXM",
+      "type": "post",
+      "citation-key": "shakespearesglobe[@the_globe]ThisDay16112013",
+      "container-title": "Twitter",
+      "language": "en",
+      "license": "NHR 18.8.5",
+      "note": "Citation Key: shakespearesglobe[@the_globe]ThisDay16112013",
+      "title": "On this day in 1611 first production of The Tempest was performed by King's Men at Whitehall Palace before James I",
+      "URL": "https://twitter.com/The_Globe/status/396257422928400385",
+      "author": [
+        {
+          "family": "Shakespeare’s Globe, [@The_Globe]",
+          "given": ""
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013,
+            11,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/U68D7U8N",
+      "type": "document",
+      "title": "CSL needs an original-edition variable"
+    },
+    {
+      "id": "6188419/YKAJYT55",
+      "type": "document",
+      "title": "Rev. ed. of: The Oxford dictionary of quotations / edited by Angela Partington."
+    },
+    {
+      "id": "6188419/5EBAGVPV",
+      "type": "document",
+      "title": "Record Page",
+      "URL": "https://catalog.hathitrust.org/Record/001196146",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/A3YW23EK",
+      "type": "document",
+      "title": "\"Adapted from The Oxford guide to style by R.M. Ritter.\" Includes index"
+    },
+    {
+      "id": "6188419/3DMZRBHQ",
+      "type": "document",
+      "title": "Vol. 1 published by C. Muquardt; v. 8: Chez Schott, frères."
+    },
+    {
+      "id": "6188419/TVM3XHWA",
+      "type": "document",
+      "title": "Record Page",
+      "URL": "https://catalog.hathitrust.org/Record/001977287",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/8TV9XICS",
+      "type": "document",
+      "title": "Texts in Portuguese-Galician, Spanish, Catalan, Gascon, Provençal (Occitan), "
+    },
+    {
+      "id": "6188419/TZ8GAQRS",
+      "type": "document",
+      "title": "Includes reproduction of original title page: London, 1822"
+    },
+    {
+      "id": "6188419/3I9T4DQE",
+      "type": "document",
+      "title": "Title in red and black, vignette, head and tail-pieces, initials."
+    },
+    {
+      "id": "6188419/6EHQWKGA",
+      "type": "document",
+      "title": "Record Page",
+      "URL": "https://catalog.hathitrust.org/Record/009403693",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            9
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/VC4FXF93",
+      "type": "document",
+      "title": "Four hundred copies printed, no. 103."
+    },
+    {
+      "id": "6188419/9EDIURTV",
+      "type": "document",
+      "title": "\"Claribel\" has been added to the 1822 series."
+    },
+    {
+      "id": "6188419/BGPMMUQ4",
+      "type": "document",
+      "title": "committed to retain2017093020421231HathiTrustNjP22600440860006421"
+    },
+    {
+      "id": "6188419/66RS486J",
+      "type": "document",
+      "title": "Facsim. of original t.-p."
+    },
+    {
+      "id": "6188419/MH26EK7K",
+      "type": "document",
+      "title": "Includes index"
+    },
+    {
+      "id": "6188419/BPC5ZFCK",
+      "type": "document",
+      "title": "\"Pese al miedo, las victimas han comenzado a hablar. Es tiempo de hacer memoria"
+    },
+    {
+      "id": "6188419/54JTV8UB",
+      "type": "document",
+      "title": "Bibliography note: Includes bibliographical references (p. 50-51) and index"
+    },
+    {
+      "id": "6188419/KHNTSYPI",
+      "type": "document",
+      "title": "Includes index"
+    },
+    {
+      "id": "6188419/YF8BIISH",
+      "type": "document",
+      "title": "French or Latin, with parallel English translation"
+    },
+    {
+      "id": "6188419/F78ICTQI",
+      "type": "document",
+      "title": "Google Books Link",
+      "URL": "https://books.google.co.uk/books?id=wloIAAAAMAAJ",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            28
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/4ASG5INM",
+      "type": "document",
+      "title": "Google Books Link",
+      "URL": "https://books.google.co.uk/books?id=ljq65n6mj5wC",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            28
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/5SETRAXL",
+      "type": "document",
+      "title": "Reprint of the 1918 ed. published by W. Heinemann, London"
+    }
+  ]
+}

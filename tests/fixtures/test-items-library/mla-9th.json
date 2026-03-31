@@ -1,0 +1,1142 @@
+{
+  "items": [
+    {
+      "id": "6188419/JZTHY2RK",
+      "type": "graphic",
+      "abstract": "From one of the world's most expert art critics, the incredible true story--part art history and part mystery--of a Velázquez portrait that went missing and the obsessed nineteenth-century bookseller determined to prove he had found it. When John Snare, a nineteenth-century provincial bookseller, traveled to a liquidation auction, he stumbled on a vivid portrait of King Charles I that defied any explanation. The Charles of the painting was young--too young to be king--and yet also too young to be painted by the Flemish painter to which the work was attributed. Snare had found something incredible--but what? His research brought him to Diego Velázquez, whose long-lost portrait of Prince Charles has eluded art experts for generations. Velázquez (1599-1660) was the official painter of the Madrid court, during the time the Spanish Empire teetered on the edge of collapse. When Prince Charles of England--a man wealthy enough to help turn Spain's fortunes--ventured to the court to propose a marriage with a Spanish princess, he allowed just a few hours to sit for his portrait. Snare believed only Velázquez could have met this challenge. But in making his theory public, Snare was ostracized, victim to aristocrats and critics who accused him of fraud, and forced to choose, like Velázquez himself, between art and family. A thrilling investigation into the complex meaning of authenticity and the unshakable determination that drives both artists and collectors of their work, The Vanishing Velázquez travels from extravagant Spanish courts in the 1700s to the gritty courtrooms and auction houses of nineteenth-century London and New York. But it is above all a tale of mystery and detection, of tragic mishaps and mistaken identities, of class, politics, snobbery, crime, and almost farcical accident. It is a magnificently crafted page-turner, a testimony to how and why great works of art can affect us to the point of obsession",
+      "archive": "Scottish National Gallery",
+      "archive_location": "NG 2180",
+      "citation-key": "velazquezOldWomanCooking2016",
+      "language": "en",
+      "note": "event-date: 1618?\nOCLC: 913303637\nISBN: 978-1-4767-6215-9\ncontainer-author: Cumming || Laura\ncontainer-title: The vanishing Velázquez: a 19th-Century bookseller's obsession with a lost masterpiece\npublisher-place: New York\npublisher: Scribner\nissued: 2016\npage: 27",
+      "title": "An old woman cooking eggs",
+      "author": [
+        {
+          "family": "Velázquez",
+          "given": "Diego"
+        }
+      ]
+    },
+    {
+      "id": "6188419/24H4TKT6",
+      "type": "thesis",
+      "call-number": "MS. D.Phil. c.3512",
+      "citation-key": "woudhuysenLeicestersLiteraryPatronage1981",
+      "genre": "D.Phil. thesis",
+      "language": "en",
+      "note": "medium: PDF download",
+      "publisher": "University of Oxford",
+      "shortTitle": "Leicester's literary patronage",
+      "source": "Oxford University Research Archive",
+      "title": "Leicester's literary patronage: a study of the English court, 1578–1582",
+      "title-short": "Leicester's literary patronage",
+      "URL": "https://ora.ox.ac.uk/objects/uuid:3c0b5d66-d7fa-4d49-b330-b1e43b46fbd3",
+      "author": [
+        {
+          "family": "Woudhuysen",
+          "given": "H. R."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1981
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/4XYGI6LG",
+      "type": "chapter",
+      "call-number": "PR1109 .N6 1993",
+      "citation-key": "shakespeare1993",
+      "container-title": "The Norton anthology of English literature",
+      "edition": "6",
+      "ISBN": "978-0-393-96287-1 978-0-393-96288-8",
+      "language": "en",
+      "note": "genre: Sonnet 30",
+      "page": "812",
+      "publisher": "Norton",
+      "publisher-place": "New York",
+      "source": "Library of Congress ISBN",
+      "collection-editor": [
+        {
+          "family": "Abrams",
+          "given": "M. H."
+        }
+      ],
+      "author": [
+        {
+          "family": "Shakespeare",
+          "given": "William"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1993
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/HYTXLKXM",
+      "type": "article-journal",
+      "citation-key": "hauser2017",
+      "container-title": "Philosophy & Rhetoric",
+      "DOI": "10.5325/philrhet.50.4.0371",
+      "ISSN": "0031-8213",
+      "issue": "4",
+      "journalAbbreviation": "Philos. Rhetor.",
+      "language": "en",
+      "note": "genre: introduction\nvolume-title: Philosophy and rhetoric: rethinking their intersections",
+      "page": "371-389",
+      "publisher": "Penn State University Press",
+      "shortTitle": "Philosophy and rhetoric",
+      "source": "JSTOR",
+      "title-short": "Philosophy and rhetoric",
+      "URL": "https://www.jstor.org/stable/10.5325/philrhet.50.4.0371",
+      "volume": "50",
+      "author": [
+        {
+          "family": "Hauser",
+          "given": "Gerard A."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Hauser",
+          "given": "Gerard A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            21
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2017
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/GXWX8YK4",
+      "type": "article-journal",
+      "abstract": "Oftentimes, honorable listeners, when stepping before you at this time and place I have not found it altogether easy to choose a theme that without leading too deeply into science and literature would nevertheless move beyond the outer chambers of knowledge and that might furthermore attract a mixed audience without merely touching on commonplaces. Today, before we proceed to the joyous principal occasion for our festive gathering, I wish to speak about the most exquisite of all the many types of novel; you will permit me to call it by a name that has to my knowledge never been used before—namely, the Bildungsroman.a Some of you have so far been content to refer to it as the family novel [Familienroman]—a name that in no way touches on the essence of the question at hand.",
+      "citation-key": "morgensternNatureBildungsroman2009",
+      "container-title": "PMLA",
+      "DOI": "10.1632/S0030812900109228",
+      "ISSN": "0030-8129, 1938-1530",
+      "issue": "2",
+      "journalAbbreviation": "PMLA",
+      "language": "en",
+      "page": "650-659",
+      "source": "Cambridge University Press",
+      "title": "On the nature of the <i>Bildungsroman</i>",
+      "URL": "https://www.cambridge.org/core/journals/pmla/article/abs/on-the-nature-of-the-bildungsroman/6B21CEBE43168D5556208D3382DE8835",
+      "volume": "124",
+      "author": [
+        {
+          "family": "Morgenstern",
+          "given": "Karl"
+        }
+      ],
+      "translator": [
+        {
+          "family": "Boes",
+          "given": "Tobias"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            20
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2009,
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/K4SVCTVK",
+      "type": "article-journal",
+      "abstract": "The term bildungsroman has long been one of the most problematic entries in the lexicon of literary studies. Although it is often used innocuously, to refer to almost any novel that focuses on the development of a young protagonist, matters look rather different in the more secluded world of academic German departments. Here, the Bildungsroman is the object of fierce debates that illustrate how even such arcane fields as classificatory genre studies tenuously float on ideological undercurrents.",
+      "citation-key": "boes2009",
+      "container-title": "PMLA",
+      "DOI": "10.1632/pmla.2009.124.2.647",
+      "ISSN": "0030-8129, 1938-1530",
+      "issue": "2",
+      "journalAbbreviation": "PMLA",
+      "language": "en",
+      "note": "genre: introduction to 'On the nature of the <i>Bildungsroman</i>', by Karl Morgenstern",
+      "page": "647-649",
+      "source": "Cambridge University Press",
+      "URL": "https://www.cambridge.org/core/journals/pmla/article/abs/on-the-nature-of-the-bildungsroman/CC793470FD03D7B9FEC10264E7836F71",
+      "volume": "124",
+      "author": [
+        {
+          "family": "Boes",
+          "given": "Tobias"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            20
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2009,
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/FEV63X7X",
+      "type": "article-journal",
+      "abstract": "Objective: Solastalgia is a new concept developed to give greater meaning and clarity to environmentally induced distress. As opposed to nostalgia – the melancholia or homesickness experienced by individuals when separated from a loved home – solastalgia is the distress that is produced by environmental change impacting on people while they are directly connected to their home environment. The paper will focus on two contexts where collaborative research teams have found solastalgia to be evident: the experiences of persistent drought in rural NSW and the impact of large-scale open-cut coal mining on individuals in the Upper Hunter Valley of NSW. In both cases, people exposed to environmental change experienced negative affect that is exacerbated by a sense of powerlessness or lack of control over the unfolding change process.\n            Methods: Qualitative (interviews and focus groups) and quantitative (community-based surveys) research has been conducted on the lived experience of drought and mining, and the findings relevant to solastalgia are presented.\n            Results: The authors are exploring the potential uses and applications of the concept of solastalgia for understanding the psychological impact of the increasing incidence of environmental change worldwide.\n            Conclusions: Worldwide, there is an increase in ecosystem distress syndromes matched by a corresponding increase in human distress syndromes. The specific role played by global-scale environmental challenges to ‘sense of place’ and identity will be explored in the future development of the concept of solastalgia.",
+      "citation-key": "albrechtSolastalgiaDistressCaused2007",
+      "container-title": "Australasian Psychiatry",
+      "DOI": "10.1080/10398560701701288",
+      "ISSN": "1039-8562, 1440-1665",
+      "journalAbbreviation": "Australas. Psychiatry",
+      "language": "en",
+      "license": "https://journals.sagepub.com/page/policies/text-and-data-mining-license",
+      "note": "supplement-number: 1\nvolume-title: Creating futures: influencing the social determinants of mental health and wellbeing in rural, indigenous and island peoples",
+      "page": "S95-S98",
+      "shortTitle": "Solastalgia",
+      "source": "DOI.org (Crossref)",
+      "title": "Solastalgia: the distress caused by environmental change",
+      "title-short": "Solastalgia",
+      "URL": "https://journals.sagepub.com/doi/10.1080/10398560701701288",
+      "volume": "15",
+      "author": [
+        {
+          "family": "Albrecht",
+          "given": "Glenn"
+        },
+        {
+          "family": "Sartore",
+          "given": "Gina-Maree"
+        },
+        {
+          "family": "Connor",
+          "given": "Linda"
+        },
+        {
+          "family": "Higginbotham",
+          "given": "Nick"
+        },
+        {
+          "family": "Freeman",
+          "given": "Sonia"
+        },
+        {
+          "family": "Kelly",
+          "given": "Brian"
+        },
+        {
+          "family": "Stain",
+          "given": "Helen"
+        },
+        {
+          "family": "Tonna",
+          "given": "Anne"
+        },
+        {
+          "family": "Pollard",
+          "given": "Georgia"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Hunter",
+          "given": "Ernest"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            20
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2007"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/L2NN2VH9",
+      "type": "article-journal",
+      "citation-key": "murphyBookHoneycombsFlow1985",
+      "container-title": "Speculum",
+      "DOI": "10.2307/2852158",
+      "ISSN": "0038-7134",
+      "issue": "1",
+      "journalAbbreviation": "Speculum",
+      "language": "en",
+      "page": "161-164",
+      "publisher": "The University of Chicago Press",
+      "source": "journals.uchicago.edu (Atypon)",
+      "title": "The book of the honeycomb's flow (<span class=\"nocase\">Sēpher nōpheth sūphīm</span>)",
+      "URL": "https://www.journals.uchicago.edu/doi/10.2307/2852158",
+      "volume": "60",
+      "author": [
+        {
+          "family": "Murphy",
+          "given": "James J."
+        }
+      ],
+      "reviewed-author": [
+        {
+          "family": "Judah Messer Leon, ed. and trans. Isaac Rabinowitz",
+          "given": ""
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            20
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1985,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/CKVTS2PJ",
+      "type": "article-journal",
+      "citation-key": "ellisonNewPublicHumanists2013",
+      "container-title": "PMLA",
+      "DOI": "10.1632/pmla.2013.128.2.289",
+      "ISSN": "0030-8129",
+      "issue": "2",
+      "journalAbbreviation": "PMLA",
+      "language": "en",
+      "note": "genre: guest column",
+      "page": "289-298",
+      "publisher": "Modern Language Association",
+      "shortTitle": "Public humanists",
+      "source": "Cambridge Core",
+      "title": "The new public humanists",
+      "title-short": "Public humanists",
+      "URL": "https://www.jstor.org/stable/23489061",
+      "volume": "128",
+      "author": [
+        {
+          "family": "Ellison",
+          "given": "Julie"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            20
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2013",
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/5H4K2R5U",
+      "type": "book",
+      "citation-key": "MLAHandbook2022",
+      "DOI": "10.1632/ORIW5168",
+      "edition": "9",
+      "ISBN": "978-1-60329-351-8 978-1-60329-352-5",
+      "language": "en",
+      "publisher": "Modern Language Association of America",
+      "publisher-place": "New York",
+      "source": "DOI.org (Crossref)",
+      "title": "MLA Handbook",
+      "URL": "https://mlahandbookplus.org/books/book/5/MLA-Handbook",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            20
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2022
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/4MJFW5S5",
+      "type": "article-journal",
+      "abstract": "Abstract\n            There is historical evidence indicating migration has been a traditional response of Sahrawi societies to the changing challenges of environmental conditions, especially the climatic shift and severe periods of droughts. The disintegration of traditional society, together with modernization, the introduction of agriculture, and sedentarization, the process of urbanization and the implementation of new strict political borders that fractured the once open space they used to move within, modified dramatically the previous patterns of climatic periodic migrations. Although we have not been able to establish a clear link between environmental conditions and migration within Moroccan controlled Western Sahara, on the contrary the environment seems to play a crucial role in determining the rhythm and other features of the migratory flows abroad from the refugee camps on the Polisario ruled part of Western Sahara and Tindouf.",
+      "citation-key": "gilaWesternSaharaMigration2011",
+      "container-title": "International Migration",
+      "DOI": "10.1111/j.1468-2435.2010.00665.x",
+      "ISSN": "0020-7985, 1468-2435",
+      "journalAbbreviation": "Int. Migr.",
+      "language": "en",
+      "note": "supplement-number: 1\nvolume-title: Environmentally induced migration in the context of social vulnerability",
+      "page": "e146-e163",
+      "shortTitle": "Western sahara",
+      "source": "Wiley Online Library",
+      "title": "Western Sahara: migration, exile and environment",
+      "title-short": "Western sahara",
+      "URL": "https://onlinelibrary.wiley.com/doi/10.1111/j.1468-2435.2010.00665.x",
+      "volume": "49",
+      "author": [
+        {
+          "family": "Gila",
+          "given": "Oscar Alvarez"
+        },
+        {
+          "family": "Zaratiegui",
+          "given": "Ana Ugalde"
+        },
+        {
+          "family": "De Maturana Diéguez",
+          "given": "Virginia López"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Afifi",
+          "given": "Tamer"
+        },
+        {
+          "family": "Warner",
+          "given": "Koko"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            20
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2011"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/GJAQBR23",
+      "type": "article-journal",
+      "citation-key": "engelstein2019",
+      "container-title": "History of Humanities",
+      "DOI": "10.1086/704878",
+      "ISSN": "2379-3163",
+      "issue": "2",
+      "journalAbbreviation": "Hist. Humanit.",
+      "language": "en",
+      "note": "genre: letter to the editors",
+      "page": "519-520",
+      "publisher": "The University of Chicago Press",
+      "source": "University of Chicago Press Journals",
+      "URL": "https://www.journals.uchicago.edu/doi/abs/10.1086/704878",
+      "volume": "4",
+      "author": [
+        {
+          "family": "Engelstein",
+          "given": "Stefani"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            20
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2019,
+            9
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/KDRZW9PX",
+      "type": "book",
+      "abstract": "These volumes contain a series of texts written by the Anglo-Saxon monastic author Ælfric between ca. 994 and 998 CE and assembled by him into a book now commonly referred to as his Lives of Saints (LS). Ælfric describes it in the Old English preface as a \"book about the passions and lives of those saints whom those who live in monasteries honor among themselves in their offices.\" He intended it to complement his two earlier series, now known as Catholic Homilies I and II (CH I and CH II), which had provided two collections for use in preaching to the laity and clergy throughout England. In composing this third collection and dedicating it to a powerful and very religious lay patron, Æthelweard, Ælfric was providing a series of texts that Æthelweard and other devout people, lay and religious, could use as spiritual reading or could listen to being read aloud.--",
+      "call-number": "PR1527 .A23 2019",
+      "citation-key": "aelfricOldEnglishLives2019a",
+      "collection-number": "60",
+      "collection-title": "Dumbarton Oaks medieval library",
+      "ISBN": "978-0-674-42509-5 978-0-674-24129-9 978-0-674-24172-5",
+      "language": "en",
+      "number-of-volumes": "3",
+      "publisher": "Harvard University Press",
+      "publisher-place": "Cambridge, MA",
+      "source": "Library of Congress ISBN",
+      "title": "Old English lives of saints",
+      "volume": "3",
+      "author": [
+        {
+          "family": "Ælfric",
+          "given": ""
+        }
+      ],
+      "editor": [
+        {
+          "family": "Clayton",
+          "given": "Mary"
+        },
+        {
+          "family": "Mullins",
+          "given": "Juliet"
+        }
+      ],
+      "translator": [
+        {
+          "family": "Clayton",
+          "given": "Mary"
+        },
+        {
+          "family": "Mullins",
+          "given": "Juliet"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2019
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/LSTIZZEN",
+      "type": "book",
+      "abstract": "Old English Lives of Saints, a series composed in the 990s by the Benedictine monk Ælfric (Aelfric) in his distinctive alliterative prose, portrays an array of saints--including virgin martyrs, married virgins, aristocrats, kings, soldiers, and bishops--for a late Anglo-Saxon audience. At a turbulent time when England was under increasingly severe Viking attack, the examples of these saints modeled courageous faith, self-sacrifice, and individual and collective resistance. The Lives also covers topics as diverse as the four kinds of war, the three orders of society, and whether the unjust can be exempt from eternal punishment. Ælfric intended this series to complement his Catholic Homilies, two important and widely disseminated collections used for preaching to lay people and clergy. The translation is presented alongside a new edition of Lives of Saints, for which all extant manuscripts have been collated afresh.\" ; \"These volumes contain a series of texts written by the Anglo-Saxon monastic author Ælfric between ca. 994 and 998 CE and assembled by him into a book now commonly referred to as his Lives of Saints (LS). Ælfric describes it in the Old English preface as a 'book about the passions and lives of those saints whom those who live in monasteries honor among themselves in their offices.' He intended it to complement his two earlier series, now known as Catholic Homilies I and II (CH I and CH II), which had provided two collections for use in preaching to the laity and clergy throughout England. In composing this third collection and dedicating it to a powerful and very religious lay patron, Æthelweard, Ælfric was providing a series of texts that Æthelweard and other devout people, lay and religious, could use as spiritual reading or could listen to being read aloud.",
+      "call-number": "270.092 2",
+      "citation-key": "aelfricOldEnglishLives2019",
+      "collection-number": "58–60",
+      "collection-title": "Dumbarton Oaks medieval library",
+      "ISBN": "978-0-674-42509-5 978-0-674-24129-9 978-0-674-24172-5",
+      "language": "en",
+      "number-of-volumes": "3",
+      "publisher": "Harvard University Press",
+      "publisher-place": "Cambridge, MA",
+      "source": "BnF ISBN",
+      "title": "Old English lives of saints",
+      "author": [
+        {
+          "family": "Ælfric",
+          "given": ""
+        }
+      ],
+      "editor": [
+        {
+          "family": "Clayton",
+          "given": "Mary"
+        },
+        {
+          "family": "Mullins",
+          "given": "Juliet"
+        }
+      ],
+      "translator": [
+        {
+          "family": "Clayton",
+          "given": "Mary"
+        },
+        {
+          "family": "Mullins",
+          "given": "Juliet"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2019
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/4XK5L77W",
+      "type": "article-journal",
+      "abstract": "Has the decline in traditional sources of local news contributed to the nationalization of U.S. elections? I hypothesize that local news coverage mitigates nationalization by providing voters with information that allows them to assess down-ballot candidates separately from their national, partisan assessment. The geography of media markets places some voters in a neighboring state’s market and others in in-state markets. I demonstrate that residents of in-state markets have access to vastly more local television news coverage of their governor and U.S. senators, and this increased coverage translates into greater knowledge of these officeholders. Further, access to in-state television news substantially increases split-ticket voting in gubernatorial and senatorial races. Supplementary analyses provide strong evidence that the estimated effects are not the result of unobserved differences between residents of in-state and out-of-state media markets. These results imply that local news coverage attenuates the nationalization of elections even in the present polarized context.",
+      "citation-key": "moskowitzLocalNewsInformation2021",
+      "container-title": "American Political Science Review",
+      "DOI": "10.1017/S0003055420000829",
+      "ISSN": "0003-0554, 1537-5943",
+      "issue": "1",
+      "journalAbbreviation": "Am. Polit. Sci. Rev.",
+      "language": "en",
+      "license": "MLA9 5.112",
+      "note": "medium: Moskowitz supplementary material",
+      "page": "114-129",
+      "source": "Cambridge Core",
+      "title": "Local news, information, and the nationalization of U.S. elections",
+      "URL": "https://www.cambridge.org/core/product/identifier/S0003055420000829/type/journal_article",
+      "volume": "115",
+      "author": [
+        {
+          "family": "Moskowitz",
+          "given": "Daniel J."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            16
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2021"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/BUMGW573",
+      "type": "book",
+      "citation-key": "caroYearsLyndonJohnson2012",
+      "ISBN": "978-1-84792-217-5",
+      "language": "en",
+      "note": "volume-title: The passage of power",
+      "number-of-volumes": "4",
+      "publisher": "The Bodley Head",
+      "publisher-place": "London",
+      "source": "BnF ISBN",
+      "title": "The years of Lyndon Johnson",
+      "volume": "4",
+      "author": [
+        {
+          "family": "Caro",
+          "given": "Robert A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2012
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/KMF8EMJY",
+      "type": "article-journal",
+      "abstract": "Intellectual exchange between South Asian and Southeast Asian societies before and outside of colonialism is still poorly understood, both because of the lingering cultural essentialism promoted by colonial scholarship and the national and regional politics that have dominated historical perspectives since. Certainly, the role of local literati in the Chindwin river area on the Burma–Manipur frontier as mediators in the movement of ideas and literature between the Indian subcontinent and Burma in the 18th and 19th centuries has been obscured by conventional political and intellectual history. This historiography has both partitioned and incor-porated the local, the transregional and the culturally diverse into national, regional and mono-cultural frameworks. The call by scholars of border-lands to reverse the way we examine border areas, taking a view from the periphery rather than the perspective of the centre, also invites the explora-tion of cultures that can complicate the state-centred narrative of literary history. The present article examines one precolonial scholarly network and the nature of its activities on what is conventionally viewed as the cultural and political periphery to raise questions about the central role attributed to the royal court in literary production, the neglect of the role of important women as patrons of local cultural activity, and the origins of Burma’s national literary heritage.",
+      "citation-key": "charneyLiteraryCultureBurma2011",
+      "container-title": "Medieval History Journal",
+      "DOI": "10.1177/097194581101400202",
+      "ISSN": "0971-9458",
+      "issue": "2",
+      "journalAbbreviation": "Mediev. Hist. J.",
+      "language": "en",
+      "note": "volume-title: Literary cultures at the frontiers: literature and identity in the early modern world",
+      "page": "159-181",
+      "publisher": "SAGE Publications India",
+      "shortTitle": "Literary culture on the Burma–Manipur frontier",
+      "source": "SAGE Journals",
+      "title": "Literary culture on the Burma–Manipur frontier in the eighteenth and nineteenth centuries",
+      "title-short": "Literary culture on the Burma–Manipur frontier",
+      "URL": "https://doi.org/10.1177/097194581101400202",
+      "volume": "14",
+      "author": [
+        {
+          "family": "Charney",
+          "given": "Michael W."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            15
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2011,
+            10,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/INP7X7T6",
+      "type": "book",
+      "abstract": "Cover Page -- Title Page -- Copyright Page -- Dedication -- Contents -- 1. Still Here (1941) -- 2. Jim Crow's Last Stand (1941 to 1943) -- 3. Simple Speaks His Mind (1943 to 1944) -- 4. Third Degree (1944 to 1945) -- 5. Street Scene (1945 to 1947) -- 6. Heart on the Wall (1947 to 1948) -- 7. On Solid Ground (1948 to 1950) -- 8. In Warm Manure (1951 to 1953) -- 9. Out from Under (1953 to 1956) -- 10. Making Hay (1957 to 1958) -- 11. You Are the World (1958 to 1960) -- 12. Ask Your Mama! (1960 to 1961) -- 13. In Gospel Glory (1961 to 1963) -- 14. Blues for Mister Backlash (1963 to 1965) -- 15. Final Call (1965 to 1966) -- 16. Do Nothing Till You Hear from Me (1966 to 1967) -- Afterword -- Abbreviations -- Notes -- Acknowledgments -- Index",
+      "citation-key": "rampersadLifeLangstonHughes2002",
+      "edition": "2",
+      "ISBN": "978-0-19-988227-4",
+      "language": "en",
+      "number-of-volumes": "2",
+      "publisher": "Oxford University Press",
+      "publisher-place": "New York",
+      "shortTitle": "Life of Langston Hughes",
+      "source": "K10plus ISBN",
+      "title": "The life of Langston Hughes",
+      "title-short": "Life of Langston Hughes",
+      "author": [
+        {
+          "family": "Rampersad",
+          "given": "Arnold"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2002
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/JKW78Z3E",
+      "type": "article",
+      "abstract": "This piece offers several threads that bind an ideal together: there are practical actions to increase the public-ness of scholarship, increasingly compelling reasons to adopt an outward-orientation, as well as many challenges to performing public scholarship in higher education. We propose that a more public scholarly practice can be sought through the dissemination of research products, the processes by which research and scholarship are conducted, opening pedagogy beyond the classroom, developing soft skills as a public intellectual, and increasing visibility with/in communities.",
+      "citation-key": "glassPublicScholarshipPractice2018",
+      "DOI": "10.17613/G64D-GD16",
+      "language": "en",
+      "license": "MLA9 5.112",
+      "note": "medium: PDF download, draft of working paper",
+      "publisher": "CORE",
+      "title": "Public scholarship in practice and philosophy",
+      "URL": "https://works.hcommons.org/doi/10.17613/g64d-gd16",
+      "author": [
+        {
+          "family": "Glass",
+          "given": "Erin"
+        },
+        {
+          "family": "Vandegrift",
+          "given": "Micah"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            15
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2018,
+            12,
+            31
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/FQES4CHS",
+      "type": "article-journal",
+      "citation-key": "gilbertFemaleImaginationModernist1986",
+      "container-title": "Women's Studies",
+      "ISSN": "0049-7878",
+      "issue": "1-2",
+      "journalAbbreviation": "Women's Stud.",
+      "language": "en",
+      "license": "MLA9 5.127",
+      "note": "type: periodical",
+      "source": "Taylor and Francis+NEJM",
+      "title": "The female imagination and the modernist aesthetic",
+      "URL": "https://www.tandfonline.com/toc/gwst20/13/1-2",
+      "volume": "13",
+      "editor": [
+        {
+          "family": "Gilbert",
+          "given": "Sandra M."
+        },
+        {
+          "family": "Gubar",
+          "given": "Susan"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            15
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1986,
+            12,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/NYQT6RC4",
+      "type": "article-journal",
+      "citation-key": "gilbertSexualLinguisticsGender1985",
+      "container-title": "New Literary History",
+      "DOI": "10.2307/468838",
+      "ISSN": "0028-6087",
+      "issue": "3",
+      "journalAbbreviation": "New Lit. Hist.",
+      "language": "la",
+      "license": "MLA9 5.127",
+      "page": "515-543",
+      "publisher": "Johns Hopkins University Press",
+      "shortTitle": "Sexual linguistics",
+      "source": "JSTOR",
+      "title": "Sexual linguistics: gender, language, sexuality",
+      "title-short": "Sexual linguistics",
+      "URL": "https://www.jstor.org/stable/468838",
+      "volume": "16",
+      "author": [
+        {
+          "family": "Gilbert",
+          "given": "Sandra M."
+        },
+        {
+          "family": "Gubar",
+          "given": "Susan"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            8,
+            15
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "1985"
+          ]
+        ],
+        "season": "spring"
+      }
+    },
+    {
+      "id": "6188419/RKEKMWER",
+      "type": "article-journal",
+      "citation-key": "goldmanQuestionsTransportReading2010",
+      "container-title": "The Georgia Review",
+      "ISSN": "0016-8386",
+      "issue": "1",
+      "journalAbbreviation": "Ga. Rev.",
+      "language": "en",
+      "license": "MLA9 5.101",
+      "page": "69-88",
+      "publisher": "Board of Regents of the University System of Georgia by and on Behalf of the University of Georgia and the Georgia Review",
+      "shortTitle": "Questions of transport",
+      "source": "JSTOR",
+      "title": "Questions of transport: reading Primo Levi reading Dante",
+      "title-short": "Questions of transport",
+      "URL": "https://www.jstor.org/stable/41403188",
+      "volume": "64",
+      "author": [
+        {
+          "family": "Goldman",
+          "given": "Anne"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            3,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2010"
+          ]
+        ],
+        "season": "spring"
+      }
+    },
+    {
+      "id": "6188419/W9C6PANN",
+      "type": "chapter",
+      "citation-key": "poeMasqueRedDeath1902",
+      "container-title": "The complete works of Edgar Allan Poe",
+      "language": "en",
+      "license": "MLA9 5.101",
+      "number-of-volumes": "17",
+      "page": "250–258",
+      "publisher": "Thomas Y. Crowell",
+      "publisher-place": "New York",
+      "title": "The masque of the red death",
+      "URL": "https://hdl.handle.net/2027/coo.31924079574368",
+      "volume": "4",
+      "author": [
+        {
+          "family": "Poe",
+          "given": "Edgar Allan"
+        }
+      ],
+      "collection-editor": [
+        {
+          "family": "Harrison",
+          "given": "James A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            3,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1902
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/4KNGAPRT",
+      "type": "entry-encyclopedia",
+      "citation-key": "bergerClimateModelSimulations2002",
+      "collection-number": "23",
+      "collection-title": "World Environmental Issues",
+      "container-title": "Encyclopedia of global environmental change",
+      "edition": "2",
+      "ISBN": "978-1-78034-286-3",
+      "language": "en",
+      "license": "MLA9 5.44",
+      "note": "OCLC: 947256329\nvolume-title: The Earth system: physical and chemical dimensions of global environmental change",
+      "number-of-volumes": "5",
+      "page": "296–301",
+      "publisher": "John Wiley",
+      "publisher-place": "New York",
+      "shortTitle": "Climate model simulations",
+      "source": "Open WorldCat",
+      "title": "Climate model simulations of the geological past",
+      "title-short": "Climate model simulations",
+      "volume": "1",
+      "author": [
+        {
+          "family": "Berger",
+          "given": "André"
+        }
+      ],
+      "editor": [
+        {
+          "family": "MacCracken",
+          "given": "Michael C."
+        },
+        {
+          "family": "Perry",
+          "given": "John S."
+        }
+      ],
+      "collection-editor": [
+        {
+          "family": "Munn",
+          "given": "Ted"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2002
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/WS6HWM9M",
+      "type": "article-journal",
+      "citation-key": "bockelmanBuenosAiresBoheme2016",
+      "container-title": "Modernism/modernity",
+      "DOI": "10.1353/mod.2016.0011",
+      "ISSN": "1080-6601",
+      "issue": "1",
+      "journalAbbreviation": "Mod./mod.",
+      "language": "en",
+      "license": "MLA9 5.93",
+      "page": "37-63",
+      "shortTitle": "Buenos Aires <i>Bohème</i>",
+      "source": "Project Muse",
+      "title": "Buenos Aires <i>Bohème</i>: Argentina and the Transatlantic Bohemian Renaissance, 1890–1910",
+      "title-short": "Buenos Aires <i>Bohème</i>",
+      "URL": "https://muse.jhu.edu/article/609692",
+      "volume": "23",
+      "author": [
+        {
+          "family": "Bockelman",
+          "given": "Brian"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            3,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2016"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/8RQ9I6EH",
+      "type": "book",
+      "citation-key": "bauerKafkaUndPrag1971",
+      "language": "de",
+      "license": "MLA9 5.122",
+      "note": "Open Library ID: OL18439980M\nissued: 1971?",
+      "number-of-pages": "190",
+      "publisher": "Belser",
+      "publisher-place": "Stuttgart",
+      "source": "The Open Library",
+      "title": "Kafka und Prag",
+      "author": [
+        {
+          "family": "Bauer",
+          "given": "Johann"
+        }
+      ]
+    },
+    {
+      "id": "6188419/S5L2RA4P",
+      "type": "book",
+      "abstract": "Mexican Literature in Theory is the first book in any language to engage post-independence Mexican literature from the perspective of current debates in literary and cultural theory. It brings together scholars whose work is defined both by their innovations in the study of Mexican literature and by the theoretical sophistication of their scholarship. Mexican Literature in Theory provides the reader with two contributions. First, it is one of the most complete accounts of Mexican literature available, covering both canonical texts as well as the most important works in contemporary production. Second, each one of the essays is in itself an important contribution to the elucidation of specific texts. Scholars and students in fields such as Latin American studies, comparative literature and literary theory will find in this book compelling readings of literature from a theoretical perspective, methodological suggestions as to how to use current theory in the study of literature, and important debates and revisions of major theoretical works through the lens of Mexican literary works",
+      "call-number": "PQ7154 .M485 2018",
+      "citation-key": "sanchezpradoMexicanLiteratureTheory2018",
+      "ISBN": "978-1-5013-3251-7",
+      "language": "en",
+      "license": "MLA9 5.3",
+      "note": "OCLC: ocn987796557",
+      "number-of-pages": "305",
+      "publisher": "Bloomsbury",
+      "publisher-place": "New York",
+      "source": "Library of Congress ISBN",
+      "title": "Mexican literature in theory",
+      "editor": [
+        {
+          "family": "Sánchez Prado",
+          "given": "Ignacio M."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/BIA8ZGPR",
+      "type": "document",
+      "title": "Includes index"
+    },
+    {
+      "id": "6188419/ZTCVJSA4",
+      "type": "document",
+      "title": "v. 1. The Middle Ages / Donaldson/David. The sixteenth century / Smith/Lewalski"
+    },
+    {
+      "id": "6188419/VUS5895Y",
+      "type": "document",
+      "title": "volume-titles-multivolume-works",
+      "URL": "https://style.mla.org/volume-titles-multivolume-works/",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            3,
+            14
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/IDJRIWGU",
+      "type": "document",
+      "title": "Laura Torres-Rodríguez -- Ana Sabau -- José Ramón Ruisánchez Serra -- I"
+    }
+  ]
+}

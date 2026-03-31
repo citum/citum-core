@@ -1,0 +1,288 @@
+{
+  "items": [
+    {
+      "id": "6188419/2WPIDEMQ",
+      "type": "article-journal",
+      "abstract": "A major challenge in agriculture is the low nitrogen (N) uptake efficiency of crops, which poses environmental and economic costs. Root adaptive architectural and anatomical phenotypes in synergy with root microbes could be a promising approach to improve plant N uptake. However, little is known about such synergies. Here, we aimed to characterize the spatial distribution of the root prokaryotes of maize (Zea mays) under low N in 30-L mesocosms, where root architecture and anatomy are freely expressed, searching for correlations between prokaryotic genus abundance and ten phenotypes.We studied the root prokaryotic community of 4-week-old plants growing in 30-L mesocosms under low N using two sandy soil mixtures. We collected root, rhizosphere and bulk soil samples at various locations, including depths (0–20, 20–70, 70–150 cm), root classes (lateral and axial) and root types (seminal and crown). We measured plant growth response to low N availability and performed 16S rRNA gene metabarcoding on extracted DNA.Sampling location was the third most important factor after soil mixture and compartment, explaining ∼5 % of the variance in root prokaryotic diversity. Seminal roots (0–20 cm depth), shallow crown roots (0–20 cm) and deep crown roots (20–150 cm) showed well-separated root microbial communities. Lateral root branching density (LRBD) explained 10 % of this variance in the rhizosphere and the root tissue. We identified prokaryotic genera specific to depth, soil–root compartment, root class and type under LN. Moreover, architectural phenotypes LRBD and lateral root length significantly correlated with the abundance of 37 genera. We highlight the importance of sampling location and architectural traits that may be associated with the microbial cycling of soil N. The exploration of synergies between root traits and microbes that participate in the N cycle has the potential to increase sustainability in agriculture.",
+      "citation-key": "galindo-castanedaLocatingMicrobesMaize2025",
+      "container-title": "Annals of Botany",
+      "DOI": "10.1093/aob/mcaf185",
+      "ISSN": "0305-7364",
+      "issue": "5-6",
+      "journalAbbreviation": "Ann. Bot.",
+      "language": "en",
+      "license": "Creative Commons Attribution",
+      "note": "citation-number: 5\nissued: 2025-10/2025-11\nvolume-title: Stress physiology of root systems",
+      "page": "1143-1162",
+      "PMID": "40796154",
+      "PMCID": "PMC12682841",
+      "publisher": "Oxford University Press",
+      "shortTitle": "Locating the microbes",
+      "source": "Oxford Academic",
+      "title": "Locating the microbes along the maize root system under nitrogen limitation: a root phenotypic approach",
+      "title-short": "Locating the microbes",
+      "URL": "https://academic.oup.com/aob/article/136/5-6/1143/8231684",
+      "volume": "136",
+      "author": [
+        {
+          "family": "Galindo-Castañeda",
+          "given": "Tania"
+        },
+        {
+          "family": "Kost",
+          "given": "Elena"
+        },
+        {
+          "family": "Giuliano",
+          "given": "Elena"
+        },
+        {
+          "family": "Conz",
+          "given": "Rafaela Feola"
+        },
+        {
+          "family": "Six",
+          "given": "Johan"
+        },
+        {
+          "family": "Hartmann",
+          "given": "Martin"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Schneider",
+          "given": "Hannah M."
+        },
+        {
+          "family": "Vetterlein",
+          "given": "Doris"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2026,
+            1,
+            17
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/F8XQVI35",
+      "type": "article-journal",
+      "abstract": "This article presents a practical roadmap for scholarly data repositories to implement data citation in accordance with the Joint Declaration of Data Citation Principles, a synopsis and harmonization of the recommendations of major science policy bodies. The roadmap was developed by the Repositories Expert Group, as part of the Data Citation Implementation Pilot (DCIP) project, an initiative of FORCE11.org and the NIH-funded BioCADDIE (https://biocaddie.org) project. The roadmap makes 11 specific recommendations, grouped into three phases of implementation: a) required steps needed to support the Joint Declaration of Data Citation Principles, b) recommended steps that facilitate article/data publication workflows, and c) optional steps that further improve data citation support provided by data repositories. We describe the early adoption of these recommendations 18 months after they have first been published, looking specifically at implementations of machine-readable metadata on dataset landing pages.",
+      "citation-key": "fennerDataCitationRoadmap2019",
+      "container-title": "Scientific Data",
+      "DOI": "10.1038/s41597-019-0031-8",
+      "ISSN": "2052-4463",
+      "journalAbbreviation": "Sci. Data",
+      "language": "en",
+      "license": "Creative Commons Attribution",
+      "note": "citation-number: 4\nnumber: 28",
+      "PMID": "30971690",
+      "PMCID": "PMC6472386",
+      "publisher": "Nature Publishing Group",
+      "shortTitle": "Data citation roadmap",
+      "source": "Nature",
+      "title": "A data citation roadmap for scholarly data repositories",
+      "title-short": "Data citation roadmap",
+      "URL": "https://www.nature.com/articles/s41597-019-0031-8",
+      "volume": "6",
+      "author": [
+        {
+          "family": "Fenner",
+          "given": "Martin"
+        },
+        {
+          "family": "Crosas",
+          "given": "Mercè"
+        },
+        {
+          "family": "Grethe",
+          "given": "Jeffrey S."
+        },
+        {
+          "family": "Kennedy",
+          "given": "David"
+        },
+        {
+          "family": "Hermjakob",
+          "given": "Henning"
+        },
+        {
+          "family": "Rocca-Serra",
+          "given": "Phillippe"
+        },
+        {
+          "family": "Durand",
+          "given": "Gustavo"
+        },
+        {
+          "family": "Berjon",
+          "given": "Robin"
+        },
+        {
+          "family": "Karcher",
+          "given": "Sebastian"
+        },
+        {
+          "family": "Martone",
+          "given": "Maryann"
+        },
+        {
+          "family": "Clark",
+          "given": "Tim"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            3,
+            31
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2019,
+            4,
+            10
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/R7DV3PCJ",
+      "type": "book",
+      "abstract": "This edited work critically analyses developments in European Political Economy and their effects on the continental European economies. Leading political economists from Europe and the United States consider how the influential 'Varieties of Capitalism' approach can help us understand these challenges",
+      "call-number": "HC240 .B455 2007",
+      "citation-key": "hanckeVarietiesCapitalismConflict2007",
+      "ISBN": "978-0-19-920648-3 978-0-19-170971-5",
+      "language": "en",
+      "note": "citation-number: 1\nDOI: 10.1093/acprof:oso/9780199206483.001.0001",
+      "number-of-pages": "438",
+      "publisher": "Oxford University Press",
+      "publisher-place": "Oxford",
+      "shortTitle": "Beyond varieties of capitalism",
+      "source": "Oxford Academic",
+      "title": "Beyond varieties of capitalism: conflict, contradictions, and complementarities in the European economy",
+      "title-short": "Beyond varieties of capitalism",
+      "URL": "https://academic.oup.com/book/5397",
+      "editor": [
+        {
+          "family": "Hancké",
+          "given": "Bob"
+        },
+        {
+          "family": "Rhodes",
+          "given": "Martin"
+        },
+        {
+          "family": "Thatcher",
+          "given": "Mark"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            10,
+            19
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2007
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/V7QISX44",
+      "type": "chapter",
+      "abstract": "When and why have employers supported the development of institutions of social insurance that provide benefits to workers for various employment‐related risks in the areas of unemployment insurance, accident insurance, and early retirement? This paper challenges the dominant explanations of welfare state development premised on the assumption of business opposition to social insurance. It examines the conditions under which firms support the introduction of a new social policy and specifies the most important variables explaining the variation in the social policy preferences of employers. The model is tested in three episodes of social policy development in Germany, relying on a collection of archival sources and policy documents submitted by business associations to bureaucratic and parliamentary commissions.",
+      "call-number": "HB501 .V355 2001",
+      "citation-key": "maresFirmsWelfareState2001",
+      "container-title": "Varieties of capitalism: the institutional foundations of comparative advantage",
+      "DOI": "10.1093/0199247757.003.0005",
+      "ISBN": "978-0-19-924775-2 978-0-19-159634-6",
+      "language": "en",
+      "note": "chapter-number: 5\ncitation-number: 3",
+      "page": "184-212",
+      "publisher": "Oxford University Press",
+      "publisher-place": "Oxford",
+      "shortTitle": "Firms and the welfare state",
+      "source": "Oxford Academic",
+      "title": "Firms and the welfare state: when, why, and how does social policy matter to employers?",
+      "title-short": "Firms and the welfare state",
+      "URL": "https://academic.oup.com/book/301/chapter/134896619",
+      "author": [
+        {
+          "family": "Mares",
+          "given": "Isabela"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Hall",
+          "given": "Peter A."
+        },
+        {
+          "family": "Soskice",
+          "given": "David"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2026,
+            1,
+            7
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2001,
+            8,
+            30
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/C6EI5WZ3",
+      "type": "webpage",
+      "citation-key": "CSLSearchExample2012",
+      "container-title": "Citation style editor",
+      "language": "en",
+      "note": "citation-number: 2",
+      "publisher": "Citation Style Language",
+      "title": "CSL search by example",
+      "URL": "https://editor.citationstyles.org/searchByExample/",
+      "accessed": {
+        "date-parts": [
+          [
+            2012,
+            12,
+            15
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2012
+          ]
+        ]
+      }
+    }
+  ]
+}
