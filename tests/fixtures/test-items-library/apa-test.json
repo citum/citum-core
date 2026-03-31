@@ -1,0 +1,2801 @@
+{
+  "items": [
+    {
+      "id": "6188419/EH96INUV",
+      "type": "broadcast",
+      "citation-key": "guest39PodcastEpisode2018",
+      "language": "en",
+      "medium": "Podcast",
+      "note": "Genre: Podcast episode\nContainer title: Podcast title",
+      "number": "12",
+      "title": "39 Podcast episode",
+      "URL": "https://example.com",
+      "guest": [
+        {
+          "family": "Guest",
+          "given": "Ginny"
+        }
+      ],
+      "contributor": [
+        {
+          "family": "Contributor",
+          "given": "Corinne"
+        }
+      ],
+      "producer": [
+        {
+          "family": "Producer",
+          "given": "Penny"
+        }
+      ],
+      "author": [
+        {
+          "family": "Host",
+          "given": "Hanna"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/EXH75ZYC",
+      "type": "broadcast",
+      "citation-key": "guest40PodcastSeries2018",
+      "language": "en",
+      "medium": "Podcast",
+      "note": "Genre: Podcast series",
+      "title": "40 Podcast series",
+      "URL": "https://example.com",
+      "guest": [
+        {
+          "family": "Guest",
+          "given": "Ginny"
+        }
+      ],
+      "contributor": [
+        {
+          "family": "Contributor",
+          "given": "Corinne"
+        }
+      ],
+      "producer": [
+        {
+          "family": "Producer",
+          "given": "Penny"
+        }
+      ],
+      "author": [
+        {
+          "family": "Host",
+          "given": "Hanna"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/77T78L85",
+      "type": "article-journal",
+      "citation-key": "wiernikPeriodicalTitle2010",
+      "language": "en",
+      "note": "Issued: 2010//2015\ntype: periodical",
+      "title": "Periodical title",
+      "volume": "20–25",
+      "editor": [
+        {
+          "family": "Wiernik",
+          "given": "Brenton M."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Tadié",
+          "given": "Jean-Yves"
+        }
+      ]
+    },
+    {
+      "id": "6188419/9V6BEVKS",
+      "type": "article-journal",
+      "abstract": "Abstract",
+      "citation-key": "bookreviewer13BookReview2014",
+      "container-title": "Journal of Book Reviews",
+      "DOI": "10.1234/567890",
+      "issue": "1",
+      "journalAbbreviation": "J. Book Rev.",
+      "language": "en",
+      "note": "Medium: Medium",
+      "page": "45-47",
+      "title": "13. Book review without reviewed title",
+      "volume": "23",
+      "author": [
+        {
+          "family": "Book Reviewer",
+          "given": "Alice"
+        }
+      ],
+      "reviewed-author": [
+        {
+          "family": "Reviewed Book Author",
+          "given": "Joe"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2014
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/CFXQP9N6",
+      "type": "dataset",
+      "citation-key": "author2013",
+      "DOI": "10.1234/5678",
+      "genre": "Untitled dataset",
+      "language": "en",
+      "version": "2.1",
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/8DA2WGMZ",
+      "type": "article-journal",
+      "citation-key": "author12JournalArticle2013",
+      "container-title": "Journal Title",
+      "ISSN": "0000-0000",
+      "issue": "5",
+      "journalAbbreviation": "J. Title",
+      "language": "en",
+      "note": "medium: special format\nvolume-title: How to enter items in Zotero",
+      "page": "1-100",
+      "shortTitle": "Title of article",
+      "title": "12. Journal article",
+      "title-short": "Title of article",
+      "volume": "32",
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "Third A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/3B7U369Y",
+      "type": "article-journal",
+      "citation-key": "author11JournalArticle2013",
+      "container-title": "Journal Title",
+      "ISSN": "0000-0000",
+      "issue": "5",
+      "journalAbbreviation": "J. Title",
+      "language": "en",
+      "note": "medium: special format\nvolume-title: How to enter items in Zotero",
+      "page": "1-100",
+      "shortTitle": "Title of article",
+      "title": "11. Journal article",
+      "title-short": "Title of article",
+      "URL": "http://example.com",
+      "volume": "32",
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "Third A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/VSB72Z9Y",
+      "type": "paper-conference",
+      "citation-key": "author57PresentationMisentered2013",
+      "DOI": "10.1234/5678",
+      "event-title": "Conference name",
+      "language": "en",
+      "title": "57 Presentation misentered as conference paper",
+      "URL": "http://example.com",
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2013",
+            10,
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/5CL39YMK",
+      "type": "manuscript",
+      "citation-key": "author52Manuscript2013",
+      "genre": "Unpublished manuscript",
+      "language": "en",
+      "publisher-place": "Place, ST",
+      "title": "52 Manuscript",
+      "URL": "http://example.com",
+      "contributor": [
+        {
+          "family": "Editor",
+          "given": "S. S."
+        },
+        {
+          "family": "Editor",
+          "given": "S. S."
+        }
+      ],
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/H735CI3Q",
+      "type": "song",
+      "citation-key": "performer3AudioTrack2018",
+      "language": "en",
+      "medium": "CD",
+      "note": "Container Title: Album title\nnumber: Album catalog number\nchapter-number: Track number",
+      "number-of-volumes": "3",
+      "publisher": "Label",
+      "publisher-place": "New York, NY",
+      "title": "3 Audio track on an album",
+      "volume": "1",
+      "author": [
+        {
+          "family": "Performer",
+          "given": "Allen"
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "Tom"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/W8PBB829",
+      "type": "broadcast",
+      "citation-key": "director35TVEpisode2018",
+      "container-title": "Program title",
+      "language": "en",
+      "medium": "DVD",
+      "note": "Genre: television episode",
+      "number": "12",
+      "publisher": "Network",
+      "publisher-place": "Place",
+      "title": "35 TV episode",
+      "author": [
+        {
+          "family": "Director",
+          "given": "Donald"
+        }
+      ],
+      "executive-producer": [
+        {
+          "family": "Jones",
+          "given": "P. T."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/QUB9VPFI",
+      "type": "speech",
+      "citation-key": "author33ConferencePresentation2013",
+      "container-title": "Session title",
+      "event-title": "Society for Industrial and Organizational Psychology conference",
+      "genre": "Symposium",
+      "language": "en",
+      "note": "type: event",
+      "publisher-place": "City, ST",
+      "title": "33 Conference presentation is a session",
+      "URL": "http://www.example.com",
+      "author": [
+        {
+          "family": "Author",
+          "given": "First"
+        }
+      ],
+      "chair": [
+        {
+          "family": "Chair",
+          "given": "First"
+        },
+        {
+          "family": "Chair",
+          "given": "Second"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2013",
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/APNNGKBJ",
+      "type": "speech",
+      "citation-key": "author34ConferencePresentation2013",
+      "event-title": "Society for Industrial and Organizational Psychology conference",
+      "genre": "Paper",
+      "language": "en",
+      "publisher-place": "City, ST",
+      "title": "34 Conference presentation",
+      "URL": "http://www.example.com",
+      "author": [
+        {
+          "family": "Author",
+          "given": "First"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2013",
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/ZVQ5NJII",
+      "type": "personal_communication",
+      "citation-key": "author62Email2018",
+      "language": "en",
+      "note": "genre: email",
+      "title": "62 Email",
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "recipient": [
+        {
+          "family": "Recipient",
+          "given": "Second B."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            15
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/4JYXEPMY",
+      "type": "chapter",
+      "citation-key": "author27aBookChapter2013",
+      "DOI": "10.1234/5678",
+      "edition": "2",
+      "language": "en",
+      "note": "original-title: Original title\ncontainer-title-short: Title of book",
+      "number-of-volumes": "3",
+      "page": "123-128",
+      "publisher": "Publisher",
+      "publisher-place": "Place, ST",
+      "title": "27a Book chapter",
+      "URL": "http://example.com",
+      "volume": "2",
+      "translator": [
+        {
+          "family": "Editor",
+          "given": "S. S."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "S. S."
+        }
+      ],
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      },
+      "original-date": {
+        "date-parts": [
+          [
+            1901
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/85XCHAVQ",
+      "type": "report",
+      "citation-key": "26Report2016",
+      "genre": "Technical report",
+      "language": "en",
+      "note": "Medium: Format",
+      "number": "12345",
+      "publisher": "Publisher",
+      "publisher-place": "City, ST",
+      "shortTitle": "Title of a chapter in a report",
+      "title": "26 Report",
+      "title-short": "Title of a chapter in a report",
+      "URL": "https://example.com",
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2016
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/9AN52IBS",
+      "type": "article-journal",
+      "citation-key": "author10JournalArticle2013",
+      "container-title": "Journal Title",
+      "DOI": "10.1234/56789",
+      "ISSN": "0000-0000",
+      "issue": "5",
+      "journalAbbreviation": "J. Title",
+      "language": "en",
+      "note": "medium: special format\nvolume-title: How to enter items in Zotero",
+      "page": "1-100",
+      "shortTitle": "Title of article",
+      "title": "10. Journal article",
+      "title-short": "Title of article",
+      "URL": "http://example.com",
+      "volume": "32",
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "Third A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/JKHE6SZ5",
+      "type": "song",
+      "citation-key": "performer1AudioTrack2018",
+      "language": "en",
+      "medium": "CD",
+      "note": "Container Title: Album title\nnumber: Album catalog number\nchapter-number: Track number",
+      "number-of-volumes": "3",
+      "publisher": "Label",
+      "publisher-place": "New York, NY",
+      "title": "1 Audio track on an album",
+      "volume": "1",
+      "author": [
+        {
+          "family": "Performer",
+          "given": "Allen"
+        }
+      ],
+      "composer": [
+        {
+          "family": "Composer",
+          "given": "Allen"
+        },
+        {
+          "family": "Composer",
+          "given": "Berry"
+        },
+        {
+          "family": "Composer",
+          "given": "Collin"
+        }
+      ],
+      "original-author": [
+        {
+          "family": "Songwriter",
+          "given": "Sally"
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "Tom"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/C6YQIHGM",
+      "type": "song",
+      "citation-key": "performer4RecordingWhole2018",
+      "language": "en",
+      "medium": "CD",
+      "note": "number: Album catalog number",
+      "number-of-volumes": "3",
+      "publisher": "Label",
+      "publisher-place": "New York, NY",
+      "title": "4 Recording or whole album",
+      "volume": "1",
+      "author": [
+        {
+          "family": "Performer",
+          "given": "Allen"
+        }
+      ],
+      "composer": [
+        {
+          "family": "Composer",
+          "given": "Allen"
+        },
+        {
+          "family": "Composer",
+          "given": "Berry"
+        },
+        {
+          "family": "Composer",
+          "given": "Collin"
+        }
+      ],
+      "original-author": [
+        {
+          "family": "Songwriter",
+          "given": "Sally"
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "Tom"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/V7W8TBT2",
+      "type": "song",
+      "citation-key": "performer2AudioTrack2018",
+      "language": "en",
+      "medium": "CD",
+      "note": "Container Title: Album title\nnumber: Album catalog number\nchapter-number: Track number",
+      "number-of-volumes": "3",
+      "publisher": "Label",
+      "publisher-place": "New York, NY",
+      "title": "2 Audio track on an album",
+      "volume": "1",
+      "author": [
+        {
+          "family": "Performer",
+          "given": "Allen"
+        }
+      ],
+      "original-author": [
+        {
+          "family": "Songwriter",
+          "given": "Sally"
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "Tom"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/RYT8J733",
+      "type": "report",
+      "citation-key": "chapter24ChapterReport2016",
+      "genre": "Technical report",
+      "language": "en",
+      "note": "container-title: Report title",
+      "number": "12345",
+      "page": "126-145",
+      "publisher": "Publisher",
+      "publisher-place": "City, ST",
+      "shortTitle": "Title of a chapter in a report",
+      "title": "24 Chapter in a report",
+      "title-short": "Title of a chapter in a report",
+      "URL": "https://example.com",
+      "author": [
+        {
+          "family": "Chapter",
+          "given": "Author M., Jr."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "First A."
+        },
+        {
+          "family": "Editor",
+          "given": "Second"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2016
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/BGZXFJF6",
+      "type": "book",
+      "citation-key": "editor22BookOnly2018",
+      "edition": "2",
+      "language": "en",
+      "note": "Illustrator: Illustrator || Ivan I.",
+      "number-of-pages": "123",
+      "number-of-volumes": "3",
+      "publisher": "Publisher",
+      "publisher-place": "Place",
+      "title": "22 Book with only illustrator",
+      "URL": "https://example.com",
+      "volume": "1",
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "Ellen E."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "Terrance T."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/EZ32JBK5",
+      "type": "article-journal",
+      "abstract": "Abstract",
+      "citation-key": "bookreviewer14BookReview2014",
+      "container-title": "Journal of Book Reviews",
+      "DOI": "10.1234/567890",
+      "issue": "1",
+      "journalAbbreviation": "J. Book Rev.",
+      "language": "en",
+      "note": "Reviewed title: Book being reviewed\nMedium: Medium\nGenre: Type",
+      "page": "45-47",
+      "title": "14 Book review with reviewed title",
+      "volume": "23",
+      "author": [
+        {
+          "family": "Book Reviewer",
+          "given": "Alice"
+        }
+      ],
+      "reviewed-author": [
+        {
+          "family": "Reviewed Book Author",
+          "given": "Joe"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2014
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/DGX4HLTK",
+      "type": "song",
+      "citation-key": "performer5RecordingWhole2018",
+      "language": "en",
+      "medium": "CD",
+      "note": "number: Album catalog number",
+      "number-of-volumes": "3",
+      "publisher": "Label",
+      "publisher-place": "New York, NY",
+      "title": "5 Recording or whole album",
+      "volume": "1",
+      "author": [
+        {
+          "family": "Performer",
+          "given": "Allen"
+        }
+      ],
+      "original-author": [
+        {
+          "family": "Songwriter",
+          "given": "Sally"
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "Tom"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/VWXSICVZ",
+      "type": "book",
+      "citation-key": "author19Book2018",
+      "DOI": "10.1234/567890",
+      "edition": "2",
+      "language": "en",
+      "medium": "format",
+      "note": "Genre: type\npart-number: 2",
+      "number-of-pages": "123",
+      "number-of-volumes": "3",
+      "publisher": "Publisher",
+      "publisher-place": "Place",
+      "title": "19 Book",
+      "volume": "1",
+      "author": [
+        {
+          "family": "Author",
+          "given": "Allen A."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "Ellen E."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "Terrance T."
+        }
+      ],
+      "collection-editor": [
+        {
+          "family": "Editor",
+          "given": "Stephen"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/L6DUFI6Y",
+      "type": "article-newspaper",
+      "citation-key": "author18NewspaperArticle2018",
+      "container-title": "Newspaper Title",
+      "edition": "evening",
+      "ISSN": "0000-0000",
+      "language": "en",
+      "note": "medium: Special format\ngenre: Type",
+      "page": "1-100",
+      "publisher-place": "Place",
+      "section": "2",
+      "shortTitle": "Title of article",
+      "title": "18 Newspaper article",
+      "title-short": "Title of article",
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "Third A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/389M98AT",
+      "type": "article-newspaper",
+      "citation-key": "author17NewspaperArticle2018",
+      "container-title": "Newspaper Title",
+      "edition": "evening",
+      "ISSN": "0000-0000",
+      "language": "en",
+      "note": "medium: Special format\ngenre: Type",
+      "page": "1-100",
+      "publisher-place": "place",
+      "section": "2",
+      "shortTitle": "Title of article",
+      "title": "17 Newspaper article",
+      "title-short": "Title of article",
+      "URL": "http://example.com",
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "Third A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/BXMWCMVJ",
+      "type": "article-magazine",
+      "citation-key": "author15MagazineArticle2018",
+      "container-title": "Journal Title",
+      "ISSN": "0000-0000",
+      "issue": "5",
+      "language": "en",
+      "note": "medium: special format\ngenre: type\nsection: department",
+      "page": "1-100",
+      "shortTitle": "Title of article",
+      "title": "15 Magazine article",
+      "title-short": "Title of article",
+      "URL": "http://example.com",
+      "volume": "32",
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "Third A."
+        }
+      ],
+      "contributor": [
+        {
+          "family": "Editor",
+          "given": "Ellen"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/2QW9ZWX5",
+      "type": "song",
+      "citation-key": "performer6RecordingWhole2018",
+      "language": "en",
+      "medium": "CD",
+      "note": "number: Album catalog number",
+      "number-of-volumes": "3",
+      "publisher": "Label",
+      "publisher-place": "New York, NY",
+      "title": "6 Recording or whole album",
+      "volume": "1",
+      "author": [
+        {
+          "family": "Performer",
+          "given": "Allen"
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "Tom"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/SNQ7E2V4",
+      "type": "report",
+      "citation-key": "chapter23ChapterReport2016",
+      "genre": "Technical report",
+      "language": "en",
+      "note": "container-title: Report title",
+      "number": "12345",
+      "page": "126-145",
+      "publisher": "Publisher",
+      "publisher-place": "City, ST",
+      "shortTitle": "Title of a chapter in a report",
+      "title": "23 Chapter in a report",
+      "title-short": "Title of a chapter in a report",
+      "author": [
+        {
+          "family": "Chapter",
+          "given": "Author M., Jr."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "First A."
+        },
+        {
+          "family": "Editor",
+          "given": "Second"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2016
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/YPT3RZQN",
+      "type": "software",
+      "citation-key": "programmer32Software2018",
+      "publisher": "Company",
+      "publisher-place": "Place",
+      "title": "32 Software",
+      "URL": "https://example.com",
+      "version": "12.0",
+      "author": [
+        {
+          "family": "Programmer",
+          "given": "Allen A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/2PU2C6AQ",
+      "type": "chapter",
+      "citation-key": "editor28BookChapter2013",
+      "container-title": "Title of book: a subtitle",
+      "edition": "2",
+      "language": "en",
+      "note": "original-title: Original title\ncontainer-title-short: Title of book",
+      "number-of-volumes": "3",
+      "page": "123-128",
+      "publisher": "Publisher",
+      "publisher-place": "Place, ST",
+      "title": "28 Book chapter",
+      "volume": "2",
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "S. S."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "S. S."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      },
+      "original-date": {
+        "date-parts": [
+          [
+            1901
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/7TKDNA94",
+      "type": "book",
+      "citation-key": "author20BookIllustrator2018",
+      "edition": "2",
+      "language": "en",
+      "note": "Illustrator: Illustrator || Ivan I.\npart-number: bk. 2",
+      "number-of-pages": "123",
+      "number-of-volumes": "3",
+      "publisher": "Publisher",
+      "publisher-place": "Place",
+      "title": "20 Book with illustrator",
+      "URL": "https://example.com",
+      "volume": "1",
+      "author": [
+        {
+          "family": "Author",
+          "given": "Allen A."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "Ellen E."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "Terrance T."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/BBHDZPC7",
+      "type": "report",
+      "archive": "Archive",
+      "archive_location": "Box 123",
+      "citation-key": "chapter25aReport2016",
+      "genre": "Technical report",
+      "language": "en",
+      "number": "12345",
+      "publisher": "Publisher",
+      "publisher-place": "City, ST",
+      "shortTitle": "Title of a chapter in a report",
+      "title": "25a Report",
+      "title-short": "Title of a chapter in a report",
+      "author": [
+        {
+          "family": "Chapter",
+          "given": "Author M., Jr."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "First A."
+        },
+        {
+          "family": "Editor",
+          "given": "Second"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2016
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/USS5KVZP",
+      "type": "software",
+      "citation-key": "programmer31Software2018",
+      "medium": "Format",
+      "publisher": "Company",
+      "publisher-place": "Place",
+      "title": "31 Software",
+      "URL": "https://example.com",
+      "version": "12.0",
+      "author": [
+        {
+          "family": "Programmer",
+          "given": "Allen A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/Q8VPSAP2",
+      "type": "software",
+      "citation-key": "programmer30Software2018",
+      "genre": "Type",
+      "publisher": "Company",
+      "publisher-place": "Place",
+      "title": "30 Software",
+      "URL": "https://example.com",
+      "version": "12.0",
+      "author": [
+        {
+          "family": "Programmer",
+          "given": "Allen A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/DPGN6UZU",
+      "type": "software",
+      "citation-key": "programmer29Software2018",
+      "genre": "Type",
+      "medium": "Format",
+      "publisher": "Company",
+      "publisher-place": "Place",
+      "title": "29 Software",
+      "URL": "https://example.com",
+      "version": "12.0",
+      "author": [
+        {
+          "family": "Programmer",
+          "given": "Allen A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/78ASHCKK",
+      "type": "report",
+      "citation-key": "chapter25Report2016",
+      "genre": "Technical report",
+      "language": "en",
+      "number": "12345",
+      "publisher": "Publisher",
+      "publisher-place": "City, ST",
+      "shortTitle": "Title of a chapter in a report",
+      "title": "25 Report",
+      "title-short": "Title of a chapter in a report",
+      "URL": "https://example.com",
+      "author": [
+        {
+          "family": "Chapter",
+          "given": "Author M., Jr."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "First A."
+        },
+        {
+          "family": "Editor",
+          "given": "Second"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2016
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/ALPB3IQT",
+      "type": "book",
+      "citation-key": "editor21BookAuthor2018",
+      "edition": "2",
+      "language": "en",
+      "number-of-pages": "123",
+      "number-of-volumes": "3",
+      "publisher": "Publisher",
+      "publisher-place": "Place",
+      "title": "21 Book without author",
+      "volume": "1",
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "Allen A."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "Terrance T."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/UCGCCQDL",
+      "type": "article-magazine",
+      "citation-key": "author16MagazineArticle2018",
+      "container-title": "Journal Title",
+      "ISSN": "0000-0000",
+      "issue": "5",
+      "language": "en",
+      "note": "medium: special format\ngenre: type\nsection: department",
+      "page": "1-100",
+      "shortTitle": "Title of article",
+      "title": "16 Magazine article",
+      "title-short": "Title of article",
+      "volume": "32",
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "Third A."
+        }
+      ],
+      "contributor": [
+        {
+          "family": "Editor",
+          "given": "Ellen"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/CVALBFC5",
+      "type": "dataset",
+      "citation-key": "author41Dataset2013",
+      "DOI": "10.1234/5678",
+      "language": "en",
+      "title": "41 Dataset",
+      "version": "2.1",
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/CTN4WQCJ",
+      "type": "broadcast",
+      "citation-key": "director37RadioEpisode2018",
+      "container-title": "Program title",
+      "language": "en",
+      "medium": "DVD",
+      "note": "Genre: Radio episode",
+      "number": "12",
+      "publisher": "Network",
+      "publisher-place": "Place",
+      "title": "37 Radio episode",
+      "URL": "https://example.com",
+      "author": [
+        {
+          "family": "Director",
+          "given": "Donald"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/SQU46STZ",
+      "type": "chapter",
+      "citation-key": "translator28aBookChapter2013",
+      "container-title": "Title of book: a subtitle",
+      "edition": "2",
+      "language": "en",
+      "note": "original-title: Original title\ncontainer-title-short: Title of book",
+      "number-of-volumes": "3",
+      "page": "123-128",
+      "publisher": "Publisher",
+      "publisher-place": "Place, ST",
+      "title": "28a Book chapter",
+      "volume": "2",
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "S. S."
+        }
+      ],
+      "container-author": [
+        {
+          "family": "Creator",
+          "given": "S. S."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      },
+      "original-date": {
+        "date-parts": [
+          [
+            1901
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/JR5ZFMB6",
+      "type": "article",
+      "citation-key": "author8aPreprintPublisher2018",
+      "language": "en",
+      "note": "Medium: Format",
+      "publisher": "PsyArXiv",
+      "publisher-place": "Place",
+      "title": "8a Preprint with publisher and place",
+      "author": [
+        {
+          "family": "Author",
+          "given": "A. A."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "A. A."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "A. A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/6EQY2YI3",
+      "type": "article",
+      "citation-key": "author8PreprintPublisher2018",
+      "language": "en",
+      "note": "Medium: Format",
+      "publisher": "PsyArXiv",
+      "title": "8 Preprint with publisher",
+      "URL": "https://example.com",
+      "author": [
+        {
+          "family": "Author",
+          "given": "A. A."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "A. A."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "A. A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/VSD5C4I5",
+      "type": "broadcast",
+      "citation-key": "director38RadioSeries2018",
+      "language": "en",
+      "medium": "DVD",
+      "note": "Genre: Radio series",
+      "publisher": "Network",
+      "publisher-place": "Place",
+      "title": "38 Radio series",
+      "author": [
+        {
+          "family": "Director",
+          "given": "Donald"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/8F43AV3E",
+      "type": "chapter",
+      "citation-key": "author27bBookChapter2013",
+      "container-title": "Title of book: a subtitle",
+      "DOI": "10.1234/5678",
+      "edition": "2",
+      "language": "en",
+      "note": "original-title: Original title\ncontainer-title-short: Title of book",
+      "number-of-volumes": "3",
+      "page": "123-128",
+      "publisher": "Publisher",
+      "publisher-place": "Place, ST",
+      "title": "27b Book chapter",
+      "URL": "http://example.com",
+      "volume": "2",
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "S. S."
+        }
+      ],
+      "container-author": [
+        {
+          "family": "Creator",
+          "given": "S. S."
+        }
+      ],
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      },
+      "original-date": {
+        "date-parts": [
+          [
+            1901
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/ZVXZI6C6",
+      "type": "broadcast",
+      "citation-key": "director36TVSeries2018",
+      "language": "en",
+      "medium": "DVD",
+      "note": "Genre: television series",
+      "publisher": "Network",
+      "publisher-place": "Place",
+      "title": "36 TV series",
+      "author": [
+        {
+          "family": "Director",
+          "given": "Donald"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/5VSYNLFP",
+      "type": "article",
+      "citation-key": "author9PreprintArchive2018",
+      "language": "en",
+      "note": "Medium: Format",
+      "number": "123445",
+      "publisher": "PsyArXiv",
+      "title": "9 Preprint with archive",
+      "author": [
+        {
+          "family": "Author",
+          "given": "A. A."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "A. A."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "A. A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/2QK89T6V",
+      "type": "chapter",
+      "citation-key": "author27BookChapter2013",
+      "container-title": "Title of book: a subtitle",
+      "DOI": "10.1234/5678",
+      "edition": "2",
+      "language": "en",
+      "note": "original-title: Original title\ncontainer-title-short: Title of book\npart-number: 2",
+      "number-of-volumes": "3",
+      "page": "123-128",
+      "publisher": "Publisher",
+      "publisher-place": "Place, ST",
+      "title": "27 Book chapter",
+      "URL": "http://example.com",
+      "volume": "2",
+      "translator": [
+        {
+          "family": "Editor",
+          "given": "S. S."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "S. S."
+        }
+      ],
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "collection-editor": [
+        {
+          "family": "Editor",
+          "given": "S. E."
+        }
+      ],
+      "container-author": [
+        {
+          "family": "Author",
+          "given": "C."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      },
+      "original-date": {
+        "date-parts": [
+          [
+            1901
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/Y5NXNKFF",
+      "type": "broadcast",
+      "citation-key": "interviewer48RadioInterview2018",
+      "container-title": "Program title",
+      "language": "en",
+      "medium": "DVD",
+      "note": "Genre: Radio episode\nInterviewer: Interviewer || Judith",
+      "number": "12",
+      "publisher": "Network",
+      "publisher-place": "Place",
+      "title": "48 Radio interview",
+      "URL": "https://example.com",
+      "author": [
+        {
+          "family": "Interviewee",
+          "given": "Donald"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/PBLXJ9QR",
+      "type": "graphic",
+      "archive": "Archive",
+      "archive_location": "Box 123",
+      "citation-key": "author47ArtworkPublication2018",
+      "dimensions": "Size",
+      "language": "en",
+      "medium": "Medium",
+      "note": "Container title: Book title\nEditor: Editor || Allen\nGenre: Type\nPublisher: Publisher\nPublisher place: Place",
+      "title": "47 Artwork in publication",
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/EGA6VFVK",
+      "type": "graphic",
+      "archive": "Archive",
+      "archive_location": "Box 123",
+      "citation-key": "author47Artwork2018",
+      "dimensions": "Size",
+      "language": "en",
+      "medium": "Medium",
+      "note": "Genre: Type\nPublisher: Publisher\nPublisher place: Place",
+      "title": "47 Artwork",
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/NJGSLTLN",
+      "type": "entry-dictionary",
+      "citation-key": "author46DictionaryEntry2013",
+      "container-title": "Title of book: a subtitle",
+      "DOI": "10.1234/5678",
+      "edition": "2",
+      "language": "en",
+      "note": "original-date: 1901\noriginal-title: Original title\ncontainer-title-short: Title of book",
+      "number-of-volumes": "3",
+      "page": "123-128",
+      "publisher": "Publisher",
+      "publisher-place": "Place, ST",
+      "title": "46 Dictionary entry",
+      "URL": "http://example.com",
+      "volume": "2",
+      "translator": [
+        {
+          "family": "Editor",
+          "given": "S. S."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "S. S."
+        }
+      ],
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/Q2MWRA2D",
+      "type": "entry-encyclopedia",
+      "citation-key": "author45EncyclopediaEntry2013",
+      "container-title": "Title of book: a subtitle",
+      "DOI": "10.1234/5678",
+      "edition": "2",
+      "language": "en",
+      "note": "original-date: 1901\noriginal-title: Original title\ncontainer-title-short: Title of book",
+      "number-of-volumes": "3",
+      "page": "123-128",
+      "publisher": "Publisher",
+      "publisher-place": "Place, ST",
+      "title": "45 Encyclopedia entry",
+      "URL": "http://example.com",
+      "volume": "2",
+      "translator": [
+        {
+          "family": "Editor",
+          "given": "S. S."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "S. S."
+        }
+      ],
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/S2SZD8ZJ",
+      "type": "article-journal",
+      "citation-key": "author44FigureRepository2013",
+      "container-title": "Repository",
+      "DOI": "10.1234/5678",
+      "journalAbbreviation": "Repository",
+      "language": "en",
+      "note": "type: figure\nversion: 2.1",
+      "title": "44 Figure in a repository or journal",
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/PZ3YA3EI",
+      "type": "article-journal",
+      "citation-key": "author43Figure2013",
+      "DOI": "10.1234/5678",
+      "language": "en",
+      "note": "type: figure\nversion: 2.1",
+      "title": "43 Figure",
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/SVLLB7E7",
+      "type": "interview",
+      "citation-key": "interviewee49RecordedInterview2018",
+      "language": "en",
+      "medium": "DVD",
+      "title": "49 Recorded interview",
+      "URL": "https://example.com",
+      "author": [
+        {
+          "family": "Interviewee",
+          "given": "Donald"
+        }
+      ],
+      "interviewer": [
+        {
+          "family": "Interviewer",
+          "given": "Judith"
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "Third A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/86PDR4PM",
+      "type": "dataset",
+      "citation-key": "author42DatasetRepository2013",
+      "DOI": "10.1234/5678",
+      "language": "en",
+      "note": "Publication Title: Repository",
+      "title": "42 Dataset in a repository",
+      "version": "2.1",
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/UDRZ5C8A",
+      "type": "article",
+      "citation-key": "author7WorkingPaper2018",
+      "DOI": "10/12345",
+      "genre": "working paper",
+      "language": "en",
+      "note": "Medium: Format\nVersion: 2.1",
+      "number": "1234",
+      "publisher": "PsyArXiv",
+      "title": "7 Working paper with version",
+      "author": [
+        {
+          "family": "Author",
+          "given": "A. A."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "A. A."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "A. A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/GA9VRGJC",
+      "type": "motion_picture",
+      "citation-key": "director55aFilm2018",
+      "genre": "Type",
+      "language": "en",
+      "medium": "CD",
+      "publisher": "Studio",
+      "title": "55a Film",
+      "producer": [
+        {
+          "family": "Producer",
+          "given": "Allen"
+        }
+      ],
+      "author": [
+        {
+          "family": "Director",
+          "given": "Allen"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/YB8A6EKK",
+      "type": "manuscript",
+      "citation-key": "author52aManuscript2013",
+      "genre": "Unpublished manuscript",
+      "language": "en",
+      "publisher-place": "Place, ST",
+      "title": "52a Manuscript",
+      "contributor": [
+        {
+          "family": "Editor",
+          "given": "S. S."
+        },
+        {
+          "family": "Editor",
+          "given": "S. S."
+        }
+      ],
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/CLHU2KJ5",
+      "type": "manuscript",
+      "archive": "Archive",
+      "archive_location": "Box 123",
+      "citation-key": "author53ManuscriptArchive2013",
+      "genre": "Ancient manuscript",
+      "language": "en",
+      "note": "Container title: Container",
+      "publisher-place": "Place, ST",
+      "title": "53 Manuscript in archive",
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "Third A."
+        }
+      ],
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/4CRXLSYU",
+      "type": "map",
+      "citation-key": "author50Map2013",
+      "edition": "2",
+      "genre": "Map type",
+      "language": "en",
+      "publisher": "Publisher",
+      "publisher-place": "Place, ST",
+      "scale": "Scale",
+      "title": "50 Map",
+      "URL": "http://example.com",
+      "contributor": [
+        {
+          "family": "Editor",
+          "given": "S. S."
+        },
+        {
+          "family": "Editor",
+          "given": "S. S."
+        }
+      ],
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/IC98IKSD",
+      "type": "webpage",
+      "citation-key": "author58WebPage2018",
+      "container-title": "Website title",
+      "genre": "page type",
+      "language": "en",
+      "note": "part-number: 1\npart-title: Part title\neditor: Editor || A. A.",
+      "title": "58 Web page",
+      "URL": "https://example.com",
+      "author": [
+        {
+          "family": "Author",
+          "given": "A. A."
+        }
+      ],
+      "contributor": [
+        {
+          "family": "Contributor",
+          "given": "A. A."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "A. A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            15
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/2G36L2LR",
+      "type": "paper-conference",
+      "citation-key": "author56ConferencePaper2013",
+      "container-title": "Proceedings",
+      "DOI": "10.1234/5678",
+      "event-title": "Conference name",
+      "language": "en",
+      "note": "event-date: 2010",
+      "page": "123-128",
+      "publisher": "Publisher",
+      "publisher-place": "Place, ST",
+      "title": "56 Conference paper",
+      "URL": "http://example.com",
+      "volume": "2",
+      "translator": [
+        {
+          "family": "Editor",
+          "given": "S. S."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "S. S."
+        }
+      ],
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/IJ7KPC8K",
+      "type": "motion_picture",
+      "citation-key": "director55Film2018",
+      "genre": "Type",
+      "language": "en",
+      "medium": "CD",
+      "publisher": "Studio",
+      "title": "55 Film",
+      "author": [
+        {
+          "family": "Director",
+          "given": "Allen"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/2ER6ASFL",
+      "type": "song",
+      "citation-key": "composer54MusicalScore2018",
+      "language": "en",
+      "note": "type: musical_score",
+      "publisher": "Label",
+      "publisher-place": "New York, NY",
+      "title": "54 Musical score",
+      "composer": [
+        {
+          "family": "Composer",
+          "given": "Allen"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/LDXN97CV",
+      "type": "manuscript",
+      "archive": "Archive",
+      "citation-key": "author53aManuscriptArchive2013",
+      "genre": "Ancient manuscript",
+      "language": "en",
+      "publisher-place": "Place, ST",
+      "title": "53a Manuscript in archive",
+      "translator": [
+        {
+          "family": "Translator",
+          "given": "Third A."
+        }
+      ],
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/N46PX5XT",
+      "type": "map",
+      "citation-key": "author51MapAtlas2013",
+      "edition": "2",
+      "genre": "Map type",
+      "language": "en",
+      "note": "Editor: Editor || Allen\nContainer title: Atlas",
+      "publisher": "Publisher",
+      "publisher-place": "Place, ST",
+      "scale": "Scale",
+      "title": "51 Map in atlas",
+      "URL": "http://example.com",
+      "contributor": [
+        {
+          "family": "Editor",
+          "given": "S. S."
+        },
+        {
+          "family": "Editor",
+          "given": "S. S."
+        }
+      ],
+      "author": [
+        {
+          "family": "Author",
+          "given": "First A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            14
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/5A2IKNKZ",
+      "type": "book",
+      "citation-key": "editor19aBookEditor2018",
+      "DOI": "10.1234/567890",
+      "edition": "2",
+      "language": "en",
+      "medium": "format",
+      "note": "Genre: type",
+      "number-of-pages": "123",
+      "number-of-volumes": "3",
+      "publisher": "Publisher",
+      "publisher-place": "Place",
+      "title": "19a Book with editor/translator",
+      "volume": "1",
+      "editor": [
+        {
+          "family": "Editor",
+          "given": "Ellen E."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Editor",
+          "given": "Ellen E."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/HCFRWJZR",
+      "type": "post",
+      "citation-key": "author60ForumPost2018",
+      "container-title": "Website title",
+      "genre": "Type",
+      "language": "la",
+      "title": "60 Forum post",
+      "URL": "https://example.com",
+      "author": [
+        {
+          "family": "Author",
+          "given": "A. A."
+        }
+      ],
+      "contributor": [
+        {
+          "family": "Editor",
+          "given": "A. A."
+        },
+        {
+          "family": "Translator",
+          "given": "A. A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            15
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/XA2MLUAS",
+      "type": "post-weblog",
+      "citation-key": "author59BlogPost2018",
+      "container-title": "Website title",
+      "genre": "Type",
+      "language": "en",
+      "title": "59 Blog post",
+      "URL": "https://example.com",
+      "author": [
+        {
+          "family": "Author",
+          "given": "A. A."
+        }
+      ],
+      "contributor": [
+        {
+          "family": "Editor",
+          "given": "A. A."
+        },
+        {
+          "family": "Translator",
+          "given": "A. A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            15
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/3R5D7LPV",
+      "type": "thesis",
+      "citation-key": "author61Thesis2018",
+      "genre": "Dissertation",
+      "language": "en",
+      "number-of-pages": "123",
+      "publisher": "University",
+      "publisher-place": "Place",
+      "title": "61 Thesis",
+      "URL": "https://example.com",
+      "author": [
+        {
+          "family": "Author",
+          "given": "Allen A."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2018,
+            7,
+            15
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/DZF52DI3",
+      "type": "document",
+      "title": "Missing ampersand. Need to be able to test for `editortranslator` and/or collap"
+    }
+  ]
+}

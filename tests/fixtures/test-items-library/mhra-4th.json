@@ -1,0 +1,4363 @@
+{
+  "items": [
+    {
+      "id": "6188419/9D8VAXZA",
+      "type": "graphic",
+      "archive": "The Metropolitan Museum of Art",
+      "archive_location": "1979.585.6",
+      "citation-key": "adamsMonolithFaceHalf1974",
+      "dimensions": "496 × 371 mm",
+      "language": "en",
+      "license": "MHRA4 7.9.iii",
+      "medium": "gelatin silver print",
+      "note": "original-date: 1927\nstatus: printed\narchive-place: New York",
+      "title": "Monolith, the face of Half Dome, Yosemite National Park, California",
+      "URL": "https://www.metmuseum.org/art/collection/search/262595",
+      "author": [
+        {
+          "family": "Adams",
+          "given": "Ansel Easton"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2026,
+            1,
+            22
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1974
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/BBDUPIHQ",
+      "type": "book",
+      "call-number": "PR1924 .K4",
+      "citation-key": "kelloggChaucerLanglandArthur1972",
+      "ISBN": "978-0-8135-0683-8",
+      "language": "eng",
+      "license": "MHRA4 7.12",
+      "number-of-pages": "385",
+      "publisher": "Rutgers University Press",
+      "publisher-place": "New Brunswick, NJ",
+      "shortTitle": "Chaucer, Langland, Arthur",
+      "source": "Library of Congress ISBN",
+      "title": "Chaucer, Langland, Arthur: essays in Middle English literature",
+      "title-short": "Chaucer, Langland, Arthur",
+      "URL": "https://archive.org/details/chaucerlanglanda0000kell",
+      "author": [
+        {
+          "family": "Kellogg",
+          "given": "Alfred L."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2026,
+            1,
+            12
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1972
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/EEW6QKXF",
+      "type": "book",
+      "call-number": "PQ6432 .A17 1983",
+      "citation-key": "santillanaInfiernoEnamorados1983",
+      "collection-number": "25, 35",
+      "collection-title": "Colección Clásicos",
+      "ISBN": "978-84-205-0997-6 978-84-205-2011-7",
+      "language": "es",
+      "license": "MHRA4 7.3b.xi",
+      "note": "Pages: 225–258\nBook Title: Poesías completas\navailable-date: 1983/1991",
+      "number-of-volumes": "2",
+      "publisher": "Alhambra",
+      "publisher-place": "Madrid",
+      "source": "Library of Congress ISBN",
+      "title": "Infierno de los enamorados",
+      "URL": "https://www.cervantesvirtual.com/nd/ark:/59851/bmcpk0w3",
+      "volume": "1",
+      "author": [
+        {
+          "family": "Santillana",
+          "given": "Iñigo López de Mendoza"
+        }
+      ],
+      "collection-editor": [
+        {
+          "family": "Pérez Priego",
+          "given": "Miguel Angel"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            12,
+            23
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1983
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/EPKB4ZW4",
+      "type": "chapter",
+      "call-number": "791.430 2330922",
+      "citation-key": "huilletAproposDeathEmpedocles2023a",
+      "collection-number": "14",
+      "collection-title": "Moving image",
+      "container-title": "The cinema of Danièle Huillet and Jean-Marie Straub",
+      "ISBN": "978-1-83954-058-5",
+      "language": "en",
+      "license": "MHRA4 7.11.iii",
+      "medium": "edited transcript of an audio cassette",
+      "note": "interviewer: Petley || Julian\nevent-date: 1990-04-09\nevent-place: Goethe-Institut London\npublisher-place: Cambridge",
+      "page": "196-209",
+      "publisher": "Legenda",
+      "source": "BnF ISBN",
+      "title": "Apropos <i>The death of Empedocles</i> and <i>Black sin</i>",
+      "URL": "https://jstor.org/stable/jj.6852987.16",
+      "author": [
+        {
+          "family": "Huillet",
+          "given": "Danièle"
+        },
+        {
+          "family": "Straub",
+          "given": "Jean–Marie"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Brady",
+          "given": "Martin"
+        },
+        {
+          "family": "Hughes",
+          "given": "Helen"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2023,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/CCKGR73D",
+      "type": "article-journal",
+      "citation-key": "rankine2016a",
+      "container-title": "CLA Journal",
+      "ISSN": "0007-8549",
+      "issue": "1",
+      "journalAbbreviation": "CLA J.",
+      "language": "en",
+      "license": "MHRA4 7.11.ii",
+      "note": "interviewer: Hudson || Jenise\ninterviewer: Price || Janeen\nvolume-title: \"We were not invented yesterday\": conversations on being Black women in the academy",
+      "page": "10-14",
+      "publisher": "College Language Association",
+      "source": "JSTOR",
+      "URL": "https://jstor.org/stable/44325513",
+      "volume": "60",
+      "author": [
+        {
+          "family": "Rankine",
+          "given": "Claudia"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Hudson",
+          "given": "Jenise"
+        },
+        {
+          "family": "Price",
+          "given": "Janeen"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            12,
+            7
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2016
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/CK7U78SE",
+      "type": "article-journal",
+      "citation-key": "mukherjeeNonhumanHauntingQuestion2021",
+      "container-title": "Sanglap",
+      "DOI": "10.35684/JLCI.2021.8103",
+      "ISSN": "23498064",
+      "issue": "1",
+      "journalAbbreviation": "Sanglap",
+      "language": "en",
+      "license": "MHRA4 8.4",
+      "page": "41-59",
+      "source": "DOI.org (Crossref)",
+      "title": "The non-human, haunting and the question of ‘excess’ in Elizabeth Bowen’s “The Demon Lover”",
+      "URL": "https://sanglap-journal.in/index.php/sanglap/article/view/190/318",
+      "volume": "8",
+      "author": [
+        {
+          "family": "Mukherjee",
+          "given": "Paromita"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            6,
+            20
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2021
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/ZMYXQB8K",
+      "type": "article-journal",
+      "abstract": "Purchase online the PDF of Witnessing Mediterranean Migration through a Postcolonial Lens, O'Healy, Áine - Bulzoni - Article",
+      "citation-key": "ohealyWitnessingMediterraneanMigration2019",
+      "container-title": "Imago",
+      "DOI": "10.1400/278443",
+      "issue": "1",
+      "journalAbbreviation": "Imago",
+      "language": "en",
+      "license": "MHRA4 8.4",
+      "page": "105-120",
+      "publisher": "Bulzoni",
+      "source": "www.torrossa.com",
+      "title": "Witnessing mediterranean migration through a postcolonial lens",
+      "URL": "https://www.torrossa.com/en/resources/an/4673707",
+      "volume": "19",
+      "author": [
+        {
+          "family": "O'Healy",
+          "given": "Áine"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            6,
+            20
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2019
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/77INTABA",
+      "type": "book",
+      "call-number": "PN1995.9.E44 O34 2018",
+      "citation-key": "ohealyMigrantAnxietiesItalian2019",
+      "collection-title": "New directions in national cinemas",
+      "ISBN": "978-0-253-03718-3 978-0-253-03717-6",
+      "language": "en",
+      "license": "MHRA4 8.4",
+      "number-of-pages": "255",
+      "publisher": "Indiana University Press",
+      "publisher-place": "Bloomington, Indiana",
+      "shortTitle": "Migrant anxieties",
+      "source": "Library of Congress ISBN",
+      "title": "Migrant anxieties: Italian cinema in a transnational frame",
+      "title-short": "Migrant anxieties",
+      "author": [
+        {
+          "family": "O'Healy",
+          "given": "Áine"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2019
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/NZ2A22NB",
+      "type": "book",
+      "call-number": "841.1",
+      "citation-key": "shortChansonRoland1990",
+      "collection-number": "4524",
+      "collection-title": "Le livre de poche",
+      "ISBN": "978-2-253-05341-5",
+      "language": "fr",
+      "license": "MHRA4 8.3",
+      "publisher": "Librairie générale française",
+      "publisher-place": "Paris",
+      "source": "BnF ISBN",
+      "title": "La chanson de Roland",
+      "editor": [
+        {
+          "family": "Short",
+          "given": "Ian"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1990
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/J6JT3YRM",
+      "type": "book",
+      "citation-key": "hilliardFreethinkersLibertinesSchwarmer2011",
+      "ISBN": "978-0-85457-225-0",
+      "language": "en",
+      "license": "MHRA4 8.3",
+      "publisher": "Institute of Germanic and Romance Studies",
+      "publisher-place": "London",
+      "source": "BnF ISBN",
+      "title": "Freethinkers, libertines and \"Schwärmer\": heterodoxy in German literature, 1750-1800",
+      "author": [
+        {
+          "family": "Hilliard",
+          "given": "K. F."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2011
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/MQH83ISG",
+      "type": "interview",
+      "call-number": "791.430 2330922",
+      "citation-key": "huilletAproposDeathEmpedocles2023",
+      "language": "en",
+      "license": "MHRA4 7.11.iii",
+      "medium": "edited transcript of an audio cassette",
+      "note": "page: 196-209\neditor: Brady || Martin\neditor: Hughes || Helen\ncontainer-title: The cinema of Danièle Huillet and Jean-Marie Straub\ncollection-title: Moving image\ncollection-number: 14\npublisher-place: Cambridge\nISBN: 978-1-83954-058-5\nevent-date: 1990-04-09\nevent-place: Goethe-Institut London",
+      "publisher": "Legenda",
+      "source": "BnF ISBN",
+      "title": "Apropos <i>The death of Empedocles</i> and <i>Black sin</i>",
+      "URL": "https://jstor.org/stable/jj.6852987.16",
+      "interviewer": [
+        {
+          "family": "Petley",
+          "given": "Julian"
+        }
+      ],
+      "author": [
+        {
+          "family": "Huillet",
+          "given": "Danièle"
+        },
+        {
+          "family": "Straub",
+          "given": "Jean–Marie"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2023,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/VYL6RZFE",
+      "type": "song",
+      "citation-key": "caleHallelujah1992",
+      "language": "en",
+      "license": "MHRA4 7.8.vi",
+      "note": "container-title: Fragments of a rainy season",
+      "publisher": "Hannibal Records",
+      "title": "Hallelujah",
+      "author": [
+        {
+          "family": "Cale",
+          "given": "John"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1992
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/CKY4S695",
+      "type": "song",
+      "citation-key": "bushStrangePhenomena1978",
+      "language": "en",
+      "license": "MHRA4 7.8.v",
+      "note": "container-title: The kick inside",
+      "publisher": "EMI",
+      "title": "Strange phenomena",
+      "author": [
+        {
+          "family": "Bush",
+          "given": "Kate"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1978
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/U32S87IH",
+      "type": "article-newspaper",
+      "abstract": "From flattened coffee pots to a steel wedding dress, embroidery to a rotting dessert trolley, a kaleidoscopic range of work by women sculptors is part of a vital generational study",
+      "citation-key": "clugstonTimelyTourFeminist2023",
+      "container-title": "The Guardian",
+      "ISSN": "0261-3077",
+      "language": "en-GB",
+      "license": "MHRA4 7.6.iii",
+      "note": "reviewed-title: If not now, when? Generations of women in sculpture in Britain, 1960–2022\nreviewed-genre: exhibition\nevent-place: The Hepworth Wakefield\nevent-date: 2023",
+      "section": "Art and design",
+      "source": "The Guardian",
+      "title": "A timely tour through feminist sculpture",
+      "URL": "https://www.theguardian.com/artanddesign/2023/apr/03/if-not-now-when-review-wakefield-post-hepworth-survey-female-narrative-sculpture",
+      "author": [
+        {
+          "family": "Clugston",
+          "given": "Hannah"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2023,
+            4,
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/C35E8Z4V",
+      "type": "book",
+      "call-number": "843.912",
+      "citation-key": "proustRechercheTempsPerdu1988",
+      "collection-number": "102",
+      "collection-title": "Bibliothèque de la Pléiade",
+      "ISBN": "978-2-07-011143-5",
+      "language": "fr",
+      "license": "MHRA4 7.3a.xv",
+      "note": "available-date: 1987/1989",
+      "number-of-pages": "1934",
+      "number-of-volumes": "4",
+      "publisher": "Gallimard",
+      "publisher-place": "Paris",
+      "shortTitle": "ALR",
+      "source": "BnF ISBN",
+      "title": "À la recherche du temps perdu",
+      "title-short": "ALR",
+      "volume": "3",
+      "author": [
+        {
+          "family": "Proust",
+          "given": "Marcel"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Tadié",
+          "given": "Jean-Yves"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            "1988",
+            11,
+            24
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/EDFBZDJF",
+      "type": "book",
+      "citation-key": "wisnickiLivingstoneOnline2004",
+      "language": "en",
+      "license": "MHRA4 7.3a.xiv",
+      "note": "issued: 2004/2021",
+      "title": "Livingstone online",
+      "URL": "https://livingstoneonline.org/",
+      "editor": [
+        {
+          "family": "Wisnicki",
+          "given": "Adrian S."
+        },
+        {
+          "family": "Ward",
+          "given": "Megan"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            6,
+            16
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/8MN7XZSM",
+      "type": "entry-dictionary",
+      "citation-key": "Style2024",
+      "container-title": "Oxford English Dictionary",
+      "DOI": "10.1093/OED/4127274906",
+      "language": "en",
+      "license": "MHRA4 7.5.ix",
+      "publisher": "Oxford University Press",
+      "publisher-place": "Oxford",
+      "title": "style, n.",
+      "issued": {
+        "date-parts": [
+          [
+            "2024",
+            12
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/KXKPZHRD",
+      "type": "personal_communication",
+      "citation-key": "bechdel2021",
+      "genre": "letter",
+      "language": "en",
+      "license": "MHRA4 7.11.viii",
+      "author": [
+        {
+          "family": "Bechdel",
+          "given": "Alison"
+        }
+      ],
+      "recipient": [
+        {
+          "family": "the author",
+          "given": ""
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            "2021",
+            8,
+            20
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/2QS2DZXL",
+      "type": "personal_communication",
+      "citation-key": "saint-pierre2013",
+      "language": "en",
+      "license": "MHRA4 7.11.vi",
+      "note": "event-date: 1791-02-23\nDOI: 10.13051/ee:doc/sainjaVF0030816a1c\neditor: Cook || Malcolm\ncollection-editor: Cook || Malcolm\ncontainer-title: Digital correspondence of Bernardin de Saint-Pierre\npublisher: Electronic Enlightenment\nissued: 2013\navailable-date: 2008/2022",
+      "author": [
+        {
+          "family": "Saint-Pierre",
+          "given": "Jacques Henri Bernardin de"
+        }
+      ],
+      "recipient": [
+        {
+          "family": "Lalande",
+          "given": "Joseph Jérôme Lefrançois de"
+        }
+      ]
+    },
+    {
+      "id": "6188419/EUK9JKVJ",
+      "type": "interview",
+      "citation-key": "ofarrell2012",
+      "language": "en",
+      "license": "MHRA4 7.11.viii",
+      "author": [
+        {
+          "family": "O’Farrell",
+          "given": "Maggie"
+        }
+      ],
+      "interviewer": [
+        {
+          "family": "the author",
+          "given": ""
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            "2012",
+            3,
+            23
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/6PHQB648",
+      "type": "personal_communication",
+      "citation-key": "walcott2012",
+      "language": "en",
+      "license": "MHRA4 7.11.viii",
+      "note": "genre: email",
+      "author": [
+        {
+          "family": "Walcott",
+          "given": "Derek"
+        }
+      ],
+      "recipient": [
+        {
+          "family": "the author",
+          "given": ""
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            "2012",
+            3,
+            23
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/94J4LJUM",
+      "type": "personal_communication",
+      "abstract": "A digital edition of the complete letters of Elizabeth Montagu 1718-1800 - ISSN 2753-9091",
+      "citation-key": "montagu",
+      "language": "en",
+      "license": "MHRA4 7.11.vii",
+      "note": "event-date: 1791-07-04\neditor: Franklin || Caroline\neditor: Franklin || Michael\neditor: Pohl || Nicole\ncontainer-title:  Elizabeth Montagu correspondence online",
+      "URL": "https://emco.swansea.ac.uk/emco/letter-view/1900",
+      "author": [
+        {
+          "family": "Montagu",
+          "given": "Elizabeth"
+        }
+      ],
+      "recipient": [
+        {
+          "family": "Beattie",
+          "given": "James"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            6,
+            11
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/7R45KF5I",
+      "type": "article-journal",
+      "abstract": "Starting with two twentieth-century lectures (both titled \"What Is a Classic?\"), delivered by T. S. Eliot and J. M. Coetzee forty-seven years apart, this essay looks at the ontology of the classic in particular and canon formation in general in the globalized and multicultural field of twenty-first-century English studies. It focuses on the agonistic process through which the classic assumes form and coherence and on the position of the critic making a claim about the classic. The essay evaluates the importance of this contestation of literary value for interlopers and latecomers to the Western canon, concluding that the \"perduring\" classic is, perhaps, the invention of the outsider. With close attention to the unstable relation between the classic as preeminently European or national and the classic as trans-or international, the essay seeks to reclaim the foundational concept of the classic for world literature, postcolonial studies, and literary criticism in an international frame.",
+      "citation-key": "mukherjeeWhatClassicInternational2010",
+      "container-title": "PMLA",
+      "DOI": "10.1632/pmla.2010.125.4.1026",
+      "ISSN": "0030-8129",
+      "issue": "4",
+      "journalAbbreviation": "PMLA",
+      "language": "en",
+      "license": "MHRA4 8.4",
+      "note": "volume-title: Literary criticism for the twenty-first century",
+      "page": "1026-1042",
+      "publisher": "Modern Language Association",
+      "shortTitle": "Classic question",
+      "source": "JSTOR",
+      "title": "\"What is a classic?\": international literary criticism and the classic question",
+      "title-short": "Classic question",
+      "URL": "https://www.jstor.org/stable/41058302",
+      "volume": "125",
+      "author": [
+        {
+          "family": "Mukherjee",
+          "given": "Ankhi"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Culler",
+          "given": "Jonathan"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            6,
+            11
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2010,
+            10
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/HF72XW2P",
+      "type": "book",
+      "citation-key": "hilliardEnlightenmentModernismThree2021",
+      "ISBN": "978-1-78188-866-7 978-1-78188-874-2",
+      "language": "en",
+      "license": "MHRA4 8.3",
+      "number-of-pages": "1",
+      "publisher": "Modern Humanities Research Association, Legenda",
+      "publisher-place": "Cambridge",
+      "shortTitle": "From the enlightenment to modernism",
+      "source": "K10plus ISBN",
+      "title": "From the enlightenment to modernism: three centuries of German literature",
+      "title-short": "From the enlightenment to modernism",
+      "editor": [
+        {
+          "family": "Hilliard",
+          "given": "K. F."
+        },
+        {
+          "family": "Duttlinger",
+          "given": "Carolin"
+        },
+        {
+          "family": "Louth",
+          "given": "Charlie"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2021
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/Z9QWPREN",
+      "type": "personal_communication",
+      "citation-key": "larkin1992",
+      "language": "en",
+      "license": "MHRA4 7.11.v",
+      "note": "event-date: 1971-09-22\ncontainer-title: Selected letters of Philip Larkin, 1940–1985\neditor: Thwaite || Anthony\npublisher: Faber\npage: 446-447",
+      "source": "K10plus ISBN",
+      "URL": "https://archive.org/details/selectedletterso00lark",
+      "author": [
+        {
+          "family": "Larkin",
+          "given": "Philip"
+        }
+      ],
+      "recipient": [
+        {
+          "family": "Day-Lewis",
+          "given": "C."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1992
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/974UYA3E",
+      "type": "chapter",
+      "citation-key": "hilliardAtemuebungenGeistUnd2003",
+      "container-title": "Body Dialectics in the Age of Goethe",
+      "DOI": "10.1163/9789004334359",
+      "ISBN": "978-90-420-1076-5 978-90-04-33435-9",
+      "language": "de",
+      "license": "MHRA4 8.3",
+      "page": "293–313",
+      "publisher": "Brill",
+      "publisher-place": "Boston",
+      "source": "K10plus ISBN",
+      "title": "Atemübungen: Geist und Körper in der Lyrik des 18. Jahrhunderts",
+      "URL": "https://brill.com/view/title/27369",
+      "editor": [
+        {
+          "family": "Henn",
+          "given": "Marianne"
+        },
+        {
+          "family": "Pausch",
+          "given": "Holger A."
+        }
+      ],
+      "author": [
+        {
+          "family": "Hilliard",
+          "given": "K. F."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2003
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/QT3FTDHR",
+      "type": "article-journal",
+      "abstract": "Abstract\n            This article examines the poet Antoinette Deshoulières’s (1638–94) interventions in a number of querelles. It focuses on a series of poems that appeared in 1678–79, early in her career, and written as if from her pet cat. Often dismissed for their frivolity, these poems instead reveal Deshoulières’s engagement with the Quarrel of the Ancients and Moderns and the debates about the animal machine. While such interventions constituted an important strategy for making a name for herself, they are characterized by elusiveness. Although that elusiveness has been read as a gendered strategy of modesty, this article shows instead that her equivocal and even parodic, burlesque way of intervening in the two quarrels is consistent with her skepticism and presents readers with a hermeneutical challenge that disrupts the rhetorical logic of a quarrel. Deshoulières’s interventions invite us to reflect on the roles of gender, genre, and interpretation in early modern quarrels and their study.",
+      "citation-key": "taylorAntoinetteDeshoulieressCat2021",
+      "container-title": "Romanic Review",
+      "DOI": "10.1215/00358118-9377358",
+      "ISSN": "0035-8118, 2688-5220",
+      "issue": "3",
+      "journalAbbreviation": "Romanic Rev.",
+      "language": "en",
+      "license": "MHRA4 8.3",
+      "page": "452-469",
+      "source": "DOI.org (Crossref)",
+      "title": "Antoinette Deshoulières’s cat: polemical equivocation in salon verse",
+      "URL": "https://read.dukeupress.edu/romanic-review/article/112/3/452/294341/Antoinette-Deshoulieres-s-CatPolemical",
+      "volume": "112",
+      "author": [
+        {
+          "family": "Taylor",
+          "given": "Helena"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            6,
+            11
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2021,
+            12,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/MV9BHESN",
+      "type": "article-journal",
+      "abstract": "Considered an incredibly “anomalous” masterpiece, Tolstoy’s last work of fiction,\n              Hadji Murat\n              (1896–1904), renders the life and death of the legendary Avari warrior, Hadji Murat. The novella is aesthetically stunning and surprisingly devoid of Tolstoy’s opinionated authorial voice. With its ideologically muted nature,\n              Hadji Murat\n              has provoked “indecision and controversy” among critics, particularly since it impartially narrates phenomena the moralistic Tolstoy normally decried, like smoking, fornication, and especially violence. In this essay, I reconsider the question of\n              Hadji Murat\n              ’s problematic place in Tolstoy’s oeuvre. I focus on the very aspects that have inspired the novella’s designation as an anomaly–Tolstoy’s depictions of brutal violence. Starting with the quagmire of violence, I show that\n              Hadji Murat\n              is not nearly so anomalous, but profoundly connected, precisely through violence, to Tolstoy’s later ideological beliefs. To this end, Islam, which has so far been omitted in scholarly discussions of\n              Hadji Murat\n              , is an essential component of my analysis. In particular, there has been no consideration of ties between Tolstoy’s faith and mainstream Sufi Islam, as practiced in nineteenth‐century Chechnya and Dagestan. A form of Islamic spirituality, Sufism informed the military resistance led by\n              imam\n              Shamil and his lieutenant Hadji Murat. Tolstoy, who spent time in the Caucasus, cites Sufi spirituality in early drafts of\n              Hadji Murat\n              . Sufi spirituality is implicitly significant in the novella where it motivates individual actions, especially during crisis moments on the violent battlefield. I argue that Sufism serves as the connecting thread between the violence in\n              Hadji Murat\n              and Tolstoy’s later spiritual beliefs. At different stages of his life, Hadji Murat has different motivations for fighting until he finally takes up the cause of\n              jihad\n              or “holy war” (termed\n              gazavat\n              in the North Caucasus). Tolstoy focuses on this concept, but moves beyond its conventional understanding in Sharia Islam to explore\n              jihad\n              in a wider spiritual context that intersects with Sufism. As I show, “holy war,” broadly conceived by Tolstoy as spiritually‐driven warfare, becomes the basis for bringing together outward practice and inner spirituality in\n              Hadji Murat\n              .",
+      "citation-key": "kokoboboTolstoysEnigmaticFinal2017",
+      "container-title": "Russian Review",
+      "DOI": "10.1111/russ.12118",
+      "ISSN": "0036-0341, 1467-9434",
+      "issue": "1",
+      "journalAbbreviation": "Russ. Rev.",
+      "language": "en",
+      "license": "MHRA4 8.3",
+      "page": "38-52",
+      "shortTitle": "Tolstoy's enigmatic final hero",
+      "source": "DOI.org (Crossref)",
+      "title": "Tolstoy's enigmatic final hero: holy war, Sufism, and the spiritual path in <i>Hadji murat</i>",
+      "title-short": "Tolstoy's enigmatic final hero",
+      "URL": "https://onlinelibrary.wiley.com/doi/10.1111/russ.12118",
+      "volume": "76",
+      "author": [
+        {
+          "family": "Kokobobo",
+          "given": "Ani"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            6,
+            11
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2017"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/U4AJ9ASQ",
+      "type": "article-journal",
+      "citation-key": "jongeneelArtDivineOrder2007",
+      "container-title": "Literature and Theology",
+      "DOI": "10.1093/litthe/frm008",
+      "ISSN": "0269-1205, 1477-4623",
+      "issue": "2",
+      "journalAbbreviation": "Lit. Theol.",
+      "language": "en",
+      "license": "MHRA4 6.2",
+      "page": "131-145",
+      "source": "DOI.org (Crossref)",
+      "title": "Art and divine order in the <i>Divina commedia</i>",
+      "URL": "https://academic.oup.com/litthe/article-lookup/doi/10.1093/litthe/frm008",
+      "volume": "21",
+      "author": [
+        {
+          "family": "Jongeneel",
+          "given": "Els"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            6,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2007,
+            4,
+            18
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/AAV6DYRH",
+      "type": "paper-conference",
+      "call-number": "PC3911 .C34 2015",
+      "citation-key": "lunatiMerceRodoredaMariaMerce2020",
+      "collection-number": "16",
+      "collection-title": "Studies in Hispanic and Lusophone cultures",
+      "container-title": "Catalan Narrative, 1875–2015",
+      "DOI": "10.2307/j.ctv1wsgrqq",
+      "event-place": "University of St. Andrews",
+      "event-title": "Catalan Narrative, 1875-2015",
+      "ISBN": "978-1-78188-427-0 978-1-78188-710-3",
+      "language": "en",
+      "license": "MHRA4 7.3b.iv",
+      "note": "event-date: 2015-12-14/2015-12-16",
+      "page": "139-160",
+      "publisher": "Legenda",
+      "publisher-place": "Cambridge",
+      "source": "DOI.org (Crossref)",
+      "title": "Mercè Rodoreda and Maria-Mercè Marçal as <span class=\"nocase\">'specters granted a hospitable memory'</span> in Mercè Ibarz’s fiction",
+      "URL": "http://www.jstor.org/stable/10.2307/j.ctv1wsgrqq",
+      "editor": [
+        {
+          "family": "Larios",
+          "given": "Jordi"
+        },
+        {
+          "family": "Lunati",
+          "given": "Montserrat"
+        }
+      ],
+      "author": [
+        {
+          "family": "Lunati",
+          "given": "Montserrat"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            6,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2020,
+            9,
+            28
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/UJCJS8XP",
+      "type": "article-journal",
+      "abstract": "This essay inquires into the relationship between translation and empire in the United States. It argues that such a relationship cannot be understood apart from a critical appreciation of the Americanization, which is to say, translation of English from an imperial into a national language that required the reorganization of the nation's linguistic diversity into a hierarchy of languages resulting in the emergence of a monolingual hegemony. However, this American notion of translation as monolingual assimilation was always contested, and we can see its limits in the context of the recent U.S. occupation of Iraq. As an examination of the vexed position of Iraqi translators working for the U.S. military shows, attempts to deploy American notions of translation in war have devolved instead into the circulation of what in fact remains untranslatable and so unassimilable to U.S. imperialist projects.",
+      "citation-key": "rafaelTranslationAmericanEnglish2009",
+      "container-title": "Social Text",
+      "DOI": "10.1215/01642472-2009-052",
+      "ISSN": "0164-2472",
+      "issue": "4",
+      "journalAbbreviation": "Soc. Text",
+      "language": "en",
+      "license": "MHRA4 7.3b.vi",
+      "page": "1-23",
+      "source": "Silverchair",
+      "title": "Translation, American English, and the national insecurities of empire",
+      "URL": "https://doi.org/10.1215/01642472-2009-052",
+      "volume": "27",
+      "author": [
+        {
+          "family": "Rafael",
+          "given": "Vicente L."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            6,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2009"
+          ]
+        ],
+        "season": "Winter"
+      }
+    },
+    {
+      "id": "6188419/QFQ36GRZ",
+      "type": "entry-encyclopedia",
+      "citation-key": "jamesFaradayMichael179118672011",
+      "container-title": "Oxford dictionary of national biography",
+      "language": "en",
+      "license": "MHRA4 6.2",
+      "note": "DOI: 10.1093/ref:odnb/9153\nstatus: entry dated 2004, rev.",
+      "publisher": "Oxford University Press",
+      "publisher-place": "Oxford",
+      "source": "DOI.org (Crossref)",
+      "title": "Faraday, Michael (1791–1867), natural philosopher, scientific adviser, and Sandemanian",
+      "URL": "http://www.oxforddnb.com/view/10.1093/ref:odnb/9780198614128.001.0001/odnb-9780198614128-e-9153",
+      "author": [
+        {
+          "family": "James",
+          "given": "Frank A. J. L."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            6,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2011,
+            1,
+            6
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/4T5MLJLA",
+      "type": "chapter",
+      "call-number": "GF22 .R43 2017",
+      "citation-key": "iretonAdalbertStifterGentle2017",
+      "collection-number": "18",
+      "collection-title": "New directions in German studies",
+      "container-title": "Readings in the anthropocene: the environmental humanities, German studies, and beyond",
+      "DOI": "10.5040/9781501307782",
+      "ISBN": "978-1-5013-0775-1 978-1-5013-0776-8",
+      "language": "en",
+      "license": "MHRA4 7.3b.v",
+      "page": "195–221",
+      "publisher": "Bloomsbury",
+      "publisher-place": "New York",
+      "source": "Library of Congress ISBN",
+      "title": "Adalbert Stifter and the gentle anthropocene",
+      "editor": [
+        {
+          "family": "Wilke",
+          "given": "Sabine"
+        },
+        {
+          "family": "Johnstone",
+          "given": "Japhet"
+        }
+      ],
+      "author": [
+        {
+          "family": "Ireton",
+          "given": "Sean"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2017
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/58S57QW9",
+      "type": "article-journal",
+      "citation-key": "hilliardGoetheCureMelancholy1994",
+      "container-title": "Oxford German Studies",
+      "DOI": "10.1179/ogs.1994.23.1.71",
+      "ISSN": "0078-7191, 1745-9214",
+      "issue": "1",
+      "journalAbbreviation": "Oxf. Ger. Stud.",
+      "language": "en",
+      "license": "MHRA4 8.3",
+      "page": "71-103",
+      "shortTitle": "Goethe and the cure for melancholy",
+      "source": "DOI.org (Crossref)",
+      "title": "Goethe and the cure for melancholy: ‘Mahomets Gesang’, orientalism and the medical psychology of the 18th century",
+      "title-short": "Goethe and the cure for melancholy",
+      "URL": "http://www.tandfonline.com/doi/full/10.1179/ogs.1994.23.1.71",
+      "volume": "23",
+      "author": [
+        {
+          "family": "Hilliard",
+          "given": "K. F."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            6,
+            7
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "1994"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/AK4A2ANW",
+      "type": "article-magazine",
+      "citation-key": "pardotorioFilosofiaClausuraModernidad1986",
+      "container-title": "Revista de Occidente",
+      "ISSN": "0034-8635, 0034-8635",
+      "issue": "66",
+      "language": "es",
+      "license": "MHRA4 7.6.vi",
+      "page": "35-48",
+      "source": "produccioncientifica.ucm.es",
+      "title": "Filosofía y clausura de la modernidad",
+      "author": [
+        {
+          "family": "Pardo Torío",
+          "given": "José Luis"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            6,
+            6
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "1986",
+            11
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/QHH8KHZL",
+      "type": "manuscript",
+      "archive": "Sheffield Central Library",
+      "archive_location": "MS Fitzwilliam E.209",
+      "citation-key": "zotero-item-66429",
+      "language": "en",
+      "license": "MHRA4 7.7"
+    },
+    {
+      "id": "6188419/3XX47ABK",
+      "type": "chapter",
+      "call-number": "791.430 2330922",
+      "citation-key": "petleyInterviewDanieleHuillet2023",
+      "collection-number": "14",
+      "collection-title": "Moving image",
+      "container-title": "The cinema of Danièle Huillet and Jean-Marie Straub",
+      "ISBN": "978-1-83954-058-5",
+      "language": "en",
+      "license": "MHRA4 7.11.iii",
+      "page": "196-209",
+      "publisher": "Legenda",
+      "publisher-place": "Cambridge",
+      "source": "BnF ISBN",
+      "title": "Interview with Danièle Huillet and Jean-Marie Straub apropos <i>The death of Empedocles</i> and <i>Black sin</i>, 9 April 1990, Goethe-Institut London",
+      "URL": "https://jstor.org/stable/jj.6852987.16",
+      "author": [
+        {
+          "family": "Petley",
+          "given": "Julian"
+        },
+        {
+          "family": "Huillet",
+          "given": "Danièle"
+        },
+        {
+          "family": "Straub",
+          "given": "Jean–Marie"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Brady",
+          "given": "Martin"
+        },
+        {
+          "family": "Hughes",
+          "given": "Helen"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2023,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/ENJR6SK6",
+      "type": "broadcast",
+      "abstract": "The bosses come in from London to reorganize Sterling Cooper, but a key player&apos;s career is sidetracked by a freak accident. Meanwhile, as Joan prepares to leave her job, her husband gives her some bad news.",
+      "citation-key": "glatterGuyWalksAdvertising2009",
+      "container-title": "Mad Men",
+      "dimensions": "1h",
+      "language": "en",
+      "license": "MHRA4 7.8.xiii",
+      "note": "available-date: 2007/2015",
+      "number": "season 3, episode 6",
+      "publisher": "Lionsgate Television, Weiner Bros., American Movie Classics (AMC)",
+      "publisher-place": "United States",
+      "source": "IMDb",
+      "title": "Guy walks into an advertising agency",
+      "author": [
+        {
+          "family": "Glatter",
+          "given": "Lesli Linka"
+        }
+      ],
+      "script-writer": [
+        {
+          "family": "Weiner",
+          "given": "Matthew"
+        },
+        {
+          "family": "Veith",
+          "given": "Robin"
+        },
+        {
+          "family": "Humphris",
+          "given": "Cathryn"
+        }
+      ],
+      "contributor": [
+        {
+          "family": "Hamm",
+          "given": "Jon"
+        },
+        {
+          "family": "Moss",
+          "given": "Elisabeth"
+        },
+        {
+          "family": "Kartheiser",
+          "given": "Vincent"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2009,
+            9,
+            20
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/YFESEWAB",
+      "type": "broadcast",
+      "abstract": "When an old enemy, the Cylons, resurface and obliterate the 12 colonies, the crew of the aged Galactica protect a small civilian fleet - the last of humanity - as they journey toward the fabled 13th colony, Earth.",
+      "citation-key": "larsonBattlestarGalactica2004",
+      "language": "en",
+      "license": "MHRA4 7.8.xii",
+      "note": "date: 2004/2009",
+      "publisher": "British Sky Broadcasting",
+      "publisher-place": "United States",
+      "source": "IMDb",
+      "title": "Battlestar Galactica",
+      "script-writer": [
+        {
+          "family": "Larson",
+          "given": "Glen A."
+        },
+        {
+          "family": "Moore",
+          "given": "Ronald D."
+        }
+      ],
+      "contributor": [
+        {
+          "family": "Olmos",
+          "given": "Edward James"
+        },
+        {
+          "family": "McDonnell",
+          "given": "Mary"
+        },
+        {
+          "family": "Bamber",
+          "given": "Jamie"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2004,
+            10,
+            18
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/4Z5PDKYD",
+      "type": "interview",
+      "citation-key": "mcqueenFutureCinema2021",
+      "language": "en",
+      "license": "MHRA4 7.11.i",
+      "note": "container-title: The Telegraph",
+      "shortTitle": "Future of cinema",
+      "source": "YouTube",
+      "title": "The future of cinema",
+      "title-short": "Future of cinema",
+      "URL": "https://www.youtube.com/watch?v=OLEFx6a47Zk",
+      "interviewer": [
+        {
+          "family": "Collin",
+          "given": "Robbie"
+        }
+      ],
+      "author": [
+        {
+          "family": "McQueen",
+          "given": "Steve"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2021,
+            4,
+            23
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/FCCHACX3",
+      "type": "interview",
+      "abstract": "Deborah Solomon interview with Elfriede Jelinek, winner of Nobel Prize in Literature; photo (M)",
+      "citation-key": "jelinekGloomHerOwn2004",
+      "language": "en-US",
+      "license": "MHRA4 7.11.iv",
+      "note": "container-title: New York Times",
+      "source": "NYTimes.com",
+      "title": "A gloom of her own",
+      "URL": "https://www.nytimes.com/2004/11/21/magazine/a-gloom-of-her-own.html",
+      "interviewer": [
+        {
+          "family": "Solomon",
+          "given": "Deborah"
+        }
+      ],
+      "author": [
+        {
+          "family": "Jelinek",
+          "given": "Elfriede"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2004,
+            11,
+            21
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/4BU43ZCP",
+      "type": "interview",
+      "citation-key": "rankine2016",
+      "language": "en",
+      "license": "MHRA4 7.11.ii",
+      "note": "container-title: CLA Journal\nvolume: 60\nissue: 1\npage: 10-14\nISSN: 0007-8549\nvolume-title: \"We were not invented yesterday\": conversations on being Black women in the academy",
+      "publisher": "College Language Association",
+      "source": "JSTOR",
+      "URL": "https://jstor.org/stable/44325513",
+      "interviewer": [
+        {
+          "family": "Hudson",
+          "given": "Jenise"
+        },
+        {
+          "family": "Price",
+          "given": "Janeen"
+        }
+      ],
+      "author": [
+        {
+          "family": "Rankine",
+          "given": "Claudia"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2016,
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/N8DLC73V",
+      "type": "software",
+      "citation-key": "Doom1993",
+      "license": "MHRA4 7.8.xvii",
+      "medium": "MS-DOS and subsequently other platforms",
+      "publisher": "Id Software",
+      "title": "Doom",
+      "issued": {
+        "date-parts": [
+          [
+            1993
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/28BHKYIX",
+      "type": "graphic",
+      "abstract": "Poster by Alphonse Mucha entitled 'Bières De La Meuse'.  France, 1897.",
+      "archive": "Victoria & Albert Museum",
+      "archive_location": "E.78-1956",
+      "citation-key": "muchaBieresMeuse1897",
+      "dimensions": "154.5 × 104.5 cm",
+      "language": "fr",
+      "license": "MHRA4 7.9.iv",
+      "medium": "colour lithograph",
+      "note": "archive-place: London\ngenre: poster\narchive_collection: Prints Drawings & Paintings Collection",
+      "source": "Victoria & Albert Museum",
+      "title": "Bières de la Meuse",
+      "URL": "https://collections.vam.ac.uk/item/O75580/",
+      "author": [
+        {
+          "family": "Mucha",
+          "given": "Alphonse"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1897
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/664DAXDA",
+      "type": "graphic",
+      "archive": "Tate Britain",
+      "citation-key": "parkerIsland2022",
+      "language": "en",
+      "license": "MHRA4 7.9.ii",
+      "medium": "mixed media",
+      "title": "Island",
+      "author": [
+        {
+          "family": "Parker",
+          "given": "Cornelia"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2022
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/W3KGD6TA",
+      "type": "graphic",
+      "archive": "Galleria Nazionale delle Marche, Urbino",
+      "citation-key": "pierodellafrancescaFlagellation1455",
+      "dimensions": "59 × 82 cm",
+      "language": "en",
+      "license": "MHRA4 7.9.i",
+      "medium": "oil and tempera on panel",
+      "note": "issued: 1455?",
+      "title": "The Flagellation",
+      "author": [
+        {
+          "family": "Piero della Francesca",
+          "given": ""
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            "1455"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/JYT42DD9",
+      "type": "software",
+      "citation-key": "gillespie-cookUntitledGooseGame2019",
+      "license": "MHRA4 7.8.xviii",
+      "medium": "macOS, Windows, Switch, PlayStation 4, and Xbox One",
+      "publisher": "House House",
+      "title": "Untitled Goose Game",
+      "URL": "https://goose.game/",
+      "author": [
+        {
+          "family": "Gillespie-Cook",
+          "given": "Stuart"
+        },
+        {
+          "family": "Strasser",
+          "given": "Jacob"
+        },
+        {
+          "family": "McMaster",
+          "given": "Michael"
+        },
+        {
+          "family": "Disseldorp",
+          "given": "Nico"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            8
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2019",
+            9,
+            20
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/VSQ46E9E",
+      "type": "software",
+      "citation-key": "shortGalatea2000",
+      "license": "MHRA4 7.8.xvi",
+      "medium": "Z-machine",
+      "title": "Galatea",
+      "URL": "https://ifarchive.org/indexes/if-archive/art/if-artshow/year2000/#galatea.z5",
+      "author": [
+        {
+          "family": "Short",
+          "given": "Emily"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2000
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/QIUGV5MI",
+      "type": "book",
+      "citation-key": "sysonLeonardoVinciPainter2011",
+      "ISBN": "978-1-85709-491-6 978-1-85709-490-9",
+      "language": "en",
+      "license": "MHRA4 7.9.v",
+      "number-of-pages": "319",
+      "publisher": "National Gallery Company",
+      "publisher-place": "London",
+      "shortTitle": "Leonardo Da Vinci, painter at the court of Milan",
+      "source": "K10plus ISBN",
+      "title": "Leonardo da Vinci, painter at the court of Milan",
+      "title-short": "Leonardo Da Vinci, painter at the court of Milan",
+      "author": [
+        {
+          "family": "Syson",
+          "given": "Luke"
+        }
+      ],
+      "contributor": [
+        {
+          "family": "Keith",
+          "given": "Lawrence H."
+        },
+        {
+          "family": "Galansino",
+          "given": "Arturo"
+        },
+        {
+          "family": "Mazzotta",
+          "given": "Antonio"
+        },
+        {
+          "family": "Moore Ede",
+          "given": "Minna"
+        },
+        {
+          "family": "Nethersole",
+          "given": "Scott"
+        },
+        {
+          "family": "Rumberg",
+          "given": "Per"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2011
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/2PZTFF82",
+      "type": "motion_picture",
+      "abstract": "A blade runner must pursue and terminate four replicants who stole a ship in space and have returned to Earth to find their creator.",
+      "citation-key": "scottBladeRunner1992",
+      "dimensions": "1h57m",
+      "language": "en",
+      "license": "MHRA4 7.8.x",
+      "note": "publisher-place: USA\nedition: director’s cut\noriginal-date: 1982-09-09",
+      "publisher": "The Ladd Company, Shaw Brothers, Warner Bros.",
+      "source": "IMDb",
+      "title": "Blade Runner",
+      "author": [
+        {
+          "family": "Scott",
+          "given": "Ridley"
+        }
+      ],
+      "script-writer": [
+        {
+          "family": "Fancher",
+          "given": "Hampton"
+        },
+        {
+          "family": "Peoples",
+          "given": "David Webb"
+        },
+        {
+          "family": "Dick",
+          "given": "Philip K."
+        }
+      ],
+      "contributor": [
+        {
+          "family": "Ford",
+          "given": "Harrison"
+        },
+        {
+          "family": "Hauer",
+          "given": "Rutger"
+        },
+        {
+          "family": "Young",
+          "given": "Sean"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1992
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/FHV354PU",
+      "type": "motion_picture",
+      "abstract": "An Oklahoma family, driven off their farm by the poverty and hopelessness of the Dust Bowl, joins the westward migration to California, suffering the misfortunes of the homeless in the Great Depression.",
+      "citation-key": "fordGrapesWrath1940",
+      "dimensions": "2h9m",
+      "language": "en",
+      "license": "MHRA4 7.8.viii",
+      "note": "publisher-place: United States",
+      "publisher": "Twentieth Century Fox",
+      "source": "IMDb",
+      "title": "The grapes of wrath",
+      "author": [
+        {
+          "family": "Ford",
+          "given": "John"
+        }
+      ],
+      "script-writer": [
+        {
+          "family": "Johnson",
+          "given": "Nunnally"
+        },
+        {
+          "family": "Steinbeck",
+          "given": "John"
+        }
+      ],
+      "contributor": [
+        {
+          "family": "Fonda",
+          "given": "Henry"
+        },
+        {
+          "family": "Darwell",
+          "given": "Jane"
+        },
+        {
+          "family": "Carradine",
+          "given": "John"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1940,
+            3,
+            15
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/NHP6ER9R",
+      "type": "song",
+      "abstract": "View credits, reviews, tracks and shop for the 1967 Vinyl release of \"Strawberry Fields Forever / Penny Lane\" on Discogs.",
+      "citation-key": "thebeatlesPennyLaneStrawberry1967",
+      "language": "en",
+      "license": "MHRA4 7.8.iii",
+      "publisher": "EMI",
+      "source": "www.discogs.com",
+      "title": "Penny Lane/Strawberry Fields Forever",
+      "author": [
+        {
+          "family": "The Beatles",
+          "given": ""
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1967,
+            2,
+            17
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/IB3C67TS",
+      "type": "article-magazine",
+      "abstract": "‘Though I have had dogs all my life, Coco is my first real companion.’ Fatima Bhutto on grief.",
+      "citation-key": "bhuttoHourWolf2022",
+      "container-title": "Granta",
+      "language": "en-US",
+      "license": "MHRA4 7.6.v",
+      "page": "9–25",
+      "title": "The hour of the wolf",
+      "URL": "https://granta.com/the-hour-of-the-wolf-fatima-bhutto/",
+      "volume": "158",
+      "author": [
+        {
+          "family": "Bhutto",
+          "given": "Fatima"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2022,
+            2,
+            10
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/2Z6P4JWT",
+      "type": "article-magazine",
+      "citation-key": "iukinaDostoinstvoCheloveka1984",
+      "container-title": "Novyi mir",
+      "issue": "12",
+      "language": "ru",
+      "license": "MHRA4 7.6.vii",
+      "page": "245–248",
+      "title": "Dostoinstvo cheloveka",
+      "author": [
+        {
+          "family": "Iukina",
+          "given": "E."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1984
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/TL7C5T9J",
+      "type": "book",
+      "call-number": "843.912",
+      "citation-key": "proustRechercheTempsPerdu1987",
+      "ISBN": "978-2-07-075492-2",
+      "language": "fr",
+      "license": "MHRA4 7.3a.xv",
+      "note": "issued: 1987/1989",
+      "number-of-volumes": "4",
+      "publisher": "Gallimard",
+      "publisher-place": "Paris",
+      "shortTitle": "ALR",
+      "source": "BnF ISBN",
+      "title": "À la recherche du temps perdu",
+      "title-short": "ALR",
+      "volume": "2",
+      "author": [
+        {
+          "family": "Proust",
+          "given": "Marcel"
+        }
+      ],
+      "collection-editor": [
+        {
+          "family": "Tadié",
+          "given": "Jean-Yves"
+        }
+      ]
+    },
+    {
+      "id": "6188419/R8B66U88",
+      "type": "motion_picture",
+      "abstract": "Germany 1939. Hans and Lene marry the day before the war breaks out, and Hans is sent to the Eastern front. During a bombing raid their daughter Anna is born. The house is destroyed and Lene and Anna moves in with relatives in Ber...",
+      "citation-key": "sanders-brahmsDeutschlandBleicheMutter2015",
+      "dimensions": "2h32m",
+      "language": "de",
+      "license": "MHRA4 7.8.xi",
+      "note": "original-publisher-place: West Germany\noriginal-date: 1980-09-26",
+      "publisher": "BFI",
+      "source": "IMDb",
+      "title": "Deutschland bleiche Mutter",
+      "author": [
+        {
+          "family": "Sanders-Brahms",
+          "given": "Helma"
+        }
+      ],
+      "script-writer": [
+        {
+          "family": "Sanders-Brahms",
+          "given": "Helma"
+        }
+      ],
+      "contributor": [
+        {
+          "family": "Mattes",
+          "given": "Eva"
+        },
+        {
+          "family": "Jacobi",
+          "given": "Ernst"
+        },
+        {
+          "family": "Stepanek",
+          "given": "Elisabeth"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2015
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/K6KFD7KD",
+      "type": "book",
+      "citation-key": "thomasMilkWood1992",
+      "ISBN": "978-1-85848-157-9",
+      "language": "en",
+      "license": "MHRA4 7.8.ii",
+      "note": "narrator: Hopkins || Anthony\nnarrator: Pryce || Jonathan",
+      "publisher": "Listening for Pleasure",
+      "publisher-place": "London",
+      "source": "Open WorldCat",
+      "title": "Under milk wood",
+      "author": [
+        {
+          "family": "Thomas",
+          "given": "Dylan"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1992
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/AJHFUJ2X",
+      "type": "entry-dictionary",
+      "citation-key": "Style",
+      "container-title": "Oxford English Dictionary",
+      "DOI": "10.1093/OED/4127274906",
+      "language": "en",
+      "license": "MHRA4 7.5.ix",
+      "title": "style"
+    },
+    {
+      "id": "6188419/LAK8SKSW",
+      "type": "motion_picture",
+      "abstract": "&quot;Hermann mein Vater&quot; is a companion piece by director Helma Sanders-Brahms to her 1980 film &quot;Germany Pale Mother&quot;. The latter work was focused on the impact of war on a German family. This made-for-tv documentary follows Sanders-B...",
+      "citation-key": "sanders-brahmsHermannMeinVater1987",
+      "dimensions": "52m",
+      "language": "de",
+      "license": "MHRA4 7.8.xi",
+      "note": "publisher-place: France, West Germany",
+      "publisher": "France 2 (FR2), Helma Sanders-Brahms Filmproduktion, INA Films",
+      "source": "IMDb",
+      "title": "Hermann mein Vater",
+      "author": [
+        {
+          "family": "Sanders-Brahms",
+          "given": "Helma"
+        }
+      ],
+      "script-writer": [
+        {
+          "family": "Sanders-Brahms",
+          "given": "Helma"
+        }
+      ],
+      "contributor": [
+        {
+          "family": "Bazin",
+          "given": "Maurice"
+        },
+        {
+          "family": "Collin",
+          "given": "Philippe"
+        },
+        {
+          "family": "Sander",
+          "given": "Herman"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1987
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/IIPRSJ5M",
+      "type": "motion_picture",
+      "abstract": "In 1961, Rita returns to her childhood village after a breakdown. As she recovers, she remembers the past two years: her love for chemist Manfred, 10 years her senior; his enthusiasm about his new chemical process, which turned to...",
+      "citation-key": "wolfGeteilteHimmel1964",
+      "dimensions": "1h50m",
+      "language": "de",
+      "license": "MHRA4 7.8.ix",
+      "note": "Translated title: The Divided Heaven\npublisher-place: East Germany",
+      "publisher": "DEFA-Studio für Spielfilme, Künstlerische Arbeitsgruppe \"Heinrich Greif\"",
+      "source": "IMDb",
+      "title": "Der geteilte Himmel",
+      "author": [
+        {
+          "family": "Wolf",
+          "given": "Konrad"
+        }
+      ],
+      "script-writer": [
+        {
+          "family": "Barthel",
+          "given": "Kurt"
+        },
+        {
+          "family": "Brückner",
+          "given": "Willi"
+        },
+        {
+          "family": "Wolf",
+          "given": "Christa"
+        }
+      ],
+      "contributor": [
+        {
+          "family": "Blume",
+          "given": "Renate"
+        },
+        {
+          "family": "Esche",
+          "given": "Eberhard"
+        },
+        {
+          "family": "Hardt-Hardtloff",
+          "given": "Hans"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1964,
+            10,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/GHHYT3YH",
+      "type": "broadcast",
+      "citation-key": "Newsnight2022",
+      "language": "en",
+      "license": "MHRA4 7.8.xv",
+      "publisher": "BBC 2",
+      "title": "Newsnight",
+      "issued": {
+        "date-parts": [
+          [
+            "2022",
+            2,
+            24
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/7KM4K6WP",
+      "type": "broadcast",
+      "citation-key": "hanrahanEastGermanyOpens1989",
+      "container-title": "BBC News",
+      "language": "en",
+      "license": "MHRA4 7.8.xiv",
+      "note": "author: Hanrahan || Brian",
+      "publisher": "BBC 1",
+      "title": "East Germany opens the gates",
+      "issued": {
+        "date-parts": [
+          [
+            1989,
+            11,
+            9
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/76NPEQJS",
+      "type": "song",
+      "citation-key": "blacksabbathVoid1971",
+      "language": "en",
+      "license": "MHRA4 7.8.iv",
+      "note": "container-title: Master of Reality",
+      "publisher": "Vertigo",
+      "title": "Into the void",
+      "author": [
+        {
+          "family": "Black Sabbath",
+          "given": ""
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1971
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/IUDKAHQB",
+      "type": "song",
+      "citation-key": "uchidaPianoConcertoNo1998",
+      "language": "en",
+      "license": "MHRA4 7.8.i",
+      "publisher": "Phillips",
+      "title": "Piano Concerto no. 5",
+      "composer": [
+        {
+          "family": "Beethoven",
+          "given": "Ludwig van"
+        }
+      ],
+      "author": [
+        {
+          "family": "Uchida",
+          "given": "Mitsuko"
+        },
+        {
+          "family": "Symphonieorchester des Bayerischen Rundfunks, cond. by Kurt Sanderling",
+          "given": ""
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1998
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/3YDA6KMP",
+      "type": "article-newspaper",
+      "abstract": "Am Zürcher Schauspielhaus muss die Intedanz gehen - und antwortet mit einem Meisterstück, Sarah Kanes \"Gier\"",
+      "citation-key": "thollSchauspielhausZuerichBeim2023",
+      "container-title": "Süddeutsche Zeitung",
+      "language": "de",
+      "license": "MHRA4 7.6.iv",
+      "title": "Schauspielhaus Zürich. Beim Geld hört die Wokeness auf",
+      "URL": "https://www.sueddeutsche.de/kultur/gier-zuercher-schspielhaus-christopher-rueping-intendanz-1.5763717",
+      "author": [
+        {
+          "family": "Tholl",
+          "given": "Egbert"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2023,
+            3,
+            6
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/28VM9GMZ",
+      "type": "article-newspaper",
+      "abstract": "From flattened coffee pots to a steel wedding dress, embroidery to a rotting dessert trolley, a kaleidoscopic range of work by women sculptors is part of a vital generational study",
+      "citation-key": "clugstonIfNotNow2023",
+      "container-title": "The Guardian",
+      "ISSN": "0261-3077",
+      "language": "en-GB",
+      "license": "MHRA4 7.6.iii",
+      "section": "Art and design",
+      "source": "The Guardian",
+      "title": "If Not Now, When? review – a timely tour through feminist sculpture",
+      "URL": "https://www.theguardian.com/artanddesign/2023/apr/03/if-not-now-when-review-wakefield-post-hepworth-survey-female-narrative-sculpture",
+      "author": [
+        {
+          "family": "Clugston",
+          "given": "Hannah"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2023,
+            4,
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/LTBYGYKV",
+      "type": "article-newspaper",
+      "abstract": "LETTRE DES MÉDIAS. Deux ouvrages « récupérés » par l’éditeur parisien égratignent l’entrepreneur breton et son empire médiatique.",
+      "citation-key": "ubertalliEntreAntoineGallimard2023",
+      "container-title": "Le Point",
+      "language": "fr",
+      "license": "MHRA4 7.6.ii",
+      "title": "Entre Antoine Gallimard et Vincent Bolloré, la guerre du livre",
+      "URL": "https://www.lepoint.fr/economie/entre-antoine-gallimard-et-vincent-bollore-la-guerre-du-livre-25-02-2023-2509972_28.php",
+      "author": [
+        {
+          "family": "Ubertalli",
+          "given": "Olivier"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2023,
+            2,
+            25
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/XZSUW6QK",
+      "type": "article-journal",
+      "citation-key": "wellerIdeaEuropeCritical2022",
+      "container-title": "Forum for Modern Language Studies",
+      "DOI": "10.1093/fmls/cqac019",
+      "ISSN": "0015-8518, 1471-6860",
+      "issue": "1",
+      "journalAbbreviation": "Forum Mod. Lang. Stud.",
+      "language": "en",
+      "license": "MHRA4 7.4.x",
+      "note": "event-date: 2021",
+      "page": "134–135",
+      "source": "DOI.org (Crossref)",
+      "title": "The idea of Europe: a critical history",
+      "URL": "https://academic.oup.com/fmls/article-abstract/58/1/134/6588180",
+      "volume": "58",
+      "reviewed-author": [
+        {
+          "family": "Weller",
+          "given": "Shane"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2022",
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/6PJFK2JJ",
+      "type": "article-journal",
+      "citation-key": "wirshbaKafkasZoopoeticsHuman2022",
+      "container-title": "Modern Language Review",
+      "DOI": "10.1353/mlr.2022.0032",
+      "ISSN": "2222-4319",
+      "issue": "1",
+      "journalAbbreviation": "Mod. Lang. Rev.",
+      "language": "en",
+      "license": "MHRA4 7.4.ix",
+      "note": "event-date: 2020",
+      "page": "140-141",
+      "shortTitle": "Kafka’s zoopoetics",
+      "source": "DOI.org (Crossref)",
+      "title": "Kafka’s zoopoetics: beyond the human–animal barrier",
+      "title-short": "Kafka’s zoopoetics",
+      "URL": "https://muse.jhu.edu/article/844972",
+      "volume": "117",
+      "author": [
+        {
+          "family": "Wirshba",
+          "given": "Jacob"
+        }
+      ],
+      "reviewed-author": [
+        {
+          "family": "Harel",
+          "given": "Naama"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2022"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/BW7ZGGL2",
+      "type": "song",
+      "citation-key": "oconnorNothingCompares21990",
+      "language": "en",
+      "license": "MHRA4 7.8.vii",
+      "note": "container-title: I do not want what I haven't got",
+      "publisher": "Chrysalis Records",
+      "title": "Nothing compares 2 U",
+      "author": [
+        {
+          "family": "O’Connor",
+          "given": "Sinéad"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1990
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/6HF6JLLI",
+      "type": "manuscript",
+      "archive": "British Library",
+      "archive_location": "Cotton MS Caligula D III",
+      "citation-key": "zotero-item-65872",
+      "language": "en",
+      "license": "MHRA4 7.7",
+      "note": "archive-place: London"
+    },
+    {
+      "id": "6188419/JFIYXHIQ",
+      "type": "article-journal",
+      "abstract": "The essay seeks to explain how and why rightwing populists in Europe, North America, and beyond have developed an “illiberal” politics of memory in opposition to the global liberal memory culture of the past generation. After explaining the rise of “illiberal memory” as a byproduct of the rise of illiberal democracy since 2008, the essay advances a comprehensive typology of the movement’s overall objectives and tactics based on numerous empirical examples from different nations, including Germany, Russia, the United States, Israel, and India. It concludes with some reflections about how illiberal memory is likely to evolve in the future. The essay is the first to advance the concept of “illiberal memory” and present an overall theory of its origins and agenda.",
+      "citation-key": "rosenfeldRiseIlliberalMemory2021",
+      "container-title": "Memory Studies",
+      "DOI": "10.1177/1750698020988771",
+      "ISSN": "1750-6980, 1750-6999",
+      "journalAbbreviation": "Mem. Stud.",
+      "language": "en",
+      "license": "MHRA4 7.4.xi",
+      "source": "DOI.org (Crossref)",
+      "title": "The rise of illiberal memory",
+      "URL": "https://journals.sagepub.com/doi/10.1177/1750698020988771",
+      "author": [
+        {
+          "family": "Rosenfeld",
+          "given": "Gavriel D."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2021",
+            2,
+            15
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/ZJIJ7RKI",
+      "type": "article-journal",
+      "citation-key": "urbinaDonQuijotePuer1987",
+      "container-title": "Journal of Hispanic Philology",
+      "ISSN": "0147-5460",
+      "journalAbbreviation": "J. Hisp. Philol.",
+      "language": "es",
+      "license": "MHRA4 7.4.vi",
+      "note": "issued: 1987/1988",
+      "page": "127–138",
+      "shortTitle": "Don Quijote, <i>puer–senex</i>",
+      "title": "Don Quijote, <i>puer–senex</i>: un tópico y su transformación paródica en el <i>Quijote</i>",
+      "title-short": "Don Quijote, <i>puer–senex</i>",
+      "volume": "12",
+      "author": [
+        {
+          "family": "Urbina",
+          "given": "Eduardo"
+        }
+      ]
+    },
+    {
+      "id": "6188419/4QVCSZ6E",
+      "type": "article-journal",
+      "citation-key": "lopesLiteratureCompositionDisparate2020",
+      "container-title": "Portuguese Studies",
+      "DOI": "10.1353/port.2020.0026",
+      "ISSN": "2222-4270",
+      "issue": "2",
+      "journalAbbreviation": "Port. Stud.",
+      "language": "en",
+      "license": "MHRA4 7.4.xii",
+      "note": "volume-title: Modern Portuguese poetry",
+      "page": "132-146",
+      "source": "DOI.org (Crossref)",
+      "title": "Of literature as a composition of the disparate and its political implications",
+      "URL": "https://muse.jhu.edu/article/814934",
+      "volume": "36",
+      "author": [
+        {
+          "family": "Lopes",
+          "given": "Silvina Rodrigues"
+        }
+      ],
+      "editor": [
+        {
+          "family": "de Medeiros",
+          "given": "Paulo"
+        },
+        {
+          "family": "Martelo",
+          "given": "Rosa Maria"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2020
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/IJJJYE67",
+      "type": "article-journal",
+      "citation-key": "demedeirosModernPortuguesePoetry2020",
+      "container-title": "Portuguese Studies",
+      "issue": "2",
+      "journalAbbreviation": "Port. Stud.",
+      "language": "en",
+      "license": "MHRA4 7.4.xii",
+      "note": "OCLC: 1222895714\ntype: periodical",
+      "source": "Open WorldCat",
+      "title": "Modern Portuguese poetry",
+      "URL": "https://www.jstor.org/stable/10.5699/portstudies.36.issue-2",
+      "volume": "36",
+      "editor": [
+        {
+          "family": "de Medeiros",
+          "given": "Paulo"
+        },
+        {
+          "family": "Martelo",
+          "given": "Rosa Maria"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            7,
+            6
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2020
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/SH3K7GA7",
+      "type": "chapter",
+      "abstract": "In recent years, the embrace of 'slow;' sensuous and durational forms of cinema and the moving image registers desires to immerse in phenomenological experiences of artworks as potential antidotes to our information-saturated, techno-capitalist age. Exploring shifts away from ownership, accumulation and possessive acquisition of the object towards more experiential, immaterial 'aneconomies' of pleasure, care, eroticism, poetry and ritual, this book tracks the evolution in understandings of the luxurious in the last decade, and luxury's potential coalitions with cinephilia; affect; the senses and the ontology and formal quality of light (lux, lucis). Engaging with four contemporary Francophone women artists - Louise Bourgeois, Chantal Akerman, Sophie Calle and Annie Ernaux - as case studies for an inter-medial, multi-sensory, and generically 'queer' conception of le luxe - the book also queries luxury's entrenched gendering as pathologized symptom of feminized experience; and both luxury and femininity's relation to consumption; embodiment and excess under neoliberal austerity and 24/7 surveillance culture. Although in our current disaster-laden epoch, sustained thinking about luxury might appear a perverse and abstracted act, the book, via the medium of cinema and the moving image, argues that a different understanding of luxury as a 'sensuous relation to the world;' a slowing down of critical and attentive faculties; and a re-investment in affective acts of communal being-together may no longer be decadent but epistemologically necessary to the preservation and continued affirmation of this world",
+      "citation-key": "blackhurstAnnieErnauxLecriture2021",
+      "collection-number": "13",
+      "collection-title": "Moving image",
+      "container-title": "Luxury, sensation and the moving image",
+      "ISBN": "978-1-83954-022-6",
+      "language": "en",
+      "license": "MHRA4 7.3b.viii",
+      "page": "55–80",
+      "publisher": "Legenda",
+      "publisher-place": "Cambridge",
+      "source": "Library of Congress ISBN",
+      "title": "Annie Ernaux: <span class=\"nocase\">l’écriture, un luxe</span>",
+      "author": [
+        {
+          "family": "Blackhurst",
+          "given": "Alice"
+        }
+      ],
+      "container-author": [
+        {
+          "family": "Blackhurst",
+          "given": "Alice"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2021
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/X2JBFW4J",
+      "type": "thesis",
+      "abstract": "My dissertation, entitled “Prosaic Times: Time as Subject in Wordsworth, Richardson, Flaubert, and Melville,” examines literary works of realism—the artistic claim to represent life as it is—that do not necessarily depend upon the plotline of the story they tell but on the sense of time that their style generates. Most noticeable in the works examined— Wordsworth’s epic blank verse narrative of first-person experience, The Prelude; the first-person, epistolary accounts of experience composing the first “realist” and longest English-language novel, Richardson’s Clarissa, or the History of a Young Lady; Flaubert’s highly stylized representation of substance experienced in the complete absence of style, the experience of the “simple” life narrated in his “Un Coeur Simple;” and the alternately lyric and encyclopedic novel, Moby Dick, or the Whale, an epic in which, narratively speaking, very little happens—is that the plot of these works are unremarkable and out of sync with the extensive and intensive development of the writing involved in their narration. This dissertation claims that the reduced significance placed on plot in these works is counterbalanced by something else: a quality of temporal experience different from linear time. The active quality of language, of what narrative discourse says and does in forming our understanding of real things and events, is brought directly to the reader’s attention in these works. In the natural objects and “scenes” of experience Wordsworth describes; the dense, temporally overlapping exchange of accounts both of purposefully misled, first impressions and disguised, misleading intentions, as well as the disclosure of these over time, composed in “real time” by Richardson’s several epistolary authors; the depiction of the quotidian ways of a village and of a life lived in service of other lives in that village, from the point of view of a subject to whom nothing but the relentless reduction of life happens, by Flaubert; and the boundless occasion for “timeless” metaphysical reflections and physical domain of an elusive, literally unfathomable creature of innumerable 19th-century industrial uses, that the sea represents in Melville, narration not only “takes” but makes time part of the experience it represents.",
+      "citation-key": "parkProsaicTimesTime2020",
+      "genre": "doctoral dissertation",
+      "language": "en",
+      "license": "MHRA4 7.10.v",
+      "note": "Accepted: 2020-11-20T05:58:58Z\nPublisher: Princeton, NJ : Princeton University",
+      "publisher": "Princeton University",
+      "shortTitle": "Prosaic times",
+      "source": "dataspace.princeton.edu",
+      "title": "Prosaic times: time as subject in Wordsworth, Richardson, Flaubert, and Melville",
+      "title-short": "Prosaic times",
+      "URL": "https://arks.princeton.edu/ark:/88435/dsp018910jx63h",
+      "author": [
+        {
+          "family": "Park",
+          "given": "John"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2020
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/Y5335LYM",
+      "type": "thesis",
+      "citation-key": "humphreyYouNeverGet2021",
+      "genre": "master’s thesis",
+      "language": "en",
+      "license": "MHRA4 7.10.iv",
+      "publisher": "Liberty University",
+      "shortTitle": "Christ-haunted security of Jean Louise “Scout” Finch",
+      "source": "COinS",
+      "title": "“You never get it out of your bones”: the Christ-haunted security of Jean Louise “Scout” Finch in Harper Lee's <i>To kill a mockingbird</i> and <i>Go set a watchman</i>",
+      "title-short": "Christ-haunted security of Jean Louise “Scout” Finch",
+      "URL": "https://digitalcommons.liberty.edu/masters/723",
+      "author": [
+        {
+          "family": "Humphrey",
+          "given": "Corley"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2021,
+            4,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/IBYDX5Z8",
+      "type": "thesis",
+      "citation-key": "vonbaibusPursuitCollectiveLaughter2022",
+      "genre": "master’s thesis",
+      "language": "en",
+      "license": "MHRA4 7.10.iii",
+      "publisher": "University of Bristol",
+      "title": "In pursuit of collective laughter",
+      "URL": "https://research-information.bris.ac.uk/en/studentTheses/in-pursuit-of-collective-laughter",
+      "author": [
+        {
+          "family": "Von Baibus",
+          "given": "Nil Melissa"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2022
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/6CEECM5Z",
+      "type": "thesis",
+      "citation-key": "sulterPost911Novel2021",
+      "genre": "doctoral thesis",
+      "language": "en",
+      "license": "MHRA4 7.10.ii",
+      "publisher": "University of Manchester",
+      "publisher-place": "Manchester",
+      "shortTitle": "Beyond the post-9/11 novel",
+      "title": "Beyond the post-9/11 novel: representations of state violence and imperialism in fictions of the war on terror",
+      "title-short": "Beyond the post-9/11 novel",
+      "URL": "https://research.manchester.ac.uk/en/studentTheses/beyond-the-post-911-novel-representations-of-state-violence-and-i",
+      "author": [
+        {
+          "family": "Sulter",
+          "given": "Philip"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2021
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/WHZWHJCP",
+      "type": "article-newspaper",
+      "abstract": "Ian Thomson remembers the Italian novelist Italo Calvino, whose fabulist fiction was deeply rooted in reality",
+      "citation-key": "thomsonItaloCalvinoCelebration2015",
+      "container-title": "The Telegraph",
+      "ISSN": "0307-1235",
+      "language": "en-GB",
+      "license": "MHRA4 7.6.i",
+      "shortTitle": "Italo Calvino",
+      "source": "www.telegraph.co.uk",
+      "title": "Italo Calvino: a celebration of the fairy king",
+      "title-short": "Italo Calvino",
+      "URL": "https://www.telegraph.co.uk/books/what-to-read/italo-calvino-the-fairy-king/",
+      "author": [
+        {
+          "family": "Thomson",
+          "given": "Ian"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2015,
+            9,
+            19
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/W3MT3MUH",
+      "type": "post-weblog",
+      "citation-key": "Visualization2016",
+      "container-title": "15cBOOKTRADE",
+      "language": "en-GB",
+      "license": "MHRA4 7.5.viii",
+      "title": "Visualization",
+      "URL": "https://15cbooktrade.ox.ac.uk/visualization/",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2016",
+            6,
+            18
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/NDF86Z26",
+      "type": "post",
+      "citation-key": "purpleferret9146WhatYouThink2023",
+      "container-title": "Reddit",
+      "language": "en",
+      "license": "MHRA4 7.5.vi",
+      "title": "What do you think about Normal People by Sally Rooney?",
+      "URL": "www.reddit.com/r/literature/comments/12oyh4k/what_do_you_think_about_normal_people_by_sally/",
+      "author": [
+        {
+          "family": "PurpleFerret9146",
+          "given": ""
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2023,
+            4,
+            17
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/ZPFPCRSW",
+      "type": "webpage",
+      "abstract": "Explore exhibitions, events, tours and workshops at Tate's four galleries. These pages are updated continually.",
+      "citation-key": "WhatsTate",
+      "container-title": "Tate",
+      "language": "en-GB",
+      "license": "MHRA4 7.5.v",
+      "title": "What's on at Tate",
+      "URL": "https://www.tate.org.uk/whats-on",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/9XA46SUP",
+      "type": "article-magazine",
+      "abstract": "Coco Jones talks child stardom, hating fame and Princess Tiana.",
+      "citation-key": "mukhtarHowFailureFreed2023",
+      "container-title": "British Vogue",
+      "language": "en-GB",
+      "license": "MHRA4 7.5.i",
+      "title": "How failure freed Coco Jones, R&B’s soulful new star",
+      "URL": "https://www.vogue.co.uk/arts-and-lifestyle/article/coco-jones-interview",
+      "author": [
+        {
+          "family": "Mukhtar",
+          "given": "Amel"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2023,
+            3,
+            28
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/37KHPWVG",
+      "type": "webpage",
+      "citation-key": "BloodyChamberOther",
+      "container-title": "goodreads",
+      "language": "en",
+      "license": "MHRA4 7.5.vii",
+      "title": "The bloody chamber and other stories",
+      "URL": "https://www.goodreads.com/book/show/49011.The_Bloody_Chamber_and_Other_Stories",
+      "accessed": {
+        "date-parts": [
+          [
+            2023,
+            1,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/8AUCKKNF",
+      "type": "post",
+      "citation-key": "viragopress@viragobooksReadersHaveTold2023",
+      "container-title": "Twitter",
+      "language": "en",
+      "license": "MHRA4 7.5.iv",
+      "title": "💙 Some readers have told us they always shed a tear at the ending of Carrie's War",
+      "URL": "https://x.com/ViragoBooks/status/1645445347378970624",
+      "author": [
+        {
+          "family": "Virago Press, (@ViragoBooks)",
+          "given": ""
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2023,
+            4,
+            10
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/3KJ96UQD",
+      "type": "post",
+      "citation-key": "legoideasHungry2023",
+      "container-title": "Facebook",
+      "language": "en",
+      "license": "MHRA4 7.5.iii",
+      "title": "Hungry? 🌭",
+      "URL": "https://www.facebook.com/LEGOIdeas/photos/a.325471264133745/6706754659338675",
+      "author": [
+        {
+          "family": "LEGO Ideas",
+          "given": ""
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2023",
+            4,
+            20
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/YU36XHPD",
+      "type": "webpage",
+      "citation-key": "WelcomeMHRAStyle",
+      "container-title": "MHRA",
+      "language": "en",
+      "license": "MHRA4 7.5.ii",
+      "title": "Welcome to the MHRA style guide online",
+      "URL": "https://www.mhra.org.uk/style/",
+      "accessed": {
+        "date-parts": [
+          [
+            2023,
+            12,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/NXGSJFE4",
+      "type": "article-journal",
+      "citation-key": "west-pavlovModernismsModernitiesAchebes2022",
+      "container-title": "English Studies in Africa",
+      "DOI": "10.1080/00138398.2022.2055860",
+      "ISSN": "0013-8398, 1943-8117",
+      "issue": "1",
+      "journalAbbreviation": "Engl. Stud. Afr.",
+      "language": "en",
+      "license": "MHRA4 7.4.v",
+      "page": "72-86",
+      "source": "DOI.org (Crossref)",
+      "title": "Modernisms and Modernities in Achebe’s <i>Things Fall Apart</i>",
+      "URL": "https://www.tandfonline.com/doi/full/10.1080/00138398.2022.2055860",
+      "volume": "65",
+      "author": [
+        {
+          "family": "West-Pavlov",
+          "given": "Russell"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2022,
+            1,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/VMFAYFX5",
+      "type": "chapter",
+      "citation-key": "zephaniahDisPoetry1992",
+      "container-title": "City psalms",
+      "ISBN": "978-1-85224-230-5",
+      "language": "en",
+      "license": "MHRA4 7.3b.ix",
+      "page": "12–13",
+      "publisher": "Bloodaxe Books",
+      "publisher-place": "Tarset",
+      "source": "K10plus ISBN",
+      "title": "Dis Poetry",
+      "container-author": [
+        {
+          "family": "Zephaniah",
+          "given": "Benjamin"
+        }
+      ],
+      "author": [
+        {
+          "family": "Zephaniah",
+          "given": "Benjamin"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1992
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/WF6ZY97H",
+      "type": "article-journal",
+      "citation-key": "rothbergDecolonizingTraumaStudies2008",
+      "container-title": "Studies in the Novel",
+      "DOI": "10.1353/sdn.0.0005",
+      "ISSN": "1934-1512",
+      "issue": "1–2",
+      "journalAbbreviation": "Stud. Nov.",
+      "language": "en",
+      "license": "MHRA4 7.4.ii",
+      "page": "224-234",
+      "shortTitle": "Decolonizing trauma studies",
+      "source": "DOI.org (Crossref)",
+      "title": "Decolonizing trauma studies: a response",
+      "title-short": "Decolonizing trauma studies",
+      "URL": "https://muse.jhu.edu/article/246619",
+      "volume": "40",
+      "author": [
+        {
+          "family": "Rothberg",
+          "given": "Michael"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2008"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/RQJQ7NIV",
+      "type": "book",
+      "citation-key": "livingstoneLivingstonesMissionaryTravels2020",
+      "edition": "rev. edn",
+      "language": "en",
+      "license": "MHRA4 7.3b.xii",
+      "note": "container-title: Livingstone Online\navailable-date: 2004/2021",
+      "title": "Livingstone's 'Missionary travels' manuscript (1857)",
+      "URL": "https://livingstoneonline.org/uuid/node/c0bd18cf-692f-4843-b896-799cff98351b",
+      "editor": [
+        {
+          "family": "Livingstone",
+          "given": "Justin D."
+        },
+        {
+          "family": "Wisnicki",
+          "given": "Adrian S."
+        }
+      ],
+      "collection-editor": [
+        {
+          "family": "Wisnicki",
+          "given": "Adrian S."
+        },
+        {
+          "family": "Ward",
+          "given": "Megan"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2020
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/7YR4GK23",
+      "type": "chapter",
+      "abstract": "\"Goncharov in the Twenty-First Century brings together a range of international scholars for a reexamination of Ivan Goncharov's life and work through a twenty-first century critical lens. Contributions to the volume highlight Goncharov's service career, the complex and understudied manifestation of Realism in his work, the diverse philosophical threads that shape his novels, and the often colliding contexts of writer and imperial bureaucrat in the 1858 travel text Frigate Pallada. Chapters engage with approaches from post-colonial and queer studies, theories of genre and the novel, desire, laughter, technology, and mobility and travel\"--",
+      "call-number": "PG3337.G6 Z6337 2021",
+      "citation-key": "kokoboboQueerNihilistQueer2021",
+      "container-title": "Goncharov in the twenty-first century",
+      "DOI": "10.2307/j.ctv249sgs4.13",
+      "ISBN": "978-1-64469-699-6 978-1-64469-698-9",
+      "language": "en",
+      "license": "MHRA4 7.3b.iii",
+      "page": "132–152",
+      "publisher": "Academic Studies Press",
+      "publisher-place": "Boston",
+      "shortTitle": "The queer nihilist",
+      "source": "DOI.org (Crossref)",
+      "title": "The queer nihilist: queer time, social refusal, and heteronormativity in <i>The precipice</i>",
+      "title-short": "The queer nihilist",
+      "URL": "http://www.jstor.org/stable/10.2307/j.ctv249sgs4",
+      "editor": [
+        {
+          "family": "Kleespies",
+          "given": "Ingrid"
+        },
+        {
+          "family": "Parts",
+          "given": "Lyudmila"
+        }
+      ],
+      "author": [
+        {
+          "family": "Kokobobo",
+          "given": "Ani"
+        },
+        {
+          "family": "McFadden",
+          "given": "Devin"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2021,
+            11,
+            23
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/WM8PEX3L",
+      "type": "chapter",
+      "call-number": "GF22 .R43 2017",
+      "citation-key": "nollgenDarknessAnthropoceneWolfgang2017",
+      "collection-number": "18",
+      "collection-title": "New directions in German studies",
+      "container-title": "Readings in the anthropocene: the environmental humanities, German studies, and beyond",
+      "DOI": "10.5040/9781501307782.ch-007",
+      "ISBN": "978-1-5013-0775-1 978-1-5013-0776-8",
+      "language": "en",
+      "license": "MHRA4 7.3b.i",
+      "page": "148–166",
+      "publisher": "Bloomsbury",
+      "publisher-place": "New York",
+      "source": "Library of Congress ISBN",
+      "title": "The darkness of the anthropocene: Wolfgang Hilbig’s <i>Alte Abdeckerei</i>",
+      "editor": [
+        {
+          "family": "Wilke",
+          "given": "Sabine"
+        },
+        {
+          "family": "Johnstone",
+          "given": "Japhet"
+        }
+      ],
+      "author": [
+        {
+          "family": "Nöllgen",
+          "given": "Sabine"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2017
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/SFHSIJG9",
+      "type": "book",
+      "citation-key": "cheesmanGermanTextCrimes2013",
+      "collection-number": "77",
+      "collection-title": "German Monitor",
+      "DOI": "10.1163/9789401209496",
+      "ISBN": "978-90-420-3690-1",
+      "language": "en",
+      "license": "MHRA4 7.3a.xii",
+      "publisher": "Rodopi",
+      "publisher-place": "Amsterdam",
+      "shortTitle": "German text crimes",
+      "source": "BnF ISBN",
+      "title": "German text crimes: writers accused, from the 1950s to the 2000s",
+      "title-short": "German text crimes",
+      "editor": [
+        {
+          "family": "Cheesman",
+          "given": "Tom"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/K5N7665A",
+      "type": "book",
+      "call-number": "PS3552.A45 A16 1998",
+      "citation-key": "baldwinCollectedEssays1998",
+      "collection-number": "98",
+      "collection-title": "The library of America",
+      "ISBN": "978-1-883011-52-9",
+      "language": "en",
+      "license": "MHRA4 7.3a.x",
+      "number-of-pages": "869",
+      "publisher": "Library of America",
+      "publisher-place": "New York",
+      "source": "Library of Congress ISBN",
+      "title": "Collected essays",
+      "author": [
+        {
+          "family": "Baldwin",
+          "given": "James"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Morrison",
+          "given": "Toni"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1998
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/EK76DWQX",
+      "type": "chapter",
+      "citation-key": "chaucerTroilusCriseyde2006",
+      "container-title": "The Riverside Chaucer",
+      "edition": "3",
+      "ISBN": "978-0-19-282109-6",
+      "language": "en",
+      "license": "MHRA4 7.3b.x",
+      "note": "type: classic",
+      "page": "472–585",
+      "publisher": "Oxford University Press",
+      "publisher-place": "Oxford",
+      "source": "K10plus ISBN",
+      "title": "Troilus and Criseyde",
+      "editor": [
+        {
+          "family": "Benson",
+          "given": "Larry D."
+        }
+      ],
+      "author": [
+        {
+          "family": "Chaucer",
+          "given": ""
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2006
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/7P6IAWUY",
+      "type": "chapter",
+      "citation-key": "zavaTranslatingCanzoniereImages2020",
+      "container-title": "Translating Petrarch's poetry: 'l'aura <span class=\"nocase\">del</span> Petrarca' from the Quattrocento to the 21st century",
+      "DOI": "10.2307/j.ctv16kkxw0.10",
+      "ISBN": "978-1-78188-665-6 978-1-78188-663-2",
+      "language": "en",
+      "license": "MHRA4 7.3b.ii",
+      "page": "82–102",
+      "publisher": "Legenda",
+      "publisher-place": "Cambridge",
+      "shortTitle": "Translating the <i>canzoniere</i>",
+      "source": "DOI.org (Crossref)",
+      "title": "Translating the <i>canzoniere</i> into images: the Petrarca queriniano incunable",
+      "title-short": "Translating the <i>canzoniere</i>",
+      "URL": "http://www.jstor.org/stable/10.2307/j.ctv16kkxw0",
+      "editor": [
+        {
+          "family": "Birkan-Berz",
+          "given": "Carole"
+        },
+        {
+          "family": "Coatalen",
+          "given": "Guillaume"
+        },
+        {
+          "family": "Vuong",
+          "given": "Thomas"
+        }
+      ],
+      "author": [
+        {
+          "family": "Zava",
+          "given": "Giulia"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2020,
+            2,
+            17
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/UKXPLJK2",
+      "type": "book",
+      "citation-key": "goodcoleWonderfullDiscoverieElizabeth1621",
+      "language": "en",
+      "license": "MHRA4 7.3a.xiii",
+      "publisher": "for William Butler",
+      "publisher-place": "London",
+      "title": "The wonderfull discoverie of Elizabeth Sawyer a witch, late of Edmonton",
+      "URL": "https://archive.org/details/bim_early-english-books-1475-1640_the-wonderfull-discoveri_goodcole-henry_1621",
+      "author": [
+        {
+          "family": "Goodcole",
+          "given": "Henry"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            25
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1621
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/K6KQYYNB",
+      "type": "book",
+      "abstract": "A study of Fonseca Pimentel's career against the backdrop of the history of the Neapolitan state plus selections from the \"Monitore Napoletano\", the vehicle by which she expressed her ardent advocacy of the revolutionary agenda",
+      "call-number": "851.6 (critique)",
+      "citation-key": "fonsecapimentelArcadiaRevolutionNeapolitan2019",
+      "collection-number": "67",
+      "collection-title": "The other voice in Early Modern Europe",
+      "ISBN": "978-0-86698-616-8",
+      "language": "en",
+      "license": "MHRA4 7.3a.viii",
+      "publisher": "Iter Press and Arizona Center for Medieval and Renaissance Studies",
+      "publisher-place": "Toronto",
+      "shortTitle": "Eleonora Fonseca Pimentel",
+      "source": "BnF ISBN",
+      "title": "From Arcadia to revolution: \"The Neapolitan Monitor\" and other writings",
+      "title-short": "Eleonora Fonseca Pimentel",
+      "editor": [
+        {
+          "family": "Jones",
+          "given": "Verina R."
+        }
+      ],
+      "translator": [
+        {
+          "family": "Jones",
+          "given": "Verina R."
+        }
+      ],
+      "author": [
+        {
+          "family": "Fonseca Pimentel",
+          "given": "Eleonora"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2019
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/K3DFFQFB",
+      "type": "book",
+      "citation-key": "allenHomeriIlias2000",
+      "edition": "facsimile repr.",
+      "ISBN": "978-0-19-924177-4",
+      "language": "grc eng",
+      "license": "MHRA4 7.3a.ix",
+      "note": "type: classic",
+      "number-of-volumes": "3",
+      "original-publisher": "Clarendon Press",
+      "original-publisher-place": "Oxford",
+      "publisher": "Oxford University Press",
+      "publisher-place": "Oxford",
+      "source": "K10plus ISBN",
+      "title": "Homeri Ilias",
+      "editor": [
+        {
+          "family": "Allen",
+          "given": "Thomas W."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2000
+          ]
+        ]
+      },
+      "original-date": {
+        "date-parts": [
+          [
+            1931
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/E3CDKLTD",
+      "type": "book",
+      "call-number": "HQ1588 .B43 1998",
+      "citation-key": "bridenthalBecomingVisibleWomen1998",
+      "edition": "3",
+      "ISBN": "978-0-395-79625-2",
+      "language": "en",
+      "license": "MHRA4 7.3a.vi",
+      "number-of-pages": "594",
+      "publisher": "Houghton Mifflin",
+      "publisher-place": "Boston",
+      "shortTitle": "Becoming visible",
+      "source": "Library of Congress ISBN",
+      "title": "Becoming visible: women in European history",
+      "title-short": "Becoming visible",
+      "editor": [
+        {
+          "family": "Bridenthal",
+          "given": "Renate"
+        },
+        {
+          "family": "Stuard",
+          "given": "Susan Mosher"
+        },
+        {
+          "family": "Wiesner-Hanks",
+          "given": "Merry E."
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            1998
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/34CMC77L",
+      "type": "book",
+      "call-number": "PN56.5.M67",
+      "citation-key": "ryeMotherhoodLiteratureCulture2018",
+      "collection-number": "78",
+      "collection-title": "Routledge Interdisciplinary perspectives on literature",
+      "DOI": "10.4324/9781315626581",
+      "ISBN": "978-1-315-62658-1",
+      "language": "en",
+      "license": "MHRA4 7.3a.v",
+      "number-of-pages": "1",
+      "publisher": "Routledge",
+      "publisher-place": "London",
+      "shortTitle": "Motherhood in literature and culture",
+      "source": "Library of Congress ISBN",
+      "title": "Motherhood in literature and culture: interdisciplinary perspectives from Europe",
+      "title-short": "Motherhood in literature and culture",
+      "editor": [
+        {
+          "family": "Rye",
+          "given": "Gill"
+        },
+        {
+          "family": "Browne",
+          "given": "Victoria"
+        },
+        {
+          "family": "Giorgio",
+          "given": "Adalgisa"
+        },
+        {
+          "family": "Jeremiah",
+          "given": "Emily"
+        },
+        {
+          "family": "Six",
+          "given": "Abigail Lee"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/47T3TJCP",
+      "type": "article-journal",
+      "abstract": "African American studies and television scholar Christine Acham interviews Kenya Barris the creator of the top-rated primetime network show Black-ish (ABC, 2014—). Acham tuned in during the 2014 political climate of #BlackLivesMatter to find a show that veered so far from television's traditionally monolithic or culturally void versions of blackness. Her conversation with Kenya Barris took place on June 23, 2017, in Burbank, California. They discussed Black-ish in detail, and also engaged questions of politics, the specificity of black storytelling, the contemporary “Black Television Renaissance,” and the pressures and responsibilities facing black creatives in the industry. At press time, Barris had gone on to create a new spinoff show, Grown-ish, and to collaborate with some of its writers to launch yet another series, Bright Futures, a twenty-something comedy, also at ABC.",
+      "citation-key": "achamBlackishKenyaBarris2018",
+      "container-title": "Film Quarterly",
+      "DOI": "10.1525/fq.2018.71.3.48",
+      "ISSN": "0015-1386, 1533-8630",
+      "issue": "3",
+      "journalAbbreviation": "Film Q.",
+      "language": "en",
+      "license": "MHRA4 7.4.vii",
+      "page": "48-57",
+      "shortTitle": "Black-ish",
+      "source": "DOI.org (Crossref)",
+      "title": "Black-ish: Kenya Barris on representing Blackness in the age of Black Lives Matter",
+      "title-short": "Black-ish",
+      "URL": "https://online.ucpress.edu/fq/article/71/3/48/29284/Blackish-Kenya-Barris-on-Representing-Blackness-in",
+      "volume": "71",
+      "author": [
+        {
+          "family": "Acham",
+          "given": "Christine"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            3,
+            18
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2018,
+            3,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/BAQ7ACHN",
+      "type": "paper-conference",
+      "citation-key": "connonTwoheadedEagleCocteaus2015",
+      "event-title": "the conference 'Adaptation: Intertextual Transformations across Different Media'",
+      "language": "en",
+      "license": "MHRA4 7.10.vi",
+      "publisher-place": "Swansea University",
+      "shortTitle": "A two-headed eagle",
+      "title": "A two-headed eagle: Cocteau’s play and film",
+      "title-short": "A two-headed eagle",
+      "author": [
+        {
+          "family": "Connon",
+          "given": "Derek"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            "2015",
+            7
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/U8AUDYUY",
+      "type": "thesis",
+      "abstract": "El objeto de esta investigación doctoral es conocer el papel que juegan los hombres- los personajes masculinos- en las películas de Pedro Almodóvar, y comprender sus relaciones con los personajes femeninos y conocer el patrón masculino existente en su cine, el que se presenta en su producción cinematográfica cumpliendo un rol social, familiar, etc., que da lugar a un destino trágico para ellos. En el mundo que Pedro Almodóvar ¨crea¨ las mujeres sufren y ellos también, nadie puede escapar. Todos están dentro del juego patriarcal.2. Marco teórico. El marco teórico se mueve entre la Teoría de los estereotipos que provienen tanto de la sociedad como de su representación artística, es decir, del interior del propio cine, literatura, teatro, etc. Como personajes son el resultado de la forma especial de ver el mundo de P. Almodóvar, basados tanto en la observación y la experiencia, como en los precedentes artísticos que usa como referencia del cine español y de otros países...",
+      "citation-key": "shenHombresMundoMujeres2018",
+      "genre": "doctoral thesis",
+      "language": "es",
+      "license": "MHRA4 7.10.i",
+      "publisher": "Universidad Complutense de Madrid",
+      "shortTitle": "Hombres en un mundo de mujeres",
+      "source": "docta.ucm.es",
+      "title": "Hombres en un mundo de mujeres: estereotipos e identidades masculinas en el cine de Pedro Almodóvar",
+      "title-short": "Hombres en un mundo de mujeres",
+      "URL": "https://hdl.handle.net/20.500.14352/16732",
+      "author": [
+        {
+          "family": "Shen",
+          "given": "Qian"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2023,
+            11,
+            10
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/5SPU2ZAD",
+      "type": "article-journal",
+      "abstract": "This article examines the relationship between the\n              Querelle des anciens et des modernes\n              and the\n              Querelle des femmes\n              as it was articulated in ‘Le Parnasse reconnoissant, ou, Le triomphe de Madame Des-Houlières’ by Marie-Jeanne L’Héritier. Published in 1694 as a riposte to Boileau’s misogynist\n              \n                Satire\n                x\n              \n              , the text contributes to the tradition of defences of women. However, L’Héritier deliberately inserts her rejoinder into the\n              Querelle des anciens et des modernes\n              ; in so doing, she responds to another work by Boileau, the\n              Dialogue des héros de roman\n              . After establishing how different quarrels and concerns combine in Boileau’s two texts, this article argues that L’Héritier consciously exploited the platform of ‘Ancients and Moderns’ to discuss women’s cultural practice. While this confirms the critical view that the two quarrels were interlinked, it also reveals a hierarchy of quarrels in which the\n              Querelle des anciens et des modernes\n              had greater capital; as such it proved useful for a woman entering the literary field. L’Héritier’s strategies demonstrate the complexities of being a Modern woman writer, despite the typical alignment of these identities, and invite us to examine how this contemporary hierarchization of quarrels has shaped their recent reception.",
+      "citation-key": "taylorAncientsModernsGender2017",
+      "container-title": "French Studies",
+      "DOI": "10.1093/fs/knw261",
+      "ISSN": "0016-1128, 1468-2931",
+      "issue": "1",
+      "journalAbbreviation": "Fr. Stud.",
+      "language": "en",
+      "license": "MHRA4 7.4.iii",
+      "page": "15-30",
+      "shortTitle": "Ancients, Moderns, Gender",
+      "source": "DOI.org (Crossref)",
+      "title": "Ancients, moderns, gender: Marie-Jeanne L’Héritier’s <span class=\"nocase\">‘Le Parnasse reconnoissant, ou, Le triomphe de Madame Des-Houlières’</span>",
+      "title-short": "Ancients, Moderns, Gender",
+      "URL": "http://www.liverpooluniversitypress.co.uk/doi/10.1093/fs/knw261",
+      "volume": "71",
+      "author": [
+        {
+          "family": "Taylor",
+          "given": "Helena"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            3,
+            18
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2017"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/U87NIMG6",
+      "type": "article-journal",
+      "citation-key": "zerkaConstructingPoeticIdentity2019",
+      "container-title": "Modern Language Review",
+      "DOI": "10.5699/modelangrevi.114.2.0274",
+      "ISSN": "0026-7937",
+      "issue": "2",
+      "journalAbbreviation": "Mod. Lang. Rev.",
+      "language": "en",
+      "license": "MHRA4 7.4.i",
+      "page": "274–293",
+      "shortTitle": "Constructing poetic identity",
+      "source": "DOI.org (Crossref)",
+      "title": "Constructing poetic identity: Iberia as a heterotopia in Oswald von Wolkenstein's songs",
+      "title-short": "Constructing poetic identity",
+      "URL": "https://www.jstor.org/stable/10.5699/modelangrevi.114.2.0274",
+      "volume": "114",
+      "author": [
+        {
+          "family": "Zerka",
+          "given": "Doriane"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            3,
+            18
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2019
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/RNS3B5HU",
+      "type": "article-journal",
+      "abstract": "ABSTRACT\n            Folklore experts have shown that for a legend to be remembered it is important that it is historicised. Focusing on three case-studies from early modern Germany and the Netherlands, this article explores how the historicisation of mythical narratives operated in early modern Europe, and argues that memory practices played a crucial role in the interplay between myth and history. The application of new criteria for historical evidence did not result in the decline of myths. By declaring such stories mythical, and by using the existence of memory practices as evidence for this, scholars could continue to take them seriously.",
+      "citation-key": "pollmannLivingLegendsAuthentic2013",
+      "collection-title": "6th ser.",
+      "container-title": "Transactions of the Royal Historical Society",
+      "DOI": "10.1017/s0080440113000054",
+      "ISSN": "0080-4401, 1474-0648",
+      "journalAbbreviation": "Trans. R. Hist. Soc.",
+      "language": "en",
+      "license": "MHRA4 7.4.viii",
+      "page": "103-125",
+      "shortTitle": "Of living legends and authentic tales",
+      "source": "DOI.org (Crossref)",
+      "title": "Of living legends and authentic tales: how to get remembered in early modern Europe",
+      "title-short": "Of living legends and authentic tales",
+      "URL": "https://www.cambridge.org/core/product/identifier/S0080440113000054/type/journal_article",
+      "volume": "23",
+      "author": [
+        {
+          "family": "Pollmann",
+          "given": "Judith"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            3,
+            18
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            "2013"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/3EMZMSDP",
+      "type": "article-journal",
+      "citation-key": "biggieBotanyColonizationJohn2022",
+      "container-title": "Renaissance Drama",
+      "DOI": "10.1086/722938",
+      "ISSN": "0486-3739, 2164-3415",
+      "issue": "2",
+      "journalAbbreviation": "Renaiss. Drama",
+      "language": "en",
+      "license": "MHRA4 7.4.iv",
+      "page": "159-187",
+      "source": "DOI.org (Crossref)",
+      "title": "The botany of colonization in John Fletcher’s <i>The island princess</i>",
+      "URL": "https://www.journals.uchicago.edu/doi/10.1086/722938",
+      "volume": "50",
+      "author": [
+        {
+          "family": "Biggie",
+          "given": "Roya"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            3,
+            18
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2022,
+            9,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/YRLP4Y83",
+      "type": "book",
+      "call-number": "PT2603.O394 A6 2002",
+      "citation-key": "boellWerke2009",
+      "collection-title": "Kölner Ausgabe",
+      "ISBN": "978-3-462-03294-9",
+      "language": "de",
+      "license": "MHRA4 7.3a.xi",
+      "note": "volume-title: 1977–1979\navailable-date: 2002/2010",
+      "number-of-volumes": "27",
+      "publisher": "Kiepenheuer & Witsch",
+      "publisher-place": "Köln",
+      "shortTitle": "Werke",
+      "source": "Library of Congress ISBN",
+      "title": "Werke",
+      "title-short": "Werke",
+      "volume": "20",
+      "author": [
+        {
+          "family": "Böll",
+          "given": "Henrich"
+        }
+      ],
+      "editor": [
+        {
+          "family": "Schnell",
+          "given": "Ralf"
+        },
+        {
+          "family": "Schubert",
+          "given": "Jochen"
+        }
+      ],
+      "collection-editor": [
+        {
+          "family": "Bernáth",
+          "given": "Árpád"
+        },
+        {
+          "family": "Bernhard",
+          "given": "Hans Joachim"
+        },
+        {
+          "family": "Conard",
+          "given": "Robert C."
+        },
+        {
+          "family": "Finlay",
+          "given": "Frank"
+        },
+        {
+          "family": "Reid",
+          "given": "J. H."
+        },
+        {
+          "family": "Schnell",
+          "given": "Ralf"
+        },
+        {
+          "family": "Schubert",
+          "given": "Jochen"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2009
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/KHAHZAHI",
+      "type": "book",
+      "abstract": "The modern concept of disability did not exist in the Romantic period. This study addresses the anachronistic use of 'disability' in scholarship of the Romantic era, providing a disability studies theorized account that explores the relationship between ideas of function and aesthetics. Unpacking the politics of ability, the book reveals the centrality of capacity and weakness concepts to the egalitarian politics of the 1790s, and the importance of desert theory to debates about sentiment and the charitable relief of impaired soldiers. Clarifying the aesthetics of deformity as distinct from discussions of ability, Joshua uncovers a controversy over the use of deformity in picturesque aesthetics, offers accounts of deformity that anticipate recent disability studies theory, and discusses deformity and monstrosity as a blended category in Frankenstein. Setting aside the modern concept of disability, Joshua cogently argues for the historical and critical value of period-specific terms",
+      "call-number": "PR468.P35 J67 2020",
+      "citation-key": "joshuaPhysicalDisabilityBritish2020",
+      "collection-number": "130",
+      "collection-title": "Cambridge studies in romanticism",
+      "DOI": "10.1017/9781108872126",
+      "ISBN": "978-1-108-87212-6 978-1-108-83670-8 978-1-108-79917-1",
+      "language": "en",
+      "license": "MHRA4 7.3a.ii",
+      "number-of-pages": "1",
+      "publisher": "Cambridge University Press",
+      "publisher-place": "Cambridge",
+      "source": "Library of Congress ISBN",
+      "title": "Physical disability in British romantic literature",
+      "URL": "https://www.cambridge.org/core/product/identifier/9781108872126/type/book",
+      "author": [
+        {
+          "family": "Joshua",
+          "given": "Essaka"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2020,
+            11,
+            12
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/X9VVMYI7",
+      "type": "book",
+      "abstract": "Critique of German authors writing about the environment and climate, based on publications from ca. mid 1700s to mid 1900s; in English",
+      "call-number": "GF22 .R43 2017",
+      "citation-key": "wilkeReadingsAnthropoceneEnvironmental2017",
+      "collection-number": "18",
+      "collection-title": "New directions in German studies",
+      "DOI": "10.5040/9781501307782",
+      "ISBN": "978-1-5013-0775-1 978-1-5013-0776-8",
+      "language": "en",
+      "license": "MHRA4 7.3a.iv",
+      "number-of-pages": "326",
+      "publisher": "Bloomsbury",
+      "publisher-place": "New York",
+      "shortTitle": "Readings in the anthropocene",
+      "source": "Library of Congress ISBN",
+      "title": "Readings in the anthropocene: the environmental humanities, German studies, and beyond",
+      "title-short": "Readings in the anthropocene",
+      "editor": [
+        {
+          "family": "Wilke",
+          "given": "Sabine"
+        },
+        {
+          "family": "Johnstone",
+          "given": "Japhet"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2017
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/848ZXP62",
+      "type": "book",
+      "citation-key": "debeauvoirMemoires2018",
+      "collection-title": "Bibliothèque de la Pléiade",
+      "ISBN": "978-2-07-278059-2",
+      "language": "fr",
+      "license": "MHRA4 7.3a.vii",
+      "number-of-volumes": "2",
+      "publisher": "Gallimard",
+      "publisher-place": "Paris",
+      "source": "K10plus ISBN",
+      "title": "Mémoires",
+      "volume": "2",
+      "author": [
+        {
+          "family": "de Beauvoir",
+          "given": "Simone"
+        }
+      ],
+      "collection-editor": [
+        {
+          "family": "Jeannelle",
+          "given": "Jean-Louis"
+        },
+        {
+          "family": "Lecarme-Tabone",
+          "given": "Éliane"
+        },
+        {
+          "family": "Baty-Delalande",
+          "given": "Hélène"
+        },
+        {
+          "family": "Louette",
+          "given": "Jean-François"
+        },
+        {
+          "family": "Nicolas-Pierre",
+          "given": "Delphine"
+        },
+        {
+          "family": "Russo",
+          "given": "Élisabeth"
+        },
+        {
+          "family": "Stemmer",
+          "given": "Valérie"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2018
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/VGI4DI27",
+      "type": "book",
+      "abstract": "xxxii, 373 p. 25 cm",
+      "call-number": "02297797",
+      "citation-key": "pearyNorthPole1985",
+      "edition": "facsimile repr.",
+      "language": "en",
+      "license": "MHRA4 7.3a.iii",
+      "number-of-pages": "528",
+      "original-publisher": "Frederick A. Stokes",
+      "original-publisher-place": "New York",
+      "publisher": "Time Life",
+      "publisher-place": "New York",
+      "source": "Internet Archive",
+      "title": "The North pole",
+      "URL": "http://archive.org/details/northpoleitsdisc00pear",
+      "author": [
+        {
+          "family": "Peary",
+          "given": "Robert E."
+        }
+      ],
+      "contributor": [
+        {
+          "family": "Roosevelt",
+          "given": "Theodore"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            3,
+            8
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1985
+          ]
+        ]
+      },
+      "original-date": {
+        "date-parts": [
+          [
+            1910
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/W8PJJZDH",
+      "type": "book",
+      "abstract": "Insurgent Empire shows how Britain's enslaved and colonial subjects were active agents in their own liberation. Not only that, they shaped British ideas of freedom and emancipation back in the United Kingdom. Priyamvada Gopal examines dissenting politics in Britain and shows that it was influenced by rebellions and resistance among the colonies in the West Indies, East Africa, Egypt, and India. In addition, a pivotal role in fomenting resistance was played by anticolonial campaigners based in London, right at the heart of empire. Much has been written on how colonized peoples took up British and European ideas and turned them against empire when making claims to freedom and self-determination. Insurgent Empire sets the record straight in demonstrating that these people were much more than victims of imperialism or, subsequently, the passive beneficiaries of an enlightened Western conscience - they were insurgents whose legacy today benefits the culture of the nation that once oppressed them",
+      "call-number": "325.341 09",
+      "citation-key": "gopalInsurgentEmpireAnticolonial2020",
+      "ISBN": "978-1-78478-412-6",
+      "language": "en",
+      "license": "MHRA4 7.3a.i",
+      "publisher": "Verso",
+      "publisher-place": "London",
+      "shortTitle": "Insurgent empire",
+      "source": "BnF ISBN",
+      "title": "Insurgent empire: anticolonial resistance and British dissent",
+      "title-short": "Insurgent empire",
+      "author": [
+        {
+          "family": "Gopal",
+          "given": "Priyamvada"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2020
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/ULWWQTIM",
+      "type": "document",
+      "title": "Title as listed in MHRA is Heinrick Böll: Werke but there is no way in CSL to "
+    },
+    {
+      "id": "6188419/6ZI7ULYT",
+      "type": "document",
+      "title": "Brityna, a new character in Geoffrey of Monmouth's British book (with R. A. Cal"
+    },
+    {
+      "id": "6188419/UKJ7FNV8",
+      "type": "document",
+      "title": "Problem: special issue has guest editors, but adding this information causes th"
+    },
+    {
+      "id": "6188419/MZ6MUGVE",
+      "type": "document",
+      "title": "Selection of papers presented at the conference 'Catalan Narrative, 1875-2015' "
+    },
+    {
+      "id": "6188419/MD7T6WUM",
+      "type": "document",
+      "title": "Table of Contents PDF",
+      "URL": "https://swbplus.bsz-bw.de/bsz352367857inh.htm",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/FLMUF5HF",
+      "type": "document",
+      "title": "Link 1 (fal.cn)",
+      "URL": "https://fal.cn/3xgWd",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/IV32GEP8",
+      "type": "document",
+      "title": "Link 2",
+      "URL": "https://t.co/Udp4QevLlT",
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            4,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/G9SKTI2K",
+      "type": "document",
+      "title": "Based on: The works of Geoffrey Chaucer / ed. by F. N. Robinson"
+    },
+    {
+      "id": "6188419/GAJUVVGD",
+      "type": "document",
+      "title": "Rev. ed. of: Becoming visible / edited by Renate Bridenthal, Claudia Koonz, Sus"
+    },
+    {
+      "id": "6188419/9I5KYB5G",
+      "type": "document",
+      "title": "We need something like a container date to record 2002/2010 for the full set"
+    },
+    {
+      "id": "6188419/BH7GRWKE",
+      "type": "document",
+      "title": "\"Critique of German authors writing about the environment and climate, based on"
+    },
+    {
+      "id": "6188419/PG9ZRV97",
+      "type": "document",
+      "title": "Includes bibliographical references and index"
+    }
+  ]
+}

@@ -102,7 +102,7 @@ Add a new top-level type when **ALL** of the following are true:
 
 ```
 ┌─────────────────────────────────────────────────┐
-│ Does this reference require different          │
+│ Does this reference require different           │
 │ citation formatting across major styles?        │
 │ (Factor 2: Style Discrimination)                │
 └─────────┬───────────────────────────────────────┘
@@ -150,9 +150,9 @@ Add a new top-level type when **ALL** of the following are true:
           ▼
 ┌─────────────────────────────────────────────────┐
 │ ADD NEW TOP-LEVEL TYPE                          │
-│                                                  │
+│                                                 │
 │ Example: LegalCase, Treaty, Dataset             │
-└──────────────────────────────────────────────────┘
+└─────────────────────────────────────────────────┘
 ```
 
 ## Examples: Applying the 4-Factor Test
@@ -339,6 +339,14 @@ Monitor these reference types for potential addition:
 | Performance | Low | ✅⚠️✅✅ | Music/theater domain, niche styles |
 | Artwork | Low | ✅⚠️✅✅ | Art history domain, niche styles |
 | Map | Low | ✅⚠️✅✅ | Cartographic works, geographic/historical contexts |
+| Event | High | ✅✅✅✅ | Conferences, performances, broadcasts; CMOS 18/APA 8 requirements |
+
+**Rationale for Event (v1.2 candidate):**
+- **Factor 1 (Semantic):** Users distinguish "the conference" or "the concert" from a book or article. Differentiation from `SerialComponent` is based on the "live/ephemeral" nature vs. the "serialized/issued" nature of episodes in a series.
+- **Factor 2 (Style):** CMOS 18 (14.165, 14.166) and APA 8 have dedicated rules for events/performances.
+- **Factor 3 (Schema):** Requires `location` (venue), `date`, `network`, `organizer`, and a `series` relation for recurring events.
+- **Factor 4 (No Parent):** The event is the primary entity; venue is a locator.
+
 
 **Previously listed candidates now implemented:** Dataset (v1.1), Software (v1.1), Standard (v1.1). Preprint was added as `MonographType::Preprint` rather than a flat type, since the preprint server relationship is custodial rather than editorial.
 

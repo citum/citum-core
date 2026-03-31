@@ -1,0 +1,294 @@
+{
+  "items": [
+    {
+      "id": "6188419/L7NH9VSH",
+      "type": "article-journal",
+      "abstract": "Plants have evolved various root adaptive traits to enhance their ability to access soil water in stressful conditions. Although root mucilage has been suggested to facilitate root water uptake in drying soils, its impact during combined edaphic and atmospheric stress remains unknown. We hypothesized that mucilage decreases the saturated soil hydraulic conductivity, and consequently, a genotype with high mucilage production will exhibit lower maximum soil–plant hydraulic conductance and restrict transpiration at relatively low vapour pressure deficit (VPD). On the contrary, in drying soil, mucilage attenuates the gradients in matric potential at the root–soil interface and thus facilitates root water uptake, especially at high VPD.We compared two cowpea genotypes with contrasting mucilage production rates and subjected them to three consecutively increasing levels of VPD (1.04, 1.8 and 2.8 kPa) while the soil was left to dry out. We measured the transpiration rate and soil and leaf water potentials and estimated canopy and plant hydraulic conductance during soil drying.In wet soil conditions, the high-mucilage genotype restricted transpiration rate at lower VPD (1.46 kPa) compared with the low-mucilage genotype (1.58 kPa). Likewise, the initial slope of transpiration rate in response to VPD (the maximum conductance) was significantly lower in the high- compared with the low-mucilage genotype. During soil drying, the transpiration rate declined earlier in the low- compared with the high-mucilage genotype, supporting the hypothesis that mucilage helps to maintain the hydraulic continuity between roots and soil at lower water potentials in the high-mucilage genotype.Root mucilage is a promising trait that reduces water use in wet soil conditions, thereby conserving soil moisture for critical phases (e.g. flowering and grain filling), both on a daily basis (increasing VPD) and on a seasonal time scale (soil drying).",
+      "citation-key": "akaleRootMucilageEnhances2025",
+      "container-title": "Annals of Botany",
+      "DOI": "10.1093/aob/mcaf182",
+      "ISSN": "0305-7364",
+      "issue": "5-6",
+      "journalAbbreviation": "Ann. Bot.",
+      "language": "en",
+      "note": "volume-title: Stress physiology of root systems",
+      "page": "1131-1142",
+      "PMID": "40798946",
+      "PMCID": "PMC12682819",
+      "publisher": "Oxford University Press",
+      "shortTitle": "Root mucilage",
+      "source": "Oxford Academic",
+      "title": "Root mucilage enhances plant water use under combined soil and atmospheric drought",
+      "title-short": "Root mucilage",
+      "URL": "https://doi.org/10.1093/aob/mcaf182",
+      "volume": "136",
+      "author": [
+        {
+          "family": "Akale",
+          "given": "Asegidew"
+        },
+        {
+          "family": "Abdalla",
+          "given": "Mohanned"
+        },
+        {
+          "family": "Koehler",
+          "given": "Tina"
+        },
+        {
+          "family": "Sauer",
+          "given": "Anna M."
+        },
+        {
+          "family": "Diamantopoulos",
+          "given": "Efstathios"
+        },
+        {
+          "family": "Ahmed",
+          "given": "Mutez A."
+        }
+      ],
+      "editor": [
+        {
+          "family": "Schneider",
+          "given": "Hannah M."
+        },
+        {
+          "family": "Vetterlein",
+          "given": "Doris"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2026,
+            1,
+            5
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2025,
+            10,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/6XC4LHKK",
+      "type": "webpage",
+      "abstract": "Guidance for sponsors on sponsoring a worker.",
+      "citation-key": "ukvisasandimmigrationWorkersTemporaryWorkers2025",
+      "container-title": "GOV.UK",
+      "language": "en",
+      "note": "part-number: 2\npart-title: Sponsor a worker\noriginal-date: 2020-12-09\noriginal-publisher: HM Government\nstatus: updated",
+      "shortTitle": "Workers and temporary workers",
+      "title": "Workers and temporary workers: guidance for sponsors",
+      "title-short": "Workers and temporary workers",
+      "URL": "https://www.gov.uk/government/publications/workers-and-temporary-workers-guidance-for-sponsors-part-2-sponsor-a-worker",
+      "author": [
+        {
+          "family": "UK Visas and Immigration",
+          "given": ""
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2026,
+            2,
+            5
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            11
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/U98ZRCY7",
+      "type": "book",
+      "citation-key": "footVeiledWomen2000",
+      "collection-number": "1",
+      "collection-title": "Studies in early medieval Britain",
+      "DOI": "10.4324/9781315264202",
+      "ISBN": "978-0-7546-0043-5 978-0-7546-0044-2",
+      "language": "en",
+      "note": "volume-title: Female religious communities in England, 871–1066",
+      "number-of-volumes": "2",
+      "publisher": "Ashgate",
+      "publisher-place": "Aldershot",
+      "source": "Taylor and Francis",
+      "title": "Veiled women",
+      "URL": "https://www.taylorfrancis.com/books/mono/10.4324/9781315264202/",
+      "volume": "2",
+      "author": [
+        {
+          "family": "Foot",
+          "given": "Sarah R. I."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2024,
+            10,
+            19
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2000
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/P334CCUU",
+      "type": "chapter",
+      "citation-key": "ohkawaCapitalFormationJapan1978",
+      "container-title": "The Cambridge economic history of Europe",
+      "DOI": "10.1017/CHOL9780521215916.004",
+      "ISBN": "978-1-139-05449-2",
+      "language": "en",
+      "note": "volume-title: The industrial economies: capital, labour and enterprise\npart-number: 2\npart-title: The United States, Japan and Russia",
+      "number-of-volumes": "7",
+      "page": "134-165",
+      "publisher": "Cambridge University Press",
+      "publisher-place": "Cambridge",
+      "source": "Cambridge Core",
+      "title": "Capital formation in Japan",
+      "URL": "https://www.cambridge.org/core/product/identifier/CBO9781139054492A009/type/book_part",
+      "volume": "7",
+      "editor": [
+        {
+          "family": "Mathias",
+          "given": "Peter"
+        },
+        {
+          "family": "Postan",
+          "given": "M. M."
+        }
+      ],
+      "author": [
+        {
+          "family": "Ohkawa",
+          "given": "Kazushi"
+        },
+        {
+          "family": "Rosovsky",
+          "given": "Henry"
+        }
+      ],
+      "collection-editor": [
+        {
+          "family": "Postan",
+          "given": "M. M."
+        },
+        {
+          "family": "Coleman",
+          "given": "D. C."
+        },
+        {
+          "family": "Mathias",
+          "given": "Peter"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2020,
+            10,
+            17
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            1978,
+            8,
+            10
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/V55IX2PN",
+      "type": "article",
+      "abstract": "The hypothesis that intuition promotes cooperation has attracted considerable attention. We address the question with a meta-analysis of 82 cooperation experiments, spanning four different types of intuition manipulations—time pressure, cognitive load, depletion, and induction—including 29,087 participants in total. To our knowledge, this is the largest and most comprehensive data set to date. We obtain a positive overall effect of intuition on cooperation, though substantially weaker than that reported in prior meta-analyses, and between studies the effect exhibits a substantial degree of systematic variation. We find that this overall effect depends exclusively on the inclusion of six experiments featuring emotion-induction manipulations, which prompt participants to rely on emotion over reason when making allocation decisions. Upon excluding from the total data set experiments featuring this class of manipulations, between-study variation in the meta-analysis is reduced substantially—and we observed no statistically discernable effect of intuition on cooperation.",
+      "citation-key": "kvarvenIntuitiveCooperationHypothesis2019",
+      "DOI": "10.31222/osf.io/kvzg3",
+      "language": "en",
+      "publisher": "MetaArXiv",
+      "shortTitle": "Intuitive cooperation hypothesis",
+      "source": "DOI.org (Crossref)",
+      "title": "The intuitive cooperation hypothesis revisited: a meta-analytic examination of effect-size and between-study heterogeneity",
+      "title-short": "Intuitive cooperation hypothesis",
+      "URL": "https://osf.io/kvzg3",
+      "author": [
+        {
+          "family": "Kvarven",
+          "given": "Amanda"
+        },
+        {
+          "family": "Strømland",
+          "given": "Eirik"
+        },
+        {
+          "family": "Wollbrant",
+          "given": "Conny Ernst-Peter"
+        },
+        {
+          "family": "Andersson",
+          "given": "David"
+        },
+        {
+          "family": "Johannesson",
+          "given": "Magnus"
+        },
+        {
+          "family": "Tinghög",
+          "given": "Gustav"
+        },
+        {
+          "family": "Västfjäll",
+          "given": "Daniel"
+        },
+        {
+          "family": "Myrseth",
+          "given": "Kristian Ove R."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2019,
+            10,
+            19
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2019,
+            4,
+            16
+          ]
+        ]
+      }
+    }
+  ]
+}

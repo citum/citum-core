@@ -1,0 +1,173 @@
+{
+  "items": [
+    {
+      "id": "6188419/H3KLARKE",
+      "type": "chapter",
+      "citation-key": "hogueStructureDatabases2001",
+      "collection-number": "43",
+      "collection-title": "Methods of biochemical analysis",
+      "container-title": "Bioinformatics: a practical guide to the analysis of genes and proteins",
+      "DOI": "10.1002/0471223921.ch5",
+      "edition": "2",
+      "ISBN": "978-0-471-38390-1 978-0-471-46101-2 978-0-471-22392-4 978-0-470-58941-0",
+      "language": "en",
+      "page": "83-109",
+      "publisher": "Wiley-Interscience",
+      "publisher-place": "New York",
+      "source": "Wiley Online Library",
+      "title": "Structure databases",
+      "URL": "https://onlinelibrary.wiley.com/doi/abs/10.1002/0471223921.ch5",
+      "editor": [
+        {
+          "family": "Baxevanis",
+          "given": "Andreas D."
+        },
+        {
+          "family": "Ouellette",
+          "given": "B. F. Francis"
+        }
+      ],
+      "author": [
+        {
+          "family": "Hogue",
+          "given": "Christopher W. V."
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2020,
+            10,
+            17
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2001
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/G5NZYKCY",
+      "type": "book",
+      "citation-key": "greenMolecularCloningLaboratory2012",
+      "edition": "4",
+      "ISBN": "978-1-936113-42-2",
+      "language": "en",
+      "number-of-pages": "1890",
+      "number-of-volumes": "3",
+      "publisher": "Cold Spring Harbor Laboratory Press",
+      "publisher-place": "Cold Spring Harbor, NY",
+      "shortTitle": "Molecular cloning",
+      "source": "K10plus ISBN",
+      "title": "Molecular cloning: a laboratory manual",
+      "title-short": "Molecular cloning",
+      "author": [
+        {
+          "family": "Green",
+          "given": "Michael R."
+        },
+        {
+          "family": "Sambrook",
+          "given": "Joseph"
+        }
+      ],
+      "issued": {
+        "date-parts": [
+          [
+            2012
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/GF5VR6YZ",
+      "type": "article-journal",
+      "citation-key": "hisakataAdaptableMetricShapes2016",
+      "container-title": "Current Biology",
+      "DOI": "10.1016/j.cub.2016.05.047",
+      "ISSN": "0960-9822",
+      "issue": "14",
+      "journalAbbreviation": "Curr. Biol.",
+      "language": "en",
+      "page": "1911-1915",
+      "PMID": "27426520",
+      "PMCID": "PMC4963211",
+      "publisher": "Elsevier",
+      "shortTitle": "Adaptable metric",
+      "source": "Cell Press",
+      "title": "An adaptable metric shapes perceptual space",
+      "title-short": "Adaptable metric",
+      "URL": "https://www.cell.com/current-biology/abstract/S0960-9822(16)30544-9",
+      "volume": "26",
+      "author": [
+        {
+          "family": "Hisakata",
+          "given": "Rumi"
+        },
+        {
+          "family": "Nishida",
+          "given": "Shin’ya"
+        },
+        {
+          "family": "Johnston",
+          "given": "Alan"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            11,
+            5
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2016,
+            7,
+            25
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6188419/ZGSZECDK",
+      "type": "post-weblog",
+      "citation-key": "broshAlotBetterYou2010",
+      "container-title": "Hyperbole and a half",
+      "language": "en",
+      "title": "The Alot is better than you at everything",
+      "URL": "https://hyperboleandahalf.blogspot.com/2010/04/alot-is-better-than-you-at-everything.html",
+      "author": [
+        {
+          "family": "Brosh",
+          "given": "Allie"
+        }
+      ],
+      "accessed": {
+        "date-parts": [
+          [
+            2025,
+            10,
+            18
+          ]
+        ]
+      },
+      "issued": {
+        "date-parts": [
+          [
+            2010,
+            4,
+            13
+          ]
+        ]
+      }
+    }
+  ]
+}
