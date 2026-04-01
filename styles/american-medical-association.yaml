@@ -207,7 +207,7 @@ bibliography:
       - date: issued
         form: year
         prefix: ", "
-    - variable: number
+    - variable: patent-number
       prefix: ":"
     motion-picture:
     - contributor: author

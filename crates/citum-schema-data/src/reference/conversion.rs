@@ -166,7 +166,11 @@ fn from_monograph_ref(
     }
     if let Some(n) = legacy.number {
         numbering.push(Numbering {
-            r#type: NumberingType::Part,
+            r#type: if r#type == MonographType::Report {
+                NumberingType::Report
+            } else {
+                NumberingType::Number
+            },
             value: n,
         });
     }
@@ -746,5 +750,50 @@ impl From<Vec<csl_legacy::csl_json::Name>> for Contributor {
             })
             .collect();
         Contributor::ContributorList(ContributorList(contributors))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn legacy_report_number_maps_to_report_numbering() {
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "report-1".to_string(),
+            ref_type: "report".to_string(),
+            title: Some("Report".to_string()),
+            issued: Some(csl_legacy::csl_json::DateVariable {
+                date_parts: Some(vec![vec![2024]]),
+                ..Default::default()
+            }),
+            number: Some("TR-7".to_string()),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        assert_eq!(converted.number(), None);
+        assert_eq!(converted.report_number(), Some("TR-7".to_string()));
+    }
+
+    #[test]
+    fn legacy_book_number_maps_to_generic_numbering() {
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "book-1".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("Book".to_string()),
+            issued: Some(csl_legacy::csl_json::DateVariable {
+                date_parts: Some(vec![vec![2024]]),
+                ..Default::default()
+            }),
+            number: Some("2".to_string()),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        assert_eq!(converted.number(), Some("2".to_string()));
+        assert_eq!(converted.report_number(), None);
     }
 }

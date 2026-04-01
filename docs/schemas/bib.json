@@ -1991,7 +1991,7 @@
       ]
     },
     "Numbering": {
-      "description": "A numbering identifier for a work (e.g., volume, issue, part).",
+      "description": "A numbering identifier for a work (e.g., volume, issue, number).",
       "type": "object",
       "properties": {
         "type": {
@@ -2022,6 +2022,16 @@
           "const": "issue"
         },
         {
+          "description": "A generic document number.",
+          "type": "string",
+          "const": "number"
+        },
+        {
+          "description": "A report identifier.",
+          "type": "string",
+          "const": "report"
+        },
+        {
           "description": "A part number.",
           "type": "string",
           "const": "part"
@@ -2035,11 +2045,6 @@
           "description": "A chapter number.",
           "type": "string",
           "const": "chapter"
-        },
-        {
-          "description": "A book number.",
-          "type": "string",
-          "const": "book"
         },
         {
           "description": "A section identifier.",

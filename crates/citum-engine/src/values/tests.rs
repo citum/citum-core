@@ -1285,6 +1285,106 @@ fn test_variable_hyperlink() {
 }
 
 #[test]
+fn test_report_number_variable_uses_report_number_accessor() {
+    let config = make_config();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let hints = ProcHints::default();
+
+    let reference = Reference::from(LegacyReference {
+        id: "report-1".to_string(),
+        ref_type: "report".to_string(),
+        title: Some("Report".to_string()),
+        issued: Some(DateVariable::year(2024)),
+        number: Some("TR-7".to_string()),
+        ..Default::default()
+    });
+
+    let number_component = TemplateNumber {
+        number: NumberVariable::ReportNumber,
+        ..Default::default()
+    };
+    let variable_component = TemplateVariable {
+        variable: SimpleVariable::ReportNumber,
+        ..Default::default()
+    };
+
+    assert_eq!(
+        number_component
+            .values::<PlainText>(&reference, &hints, &options)
+            .expect("report number should render")
+            .value,
+        "TR-7"
+    );
+    assert_eq!(
+        variable_component
+            .values::<PlainText>(&reference, &hints, &options)
+            .expect("report variable should render")
+            .value,
+        "TR-7"
+    );
+}
+
+#[test]
+fn test_number_variable_excludes_report_number_accessor() {
+    let config = make_config();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let hints = ProcHints::default();
+
+    let reference = Reference::from(LegacyReference {
+        id: "report-1".to_string(),
+        ref_type: "report".to_string(),
+        title: Some("Report".to_string()),
+        issued: Some(DateVariable::year(2024)),
+        number: Some("TR-7".to_string()),
+        ..Default::default()
+    });
+
+    let number_component = TemplateNumber {
+        number: NumberVariable::Number,
+        ..Default::default()
+    };
+    let variable_component = TemplateVariable {
+        variable: SimpleVariable::Number,
+        ..Default::default()
+    };
+
+    assert!(
+        number_component
+            .values::<PlainText>(&reference, &hints, &options)
+            .is_none()
+    );
+    assert!(
+        variable_component
+            .values::<PlainText>(&reference, &hints, &options)
+            .is_none()
+    );
+}
+
+#[test]
 fn test_role_label_preset_applies_to_translator_component() {
     let mut config = make_config();
     let locale = make_locale();

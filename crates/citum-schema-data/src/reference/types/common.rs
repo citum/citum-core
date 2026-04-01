@@ -16,7 +16,7 @@ use url::Url;
 /// Unique identifier for a reference item.
 pub type RefID = String;
 
-/// A numbering identifier for a work (e.g., volume, issue, part).
+/// A numbering identifier for a work (e.g., volume, issue, number).
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
@@ -38,14 +38,16 @@ pub enum NumberingType {
     Volume,
     /// An issue number.
     Issue,
+    /// A generic document number.
+    Number,
+    /// A report identifier.
+    Report,
     /// A part number.
     Part,
     /// A supplement number.
     Supplement,
     /// A chapter number.
     Chapter,
-    /// A book number.
-    Book,
     /// A section identifier.
     Section,
     /// An edition identifier.
@@ -91,13 +93,13 @@ pub(crate) trait NormalizeNumbering {
         push_shorthand(NumberingType::Volume, volume);
         push_shorthand(NumberingType::Issue, issue);
         push_shorthand(NumberingType::Edition, edition);
-        push_shorthand(NumberingType::Part, number);
+        push_shorthand(NumberingType::Number, number);
 
         normalized.extend(existing.into_iter().filter(|entry| match entry.r#type {
             NumberingType::Volume => !has_volume,
             NumberingType::Issue => !has_issue,
             NumberingType::Edition => !has_edition,
-            NumberingType::Part => !has_number,
+            NumberingType::Number => !has_number,
             _ => true,
         }));
 
