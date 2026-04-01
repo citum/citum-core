@@ -58,7 +58,8 @@ references:
             family: "Al-Ghazali"
             given: "Abu Hamid Muhammad"
     issued: "1095"
-    parent:
+    container:
+      class: serial
       type: academic-journal
       title: "دراسات إسلامية"
     language: "ar"

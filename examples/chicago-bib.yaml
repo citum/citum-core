@@ -5,6 +5,7 @@ info:
   author: Bruce D'Arcus
 references:
   - id: biss
+    class: monograph
     type: book
     author: 
       family: Bissell
@@ -17,6 +18,7 @@ references:
       location: New York
       name: Vintage Books
   - id: hutt
+    class: collection-component
     type: chapter
     issued: "2011"
     author: 
@@ -25,7 +27,8 @@ references:
     title: 
       main: Infinite Surprises
       sub: Value in the Creative Industries
-    parent:
+    container:
+      class: collection
       type: edited-book
       issued: "2011"
       title: 
@@ -41,6 +44,7 @@ references:
         name: Oxford University Press
     pages: 201-220
   - id: lamp
+    class: serial-component
     type: article
     author:
       - family: Lampel
@@ -53,13 +57,15 @@ references:
     title: 
       main: Balancing Act
       sub: Learning from Organizing Practices in Cultural Industries
-    parent:
+    container:
+      class: serial
       type: academic-journal
       title: Organization Science
-    volume: 11 
-    issue: 3
+    volume: "11"
+    issue: "3"
     pages: 263-269
   - id: daum
+    class: collection
     type: edited-book
     editor:
       family: Daum
@@ -72,6 +78,7 @@ references:
       name: Picador
       location: New York
   - id: liu
+    class: serial-component
     type: article
     author:
       family: Liu
@@ -80,14 +87,16 @@ references:
     title:
       main: Beholding the Feminine Sublime
       sub: Lee Miller’s War Photography
-    parent:
+    container:
+      class: serial
       title: Signs
       type: academic-journal
-    volume: 40
-    issue: 2
+    volume: "40"
+    issue: "2"
     pages: '308-19'
     doi: 10.1086/678242
   - id: gund
+    class: serial-component
     type: article
     author:
     - family: Gunderson
@@ -96,39 +105,10 @@ references:
       given: Manuel
     issued: '2015-05'
     title: Patterns of Thermal Constraint on Ectotherm Activity
-    parent:
+    container:
+      class: serial
       type: academic-journal
       title: American Naturalist
-    issue: 185
-    pages: 653-664
-    doi: 10.1086/680849
-  - id: glass
-    type: article
-    author:
-    - family: Glass
-      given: Jennifer
-    - family: Levchak
-      given: Philip
-    issued: '2014'
-    title:
-      main: Red States, Blue States, and Divorce
-      sub: Understanding the Impact of Conservative Protestantism on Regional Variation in Divorce Rates
-    parent:
-      type: academic-journal
-      title: American Journal of Sociology
-    volume: 119
-    issue: 4
-    pages: 1002-1046
-    doi: 10.1086/674703
-  - id: meyer
-    type: article
-    author: 
-      family: Meyerovitch
-      given: Eva
-    issued: '1959'
-    title: The Gnostic Manuscripts of Upper Egypt
-    parent:
-      type: academic-journal
-      title: Diogenes
-    issue: 25
-    pages: 84-117
+    volume: "185"
+    issue: "5"
+    pages: 691-698

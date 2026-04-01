@@ -27,7 +27,8 @@ references:
       - family: Crick
         given: F. H. C.
     issued: "1953-04-25"
-    parent:
+    container:
+      class: serial
       type: academic-journal
       title: Nature
     volume: "171"
@@ -44,7 +45,8 @@ references:
       - family: Ericsson
         given: K. Anders
     issued: "2006"
-    parent:
+    container:
+      class: collection
       type: edited-book
       title: The Cambridge Handbook of Expertise and Expert Performance
       editor:
@@ -77,7 +79,7 @@ references:
       name: Cambridge University Press
       location: Cambridge
 
-  # 5. Monograph with original-date and keywords
+  # 5. Monograph with original relation and keywords
   - id: foucault_discipline
     class: monograph
     type: book
@@ -89,7 +91,10 @@ references:
       - family: Sheridan
         given: Alan
     issued: "1977"
-    original-date: "1975"
+    original:
+      class: monograph
+      type: book
+      issued: "1975"
     publisher:
       name: Pantheon Books
     keywords:
@@ -97,7 +102,7 @@ references:
       - translation
       - philosophy
 
-  # 6. Missing references from complex-citations.yaml
+  # 6. Additional examples for coverage
   - id: brown1954
     class: monograph
     type: book

@@ -79,7 +79,8 @@ references:
       - family: Mayr
         given: Ernst
     issued: "1991"
-    parent:
+    container:
+      class: serial
       type: academic-journal
       title: Proceedings of the American Philosophical Society
     volume: "135"
