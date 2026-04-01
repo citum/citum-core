@@ -22,7 +22,7 @@ use citum_schema::{
     reference::types::{
         Collection, CollectionComponent, MultilingualComplex, MultilingualString, Title,
     },
-    reference::{EdtfString, InputReference, Monograph, MonographType, Parent},
+    reference::{EdtfString, InputReference, Monograph, MonographType, WorkRelation},
     template::{
         ContributorForm, ContributorRole, DateForm, NameOrder, Rendering, TemplateContributor,
         TemplateDate, TemplateTitle, TitleType,
@@ -126,10 +126,11 @@ fn make_german_translator_role_style() -> Style {
 
 fn make_german_translator_reference() -> InputReference {
     InputReference::Monograph(Box::new(Monograph {
+        short_title: None,
         id: Some("ref1".to_string()),
         r#type: MonographType::Book,
         title: Some(Title::Single("Das Buch".to_string())),
-        container_title: None,
+        container: None,
         author: Some(Contributor::StructuredName(StructuredName {
             given: "Autor".into(),
             family: "Name".into(),
@@ -145,27 +146,8 @@ fn make_german_translator_reference() -> InputReference {
         interviewer: None,
         guest: None,
         issued: EdtfString("2024".to_string()),
-        publisher: None,
-        url: None,
-        accessed: None,
         language: Some("de".to_string()),
-        field_languages: HashMap::new(),
-        note: None,
-        isbn: None,
-        doi: None,
-        ads_bibcode: None,
-        edition: None,
-        report_number: None,
-        collection_number: None,
-        genre: None,
-        medium: None,
-        archive_info: None,
-        eprint: None,
-        archive: None,
-        archive_location: None,
-        keywords: None,
-        original_date: None,
-        original_title: None,
+        ..Default::default()
     }))
 }
 
@@ -611,12 +593,13 @@ fn given_translated_numeric_integral_citations_when_rendered_then_the_translated
         "item1".to_string(),
         citum_schema::reference::InputReference::Monograph(Box::new(
             citum_schema::reference::Monograph {
+                short_title: None,
                 id: Some("item1".to_string()),
                 r#type: citum_schema::reference::MonographType::Book,
                 title: Some(citum_schema::reference::Title::Single(
                     "War and Peace".to_string(),
                 )),
-                container_title: None,
+                container: None,
                 author: Some(Contributor::Multilingual(MultilingualName {
                     original: StructuredName {
                         family: MultilingualString::Simple("Толстой".to_string()),
@@ -633,27 +616,7 @@ fn given_translated_numeric_integral_citations_when_rendered_then_the_translated
                 interviewer: None,
                 guest: None,
                 issued: citum_schema::reference::EdtfString("1869".to_string()),
-                publisher: None,
-                url: None,
-                accessed: None,
-                language: None,
-                field_languages: Default::default(),
-                note: None,
-                isbn: None,
-                doi: None,
-                edition: None,
-                report_number: None,
-                collection_number: None,
-                genre: None,
-                medium: None,
-                archive_info: None,
-                eprint: None,
-                archive: None,
-                archive_location: None,
-                keywords: None,
-                original_date: None,
-                original_title: None,
-                ads_bibcode: None,
+                ..Default::default()
             },
         )),
     );
@@ -673,6 +636,7 @@ fn given_translated_numeric_integral_citations_when_rendered_then_the_translated
 fn given_field_language_overrides_when_resolving_the_effective_field_language_then_the_field_override_wins()
  {
     let reference = InputReference::Monograph(Box::new(Monograph {
+        short_title: None,
         id: Some("item1".to_string()),
         r#type: MonographType::Book,
         title: Some(Title::Multilingual(MultilingualComplex {
@@ -681,7 +645,7 @@ fn given_field_language_overrides_when_resolving_the_effective_field_language_th
             transliterations: HashMap::new(),
             translations: HashMap::new(),
         })),
-        container_title: None,
+        container: None,
         author: None,
         editor: None,
         translator: None,
@@ -689,27 +653,9 @@ fn given_field_language_overrides_when_resolving_the_effective_field_language_th
         interviewer: None,
         guest: None,
         issued: EdtfString("2024".to_string()),
-        publisher: None,
-        url: None,
-        accessed: None,
         language: Some("fr".to_string()),
         field_languages: HashMap::from([("title".to_string(), "en".to_string())]),
-        note: None,
-        isbn: None,
-        doi: None,
-        edition: None,
-        report_number: None,
-        collection_number: None,
-        genre: None,
-        medium: None,
-        archive_info: None,
-        eprint: None,
-        archive: None,
-        archive_location: None,
-        keywords: None,
-        original_date: None,
-        original_title: None,
-        ads_bibcode: None,
+        ..Default::default()
     }));
 
     assert_eq!(
@@ -721,6 +667,7 @@ fn given_field_language_overrides_when_resolving_the_effective_field_language_th
 fn given_no_item_language_when_resolving_the_effective_item_language_then_the_multilingual_title_language_is_used()
  {
     let reference = InputReference::Monograph(Box::new(Monograph {
+        short_title: None,
         id: Some("item1".to_string()),
         r#type: MonographType::Book,
         title: Some(Title::Multilingual(MultilingualComplex {
@@ -729,7 +676,7 @@ fn given_no_item_language_when_resolving_the_effective_item_language_then_the_mu
             transliterations: HashMap::new(),
             translations: HashMap::new(),
         })),
-        container_title: None,
+        container: None,
         author: None,
         editor: None,
         translator: None,
@@ -737,27 +684,7 @@ fn given_no_item_language_when_resolving_the_effective_item_language_then_the_mu
         interviewer: None,
         guest: None,
         issued: EdtfString("2024".to_string()),
-        publisher: None,
-        url: None,
-        accessed: None,
-        language: None,
-        field_languages: HashMap::new(),
-        note: None,
-        isbn: None,
-        doi: None,
-        edition: None,
-        report_number: None,
-        collection_number: None,
-        genre: None,
-        medium: None,
-        archive_info: None,
-        eprint: None,
-        archive: None,
-        archive_location: None,
-        keywords: None,
-        original_date: None,
-        original_title: None,
-        ads_bibcode: None,
+        ..Default::default()
     }));
 
     assert_eq!(effective_item_language(&reference), Some("ja".to_string()));
@@ -797,10 +724,11 @@ fn given_localized_citation_templates_when_the_item_language_matches_then_the_lo
     bibliography.insert(
         "de-item".to_string(),
         InputReference::Monograph(Box::new(Monograph {
+            short_title: None,
             id: Some("de-item".to_string()),
             r#type: MonographType::Book,
             title: Some(Title::Single("Titel".to_string())),
-            container_title: None,
+            container: None,
             author: None,
             editor: None,
             translator: None,
@@ -821,9 +749,7 @@ fn given_localized_citation_templates_when_the_item_language_matches_then_the_lo
             note: Some("fallback".to_string()),
             isbn: None,
             doi: None,
-            edition: None,
-            report_number: None,
-            collection_number: None,
+            numbering: Default::default(),
             genre: None,
             medium: None,
             archive_info: None,
@@ -831,18 +757,19 @@ fn given_localized_citation_templates_when_the_item_language_matches_then_the_lo
             archive: None,
             archive_location: None,
             keywords: None,
-            original_date: None,
-            original_title: None,
+            original: None,
             ads_bibcode: None,
+            ..Default::default()
         })),
     );
     bibliography.insert(
         "fr-item".to_string(),
         InputReference::Monograph(Box::new(Monograph {
+            short_title: None,
             id: Some("fr-item".to_string()),
             r#type: MonographType::Book,
             title: Some(Title::Single("Titre".to_string())),
-            container_title: None,
+            container: None,
             author: None,
             editor: None,
             translator: None,
@@ -863,9 +790,7 @@ fn given_localized_citation_templates_when_the_item_language_matches_then_the_lo
             note: Some("fallback".to_string()),
             isbn: None,
             doi: None,
-            edition: None,
-            report_number: None,
-            collection_number: None,
+            numbering: Default::default(),
             genre: None,
             medium: None,
             archive_info: None,
@@ -873,9 +798,9 @@ fn given_localized_citation_templates_when_the_item_language_matches_then_the_lo
             archive: None,
             archive_location: None,
             keywords: None,
-            original_date: None,
-            original_title: None,
+            original: None,
             ads_bibcode: None,
+            ..Default::default()
         })),
     );
 
@@ -924,6 +849,7 @@ fn given_localized_bibliography_templates_when_only_the_multilingual_title_has_a
     bibliography.insert(
         "item1".to_string(),
         InputReference::Monograph(Box::new(Monograph {
+            short_title: None,
             id: Some("item1".to_string()),
             r#type: MonographType::Book,
             title: Some(Title::Multilingual(MultilingualComplex {
@@ -932,7 +858,7 @@ fn given_localized_bibliography_templates_when_only_the_multilingual_title_has_a
                 transliterations: HashMap::new(),
                 translations: HashMap::new(),
             })),
-            container_title: None,
+            container: None,
             author: None,
             editor: None,
             translator: None,
@@ -948,9 +874,7 @@ fn given_localized_bibliography_templates_when_only_the_multilingual_title_has_a
             note: Some("fallback".to_string()),
             isbn: None,
             doi: None,
-            edition: None,
-            report_number: None,
-            collection_number: None,
+            numbering: Default::default(),
             genre: None,
             medium: None,
             archive_info: None,
@@ -958,9 +882,9 @@ fn given_localized_bibliography_templates_when_only_the_multilingual_title_has_a
             archive: None,
             archive_location: None,
             keywords: None,
-            original_date: None,
-            original_title: None,
+            original: None,
             ads_bibcode: None,
+            ..Default::default()
         })),
     );
 
@@ -1022,24 +946,29 @@ fn given_mixed_language_titles_when_rendering_the_bibliography_then_field_langua
         author: None,
         translator: None,
         issued: EdtfString("2024".to_string()),
-        parent: Parent::Embedded(Collection {
-            id: None,
-            r#type: citum_schema::reference::CollectionType::EditedBook,
-            title: Some(Title::Single("Deutscher Sammelband".to_string())),
-            short_title: None,
-            editor: None,
-            translator: None,
-            issued: EdtfString("2024".to_string()),
-            publisher: None,
-            collection_number: None,
-            url: None,
-            accessed: None,
-            language: Some("de".to_string()),
-            field_languages: HashMap::new(),
-            note: None,
-            isbn: None,
-            keywords: None,
-        }),
+        container: Some(WorkRelation::Embedded(Box::new(
+            InputReference::Collection(Box::new(Collection {
+                short_title: None,
+                id: None,
+                r#type: citum_schema::reference::CollectionType::EditedBook,
+                title: Some(Title::Single("Deutscher Sammelband".to_string())),
+                container: None,
+                editor: None,
+                translator: None,
+                issued: EdtfString("2024".to_string()),
+                publisher: None,
+                numbering: Vec::new(),
+                url: None,
+                accessed: None,
+                language: Some("de".to_string()),
+                field_languages: HashMap::new(),
+                note: None,
+                isbn: None,
+                keywords: None,
+                ..Default::default()
+            })),
+        ))),
+        numbering: Vec::new(),
         pages: None,
         url: None,
         accessed: None,
@@ -1055,6 +984,8 @@ fn given_mixed_language_titles_when_rendering_the_bibliography_then_field_langua
         archive_info: None,
         eprint: None,
         keywords: None,
+        original: None,
+        ..Default::default()
     }));
 
     let bibliography = indexmap::IndexMap::from([("chapter-1".to_string(), reference)]);
@@ -1281,28 +1212,32 @@ fn chicago_german_override_localizes_editor_verb() {
             })),
             translator: None,
             issued: EdtfString("2024".to_string()),
-            parent: Parent::Embedded(Collection {
-                id: None,
-                r#type: citum_schema::reference::CollectionType::EditedBook,
-                title: Some(Title::Single("Sammelband".to_string())),
-                short_title: None,
-                editor: Some(Contributor::StructuredName(StructuredName {
-                    given: "Editor".into(),
-                    family: "Name".into(),
+            container: Some(WorkRelation::Embedded(Box::new(
+                InputReference::Collection(Box::new(Collection {
+                    short_title: None,
+                    id: None,
+                    r#type: citum_schema::reference::CollectionType::EditedBook,
+                    title: Some(Title::Single("Sammelband".to_string())),
+                    container: None,
+                    editor: Some(Contributor::StructuredName(StructuredName {
+                        given: "Editor".into(),
+                        family: "Name".into(),
+                        ..Default::default()
+                    })),
+                    translator: None,
+                    issued: EdtfString("2024".to_string()),
+                    publisher: None,
+                    numbering: Vec::new(),
+                    url: None,
+                    accessed: None,
+                    language: Some("de".to_string()),
+                    field_languages: HashMap::new(),
+                    note: None,
+                    isbn: None,
                     ..Default::default()
                 })),
-                translator: None,
-                issued: EdtfString("2024".to_string()),
-                publisher: None,
-                collection_number: None,
-                url: None,
-                accessed: None,
-                language: Some("de".to_string()),
-                field_languages: HashMap::new(),
-                note: None,
-                isbn: None,
-                keywords: None,
-            }),
+            ))),
+            numbering: Vec::new(),
             pages: None,
             url: None,
             accessed: None,
@@ -1315,6 +1250,8 @@ fn chicago_german_override_localizes_editor_verb() {
             archive_info: None,
             eprint: None,
             keywords: None,
+            original: None,
+            ..Default::default()
         })),
     );
 

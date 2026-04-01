@@ -5,7 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 //! Note-context normalization and citation position inference.
 //!
-//! These helpers prepare citation sequences for note styles by filling in
+//! These helpers prepare citation numbering for note styles by filling in
 //! missing note numbers and assigning positions such as `First`, `Subsequent`,
 //! and `Ibid` before citation rendering begins.
 

@@ -1,11 +1,11 @@
-use crate::reference::InputReference;
 use crate::reference::contributor::{Contributor, ContributorList, SimpleName, StructuredName};
 use crate::reference::date::EdtfString;
 use crate::reference::types::{
     ArchiveInfo, Collection, CollectionComponent, CollectionType, Dataset, LegalCase, Monograph,
-    MonographComponentType, MonographType, NumOrStr, Parent, Patent, Serial, SerialComponent,
+    MonographComponentType, MonographType, NumOrStr, Patent, Serial, SerialComponent,
     SerialComponentType, SerialType, Software, Standard, Statute, Title, Treaty,
 };
+use crate::reference::{Event, InputReference, Numbering, NumberingType, WorkRelation};
 use std::collections::HashMap;
 use url::Url;
 
@@ -102,6 +102,10 @@ fn from_software_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
     }))
 }
 
+#[allow(
+    clippy::too_many_lines,
+    reason = "Legacy CSL mapping requires extensive branching"
+)]
 fn from_monograph_ref(
     legacy: csl_legacy::csl_json::Reference,
     mut ctx: RefContext,
@@ -141,11 +145,50 @@ fn from_monograph_ref(
 
     let archive_info = archive_info_from_legacy_flat(&legacy);
 
+    let mut numbering = Vec::new();
+    if let Some(edition) = ctx.edition {
+        numbering.push(Numbering {
+            r#type: NumberingType::Edition,
+            value: edition,
+        });
+    }
+    if let Some(volume) = legacy.volume {
+        numbering.push(Numbering {
+            r#type: NumberingType::Volume,
+            value: volume.to_string(),
+        });
+    }
+    if let Some(collection_number) = legacy.collection_number {
+        numbering.push(Numbering {
+            r#type: NumberingType::Volume,
+            value: collection_number.to_string(),
+        });
+    }
+    if let Some(n) = legacy.number {
+        numbering.push(Numbering {
+            r#type: NumberingType::Part,
+            value: n,
+        });
+    }
+
+    let original = legacy.original_title.map(|original_title| {
+        WorkRelation::Embedded(Box::new(InputReference::Monograph(Box::new(Monograph {
+            title: Some(Title::Single(original_title)),
+            ..Default::default()
+        }))))
+    });
+
     InputReference::Monograph(Box::new(Monograph {
         id: ctx.id,
         r#type,
         title: ctx.title,
-        container_title: legacy.container_title.clone().map(Title::Single),
+        short_title: None,
+        container: legacy.container_title.map(|t| {
+            WorkRelation::Embedded(Box::new(InputReference::Monograph(Box::new(Monograph {
+                title: Some(Title::Single(t)),
+                ..Default::default()
+            }))))
+        }),
         author: legacy.author.map(Contributor::from),
         editor: legacy.editor.map(Contributor::from),
         translator: legacy.translator.map(Contributor::from),
@@ -167,9 +210,7 @@ fn from_monograph_ref(
         isbn: ctx.isbn,
         doi: ctx.doi,
         ads_bibcode: None,
-        edition: ctx.edition,
-        report_number: legacy.number,
-        collection_number: legacy.collection_number.map(|v| v.to_string()),
+        numbering,
         genre: legacy.genre,
         medium: legacy.medium,
         archive: legacy.archive,
@@ -177,8 +218,8 @@ fn from_monograph_ref(
         archive_info,
         eprint: None,
         keywords: None,
-        original_date: None,
-        original_title: legacy.original_title.map(Title::Single),
+        original,
+        ..Default::default()
     }))
 }
 
@@ -187,6 +228,14 @@ fn from_collection_component_ref(
     ctx: RefContext,
 ) -> InputReference {
     let parent_title = legacy.container_title.map(Title::Single);
+    let mut parent_numbering = Vec::new();
+    if let Some(v) = legacy.collection_number.clone().or(legacy.volume.clone()) {
+        parent_numbering.push(Numbering {
+            r#type: NumberingType::Volume,
+            value: v.to_string(),
+        });
+    }
+
     InputReference::CollectionComponent(Box::new(CollectionComponent {
         id: ctx.id,
         r#type: if legacy.ref_type == "paper-conference" {
@@ -198,35 +247,27 @@ fn from_collection_component_ref(
         author: legacy.author.map(Contributor::from),
         translator: legacy.translator.map(Contributor::from),
         issued: ctx.issued,
-        parent: Parent::Embedded(Collection {
-            id: None,
-            r#type: CollectionType::EditedBook,
-            title: parent_title,
-            short_title: ctx.container_title_short,
-            editor: legacy.editor.map(Contributor::from),
-            translator: None,
-            issued: EdtfString(String::new()),
-            publisher: legacy.publisher.map(|n| {
-                Contributor::SimpleName(SimpleName {
-                    name: n.into(),
-                    location: legacy.publisher_place,
-                })
-            }),
-            collection_number: legacy.collection_number.map(|v| v.to_string()).or(legacy
-                .volume
-                .as_ref()
-                .map(|v| match v {
-                    csl_legacy::csl_json::StringOrNumber::String(s) => s.clone(),
-                    csl_legacy::csl_json::StringOrNumber::Number(n) => n.to_string(),
-                })),
-            url: None,
-            accessed: None,
-            language: None,
-            field_languages: HashMap::new(),
-            note: None,
-            isbn: None,
-            keywords: None,
-        }),
+        container: Some(WorkRelation::Embedded(Box::new(
+            InputReference::Collection(Box::new(Collection {
+                id: None,
+                r#type: CollectionType::EditedBook,
+                title: parent_title,
+                short_title: ctx.container_title_short,
+                container: None,
+                editor: legacy.editor.map(Contributor::from),
+                translator: None,
+                issued: EdtfString(String::new()),
+                publisher: legacy.publisher.map(|n| {
+                    Contributor::SimpleName(SimpleName {
+                        name: n.into(),
+                        location: legacy.publisher_place,
+                    })
+                }),
+                numbering: parent_numbering,
+                ..Default::default()
+            })),
+        ))),
+        numbering: Vec::new(),
         pages: legacy.page.map(NumOrStr::Str),
         url: ctx.url,
         accessed: ctx.accessed,
@@ -236,9 +277,7 @@ fn from_collection_component_ref(
         doi: ctx.doi,
         genre: legacy.genre,
         medium: legacy.medium,
-        archive_info: None,
-        eprint: None,
-        keywords: None,
+        ..Default::default()
     }))
 }
 
@@ -247,6 +286,14 @@ fn from_collection_component_ref(
 pub fn input_reference_from_legacy_edited_book(
     legacy: csl_legacy::csl_json::Reference,
 ) -> InputReference {
+    let mut numbering = Vec::new();
+    if let Some(cn) = legacy.collection_number.clone() {
+        numbering.push(Numbering {
+            r#type: NumberingType::Volume,
+            value: cn.to_string(),
+        });
+    }
+
     let csl_legacy::csl_json::Reference {
         id,
         title,
@@ -255,7 +302,6 @@ pub fn input_reference_from_legacy_edited_book(
         issued,
         publisher,
         publisher_place,
-        collection_number,
         url,
         accessed,
         language,
@@ -273,6 +319,7 @@ pub fn input_reference_from_legacy_edited_book(
             .get("shortTitle")
             .and_then(serde_json::Value::as_str)
             .map(str::to_string),
+        container: None,
         editor: editor.map(Contributor::from),
         translator: translator.map(Contributor::from),
         issued: issued
@@ -284,14 +331,14 @@ pub fn input_reference_from_legacy_edited_book(
                 location: publisher_place.clone(),
             })
         }),
-        collection_number: collection_number.map(|value| value.to_string()),
+        numbering,
         url: url.as_deref().and_then(|value| Url::parse(value).ok()),
         accessed: accessed.map(EdtfString::from),
         language,
         field_languages: HashMap::new(),
         note,
         isbn,
-        keywords: None,
+        ..Default::default()
     }))
 }
 
@@ -311,6 +358,30 @@ fn from_serial_component_ref(
         _ => SerialType::AcademicJournal,
     };
     let parent_title = legacy.container_title.map(Title::Single);
+
+    let mut numbering = Vec::new();
+    if let Some(v) = legacy.volume {
+        numbering.push(Numbering {
+            r#type: NumberingType::Volume,
+            value: v.to_string(),
+        });
+    }
+    if let Some(i) = legacy.issue.or_else(|| {
+        if legacy.ref_type == "broadcast" || legacy.ref_type == "motion_picture" {
+            legacy
+                .number
+                .as_ref()
+                .map(|n| csl_legacy::csl_json::StringOrNumber::String(n.clone()))
+        } else {
+            None
+        }
+    }) {
+        numbering.push(Numbering {
+            r#type: NumberingType::Issue,
+            value: i.to_string(),
+        });
+    }
+
     InputReference::SerialComponent(Box::new(SerialComponent {
         id: ctx.id,
         r#type: SerialComponentType::Article,
@@ -318,19 +389,29 @@ fn from_serial_component_ref(
         author: legacy.author.map(Contributor::from),
         translator: legacy.translator.map(Contributor::from),
         issued: ctx.issued,
-        parent: Parent::Embedded(Serial {
-            r#type: serial_type,
-            title: parent_title,
-            short_title: ctx.container_title_short.or(ctx.journal_abbreviation),
-            editor: None,
-            publisher: legacy.publisher.clone().map(|n| {
-                Contributor::SimpleName(SimpleName {
-                    name: n.into(),
-                    location: legacy.publisher_place.clone(),
-                })
+        container: Some(WorkRelation::Embedded(Box::new(InputReference::Serial(
+            Box::new(Serial {
+                id: None,
+                r#type: serial_type,
+                title: parent_title,
+                short_title: ctx.container_title_short.or(ctx.journal_abbreviation),
+                container: None,
+                editor: None,
+                publisher: legacy.publisher.clone().map(|n| {
+                    Contributor::SimpleName(SimpleName {
+                        name: n.into(),
+                        location: legacy.publisher_place.clone(),
+                    })
+                }),
+                url: None,
+                accessed: None,
+                language: None,
+                field_languages: HashMap::new(),
+                note: None,
+                issn: legacy.issn,
             }),
-            issn: legacy.issn,
-        }),
+        )))),
+        numbering,
         url: ctx.url,
         accessed: ctx.accessed,
         language: ctx.language,
@@ -339,31 +420,14 @@ fn from_serial_component_ref(
         doi: ctx.doi,
         ads_bibcode: None,
         pages: legacy.page,
-        volume: legacy.volume.map(|v| match v {
-            csl_legacy::csl_json::StringOrNumber::String(s) => NumOrStr::Str(s),
-            csl_legacy::csl_json::StringOrNumber::Number(n) => NumOrStr::Number(n),
-        }),
-        issue: legacy
-            .issue
-            .or_else(|| {
-                if legacy.ref_type == "broadcast" || legacy.ref_type == "motion_picture" {
-                    legacy
-                        .number
-                        .as_ref()
-                        .map(|n| csl_legacy::csl_json::StringOrNumber::String(n.clone()))
-                } else {
-                    None
-                }
-            })
-            .map(|v| match v {
-                csl_legacy::csl_json::StringOrNumber::String(s) => NumOrStr::Str(s),
-                csl_legacy::csl_json::StringOrNumber::Number(n) => NumOrStr::Number(n),
-            }),
         genre,
         medium: legacy.medium,
         archive_info: None,
         eprint: None,
         keywords: None,
+        reviewed: None,
+        original: None,
+        ..Default::default()
     }))
 }
 
@@ -495,11 +559,25 @@ fn from_dataset_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) ->
 fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     let archive_info = archive_info_from_legacy_flat(&legacy);
 
+    let mut numbering = Vec::new();
+    if let Some(v) = legacy.volume {
+        numbering.push(Numbering {
+            r#type: NumberingType::Volume,
+            value: v.to_string(),
+        });
+    }
+
     InputReference::Monograph(Box::new(Monograph {
         id: ctx.id,
         r#type: MonographType::Document,
         title: ctx.title,
-        container_title: legacy.container_title.clone().map(Title::Single),
+        short_title: None,
+        container: legacy.container_title.map(|t| {
+            WorkRelation::Embedded(Box::new(InputReference::Monograph(Box::new(Monograph {
+                title: Some(Title::Single(t)),
+                ..Default::default()
+            }))))
+        }),
         author: legacy.author.map(Contributor::from),
         editor: legacy.editor.map(Contributor::from),
         translator: legacy.translator.map(Contributor::from),
@@ -521,9 +599,7 @@ fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         isbn: ctx.isbn,
         doi: ctx.doi,
         ads_bibcode: None,
-        edition: ctx.edition,
-        report_number: legacy.number,
-        collection_number: legacy.collection_number.map(|v| v.to_string()),
+        numbering,
         genre: legacy.genre,
         medium: legacy.medium,
         archive: legacy.archive,
@@ -531,8 +607,37 @@ fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         archive_info,
         eprint: None,
         keywords: None,
-        original_date: None,
-        original_title: legacy.original_title.map(Title::Single),
+        original: None,
+        ..Default::default()
+    }))
+}
+
+fn from_event_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
+    InputReference::Event(Box::new(Event {
+        id: ctx.id,
+        title: ctx.title,
+        container: legacy.container_title.map(|t| {
+            WorkRelation::Embedded(Box::new(InputReference::Monograph(Box::new(Monograph {
+                title: Some(Title::Single(t)),
+                ..Default::default()
+            }))))
+        }),
+        location: legacy.publisher_place.clone(),
+        date: Some(ctx.issued),
+        genre: legacy.genre,
+        network: None,
+        performer: legacy.author.map(Contributor::from),
+        organizer: legacy.publisher.map(|n| {
+            Contributor::SimpleName(SimpleName {
+                name: n.into(),
+                location: None,
+            })
+        }),
+        url: ctx.url,
+        accessed: ctx.accessed,
+        language: ctx.language,
+        field_languages: HashMap::new(),
+        note: ctx.note,
     }))
 }
 
@@ -577,6 +682,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
             | "broadcast" | "motion_picture" | "entry-encyclopedia" => {
                 from_serial_component_ref(legacy, ctx)
             }
+            "speech" | "presentation" => from_event_ref(legacy, ctx),
             "legal-case" | "legal_case" => from_legal_case_ref(legacy, ctx),
             "statute" | "legislation" => from_statute_ref(legacy, ctx),
             "treaty" => from_treaty_ref(legacy, ctx),
@@ -593,9 +699,7 @@ impl From<csl_legacy::csl_json::DateVariable> for EdtfString {
         if let Some(literal) = date.literal {
             return EdtfString(literal);
         }
-        if let Some(parts) = date.date_parts
-            && let Some(first) = parts.first()
-        {
+        if let Some(first) = date.date_parts.and_then(|p| p.first().cloned()) {
             let year = first
                 .first()
                 .map(|y| {

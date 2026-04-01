@@ -18,7 +18,7 @@ pub mod list;
 pub mod locator;
 /// Numeric variable extraction and page-range helpers.
 pub mod number;
-/// Shared helpers for collapsing consecutive numeric or ordinal sequences.
+/// Shared helpers for collapsing consecutive numeric or ordinal numbering.
 pub mod range;
 /// Locale term resolution helpers.
 pub mod term;
@@ -203,28 +203,8 @@ pub fn effective_component_language(
         TemplateComponent::Title(title_component) => {
             let title = match title_component.title {
                 TitleType::Primary => reference.title(),
-                TitleType::ParentMonograph => match reference {
-                    Reference::CollectionComponent(component) => match &component.parent {
-                        citum_schema::reference::Parent::Embedded(parent) => parent.title.clone(),
-                        citum_schema::reference::Parent::Id(_) => None,
-                    },
-                    _ => None,
-                },
-                TitleType::ParentSerial => match reference {
-                    Reference::SerialComponent(component) => match &component.parent {
-                        citum_schema::reference::Parent::Embedded(parent) => parent.title.clone(),
-                        citum_schema::reference::Parent::Id(_) => None,
-                    },
-                    Reference::LegalCase(case) => case
-                        .reporter
-                        .as_ref()
-                        .map(|reporter| Title::Single(reporter.clone())),
-                    Reference::Treaty(treaty) => treaty
-                        .reporter
-                        .as_ref()
-                        .map(|reporter| Title::Single(reporter.clone())),
-                    _ => None,
-                },
+                TitleType::ParentMonograph => reference.container_title(),
+                TitleType::ParentSerial => reference.container_title(),
                 _ => reference.title(),
             };
 

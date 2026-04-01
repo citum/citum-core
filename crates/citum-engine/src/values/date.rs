@@ -8,7 +8,7 @@ use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
 use citum_edtf::{Day, Edtf, MonthOrSeason, Timezone, UnspecifiedYear, Year};
 use citum_schema::locale::{GeneralTerm, TermForm};
 use citum_schema::options::dates::TimeFormat;
-use citum_schema::reference::RefDate;
+use citum_schema::reference::types::RefDate;
 use citum_schema::template::{DateForm, DateVariable as TemplateDateVar, TemplateDate};
 
 fn month_to_string(month: u32, months: &[String]) -> String {

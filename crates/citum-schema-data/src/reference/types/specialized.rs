@@ -1,6 +1,9 @@
-//! Specialized work types: classic works, patents, datasets, standards, and software.
+//! Specialized work types: classic works, patents, datasets, standards, software, and events.
 
-use super::common::{FieldLanguageMap, LangID, RefID, Title};
+use super::common::{
+    FieldLanguageMap, HasNumbering, LangID, NormalizeNumbering, Numbering, RefID, Title,
+};
+use crate::reference::WorkRelation;
 use crate::reference::contributor::Contributor;
 use crate::reference::date::EdtfString;
 #[cfg(feature = "schema")]
@@ -11,27 +14,81 @@ use specta::Type;
 use std::collections::HashMap;
 use url::Url;
 
-/// A classic work (Aristotle, Bible, etc.) with standard citation forms.
+/// Event metadata for conferences, performances, broadcasts, and recordings.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
+pub struct Event {
+    /// Unique identifier for this reference.
+    pub id: Option<RefID>,
+    /// Event name (e.g., conference title, performance name).
+    pub title: Option<Title>,
+    /// Recurring event series or container.
+    pub container: Option<WorkRelation>,
+    /// Event location (city, venue).
+    pub location: Option<String>,
+    /// Event date.
+    pub date: Option<EdtfString>,
+    /// Event genre (e.g., "conference", "performance", "broadcast", "talk").
+    pub genre: Option<String>,
+    /// Broadcaster, network, or streaming platform.
+    pub network: Option<String>,
+    /// Performer(s) or presenter(s).
+    pub performer: Option<Contributor>,
+    /// Organizer or sponsor.
+    pub organizer: Option<Contributor>,
+    /// URL for the event.
+    #[serde(alias = "URL")]
+    pub url: Option<Url>,
+    /// Date the URL was accessed.
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    pub accessed: Option<EdtfString>,
+    /// BCP 47 language of the event.
+    pub language: Option<LangID>,
+    /// Per-field language overrides.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub field_languages: FieldLanguageMap,
+    /// Freeform note.
+    pub note: Option<String>,
+}
+
+/// A classic work (Aristotle, Bible, etc.) with standard citation forms.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(from = "ClassicDeser", rename_all = "kebab-case")]
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Classic {
     /// Unique identifier for this reference.
     pub id: Option<RefID>,
     /// Work title (e.g., "Nicomachean Ethics")
     pub title: Option<Title>,
+    /// The primary container for this work.
+    pub container: Option<WorkRelation>,
     /// Author (e.g., "Aristotle")
     pub author: Option<Contributor>,
     /// Editor of this edition
     pub editor: Option<Contributor>,
     /// Translator of this edition
     pub translator: Option<Contributor>,
-    /// Volume in standard reference system
+    /// Volume number (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub volume: Option<String>,
-    /// Section, book, or chapter in standard reference system
-    pub section: Option<String>,
+    /// Issue number (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub issue: Option<String>,
+    /// Edition (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub edition: Option<String>,
+    /// Part or report number (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub number: Option<String>,
+    /// Numbering identifiers (e.g., volume, section, book, chapter in standard reference system).
+    /// Flat shorthand fields are accepted on input for authoring ergonomics and normalized
+    /// into canonical `numbering` entries during deserialization.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub numbering: Vec<Numbering>,
     /// Publication date of this edition (not original)
     #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
@@ -52,6 +109,97 @@ pub struct Classic {
     pub note: Option<String>,
     /// Keywords or subject tags.
     pub keywords: Option<Vec<String>>,
+}
+
+#[derive(Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(rename_all = "kebab-case")]
+struct ClassicDeser {
+    id: Option<RefID>,
+    title: Option<Title>,
+    container: Option<WorkRelation>,
+    author: Option<Contributor>,
+    editor: Option<Contributor>,
+    translator: Option<Contributor>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    volume: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    issue: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    edition: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    number: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    numbering: Vec<Numbering>,
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    issued: EdtfString,
+    publisher: Option<Contributor>,
+    #[serde(alias = "URL")]
+    url: Option<Url>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    accessed: Option<EdtfString>,
+    language: Option<LangID>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    field_languages: FieldLanguageMap,
+    note: Option<String>,
+    keywords: Option<Vec<String>>,
+}
+
+impl From<ClassicDeser> for Classic {
+    fn from(raw: ClassicDeser) -> Self {
+        let mut classic = Self {
+            id: raw.id,
+            title: raw.title,
+            container: raw.container,
+            author: raw.author,
+            editor: raw.editor,
+            translator: raw.translator,
+            volume: raw.volume,
+            issue: raw.issue,
+            edition: raw.edition,
+            number: raw.number,
+            numbering: raw.numbering,
+            issued: raw.issued,
+            publisher: raw.publisher,
+            url: raw.url,
+            accessed: raw.accessed,
+            language: raw.language,
+            field_languages: raw.field_languages,
+            note: raw.note,
+            keywords: raw.keywords,
+        };
+        classic.normalize_numbering();
+        classic
+    }
+}
+
+impl HasNumbering for Classic {
+    fn numbering(&self) -> &[Numbering] {
+        &self.numbering
+    }
+}
+
+impl NormalizeNumbering for Classic {
+    fn numbering_mut(&mut self) -> &mut Vec<Numbering> {
+        &mut self.numbering
+    }
+
+    fn volume_mut(&mut self) -> &mut Option<String> {
+        &mut self.volume
+    }
+
+    fn issue_mut(&mut self) -> &mut Option<String> {
+        &mut self.issue
+    }
+
+    fn edition_mut(&mut self) -> &mut Option<String> {
+        &mut self.edition
+    }
+
+    fn number_mut(&mut self) -> &mut Option<String> {
+        &mut self.number
+    }
 }
 
 /// A patent.

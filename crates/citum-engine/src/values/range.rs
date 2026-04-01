@@ -3,7 +3,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-//! Shared helpers for collapsing ordered consecutive sequences into spans.
+//! Shared helpers for collapsing ordered consecutive numbering into spans.
 
 /// One collapsed segment from an ordered numeric sequence.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

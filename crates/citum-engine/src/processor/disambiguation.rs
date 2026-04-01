@@ -813,7 +813,8 @@ mod tests {
             id: Some(id.to_string()),
             r#type: MonographType::Book,
             title: Some(Title::Single(title.clone())),
-            container_title: None,
+            short_title: None,
+            container: None,
             author: Some(Contributor::StructuredName(StructuredName {
                 family: MultilingualString::Simple(family.to_string()),
                 given: MultilingualString::Simple(given.to_string()),
@@ -827,27 +828,7 @@ mod tests {
             interviewer: None,
             guest: None,
             issued: EdtfString(year.to_string()),
-            publisher: None,
-            url: None,
-            accessed: None,
-            language: None,
-            field_languages: Default::default(),
-            note: None,
-            isbn: None,
-            doi: None,
-            edition: None,
-            report_number: None,
-            collection_number: None,
-            genre: None,
-            medium: None,
-            archive: None,
-            archive_location: None,
-            archive_info: None,
-            eprint: None,
-            keywords: None,
-            original_date: None,
-            original_title: None,
-            ads_bibcode: None,
+            ..Default::default()
         }))
     }
 
@@ -857,7 +838,8 @@ mod tests {
             id: Some(id.to_string()),
             r#type: MonographType::Book,
             title: Some(Title::Single(title)),
-            container_title: None,
+            short_title: None,
+            container: None,
             author: Some(Contributor::ContributorList(
                 citum_schema::reference::ContributorList(
                     authors
@@ -880,27 +862,7 @@ mod tests {
             interviewer: None,
             guest: None,
             issued: EdtfString(year.to_string()),
-            publisher: None,
-            url: None,
-            accessed: None,
-            language: None,
-            field_languages: Default::default(),
-            note: None,
-            isbn: None,
-            doi: None,
-            edition: None,
-            report_number: None,
-            collection_number: None,
-            genre: None,
-            medium: None,
-            archive: None,
-            archive_location: None,
-            archive_info: None,
-            eprint: None,
-            keywords: None,
-            original_date: None,
-            original_title: None,
-            ads_bibcode: None,
+            ..Default::default()
         }))
     }
 

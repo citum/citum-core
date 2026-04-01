@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! Biblatex entry conversion to Citum `InputReference`.
 //!
 //! Provides functions to convert biblatex entries and contributor
@@ -5,13 +10,12 @@
 
 use biblatex;
 use citum_schema::reference::{
-    InputReference,
+    InputReference, Numbering, NumberingType, WorkRelation,
     contributor::{Contributor, ContributorList, SimpleName, StructuredName},
     date::EdtfString,
     types::{
         Collection, CollectionComponent, CollectionType, Monograph, MonographComponentType,
-        MonographType, NumOrStr, Parent, Serial, SerialComponent, SerialComponentType, SerialType,
-        Title,
+        MonographType, NumOrStr, Serial, SerialComponent, SerialComponentType, SerialType, Title,
     },
 };
 use std::collections::HashMap;
@@ -33,6 +37,15 @@ struct BibRefContext<'a> {
 fn build_inbook_reference(ctx: BibRefContext<'_>) -> InputReference {
     let field_str = ctx.field_str;
     let parent_title = field_str("booktitle").map(Title::Single);
+
+    let mut parent_numbering = Vec::new();
+    if let Some(n) = field_str("number") {
+        parent_numbering.push(Numbering {
+            r#type: NumberingType::Volume,
+            value: n,
+        });
+    }
+
     InputReference::CollectionComponent(Box::new(CollectionComponent {
         id: ctx.id,
         r#type: MonographComponentType::Chapter,
@@ -40,24 +53,22 @@ fn build_inbook_reference(ctx: BibRefContext<'_>) -> InputReference {
         author: ctx.author,
         translator: None,
         issued: ctx.issued,
-        parent: Parent::Embedded(Collection {
-            id: None,
-            r#type: CollectionType::EditedBook,
-            title: parent_title,
-            short_title: None,
-            editor: ctx.editor,
-            translator: None,
-            issued: EdtfString(String::new()),
-            publisher: ctx.publisher,
-            collection_number: field_str("number"),
-            url: None,
-            accessed: None,
-            language: None,
-            field_languages: HashMap::new(),
-            note: None,
-            isbn: None,
-            keywords: None,
-        }),
+        container: Some(WorkRelation::Embedded(Box::new(
+            InputReference::Collection(Box::new(Collection {
+                id: None,
+                r#type: CollectionType::EditedBook,
+                title: parent_title,
+                short_title: None,
+                container: None,
+                editor: ctx.editor,
+                translator: None,
+                issued: EdtfString(String::new()),
+                publisher: ctx.publisher,
+                numbering: parent_numbering,
+                ..Default::default()
+            })),
+        ))),
+        numbering: Vec::new(),
         pages: field_str("pages").map(NumOrStr::Str),
         url: field_str("url").and_then(|u| Url::parse(&u).ok()),
         accessed: field_str("urldate").map(EdtfString),
@@ -66,10 +77,7 @@ fn build_inbook_reference(ctx: BibRefContext<'_>) -> InputReference {
         note: field_str("note"),
         doi: field_str("doi"),
         genre: field_str("type"),
-        medium: None,
-        archive_info: None,
-        eprint: None,
-        keywords: None,
+        ..Default::default()
     }))
 }
 
@@ -79,6 +87,21 @@ fn build_article_reference(ctx: BibRefContext<'_>) -> InputReference {
     let parent_title = field_str("journaltitle")
         .or_else(|| field_str("journal"))
         .map(Title::Single);
+
+    let mut component_numbering = Vec::new();
+    if let Some(v) = field_str("volume") {
+        component_numbering.push(Numbering {
+            r#type: NumberingType::Volume,
+            value: v,
+        });
+    }
+    if let Some(i) = field_str("number") {
+        component_numbering.push(Numbering {
+            r#type: NumberingType::Issue,
+            value: i,
+        });
+    }
+
     InputReference::SerialComponent(Box::new(SerialComponent {
         id: ctx.id,
         r#type: SerialComponentType::Article,
@@ -86,14 +109,24 @@ fn build_article_reference(ctx: BibRefContext<'_>) -> InputReference {
         author: ctx.author,
         translator: None,
         issued: ctx.issued,
-        parent: Parent::Embedded(Serial {
-            r#type: SerialType::AcademicJournal,
-            title: parent_title,
-            short_title: None,
-            editor: None,
-            publisher: None,
-            issn: field_str("issn"),
-        }),
+        container: Some(WorkRelation::Embedded(Box::new(InputReference::Serial(
+            Box::new(Serial {
+                id: None,
+                r#type: SerialType::AcademicJournal,
+                title: parent_title,
+                short_title: None,
+                container: None,
+                editor: None,
+                publisher: None,
+                url: None,
+                accessed: None,
+                language: None,
+                field_languages: HashMap::new(),
+                note: None,
+                issn: field_str("issn"),
+            }),
+        )))),
+        numbering: component_numbering,
         url: field_str("url").and_then(|u| Url::parse(&u).ok()),
         accessed: field_str("urldate").map(EdtfString),
         language: ctx.language,
@@ -102,13 +135,8 @@ fn build_article_reference(ctx: BibRefContext<'_>) -> InputReference {
         doi: field_str("doi"),
         ads_bibcode: field_str("bibcode"),
         pages: field_str("pages"),
-        volume: field_str("volume").map(NumOrStr::Str),
-        issue: field_str("number").map(NumOrStr::Str),
         genre: field_str("type"),
-        medium: None,
-        archive_info: None,
-        eprint: None,
-        keywords: None,
+        ..Default::default()
     }))
 }
 
@@ -194,11 +222,34 @@ fn biblatex_monograph(
     ctx: BibRefContext<'_>,
 ) -> Monograph {
     let field_str = ctx.field_str;
+
+    let mut numbering = Vec::new();
+    if let Some(ed) = field_str("edition") {
+        numbering.push(Numbering {
+            r#type: NumberingType::Edition,
+            value: ed,
+        });
+    }
+    if let Some(n) = field_str("number") {
+        if entry_type == "report" {
+            numbering.push(Numbering {
+                r#type: NumberingType::Part,
+                value: n,
+            });
+        } else {
+            numbering.push(Numbering {
+                r#type: NumberingType::Volume,
+                value: n,
+            });
+        }
+    }
+
     Monograph {
         id: ctx.id,
         r#type,
         title: ctx.title,
-        container_title: None,
+        short_title: None,
+        container: None,
         author: ctx.author,
         editor: ctx.editor,
         translator: None,
@@ -215,26 +266,9 @@ fn biblatex_monograph(
         isbn: field_str("isbn"),
         doi: field_str("doi"),
         ads_bibcode: field_str("bibcode"),
-        edition: field_str("edition"),
-        report_number: if entry_type == "report" {
-            field_str("number")
-        } else {
-            None
-        },
-        collection_number: if entry_type == "report" {
-            None
-        } else {
-            field_str("number")
-        },
+        numbering,
         genre: field_str("type"),
-        medium: None,
-        archive: None,
-        archive_location: None,
-        archive_info: None,
-        eprint: None,
-        keywords: None,
-        original_date: None,
-        original_title: None,
+        ..Default::default()
     }
 }
 

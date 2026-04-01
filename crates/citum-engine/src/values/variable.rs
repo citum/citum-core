@@ -5,7 +5,6 @@
 
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
-use citum_schema::reference::Parent;
 use citum_schema::template::{SimpleVariable, TemplateVariable};
 
 /// Extracts the short title from a parent reference if available.
@@ -14,17 +13,11 @@ use citum_schema::template::{SimpleVariable, TemplateVariable};
 /// components, or None if the parent is an ID reference or the component
 /// type doesn't support short titles.
 fn container_title_short(reference: &Reference) -> Option<String> {
-    match reference {
-        Reference::CollectionComponent(component) => match &component.parent {
-            Parent::Embedded(parent) => parent.short_title.clone(),
-            Parent::Id(_) => None,
-        },
-        Reference::SerialComponent(component) => match &component.parent {
-            Parent::Embedded(parent) => parent.short_title.clone(),
-            Parent::Id(_) => None,
-        },
+    reference.container_title().and_then(|t| match t {
+        citum_schema::reference::types::Title::Shorthand(short, _) => Some(short),
+        citum_schema::reference::types::Title::Single(s) => Some(s),
         _ => None,
-    }
+    })
 }
 
 fn resolve_archive_name(reference: &Reference, options: &RenderOptions<'_>) -> Option<String> {
@@ -89,10 +82,7 @@ fn resolve_variable_value(
             _ => None,
         },
         SimpleVariable::AdsBibcode => reference.ads_bibcode(),
-        SimpleVariable::ReportNumber => match reference {
-            Reference::Monograph(r) => r.report_number.clone(),
-            _ => None,
-        },
+        SimpleVariable::ReportNumber => reference.number(),
         SimpleVariable::Version => reference.version(),
         SimpleVariable::ContainerTitleShort => container_title_short(reference),
         SimpleVariable::Locator => options.locator_raw.map(|loc| {
