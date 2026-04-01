@@ -1,4 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-exec python3 "$ROOT_DIR/scripts/schema-check.py" pre-commit
+
+# 1. Schema checks
+python3 "$ROOT_DIR/scripts/schema-check.py" pre-commit
+
+# 2. Bean hygiene check (same as CI and pre-push)
+BEAN_WRAPPER="$ROOT_DIR/.claude/skills/beans/bin/citum-bean"
+if [[ -x "$BEAN_WRAPPER" ]]; then
+  printf '[PRE-COMMIT] Running bean hygiene check...\n'
+  if ! "$BEAN_WRAPPER" hygiene; then
+    printf '[ERROR] Bean hygiene failed. Fix before committing.\n' >&2
+    exit 1
+  fi
+fi
+
+# 3. Docs/Beans hygiene check (CI script)
+if [[ -x "$ROOT_DIR/scripts/check-docs-beans-hygiene.sh" ]]; then
+  printf '[PRE-COMMIT] Running docs and beans hygiene script...\n'
+  if ! "$ROOT_DIR/scripts/check-docs-beans-hygiene.sh"; then
+    printf '[ERROR] Docs/beans hygiene check failed. Fix before committing.\n' >&2
+    exit 1
+  fi
+fi
