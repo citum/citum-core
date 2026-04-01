@@ -44,11 +44,11 @@ Running `scripts/coverage-analysis.py` on the Chicago 18th test corpus (403 item
 
 *Revision Note: This batch originally proposed adding flat fields like `volume_title` and `part_number`. To align with FRBR principles and future-proof the schema, Citum will instead adopt a recursive container model.*
 
-CSL JSON fixtures show that variables like `part-number` and `part-title` typically define the identity of the physical document being cited. In Citum, these are mapped directly to the document's own `title` and `number`, while the larger work is defined as a `container`.
+CSL JSON fixtures show that variables like generic `number`, `part-number`, and `part-title` typically define the identity of the physical document being cited. In Citum, these are mapped directly to the document's own `title` plus either generic `numbering` or true part numbering, while the larger work is defined as a `container`.
 
 | CSL Variable | CSL Uses | Citum Relational Strategy |
 | :--- | :--- | :--- |
-| `part-number` | 6 | **Document Attribute:** Mapped to the `number` or `Numbering` identifier of the cited item itself. |
+| `part-number` | 6 | **Document Attribute:** Mapped to the cited item's document-level numbering, using generic `number` or true `part` semantics as appropriate. |
 | `part-title` | 2 | **Document Attribute:** Mapped to the `title` of the cited item. |
 | `volume-title` | 16 | **Container Attribute:** Mapped to the `title` of the item's `container` (WorkRelation). |
 | `chapter-number` | 7 | **Document Attribute:** Mapped to the `number` of the Chapter item. |

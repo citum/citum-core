@@ -81,10 +81,10 @@ pub struct Classic {
     /// Edition (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub edition: Option<String>,
-    /// Part or report number (shorthand for numbering).
+    /// Generic document number (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub number: Option<String>,
-    /// Numbering identifiers (e.g., volume, section, book, chapter in standard reference system).
+    /// Numbering identifiers (e.g., volume, section, number, chapter in standard reference system).
     /// Flat shorthand fields are accepted on input for authoring ergonomics and normalized
     /// into canonical `numbering` entries during deserialization.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]

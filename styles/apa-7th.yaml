@@ -354,6 +354,22 @@ bibliography:
       suffix: "."
     - variable: url
       prefix: " "
+    patent:
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: "."
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      emph: true
+      suffix: "."
+    - variable: patent-number
+      prefix: " U.S. Patent No. "
+      suffix: "."
   template:
   - contributor: author
     form: long

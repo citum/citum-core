@@ -82,7 +82,7 @@ fn resolve_variable_value(
             _ => None,
         },
         SimpleVariable::AdsBibcode => reference.ads_bibcode(),
-        SimpleVariable::ReportNumber => reference.number(),
+        SimpleVariable::ReportNumber => reference.report_number(),
         SimpleVariable::Version => reference.version(),
         SimpleVariable::ContainerTitleShort => container_title_short(reference),
         SimpleVariable::Locator => options.locator_raw.map(|loc| {

@@ -834,34 +834,38 @@ impl InputReference {
         }
     }
 
-    /// Return the number (docket number, session number, etc.).
+    /// Return the generic document number.
     pub fn number(&self) -> Option<String> {
         match self {
             InputReference::Monograph(r) => r
                 .number
                 .clone()
-                .or_else(|| self.find_numbering(NumberingType::Part)),
+                .or_else(|| self.find_numbering(NumberingType::Number)),
             InputReference::Collection(r) => r
                 .number
                 .clone()
-                .or_else(|| self.find_numbering(NumberingType::Part)),
+                .or_else(|| self.find_numbering(NumberingType::Number)),
             InputReference::CollectionComponent(r) => r
                 .number
                 .clone()
-                .or_else(|| self.find_numbering(NumberingType::Part)),
+                .or_else(|| self.find_numbering(NumberingType::Number)),
             InputReference::SerialComponent(r) => r
                 .number
                 .clone()
-                .or_else(|| self.find_numbering(NumberingType::Part)),
+                .or_else(|| self.find_numbering(NumberingType::Number)),
             InputReference::Classic(r) => r
                 .number
                 .clone()
-                .or_else(|| self.find_numbering(NumberingType::Part)),
-            InputReference::Hearing(r) => r.session_number.clone(),
-            InputReference::Brief(r) => r.docket_number.clone(),
-            InputReference::Patent(r) => Some(r.patent_number.clone()),
-            InputReference::Standard(r) => Some(r.standard_number.clone()),
-            _ => self.find_numbering(NumberingType::Part),
+                .or_else(|| self.find_numbering(NumberingType::Number)),
+            _ => self.find_numbering(NumberingType::Number),
+        }
+    }
+
+    /// Return the report identifier.
+    pub fn report_number(&self) -> Option<String> {
+        match self {
+            InputReference::Monograph(_) => self.find_numbering(NumberingType::Report),
+            _ => None,
         }
     }
 
@@ -1296,7 +1300,30 @@ mod numbering_tests {
                 Some("4".to_string()),
                 "{label} should resolve number"
             );
+            assert_eq!(
+                reference.report_number(),
+                None,
+                "{label} should not resolve report number"
+            );
         }
+    }
+
+    #[test]
+    fn report_number_accessor_stays_separate_from_generic_number() {
+        let reference = parse_reference(
+            r#"{
+                "class": "monograph",
+                "type": "report",
+                "title": "Report",
+                "issued": "2024",
+                "numbering": [
+                    { "type": "report", "value": "TR-42" }
+                ]
+            }"#,
+        );
+
+        assert_eq!(reference.number(), None);
+        assert_eq!(reference.report_number(), Some("TR-42".to_string()));
     }
 
     #[test]

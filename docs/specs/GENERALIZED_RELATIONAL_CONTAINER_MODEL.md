@@ -80,11 +80,11 @@ A recursive container model must provide a robust metadata inheritance strategy.
 
 ## Formalizing "Numbering"
 
-Analysis of CSL JSON fixtures reveals that `part-number` and `volume` are identity markers for the document. To handle multiplicity (e.g., "Supplement 2 of Volume 5"), we adopt a `Vec<Numbering>` model with a controlled vocabulary for reliable i18n rendering.
+Analysis of CSL JSON fixtures reveals that document numbering such as generic `number`, `part-number`, and `volume` are identity markers for the document. To handle multiplicity (e.g., "Supplement 2 of Volume 5"), we adopt a `Vec<Numbering>` model with a controlled vocabulary for reliable i18n rendering.
 
 ```rust
 pub struct Numbering {
-    /// Controlled vocabulary: "volume", "issue", "part", "supplement", "chapter", "book", "section"
+    /// Controlled vocabulary (see `NumberingType`), e.g.: "volume", "issue", "number", "report", "part", "supplement", "chapter", "section", "edition"
     pub r#type: NumberingType, 
     pub value: String, // e.g., "4", "B", "12"
 }

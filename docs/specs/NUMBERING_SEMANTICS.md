@@ -1,8 +1,8 @@
 # Numbering Semantics Specification
 
-**Status:** Draft
+**Status:** Active
 **Date:** 2026-04-01
-**Related:** `.beans/csl26-aew9--refine-numbering-semantic-distinctions.md`
+**Related:** `.beans/archive/csl26-aew9--refine-numbering-semantic-distinctions.md`
 
 ## Purpose
 Define the canonical semantics of Citum's numbering model so `number`, `report`, and `part` stop sharing the same storage and accessor behavior. This specification narrows the meaning of generic numbering, preserves dedicated fields for type-specific identifiers, and removes misleading numbering vocabulary that no longer matches the data model.
@@ -77,4 +77,5 @@ Out of scope: arbitrary user-defined numbering kinds, new locator vocabularies, 
 - [ ] Styles using `report-number` continue to render correctly after the change.
 
 ## Changelog
+- 2026-04-01: Activated with the clean-break numbering semantics implementation.
 - 2026-04-01: Initial draft.

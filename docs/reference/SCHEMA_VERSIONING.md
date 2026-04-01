@@ -210,6 +210,12 @@ Track schema changes separately from code changes.
 Historical note: entries below may predate the automation baseline and are the
 authoritative record when matching tags were not created at the time.
 
+#### schema-v0.22.0 (2026-04-01)
+- Schema version bumped from 0.21.0 to 0.22.0
+- Breaking: split numbering semantics for generic `number`, `report`, and `part`
+- Breaking: `NumberingType` adds `number` and `report`, and removes `book`
+- Breaking: numbering accessors and rendering now preserve the narrowed generic/report boundary
+
 #### schema-v0.21.0 (2026-04-01)
 - Schema version bumped from 0.20.0 to 0.21.0
 - Universal relational container model with recursive `WorkRelation`

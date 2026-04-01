@@ -194,11 +194,11 @@ pub(super) fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputRef
     };
 
     match entry_type.as_str() {
-        "book" | "mvbook" | "collection" | "mvcollection" | "manual" => {
-            let mono_type = if entry_type == "manual" {
-                MonographType::Manual
-            } else {
-                MonographType::Book
+        "book" | "mvbook" | "collection" | "mvcollection" | "manual" | "report" => {
+            let mono_type = match entry_type.as_str() {
+                "manual" => MonographType::Manual,
+                "report" => MonographType::Report,
+                _ => MonographType::Book,
             };
             InputReference::Monograph(Box::new(biblatex_monograph(mono_type, &entry_type, ctx)))
         }
@@ -214,8 +214,8 @@ pub(super) fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputRef
 
 /// Build a Monograph reference with common fields from biblatex.
 ///
-/// Extracts `report_number` and `collection_number` based on entry type,
-/// and handles URL parsing.
+/// Maps biblatex `edition` and `number` fields into canonical `numbering`,
+/// treating `report` entry numbers as `NumberingType::Report`, and handles URL parsing.
 fn biblatex_monograph(
     r#type: MonographType,
     entry_type: &str,
@@ -233,12 +233,12 @@ fn biblatex_monograph(
     if let Some(n) = field_str("number") {
         if entry_type == "report" {
             numbering.push(Numbering {
-                r#type: NumberingType::Part,
+                r#type: NumberingType::Report,
                 value: n,
             });
         } else {
             numbering.push(Numbering {
-                r#type: NumberingType::Volume,
+                r#type: NumberingType::Number,
                 value: n,
             });
         }
@@ -298,4 +298,41 @@ pub(super) fn contributors_from_biblatex_persons(persons: &[biblatex::Person]) -
         })
         .collect();
     Contributor::ContributorList(ContributorList(contributors))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn parse_single_entry(source: &str) -> biblatex::Entry {
+        let bibliography = biblatex::Bibliography::parse(source).expect("biblatex should parse");
+        bibliography
+            .into_iter()
+            .next()
+            .expect("bibliography should contain one entry")
+    }
+
+    #[test]
+    fn biblatex_report_number_maps_to_report_numbering() {
+        let entry = parse_single_entry(
+            "@report{r1,\n  title = {Report},\n  date = {2024},\n  number = {TR-7}\n}",
+        );
+
+        let converted = input_reference_from_biblatex(&entry);
+
+        assert_eq!(converted.ref_type(), "report");
+        assert_eq!(converted.number(), None);
+        assert_eq!(converted.report_number(), Some("TR-7".to_string()));
+    }
+
+    #[test]
+    fn biblatex_book_number_maps_to_generic_numbering() {
+        let entry =
+            parse_single_entry("@book{b1,\n  title = {Book},\n  date = {2024},\n  number = {2}\n}");
+
+        let converted = input_reference_from_biblatex(&entry);
+
+        assert_eq!(converted.number(), Some("2".to_string()));
+        assert_eq!(converted.report_number(), None);
+    }
 }

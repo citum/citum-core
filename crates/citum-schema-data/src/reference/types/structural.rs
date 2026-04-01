@@ -79,7 +79,7 @@ pub struct Monograph {
     /// Edition (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub edition: Option<String>,
-    /// Part or report number (shorthand for numbering).
+    /// Generic document number (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub number: Option<String>,
     /// Numbering identifiers (e.g., volume, issue, edition).
@@ -275,7 +275,7 @@ pub struct Collection {
     /// Edition (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub edition: Option<String>,
-    /// Part or report number (shorthand for numbering).
+    /// Generic document number (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub number: Option<String>,
     /// Numbering identifiers (e.g., volume, collection number).
@@ -420,7 +420,7 @@ pub struct CollectionComponent {
     /// Edition (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub edition: Option<String>,
-    /// Part or report number (shorthand for numbering).
+    /// Generic document number (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub number: Option<String>,
     /// Numbering identifiers (e.g., chapter number, part number).
@@ -582,10 +582,10 @@ pub struct SerialComponent {
     /// Edition (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub edition: Option<String>,
-    /// Part or report number (shorthand for numbering).
+    /// Generic document number (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub number: Option<String>,
-    /// Numbering identifiers (e.g., volume, issue, part).
+    /// Numbering identifiers (e.g., volume, issue, number).
     /// Flat shorthand fields are accepted on input for authoring ergonomics and normalized
     /// into canonical `numbering` entries during deserialization.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]

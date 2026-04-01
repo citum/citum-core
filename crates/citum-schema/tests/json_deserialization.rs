@@ -221,7 +221,7 @@ fn test_monograph_shorthand_numbering_normalizes_on_deserialize() {
     assert_eq!(monograph.numbering[1].value, "4");
     assert_eq!(monograph.numbering[2].r#type, NumberingType::Edition);
     assert_eq!(monograph.numbering[2].value, "2");
-    assert_eq!(monograph.numbering[3].r#type, NumberingType::Part);
+    assert_eq!(monograph.numbering[3].r#type, NumberingType::Number);
     assert_eq!(monograph.numbering[3].value, "7");
     assert_eq!(monograph.numbering[4].r#type, NumberingType::Chapter);
     assert_eq!(monograph.numbering[4].value, "9");
@@ -258,7 +258,7 @@ fn test_monograph_shorthand_overrides_conflicting_numbering_entries() {
         "number": "5",
         "numbering": [
             { "type": "volume", "value": "1" },
-            { "type": "part", "value": "2" },
+            { "type": "number", "value": "2" },
             { "type": "supplement", "value": "A" }
         ]
     }"#;
@@ -268,10 +268,43 @@ fn test_monograph_shorthand_overrides_conflicting_numbering_entries() {
     assert_eq!(monograph.numbering.len(), 3);
     assert_eq!(monograph.numbering[0].r#type, NumberingType::Volume);
     assert_eq!(monograph.numbering[0].value, "12");
-    assert_eq!(monograph.numbering[1].r#type, NumberingType::Part);
+    assert_eq!(monograph.numbering[1].r#type, NumberingType::Number);
     assert_eq!(monograph.numbering[1].value, "5");
     assert_eq!(monograph.numbering[2].r#type, NumberingType::Supplement);
     assert_eq!(monograph.numbering[2].value, "A");
+}
+
+#[test]
+fn test_monograph_report_numbering_deserializes_with_report_type() {
+    let json = r#"{
+        "type": "report",
+        "title": "Report",
+        "issued": "2023",
+        "numbering": [
+            { "type": "report", "value": "TR-7" }
+        ]
+    }"#;
+
+    let monograph: Monograph = serde_json::from_str(json).expect("monograph should parse");
+
+    assert_eq!(monograph.numbering.len(), 1);
+    assert_eq!(monograph.numbering[0].r#type, NumberingType::Report);
+    assert_eq!(monograph.numbering[0].value, "TR-7");
+}
+
+#[test]
+fn test_monograph_book_numbering_rejected_after_clean_break() {
+    let json = r#"{
+        "type": "book",
+        "title": "Legacy Book Number",
+        "issued": "2023",
+        "numbering": [
+            { "type": "book", "value": "III" }
+        ]
+    }"#;
+
+    let error = serde_json::from_str::<Monograph>(json).expect_err("book numbering should fail");
+    assert!(error.to_string().contains("unknown variant") || error.to_string().contains("book"));
 }
 
 #[test]

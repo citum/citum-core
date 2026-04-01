@@ -50,7 +50,7 @@ fn resolve_number_value(
             Reference::Standard(r) => Some(r.standard_number.clone()),
             _ => None,
         },
-        NumberVariable::ReportNumber => reference.number(),
+        NumberVariable::ReportNumber => reference.report_number(),
         NumberVariable::PartNumber
         | NumberVariable::SupplementNumber
         | NumberVariable::PrintingNumber => None,
