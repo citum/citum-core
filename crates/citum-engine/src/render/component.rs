@@ -52,7 +52,7 @@ use super::plain::PlainText;
 
 /// Resolve the semantic CSS class for a rendered component based on its template type.
 fn resolve_semantic_class(component: &ProcTemplateComponent) -> Option<String> {
-    use citum_schema::template::{DateVariable, NumberVariable, SimpleVariable};
+    use citum_schema::template::{DateVariable, SimpleVariable};
     match &component.template_component {
         TemplateComponent::Title(t) => match t.title {
             TitleType::Primary => Some("csln-title".to_string()),
@@ -72,21 +72,7 @@ fn resolve_semantic_class(component: &ProcTemplateComponent) -> Option<String> {
                 DateVariable::EventDate => "event-date",
             }
         )),
-        TemplateComponent::Number(n) => Some(format!(
-            "csln-{}",
-            match n.number {
-                NumberVariable::Volume => "volume",
-                NumberVariable::Issue => "issue",
-                NumberVariable::Pages => "pages",
-                NumberVariable::Edition => "edition",
-                NumberVariable::ChapterNumber => "chapter-number",
-                NumberVariable::CollectionNumber => "collection-number",
-                NumberVariable::NumberOfPages => "number-of-pages",
-                NumberVariable::NumberOfVolumes => "number-of-volumes",
-                NumberVariable::CitationNumber => "citation-number",
-                _ => "number",
-            }
-        )),
+        TemplateComponent::Number(n) => Some(format!("csln-{}", n.number.as_key())),
         TemplateComponent::Variable(v) => Some(format!(
             "csln-{}",
             match v.variable {

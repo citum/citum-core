@@ -77,7 +77,7 @@
     "version": {
       "description": "Style schema version.",
       "type": "string",
-      "default": "0.22.0"
+      "default": "0.23.0"
     }
   },
   "additionalProperties": false,
@@ -2675,189 +2675,8 @@
       ]
     },
     "LocatorType": {
-      "description": "Locator types for pinpoint citations.",
-      "oneOf": [
-        {
-          "description": "Locator refers to a book within a larger work.",
-          "type": "string",
-          "const": "book"
-        },
-        {
-          "description": "Locator refers to a chapter.",
-          "type": "string",
-          "const": "chapter"
-        },
-        {
-          "description": "Locator refers to a clause.",
-          "type": "string",
-          "const": "clause"
-        },
-        {
-          "description": "Locator refers to a column.",
-          "type": "string",
-          "const": "column"
-        },
-        {
-          "description": "Locator refers to a corollary.",
-          "type": "string",
-          "const": "corollary"
-        },
-        {
-          "description": "Locator refers to a definition.",
-          "type": "string",
-          "const": "definition"
-        },
-        {
-          "description": "Locator refers to a division.",
-          "type": "string",
-          "const": "division"
-        },
-        {
-          "description": "Locator refers to a figure.",
-          "type": "string",
-          "const": "figure"
-        },
-        {
-          "description": "Locator refers to a folio.",
-          "type": "string",
-          "const": "folio"
-        },
-        {
-          "description": "Locator refers to a numbered line.",
-          "type": "string",
-          "const": "line"
-        },
-        {
-          "description": "Locator refers to a lemma.",
-          "type": "string",
-          "const": "lemma"
-        },
-        {
-          "description": "Locator refers to a note.",
-          "type": "string",
-          "const": "note"
-        },
-        {
-          "description": "Locator refers to a numbered unit.",
-          "type": "string",
-          "const": "number"
-        },
-        {
-          "description": "Locator refers to an opus number.",
-          "type": "string",
-          "const": "opus"
-        },
-        {
-          "description": "Locator refers to a page.",
-          "type": "string",
-          "const": "page"
-        },
-        {
-          "description": "Locator refers to a paragraph.",
-          "type": "string",
-          "const": "paragraph"
-        },
-        {
-          "description": "Locator refers to a sub-paragraph.",
-          "type": "string",
-          "const": "subparagraph"
-        },
-        {
-          "description": "Locator refers to a sub-clause.",
-          "type": "string",
-          "const": "subclause"
-        },
-        {
-          "description": "Locator refers to a sub-division.",
-          "type": "string",
-          "const": "subdivision"
-        },
-        {
-          "description": "Locator refers to a sub-section.",
-          "type": "string",
-          "const": "subsection"
-        },
-        {
-          "description": "Locator refers to a part or division.",
-          "type": "string",
-          "const": "part"
-        },
-        {
-          "description": "Locator refers to a problem.",
-          "type": "string",
-          "const": "problem"
-        },
-        {
-          "description": "Locator refers to a proposition.",
-          "type": "string",
-          "const": "proposition"
-        },
-        {
-          "description": "Locator refers to a recital.",
-          "type": "string",
-          "const": "recital"
-        },
-        {
-          "description": "Locator refers to a schedule.",
-          "type": "string",
-          "const": "schedule"
-        },
-        {
-          "description": "Locator refers to a section.",
-          "type": "string",
-          "const": "section"
-        },
-        {
-          "description": "Locator refers to a surah.",
-          "type": "string",
-          "const": "surah"
-        },
-        {
-          "description": "Locator refers to a theorem.",
-          "type": "string",
-          "const": "theorem"
-        },
-        {
-          "description": "Locator refers to an entry under a headword.",
-          "type": "string",
-          "const": "sub-verbo"
-        },
-        {
-          "description": "Locator refers to a supplement.",
-          "type": "string",
-          "const": "supplement"
-        },
-        {
-          "description": "Locator refers to a verse.",
-          "type": "string",
-          "const": "verse"
-        },
-        {
-          "description": "Locator refers to a volume.",
-          "type": "string",
-          "const": "volume"
-        },
-        {
-          "description": "Locator refers to a periodical volume.",
-          "type": "string",
-          "const": "volume-periodical"
-        },
-        {
-          "description": "Locator refers to a monograph volume.",
-          "type": "string",
-          "const": "volume-book"
-        },
-        {
-          "description": "Locator refers to an issue.",
-          "type": "string",
-          "const": "issue"
-        },
-        {
-          "description": "Locator refers to an algorithm.",
-          "type": "string",
-          "const": "algorithm"
-        }
-      ]
+      "description": "Known locator label keyword or custom kebab-case identifier.",
+      "type": "string"
     },
     "MonthFormat": {
       "description": "Month display format.",
@@ -3127,28 +2946,8 @@
       ]
     },
     "NumberVariable": {
-      "description": "Number variables.\n\nUse `number:` when the value is treated as a number by the style:\nnumeric labels, numeric-specific formatting, ordinals, roman numerals, or\nlocator-aware punctuation. Use `variable:` instead when the field should be\npassed through as plain text without number formatting semantics.",
-      "type": "string",
-      "enum": [
-        "volume",
-        "issue",
-        "pages",
-        "edition",
-        "chapter-number",
-        "collection-number",
-        "number-of-pages",
-        "number-of-volumes",
-        "citation-number",
-        "citation-label",
-        "number",
-        "docket-number",
-        "patent-number",
-        "standard-number",
-        "report-number",
-        "part-number",
-        "supplement-number",
-        "printing-number"
-      ]
+      "description": "Known number variable keyword or custom kebab-case identifier.",
+      "type": "string"
     },
     "PageRangeFormat": {
       "description": "Page range formatting options.",

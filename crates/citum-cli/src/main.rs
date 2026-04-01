@@ -1180,8 +1180,8 @@ fn lint_style_against_locale(style: &Style, locale: &Locale) -> LintReport {
                 }
             }
             LocaleRequirementKind::Locator { locator, form } => {
-                let singular = locale.resolved_locator_term(&locator, false, form);
-                let plural = locale.resolved_locator_term(&locator, true, form);
+                let singular = lint_locator_term(locale, &locator, false, form);
+                let plural = lint_locator_term(locale, &locator, true, form);
                 if singular.is_none() || plural.is_none() {
                     report.warning(
                         requirement.path,
@@ -1195,6 +1195,41 @@ fn lint_style_against_locale(style: &Style, locale: &Locale) -> LintReport {
     }
 
     report
+}
+
+fn lint_locator_term(
+    locale: &Locale,
+    locator: &citum_schema::citation::LocatorType,
+    plural: bool,
+    form: TermForm,
+) -> Option<String> {
+    match locator {
+        citum_schema::citation::LocatorType::Custom(_) => locale
+            .locators
+            .get(locator)
+            .and_then(|term| match form {
+                TermForm::Long => term.long.as_ref(),
+                TermForm::Short => term.short.as_ref(),
+                TermForm::Symbol => term.symbol.as_ref(),
+                _ => term.short.as_ref(),
+            })
+            .or_else(|| {
+                locale.locators.get(locator).and_then(|term| {
+                    term.long
+                        .as_ref()
+                        .or(term.short.as_ref())
+                        .or(term.symbol.as_ref())
+                })
+            })
+            .map(|forms| {
+                if plural {
+                    forms.plural.clone()
+                } else {
+                    forms.singular.clone()
+                }
+            }),
+        _ => locale.resolved_locator_term(locator, plural, form),
+    }
 }
 
 fn collect_style_locale_requirements(style: &Style) -> Vec<LocaleRequirement> {
@@ -1534,6 +1569,7 @@ fn number_variable_to_locator(
         | NumberVariable::CitationLabel => Some(LocatorType::Number),
         NumberVariable::PartNumber => Some(LocatorType::Part),
         NumberVariable::SupplementNumber => Some(LocatorType::Supplement),
+        NumberVariable::Custom(kind) => Some(LocatorType::Custom(kind)),
         _ => None,
     }
 }
@@ -3746,6 +3782,64 @@ grammar-options:
             finding.severity == LintSeverity::Warning
                 && finding.path == "citation.template[0]"
                 && finding.message.contains("role term")
+        }));
+    }
+
+    #[test]
+    fn test_lint_style_against_locale_accepts_custom_locator_when_locale_defines_it() {
+        let style = Style {
+            citation: Some(citum_schema::CitationSpec {
+                template: Some(vec![TemplateComponent::Number(TemplateNumber {
+                    number: NumberVariable::Custom("reel".to_string()),
+                    label_form: Some(TemplateLabelForm::Short),
+                    ..Default::default()
+                })]),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: en-US
+locators:
+  reel:
+    short:
+      singular: "reel"
+      plural: "reels"
+"#,
+        )
+        .expect("custom locale should parse");
+
+        let report = lint_style_against_locale(&style, &locale);
+
+        assert!(
+            report.findings.is_empty(),
+            "unexpected findings: {:?}",
+            report.findings
+        );
+    }
+
+    #[test]
+    fn test_lint_style_against_locale_warns_for_missing_custom_locator_term() {
+        let style = Style {
+            citation: Some(citum_schema::CitationSpec {
+                template: Some(vec![TemplateComponent::Number(TemplateNumber {
+                    number: NumberVariable::Custom("reel".to_string()),
+                    label_form: Some(TemplateLabelForm::Short),
+                    ..Default::default()
+                })]),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let locale = Locale::default();
+
+        let report = lint_style_against_locale(&style, &locale);
+
+        assert!(report.findings.iter().any(|finding| {
+            finding.severity == LintSeverity::Warning
+                && finding.path == "citation.template[0]"
+                && finding.message.contains("locator term")
         }));
     }
 }

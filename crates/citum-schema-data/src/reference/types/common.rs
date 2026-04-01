@@ -5,12 +5,14 @@
 
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 #[cfg(feature = "bindings")]
 use specta::Type;
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Display, Formatter};
+use std::hash::{Hash, Hasher};
 use url::Url;
 
 /// Unique identifier for a reference item.
@@ -28,10 +30,8 @@ pub struct Numbering {
 }
 
 /// Controlled vocabulary for numbering types.
-#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[derive(Debug, Clone)]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
 pub enum NumberingType {
     /// A volume number.
@@ -52,6 +52,98 @@ pub enum NumberingType {
     Section,
     /// An edition identifier.
     Edition,
+    /// A custom numbering identifier for domain-specific kinds.
+    Custom(String),
+}
+
+impl NumberingType {
+    /// Return the canonical kebab-case key for this numbering kind.
+    #[must_use]
+    pub fn as_key(&self) -> Cow<'_, str> {
+        match self {
+            Self::Volume => Cow::Borrowed("volume"),
+            Self::Issue => Cow::Borrowed("issue"),
+            Self::Number => Cow::Borrowed("number"),
+            Self::Report => Cow::Borrowed("report"),
+            Self::Part => Cow::Borrowed("part"),
+            Self::Supplement => Cow::Borrowed("supplement"),
+            Self::Chapter => Cow::Borrowed("chapter"),
+            Self::Section => Cow::Borrowed("section"),
+            Self::Edition => Cow::Borrowed("edition"),
+            Self::Custom(value) => normalize_kind_key(value)
+                .map(Cow::Owned)
+                .unwrap_or_else(|| Cow::Borrowed(value.as_str())),
+        }
+    }
+
+    /// Parse a numbering kind from a known keyword or custom identifier.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the input is empty or normalizes to an empty key.
+    pub fn from_key(value: &str) -> Result<Self, String> {
+        let canonical = normalize_kind_key(value)
+            .ok_or_else(|| "numbering kind must not be empty".to_string())?;
+        Ok(match canonical.as_str() {
+            "volume" => Self::Volume,
+            "issue" => Self::Issue,
+            "number" => Self::Number,
+            "report" => Self::Report,
+            "part" => Self::Part,
+            "supplement" => Self::Supplement,
+            "chapter" => Self::Chapter,
+            "section" => Self::Section,
+            "edition" => Self::Edition,
+            _ => Self::Custom(canonical),
+        })
+    }
+}
+
+impl PartialEq for NumberingType {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_key().as_ref() == other.as_key().as_ref()
+    }
+}
+
+impl Eq for NumberingType {}
+
+impl Hash for NumberingType {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.as_key().as_ref().hash(state);
+    }
+}
+
+impl Serialize for NumberingType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.as_key().as_ref())
+    }
+}
+
+impl<'de> Deserialize<'de> for NumberingType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value = String::deserialize(deserializer)?;
+        Self::from_key(&value).map_err(serde::de::Error::custom)
+    }
+}
+
+#[cfg(feature = "schema")]
+impl JsonSchema for NumberingType {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "NumberingType".into()
+    }
+
+    fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "type": "string",
+            "description": "Known numbering kind keyword or custom kebab-case identifier."
+        })
+    }
 }
 
 pub(crate) trait HasNumbering {
@@ -104,6 +196,29 @@ pub(crate) trait NormalizeNumbering {
         }));
 
         *self.numbering_mut() = normalized;
+    }
+}
+
+fn normalize_kind_key(value: &str) -> Option<String> {
+    let mut normalized = String::new();
+    let mut pending_dash = false;
+
+    for ch in value.trim().chars() {
+        if ch.is_ascii_alphanumeric() {
+            if pending_dash && !normalized.is_empty() {
+                normalized.push('-');
+            }
+            normalized.push(ch.to_ascii_lowercase());
+            pending_dash = false;
+        } else if !normalized.is_empty() {
+            pending_dash = true;
+        }
+    }
+
+    if normalized.is_empty() {
+        None
+    } else {
+        Some(normalized)
     }
 }
 

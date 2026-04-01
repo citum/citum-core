@@ -2009,54 +2009,8 @@
       ]
     },
     "NumberingType": {
-      "description": "Controlled vocabulary for numbering types.",
-      "oneOf": [
-        {
-          "description": "A volume number.",
-          "type": "string",
-          "const": "volume"
-        },
-        {
-          "description": "An issue number.",
-          "type": "string",
-          "const": "issue"
-        },
-        {
-          "description": "A generic document number.",
-          "type": "string",
-          "const": "number"
-        },
-        {
-          "description": "A report identifier.",
-          "type": "string",
-          "const": "report"
-        },
-        {
-          "description": "A part number.",
-          "type": "string",
-          "const": "part"
-        },
-        {
-          "description": "A supplement number.",
-          "type": "string",
-          "const": "supplement"
-        },
-        {
-          "description": "A chapter number.",
-          "type": "string",
-          "const": "chapter"
-        },
-        {
-          "description": "A section identifier.",
-          "type": "string",
-          "const": "section"
-        },
-        {
-          "description": "An edition identifier.",
-          "type": "string",
-          "const": "edition"
-        }
-      ]
+      "description": "Known numbering kind keyword or custom kebab-case identifier.",
+      "type": "string"
     },
     "Patent": {
       "description": "A patent.",

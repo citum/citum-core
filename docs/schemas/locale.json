@@ -72,6 +72,14 @@
         "null"
       ]
     },
+    "locators": {
+      "description": "Locator terms keyed by locator name.",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/RawTermValue"
+      },
+      "default": {}
+    },
     "messages": {
       "description": "ICU Message Format 1 messages keyed by message ID (v2 locales only).",
       "type": "object",

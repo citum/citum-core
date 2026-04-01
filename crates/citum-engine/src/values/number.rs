@@ -38,6 +38,9 @@ fn resolve_number_value(
         NumberVariable::Edition => reference.edition(),
         NumberVariable::CollectionNumber => reference.collection_number(),
         NumberVariable::Number => reference.number(),
+        NumberVariable::Custom(kind) => reference.numbering_value(
+            &citum_schema::reference::NumberingType::Custom(kind.clone()),
+        ),
         NumberVariable::DocketNumber => match reference {
             Reference::Brief(r) => r.docket_number.clone(),
             _ => None,
@@ -197,6 +200,7 @@ pub fn number_var_to_locator_type(
         NumberVariable::PartNumber => Some(LocatorType::Part),
         NumberVariable::SupplementNumber => Some(LocatorType::Supplement),
         NumberVariable::Issue => Some(LocatorType::Issue),
+        NumberVariable::Custom(kind) => Some(LocatorType::Custom(kind.clone())),
         _ => None,
     }
 }
