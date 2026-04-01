@@ -2296,35 +2296,23 @@ fn input_reference_to_csl_json(reference: &InputReference) -> csl_legacy::csl_js
             r.ref_type = "book".to_string();
             r.isbn = m.isbn.clone();
             r.url = m.url.as_ref().map(std::string::ToString::to_string);
-            r.edition = m.edition.clone().map(StringOrNumber::String);
+            r.edition = reference.edition().map(StringOrNumber::String);
         }
         InputReference::SerialComponent(s) => {
             r.ref_type = "article-journal".to_string();
-            r.container_title = match &s.parent {
-                citum_schema::reference::Parent::Embedded(parent) => {
-                    parent.title.as_ref().map(std::string::ToString::to_string)
-                }
-                citum_schema::reference::Parent::Id(_) => None,
-            };
+            r.container_title = reference.container_title().map(|t| t.to_string());
             r.page = s.pages.clone();
-            r.volume = s
-                .volume
-                .as_ref()
+            r.volume = reference
+                .volume()
                 .map(|v| StringOrNumber::String(v.to_string()));
-            r.issue = s
-                .issue
-                .as_ref()
+            r.issue = reference
+                .issue()
                 .map(|v| StringOrNumber::String(v.to_string()));
             r.url = s.url.as_ref().map(std::string::ToString::to_string);
         }
         InputReference::CollectionComponent(c) => {
             r.ref_type = "chapter".to_string();
-            r.container_title = match &c.parent {
-                citum_schema::reference::Parent::Embedded(parent) => {
-                    parent.title.as_ref().map(ToString::to_string)
-                }
-                citum_schema::reference::Parent::Id(_) => None,
-            };
+            r.container_title = reference.container_title().map(|t| t.to_string());
             r.page = c.pages.as_ref().map(std::string::ToString::to_string);
         }
         _ => {

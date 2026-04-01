@@ -7,6 +7,7 @@ use std::fmt;
 /// An EDTF string.
 #[derive(Debug, Deserialize, Serialize, Clone, Default, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(specta::Type))]
 pub struct EdtfString(pub String);
 
 impl EdtfString {

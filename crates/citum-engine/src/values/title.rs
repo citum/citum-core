@@ -11,8 +11,7 @@ use crate::render::rich_text::render_djot_inline_with_transform;
 use crate::values::text_case::{self, apply_text_case, capitalize_first_word};
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
 use citum_schema::options::titles::TextCase;
-use citum_schema::reference::types::{StructuredTitle, Subtitle};
-use citum_schema::reference::{Parent, types::Title};
+use citum_schema::reference::types::{StructuredTitle, Subtitle, Title};
 use citum_schema::template::{TemplateTitle, TitleForm, TitleType};
 
 /// Converts straight apostrophes and double quotes to curly quotes when the
@@ -96,21 +95,28 @@ fn title_text(title: &Title, form: Option<&TitleForm>) -> String {
 
 fn parent_short_title(reference: &Reference, title_type: &TitleType) -> Option<String> {
     match title_type {
-        TitleType::ParentMonograph => match reference {
-            Reference::Monograph(_) => None,
-            Reference::CollectionComponent(component) => match &component.parent {
-                Parent::Embedded(parent) => parent.short_title.clone(),
-                Parent::Id(_) => None,
-            },
-            _ => None,
-        },
-        TitleType::ParentSerial => match reference {
-            Reference::SerialComponent(component) => match &component.parent {
-                Parent::Embedded(parent) => parent.short_title.clone(),
-                Parent::Id(_) => None,
-            },
-            _ => None,
-        },
+        TitleType::ParentMonograph => {
+            if reference.ref_type() == "chapter" || reference.ref_type() == "paper-conference" {
+                reference.container_title().and_then(|t| match t {
+                    Title::Shorthand(short, _) => Some(short),
+                    Title::Single(s) => Some(s),
+                    _ => None,
+                })
+            } else {
+                None
+            }
+        }
+        TitleType::ParentSerial => {
+            if reference.ref_type().contains("article") || reference.ref_type() == "broadcast" {
+                reference.container_title().and_then(|t| match t {
+                    Title::Shorthand(short, _) => Some(short),
+                    Title::Single(s) => Some(s),
+                    _ => None,
+                })
+            } else {
+                None
+            }
+        }
         _ => None,
     }
 }
@@ -272,23 +278,18 @@ impl ComponentValues for TemplateTitle {
             });
         }
 
-        let raw_title = match self.title {
+        let title = match self.title {
             TitleType::Primary => reference.title(),
-            TitleType::ParentSerial => match reference {
-                Reference::SerialComponent(r) => match &r.parent {
-                    Parent::Embedded(p) => p.title.clone(),
-                    _ => None,
-                },
-                Reference::LegalCase(r) => r.reporter.clone().map(Title::Single),
-                Reference::Treaty(r) => r.reporter.clone().map(Title::Single),
+            TitleType::ParentMonograph => match reference {
+                Reference::Monograph(_) | Reference::CollectionComponent(_) => {
+                    reference.container_title()
+                }
                 _ => None,
             },
-            TitleType::ParentMonograph => match reference {
-                Reference::Monograph(r) => r.container_title.clone(),
-                Reference::CollectionComponent(r) => match &r.parent {
-                    Parent::Embedded(p) => p.title.clone(),
-                    _ => None,
-                },
+            TitleType::ParentSerial => match reference {
+                Reference::SerialComponent(_) | Reference::LegalCase(_) | Reference::Treaty(_) => {
+                    reference.container_title()
+                }
                 _ => None,
             },
             _ => None,
@@ -298,9 +299,9 @@ impl ComponentValues for TemplateTitle {
         let fmt = F::default();
 
         // Render title with structured-title-aware case transforms
-        let rendered: Option<(String, bool, bool)> = raw_title.map(|title| match &title {
+        let rendered: Option<(String, bool, bool)> = title.as_ref().map(|title| match title {
             Title::Structured(st) => {
-                let raw_text = title_text(&title, self.form.as_ref());
+                let raw_text = title_text(title, self.form.as_ref());
                 let (value, has_link) = render_structured_title(st, &fmt, effective_case);
                 let pre_formatted = looks_like_djot_markup(&raw_text);
                 (value, has_link, pre_formatted)
@@ -324,15 +325,16 @@ impl ComponentValues for TemplateTitle {
                 (rendered, has_link, pre_formatted)
             }
             _ => {
-                let value = title_text(&title, self.form.as_ref());
+                let value = title_text(title, self.form.as_ref());
                 let (rendered, has_link) = render_part_with_case(&value, &fmt, effective_case);
                 let pre_formatted = looks_like_djot_markup(&value);
                 (rendered, has_link, pre_formatted)
             }
         });
 
-        rendered.filter(|(v, _, _)| !v.is_empty()).map(
-            |(value, has_explicit_link, pre_formatted)| {
+        rendered
+            .filter(|(v, _, _): &(String, bool, bool)| !v.is_empty())
+            .map(|(value, has_explicit_link, pre_formatted)| {
                 use citum_schema::options::LinkAnchor;
                 let url = crate::values::resolve_effective_url(
                     self.links.as_ref(),
@@ -348,8 +350,7 @@ impl ComponentValues for TemplateTitle {
                     substituted_key: None,
                     pre_formatted,
                 }
-            },
-        )
+            })
     }
 }
 

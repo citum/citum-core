@@ -184,7 +184,8 @@ fn make_ref_with_title(id: &str, family: &str, given: &str, year: i32, title: &s
         id: Some(id.to_string()),
         r#type: MonographType::Book,
         title: Some(Title::Single(title.to_string())),
-        container_title: None,
+        short_title: None,
+        container: None,
         author: Some(Contributor::StructuredName(StructuredName {
             family: MultilingualString::Simple(family.to_string()),
             given: MultilingualString::Simple(given.to_string()),
@@ -198,27 +199,7 @@ fn make_ref_with_title(id: &str, family: &str, given: &str, year: i32, title: &s
         interviewer: None,
         guest: None,
         issued: EdtfString(year.to_string()),
-        publisher: None,
-        url: None,
-        accessed: None,
-        language: None,
-        field_languages: Default::default(),
-        note: None,
-        isbn: None,
-        doi: None,
-        edition: None,
-        report_number: None,
-        collection_number: None,
-        genre: None,
-        medium: None,
-        archive_info: None,
-        eprint: None,
-        archive: None,
-        archive_location: None,
-        keywords: None,
-        original_date: None,
-        original_title: None,
-        ads_bibcode: None,
+        ..Default::default()
     }))
 }
 
@@ -305,7 +286,8 @@ where
         id: Some(id.to_string()),
         r#type: MonographType::Book,
         title: Some(Title::Single(title)),
-        container_title: None,
+        short_title: None,
+        container: None,
         author: Some(Contributor::ContributorList(citum_engine::ContributorList(
             authors,
         ))),
@@ -323,9 +305,7 @@ where
         note: None,
         isbn: None,
         doi: None,
-        edition: None,
-        report_number: None,
-        collection_number: None,
+        numbering: Default::default(),
         genre: None,
         medium: None,
         archive_info: None,
@@ -333,9 +313,9 @@ where
         archive: None,
         archive_location: None,
         keywords: None,
-        original_date: None,
-        original_title: None,
+        original: None,
         ads_bibcode: None,
+        ..Default::default()
     }))
 }
 

@@ -2,7 +2,7 @@
 
 use citum_schema::citation::{CitationItem, IntegralNameState};
 use citum_schema::options::{IntegralNameContexts, IntegralNameRule, IntegralNameScope};
-use citum_schema::reference::{InputReference, Monograph};
+use citum_schema::reference::{InputReference, Monograph, NumberingType};
 use citum_schema::{InputBibliography, Style};
 
 #[test]
@@ -191,4 +191,118 @@ fn test_citation_item_integral_name_state_round_trip() {
         reparsed.integral_name_state,
         Some(IntegralNameState::Subsequent)
     );
+}
+
+#[test]
+fn test_monograph_shorthand_numbering_normalizes_on_deserialize() {
+    let json = r#"{
+        "type": "book",
+        "title": "Normalized Numbering",
+        "issued": "2023",
+        "volume": "12",
+        "issue": "4",
+        "edition": "2",
+        "number": "7",
+        "numbering": [
+            { "type": "chapter", "value": "9" }
+        ]
+    }"#;
+
+    let monograph: Monograph = serde_json::from_str(json).expect("monograph should parse");
+
+    assert!(monograph.volume.is_none());
+    assert!(monograph.issue.is_none());
+    assert!(monograph.edition.is_none());
+    assert!(monograph.number.is_none());
+    assert_eq!(monograph.numbering.len(), 5);
+    assert_eq!(monograph.numbering[0].r#type, NumberingType::Volume);
+    assert_eq!(monograph.numbering[0].value, "12");
+    assert_eq!(monograph.numbering[1].r#type, NumberingType::Issue);
+    assert_eq!(monograph.numbering[1].value, "4");
+    assert_eq!(monograph.numbering[2].r#type, NumberingType::Edition);
+    assert_eq!(monograph.numbering[2].value, "2");
+    assert_eq!(monograph.numbering[3].r#type, NumberingType::Part);
+    assert_eq!(monograph.numbering[3].value, "7");
+    assert_eq!(monograph.numbering[4].r#type, NumberingType::Chapter);
+    assert_eq!(monograph.numbering[4].value, "9");
+}
+
+#[test]
+fn test_monograph_numbering_only_deserialize_preserves_entries() {
+    let json = r#"{
+        "type": "book",
+        "title": "Numbering Only",
+        "issued": "2023",
+        "numbering": [
+            { "type": "volume", "value": "3" },
+            { "type": "chapter", "value": "11" }
+        ]
+    }"#;
+
+    let monograph: Monograph = serde_json::from_str(json).expect("monograph should parse");
+
+    assert_eq!(monograph.numbering.len(), 2);
+    assert_eq!(monograph.numbering[0].r#type, NumberingType::Volume);
+    assert_eq!(monograph.numbering[0].value, "3");
+    assert_eq!(monograph.numbering[1].r#type, NumberingType::Chapter);
+    assert_eq!(monograph.numbering[1].value, "11");
+}
+
+#[test]
+fn test_monograph_shorthand_overrides_conflicting_numbering_entries() {
+    let json = r#"{
+        "type": "book",
+        "title": "Conflict",
+        "issued": "2023",
+        "volume": "12",
+        "number": "5",
+        "numbering": [
+            { "type": "volume", "value": "1" },
+            { "type": "part", "value": "2" },
+            { "type": "supplement", "value": "A" }
+        ]
+    }"#;
+
+    let monograph: Monograph = serde_json::from_str(json).expect("monograph should parse");
+
+    assert_eq!(monograph.numbering.len(), 3);
+    assert_eq!(monograph.numbering[0].r#type, NumberingType::Volume);
+    assert_eq!(monograph.numbering[0].value, "12");
+    assert_eq!(monograph.numbering[1].r#type, NumberingType::Part);
+    assert_eq!(monograph.numbering[1].value, "5");
+    assert_eq!(monograph.numbering[2].r#type, NumberingType::Supplement);
+    assert_eq!(monograph.numbering[2].value, "A");
+}
+
+#[test]
+fn test_input_reference_round_trip_serializes_canonical_numbering_only() {
+    let json = r#"{
+        "class": "monograph",
+        "type": "book",
+        "title": "Canonical",
+        "issued": "2023",
+        "volume": "6",
+        "issue": "2",
+        "numbering": [
+            { "type": "volume", "value": "1" },
+            { "type": "chapter", "value": "4" }
+        ]
+    }"#;
+
+    let reference: InputReference = serde_json::from_str(json).expect("reference should parse");
+    let serialized = serde_json::to_value(&reference).expect("serialization should work");
+
+    assert!(serialized.get("volume").is_none());
+    assert!(serialized.get("issue").is_none());
+    let numbering = serialized
+        .get("numbering")
+        .and_then(serde_json::Value::as_array)
+        .expect("canonical numbering should serialize");
+    assert_eq!(numbering.len(), 3);
+    assert_eq!(numbering[0]["type"], "volume");
+    assert_eq!(numbering[0]["value"], "6");
+    assert_eq!(numbering[1]["type"], "issue");
+    assert_eq!(numbering[1]["value"], "2");
+    assert_eq!(numbering[2]["type"], "chapter");
+    assert_eq!(numbering[2]["value"], "4");
 }

@@ -210,6 +210,18 @@ Track schema changes separately from code changes.
 Historical note: entries below may predate the automation baseline and are the
 authoritative record when matching tags were not created at the time.
 
+#### schema-v0.21.0 (2026-04-01)
+- Schema version bumped from 0.20.0 to 0.21.0
+- Universal relational container model with recursive `WorkRelation`
+- Controlled `Numbering` system for volume, issue, and edition
+- Shorthand fields restored for better YAML ergonomics
+
+#### schema-v0.19.0 (2026-03-31)
+- Schema version bumped from 0.18.0 to 0.19.0
+
+#### schema-v0.18.0 (2026-03-31)
+- Schema version bumped from 0.17.1 to 0.18.0
+
 #### schema-v0.17.0 (2026-03-30)
 - Schema version bumped from 0.16.1 to 0.17.0
 

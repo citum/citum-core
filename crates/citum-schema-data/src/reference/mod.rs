@@ -15,6 +15,19 @@ pub mod types;
 #[cfg(all(test, feature = "legacy-convert"))]
 mod tests;
 
+pub use self::contributor::{Contributor, ContributorList, FlatName, SimpleName, StructuredName};
+pub use self::date::EdtfString;
+use self::types::common::HasNumbering;
+pub use self::types::common::{
+    FieldLanguageMap, LangID, MultilingualString, NumOrStr, Numbering, NumberingType, RefID, Title,
+};
+pub use self::types::legal::{Brief, Hearing, LegalCase, Regulation, Statute, Treaty};
+pub use self::types::specialized::{Classic, Dataset, Event, Patent, Software, Standard};
+pub use self::types::structural::{
+    Collection, CollectionComponent, CollectionType, Monograph, MonographComponentType,
+    MonographType, Serial, SerialComponent, SerialComponentType, SerialType,
+};
+
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -22,9 +35,20 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use url::Url;
 
-pub use self::contributor::{Contributor, ContributorList, FlatName, SimpleName, StructuredName};
-pub use self::date::EdtfString;
-pub use self::types::*;
+/// A relation to another bibliographic entity.
+///
+/// Untagged in serde to allow either an inline object or a string ID reference.
+/// Used for both hierarchical (`container`) and associative (`original`, `reviewed`, `series`) links.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(untagged)]
+pub enum WorkRelation {
+    /// The target work is referenced by its ID (resolved at render time).
+    Id(RefID),
+    /// The target work is embedded inline.
+    Embedded(Box<InputReference>),
+}
 
 /// The Reference model.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
@@ -42,6 +66,8 @@ pub enum InputReference {
     SerialComponent(Box<SerialComponent>),
     /// A collection of works, such as an anthology or proceedings.
     Collection(Box<Collection>),
+    /// A serial publication (journal, magazine, etc.).
+    Serial(Box<Serial>),
     /// A legal case (court decision).
     LegalCase(Box<LegalCase>),
     /// A statute or legislative act.
@@ -64,9 +90,28 @@ pub enum InputReference {
     Standard(Box<Standard>),
     /// Software or source code.
     Software(Box<Software>),
+    /// An event such as a conference, performance, or broadcast.
+    Event(Box<Event>),
 }
 
 impl InputReference {
+    fn numbered(&self) -> Option<&dyn HasNumbering> {
+        match self {
+            InputReference::Monograph(reference) => Some(reference.as_ref()),
+            InputReference::Collection(reference) => Some(reference.as_ref()),
+            InputReference::CollectionComponent(reference) => Some(reference.as_ref()),
+            InputReference::SerialComponent(reference) => Some(reference.as_ref()),
+            InputReference::Classic(reference) => Some(reference.as_ref()),
+            _ => None,
+        }
+    }
+
+    /// Internal helper to find a numbering by type.
+    fn find_numbering(&self, numbering_type: NumberingType) -> Option<String> {
+        self.numbered()
+            .and_then(|reference| reference.find_numbering(numbering_type))
+    }
+
     /// Return the reference ID.
     pub fn id(&self) -> Option<RefID> {
         match self {
@@ -74,6 +119,7 @@ impl InputReference {
             InputReference::CollectionComponent(r) => r.id.clone(),
             InputReference::SerialComponent(r) => r.id.clone(),
             InputReference::Collection(r) => r.id.clone(),
+            InputReference::Serial(r) => r.id.clone(),
             InputReference::LegalCase(r) => r.id.clone(),
             InputReference::Statute(r) => r.id.clone(),
             InputReference::Treaty(r) => r.id.clone(),
@@ -85,6 +131,7 @@ impl InputReference {
             InputReference::Dataset(r) => r.id.clone(),
             InputReference::Standard(r) => r.id.clone(),
             InputReference::Software(r) => r.id.clone(),
+            InputReference::Event(r) => r.id.clone(),
         }
     }
 
@@ -100,6 +147,7 @@ impl InputReference {
             InputReference::Patent(r) => r.author.clone(),
             InputReference::Dataset(r) => r.author.clone(),
             InputReference::Software(r) => r.author.clone(),
+            InputReference::Event(r) => r.performer.clone().or(r.organizer.clone()),
             _ => None,
         }
     }
@@ -108,10 +156,11 @@ impl InputReference {
         match self {
             InputReference::Monograph(r) => r.editor.clone(),
             InputReference::Collection(r) => r.editor.clone(),
-            InputReference::CollectionComponent(r) => match &r.parent {
-                Parent::Embedded(p) => p.editor.clone(),
-                Parent::Id(_) => None,
-            },
+            InputReference::CollectionComponent(r) => r.container.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.editor(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Serial(r) => r.editor.clone(),
             InputReference::Classic(r) => r.editor.clone(),
             _ => None,
         }
@@ -157,21 +206,16 @@ impl InputReference {
     pub fn publisher(&self) -> Option<Contributor> {
         match self {
             InputReference::Monograph(r) => r.publisher.clone(),
-            InputReference::CollectionComponent(r) => {
-                let r = r.as_ref();
-                match &r.parent {
-                    Parent::Embedded(p) => p.publisher.clone(),
-                    Parent::Id(_) => None,
-                }
-            }
-            InputReference::SerialComponent(r) => {
-                let r = r.as_ref();
-                match &r.parent {
-                    Parent::Embedded(p) => p.publisher.clone(),
-                    Parent::Id(_) => None,
-                }
-            }
+            InputReference::CollectionComponent(r) => r.container.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::SerialComponent(r) => r.container.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher(),
+                WorkRelation::Id(_) => None,
+            }),
             InputReference::Collection(r) => r.publisher.clone(),
+            InputReference::Serial(r) => r.publisher.clone(),
             InputReference::Classic(r) => r.publisher.clone(),
             InputReference::Dataset(r) => r.publisher.clone(),
             InputReference::Standard(r) => r.publisher.clone(),
@@ -183,10 +227,26 @@ impl InputReference {
     /// Return the title.
     pub fn title(&self) -> Option<Title> {
         match self {
-            InputReference::Monograph(r) => r.title.clone(),
+            InputReference::Monograph(r) => match (&r.title, &r.short_title) {
+                (Some(Title::Single(long)), Some(short)) => {
+                    Some(Title::Shorthand(short.clone(), long.clone()))
+                }
+                _ => r.title.clone(),
+            },
             InputReference::CollectionComponent(r) => r.title.clone(),
             InputReference::SerialComponent(r) => r.title.clone(),
-            InputReference::Collection(r) => r.title.clone(),
+            InputReference::Collection(r) => match (&r.title, &r.short_title) {
+                (Some(Title::Single(long)), Some(short)) => {
+                    Some(Title::Shorthand(short.clone(), long.clone()))
+                }
+                _ => r.title.clone(),
+            },
+            InputReference::Serial(r) => match (&r.title, &r.short_title) {
+                (Some(Title::Single(long)), Some(short)) => {
+                    Some(Title::Shorthand(short.clone(), long.clone()))
+                }
+                _ => r.title.clone(),
+            },
             InputReference::LegalCase(r) => r.title.clone(),
             InputReference::Statute(r) => r.title.clone(),
             InputReference::Treaty(r) => r.title.clone(),
@@ -198,6 +258,7 @@ impl InputReference {
             InputReference::Dataset(r) => r.title.clone(),
             InputReference::Standard(r) => r.title.clone(),
             InputReference::Software(r) => r.title.clone(),
+            InputReference::Event(r) => r.title.clone(),
         }
     }
 
@@ -208,6 +269,7 @@ impl InputReference {
             InputReference::CollectionComponent(r) => Some(r.issued.clone()),
             InputReference::SerialComponent(r) => Some(r.issued.clone()),
             InputReference::Collection(r) => Some(r.issued.clone()),
+            InputReference::Serial(_) => None,
             InputReference::LegalCase(r) => Some(r.issued.clone()),
             InputReference::Statute(r) => Some(r.issued.clone()),
             InputReference::Treaty(r) => Some(r.issued.clone()),
@@ -219,6 +281,7 @@ impl InputReference {
             InputReference::Dataset(r) => Some(r.issued.clone()),
             InputReference::Standard(r) => Some(r.issued.clone()),
             InputReference::Software(r) => Some(r.issued.clone()),
+            InputReference::Event(r) => r.date.clone(),
         }
     }
 
@@ -250,10 +313,13 @@ impl InputReference {
             InputReference::Monograph(r) => r.note.clone(),
             InputReference::CollectionComponent(r) => r.note.clone(),
             InputReference::SerialComponent(r) => r.note.clone(),
+            InputReference::Collection(r) => r.note.clone(),
+            InputReference::Serial(r) => r.note.clone(),
             InputReference::LegalCase(r) => r.note.clone(),
             InputReference::Statute(r) => r.note.clone(),
             InputReference::Treaty(r) => r.note.clone(),
             InputReference::Standard(r) => r.note.clone(),
+            InputReference::Event(r) => r.note.clone(),
             _ => None,
         }
     }
@@ -265,6 +331,7 @@ impl InputReference {
             InputReference::CollectionComponent(r) => r.url.clone(),
             InputReference::SerialComponent(r) => r.url.clone(),
             InputReference::Collection(r) => r.url.clone(),
+            InputReference::Serial(r) => r.url.clone(),
             InputReference::LegalCase(r) => r.url.clone(),
             InputReference::Statute(r) => r.url.clone(),
             InputReference::Treaty(r) => r.url.clone(),
@@ -276,26 +343,43 @@ impl InputReference {
             InputReference::Dataset(r) => r.url.clone(),
             InputReference::Standard(r) => r.url.clone(),
             InputReference::Software(r) => r.url.clone(),
+            InputReference::Event(r) => r.url.clone(),
         }
     }
 
     /// Return the publisher place.
     pub fn publisher_place(&self) -> Option<String> {
         match self {
-            InputReference::Monograph(r) => r.publisher.as_ref().and_then(|c| c.location()),
-            InputReference::CollectionComponent(r) => match &r.parent {
-                Parent::Embedded(p) => p.publisher.as_ref().and_then(|c| c.location()),
+            InputReference::Monograph(r) => {
+                r.publisher.as_ref().and_then(|c| c.location()).or_else(|| {
+                    r.container.as_ref().and_then(|c| match c {
+                        WorkRelation::Embedded(p) => p.publisher_place(),
+                        _ => None,
+                    })
+                })
+            }
+            InputReference::CollectionComponent(r) => r.container.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_place(),
                 _ => None,
-            },
-            InputReference::SerialComponent(r) => match &r.parent {
-                Parent::Embedded(p) => p.publisher.as_ref().and_then(|c| c.location()),
+            }),
+            InputReference::SerialComponent(r) => r.container.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_place(),
                 _ => None,
-            },
-            InputReference::Collection(r) => r.publisher.as_ref().and_then(|c| c.location()),
+            }),
+            InputReference::Collection(r) => {
+                r.publisher.as_ref().and_then(|c| c.location()).or_else(|| {
+                    r.container.as_ref().and_then(|c| match c {
+                        WorkRelation::Embedded(p) => p.publisher_place(),
+                        _ => None,
+                    })
+                })
+            }
+            InputReference::Serial(_) => None,
             InputReference::Classic(r) => r.publisher.as_ref().and_then(|c| c.location()),
             InputReference::Dataset(r) => r.publisher.as_ref().and_then(|c| c.location()),
             InputReference::Standard(r) => r.publisher.as_ref().and_then(|c| c.location()),
             InputReference::Software(r) => r.publisher.as_ref().and_then(|c| c.location()),
+            InputReference::Event(r) => r.location.clone(),
             _ => None,
         }
     }
@@ -303,20 +387,36 @@ impl InputReference {
     /// Return the publisher as a string.
     pub fn publisher_str(&self) -> Option<String> {
         match self {
-            InputReference::Monograph(r) => r.publisher.as_ref().and_then(|c| c.name()),
-            InputReference::CollectionComponent(r) => match &r.parent {
-                Parent::Embedded(p) => p.publisher.as_ref().and_then(|c| c.name()),
+            InputReference::Monograph(r) => {
+                r.publisher.as_ref().and_then(|c| c.name()).or_else(|| {
+                    r.container.as_ref().and_then(|c| match c {
+                        WorkRelation::Embedded(p) => p.publisher_str(),
+                        _ => None,
+                    })
+                })
+            }
+            InputReference::CollectionComponent(r) => r.container.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_str(),
                 _ => None,
-            },
-            InputReference::SerialComponent(r) => match &r.parent {
-                Parent::Embedded(p) => p.publisher.as_ref().and_then(|c| c.name()),
+            }),
+            InputReference::SerialComponent(r) => r.container.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_str(),
                 _ => None,
-            },
-            InputReference::Collection(r) => r.publisher.as_ref().and_then(|c| c.name()),
+            }),
+            InputReference::Collection(r) => {
+                r.publisher.as_ref().and_then(|c| c.name()).or_else(|| {
+                    r.container.as_ref().and_then(|c| match c {
+                        WorkRelation::Embedded(p) => p.publisher_str(),
+                        _ => None,
+                    })
+                })
+            }
+            InputReference::Serial(r) => r.publisher.as_ref().and_then(|c| c.name()),
             InputReference::Classic(r) => r.publisher.as_ref().and_then(|c| c.name()),
             InputReference::Dataset(r) => r.publisher.as_ref().and_then(|c| c.name()),
             InputReference::Standard(r) => r.publisher.as_ref().and_then(|c| c.name()),
             InputReference::Software(r) => r.publisher.as_ref().and_then(|c| c.name()),
+            InputReference::Event(r) => r.network.clone(),
             _ => None,
         }
     }
@@ -345,6 +445,7 @@ impl InputReference {
             InputReference::SerialComponent(r) => {
                 r.genre.as_ref().map(|g| Self::normalize_genre_medium(g))
             }
+            InputReference::Event(r) => r.genre.as_ref().map(|g| Self::normalize_genre_medium(g)),
             _ => None,
         }
     }
@@ -365,18 +466,26 @@ impl InputReference {
                 .as_ref()
                 .and_then(|info| info.location.clone())
                 .or_else(|| r.archive_location.clone()),
-            InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.location.clone(),
-            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.location.clone(),
+            InputReference::CollectionComponent(r) => {
+                r.archive_info.as_ref().and_then(|i| i.location.clone())
+            }
+            InputReference::SerialComponent(r) => {
+                r.archive_info.as_ref().and_then(|i| i.location.clone())
+            }
             _ => None,
         }
     }
 
     /// Return the archive name from structured ArchiveInfo.
-    pub fn archive_name(&self) -> Option<crate::reference::types::MultilingualString> {
+    pub fn archive_name(&self) -> Option<MultilingualString> {
         match self {
-            InputReference::Monograph(r) => r.archive_info.as_ref()?.name.clone(),
-            InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.name.clone(),
-            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.name.clone(),
+            InputReference::Monograph(r) => r.archive_info.as_ref().and_then(|i| i.name.clone()),
+            InputReference::CollectionComponent(r) => {
+                r.archive_info.as_ref().and_then(|i| i.name.clone())
+            }
+            InputReference::SerialComponent(r) => {
+                r.archive_info.as_ref().and_then(|i| i.name.clone())
+            }
             _ => None,
         }
     }
@@ -384,9 +493,13 @@ impl InputReference {
     /// Return the archive geographic place from structured ArchiveInfo.
     pub fn archive_place(&self) -> Option<String> {
         match self {
-            InputReference::Monograph(r) => r.archive_info.as_ref()?.place.clone(),
-            InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.place.clone(),
-            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.place.clone(),
+            InputReference::Monograph(r) => r.archive_info.as_ref().and_then(|i| i.place.clone()),
+            InputReference::CollectionComponent(r) => {
+                r.archive_info.as_ref().and_then(|i| i.place.clone())
+            }
+            InputReference::SerialComponent(r) => {
+                r.archive_info.as_ref().and_then(|i| i.place.clone())
+            }
             _ => None,
         }
     }
@@ -394,9 +507,15 @@ impl InputReference {
     /// Return the archive collection name from structured ArchiveInfo.
     pub fn archive_collection(&self) -> Option<String> {
         match self {
-            InputReference::Monograph(r) => r.archive_info.as_ref()?.collection.clone(),
-            InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.collection.clone(),
-            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.collection.clone(),
+            InputReference::Monograph(r) => {
+                r.archive_info.as_ref().and_then(|i| i.collection.clone())
+            }
+            InputReference::CollectionComponent(r) => {
+                r.archive_info.as_ref().and_then(|i| i.collection.clone())
+            }
+            InputReference::SerialComponent(r) => {
+                r.archive_info.as_ref().and_then(|i| i.collection.clone())
+            }
             _ => None,
         }
     }
@@ -404,11 +523,18 @@ impl InputReference {
     /// Return the archive collection identifier from structured ArchiveInfo.
     pub fn archive_collection_id(&self) -> Option<String> {
         match self {
-            InputReference::Monograph(r) => r.archive_info.as_ref()?.collection_id.clone(),
-            InputReference::CollectionComponent(r) => {
-                r.archive_info.as_ref()?.collection_id.clone()
-            }
-            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.collection_id.clone(),
+            InputReference::Monograph(r) => r
+                .archive_info
+                .as_ref()
+                .and_then(|i| i.collection_id.clone()),
+            InputReference::CollectionComponent(r) => r
+                .archive_info
+                .as_ref()
+                .and_then(|i| i.collection_id.clone()),
+            InputReference::SerialComponent(r) => r
+                .archive_info
+                .as_ref()
+                .and_then(|i| i.collection_id.clone()),
             _ => None,
         }
     }
@@ -416,9 +542,13 @@ impl InputReference {
     /// Return the archive series from structured ArchiveInfo.
     pub fn archive_series(&self) -> Option<String> {
         match self {
-            InputReference::Monograph(r) => r.archive_info.as_ref()?.series.clone(),
-            InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.series.clone(),
-            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.series.clone(),
+            InputReference::Monograph(r) => r.archive_info.as_ref().and_then(|i| i.series.clone()),
+            InputReference::CollectionComponent(r) => {
+                r.archive_info.as_ref().and_then(|i| i.series.clone())
+            }
+            InputReference::SerialComponent(r) => {
+                r.archive_info.as_ref().and_then(|i| i.series.clone())
+            }
             _ => None,
         }
     }
@@ -426,9 +556,13 @@ impl InputReference {
     /// Return the archive box number from structured ArchiveInfo.
     pub fn archive_box(&self) -> Option<String> {
         match self {
-            InputReference::Monograph(r) => r.archive_info.as_ref()?.r#box.clone(),
-            InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.r#box.clone(),
-            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.r#box.clone(),
+            InputReference::Monograph(r) => r.archive_info.as_ref().and_then(|i| i.r#box.clone()),
+            InputReference::CollectionComponent(r) => {
+                r.archive_info.as_ref().and_then(|i| i.r#box.clone())
+            }
+            InputReference::SerialComponent(r) => {
+                r.archive_info.as_ref().and_then(|i| i.r#box.clone())
+            }
             _ => None,
         }
     }
@@ -436,9 +570,13 @@ impl InputReference {
     /// Return the archive folder from structured ArchiveInfo.
     pub fn archive_folder(&self) -> Option<String> {
         match self {
-            InputReference::Monograph(r) => r.archive_info.as_ref()?.folder.clone(),
-            InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.folder.clone(),
-            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.folder.clone(),
+            InputReference::Monograph(r) => r.archive_info.as_ref().and_then(|i| i.folder.clone()),
+            InputReference::CollectionComponent(r) => {
+                r.archive_info.as_ref().and_then(|i| i.folder.clone())
+            }
+            InputReference::SerialComponent(r) => {
+                r.archive_info.as_ref().and_then(|i| i.folder.clone())
+            }
             _ => None,
         }
     }
@@ -446,9 +584,13 @@ impl InputReference {
     /// Return the archive item identifier from structured ArchiveInfo.
     pub fn archive_item(&self) -> Option<String> {
         match self {
-            InputReference::Monograph(r) => r.archive_info.as_ref()?.item.clone(),
-            InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.item.clone(),
-            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.item.clone(),
+            InputReference::Monograph(r) => r.archive_info.as_ref().and_then(|i| i.item.clone()),
+            InputReference::CollectionComponent(r) => {
+                r.archive_info.as_ref().and_then(|i| i.item.clone())
+            }
+            InputReference::SerialComponent(r) => {
+                r.archive_info.as_ref().and_then(|i| i.item.clone())
+            }
             _ => None,
         }
     }
@@ -456,9 +598,13 @@ impl InputReference {
     /// Return the archive URL from structured ArchiveInfo.
     pub fn archive_url(&self) -> Option<Url> {
         match self {
-            InputReference::Monograph(r) => r.archive_info.as_ref()?.url.clone(),
-            InputReference::CollectionComponent(r) => r.archive_info.as_ref()?.url.clone(),
-            InputReference::SerialComponent(r) => r.archive_info.as_ref()?.url.clone(),
+            InputReference::Monograph(r) => r.archive_info.as_ref().and_then(|i| i.url.clone()),
+            InputReference::CollectionComponent(r) => {
+                r.archive_info.as_ref().and_then(|i| i.url.clone())
+            }
+            InputReference::SerialComponent(r) => {
+                r.archive_info.as_ref().and_then(|i| i.url.clone())
+            }
             _ => None,
         }
     }
@@ -528,23 +674,28 @@ impl InputReference {
     /// Return the container-style title for parent works, reporters, or codes.
     pub fn container_title(&self) -> Option<Title> {
         match self {
-            InputReference::Monograph(r) => r.container_title.clone(),
-            InputReference::CollectionComponent(r) => {
-                let r = r.as_ref();
-                match &r.parent {
-                    Parent::Embedded(p) => p.title.clone(),
-                    Parent::Id(_) => None,
-                }
-            }
-            InputReference::SerialComponent(r) => {
-                let r = r.as_ref();
-                match &r.parent {
-                    Parent::Embedded(p) => p.title.clone(),
-                    Parent::Id(_) => None,
-                }
-            }
+            InputReference::Monograph(r) => r.container.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title().or_else(|| p.container_title()),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::CollectionComponent(r) => r.container.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title().or_else(|| p.container_title()),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::SerialComponent(r) => r.container.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title().or_else(|| p.container_title()),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Serial(r) => r.container.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title().or_else(|| p.container_title()),
+                WorkRelation::Id(_) => None,
+            }),
             InputReference::LegalCase(r) => r.reporter.clone().map(Title::Single),
             InputReference::Treaty(r) => r.reporter.clone().map(Title::Single),
+            InputReference::Event(r) => r.container.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title().or_else(|| p.container_title()),
+                WorkRelation::Id(_) => None,
+            }),
             _ => None,
         }
     }
@@ -552,34 +703,81 @@ impl InputReference {
     /// Return the volume.
     pub fn volume(&self) -> Option<NumOrStr> {
         match self {
-            InputReference::SerialComponent(r) => r.volume.clone(),
+            InputReference::Monograph(r) => r
+                .volume
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Volume))
+                .map(NumOrStr::Str),
+            InputReference::Collection(r) => r
+                .volume
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Volume))
+                .map(NumOrStr::Str),
+            InputReference::CollectionComponent(r) => r
+                .volume
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Volume))
+                .map(NumOrStr::Str),
+            InputReference::SerialComponent(r) => r
+                .volume
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Volume))
+                .map(NumOrStr::Str),
+            InputReference::Classic(r) => r
+                .volume
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Volume))
+                .map(NumOrStr::Str),
             InputReference::LegalCase(r) => r.volume.clone().map(NumOrStr::Str),
             InputReference::Statute(r) => r.volume.clone().map(NumOrStr::Str),
             InputReference::Treaty(r) => r.volume.clone().map(NumOrStr::Str),
             InputReference::Regulation(r) => r.volume.clone().map(NumOrStr::Str),
-            InputReference::Classic(r) => r.volume.clone().map(NumOrStr::Str),
-            _ => None,
+            _ => self
+                .find_numbering(NumberingType::Volume)
+                .map(NumOrStr::Str),
         }
     }
 
     /// Return the collection number (series number).
     pub fn collection_number(&self) -> Option<String> {
         match self {
-            InputReference::Monograph(r) => r.collection_number.clone(),
-            InputReference::Collection(r) => r.collection_number.clone(),
-            InputReference::CollectionComponent(r) => match &r.parent {
-                Parent::Embedded(p) => p.collection_number.clone(),
-                Parent::Id(_) => None,
-            },
-            _ => None,
+            InputReference::CollectionComponent(r) => r.container.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.collection_number(),
+                WorkRelation::Id(_) => None,
+            }),
+            _ => self.find_numbering(NumberingType::Volume),
         }
     }
 
     /// Return the issue.
     pub fn issue(&self) -> Option<NumOrStr> {
         match self {
-            InputReference::SerialComponent(r) => r.issue.clone(),
-            _ => None,
+            InputReference::Monograph(r) => r
+                .issue
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Issue))
+                .map(NumOrStr::Str),
+            InputReference::Collection(r) => r
+                .issue
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Issue))
+                .map(NumOrStr::Str),
+            InputReference::CollectionComponent(r) => r
+                .issue
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Issue))
+                .map(NumOrStr::Str),
+            InputReference::SerialComponent(r) => r
+                .issue
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Issue))
+                .map(NumOrStr::Str),
+            InputReference::Classic(r) => r
+                .issue
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Issue))
+                .map(NumOrStr::Str),
+            _ => self.find_numbering(NumberingType::Issue).map(NumOrStr::Str),
         }
     }
 
@@ -631,7 +829,7 @@ impl InputReference {
         match self {
             InputReference::Statute(r) => r.section.clone(),
             InputReference::Regulation(r) => r.section.clone(),
-            InputReference::Classic(r) => r.section.clone(),
+            InputReference::Classic(_) => self.find_numbering(NumberingType::Section),
             _ => None,
         }
     }
@@ -639,20 +837,58 @@ impl InputReference {
     /// Return the number (docket number, session number, etc.).
     pub fn number(&self) -> Option<String> {
         match self {
-            InputReference::Monograph(r) => r.report_number.clone(),
+            InputReference::Monograph(r) => r
+                .number
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Part)),
+            InputReference::Collection(r) => r
+                .number
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Part)),
+            InputReference::CollectionComponent(r) => r
+                .number
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Part)),
+            InputReference::SerialComponent(r) => r
+                .number
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Part)),
+            InputReference::Classic(r) => r
+                .number
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Part)),
             InputReference::Hearing(r) => r.session_number.clone(),
             InputReference::Brief(r) => r.docket_number.clone(),
             InputReference::Patent(r) => Some(r.patent_number.clone()),
             InputReference::Standard(r) => Some(r.standard_number.clone()),
-            _ => None,
+            _ => self.find_numbering(NumberingType::Part),
         }
     }
 
     /// Return the edition.
     pub fn edition(&self) -> Option<String> {
         match self {
-            InputReference::Monograph(r) => r.edition.clone(),
-            _ => None,
+            InputReference::Monograph(r) => r
+                .edition
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Edition)),
+            InputReference::Collection(r) => r
+                .edition
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Edition)),
+            InputReference::CollectionComponent(r) => r
+                .edition
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Edition)),
+            InputReference::SerialComponent(r) => r
+                .edition
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Edition)),
+            InputReference::Classic(r) => r
+                .edition
+                .clone()
+                .or_else(|| self.find_numbering(NumberingType::Edition)),
+            _ => self.find_numbering(NumberingType::Edition),
         }
     }
 
@@ -663,6 +899,7 @@ impl InputReference {
             InputReference::CollectionComponent(r) => r.accessed.clone(),
             InputReference::SerialComponent(r) => r.accessed.clone(),
             InputReference::Collection(r) => r.accessed.clone(),
+            InputReference::Serial(r) => r.accessed.clone(),
             InputReference::LegalCase(r) => r.accessed.clone(),
             InputReference::Statute(r) => r.accessed.clone(),
             InputReference::Treaty(r) => r.accessed.clone(),
@@ -674,13 +911,25 @@ impl InputReference {
             InputReference::Dataset(r) => r.accessed.clone(),
             InputReference::Standard(r) => r.accessed.clone(),
             InputReference::Software(r) => r.accessed.clone(),
+            InputReference::Event(r) => r.accessed.clone(),
         }
     }
 
     /// Return the original publication date.
     pub fn original_date(&self) -> Option<EdtfString> {
         match self {
-            InputReference::Monograph(r) => r.original_date.clone(),
+            InputReference::Monograph(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.issued(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::CollectionComponent(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.issued(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::SerialComponent(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.issued(),
+                WorkRelation::Id(_) => None,
+            }),
             _ => None,
         }
     }
@@ -688,7 +937,18 @@ impl InputReference {
     /// Return the original title.
     pub fn original_title(&self) -> Option<Title> {
         match self {
-            InputReference::Monograph(r) => r.original_title.clone(),
+            InputReference::Monograph(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::CollectionComponent(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::SerialComponent(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title(),
+                WorkRelation::Id(_) => None,
+            }),
             _ => None,
         }
     }
@@ -704,10 +964,11 @@ impl InputReference {
     /// Return the ISSN.
     pub fn issn(&self) -> Option<String> {
         match self {
-            InputReference::SerialComponent(r) => match &r.parent {
-                Parent::Embedded(s) => s.issn.clone(),
-                Parent::Id(_) => None,
-            },
+            InputReference::SerialComponent(r) => r.container.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(s) => s.issn(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Serial(r) => r.issn.clone(),
             _ => None,
         }
     }
@@ -719,6 +980,7 @@ impl InputReference {
             InputReference::CollectionComponent(r) => r.keywords.clone(),
             InputReference::SerialComponent(r) => r.keywords.clone(),
             InputReference::Collection(r) => r.keywords.clone(),
+            InputReference::Serial(_) => None,
             InputReference::LegalCase(r) => r.keywords.clone(),
             InputReference::Statute(r) => r.keywords.clone(),
             InputReference::Treaty(r) => r.keywords.clone(),
@@ -730,6 +992,7 @@ impl InputReference {
             InputReference::Dataset(r) => r.keywords.clone(),
             InputReference::Standard(r) => r.keywords.clone(),
             InputReference::Software(r) => r.keywords.clone(),
+            InputReference::Event(_) => None,
         }
     }
 
@@ -740,6 +1003,7 @@ impl InputReference {
             InputReference::CollectionComponent(r) => r.language.clone(),
             InputReference::SerialComponent(r) => r.language.clone(),
             InputReference::Collection(r) => r.language.clone(),
+            InputReference::Serial(r) => r.language.clone(),
             InputReference::LegalCase(r) => r.language.clone(),
             InputReference::Statute(r) => r.language.clone(),
             InputReference::Treaty(r) => r.language.clone(),
@@ -751,6 +1015,7 @@ impl InputReference {
             InputReference::Dataset(r) => r.language.clone(),
             InputReference::Standard(r) => r.language.clone(),
             InputReference::Software(r) => r.language.clone(),
+            InputReference::Event(r) => r.language.clone(),
         }
     }
 
@@ -761,6 +1026,7 @@ impl InputReference {
             InputReference::CollectionComponent(r) => &r.field_languages,
             InputReference::SerialComponent(r) => &r.field_languages,
             InputReference::Collection(r) => &r.field_languages,
+            InputReference::Serial(r) => &r.field_languages,
             InputReference::LegalCase(r) => &r.field_languages,
             InputReference::Statute(r) => &r.field_languages,
             InputReference::Treaty(r) => &r.field_languages,
@@ -772,6 +1038,7 @@ impl InputReference {
             InputReference::Dataset(r) => &r.field_languages,
             InputReference::Standard(r) => &r.field_languages,
             InputReference::Software(r) => &r.field_languages,
+            InputReference::Event(r) => &r.field_languages,
         }
     }
 
@@ -782,6 +1049,7 @@ impl InputReference {
             InputReference::CollectionComponent(component) => component.id = Some(id),
             InputReference::SerialComponent(component) => component.id = Some(id),
             InputReference::Collection(collection) => collection.id = Some(id),
+            InputReference::Serial(serial) => serial.id = Some(id),
             InputReference::LegalCase(r) => r.id = Some(id),
             InputReference::Statute(r) => r.id = Some(id),
             InputReference::Treaty(r) => r.id = Some(id),
@@ -793,10 +1061,15 @@ impl InputReference {
             InputReference::Dataset(r) => r.id = Some(id),
             InputReference::Standard(r) => r.id = Some(id),
             InputReference::Software(r) => r.id = Some(id),
+            InputReference::Event(r) => r.id = Some(id),
         }
     }
 
     /// Return the reference type as a string (CSL-compatible).
+    #[allow(
+        clippy::too_many_lines,
+        reason = "Enum dispatch for reference types requires extensive branching"
+    )]
     pub fn ref_type(&self) -> String {
         match self {
             InputReference::Monograph(r) => match r.r#type {
@@ -834,21 +1107,23 @@ impl InputReference {
                 MonographComponentType::Chapter => "chapter".to_string(),
                 MonographComponentType::Document => "paper-conference".to_string(),
             },
-            InputReference::SerialComponent(r) => match r.parent {
-                Parent::Embedded(ref s) => match s.r#type {
-                    SerialType::AcademicJournal => {
+            InputReference::SerialComponent(r) => {
+                let container_type = r.container.as_ref().and_then(|c| match c {
+                    WorkRelation::Embedded(p) => Some(p.ref_type()),
+                    _ => None,
+                });
+
+                match container_type.as_deref() {
+                    Some("article-journal") => {
                         if r.genre.as_deref() == Some("entry-encyclopedia") {
                             "entry-encyclopedia".to_string()
-                        } else if matches!(&s.title, Some(Title::Single(title)) if title == "arXiv")
-                        {
-                            "article-journal+arxiv".to_string()
                         } else {
                             "article-journal".to_string()
                         }
                     }
-                    SerialType::Magazine => "article-magazine".to_string(),
-                    SerialType::Newspaper => "article-newspaper".to_string(),
-                    SerialType::BroadcastProgram => {
+                    Some("article-magazine") => "article-magazine".to_string(),
+                    Some("article-newspaper") => "article-newspaper".to_string(),
+                    Some("broadcast") => {
                         if r.genre
                             .as_deref()
                             .is_some_and(|g| g.to_ascii_lowercase().contains("film"))
@@ -859,12 +1134,18 @@ impl InputReference {
                         }
                     }
                     _ => "article-journal".to_string(),
-                },
-                Parent::Id(_) => "article-journal".to_string(),
-            },
+                }
+            }
             InputReference::Collection(r) => match r.r#type {
                 CollectionType::EditedBook => "book".to_string(),
                 _ => "collection".to_string(),
+            },
+            InputReference::Serial(r) => match r.r#type {
+                SerialType::AcademicJournal => "article-journal".to_string(),
+                SerialType::Magazine => "article-magazine".to_string(),
+                SerialType::Newspaper => "article-newspaper".to_string(),
+                SerialType::BroadcastProgram => "broadcast".to_string(),
+                _ => "serial".to_string(),
             },
             InputReference::LegalCase(_) => "legal-case".to_string(),
             InputReference::Statute(_) => "statute".to_string(),
@@ -877,6 +1158,21 @@ impl InputReference {
             InputReference::Dataset(_) => "dataset".to_string(),
             InputReference::Standard(_) => "standard".to_string(),
             InputReference::Software(_) => "software".to_string(),
+            InputReference::Event(r) => {
+                match r
+                    .genre
+                    .as_deref()
+                    .map(|g| g.to_ascii_lowercase())
+                    .as_deref()
+                {
+                    Some(g) if g.contains("conference") || g.contains("paper") => {
+                        "paper-conference".to_string()
+                    }
+                    Some(g) if g.contains("broadcast") => "broadcast".to_string(),
+                    Some(g) if g.contains("talk") || g.contains("speech") => "speech".to_string(),
+                    _ => "event".to_string(),
+                }
+            }
         }
     }
 }
@@ -897,5 +1193,130 @@ mod normalize_tests {
         assert_eq!(norm("video-interview"), "video-interview");
         assert_eq!(norm("film"), "film");
         assert_eq!(norm("Annual report"), "annual-report");
+    }
+}
+
+#[cfg(test)]
+mod numbering_tests {
+    use super::{InputReference, NumOrStr};
+
+    fn parse_reference(json: &str) -> InputReference {
+        serde_json::from_str(json).expect("reference should parse")
+    }
+
+    #[test]
+    fn shorthand_numbering_accessors_cover_all_numbered_reference_variants() {
+        let cases = [
+            (
+                "monograph",
+                r#"{
+                    "class": "monograph",
+                    "type": "book",
+                    "title": "Book",
+                    "issued": "2024",
+                    "volume": "1",
+                    "issue": "2",
+                    "edition": "3",
+                    "number": "4"
+                }"#,
+            ),
+            (
+                "collection",
+                r#"{
+                    "class": "collection",
+                    "type": "anthology",
+                    "title": "Collection",
+                    "issued": "2024",
+                    "volume": "1",
+                    "issue": "2",
+                    "edition": "3",
+                    "number": "4"
+                }"#,
+            ),
+            (
+                "collection-component",
+                r#"{
+                    "class": "collection-component",
+                    "type": "chapter",
+                    "title": "Chapter",
+                    "issued": "2024",
+                    "volume": "1",
+                    "issue": "2",
+                    "edition": "3",
+                    "number": "4"
+                }"#,
+            ),
+            (
+                "serial-component",
+                r#"{
+                    "class": "serial-component",
+                    "type": "article",
+                    "title": "Article",
+                    "issued": "2024",
+                    "volume": "1",
+                    "issue": "2",
+                    "edition": "3",
+                    "number": "4"
+                }"#,
+            ),
+            (
+                "classic",
+                r#"{
+                    "class": "classic",
+                    "title": "Classic",
+                    "issued": "2024",
+                    "volume": "1",
+                    "issue": "2",
+                    "edition": "3",
+                    "number": "4"
+                }"#,
+            ),
+        ];
+
+        for (label, json) in cases {
+            let reference = parse_reference(json);
+
+            assert_eq!(
+                reference.volume(),
+                Some(NumOrStr::Str("1".to_string())),
+                "{label} should resolve volume"
+            );
+            assert_eq!(
+                reference.issue(),
+                Some(NumOrStr::Str("2".to_string())),
+                "{label} should resolve issue"
+            );
+            assert_eq!(
+                reference.edition(),
+                Some("3".to_string()),
+                "{label} should resolve edition"
+            );
+            assert_eq!(
+                reference.number(),
+                Some("4".to_string()),
+                "{label} should resolve number"
+            );
+        }
+    }
+
+    #[test]
+    fn collection_component_collection_number_bubbles_from_embedded_container() {
+        let reference = parse_reference(
+            r#"{
+                "class": "collection-component",
+                "type": "chapter",
+                "title": "Chapter",
+                "issued": "2024",
+                "container": {
+                    "class": "collection",
+                    "type": "edited-book",
+                    "title": "Series",
+                    "issued": "2024",
+                    "volume": "7"
+                }
+            }"#,
+        );
+
+        assert_eq!(reference.collection_number(), Some("7".to_string()));
     }
 }

@@ -166,7 +166,7 @@ macro_rules! tc_term {
     ($term_var:ident $(, $key:ident = $val:expr)*) => {
         $crate::template::TemplateComponent::Term(
             $crate::template::TemplateTerm {
-                term: $crate::localization::GeneralTerm::$term_var,
+                term: $crate::locale::GeneralTerm::$term_var,
                 rendering: $crate::template::Rendering {
                     $( $key: Some($val.into()), )*
                     ..Default::default()
@@ -198,11 +198,6 @@ macro_rules! tc_group {
 // These construct native Citum InputReference values without verbose struct literals.
 
 /// Builds an `InputReference::Monograph` (book) with a single structured-name author.
-///
-/// # Examples
-/// ```ignore
-/// let r = citum_schema::ref_book!("b1", "Smith", "John", 2020, "My Title");
-/// ```
 #[macro_export]
 macro_rules! ref_book {
     ($id:expr, $family:expr, $given:expr, $year:expr, $title:expr) => {
@@ -211,7 +206,6 @@ macro_rules! ref_book {
                 id: Some($id.to_string()),
                 r#type: $crate::reference::MonographType::Book,
                 title: Some($crate::reference::Title::Single($title.to_string())),
-                container_title: None,
                 author: Some($crate::reference::Contributor::StructuredName(
                     $crate::reference::StructuredName {
                         family: $crate::reference::MultilingualString::Simple($family.to_string()),
@@ -219,44 +213,14 @@ macro_rules! ref_book {
                         ..Default::default()
                     },
                 )),
-                editor: None,
-                translator: None,
-                recipient: None,
-                interviewer: None,
-                guest: None,
                 issued: $crate::reference::EdtfString($year.to_string()),
-                publisher: None,
-                url: None,
-                accessed: None,
-                language: None,
-                field_languages: ::std::collections::HashMap::new(),
-                note: None,
-                isbn: None,
-                doi: None,
-                edition: None,
-                report_number: None,
-                collection_number: None,
-                genre: None,
-                medium: None,
-                archive: None,
-                archive_location: None,
-                archive_info: None,
-                eprint: None,
-                keywords: None,
-                original_date: None,
-                original_title: None,
-                ads_bibcode: None,
+                ..Default::default()
             },
         ))
     };
 }
 
 /// Builds an `InputReference::Monograph` (book) with multiple structured-name authors.
-///
-/// # Examples
-/// ```ignore
-/// let r = citum_schema::ref_book_authors!("b1", [("Smith", "John"), ("Doe", "Jane")], 2020, "Title");
-/// ```
 #[macro_export]
 macro_rules! ref_book_authors {
     ($id:expr, [$(($family:expr, $given:expr)),* $(,)?], $year:expr, $title:expr) => {{
@@ -278,48 +242,17 @@ macro_rules! ref_book_authors {
                 id: Some($id.to_string()),
                 r#type: $crate::reference::MonographType::Book,
                 title: Some($crate::reference::Title::Single($title.to_string())),
-                container_title: None,
                 author: Some($crate::reference::Contributor::ContributorList(
                     $crate::reference::ContributorList(_authors),
                 )),
-                editor: None,
-                translator: None,
-                recipient: None,
-                interviewer: None,
-                guest: None,
                 issued: $crate::reference::EdtfString($year.to_string()),
-                publisher: None,
-                url: None,
-                accessed: None,
-                language: None,
-                field_languages: ::std::collections::HashMap::new(),
-                note: None,
-                isbn: None,
-                doi: None,
-                edition: None,
-                report_number: None,
-                collection_number: None,
-                genre: None,
-                medium: None,
-                archive: None,
-                archive_location: None,
-                archive_info: None,
-                eprint: None,
-                keywords: None,
-                original_date: None,
-                original_title: None,
-                ads_bibcode: None,
+                ..Default::default()
             },
         ))
     }};
 }
 
 /// Builds an `InputReference::SerialComponent` (journal article) with a single author.
-///
-/// # Examples
-/// ```ignore
-/// let r = citum_schema::ref_article!("a1", "Doe", "Jane", 2021, "Article Title");
-/// ```
 #[macro_export]
 macro_rules! ref_article {
     ($id:expr, $family:expr, $given:expr, $year:expr, $title:expr) => {
@@ -335,42 +268,23 @@ macro_rules! ref_article {
                         ..Default::default()
                     },
                 )),
-                translator: None,
                 issued: $crate::reference::EdtfString($year.to_string()),
-                parent: $crate::reference::Parent::Embedded($crate::reference::Serial {
-                    r#type: $crate::reference::SerialType::AcademicJournal,
-                    title: Some($crate::reference::Title::Single(String::new())),
-                    short_title: None,
-                    editor: None,
-                    publisher: None,
-                    issn: None,
-                }),
-                url: None,
-                accessed: None,
-                language: None,
-                field_languages: ::std::collections::HashMap::new(),
-                note: None,
-                doi: None,
-                pages: None,
-                volume: None,
-                issue: None,
-                genre: None,
-                medium: None,
-                archive_info: None,
-                eprint: None,
-                keywords: None,
-                ads_bibcode: None,
+                container: Some($crate::reference::WorkRelation::Embedded(
+                    ::std::boxed::Box::new($crate::reference::InputReference::Serial(
+                        ::std::boxed::Box::new($crate::reference::Serial {
+                            r#type: $crate::reference::SerialType::AcademicJournal,
+                            title: Some($crate::reference::Title::Single(String::new())),
+                            ..Default::default()
+                        }),
+                    )),
+                )),
+                ..Default::default()
             },
         ))
     };
 }
 
 /// Builds an `InputReference::SerialComponent` (journal article) with multiple authors.
-///
-/// # Examples
-/// ```ignore
-/// let r = citum_schema::ref_article_authors!("a1", [("Doe", "Jane"), ("Roe", "John")], 2021, "Title");
-/// ```
 #[macro_export]
 macro_rules! ref_article_authors {
     ($id:expr, [$(($family:expr, $given:expr)),* $(,)?], $year:expr, $title:expr) => {{
@@ -395,46 +309,14 @@ macro_rules! ref_article_authors {
                 author: Some($crate::reference::Contributor::ContributorList(
                     $crate::reference::ContributorList(_authors),
                 )),
-                translator: None,
                 issued: $crate::reference::EdtfString($year.to_string()),
-                parent: $crate::reference::Parent::Embedded($crate::reference::Serial {
-                    r#type: $crate::reference::SerialType::AcademicJournal,
-                    title: Some($crate::reference::Title::Single(String::new())),
-                    short_title: None,
-                    editor: None,
-                    publisher: None,
-                    issn: None,
-                }),
-                url: None,
-                accessed: None,
-                language: None,
-                field_languages: ::std::collections::HashMap::new(),
-                note: None,
-                doi: None,
-                pages: None,
-                volume: None,
-                issue: None,
-                genre: None,
-                medium: None,
-                archive_info: None,
-                eprint: None,
-                keywords: None,
-                ads_bibcode: None,
+                ..Default::default()
             },
         ))
     }};
 }
 
 /// Builds a `CitationLocator` value.
-///
-/// # Examples
-/// ```ignore
-/// let locator = citum_schema::citation_locator!(Page, "42");
-/// let locator = citum_schema::citation_locator!(
-///     Chapter => "3",
-///     Section => "42",
-/// );
-/// ```
 #[macro_export]
 macro_rules! citation_locator {
     ($label:ident, $value:expr) => {
@@ -464,18 +346,6 @@ macro_rules! citation_locator {
 }
 
 /// Builds a `CitationItem` with optional named fields.
-///
-/// Supported fields: `locator`, `prefix`, `suffix`.
-///
-/// # Examples
-/// ```ignore
-/// let item = citum_schema::citation_item!("kuhn1962");
-/// let item = citum_schema::citation_item!(
-///     "kuhn1962",
-///     locator = citum_schema::citation_locator!(Page, "42")
-/// );
-/// let item = citum_schema::citation_item!("smith2020", prefix = "cf. ");
-/// ```
 #[macro_export]
 macro_rules! citation_item {
     ($id:expr $(, $key:ident = $val:expr)*) => {{
@@ -493,32 +363,6 @@ macro_rules! citation_item {
 }
 
 /// Builds a `Citation` from a list of `CitationItem` expressions with optional named fields.
-///
-/// Supported citation fields: `mode`, `suppress_author`.
-///
-/// # Examples
-/// ```ignore
-/// // Two items, no options
-/// let c = citum_schema::citation!([
-///     citum_schema::citation_item!("item1"),
-///     citum_schema::citation_item!(
-///         "item2",
-///         locator = citum_schema::citation_locator!(Page, "42")
-///     ),
-/// ]);
-///
-/// // Integral mode
-/// let c = citum_schema::citation!(
-///     [citum_schema::citation_item!("item1"), citum_schema::citation_item!("item2")],
-///     mode = citum_schema::citation::CitationMode::Integral,
-/// );
-///
-/// // Suppress author across all items
-/// let c = citum_schema::citation!(
-///     [citum_schema::citation_item!("item1")],
-///     suppress_author = true,
-/// );
-/// ```
 #[macro_export]
 macro_rules! citation {
     ([$($item:expr),* $(,)?] $(, $key:ident = $val:expr)* $(,)?) => {
@@ -531,13 +375,6 @@ macro_rules! citation {
 }
 
 /// Builds a `Citation` with one `CitationItem`.
-///
-/// # Examples
-/// ```ignore
-/// let c = citum_schema::cite!("item1");
-/// let c = citum_schema::cite!("item1", mode = citum_schema::citation::CitationMode::Integral);
-/// let c = citum_schema::cite!("item1", suppress_author = true);
-/// ```
 #[macro_export]
 macro_rules! cite {
     ($id:expr) => {
@@ -562,16 +399,6 @@ macro_rules! cite {
 }
 
 /// Builds an `IndexMap<String, InputReference>` from key-value pairs.
-///
-/// Requires `indexmap` as a dependency of the calling crate.
-///
-/// # Examples
-/// ```ignore
-/// let bib = citum_schema::bib_map![
-///     "ref1" => make_book("ref1", "Smith", "J", 2020, "Title"),
-///     "ref2" => make_article("ref2", "Doe", "J", 2021, "Article"),
-/// ];
-/// ```
 #[macro_export]
 macro_rules! bib_map {
     ($($key:expr => $val:expr),* $(,)?) => {{

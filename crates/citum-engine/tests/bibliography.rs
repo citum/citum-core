@@ -19,8 +19,9 @@ use citum_schema::{
         SortSpec,
     },
     reference::{
-        Contributor, EdtfString, InputReference, Monograph, MonographType, NumOrStr, Parent,
-        Serial, SerialComponent, SerialComponentType, SerialType, StructuredName, Title,
+        Contributor, EdtfString, InputReference, Monograph, MonographType, Numbering,
+        NumberingType, Serial, SerialComponent, SerialComponentType, SerialType, StructuredName,
+        Title, WorkRelation,
         types::{ArchiveInfo, EprintInfo, MultilingualComplex, MultilingualString},
     },
     template::{
@@ -546,10 +547,11 @@ fn build_multilingual_archive_name_style() -> Style {
 
 fn make_archive_eprint_reference() -> InputReference {
     InputReference::Monograph(Box::new(Monograph {
+        short_title: None,
         id: Some("archive-eprint-ref".to_string()),
         r#type: MonographType::Preprint,
         title: Some(Title::Single("Archive-Aware Preprint".to_string())),
-        container_title: None,
+        container: None,
         author: None,
         editor: None,
         translator: None,
@@ -565,9 +567,7 @@ fn make_archive_eprint_reference() -> InputReference {
         note: None,
         isbn: None,
         doi: None,
-        edition: None,
-        report_number: None,
-        collection_number: None,
+        numbering: Default::default(),
         genre: None,
         medium: None,
         archive: None,
@@ -590,18 +590,19 @@ fn make_archive_eprint_reference() -> InputReference {
             class: Some("cs.DL".to_string()),
         }),
         keywords: None,
-        original_date: None,
-        original_title: None,
+        original: None,
         ads_bibcode: None,
+        ..Default::default()
     }))
 }
 
 fn make_multilingual_archive_name_reference() -> InputReference {
     InputReference::Monograph(Box::new(Monograph {
+        short_title: None,
         id: Some("archive-name-ref".to_string()),
         r#type: MonographType::Document,
         title: Some(Title::Single("Repository Record".to_string())),
-        container_title: None,
+        container: None,
         author: None,
         editor: None,
         translator: None,
@@ -617,9 +618,7 @@ fn make_multilingual_archive_name_reference() -> InputReference {
         note: None,
         isbn: None,
         doi: None,
-        edition: None,
-        report_number: None,
-        collection_number: None,
+        numbering: Default::default(),
         genre: None,
         medium: None,
         archive: None,
@@ -638,18 +637,19 @@ fn make_multilingual_archive_name_reference() -> InputReference {
         }),
         eprint: None,
         keywords: None,
-        original_date: None,
-        original_title: None,
+        original: None,
         ads_bibcode: None,
+        ..Default::default()
     }))
 }
 
 fn make_historical_archive_reference() -> InputReference {
     InputReference::Monograph(Box::new(Monograph {
+        short_title: None,
         id: Some("dead-sea-scrolls-demo".to_string()),
         r#type: MonographType::Manuscript,
         title: Some(Title::Single("The Community Rule (1QS)".to_string())),
-        container_title: None,
+        container: None,
         author: None,
         editor: None,
         translator: None,
@@ -665,9 +665,7 @@ fn make_historical_archive_reference() -> InputReference {
         note: None,
         isbn: None,
         doi: None,
-        edition: None,
-        report_number: None,
-        collection_number: None,
+        numbering: Default::default(),
         genre: Some("manuscript-scroll".to_string()),
         medium: None,
         archive: None,
@@ -682,9 +680,9 @@ fn make_historical_archive_reference() -> InputReference {
         }),
         eprint: None,
         keywords: None,
-        original_date: None,
-        original_title: None,
+        original: None,
         ads_bibcode: None,
+        ..Default::default()
     }))
 }
 
@@ -837,6 +835,17 @@ fn make_article_journal_with_detail(
     pages: Option<&str>,
     doi: Option<&str>,
 ) -> InputReference {
+    let mut numbering = vec![Numbering {
+        r#type: NumberingType::Volume,
+        value: "12".to_string(),
+    }];
+    if let Some(i) = issue {
+        numbering.push(Numbering {
+            r#type: NumberingType::Issue,
+            value: i.to_string(),
+        });
+    }
+
     InputReference::SerialComponent(Box::new(SerialComponent {
         id: Some(id.to_string()),
         r#type: SerialComponentType::Article,
@@ -850,14 +859,13 @@ fn make_article_journal_with_detail(
         })),
         translator: None,
         issued: EdtfString(issued.to_string()),
-        parent: Parent::Embedded(Serial {
-            r#type: SerialType::AcademicJournal,
-            title: Some(Title::Single("Journal of Fallbacks".to_string())),
-            short_title: None,
-            editor: None,
-            publisher: None,
-            issn: None,
-        }),
+        container: Some(WorkRelation::Embedded(Box::new(InputReference::Serial(
+            Box::new(Serial {
+                r#type: SerialType::AcademicJournal,
+                title: Some(Title::Single("Journal of Fallbacks".to_string())),
+                ..Default::default()
+            }),
+        )))),
         url: None,
         accessed: None,
         language: None,
@@ -866,13 +874,15 @@ fn make_article_journal_with_detail(
         doi: doi.map(str::to_string),
         ads_bibcode: None,
         pages: pages.map(str::to_string),
-        volume: Some(NumOrStr::Str("12".to_string())),
-        issue: issue.map(|value| NumOrStr::Str(value.to_string())),
+        numbering,
         genre: None,
         medium: None,
         archive_info: None,
         eprint: None,
         keywords: None,
+        reviewed: None,
+        original: None,
+        ..Default::default()
     }))
 }
 
@@ -943,10 +953,11 @@ fn make_particle_book(
     particle: Option<&str>,
 ) -> InputReference {
     InputReference::Monograph(Box::new(Monograph {
+        short_title: None,
         id: Some(id.to_string()),
         r#type: MonographType::Book,
         title: Some(Title::Single(format!("Title {id}"))),
-        container_title: None,
+        container: None,
         author: Some(Contributor::StructuredName(StructuredName {
             family: family.into(),
             given: given.into(),
@@ -968,9 +979,7 @@ fn make_particle_book(
         note: None,
         isbn: None,
         doi: None,
-        edition: None,
-        report_number: None,
-        collection_number: None,
+        numbering: Default::default(),
         genre: None,
         medium: None,
         archive_info: None,
@@ -978,9 +987,9 @@ fn make_particle_book(
         archive: None,
         archive_location: None,
         keywords: None,
-        original_date: None,
-        original_title: None,
+        original: None,
         ads_bibcode: None,
+        ..Default::default()
     }))
 }
 
@@ -992,9 +1001,11 @@ fn make_editor_only_book(
     given: &str,
 ) -> InputReference {
     InputReference::Monograph(Box::new(Monograph {
+        short_title: None,
         id: Some(id.to_string()),
         r#type: MonographType::Book,
         title: Some(Title::Single(title.to_string())),
+        container: None,
         author: None,
         editor: Some(Contributor::StructuredName(StructuredName {
             given: given.into(),
@@ -1007,7 +1018,6 @@ fn make_editor_only_book(
         guest: None,
         issued: EdtfString(year.to_string()),
         publisher: None,
-        container_title: None,
         url: None,
         accessed: None,
         language: None,
@@ -1015,9 +1025,7 @@ fn make_editor_only_book(
         note: None,
         isbn: None,
         doi: None,
-        edition: None,
-        report_number: None,
-        collection_number: None,
+        numbering: Default::default(),
         genre: None,
         medium: None,
         archive_info: None,
@@ -1025,9 +1033,9 @@ fn make_editor_only_book(
         archive: None,
         archive_location: None,
         keywords: None,
-        original_date: None,
-        original_title: None,
+        original: None,
         ads_bibcode: None,
+        ..Default::default()
     }))
 }
 
@@ -1049,9 +1057,11 @@ fn make_multi_editor_only_book(
         .collect();
 
     InputReference::Monograph(Box::new(Monograph {
+        short_title: None,
         id: Some(id.to_string()),
         r#type: MonographType::Book,
         title: Some(Title::Single(title.to_string())),
+        container: None,
         author: None,
         editor: Some(Contributor::ContributorList(
             citum_schema::reference::ContributorList(editors),
@@ -1062,7 +1072,6 @@ fn make_multi_editor_only_book(
         guest: None,
         issued: EdtfString(year.to_string()),
         publisher: None,
-        container_title: None,
         url: None,
         accessed: None,
         language: None,
@@ -1070,9 +1079,7 @@ fn make_multi_editor_only_book(
         note: None,
         isbn: None,
         doi: None,
-        edition: None,
-        report_number: None,
-        collection_number: None,
+        numbering: Default::default(),
         genre: None,
         medium: None,
         archive_info: None,
@@ -1080,9 +1087,9 @@ fn make_multi_editor_only_book(
         archive: None,
         archive_location: None,
         keywords: None,
-        original_date: None,
-        original_title: None,
+        original: None,
         ads_bibcode: None,
+        ..Default::default()
     }))
 }
 
@@ -1731,9 +1738,11 @@ bibliography:
 fn bibliography_local_entry_links_apply_on_the_default_render_path() {
     let style = build_bibliography_entry_link_style();
     let reference = InputReference::Monograph(Box::new(Monograph {
+        short_title: None,
         id: Some("linked-book".to_string()),
         r#type: MonographType::Book,
         title: Some(Title::Single("Linked Book".to_string())),
+        container: None,
         author: None,
         editor: None,
         translator: None,
@@ -1742,7 +1751,6 @@ fn bibliography_local_entry_links_apply_on_the_default_render_path() {
         guest: None,
         issued: EdtfString("2024".to_string()),
         publisher: None,
-        container_title: None,
         url: Some(Url::parse("https://example.com/linked-book").expect("valid url")),
         accessed: None,
         language: None,
@@ -1750,9 +1758,7 @@ fn bibliography_local_entry_links_apply_on_the_default_render_path() {
         note: None,
         isbn: None,
         doi: None,
-        edition: None,
-        report_number: None,
-        collection_number: None,
+        numbering: Default::default(),
         genre: None,
         medium: None,
         archive_info: None,
@@ -1760,9 +1766,9 @@ fn bibliography_local_entry_links_apply_on_the_default_render_path() {
         archive: None,
         archive_location: None,
         keywords: None,
-        original_date: None,
-        original_title: None,
+        original: None,
         ads_bibcode: None,
+        ..Default::default()
     }));
     let bib = citum_schema::bib_map!["linked-book" => reference];
 

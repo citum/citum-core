@@ -15,6 +15,97 @@ use url::Url;
 
 /// Unique identifier for a reference item.
 pub type RefID = String;
+
+/// A numbering identifier for a work (e.g., volume, issue, part).
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+pub struct Numbering {
+    /// The type of the numbering.
+    pub r#type: NumberingType,
+    /// The value of the numbering (e.g., "4", "B").
+    pub value: String,
+}
+
+/// Controlled vocabulary for numbering types.
+#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(rename_all = "kebab-case")]
+#[non_exhaustive]
+pub enum NumberingType {
+    /// A volume number.
+    Volume,
+    /// An issue number.
+    Issue,
+    /// A part number.
+    Part,
+    /// A supplement number.
+    Supplement,
+    /// A chapter number.
+    Chapter,
+    /// A book number.
+    Book,
+    /// A section identifier.
+    Section,
+    /// An edition identifier.
+    Edition,
+}
+
+pub(crate) trait HasNumbering {
+    fn numbering(&self) -> &[Numbering];
+
+    fn find_numbering(&self, numbering_type: NumberingType) -> Option<String> {
+        self.numbering()
+            .iter()
+            .find(|numbering| numbering.r#type == numbering_type)
+            .map(|numbering| numbering.value.clone())
+    }
+}
+
+pub(crate) trait NormalizeNumbering {
+    fn numbering_mut(&mut self) -> &mut Vec<Numbering>;
+    fn volume_mut(&mut self) -> &mut Option<String>;
+    fn issue_mut(&mut self) -> &mut Option<String>;
+    fn edition_mut(&mut self) -> &mut Option<String>;
+    fn number_mut(&mut self) -> &mut Option<String>;
+
+    fn normalize_numbering(&mut self) {
+        let volume = self.volume_mut().take();
+        let issue = self.issue_mut().take();
+        let edition = self.edition_mut().take();
+        let number = self.number_mut().take();
+        let has_volume = volume.is_some();
+        let has_issue = issue.is_some();
+        let has_edition = edition.is_some();
+        let has_number = number.is_some();
+        let existing = std::mem::take(self.numbering_mut());
+
+        let mut normalized = Vec::with_capacity(existing.len() + 4);
+        let mut push_shorthand = |r#type, value: Option<String>| {
+            if let Some(value) = value {
+                normalized.push(Numbering { r#type, value });
+            }
+        };
+
+        push_shorthand(NumberingType::Volume, volume);
+        push_shorthand(NumberingType::Issue, issue);
+        push_shorthand(NumberingType::Edition, edition);
+        push_shorthand(NumberingType::Part, number);
+
+        normalized.extend(existing.into_iter().filter(|entry| match entry.r#type {
+            NumberingType::Volume => !has_volume,
+            NumberingType::Issue => !has_issue,
+            NumberingType::Edition => !has_edition,
+            NumberingType::Part => !has_number,
+            _ => true,
+        }));
+
+        *self.numbering_mut() = normalized;
+    }
+}
+
+/// BCP 47 language tag (e.g., `"en"`, `"de"`, `"ja"`).
 /// BCP 47 language tag (e.g., `"en"`, `"de"`, `"ja"`).
 pub type LangID = String;
 /// Maps field names to their language tags for multilingual references.
