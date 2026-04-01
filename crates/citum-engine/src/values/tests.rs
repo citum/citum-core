@@ -1385,6 +1385,125 @@ fn test_number_variable_excludes_report_number_accessor() {
 }
 
 #[test]
+fn test_custom_number_variable_renders_from_custom_numbering_kind() {
+    let config = make_config();
+    let locale = citum_schema::Locale::from_yaml_str(
+        r#"
+locale: en-US
+locators:
+  reel:
+    short:
+      singular: "reel"
+      plural: "reels"
+"#,
+    )
+    .expect("custom locale should parse");
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let hints = ProcHints::default();
+
+    let reference: Reference = serde_json::from_str(
+        r#"{
+            "class": "monograph",
+            "type": "book",
+            "title": "Film",
+            "issued": "2024",
+            "numbering": [
+                { "type": "reel", "value": "3" }
+            ]
+        }"#,
+    )
+    .expect("reference should parse");
+
+    let unlabeled = TemplateNumber {
+        number: NumberVariable::Custom("reel".to_string()),
+        ..Default::default()
+    };
+    let labeled = TemplateNumber {
+        number: NumberVariable::Custom("reel".to_string()),
+        label_form: Some(citum_schema::template::LabelForm::Short),
+        ..Default::default()
+    };
+
+    assert_eq!(
+        unlabeled
+            .values::<PlainText>(&reference, &hints, &options)
+            .expect("custom number should render")
+            .value,
+        "3"
+    );
+    let labeled_values = labeled
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("custom labeled number should render");
+    assert_eq!(labeled_values.value, "3");
+    assert_eq!(labeled_values.prefix, Some("reel ".to_string()));
+}
+
+#[test]
+fn test_custom_number_variable_normalizes_manual_custom_key() {
+    let config = make_config();
+    let locale = Locale::from_yaml_str(
+        r#"
+locale: en-US
+locators:
+  reel:
+    short:
+      singular: "reel"
+      plural: "reels"
+"#,
+    )
+    .expect("custom locale should parse");
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+
+    let reference: Reference = serde_json::from_str(
+        r#"{
+            "class": "monograph",
+            "type": "book",
+            "title": "Film",
+            "issued": "2024",
+            "numbering": [
+                { "type": "reel", "value": "3" }
+            ]
+        }"#,
+    )
+    .expect("reference should parse");
+
+    let number = TemplateNumber {
+        number: NumberVariable::Custom("Reel".to_string()),
+        label_form: Some(citum_schema::template::LabelForm::Short),
+        ..Default::default()
+    };
+
+    let values = number
+        .values::<PlainText>(&reference, &ProcHints::default(), &options)
+        .expect("custom number should render");
+
+    assert_eq!(values.value, "3");
+    assert_eq!(values.prefix, Some("reel ".to_string()));
+}
+
+#[test]
 fn test_role_label_preset_applies_to_translator_component() {
     let mut config = make_config();
     let locale = make_locale();

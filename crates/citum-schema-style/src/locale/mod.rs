@@ -628,6 +628,30 @@ impl Locale {
 
         self.locator_term(locator, plural, form)
             .map(ToOwned::to_owned)
+            .or_else(|| {
+                if let LocatorType::Custom(key) = locator {
+                    self.locator_term_any_form(locator, plural)
+                        .map(ToOwned::to_owned)
+                        .or_else(|| Some(key.clone()))
+                } else {
+                    None
+                }
+            })
+    }
+
+    fn locator_term_any_form(&self, locator: &LocatorType, plural: bool) -> Option<&str> {
+        let term = self.locators.get(locator)?;
+        [&term.long, &term.short, &term.symbol]
+            .into_iter()
+            .flatten()
+            .next()
+            .map(|forms| {
+                if plural {
+                    forms.plural.as_str()
+                } else {
+                    forms.singular.as_str()
+                }
+            })
     }
 
     /// Get a general term by type and form.
@@ -1056,18 +1080,37 @@ impl Locale {
             locale.number_formats = nf;
         }
 
-        // Map raw terms to structured terms and locators
+        let explicit_locator_keys: std::collections::HashSet<LocatorType> = raw
+            .locators
+            .keys()
+            .filter_map(|key| Self::parse_builtin_locator_type(key))
+            .collect();
+
+        for (key, value) in &raw.locators {
+            if let Some(locator_type) = Self::parse_locator_type(key)
+                && let Some(forms) = Self::get_forms(value)
+            {
+                let locator_term = LocatorTerm {
+                    long: Self::extract_singular_plural(forms.get("long").as_ref()),
+                    short: Self::extract_singular_plural(forms.get("short").as_ref()),
+                    symbol: Self::extract_singular_plural(forms.get("symbol").as_ref()),
+                };
+                locale.locators.insert(locator_type, locator_term);
+            }
+        }
+
+        // Map raw terms to structured general terms.
         for (key, value) in &raw.terms {
-            // First try to parse as a locator
-            if let Some(locator_type) = Self::parse_locator_type(key) {
-                if let Some(forms) = Self::get_forms(value) {
-                    let locator_term = LocatorTerm {
-                        long: Self::extract_singular_plural(forms.get("long").as_ref()),
-                        short: Self::extract_singular_plural(forms.get("short").as_ref()),
-                        symbol: Self::extract_singular_plural(forms.get("symbol").as_ref()),
-                    };
-                    locale.locators.insert(locator_type, locator_term);
-                }
+            if let Some(locator_type) = Self::parse_builtin_locator_type(key)
+                && !explicit_locator_keys.contains(&locator_type)
+                && let Some(forms) = Self::get_forms(value)
+            {
+                let locator_term = LocatorTerm {
+                    long: Self::extract_singular_plural(forms.get("long").as_ref()),
+                    short: Self::extract_singular_plural(forms.get("short").as_ref()),
+                    symbol: Self::extract_singular_plural(forms.get("symbol").as_ref()),
+                };
+                locale.locators.insert(locator_type, locator_term);
                 continue;
             }
 
@@ -1154,44 +1197,13 @@ impl Locale {
     }
 
     fn parse_locator_type(name: &str) -> Option<LocatorType> {
-        match name {
-            "algorithm" => Some(LocatorType::Algorithm),
-            "book" => Some(LocatorType::Book),
-            "chapter" => Some(LocatorType::Chapter),
-            "clause" => Some(LocatorType::Clause),
-            "column" => Some(LocatorType::Column),
-            "corollary" => Some(LocatorType::Corollary),
-            "definition" => Some(LocatorType::Definition),
-            "division" => Some(LocatorType::Division),
-            "figure" => Some(LocatorType::Figure),
-            "folio" => Some(LocatorType::Folio),
-            "issue" => Some(LocatorType::Issue),
-            "lemma" => Some(LocatorType::Lemma),
-            "line" => Some(LocatorType::Line),
-            "note" => Some(LocatorType::Note),
-            "number" => Some(LocatorType::Number),
-            "opus" => Some(LocatorType::Opus),
-            "page" => Some(LocatorType::Page),
-            "paragraph" => Some(LocatorType::Paragraph),
-            "part" => Some(LocatorType::Part),
-            "problem" => Some(LocatorType::Problem),
-            "proposition" => Some(LocatorType::Proposition),
-            "recital" => Some(LocatorType::Recital),
-            "schedule" => Some(LocatorType::Schedule),
-            "section" => Some(LocatorType::Section),
-            "subclause" | "sub-clause" | "sub_clause" => Some(LocatorType::Subclause),
-            "subdivision" | "sub-division" | "sub_division" => Some(LocatorType::Subdivision),
-            "subparagraph" | "sub-paragraph" | "sub_paragraph" => Some(LocatorType::Subparagraph),
-            "subsection" | "sub-section" | "sub_section" => Some(LocatorType::Subsection),
-            "sub_verbo" | "sub-verbo" => Some(LocatorType::SubVerbo),
-            "supplement" => Some(LocatorType::Supplement),
-            "surah" => Some(LocatorType::Surah),
-            "theorem" => Some(LocatorType::Theorem),
-            "verse" => Some(LocatorType::Verse),
-            "volume" => Some(LocatorType::Volume),
-            "volume-book" | "volume_book" => Some(LocatorType::VolumeBook),
-            "volume-periodical" | "volume_periodical" => Some(LocatorType::VolumePeriodical),
-            _ => None,
+        LocatorType::from_key(name).ok()
+    }
+
+    fn parse_builtin_locator_type(name: &str) -> Option<LocatorType> {
+        match Self::parse_locator_type(name)? {
+            LocatorType::Custom(_) => None,
+            locator => Some(locator),
         }
     }
 
@@ -1634,6 +1646,103 @@ locale: en-US
         assert_eq!(
             locale.resolved_locator_term(&LocatorType::Page, true, TermForm::Short),
             Some("pp.".to_string())
+        );
+    }
+
+    #[test]
+    fn test_resolved_locator_term_falls_back_to_custom_locale_form_then_raw_key() {
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: en-US
+locators:
+  reel:
+    long:
+      singular: "reel"
+      plural: "reels"
+"#,
+        )
+        .expect("custom locale should parse");
+
+        assert_eq!(
+            locale.resolved_locator_term(
+                &LocatorType::Custom("reel".to_string()),
+                false,
+                TermForm::Short
+            ),
+            Some("reel".to_string())
+        );
+        assert_eq!(
+            locale.resolved_locator_term(
+                &LocatorType::Custom("movement".to_string()),
+                false,
+                TermForm::Short
+            ),
+            Some("movement".to_string())
+        );
+    }
+
+    #[test]
+    fn test_legacy_locator_terms_under_terms_still_populate_locators() {
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: en-US
+terms:
+  page:
+    short:
+      singular: "pg."
+      plural: "pgs."
+"#,
+        )
+        .expect("legacy locator terms should parse");
+
+        assert_eq!(
+            locale.resolved_locator_term(&LocatorType::Page, false, TermForm::Short),
+            Some("pg.".to_string())
+        );
+    }
+
+    #[test]
+    fn test_explicit_locators_override_legacy_terms_for_builtin_keys() {
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: en-US
+terms:
+  page:
+    short:
+      singular: "pg."
+      plural: "pgs."
+locators:
+  page:
+    short:
+      singular: "p."
+      plural: "pp."
+"#,
+        )
+        .expect("mixed locator forms should parse");
+
+        assert_eq!(
+            locale.resolved_locator_term(&LocatorType::Page, false, TermForm::Short),
+            Some("p.".to_string())
+        );
+    }
+
+    #[test]
+    fn test_non_locator_terms_are_not_reclassified_as_custom_locators() {
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: en-US
+terms:
+  and:
+    long: "und"
+"#,
+        )
+        .expect("general terms should parse");
+
+        assert_eq!(locale.terms.and.as_deref(), Some("und"));
+        assert!(
+            !locale
+                .locators
+                .contains_key(&LocatorType::Custom("and".to_string()))
         );
     }
 

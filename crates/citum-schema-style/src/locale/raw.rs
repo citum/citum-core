@@ -25,6 +25,9 @@ pub struct RawLocale {
     /// General terms keyed by term name.
     #[serde(default)]
     pub terms: HashMap<String, RawTermValue>,
+    /// Locator terms keyed by locator name.
+    #[serde(default)]
+    pub locators: HashMap<String, RawTermValue>,
     /// Schema version. Absent or "1" uses the legacy term-map path.
     /// "2" activates the new messages/dateFormats/grammarOptions path.
     #[serde(default, skip_serializing_if = "Option::is_none")]

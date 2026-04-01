@@ -20,7 +20,7 @@ pub fn locator_aliases(locale: &Locale) -> Vec<(String, LocatorType)> {
     let mut aliases = HashMap::<String, LocatorType>::new();
 
     for (alias, label) in english_locator_aliases() {
-        aliases.insert(alias.to_string(), *label);
+        aliases.insert(alias.to_string(), label.clone());
     }
 
     for (label, term) in &locale.locators {
@@ -30,8 +30,10 @@ pub fn locator_aliases(locale: &Locale) -> Vec<(String, LocatorType)> {
         {
             aliases
                 .entry(form.singular.to_lowercase())
-                .or_insert(*label);
-            aliases.entry(form.plural.to_lowercase()).or_insert(*label);
+                .or_insert_with(|| label.clone());
+            aliases
+                .entry(form.plural.to_lowercase())
+                .or_insert_with(|| label.clone());
         }
     }
 
@@ -130,4 +132,30 @@ pub fn english_locator_aliases() -> &'static [(&'static str, LocatorType)] {
         ("issue", LocatorType::Issue),
         ("issues", LocatorType::Issue),
     ]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn custom_locale_locator_terms_become_parsing_aliases() {
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: en-US
+locators:
+  reel:
+    short:
+      singular: "reel"
+      plural: "reels"
+"#,
+        )
+        .expect("custom locale should parse");
+
+        let locator =
+            normalize_locator_text("reel 3", &locale).expect("custom locator should parse");
+        let segment = &locator.segments()[0];
+        assert_eq!(segment.label, LocatorType::Custom("reel".to_string()));
+        assert_eq!(segment.value.value_str(), "3");
+    }
 }

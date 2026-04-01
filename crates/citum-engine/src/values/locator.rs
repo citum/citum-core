@@ -33,13 +33,13 @@ pub fn render_locator(
 
     // Collect the set of locator kinds present in the locator
     let kinds: std::collections::HashSet<LocatorType> =
-        segments.iter().map(|seg| seg.label).collect();
+        segments.iter().map(|seg| seg.label.clone()).collect();
 
     // Find first matching pattern
     let pattern = config.patterns.iter().find(|p| {
         // Check if pattern's kind set is a subset of active kinds
         let pattern_kinds: std::collections::HashSet<LocatorType> =
-            p.kinds.iter().copied().collect();
+            p.kinds.iter().cloned().collect();
         if !pattern_kinds.is_subset(&kinds) {
             return false;
         }
@@ -94,7 +94,7 @@ fn render_with_pattern(
     }
 
     // Render segments not covered by pattern.order using default rendering
-    let covered: std::collections::HashSet<LocatorType> = pattern.order.iter().copied().collect();
+    let covered: std::collections::HashSet<LocatorType> = pattern.order.iter().cloned().collect();
     for seg in segments.iter().filter(|s| !covered.contains(&s.label)) {
         let kind_cfg = config.kinds.get(&seg.label);
         let form = kind_cfg
@@ -439,5 +439,64 @@ mod tests {
         // then both segments contain their values
         assert!(result.contains("33"));
         assert!(result.contains('5'));
+    }
+
+    #[test]
+    fn test_render_custom_locator_with_locale_defined_label() {
+        let config = LocatorConfig {
+            default_label_form: LabelForm::Short,
+            ..Default::default()
+        };
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: en-US
+locators:
+  reel:
+    short:
+      singular: "reel"
+      plural: "reels"
+"#,
+        )
+        .expect("custom locale should parse");
+        let locator = CitationLocator::Single(LocatorSegment {
+            label: LocatorType::Custom("reel".to_string()),
+            value: LocatorValue::Text("3".to_string()),
+        });
+
+        assert_eq!(render_locator(&locator, "book", &config, &locale), "reel 3");
+    }
+
+    #[test]
+    fn test_render_custom_locator_pattern_matches_custom_kind() {
+        use citum_schema::options::{LabelRepeat, LocatorPattern};
+
+        let config = LocatorConfig {
+            default_label_form: LabelForm::Short,
+            patterns: vec![LocatorPattern {
+                kinds: vec![LocatorType::Custom("reel".to_string())],
+                type_class: None,
+                order: vec![LocatorType::Custom("reel".to_string())],
+                delimiter: " | ".to_string(),
+                label_repeat: LabelRepeat::All,
+            }],
+            ..Default::default()
+        };
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: en-US
+locators:
+  reel:
+    short:
+      singular: "reel"
+      plural: "reels"
+"#,
+        )
+        .expect("custom locale should parse");
+        let locator = CitationLocator::Single(LocatorSegment {
+            label: LocatorType::Custom("reel".to_string()),
+            value: LocatorValue::Text("3".to_string()),
+        });
+
+        assert_eq!(render_locator(&locator, "book", &config, &locale), "reel 3");
     }
 }

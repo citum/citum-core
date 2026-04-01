@@ -112,6 +112,11 @@ impl InputReference {
             .and_then(|reference| reference.find_numbering(numbering_type))
     }
 
+    /// Return the numbering value for an arbitrary numbering kind.
+    pub fn numbering_value(&self, numbering_type: &NumberingType) -> Option<String> {
+        self.find_numbering(numbering_type.clone())
+    }
+
     /// Return the reference ID.
     pub fn id(&self) -> Option<RefID> {
         match self {
@@ -1202,7 +1207,7 @@ mod normalize_tests {
 
 #[cfg(test)]
 mod numbering_tests {
-    use super::{InputReference, NumOrStr};
+    use super::{InputReference, NumOrStr, NumberingType};
 
     fn parse_reference(json: &str) -> InputReference {
         serde_json::from_str(json).expect("reference should parse")
@@ -1324,6 +1329,48 @@ mod numbering_tests {
 
         assert_eq!(reference.number(), None);
         assert_eq!(reference.report_number(), Some("TR-42".to_string()));
+    }
+
+    #[test]
+    fn numbering_value_accessor_resolves_custom_numbering_without_changing_builtin_accessors() {
+        let reference = parse_reference(
+            r#"{
+                "class": "monograph",
+                "type": "book",
+                "title": "Score",
+                "issued": "2024",
+                "numbering": [
+                    { "type": "movement", "value": "II" }
+                ]
+            }"#,
+        );
+
+        assert_eq!(
+            reference.numbering_value(&NumberingType::Custom("movement".to_string())),
+            Some("II".to_string())
+        );
+        assert_eq!(reference.number(), None);
+        assert_eq!(reference.report_number(), None);
+    }
+
+    #[test]
+    fn numbering_value_accessor_normalizes_manual_custom_numbering_keys() {
+        let reference = parse_reference(
+            r#"{
+                "class": "monograph",
+                "type": "book",
+                "title": "Score",
+                "issued": "2024",
+                "numbering": [
+                    { "type": "movement", "value": "II" }
+                ]
+            }"#,
+        );
+
+        assert_eq!(
+            reference.numbering_value(&NumberingType::Custom("Movement".to_string())),
+            Some("II".to_string())
+        );
     }
 
     #[test]

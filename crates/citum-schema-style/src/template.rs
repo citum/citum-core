@@ -36,8 +36,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 use crate::locale::{GeneralTerm, TermForm};
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::borrow::Cow;
 use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
 
 /// Rendering instructions applied to template components.
 ///
@@ -707,9 +709,7 @@ pub struct TemplateNumber {
 /// numeric labels, numeric-specific formatting, ordinals, roman numerals, or
 /// locator-aware punctuation. Use `variable:` instead when the field should be
 /// passed through as plain text without number formatting semantics.
-#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case")]
+#[derive(Debug, Default, Clone)]
 #[non_exhaustive]
 pub enum NumberVariable {
     #[default]
@@ -731,6 +731,111 @@ pub enum NumberVariable {
     PartNumber,
     SupplementNumber,
     PrintingNumber,
+    /// A custom numbering variable rendered from an arbitrary numbering kind.
+    Custom(String),
+}
+
+impl NumberVariable {
+    /// Return the canonical kebab-case key for this numeric variable.
+    #[must_use]
+    pub fn as_key(&self) -> Cow<'_, str> {
+        match self {
+            Self::Volume => Cow::Borrowed("volume"),
+            Self::Issue => Cow::Borrowed("issue"),
+            Self::Pages => Cow::Borrowed("pages"),
+            Self::Edition => Cow::Borrowed("edition"),
+            Self::ChapterNumber => Cow::Borrowed("chapter-number"),
+            Self::CollectionNumber => Cow::Borrowed("collection-number"),
+            Self::NumberOfPages => Cow::Borrowed("number-of-pages"),
+            Self::NumberOfVolumes => Cow::Borrowed("number-of-volumes"),
+            Self::CitationNumber => Cow::Borrowed("citation-number"),
+            Self::CitationLabel => Cow::Borrowed("citation-label"),
+            Self::Number => Cow::Borrowed("number"),
+            Self::DocketNumber => Cow::Borrowed("docket-number"),
+            Self::PatentNumber => Cow::Borrowed("patent-number"),
+            Self::StandardNumber => Cow::Borrowed("standard-number"),
+            Self::ReportNumber => Cow::Borrowed("report-number"),
+            Self::PartNumber => Cow::Borrowed("part-number"),
+            Self::SupplementNumber => Cow::Borrowed("supplement-number"),
+            Self::PrintingNumber => Cow::Borrowed("printing-number"),
+            Self::Custom(value) => normalize_kind_key(value)
+                .map(Cow::Owned)
+                .unwrap_or_else(|| Cow::Borrowed(value.as_str())),
+        }
+    }
+
+    fn from_key(value: &str) -> Result<Self, String> {
+        let canonical = normalize_kind_key(value)
+            .ok_or_else(|| "number variable must not be empty".to_string())?;
+        Ok(match canonical.as_str() {
+            "volume" => Self::Volume,
+            "issue" => Self::Issue,
+            "pages" => Self::Pages,
+            "edition" => Self::Edition,
+            "chapter-number" => Self::ChapterNumber,
+            "collection-number" => Self::CollectionNumber,
+            "number-of-pages" => Self::NumberOfPages,
+            "number-of-volumes" => Self::NumberOfVolumes,
+            "citation-number" => Self::CitationNumber,
+            "citation-label" => Self::CitationLabel,
+            "number" => Self::Number,
+            "docket-number" => Self::DocketNumber,
+            "patent-number" => Self::PatentNumber,
+            "standard-number" => Self::StandardNumber,
+            "report-number" => Self::ReportNumber,
+            "part-number" => Self::PartNumber,
+            "supplement-number" => Self::SupplementNumber,
+            "printing-number" => Self::PrintingNumber,
+            _ => Self::Custom(canonical),
+        })
+    }
+}
+
+impl PartialEq for NumberVariable {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_key().as_ref() == other.as_key().as_ref()
+    }
+}
+
+impl Eq for NumberVariable {}
+
+impl Hash for NumberVariable {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.as_key().as_ref().hash(state);
+    }
+}
+
+impl Serialize for NumberVariable {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.as_key().as_ref())
+    }
+}
+
+impl<'de> Deserialize<'de> for NumberVariable {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value = String::deserialize(deserializer)?;
+        Self::from_key(&value).map_err(serde::de::Error::custom)
+    }
+}
+
+#[cfg(feature = "schema")]
+impl JsonSchema for NumberVariable {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "NumberVariable".into()
+    }
+
+    fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "type": "string",
+            "description": "Known number variable keyword or custom kebab-case identifier."
+        })
+    }
 }
 
 /// Number rendering forms.
@@ -742,6 +847,29 @@ pub enum NumberForm {
     Numeric,
     Ordinal,
     Roman,
+}
+
+fn normalize_kind_key(value: &str) -> Option<String> {
+    let mut normalized = String::new();
+    let mut pending_dash = false;
+
+    for ch in value.trim().chars() {
+        if ch.is_ascii_alphanumeric() {
+            if pending_dash && !normalized.is_empty() {
+                normalized.push('-');
+            }
+            normalized.push(ch.to_ascii_lowercase());
+            pending_dash = false;
+        } else if !normalized.is_empty() {
+            pending_dash = true;
+        }
+    }
+
+    if normalized.is_empty() {
+        None
+    } else {
+        Some(normalized)
+    }
 }
 
 /// Label rendering forms.
@@ -1024,6 +1152,22 @@ form: long
             }
             _ => panic!("Expected Date"),
         }
+    }
+
+    #[test]
+    fn test_number_variable_custom_normalizes_manual_construction() {
+        let number = NumberVariable::Custom("Reel Label".to_string());
+
+        assert_eq!(number.as_key(), "reel-label");
+        assert_eq!(
+            number,
+            serde_yaml::from_str::<NumberVariable>("reel-label")
+                .expect("custom number variable should parse")
+        );
+        assert_eq!(
+            serde_json::to_string(&number).expect("custom number variable should serialize"),
+            "\"reel-label\""
+        );
     }
 
     #[test]

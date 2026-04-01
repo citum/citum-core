@@ -11,9 +11,11 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 #[cfg(feature = "bindings")]
 use specta::Type;
+use std::borrow::Cow;
+use std::hash::{Hash, Hasher};
 
 /// A list of citations to process.
 pub type Citations = Vec<Citation>;
@@ -131,10 +133,8 @@ fn is_false(b: &bool) -> bool {
 }
 
 /// Locator types for pinpoint citations.
-#[derive(Debug, Clone, Copy, Default, Deserialize, Serialize, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[derive(Debug, Clone, Default)]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
 pub enum LocatorType {
     /// Locator refers to a book within a larger work.
     Book,
@@ -209,6 +209,152 @@ pub enum LocatorType {
     Issue,
     /// Locator refers to an algorithm.
     Algorithm,
+    /// Locator refers to a custom pinpoint label.
+    Custom(String),
+}
+
+impl LocatorType {
+    /// Return the canonical kebab-case key for this locator label.
+    #[must_use]
+    pub fn as_key(&self) -> Cow<'_, str> {
+        match self {
+            Self::Book => Cow::Borrowed("book"),
+            Self::Chapter => Cow::Borrowed("chapter"),
+            Self::Clause => Cow::Borrowed("clause"),
+            Self::Column => Cow::Borrowed("column"),
+            Self::Corollary => Cow::Borrowed("corollary"),
+            Self::Definition => Cow::Borrowed("definition"),
+            Self::Division => Cow::Borrowed("division"),
+            Self::Figure => Cow::Borrowed("figure"),
+            Self::Folio => Cow::Borrowed("folio"),
+            Self::Line => Cow::Borrowed("line"),
+            Self::Lemma => Cow::Borrowed("lemma"),
+            Self::Note => Cow::Borrowed("note"),
+            Self::Number => Cow::Borrowed("number"),
+            Self::Opus => Cow::Borrowed("opus"),
+            Self::Page => Cow::Borrowed("page"),
+            Self::Paragraph => Cow::Borrowed("paragraph"),
+            Self::Subparagraph => Cow::Borrowed("subparagraph"),
+            Self::Subclause => Cow::Borrowed("subclause"),
+            Self::Subdivision => Cow::Borrowed("subdivision"),
+            Self::Subsection => Cow::Borrowed("subsection"),
+            Self::Part => Cow::Borrowed("part"),
+            Self::Problem => Cow::Borrowed("problem"),
+            Self::Proposition => Cow::Borrowed("proposition"),
+            Self::Recital => Cow::Borrowed("recital"),
+            Self::Schedule => Cow::Borrowed("schedule"),
+            Self::Section => Cow::Borrowed("section"),
+            Self::Surah => Cow::Borrowed("surah"),
+            Self::Theorem => Cow::Borrowed("theorem"),
+            Self::SubVerbo => Cow::Borrowed("sub-verbo"),
+            Self::Supplement => Cow::Borrowed("supplement"),
+            Self::Verse => Cow::Borrowed("verse"),
+            Self::Volume => Cow::Borrowed("volume"),
+            Self::VolumePeriodical => Cow::Borrowed("volume-periodical"),
+            Self::VolumeBook => Cow::Borrowed("volume-book"),
+            Self::Issue => Cow::Borrowed("issue"),
+            Self::Algorithm => Cow::Borrowed("algorithm"),
+            Self::Custom(value) => normalize_kind_key(value)
+                .map(Cow::Owned)
+                .unwrap_or_else(|| Cow::Borrowed(value.as_str())),
+        }
+    }
+
+    /// Parse a locator label from a known keyword or custom identifier.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the input is empty or normalizes to an empty key.
+    pub fn from_key(value: &str) -> Result<Self, String> {
+        let canonical = normalize_kind_key(value)
+            .ok_or_else(|| "locator label must not be empty".to_string())?;
+        Ok(match canonical.as_str() {
+            "algorithm" => Self::Algorithm,
+            "book" => Self::Book,
+            "chapter" => Self::Chapter,
+            "clause" => Self::Clause,
+            "column" => Self::Column,
+            "corollary" => Self::Corollary,
+            "definition" => Self::Definition,
+            "division" => Self::Division,
+            "figure" => Self::Figure,
+            "folio" => Self::Folio,
+            "line" => Self::Line,
+            "lemma" => Self::Lemma,
+            "note" => Self::Note,
+            "number" => Self::Number,
+            "opus" => Self::Opus,
+            "page" => Self::Page,
+            "paragraph" => Self::Paragraph,
+            "part" => Self::Part,
+            "problem" => Self::Problem,
+            "proposition" => Self::Proposition,
+            "recital" => Self::Recital,
+            "schedule" => Self::Schedule,
+            "section" => Self::Section,
+            "subclause" => Self::Subclause,
+            "subdivision" => Self::Subdivision,
+            "subparagraph" => Self::Subparagraph,
+            "subsection" => Self::Subsection,
+            "sub-verbo" => Self::SubVerbo,
+            "supplement" => Self::Supplement,
+            "surah" => Self::Surah,
+            "theorem" => Self::Theorem,
+            "verse" => Self::Verse,
+            "volume" => Self::Volume,
+            "volume-book" => Self::VolumeBook,
+            "volume-periodical" => Self::VolumePeriodical,
+            "issue" => Self::Issue,
+            _ => Self::Custom(canonical),
+        })
+    }
+}
+
+impl PartialEq for LocatorType {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_key().as_ref() == other.as_key().as_ref()
+    }
+}
+
+impl Eq for LocatorType {}
+
+impl Hash for LocatorType {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.as_key().as_ref().hash(state);
+    }
+}
+
+impl Serialize for LocatorType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.as_key().as_ref())
+    }
+}
+
+impl<'de> Deserialize<'de> for LocatorType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value = String::deserialize(deserializer)?;
+        Self::from_key(&value).map_err(serde::de::Error::custom)
+    }
+}
+
+#[cfg(feature = "schema")]
+impl JsonSchema for LocatorType {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "LocatorType".into()
+    }
+
+    fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "type": "string",
+            "description": "Known locator label keyword or custom kebab-case identifier."
+        })
+    }
 }
 
 /// A locator value that supports both plain strings and explicit plurality.
@@ -372,7 +518,7 @@ impl CitationLocator {
     pub fn canonical_string(&self) -> String {
         self.segments()
             .iter()
-            .map(|segment| format!("{:?}:{}", segment.label, segment.value.value_str()))
+            .map(|segment| format!("{}:{}", segment.label.as_key(), segment.value.value_str()))
             .collect::<Vec<_>>()
             .join(",")
     }
@@ -396,6 +542,29 @@ impl JsonSchema for CitationLocator {
         schemars::json_schema!({
             "oneOf": [single_schema, compound_schema]
         })
+    }
+}
+
+fn normalize_kind_key(value: &str) -> Option<String> {
+    let mut normalized = String::new();
+    let mut pending_dash = false;
+
+    for ch in value.trim().chars() {
+        if ch.is_ascii_alphanumeric() {
+            if pending_dash && !normalized.is_empty() {
+                normalized.push('-');
+            }
+            normalized.push(ch.to_ascii_lowercase());
+            pending_dash = false;
+        } else if !normalized.is_empty() {
+            pending_dash = true;
+        }
+    }
+
+    if normalized.is_empty() {
+        None
+    } else {
+        Some(normalized)
     }
 }
 
@@ -514,8 +683,11 @@ fn strip_locator_label<'a>(
             && alias_boundary(remainder)
         {
             let alias_len = alias.len();
-            if best.is_none_or(|(_, best_len)| alias_len > best_len) {
-                best = Some((*label, alias_len));
+            if best
+                .as_ref()
+                .is_none_or(|(_, best_len)| alias_len > *best_len)
+            {
+                best = Some((label.clone(), alias_len));
             }
         }
     }
@@ -648,7 +820,49 @@ mod tests {
         ])
         .unwrap();
 
-        assert_eq!(locator.canonical_string(), "Page:23,Line:13");
+        assert_eq!(locator.canonical_string(), "page:23,line:13");
+    }
+
+    #[test]
+    fn test_custom_locator_type_round_trips_as_plain_string() {
+        let json = r#"
+        {
+            "id": "score2024",
+            "locator": {
+                "label": "Movement",
+                "value": "II"
+            }
+        }
+        "#;
+
+        let item: CitationItem = serde_json::from_str(json).expect("custom locator should parse");
+        let locator = item.locator.expect("custom locator should exist");
+        let segment = &locator.segments()[0];
+
+        assert_eq!(segment.label, LocatorType::Custom("movement".to_string()));
+        let serialized = serde_json::to_value(&CitationItem {
+            id: "score2024".to_string(),
+            locator: Some(locator),
+            ..Default::default()
+        })
+        .expect("custom locator should serialize");
+
+        assert_eq!(serialized["locator"]["label"], "movement");
+    }
+
+    #[test]
+    fn test_custom_locator_type_normalizes_manual_construction() {
+        let locator = LocatorType::Custom("Reel Label".to_string());
+
+        assert_eq!(locator.as_key(), "reel-label");
+        assert_eq!(
+            locator,
+            LocatorType::from_key("reel-label").expect("known custom key should parse")
+        );
+        assert_eq!(
+            serde_json::to_string(&locator).expect("custom locator should serialize"),
+            "\"reel-label\""
+        );
     }
 
     #[test]

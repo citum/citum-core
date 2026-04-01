@@ -293,18 +293,47 @@ fn test_monograph_report_numbering_deserializes_with_report_type() {
 }
 
 #[test]
-fn test_monograph_book_numbering_rejected_after_clean_break() {
+fn test_monograph_custom_numbering_deserializes_with_custom_type() {
     let json = r#"{
         "type": "book",
-        "title": "Legacy Book Number",
+        "title": "Custom Numbering",
         "issued": "2023",
         "numbering": [
-            { "type": "book", "value": "III" }
+            { "type": "movement", "value": "III" }
         ]
     }"#;
 
-    let error = serde_json::from_str::<Monograph>(json).expect_err("book numbering should fail");
-    assert!(error.to_string().contains("unknown variant") || error.to_string().contains("book"));
+    let monograph: Monograph = serde_json::from_str(json).expect("custom numbering should parse");
+
+    assert_eq!(monograph.numbering.len(), 1);
+    assert_eq!(
+        monograph.numbering[0].r#type,
+        NumberingType::Custom("movement".to_string())
+    );
+    assert_eq!(monograph.numbering[0].value, "III");
+}
+
+#[test]
+fn test_input_reference_round_trip_serializes_custom_numbering_type_as_plain_string() {
+    let json = r#"{
+        "class": "monograph",
+        "type": "book",
+        "title": "Custom Canonical",
+        "issued": "2023",
+        "numbering": [
+            { "type": "Movement", "value": "II" }
+        ]
+    }"#;
+
+    let reference: InputReference = serde_json::from_str(json).expect("reference should parse");
+    let serialized = serde_json::to_value(&reference).expect("serialization should work");
+    let numbering = serialized
+        .get("numbering")
+        .and_then(serde_json::Value::as_array)
+        .expect("custom numbering should serialize");
+
+    assert_eq!(numbering[0]["type"], "movement");
+    assert_eq!(numbering[0]["value"], "II");
 }
 
 #[test]
