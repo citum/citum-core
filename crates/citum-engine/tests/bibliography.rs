@@ -265,6 +265,39 @@ fn build_article_journal_no_page_fallback_style() -> Style {
     }
 }
 
+fn build_anonymous_entry_policy_style() -> Style {
+    let style_yaml = r#"
+info:
+  title: Anonymous Entry Policy Test
+  id: anonymous-entry-policy-test
+bibliography:
+  type-variants:
+    entry-dictionary:
+      - contributor: author
+        form: long
+      - variable: version
+      - title: primary
+      - title: parent-monograph
+      - date: issued
+        form: year
+      - variable: doi
+        prefix: "https://doi.org/"
+      - variable: url
+    entry-encyclopedia:
+      - contributor: author
+        form: long
+      - title: primary
+      - title: parent-serial
+      - date: issued
+        form: year
+      - variable: doi
+        prefix: "https://doi.org/"
+      - variable: url
+"#;
+
+    serde_yaml::from_str(style_yaml).expect("style should parse")
+}
+
 fn build_bibliography_entry_link_style() -> Style {
     Style {
         info: StyleInfo {
@@ -884,6 +917,41 @@ fn make_article_journal_with_detail(
         original: None,
         ..Default::default()
     }))
+}
+
+struct EntryReferenceParams<'a> {
+    id: &'a str,
+    entry_type: &'a str,
+    title: &'a str,
+    container_title: &'a str,
+    year: i32,
+    doi: Option<&'a str>,
+    url: Option<&'a str>,
+    author: Option<(&'a str, &'a str)>,
+}
+
+fn make_entry_reference(params: EntryReferenceParams<'_>) -> InputReference {
+    let mut fixture = serde_json::json!({
+        "id": params.id,
+        "type": params.entry_type,
+        "title": params.title,
+        "container-title": params.container_title,
+        "issued": {"date-parts": [[params.year]]},
+    });
+
+    if let Some(doi) = params.doi {
+        fixture["DOI"] = serde_json::json!(doi);
+    }
+    if let Some(url) = params.url {
+        fixture["URL"] = serde_json::json!(url);
+    }
+    if let Some((family, given)) = params.author {
+        fixture["author"] = serde_json::json!([{ "family": family, "given": given }]);
+    }
+
+    let legacy: csl_legacy::csl_json::Reference =
+        serde_json::from_value(fixture).expect("entry fixture should parse");
+    legacy.into()
 }
 
 fn build_processing_style(processing: Processing) -> Style {
@@ -1735,6 +1803,91 @@ bibliography:
     );
 }
 
+fn anonymous_entry_type_variants_reorder_online_entries_and_drop_print_fallback_rows() {
+    let style = build_anonymous_entry_policy_style();
+
+    let online_encyclopedia = make_entry_reference(EntryReferenceParams {
+        id: "online-encyclopedia",
+        entry_type: "entry-encyclopedia",
+        title: "Stevie Nicks",
+        container_title: "Wikipedia",
+        year: 2025,
+        doi: None,
+        url: Some("https://en.wikipedia.org/w/index.php?title=Stevie_Nicks&oldid=1279222290"),
+        author: None,
+    });
+    let print_dictionary = make_entry_reference(EntryReferenceParams {
+        id: "print-dictionary",
+        entry_type: "entry-dictionary",
+        title: "hootenanny, n.",
+        container_title: "Oxford English Dictionary",
+        year: 1976,
+        doi: None,
+        url: None,
+        author: None,
+    });
+    let print_encyclopedia = make_entry_reference(EntryReferenceParams {
+        id: "print-encyclopedia",
+        entry_type: "entry-encyclopedia",
+        title: "Feathers",
+        container_title: "Johnson's Universal Cyclopaedia",
+        year: 1886,
+        doi: None,
+        url: None,
+        author: None,
+    });
+    let authorful_encyclopedia = make_entry_reference(EntryReferenceParams {
+        id: "authorful-encyclopedia",
+        entry_type: "entry-encyclopedia",
+        title: "Ellington, Duke",
+        container_title: "Grove Music Online",
+        year: 2013,
+        doi: Some("10.1093/gmo/9781561592630.article.A2249397"),
+        url: None,
+        author: Some(("Piras", "Marcello")),
+    });
+
+    let mut bibliography = indexmap::IndexMap::new();
+    bibliography.insert("print-dictionary".to_string(), print_dictionary);
+    bibliography.insert("print-encyclopedia".to_string(), print_encyclopedia);
+    bibliography.insert("online-encyclopedia".to_string(), online_encyclopedia);
+    bibliography.insert("authorful-encyclopedia".to_string(), authorful_encyclopedia);
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_selected_bibliography_with_format::<PlainText, _>([
+        "print-dictionary".to_string(),
+        "print-encyclopedia".to_string(),
+        "online-encyclopedia".to_string(),
+        "authorful-encyclopedia".to_string(),
+    ]);
+
+    let rendered_lines: Vec<&str> = rendered
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+        .collect();
+
+    assert_eq!(
+        rendered_lines.len(),
+        2,
+        "anonymous print-like dictionary and encyclopedia rows should be suppressed: {rendered}"
+    );
+    assert!(
+        rendered.contains(
+            "Wikipedia. 2025. Stevie Nicks. https://en.wikipedia.org/w/index.php?title=Stevie_Nicks&oldid=1279222290"
+        ),
+        "online anonymous encyclopedia entries should be container-led and URL-backed: {rendered}"
+    );
+    assert!(
+        !rendered.contains("1976") && !rendered.contains("Johnson's Universal Cyclopaedia"),
+        "print-like anonymous dictionary and encyclopedia rows should be dropped: {rendered}"
+    );
+    assert!(
+        rendered.contains("Marcello Piras"),
+        "authorful encyclopedia entries should still render instead of being suppressed: {rendered}"
+    );
+}
+
 fn bibliography_local_entry_links_apply_on_the_default_render_path() {
     let style = build_bibliography_entry_link_style();
     let reference = InputReference::Monograph(Box::new(Monograph {
@@ -2213,6 +2366,18 @@ mod article_journal_no_page_fallback {
             "The Royal Society of Chemistry bibliography should restore the legacy page-less journal behavior by rendering DOI instead of the standard detail block.",
         );
         super::royal_society_of_chemistry_restores_legacy_page_less_doi_behavior();
+    }
+}
+
+mod anonymous_entry_type_variants {
+    use super::announce_behavior;
+
+    #[test]
+    fn chicago_like_anonymous_entries_prefer_online_container_rows_and_drop_print_fallbacks() {
+        announce_behavior(
+            "Chicago-like anonymous dictionary and encyclopedia bibliography variants should keep online entries in container-led order while omitting the print-style fallback rows that the oracle does not emit.",
+        );
+        super::anonymous_entry_type_variants_reorder_online_entries_and_drop_print_fallback_rows();
     }
 }
 

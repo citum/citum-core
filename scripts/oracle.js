@@ -126,6 +126,28 @@ function normalizeFixtureItems(fixturesData) {
   );
 }
 
+function summarizeSection(section = {}) {
+  const total = section.total || 0;
+  const passed = section.passed || 0;
+  const failed = section.failed ?? Math.max(0, total - passed);
+  return {
+    total,
+    passed,
+    failed,
+    matchRate: total > 0 ? parseFloat((passed / total).toFixed(3)) : null,
+  };
+}
+
+function buildOracleSummary(results, scope) {
+  return {
+    scope,
+    citations: summarizeSection(results.citations),
+    bibliography: summarizeSection(results.bibliography),
+    orderingIssues: results.orderingIssues || 0,
+    componentSummary: { ...(results.componentSummary || {}) },
+  };
+}
+
 function normalizeProcessorDates(value, parentKey = null) {
   const seasonMap = {
     Spring: 21,
@@ -785,6 +807,7 @@ function runOracle(cliOptions = parseArgs()) {
     testItems,
     testCitations
   );
+  results.summary = buildOracleSummary(results, cliOptions.scope);
 
   // Output
   if (jsonOutput) {

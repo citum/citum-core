@@ -124,7 +124,7 @@ Run the converter on each corpus style and measure fidelity:
 
 ```bash
 # For each style in corpus:
-cargo run --bin citum -- migrate styles-legacy/<name>.csl -o /tmp/migrate-test/<name>.yaml
+cargo run --bin citum-migrate -- styles-legacy/<name>.csl > /tmp/migrate-test/<name>.yaml
 node scripts/oracle.js styles-legacy/<name>.csl --json > lab/session-N/oracle-<name>.json
 ```
 
@@ -198,6 +198,26 @@ Artifacts written by the extractor:
 
 Preferred starting size: 1-5 bibliography rows.
 
+Rich-input operator commands for this mode:
+
+```bash
+node scripts/oracle.js styles-legacy/<name>.csl --json > /tmp/<name>-primary.json
+node scripts/report-core.js --style <name> > /tmp/<name>-report-before.json
+cargo run --bin citum-migrate -- styles-legacy/<name>.csl > /tmp/<name>-migrated.yaml
+node scripts/report-core.js --style <name> --style-file /tmp/<name>-migrated.yaml > /tmp/<name>-report-after.json
+```
+
+Important: do not use the legacy-style `oracle.js styles-legacy/<name>.csl ...` path
+for a reduced-cluster "after" measurement when you need to validate the temporary
+migrated style. That command can resolve to the checked-in YAML for known styles
+and silently stop measuring the temporary migrated output.
+
+Current limitation: `report-core --style-file` is trustworthy for temporary-style
+loading, metadata, and quality metric evaluation, but the citeproc benchmark path
+is not yet fully migrated-style-aware for every supplemental fixture shape. Use it
+as the style-scoped evidence surface, but do not overclaim that every reduced-cluster
+oracle command is automatically bound to the temporary migrated YAML.
+
 ### Step 6 — Hypothesize
 
 State a one-line hypothesis before writing any Rust:
@@ -221,6 +241,10 @@ get_symbol("<ConverterFunction>", repo: "local/citum-core")
 Scope of changes: **only `crates/citum_migrate/src/`**. If the fix would require
 engine or schema changes, re-classify the cluster and skip.
 
+If a migration-side change produces no delta in the reduced cluster and no delta
+in `report-core --style-file`, stop classifying the cluster as migration-owned
+and reroute the same bounded cluster to processor work.
+
 ### Step 8 — Gate
 
 Before measuring, the fix must pass the standard gate:
@@ -240,7 +264,7 @@ Re-run the converter + oracle on the full corpus:
 
 ```bash
 # For each style in corpus:
-cargo run --bin citum -- migrate styles-legacy/<name>.csl -o /tmp/migrate-test/<name>.yaml
+cargo run --bin citum-migrate -- styles-legacy/<name>.csl > /tmp/migrate-test/<name>.yaml
 node scripts/oracle.js styles-legacy/<name>.csl --json
 ```
 
