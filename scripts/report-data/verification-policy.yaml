@@ -122,6 +122,25 @@ styles:
     secondary:
       - biblatex
     fixture_family: author-date
+    benchmark_runs:
+      - id: chicago-zotero-bibliography
+        label: Chicago Zotero bibliography
+        runner: citeproc-oracle
+        refs_fixture: tests/fixtures/test-items-library/chicago-18th.json
+        scope: bibliography
+        count_toward_fidelity: true
+      - id: relational-comprehensive-smoke
+        label: Relational comprehensive native smoke
+        runner: native-smoke
+        refs_fixture: examples/comprehensive.yaml
+        scope: bibliography
+        count_toward_fidelity: false
+      - id: relational-chicago-bib-smoke
+        label: Relational Chicago bibliography native smoke
+        runner: native-smoke
+        refs_fixture: examples/chicago-bib.yaml
+        scope: bibliography
+        count_toward_fidelity: false
   chicago-notes:
     secondary:
       - biblatex

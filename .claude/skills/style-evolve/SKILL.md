@@ -170,6 +170,9 @@ When diverging intentionally:
 - Compatibility fidelity regression is never allowed unless the task explicitly
   chooses a documented semantic divergence from legacy CSL behavior.
 - SQI is optimization-only after fidelity is stable.
+- For styles with configured `benchmark_runs`, run `node scripts/report-core.js --style <name>`
+  after the primary oracle pass and treat the rich-input results as official supplemental
+  evidence, not as a hard completion gate in this wave.
 - All modes must pass `../style-qa/SKILL.md` before completion.
 - If docs or beans are changed: `./scripts/check-docs-beans-hygiene.sh` must pass.
 
@@ -192,12 +195,15 @@ Every completed task delivers:
 2. SQI delta: `+N`, `-N`, or `±0`
 3. Authority basis: which source won (`style guide`, `Citum policy`, `biblatex`,
    `citeproc`, or mixed) and why
-4. Divergences: `none` or a short statement of any intentional divergence from
+4. Rich Input Evidence: `not configured` or a compact summary from
+   `node scripts/report-core.js --style <name>`, including any configured benchmark
+   mismatches and their classification
+5. Divergences: `none` or a short statement of any intentional divergence from
    legacy CSL/citeproc behavior
-5. Code Opportunities table (mandatory — see above)
-6. QA verdict from `../style-qa/SKILL.md`
-7. Research value: `high` / `medium` / `low`
-8. Commit: the short SHA and message of the commit made, or `none` if QA did
+6. Code Opportunities table (mandatory — see above)
+7. QA verdict from `../style-qa/SKILL.md`
+8. Research value: `high` / `medium` / `low`
+9. Commit: the short SHA and message of the commit made, or `none` if QA did
    not pass. Format: `abc1234 fix(styles): <message>`
 
 Include a header line before the contract fields identifying the routed

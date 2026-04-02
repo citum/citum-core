@@ -3,9 +3,12 @@
 > **Living document** — updated after each significant batch oracle run.
 > Last updated: 2026-03-12
 >
-> **Oracle scoring:** Strict 18-scenario citation set (`tests/fixtures/citations-expanded.json`).
+> **Baseline gate scoring:** Strict 18-scenario citation set (`tests/fixtures/citations-expanded.json`).
 > Hard-fails on processor/style errors. Includes suppress-author, mixed locator/prefix/suffix
 > edge cases. Run `node scripts/oracle-batch-aggregate.js styles-legacy/ --top 10` to refresh.
+> Configured `benchmark_runs` now appear in official reporting as supplemental rich-input evidence.
+> They inform style work and published status details, but they do not yet redefine the
+> headline portfolio gate or current “100% fidelity” claims.
 > Testing contract and fixture governance are defined in
 > `docs/architecture/CSL26_R6FN_TESTING_INFRASTRUCTURE_CONSOLIDATION_PLAN_2026-02-27.md`
 > and `tests/fixtures/coverage-manifest.json`.
@@ -32,6 +35,7 @@ Current maintained portfolio status:
 - `node scripts/report-core.js` reports `147` styles at fidelity `1.0`.
 - Case-aware scoring is now the default oracle mode.
 - `report-core` exposes `caseMismatchesOverall` and per-style `caseMismatches`.
+- `report-core` also exposes supplemental rich benchmark evidence for configured styles.
 - Title/text-case regressions across shipped core styles are reduced to `0`.
 - One remaining case-only mismatch (`american-mathematical-society-label`) is a
   citation-label acronym issue, not a title-rendering delta.
@@ -197,6 +201,9 @@ node scripts/oracle-batch-aggregate.js styles-legacy/ --top 10
 
 # Generate core quality report (used by CI gate)
 node scripts/report-core.js > /tmp/core-report.json
+
+# Generate one official style report with supplemental rich-input evidence
+node scripts/report-core.js --style chicago-author-date > /tmp/chicago-author-date-report.json
 
 # Check against CI baseline
 node scripts/check-core-quality.js \

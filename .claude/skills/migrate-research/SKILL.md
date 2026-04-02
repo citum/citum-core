@@ -33,6 +33,8 @@ produce better output.
 - Fixing a single style's YAML → use `style-evolve upgrade`
 - The failure is an engine rendering bug, not a converter bug → use Co-Evolution
 - The failure requires new schema fields → file a bean, escalate to planner
+- The only new signal is style-level `benchmark_runs` evidence → record it as follow-up
+  context, but do not use rich-input corpora as keep/revert gates in this wave
 
 ## Entry Points
 

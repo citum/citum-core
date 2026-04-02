@@ -24,6 +24,7 @@ model: sonnet
   - baseline (seeded)
   - enhanced (edited)
   - rerun (fresh `citum-migrate` for comparison)
+  - rich-input evidence (official supplemental report for styles with configured `benchmark_runs`)
 - List of migration-pattern gaps and recommended converter/preset follow-up.
 
 ## Autonomous Operation
@@ -45,7 +46,9 @@ git add -A && git commit -m "feat(styles): migrate <style-name>"
 3. Capture baseline metrics (`node scripts/report-core.js`, `node scripts/oracle.js ... --json`).
 4. Run iterative style fixes with fidelity-first ordering.
 5. Re-run migration for apples-to-apples comparison.
-6. Commit each passing style; produce final metrics + follow-up recommendations.
+6. For styles with configured `benchmark_runs`, run `node scripts/report-core.js --style <name>`
+   and carry the rich-input evidence into the final summary as advisory evidence.
+7. Commit each passing style; produce final metrics + follow-up recommendations.
 
 ## Hard Gates
 - Never accept a fidelity regression.
@@ -68,6 +71,8 @@ git add -A && git commit -m "feat(styles): migrate <style-name>"
 ## Verification
 - Structured oracle: `node scripts/oracle.js <legacy-style> --json`
 - Core quality report: `node scripts/report-core.js`
+- Supplemental official style report for configured rich-input styles:
+  `node scripts/report-core.js --style <name>`
 - Optional full workflow impact: `./scripts/workflow-test.sh <legacy-style>`
 
 ## Related

@@ -106,19 +106,53 @@ test('parallel oracle invocations do not collide on temp files', {
   }
 });
 
+test('oracle rejects unsupported citation-only scope', {
+  skip: !hasLegacyStyles,
+}, async () => {
+  const stylePath = path.join(projectRoot, 'styles-legacy', 'apa.csl');
+
+  await new Promise((resolve, reject) => {
+    const proc = spawn('node', [oracleScript, stylePath, '--json', '--scope', 'citation'], {
+      cwd: projectRoot,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    let stderr = '';
+    proc.stderr.on('data', (chunk) => {
+      stderr += chunk;
+    });
+    proc.on('error', reject);
+    proc.on('close', (code) => {
+      try {
+        assert.equal(code, 1);
+        assert.match(stderr, /scope citation is not yet supported/);
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  });
+});
+
 test('normalizeFixtureItems handles wrapped and array fixtures by item id', () => {
   const wrapped = JSON.parse(
     fs.readFileSync(path.join(projectRoot, 'tests', 'fixtures', 'compound-numeric-refs.json'), 'utf8')
+  );
+  const zoteroWrapped = JSON.parse(
+    fs.readFileSync(path.join(projectRoot, 'tests', 'fixtures', 'test-items-library', 'chicago-18th.json'), 'utf8')
   );
   const arrayFixture = JSON.parse(
     fs.readFileSync(path.join(projectRoot, 'tests', 'fixtures', 'references-humanities-note.json'), 'utf8')
   );
 
   const wrappedItems = normalizeFixtureItems(wrapped);
+  const zoteroItems = normalizeFixtureItems(zoteroWrapped);
   const arrayItems = normalizeFixtureItems(arrayFixture);
 
   assert.ok(wrappedItems['zwart1983']);
   assert.ok(wrappedItems['astm-e2881']);
+  assert.ok(zoteroItems['6188419/UDAG5V6W']);
+  assert.ok(zoteroItems['6188419/SIQ8AUN7']);
   assert.ok(arrayItems['ginzburg1976']);
   assert.ok(arrayItems['foucault-interview']);
 });
@@ -148,6 +182,22 @@ test('refsDataForProcessor preserves wrapped fixture sets', () => {
     'catalysis-studies',
     'peroxisome-biogenesis',
   ]);
+});
+
+test('refsDataForProcessor converts Zotero item wrappers into a processor-ready array', () => {
+  const zoteroWrapped = JSON.parse(
+    fs.readFileSync(path.join(projectRoot, 'tests', 'fixtures', 'test-items-library', 'chicago-18th.json'), 'utf8')
+  );
+
+  const refsData = refsDataForProcessor(zoteroWrapped);
+
+  assert.ok(Array.isArray(refsData));
+  assert.equal(refsData.length, 403);
+  assert.equal(refsData[0].id, '6188419/UDAG5V6W');
+  const normalizedDate = refsData.find((item) => item.id === '6188419/TZUZU9ZP')?.issued?.['date-parts']?.[0]?.[0];
+  assert.equal(normalizedDate, 2017);
+  const normalizedSeason = refsData.find((item) => item.id === '6188419/PTREB4H3')?.issued?.season;
+  assert.equal(normalizedSeason, 21);
 });
 
 test('div-004 detection recognizes missing-name order drift without treating named order as changed', () => {

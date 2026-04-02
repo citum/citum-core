@@ -35,7 +35,10 @@ Token efficiency matters — diagnose everything before touching any files.
    Run `node scripts/oracle.js styles-legacy/<name>.csl --verbose` (or the correct
    oracle per the routing table below). The `--verbose` flag prints every failure with
    oracle vs. Citum side-by-side. Read all failures before writing a single line of YAML.
-   Do not use `report-core.js` for upgrade tasks — it's a portfolio tool, not a diff tool.
+   Do not use `report-core.js` as the primary diff tool for upgrade tasks. Use it only
+   after the main oracle pass when the style has configured `benchmark_runs`, via
+   `node scripts/report-core.js --style <name>`, to collect official supplemental
+   rich-input evidence.
 
 2. **Classify all failures before fixing any.**
    For each failure decide: `style-defect`, `migration-artifact`, `processor-defect`, or
@@ -46,6 +49,11 @@ Token efficiency matters — diagnose everything before touching any files.
 3. **Apply all YAML fixes in one pass.**
 
 4. **One confirming oracle run.** Verify fidelity improved, bibliography held.
+
+4a. **Supplemental rich-input run when configured.**
+   If the style declares `benchmark_runs`, run `node scripts/report-core.js --style <name>`
+   and include the rich-input evidence in the final write-up. Treat those results as
+   advisory evidence in this wave, not as the hard completion gate.
 
 5. **Convergence check.** If a scenario still fails with identical output after
    2 distinct YAML approaches, stop iterating on YAML for that scenario.
@@ -156,11 +164,11 @@ Read `originKey` from the style's `info.source.adapted-by` field or from `report
 | `originKey` | Correct oracle |
 |---|---|
 | `csl-derived` | `node scripts/oracle.js styles-legacy/<name>.csl` |
-| `biblatex-derived` | `node scripts/report-core.js > /tmp/r.json` — failures are in `styles[name].bibliography.entries` where `match === false` |
+| `biblatex-derived` | `node scripts/report-core.js --style <name> > /tmp/r.json` — failures are in `styles[0].bibliography.entries` where `match === false` |
 | `citum-native` | `node scripts/oracle-yaml.js styles/<name>.yaml` only |
 
 For `biblatex-derived`, the only oracle that uses the correct authority (biblatex snapshot in
-`tests/snapshots/biblatex/<name>.json`) is `report-core.js`. Run it and parse the JSON output
+`tests/snapshots/biblatex/<name>.json`) is `report-core.js`. Run the style-scoped form and parse the JSON output
 to see per-entry failures. If the snapshot is missing:
 ```bash
 node scripts/gen-biblatex-snapshot.js --style <biblatex-style-name> --citum-style <name>
