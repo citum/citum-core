@@ -5,6 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 
 const {
+  validateVerificationPolicy,
   resolveRegisteredDivergence,
   loadVerificationPolicy,
   resolveVerificationPolicy,
@@ -16,6 +17,9 @@ const {
   buildNoteStyleLookup,
   discoverCoreStyles,
   computeFidelityScore,
+  buildEmptyOracleResult,
+  cloneOracleResult,
+  executeBenchmarkRuns,
   equivalentText,
   expandCompoundBibEntries,
   formatAuthorityLabel,
@@ -23,11 +27,15 @@ const {
   getCslSnapshotStatus,
   getComparisonEntryTexts,
   generateHtml,
+  generateReport,
   mapWithConcurrency,
+  mergeBenchmarkRunIntoOracle,
   mergeDivergenceSummaries,
+  mergeOracleResults,
   preflightSnapshots,
   runCachedJsonJob,
   selectPrimaryComparator,
+  toPublishedBenchmarkRunRecord,
 } = require('./report-core');
 
 const projectRoot = path.resolve(__dirname, '..');
@@ -147,6 +155,226 @@ test('citation-only note styles do not advertise bibliography verification scope
   assert.deepEqual(getEffectiveVerificationScopes(stylePolicy, chicagoNotesClassic.hasBibliography), ['citation']);
 });
 
+test('verification policy validates and resolves ordered benchmark runs', () => {
+  const policy = validateVerificationPolicy({
+    version: 1,
+    defaults: {
+      authority: 'citeproc-js',
+      secondary: [],
+      scopes: ['citation', 'bibliography'],
+    },
+    styles: {
+      'chicago-author-date': {
+        benchmark_runs: [
+          {
+            id: 'rich-bib',
+            label: 'Rich bibliography',
+            runner: 'citeproc-oracle',
+            refs_fixture: 'tests/fixtures/test-items-library/chicago-18th.json',
+            scope: 'bibliography',
+            count_toward_fidelity: true,
+          },
+          {
+            id: 'native-smoke',
+            label: 'Native smoke',
+            runner: 'native-smoke',
+            refs_fixture: 'examples/comprehensive.yaml',
+            scope: 'bibliography',
+            count_toward_fidelity: false,
+          },
+        ],
+      },
+    },
+  });
+
+  const stylePolicy = resolveVerificationPolicy('chicago-author-date', policy);
+  assert.deepEqual(
+    stylePolicy.benchmarkRuns.map((run) => run.id),
+    ['rich-bib', 'native-smoke']
+  );
+  assert.equal(stylePolicy.benchmarkRuns[0].countTowardFidelity, true);
+  assert.equal(stylePolicy.benchmarkRuns[1].runner, 'native-smoke');
+});
+
+test('verification policy rejects unsupported benchmark run combinations', () => {
+  assert.throws(
+    () => validateVerificationPolicy({
+      version: 1,
+      defaults: {
+        authority: 'citeproc-js',
+        secondary: [],
+        scopes: ['citation', 'bibliography'],
+      },
+      styles: {
+        sample: {
+          benchmark_runs: [{
+            id: 'bad-native-scope',
+            label: 'Bad native scope',
+            runner: 'native-smoke',
+            refs_fixture: 'examples/comprehensive.yaml',
+            scope: 'both',
+            count_toward_fidelity: false,
+            citations_fixture: 'tests/fixtures/citations-expanded.json',
+          }],
+        },
+      },
+    }),
+    /scope must be bibliography for native-smoke/
+  );
+
+  assert.throws(
+    () => validateVerificationPolicy({
+      version: 1,
+      defaults: {
+        authority: 'citeproc-js',
+        secondary: [],
+        scopes: ['citation', 'bibliography'],
+      },
+      styles: {
+        sample: {
+          benchmark_runs: [{
+            id: 'bad-native-count',
+            label: 'Bad native count',
+            runner: 'native-smoke',
+            refs_fixture: 'examples/comprehensive.yaml',
+            scope: 'bibliography',
+            count_toward_fidelity: true,
+          }],
+        },
+      },
+    }),
+    /count_toward_fidelity must be false for native-smoke/
+  );
+
+  assert.throws(
+    () => validateVerificationPolicy({
+      version: 1,
+      defaults: {
+        authority: 'citeproc-js',
+        secondary: [],
+        scopes: ['citation', 'bibliography'],
+      },
+      styles: {
+        sample: {
+          benchmark_runs: [{
+            id: 'bad-citation-only',
+            label: 'Bad citation only',
+            runner: 'citeproc-oracle',
+            refs_fixture: 'tests/fixtures/references-expanded.json',
+            citations_fixture: 'tests/fixtures/citations-expanded.json',
+            scope: 'citation',
+            count_toward_fidelity: true,
+          }],
+        },
+      },
+    }),
+    /scope citation is not yet supported for citeproc-oracle/
+  );
+});
+
+test('executeBenchmarkRuns preserves declaration order', async () => {
+  const seen = [];
+  const benchmarkRuns = [{ id: 'first' }, { id: 'second' }];
+
+  const results = await executeBenchmarkRuns(benchmarkRuns, async (benchmarkRun) => {
+    seen.push(benchmarkRun.id);
+    await new Promise((resolve) => setTimeout(resolve, benchmarkRun.id === 'first' ? 5 : 0));
+    return benchmarkRun.id;
+  });
+
+  assert.deepEqual(seen, ['first', 'second']);
+  assert.deepEqual(results, ['first', 'second']);
+});
+
+test('mergeBenchmarkRunIntoOracle adds bibliography-only scoring totals without changing citations', () => {
+  const base = cloneOracleResult(buildEmptyOracleResult({
+    citations: { passed: 2, total: 2, entries: [{ id: 'c1', match: true }] },
+    bibliography: { passed: 3, total: 4, entries: [{ index: 1, match: true }] },
+    adjusted: {
+      citations: { passed: 2, total: 2, entries: [{ id: 'c1', match: true }] },
+      bibliography: { passed: 3, total: 4, entries: [{ index: 1, match: true }] },
+      divergenceSummary: {},
+    },
+  }));
+  const benchmarkOracle = buildEmptyOracleResult({
+    bibliography: { passed: 5, total: 6, entries: [{ index: 2, match: false }] },
+    adjusted: {
+      citations: { passed: 0, total: 0, entries: [] },
+      bibliography: { passed: 5, total: 6, entries: [{ index: 2, match: false }] },
+      divergenceSummary: {},
+    },
+  });
+
+  mergeBenchmarkRunIntoOracle(base, {
+    countTowardFidelity: true,
+    scope: 'bibliography',
+    oracleResult: benchmarkOracle,
+  });
+
+  assert.deepEqual(base.citations.passed, 2);
+  assert.deepEqual(base.citations.total, 2);
+  assert.deepEqual(base.bibliography.passed, 8);
+  assert.deepEqual(base.bibliography.total, 10);
+});
+
+test('mergeOracleResults combines bibliography-only oracle sections', () => {
+  const main = buildEmptyOracleResult({
+    bibliography: { passed: 1, total: 2, entries: [{ index: 1, match: true }] },
+    adjusted: {
+      citations: { passed: 0, total: 0, entries: [] },
+      bibliography: { passed: 1, total: 2, entries: [{ index: 1, match: true }] },
+      divergenceSummary: {},
+    },
+  });
+  const extra = buildEmptyOracleResult({
+    bibliography: { passed: 2, total: 3, entries: [{ index: 2, match: false }] },
+    adjusted: {
+      citations: { passed: 0, total: 0, entries: [] },
+      bibliography: { passed: 2, total: 3, entries: [{ index: 2, match: false }] },
+      divergenceSummary: {},
+    },
+  });
+
+  mergeOracleResults(main, extra);
+  assert.deepEqual(main.bibliography.passed, 3);
+  assert.deepEqual(main.bibliography.total, 5);
+  assert.deepEqual(main.citations.total, 0);
+});
+
+test('published benchmark run records are compact and repo-relative', () => {
+  const published = toPublishedBenchmarkRunRecord({
+    id: 'chicago-zotero-bibliography',
+    label: 'Chicago Zotero bibliography',
+    runner: 'citeproc-oracle',
+    scope: 'bibliography',
+    countTowardFidelity: true,
+    refsFixture: path.join(projectRoot, 'tests', 'fixtures', 'test-items-library', 'chicago-18th.json'),
+    citationsFixture: null,
+    status: 'pass',
+    error: null,
+    citations: { passed: 0, total: 0, entries: [{ id: 'c1', match: true }] },
+    bibliography: { passed: 12, total: 18, entries: [{ index: 1, match: false }] },
+    bibliographyEntries: null,
+    oracleResult: { bibliography: { entries: ['too-much-detail'] } },
+  });
+
+  assert.deepEqual(published, {
+    id: 'chicago-zotero-bibliography',
+    label: 'Chicago Zotero bibliography',
+    runner: 'citeproc-oracle',
+    scope: 'bibliography',
+    countTowardFidelity: true,
+    refsFixture: 'tests/fixtures/test-items-library/chicago-18th.json',
+    citationsFixture: null,
+    status: 'pass',
+    error: null,
+    citations: { passed: 0, total: 0 },
+    bibliography: { passed: 12, total: 18 },
+    bibliographyEntries: null,
+  });
+  assert.equal(Object.hasOwn(published, 'oracleResult'), false);
+});
+
 test('comparison text helper supports both live-oracle and native-snapshot entry shapes', () => {
   assert.deepEqual(
     getComparisonEntryTexts({ oracle: 'benchmark text', citum: 'citum text' }),
@@ -214,6 +442,87 @@ test('generateHtml renders repeated-note regression and conformance layers separ
   assert.match(html, /Normative Conformance/);
   assert.match(html, /chicago-full-note/);
   assert.match(html, /Unresolved: prose-integral/);
+});
+
+test('generateHtml renders rich benchmark run summaries', () => {
+  const html = generateHtml({
+    generated: '2026-03-11T00:00:00.000Z',
+    commit: 'deadbee',
+    metadata: {},
+    totalImpact: 0,
+    totalStyles: 1,
+    citationsOverall: { passed: 1, total: 1 },
+    bibliographyOverall: { passed: 1, total: 1 },
+    qualityOverall: { score: 1 },
+    styles: [
+      {
+        name: 'chicago-author-date',
+        sourceName: 'chicago-author-date',
+        format: 'author-date',
+        hasBibliography: true,
+        originLabel: 'Test',
+        benchmarkLabel: 'citeproc-js',
+        fidelityScore: 1,
+        citations: { passed: 1, total: 1 },
+        bibliography: { passed: 1, total: 1 },
+        qualityScore: 1,
+        qualityBreakdown: {
+          subscores: {
+            typeCoverage: { score: 100 },
+            fallbackRobustness: { score: 100 },
+            concision: { score: 100 },
+            presetUsage: { score: 100 },
+          },
+        },
+        benchmarkRunResults: [
+          {
+            id: 'chicago-zotero-bibliography',
+            label: 'Chicago Zotero bibliography',
+            runner: 'citeproc-oracle',
+            scope: 'bibliography',
+            countTowardFidelity: true,
+            refsFixture: 'tests/fixtures/test-items-library/chicago-18th.json',
+            citations: { passed: 0, total: 0 },
+            bibliography: { passed: 12, total: 18 },
+            status: 'pass',
+          },
+          {
+            id: 'relational-comprehensive-smoke',
+            label: 'Relational comprehensive native smoke',
+            runner: 'native-smoke',
+            scope: 'bibliography',
+            countTowardFidelity: false,
+            refsFixture: 'examples/comprehensive.yaml',
+            bibliographyEntries: 8,
+            status: 'pass',
+          },
+        ],
+      },
+    ],
+  });
+
+  assert.match(html, /Official Supplemental Rich Benchmark Evidence/);
+  assert.match(html, /Chicago Zotero bibliography/);
+  assert.match(html, /counts toward fidelity/);
+  assert.match(html, /diagnostic only/);
+  assert.match(html, /Relational comprehensive native smoke/);
+});
+
+test('generateReport supports style-scoped official reports', {
+  skip: !hasLegacyStyles,
+}, async () => {
+  const { report } = await generateReport({
+    styleName: 'apa-7th',
+    parallelism: 1,
+  });
+
+  assert.equal(report.totalStyles, 1);
+  assert.deepEqual(report.metadata.styles, ['apa-7th']);
+  assert.equal(report.metadata.styleSelector, 'style:apa-7th');
+  assert.deepEqual(report.metadata.richInputEvidence, {
+    status: 'official-supplemental',
+    headlineGate: 'baseline-fixtures',
+  });
 });
 
 test('generateHtml does not misreport missing conformance data as a pass', () => {

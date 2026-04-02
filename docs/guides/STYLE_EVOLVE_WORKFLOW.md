@@ -35,6 +35,7 @@ Do not choose internal skills directly unless you are maintaining the workflow.
 ## Quality Policy
 - Fidelity is the hard gate.
 - SQI is a secondary optimization metric.
+- For styles with configured `benchmark_runs`, official rich-input evidence is auto-run as supplemental advisory output.
 - Every iteration must assess both:
   - style-level edits
   - processor/preset/feature opportunities

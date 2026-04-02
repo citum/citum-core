@@ -55,9 +55,10 @@ function parseArgs() {
     jsonOutput: false,
     verbose: false,
     refsFixture: DEFAULT_REFS_FIXTURE,
-    citationsFixture: DEFAULT_CITATIONS_FIXTURE,
+    citationsFixture: null,
     forceMigrate: false,
     caseSensitive: true,
+    scope: 'both',
     migrate: {
       templateSource: null,
       minTemplateConfidence: null,
@@ -81,6 +82,8 @@ function parseArgs() {
       options.refsFixture = path.resolve(args[++i]);
     } else if (arg === '--citations-fixture') {
       options.citationsFixture = path.resolve(args[++i]);
+    } else if (arg === '--scope') {
+      options.scope = args[++i];
     } else if (arg === '--migrate-template-source') {
       options.migrate.templateSource = args[++i];
     } else if (arg === '--migrate-min-template-confidence') {
@@ -95,6 +98,12 @@ function parseArgs() {
   if (!options.stylePath) {
     options.stylePath = path.join(__dirname, '..', 'styles-legacy', 'apa.csl');
   }
+  if (!['both', 'bibliography', 'citation'].includes(options.scope)) {
+    throw new Error(`Unsupported --scope value: ${options.scope}`);
+  }
+  if (options.scope !== 'bibliography' && !options.citationsFixture) {
+    options.citationsFixture = DEFAULT_CITATIONS_FIXTURE;
+  }
 
   return options;
 }
@@ -102,6 +111,10 @@ function parseArgs() {
 function normalizeFixtureItems(fixturesData) {
   if (Array.isArray(fixturesData)) {
     return Object.fromEntries(fixturesData.map((item) => [item.id, item]));
+  }
+
+  if (fixturesData && Array.isArray(fixturesData.items)) {
+    return Object.fromEntries(fixturesData.items.map((item) => [item.id, item]));
   }
 
   if (fixturesData && Array.isArray(fixturesData.references)) {
@@ -113,14 +126,53 @@ function normalizeFixtureItems(fixturesData) {
   );
 }
 
+function normalizeProcessorDates(value, parentKey = null) {
+  const seasonMap = {
+    Spring: 21,
+    Summer: 22,
+    Autumn: 23,
+    Fall: 23,
+    Winter: 24,
+  };
+
+  if (Array.isArray(value)) {
+    if (parentKey === 'date-parts') {
+      return value.map((row) =>
+        Array.isArray(row)
+          ? row.map((part) => (typeof part === 'string' && /^-?\d+$/.test(part) ? Number.parseInt(part, 10) : part))
+          : row
+      );
+    }
+    return value.map((entry) => normalizeProcessorDates(entry));
+  }
+
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, entry]) => {
+      if (key === 'season' && typeof entry === 'string' && Object.prototype.hasOwnProperty.call(seasonMap, entry)) {
+        return [key, seasonMap[entry]];
+      }
+      return [key, normalizeProcessorDates(entry, key)];
+    })
+  );
+}
+
 function refsDataForProcessor(fixturesData) {
-  return fixturesData;
+  if (fixturesData && Array.isArray(fixturesData.items)) {
+    return normalizeProcessorDates(fixturesData.items);
+  }
+  return normalizeProcessorDates(fixturesData);
 }
 
 function loadFixtures(refsFixture, citationsFixture) {
   const fixturesData = JSON.parse(fs.readFileSync(refsFixture, 'utf8'));
   const testItems = normalizeFixtureItems(fixturesData);
-  const testCitations = JSON.parse(fs.readFileSync(citationsFixture, 'utf8'));
+  const testCitations = citationsFixture
+    ? JSON.parse(fs.readFileSync(citationsFixture, 'utf8'))
+    : [];
   return { refsData: fixturesData, testItems, testCitations };
 }
 
@@ -211,7 +263,7 @@ function compareOrdering(oracleOrder, citumOrder) {
   return issues;
 }
 
-function renderWithCiteprocJs(stylePath, testItems, testCitations) {
+function renderWithCiteprocJs(stylePath, testItems, testCitations, options = {}) {
   const styleXml = fs.readFileSync(stylePath, 'utf8');
 
   const sys = {
@@ -223,24 +275,26 @@ function renderWithCiteprocJs(stylePath, testItems, testCitations) {
   citeproc.updateItems(Object.keys(testItems));
 
   const citations = {};
-  testCitations.forEach(cite => {
-    // Convert Citum citation items to citeproc-js format
-    const suppressAuthor = cite['suppress-author'] === true;
-    const citeprocItems = cite.items.map(item => toCiteprocItem(item, suppressAuthor));
+  if (options.scope !== 'bibliography') {
+    testCitations.forEach(cite => {
+      // Convert Citum citation items to citeproc-js format
+      const suppressAuthor = cite['suppress-author'] === true;
+      const citeprocItems = cite.items.map(item => toCiteprocItem(item, suppressAuthor));
 
-    // For narrative/integral citations, citeproc-js doesn't have a direct equivalent
-    // in makeCitationCluster that matches Citum's specific split rendering.
-    // However, if we just want to test clustered rendering, we can use the cluster.
-    // For now, we compare non-integral clusters.
-    try {
-      const result = citeproc.makeCitationCluster(citeprocItems);
-      // citeproc-js returns [id, text] or formatted cluster
-      citations[cite.id] = result;
-    } catch (e) {
-      console.error(`Error rendering citation cluster ${cite.id}:`, e.message);
-      citations[cite.id] = `ERROR: ${e.message}`;
-    }
-  });
+      // For narrative/integral citations, citeproc-js doesn't have a direct equivalent
+      // in makeCitationCluster that matches Citum's specific split rendering.
+      // However, if we just want to test clustered rendering, we can use the cluster.
+      // For now, we compare non-integral clusters.
+      try {
+        const result = citeproc.makeCitationCluster(citeprocItems);
+        // citeproc-js returns [id, text] or formatted cluster
+        citations[cite.id] = result;
+      } catch (e) {
+        console.error(`Error rendering citation cluster ${cite.id}:`, e.message);
+        citations[cite.id] = `ERROR: ${e.message}`;
+      }
+    });
+  }
 
   const bibResult = citeproc.makeBibliography();
   const bibliography = bibResult ? bibResult[1] : [];
@@ -300,8 +354,13 @@ function renderWithCitumProcessor(stylePath, refsData, testItems, testCitations,
       }
     }
 
+    const scope = cliOptions.scope || 'both';
+    const bibliographyOnly = scope === 'bibliography';
+
     fs.writeFileSync(workspace.refsFile, JSON.stringify(refsDataForProcessor(refsData), null, 2));
-    fs.writeFileSync(workspace.citationsFile, JSON.stringify(testCitations, null, 2));
+    if (!bibliographyOnly) {
+      fs.writeFileSync(workspace.citationsFile, JSON.stringify(testCitations, null, 2));
+    }
 
     if (!citumStylePath) {
       // 2. Fall back to migration
@@ -323,8 +382,18 @@ function renderWithCitumProcessor(stylePath, refsData, testItems, testCitations,
 
     let output;
     try {
+      const renderParts = [
+        'cargo run -q --bin citum -- render refs',
+        `-b "${workspace.refsFile}"`,
+        `-s "${citumStylePath}"`,
+      ];
+      if (!bibliographyOnly) {
+        renderParts.push(`-c "${workspace.citationsFile}"`);
+      }
+      renderParts.push(`--mode ${bibliographyOnly ? 'bib' : 'both'}`);
+      renderParts.push('--show-keys');
       output = execSync(
-        `cargo run -q --bin citum -- render refs -b "${workspace.refsFile}" -s "${citumStylePath}" -c "${workspace.citationsFile}" --mode both --show-keys`,
+        renderParts.join(' '),
         { cwd: projectRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
       );
     } catch (e) {
@@ -509,6 +578,9 @@ function matchBibliographyEntries(oracleBib, citumBib) {
 }
 
 function runOracle(cliOptions = parseArgs()) {
+  if (cliOptions.scope === 'citation') {
+    throw new Error('--scope citation is not yet supported; use --scope both or --scope bibliography');
+  }
   const stylePath = cliOptions.stylePath;
   const jsonOutput = cliOptions.jsonOutput;
   const verbose = cliOptions.verbose;
@@ -536,7 +608,7 @@ function runOracle(cliOptions = parseArgs()) {
     console.log('Rendering with citeproc-js (oracle)...');
   }
 
-  const oracle = renderWithCiteprocJs(stylePath, testItems, testCitations);
+  const oracle = renderWithCiteprocJs(stylePath, testItems, testCitations, cliOptions);
 
   if (!jsonOutput) {
     console.log('Migrating and rendering with Citum...');
@@ -578,7 +650,7 @@ function runOracle(cliOptions = parseArgs()) {
   const rawResults = {
     style: styleName,
     citations: {
-      total: testCitations.length,
+      total: cliOptions.scope === 'bibliography' ? 0 : testCitations.length,
       passed: 0,
       failed: 0,
       entries: [],
@@ -595,37 +667,39 @@ function runOracle(cliOptions = parseArgs()) {
   };
 
   // Check citations
-  for (const cite of testCitations) {
-    const id = cite.id;
-    const comparison = compareText(oracle.citations[id] || '', citum.citations[id] || '', {
-      caseSensitive: cliOptions.caseSensitive,
-    });
-    const match = STRICT_CITATION_IDS.has(id)
-      ? equivalentCitationText(comparison.expected, comparison.actual, id, {
+  if (cliOptions.scope !== 'bibliography') {
+    for (const cite of testCitations) {
+      const id = cite.id;
+      const comparison = compareText(oracle.citations[id] || '', citum.citations[id] || '', {
         caseSensitive: cliOptions.caseSensitive,
-      })
-      : comparison.match;
-    if (match) {
-      rawResults.citations.passed++;
-    } else {
-      rawResults.citations.failed++;
-    }
-    rawResults.citations.entries.push({
-      id,
-      oracle: comparison.expected,
-      citum: comparison.actual,
-      match,
-      caseMismatch: comparison.caseMismatch,
-    });
-
-    const citationTypes = collectCitationTypes(cite, testItems);
-    for (const type of citationTypes) {
-      if (!rawResults.citationsByType[type]) {
-        rawResults.citationsByType[type] = { total: 0, passed: 0 };
-      }
-      rawResults.citationsByType[type].total++;
+      });
+      const match = STRICT_CITATION_IDS.has(id)
+        ? equivalentCitationText(comparison.expected, comparison.actual, id, {
+          caseSensitive: cliOptions.caseSensitive,
+        })
+        : comparison.match;
       if (match) {
-        rawResults.citationsByType[type].passed++;
+        rawResults.citations.passed++;
+      } else {
+        rawResults.citations.failed++;
+      }
+      rawResults.citations.entries.push({
+        id,
+        oracle: comparison.expected,
+        citum: comparison.actual,
+        match,
+        caseMismatch: comparison.caseMismatch,
+      });
+
+      const citationTypes = collectCitationTypes(cite, testItems);
+      for (const type of citationTypes) {
+        if (!rawResults.citationsByType[type]) {
+          rawResults.citationsByType[type] = { total: 0, passed: 0 };
+        }
+        rawResults.citationsByType[type].total++;
+        if (match) {
+          rawResults.citationsByType[type].passed++;
+        }
       }
     }
   }
@@ -777,7 +851,8 @@ function runOracle(cliOptions = parseArgs()) {
     console.log();
   }
 
-  process.exitCode = results.citations.failed === 0 && results.bibliography.failed === 0 ? 0 : 1;
+  const citationFailures = cliOptions.scope === 'bibliography' ? 0 : results.citations.failed;
+  process.exitCode = citationFailures === 0 && results.bibliography.failed === 0 ? 0 : 1;
 }
 
 if (require.main === module) {

@@ -9,6 +9,7 @@
  *   node report-core.js                                      # Output JSON to stdout
  *   node report-core.js --write-html                         # Write HTML to docs/compat.html
  *   node report-core.js --output-html /path/to/output.html   # Write HTML to custom path
+ *   node report-core.js --style chicago-author-date          # Output one official style report
  *   node report-core.js --styles-dir /path/to/csl            # Override CSL directory
  */
 
@@ -111,6 +112,11 @@ const BENCHMARK_LABELS = {
   documentary: 'documentary',
 };
 
+const BENCHMARK_RUNNERS = {
+  CITEPROC_ORACLE: 'citeproc-oracle',
+  NATIVE_SMOKE: 'native-smoke',
+};
+
 /**
  * Parse command-line arguments
  */
@@ -119,6 +125,7 @@ function parseArgs() {
   const options = {
     writeHtml: false,
     outputHtml: null,
+    styleName: null,
     stylesDir: null,
     parallelism: DEFAULT_PARALLELISM,
     allowLiveFallback: false,
@@ -134,6 +141,8 @@ function parseArgs() {
     } else if (args[i] === '--output-html') {
       options.outputHtml = args[++i];
       options.writeHtml = true;
+    } else if (args[i] === '--style') {
+      options.styleName = args[++i];
     } else if (args[i] === '--styles-dir') {
       options.stylesDir = args[++i];
     } else if (args[i] === '--parallelism') {
@@ -562,6 +571,30 @@ function buildEmptyOracleResult(overrides = {}) {
   };
 }
 
+function cloneOracleSection(section = {}) {
+  return {
+    passed: section.passed || 0,
+    total: section.total || 0,
+    entries: [...(section.entries || [])],
+  };
+}
+
+function cloneOracleResult(oracleResult = {}) {
+  return {
+    citations: cloneOracleSection(oracleResult.citations),
+    bibliography: cloneOracleSection(oracleResult.bibliography),
+    adjusted: {
+      citations: cloneOracleSection(oracleResult.adjusted?.citations),
+      bibliography: cloneOracleSection(oracleResult.adjusted?.bibliography),
+      divergenceSummary: { ...(oracleResult.adjusted?.divergenceSummary || {}) },
+    },
+    citationsByType: { ...(oracleResult.citationsByType || {}) },
+    componentSummary: { ...(oracleResult.componentSummary || {}) },
+    oracleSource: oracleResult.oracleSource || null,
+    error: oracleResult.error || null,
+  };
+}
+
 function getEffectiveOracleSection(oracleResult, sectionName) {
   const adjustedSection = oracleResult?.adjusted?.[sectionName];
   if (adjustedSection) {
@@ -671,6 +704,28 @@ async function runNodeOracleScript(scriptPath, args) {
   return result;
 }
 
+function resolveBenchmarkFixturePath(filePath) {
+  return path.isAbsolute(filePath) ? filePath : path.join(PROJECT_ROOT, filePath);
+}
+
+function resolveBenchmarkRunConfig(benchmarkRun) {
+  return {
+    ...benchmarkRun,
+    refsFixture: resolveBenchmarkFixturePath(benchmarkRun.refsFixture),
+    citationsFixture: benchmarkRun.citationsFixture
+      ? resolveBenchmarkFixturePath(benchmarkRun.citationsFixture)
+      : null,
+  };
+}
+
+function toRepoRelativePath(filePath) {
+  if (!filePath) return null;
+  const relativePath = path.relative(PROJECT_ROOT, filePath);
+  return relativePath && !relativePath.startsWith('..')
+    ? relativePath
+    : filePath;
+}
+
 async function runCiteprocSnapshotOracle(runtime, stylePath, styleName, styleFormat, refsFixture = DEFAULT_REFS_FIXTURE, citationsFixture = null) {
   const resolvedCitationsFixture = citationsFixture
     || (styleFormat === 'note' ? NOTE_CITATIONS_FIXTURE : DEFAULT_CITATIONS_FIXTURE);
@@ -688,6 +743,8 @@ async function runCiteprocSnapshotOracle(runtime, stylePath, styleName, styleFor
     citationsHash: hashFile(resolvedCitationsFixture),
     snapshotStatus: snapshotStatus.status,
     snapshotHash: snapshotStatus.ok ? hashFile(snapshotStatus.snapshotPath) : null,
+    fastScriptHash: hashFile(fastScript),
+    liveScriptHash: hashFile(liveScript),
     citumBin: runtime.citumBin,
     citumBinHash: hashFile(runtime.citumBin),
     allowLiveFallback: runtime.allowLiveFallback,
@@ -783,6 +840,7 @@ async function runNativeOracle(runtime, styleName) {
       styleHash: hashFile(styleYamlPath),
       fixtureHash: hashFile(fixturePath),
       snapshotHash: fs.existsSync(snapshotPath) ? hashFile(snapshotPath) : null,
+      scriptHash: hashFile(scriptPath),
       citumBin: runtime.citumBin,
       citumBinHash: hashFile(runtime.citumBin),
     },
@@ -811,6 +869,75 @@ async function runNativeOracle(runtime, styleName) {
       });
     },
   });
+}
+
+async function runCiteprocBenchmarkOracle(runtime, stylePath, styleName, benchmarkRun) {
+  const resolvedRun = resolveBenchmarkRunConfig(benchmarkRun);
+  const liveScript = path.join(__dirname, 'oracle.js');
+  return runCachedJsonJob(runtime, {
+    kind: 'benchmarkCiteproc',
+    cacheKey: {
+      backend: 'benchmarkCiteproc',
+      styleName,
+      stylePath,
+      benchmarkRunId: resolvedRun.id,
+      benchmarkRunner: resolvedRun.runner,
+      scope: resolvedRun.scope,
+      refsFixture: resolvedRun.refsFixture,
+      citationsFixture: resolvedRun.citationsFixture,
+      styleHash: hashFile(stylePath),
+      refsHash: hashFile(resolvedRun.refsFixture),
+      citationsHash: resolvedRun.citationsFixture ? hashFile(resolvedRun.citationsFixture) : null,
+      liveScriptHash: hashFile(liveScript),
+      citumBin: runtime.citumBin,
+      citumBinHash: hashFile(runtime.citumBin),
+      caseSensitive: runtime.caseSensitive,
+    },
+    async compute() {
+      const args = [
+        stylePath,
+        '--json',
+        '--scope', resolvedRun.scope,
+        '--refs-fixture', resolvedRun.refsFixture,
+        runtime.caseSensitive ? '--case-sensitive' : '--case-insensitive',
+      ];
+      if (resolvedRun.citationsFixture) {
+        args.push('--citations-fixture', resolvedRun.citationsFixture);
+      }
+      const result = await runNodeOracleScript(liveScript, args);
+      if ((result.code === 0 || result.code === 1) && result.stdout.trim()) {
+        try {
+          const parsed = JSON.parse(result.stdout);
+          parsed.oracleSource = 'citeproc-js-live';
+          return parsed;
+        } catch (error) {
+          return buildEmptyOracleResult({
+            error: `Benchmark oracle JSON parse failed for ${styleName}/${resolvedRun.id}: ${error.message}`,
+            style: styleName,
+            oracleSource: 'citeproc-js-live',
+          });
+        }
+      }
+
+      return buildEmptyOracleResult({
+        error: `Benchmark oracle failed for ${styleName}/${resolvedRun.id}: ${result.stderr || result.stdout || `exit ${result.code}`}`.trim(),
+        style: styleName,
+        oracleSource: 'citeproc-js-live',
+      });
+    },
+  });
+}
+
+function countRenderedBibliographyEntries(rendered) {
+  return rendered?.bibliography?.entries?.length || 0;
+}
+
+async function runNativeSmokeBenchmark(runtime, styleYamlPath, benchmarkRun) {
+  const resolvedRun = resolveBenchmarkRunConfig(benchmarkRun);
+  const rendered = await renderCitumJson(runtime, styleYamlPath, resolvedRun.refsFixture, 'bib');
+  return {
+    bibliographyEntries: countRenderedBibliographyEntries(rendered),
+  };
 }
 
 async function renderCitumJson(runtime, styleYamlPath, refsFixture, mode = 'both', citationsFixture = null) {
@@ -988,6 +1115,7 @@ async function runFamilyFixtureOracle(runtime, stylePath, styleName, fixtureSetN
       styleHash: hashFile(stylePath),
       refsHash: hashFile(refsFixture),
       citationsHash: hashFile(citationsFixture),
+      liveScriptHash: hashFile(liveScript),
       citumBin: runtime.citumBin,
       citumBinHash: hashFile(runtime.citumBin),
       caseSensitive: runtime.caseSensitive,
@@ -1103,6 +1231,101 @@ function mergeOracleErrors(...results) {
     .map((result) => result?.error)
     .filter(Boolean)
     .join('\n');
+}
+
+async function executeBenchmarkRuns(benchmarkRuns, executor) {
+  const results = [];
+  for (const benchmarkRun of benchmarkRuns || []) {
+    results.push(await executor(benchmarkRun));
+  }
+  return results;
+}
+
+function mergeBenchmarkRunIntoOracle(oracleResult, benchmarkRunRecord) {
+  if (!benchmarkRunRecord?.countTowardFidelity || !benchmarkRunRecord?.oracleResult) {
+    return oracleResult;
+  }
+  if (benchmarkRunRecord.scope === 'citation') {
+    mergeCitationResults(oracleResult, benchmarkRunRecord.oracleResult);
+    return oracleResult;
+  }
+  mergeOracleResults(oracleResult, benchmarkRunRecord.oracleResult);
+  return oracleResult;
+}
+
+function formatBenchmarkRunRecord(benchmarkRun, extras = {}) {
+  return {
+    id: benchmarkRun.id,
+    label: benchmarkRun.label,
+    runner: benchmarkRun.runner,
+    scope: benchmarkRun.scope,
+    countTowardFidelity: benchmarkRun.countTowardFidelity,
+    refsFixture: benchmarkRun.refsFixture,
+    citationsFixture: benchmarkRun.citationsFixture || null,
+    ...extras,
+  };
+}
+
+function toPublishedBenchmarkRunRecord(benchmarkRunRecord) {
+  return {
+    id: benchmarkRunRecord.id,
+    label: benchmarkRunRecord.label,
+    runner: benchmarkRunRecord.runner,
+    scope: benchmarkRunRecord.scope,
+    countTowardFidelity: benchmarkRunRecord.countTowardFidelity,
+    refsFixture: toRepoRelativePath(benchmarkRunRecord.refsFixture),
+    citationsFixture: toRepoRelativePath(benchmarkRunRecord.citationsFixture),
+    status: benchmarkRunRecord.status,
+    error: benchmarkRunRecord.error || null,
+    citations: benchmarkRunRecord.citations
+      ? {
+        passed: benchmarkRunRecord.citations.passed || 0,
+        total: benchmarkRunRecord.citations.total || 0,
+      }
+      : null,
+    bibliography: benchmarkRunRecord.bibliography
+      ? {
+        passed: benchmarkRunRecord.bibliography.passed || 0,
+        total: benchmarkRunRecord.bibliography.total || 0,
+      }
+      : null,
+    bibliographyEntries: benchmarkRunRecord.bibliographyEntries ?? null,
+  };
+}
+
+async function runBenchmarkRun(runtime, styleSpec, stylePath, styleYamlPath, benchmarkRun) {
+  const resolvedRun = resolveBenchmarkRunConfig(benchmarkRun);
+  try {
+    if (resolvedRun.runner === BENCHMARK_RUNNERS.CITEPROC_ORACLE) {
+      const oracleResult = await runCiteprocBenchmarkOracle(runtime, stylePath, styleSpec.name, resolvedRun);
+      return formatBenchmarkRunRecord(resolvedRun, {
+        status: oracleResult.error ? 'error' : 'pass',
+        error: oracleResult.error || null,
+        oracleResult,
+        citations: oracleResult.citations || { passed: 0, total: 0, entries: [] },
+        bibliography: oracleResult.bibliography || { passed: 0, total: 0, entries: [] },
+      });
+    }
+
+    if (resolvedRun.runner === BENCHMARK_RUNNERS.NATIVE_SMOKE) {
+      const nativeResult = await runNativeSmokeBenchmark(runtime, styleYamlPath, resolvedRun);
+      return formatBenchmarkRunRecord(resolvedRun, {
+        status: 'pass',
+        error: null,
+        bibliographyEntries: nativeResult.bibliographyEntries,
+      });
+    }
+
+    return formatBenchmarkRunRecord(resolvedRun, {
+      status: 'error',
+      error: `Unsupported benchmark runner: ${resolvedRun.runner}`,
+    });
+  } catch (error) {
+    return formatBenchmarkRunRecord(resolvedRun, {
+      status: 'error',
+      error: error.message,
+    });
+  }
 }
 
 function composeScopedOracleResult(citationResult, bibliographyResult) {
@@ -1625,6 +1848,7 @@ function buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy) {
     requiredReferenceTypes: sufficiencyPolicy.requiredReferenceTypes,
     requiredScenarios: sufficiencyPolicy.requiredScenarios,
     fixtureSets: sufficiencyPolicy.fixtureSets,
+    benchmarkRuns: stylePolicy.benchmarkRuns || [],
     verificationNote: stylePolicy.note,
   };
 }
@@ -1777,6 +2001,17 @@ async function processStyleReport(runtime, styleSpec, context) {
     }
   }
 
+  const benchmarkRunResults = await executeBenchmarkRuns(stylePolicy.benchmarkRuns || [], async (benchmarkRun) =>
+    runBenchmarkRun(runtime, styleSpec, stylePath, styleYamlPath, benchmarkRun)
+  );
+  for (const benchmarkRunResult of benchmarkRunResults) {
+    mergeBenchmarkRunIntoOracle(oracleResult, benchmarkRunResult);
+  }
+  const benchmarkErrors = benchmarkRunResults
+    .filter((benchmarkRunResult) => benchmarkRunResult.error)
+    .map((benchmarkRunResult) => `benchmark ${benchmarkRunResult.id}: ${benchmarkRunResult.error}`);
+  const publishedBenchmarkRunResults = benchmarkRunResults.map(toPublishedBenchmarkRunRecord);
+
   const fidelityScore = computeFidelityScore(oracleResult);
   const caseMismatches = collectCaseMismatchSummary(oracleResult);
   const citations = getEffectiveOracleSection(oracleResult, 'citations');
@@ -1788,7 +2023,9 @@ async function processStyleReport(runtime, styleSpec, context) {
   const qualityScore = qualityMetrics.score / 100;
 
   let statusTier = 'failing';
-  if (oracleResult.error) {
+  const combinedStyleError = [oracleResult.error, ...benchmarkErrors].filter(Boolean).join('\n') || null;
+
+  if (combinedStyleError) {
     statusTier = 'error';
   } else if (fidelityScore === 1.0) {
     statusTier = 'perfect';
@@ -1815,18 +2052,19 @@ async function processStyleReport(runtime, styleSpec, context) {
       adjustedDivergences: oracleResult.adjusted?.divergenceSummary || {},
       caseMismatches,
       citationsByType: oracleResult.citationsByType || {},
-      error: oracleResult.error || null,
+      error: combinedStyleError,
       componentMatchRate,
       statusTier,
       componentSummary: oracleResult.componentSummary || {},
       citationEntries: oracleResult.citations ? oracleResult.citations.entries : null,
       oracleDetail: oracleResult.bibliography ? oracleResult.bibliography.entries : null,
+      benchmarkRunResults: publishedBenchmarkRunResults,
       qualityScore: parseFloat(qualityScore.toFixed(3)),
       qualityBreakdown: qualityMetrics,
       oracleSource: oracleResult.oracleSource || primaryComparator,
       notePositionAudit,
     },
-    errorCount: oracleResult.error ? 1 : 0,
+    errorCount: combinedStyleError ? 1 : 0,
     citations,
     bibliography,
     qualityScore,
@@ -1839,7 +2077,13 @@ async function processStyleReport(runtime, styleSpec, context) {
 async function generateReport(options) {
   const stylesDir = getStylesDir(options.stylesDir);
   const provenanceConfig = loadReportProvenance();
-  const coreStyles = discoverCoreStyles(provenanceConfig);
+  const discoveredStyles = discoverCoreStyles(provenanceConfig);
+  const coreStyles = options.styleName
+    ? discoveredStyles.filter((style) => style.name === options.styleName)
+    : discoveredStyles;
+  if (options.styleName && coreStyles.length === 0) {
+    throw new Error(`Core style not found for --style: ${options.styleName}`);
+  }
   const divergences = loadDivergences();
   const verificationPolicy = loadVerificationPolicy();
   const fixtureSufficiency = loadFixtureSufficiency();
@@ -1910,9 +2154,13 @@ async function generateReport(options) {
         timestamp: generated,
         gitCommit,
         fixture: 'tests/fixtures/references-expanded.json',
-        styleSelector: 'core-styles',
+        styleSelector: options.styleName ? `style:${options.styleName}` : 'core-styles',
         styles: coreStyles.map((style) => style.name),
         generator: 'scripts/report-core.js',
+        richInputEvidence: {
+          status: 'official-supplemental',
+          headlineGate: 'baseline-fixtures',
+        },
         extraFixtures: [
           'tests/fixtures/citations-note-expanded.json',
           'tests/fixtures/references-note-positions.json',
@@ -2537,6 +2785,54 @@ function generateDetailContent(style) {
 `;
   }
 
+  if (Array.isArray(style.benchmarkRunResults) && style.benchmarkRunResults.length > 0) {
+    html += `
+                            <div class="mb-4 p-3 rounded border border-slate-200 bg-white">
+                                <div class="text-xs font-semibold text-slate-900 mb-1">Official Supplemental Rich Benchmark Evidence</div>
+                                <div class="text-xs text-slate-500 mb-3">Baseline fidelity remains the gate. Rich benchmark runs extend the official evidence for configured styles.</div>
+                                <div class="space-y-3">
+`;
+    for (const benchmarkRun of style.benchmarkRunResults) {
+      const statusClass = benchmarkRun.status === 'pass'
+        ? 'bg-emerald-100 text-emerald-700'
+        : 'bg-red-100 text-red-700';
+      const scopeText = benchmarkRun.scope === 'both' ? 'citation + bibliography' : benchmarkRun.scope;
+      const contributionText = benchmarkRun.countTowardFidelity ? 'counts toward fidelity' : 'diagnostic only';
+      const bibliographyText = benchmarkRun.bibliography
+        ? `${benchmarkRun.bibliography.passed}/${benchmarkRun.bibliography.total}`
+        : benchmarkRun.bibliographyEntries != null
+          ? `${benchmarkRun.bibliographyEntries} rendered`
+          : '—';
+      const citationsText = benchmarkRun.citations
+        ? `${benchmarkRun.citations.passed}/${benchmarkRun.citations.total}`
+        : '—';
+
+      html += `
+                                    <div class="rounded border border-slate-200 p-3">
+                                        <div class="flex items-center justify-between gap-3 mb-2">
+                                            <div class="text-xs font-semibold text-slate-800">${escapeHtml(benchmarkRun.label)}</div>
+                                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium ${statusClass}">
+                                                ${escapeHtml(benchmarkRun.status)}
+                                            </span>
+                                        </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                                            <div><span class="font-semibold text-slate-700">Runner:</span> <span class="font-mono text-slate-600">${escapeHtml(benchmarkRun.runner)}</span></div>
+                                            <div><span class="font-semibold text-slate-700">Scope:</span> <span class="font-mono text-slate-600">${escapeHtml(scopeText)}</span></div>
+                                            <div><span class="font-semibold text-slate-700">Contribution:</span> <span class="font-mono text-slate-600">${escapeHtml(contributionText)}</span></div>
+                                            <div><span class="font-semibold text-slate-700">Bibliography:</span> <span class="font-mono text-slate-600">${escapeHtml(bibliographyText)}</span></div>
+                                            ${benchmarkRun.citations ? `<div><span class="font-semibold text-slate-700">Citations:</span> <span class="font-mono text-slate-600">${escapeHtml(citationsText)}</span></div>` : ''}
+                                            <div><span class="font-semibold text-slate-700">Refs fixture:</span> <span class="font-mono text-slate-600">${escapeHtml(benchmarkRun.refsFixture)}</span></div>
+                                        </div>
+                                        ${benchmarkRun.error ? `<div class="mt-2 text-xs font-mono text-red-600">${escapeHtml(benchmarkRun.error)}</div>` : ''}
+                                    </div>
+`;
+    }
+    html += `
+                                </div>
+                            </div>
+`;
+  }
+
   if (style.componentSummary && Object.keys(style.componentSummary).length > 0) {
     const issues = Object.entries(style.componentSummary)
       .sort((a, b) => b[1] - a[1])
@@ -2972,6 +3268,12 @@ module.exports = {
   normalizeBenchmarkSource,
   preflightSnapshots,
   runCachedJsonJob,
+  buildEmptyOracleResult,
+  cloneOracleResult,
+  executeBenchmarkRuns,
+  mergeBenchmarkRunIntoOracle,
+  mergeOracleResults,
+  toPublishedBenchmarkRunRecord,
   selectPrimaryComparator,
   serializeTimingSummary,
   textSimilarity,

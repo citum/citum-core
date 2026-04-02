@@ -14,6 +14,15 @@ const ALLOWED_AUTHORITIES = new Set([
   'citum-baseline',
   'documentary',
 ]);
+const ALLOWED_BENCHMARK_RUNNERS = new Set([
+  'citeproc-oracle',
+  'native-smoke',
+]);
+const ALLOWED_BENCHMARK_SCOPES = new Set([
+  'citation',
+  'bibliography',
+  'both',
+]);
 
 function readYaml(filePath) {
   return yaml.load(fs.readFileSync(filePath, 'utf8')) || {};
@@ -55,6 +64,34 @@ function validateScopePolicy(scopePolicy, label) {
   }
   ensureOptionalString(scopePolicy.authority_id, `${label}.authority_id`);
   ensureOptionalString(scopePolicy.note, `${label}.note`);
+}
+
+function validateBenchmarkRun(run, label) {
+  assert(run && typeof run === 'object' && !Array.isArray(run), `${label} must be an object`);
+  ensureOptionalString(run.id, `${label}.id`);
+  ensureOptionalString(run.label, `${label}.label`);
+  assert(
+    typeof run.runner === 'string' && ALLOWED_BENCHMARK_RUNNERS.has(run.runner),
+    `${label}.runner must be one of: ${[...ALLOWED_BENCHMARK_RUNNERS].join(', ')}`
+  );
+  assert(
+    typeof run.scope === 'string' && ALLOWED_BENCHMARK_SCOPES.has(run.scope),
+    `${label}.scope must be one of: ${[...ALLOWED_BENCHMARK_SCOPES].join(', ')}`
+  );
+  ensureOptionalString(run.refs_fixture, `${label}.refs_fixture`);
+  ensureOptionalString(run.citations_fixture, `${label}.citations_fixture`);
+  assert(typeof run.count_toward_fidelity === 'boolean', `${label}.count_toward_fidelity must be a boolean`);
+  assert(run.id && run.label && run.refs_fixture, `${label} must define id, label, and refs_fixture`);
+  if (run.runner === 'native-smoke') {
+    assert(run.scope === 'bibliography', `${label}.scope must be bibliography for native-smoke runs`);
+    assert(run.count_toward_fidelity === false, `${label}.count_toward_fidelity must be false for native-smoke runs`);
+  }
+  if (run.runner === 'citeproc-oracle') {
+    assert(run.scope !== 'citation', `${label}.scope citation is not yet supported for citeproc-oracle runs`);
+  }
+  if (run.scope !== 'bibliography') {
+    assert(run.citations_fixture, `${label}.citations_fixture is required unless scope is bibliography`);
+  }
 }
 
 function validateVerificationPolicy(policy) {
@@ -113,6 +150,15 @@ function validateVerificationPolicy(policy) {
         validateScopePolicy(scopePolicy, `verification-policy.yaml styles.${styleName}.scope_authorities.${scopeName}`);
       }
     }
+    if (stylePolicy.benchmark_runs != null) {
+      assert(Array.isArray(stylePolicy.benchmark_runs), `verification-policy.yaml styles.${styleName}.benchmark_runs must be an array`);
+      for (let index = 0; index < stylePolicy.benchmark_runs.length; index += 1) {
+        validateBenchmarkRun(
+          stylePolicy.benchmark_runs[index],
+          `verification-policy.yaml styles.${styleName}.benchmark_runs[${index}]`
+        );
+      }
+    }
   }
 
   return policy;
@@ -155,6 +201,15 @@ function resolveVerificationPolicy(styleName, policy) {
     note: stylePolicy.note || null,
     regressionBaseline: stylePolicy.regression_baseline || null,
     scopeAuthorities: stylePolicy.scope_authorities || {},
+    benchmarkRuns: (stylePolicy.benchmark_runs || []).map((run) => ({
+      id: run.id,
+      label: run.label,
+      runner: run.runner,
+      refsFixture: run.refs_fixture,
+      citationsFixture: run.citations_fixture || null,
+      scope: run.scope,
+      countTowardFidelity: run.count_toward_fidelity,
+    })),
   };
 }
 
@@ -198,6 +253,8 @@ function resolveFixtureSufficiency(familyName, config) {
 
 module.exports = {
   ALLOWED_AUTHORITIES,
+  ALLOWED_BENCHMARK_RUNNERS,
+  ALLOWED_BENCHMARK_SCOPES,
   DEFAULT_POLICY_PATH,
   DEFAULT_SUFFICIENCY_PATH,
   loadFixtureSufficiency,
