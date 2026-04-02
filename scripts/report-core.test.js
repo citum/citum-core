@@ -32,7 +32,9 @@ const {
   mergeBenchmarkRunIntoOracle,
   mergeDivergenceSummaries,
   mergeOracleResults,
+  parseArgs,
   preflightSnapshots,
+  resolveSelectedStyles,
   runCachedJsonJob,
   selectPrimaryComparator,
   toPublishedBenchmarkRunRecord,
@@ -69,6 +71,44 @@ test('discoverCoreStyles keeps wrapper style baseline identity while resolving p
   assert.equal(chicagoNotes.sourceName, 'chicago-notes');
   assert.equal(chicagoNotes.format, 'note');
   assert.equal(chicagoNotes.hasBibliography, false);
+});
+
+test('resolveSelectedStyles filters to requested style names and rejects unknown styles', () => {
+  const coreStyles = discoverCoreStyles();
+
+  const selected = resolveSelectedStyles(coreStyles, ['chicago-author-date', 'apa-7th']);
+  assert.deepEqual(selected.map((style) => style.name), ['apa-7th', 'chicago-author-date']);
+
+  assert.throws(
+    () => resolveSelectedStyles(coreStyles, ['not-a-style']),
+    /Unknown style name\(s\) for --styles: not-a-style/
+  );
+});
+
+test('parseArgs accepts either --style or --styles and rejects invalid selector usage', () => {
+  const originalArgv = process.argv;
+
+  try {
+    process.argv = ['node', 'scripts/report-core.js', '--style', 'chicago-author-date'];
+    assert.equal(parseArgs().styleName, 'chicago-author-date');
+
+    process.argv = ['node', 'scripts/report-core.js', '--styles', 'chicago-author-date, apa-7th'];
+    assert.deepEqual(parseArgs().styles, ['chicago-author-date', 'apa-7th']);
+
+    process.argv = ['node', 'scripts/report-core.js', '--style'];
+    assert.throws(() => parseArgs(), /Missing value for --style/);
+
+    process.argv = ['node', 'scripts/report-core.js', '--styles'];
+    assert.throws(() => parseArgs(), /Missing value for --styles/);
+
+    process.argv = ['node', 'scripts/report-core.js', '--styles', '   '];
+    assert.throws(() => parseArgs(), /Missing value for --styles/);
+
+    process.argv = ['node', 'scripts/report-core.js', '--style', 'chicago-author-date', '--styles', 'apa-7th'];
+    assert.throws(() => parseArgs(), /Flags --style and --styles are mutually exclusive/);
+  } finally {
+    process.argv = originalArgv;
+  }
 });
 
 test('buildNoteStyleLookup indexes shipped note styles', () => {
@@ -523,6 +563,19 @@ test('generateReport supports style-scoped official reports', {
     status: 'official-supplemental',
     headlineGate: 'baseline-fixtures',
   });
+});
+
+test('generateReport supports multi-style selected reports', {
+  skip: !hasLegacyStyles,
+}, async () => {
+  const { report } = await generateReport({
+    styles: ['chicago-author-date', 'apa-7th'],
+    parallelism: 1,
+  });
+
+  assert.equal(report.totalStyles, 2);
+  assert.deepEqual(report.metadata.styles, ['apa-7th', 'chicago-author-date']);
+  assert.equal(report.metadata.styleSelector, 'selected-styles');
 });
 
 test('generateHtml does not misreport missing conformance data as a pass', () => {
