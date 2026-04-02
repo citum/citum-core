@@ -5,16 +5,20 @@ status: todo
 type: task
 priority: normal
 created_at: 2026-04-01T15:00:00Z
-updated_at: 2026-04-01T15:00:00Z
+updated_at: 2026-04-02T00:23:32Z
 ---
 
-Following the implementation of the generalized relational container model (PR #485 / v0.20.0), we need to ensure the new high-fidelity fixtures (comprehensive.yaml, chicago-bib.yaml, etc.) are integrated into the automated fidelity reporting pipeline.
+Following the implementation of the generalized relational container model (PR #485 / v0.20.0) and the numbering cleanup, the fidelity pipeline now needs richer benchmark inputs that exercise the new relational model instead of relying only on the older flat fixtures.
+
+This work should focus on building that broader capability first. Native relational corpora such as `examples/comprehensive.yaml` and `examples/chicago-bib.yaml` should become benchmarkable inputs, and external corpora such as the Zotero test libraries should plug into the same framework where they expose larger real-world style gaps.
+
+This bean is specified by `docs/specs/FIDELITY_RICH_INPUTS.md`.
 
 ## Context
-The architectural shift to recursive `WorkRelation` and `numbering` system requires updating the fidelity tools to correctly resolve and compare rendered output against these new relational structures.
+The architectural shift to recursive `WorkRelation` and canonical `numbering` was intended to prepare the ground for richer fidelity data that can drive later style enhancement waves. Small flat fixtures underrepresent container hierarchies, numbering semantics, reviewed/original relations, and large bibliography corpora.
 
 ## Tasks
-- [ ] Update fidelity reporting tools to support recursive container resolution.
-- [ ] Add `examples/comprehensive.yaml` to the fidelity benchmark suite.
-- [ ] Verify that shorthand fields (volume, issue, etc.) are correctly handled by the reporting logic.
-- [ ] Compare fidelity scores against the previous flat model baselines.
+- [ ] Add style-level `benchmark_runs` support to the fidelity reporting pipeline.
+- [ ] Add native relational benchmark inputs for `examples/comprehensive.yaml` and `examples/chicago-bib.yaml`.
+- [ ] Add an external bibliography pilot using Zotero test data from `tests/fixtures/test-items-library/`.
+- [ ] Make richer relational inputs visible in report output so they can guide future style enhancement work.
