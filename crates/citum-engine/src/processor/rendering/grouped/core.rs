@@ -21,6 +21,12 @@ enum ArticleJournalBibliographyMode {
     DoiFallback,
 }
 
+#[derive(Clone, Copy)]
+enum AnonymousEntryBibliographyMode {
+    ContainerLed,
+    SuppressPrintLike,
+}
+
 struct GroupRenderState<'a> {
     first_item: &'a crate::reference::CitationItem,
     first_ref: &'a Reference,
@@ -50,9 +56,13 @@ fn resolve_type_variant<'a>(
     >,
     ref_type: &str,
 ) -> Option<&'a [TemplateComponent]> {
-    type_variants?
-        .iter()
-        .find_map(|(selector, template)| selector.matches(ref_type).then_some(template.as_slice()))
+    let selector_candidates = aliased_type_selector_candidates(ref_type);
+    type_variants?.iter().find_map(|(selector, template)| {
+        selector_candidates
+            .iter()
+            .any(|candidate| selector.matches(candidate))
+            .then_some(template.as_slice())
+    })
 }
 
 impl Renderer<'_> {
@@ -731,6 +741,7 @@ impl Renderer<'_> {
             .map(Cow::Borrowed)
             .or(default_template)?;
 
+        let template = self.apply_anonymous_entry_bibliography_policy(reference, template)?;
         let template = self.apply_article_journal_bibliography_policy(reference, template);
 
         self.process_template_request_with_format::<F>(
@@ -876,6 +887,29 @@ impl Renderer<'_> {
         ))
     }
 
+    fn apply_anonymous_entry_bibliography_policy<'a>(
+        &self,
+        reference: &Reference,
+        template: Cow<'a, [TemplateComponent]>,
+    ) -> Option<Cow<'a, [TemplateComponent]>> {
+        let Some(mode) = self.anonymous_entry_bibliography_mode(reference, template.as_ref())
+        else {
+            return Some(template);
+        };
+
+        match mode {
+            AnonymousEntryBibliographyMode::ContainerLed => {
+                Some(Cow::Owned(rewrite_anonymous_entry_template(
+                    template.as_ref(),
+                    mode,
+                    reference.ref_type().as_str(),
+                    reference_has_doi(reference),
+                )))
+            }
+            AnonymousEntryBibliographyMode::SuppressPrintLike => None,
+        }
+    }
+
     fn article_journal_bibliography_mode(
         &self,
         reference: &Reference,
@@ -902,6 +936,43 @@ impl Renderer<'_> {
                 }
             }
         }
+    }
+
+    fn anonymous_entry_bibliography_mode(
+        &self,
+        reference: &Reference,
+        template: &[TemplateComponent],
+    ) -> Option<AnonymousEntryBibliographyMode> {
+        if !matches!(
+            reference.ref_type().as_str(),
+            "entry-dictionary" | "entry-encyclopedia" | "chapter"
+        ) {
+            return None;
+        }
+
+        if reference.ref_type() == "chapter" && !template_has_dictionary_entry_shape(template) {
+            return None;
+        }
+
+        if self.reference_has_visible_author(reference) {
+            return None;
+        }
+
+        if !template_has_primary_title(template) || !template_has_parent_container_title(template) {
+            return None;
+        }
+
+        if reference_has_online_access(reference) {
+            Some(AnonymousEntryBibliographyMode::ContainerLed)
+        } else {
+            Some(AnonymousEntryBibliographyMode::SuppressPrintLike)
+        }
+    }
+
+    fn reference_has_visible_author(&self, reference: &Reference) -> bool {
+        reference
+            .author()
+            .is_some_and(|author| !self.resolve_contributor_names(&author).is_empty())
     }
 
     fn build_template_render_hint(
@@ -1207,6 +1278,71 @@ fn article_journal_template_needs_filter(
         .any(|component| article_journal_component_needs_filter(component, mode))
 }
 
+fn rewrite_anonymous_entry_template(
+    template: &[TemplateComponent],
+    mode: AnonymousEntryBibliographyMode,
+    ref_type: &str,
+    prefer_doi: bool,
+) -> Vec<TemplateComponent> {
+    match mode {
+        AnonymousEntryBibliographyMode::ContainerLed => {
+            let mut rewritten = Vec::new();
+
+            if let Some(container_title) =
+                find_preferred_parent_container_component(template, ref_type)
+            {
+                rewritten.push(container_title.clone());
+            }
+            if let Some(issued) = find_first_component(template, is_issued_date_component) {
+                rewritten.push(issued.clone());
+            }
+            if let Some(primary_title) = find_first_component(template, is_primary_title_component)
+            {
+                rewritten.push(primary_title.clone());
+            }
+            if let Some(volume) = find_first_component(template, is_volume_component) {
+                rewritten.push(volume.clone());
+            }
+
+            if prefer_doi {
+                if let Some(doi) = find_first_component(template, is_doi_component) {
+                    rewritten.push(doi.clone());
+                }
+            } else if let Some(url) = find_first_component(template, is_url_component) {
+                rewritten.push(url.clone());
+            }
+
+            if rewritten.is_empty() {
+                template.to_vec()
+            } else {
+                rewritten
+            }
+        }
+        AnonymousEntryBibliographyMode::SuppressPrintLike => template.to_vec(),
+    }
+}
+
+fn find_first_component(
+    template: &[TemplateComponent],
+    predicate: impl Fn(&TemplateComponent) -> bool,
+) -> Option<&TemplateComponent> {
+    template.iter().find(|component| predicate(component))
+}
+
+fn find_preferred_parent_container_component<'a>(
+    template: &'a [TemplateComponent],
+    ref_type: &str,
+) -> Option<&'a TemplateComponent> {
+    if ref_type == "chapter"
+        && let Some(parent_monograph) =
+            find_first_component(template, is_parent_monograph_title_component)
+    {
+        return Some(parent_monograph);
+    }
+
+    find_first_component(template, is_parent_container_title_component)
+}
+
 fn article_journal_component_needs_filter(
     component: &TemplateComponent,
     mode: ArticleJournalBibliographyMode,
@@ -1241,6 +1377,72 @@ fn should_suppress_article_journal_component(
     }
 }
 
+fn template_has_primary_title(template: &[TemplateComponent]) -> bool {
+    template.iter().any(is_primary_title_component)
+}
+
+fn template_has_parent_container_title(template: &[TemplateComponent]) -> bool {
+    template.iter().any(is_parent_container_title_component)
+}
+
+fn template_has_dictionary_entry_shape(template: &[TemplateComponent]) -> bool {
+    template.iter().any(|component| {
+        matches!(
+            component,
+            TemplateComponent::Variable(variable) if variable.variable == SimpleVariable::Version
+        )
+    })
+}
+
+fn is_primary_title_component(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Title(title)
+            if title.title == citum_schema::template::TitleType::Primary
+    )
+}
+
+fn is_parent_container_title_component(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Title(title)
+            if matches!(
+                title.title,
+                citum_schema::template::TitleType::ParentSerial
+                    | citum_schema::template::TitleType::ParentMonograph
+            )
+    )
+}
+
+fn is_parent_monograph_title_component(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Title(title)
+            if title.title == citum_schema::template::TitleType::ParentMonograph
+    )
+}
+
+fn is_issued_date_component(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Date(date) if date.date == DateVariable::Issued
+    )
+}
+
+fn is_volume_component(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Number(number) if number.number == NumberVariable::Volume
+    )
+}
+
+fn is_url_component(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Variable(variable) if variable.variable == SimpleVariable::Url
+    )
+}
+
 fn is_doi_component(component: &TemplateComponent) -> bool {
     matches!(
         component,
@@ -1272,6 +1474,21 @@ fn reference_has_pages(reference: &Reference) -> bool {
 
 fn reference_has_doi(reference: &Reference) -> bool {
     reference.doi().is_some_and(|doi| !doi.trim().is_empty())
+}
+
+fn reference_has_url(reference: &Reference) -> bool {
+    reference.url().is_some()
+}
+
+fn reference_has_online_access(reference: &Reference) -> bool {
+    reference_has_doi(reference) || reference_has_url(reference)
+}
+
+fn aliased_type_selector_candidates(ref_type: &str) -> Vec<&str> {
+    match ref_type {
+        "chapter" => vec!["chapter", "entry-dictionary"],
+        _ => vec![ref_type],
+    }
 }
 
 pub(super) fn filter_author_from_template(

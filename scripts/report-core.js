@@ -138,6 +138,7 @@ function parseArgs() {
     writeHtml: false,
     outputHtml: null,
     styleName: null,
+    styleFile: null,
     stylesDir: null,
     styles: null,
     parallelism: DEFAULT_PARALLELISM,
@@ -160,6 +161,10 @@ function parseArgs() {
       const consumed = consumeFlagValue(args, i, '--style');
       i = consumed.nextIndex;
       options.styleName = consumed.value.trim();
+    } else if (args[i] === '--style-file') {
+      const consumed = consumeFlagValue(args, i, '--style-file');
+      i = consumed.nextIndex;
+      options.styleFile = path.resolve(consumed.value);
     } else if (args[i] === '--styles-dir') {
       const consumed = consumeFlagValue(args, i, '--styles-dir');
       i = consumed.nextIndex;
@@ -193,6 +198,9 @@ function parseArgs() {
 
   if (options.styleName && options.styles?.length) {
     throw new Error('Flags --style and --styles are mutually exclusive');
+  }
+  if (options.styleFile && !options.styleName) {
+    throw new Error('Flag --style-file requires --style');
   }
 
   return options;
@@ -949,7 +957,7 @@ async function runCiteprocBenchmarkOracle(runtime, stylePath, styleName, benchma
         '--refs-fixture', resolvedRun.refsFixture,
         runtime.caseSensitive ? '--case-sensitive' : '--case-insensitive',
       ];
-      if (resolvedRun.citationsFixture) {
+      if (resolvedRun.citationsFixture && resolvedRun.scope !== 'bibliography') {
         args.push('--citations-fixture', resolvedRun.citationsFixture);
       }
       const result = await runNodeOracleScript(liveScript, args);
@@ -1314,6 +1322,43 @@ function formatBenchmarkRunRecord(benchmarkRun, extras = {}) {
   };
 }
 
+function summarizeSection(section = null) {
+  if (!section) return null;
+  const total = section.total || 0;
+  const passed = section.passed || 0;
+  return {
+    passed,
+    total,
+    failed: Math.max(0, total - passed),
+    matchRate: total > 0 ? parseFloat((passed / total).toFixed(3)) : null,
+  };
+}
+
+function summarizeBenchmarkRunRecord(benchmarkRunRecord) {
+  return {
+    id: benchmarkRunRecord.id,
+    label: benchmarkRunRecord.label,
+    runner: benchmarkRunRecord.runner,
+    scope: benchmarkRunRecord.scope,
+    status: benchmarkRunRecord.status,
+    countTowardFidelity: benchmarkRunRecord.countTowardFidelity,
+    citations: summarizeSection(benchmarkRunRecord.citations),
+    bibliography: summarizeSection(benchmarkRunRecord.bibliography),
+    bibliographyEntries: benchmarkRunRecord.bibliographyEntries ?? null,
+  };
+}
+
+function buildRichInputEvidenceSummary(styleRecord, benchmarkRunResults) {
+  return {
+    headlineGate: {
+      citations: summarizeSection(styleRecord.rawCitations),
+      bibliography: summarizeSection(styleRecord.rawBibliography),
+      qualityScore: styleRecord.qualityScore,
+    },
+    officialSupplemental: benchmarkRunResults.map(summarizeBenchmarkRunRecord),
+  };
+}
+
 function toPublishedBenchmarkRunRecord(benchmarkRunRecord) {
   return {
     id: benchmarkRunRecord.id,
@@ -1463,8 +1508,8 @@ function safePct(value) {
   return parseFloat(clamp(0, 100, value).toFixed(1));
 }
 
-function loadStyleYaml(styleName) {
-  const stylePath = path.join(path.dirname(__dirname), 'styles', `${styleName}.yaml`);
+function loadStyleYaml(styleName, stylePathOverride = null) {
+  const stylePath = stylePathOverride || path.join(path.dirname(__dirname), 'styles', `${styleName}.yaml`);
   if (!fs.existsSync(stylePath)) {
     return {
       stylePath,
@@ -1799,8 +1844,8 @@ function computePresetUsageScore(styleData, concisionScore) {
   };
 }
 
-function computeQualityMetrics(styleSpec, oracleResult) {
-  const loaded = loadStyleYaml(styleSpec.name);
+function computeQualityMetrics(styleSpec, oracleResult, styleYamlPath = null) {
+  const loaded = loadStyleYaml(styleSpec.name, styleYamlPath);
   if (!loaded.resolvedStyleData) {
     return {
       score: 0,
@@ -1930,6 +1975,7 @@ async function processStyleReport(runtime, styleSpec, context) {
   const {
     divergences,
     stylesDir,
+    styleYamlOverridePath,
     verificationPolicy,
     fixtureSufficiency,
     noteStyles,
@@ -1948,7 +1994,7 @@ async function processStyleReport(runtime, styleSpec, context) {
     const citations = getEffectiveOracleSection(oracleResult, 'citations');
     const rawBibliography = oracleResult.bibliography || { passed: 0, total: 0 };
     const rawCitations = oracleResult.citations || { passed: 0, total: 0 };
-    const qualityMetrics = computeQualityMetrics(styleSpec, oracleResult);
+    const qualityMetrics = computeQualityMetrics(styleSpec, oracleResult, styleYamlOverridePath);
     const qualityScore = qualityMetrics.score / 100;
     let statusTier = 'failing';
     if (oracleResult.error) {
@@ -1997,7 +2043,7 @@ async function processStyleReport(runtime, styleSpec, context) {
   }
 
   const stylePath = path.join(stylesDir, `${styleSpec.sourceName}.csl`);
-  const styleYamlPath = path.join(PROJECT_ROOT, 'styles', `${styleSpec.name}.yaml`);
+  const styleYamlPath = styleYamlOverridePath || path.join(PROJECT_ROOT, 'styles', `${styleSpec.name}.yaml`);
 
   if (citationAuthority.authority === 'citeproc-js' && !fs.existsSync(stylePath)) {
     return {
@@ -2067,7 +2113,7 @@ async function processStyleReport(runtime, styleSpec, context) {
   const rawCitations = oracleResult.citations || { passed: 0, total: 0 };
   const rawBibliography = oracleResult.bibliography || { passed: 0, total: 0 };
   const componentMatchRate = computeComponentMatchRate(oracleResult);
-  const qualityMetrics = computeQualityMetrics(styleSpec, oracleResult);
+  const qualityMetrics = computeQualityMetrics(styleSpec, oracleResult, styleYamlPath);
   const qualityScore = qualityMetrics.score / 100;
 
   let statusTier = 'failing';
@@ -2085,33 +2131,37 @@ async function processStyleReport(runtime, styleSpec, context) {
     ? auditNoteStyle(noteStyles.get(styleSpec.name), { citumBin: runtime.citumBin })
     : null;
 
+  const styleRecord = {
+    name: styleSpec.name,
+    format: styleSpec.format,
+    hasBibliography: styleSpec.hasBibliography,
+    ...buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy),
+    fidelityScore: parseFloat(fidelityScore.toFixed(3)),
+    citations,
+    bibliography,
+    rawCitations,
+    rawBibliography,
+    knownDivergences: divergences[styleSpec.name] || [],
+    adjustedDivergences: oracleResult.adjusted?.divergenceSummary || {},
+    caseMismatches,
+    citationsByType: oracleResult.citationsByType || {},
+    error: combinedStyleError,
+    componentMatchRate,
+    statusTier,
+    componentSummary: oracleResult.componentSummary || {},
+    citationEntries: oracleResult.citations ? oracleResult.citations.entries : null,
+    oracleDetail: oracleResult.bibliography ? oracleResult.bibliography.entries : null,
+    benchmarkRunResults: publishedBenchmarkRunResults,
+    qualityScore: parseFloat(qualityScore.toFixed(3)),
+    qualityBreakdown: qualityMetrics,
+    oracleSource: oracleResult.oracleSource || primaryComparator,
+    styleYamlPath: toRepoRelativePath(styleYamlPath) || styleYamlPath,
+    notePositionAudit,
+  };
+  styleRecord.richInputEvidence = buildRichInputEvidenceSummary(styleRecord, publishedBenchmarkRunResults);
+
   return {
-    styleRecord: {
-      name: styleSpec.name,
-      format: styleSpec.format,
-      hasBibliography: styleSpec.hasBibliography,
-      ...buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy),
-      fidelityScore: parseFloat(fidelityScore.toFixed(3)),
-      citations,
-      bibliography,
-      rawCitations,
-      rawBibliography,
-      knownDivergences: divergences[styleSpec.name] || [],
-      adjustedDivergences: oracleResult.adjusted?.divergenceSummary || {},
-      caseMismatches,
-      citationsByType: oracleResult.citationsByType || {},
-      error: combinedStyleError,
-      componentMatchRate,
-      statusTier,
-      componentSummary: oracleResult.componentSummary || {},
-      citationEntries: oracleResult.citations ? oracleResult.citations.entries : null,
-      oracleDetail: oracleResult.bibliography ? oracleResult.bibliography.entries : null,
-      benchmarkRunResults: publishedBenchmarkRunResults,
-      qualityScore: parseFloat(qualityScore.toFixed(3)),
-      qualityBreakdown: qualityMetrics,
-      oracleSource: oracleResult.oracleSource || primaryComparator,
-      notePositionAudit,
-    },
+    styleRecord,
     errorCount: combinedStyleError ? 1 : 0,
     citations,
     bibliography,
@@ -2151,6 +2201,7 @@ async function generateReport(options) {
     const result = await processStyleReport(runtime, styleSpec, {
       divergences,
       stylesDir,
+      styleYamlOverridePath: options.styleFile,
       verificationPolicy,
       fixtureSufficiency,
       noteStyles,
@@ -2207,6 +2258,7 @@ async function generateReport(options) {
           : options.styles?.length
             ? 'selected-styles'
             : 'core-styles',
+        styleYamlOverride: options.styleFile ? toRepoRelativePath(options.styleFile) || options.styleFile : null,
         styles: coreStyles.map((style) => style.name),
         generator: 'scripts/report-core.js',
         richInputEvidence: {

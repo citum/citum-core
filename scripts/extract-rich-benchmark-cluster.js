@@ -176,7 +176,10 @@ function loadFixtureItems(filePath) {
 }
 
 function createFixtureObject(items) {
-  return { items };
+  return {
+    items,
+    references: items,
+  };
 }
 
 function selectFixtureItems(items, selectors) {

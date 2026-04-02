@@ -99,9 +99,9 @@ pub(super) fn should_merge_inferred_type_template(
 ) -> bool {
     match type_name {
         "patent" => candidate_template.len() <= 12,
-        "entry-encyclopedia" => {
+        "entry-dictionary" | "entry-encyclopedia" => {
             !template_targets_type(inferred_template, type_name)
-                && !template_has_parent_title(candidate_template)
+                && template_has_parent_title(candidate_template)
         }
         "webpage" => {
             (!template_targets_type(inferred_template, type_name)
@@ -286,5 +286,45 @@ fn component_has_volume(component: &TemplateComponent) -> bool {
         TemplateComponent::Number(n) => n.number == citum_schema::template::NumberVariable::Volume,
         TemplateComponent::Group(list) => list.group.iter().any(component_has_volume),
         _ => false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::should_merge_inferred_type_template;
+    use citum_schema::template::{TemplateComponent, TemplateTitle, TitleType};
+
+    fn parent_serial_title() -> TemplateComponent {
+        TemplateComponent::Title(TemplateTitle {
+            title: TitleType::ParentSerial,
+            ..Default::default()
+        })
+    }
+
+    #[test]
+    fn merges_entry_encyclopedia_candidates_with_parent_titles() {
+        assert!(should_merge_inferred_type_template(
+            "entry-encyclopedia",
+            &[],
+            &[parent_serial_title()],
+        ));
+    }
+
+    #[test]
+    fn merges_entry_dictionary_candidates_with_parent_titles() {
+        assert!(should_merge_inferred_type_template(
+            "entry-dictionary",
+            &[],
+            &[parent_serial_title()],
+        ));
+    }
+
+    #[test]
+    fn skips_entry_dictionary_candidates_without_parent_titles() {
+        assert!(!should_merge_inferred_type_template(
+            "entry-dictionary",
+            &[],
+            &[],
+        ));
     }
 }

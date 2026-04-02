@@ -47,6 +47,10 @@ Action routing:
 - `processor-defect` routes to engine follow-up
 - `intentional divergence` routes to adjudication
 
+If a migration-side change produces no delta in the reduced cluster and no delta
+in `report-core --style-file`, stop treating the cluster as migration-owned and
+reroute the same bounded cluster to processor work.
+
 ## Operator Commands
 Primary oracle:
 
@@ -58,6 +62,13 @@ Official style report:
 
 ```bash
 node scripts/report-core.js --style chicago-author-date > /tmp/chicago-report.json
+```
+
+Temporary migrated style:
+
+```bash
+cargo run --bin citum-migrate -- styles-legacy/chicago-author-date.csl > /tmp/chicago-migrated.yaml
+node scripts/report-core.js --style chicago-author-date --style-file /tmp/chicago-migrated.yaml > /tmp/chicago-report-temp.json
 ```
 
 Cluster extraction:
@@ -81,6 +92,15 @@ node scripts/oracle.js styles-legacy/chicago-author-date.csl \
   > /tmp/chicago-entry-cluster/cluster-oracle.json
 ```
 
+Reduced cluster warning:
+
+- Do not use the legacy-style `oracle.js styles-legacy/...` rerun as the
+  temporary migrated-style "after" measurement when the style is already known
+  to the repo and may resolve to the checked-in YAML.
+- Use the reduced cluster render against `/tmp/chicago-migrated.yaml` as the
+  trustworthy post-fix surface unless a fully migrated-style-aware comparator is
+  available for that fixture shape.
+
 ## Output Artifacts
 The extractor writes:
 
@@ -99,3 +119,6 @@ row count instead of over-reducing to a non-reproducible subset.
 - explicit selectors only: `--type` or `--ids`
 - no changes to `report-core` published JSON shape
 - no heuristic cluster inference in the extractor
+- `report-core --style-file` is style-file-aware for loading and reporting, but
+  its citeproc benchmark step is not yet universally migrated-style-aware for
+  every wrapped supplemental fixture shape
