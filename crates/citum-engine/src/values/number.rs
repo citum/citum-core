@@ -35,6 +35,10 @@ fn resolve_number_value(
                 })
             }
         }
+        NumberVariable::ChapterNumber => match reference {
+            Reference::Statute(r) => r.chapter_number.clone(),
+            _ => reference.numbering_value(&citum_schema::reference::NumberingType::Chapter),
+        },
         NumberVariable::Edition => reference.edition(),
         NumberVariable::CollectionNumber => reference.collection_number(),
         NumberVariable::Number => reference.number(),

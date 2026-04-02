@@ -77,7 +77,7 @@
     "version": {
       "description": "Style schema version.",
       "type": "string",
-      "default": "0.23.0"
+      "default": "0.24.0"
     }
   },
   "additionalProperties": false,
@@ -3381,8 +3381,10 @@
         "locator",
         "container-title-short",
         "authority",
+        "code",
         "reporter",
         "page",
+        "section",
         "volume",
         "number",
         "docket-number",

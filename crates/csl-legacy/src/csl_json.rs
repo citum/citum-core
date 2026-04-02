@@ -11,7 +11,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! Note: This is a legacy format with known limitations. The preferred format
 //! for new data is the Citum InputReference model in citum_schema.
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 
 /// A bibliographic reference item.
@@ -116,6 +116,9 @@ pub struct Reference {
     /// Number
     #[serde(skip_serializing_if = "Option::is_none")]
     pub number: Option<String>,
+    /// Chapter or session identifier used by some legal and legislative sources.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub chapter_number: Option<String>,
     /// Genre
     #[serde(skip_serializing_if = "Option::is_none")]
     pub genre: Option<String>,
@@ -199,7 +202,11 @@ impl Name {
 #[serde(rename_all = "kebab-case")]
 pub struct DateVariable {
     /// Date parts: [[year, month, day], [`end_year`, `end_month`, `end_day`]]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_date_parts_opt"
+    )]
     pub date_parts: Option<Vec<Vec<i32>>>,
     /// Literal date string
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -208,11 +215,73 @@ pub struct DateVariable {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub raw: Option<String>,
     /// Season (1-4)
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_season_opt"
+    )]
     pub season: Option<i32>,
     /// Circa (approximate date)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub circa: Option<bool>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+enum IntOrString {
+    Int(i32),
+    String(String),
+}
+
+fn deserialize_date_parts_opt<'de, D>(deserializer: D) -> Result<Option<Vec<Vec<i32>>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let raw = Option::<Vec<Vec<IntOrString>>>::deserialize(deserializer)?;
+    raw.map(|rows| {
+        rows.into_iter()
+            .map(|row| {
+                row.into_iter()
+                    .map(|value| match value {
+                        IntOrString::Int(n) => Ok(n),
+                        IntOrString::String(text) => text.parse::<i32>().map_err(|_| {
+                            serde::de::Error::custom(format!(
+                                "invalid date-parts component {:?}: expected integer or integer-like string",
+                                text
+                            ))
+                        }),
+                    })
+                    .collect::<Result<Vec<_>, D::Error>>()
+            })
+            .collect::<Result<Vec<_>, D::Error>>()
+    })
+    .transpose()
+}
+
+fn deserialize_season_opt<'de, D>(deserializer: D) -> Result<Option<i32>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let raw = Option::<IntOrString>::deserialize(deserializer)?;
+    raw.map(|value| match value {
+        IntOrString::Int(n) => Ok(n),
+        IntOrString::String(text) => {
+            let normalized = text.trim().to_ascii_lowercase();
+            match normalized.as_str() {
+                "spring" => Ok(1),
+                "summer" => Ok(2),
+                "fall" | "autumn" => Ok(3),
+                "winter" => Ok(4),
+                _ => text.parse::<i32>().map_err(|_| {
+                    serde::de::Error::custom(format!(
+                        "invalid season {:?}: expected integer, integer-like string, or named season",
+                        text
+                    ))
+                }),
+            }
+        }
+    })
+    .transpose()
 }
 
 impl DateVariable {

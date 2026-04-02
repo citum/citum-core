@@ -70,8 +70,14 @@ pub struct Statute {
     pub volume: Option<String>,
     /// Code abbreviation (e.g., "U.S.C.", "Pub. L.")
     pub code: Option<String>,
+    /// Statute or public-law number when present.
+    pub number: Option<String>,
+    /// Page or entry locator for session laws and registers.
+    pub page: Option<String>,
     /// Section or page number
     pub section: Option<String>,
+    /// Optional chapter or session identifier.
+    pub chapter_number: Option<String>,
     /// Enactment or publication date
     #[cfg_attr(feature = "bindings", specta(type = String))]
     pub issued: EdtfString,
