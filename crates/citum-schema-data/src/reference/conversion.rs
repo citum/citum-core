@@ -461,7 +461,10 @@ fn from_statute_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) ->
         authority: legacy.authority,
         volume: legacy.volume.map(|v| v.to_string()),
         code: legacy.container_title,
+        number: legacy.number,
+        page: legacy.page,
         section: legacy.section,
+        chapter_number: legacy.chapter_number,
         issued: ctx.issued,
         url: ctx.url,
         accessed: ctx.accessed,
@@ -557,6 +560,83 @@ fn from_dataset_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) ->
         field_languages: HashMap::new(),
         note: ctx.note,
         keywords: None,
+    }))
+}
+
+fn from_bill_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
+    let titleless_proceeding =
+        legacy.title.is_none() && (legacy.authority.is_some() || legacy.chapter_number.is_some());
+    let titleless_record = legacy.title.is_none()
+        && legacy.container_title.is_some()
+        && legacy.volume.is_some()
+        && legacy.page.is_some();
+
+    if !(titleless_proceeding || titleless_record) {
+        return from_document_ref(legacy, ctx);
+    }
+
+    let mut numbering = Vec::new();
+    if let Some(chapter) = legacy.chapter_number.clone() {
+        numbering.push(Numbering {
+            r#type: NumberingType::Chapter,
+            value: chapter,
+        });
+    }
+
+    let genre = if titleless_proceeding {
+        "bill-proceeding"
+    } else {
+        "bill-record"
+    };
+
+    let title = if titleless_record {
+        ctx.title
+            .or_else(|| legacy.container_title.clone().map(Title::Single))
+    } else {
+        ctx.title
+            .or_else(|| legacy.number.clone().map(Title::Single))
+            .or_else(|| legacy.container_title.clone().map(Title::Single))
+    };
+
+    InputReference::Monograph(Box::new(Monograph {
+        id: ctx.id,
+        r#type: MonographType::Document,
+        title,
+        short_title: None,
+        container: None,
+        author: None,
+        editor: None,
+        translator: None,
+        recipient: None,
+        interviewer: None,
+        guest: None,
+        issued: ctx.issued,
+        publisher: legacy.authority.map(|name| {
+            Contributor::SimpleName(SimpleName {
+                name: name.into(),
+                location: None,
+            })
+        }),
+        volume: legacy.volume.map(|v| v.to_string()),
+        number: legacy.page,
+        url: ctx.url,
+        accessed: ctx.accessed,
+        language: ctx.language,
+        field_languages: HashMap::new(),
+        note: ctx.note,
+        isbn: ctx.isbn,
+        doi: ctx.doi,
+        ads_bibcode: None,
+        numbering,
+        genre: Some(genre.to_string()),
+        medium: legacy.medium,
+        archive: legacy.archive,
+        archive_location: legacy.archive_location,
+        archive_info: None,
+        eprint: None,
+        keywords: None,
+        original: None,
+        ..Default::default()
     }))
 }
 
@@ -687,6 +767,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                 from_serial_component_ref(legacy, ctx)
             }
             "speech" | "presentation" => from_event_ref(legacy, ctx),
+            "bill" => from_bill_ref(legacy, ctx),
             "legal-case" | "legal_case" => from_legal_case_ref(legacy, ctx),
             "statute" | "legislation" => from_statute_ref(legacy, ctx),
             "treaty" => from_treaty_ref(legacy, ctx),

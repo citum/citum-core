@@ -2939,6 +2939,13 @@
             "null"
           ]
         },
+        "chapter-number": {
+          "description": "Optional chapter or session identifier.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "code": {
           "description": "Code abbreviation (e.g., \"U.S.C.\", \"Pub. L.\")",
           "type": [
@@ -2983,6 +2990,20 @@
         },
         "note": {
           "description": "Freeform note.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "number": {
+          "description": "Statute or public-law number when present.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "page": {
+          "description": "Page or entry locator for session laws and registers.",
           "type": [
             "string",
             "null"

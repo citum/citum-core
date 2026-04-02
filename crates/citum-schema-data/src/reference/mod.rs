@@ -696,6 +696,7 @@ impl InputReference {
                 WorkRelation::Id(_) => None,
             }),
             InputReference::LegalCase(r) => r.reporter.clone().map(Title::Single),
+            InputReference::Statute(r) => r.code.clone().map(Title::Single),
             InputReference::Treaty(r) => r.reporter.clone().map(Title::Single),
             InputReference::Event(r) => r.container.as_ref().and_then(|c| match c {
                 WorkRelation::Embedded(p) => p.title().or_else(|| p.container_title()),
@@ -792,6 +793,7 @@ impl InputReference {
             InputReference::CollectionComponent(r) => r.pages.clone(),
             InputReference::SerialComponent(r) => r.pages.clone().map(NumOrStr::Str),
             InputReference::LegalCase(r) => r.page.clone().map(NumOrStr::Str),
+            InputReference::Statute(r) => r.page.clone().map(NumOrStr::Str),
             InputReference::Treaty(r) => r.page.clone().map(NumOrStr::Str),
             _ => None,
         }
@@ -846,6 +848,7 @@ impl InputReference {
                 .number
                 .clone()
                 .or_else(|| self.find_numbering(NumberingType::Number)),
+            InputReference::Statute(r) => r.number.clone(),
             InputReference::Collection(r) => r
                 .number
                 .clone()
@@ -1102,6 +1105,11 @@ impl InputReference {
                 MonographType::Preprint => "preprint".to_string(),
                 MonographType::PersonalCommunication => "personal-communication".to_string(),
                 MonographType::Document => {
+                    if let Some(genre) = r.genre.as_deref()
+                        && matches!(genre, "bill-proceeding" | "bill-record")
+                    {
+                        return genre.to_string();
+                    }
                     if r.medium
                         .as_deref()
                         .is_some_and(|m| m.to_ascii_lowercase().contains("interview"))

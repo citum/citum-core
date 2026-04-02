@@ -65,8 +65,10 @@ fn resolve_variable_value(
         SimpleVariable::EprintServer => reference.eprint_server(),
         SimpleVariable::EprintClass => reference.eprint_class(),
         SimpleVariable::Authority => reference.authority(),
+        SimpleVariable::Code => reference.code(),
         SimpleVariable::Reporter => reference.reporter(),
         SimpleVariable::Page => reference.pages().map(|v| v.to_string()),
+        SimpleVariable::Section => reference.section(),
         SimpleVariable::Volume => reference.volume().map(|v| v.to_string()),
         SimpleVariable::Number => reference.number(),
         SimpleVariable::DocketNumber => match reference {
