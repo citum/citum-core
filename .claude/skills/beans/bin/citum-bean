@@ -73,7 +73,6 @@ main_commit_evidence_json() {
     local cache_file=""
     local cache_tmp=""
     local first=1
-    local -a commit_args=()
     local rev
     local header
     local sha
@@ -112,12 +111,12 @@ main_commit_evidence_json() {
         progress "  scanning main commit history"
     fi
 
-    if [[ -n "$since" ]]; then
-        commit_args=(--since="$since")
-    fi
-
     generate_records() {
-        git log "${commit_args[@]}" --name-only --format="@@COMMIT@@%H%x1f%ct%x1f%cI%x1f%s%x1f%b@@BODYEND@@" main | \
+        if [[ -n "$since" ]]; then
+            git log --since="$since" --name-only --format="@@COMMIT@@%H%x1f%ct%x1f%cI%x1f%s%x1f%b@@BODYEND@@" main
+        else
+            git log --name-only --format="@@COMMIT@@%H%x1f%ct%x1f%cI%x1f%s%x1f%b@@BODYEND@@" main
+        fi | \
         python3 -c '
 import sys, json
 
@@ -231,7 +230,9 @@ build_audit_json() {
             else (try ($value | fromdateiso8601) catch null)
             end;
         def is_after_opened($bean; $commit):
-            (parsed_epoch($bean.created_at // $bean.updated_at) as $bean_epoch |
+            # Stale-bean detection should respect the most recent bean touch, not
+            # just the original creation time.
+            (parsed_epoch($bean.updated_at // $bean.created_at) as $bean_epoch |
                 if $bean_epoch == null then true
                 else (($commit.epoch // -1) >= $bean_epoch)
                 end);

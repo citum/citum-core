@@ -202,6 +202,31 @@ set -e
 [[ "$precreated_status" -eq 0 ]] || fail "expected pre-created stale candidate to be ignored"
 assert_contains "$precreated_output" "No bean hygiene issues found."
 
+cat >"$TMP_ROOT/updated-soft-stale.json" <<'EOF'
+[
+  {
+    "id": "csl26-soft3",
+    "title": "Investigate stale bean detection",
+    "status": "todo",
+    "type": "task",
+    "priority": "normal",
+    "created_at": "2020-03-01T00:00:00Z",
+    "updated_at": "2999-03-02T00:00:00Z",
+    "path": "csl26-soft3--investigate-stale-bean-detection.md"
+  }
+]
+EOF
+
+repo=$(new_repo updated-soft-stale)
+commit_file "$repo" README.md "baseline" "chore: initial commit"
+commit_file "$repo" notes.txt "done" $'feat(workflow): stale candidate\n\nRefs: csl26-soft3'
+set +e
+updated_output=$(run_wrapper "$repo" "$TMP_ROOT/updated-soft-stale.json" hygiene 2>&1)
+updated_status=$?
+set -e
+[[ "$updated_status" -eq 0 ]] || fail "expected updated stale candidate to be ignored"
+assert_contains "$updated_output" "No bean hygiene issues found."
+
 cat >"$TMP_ROOT/umbrella-stale.json" <<'EOF'
 [
   {
