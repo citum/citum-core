@@ -27,14 +27,16 @@ produce better output.
 - You want to close the gap between `citum-migrate` output and reference fidelity
 - After a `style-migrate-enhance` wave surfaced repeated `missing-feature` gaps
   that trace back to the converter
+- A style-fidelity follow-up needs bounded rich-input evidence to determine
+  whether the next pass belongs in migration, style, processor, or adjudication
 
 ## Do Not Use When
 
 - Fixing a single style's YAML → use `style-evolve upgrade`
 - The failure is an engine rendering bug, not a converter bug → use Co-Evolution
 - The failure requires new schema fields → file a bean, escalate to planner
-- The only new signal is style-level `benchmark_runs` evidence → record it as follow-up
-  context, but do not use rich-input corpora as keep/revert gates in this wave
+- The only new signal is a full supplemental corpus rerun with no bounded cluster,
+  hypothesis, or classification → reduce the fixture first
 
 ## Entry Points
 
@@ -61,6 +63,22 @@ Everything else proceeds automatically. Report results at the end.
 - **Corpus**: style names or `--top N` (default: 10 from `docs/reference/STYLE_PRIORITY.md`)
 - **Budget**: max iterations (default: 5 per session)
 - **Skip list**: styles or failure patterns to ignore (optional)
+
+## Operating Modes
+
+### 1. Broad converter loop
+
+Use the existing corpus-level autoresearch loop when the goal is to improve
+`citum-migrate` across multiple styles at once.
+
+### 2. Rich-input follow-up loop
+
+Use this mode when a single style has an official supplemental benchmark and the
+next pass needs tighter evidence selection before deciding whether the problem is
+in migration, style YAML, processor behavior, or adjudication.
+
+This mode is still process-first and migration-focused. It does not authorize
+style editing inside `migrate-research`.
 
 ## Session State
 
@@ -129,20 +147,56 @@ For each cluster, decide:
 
 | Classification | Meaning | Action |
 |---|---|---|
-| `converter-gap` | The converter produces wrong/missing YAML for a CSL construct it should handle | Fix in this loop |
-| `engine-gap` | The YAML would be correct but the renderer doesn't support it | File a bean, skip |
-| `schema-gap` | The behavior requires schema fields that don't exist | File a bean, skip |
+| `migration-artifact` | `citum-migrate` produced the wrong or incomplete style behavior | Fix in this loop |
+| `style-defect` | The remaining mismatch belongs in hand-authored YAML, not migration | Route to `style-evolve upgrade` |
+| `processor-defect` | The migrated YAML is reasonable, but engine rendering is wrong | File or update engine follow-up |
+| `intentional divergence` | Citum should not chase citeproc parity for this case | Route to adjudication |
 
 Read `docs/adjudication/DIVERGENCE_REGISTER.md` before classifying. If a cluster
 matches a registered divergence, record `div-XXX` and exclude it from the fix queue.
 
-Only `converter-gap` clusters are in scope. If zero converter-gaps remain, the
-session terminates early — the converter is not the bottleneck.
+Only `migration-artifact` clusters are implementation targets in this skill. If
+zero `migration-artifact` clusters remain, the session terminates early — the
+converter is not the bottleneck.
 
 ### Step 5 — Pick the highest-impact cluster
 
-Select the `converter-gap` that affects the most styles. Ties broken by priority
-rank of affected styles.
+Select one bounded target cluster. In broad mode, choose the highest-impact
+`migration-artifact`. In rich-input follow-up mode, choose exactly one
+style-local cluster before any code edit.
+
+Do not mix clusters in one pass.
+
+### Step 5a — Evidence ladder for rich-input follow-up
+
+When the style has official supplemental evidence, use this order:
+
+1. Run the primary oracle hard gate.
+2. Run the official style-scoped report with `report-core`.
+3. Extract one reduced supplemental cluster before edits.
+4. Use the full supplemental benchmark only as confirmation after the cluster rerun.
+
+The official style report is the authority for whether a supplemental benchmark
+is configured. The reduced cluster is the authority for fast iteration.
+
+### Step 5b — Fixture minimization for rich-input follow-up
+
+Before editing any migration code:
+
+1. Select the cluster by explicit `--type` or `--ids`.
+2. Run `scripts/extract-rich-benchmark-cluster.js`.
+3. Confirm the reduced cluster reproduces the target mismatch.
+
+If the extractor reports unresolved unmapped mismatch rows, keep the selected
+cluster as the working fixture for that pass. Do not force further reduction.
+
+Artifacts written by the extractor:
+
+- `cluster-fixture.json`
+- `cluster-before.json`
+- `cluster-summary.json`
+
+Preferred starting size: 1-5 bibliography rows.
 
 ### Step 6 — Hypothesize
 
@@ -192,6 +246,14 @@ node scripts/oracle.js styles-legacy/<name>.csl --json
 
 Compare against baseline. Compute per-style and aggregate fidelity delta.
 
+For rich-input follow-up mode, always record both:
+
+- cluster before and after
+- full supplemental benchmark before and after
+
+Do not treat a full supplemental rerun as sufficient evidence if the reduced
+cluster was not rechecked first.
+
 ### Step 10 — Decide
 
 | Outcome | Action |
@@ -231,13 +293,15 @@ Return to Step 5 for the next cluster. Stop when:
 | Corpus fidelity delta < 0.5% per iteration over last 2 attempts | Plateau — session complete |
 | 3 consecutive reverts | Current approach exhausted — session complete |
 | Budget exhausted (default: 5 iterations) | Session complete |
-| Zero `converter-gap` clusters remain | Converter is not the bottleneck — session complete |
+| Zero `migration-artifact` clusters remain | Converter is not the bottleneck — session complete |
 | Same converter module modified 3+ times without sustained gain | Try a different module or rethink the approach |
 
 ## Hard Gates
 
 - **No fidelity regression on the corpus.** A fix that helps one style but
   breaks another is not acceptable without investigation.
+- **No regression on the primary oracle hard gate.**
+- **One bounded cluster per pass.**
 - **No `Cargo.toml` changes without confirmation.** The converter fix should not
   require new dependencies.
 - **No style YAML modifications.** This skill modifies the converter, not its
@@ -265,10 +329,18 @@ Every completed session delivers:
 1. **Corpus delta table**: per-style citation and bibliography fidelity, before vs after
 2. **Cluster table**: each failure cluster, classification, disposition (fixed/skipped/deferred)
 3. **Attempt log**: per-iteration hypothesis, result, and reflection
-4. **Beans filed**: IDs for any `engine-gap` or `schema-gap` items discovered
+4. **Beans filed**: IDs for any `processor-defect` or follow-up migration/style items discovered
 5. **Follow-up styles**: which styles should be re-run through `style-migrate-enhance`
    to benefit from the converter improvements
 6. **Convergence reason**: why the session stopped
+
+For rich-input follow-up mode, also deliver:
+
+7. **Target cluster**: one bounded cluster only
+8. **Evidence ladder status**: primary oracle, official style report, reduced
+   cluster rerun, full supplemental confirmation
+9. **Per-pass accounting**: cluster before/after, full supplemental before/after,
+   classification, and stop reason
 
 Format:
 
@@ -286,8 +358,8 @@ Corpus: <N> styles | Budget: <M> iterations | Convergence: <reason>
 ### Clusters
 | Cluster | Classification | Styles affected | Disposition | Commit |
 |---|---|---|---|---|
-| volume-pages delimiter | converter-gap | nature, cell, science | fixed | abc1234 |
-| DOI suppression | engine-gap | elsevier-harvard, apa | bean: csl26-xxxx | — |
+| volume-pages delimiter | migration-artifact | nature, cell, science | fixed | abc1234 |
+| DOI suppression | processor-defect | elsevier-harvard, apa | bean: csl26-xxxx | — |
 
 ### Attempts
 1. **volume-pages delimiter** — Hypothesis: group delimiter not preserved during
@@ -297,6 +369,19 @@ Corpus: <N> styles | Budget: <M> iterations | Convergence: <reason>
 ### Follow-up
 Re-run `style-migrate-enhance` on: nature, cell, science (converter now handles
 volume-pages correctly; fresh migration will produce better YAML baseline).
+```
+
+### Rich-input follow-up template
+```
+Target style: <style>
+Target cluster: <one cluster only>
+Cluster selector: <type or ids>
+Primary oracle before/after: <x/y -> x/y>
+Official supplemental before/after: <m/n -> m/n>
+Cluster before/after: <a/b -> c/d>
+Classification: style-defect | migration-artifact | processor-defect | intentional divergence
+Hypothesis: <one sentence>
+Stop reason: landed | reroute | plateau | adjudication
 ```
 
 ## Integration Points
