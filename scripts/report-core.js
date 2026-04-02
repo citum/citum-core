@@ -11,6 +11,7 @@
  *   node report-core.js --output-html /path/to/output.html   # Write HTML to custom path
  *   node report-core.js --style chicago-author-date          # Output one official style report
  *   node report-core.js --styles-dir /path/to/csl            # Override CSL directory
+ *   node report-core.js --styles chicago-author-date,apa-7th # Limit report to selected styles
  */
 
 const crypto = require('crypto');
@@ -117,6 +118,17 @@ const BENCHMARK_RUNNERS = {
   NATIVE_SMOKE: 'native-smoke',
 };
 
+function consumeFlagValue(args, index, flag) {
+  const value = args[index + 1];
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw new Error(`Missing value for ${flag}`);
+  }
+  return {
+    nextIndex: index + 1,
+    value,
+  };
+}
+
 /**
  * Parse command-line arguments
  */
@@ -127,6 +139,7 @@ function parseArgs() {
     outputHtml: null,
     styleName: null,
     stylesDir: null,
+    styles: null,
     parallelism: DEFAULT_PARALLELISM,
     allowLiveFallback: false,
     timings: false,
@@ -139,12 +152,28 @@ function parseArgs() {
     if (args[i] === '--write-html') {
       options.writeHtml = true;
     } else if (args[i] === '--output-html') {
-      options.outputHtml = args[++i];
+      const consumed = consumeFlagValue(args, i, '--output-html');
+      i = consumed.nextIndex;
+      options.outputHtml = consumed.value;
       options.writeHtml = true;
     } else if (args[i] === '--style') {
-      options.styleName = args[++i];
+      const consumed = consumeFlagValue(args, i, '--style');
+      i = consumed.nextIndex;
+      options.styleName = consumed.value.trim();
     } else if (args[i] === '--styles-dir') {
-      options.stylesDir = args[++i];
+      const consumed = consumeFlagValue(args, i, '--styles-dir');
+      i = consumed.nextIndex;
+      options.stylesDir = consumed.value;
+    } else if (args[i] === '--styles') {
+      const consumed = consumeFlagValue(args, i, '--styles');
+      i = consumed.nextIndex;
+      options.styles = consumed.value
+        .split(',')
+        .map((style) => style.trim())
+        .filter(Boolean);
+      if (options.styles.length === 0) {
+        throw new Error('Missing value for --styles');
+      }
     } else if (args[i] === '--parallelism') {
       options.parallelism = Math.max(1, parseInt(args[++i], 10) || DEFAULT_PARALLELISM);
     } else if (args[i] === '--allow-live-fallback' || args[i] === '--refresh-missing') {
@@ -160,6 +189,10 @@ function parseArgs() {
     } else if (args[i] === '--case-insensitive') {
       options.caseSensitive = false;
     }
+  }
+
+  if (options.styleName && options.styles?.length) {
+    throw new Error('Flags --style and --styles are mutually exclusive');
   }
 
   return options;
@@ -479,6 +512,21 @@ function discoverCoreStyles(provenanceConfig = loadReportProvenance()) {
       originSortRank: origin.sortRank,
     };
   });
+}
+
+function resolveSelectedStyles(coreStyles, selectedNames = null) {
+  if (!Array.isArray(selectedNames) || selectedNames.length === 0) {
+    return coreStyles;
+  }
+
+  const requested = new Set(selectedNames);
+  const known = new Set(coreStyles.map((style) => style.name));
+  const unknown = [...requested].filter((name) => !known.has(name)).sort((a, b) => a.localeCompare(b));
+  if (unknown.length > 0) {
+    throw new Error(`Unknown style name(s) for --styles: ${unknown.join(', ')}`);
+  }
+
+  return coreStyles.filter((style) => requested.has(style.name));
 }
 
 function buildNoteStyleLookup() {
@@ -2080,7 +2128,7 @@ async function generateReport(options) {
   const discoveredStyles = discoverCoreStyles(provenanceConfig);
   const coreStyles = options.styleName
     ? discoveredStyles.filter((style) => style.name === options.styleName)
-    : discoveredStyles;
+    : resolveSelectedStyles(discoveredStyles, options.styles);
   if (options.styleName && coreStyles.length === 0) {
     throw new Error(`Core style not found for --style: ${options.styleName}`);
   }
@@ -2154,7 +2202,11 @@ async function generateReport(options) {
         timestamp: generated,
         gitCommit,
         fixture: 'tests/fixtures/references-expanded.json',
-        styleSelector: options.styleName ? `style:${options.styleName}` : 'core-styles',
+        styleSelector: options.styleName
+          ? `style:${options.styleName}`
+          : options.styles?.length
+            ? 'selected-styles'
+            : 'core-styles',
         styles: coreStyles.map((style) => style.name),
         generator: 'scripts/report-core.js',
         richInputEvidence: {
@@ -3266,7 +3318,9 @@ module.exports = {
   getComparisonEntryTexts,
   mapWithConcurrency,
   normalizeBenchmarkSource,
+  parseArgs,
   preflightSnapshots,
+  resolveSelectedStyles,
   runCachedJsonJob,
   buildEmptyOracleResult,
   cloneOracleResult,
