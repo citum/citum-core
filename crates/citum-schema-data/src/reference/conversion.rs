@@ -726,7 +726,8 @@ fn from_event_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> I
 }
 
 impl From<csl_legacy::csl_json::Reference> for InputReference {
-    fn from(legacy: csl_legacy::csl_json::Reference) -> Self {
+    fn from(mut legacy: csl_legacy::csl_json::Reference) -> Self {
+        legacy.parse_note_field_hacks();
         let ctx = RefContext {
             id: Some(legacy.id.clone()),
             title: legacy.title.clone().map(Title::Single),

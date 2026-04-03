@@ -12,7 +12,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! for new data is the Citum InputReference model in citum_schema.
 
 use serde::{Deserialize, Deserializer, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 /// A bibliographic reference item.
 /// This is compatible with CSL-JSON format.
@@ -366,17 +366,19 @@ impl Reference {
     /// Parse structured CSL variables from the note field.
     ///
     /// Extracts key-value pairs from the Zotero "Extra" field (stored in `note`),
-    /// following citeproc-js's `parseNoteFieldHacks` behavior. Lines must start
-    /// with a lowercase letter and contain `key: value` patterns. Type overrides
-    /// are always applied; other fields only set if currently None.
+    /// following citeproc-js's `parseNoteFieldHacks` behavior. Lines contain
+    /// `key: value` patterns where the key is a CSL variable name (e.g., `DOI`,
+    /// `publisher`, `issued`). Type overrides are always applied; other fields
+    /// only set if currently None. Only recognized keys are consumed; unrecognized
+    /// `key: value` lines are left in `note` unchanged.
     ///
     /// # Algorithm
     /// 1. Skip if note is None or empty
     /// 2. Split by newline
-    /// 3. For each line, parse `key: value` where key starts lowercase
+    /// 3. For each line, parse `key: value` where key is alphabetic
     /// 4. Stop at first non-matching line (unless it's the first line)
     /// 5. Extract type, dates, names, and strings to appropriate fields
-    /// 6. Rebuild note with only unparsed lines
+    /// 6. Rebuild note with only unrecognized/unparsed lines
     pub fn parse_note_field_hacks(&mut self) {
         let note = match &self.note {
             Some(n) if !n.is_empty() => n.clone(),
@@ -388,7 +390,7 @@ impl Reference {
             return;
         }
 
-        let mut parsed_indices = Vec::new();
+        let mut parsed_indices = HashSet::new();
         let mut skip_first_line = false;
 
         for (idx, line) in lines.iter().enumerate() {
@@ -410,17 +412,19 @@ impl Reference {
                 break;
             };
 
-            parsed_indices.push(idx);
-
-            // Process the key-value pair
+            // Process the key-value pair; only mark as parsed when the key is recognized
             if key == "type" {
                 self.ref_type = value.to_string();
+                parsed_indices.insert(idx);
             } else if is_date_variable(key) {
                 handle_date_variable(self, key, value);
+                parsed_indices.insert(idx);
             } else if is_name_variable(key) {
                 handle_name_variable(self, key, value);
+                parsed_indices.insert(idx);
             } else if is_string_variable(key) {
                 handle_string_variable(self, key, value);
+                parsed_indices.insert(idx);
             }
         }
 
@@ -441,7 +445,9 @@ impl Reference {
 }
 
 /// Parse a line into `(key, value)` if it matches `key: value` pattern.
-/// Key must start with lowercase letter and contain only word chars, hyphens, underscores.
+/// Key must start with an ASCII letter and contain only word chars, hyphens,
+/// underscores. Uppercase keys (e.g. `DOI`, `ISBN`, `URL`) are preserved
+/// as-is so they can be matched by their canonical uppercase names downstream.
 fn parse_key_value(line: &str) -> Option<(&str, &str)> {
     if line.is_empty() {
         return None;
@@ -450,9 +456,9 @@ fn parse_key_value(line: &str) -> Option<(&str, &str)> {
     let colon_pos = line.find(':')?;
     let key = &line[..colon_pos];
 
-    // Validate key: must start with lowercase letter
+    // Validate key: must start with an ASCII letter (upper or lower)
     let first_char = key.chars().next()?;
-    if !first_char.is_ascii_lowercase() {
+    if !first_char.is_ascii_alphabetic() {
         return None;
     }
 
@@ -661,6 +667,7 @@ fn is_string_variable(key: &str) -> bool {
             | "publisher-place"
             | "archive"
             | "archive-place"
+            | "archive-location"
             | "archive-collection"
             | "genre"
             | "medium"
@@ -1053,5 +1060,61 @@ mod tests {
         let authors = ref_obj.author.unwrap();
         assert_eq!(authors.len(), 1);
         assert_eq!(authors[0].literal, Some("United Nations".to_string()));
+    }
+
+    #[test]
+    fn test_parse_note_field_uppercase_keys() {
+        // DOI, ISBN, ISSN, URL are uppercase in CSL/Zotero Extra
+        let mut ref_obj = Reference {
+            id: "test".to_string(),
+            ref_type: "article-journal".to_string(),
+            note: Some(
+                "DOI: 10.1000/xyz123\nISBN: 978-3-16-148410-0\nURL: https://example.org"
+                    .to_string(),
+            ),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+        assert_eq!(ref_obj.doi, Some("10.1000/xyz123".to_string()));
+        assert_eq!(ref_obj.isbn, Some("978-3-16-148410-0".to_string()));
+        assert_eq!(ref_obj.url, Some("https://example.org".to_string()));
+        assert_eq!(ref_obj.note, None);
+    }
+
+    #[test]
+    fn test_parse_note_field_unknown_key_preserved() {
+        // Unrecognized keys must not be silently stripped from note; the loop
+        // continues past them (it only stops on lines that cannot be parsed as
+        // `key: value` at all), so subsequent recognized keys are still applied.
+        let mut ref_obj = Reference {
+            id: "test".to_string(),
+            ref_type: "book".to_string(),
+            note: Some("genre: memoir\nfoo: bar\npublisher: MIT Press".to_string()),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+        assert_eq!(ref_obj.genre, Some("memoir".to_string()));
+        assert_eq!(ref_obj.publisher, Some("MIT Press".to_string()));
+        // "foo: bar" is unrecognized — it stays in note unchanged
+        assert_eq!(ref_obj.note, Some("foo: bar".to_string()));
+    }
+
+    #[test]
+    fn test_parse_note_field_archive_location() {
+        let mut ref_obj = Reference {
+            id: "test".to_string(),
+            ref_type: "book".to_string(),
+            note: Some("archive-location: Box 5, Folder 3".to_string()),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+        assert_eq!(
+            ref_obj.archive_location,
+            Some("Box 5, Folder 3".to_string())
+        );
+        assert_eq!(ref_obj.note, None);
     }
 }

@@ -143,9 +143,10 @@ fn to_title_case(text: &str) -> String {
 
     let last_idx = words.len() - 1;
     let mut parts: Vec<String> = Vec::with_capacity(words.len());
+    let mut after_colon = false;
 
     for (i, word) in words.iter().enumerate() {
-        if i == 0 || i == last_idx {
+        if i == 0 || i == last_idx || after_colon {
             parts.push(capitalize_first_word(&word.to_lowercase()));
         } else {
             let lower = word.to_lowercase();
@@ -155,6 +156,7 @@ fn to_title_case(text: &str) -> String {
                 parts.push(capitalize_first_word(&lower));
             }
         }
+        after_colon = word.ends_with(':');
     }
 
     // Rebuild with original whitespace structure
@@ -245,6 +247,23 @@ mod tests {
         assert_eq!(
             to_title_case("the world we live in"),
             "The World We Live In"
+        );
+    }
+
+    #[test]
+    fn test_title_case_after_colon() {
+        assert_eq!(
+            to_title_case("the title: a subtitle"),
+            "The Title: A Subtitle"
+        );
+    }
+
+    #[test]
+    fn test_title_case_after_colon_stop_word() {
+        // First word after colon is a stop word but must still be capitalized
+        assert_eq!(
+            to_title_case("history of the world: a new perspective"),
+            "History of the World: A New Perspective"
         );
     }
 
