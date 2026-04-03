@@ -54,7 +54,8 @@ options:
     demote-non-dropping-particle: display-and-sort
   dates: long
   titles:
-    component: {}
+    component:
+      text-case: title
     monograph:
       text-case: title
       emph: true
