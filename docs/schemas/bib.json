@@ -1459,7 +1459,10 @@
         },
         "authority": {
           "description": "Court or authority (e.g., \"U.S. Supreme Court\")",
-          "type": "string"
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "doi": {
           "description": "DOI identifier.",
@@ -1552,7 +1555,6 @@
         }
       },
       "required": [
-        "authority",
         "issued"
       ]
     },

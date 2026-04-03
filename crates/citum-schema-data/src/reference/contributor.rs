@@ -27,6 +27,7 @@ pub struct MultilingualName {
     /// The name in its original script.
     pub original: StructuredName,
     /// ISO 639/BCP 47 language code for the original name.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub lang: Option<crate::reference::types::LangID>,
     /// Transliterations/Transcriptions of the name.
     #[serde(default, skip_serializing_if = "std::collections::HashMap::is_empty")]
@@ -42,6 +43,7 @@ pub struct MultilingualName {
 #[cfg_attr(feature = "bindings", derive(Type))]
 pub struct SimpleName {
     pub name: MultilingualString,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub location: Option<String>,
 }
 
@@ -53,8 +55,11 @@ pub struct SimpleName {
 pub struct StructuredName {
     pub given: MultilingualString,
     pub family: MultilingualString,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub suffix: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropping_particle: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub non_dropping_particle: Option<String>,
 }
 

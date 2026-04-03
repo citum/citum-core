@@ -14,7 +14,21 @@ import tempfile
 from pathlib import Path
 import filecmp
 import re
+import shutil
 
+
+# Resolve cargo binary — git hooks don't inherit the full user PATH.
+# Prefer $CARGO_HOME/bin/cargo, then ~/.cargo/bin/cargo, then PATH lookup.
+def _find_cargo() -> str:
+    cargo_home = os.environ.get("CARGO_HOME") or os.path.expanduser("~/.cargo")
+    candidate = Path(cargo_home) / "bin" / "cargo"
+    if candidate.exists():
+        return str(candidate)
+    found = shutil.which("cargo")
+    return found if found else "cargo"
+
+
+CARGO_BIN = _find_cargo()
 
 STYLE_SCHEMA_LIB = Path("crates/citum-schema-style/src/lib.rs")
 SCHEMA_BUMP_RE = re.compile(r"^Schema-Bump:\s*(patch|minor|major)\s*$", re.MULTILINE)
@@ -30,6 +44,20 @@ def get_root_dir():
     )
     if result.returncode != 0:
         sys.stderr.write("Error: not in a git repository\n")
+        sys.exit(1)
+    return Path(result.stdout.strip())
+
+
+def get_git_dir() -> Path:
+    """Return the actual git directory (handles worktrees where .git is a file)."""
+    result = subprocess.run(
+        ["git", "rev-parse", "--git-dir"],
+        capture_output=True,
+        text=True,
+        cwd=os.getcwd(),
+    )
+    if result.returncode != 0:
+        sys.stderr.write("Error: could not determine git dir\n")
         sys.exit(1)
     return Path(result.stdout.strip())
 
@@ -63,7 +91,7 @@ def schema_artifacts_staged(staged_files: list[str]) -> bool:
 
 def clear_handoff_file(root: Path) -> None:
     """Remove the schema bump handoff file if it exists."""
-    handoff_file = root / ".git" / "SCHEMA_BUMP"
+    handoff_file = get_git_dir() / "SCHEMA_BUMP"
     if handoff_file.exists():
         handoff_file.unlink()
 
@@ -172,7 +200,7 @@ def regenerate_schemas(root: Path, tmpdir: Path) -> bool:
     try:
         subprocess.run(
             [
-                "cargo",
+                CARGO_BIN,
                 "run",
                 "--bin",
                 "citum",
@@ -256,7 +284,7 @@ def pre_commit_hook():
         )
 
         # Write to handoff file
-        handoff_file = root / ".git" / "SCHEMA_BUMP"
+        handoff_file = get_git_dir() / "SCHEMA_BUMP"
         handoff_file.write_text(bump_type + "\n")
 
         sys.stdout.write(
@@ -282,7 +310,7 @@ def commit_msg_hook(msg_file_path):
     msg_content = msg_file.read_text()
     staged_files = get_staged_files()
     schema_change_staged = schema_artifacts_staged(staged_files)
-    handoff_file = root / ".git" / "SCHEMA_BUMP"
+    handoff_file = get_git_dir() / "SCHEMA_BUMP"
     footer_match = SCHEMA_BUMP_RE.search(msg_content)
 
     if footer_match:

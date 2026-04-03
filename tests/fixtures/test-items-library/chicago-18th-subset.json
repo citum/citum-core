@@ -1,0 +1,772 @@
+[
+  {
+    "id": "6188419/UDAG5V6W",
+    "type": "manuscript",
+    "archive": "University of Georgia Library",
+    "citation-key": "EgmontManuscripts",
+    "language": "en",
+    "license": "CMOS18 14.128",
+    "note": "type: collection\narchive_collection: Phillipps Collection",
+    "title": "Egmont manuscripts"
+  },
+  {
+    "id": "6188419/YF7Q2VUU",
+    "type": "article-journal",
+    "abstract": "The ability of microbial active motion, morphology, and optical properties to serve as biosignatures was investigated by\n              in situ\n              video microscopy in a wide range of extreme field sites where such imaging had not been performed previously. These sites allowed for sampling seawater, sea ice brines, cryopeg brines, hypersaline pools and seeps, hyperalkaline springs, and glaciovolcanic cave ice. In all samples except the cryopeg brine, active motion was observed without any sample treatment. Active motion was observed in the cryopeg brines when samples were subjected to a temperature gradient above\n              in situ\n              . In general, levels of motility were low in the field samples collected at temperatures <  4ºC. Non-motile cells could be distinguished from microminerals by differences in passive motion (e.g., density measured by sinking/floating), refractive index and/or absorbance, or morphology in the case of larger eukaryotes. Dramatic increases in the fraction of motile cells were seen with simple stimuli such as warming or the addition of L-serine. Chemotaxis and thermotaxis were also observed in select samples. An open-source, autonomous software package with computational requirements that can be scaled to spaceflight computers was used to classify the data. These results demonstrate the utility of volumetric light microscopy for life detection, but also suggest the importance of developing methods to stimulate cells\n              in situ\n              and process data using the restrictions imposed by mission bandwidth, as well as instruments to capture cell-like objects for detailed chemical analysis.",
+    "citation-key": "snyderExtantLifeDetection2025",
+    "container-title": "PLOS ONE",
+    "DOI": "10.1371/journal.pone.0318239",
+    "ISSN": "1932-6203",
+    "issue": "3",
+    "journalAbbreviation": "PLOS One",
+    "language": "en",
+    "license": "CMOS18 14.71 (quick)",
+    "note": "number: e0318239",
+    "source": "DOI.org (Crossref)",
+    "title": "Extant life detection using label-free video microscopy in analog aquatic environments",
+    "URL": "https://dx.plos.org/10.1371/journal.pone.0318239",
+    "volume": "20",
+    "author": [
+      {
+        "family": "Snyder",
+        "given": "Carl D."
+      },
+      {
+        "family": "Bedrossian",
+        "given": "Manuel"
+      },
+      {
+        "family": "Barr",
+        "given": "Casey"
+      },
+      {
+        "family": "Deming",
+        "given": "Jody W."
+      },
+      {
+        "family": "Lindensmith",
+        "given": "Chris A."
+      },
+      {
+        "family": "Stenner",
+        "given": "Christian"
+      },
+      {
+        "family": "Nadeau",
+        "given": "Jay L."
+      }
+    ],
+    "editor": [
+      {
+        "family": "Schubert",
+        "given": "Michael"
+      }
+    ],
+    "accessed": {
+      "date-parts": [
+        [
+          2026,
+          1,
+          28
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          2025,
+          3,
+          12
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/2FLUQV7Q",
+    "type": "book",
+    "citation-key": "anglePrairieStateImpressions1968",
+    "ISBN": "978-0-226-02088-4",
+    "language": "en",
+    "note": "OCLC: 429217",
+    "publisher": "University of Chicago Press",
+    "publisher-place": "Chicago",
+    "shortTitle": "Prairie State",
+    "source": "Open WorldCat",
+    "title": "Prairie State: impressions of Illinois, 1673–1967, by travelers and other observers",
+    "title-short": "Prairie State",
+    "author": [
+      {
+        "family": "Angle",
+        "given": "Paul M."
+      },
+      {
+        "family": "Bryan",
+        "given": "Mary Lynn McCree"
+      }
+    ],
+    "contributor": [
+      {
+        "family": "Burnett",
+        "given": "Virgil"
+      },
+      {
+        "family": "Long",
+        "given": "Barbara"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          1968
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/SIQ8AUN7",
+    "type": "legislation",
+    "citation-key": "ExecOrderNo2021",
+    "container-title": "C.F.R.",
+    "language": "en",
+    "license": "CMOS18 14.190",
+    "note": "Type: regulation",
+    "page": "556",
+    "title": "Exec. Order No. 14028",
+    "URL": "https://www.govinfo.gov/content/pkg/DCPD-202100401/pdf/DCPD-202100401.pdf",
+    "volume": "2943",
+    "issued": {
+      "date-parts": [
+        [
+          2021
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/EDMI8NQY",
+    "type": "interview",
+    "citation-key": "sanders2019",
+    "language": "en",
+    "license": "CMOS18 14.110",
+    "medium": "YouTube",
+    "note": "event-place: TEN Nail Bar, Detroit, MI\nevent-date: 2019-07-29\nstatus: posted",
+    "URL": "https://youtu.be/p1ubTsrZFBU",
+    "author": [
+      {
+        "family": "Sanders",
+        "given": "Bernie"
+      }
+    ],
+    "interviewer": [
+      {
+        "family": "Cardi B",
+        "given": ""
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          "2019",
+          8,
+          15
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/EXVHRUDT",
+    "type": "broadcast",
+    "abstract": "Jan is tired of being compared to Marcia and constantly being told how great her older sister is, so she tries to do something that Marcia never accomplished--make the pom-pom team.",
+    "citation-key": "mayberryHerSistersShadow1971",
+    "container-title": "The Brady Bunch",
+    "dimensions": "26m",
+    "language": "en",
+    "license": "CMOS18 14.165",
+    "note": "Distributor: Redwood Productions, Paramount Television\nIMDb ID: tt0531099\nevent-location: United States",
+    "number": "season 3, episode 10",
+    "publisher": "ABC",
+    "source": "IMDb",
+    "title": "Her sister's shadow",
+    "author": [
+      {
+        "family": "Mayberry",
+        "given": "Russ"
+      }
+    ],
+    "script-writer": [
+      {
+        "family": "Schwartz",
+        "given": "Sherwood"
+      },
+      {
+        "family": "Schwartz",
+        "given": "Al"
+      },
+      {
+        "family": "Leslie",
+        "given": "Phil"
+      }
+    ],
+    "contributor": [
+      {
+        "family": "Reed",
+        "given": "Robert"
+      },
+      {
+        "family": "Henderson",
+        "given": "Florence"
+      },
+      {
+        "family": "Davis",
+        "given": "Ann B."
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          1971,
+          11,
+          19
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/7ARXM8SB",
+    "type": "bill",
+    "citation-key": "u.k.TreatyBanningNuclear1963",
+    "container-title": "U.S.T.",
+    "language": "en",
+    "license": "CMOS18 14.191",
+    "note": "type: treaty",
+    "page": "1313",
+    "title": "Treaty Banning Nuclear Weapon Tests in the Atmosphere, in Outer Space and Under Water",
+    "volume": "14",
+    "author": [
+      {
+        "family": "U.K.",
+        "given": ""
+      },
+      {
+        "family": "U.S.",
+        "given": ""
+      },
+      {
+        "family": "U.S.S.R.",
+        "given": ""
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          "1963",
+          8,
+          5
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/Y8GSRLWD",
+    "type": "song",
+    "citation-key": "weingartner150JahreWiener1992",
+    "language": "de",
+    "license": "CMOS18 14.163",
+    "medium": "compact disc",
+    "note": "number: PR90113 (mono)\nevent-date: 1936\nreferences: Includes Beethoven’s Symphony No. 3 in E-flat Major and Symphony No. 8 in F Major.",
+    "publisher": "Preiser Records",
+    "title": "150 Jahre Wiener Philharmoniker",
+    "author": [
+      {
+        "family": "Weingartner",
+        "given": "Felix von"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          1992
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/YCKMRRLI",
+    "type": "dataset",
+    "abstract": "This dataset contains precinct-level returns for US Senate elections on November 3, 2020.",
+    "citation-key": "mitelectiondataandsciencelabUSSenatePrecinctlevel2022",
+    "DOI": "10.7910/DVN/ER9XTV",
+    "language": "la",
+    "license": "CMOS18 14.157",
+    "publisher": "Harvard Dataverse",
+    "source": "DOI.org (Datacite)",
+    "title": "U.S. senate precinct-level returns 2020",
+    "URL": "https://dataverse.harvard.edu/citation?persistentId=doi:10.7910/DVN/ER9XTV",
+    "version": "1.2",
+    "author": [
+      {
+        "family": "MIT Election Data and Science Lab",
+        "given": ""
+      }
+    ],
+    "contributor": [
+      {
+        "family": "Baltz",
+        "given": "Samuel"
+      },
+      {
+        "family": "Chin",
+        "given": "Declan"
+      },
+      {
+        "family": "Zarate",
+        "given": "Marcos"
+      },
+      {
+        "family": "DeLuca",
+        "given": "Kevin"
+      },
+      {
+        "family": "Miranda",
+        "given": "Jennifer"
+      },
+      {
+        "family": "Uhlman",
+        "given": "Annabel"
+      },
+      {
+        "family": "Fei",
+        "given": "Jonathan"
+      },
+      {
+        "family": "Grewal",
+        "given": "Darsh"
+      },
+      {
+        "family": "Jaffe",
+        "given": "Jacob"
+      },
+      {
+        "family": "Pauley",
+        "given": "Sam"
+      },
+      {
+        "family": "Zheng",
+        "given": "Sophia"
+      },
+      {
+        "family": "Williams",
+        "given": "Jack"
+      },
+      {
+        "family": "Curiel",
+        "given": "John"
+      },
+      {
+        "family": "III",
+        "given": "Charles Stewart"
+      }
+    ],
+    "accessed": {
+      "date-parts": [
+        [
+          2025,
+          4,
+          30
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          "2022",
+          3,
+          17
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/YII55FQP",
+    "type": "entry-dictionary",
+    "citation-key": "Hootenanny1976",
+    "container-title": "Oxford English Dictionary",
+    "edition": "2",
+    "language": "en",
+    "license": "CMOS18 14.130",
+    "note": "medium: CD-ROM",
+    "publisher": "Oxford University Press",
+    "publisher-place": "Oxford",
+    "source": "DOI.org (Crossref)",
+    "title": "hootenanny, n.",
+    "accessed": {
+      "date-parts": [
+        [
+          2025,
+          4,
+          29
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          1976
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/VHPQRCMZ",
+    "type": "personal_communication",
+    "archive": "Harvard College Library",
+    "archive_location": "O’Laughlin Papers",
+    "citation-key": "johnson1916",
+    "language": "en",
+    "license": "CMOS18 14.127",
+    "note": "archive_collection: Theodore Roosevelt Collection",
+    "author": [
+      {
+        "family": "Johnson",
+        "given": "Hiram"
+      }
+    ],
+    "recipient": [
+      {
+        "family": "O’Laughlin",
+        "given": "John Callan"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          "1916",
+          7,
+          13
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/VCP6HK7G",
+    "type": "hearing",
+    "authority": "107th Cong.",
+    "chapter-number": "203",
+    "citation-key": "davidwalkercomptrollergeneraloftheunitedstatesHomelandSecurityAct2002",
+    "language": "en",
+    "license": "CMOS18 14.185",
+    "note": "author: David Walker, Comptroller General of the United States",
+    "publisher-place": "Washington",
+    "title": "Homeland Security Act of 2002: Hearings on H.R. 5005, Day 3, Before the Select Comm. on Homeland Security",
+    "accessed": {
+      "date-parts": [
+        [
+          2025,
+          4,
+          11
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          2002
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/3Z3JZDFY",
+    "type": "motion_picture",
+    "abstract": "Greed and class discrimination threaten the newly formed symbiotic relationship between the wealthy Park family and the destitute Kim clan.",
+    "citation-key": "joon-hoGisaengchung2020",
+    "dimensions": "2h12m",
+    "language": "la",
+    "license": "CMOS18 14.165",
+    "medium": "in Korean, with English subtitles by Darcy Paquet",
+    "note": "Translated title: Parasite\nIMDb ID: tt6751668\npublisher-place: South Korea",
+    "publisher": "Barunson E&A",
+    "source": "IMDb",
+    "title": "Gisaengchung",
+    "author": [
+      {
+        "family": "Joon-ho",
+        "given": "Bong"
+      }
+    ],
+    "script-writer": [
+      {
+        "family": "Joon-ho",
+        "given": "Bong"
+      },
+      {
+        "family": "Jin-won",
+        "given": "Han"
+      }
+    ],
+    "contributor": [
+      {
+        "family": "Kang-ho",
+        "given": "Song"
+      },
+      {
+        "family": "Sun-kyun",
+        "given": "Lee"
+      },
+      {
+        "family": "Yeo-jeong",
+        "given": "Cho"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2020,
+          2,
+          7
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/Y6BIFHFV",
+    "type": "bill",
+    "authority": "117th Cong.",
+    "citation-key": "RespectMarriageAct2022",
+    "language": "en",
+    "license": "CMOS18 14.184",
+    "note": "status: enacted\ngenre: H.R.",
+    "number": "8404",
+    "title": "Respect for Marriage Act",
+    "URL": "https://www.congress.gov/bill/117th-congress/house-bill/8404",
+    "accessed": {
+      "date-parts": [
+        [
+          2025,
+          4,
+          11
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          2022
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/D85TWV9U",
+    "type": "interview",
+    "citation-key": "lastname2000",
+    "language": "en",
+    "license": "CMOS18 14.137",
+    "medium": "interview",
+    "note": "genre: topic/subject of communication\nevent-title: Nation/community, Treaty territory [if applicable]\nevent-place: Where they live [if applicable]",
+    "author": [
+      {
+        "family": "Last Name",
+        "given": "First Name, (Traditional Name [if applicable])"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2000,
+          1,
+          1
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/35B93H6N",
+    "type": "chapter",
+    "abstract": "A great foreword is more than just a few pages of self-indulgent frippery that comes before a book. A great foreword adds zest. It sets the stage for the page turner you're about to open, and perhaps even puts you in the locked room where a mystery happens or in the high-button shoes of a year gone by. A great foreword--sometimes--is even better than the book it precedes.  So why not skip the boring actual-book part?  Moving Foreword is a collection of introductions to imaginary books, written by real celebrities, comedians, musicians, and other writers with something to say. With a real foreword by Rainn Wilson, this book offers a no-holds-barred cacophony of laugh-out-loud funny, poignant, and thought-provoking writing that tackles everything from politics to pop culture, true crime to trout fishing, and Star Wars to skin flicks. Highlights include:    • Bustin' Through: Confessions of a Kool-Aid Man <p style=\"padding-left: 30px;\">Foreword by \"Pop Candy\" columnist Whitney Matheson     • Phil Rosenthal's Who's the Boss?: My Unlikely Rise to Rock Stardom <p style=\"padding-left: 30px;\">Foreword by \"Bruce Springsteen\" (Phil Rosenthal)    • Keep Your Gaze on Me: A True Story of Social Media, Obsession, and Murder <p style=\"padding-left: 30px;\">Foreword by Shirley Manson, lead vocalist of Garbage     • Sock Puppet Mozart: The Life and Gruesome Death of Randy Masterson <p style=\"padding-left: 30px;\">Foreword by actor Thomas Lennon    • Vance DeGeneris: An Unauthorized Biography <p style=\"padding-left: 30px;\">Foreword by Vance DeGeneres     • Everything You Need to Know About Massachusetts Fish and Wildlife Regulations <p style=\"padding-left: 30px;\">Foreword by New Kids on the Block member Jonathan Knight    • Fly Ball: How the New York Yankees Have Changed Lives <p style=\"padding-left: 30px;\">Foreword by talk show host Jerry Springer    • Terrible Band Names: A Chronology of Rock History <p style=\"padding-left: 30px;\">Foreword by John Ondrasik, a.k.a. Five for Fighting    • God's Wow, You're All F***ing This Up Big Time <p style=\"padding-left: 30px;\">Foreword by singer-songwriter Mary Lambert    . . . any many more!",
+    "citation-key": "wilson2019",
+    "container-title": "Moving foreword: real introductions to totally made-up books",
+    "ISBN": "978-1-948836-19-7",
+    "language": "en",
+    "license": "CMOS18 14.46",
+    "note": "OCLC: 1089276783\ngenre: foreword\ncontainer-title-short: Moving foreword",
+    "page": "xv–xvii",
+    "publisher": "BenBella",
+    "publisher-place": "Dallas, TX",
+    "source": "Open WorldCat",
+    "editor": [
+      {
+        "family": "Chattman",
+        "given": "Jon"
+      }
+    ],
+    "author": [
+      {
+        "family": "Wilson",
+        "given": "Rainn"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2019
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/RY7PJ7H7",
+    "type": "thesis",
+    "archive": "ProQuest",
+    "citation-key": "stoutCatsCoronavirusesOne2021",
+    "genre": "PhD diss.",
+    "language": "en",
+    "license": "CMOS18 14.113",
+    "note": "number: 28490261",
+    "publisher": "Cornell University",
+    "publisher-place": "New York, NY",
+    "shortTitle": "Cats and coronaviruses",
+    "title": "Cats and coronaviruses: One Health in the age of COVID-19",
+    "title-short": "Cats and coronaviruses",
+    "URL": "https://proquest.com/docview/2550605226",
+    "author": [
+      {
+        "family": "Stout",
+        "given": "Alison E."
+      }
+    ],
+    "accessed": {
+      "date-parts": [
+        [
+          2025,
+          3,
+          18
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          2021
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/ANR2QB7P",
+    "type": "article-newspaper",
+    "abstract": "Zhu Wang played an unusually interesting and adventurous set of pieces at Zankel Hall.",
+    "citation-key": "tommasiniYoungConcertArtists2021",
+    "container-title": "New York Times",
+    "ISSN": "0362-4331",
+    "language": "en-US",
+    "license": "CMOS18 14.101",
+    "note": "reviewed-genre: recital\nevent-title: Zankel Hall\nevent-place: New York",
+    "section": "Arts",
+    "source": "NYTimes.com",
+    "title": "Young Concert Artists is back, with a superb pianist",
+    "URL": "https://www.nytimes.com/2021/11/12/arts/music/young-concert-artists-zhu-wang.html",
+    "author": [
+      {
+        "family": "Tommasini",
+        "given": "Anthony"
+      }
+    ],
+    "reviewed-author": [
+      {
+        "family": "Zhu Wang (piano)",
+        "given": ""
+      }
+    ],
+    "accessed": {
+      "date-parts": [
+        [
+          2025,
+          3,
+          30
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          2021,
+          11,
+          12
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/BGSKEDCQ",
+    "type": "webpage",
+    "abstract": "Learn about undergraduate, graduate, doctoral and professional programs at Howard University.",
+    "citation-key": "Academics2023",
+    "language": "en",
+    "license": "CMOS18 14.104",
+    "note": "status: archived",
+    "publisher": "Howard University",
+    "title": "Academics",
+    "URL": "https://web.archive.org/web/20231019175606/https://howard.edu/academics",
+    "accessed": {
+      "date-parts": [
+        [
+          2025,
+          8,
+          31
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          "2023",
+          10,
+          19
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/IQYPBSTQ",
+    "type": "legal_case",
+    "citation-key": "EganCanada1995",
+    "container-title": "S.C.R.",
+    "language": "en",
+    "license": "CMOS18 14.195",
+    "page": "513",
+    "title": "Egan v. Canada",
+    "volume": "2",
+    "issued": {
+      "date-parts": [
+        [
+          1995
+        ]
+      ]
+    }
+  },
+  {
+    "id": "6188419/7RP5QFT2",
+    "type": "paper-conference",
+    "citation-key": "leeDocumentaryOperationalityRepresentation2021",
+    "event-title": "the Society for Cinema and Media Studies annual conference (virtual)",
+    "language": "en",
+    "license": "CMOS18 14.115",
+    "title": "Documentary operationality: beyond representation",
+    "author": [
+      {
+        "family": "Lee",
+        "given": "Toby"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          "2021",
+          3,
+          20
+        ]
+      ]
+    }
+  }
+]

@@ -413,7 +413,7 @@ impl Reference {
             };
 
             // Process the key-value pair; only mark as parsed when the key is recognized
-            if key == "type" {
+            if key.eq_ignore_ascii_case("type") {
                 self.ref_type = value.to_string();
                 parsed_indices.insert(idx);
             } else if is_date_variable(key) {
@@ -663,12 +663,14 @@ fn is_string_variable(key: &str) -> bool {
             | "volume-title"
             | "event-title"
             | "event-place"
+            | "event-location"
             | "publisher"
             | "publisher-place"
             | "archive"
             | "archive-place"
             | "archive-location"
             | "archive-collection"
+            | "archive_collection"
             | "genre"
             | "medium"
             | "dimensions"
@@ -848,12 +850,18 @@ fn handle_string_variable(ref_obj: &mut Reference, key: &str, value: &str) {
             }
         }
         // Fields not on Reference: store in extra as JSON
-        "volume-title" | "event-title" | "event-place" | "archive-collection" | "dimensions"
-        | "part-number" | "supplement-number" | "references" | "source" | "status"
-        | "reviewed-title" | "reviewed-genre" | "call-number" | "jurisdiction"
-        | "citation-number" | "citation-label" | "annote" | "keyword" | "title-short" => {
+        "volume-title" | "event-title" | "event-place" | "event-location"
+        | "archive-collection" | "archive_collection" | "dimensions" | "part-number"
+        | "supplement-number" | "references" | "source" | "status" | "reviewed-title"
+        | "reviewed-genre" | "call-number" | "jurisdiction" | "citation-number"
+        | "citation-label" | "annote" | "keyword" | "title-short" => {
+            let key_to_store = match key {
+                "archive_collection" => "archive-collection",
+                "event-location" => "event-place",
+                _ => key,
+            };
             ref_obj.extra.insert(
-                key.to_string(),
+                key_to_store.to_string(),
                 serde_json::Value::String(trimmed.to_string()),
             );
         }

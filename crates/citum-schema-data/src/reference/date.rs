@@ -11,6 +11,11 @@ use std::fmt;
 pub struct EdtfString(pub String);
 
 impl EdtfString {
+    /// Check if the EdtfString is empty.
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
     /// Parse the string as an EDTF date etc, or return the string as a literal.
     pub fn parse(&self) -> RefDate {
         let mut input = self.0.as_str();
