@@ -802,7 +802,7 @@ impl InputReference {
     /// Return the authority (court, legislative body, standards org, etc.).
     pub fn authority(&self) -> Option<String> {
         match self {
-            InputReference::LegalCase(r) => Some(r.authority.clone()),
+            InputReference::LegalCase(r) => r.authority.clone(),
             InputReference::Statute(r) => r.authority.clone(),
             InputReference::Hearing(r) => r.authority.clone(),
             InputReference::Regulation(r) => r.authority.clone(),

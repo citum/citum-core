@@ -1,0 +1,300 @@
+references:
+- class: monograph
+  id: 6188419/UDAG5V6W
+  type: document
+  title: Egmont manuscripts
+  language: en
+  archive: University of Georgia Library
+  archive-info:
+    name: University of Georgia Library
+- class: serial-component
+  id: 6188419/YF7Q2VUU
+  type: article
+  title: Extant life detection using label-free video microscopy in analog aquatic environments
+  author:
+  - given: Carl D.
+    family: Snyder
+  - given: Manuel
+    family: Bedrossian
+  - given: Casey
+    family: Barr
+  - given: Jody W.
+    family: Deming
+  - given: Chris A.
+    family: Lindensmith
+  - given: Christian
+    family: Stenner
+  - given: Jay L.
+    family: Nadeau
+  issued: 2025-03-12
+  container:
+    class: serial
+    type: academic-journal
+    title: PLOS ONE
+    short-title: PLOS One
+    issn: 1932-6203
+  volume: '20'
+  issue: '3'
+  url: https://dx.plos.org/10.1371/journal.pone.0318239
+  accessed: 2026-01-28
+  language: en
+  doi: 10.1371/journal.pone.0318239
+- class: monograph
+  id: 6188419/2FLUQV7Q
+  type: book
+  title: 'Prairie State: impressions of Illinois, 1673–1967, by travelers and other observers'
+  author:
+  - given: Paul M.
+    family: Angle
+  - given: Mary Lynn McCree
+    family: Bryan
+  issued: '1968'
+  publisher:
+    name: University of Chicago Press
+    location: Chicago
+  language: en
+  note: 'OCLC: 429217'
+  isbn: 978-0-226-02088-4
+- class: regulation
+  id: 6188419/SIQ8AUN7
+  title: Exec. Order No. 14028
+  volume: '2943'
+  code: C.F.R.
+  issued: '2021'
+  url: https://www.govinfo.gov/content/pkg/DCPD-202100401/pdf/DCPD-202100401.pdf
+  language: en
+- class: monograph
+  id: 6188419/EDMI8NQY
+  type: interview
+  author:
+  - given: Bernie
+    family: Sanders
+  interviewer:
+  - name: Cardi B
+  issued: 2019-08-15
+  url: https://youtu.be/p1ubTsrZFBU
+  language: en
+  medium: YouTube
+- class: serial-component
+  id: 6188419/EXVHRUDT
+  type: article
+  title: Her sister's shadow
+  author:
+  - given: Russ
+    family: Mayberry
+  issued: 1971-11-19
+  container:
+    class: serial
+    type: broadcast-program
+    title: The Brady Bunch
+    publisher:
+      name: ABC
+  issue: season 3, episode 10
+  language: en
+  note: |-
+    Distributor: Redwood Productions, Paramount Television
+    IMDb ID: tt0531099
+    event-location: United States
+- class: treaty
+  id: 6188419/7ARXM8SB
+  title: Treaty Banning Nuclear Weapon Tests in the Atmosphere, in Outer Space and Under Water
+  author:
+  - name: U.K.
+  - name: U.S.
+  - name: U.S.S.R.
+  volume: '14'
+  reporter: U.S.T.
+  page: '1313'
+  issued: 1963-08-05
+  language: en
+- class: monograph
+  id: 6188419/Y8GSRLWD
+  type: document
+  title: 150 Jahre Wiener Philharmoniker
+  author:
+  - given: Felix von
+    family: Weingartner
+  issued: '1992'
+  publisher:
+    name: Preiser Records
+  language: de
+  medium: compact disc
+- class: dataset
+  id: 6188419/YCKMRRLI
+  title: U.S. senate precinct-level returns 2020
+  author:
+  - name: MIT Election Data and Science Lab
+  issued: 2022-03-17
+  publisher:
+    name: Harvard Dataverse
+  doi: 10.7910/DVN/ER9XTV
+  url: https://dataverse.harvard.edu/citation?persistentId=doi:10.7910/DVN/ER9XTV
+  accessed: 2025-04-30
+  language: la
+- class: collection-component
+  id: 6188419/YII55FQP
+  type: chapter
+  title: hootenanny, n.
+  issued: '1976'
+  container:
+    class: collection
+    type: edited-book
+    title: Oxford English Dictionary
+    publisher:
+      name: Oxford University Press
+      location: Oxford
+  accessed: 2025-04-29
+  language: en
+  medium: CD-ROM
+- class: monograph
+  id: 6188419/VHPQRCMZ
+  type: personal-communication
+  author:
+  - given: Hiram
+    family: Johnson
+  recipient:
+  - given: John Callan
+    family: O’Laughlin
+  issued: 1916-07-13
+  language: en
+  note: personal communication
+  archive: Harvard College Library
+  archive-location: O’Laughlin Papers
+  archive-info:
+    name: Harvard College Library
+    location: O’Laughlin Papers
+- class: monograph
+  id: 6188419/VCP6HK7G
+  type: document
+  title: 'Homeland Security Act of 2002: Hearings on H.R. 5005, Day 3, Before the Select Comm. on Homeland Security'
+  author:
+  - name: David Walker, Comptroller General of the United States
+  issued: '2002'
+  accessed: 2025-04-11
+  language: en
+- class: serial-component
+  id: 6188419/3Z3JZDFY
+  type: article
+  title: Gisaengchung
+  author:
+  - given: Bong
+    family: Joon-ho
+  issued: 2020-02-07
+  container:
+    class: serial
+    type: broadcast-program
+    publisher:
+      name: Barunson E&A
+  language: la
+  note: |-
+    Translated title: Parasite
+    IMDb ID: tt6751668
+    publisher-place: South Korea
+  medium: in Korean, with English subtitles by Darcy Paquet
+- class: monograph
+  id: 6188419/Y6BIFHFV
+  type: document
+  title: Respect for Marriage Act
+  issued: '2022'
+  url: https://www.congress.gov/bill/117th-congress/house-bill/8404
+  accessed: 2025-04-11
+  language: en
+  genre: H.R.
+- class: monograph
+  id: 6188419/D85TWV9U
+  type: interview
+  author:
+  - given: First Name, (Traditional Name [if applicable])
+    family: Last Name
+  issued: 2000-01-01
+  language: en
+  genre: topic/subject of communication
+  medium: interview
+- class: collection-component
+  id: 6188419/35B93H6N
+  type: chapter
+  author:
+  - given: Rainn
+    family: Wilson
+  issued: '2019'
+  container:
+    class: collection
+    type: edited-book
+    title: 'Moving foreword: real introductions to totally made-up books'
+    editor:
+    - given: Jon
+      family: Chattman
+    publisher:
+      name: BenBella
+      location: Dallas, TX
+  pages: xv–xvii
+  language: en
+  note: |-
+    OCLC: 1089276783
+    container-title-short: Moving foreword
+  genre: foreword
+- class: monograph
+  id: 6188419/RY7PJ7H7
+  type: thesis
+  title: 'Cats and coronaviruses: One Health in the age of COVID-19'
+  author:
+  - given: Alison E.
+    family: Stout
+  issued: '2021'
+  publisher:
+    name: Cornell University
+    location: New York, NY
+  url: https://proquest.com/docview/2550605226
+  accessed: 2025-03-18
+  language: en
+  number: '28490261'
+  genre: PhD diss.
+  archive: ProQuest
+  archive-info:
+    name: ProQuest
+- class: serial-component
+  id: 6188419/ANR2QB7P
+  type: article
+  title: Young Concert Artists is back, with a superb pianist
+  author:
+  - given: Anthony
+    family: Tommasini
+  issued: 2021-11-12
+  container:
+    class: serial
+    type: newspaper
+    title: New York Times
+    issn: 0362-4331
+  url: https://www.nytimes.com/2021/11/12/arts/music/young-concert-artists-zhu-wang.html
+  accessed: 2025-03-30
+  language: en-US
+- class: monograph
+  id: 6188419/BGSKEDCQ
+  type: webpage
+  title: Academics
+  issued: 2023-10-19
+  publisher:
+    name: Howard University
+  url: https://web.archive.org/web/20231019175606/https://howard.edu/academics
+  accessed: 2025-08-31
+  language: en
+- class: legal-case
+  id: 6188419/IQYPBSTQ
+  title: Egan v. Canada
+  volume: '2'
+  reporter: S.C.R.
+  page: '513'
+  issued: '1995'
+  language: en
+- class: collection-component
+  id: 6188419/7RP5QFT2
+  type: document
+  title: 'Documentary operationality: beyond representation'
+  author:
+  - given: Toby
+    family: Lee
+  issued: 2021-03-20
+  container:
+    class: collection
+    type: edited-book
+  language: en

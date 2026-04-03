@@ -77,7 +77,7 @@
     "version": {
       "description": "Style schema version.",
       "type": "string",
-      "default": "0.24.0"
+      "default": "0.25.0"
     }
   },
   "additionalProperties": false,

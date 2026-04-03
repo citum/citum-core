@@ -20,5 +20,6 @@ The architectural shift to recursive `WorkRelation` and canonical `numbering` wa
 ## Tasks
 - [ ] Add style-level `benchmark_runs` support to the fidelity reporting pipeline.
 - [ ] Add native relational benchmark inputs for `examples/comprehensive.yaml` and `examples/chicago-bib.yaml`.
+- [ ] Convert a small Zotero subset (e.g., the note-heavy Chicago 18 rows) into `examples/chicago-note-converted.yaml` using `scripts/export-chicago-note-examples.js` and include it as a native diagnostic fixture.
 - [ ] Add an external bibliography pilot using Zotero test data from `tests/fixtures/test-items-library/`.
 - [ ] Make richer relational inputs visible in report output so they can guide future style enhancement work.

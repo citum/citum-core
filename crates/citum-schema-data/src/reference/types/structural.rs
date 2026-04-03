@@ -23,52 +23,68 @@ use url::Url;
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Monograph {
     /// Unique identifier for this reference.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<RefID>,
     /// Subtype for style-directed formatting.
     pub r#type: MonographType,
     /// Title of the monographic work.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<Title>,
     /// Optional short form of the title for style-directed rendering.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub short_title: Option<String>,
     /// The primary container for this work (e.g., a multivolume set or series).
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub container: Option<WorkRelation>,
     /// Author(s) of the work.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub author: Option<Contributor>,
     /// Editor(s) of the work.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub editor: Option<Contributor>,
     /// Translator(s) of the work.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub translator: Option<Contributor>,
     /// Recipient for personal communications such as letters or emails.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub recipient: Option<Contributor>,
     /// Interviewer for interview-style references.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub interviewer: Option<Contributor>,
     /// Guest for interview or podcast-style references.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub guest: Option<Contributor>,
     /// Publication date.
     #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// Publisher of the work.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub publisher: Option<Contributor>,
     /// URL for the work.
-    #[serde(alias = "URL")]
+    #[serde(alias = "URL", skip_serializing_if = "Option::is_none")]
     pub url: Option<Url>,
     /// Date the URL was accessed.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub accessed: Option<EdtfString>,
     /// BCP 47 language of the work.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub language: Option<LangID>,
     /// Per-field language overrides.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
     /// ISBN identifier.
-    #[serde(alias = "ISBN")]
+    #[serde(alias = "ISBN", skip_serializing_if = "Option::is_none")]
     pub isbn: Option<String>,
     /// DOI identifier.
-    #[serde(alias = "DOI")]
+    #[serde(alias = "DOI", skip_serializing_if = "Option::is_none")]
     pub doi: Option<String>,
     /// ADS bibcode identifier.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ads_bibcode: Option<String>,
     /// Volume number (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -89,22 +105,29 @@ pub struct Monograph {
     pub numbering: Vec<Numbering>,
     /// Free-text genre descriptor using kebab-case canonical forms (e.g., `"phd-thesis"`, `"short-film"`).
     /// See `docs/reference/GENRE_AND_MEDIUM_VALUES.md` for canonical values and `docs/policies/ENUM_VOCABULARY_POLICY.md`.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub genre: Option<String>,
     /// Free-text medium descriptor using kebab-case canonical forms (e.g., `"film"`, `"television"`).
     /// See `docs/reference/GENRE_AND_MEDIUM_VALUES.md` for canonical values and `docs/policies/ENUM_VOCABULARY_POLICY.md`.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub medium: Option<String>,
     /// Archive or repository name for unpublished material.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub archive: Option<String>,
     /// Archive location, shelfmark, or call number for unpublished material.
-    #[serde(alias = "archive_location")]
+    #[serde(alias = "archive_location", skip_serializing_if = "Option::is_none")]
     pub archive_location: Option<String>,
     /// Structured archival location metadata. When present, preferred over legacy `archive` and `archive_location`.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub archive_info: Option<ArchiveInfo>,
     /// Preprint server identifier.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub eprint: Option<EprintInfo>,
     /// Keywords or subject tags.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
     /// Original publication relation (for reprints or translations).
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub original: Option<WorkRelation>,
 }
 
@@ -248,23 +271,31 @@ pub enum MonographType {
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Collection {
     /// Unique identifier for this reference.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<RefID>,
     /// Collection subtype for style-directed formatting.
     pub r#type: CollectionType,
     /// Title of the collection.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<Title>,
     /// Optional short form of the title for style-directed rendering.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub short_title: Option<String>,
     /// The primary container for this collection (e.g., a series).
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub container: Option<WorkRelation>,
     /// Editor(s) of the collection.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub editor: Option<Contributor>,
     /// Translator(s) of the collection.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub translator: Option<Contributor>,
     /// Publication date.
     #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// Publisher of the collection.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub publisher: Option<Contributor>,
     /// Volume number (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -284,22 +315,26 @@ pub struct Collection {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub numbering: Vec<Numbering>,
     /// URL for the collection.
-    #[serde(alias = "URL")]
+    #[serde(alias = "URL", skip_serializing_if = "Option::is_none")]
     pub url: Option<Url>,
     /// Date the URL was accessed.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub accessed: Option<EdtfString>,
     /// BCP 47 language of the collection.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub language: Option<LangID>,
     /// Per-field language overrides.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
     /// ISBN identifier.
-    #[serde(alias = "ISBN")]
+    #[serde(alias = "ISBN", skip_serializing_if = "Option::is_none")]
     pub isbn: Option<String>,
     /// Keywords or subject tags.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
 }
 
@@ -397,19 +432,25 @@ pub enum CollectionType {
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct CollectionComponent {
     /// Unique identifier for this reference.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<RefID>,
     /// Component subtype for style-directed formatting.
     pub r#type: MonographComponentType,
     /// Title of the component.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<Title>,
     /// Author(s) of the component.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub author: Option<Contributor>,
     /// Translator(s) of the component.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub translator: Option<Contributor>,
     /// Publication date.
     #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// The parent collection or monograph.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub container: Option<WorkRelation>,
     /// Volume number (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -429,34 +470,44 @@ pub struct CollectionComponent {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub numbering: Vec<Numbering>,
     /// Page range within the parent container.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pages: Option<NumOrStr>,
     /// URL for the component.
-    #[serde(alias = "URL")]
+    #[serde(alias = "URL", skip_serializing_if = "Option::is_none")]
     pub url: Option<Url>,
     /// Date the URL was accessed.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub accessed: Option<EdtfString>,
     /// BCP 47 language of the component.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub language: Option<LangID>,
     /// Per-field language overrides.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
     /// DOI identifier.
-    #[serde(alias = "DOI")]
+    #[serde(alias = "DOI", skip_serializing_if = "Option::is_none")]
     pub doi: Option<String>,
     /// Free-text genre descriptor.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub genre: Option<String>,
     /// Free-text medium descriptor.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub medium: Option<String>,
     /// Structured archival location metadata.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub archive_info: Option<ArchiveInfo>,
     /// Preprint server identifier.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub eprint: Option<EprintInfo>,
     /// Keywords or subject tags.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
     /// Original publication relation.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub original: Option<WorkRelation>,
 }
 
@@ -559,19 +610,25 @@ pub enum MonographComponentType {
 // deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct SerialComponent {
     /// Unique identifier for this reference.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<RefID>,
     /// Component subtype for style-directed formatting.
     pub r#type: SerialComponentType,
     /// Title of the component.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<Title>,
     /// Author(s) of the component.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub author: Option<Contributor>,
     /// Translator(s) of the component.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub translator: Option<Contributor>,
     /// Publication date.
     #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// The parent work, such as a magazine, journal, or book set.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub container: Option<WorkRelation>,
     /// Volume number (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -591,38 +648,50 @@ pub struct SerialComponent {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub numbering: Vec<Numbering>,
     /// URL for the component.
-    #[serde(alias = "URL")]
+    #[serde(alias = "URL", skip_serializing_if = "Option::is_none")]
     pub url: Option<Url>,
     /// Date the URL was accessed.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub accessed: Option<EdtfString>,
     /// BCP 47 language of the component.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub language: Option<LangID>,
     /// Per-field language overrides.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
     /// DOI identifier.
-    #[serde(alias = "DOI")]
+    #[serde(alias = "DOI", skip_serializing_if = "Option::is_none")]
     pub doi: Option<String>,
     /// ADS bibcode identifier.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ads_bibcode: Option<String>,
     /// Page range within the parent serial issue.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pages: Option<String>,
     /// Free-text genre descriptor.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub genre: Option<String>,
     /// Free-text medium descriptor.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub medium: Option<String>,
     /// Structured archival location metadata.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub archive_info: Option<ArchiveInfo>,
     /// Preprint server identifier.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub eprint: Option<EprintInfo>,
     /// Keywords or subject tags.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
     /// Work relation for reviews.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub reviewed: Option<WorkRelation>,
     /// Original publication relation.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub original: Option<WorkRelation>,
 }
 
@@ -728,34 +797,43 @@ pub enum SerialComponentType {
 #[serde(rename_all = "kebab-case")]
 pub struct Serial {
     /// Unique identifier for this reference.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<RefID>,
     /// Serial subtype for style-directed formatting.
     pub r#type: SerialType,
     /// Title of the serial.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<Title>,
     /// Optional short form of the title for style-directed rendering.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub short_title: Option<String>,
     /// The parent container for this serial (e.g., a larger series).
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub container: Option<WorkRelation>,
     /// Editor(s) of the serial.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub editor: Option<Contributor>,
     /// Publisher of the serial.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub publisher: Option<Contributor>,
     /// URL for the serial.
-    #[serde(alias = "URL")]
+    #[serde(alias = "URL", skip_serializing_if = "Option::is_none")]
     pub url: Option<Url>,
     /// Date the URL was accessed.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub accessed: Option<EdtfString>,
     /// BCP 47 language of the serial.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub language: Option<LangID>,
     /// Per-field language overrides.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
     /// ISSN identifier.
-    #[serde(alias = "ISSN")]
+    #[serde(alias = "ISSN", skip_serializing_if = "Option::is_none")]
     pub issn: Option<String>,
 }
 

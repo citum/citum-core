@@ -338,31 +338,41 @@ pub struct ArchiveInfo {
     ///
     /// Uses `MultilingualString` to support international institution names
     /// (e.g., 国立国会図書館 / National Diet Library).
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<MultilingualString>,
     /// Geographic location (city/country) of the archive.
     ///
     /// Parallel to `SimpleName.location`; both carry geographic-place semantics.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub place: Option<String>,
     /// Name of the collection within the archive.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub collection: Option<String>,
     /// Identifier for the collection (call number, accession number, etc.).
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub collection_id: Option<String>,
     /// Name of the series within the collection.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub series: Option<String>,
     /// Box number within the collection.
     ///
     /// Uses raw identifier syntax `r#box`, which serde serializes as `"box"` transparently.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub r#box: Option<String>,
     /// Folder number within the box.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub folder: Option<String>,
     /// Item identifier within the folder.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub item: Option<String>,
     /// Display override for the archival location (shelfmark, call number, or complex location string).
     ///
     /// When present, overrides the structured fields for display. Acts as the legacy
     /// `archive_location` fallback for complex shelfmarks that don't fit the structured model.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub location: Option<String>,
     /// URL for the archival item (e.g. digitized finding aid or item page).
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub url: Option<Url>,
 }
 

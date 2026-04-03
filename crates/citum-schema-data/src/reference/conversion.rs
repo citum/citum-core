@@ -2,7 +2,7 @@ use crate::reference::contributor::{Contributor, ContributorList, SimpleName, St
 use crate::reference::date::EdtfString;
 use crate::reference::types::{
     ArchiveInfo, Collection, CollectionComponent, CollectionType, Dataset, LegalCase, Monograph,
-    MonographComponentType, MonographType, NumOrStr, Patent, Serial, SerialComponent,
+    MonographComponentType, MonographType, NumOrStr, Patent, Regulation, Serial, SerialComponent,
     SerialComponentType, SerialType, Software, Standard, Statute, Title, Treaty,
 };
 use crate::reference::{Event, InputReference, Numbering, NumberingType, WorkRelation};
@@ -15,37 +15,6 @@ fn short_title_from_legacy(legacy: &csl_legacy::csl_json::Reference, key: &str) 
         .get(key)
         .and_then(serde_json::Value::as_str)
         .map(str::to_string)
-}
-
-fn format_interviewer_note(names: &[csl_legacy::csl_json::Name]) -> Option<String> {
-    if names.is_empty() {
-        return None;
-    }
-
-    let formatted: Vec<String> = names
-        .iter()
-        .filter_map(|n| {
-            if let Some(literal) = &n.literal {
-                return Some(literal.clone());
-            }
-            let family = n.family.as_deref().unwrap_or("").trim();
-            if family.is_empty() {
-                return None;
-            }
-            let given_initial = n
-                .given
-                .as_deref()
-                .and_then(|g| g.chars().next())
-                .map(|c| format!("{c}. "));
-            Some(format!("{}{}", given_initial.unwrap_or_default(), family))
-        })
-        .collect();
-
-    if formatted.is_empty() {
-        None
-    } else {
-        Some(format!("{}, Interviewer", formatted.join(", ")))
-    }
 }
 
 fn archive_info_from_legacy_flat(legacy: &csl_legacy::csl_json::Reference) -> Option<ArchiveInfo> {
@@ -114,11 +83,6 @@ fn from_monograph_ref(
         && ctx.note.is_none()
     {
         ctx.note = Some("personal communication".to_string());
-    } else if legacy.ref_type == "interview" && ctx.note.is_none() {
-        ctx.note = legacy
-            .interviewer
-            .as_ref()
-            .and_then(|names| format_interviewer_note(names));
     }
 
     let r#type = if legacy.ref_type == "report" {
@@ -145,35 +109,32 @@ fn from_monograph_ref(
 
     let archive_info = archive_info_from_legacy_flat(&legacy);
 
-    let mut numbering = Vec::new();
-    if let Some(edition) = ctx.edition {
-        numbering.push(Numbering {
-            r#type: NumberingType::Edition,
-            value: edition,
-        });
-    }
-    if let Some(volume) = legacy.volume {
-        numbering.push(Numbering {
-            r#type: NumberingType::Volume,
-            value: volume.to_string(),
-        });
-    }
-    if let Some(collection_number) = legacy.collection_number {
-        numbering.push(Numbering {
-            r#type: NumberingType::Volume,
-            value: collection_number.to_string(),
-        });
-    }
-    if let Some(n) = legacy.number {
-        numbering.push(Numbering {
-            r#type: if r#type == MonographType::Report {
-                NumberingType::Report
-            } else {
-                NumberingType::Number
-            },
-            value: n,
-        });
-    }
+    // Use report numbering only for Report type; all standard types use shorthand fields.
+    let numbering = if r#type == MonographType::Report {
+        legacy
+            .number
+            .as_ref()
+            .map(|n| {
+                vec![Numbering {
+                    r#type: NumberingType::Report,
+                    value: n.clone(),
+                }]
+            })
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+
+    let edition = ctx.edition;
+    let volume = legacy
+        .volume
+        .map(|v| v.to_string())
+        .or_else(|| legacy.collection_number.map(|cn| cn.to_string()));
+    let number = if r#type == MonographType::Report {
+        None
+    } else {
+        legacy.number
+    };
 
     let original = legacy.original_title.map(|original_title| {
         WorkRelation::Embedded(Box::new(InputReference::Monograph(Box::new(Monograph {
@@ -181,6 +142,8 @@ fn from_monograph_ref(
             ..Default::default()
         }))))
     });
+
+    let archive = legacy.archive;
 
     InputReference::Monograph(Box::new(Monograph {
         id: ctx.id,
@@ -214,16 +177,19 @@ fn from_monograph_ref(
         isbn: ctx.isbn,
         doi: ctx.doi,
         ads_bibcode: None,
+        volume,
+        issue: None,
+        edition,
+        number,
         numbering,
         genre: legacy.genre,
         medium: legacy.medium,
-        archive: legacy.archive,
+        archive,
         archive_location: legacy.archive_location,
         archive_info,
         eprint: None,
         keywords: None,
         original,
-        ..Default::default()
     }))
 }
 
@@ -232,13 +198,11 @@ fn from_collection_component_ref(
     ctx: RefContext,
 ) -> InputReference {
     let parent_title = legacy.container_title.map(Title::Single);
-    let mut parent_numbering = Vec::new();
-    if let Some(v) = legacy.collection_number.clone().or(legacy.volume.clone()) {
-        parent_numbering.push(Numbering {
-            r#type: NumberingType::Volume,
-            value: v.to_string(),
-        });
-    }
+    let parent_volume = legacy
+        .collection_number
+        .clone()
+        .or_else(|| legacy.volume.clone())
+        .map(|v| v.to_string());
 
     InputReference::CollectionComponent(Box::new(CollectionComponent {
         id: ctx.id,
@@ -267,11 +231,10 @@ fn from_collection_component_ref(
                         location: legacy.publisher_place,
                     })
                 }),
-                numbering: parent_numbering,
+                volume: parent_volume,
                 ..Default::default()
             })),
         ))),
-        numbering: Vec::new(),
         pages: legacy.page.map(NumOrStr::Str),
         url: ctx.url,
         accessed: ctx.accessed,
@@ -363,28 +326,20 @@ fn from_serial_component_ref(
     };
     let parent_title = legacy.container_title.map(Title::Single);
 
-    let mut numbering = Vec::new();
-    if let Some(v) = legacy.volume {
-        numbering.push(Numbering {
-            r#type: NumberingType::Volume,
-            value: v.to_string(),
-        });
-    }
-    if let Some(i) = legacy.issue.or_else(|| {
-        if legacy.ref_type == "broadcast" || legacy.ref_type == "motion_picture" {
-            legacy
-                .number
-                .as_ref()
-                .map(|n| csl_legacy::csl_json::StringOrNumber::String(n.clone()))
-        } else {
-            None
-        }
-    }) {
-        numbering.push(Numbering {
-            r#type: NumberingType::Issue,
-            value: i.to_string(),
-        });
-    }
+    let volume = legacy.volume.map(|v| v.to_string());
+    let issue = legacy
+        .issue
+        .or_else(|| {
+            if legacy.ref_type == "broadcast" || legacy.ref_type == "motion_picture" {
+                legacy
+                    .number
+                    .as_ref()
+                    .map(|n| csl_legacy::csl_json::StringOrNumber::String(n.clone()))
+            } else {
+                None
+            }
+        })
+        .map(|i| i.to_string());
 
     InputReference::SerialComponent(Box::new(SerialComponent {
         id: ctx.id,
@@ -415,7 +370,8 @@ fn from_serial_component_ref(
                 issn: legacy.issn,
             }),
         )))),
-        numbering,
+        volume,
+        issue,
         url: ctx.url,
         accessed: ctx.accessed,
         language: ctx.language,
@@ -439,7 +395,7 @@ fn from_legal_case_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext)
     InputReference::LegalCase(Box::new(LegalCase {
         id: ctx.id,
         title: ctx.title,
-        authority: legacy.authority.unwrap_or_default(),
+        authority: legacy.authority,
         volume: legacy.volume.map(|v| v.to_string()),
         reporter: legacy.container_title,
         page: legacy.page,
@@ -465,6 +421,24 @@ fn from_statute_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) ->
         page: legacy.page,
         section: legacy.section,
         chapter_number: legacy.chapter_number,
+        issued: ctx.issued,
+        url: ctx.url,
+        accessed: ctx.accessed,
+        language: ctx.language,
+        field_languages: HashMap::new(),
+        note: ctx.note,
+        keywords: None,
+    }))
+}
+
+fn from_regulation_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
+    InputReference::Regulation(Box::new(Regulation {
+        id: ctx.id,
+        title: ctx.title,
+        authority: legacy.authority,
+        volume: legacy.volume.map(|v| v.to_string()),
+        code: legacy.container_title,
+        section: legacy.section,
         issued: ctx.issued,
         url: ctx.url,
         accessed: ctx.accessed,
@@ -643,13 +617,9 @@ fn from_bill_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> In
 fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     let archive_info = archive_info_from_legacy_flat(&legacy);
 
-    let mut numbering = Vec::new();
-    if let Some(v) = legacy.volume {
-        numbering.push(Numbering {
-            r#type: NumberingType::Volume,
-            value: v.to_string(),
-        });
-    }
+    let volume = legacy.volume.map(|v| v.to_string());
+
+    let archive = legacy.archive;
 
     InputReference::Monograph(Box::new(Monograph {
         id: ctx.id,
@@ -683,10 +653,10 @@ fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         isbn: ctx.isbn,
         doi: ctx.doi,
         ads_bibcode: None,
-        numbering,
+        volume,
         genre: legacy.genre,
         medium: legacy.medium,
-        archive: legacy.archive,
+        archive,
         archive_location: legacy.archive_location,
         archive_info,
         eprint: None,
@@ -771,6 +741,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
             "bill" => from_bill_ref(legacy, ctx),
             "legal-case" | "legal_case" => from_legal_case_ref(legacy, ctx),
             "statute" | "legislation" => from_statute_ref(legacy, ctx),
+            "regulation" => from_regulation_ref(legacy, ctx),
             "treaty" => from_treaty_ref(legacy, ctx),
             "standard" => from_standard_ref(legacy, ctx),
             "patent" => from_patent_ref(legacy, ctx),
@@ -821,13 +792,25 @@ impl From<Vec<csl_legacy::csl_json::Name>> for Contributor {
                         location: None,
                     })
                 } else {
-                    Contributor::StructuredName(StructuredName {
-                        given: n.given.unwrap_or_default().into(),
-                        family: n.family.unwrap_or_default().into(),
-                        suffix: n.suffix,
-                        dropping_particle: n.dropping_particle,
-                        non_dropping_particle: n.non_dropping_particle,
-                    })
+                    let given_str = n.given.as_deref().map(str::trim).unwrap_or("");
+                    if given_str.is_empty()
+                        && n.dropping_particle.is_none()
+                        && n.non_dropping_particle.is_none()
+                    {
+                        // No given name and no particles: treat family as a literal name
+                        Contributor::SimpleName(SimpleName {
+                            name: n.family.unwrap_or_default().into(),
+                            location: None,
+                        })
+                    } else {
+                        Contributor::StructuredName(StructuredName {
+                            given: given_str.to_string().into(),
+                            family: n.family.unwrap_or_default().into(),
+                            suffix: n.suffix,
+                            dropping_particle: n.dropping_particle,
+                            non_dropping_particle: n.non_dropping_particle,
+                        })
+                    }
                 }
             })
             .collect();
