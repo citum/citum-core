@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-02T11:56:15Z
-updated_at: 2026-04-02T13:40:00Z
+updated_at: 2026-04-03T17:30:00Z
 ---
 
 Continue the Chicago author-date fidelity pass using the raw Chicago 18 Zotero
@@ -15,7 +15,8 @@ Current verified state after the legal-material pass:
 - primary oracle remains green at 18 / 18 citations and 32 / 32 bibliography
 - official style-scoped rich-input report remains 40 / 40 citations and 53 / 54 bibliography
 - Chicago 18 supplemental bibliography benchmark improved from 268 / 406 to
-  271 / 404
+  275 / 401
+- APA rich bibliography benchmark improved from 303 / 359 to 306 / 359
 - focused legal-material subset improved from 19 / 23 to 20 / 21
 - focused `entry-dictionary` / `entry-encyclopedia` subset remains 6 / 11
 
@@ -45,15 +46,18 @@ Policy / architecture constraints established in this pass:
 - [ ] Fix title casing for named legal acts such as `Homeland Security Act`
 - [ ] Audit `entry-dictionary` and `entry-encyclopedia` against Zotero output
 - [ ] Re-run the official style-scoped report and summarize the next net gain
+- [x] Add conversion regression tests that exercise the note-field parser before
+  routing legacy references into Citum
 
 ## Processor / migration follow-up
 
 - [ ] Normalize note-trapped legal metadata such as `genre: H.R.` and
-  `status: enacted` into style-addressable fields
+  `status: enacted` into style-addressable fields (see
+  `csl26-bn0r--promote-note-parsed-metadata`)
 - [ ] Decide whether titleless `bill` rows should normalize into existing legal
   types or remain generic documents with legal-facing sublabels
 - [ ] Fix anonymous/titleless bibliography year-suffix leakage on the Chicago 18
-  supplemental corpus
+  supplemental corpus (see `csl26-cr7m--chicago-year-suffix-name-order`)
 - [ ] Expose a style-addressable legal `code` / container path everywhere
   titleless statute citations need it
 - [ ] Preserve `event-title` for `paper-conference` and `speech`
