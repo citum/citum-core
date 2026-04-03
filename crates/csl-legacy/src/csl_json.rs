@@ -362,6 +362,498 @@ impl std::fmt::Display for StringOrNumber {
     }
 }
 
+impl Reference {
+    /// Parse structured CSL variables from the note field.
+    ///
+    /// Extracts key-value pairs from the Zotero "Extra" field (stored in `note`),
+    /// following citeproc-js's `parseNoteFieldHacks` behavior. Lines must start
+    /// with a lowercase letter and contain `key: value` patterns. Type overrides
+    /// are always applied; other fields only set if currently None.
+    ///
+    /// # Algorithm
+    /// 1. Skip if note is None or empty
+    /// 2. Split by newline
+    /// 3. For each line, parse `key: value` where key starts lowercase
+    /// 4. Stop at first non-matching line (unless it's the first line)
+    /// 5. Extract type, dates, names, and strings to appropriate fields
+    /// 6. Rebuild note with only unparsed lines
+    pub fn parse_note_field_hacks(&mut self) {
+        let note = match &self.note {
+            Some(n) if !n.is_empty() => n.clone(),
+            _ => return,
+        };
+
+        let lines: Vec<&str> = note.lines().collect();
+        if lines.is_empty() {
+            return;
+        }
+
+        let mut parsed_indices = Vec::new();
+        let mut skip_first_line = false;
+
+        for (idx, line) in lines.iter().enumerate() {
+            let trimmed = line.trim();
+
+            // Skip blank lines
+            if trimmed.is_empty() {
+                continue;
+            }
+
+            // Parse key: value pattern
+            let Some((key, value)) = parse_key_value(trimmed) else {
+                // First non-matching line: if this is the first line, skip it and continue
+                if idx == 0 && !skip_first_line {
+                    skip_first_line = true;
+                    continue;
+                }
+                // Otherwise, stop parsing
+                break;
+            };
+
+            parsed_indices.push(idx);
+
+            // Process the key-value pair
+            if key == "type" {
+                self.ref_type = value.to_string();
+            } else if is_date_variable(key) {
+                handle_date_variable(self, key, value);
+            } else if is_name_variable(key) {
+                handle_name_variable(self, key, value);
+            } else if is_string_variable(key) {
+                handle_string_variable(self, key, value);
+            }
+        }
+
+        // Rebuild note from unparsed lines
+        let remaining_lines: Vec<&str> = lines
+            .iter()
+            .enumerate()
+            .filter(|(idx, _)| !parsed_indices.contains(idx))
+            .map(|(_, line)| *line)
+            .collect();
+
+        if remaining_lines.is_empty() {
+            self.note = None;
+        } else {
+            self.note = Some(remaining_lines.join("\n"));
+        }
+    }
+}
+
+/// Parse a line into `(key, value)` if it matches `key: value` pattern.
+/// Key must start with lowercase letter and contain only word chars, hyphens, underscores.
+fn parse_key_value(line: &str) -> Option<(&str, &str)> {
+    if line.is_empty() {
+        return None;
+    }
+
+    let colon_pos = line.find(':')?;
+    let key = &line[..colon_pos];
+
+    // Validate key: must start with lowercase letter
+    let first_char = key.chars().next()?;
+    if !first_char.is_ascii_lowercase() {
+        return None;
+    }
+
+    // Rest of key: word chars, hyphens, underscores
+    if !key
+        .chars()
+        .skip(1)
+        .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
+    {
+        return None;
+    }
+
+    let value = line[colon_pos + 1..].trim();
+    Some((key, value))
+}
+
+/// Check if key is a date variable.
+fn is_date_variable(key: &str) -> bool {
+    matches!(
+        key,
+        "issued" | "event-date" | "original-date" | "available-date" | "accessed" | "submitted"
+    )
+}
+
+/// Handle date variable extraction.
+fn handle_date_variable(ref_obj: &mut Reference, key: &str, value: &str) {
+    let date = parse_date_variable(value);
+
+    match key {
+        "issued" => {
+            if ref_obj.issued.is_none() {
+                ref_obj.issued = Some(date);
+            }
+        }
+        "accessed" => {
+            if ref_obj.accessed.is_none() {
+                ref_obj.accessed = Some(date);
+            }
+        }
+        "event-date" | "original-date" | "available-date" | "submitted" => {
+            // Store in extra as JSON
+            ref_obj.extra.insert(
+                key.to_string(),
+                serde_json::Value::String(value.to_string()),
+            );
+        }
+        _ => {}
+    }
+}
+
+/// Parse a date string into DateVariable.
+/// Supports YYYY, YYYY-MM, YYYY-MM-DD, and ranges like YYYY/YYYY or YYYY–YYYY.
+fn parse_date_variable(value: &str) -> DateVariable {
+    let trimmed = value.trim();
+
+    // Check for range: YYYY/YYYY or YYYY–YYYY
+    if let Some(sep_pos) = trimmed.find('/').or_else(|| trimmed.find('–')) {
+        let start_str = trimmed[..sep_pos].trim();
+        let end_str = trimmed[sep_pos + 1..].trim();
+
+        if let (Some(start_parts), Some(end_parts)) =
+            (parse_date_parts(start_str), parse_date_parts(end_str))
+        {
+            return DateVariable {
+                date_parts: Some(vec![start_parts, end_parts]),
+                ..Default::default()
+            };
+        }
+    }
+
+    // Try to parse as YYYY-MM-DD, YYYY-MM, or YYYY
+    if let Some(parts) = parse_date_parts(trimmed) {
+        DateVariable {
+            date_parts: Some(vec![parts]),
+            ..Default::default()
+        }
+    } else {
+        // Store as raw for downstream parsing
+        DateVariable {
+            raw: Some(trimmed.to_string()),
+            ..Default::default()
+        }
+    }
+}
+
+/// Parse date parts from a string like "2020", "2020-03", or "2020-03-15".
+fn parse_date_parts(s: &str) -> Option<Vec<i32>> {
+    let parts: Vec<&str> = s.split('-').collect();
+    if parts.is_empty() || parts.len() > 3 {
+        return None;
+    }
+
+    let mut result = Vec::new();
+    for part in parts {
+        result.push(part.trim().parse::<i32>().ok()?);
+    }
+
+    Some(result)
+}
+
+/// Check if key is a name variable.
+fn is_name_variable(key: &str) -> bool {
+    matches!(
+        key,
+        "editor"
+            | "translator"
+            | "interviewer"
+            | "director"
+            | "recipient"
+            | "author"
+            | "collection-editor"
+            | "container-author"
+            | "editorial-director"
+            | "illustrator"
+            | "original-author"
+            | "reviewed-author"
+            | "composer"
+            | "narrator"
+            | "performer"
+            | "producer"
+            | "script-writer"
+            | "compiler"
+    )
+}
+
+/// Handle name variable extraction.
+fn handle_name_variable(ref_obj: &mut Reference, key: &str, value: &str) {
+    let name = parse_name_variable(value);
+
+    match key {
+        "author" => {
+            if ref_obj.author.is_none() {
+                ref_obj.author = Some(vec![name]);
+            }
+        }
+        "editor" => {
+            if ref_obj.editor.is_none() {
+                ref_obj.editor = Some(vec![name]);
+            }
+        }
+        "translator" => {
+            if ref_obj.translator.is_none() {
+                ref_obj.translator = Some(vec![name]);
+            }
+        }
+        "interviewer" => {
+            if ref_obj.interviewer.is_none() {
+                ref_obj.interviewer = Some(vec![name]);
+            }
+        }
+        "director" => {
+            if ref_obj.director.is_none() {
+                ref_obj.director = Some(vec![name]);
+            }
+        }
+        "recipient" => {
+            if ref_obj.recipient.is_none() {
+                ref_obj.recipient = Some(vec![name]);
+            }
+        }
+        // Fields not on Reference: store in extra as JSON
+        "collection-editor" | "container-author" | "editorial-director" | "illustrator"
+        | "original-author" | "reviewed-author" | "composer" | "narrator" | "performer"
+        | "producer" | "script-writer" | "compiler" => {
+            ref_obj.extra.insert(
+                key.to_string(),
+                serde_json::to_value(vec![name]).unwrap_or(serde_json::Value::Null),
+            );
+        }
+        _ => {}
+    }
+}
+
+/// Parse a name from a string.
+/// Format: "family || given" for structured, otherwise literal.
+fn parse_name_variable(value: &str) -> Name {
+    let trimmed = value.trim();
+
+    if let Some(sep_pos) = trimmed.find("||") {
+        let family = trimmed[..sep_pos].trim().to_string();
+        let given = trimmed[sep_pos + 2..].trim().to_string();
+
+        Name {
+            family: Some(family),
+            given: Some(given),
+            ..Default::default()
+        }
+    } else {
+        Name {
+            literal: Some(trimmed.to_string()),
+            ..Default::default()
+        }
+    }
+}
+
+/// Check if key is a recognized string variable.
+fn is_string_variable(key: &str) -> bool {
+    matches!(
+        key,
+        "container-title"
+            | "collection-title"
+            | "volume-title"
+            | "event-title"
+            | "event-place"
+            | "publisher"
+            | "publisher-place"
+            | "archive"
+            | "archive-place"
+            | "archive-collection"
+            | "genre"
+            | "medium"
+            | "dimensions"
+            | "section"
+            | "volume"
+            | "issue"
+            | "page"
+            | "edition"
+            | "number"
+            | "number-of-volumes"
+            | "number-of-pages"
+            | "chapter-number"
+            | "part-number"
+            | "supplement-number"
+            | "references"
+            | "source"
+            | "status"
+            | "DOI"
+            | "ISBN"
+            | "ISSN"
+            | "URL"
+            | "original-title"
+            | "reviewed-title"
+            | "reviewed-genre"
+            | "call-number"
+            | "abstract"
+            | "language"
+            | "jurisdiction"
+            | "authority"
+            | "citation-number"
+            | "citation-label"
+            | "annote"
+            | "keyword"
+            | "title-short"
+            | "collection-number"
+    )
+}
+
+/// Handle string variable extraction.
+#[allow(
+    clippy::too_many_lines,
+    clippy::cognitive_complexity,
+    reason = "match statement for all CSL string variable mappings"
+)]
+fn handle_string_variable(ref_obj: &mut Reference, key: &str, value: &str) {
+    let trimmed = value.trim();
+
+    match key {
+        "container-title" => {
+            if ref_obj.container_title.is_none() {
+                ref_obj.container_title = Some(trimmed.to_string());
+            }
+        }
+        "collection-title" => {
+            if ref_obj.collection_title.is_none() {
+                ref_obj.collection_title = Some(trimmed.to_string());
+            }
+        }
+        "collection-number" => {
+            if ref_obj.collection_number.is_none() {
+                ref_obj.collection_number = Some(StringOrNumber::String(trimmed.to_string()));
+            }
+        }
+        "publisher-place" => {
+            if ref_obj.publisher_place.is_none() {
+                ref_obj.publisher_place = Some(trimmed.to_string());
+            }
+        }
+        "publisher" => {
+            if ref_obj.publisher.is_none() {
+                ref_obj.publisher = Some(trimmed.to_string());
+            }
+        }
+        "archive-place" | "archive-location" => {
+            if ref_obj.archive_location.is_none() {
+                ref_obj.archive_location = Some(trimmed.to_string());
+            }
+        }
+        "archive" => {
+            if ref_obj.archive.is_none() {
+                ref_obj.archive = Some(trimmed.to_string());
+            }
+        }
+        "volume" => {
+            if ref_obj.volume.is_none() {
+                ref_obj.volume = Some(StringOrNumber::String(trimmed.to_string()));
+            }
+        }
+        "issue" => {
+            if ref_obj.issue.is_none() {
+                ref_obj.issue = Some(StringOrNumber::String(trimmed.to_string()));
+            }
+        }
+        "page" => {
+            if ref_obj.page.is_none() {
+                ref_obj.page = Some(trimmed.to_string());
+            }
+        }
+        "edition" => {
+            if ref_obj.edition.is_none() {
+                ref_obj.edition = Some(StringOrNumber::String(trimmed.to_string()));
+            }
+        }
+        "number-of-pages" => {
+            if ref_obj.number_of_pages.is_none() {
+                ref_obj.number_of_pages = Some(StringOrNumber::String(trimmed.to_string()));
+            }
+        }
+        "number-of-volumes" => {
+            if ref_obj.number_of_volumes.is_none() {
+                ref_obj.number_of_volumes = Some(StringOrNumber::String(trimmed.to_string()));
+            }
+        }
+        "chapter-number" => {
+            if ref_obj.chapter_number.is_none() {
+                ref_obj.chapter_number = Some(trimmed.to_string());
+            }
+        }
+        "genre" => {
+            if ref_obj.genre.is_none() {
+                ref_obj.genre = Some(trimmed.to_string());
+            }
+        }
+        "medium" => {
+            if ref_obj.medium.is_none() {
+                ref_obj.medium = Some(trimmed.to_string());
+            }
+        }
+        "language" => {
+            if ref_obj.language.is_none() {
+                ref_obj.language = Some(trimmed.to_string());
+            }
+        }
+        "original-title" => {
+            if ref_obj.original_title.is_none() {
+                ref_obj.original_title = Some(trimmed.to_string());
+            }
+        }
+        "abstract" => {
+            if ref_obj.abstract_text.is_none() {
+                ref_obj.abstract_text = Some(trimmed.to_string());
+            }
+        }
+        "DOI" => {
+            if ref_obj.doi.is_none() {
+                ref_obj.doi = Some(trimmed.to_string());
+            }
+        }
+        "ISBN" => {
+            if ref_obj.isbn.is_none() {
+                ref_obj.isbn = Some(trimmed.to_string());
+            }
+        }
+        "ISSN" => {
+            if ref_obj.issn.is_none() {
+                ref_obj.issn = Some(trimmed.to_string());
+            }
+        }
+        "URL" => {
+            if ref_obj.url.is_none() {
+                ref_obj.url = Some(trimmed.to_string());
+            }
+        }
+        "authority" => {
+            if ref_obj.authority.is_none() {
+                ref_obj.authority = Some(trimmed.to_string());
+            }
+        }
+        "section" => {
+            if ref_obj.section.is_none() {
+                ref_obj.section = Some(trimmed.to_string());
+            }
+        }
+        "number" => {
+            if ref_obj.number.is_none() {
+                ref_obj.number = Some(trimmed.to_string());
+            }
+        }
+        // Fields not on Reference: store in extra as JSON
+        "volume-title" | "event-title" | "event-place" | "archive-collection" | "dimensions"
+        | "part-number" | "supplement-number" | "references" | "source" | "status"
+        | "reviewed-title" | "reviewed-genre" | "call-number" | "jurisdiction"
+        | "citation-number" | "citation-label" | "annote" | "keyword" | "title-short" => {
+            ref_obj.extra.insert(
+                key.to_string(),
+                serde_json::Value::String(trimmed.to_string()),
+            );
+        }
+        _ => {}
+    }
+}
+
 /// A bibliography is a collection of references keyed by ID.
 /// Uses `IndexMap` to preserve insertion order for numeric citation styles.
 pub type Bibliography = indexmap::IndexMap<String, Reference>;
@@ -401,5 +893,165 @@ mod tests {
         let date = DateVariable::year_month(2023, 6);
         assert_eq!(date.year_value(), Some(2023));
         assert_eq!(date.month_value(), Some(6));
+    }
+
+    #[test]
+    fn test_parse_note_field_type_override() {
+        let mut ref_obj = Reference {
+            id: "test".to_string(),
+            ref_type: "book".to_string(),
+            note: Some("type: article-journal".to_string()),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+        assert_eq!(ref_obj.ref_type, "article-journal");
+        assert_eq!(ref_obj.note, None);
+    }
+
+    #[test]
+    fn test_parse_note_field_string_variable() {
+        let mut ref_obj = Reference {
+            id: "test".to_string(),
+            ref_type: "book".to_string(),
+            note: Some("genre: H.R.\nstatus: enacted".to_string()),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+        assert_eq!(ref_obj.genre, Some("H.R.".to_string()));
+        assert!(ref_obj.extra.contains_key("status"));
+        assert_eq!(ref_obj.note, None);
+    }
+
+    #[test]
+    fn test_parse_note_field_date() {
+        let mut ref_obj = Reference {
+            id: "test".to_string(),
+            ref_type: "book".to_string(),
+            note: Some("issued: 2020-03-15".to_string()),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+        assert!(ref_obj.issued.is_some());
+        let issued = ref_obj.issued.unwrap();
+        assert_eq!(issued.year_value(), Some(2020));
+        assert_eq!(issued.month_value(), Some(3));
+        assert_eq!(issued.day_value(), Some(15));
+        assert_eq!(ref_obj.note, None);
+    }
+
+    #[test]
+    fn test_parse_note_field_name() {
+        let mut ref_obj = Reference {
+            id: "test".to_string(),
+            ref_type: "book".to_string(),
+            note: Some("editor: Smith || John".to_string()),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+        assert!(ref_obj.editor.is_some());
+        let editors = ref_obj.editor.unwrap();
+        assert_eq!(editors.len(), 1);
+        assert_eq!(editors[0].family, Some("Smith".to_string()));
+        assert_eq!(editors[0].given, Some("John".to_string()));
+        assert_eq!(ref_obj.note, None);
+    }
+
+    #[test]
+    fn test_parse_note_field_preserves_existing() {
+        let mut ref_obj = Reference {
+            id: "test".to_string(),
+            ref_type: "book".to_string(),
+            publisher: Some("OldPub".to_string()),
+            note: Some("publisher: NewPub".to_string()),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+        assert_eq!(ref_obj.publisher, Some("OldPub".to_string()));
+        assert_eq!(ref_obj.note, None);
+    }
+
+    #[test]
+    fn test_parse_note_field_strips_parsed() {
+        let mut ref_obj = Reference {
+            id: "test".to_string(),
+            ref_type: "book".to_string(),
+            note: Some("genre: H.R.\nThis is an extra note line".to_string()),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+        assert_eq!(ref_obj.genre, Some("H.R.".to_string()));
+        assert_eq!(ref_obj.note, Some("This is an extra note line".to_string()));
+    }
+
+    #[test]
+    fn test_parse_note_field_empty() {
+        let mut ref_obj = Reference {
+            id: "test".to_string(),
+            ref_type: "book".to_string(),
+            note: None,
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+        assert_eq!(ref_obj.note, None);
+    }
+
+    #[test]
+    fn test_parse_note_field_first_line_free_text() {
+        let mut ref_obj = Reference {
+            id: "test".to_string(),
+            ref_type: "book".to_string(),
+            note: Some("This is free text on first line\ngenre: H.R.\nstatus: enacted".to_string()),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+        assert_eq!(ref_obj.genre, Some("H.R.".to_string()));
+        assert!(ref_obj.extra.contains_key("status"));
+        assert_eq!(
+            ref_obj.note,
+            Some("This is free text on first line".to_string())
+        );
+    }
+
+    #[test]
+    fn test_parse_note_field_date_range() {
+        let mut ref_obj = Reference {
+            id: "test".to_string(),
+            ref_type: "book".to_string(),
+            note: Some("issued: 2020/2021".to_string()),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+        assert!(ref_obj.issued.is_some());
+        let issued = ref_obj.issued.unwrap();
+        assert!(issued.date_parts.is_some());
+        let parts = issued.date_parts.unwrap();
+        assert_eq!(parts.len(), 2);
+        assert_eq!(parts[0][0], 2020);
+        assert_eq!(parts[1][0], 2021);
+    }
+
+    #[test]
+    fn test_parse_note_field_name_literal() {
+        let mut ref_obj = Reference {
+            id: "test".to_string(),
+            ref_type: "book".to_string(),
+            note: Some("author: United Nations".to_string()),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+        assert!(ref_obj.author.is_some());
+        let authors = ref_obj.author.unwrap();
+        assert_eq!(authors.len(), 1);
+        assert_eq!(authors[0].literal, Some("United Nations".to_string()));
     }
 }
