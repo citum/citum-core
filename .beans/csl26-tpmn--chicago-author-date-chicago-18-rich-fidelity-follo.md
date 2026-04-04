@@ -64,6 +64,8 @@ Policy / architecture constraints established in this pass:
 - [ ] Preserve blog reply / medium metadata in a style-addressable field for
   `post-weblog`
 - [ ] Expose script writer / cast roles and runtime details for broadcast media
+- [ ] Decide whether `medium` (e.g. `YouTube`) should map to a publisher/platform field or a separate medium field; currently outputs as-is
+- [ ] Add `Episode` variant to `SerialComponentType` for broadcast/motion_picture items (currently routes to `Article`)
 
 ## Root-cause buckets for next pass
 
