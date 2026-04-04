@@ -4,9 +4,9 @@ references:
   type: document
   title: Egmont manuscripts
   language: en
-  archive: University of Georgia Library
   archive-info:
     name: University of Georgia Library
+    collection: Phillipps Collection
 - class: serial-component
   id: 6188419/YF7Q2VUU
   type: article
@@ -42,7 +42,10 @@ references:
 - class: monograph
   id: 6188419/2FLUQV7Q
   type: book
-  title: 'Prairie State: impressions of Illinois, 1673–1967, by travelers and other observers'
+  title:
+    full: null
+    main: Prairie State
+    sub: impressions of Illinois, 1673–1967, by travelers and other observers
   author:
   - given: Paul M.
     family: Angle
@@ -118,6 +121,7 @@ references:
   publisher:
     name: Preiser Records
   language: de
+  number: PR90113 (mono)
   medium: compact disc
 - class: dataset
   id: 6188419/YCKMRRLI
@@ -158,10 +162,10 @@ references:
   issued: 1916-07-13
   language: en
   note: personal communication
-  archive: Harvard College Library
   archive-location: O’Laughlin Papers
   archive-info:
     name: Harvard College Library
+    collection: Theodore Roosevelt Collection
     location: O’Laughlin Papers
 - class: monograph
   id: 6188419/VCP6HK7G
@@ -199,17 +203,8 @@ references:
   url: https://www.congress.gov/bill/117th-congress/house-bill/8404
   accessed: 2025-04-11
   language: en
+  number: '8404'
   genre: H.R.
-- class: monograph
-  id: 6188419/D85TWV9U
-  type: interview
-  author:
-  - given: First Name, (Traditional Name [if applicable])
-    family: Last Name
-  issued: 2000-01-01
-  language: en
-  genre: topic/subject of communication
-  medium: interview
 - class: collection-component
   id: 6188419/35B93H6N
   type: chapter
@@ -236,7 +231,10 @@ references:
 - class: monograph
   id: 6188419/RY7PJ7H7
   type: thesis
-  title: 'Cats and coronaviruses: One Health in the age of COVID-19'
+  title:
+    full: null
+    main: Cats and coronaviruses
+    sub: One Health in the age of COVID-19
   author:
   - given: Alison E.
     family: Stout
