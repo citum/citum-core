@@ -3,7 +3,8 @@ use crate::reference::date::EdtfString;
 use crate::reference::types::{
     ArchiveInfo, Collection, CollectionComponent, CollectionType, Dataset, LegalCase, Monograph,
     MonographComponentType, MonographType, NumOrStr, Patent, Regulation, Serial, SerialComponent,
-    SerialComponentType, SerialType, Software, Standard, Statute, Title, Treaty,
+    SerialComponentType, SerialType, Software, Standard, Statute, StructuredTitle, Subtitle, Title,
+    Treaty,
 };
 use crate::reference::{Event, InputReference, Numbering, NumberingType, WorkRelation};
 use std::collections::HashMap;
@@ -17,14 +18,48 @@ fn short_title_from_legacy(legacy: &csl_legacy::csl_json::Reference, key: &str) 
         .map(str::to_string)
 }
 
+/// Build a title, optionally structured if short_title is present and title contains a colon.
+fn build_title(title: Option<String>, short_title: Option<String>) -> Option<Title> {
+    match (title, short_title) {
+        (Some(full_title), Some(short)) => {
+            if let Some(colon_pos) = full_title.find(':') {
+                let potential_main = full_title[..colon_pos].trim();
+                // Check if short title matches pre-colon portion
+                if potential_main.eq_ignore_ascii_case(short.as_str())
+                    || potential_main.contains(&short)
+                {
+                    let post_colon = full_title[colon_pos + 1..].trim();
+                    return Some(Title::Structured(StructuredTitle {
+                        full: None,
+                        main: short,
+                        sub: Subtitle::String(post_colon.to_string()),
+                    }));
+                }
+            }
+            // Fallback: just use the full title
+            Some(Title::Single(full_title))
+        }
+        (Some(title), None) => Some(Title::Single(title)),
+        _ => None,
+    }
+}
+
 fn archive_info_from_legacy_flat(legacy: &csl_legacy::csl_json::Reference) -> Option<ArchiveInfo> {
     if legacy.archive.is_none() && legacy.archive_location.is_none() {
         return None;
     }
 
+    let collection = legacy
+        .extra
+        .get("archive-collection")
+        .or_else(|| legacy.extra.get("archive_collection"))
+        .and_then(serde_json::Value::as_str)
+        .map(str::to_string);
+
     Some(ArchiveInfo {
         name: legacy.archive.clone().map(Into::into),
         location: legacy.archive_location.clone(),
+        collection,
         ..Default::default()
     })
 }
@@ -32,7 +67,8 @@ fn archive_info_from_legacy_flat(legacy: &csl_legacy::csl_json::Reference) -> Op
 /// Pre-extracted common fields shared by all reference conversion functions.
 struct RefContext {
     id: Option<String>,
-    title: Option<Title>,
+    title: Option<String>,
+    short_title: Option<String>,
     issued: EdtfString,
     url: Option<Url>,
     accessed: Option<EdtfString>,
@@ -48,7 +84,7 @@ struct RefContext {
 fn from_software_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::Software(Box::new(Software {
         id: ctx.id,
-        title: ctx.title,
+        title: build_title(ctx.title, ctx.short_title),
         author: legacy.author.map(Contributor::from),
         issued: ctx.issued,
         publisher: legacy.publisher.map(|n| {
@@ -108,6 +144,10 @@ fn from_monograph_ref(
     };
 
     let archive_info = archive_info_from_legacy_flat(&legacy);
+    let archive = match archive_info.as_ref() {
+        Some(ai) if ai.collection.is_some() => None,
+        _ => legacy.archive.clone(),
+    };
 
     // Use report numbering only for Report type; all standard types use shorthand fields.
     let numbering = if r#type == MonographType::Report {
@@ -143,12 +183,10 @@ fn from_monograph_ref(
         }))))
     });
 
-    let archive = legacy.archive;
-
     InputReference::Monograph(Box::new(Monograph {
         id: ctx.id,
         r#type,
-        title: ctx.title,
+        title: build_title(ctx.title, ctx.short_title.clone()),
         short_title: None,
         container: legacy.container_title.map(|t| {
             WorkRelation::Embedded(Box::new(InputReference::Monograph(Box::new(Monograph {
@@ -211,7 +249,7 @@ fn from_collection_component_ref(
         } else {
             MonographComponentType::Chapter
         },
-        title: ctx.title,
+        title: build_title(ctx.title, ctx.short_title.clone()),
         author: legacy.author.map(Contributor::from),
         translator: legacy.translator.map(Contributor::from),
         issued: ctx.issued,
@@ -344,7 +382,7 @@ fn from_serial_component_ref(
     InputReference::SerialComponent(Box::new(SerialComponent {
         id: ctx.id,
         r#type: SerialComponentType::Article,
-        title: ctx.title,
+        title: build_title(ctx.title, ctx.short_title.clone()),
         author: legacy.author.map(Contributor::from),
         translator: legacy.translator.map(Contributor::from),
         issued: ctx.issued,
@@ -394,7 +432,7 @@ fn from_serial_component_ref(
 fn from_legal_case_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::LegalCase(Box::new(LegalCase {
         id: ctx.id,
-        title: ctx.title,
+        title: build_title(ctx.title, ctx.short_title.clone()),
         authority: legacy.authority,
         volume: legacy.volume.map(|v| v.to_string()),
         reporter: legacy.container_title,
@@ -413,7 +451,7 @@ fn from_legal_case_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext)
 fn from_statute_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::Statute(Box::new(Statute {
         id: ctx.id,
-        title: ctx.title,
+        title: build_title(ctx.title, ctx.short_title.clone()),
         authority: legacy.authority,
         volume: legacy.volume.map(|v| v.to_string()),
         code: legacy.container_title,
@@ -434,7 +472,7 @@ fn from_statute_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) ->
 fn from_regulation_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::Regulation(Box::new(Regulation {
         id: ctx.id,
-        title: ctx.title,
+        title: build_title(ctx.title, ctx.short_title.clone()),
         authority: legacy.authority,
         volume: legacy.volume.map(|v| v.to_string()),
         code: legacy.container_title,
@@ -452,7 +490,7 @@ fn from_regulation_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext)
 fn from_treaty_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::Treaty(Box::new(Treaty {
         id: ctx.id,
-        title: ctx.title,
+        title: build_title(ctx.title, ctx.short_title.clone()),
         author: legacy.author.map(Contributor::from),
         volume: legacy.volume.map(|v| v.to_string()),
         reporter: legacy.container_title,
@@ -470,7 +508,7 @@ fn from_treaty_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> 
 fn from_standard_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::Standard(Box::new(Standard {
         id: ctx.id,
-        title: ctx.title,
+        title: build_title(ctx.title, ctx.short_title.clone()),
         authority: legacy.authority,
         standard_number: legacy.number.unwrap_or_default(),
         issued: ctx.issued,
@@ -493,7 +531,7 @@ fn from_standard_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
 fn from_patent_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::Patent(Box::new(Patent {
         id: ctx.id,
-        title: ctx.title,
+        title: build_title(ctx.title, ctx.short_title.clone()),
         author: legacy.author.map(Contributor::from),
         assignee: None,
         patent_number: legacy.number.unwrap_or_default(),
@@ -514,7 +552,7 @@ fn from_patent_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> 
 fn from_dataset_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::Dataset(Box::new(Dataset {
         id: ctx.id,
-        title: ctx.title,
+        title: build_title(ctx.title, ctx.short_title.clone()),
         author: legacy.author.map(Contributor::from),
         issued: ctx.issued,
         publisher: legacy.publisher.map(|n| {
@@ -564,10 +602,10 @@ fn from_bill_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> In
     };
 
     let title = if titleless_record {
-        ctx.title
+        build_title(ctx.title, ctx.short_title)
             .or_else(|| legacy.container_title.clone().map(Title::Single))
     } else {
-        ctx.title
+        build_title(ctx.title, ctx.short_title)
             .or_else(|| legacy.number.clone().map(Title::Single))
             .or_else(|| legacy.container_title.clone().map(Title::Single))
     };
@@ -616,15 +654,18 @@ fn from_bill_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> In
 
 fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     let archive_info = archive_info_from_legacy_flat(&legacy);
+    let archive = match archive_info.as_ref() {
+        Some(ai) if ai.collection.is_some() => None,
+        _ => legacy.archive.clone(),
+    };
 
     let volume = legacy.volume.map(|v| v.to_string());
-
-    let archive = legacy.archive;
+    let number = legacy.number.clone();
 
     InputReference::Monograph(Box::new(Monograph {
         id: ctx.id,
         r#type: MonographType::Document,
-        title: ctx.title,
+        title: build_title(ctx.title, ctx.short_title.clone()),
         short_title: None,
         container: legacy.container_title.map(|t| {
             WorkRelation::Embedded(Box::new(InputReference::Monograph(Box::new(Monograph {
@@ -654,6 +695,7 @@ fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         doi: ctx.doi,
         ads_bibcode: None,
         volume,
+        number,
         genre: legacy.genre,
         medium: legacy.medium,
         archive,
@@ -669,7 +711,7 @@ fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
 fn from_event_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::Event(Box::new(Event {
         id: ctx.id,
-        title: ctx.title,
+        title: build_title(ctx.title, ctx.short_title.clone()),
         container: legacy.container_title.map(|t| {
             WorkRelation::Embedded(Box::new(InputReference::Monograph(Box::new(Monograph {
                 title: Some(Title::Single(t)),
@@ -700,7 +742,9 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
         legacy.parse_note_field_hacks();
         let ctx = RefContext {
             id: Some(legacy.id.clone()),
-            title: legacy.title.clone().map(Title::Single),
+            title: legacy.title.clone(),
+            short_title: short_title_from_legacy(&legacy, "shortTitle")
+                .or_else(|| short_title_from_legacy(&legacy, "title-short")),
             issued: legacy
                 .issued
                 .clone()
