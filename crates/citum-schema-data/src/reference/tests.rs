@@ -634,3 +634,107 @@ issued: "1962"
         panic!("expected AudioVisual");
     }
 }
+
+#[test]
+fn conversion_hydrates_structured_archive_info_from_legacy_fields() {
+    let json = r#"{
+        "id": "archive-manuscript",
+        "type": "manuscript",
+        "title": "Letter from the archive",
+        "archive": "Houghton Library",
+        "archive_location": "MS Am 1280, Box 12, Folder 4",
+        "note": "archive_collection: Ada Lovelace Papers"
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    match reference {
+        InputReference::Monograph(monograph) => {
+            let archive_info = monograph
+                .archive_info
+                .expect("archive info should be hydrated");
+            assert_eq!(
+                archive_info
+                    .name
+                    .expect("archive name should exist")
+                    .to_string(),
+                "Houghton Library"
+            );
+            assert_eq!(
+                archive_info.location,
+                Some("MS Am 1280, Box 12, Folder 4".to_string())
+            );
+            assert_eq!(
+                archive_info.collection.as_deref(),
+                Some("Ada Lovelace Papers")
+            );
+
+            assert_eq!(monograph.archive, None);
+            assert_eq!(
+                monograph.archive_location,
+                Some("MS Am 1280, Box 12, Folder 4".to_string())
+            );
+            assert_eq!(monograph.note, None);
+        }
+        other => panic!("expected monograph, got {:?}", other),
+    }
+}
+
+#[test]
+fn conversion_retains_av_interview_metadata() {
+    let json = r#"{
+        "id": "av-interview",
+        "type": "interview",
+        "title": "The Future of Artificial Intelligence",
+        "genre": "video-interview",
+        "medium": "television",
+        "interviewer": [{"family": "Colbert", "given": "Stephen"}],
+        "URL": "https://example.com/interview",
+        "issued": {"date-parts": [[2023, 11, 10]]}
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(reference.ref_type(), "interview");
+    assert_eq!(reference.genre(), Some("video-interview".to_string()));
+    assert_eq!(reference.medium(), Some("television".to_string()));
+
+    match reference.contributor(ContributorRole::Interviewer) {
+        Some(Contributor::ContributorList(list)) => match &list.0[0] {
+            Contributor::StructuredName(name) => {
+                assert_eq!(name.family.to_string(), "Colbert");
+                assert_eq!(name.given.to_string(), "Stephen");
+            }
+            other => panic!("expected structured interviewer, got {:?}", other),
+        },
+        other => panic!("expected interviewer list, got {:?}", other),
+    }
+}
+
+#[test]
+fn conversion_preserves_unpublished_manuscript_descriptor() {
+    let json = r#"{
+        "id": "submitted-manuscript",
+        "type": "manuscript",
+        "title": "Emotion recognition as a function of facial cues",
+        "genre": "Manuscript submitted for publication",
+        "note": "status: submitted for publication",
+        "publisher": "Department of Psychology, University of Washington",
+        "issued": {"date-parts": [[2019]]}
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(reference.ref_type(), "manuscript");
+    assert_eq!(
+        reference.genre(),
+        Some("manuscript-submitted-for-publication".to_string())
+    );
+    assert_eq!(
+        reference.publisher_str(),
+        Some("Department of Psychology, University of Washington".to_string())
+    );
+}
