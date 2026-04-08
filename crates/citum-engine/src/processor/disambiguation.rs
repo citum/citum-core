@@ -695,7 +695,7 @@ impl<'a> Disambiguator<'a> {
         key.push_str(author_key);
         key.push(':');
         let Some(year) = reference
-            .issued()
+            .csl_issued_date()
             .and_then(|d| d.year().parse::<i32>().ok())
         else {
             return key;

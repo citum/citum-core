@@ -52,6 +52,7 @@ fn build_inbook_reference(ctx: BibRefContext<'_>) -> InputReference {
         title: ctx.title,
         author: ctx.author,
         translator: None,
+        created: EdtfString(String::new()),
         issued: ctx.issued,
         container: Some(WorkRelation::Embedded(Box::new(
             InputReference::Collection(Box::new(Collection {
@@ -62,6 +63,7 @@ fn build_inbook_reference(ctx: BibRefContext<'_>) -> InputReference {
                 container: None,
                 editor: ctx.editor,
                 translator: None,
+                created: EdtfString(String::new()),
                 issued: EdtfString(String::new()),
                 publisher: ctx.publisher,
                 numbering: parent_numbering,
@@ -108,6 +110,7 @@ fn build_article_reference(ctx: BibRefContext<'_>) -> InputReference {
         title: ctx.title,
         author: ctx.author,
         translator: None,
+        created: EdtfString(String::new()),
         issued: ctx.issued,
         container: Some(WorkRelation::Embedded(Box::new(InputReference::Serial(
             Box::new(Serial {
@@ -252,6 +255,7 @@ fn biblatex_monograph(
         author: ctx.author,
         editor: ctx.editor,
         translator: None,
+        created: EdtfString(String::new()),
         issued: ctx.issued,
         publisher: ctx.publisher,
         url: field_str("url").and_then(|u| Url::parse(&u).ok()),
