@@ -174,6 +174,12 @@ impl InputReference {
             InputReference::Software(r) => r.author.clone(),
             InputReference::Event(r) => {
                 collect_contributors_by_role(&r.contributors, &DataRole::Performer)
+                    .or_else(|| {
+                        collect_contributors_by_role(
+                            &r.contributors,
+                            &DataRole::Custom("organizer".to_string()),
+                        )
+                    })
                     .or_else(|| collect_contributors_by_role(&r.contributors, &DataRole::Author))
             }
             InputReference::AudioVisual(r) => match r.r#type {
