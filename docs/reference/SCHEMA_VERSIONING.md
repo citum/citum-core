@@ -212,6 +212,14 @@ authoritative record when matching tags were not created at the time.
 
 #### schema-v0.27.0 (2026-04-08)
 - Schema version bumped from 0.26.0 to 0.27.0
+- Breaking: `Event` replaced separate `performer` and `organizer` fields with a
+  unified `contributors: Vec<ContributorEntry>` list; update serialized Event
+  payloads and generated bindings accordingly
+- Added `available-date` to `Event`, `Monograph`, and `SerialComponent` to
+  capture public-availability timing distinct from `issued`
+- Added `series: Option<WorkRelation>` to `Event` for recurring event series
+- Added `status`, `size`, `duration`, `references`, and `scale` to `Monograph`
+- Added `section` and `status` to `SerialComponent`
 
 #### schema-v0.26.0 (2026-04-07)
 - Schema version bumped from 0.25.0 to 0.26.0
