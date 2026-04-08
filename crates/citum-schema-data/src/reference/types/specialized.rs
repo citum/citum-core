@@ -27,27 +27,31 @@ pub struct Event {
     /// Event name (e.g., conference title, performance name).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<Title>,
-    /// Recurring event series or container.
+    /// Immediate container (e.g., broadcast program, proceedings volume).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub container: Option<WorkRelation>,
+    /// Recurring event series (e.g., annual conference series).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub series: Option<WorkRelation>,
     /// Event location (city, venue).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub location: Option<String>,
     /// Event date.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub date: Option<EdtfString>,
-    /// Event genre (e.g., "conference", "performance", "broadcast", "talk").
+    /// Date the event became or will become publicly available.
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub available_date: Option<EdtfString>,
+    /// Event genre (e.g., `"conference"`, `"performance"`, `"broadcast"`, `"talk"`).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub genre: Option<String>,
     /// Broadcaster, network, or streaming platform.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub network: Option<String>,
-    /// Performer(s) or presenter(s).
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub performer: Option<Contributor>,
-    /// Organizer or sponsor.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub organizer: Option<Contributor>,
+    /// Unified contributor list with explicit role tags.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub contributors: Vec<ContributorEntry>,
     /// URL for the event.
     #[serde(alias = "URL", skip_serializing_if = "Option::is_none")]
     pub url: Option<Url>,
