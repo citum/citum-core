@@ -173,6 +173,25 @@ pub struct Monograph {
     /// Original publication relation (for reprints or translations).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub original: Option<WorkRelation>,
+    /// Publication status (e.g., `"forthcoming"`, `"in press"`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
+    /// Date the work became or will become publicly available.
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub available_date: Option<EdtfString>,
+    /// Physical dimensions or format (e.g., `"24 x 30 cm"`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub size: Option<String>,
+    /// Duration or running time in ISO 8601 or freeform (e.g., `"PT2H30M"`, `"90 min"`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub duration: Option<String>,
+    /// Reference list count or citation string (e.g., `"42 refs"`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub references: Option<String>,
+    /// Cartographic scale for maps and globes (e.g., `"1:250,000"`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scale: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -229,6 +248,13 @@ struct MonographDeser {
     eprint: Option<EprintInfo>,
     keywords: Option<Vec<String>>,
     original: Option<WorkRelation>,
+    status: Option<String>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    available_date: Option<EdtfString>,
+    size: Option<String>,
+    duration: Option<String>,
+    references: Option<String>,
+    scale: Option<String>,
 }
 
 impl From<MonographDeser> for Monograph {
@@ -278,6 +304,12 @@ impl From<MonographDeser> for Monograph {
             eprint: raw.eprint,
             keywords: raw.keywords,
             original: raw.original,
+            status: raw.status,
+            available_date: raw.available_date,
+            size: raw.size,
+            duration: raw.duration,
+            references: raw.references,
+            scale: raw.scale,
         };
         monograph.normalize_numbering();
         monograph
@@ -799,6 +831,16 @@ pub struct SerialComponent {
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
+    /// Section within the serial issue (e.g., `"A"`, `"Sports"`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub section: Option<String>,
+    /// Publication status (e.g., `"forthcoming"`, `"ahead of print"`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
+    /// Date the component became publicly available (e.g., ahead-of-print date).
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub available_date: Option<EdtfString>,
     /// Work relation for reviews.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reviewed: Option<WorkRelation>,
@@ -853,6 +895,10 @@ struct SerialComponentDeser {
     archive_info: Option<ArchiveInfo>,
     eprint: Option<EprintInfo>,
     keywords: Option<Vec<String>>,
+    section: Option<String>,
+    status: Option<String>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    available_date: Option<EdtfString>,
     reviewed: Option<WorkRelation>,
     original: Option<WorkRelation>,
 }
@@ -896,6 +942,9 @@ impl From<SerialComponentDeser> for SerialComponent {
             archive_info: raw.archive_info,
             eprint: raw.eprint,
             keywords: raw.keywords,
+            section: raw.section,
+            status: raw.status,
+            available_date: raw.available_date,
             reviewed: raw.reviewed,
             original: raw.original,
         };

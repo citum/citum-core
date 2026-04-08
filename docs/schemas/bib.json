@@ -1198,8 +1198,19 @@
             }
           ]
         },
+        "available-date": {
+          "description": "Date the event became or will become publicly available.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EdtfString"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "container": {
-          "description": "Recurring event series or container.",
+          "description": "Immediate container (e.g., broadcast program, proceedings volume).",
           "anyOf": [
             {
               "$ref": "#/$defs/WorkRelation"
@@ -1208,6 +1219,13 @@
               "type": "null"
             }
           ]
+        },
+        "contributors": {
+          "description": "Unified contributor list with explicit role tags.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContributorEntry"
+          }
         },
         "date": {
           "description": "Event date.",
@@ -1228,7 +1246,7 @@
           }
         },
         "genre": {
-          "description": "Event genre (e.g., \"conference\", \"performance\", \"broadcast\", \"talk\").",
+          "description": "Event genre (e.g., `\"conference\"`, `\"performance\"`, `\"broadcast\"`, `\"talk\"`).",
           "type": [
             "string",
             "null"
@@ -1269,22 +1287,11 @@
             "null"
           ]
         },
-        "organizer": {
-          "description": "Organizer or sponsor.",
+        "series": {
+          "description": "Recurring event series (e.g., annual conference series).",
           "anyOf": [
             {
-              "$ref": "#/$defs/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "performer": {
-          "description": "Performer(s) or presenter(s).",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Contributor"
+              "$ref": "#/$defs/WorkRelation"
             },
             {
               "type": "null"
@@ -1854,6 +1861,16 @@
             }
           ]
         },
+        "available-date": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EdtfString"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "container": {
           "anyOf": [
             {
@@ -1875,6 +1892,12 @@
           "default": ""
         },
         "doi": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "duration": {
           "type": [
             "string",
             "null"
@@ -1999,7 +2022,31 @@
             }
           ]
         },
+        "references": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "short-title": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "size": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
           "type": [
             "string",
             "null"
@@ -2673,6 +2720,16 @@
             }
           ]
         },
+        "available-date": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EdtfString"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "container": {
           "anyOf": [
             {
@@ -2806,6 +2863,18 @@
             {
               "type": "null"
             }
+          ]
+        },
+        "section": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
           ]
         },
         "title": {
