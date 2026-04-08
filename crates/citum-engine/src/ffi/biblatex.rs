@@ -10,8 +10,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 use biblatex;
 use citum_schema::reference::{
-    InputReference, Numbering, NumberingType, WorkRelation,
-    contributor::{Contributor, ContributorList, SimpleName, StructuredName},
+    InputReference, Numbering, NumberingType, Publisher, WorkRelation,
+    contributor::{Contributor, ContributorList, StructuredName},
     date::EdtfString,
     types::{
         Collection, CollectionComponent, CollectionType, Monograph, MonographComponentType,
@@ -28,7 +28,7 @@ struct BibRefContext<'a> {
     author: Option<Contributor>,
     editor: Option<Contributor>,
     issued: EdtfString,
-    publisher: Option<Contributor>,
+    publisher: Option<Publisher>,
     language: Option<String>,
     field_str: &'a dyn Fn(&str) -> Option<String>,
 }
@@ -52,6 +52,7 @@ fn build_inbook_reference(ctx: BibRefContext<'_>) -> InputReference {
         title: ctx.title,
         author: ctx.author,
         translator: None,
+        created: EdtfString(String::new()),
         issued: ctx.issued,
         container: Some(WorkRelation::Embedded(Box::new(
             InputReference::Collection(Box::new(Collection {
@@ -62,6 +63,7 @@ fn build_inbook_reference(ctx: BibRefContext<'_>) -> InputReference {
                 container: None,
                 editor: ctx.editor,
                 translator: None,
+                created: EdtfString(String::new()),
                 issued: EdtfString(String::new()),
                 publisher: ctx.publisher,
                 numbering: parent_numbering,
@@ -108,6 +110,7 @@ fn build_article_reference(ctx: BibRefContext<'_>) -> InputReference {
         title: ctx.title,
         author: ctx.author,
         translator: None,
+        created: EdtfString(String::new()),
         issued: ctx.issued,
         container: Some(WorkRelation::Embedded(Box::new(InputReference::Serial(
             Box::new(Serial {
@@ -117,6 +120,7 @@ fn build_article_reference(ctx: BibRefContext<'_>) -> InputReference {
                 short_title: None,
                 container: None,
                 editor: None,
+                contributors: Vec::new(),
                 publisher: None,
                 url: None,
                 accessed: None,
@@ -160,11 +164,9 @@ pub(super) fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputRef
 
     let title = field_str("title").map(Title::Single);
     let issued = field_str("date").map_or(EdtfString(String::new()), EdtfString);
-    let publisher = field_str("publisher").map(|p| {
-        Contributor::SimpleName(SimpleName {
-            name: p.into(),
-            location: field_str("location"),
-        })
+    let publisher = field_str("publisher").map(|p| Publisher {
+        name: p.into(),
+        place: field_str("location"),
     });
 
     let author = entry
@@ -253,9 +255,7 @@ fn biblatex_monograph(
         author: ctx.author,
         editor: ctx.editor,
         translator: None,
-        recipient: None,
-        interviewer: None,
-        guest: None,
+        created: EdtfString(String::new()),
         issued: ctx.issued,
         publisher: ctx.publisher,
         url: field_str("url").and_then(|u| Url::parse(&u).ok()),

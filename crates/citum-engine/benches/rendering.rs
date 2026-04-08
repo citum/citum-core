@@ -195,9 +195,7 @@ fn make_ref_with_title(id: &str, family: &str, given: &str, year: i32, title: &s
         })),
         editor: None,
         translator: None,
-        recipient: None,
-        interviewer: None,
-        guest: None,
+
         issued: EdtfString(year.to_string()),
         ..Default::default()
     }))
@@ -293,9 +291,7 @@ where
         ))),
         editor: None,
         translator: None,
-        recipient: None,
-        interviewer: None,
-        guest: None,
+
         issued: EdtfString(year.to_string()),
         publisher: None,
         url: None,

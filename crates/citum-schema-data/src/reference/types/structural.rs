@@ -2,10 +2,12 @@
 
 use super::common::{
     ArchiveInfo, EprintInfo, FieldLanguageMap, HasNumbering, LangID, NormalizeNumbering, NumOrStr,
-    Numbering, RefID, Title,
+    Numbering, Publisher, RefID, Title,
 };
 use crate::reference::WorkRelation;
-use crate::reference::contributor::Contributor;
+use crate::reference::contributor::{
+    Contributor, ContributorEntry, ContributorList, ContributorRole,
+};
 use crate::reference::date::EdtfString;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
@@ -14,6 +16,50 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use std::collections::HashMap;
 use url::Url;
+
+/// Fold named contributor shorthands into the contributors vec.
+///
+/// Explicit `contributors` entries come first (source order). Named
+/// shorthands are appended only when no existing entry already carries
+/// the same role and contributor value.
+fn fold_contributors(
+    mut contributors: Vec<ContributorEntry>,
+    shorthands: &[(ContributorRole, Option<&Contributor>)],
+) -> Vec<ContributorEntry> {
+    for (role, maybe_c) in shorthands {
+        if let Some(c) = maybe_c
+            && !contributors
+                .iter()
+                .any(|e| &e.role == role && &e.contributor == *c)
+        {
+            contributors.push(ContributorEntry {
+                role: role.clone(),
+                contributor: (*c).clone(),
+            });
+        }
+    }
+    contributors
+}
+
+/// Collect contributors with a given role from a slice of entries.
+fn collect_contributors_by_role(
+    entries: &[ContributorEntry],
+    role: &ContributorRole,
+) -> Option<Contributor> {
+    let matching: Vec<&Contributor> = entries
+        .iter()
+        .filter(|entry| &entry.role == role)
+        .map(|entry| &entry.contributor)
+        .collect();
+
+    match matching.len() {
+        0 => None,
+        1 => Some(matching[0].clone()),
+        _ => Some(Contributor::ContributorList(ContributorList(
+            matching.into_iter().cloned().collect(),
+        ))),
+    }
+}
 
 /// A monograph, such as a book or a report, is a monolithic work published or produced as a complete entity.
 #[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
@@ -37,30 +83,28 @@ pub struct Monograph {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub container: Option<WorkRelation>,
     /// Author(s) of the work.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing)]
     pub author: Option<Contributor>,
     /// Editor(s) of the work.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing)]
     pub editor: Option<Contributor>,
     /// Translator(s) of the work.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing)]
     pub translator: Option<Contributor>,
-    /// Recipient for personal communications such as letters or emails.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub recipient: Option<Contributor>,
-    /// Interviewer for interview-style references.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub interviewer: Option<Contributor>,
-    /// Guest for interview or podcast-style references.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub guest: Option<Contributor>,
+    /// Unified contributor list with explicit role tags.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub contributors: Vec<ContributorEntry>,
+    /// Creation or origination date.
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
+    pub created: EdtfString,
     /// Publication date.
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(skip_serializing_if = "EdtfString::is_empty")]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// Publisher of the work.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub publisher: Option<Contributor>,
+    pub publisher: Option<Publisher>,
     /// URL for the work.
     #[serde(alias = "URL", skip_serializing_if = "Option::is_none")]
     pub url: Option<Url>,
@@ -144,12 +188,15 @@ struct MonographDeser {
     author: Option<Contributor>,
     editor: Option<Contributor>,
     translator: Option<Contributor>,
-    recipient: Option<Contributor>,
-    interviewer: Option<Contributor>,
-    guest: Option<Contributor>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    contributors: Vec<ContributorEntry>,
     #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default)]
+    created: EdtfString,
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default)]
     issued: EdtfString,
-    publisher: Option<Contributor>,
+    publisher: Option<Publisher>,
     #[serde(alias = "URL")]
     url: Option<Url>,
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
@@ -186,18 +233,28 @@ struct MonographDeser {
 
 impl From<MonographDeser> for Monograph {
     fn from(raw: MonographDeser) -> Self {
+        let contributors = fold_contributors(
+            raw.contributors,
+            &[
+                (ContributorRole::Author, raw.author.as_ref()),
+                (ContributorRole::Editor, raw.editor.as_ref()),
+                (ContributorRole::Translator, raw.translator.as_ref()),
+            ],
+        );
+        let author = collect_contributors_by_role(&contributors, &ContributorRole::Author);
+        let editor = collect_contributors_by_role(&contributors, &ContributorRole::Editor);
+        let translator = collect_contributors_by_role(&contributors, &ContributorRole::Translator);
         let mut monograph = Self {
             id: raw.id,
             r#type: raw.r#type,
             title: raw.title,
             short_title: raw.short_title,
             container: raw.container,
-            author: raw.author,
-            editor: raw.editor,
-            translator: raw.translator,
-            recipient: raw.recipient,
-            interviewer: raw.interviewer,
-            guest: raw.guest,
+            author,
+            editor,
+            translator,
+            contributors,
+            created: raw.created,
             issued: raw.issued,
             publisher: raw.publisher,
             url: raw.url,
@@ -285,18 +342,25 @@ pub struct Collection {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub container: Option<WorkRelation>,
     /// Editor(s) of the collection.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing)]
     pub editor: Option<Contributor>,
     /// Translator(s) of the collection.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing)]
     pub translator: Option<Contributor>,
+    /// Unified contributor list with explicit role tags.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub contributors: Vec<ContributorEntry>,
+    /// Creation or origination date.
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
+    pub created: EdtfString,
     /// Publication date.
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(skip_serializing_if = "EdtfString::is_empty")]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// Publisher of the collection.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub publisher: Option<Contributor>,
+    pub publisher: Option<Publisher>,
     /// Volume number (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub volume: Option<String>,
@@ -350,9 +414,15 @@ struct CollectionDeser {
     container: Option<WorkRelation>,
     editor: Option<Contributor>,
     translator: Option<Contributor>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    contributors: Vec<ContributorEntry>,
     #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default)]
+    created: EdtfString,
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default)]
     issued: EdtfString,
-    publisher: Option<Contributor>,
+    publisher: Option<Publisher>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     volume: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -378,14 +448,25 @@ struct CollectionDeser {
 
 impl From<CollectionDeser> for Collection {
     fn from(raw: CollectionDeser) -> Self {
+        let contributors = fold_contributors(
+            raw.contributors,
+            &[
+                (ContributorRole::Editor, raw.editor.as_ref()),
+                (ContributorRole::Translator, raw.translator.as_ref()),
+            ],
+        );
+        let editor = collect_contributors_by_role(&contributors, &ContributorRole::Editor);
+        let translator = collect_contributors_by_role(&contributors, &ContributorRole::Translator);
         let mut collection = Self {
             id: raw.id,
             r#type: raw.r#type,
             title: raw.title,
             short_title: raw.short_title,
             container: raw.container,
-            editor: raw.editor,
-            translator: raw.translator,
+            editor,
+            translator,
+            contributors,
+            created: raw.created,
             issued: raw.issued,
             publisher: raw.publisher,
             volume: raw.volume,
@@ -440,14 +521,21 @@ pub struct CollectionComponent {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<Title>,
     /// Author(s) of the component.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing)]
     pub author: Option<Contributor>,
     /// Translator(s) of the component.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing)]
     pub translator: Option<Contributor>,
+    /// Unified contributor list with explicit role tags.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub contributors: Vec<ContributorEntry>,
+    /// Creation or origination date.
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
+    pub created: EdtfString,
     /// Publication date.
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(skip_serializing_if = "EdtfString::is_empty")]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// The parent collection or monograph.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -521,7 +609,13 @@ struct CollectionComponentDeser {
     title: Option<Title>,
     author: Option<Contributor>,
     translator: Option<Contributor>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    contributors: Vec<ContributorEntry>,
     #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default)]
+    created: EdtfString,
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default)]
     issued: EdtfString,
     container: Option<WorkRelation>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -555,12 +649,23 @@ struct CollectionComponentDeser {
 
 impl From<CollectionComponentDeser> for CollectionComponent {
     fn from(raw: CollectionComponentDeser) -> Self {
+        let contributors = fold_contributors(
+            raw.contributors,
+            &[
+                (ContributorRole::Author, raw.author.as_ref()),
+                (ContributorRole::Translator, raw.translator.as_ref()),
+            ],
+        );
+        let author = collect_contributors_by_role(&contributors, &ContributorRole::Author);
+        let translator = collect_contributors_by_role(&contributors, &ContributorRole::Translator);
         let mut component = Self {
             id: raw.id,
             r#type: raw.r#type,
             title: raw.title,
-            author: raw.author,
-            translator: raw.translator,
+            author,
+            translator,
+            contributors,
+            created: raw.created,
             issued: raw.issued,
             container: raw.container,
             volume: raw.volume,
@@ -618,14 +723,21 @@ pub struct SerialComponent {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<Title>,
     /// Author(s) of the component.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing)]
     pub author: Option<Contributor>,
     /// Translator(s) of the component.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing)]
     pub translator: Option<Contributor>,
+    /// Unified contributor list with explicit role tags.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub contributors: Vec<ContributorEntry>,
+    /// Creation or origination date.
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
+    pub created: EdtfString,
     /// Publication date.
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(skip_serializing_if = "EdtfString::is_empty")]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// The parent work, such as a magazine, journal, or book set.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -705,7 +817,13 @@ struct SerialComponentDeser {
     title: Option<Title>,
     author: Option<Contributor>,
     translator: Option<Contributor>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    contributors: Vec<ContributorEntry>,
     #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default)]
+    created: EdtfString,
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default)]
     issued: EdtfString,
     container: Option<WorkRelation>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -741,12 +859,23 @@ struct SerialComponentDeser {
 
 impl From<SerialComponentDeser> for SerialComponent {
     fn from(raw: SerialComponentDeser) -> Self {
+        let contributors = fold_contributors(
+            raw.contributors,
+            &[
+                (ContributorRole::Author, raw.author.as_ref()),
+                (ContributorRole::Translator, raw.translator.as_ref()),
+            ],
+        );
+        let author = collect_contributors_by_role(&contributors, &ContributorRole::Author);
+        let translator = collect_contributors_by_role(&contributors, &ContributorRole::Translator);
         let mut component = Self {
             id: raw.id,
             r#type: raw.r#type,
             title: raw.title,
-            author: raw.author,
-            translator: raw.translator,
+            author,
+            translator,
+            contributors,
+            created: raw.created,
             issued: raw.issued,
             container: raw.container,
             volume: raw.volume,
@@ -794,7 +923,8 @@ pub enum SerialComponentType {
 #[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
+#[serde(from = "SerialDeser", rename_all = "kebab-case")]
+// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Serial {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -811,11 +941,14 @@ pub struct Serial {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub container: Option<WorkRelation>,
     /// Editor(s) of the serial.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing)]
     pub editor: Option<Contributor>,
+    /// Unified contributor list with explicit role tags.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub contributors: Vec<ContributorEntry>,
     /// Publisher of the serial.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub publisher: Option<Contributor>,
+    pub publisher: Option<Publisher>,
     /// URL for the serial.
     #[serde(alias = "URL", skip_serializing_if = "Option::is_none")]
     pub url: Option<Url>,
@@ -835,6 +968,59 @@ pub struct Serial {
     /// ISSN identifier.
     #[serde(alias = "ISSN", skip_serializing_if = "Option::is_none")]
     pub issn: Option<String>,
+}
+
+#[derive(Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(rename_all = "kebab-case")]
+struct SerialDeser {
+    id: Option<RefID>,
+    r#type: SerialType,
+    title: Option<Title>,
+    short_title: Option<String>,
+    container: Option<WorkRelation>,
+    editor: Option<Contributor>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    contributors: Vec<ContributorEntry>,
+    publisher: Option<Publisher>,
+    #[serde(alias = "URL")]
+    url: Option<Url>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    accessed: Option<EdtfString>,
+    language: Option<LangID>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    field_languages: FieldLanguageMap,
+    note: Option<String>,
+    #[serde(alias = "ISSN")]
+    issn: Option<String>,
+}
+
+impl From<SerialDeser> for Serial {
+    fn from(raw: SerialDeser) -> Self {
+        let contributors = fold_contributors(
+            raw.contributors,
+            &[(ContributorRole::Editor, raw.editor.as_ref())],
+        );
+        let editor = collect_contributors_by_role(&contributors, &ContributorRole::Editor);
+
+        Self {
+            id: raw.id,
+            r#type: raw.r#type,
+            title: raw.title,
+            short_title: raw.short_title,
+            container: raw.container,
+            editor,
+            contributors,
+            publisher: raw.publisher,
+            url: raw.url,
+            accessed: raw.accessed,
+            language: raw.language,
+            field_languages: raw.field_languages,
+            note: raw.note,
+            issn: raw.issn,
+        }
+    }
 }
 
 impl HasNumbering for Monograph {

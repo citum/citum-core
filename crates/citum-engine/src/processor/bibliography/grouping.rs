@@ -461,7 +461,9 @@ impl Processor {
             author: reference
                 .author()
                 .map(|authors| format_contributors_short(&authors.to_names_vec(), &options)),
-            year: reference.issued().map(|issued| issued.year().clone()),
+            year: reference
+                .csl_issued_date()
+                .map(|issued| issued.year().clone()),
             title: reference.title().map(|title| title.to_string()),
         }
     }

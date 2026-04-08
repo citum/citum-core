@@ -2317,7 +2317,7 @@ fn input_reference_to_csl_json(reference: &InputReference) -> csl_legacy::csl_js
     r.language = reference.language();
     r.note = reference.note();
     r.doi = reference.doi();
-    r.issued = reference.issued().and_then(|d| {
+    r.issued = reference.csl_issued_date().and_then(|d| {
         let s = d.0;
         let year = s.get(0..4)?.parse::<i32>().ok()?;
         Some(DateVariable::year(year))
@@ -2325,7 +2325,7 @@ fn input_reference_to_csl_json(reference: &InputReference) -> csl_legacy::csl_js
     r.author = reference.author().map(contributor_to_csl_names);
     r.editor = reference.editor().map(contributor_to_csl_names);
     r.translator = reference.translator().map(contributor_to_csl_names);
-    r.publisher = reference.publisher().and_then(|c| c.name());
+    r.publisher = reference.publisher().map(|p| p.name.to_string());
 
     match reference {
         InputReference::Monograph(m) => {
@@ -2415,7 +2415,7 @@ fn render_biblatex(input: &InputBibliography) -> String {
                 let _ = writeln!(&mut out, "  author = {{{}}},", names.join(" and "));
             }
         }
-        if let Some(issued) = reference.issued()
+        if let Some(issued) = reference.csl_issued_date()
             && let Some(year) = issued.0.get(0..4)
         {
             let _ = writeln!(&mut out, "  year = {{{year}}},");
@@ -2574,7 +2574,7 @@ fn render_ris(input: &InputBibliography) -> String {
                 let _ = writeln!(&mut out, "AU  - {name}");
             }
         }
-        if let Some(issued) = reference.issued()
+        if let Some(issued) = reference.csl_issued_date()
             && let Some(year) = issued.0.get(0..4)
         {
             let _ = writeln!(&mut out, "PY  - {year}");

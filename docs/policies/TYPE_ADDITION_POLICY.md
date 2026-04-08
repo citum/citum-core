@@ -350,6 +350,56 @@ Monitor these reference types for potential addition:
 
 **Previously listed candidates now implemented:** Dataset (v1.1), Software (v1.1), Standard (v1.1). Preprint was added as `MonographType::Preprint` rather than a flat type, since the preprint server relationship is custodial rather than editorial.
 
+## ContributorRole Extension Policy
+
+New contributor roles should be added to the `ContributorRole` enum in `crates/citum-schema-data/src/reference/contributor.rs` when they represent a distinct agent role in a citation context. The enum includes both named variants for standardized roles and a `#[serde(untagged)] Custom(String)` escape hatch for domain-specific or unstandardized roles.
+
+### Adding a Named Role
+
+When adding a new named role variant to the `ContributorRole` enum:
+
+1. **Justify the role.** Ensure it has a clear use case in at least one priority style (e.g., APA, Chicago, MLA, a domain-specific standard).
+
+2. **Update the enum** in `crates/citum-schema-data/src/reference/contributor.rs`:
+   ```rust
+   pub enum ContributorRole {
+       // existing roles ...
+       YourNewRole,
+       // ...
+       #[serde(untagged)]
+       Custom(String),
+   }
+   ```
+
+3. **Update dispatcher logic.** If the new role affects the `author()` dispatch on `InputReference` (e.g., for work-level types like `AudioVisualWork`), update the pattern match in `crates/citum-schema-data/src/reference/mod.rs`.
+
+4. **Update engine routing.** If the role requires distinct rendering or template variable mapping, add handling in `crates/citum-engine/src/values/contributor/mod.rs`.
+
+### Using the Custom Variant
+
+For unstandardized roles or domain-specific extensions, use the `Custom(String)` variant:
+
+```yaml
+contributors:
+  - role: "uncommon-role"  # Parsed as Custom("uncommon-role")
+    contributor:
+      family: Smith
+      given: Jane
+```
+
+This avoids schema churn for niche use cases. If a custom role becomes standardized across multiple styles, promote it to a named variant in a follow-up update.
+
+## AudioVisualWork Rationale
+
+`AudioVisualWork` was added as a first-class `InputReference` variant rather than a `MonographType` subtype because it has a distinct contributor model and requires type-aware primary author dispatch. Films and episodes have Directors as primary agents, recordings have Composers or Performers, and broadcasts have no fixed primary. This pattern differs fundamentally from monographs and should be followed for any future type where the primary agent role differs from the standard `author` field.
+
+When considering new work-level types (e.g., `Artwork`, `MusicalWork`), use this principle: add a first-class variant and compose `WorkCore` if:
+1. The primary contributor role is not `author`, OR
+2. The type needs distinct rendering across major citation styles, OR
+3. The field schema differs significantly from existing monolithic types
+
+Otherwise, use a `MonographType` subtype for simplicity.
+
 ## References
 
 - TYPE_SYSTEM_ARCHITECTURE.md - Full analysis of structural vs flat options
@@ -358,6 +408,10 @@ Monitor these reference types for potential addition:
 - CLAUDE.md - Citum design principles
 
 ## Changelog
+
+**v1.2 (2026-04-07):**
+- Added ContributorRole Extension Policy section with guidance on adding named roles vs. using Custom variant
+- Added AudioVisualWork Rationale section explaining work-level variant decisions
 
 **v1.1 (2026-03-29):**
 - Updated audit tables to reflect implemented types (Patent, Dataset, Standard, Software, MonographType subtypes)

@@ -112,11 +112,11 @@ impl<'a> Sorter<'a> {
                         }
                         SortKey::Year => {
                             let a_year = a
-                                .issued()
+                                .csl_issued_date()
                                 .and_then(|d| d.year().parse::<i32>().ok())
                                 .filter(|year| *year != 0);
                             let b_year = b
-                                .issued()
+                                .csl_issued_date()
                                 .and_then(|d| d.year().parse::<i32>().ok())
                                 .filter(|year| *year != 0);
 

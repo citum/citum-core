@@ -383,7 +383,7 @@ impl<'a> GroupSorter<'a> {
 
     fn issued_year(reference: &Reference) -> Option<i32> {
         reference
-            .issued()
+            .csl_issued_date()
             .and_then(|d| d.year().parse::<i32>().ok())
             .filter(|year| *year != 0)
     }
@@ -556,6 +556,35 @@ mod tests {
         assert_eq!(refs[0].id().unwrap(), "r1");
         assert_eq!(refs[1].id().unwrap(), "r2");
         assert_eq!(refs[2].id().unwrap(), "r3");
+    }
+
+    #[test]
+    fn test_issued_sort_uses_created_when_issued_is_missing() {
+        let locale = make_locale();
+        let sorter = GroupSorter::new(&locale);
+
+        let dated = make_reference("r1", "book", "Smith", "Book D", 1999);
+        let mut created_only = make_reference("r2", "book", "Jones", "Book C", 2000);
+        if let Reference::Monograph(monograph) = &mut created_only {
+            monograph.created = citum_schema::reference::EdtfString("1985".to_string());
+            monograph.issued = citum_schema::reference::EdtfString(String::new());
+        }
+
+        let mut refs = vec![&dated, &created_only];
+
+        let sort_spec = GroupSort {
+            template: vec![GroupSortKey {
+                key: GroupSortKeyType::Issued,
+                ascending: true,
+                order: None,
+                sort_order: None,
+            }],
+        };
+
+        refs = sorter.sort_references(refs, &sort_spec);
+
+        assert_eq!(refs[0].id().unwrap(), "r2");
+        assert_eq!(refs[1].id().unwrap(), "r1");
     }
 
     #[test]

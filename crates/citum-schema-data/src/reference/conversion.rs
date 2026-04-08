@@ -1,14 +1,66 @@
-use crate::reference::contributor::{Contributor, ContributorList, SimpleName, StructuredName};
+use crate::reference::contributor::{
+    Contributor, ContributorEntry, ContributorList, ContributorRole, SimpleName, StructuredName,
+};
 use crate::reference::date::EdtfString;
 use crate::reference::types::{
     ArchiveInfo, Collection, CollectionComponent, CollectionType, Dataset, LegalCase, Monograph,
-    MonographComponentType, MonographType, NumOrStr, Patent, Regulation, Serial, SerialComponent,
-    SerialComponentType, SerialType, Software, Standard, Statute, StructuredTitle, Subtitle, Title,
-    Treaty,
+    MonographComponentType, MonographType, NumOrStr, Patent, Publisher, Regulation, Serial,
+    SerialComponent, SerialComponentType, SerialType, Software, Standard, Statute, StructuredTitle,
+    Subtitle, Title, Treaty,
 };
-use crate::reference::{Event, InputReference, Numbering, NumberingType, WorkRelation};
+use crate::reference::{
+    AudioVisualType, AudioVisualWork, Event, InputReference, Numbering, NumberingType, WorkCore,
+    WorkRelation,
+};
 use std::collections::HashMap;
 use url::Url;
+
+/// Fold legacy named contributor fields (recipient and interviewer) into a contributors vec.
+fn legacy_named_contributors(legacy: &csl_legacy::csl_json::Reference) -> Vec<ContributorEntry> {
+    let mut entries = Vec::new();
+    push_legacy_contributor(
+        &mut entries,
+        ContributorRole::Recipient,
+        legacy.recipient.clone(),
+    );
+    push_legacy_contributor(
+        &mut entries,
+        ContributorRole::Interviewer,
+        legacy.interviewer.clone(),
+    );
+    entries
+}
+
+fn push_legacy_contributor(
+    entries: &mut Vec<ContributorEntry>,
+    role: ContributorRole,
+    src: Option<Vec<csl_legacy::csl_json::Name>>,
+) {
+    if let Some(names) = src {
+        entries.push(ContributorEntry {
+            role,
+            contributor: Contributor::from(names),
+        });
+    }
+}
+
+fn legacy_extra_names(
+    legacy: &csl_legacy::csl_json::Reference,
+    key: &str,
+) -> Option<Vec<csl_legacy::csl_json::Name>> {
+    legacy
+        .extra
+        .get(key)
+        .cloned()
+        .and_then(|value| serde_json::from_value(value).ok())
+}
+
+fn legacy_has_audio_visual_roles(legacy: &csl_legacy::csl_json::Reference) -> bool {
+    legacy.director.is_some()
+        || legacy_extra_names(legacy, "composer").is_some()
+        || legacy_extra_names(legacy, "performer").is_some()
+        || legacy_extra_names(legacy, "producer").is_some()
+}
 
 fn short_title_from_legacy(legacy: &csl_legacy::csl_json::Reference, key: &str) -> Option<String> {
     legacy
@@ -69,6 +121,7 @@ struct RefContext {
     id: Option<String>,
     title: Option<String>,
     short_title: Option<String>,
+    created: EdtfString,
     issued: EdtfString,
     url: Option<Url>,
     accessed: Option<EdtfString>,
@@ -81,17 +134,28 @@ struct RefContext {
     journal_abbreviation: Option<String>,
 }
 
+fn legacy_type_uses_created(ref_type: &str) -> bool {
+    matches!(
+        ref_type,
+        "manuscript"
+            | "interview"
+            | "personal_communication"
+            | "personal-communication"
+            | "speech"
+            | "presentation"
+    )
+}
+
 fn from_software_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::Software(Box::new(Software {
         id: ctx.id,
         title: build_title(ctx.title, ctx.short_title),
         author: legacy.author.map(Contributor::from),
+        created: ctx.created,
         issued: ctx.issued,
-        publisher: legacy.publisher.map(|n| {
-            Contributor::SimpleName(SimpleName {
-                name: n.into(),
-                location: legacy.publisher_place,
-            })
+        publisher: legacy.publisher.map(|n| Publisher {
+            name: n.into(),
+            place: legacy.publisher_place,
         }),
         version: None,
         repository: None,
@@ -165,6 +229,25 @@ fn from_monograph_ref(
         Vec::new()
     };
 
+    let author = legacy.author.clone().map(Contributor::from);
+    let editor = legacy.editor.clone().map(Contributor::from);
+    let translator = legacy.translator.clone().map(Contributor::from);
+    let mut contributors = legacy_named_contributors(&legacy);
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Author,
+        legacy.author.clone(),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Editor,
+        legacy.editor.clone(),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Translator,
+        legacy.translator.clone(),
+    );
     let edition = ctx.edition;
     let volume = legacy
         .volume
@@ -175,7 +258,6 @@ fn from_monograph_ref(
     } else {
         legacy.number
     };
-
     let original = legacy.original_title.map(|original_title| {
         WorkRelation::Embedded(Box::new(InputReference::Monograph(Box::new(Monograph {
             title: Some(Title::Single(original_title)),
@@ -194,18 +276,15 @@ fn from_monograph_ref(
                 ..Default::default()
             }))))
         }),
-        author: legacy.author.map(Contributor::from),
-        editor: legacy.editor.map(Contributor::from),
-        translator: legacy.translator.map(Contributor::from),
-        recipient: legacy.recipient.map(Contributor::from),
-        interviewer: legacy.interviewer.map(Contributor::from),
-        guest: None,
+        author,
+        editor,
+        translator,
+        contributors,
+        created: ctx.created,
         issued: ctx.issued,
-        publisher: legacy.publisher.map(|n| {
-            Contributor::SimpleName(SimpleName {
-                name: n.into(),
-                location: legacy.publisher_place,
-            })
+        publisher: legacy.publisher.map(|n| Publisher {
+            name: n.into(),
+            place: legacy.publisher_place,
         }),
         url: ctx.url,
         accessed: ctx.accessed,
@@ -242,6 +321,27 @@ fn from_collection_component_ref(
         .or_else(|| legacy.volume.clone())
         .map(|v| v.to_string());
 
+    let author = legacy.author.clone().map(Contributor::from);
+    let translator = legacy.translator.clone().map(Contributor::from);
+    let mut contributors = Vec::new();
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Author,
+        legacy.author.clone(),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Translator,
+        legacy.translator.clone(),
+    );
+    let container_editor = legacy.editor.clone().map(Contributor::from);
+    let mut container_contributors = Vec::new();
+    push_legacy_contributor(
+        &mut container_contributors,
+        ContributorRole::Editor,
+        legacy.editor.clone(),
+    );
+
     InputReference::CollectionComponent(Box::new(CollectionComponent {
         id: ctx.id,
         r#type: if legacy.ref_type == "paper-conference" {
@@ -250,8 +350,9 @@ fn from_collection_component_ref(
             MonographComponentType::Chapter
         },
         title: build_title(ctx.title, ctx.short_title.clone()),
-        author: legacy.author.map(Contributor::from),
-        translator: legacy.translator.map(Contributor::from),
+        author,
+        translator,
+        contributors,
         issued: ctx.issued,
         container: Some(WorkRelation::Embedded(Box::new(
             InputReference::Collection(Box::new(Collection {
@@ -260,14 +361,14 @@ fn from_collection_component_ref(
                 title: parent_title,
                 short_title: ctx.container_title_short,
                 container: None,
-                editor: legacy.editor.map(Contributor::from),
+                editor: container_editor,
                 translator: None,
+                contributors: container_contributors,
+                created: EdtfString(String::new()),
                 issued: EdtfString(String::new()),
-                publisher: legacy.publisher.map(|n| {
-                    Contributor::SimpleName(SimpleName {
-                        name: n.into(),
-                        location: legacy.publisher_place,
-                    })
+                publisher: legacy.publisher.map(|n| Publisher {
+                    name: n.into(),
+                    place: legacy.publisher_place,
                 }),
                 volume: parent_volume,
                 ..Default::default()
@@ -316,6 +417,12 @@ pub fn input_reference_from_legacy_edited_book(
         ..
     } = legacy;
 
+    let editor_value = editor.clone().map(Contributor::from);
+    let translator_value = translator.clone().map(Contributor::from);
+    let mut contributors = Vec::new();
+    push_legacy_contributor(&mut contributors, ContributorRole::Editor, editor);
+    push_legacy_contributor(&mut contributors, ContributorRole::Translator, translator);
+
     InputReference::Collection(Box::new(Collection {
         id: Some(id),
         r#type: CollectionType::EditedBook,
@@ -325,16 +432,16 @@ pub fn input_reference_from_legacy_edited_book(
             .and_then(serde_json::Value::as_str)
             .map(str::to_string),
         container: None,
-        editor: editor.map(Contributor::from),
-        translator: translator.map(Contributor::from),
+        editor: editor_value,
+        translator: translator_value,
+        contributors,
+        created: EdtfString(String::new()),
         issued: issued
             .map(EdtfString::from)
             .unwrap_or(EdtfString(String::new())),
-        publisher: publisher.map(|name| {
-            Contributor::SimpleName(SimpleName {
-                name: name.into(),
-                location: publisher_place.clone(),
-            })
+        publisher: publisher.map(|name| Publisher {
+            name: name.into(),
+            place: publisher_place.clone(),
         }),
         numbering,
         url: url.as_deref().and_then(|value| Url::parse(value).ok()),
@@ -343,7 +450,11 @@ pub fn input_reference_from_legacy_edited_book(
         field_languages: HashMap::new(),
         note,
         isbn,
-        ..Default::default()
+        volume: None,
+        issue: None,
+        edition: None,
+        number: None,
+        keywords: None,
     }))
 }
 
@@ -379,12 +490,35 @@ fn from_serial_component_ref(
         })
         .map(|i| i.to_string());
 
+    let author = legacy.author.clone().map(Contributor::from);
+    let translator = legacy.translator.clone().map(Contributor::from);
+    let mut contributors = Vec::new();
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Author,
+        legacy.author.clone(),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Translator,
+        legacy.translator.clone(),
+    );
+    let serial_editor = legacy.editor.clone().map(Contributor::from);
+    let mut serial_contributors = Vec::new();
+    push_legacy_contributor(
+        &mut serial_contributors,
+        ContributorRole::Editor,
+        legacy.editor.clone(),
+    );
+
     InputReference::SerialComponent(Box::new(SerialComponent {
         id: ctx.id,
         r#type: SerialComponentType::Article,
         title: build_title(ctx.title, ctx.short_title.clone()),
-        author: legacy.author.map(Contributor::from),
-        translator: legacy.translator.map(Contributor::from),
+        author,
+        translator,
+        contributors,
+        created: ctx.created,
         issued: ctx.issued,
         container: Some(WorkRelation::Embedded(Box::new(InputReference::Serial(
             Box::new(Serial {
@@ -393,12 +527,11 @@ fn from_serial_component_ref(
                 title: parent_title,
                 short_title: ctx.container_title_short.or(ctx.journal_abbreviation),
                 container: None,
-                editor: None,
-                publisher: legacy.publisher.clone().map(|n| {
-                    Contributor::SimpleName(SimpleName {
-                        name: n.into(),
-                        location: legacy.publisher_place.clone(),
-                    })
+                editor: serial_editor,
+                contributors: serial_contributors,
+                publisher: legacy.publisher.clone().map(|n| Publisher {
+                    name: n.into(),
+                    place: legacy.publisher_place.clone(),
                 }),
                 url: None,
                 accessed: None,
@@ -429,6 +562,81 @@ fn from_serial_component_ref(
     }))
 }
 
+fn from_audio_visual_ref(
+    legacy: csl_legacy::csl_json::Reference,
+    ctx: RefContext,
+) -> InputReference {
+    let r#type = match legacy.ref_type.as_str() {
+        "motion_picture" => AudioVisualType::Film,
+        "broadcast" => AudioVisualType::Broadcast,
+        _ => AudioVisualType::Broadcast,
+    };
+    let mut contributors = Vec::new();
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Director,
+        legacy.director.clone(),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Composer,
+        legacy_extra_names(&legacy, "composer"),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Performer,
+        legacy_extra_names(&legacy, "performer"),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Producer,
+        legacy_extra_names(&legacy, "producer"),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Author,
+        legacy.author.clone(),
+    );
+
+    InputReference::AudioVisual(Box::new(AudioVisualWork {
+        id: ctx.id,
+        r#type,
+        core: WorkCore {
+            title: build_title(ctx.title, ctx.short_title.clone()),
+            short_title: None,
+            contributors,
+            created: ctx.created,
+            issued: ctx.issued,
+            language: ctx.language,
+            genre: legacy.genre,
+        },
+        container: legacy.container_title.map(|title| {
+            WorkRelation::Embedded(Box::new(InputReference::Monograph(Box::new(Monograph {
+                title: Some(Title::Single(title)),
+                ..Default::default()
+            }))))
+        }),
+        numbering: legacy
+            .number
+            .into_iter()
+            .map(|number| Numbering {
+                r#type: NumberingType::Number,
+                value: number,
+            })
+            .collect(),
+        publisher: legacy.publisher.map(|name| Publisher {
+            name: name.into(),
+            place: legacy.publisher_place,
+        }),
+        medium: legacy.medium,
+        platform: None,
+        url: ctx.url,
+        accessed: ctx.accessed,
+        field_languages: HashMap::new(),
+        note: ctx.note,
+    }))
+}
+
 fn from_legal_case_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     InputReference::LegalCase(Box::new(LegalCase {
         id: ctx.id,
@@ -437,6 +645,7 @@ fn from_legal_case_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext)
         volume: legacy.volume.map(|v| v.to_string()),
         reporter: legacy.container_title,
         page: legacy.page,
+        created: ctx.created,
         issued: ctx.issued,
         url: ctx.url,
         accessed: ctx.accessed,
@@ -457,6 +666,7 @@ fn from_statute_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) ->
         code: legacy.container_title,
         number: legacy.number,
         page: legacy.page,
+        created: ctx.created,
         section: legacy.section,
         chapter_number: legacy.chapter_number,
         issued: ctx.issued,
@@ -476,6 +686,7 @@ fn from_regulation_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext)
         authority: legacy.authority,
         volume: legacy.volume.map(|v| v.to_string()),
         code: legacy.container_title,
+        created: ctx.created,
         section: legacy.section,
         issued: ctx.issued,
         url: ctx.url,
@@ -495,6 +706,7 @@ fn from_treaty_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> 
         volume: legacy.volume.map(|v| v.to_string()),
         reporter: legacy.container_title,
         page: legacy.page,
+        created: ctx.created,
         issued: ctx.issued,
         url: ctx.url,
         accessed: ctx.accessed,
@@ -511,13 +723,12 @@ fn from_standard_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         title: build_title(ctx.title, ctx.short_title.clone()),
         authority: legacy.authority,
         standard_number: legacy.number.unwrap_or_default(),
+        created: ctx.created,
         issued: ctx.issued,
         status: None,
-        publisher: legacy.publisher.map(|n| {
-            Contributor::SimpleName(SimpleName {
-                name: n.into(),
-                location: legacy.publisher_place,
-            })
+        publisher: legacy.publisher.map(|n| Publisher {
+            name: n.into(),
+            place: legacy.publisher_place,
         }),
         url: ctx.url,
         accessed: ctx.accessed,
@@ -536,6 +747,7 @@ fn from_patent_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> 
         assignee: None,
         patent_number: legacy.number.unwrap_or_default(),
         application_number: None,
+        created: ctx.created,
         filing_date: None,
         issued: ctx.issued,
         jurisdiction: None,
@@ -554,12 +766,11 @@ fn from_dataset_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) ->
         id: ctx.id,
         title: build_title(ctx.title, ctx.short_title.clone()),
         author: legacy.author.map(Contributor::from),
+        created: ctx.created,
         issued: ctx.issued,
-        publisher: legacy.publisher.map(|n| {
-            Contributor::SimpleName(SimpleName {
-                name: n.into(),
-                location: legacy.publisher_place,
-            })
+        publisher: legacy.publisher.map(|n| Publisher {
+            name: n.into(),
+            place: legacy.publisher_place,
         }),
         version: None,
         format: None,
@@ -619,15 +830,12 @@ fn from_bill_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> In
         author: None,
         editor: None,
         translator: None,
-        recipient: None,
-        interviewer: None,
-        guest: None,
+        contributors: Vec::new(),
+        created: ctx.created,
         issued: ctx.issued,
-        publisher: legacy.authority.map(|name| {
-            Contributor::SimpleName(SimpleName {
-                name: name.into(),
-                location: None,
-            })
+        publisher: legacy.authority.map(|name| Publisher {
+            name: name.into(),
+            place: None,
         }),
         volume: legacy.volume.map(|v| v.to_string()),
         number: legacy.page,
@@ -661,6 +869,25 @@ fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
 
     let volume = legacy.volume.map(|v| v.to_string());
     let number = legacy.number.clone();
+    let author = legacy.author.clone().map(Contributor::from);
+    let editor = legacy.editor.clone().map(Contributor::from);
+    let translator = legacy.translator.clone().map(Contributor::from);
+    let mut contributors = Vec::new();
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Author,
+        legacy.author.clone(),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Editor,
+        legacy.editor.clone(),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Translator,
+        legacy.translator.clone(),
+    );
 
     InputReference::Monograph(Box::new(Monograph {
         id: ctx.id,
@@ -673,18 +900,15 @@ fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
                 ..Default::default()
             }))))
         }),
-        author: legacy.author.map(Contributor::from),
-        editor: legacy.editor.map(Contributor::from),
-        translator: legacy.translator.map(Contributor::from),
-        recipient: legacy.recipient.map(Contributor::from),
-        interviewer: legacy.interviewer.map(Contributor::from),
-        guest: None,
+        author,
+        editor,
+        translator,
+        contributors,
+        created: ctx.created,
         issued: ctx.issued,
-        publisher: legacy.publisher.map(|n| {
-            Contributor::SimpleName(SimpleName {
-                name: n.into(),
-                location: legacy.publisher_place,
-            })
+        publisher: legacy.publisher.map(|n| Publisher {
+            name: n.into(),
+            place: legacy.publisher_place,
         }),
         url: ctx.url,
         accessed: ctx.accessed,
@@ -745,6 +969,15 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
             title: legacy.title.clone(),
             short_title: short_title_from_legacy(&legacy, "shortTitle")
                 .or_else(|| short_title_from_legacy(&legacy, "title-short")),
+            created: if legacy_type_uses_created(&legacy.ref_type) {
+                legacy
+                    .issued
+                    .clone()
+                    .map(EdtfString::from)
+                    .unwrap_or(EdtfString(String::new()))
+            } else {
+                EdtfString(String::new())
+            },
             issued: legacy
                 .issued
                 .clone()
@@ -778,8 +1011,14 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                 from_collection_component_ref(legacy, ctx)
             }
             "article-journal" | "article" | "article-magazine" | "article-newspaper"
-            | "broadcast" | "motion_picture" | "entry-encyclopedia" => {
-                from_serial_component_ref(legacy, ctx)
+            | "entry-encyclopedia" => from_serial_component_ref(legacy, ctx),
+            "motion_picture" => from_audio_visual_ref(legacy, ctx),
+            "broadcast" => {
+                if legacy_has_audio_visual_roles(&legacy) {
+                    from_audio_visual_ref(legacy, ctx)
+                } else {
+                    from_serial_component_ref(legacy, ctx)
+                }
             }
             "speech" | "presentation" => from_event_ref(legacy, ctx),
             "bill" => from_bill_ref(legacy, ctx),

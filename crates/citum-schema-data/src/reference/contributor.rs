@@ -154,3 +154,42 @@ impl fmt::Display for ContributorList {
         write!(f, "{}", names.join(", "))
     }
 }
+
+/// A contributor role for use in the unified contributors list.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(rename_all = "kebab-case")]
+#[non_exhaustive]
+pub enum ContributorRole {
+    Author,
+    Editor,
+    Translator,
+    Director,
+    Performer,
+    Composer,
+    Illustrator,
+    Narrator,
+    Host,
+    Guest,
+    Interviewer,
+    Recipient,
+    Compiler,
+    Producer,
+    Writer,
+    /// An open extension point for domain-specific roles.
+    #[serde(untagged)]
+    Custom(String),
+}
+
+/// A single entry in a reference's contributors list.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(rename_all = "kebab-case")]
+pub struct ContributorEntry {
+    /// The role this contributor plays in relation to the work.
+    pub role: ContributorRole,
+    /// The contributor (name, organization, or list).
+    pub contributor: Contributor,
+}

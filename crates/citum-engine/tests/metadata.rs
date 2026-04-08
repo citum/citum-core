@@ -408,3 +408,25 @@ fn test_date_rendering_fallback() {
         "n.d."
     );
 }
+
+#[test]
+fn test_date_rendering_uses_created_when_issued_is_missing() {
+    announce_behavior("A created date backfills issued rendering for compatibility.");
+    let style = build_date_style(DateForm::Year);
+
+    let mut bib = indexmap::IndexMap::new();
+    let mut item = make_book("item1", "Smith", "J", 2020, "Title");
+    if let citum_schema::reference::InputReference::Monograph(m) = &mut item {
+        m.created = citum_schema::reference::EdtfString("1954-05-17".to_string());
+        m.issued = citum_schema::reference::EdtfString(String::new());
+    }
+    bib.insert("item1".to_string(), item);
+
+    let processor = Processor::new(style, bib);
+    assert_eq!(
+        processor
+            .process_citation(&citum_schema::cite!("item1"))
+            .unwrap(),
+        "1954"
+    );
+}

@@ -32,3 +32,41 @@ references:
       id: "2602.01234"
       server: "arxiv"
       class: "cs.DL"
+
+  - id: anne-braden-letter-1973
+    class: monograph
+    type: personal-communication
+    title: "Letter to Jim Braden"
+    issued: "1973-01-01"
+    genre: "autograph letter"
+    author:
+      - given: Anne
+        family: Braden
+    contributors:
+      - role: recipient
+        contributor:
+          given: Jim
+          family: Braden
+    archive-info:
+      name: "Archives & Special Collections, University of Louisville"
+      collection: "Anne Braden Papers"
+      collection-id: "MSS 235"
+      box: "5"
+      folder: "2"
+      place: "Louisville, Kentucky"
+
+  - id: depauw-photo-1908
+    class: monograph
+    type: graphic
+    title: "Eleanore Cammack at Scarritt Fountain"
+    issued: "1908"
+    genre: "photographic print"
+    author:
+      - name: "Cammack Studio Photography"
+    url: "https://palni.contentdm.oclc.org/digital/collection/archives/id/79893/rec/27"
+    accessed: "2026-04-08"
+    archive-info:
+      name: "Archives and Special Collections, DePauw University"
+      collection: "Archives Documents and Photographs Digital Collection"
+      item: "archives/id/79893"
+      place: "Greencastle, Indiana"

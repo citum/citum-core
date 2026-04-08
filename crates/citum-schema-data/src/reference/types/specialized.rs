@@ -1,10 +1,11 @@
 //! Specialized work types: classic works, patents, datasets, standards, software, and events.
 
 use super::common::{
-    FieldLanguageMap, HasNumbering, LangID, NormalizeNumbering, Numbering, RefID, Title,
+    FieldLanguageMap, HasNumbering, LangID, NormalizeNumbering, Numbering, NumberingType,
+    Publisher, RefID, Title,
 };
 use crate::reference::WorkRelation;
-use crate::reference::contributor::Contributor;
+use crate::reference::contributor::{Contributor, ContributorEntry};
 use crate::reference::date::EdtfString;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
@@ -107,13 +108,17 @@ pub struct Classic {
     /// into canonical `numbering` entries during deserialization.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub numbering: Vec<Numbering>,
+    /// Creation or origination date of the work.
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
+    pub created: EdtfString,
     /// Publication date of this edition (not original)
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(skip_serializing_if = "EdtfString::is_empty")]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// Publisher of this edition
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub publisher: Option<Contributor>,
+    pub publisher: Option<Publisher>,
     /// URL for the work.
     #[serde(alias = "URL", skip_serializing_if = "Option::is_none")]
     pub url: Option<Url>,
@@ -157,8 +162,12 @@ struct ClassicDeser {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     numbering: Vec<Numbering>,
     #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default)]
+    created: EdtfString,
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default)]
     issued: EdtfString,
-    publisher: Option<Contributor>,
+    publisher: Option<Publisher>,
     #[serde(alias = "URL")]
     url: Option<Url>,
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
@@ -184,6 +193,7 @@ impl From<ClassicDeser> for Classic {
             edition: raw.edition,
             number: raw.number,
             numbering: raw.numbering,
+            created: raw.created,
             issued: raw.issued,
             publisher: raw.publisher,
             url: raw.url,
@@ -250,13 +260,17 @@ pub struct Patent {
     /// Application number
     #[serde(skip_serializing_if = "Option::is_none")]
     pub application_number: Option<String>,
+    /// Creation or origination date of the patented work.
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
+    pub created: EdtfString,
     /// Filing date
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub filing_date: Option<EdtfString>,
     /// Issue/grant date
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(skip_serializing_if = "EdtfString::is_empty")]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// Jurisdiction (e.g., "US", "EP", "JP")
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -301,13 +315,17 @@ pub struct Dataset {
     /// Dataset author(s)/creator(s)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub author: Option<Contributor>,
+    /// Creation or origination date of the dataset.
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
+    pub created: EdtfString,
     /// Publication/release date
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(skip_serializing_if = "EdtfString::is_empty")]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// Publisher or repository (e.g., "Zenodo", "Dryad")
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub publisher: Option<Contributor>,
+    pub publisher: Option<Publisher>,
     /// Version number
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
@@ -363,9 +381,13 @@ pub struct Standard {
     pub authority: Option<String>,
     /// Standard number (e.g., "ISO 8601", "IEEE 754-2008")
     pub standard_number: String,
+    /// Creation or origination date of the standard.
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
+    pub created: EdtfString,
     /// Publication date
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(skip_serializing_if = "EdtfString::is_empty")]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// Publication status. Canonical controlled-vocabulary values: `"published"`, `"draft"`, `"withdrawn"`.
     /// See `docs/policies/ENUM_VOCABULARY_POLICY.md` for matching rules.
@@ -373,7 +395,7 @@ pub struct Standard {
     pub status: Option<String>,
     /// Publisher (usually same as authority)
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub publisher: Option<Contributor>,
+    pub publisher: Option<Publisher>,
     /// URL for the standard.
     #[serde(alias = "URL", skip_serializing_if = "Option::is_none")]
     pub url: Option<Url>,
@@ -411,13 +433,17 @@ pub struct Software {
     /// Author(s)/developer(s)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub author: Option<Contributor>,
+    /// Creation or origination date of the software work.
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
+    pub created: EdtfString,
     /// Release date
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(skip_serializing_if = "EdtfString::is_empty")]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// Publisher or repository (e.g., "GitHub", "Zenodo")
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub publisher: Option<Contributor>,
+    pub publisher: Option<Publisher>,
     /// Version number (e.g., "4.1.0", "v2.3.1")
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
@@ -453,4 +479,182 @@ pub struct Software {
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
+}
+
+/// Shared fields for all work-level reference classes.
+///
+/// Composed into `AudioVisualWork` and future work-level classes.
+/// Always embedded via `#[serde(flatten)]`, never used directly as a variant.
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(rename_all = "kebab-case")]
+pub struct WorkCore {
+    /// Title of the work.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub title: Option<Title>,
+    /// Optional short form of the title.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub short_title: Option<String>,
+    /// Unified contributor list with explicit role tags.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub contributors: Vec<ContributorEntry>,
+    /// Creation or origination date of the work.
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
+    pub created: EdtfString,
+    /// Publication or release date of the work.
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
+    pub issued: EdtfString,
+    /// BCP 47 language of the work.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub language: Option<LangID>,
+    /// Abstract genre (e.g., `"feature-film"`, `"documentary"`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub genre: Option<String>,
+}
+
+/// Discriminates audio-visual subtypes for style-directed formatting.
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(rename_all = "kebab-case")]
+#[non_exhaustive]
+pub enum AudioVisualType {
+    /// A film or motion picture (default).
+    #[default]
+    Film,
+    /// A single episode of a TV series, podcast, or web series.
+    Episode,
+    /// A recording (music video, concert, etc.).
+    Recording,
+    /// A broadcast program.
+    Broadcast,
+}
+
+/// An audio-visual work: film, TV episode, recording, or broadcast.
+///
+/// This is a work-like reference class. It represents the creative work
+/// when that work is the citee, not a fully modeled release hierarchy.
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(from = "AudioVisualDeser", rename_all = "kebab-case")]
+pub struct AudioVisualWork {
+    /// Unique identifier for this reference.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<RefID>,
+    /// Subtype for style-directed rendering.
+    pub r#type: AudioVisualType,
+    /// Shared work-level fields (title, contributors, issued, language, genre).
+    #[serde(flatten)]
+    pub core: WorkCore,
+    /// Container series or program (work-to-work relation).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub container: Option<WorkRelation>,
+    /// Season and episode numbering.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub numbering: Vec<Numbering>,
+    /// Production company, studio, or network.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub publisher: Option<Publisher>,
+    /// Physical delivery format or presentation descriptor.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub medium: Option<String>,
+    /// Digital distribution host or streaming service.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub platform: Option<String>,
+    /// URL or streaming location.
+    #[serde(alias = "URL", skip_serializing_if = "Option::is_none")]
+    pub url: Option<Url>,
+    /// Date accessed.
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub accessed: Option<EdtfString>,
+    /// Per-field language overrides.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub field_languages: FieldLanguageMap,
+    /// Freeform note.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub note: Option<String>,
+}
+
+/// Deserialization shim for `AudioVisualWork`.
+///
+/// Accepts all `WorkCore` fields inline (flattened) plus `AudioVisualWork`-specific fields.
+#[derive(Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(rename_all = "kebab-case")]
+struct AudioVisualDeser {
+    id: Option<RefID>,
+    #[serde(default)]
+    r#type: AudioVisualType,
+    // WorkCore fields (flattened in canonical but explicit here for deser)
+    title: Option<Title>,
+    short_title: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    contributors: Vec<ContributorEntry>,
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default)]
+    created: EdtfString,
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default)]
+    issued: EdtfString,
+    language: Option<LangID>,
+    genre: Option<String>,
+    // AudioVisualWork-specific fields
+    container: Option<WorkRelation>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    numbering: Vec<Numbering>,
+    /// Catalog or episode number shorthand (normalized into `numbering`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    number: Option<String>,
+    publisher: Option<Publisher>,
+    medium: Option<String>,
+    platform: Option<String>,
+    #[serde(alias = "URL")]
+    url: Option<Url>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    accessed: Option<EdtfString>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    field_languages: FieldLanguageMap,
+    note: Option<String>,
+}
+
+impl From<AudioVisualDeser> for AudioVisualWork {
+    fn from(raw: AudioVisualDeser) -> Self {
+        let mut numbering = raw.numbering;
+        if let Some(n) = raw.number
+            && !numbering.iter().any(|e| e.r#type == NumberingType::Number)
+        {
+            numbering.push(Numbering {
+                r#type: NumberingType::Number,
+                value: n,
+            });
+        }
+        Self {
+            id: raw.id,
+            r#type: raw.r#type,
+            core: WorkCore {
+                title: raw.title,
+                short_title: raw.short_title,
+                contributors: raw.contributors,
+                created: raw.created,
+                issued: raw.issued,
+                language: raw.language,
+                genre: raw.genre,
+            },
+            container: raw.container,
+            numbering,
+            publisher: raw.publisher,
+            medium: raw.medium,
+            platform: raw.platform,
+            url: raw.url,
+            accessed: raw.accessed,
+            field_languages: raw.field_languages,
+            note: raw.note,
+        }
+    }
 }
