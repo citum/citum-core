@@ -1,12 +1,20 @@
 references:
+# Archival letter example based on Chicago Manual of Style.
+# Item: https://dlg.galileo.usg.edu/do:guan_ms1786_ms1786-14200
+# Collection: https://dlg.usg.edu/collection/guan_ms1786
+# Finding Aid: https://sclfind.libs.uga.edu/catalog/ms1786
 - class: monograph
   id: 6188419/UDAG5V6W
-  type: document
-  title: Egmont manuscripts
-  language: en
+  type: personal-communication
+  title: James Oglethorpe to the Trustees
+  issued: '1733'
   archive-info:
     name: University of Georgia Library
-    collection: Phillipps Collection
+    collection: Phillips Collection of Egmont Manuscripts
+    item: '14200:13'
+    url: https://dlg.usg.edu/collection/guan_ms1786
+  url: https://dlg.galileo.usg.edu/do:guan_ms1786_ms1786-14200
+  note: Available digitally online.
 - class: serial-component
   id: 6188419/YF7Q2VUU
   type: article
@@ -43,7 +51,6 @@ references:
   id: 6188419/2FLUQV7Q
   type: book
   title:
-    full: null
     main: Prairie State
     sub: impressions of Illinois, 1673–1967, by travelers and other observers
   author:
@@ -54,7 +61,7 @@ references:
   issued: '1968'
   publisher:
     name: University of Chicago Press
-    location: Chicago
+    place: Chicago
   language: en
   note: 'OCLC: 429217'
   isbn: 978-0-226-02088-4
@@ -66,33 +73,41 @@ references:
   issued: '2021'
   url: https://www.govinfo.gov/content/pkg/DCPD-202100401/pdf/DCPD-202100401.pdf
   language: en
-- class: monograph
+- class: audio-visual
   id: 6188419/EDMI8NQY
-  type: interview
-  author:
-  - given: Bernie
-    family: Sanders
-  interviewer:
-  - name: Cardi B
+  type: recording
+  title: Bernie Sanders with Cardi B
+  contributors:
+  - role: interviewer
+    contributor:
+      name: Cardi B
+  - role: guest
+    contributor:
+      given: Bernie
+      family: Sanders
   issued: 2019-08-15
   url: https://youtu.be/p1ubTsrZFBU
   language: en
-  medium: YouTube
-- class: serial-component
+  platform: YouTube
+- class: audio-visual
   id: 6188419/EXVHRUDT
-  type: article
+  type: episode
   title: Her sister's shadow
-  author:
-  - given: Russ
-    family: Mayberry
+  contributors:
+  - role: director
+    contributor:
+      given: Russ
+      family: Mayberry
   issued: 1971-11-19
   container:
-    class: serial
-    type: broadcast-program
     title: The Brady Bunch
-    publisher:
-      name: ABC
-  issue: season 3, episode 10
+    class: audio-visual
+    type: broadcast
+  numbering:
+  - type: season
+    value: '3'
+  - type: episode
+    value: '10'
   language: en
   note: |-
     Distributor: Redwood Productions, Paramount Television
@@ -110,13 +125,15 @@ references:
   page: '1313'
   issued: 1963-08-05
   language: en
-- class: monograph
+- class: audio-visual
   id: 6188419/Y8GSRLWD
-  type: document
+  type: recording
   title: 150 Jahre Wiener Philharmoniker
-  author:
-  - given: Felix von
-    family: Weingartner
+  contributors:
+  - role: composer
+    contributor:
+      given: Felix von
+      family: Weingartner
   issued: '1992'
   publisher:
     name: Preiser Records
@@ -146,27 +163,28 @@ references:
     title: Oxford English Dictionary
     publisher:
       name: Oxford University Press
-      location: Oxford
+      place: Oxford
   accessed: 2025-04-29
   language: en
   medium: CD-ROM
 - class: monograph
   id: 6188419/VHPQRCMZ
   type: personal-communication
-  author:
-  - given: Hiram
-    family: Johnson
-  recipient:
-  - given: John Callan
-    family: O’Laughlin
+  contributors:
+  - role: author
+    contributor:
+      given: Hiram
+      family: Johnson
+  - role: recipient
+    contributor:
+      given: John Callan
+      family: O’Laughlin
   issued: 1916-07-13
   language: en
   note: personal communication
-  archive-location: O’Laughlin Papers
   archive-info:
     name: Harvard College Library
-    collection: Theodore Roosevelt Collection
-    location: O’Laughlin Papers
+    collection: O’Laughlin Papers
 - class: monograph
   id: 6188419/VCP6HK7G
   type: document
@@ -176,24 +194,23 @@ references:
   issued: '2002'
   accessed: 2025-04-11
   language: en
-- class: serial-component
+- class: audio-visual
   id: 6188419/3Z3JZDFY
-  type: article
+  type: film
   title: Gisaengchung
-  author:
-  - given: Bong
-    family: Joon-ho
+  contributors:
+  - role: director
+    contributor:
+      given: Bong
+      family: Joon-ho
   issued: 2020-02-07
-  container:
-    class: serial
-    type: broadcast-program
-    publisher:
-      name: Barunson E&A
+  publisher:
+    name: Barunson E&A
+    place: South Korea
   language: la
   note: |-
     Translated title: Parasite
     IMDb ID: tt6751668
-    publisher-place: South Korea
   medium: in Korean, with English subtitles by Darcy Paquet
 - class: monograph
   id: 6188419/Y6BIFHFV
@@ -204,7 +221,7 @@ references:
   accessed: 2025-04-11
   language: en
   number: '8404'
-  genre: H.R.
+  genre: H.R. # TODO: revisit classification when a bill/legislation class is added to the type system
 - class: collection-component
   id: 6188419/35B93H6N
   type: chapter
@@ -221,7 +238,7 @@ references:
       family: Chattman
     publisher:
       name: BenBella
-      location: Dallas, TX
+      place: Dallas, TX
   pages: xv–xvii
   language: en
   note: |-
@@ -232,7 +249,6 @@ references:
   id: 6188419/RY7PJ7H7
   type: thesis
   title:
-    full: null
     main: Cats and coronaviruses
     sub: One Health in the age of COVID-19
   author:
@@ -241,13 +257,12 @@ references:
   issued: '2021'
   publisher:
     name: Cornell University
-    location: New York, NY
+    place: New York, NY
   url: https://proquest.com/docview/2550605226
   accessed: 2025-03-18
   language: en
   number: '28490261'
   genre: PhD diss.
-  archive: ProQuest
   archive-info:
     name: ProQuest
 - class: serial-component
@@ -284,7 +299,7 @@ references:
   page: '513'
   issued: '1995'
   language: en
-- class: collection-component
+- class: monograph
   id: 6188419/7RP5QFT2
   type: document
   title: 'Documentary operationality: beyond representation'
@@ -292,7 +307,6 @@ references:
   - given: Toby
     family: Lee
   issued: 2021-03-20
-  container:
-    class: collection
-    type: edited-book
   language: en
+  genre: conference-paper
+  note: Paper presented at the annual Society for Cinema and Media Studies conference (virtual)
