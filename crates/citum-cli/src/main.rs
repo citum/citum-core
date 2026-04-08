@@ -2325,7 +2325,7 @@ fn input_reference_to_csl_json(reference: &InputReference) -> csl_legacy::csl_js
     r.author = reference.author().map(contributor_to_csl_names);
     r.editor = reference.editor().map(contributor_to_csl_names);
     r.translator = reference.translator().map(contributor_to_csl_names);
-    r.publisher = reference.publisher().and_then(|c| c.name());
+    r.publisher = reference.publisher().map(|p| p.name.to_string());
 
     match reference {
         InputReference::Monograph(m) => {

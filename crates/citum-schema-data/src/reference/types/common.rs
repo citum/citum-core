@@ -3,6 +3,7 @@
 //! Includes multilingual string support, title representation, date types,
 //! and reusable metadata structs (archive, eprint).
 
+use crate::reference::contributor::Contributor;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -52,6 +53,10 @@ pub enum NumberingType {
     Section,
     /// An edition identifier.
     Edition,
+    /// A season number.
+    Season,
+    /// An episode number.
+    Episode,
     /// A custom numbering identifier for domain-specific kinds.
     Custom(String),
 }
@@ -70,6 +75,8 @@ impl NumberingType {
             Self::Chapter => Cow::Borrowed("chapter"),
             Self::Section => Cow::Borrowed("section"),
             Self::Edition => Cow::Borrowed("edition"),
+            Self::Season => Cow::Borrowed("season"),
+            Self::Episode => Cow::Borrowed("episode"),
             Self::Custom(value) => normalize_kind_key(value)
                 .map(Cow::Owned)
                 .unwrap_or_else(|| Cow::Borrowed(value.as_str())),
@@ -94,6 +101,8 @@ impl NumberingType {
             "chapter" => Self::Chapter,
             "section" => Self::Section,
             "edition" => Self::Edition,
+            "season" => Self::Season,
+            "episode" => Self::Episode,
             _ => Self::Custom(canonical),
         })
     }
@@ -398,6 +407,68 @@ pub struct EprintInfo {
     pub class: Option<String>,
 }
 
+/// A publisher or production company.
+///
+/// Publisher is always a corporate entity — a person is never a publisher
+/// in the bibliographic sense.
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(rename_all = "kebab-case")]
+#[serde(from = "PublisherCompat")]
+pub struct Publisher {
+    /// Publisher name.
+    pub name: MultilingualString,
+    /// Geographic place of publication (city, country).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub place: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(untagged)]
+enum PublisherCompat {
+    PublisherObject {
+        name: MultilingualString,
+        place: Option<String>,
+    },
+    Contributor(Box<Contributor>),
+    Name(MultilingualString),
+    String(String),
+}
+
+impl From<PublisherCompat> for Publisher {
+    fn from(value: PublisherCompat) -> Self {
+        match value {
+            PublisherCompat::PublisherObject { name, place } => Self { name, place },
+            PublisherCompat::Contributor(contributor) => match *contributor {
+                Contributor::SimpleName(name) => Self {
+                    name: name.name,
+                    place: name.location,
+                },
+                Contributor::StructuredName(name) => Self {
+                    name: format!("{} {}", name.given, name.family).into(),
+                    place: None,
+                },
+                Contributor::Multilingual(name) => Self {
+                    name: format!("{} {}", name.original.given, name.original.family).into(),
+                    place: None,
+                },
+                Contributor::ContributorList(list) => Self {
+                    name: list.to_string().into(),
+                    place: None,
+                },
+            },
+            PublisherCompat::Name(name) => Self { name, place: None },
+            PublisherCompat::String(name) => Self {
+                name: name.into(),
+                place: None,
+            },
+        }
+    }
+}
+
 /// A title can be a single string, a structured title, or a multilingual title.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
@@ -425,6 +496,7 @@ pub enum Title {
 #[serde(rename_all = "kebab-case")]
 pub struct StructuredTitle {
     /// Full rendered title string (optional override).
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub full: Option<String>,
     /// Main title component.
     pub main: String,

@@ -10,8 +10,8 @@ use common::*;
 
 use citum_engine::Processor;
 use citum_schema::reference::{
-    Contributor, EdtfString, InputReference, Monograph, MonographType, SimpleName, StructuredName,
-    Title,
+    Contributor, ContributorEntry, ContributorRole, EdtfString, InputReference, Monograph,
+    MonographType, Publisher, StructuredName, Title,
 };
 use indexmap::IndexMap;
 
@@ -29,16 +29,19 @@ fn test_apa_interview_fidelity_regression() {
             given: "Hannah".into(),
             ..Default::default()
         })),
-        interviewer: Some(Contributor::StructuredName(StructuredName {
-            family: "Young-Bruehl".into(),
-            given: "Elisabeth".into(),
-            ..Default::default()
-        })),
+        contributors: vec![ContributorEntry {
+            role: ContributorRole::Interviewer,
+            contributor: Contributor::StructuredName(StructuredName {
+                family: "Young-Bruehl".into(),
+                given: "Elisabeth".into(),
+                ..Default::default()
+            }),
+        }],
         issued: EdtfString("1975".to_string()),
-        publisher: Some(Contributor::SimpleName(SimpleName {
+        publisher: Some(Publisher {
             name: "Schocken Books".into(),
-            location: None,
-        })),
+            place: None,
+        }),
         ..Default::default()
     }));
 

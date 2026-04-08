@@ -15,14 +15,20 @@ pub mod types;
 #[cfg(all(test, feature = "legacy-convert"))]
 mod tests;
 
-pub use self::contributor::{Contributor, ContributorList, FlatName, SimpleName, StructuredName};
+pub use self::contributor::{
+    Contributor, ContributorEntry, ContributorList, ContributorRole, FlatName, SimpleName,
+    StructuredName,
+};
 pub use self::date::EdtfString;
 use self::types::common::HasNumbering;
 pub use self::types::common::{
-    FieldLanguageMap, LangID, MultilingualString, NumOrStr, Numbering, NumberingType, RefID, Title,
+    FieldLanguageMap, LangID, MultilingualString, NumOrStr, Numbering, NumberingType, Publisher,
+    RefID, Title,
 };
 pub use self::types::legal::{Brief, Hearing, LegalCase, Regulation, Statute, Treaty};
-pub use self::types::specialized::{Classic, Dataset, Event, Patent, Software, Standard};
+pub use self::types::specialized::{
+    AudioVisualType, AudioVisualWork, Classic, Dataset, Event, Patent, Software, Standard, WorkCore,
+};
 pub use self::types::structural::{
     Collection, CollectionComponent, CollectionType, Monograph, MonographComponentType,
     MonographType, Serial, SerialComponent, SerialComponentType, SerialType,
@@ -92,6 +98,8 @@ pub enum InputReference {
     Software(Box<Software>),
     /// An event such as a conference, performance, or broadcast.
     Event(Box<Event>),
+    /// An audio-visual work: film, TV episode, recording, or broadcast.
+    AudioVisual(Box<AudioVisualWork>),
 }
 
 impl InputReference {
@@ -137,15 +145,27 @@ impl InputReference {
             InputReference::Standard(r) => r.id.clone(),
             InputReference::Software(r) => r.id.clone(),
             InputReference::Event(r) => r.id.clone(),
+            InputReference::AudioVisual(r) => r.id.clone(),
         }
     }
 
     /// Return the author.
     pub fn author(&self) -> Option<Contributor> {
+        use crate::reference::contributor::ContributorRole as DataRole;
+
         match self {
-            InputReference::Monograph(r) => r.author.clone(),
-            InputReference::CollectionComponent(r) => r.author.clone(),
-            InputReference::SerialComponent(r) => r.author.clone(),
+            InputReference::Monograph(r) => {
+                collect_contributors_by_role(&r.contributors, &DataRole::Author)
+                    .or_else(|| r.author.clone())
+            }
+            InputReference::CollectionComponent(r) => {
+                collect_contributors_by_role(&r.contributors, &DataRole::Author)
+                    .or_else(|| r.author.clone())
+            }
+            InputReference::SerialComponent(r) => {
+                collect_contributors_by_role(&r.contributors, &DataRole::Author)
+                    .or_else(|| r.author.clone())
+            }
             InputReference::Treaty(r) => r.author.clone(),
             InputReference::Brief(r) => r.author.clone(),
             InputReference::Classic(r) => r.author.clone(),
@@ -153,20 +173,41 @@ impl InputReference {
             InputReference::Dataset(r) => r.author.clone(),
             InputReference::Software(r) => r.author.clone(),
             InputReference::Event(r) => r.performer.clone().or(r.organizer.clone()),
+            InputReference::AudioVisual(r) => match r.r#type {
+                AudioVisualType::Film | AudioVisualType::Episode => {
+                    collect_contributors_by_role(&r.core.contributors, &DataRole::Director)
+                }
+                AudioVisualType::Recording => {
+                    collect_contributors_by_role(&r.core.contributors, &DataRole::Composer).or_else(
+                        || collect_contributors_by_role(&r.core.contributors, &DataRole::Performer),
+                    )
+                }
+                AudioVisualType::Broadcast => None,
+            },
             _ => None,
         }
     }
 
     pub fn editor(&self) -> Option<Contributor> {
         match self {
-            InputReference::Monograph(r) => r.editor.clone(),
-            InputReference::Collection(r) => r.editor.clone(),
+            InputReference::Monograph(r) => {
+                collect_contributors_by_role(&r.contributors, &ContributorRole::Editor)
+                    .or_else(|| r.editor.clone())
+            }
+            InputReference::Collection(r) => {
+                collect_contributors_by_role(&r.contributors, &ContributorRole::Editor)
+                    .or_else(|| r.editor.clone())
+            }
             InputReference::CollectionComponent(r) => r.container.as_ref().and_then(|c| match c {
                 WorkRelation::Embedded(p) => p.editor(),
                 WorkRelation::Id(_) => None,
             }),
-            InputReference::Serial(r) => r.editor.clone(),
+            InputReference::Serial(r) => {
+                collect_contributors_by_role(&r.contributors, &ContributorRole::Editor)
+                    .or_else(|| r.editor.clone())
+            }
             InputReference::Classic(r) => r.editor.clone(),
+            InputReference::AudioVisual(_) => None,
             _ => None,
         }
     }
@@ -174,41 +215,30 @@ impl InputReference {
     /// Return the translator.
     pub fn translator(&self) -> Option<Contributor> {
         match self {
-            InputReference::Monograph(r) => r.translator.clone(),
-            InputReference::CollectionComponent(r) => r.translator.clone(),
-            InputReference::SerialComponent(r) => r.translator.clone(),
-            InputReference::Collection(r) => r.translator.clone(),
+            InputReference::Monograph(r) => {
+                collect_contributors_by_role(&r.contributors, &ContributorRole::Translator)
+                    .or_else(|| r.translator.clone())
+            }
+            InputReference::CollectionComponent(r) => {
+                collect_contributors_by_role(&r.contributors, &ContributorRole::Translator)
+                    .or_else(|| r.translator.clone())
+            }
+            InputReference::SerialComponent(r) => {
+                collect_contributors_by_role(&r.contributors, &ContributorRole::Translator)
+                    .or_else(|| r.translator.clone())
+            }
+            InputReference::Collection(r) => {
+                collect_contributors_by_role(&r.contributors, &ContributorRole::Translator)
+                    .or_else(|| r.translator.clone())
+            }
             InputReference::Classic(r) => r.translator.clone(),
-            _ => None,
-        }
-    }
-
-    /// Return the recipient.
-    pub fn recipient(&self) -> Option<Contributor> {
-        match self {
-            InputReference::Monograph(r) => r.recipient.clone(),
-            _ => None,
-        }
-    }
-
-    /// Return the interviewer.
-    pub fn interviewer(&self) -> Option<Contributor> {
-        match self {
-            InputReference::Monograph(r) => r.interviewer.clone(),
-            _ => None,
-        }
-    }
-
-    /// Return the guest.
-    pub fn guest(&self) -> Option<Contributor> {
-        match self {
-            InputReference::Monograph(r) => r.guest.clone(),
+            InputReference::AudioVisual(_) => None,
             _ => None,
         }
     }
 
     /// Return the publisher.
-    pub fn publisher(&self) -> Option<Contributor> {
+    pub fn publisher(&self) -> Option<Publisher> {
         match self {
             InputReference::Monograph(r) => r.publisher.clone(),
             InputReference::CollectionComponent(r) => r.container.as_ref().and_then(|c| match c {
@@ -225,8 +255,27 @@ impl InputReference {
             InputReference::Dataset(r) => r.publisher.clone(),
             InputReference::Standard(r) => r.publisher.clone(),
             InputReference::Software(r) => r.publisher.clone(),
+            InputReference::AudioVisual(r) => r.publisher.clone(),
             _ => None,
         }
+    }
+
+    /// Returns contributors matching `role` for any reference class that
+    /// carries a contributors list.
+    ///
+    /// Returns `None` if no contributors with the given role exist.
+    /// Returns a single `Contributor` directly, or folds multiple into a `ContributorList`.
+    pub fn contributor(&self, role: ContributorRole) -> Option<Contributor> {
+        let entries: &[ContributorEntry] = match self {
+            InputReference::Monograph(r) => &r.contributors,
+            InputReference::Collection(r) => &r.contributors,
+            InputReference::CollectionComponent(r) => &r.contributors,
+            InputReference::Serial(r) => &r.contributors,
+            InputReference::SerialComponent(r) => &r.contributors,
+            InputReference::AudioVisual(r) => &r.core.contributors,
+            _ => &[],
+        };
+        collect_contributors_by_role(entries, &role)
     }
 
     /// Return the title.
@@ -264,30 +313,70 @@ impl InputReference {
             InputReference::Standard(r) => r.title.clone(),
             InputReference::Software(r) => r.title.clone(),
             InputReference::Event(r) => r.title.clone(),
+            InputReference::AudioVisual(r) => match (&r.core.title, &r.core.short_title) {
+                (Some(Title::Single(long)), Some(short)) => {
+                    Some(Title::Shorthand(short.clone(), long.clone()))
+                }
+                _ => r.core.title.clone(),
+            },
         }
     }
 
-    /// Return the issued date.
+    fn non_empty_date(date: EdtfString) -> Option<EdtfString> {
+        if date.is_empty() { None } else { Some(date) }
+    }
+
+    /// Return the creation or origination date.
+    pub fn created(&self) -> Option<EdtfString> {
+        match self {
+            InputReference::Monograph(r) => Self::non_empty_date(r.created.clone()),
+            InputReference::CollectionComponent(r) => Self::non_empty_date(r.created.clone()),
+            InputReference::SerialComponent(r) => Self::non_empty_date(r.created.clone()),
+            InputReference::Collection(r) => Self::non_empty_date(r.created.clone()),
+            InputReference::Serial(_) => None,
+            InputReference::LegalCase(r) => Self::non_empty_date(r.created.clone()),
+            InputReference::Statute(r) => Self::non_empty_date(r.created.clone()),
+            InputReference::Treaty(r) => Self::non_empty_date(r.created.clone()),
+            InputReference::Hearing(r) => Self::non_empty_date(r.created.clone()),
+            InputReference::Regulation(r) => Self::non_empty_date(r.created.clone()),
+            InputReference::Brief(r) => Self::non_empty_date(r.created.clone()),
+            InputReference::Classic(r) => Self::non_empty_date(r.created.clone()),
+            InputReference::Patent(r) => Self::non_empty_date(r.created.clone()),
+            InputReference::Dataset(r) => Self::non_empty_date(r.created.clone()),
+            InputReference::Standard(r) => Self::non_empty_date(r.created.clone()),
+            InputReference::Software(r) => Self::non_empty_date(r.created.clone()),
+            InputReference::Event(_) => None,
+            InputReference::AudioVisual(r) => Self::non_empty_date(r.core.created.clone()),
+        }
+    }
+
+    /// Return the explicit publication or release date.
     pub fn issued(&self) -> Option<EdtfString> {
         match self {
-            InputReference::Monograph(r) => Some(r.issued.clone()),
-            InputReference::CollectionComponent(r) => Some(r.issued.clone()),
-            InputReference::SerialComponent(r) => Some(r.issued.clone()),
-            InputReference::Collection(r) => Some(r.issued.clone()),
+            InputReference::Monograph(r) => Self::non_empty_date(r.issued.clone()),
+            InputReference::CollectionComponent(r) => Self::non_empty_date(r.issued.clone()),
+            InputReference::SerialComponent(r) => Self::non_empty_date(r.issued.clone()),
+            InputReference::Collection(r) => Self::non_empty_date(r.issued.clone()),
             InputReference::Serial(_) => None,
-            InputReference::LegalCase(r) => Some(r.issued.clone()),
-            InputReference::Statute(r) => Some(r.issued.clone()),
-            InputReference::Treaty(r) => Some(r.issued.clone()),
-            InputReference::Hearing(r) => Some(r.issued.clone()),
-            InputReference::Regulation(r) => Some(r.issued.clone()),
-            InputReference::Brief(r) => Some(r.issued.clone()),
-            InputReference::Classic(r) => Some(r.issued.clone()),
-            InputReference::Patent(r) => Some(r.issued.clone()),
-            InputReference::Dataset(r) => Some(r.issued.clone()),
-            InputReference::Standard(r) => Some(r.issued.clone()),
-            InputReference::Software(r) => Some(r.issued.clone()),
+            InputReference::LegalCase(r) => Self::non_empty_date(r.issued.clone()),
+            InputReference::Statute(r) => Self::non_empty_date(r.issued.clone()),
+            InputReference::Treaty(r) => Self::non_empty_date(r.issued.clone()),
+            InputReference::Hearing(r) => Self::non_empty_date(r.issued.clone()),
+            InputReference::Regulation(r) => Self::non_empty_date(r.issued.clone()),
+            InputReference::Brief(r) => Self::non_empty_date(r.issued.clone()),
+            InputReference::Classic(r) => Self::non_empty_date(r.issued.clone()),
+            InputReference::Patent(r) => Self::non_empty_date(r.issued.clone()),
+            InputReference::Dataset(r) => Self::non_empty_date(r.issued.clone()),
+            InputReference::Standard(r) => Self::non_empty_date(r.issued.clone()),
+            InputReference::Software(r) => Self::non_empty_date(r.issued.clone()),
             InputReference::Event(r) => r.date.clone(),
+            InputReference::AudioVisual(r) => Self::non_empty_date(r.core.issued.clone()),
         }
+    }
+
+    /// Return the effective issued date used for compatibility layers.
+    pub fn csl_issued_date(&self) -> Option<EdtfString> {
+        self.issued().or_else(|| self.created())
     }
 
     /// Return the DOI.
@@ -299,6 +388,7 @@ impl InputReference {
             InputReference::LegalCase(r) => r.doi.clone(),
             InputReference::Dataset(r) => r.doi.clone(),
             InputReference::Software(r) => r.doi.clone(),
+            InputReference::AudioVisual(_) => None,
             _ => None,
         }
     }
@@ -308,6 +398,7 @@ impl InputReference {
         match self {
             InputReference::Monograph(r) => r.ads_bibcode.clone(),
             InputReference::SerialComponent(r) => r.ads_bibcode.clone(),
+            InputReference::AudioVisual(_) => None,
             _ => None,
         }
     }
@@ -325,6 +416,7 @@ impl InputReference {
             InputReference::Treaty(r) => r.note.clone(),
             InputReference::Standard(r) => r.note.clone(),
             InputReference::Event(r) => r.note.clone(),
+            InputReference::AudioVisual(r) => r.note.clone(),
             _ => None,
         }
     }
@@ -349,20 +441,23 @@ impl InputReference {
             InputReference::Standard(r) => r.url.clone(),
             InputReference::Software(r) => r.url.clone(),
             InputReference::Event(r) => r.url.clone(),
+            InputReference::AudioVisual(r) => r.url.clone(),
         }
     }
 
     /// Return the publisher place.
     pub fn publisher_place(&self) -> Option<String> {
         match self {
-            InputReference::Monograph(r) => {
-                r.publisher.as_ref().and_then(|c| c.location()).or_else(|| {
+            InputReference::Monograph(r) => r
+                .publisher
+                .as_ref()
+                .and_then(|p| p.place.clone())
+                .or_else(|| {
                     r.container.as_ref().and_then(|c| match c {
                         WorkRelation::Embedded(p) => p.publisher_place(),
                         _ => None,
                     })
-                })
-            }
+                }),
             InputReference::CollectionComponent(r) => r.container.as_ref().and_then(|c| match c {
                 WorkRelation::Embedded(p) => p.publisher_place(),
                 _ => None,
@@ -371,20 +466,23 @@ impl InputReference {
                 WorkRelation::Embedded(p) => p.publisher_place(),
                 _ => None,
             }),
-            InputReference::Collection(r) => {
-                r.publisher.as_ref().and_then(|c| c.location()).or_else(|| {
+            InputReference::Collection(r) => r
+                .publisher
+                .as_ref()
+                .and_then(|p| p.place.clone())
+                .or_else(|| {
                     r.container.as_ref().and_then(|c| match c {
                         WorkRelation::Embedded(p) => p.publisher_place(),
                         _ => None,
                     })
-                })
-            }
+                }),
             InputReference::Serial(_) => None,
-            InputReference::Classic(r) => r.publisher.as_ref().and_then(|c| c.location()),
-            InputReference::Dataset(r) => r.publisher.as_ref().and_then(|c| c.location()),
-            InputReference::Standard(r) => r.publisher.as_ref().and_then(|c| c.location()),
-            InputReference::Software(r) => r.publisher.as_ref().and_then(|c| c.location()),
+            InputReference::Classic(r) => r.publisher.as_ref().and_then(|p| p.place.clone()),
+            InputReference::Dataset(r) => r.publisher.as_ref().and_then(|p| p.place.clone()),
+            InputReference::Standard(r) => r.publisher.as_ref().and_then(|p| p.place.clone()),
+            InputReference::Software(r) => r.publisher.as_ref().and_then(|p| p.place.clone()),
             InputReference::Event(r) => r.location.clone(),
+            InputReference::AudioVisual(r) => r.publisher.as_ref().and_then(|p| p.place.clone()),
             _ => None,
         }
     }
@@ -392,14 +490,16 @@ impl InputReference {
     /// Return the publisher as a string.
     pub fn publisher_str(&self) -> Option<String> {
         match self {
-            InputReference::Monograph(r) => {
-                r.publisher.as_ref().and_then(|c| c.name()).or_else(|| {
+            InputReference::Monograph(r) => r
+                .publisher
+                .as_ref()
+                .map(|p| p.name.to_string())
+                .or_else(|| {
                     r.container.as_ref().and_then(|c| match c {
                         WorkRelation::Embedded(p) => p.publisher_str(),
                         _ => None,
                     })
-                })
-            }
+                }),
             InputReference::CollectionComponent(r) => r.container.as_ref().and_then(|c| match c {
                 WorkRelation::Embedded(p) => p.publisher_str(),
                 _ => None,
@@ -408,20 +508,23 @@ impl InputReference {
                 WorkRelation::Embedded(p) => p.publisher_str(),
                 _ => None,
             }),
-            InputReference::Collection(r) => {
-                r.publisher.as_ref().and_then(|c| c.name()).or_else(|| {
+            InputReference::Collection(r) => r
+                .publisher
+                .as_ref()
+                .map(|p| p.name.to_string())
+                .or_else(|| {
                     r.container.as_ref().and_then(|c| match c {
                         WorkRelation::Embedded(p) => p.publisher_str(),
                         _ => None,
                     })
-                })
-            }
-            InputReference::Serial(r) => r.publisher.as_ref().and_then(|c| c.name()),
-            InputReference::Classic(r) => r.publisher.as_ref().and_then(|c| c.name()),
-            InputReference::Dataset(r) => r.publisher.as_ref().and_then(|c| c.name()),
-            InputReference::Standard(r) => r.publisher.as_ref().and_then(|c| c.name()),
-            InputReference::Software(r) => r.publisher.as_ref().and_then(|c| c.name()),
+                }),
+            InputReference::Serial(r) => r.publisher.as_ref().map(|p| p.name.to_string()),
+            InputReference::Classic(r) => r.publisher.as_ref().map(|p| p.name.to_string()),
+            InputReference::Dataset(r) => r.publisher.as_ref().map(|p| p.name.to_string()),
+            InputReference::Standard(r) => r.publisher.as_ref().map(|p| p.name.to_string()),
+            InputReference::Software(r) => r.publisher.as_ref().map(|p| p.name.to_string()),
             InputReference::Event(r) => r.network.clone(),
+            InputReference::AudioVisual(r) => r.publisher.as_ref().map(|p| p.name.to_string()),
             _ => None,
         }
     }
@@ -451,6 +554,11 @@ impl InputReference {
                 r.genre.as_ref().map(|g| Self::normalize_genre_medium(g))
             }
             InputReference::Event(r) => r.genre.as_ref().map(|g| Self::normalize_genre_medium(g)),
+            InputReference::AudioVisual(r) => r
+                .core
+                .genre
+                .as_ref()
+                .map(|g| Self::normalize_genre_medium(g)),
             _ => None,
         }
     }
@@ -658,6 +766,9 @@ impl InputReference {
             InputReference::SerialComponent(r) => {
                 r.medium.as_ref().map(|m| Self::normalize_genre_medium(m))
             }
+            InputReference::AudioVisual(r) => {
+                r.medium.as_ref().map(|m| Self::normalize_genre_medium(m))
+            }
             _ => None,
         }
     }
@@ -699,6 +810,10 @@ impl InputReference {
             InputReference::Statute(r) => r.code.clone().map(Title::Single),
             InputReference::Treaty(r) => r.reporter.clone().map(Title::Single),
             InputReference::Event(r) => r.container.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title().or_else(|| p.container_title()),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::AudioVisual(r) => r.container.as_ref().and_then(|c| match c {
                 WorkRelation::Embedded(p) => p.title().or_else(|| p.container_title()),
                 WorkRelation::Id(_) => None,
             }),
@@ -924,6 +1039,7 @@ impl InputReference {
             InputReference::Standard(r) => r.accessed.clone(),
             InputReference::Software(r) => r.accessed.clone(),
             InputReference::Event(r) => r.accessed.clone(),
+            InputReference::AudioVisual(r) => r.accessed.clone(),
         }
     }
 
@@ -1005,6 +1121,7 @@ impl InputReference {
             InputReference::Standard(r) => r.keywords.clone(),
             InputReference::Software(r) => r.keywords.clone(),
             InputReference::Event(_) => None,
+            InputReference::AudioVisual(_) => None,
         }
     }
 
@@ -1028,6 +1145,7 @@ impl InputReference {
             InputReference::Standard(r) => r.language.clone(),
             InputReference::Software(r) => r.language.clone(),
             InputReference::Event(r) => r.language.clone(),
+            InputReference::AudioVisual(r) => r.core.language.clone(),
         }
     }
 
@@ -1051,6 +1169,7 @@ impl InputReference {
             InputReference::Standard(r) => &r.field_languages,
             InputReference::Software(r) => &r.field_languages,
             InputReference::Event(r) => &r.field_languages,
+            InputReference::AudioVisual(r) => &r.field_languages,
         }
     }
 
@@ -1074,6 +1193,7 @@ impl InputReference {
             InputReference::Standard(r) => r.id = Some(id),
             InputReference::Software(r) => r.id = Some(id),
             InputReference::Event(r) => r.id = Some(id),
+            InputReference::AudioVisual(r) => r.id = Some(id),
         }
     }
 
@@ -1190,7 +1310,33 @@ impl InputReference {
                     _ => "event".to_string(),
                 }
             }
+            InputReference::AudioVisual(r) => match r.r#type {
+                AudioVisualType::Film => "motion-picture".to_string(),
+                AudioVisualType::Episode => "broadcast".to_string(),
+                AudioVisualType::Recording => "song".to_string(),
+                AudioVisualType::Broadcast => "broadcast".to_string(),
+            },
         }
+    }
+}
+
+/// Collects contributors with a given role from a slice of entries.
+fn collect_contributors_by_role(
+    entries: &[ContributorEntry],
+    role: &ContributorRole,
+) -> Option<Contributor> {
+    use crate::reference::contributor::ContributorList;
+    let matching: Vec<&Contributor> = entries
+        .iter()
+        .filter(|e| &e.role == role)
+        .map(|e| &e.contributor)
+        .collect();
+    match matching.len() {
+        0 => None,
+        1 => Some(matching[0].clone()),
+        _ => Some(Contributor::ContributorList(ContributorList(
+            matching.into_iter().cloned().collect(),
+        ))),
     }
 }
 

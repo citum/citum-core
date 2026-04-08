@@ -824,9 +824,6 @@ mod tests {
             })),
             editor: None,
             translator: None,
-            recipient: None,
-            interviewer: None,
-            guest: None,
             issued: EdtfString(year.to_string()),
             ..Default::default()
         }))
@@ -858,9 +855,6 @@ mod tests {
             )),
             editor: None,
             translator: None,
-            recipient: None,
-            interviewer: None,
-            guest: None,
             issued: EdtfString(year.to_string()),
             ..Default::default()
         }))

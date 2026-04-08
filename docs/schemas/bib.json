@@ -129,6 +129,163 @@
         }
       }
     },
+    "AudioVisualType": {
+      "description": "Discriminates audio-visual subtypes for style-directed formatting.",
+      "oneOf": [
+        {
+          "description": "A film or motion picture (default).",
+          "type": "string",
+          "const": "film"
+        },
+        {
+          "description": "A single episode of a TV series, podcast, or web series.",
+          "type": "string",
+          "const": "episode"
+        },
+        {
+          "description": "A recording (music video, concert, etc.).",
+          "type": "string",
+          "const": "recording"
+        },
+        {
+          "description": "A broadcast program.",
+          "type": "string",
+          "const": "broadcast"
+        }
+      ]
+    },
+    "AudioVisualWork": {
+      "description": "An audio-visual work: film, TV episode, recording, or broadcast.\n\nThis is a work-like reference class. It represents the creative work\nwhen that work is the citee, not a fully modeled release hierarchy.",
+      "type": "object",
+      "properties": {
+        "accessed": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EdtfString"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "container": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkRelation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contributors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContributorEntry"
+          }
+        },
+        "created": {
+          "$ref": "#/$defs/EdtfString",
+          "default": ""
+        },
+        "field-languages": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "genre": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "issued": {
+          "$ref": "#/$defs/EdtfString",
+          "default": ""
+        },
+        "language": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "medium": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "number": {
+          "description": "Catalog or episode number shorthand (normalized into `numbering`).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "numbering": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Numbering"
+          }
+        },
+        "platform": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "publisher": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Publisher"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "short-title": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "title": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Title"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "type": {
+          "$ref": "#/$defs/AudioVisualType",
+          "default": "film"
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uri"
+        }
+      }
+    },
     "Brief": {
       "description": "A legal brief or filing.",
       "type": "object",
@@ -161,6 +318,10 @@
             "string",
             "null"
           ]
+        },
+        "created": {
+          "description": "Creation or origination date of the brief.",
+          "$ref": "#/$defs/EdtfString"
         },
         "docket-number": {
           "description": "Docket number",
@@ -230,10 +391,7 @@
           ],
           "format": "uri"
         }
-      },
-      "required": [
-        "issued"
-      ]
+      }
     },
     "Classic": {
       "description": "A classic work (Aristotle, Bible, etc.) with standard citation forms.",
@@ -268,6 +426,10 @@
               "type": "null"
             }
           ]
+        },
+        "created": {
+          "$ref": "#/$defs/EdtfString",
+          "default": ""
         },
         "edition": {
           "type": [
@@ -304,7 +466,8 @@
           ]
         },
         "issued": {
-          "$ref": "#/$defs/EdtfString"
+          "$ref": "#/$defs/EdtfString",
+          "default": ""
         },
         "keywords": {
           "type": [
@@ -342,7 +505,7 @@
         "publisher": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Contributor"
+              "$ref": "#/$defs/Publisher"
             },
             {
               "type": "null"
@@ -382,10 +545,7 @@
             "null"
           ]
         }
-      },
-      "required": [
-        "issued"
-      ]
+      }
     },
     "Collection": {
       "description": "A collection of works, such as an anthology or proceedings.",
@@ -410,6 +570,16 @@
               "type": "null"
             }
           ]
+        },
+        "contributors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContributorEntry"
+          }
+        },
+        "created": {
+          "$ref": "#/$defs/EdtfString",
+          "default": ""
         },
         "edition": {
           "type": [
@@ -452,7 +622,8 @@
           ]
         },
         "issued": {
-          "$ref": "#/$defs/EdtfString"
+          "$ref": "#/$defs/EdtfString",
+          "default": ""
         },
         "keywords": {
           "type": [
@@ -490,7 +661,7 @@
         "publisher": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Contributor"
+              "$ref": "#/$defs/Publisher"
             },
             {
               "type": "null"
@@ -541,8 +712,7 @@
         }
       },
       "required": [
-        "type",
-        "issued"
+        "type"
       ]
     },
     "CollectionComponent": {
@@ -588,6 +758,16 @@
               "type": "null"
             }
           ]
+        },
+        "contributors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContributorEntry"
+          }
+        },
+        "created": {
+          "$ref": "#/$defs/EdtfString",
+          "default": ""
         },
         "doi": {
           "type": [
@@ -636,7 +816,8 @@
           ]
         },
         "issued": {
-          "$ref": "#/$defs/EdtfString"
+          "$ref": "#/$defs/EdtfString",
+          "default": ""
         },
         "keywords": {
           "type": [
@@ -735,8 +916,7 @@
         }
       },
       "required": [
-        "type",
-        "issued"
+        "type"
       ]
     },
     "CollectionType": {
@@ -781,12 +961,59 @@
         }
       ]
     },
+    "ContributorEntry": {
+      "description": "A single entry in a reference's contributors list.",
+      "type": "object",
+      "properties": {
+        "contributor": {
+          "description": "The contributor (name, organization, or list).",
+          "$ref": "#/$defs/Contributor"
+        },
+        "role": {
+          "description": "The role this contributor plays in relation to the work.",
+          "$ref": "#/$defs/ContributorRole"
+        }
+      },
+      "required": [
+        "role",
+        "contributor"
+      ]
+    },
     "ContributorList": {
       "description": "A list of contributors.",
       "type": "array",
       "items": {
         "$ref": "#/$defs/Contributor"
       }
+    },
+    "ContributorRole": {
+      "description": "A contributor role for use in the unified contributors list.",
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "author",
+            "editor",
+            "translator",
+            "director",
+            "performer",
+            "composer",
+            "illustrator",
+            "narrator",
+            "host",
+            "guest",
+            "interviewer",
+            "recipient",
+            "compiler",
+            "producer",
+            "writer"
+          ]
+        },
+        {
+          "description": "An open extension point for domain-specific roles.",
+          "type": "string"
+        }
+      ]
     },
     "Dataset": {
       "description": "A research dataset.",
@@ -813,6 +1040,10 @@
               "type": "null"
             }
           ]
+        },
+        "created": {
+          "description": "Creation or origination date of the dataset.",
+          "$ref": "#/$defs/EdtfString"
         },
         "doi": {
           "description": "DOI identifier.",
@@ -874,7 +1105,7 @@
           "description": "Publisher or repository (e.g., \"Zenodo\", \"Dryad\")",
           "anyOf": [
             {
-              "$ref": "#/$defs/Contributor"
+              "$ref": "#/$defs/Publisher"
             },
             {
               "type": "null"
@@ -921,10 +1152,7 @@
             "null"
           ]
         }
-      },
-      "required": [
-        "issued"
-      ]
+      }
     },
     "EdtfString": {
       "description": "An EDTF string.",
@@ -1106,6 +1334,10 @@
             "null"
           ]
         },
+        "created": {
+          "description": "Creation or origination date of the hearing record.",
+          "$ref": "#/$defs/EdtfString"
+        },
         "field-languages": {
           "description": "Per-field language overrides.",
           "type": "object",
@@ -1174,10 +1406,7 @@
           ],
           "format": "uri"
         }
-      },
-      "required": [
-        "issued"
-      ]
+      }
     },
     "InputBibliographyInfo": {
       "description": "Metadata for an input bibliography.",
@@ -1439,6 +1668,20 @@
           "required": [
             "class"
           ]
+        },
+        {
+          "description": "An audio-visual work: film, TV episode, recording, or broadcast.",
+          "type": "object",
+          "properties": {
+            "class": {
+              "type": "string",
+              "const": "audio-visual"
+            }
+          },
+          "$ref": "#/$defs/AudioVisualWork",
+          "required": [
+            "class"
+          ]
         }
       ]
     },
@@ -1463,6 +1706,10 @@
             "string",
             "null"
           ]
+        },
+        "created": {
+          "description": "Creation or origination date of the legal work.",
+          "$ref": "#/$defs/EdtfString"
         },
         "doi": {
           "description": "DOI identifier.",
@@ -1553,10 +1800,7 @@
             "null"
           ]
         }
-      },
-      "required": [
-        "issued"
-      ]
+      }
     },
     "Monograph": {
       "description": "A monograph, such as a book or a report, is a monolithic work published or produced as a complete entity.",
@@ -1620,6 +1864,16 @@
             }
           ]
         },
+        "contributors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContributorEntry"
+          }
+        },
+        "created": {
+          "$ref": "#/$defs/EdtfString",
+          "default": ""
+        },
         "doi": {
           "type": [
             "string",
@@ -1664,30 +1918,10 @@
             "null"
           ]
         },
-        "guest": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
         "id": {
           "type": [
             "string",
             "null"
-          ]
-        },
-        "interviewer": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Contributor"
-            },
-            {
-              "type": "null"
-            }
           ]
         },
         "isbn": {
@@ -1703,7 +1937,8 @@
           ]
         },
         "issued": {
-          "$ref": "#/$defs/EdtfString"
+          "$ref": "#/$defs/EdtfString",
+          "default": ""
         },
         "keywords": {
           "type": [
@@ -1757,17 +1992,7 @@
         "publisher": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Contributor"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "recipient": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Contributor"
+              "$ref": "#/$defs/Publisher"
             },
             {
               "type": "null"
@@ -1818,8 +2043,7 @@
         }
       },
       "required": [
-        "type",
-        "issued"
+        "type"
       ]
     },
     "MonographComponentType": {
@@ -2065,6 +2289,10 @@
             "null"
           ]
         },
+        "created": {
+          "description": "Creation or origination date of the patented work.",
+          "$ref": "#/$defs/EdtfString"
+        },
         "field-languages": {
           "description": "Per-field language overrides.",
           "type": "object",
@@ -2150,8 +2378,38 @@
         }
       },
       "required": [
-        "patent-number",
-        "issued"
+        "patent-number"
+      ]
+    },
+    "Publisher": {
+      "description": "A publisher or production company.\n\nPublisher is always a corporate entity — a person is never a publisher\nin the bibliographic sense.",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/MultilingualString"
+            },
+            "place": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "name"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Contributor"
+        },
+        {
+          "$ref": "#/$defs/MultilingualString"
+        },
+        {
+          "type": "string"
+        }
       ]
     },
     "Regulation": {
@@ -2182,6 +2440,10 @@
             "string",
             "null"
           ]
+        },
+        "created": {
+          "description": "Creation or origination date of the regulation text.",
+          "$ref": "#/$defs/EdtfString"
         },
         "field-languages": {
           "description": "Per-field language overrides.",
@@ -2258,17 +2520,13 @@
             "null"
           ]
         }
-      },
-      "required": [
-        "issued"
-      ]
+      }
     },
     "Serial": {
       "description": "A serial publication (journal, magazine, etc.).",
       "type": "object",
       "properties": {
         "accessed": {
-          "description": "Date the URL was accessed.",
           "anyOf": [
             {
               "$ref": "#/$defs/EdtfString"
@@ -2279,7 +2537,6 @@
           ]
         },
         "container": {
-          "description": "The parent container for this serial (e.g., a larger series).",
           "anyOf": [
             {
               "$ref": "#/$defs/WorkRelation"
@@ -2289,8 +2546,13 @@
             }
           ]
         },
+        "contributors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContributorEntry"
+          }
+        },
         "editor": {
-          "description": "Editor(s) of the serial.",
           "anyOf": [
             {
               "$ref": "#/$defs/Contributor"
@@ -2301,45 +2563,39 @@
           ]
         },
         "field-languages": {
-          "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "id": {
-          "description": "Unique identifier for this reference.",
           "type": [
             "string",
             "null"
           ]
         },
         "issn": {
-          "description": "ISSN identifier.",
           "type": [
             "string",
             "null"
           ]
         },
         "language": {
-          "description": "BCP 47 language of the serial.",
           "type": [
             "string",
             "null"
           ]
         },
         "note": {
-          "description": "Freeform note.",
           "type": [
             "string",
             "null"
           ]
         },
         "publisher": {
-          "description": "Publisher of the serial.",
           "anyOf": [
             {
-              "$ref": "#/$defs/Contributor"
+              "$ref": "#/$defs/Publisher"
             },
             {
               "type": "null"
@@ -2347,14 +2603,12 @@
           ]
         },
         "short-title": {
-          "description": "Optional short form of the title for style-directed rendering.",
           "type": [
             "string",
             "null"
           ]
         },
         "title": {
-          "description": "Title of the serial.",
           "anyOf": [
             {
               "$ref": "#/$defs/Title"
@@ -2365,11 +2619,9 @@
           ]
         },
         "type": {
-          "description": "Serial subtype for style-directed formatting.",
           "$ref": "#/$defs/SerialType"
         },
         "url": {
-          "description": "URL for the serial.",
           "type": [
             "string",
             "null"
@@ -2431,6 +2683,16 @@
             }
           ]
         },
+        "contributors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContributorEntry"
+          }
+        },
+        "created": {
+          "$ref": "#/$defs/EdtfString",
+          "default": ""
+        },
         "doi": {
           "type": [
             "string",
@@ -2478,7 +2740,8 @@
           ]
         },
         "issued": {
-          "$ref": "#/$defs/EdtfString"
+          "$ref": "#/$defs/EdtfString",
+          "default": ""
         },
         "keywords": {
           "type": [
@@ -2583,8 +2846,7 @@
         }
       },
       "required": [
-        "type",
-        "issued"
+        "type"
       ]
     },
     "SerialComponentType": {
@@ -2696,6 +2958,10 @@
             }
           ]
         },
+        "created": {
+          "description": "Creation or origination date of the software work.",
+          "$ref": "#/$defs/EdtfString"
+        },
         "doi": {
           "description": "DOI identifier.",
           "type": [
@@ -2763,7 +3029,7 @@
           "description": "Publisher or repository (e.g., \"GitHub\", \"Zenodo\")",
           "anyOf": [
             {
-              "$ref": "#/$defs/Contributor"
+              "$ref": "#/$defs/Publisher"
             },
             {
               "type": "null"
@@ -2803,10 +3069,7 @@
             "null"
           ]
         }
-      },
-      "required": [
-        "issued"
-      ]
+      }
     },
     "Standard": {
       "description": "A technical standard or specification.",
@@ -2829,6 +3092,10 @@
             "string",
             "null"
           ]
+        },
+        "created": {
+          "description": "Creation or origination date of the standard.",
+          "$ref": "#/$defs/EdtfString"
         },
         "field-languages": {
           "description": "Per-field language overrides.",
@@ -2876,7 +3143,7 @@
           "description": "Publisher (usually same as authority)",
           "anyOf": [
             {
-              "$ref": "#/$defs/Contributor"
+              "$ref": "#/$defs/Publisher"
             },
             {
               "type": "null"
@@ -2915,8 +3182,7 @@
         }
       },
       "required": [
-        "standard-number",
-        "issued"
+        "standard-number"
       ]
     },
     "Statute": {
@@ -2954,6 +3220,10 @@
             "string",
             "null"
           ]
+        },
+        "created": {
+          "description": "Creation or origination date of the statute.",
+          "$ref": "#/$defs/EdtfString"
         },
         "field-languages": {
           "description": "Per-field language overrides.",
@@ -3044,10 +3314,7 @@
             "null"
           ]
         }
-      },
-      "required": [
-        "issued"
-      ]
+      }
     },
     "StructuredName": {
       "description": "A structured name is a name broken down into its constituent parts.",
@@ -3215,6 +3482,10 @@
             }
           ]
         },
+        "created": {
+          "description": "Creation or origination date of the treaty text.",
+          "$ref": "#/$defs/EdtfString"
+        },
         "field-languages": {
           "description": "Per-field language overrides.",
           "type": "object",
@@ -3297,10 +3568,7 @@
             "null"
           ]
         }
-      },
-      "required": [
-        "issued"
-      ]
+      }
     },
     "WorkRelation": {
       "description": "A relation to another bibliographic entity.\n\nUntagged in serde to allow either an inline object or a string ID reference.\nUsed for both hierarchical (`container`) and associative (`original`, `reviewed`, `series`) links.",

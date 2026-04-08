@@ -131,6 +131,10 @@ fn format_contributor_names(
 }
 
 impl ComponentValues for TemplateContributor {
+    #[allow(
+        clippy::too_many_lines,
+        reason = "large match statement for contributor role dispatch"
+    )]
     fn values<F: crate::render::format::OutputFormat<Output = String>>(
         &self,
         reference: &Reference,
@@ -173,10 +177,51 @@ impl ComponentValues for TemplateContributor {
             }
             ContributorRole::Editor => reference.editor(),
             ContributorRole::Translator => reference.translator(),
-            ContributorRole::Recipient => reference.recipient(),
-            ContributorRole::Interviewer => reference.interviewer(),
-            ContributorRole::Guest => reference.guest(),
-            _ => None,
+            ContributorRole::Recipient => {
+                reference.contributor(citum_schema::reference::ContributorRole::Recipient)
+            }
+            ContributorRole::Interviewer => {
+                reference.contributor(citum_schema::reference::ContributorRole::Interviewer)
+            }
+            ContributorRole::Guest => {
+                reference.contributor(citum_schema::reference::ContributorRole::Guest)
+            }
+            ContributorRole::Director => {
+                reference.contributor(citum_schema::reference::ContributorRole::Director)
+            }
+            ContributorRole::Composer => {
+                reference.contributor(citum_schema::reference::ContributorRole::Composer)
+            }
+            ContributorRole::Illustrator => {
+                reference.contributor(citum_schema::reference::ContributorRole::Illustrator)
+            }
+            ContributorRole::Interviewee => None, // Not a standard reference contributor role
+            ContributorRole::Publisher => None, // Publisher is a corporate entity, not a person contributor
+            ContributorRole::Inventor => reference.contributor(
+                citum_schema::reference::ContributorRole::Custom("inventor".to_string()),
+            ),
+            ContributorRole::Counsel => reference.contributor(
+                citum_schema::reference::ContributorRole::Custom("counsel".to_string()),
+            ),
+            ContributorRole::CollectionEditor => reference.contributor(
+                citum_schema::reference::ContributorRole::Custom("collection-editor".to_string()),
+            ),
+            ContributorRole::ContainerAuthor => reference.contributor(
+                citum_schema::reference::ContributorRole::Custom("container-author".to_string()),
+            ),
+            ContributorRole::EditorialDirector => reference.contributor(
+                citum_schema::reference::ContributorRole::Custom("editorial-director".to_string()),
+            ),
+            ContributorRole::TextualEditor => reference.contributor(
+                citum_schema::reference::ContributorRole::Custom("textual-editor".to_string()),
+            ),
+            ContributorRole::OriginalAuthor => reference.contributor(
+                citum_schema::reference::ContributorRole::Custom("original-author".to_string()),
+            ),
+            ContributorRole::ReviewedAuthor => reference.contributor(
+                citum_schema::reference::ContributorRole::Custom("reviewed-author".to_string()),
+            ),
+            _ => None, // Handle any future template contributor roles
         };
 
         // Resolve multilingual names if configured

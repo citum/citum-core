@@ -36,9 +36,13 @@ pub struct LegalCase {
     /// First page of case in reporter
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page: Option<String>,
+    /// Creation or origination date of the legal work.
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
+    pub created: EdtfString,
     /// Decision date
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(skip_serializing_if = "EdtfString::is_empty")]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// URL for the case.
     #[serde(alias = "URL", skip_serializing_if = "Option::is_none")]
@@ -92,6 +96,10 @@ pub struct Statute {
     /// Page or entry locator for session laws and registers.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page: Option<String>,
+    /// Creation or origination date of the statute.
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
+    pub created: EdtfString,
     /// Section or page number
     #[serde(skip_serializing_if = "Option::is_none")]
     pub section: Option<String>,
@@ -100,7 +108,7 @@ pub struct Statute {
     pub chapter_number: Option<String>,
     /// Enactment or publication date
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(skip_serializing_if = "EdtfString::is_empty")]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// URL for the statute.
     #[serde(alias = "URL", skip_serializing_if = "Option::is_none")]
@@ -148,9 +156,13 @@ pub struct Treaty {
     /// Page or treaty number
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page: Option<String>,
+    /// Creation or origination date of the treaty text.
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
+    pub created: EdtfString,
     /// Signing or ratification date
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(skip_serializing_if = "EdtfString::is_empty")]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// URL for the treaty.
     #[serde(alias = "URL", skip_serializing_if = "Option::is_none")]
@@ -192,9 +204,13 @@ pub struct Hearing {
     /// Session or congress number
     #[serde(skip_serializing_if = "Option::is_none")]
     pub session_number: Option<String>,
+    /// Creation or origination date of the hearing record.
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
+    pub created: EdtfString,
     /// Hearing date
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(skip_serializing_if = "EdtfString::is_empty")]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// URL for the hearing record.
     #[serde(alias = "URL", skip_serializing_if = "Option::is_none")]
@@ -236,6 +252,10 @@ pub struct Regulation {
     /// Code volume
     #[serde(skip_serializing_if = "Option::is_none")]
     pub volume: Option<String>,
+    /// Creation or origination date of the regulation text.
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
+    pub created: EdtfString,
     /// Code abbreviation (e.g., "C.F.R.", "Fed. Reg.")
     #[serde(skip_serializing_if = "Option::is_none")]
     pub code: Option<String>,
@@ -244,7 +264,7 @@ pub struct Regulation {
     pub section: Option<String>,
     /// Publication or effective date
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(skip_serializing_if = "EdtfString::is_empty")]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// URL for the regulation.
     #[serde(alias = "URL", skip_serializing_if = "Option::is_none")]
@@ -289,9 +309,13 @@ pub struct Brief {
     /// Docket number
     #[serde(skip_serializing_if = "Option::is_none")]
     pub docket_number: Option<String>,
+    /// Creation or origination date of the brief.
+    #[cfg_attr(feature = "bindings", specta(type = String))]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
+    pub created: EdtfString,
     /// Filing date
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(skip_serializing_if = "EdtfString::is_empty")]
+    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
     /// URL for the brief.
     #[serde(alias = "URL", skip_serializing_if = "Option::is_none")]
