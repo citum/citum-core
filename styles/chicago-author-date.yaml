@@ -120,6 +120,7 @@ bibliography:
       - translator
       - title
     contributors:
+      display-as-sort: first
       shorten:
         min: 7
         use-first: 3

@@ -158,7 +158,10 @@ impl<'a> Disambiguator<'a> {
         let mut hints = HashMap::new();
         let refs: Vec<&Reference> = self.bibliography.values().collect();
         let flags = self.disambiguation_flags();
-        let needs_title_key = self.group_sort.is_none() && flags.year_suffix;
+        // Always populate title_key when year-suffix disambiguation is active so that
+        // sort_group_for_year_suffix can use it as a stable tie-breaker regardless of
+        // whether a group_sort is configured.
+        let needs_title_key = flags.year_suffix;
         let cache = self.build_reference_cache(&refs, needs_title_key);
         let grouped = self.group_references(&refs, &cache);
         let author_group_lengths = self.author_group_lengths(&refs, &cache);
@@ -553,7 +556,25 @@ impl<'a> Disambiguator<'a> {
     ) -> Vec<&'b Reference> {
         if let Some(sort_spec) = self.group_sort {
             let sorter = GroupSorter::new(self.locale);
-            sorter.sort_references(group.to_vec(), sort_spec)
+            // Pre-sort by title_key so that entries which compare equal under the primary
+            // sort_spec retain a stable, deterministic order (title ascending as tiebreaker).
+            // GroupSorter::sort_references uses sort_by (stable), so the pre-sort order is
+            // preserved for entries that compare equal under the primary key.
+            let mut pre_sorted: Vec<&Reference> = group.to_vec();
+            pre_sorted.sort_by(|a, b| {
+                let a_title = self
+                    .reference_data(a, cache)
+                    .title_key
+                    .as_deref()
+                    .unwrap_or_default();
+                let b_title = self
+                    .reference_data(b, cache)
+                    .title_key
+                    .as_deref()
+                    .unwrap_or_default();
+                a_title.cmp(b_title)
+            });
+            sorter.sort_references(pre_sorted, sort_spec)
         } else {
             let mut sorted: Vec<&Reference> = group.to_vec();
             sorted.sort_by(|a, b| {
@@ -691,6 +712,17 @@ impl<'a> Disambiguator<'a> {
             return crate::processor::labels::generate_base_label(reference, &params);
         }
 
+        // Anonymous entries (no author key) must not be grouped together for year-suffix
+        // assignment. CSL year-suffix disambiguates entries with the same *author* —
+        // anonymous entries are already distinguished by their title substitution.
+        // Give each anonymous reference a unique key so it forms its own singleton group.
+        if author_key.is_empty() {
+            if let Some(ref_id) = reference.id().filter(|id| !id.is_empty()) {
+                return format!("anon:{ref_id}");
+            }
+            return format!("anon:{}", Self::reference_cache_key(reference));
+        }
+
         let mut key = String::with_capacity(author_key.len() + 8);
         key.push_str(author_key);
         key.push(':');
@@ -813,6 +845,28 @@ mod tests {
             id: Some(id.to_string()),
             r#type: MonographType::Book,
             title: Some(Title::Single(title.clone())),
+            short_title: None,
+            container: None,
+            author: Some(Contributor::StructuredName(StructuredName {
+                family: MultilingualString::Simple(family.to_string()),
+                given: MultilingualString::Simple(given.to_string()),
+                suffix: None,
+                dropping_particle: None,
+                non_dropping_particle: None,
+            })),
+            editor: None,
+            translator: None,
+            issued: EdtfString(year.to_string()),
+            ..Default::default()
+        }))
+    }
+
+    fn make_ref_without_id(title_suffix: &str, family: &str, given: &str, year: i32) -> Reference {
+        let title = format!("Title {title_suffix}");
+        Reference::Monograph(Box::new(Monograph {
+            id: None,
+            r#type: MonographType::Book,
+            title: Some(Title::Single(title)),
             short_title: None,
             container: None,
             author: Some(Contributor::StructuredName(StructuredName {
@@ -1038,7 +1092,9 @@ mod tests {
     }
 
     #[test]
-    fn test_build_reference_cache_skips_title_keys_when_year_suffix_is_unused() {
+    fn test_build_reference_cache_populates_title_keys_when_year_suffix_is_active() {
+        // title_key must be populated whenever year-suffix is on (regardless of group_sort)
+        // so that sort_group_for_year_suffix can use it as a stable tie-breaker.
         use citum_schema::options::{Disambiguation, Processing, ProcessingCustom};
 
         let mut bib = Bibliography::new();
@@ -1059,10 +1115,8 @@ mod tests {
         };
         let disabled = Disambiguator::new(&bib, &disabled_config, &locale);
         let disabled_flags = disabled.disambiguation_flags();
-        let disabled_cache = disabled.build_reference_cache(
-            &refs,
-            disabled.group_sort.is_none() && disabled_flags.year_suffix,
-        );
+        // year_suffix=false → title_key must be None
+        let disabled_cache = disabled.build_reference_cache(&refs, disabled_flags.year_suffix);
         assert!(disabled_cache.values().all(|data| data.title_key.is_none()));
 
         let enabled_config = Config {
@@ -1078,11 +1132,45 @@ mod tests {
         };
         let enabled = Disambiguator::new(&bib, &enabled_config, &locale);
         let enabled_flags = enabled.disambiguation_flags();
-        let enabled_cache = enabled.build_reference_cache(
-            &refs,
-            enabled.group_sort.is_none() && enabled_flags.year_suffix,
-        );
+        // year_suffix=true → title_key must be Some regardless of group_sort
+        let enabled_cache = enabled.build_reference_cache(&refs, enabled_flags.year_suffix);
         assert!(enabled_cache.values().all(|data| data.title_key.is_some()));
+    }
+
+    #[test]
+    fn test_anonymous_refs_do_not_receive_year_suffix() {
+        // Anonymous entries (no author) sharing the same year must each be placed in
+        // their own singleton group, even when an embedded reference id is empty or missing.
+        use citum_schema::options::{Disambiguation, Processing, ProcessingCustom};
+
+        let mut bib = Bibliography::new();
+        bib.insert("a1".to_string(), make_ref("a1", "", "", 2020));
+        bib.insert("a2".to_string(), make_ref("a2", "", "", 2020));
+        bib.insert("a3".to_string(), make_ref("", "", "", 2020));
+        bib.insert(
+            "a4".to_string(),
+            make_ref_without_id("missing-id", "", "", 2020),
+        );
+        let locale = Locale::en_us();
+        let config = Config {
+            processing: Some(Processing::Custom(ProcessingCustom {
+                disambiguate: Some(Disambiguation {
+                    names: true,
+                    add_givenname: true,
+                    year_suffix: true,
+                }),
+                ..Default::default()
+            })),
+            ..Default::default()
+        };
+        let disambiguator = Disambiguator::new(&bib, &config, &locale);
+        let refs: Vec<&Reference> = bib.values().collect();
+        let cache = disambiguator.build_reference_cache(&refs, false);
+        let grouped = disambiguator.group_references(&refs, &cache);
+
+        assert_eq!(grouped.len(), 4);
+        assert!(!grouped.contains_key("anon:"));
+        assert!(grouped.values().all(|group| group.len() == 1));
     }
 
     #[test]
