@@ -94,7 +94,9 @@ Do not consider the task done until CI passes.
 | @builder | Implementation | 2-retry cap, no questions |
 | @reviewer | QA / conflict detection | Use after code changes |
 
-Style tasks: use **`/style-evolve`** (`upgrade`, `migrate`, `create`). Skills in `.claude/skills/`.
+Style tasks: use **`/style-evolve`** (`upgrade`, `migrate`, `create`). Codex skills
+live in `.codex/skills/` and are installed with `./scripts/install-codex-skills.sh`.
+Claude skills remain in `.claude/skills/`.
 
 ## Task Management
 
@@ -133,7 +135,8 @@ styles-legacy/     # 2,844 CSL 1.0 styles (submodule)
 
 Hybrid: XML pipeline for options extraction + LLM-authored templates for top parent styles. See [docs/architecture/MIGRATION_STRATEGY_ANALYSIS.md](./docs/architecture/MIGRATION_STRATEGY_ANALYSIS.md).
 
-Use `./scripts/prep-migration.sh` + `/style-evolve migrate` for hand-authoring. See `docs/TIER_STATUS.md` for live fidelity metrics.
+Use `./scripts/prep-migration.sh` + `/style-evolve migrate` for hand-authoring. See
+`docs/TIER_STATUS.md` for live fidelity metrics.
 
 ## Design Principles
 

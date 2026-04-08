@@ -1,11 +1,15 @@
 ---
 name: style-qa
 type: agent-invocable
-description: "Standardized QA gate for style work. Verifies fidelity (citations + bibliography), SQI drift, formatting defects, and regression surface. Produces approve/reject verdict with numbered findings."
+description: Standardized QA gate for style work. Verifies fidelity, SQI drift, formatting defects, and regression surface. Produces approve/reject verdict with numbered findings.
 model: haiku
 ---
 
 # Style QA Gate
+
+Authoritative shared process docs:
+- `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md`
+- `docs/guides/STYLE_WORKFLOW_EXECUTION.md`
 
 ## Gate Inputs
 - Style path(s) changed.
@@ -14,22 +18,11 @@ model: haiku
 - Optional docs/beans diff when task updates `.md` or `.beans/*`.
 
 ## Required Checks
-1. Fidelity summary:
-   - citations passed/total
-   - bibliography passed/total
-   - confirm whether any remaining mismatches are covered by
-     `docs/adjudication/DIVERGENCE_REGISTER.md`
-2. SQI drift summary (secondary metric only).
-3. Formatting audit:
-   - double spaces
-   - spaces before punctuation (` :`, ` ,`, ` .`)
-   - delimiter collisions from prefix/suffix + group delimiters
-4. Regression surface:
-   - impacted style family/priority rank
-   - likely cross-style risk
-5. Docs/beans hygiene (when docs or beans are touched):
-   - run `./scripts/check-docs-beans-hygiene.sh`
-   - require pass before approve
+1. Fidelity summary.
+2. SQI drift summary as a secondary metric only.
+3. Formatting audit.
+4. Regression surface.
+5. Docs/beans hygiene when docs or beans are touched.
 
 ## Decision Rules
 - Reject when fidelity regresses.
@@ -42,9 +35,3 @@ model: haiku
 - Metrics line: citations + bibliography + SQI delta
 - Findings: short numbered list
 - Next step: merge, iterate, or escalate to planner/processor
-
-## Suggested Commands
-- `node scripts/oracle.js <legacy-style> --json`
-- `node scripts/report-core.js`
-- `./scripts/lint-rendering.sh <style-path>`
-- `./scripts/check-docs-beans-hygiene.sh`

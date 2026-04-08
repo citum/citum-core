@@ -8,6 +8,11 @@ Use `/style-evolve` for all style tasks.
 
 Do not choose internal skills directly unless you are maintaining the workflow.
 
+For Codex CLI use, install the repo-owned skills with
+`./scripts/install-codex-skills.sh` and invoke the named skills directly.
+`./scripts/codex <role> <target...>` remains available as a fallback for direct role
+targeting.
+
 ## Modes
 1. `upgrade`
 - Improve existing Citum style(s).
@@ -48,3 +53,14 @@ Do not choose internal skills directly unless you are maintaining the workflow.
 - `pr-workflow-fast` (branch/PR efficiency)
 
 `/styleauthor` remains available as a legacy alias and forwards to `/style-evolve`.
+
+For Codex CLI users outside the host slash-command UI, use the named Codex skills
+first:
+
+```bash
+./scripts/install-codex-skills.sh
+# Then invoke $style-evolve, $migrate-research, or $rust-simplify in Codex.
+```
+
+Use `./scripts/codex <role> <target...>` only when you need direct access to an
+internal role contract.
