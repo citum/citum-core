@@ -172,7 +172,10 @@ impl InputReference {
             InputReference::Patent(r) => r.author.clone(),
             InputReference::Dataset(r) => r.author.clone(),
             InputReference::Software(r) => r.author.clone(),
-            InputReference::Event(r) => r.performer.clone().or(r.organizer.clone()),
+            InputReference::Event(r) => {
+                collect_contributors_by_role(&r.contributors, &DataRole::Performer)
+                    .or_else(|| collect_contributors_by_role(&r.contributors, &DataRole::Author))
+            }
             InputReference::AudioVisual(r) => match r.r#type {
                 AudioVisualType::Film | AudioVisualType::Episode => {
                     collect_contributors_by_role(&r.core.contributors, &DataRole::Director)
