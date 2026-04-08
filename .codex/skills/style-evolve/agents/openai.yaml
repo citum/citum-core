@@ -1,0 +1,5 @@
+interface:
+  display_name: "Style Evolve"
+  short_description: "Route Citum style work"
+  default_prompt: "Use $style-evolve to fix, migrate, or create a Citum style."
+

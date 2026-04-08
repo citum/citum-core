@@ -7,74 +7,51 @@ model: sonnet
 
 # Style Migrate+Enhance
 
+Authoritative shared process docs:
+- `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md`
+- `docs/guides/STYLE_WORKFLOW_EXECUTION.md`
+
 ## Use This Skill When
-- The task is portfolio migration (for example: next 5 or 10 styles).
+- The task is portfolio migration.
 - You need repeatable before/after/rerun metrics.
 - You want concrete recommendations for `citum_migrate` improvements from observed gaps.
 
 ## Input Contract
 - Legacy style path(s) under `styles-legacy/`.
 - Target Citum style path(s) under `styles/`.
-- Batch size and priority source (`docs/reference/STYLE_PRIORITY.md`, `docs/TIER_STATUS.md`).
-- Optional target metric (for example: bibliography >= 24/28).
+- Batch size and priority source.
+- Optional target metric.
 
 ## Output Contract
 - Updated style YAML file(s).
-- Metrics table per style:
-  - baseline (seeded)
-  - enhanced (edited)
-  - rerun (fresh `citum-migrate` for comparison)
-  - rich-input evidence (official supplemental report for styles with configured `benchmark_runs`)
-- List of migration-pattern gaps and recommended converter/preset follow-up.
+- Shared metrics and rerun evidence in the format described by the shared execution guide.
+- Migration-pattern gaps and recommended converter/preset follow-up when observed.
 
 ## Autonomous Operation
 
-Run the full wave — seed, fix, verify, QA, commit — without pausing between styles.
-Only interrupt for `Cargo.toml`/`Cargo.lock` changes or `git push origin main` (per CLAUDE.md).
-
-Commit after each successfully QA'd style rather than batching everything:
-```bash
-git add -A && git commit -m "feat(styles): migrate <style-name>"
-```
+Run the full wave without pausing between styles. Use the shared docs for the common evidence order, decision rules, and output shape. Only interrupt for `Cargo.toml`/`Cargo.lock` changes or `git push origin main`.
 
 ## Workflow
-0. Read `docs/adjudication/DIVERGENCE_REGISTER.md` before baseline capture or
-   oracle review. Do not spend migration-wave time trying to erase a registered
-   intentional divergence.
-1. Select next priority wave.
-2. Seed with migration baseline (`scripts/prep-migration.sh` or `citum-migrate`).
-3. Capture baseline metrics (`node scripts/report-core.js`, `node scripts/oracle.js ... --json`).
-4. Run iterative style fixes with fidelity-first ordering.
-5. Re-run migration for apples-to-apples comparison.
-6. For styles with configured `benchmark_runs`, run `node scripts/report-core.js --style <name>`
-   and carry the rich-input evidence into the final summary as advisory evidence.
-7. Commit each passing style; produce final metrics + follow-up recommendations.
+1. Select the next priority wave.
+2. Seed the baseline with the smallest trustworthy evidence surface.
+3. Apply the fix according to the shared policy and execution guide.
+4. Re-run apples-to-apples comparison evidence.
+5. Treat supplemental rich-input evidence as confirmation when configured.
+6. Commit each passing style and produce final metrics plus follow-up recommendations.
 
 ## Hard Gates
 - Never accept a fidelity regression.
-- Never classify a registered divergence as a migration or engine bug without
-  first updating adjudication.
+- Never classify a registered divergence as a migration or engine bug without updating adjudication first.
 - SQI is tie-breaker and optimization only.
-- If iteration 1 bibliography is below 50%: log it, attempt up to 3 more fix passes before
-  flagging in the final summary — do not stop mid-wave and wait for user input.
-- After bounded retries with no progress: note it in the wave summary and move to the next
-  style rather than halting the entire wave.
+- After bounded retries with no progress, note it in the wave summary and move to the next style rather than halting the entire wave.
 
 ## Required Artifacts
-- Iteration log (what changed, what improved, what remains).
+- Iteration log.
 - Final wave summary table.
-- Code Opportunities table (same format as `../style-evolve/SKILL.md`) — one row per
-  gap observed. Migration-engine gaps go in as `missing-feature`; apply the same
-  implement-first rule: attempt the fix, defer only when a hard blocker applies.
-  Gaps that appear across multiple styles are highest priority for implementation.
+- Code Opportunities table in the same shape as the router skill when engine gaps are observed.
 
 ## Verification
 - Structured oracle: `node scripts/oracle.js <legacy-style> --json`
 - Core quality report: `node scripts/report-core.js`
-- Supplemental official style report for configured rich-input styles:
-  `node scripts/report-core.js --style <name>`
+- Supplemental official style report for configured rich-input styles: `node scripts/report-core.js --style <name>`
 - Optional full workflow impact: `./scripts/workflow-test.sh <legacy-style>`
-
-## Related
-- Public router: `../style-evolve/SKILL.md`
-- QA gate: `../style-qa/SKILL.md`

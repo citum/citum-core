@@ -1,0 +1,5 @@
+interface:
+  display_name: "Rust Simplify"
+  short_description: "Simplify and clean up Citum Rust"
+  default_prompt: "Use $rust-simplify to find the best Citum Rust file, simplify it, and verify the result."
+

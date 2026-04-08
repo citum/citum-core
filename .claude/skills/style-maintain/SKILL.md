@@ -7,6 +7,10 @@ model: haiku
 
 # Style Maintain
 
+Authoritative shared process docs:
+- `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md`
+- `docs/guides/STYLE_WORKFLOW_EXECUTION.md`
+
 ## Use This Skill When
 - Updating one style for punctuation/layout bugs.
 - Adding a missing `type-variants` entry.
@@ -14,57 +18,23 @@ model: haiku
 
 ## Input Contract
 - Existing style path in `styles/`.
-- One focused objective (formatting bug, missing type, or modernization).
+- One focused objective.
 - Optional reference oracle style in `styles-legacy/`.
 
 ## Autonomous Operation
 
-Run the full fix loop without pausing for approval. Commit automatically when QA passes.
-Only interrupt for `Cargo.toml`/`Cargo.lock` changes or `git push origin main` (per CLAUDE.md).
+Run the full fix loop without pausing for approval. Use the shared docs for the common decision and execution flow. Only interrupt for `Cargo.toml`/`Cargo.lock` changes or `git push origin main`.
 
 ## Workflow
 
-Token efficiency matters — diagnose everything before touching any files.
-
-0. **Divergence preflight.**
-   Read `docs/adjudication/DIVERGENCE_REGISTER.md` before the first oracle run.
-   If any mismatch is already covered there, classify it under the registered
-   divergence instead of treating it as a fresh defect.
-
-1. **Single oracle call, all failures at once.**
-   Run `node scripts/oracle.js styles-legacy/<name>.csl --verbose` (or the correct
-   oracle per the routing table below). The `--verbose` flag prints every failure with
-   oracle vs. Citum side-by-side. Read all failures before writing a single line of YAML.
-   Do not use `report-core.js` as the primary diff tool for upgrade tasks. Use it only
-   after the main oracle pass when the style has configured `benchmark_runs`, via
-   `node scripts/report-core.js --style <name>`, to collect official supplemental
-   rich-input evidence.
-
-2. **Classify all failures before fixing any.**
-   For each failure decide: `style-defect`, `migration-artifact`, `processor-defect`, or
-   `legacy-limitation`. First check whether the case is already adjudicated in the
-   divergence register; if so, record the matching `div-XXX`. This shapes both what
-   you fix and what you escalate (see Co-Evolution below).
-
-3. **Apply all YAML fixes in one pass.**
-
-4. **One confirming oracle run.** Verify fidelity improved, bibliography held.
-
-4a. **Supplemental rich-input run when configured.**
-   If the style declares `benchmark_runs`, run `node scripts/report-core.js --style <name>`
-   and include the rich-input evidence in the final write-up. Treat those results as
-   advisory evidence in this wave, not as the hard completion gate.
-
-5. **Convergence check.** If a scenario still fails with identical output after
-   2 distinct YAML approaches, stop iterating on YAML for that scenario.
-   Re-classify it as `processor-defect` or `legacy-limitation` and route to
-   Co-Evolution (engine fix) or accept the divergence. The cause is almost
-   certainly not in the YAML — further template tweaks waste tokens without
-   progress. See Convergence Detection below.
-
-6. **QA gate → commit.**
-   `git add -A && git commit -m "fix(styles): <name> <change>"` — max 5 iterations
-   before surfacing to user.
+1. Read `docs/adjudication/DIVERGENCE_REGISTER.md` before the first oracle run.
+2. Run the correct oracle with all failures visible.
+3. Classify each failure using the shared decision rules.
+4. Apply the smallest YAML fix needed for the selected defect.
+5. Re-run the oracle.
+6. If configured, capture supplemental rich-input evidence after the main oracle pass.
+7. Stop iterating on scenarios that have converged or belong to another layer.
+8. QA gate, then commit.
 
 ## Fix Ordering
 1. Component-level type variations and punctuation/wrap controls.
@@ -72,113 +42,11 @@ Token efficiency matters — diagnose everything before touching any files.
 3. `type-variants` only for true structural outliers.
 4. Processor/schema changes only after planner escalation.
 
-## Convergence Detection
+## Co-Evolution
 
-Not every oracle failure is fixable with YAML. These rules prevent wasted iterations:
-
-| Signal | Action |
-|--------|--------|
-| Same scenario fails with identical output after 2 distinct YAML approaches | Re-classify as `processor-defect` or `legacy-limitation`; stop YAML iteration for this scenario |
-| 3 consecutive iterations with zero fidelity gain across all scenarios | Surface to user — the remaining failures are likely all engine/schema gaps |
-| Fix improves one scenario but regresses another | Isolate the regression cause before proceeding; do not accept a net-zero trade |
-| Oracle output matches a registered divergence (`div-XXX`) | Not a failure — record the div-ID and exclude from fix count |
-
-The key insight: when YAML changes don't move the needle, the problem is upstream
-(converter, engine, or schema). Recognizing this early and routing to Co-Evolution
-or filing a bean saves significant tokens and wall-clock time.
-
-## Co-Evolution (Mandatory — implement-first)
-
-Style work and engine work evolve together. The default action for every `processor-defect`
-or `missing-feature` is **to attempt the fix now** — not assess and defer.
-
-**Step 1 — Group failures by root cause before any jCodeMunch lookup.**
-
-Multiple oracle failures often share one engine root. Deduplicate first:
-- List all `processor-defect` / `missing-feature` failures.
-- Group by suspected root cause (e.g., "volume-pages delimiter", "editor name order").
-- One jCodeMunch lookup per group, not per failure.
-
-**Step 2 — Locate the relevant code.**
-
-```
-search_symbols("<feature or field name>", repo: "local/citum-core")
-get_symbol("<SymbolName>", repo: "local/citum-core")
-```
-
-**Step 3 — Hypothesize, then attempt the fix.**
-
-Before writing any Rust, state a one-line hypothesis: what you expect the change to fix
-and why (e.g., "Hypothesis: the volume-pages delimiter is hardcoded to comma; making it
-style-configurable will fix nature and cell scenarios"). This forces articulation of the
-causal model before code — preventing blind trial-and-error on engine internals.
-
-Write the Rust, run `~/.claude/scripts/verify.sh` (or `cargo nextest run`). If green,
-include the fix in the same commit as the style change. After the test run, note whether
-the hypothesis was confirmed, partially confirmed, or refuted — this informs the next
-iteration. Most engine fixes are smaller than they look once you're in the code.
-
-Defer **only** when one of these hard blockers applies:
-- Fix requires new schema YAML fields that need design review (new `info.*` or
-  `options.*` keys that affect the style spec).
-- Fix touches >3 modules and cascades through trait bounds.
-- Fix direction is genuinely unclear after reading the symbol *and* one minimal
-  experiment fails to converge.
-
-If you're not sure, err toward trying. A failed experiment that isolates the defect is
-more useful than a bean filed from the oracle diff alone.
-
-**Step 4 — If deferring: file a rich bean, not a stub.**
-
-`beans create "engine: <description>" -t bug -d "..."`
-
-The bean body must include:
-- jCodeMunch symbol path and line (copy from `get_symbol` output)
-- Oracle diff snippet showing the exact failure
-- Proposed fix sketch (even two pseudocode lines)
-- Which oracle scenarios this fix would unlock
-
-Before filing, run `beans list -S "<feature-keyword>"` — avoid duplicate beans for the
-same root cause.
-
-**Step 5 — When a fix lands, record what it unlocks.**
-
-In the Code Opportunities table row, add a `Unlocks` column listing oracle scenarios
-(e.g., `volume-pages in nature, cell`) so the user knows which other styles to re-run
-next session.
-
-The Code Opportunities table is delivered as part of every task output (inherited from
-style-evolve). Every row must be either `implemented` or `deferred: <bean-id>`.
-
-## Hard Gates
-- Preserve or improve fidelity.
-- No unnecessary template explosion.
-- Keep fallback behavior for non-explicit types reasonable.
-
-## Oracle Routing (MANDATORY — check before running any oracle)
-
-Read `originKey` from the style's `info.source.adapted-by` field or from `report-core` output.
-
-**`oracle.js` and `oracle-yaml.js` both use citeproc-js as the reference — they are WRONG for biblatex-derived styles.**
-
-| `originKey` | Correct oracle |
-|---|---|
-| `csl-derived` | `node scripts/oracle.js styles-legacy/<name>.csl` |
-| `biblatex-derived` | `node scripts/report-core.js --style <name> > /tmp/r.json` — failures are in `styles[0].bibliography.entries` where `match === false` |
-| `citum-native` | `node scripts/oracle-yaml.js styles/<name>.yaml` only |
-
-For `biblatex-derived`, the only oracle that uses the correct authority (biblatex snapshot in
-`tests/snapshots/biblatex/<name>.json`) is `report-core.js`. Run the style-scoped form and parse the JSON output
-to see per-entry failures. If the snapshot is missing:
-```bash
-node scripts/gen-biblatex-snapshot.js --style <biblatex-style-name> --citum-style <name>
-```
+If the defect is actually a processor or engine issue, use the shared decision rules and then route it to the appropriate Rust workflow.
 
 ## Verification
-- Oracle per routing table above — **not** blindly `oracle.js <csl-path>`
+- Oracle per routing table in the shared docs and this skill.
 - `cargo run --bin citum -- render refs -b tests/fixtures/references-expanded.json -s <style-path>`
 - QA handoff to `../style-qa/SKILL.md`
-
-## Related
-- Public router: `../style-evolve/SKILL.md`
-- QA gate: `../style-qa/SKILL.md`

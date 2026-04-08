@@ -1,0 +1,5 @@
+interface:
+  display_name: "Migrate Research"
+  short_description: "Investigate Citum migration gaps"
+  default_prompt: "Use $migrate-research to classify and repair a citum-migrate fidelity gap."
+

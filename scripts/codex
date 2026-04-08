@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -lt 2 ]]; then
+  cat <<'EOF' >&2
+Usage:
+  ./scripts/codex <role> <target...>
+
+Roles:
+  style-evolve
+  migration-researcher
+  style-qa-reviewer
+  rust-implementer
+  spec-planner
+  docs-curator
+EOF
+  exit 2
+fi
+
+role="$1"
+shift
+target="$*"
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+docs_policy="$repo_root/docs/policies/STYLE_WORKFLOW_DECISION_RULES.md"
+docs_guide="$repo_root/docs/guides/STYLE_WORKFLOW_EXECUTION.md"
+
+prompt_for_role() {
+  case "$1" in
+    style-evolve)
+      cat <<EOF
+Use the style-evolve role for: $target
+
+Read:
+- $docs_policy
+- $docs_guide
+
+Route the request to the right style mode and keep the response short.
+EOF
+      ;;
+    migration-researcher)
+      cat <<EOF
+Use the migration-researcher role for: $target
+
+Read:
+- $docs_policy
+- $docs_guide
+
+Run one bounded migration cluster pass and report the classification.
+EOF
+      ;;
+    style-qa-reviewer)
+      cat <<EOF
+Use the style-qa-reviewer role for: $target
+
+Read:
+- $docs_policy
+- $docs_guide
+
+Review only. Return approve or reject with concise findings.
+EOF
+      ;;
+    rust-implementer)
+      cat <<EOF
+Use the rust-implementer role for: $target
+
+Read:
+- $docs_policy
+- $docs_guide
+
+Implement the smallest bounded Rust change and report verification.
+EOF
+      ;;
+    spec-planner)
+      cat <<EOF
+Use the spec-planner role for: $target
+
+Read:
+- $docs_policy
+- $docs_guide
+
+Produce a decision-complete plan only.
+EOF
+      ;;
+    docs-curator)
+      cat <<EOF
+Use the docs-curator role for: $target
+
+Read:
+- $docs_policy
+- $docs_guide
+
+Update docs and public Rust item comments only.
+EOF
+      ;;
+    *)
+      echo "Unknown role: $role" >&2
+      exit 2
+      ;;
+  esac
+}
+
+model_for_role() {
+  case "$1" in
+    rust-implementer|spec-planner)
+      echo "gpt-5.4"
+      ;;
+    *)
+      echo "gpt-5.4-mini"
+      ;;
+  esac
+}
+
+prompt="$(prompt_for_role "$role")"
+
+if command -v codex >/dev/null 2>&1; then
+  if codex exec --cd "$repo_root" --model "$(model_for_role "$role")" "$prompt"; then
+    exit 0
+  fi
+fi
+
+cat <<EOF >&2
+Codex runtime unavailable or rejected the request.
+
+Prompt template for manual use:
+
+$prompt
+EOF
+exit 127

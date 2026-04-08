@@ -1,11 +1,7 @@
 ---
 name: style-evolve
 type: user-invocable, agent-invocable
-description: Single human-facing command for all Citum style work. Use whenever someone
-  asks to fix, improve, convert, or create a citation style — even if they don't say
-  "style-evolve". Routes to upgrade (fix existing Citum style), migrate (CSL 1.0 to
-  Citum), or create (new style from scratch). Always use this rather than calling
-  style-maintain or style-migrate-enhance directly.
+description: "Single human-facing command for all Citum style work. Use whenever someone asks to fix, improve, convert, or create a citation style. Routes to upgrade, migrate, or create. Always use this rather than calling style-maintain or style-migrate-enhance directly."
 model: sonnet
 routes-to: style-maintain, style-migrate-enhance, style-qa
 ---
@@ -15,48 +11,22 @@ routes-to: style-maintain, style-migrate-enhance, style-qa
 ## Human UX (Public Entry Point)
 
 ```
-/style-evolve upgrade <style-path>    # fix or improve an existing Citum style
-/style-evolve migrate <csl-path>      # convert CSL 1.0 → Citum
-/style-evolve create                  # new style from scratch or spec (see below)
+/style-evolve upgrade <style-path>
+/style-evolve migrate <csl-path>
+/style-evolve create
 ```
 
 Do not ask users to call internal skills directly.
 
+## Setup (read first)
+
+Before doing anything else, read:
+- `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md` — failure classification and stop conditions
+- `docs/guides/STYLE_WORKFLOW_EXECUTION.md` — decision flow, evidence ladder, shared gates
+
 ## Autonomous Operation
 
-Run the full pipeline without stopping to ask questions or seek approval between steps.
-The user's goal is hands-off execution — they want a result, not a dialogue.
-
-**Only interrupt for these explicit permission gates (per CLAUDE.md):**
-- `Cargo.toml` / `Cargo.lock` changes (confirm before touching)
-- `styles-legacy/` submodule operations
-- `git push origin main`
-- `gh pr create`
-
-Everything else — reading files, running oracle/QA scripts, editing YAML, committing
-the result — proceeds automatically. When in doubt, proceed and report at the end.
-
-After QA passes, commit automatically:
-```bash
-git add -A && git commit -m "fix(styles): <style-name> <brief-description>"
-```
-
-Deliver the output contract as a final summary. Do not ask "what should I do next?"
-
-## Mode Disambiguation
-
-| Situation | Mode |
-|---|---|
-| Existing Citum style has a bug or formatting issue | `upgrade` |
-| A CSL 1.0 `.csl` file exists and needs converting | `migrate` |
-| No existing style; building from a spec or samples | `create` |
-
-**Infer mode from context — do not ask if you can determine it:**
-- Path ends in `.csl` or is under `styles-legacy/` → `migrate`
-- Path is under `styles/` or the style already exists as Citum YAML → `upgrade`
-- No path given, but a spec or sample is provided → `create`
-
-Only ask if the mode is genuinely ambiguous after checking the filesystem.
+Run the full pipeline without stopping to ask questions between steps. Only interrupt for the explicit permission gates in `CLAUDE.md`.
 
 ## Modes
 
@@ -66,196 +36,32 @@ Route to `../style-maintain/SKILL.md`.
 ### 2. migrate
 Route to `../style-migrate-enhance/SKILL.md`.
 
-### 3. create *(aspirational — not yet fully supported)*
+### 3. create
 Build a new Citum style from source evidence. Escalate to `@dplanner` for design.
-Accepted source hints: `--source-url`, `--source-text`, `--source-issue`, `--source-file`.
 
-## Co-Evolution Rule (Mandatory — implement-first)
+## Co-Evolution Rule
 
-Every style iteration must also assess and act on processor/preset opportunities.
-The default is **attempt the fix, not assess and defer.**
-
-At the end of every task, produce this table:
-
-```
-## Code Opportunities
-
-| Description | Type | Action | Unlocks |
-|---|---|---|---|
-| <what was observed> | preset / missing-feature / processor-defect | implemented / deferred: <bean-id> | <oracle scenarios now fixed, or —> |
-```
-
-**Types:**
-- **preset** — a pattern repeated across styles that could become a shared preset
-- **missing-feature** — behavior the processor can't express; requires engine work
-- **processor-defect** — incorrect output from a valid template; requires an engine fix
-
-**Rules:**
-- Every task must include this table, even when empty. When nothing was found,
-  use exactly: `| no opportunities observed | — | — | — |`. Never leave the
-  Description cell blank or filled with dashes — a placeholder row with all
-  dashes is not acceptable.
-- For `processor-defect` and `missing-feature`: attempt the Rust fix by default.
-  Group failures by root cause first, then use jCodeMunch to locate the code,
-  then write and test the fix. See `../style-maintain/SKILL.md` Co-Evolution for
-  the step-by-step workflow.
-- Defer **only** when a hard blocker applies (schema design needed, >3-module cascade,
-  unclear fix direction after one experiment). `deferred` requires a **bean ID** with
-  a rich description — not a stub. Run `beans list -S "<keyword>"` before filing to
-  avoid duplicates.
-- When a fix lands: populate the `Unlocks` column with oracle scenarios the fix
-  resolves across the portfolio (not just the current style).
-- A missing or empty table means the task is **incomplete**.
-
-## Authority Hierarchy
-
-Do not assume legacy CSL or citeproc-js behavior is always normatively correct.
-Treat compatibility output as evidence, not law.
-
-When outputs conflict, evaluate sources in this order:
-
-1. Explicit publisher or style-guide rules
-2. Citum design principles and schema intent
-3. Stable bibliographic prior art, preferably `biblatex`
-4. Legacy CSL and citeproc behavior
-5. Local style convenience or migration shortcuts
-
-If citeproc output appears bibliographically wrong, underspecified, or in tension
-with project intent, do not blindly copy it. Classify the mismatch first.
-
-## Normative vs Legacy Check
-
-Before applying this check to any mismatch, read
-`docs/adjudication/DIVERGENCE_REGISTER.md`.
-
-If a mismatch is already covered there, classify it under the recorded
-divergence first. Do not reopen it as a style defect, migration artifact, or
-processor defect unless Citum is violating the divergence's own declared
-behavior.
-
-Before applying a fix for any non-trivial mismatch, explicitly decide which of
-these buckets it belongs to:
-
-- `style-defect` — the Citum style is wrong
-- `migration-artifact` — migration preserved or introduced the wrong behavior
-- `processor-defect` — the engine misrenders a valid style
-- `legacy-limitation` — CSL/citeproc behavior is compatible legacy behavior but
-  not the behavior Citum should preserve
-
-Do this before optimizing for fidelity. If the answer is `legacy-limitation`,
-an intentional divergence is allowed and should be preferred over copying the
-legacy behavior.
-
-Every style task must explicitly record one of:
-
-- `applied divergence: div-XXX`
-- `no applicable divergence found`
-- `new adjudication required`
-
-## Intentional Divergence Rule
-
-Intentional divergence from legacy CSL/citeproc is allowed when it is justified
-by style-guide intent, bibliographic expectations, or Citum design goals.
-
-When diverging intentionally:
-
-- say explicitly that the divergence is intentional
-- add or update regression coverage for the intended behavior
-- explain verification impact if citeproc-based fidelity will remain lower
-- avoid calling the result a processor defect unless the engine violates Citum's
-  own declared semantics
+Use `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md` for failure classification and stop conditions. Keep the router focused on dispatch and host entrypoint behavior.
 
 ## Shared Gates
 
-- Compatibility fidelity regression is never allowed unless the task explicitly
-  chooses a documented semantic divergence from legacy CSL behavior.
+- Compatibility fidelity regression is never allowed unless the task explicitly chooses a documented semantic divergence from legacy CSL behavior.
 - SQI is optimization-only after fidelity is stable.
-- For styles with configured `benchmark_runs`, run `node scripts/report-core.js --style <name>`
-  after the primary oracle pass and treat the rich-input results as official supplemental
-  evidence, not as a hard completion gate in this wave.
+- For styles with configured `benchmark_runs`, run `node scripts/report-core.js --style <name>` after the primary oracle pass and treat the rich-input results as official supplemental evidence.
 - All modes must pass `../style-qa/SKILL.md` before completion.
 - If docs or beans are changed: `./scripts/check-docs-beans-hygiene.sh` must pass.
-
-## Note-Style Upgrade Check
-
-When upgrading a note style after migrate changes, inspect `citation.template`,
-`citation.subsequent`, and `citation.ibid` before rewriting templates manually.
-
-- If migrate already surfaced repeated-position entries (`citation.subsequent`, `citation.ibid`),
-  prefer refining the YAML over re-authoring the note citation structure from scratch.
-- If the style still warns because CSL mixes `position` with other conditions,
-  classify that as a migrate limitation / bean handoff first, not as a style
-  defect by default.
 
 ## Output Contract
 
 Every completed task delivers:
+- fidelity metrics
+- SQI delta
+- authority basis
+- rich input evidence summary
+- divergences
+- code opportunities table
+- QA verdict
+- research value
+- commit SHA and message, or `none`
 
-1. Fidelity metrics: citations `N/M` and bibliography `N/M`
-2. SQI delta: `+N`, `-N`, or `±0`
-3. Authority basis: which source won (`style guide`, `Citum policy`, `biblatex`,
-   `citeproc`, or mixed) and why
-4. Rich Input Evidence: `not configured` or a compact summary from
-   `node scripts/report-core.js --style <name>`, including any configured benchmark
-   mismatches and their classification
-5. Divergences: `none` or a short statement of any intentional divergence from
-   legacy CSL/citeproc behavior
-6. Code Opportunities table (mandatory — see above)
-7. QA verdict from `../style-qa/SKILL.md`
-8. Research value: `high` / `medium` / `low`
-9. Commit: the short SHA and message of the commit made, or `none` if QA did
-   not pass. Format: `abc1234 fix(styles): <message>`
-
-Include a header line before the contract fields identifying the routed
-sub-skill, e.g. `**Routed to**: style-maintain` or
-`**Routed to**: style-migrate-enhance`. This makes the routing verifiable
-from the output report without reading the transcript.
-
-   - `high` — fidelity is stable or improved, SQI improved (`+N`), and at least one
-     Code Opportunity was **implemented** this task
-   - `medium` — fidelity is stable, SQI is improved or neutral (`+N` or `±0`), and
-     only deferred Code Opportunities are present
-   - `low` — fidelity is stable, SQI is neutral (`±0`), and no new Code Opportunities
-     were identified or implemented
-
-## Divergence Preflight (Applies at Every Layer)
-
-Read `docs/adjudication/DIVERGENCE_REGISTER.md` before classifying **any** oracle failure
-— including diagnostic work done before dispatching a worker skill.
-
-The preflight is not just Step 0 inside `style-maintain`; it applies whenever this skill
-or its orchestrator is categorizing failures, assessing scope, or deciding what to "fix."
-Classifying a failure as a bug without checking the register first is invalid, even during
-a pre-dispatch survey. If the failure matches a registered divergence, record the div-ID
-and move on — do not schedule a fix.
-
-## Codebase Exploration (Engine / Schema Internals)
-
-When assessing Code Opportunities or checking whether a processor feature exists,
-use **jCodeMunch** instead of loading full source files. It returns symbol-level
-slices at a fraction of the tokens.
-
-```
-# Map citum_engine's public API before assessing what's missing
-get_repo_outline(repo: "local/citum-core")
-
-# Check if a specific type or trait exists
-get_symbol("StyleOptions", repo: "local/citum-core")
-
-# Find all impls of a trait across crates
-search_symbols("Render", repo: "local/citum-core")
-```
-
-Consult `~/.claude/skills/jcodemunch/SKILL.md` for the full tool reference.
-Only fall back to `Read` for files where you need non-symbol content (YAML
-styles, fixture JSON, shell scripts).
-
-## Internal Skills (Pipeline Components)
-
-- `style-maintain` — targeted fixes to existing Citum styles
-- `style-migrate-enhance` — CSL 1.0 batch migration
-- `migrate-research` — autonomous loop improving the `citum-migrate` binary itself
-  (use when multiple styles share the same converter failure pattern)
-- `style-qa` — QA gate
-- `pr-workflow-fast` — PR packaging
-- `jcodemunch` (`~/.claude/skills/jcodemunch/`) — symbol-level engine/schema lookup
+Include a routed sub-skill header line in the final output.

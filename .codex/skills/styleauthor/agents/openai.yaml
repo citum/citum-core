@@ -1,0 +1,5 @@
+interface:
+  display_name: "Style Author"
+  short_description: "Legacy alias for Style Evolve"
+  default_prompt: "Use $styleauthor to run the legacy alias for style-evolve."
+
