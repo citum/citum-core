@@ -1005,9 +1005,23 @@ fn from_patent_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> 
 }
 
 fn from_dataset_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
+    let version = legacy_extra_str(&legacy, "version");
+    let synthesized_title = ctx.title.clone().or_else(|| {
+        legacy
+            .genre
+            .as_ref()
+            .map(|genre| format!("[{genre}]"))
+            .map(|title| {
+                version
+                    .as_ref()
+                    .map(|version| format!("{title} (Version {version})"))
+                    .unwrap_or(title)
+            })
+    });
+
     InputReference::Dataset(Box::new(Dataset {
         id: ctx.id,
-        title: build_title(ctx.title, ctx.short_title.clone()),
+        title: build_title(synthesized_title, ctx.short_title.clone()),
         author: legacy.author.map(Contributor::from),
         created: ctx.created,
         issued: ctx.issued,
@@ -1015,8 +1029,8 @@ fn from_dataset_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) ->
             name: n.into(),
             place: legacy.publisher_place,
         }),
-        version: None,
-        format: None,
+        version,
+        format: legacy.medium,
         size: None,
         repository: None,
         doi: ctx.doi,

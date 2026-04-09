@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
 use citum_schema::options::{Config, bibliography::BibliographyConfig};
-use citum_schema::template::{Rendering, TemplateComponent, TitleType};
+use citum_schema::template::{Rendering, TemplateComponent, TemplateTitle, TitleType};
 
 /// A processed template component with its rendered value.
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -245,6 +245,20 @@ pub fn get_effective_rendering(component: &ProcTemplateComponent) -> Rendering {
 
     // 2. Layer local template rendering
     effective.merge(component.template_component.rendering());
+
+    if component.ref_type.as_deref() == Some("dataset")
+        && component.value.starts_with('[')
+        && matches!(
+            component.template_component,
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..
+            })
+        )
+        && effective.suffix.as_deref() == Some(" [Dataset].")
+    {
+        effective.suffix = Some(".".to_string());
+    }
 
     effective
 }
