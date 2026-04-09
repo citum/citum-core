@@ -374,6 +374,29 @@ fn from_monograph_ref(
         None,
     );
 
+    let title = if r#type == MonographType::Webpage {
+        ctx.title.clone().map(|base_title| {
+            let mut combined = base_title;
+            if let Some(part_num) = part_number.as_ref() {
+                combined.push_str(": Pt. ");
+                combined.push_str(part_num);
+            }
+            if let Some(part) = part_title.as_ref() {
+                if part_number.is_none() {
+                    combined.push(':');
+                    combined.push(' ');
+                } else {
+                    combined.push('.');
+                    combined.push(' ');
+                }
+                combined.push_str(part);
+            }
+            combined
+        })
+    } else {
+        part_title.or(ctx.title)
+    };
+
     // Batch 1: volume-title enriches container; part-number adds a Part numbering entry.
     let container = {
         let base_title = legacy.container_title.clone().map(Title::Single);
@@ -416,7 +439,7 @@ fn from_monograph_ref(
     InputReference::Monograph(Box::new(Monograph {
         id: ctx.id,
         r#type,
-        title: build_title(part_title.or(ctx.title), ctx.short_title.clone()),
+        title: build_title(title, ctx.short_title.clone()),
         short_title: None,
         container,
         author,
@@ -459,6 +482,10 @@ fn from_monograph_ref(
     }))
 }
 
+#[allow(
+    clippy::too_many_lines,
+    reason = "Legacy CSL collection-component mapping requires extensive field wiring"
+)]
 fn from_collection_component_ref(
     legacy: csl_legacy::csl_json::Reference,
     ctx: RefContext,
@@ -474,6 +501,8 @@ fn from_collection_component_ref(
         .clone()
         .or_else(|| legacy.volume.clone())
         .map(|v| v.to_string());
+    let parent_edition = ctx.edition.clone();
+    let container_author = legacy_extra_names(&legacy, "container-author").map(Contributor::from);
 
     let author = legacy.author.clone().map(Contributor::from);
     let translator = legacy.translator.clone().map(Contributor::from);
@@ -488,6 +517,12 @@ fn from_collection_component_ref(
         ContributorRole::Translator,
         legacy.translator.clone(),
     );
+    if let Some(container_author) = container_author.clone() {
+        contributors.push(ContributorEntry {
+            role: ContributorRole::Custom("container-author".to_string()),
+            contributor: container_author,
+        });
+    }
     let container_editor = legacy.editor.clone().map(Contributor::from);
     let mut container_contributors = Vec::new();
     push_legacy_contributor(
@@ -496,22 +531,41 @@ fn from_collection_component_ref(
         legacy.editor.clone(),
     );
 
-    InputReference::CollectionComponent(Box::new(CollectionComponent {
-        id: ctx.id,
-        r#type: if legacy.ref_type == "paper-conference" {
-            MonographComponentType::Document
-        } else {
-            MonographComponentType::Chapter
-        },
-        title: build_title(part_title.or(ctx.title), ctx.short_title.clone()),
-        author,
-        translator,
-        contributors,
-        issued: ctx.issued,
-        container: Some(WorkRelation::Embedded(Box::new(
+    let container = if legacy.ref_type == "report" {
+        Some(WorkRelation::Embedded(Box::new(InputReference::Monograph(
+            Box::new(Monograph {
+                r#type: MonographType::Report,
+                title: parent_title,
+                editor: container_editor,
+                contributors: container_contributors,
+                publisher: legacy.publisher.map(|n| Publisher {
+                    name: n.into(),
+                    place: legacy.publisher_place,
+                }),
+                edition: parent_edition.clone(),
+                numbering: legacy
+                    .number
+                    .as_ref()
+                    .map(|number| {
+                        vec![Numbering {
+                            r#type: NumberingType::Report,
+                            value: number.clone(),
+                        }]
+                    })
+                    .unwrap_or_default(),
+                genre: legacy.genre.clone(),
+                ..Default::default()
+            }),
+        ))))
+    } else {
+        Some(WorkRelation::Embedded(Box::new(
             InputReference::Collection(Box::new(Collection {
                 id: None,
-                r#type: CollectionType::EditedBook,
+                r#type: if legacy.ref_type == "paper-conference" {
+                    CollectionType::Proceedings
+                } else {
+                    CollectionType::EditedBook
+                },
                 title: parent_title,
                 short_title: ctx.container_title_short,
                 container: None,
@@ -525,9 +579,26 @@ fn from_collection_component_ref(
                     place: legacy.publisher_place,
                 }),
                 volume: parent_volume,
+                edition: parent_edition,
                 ..Default::default()
             })),
-        ))),
+        )))
+    };
+
+    InputReference::CollectionComponent(Box::new(CollectionComponent {
+        id: ctx.id,
+        r#type: if legacy.ref_type == "paper-conference" {
+            MonographComponentType::Document
+        } else {
+            MonographComponentType::Chapter
+        },
+        title: build_title(part_title.or(ctx.title), ctx.short_title.clone()),
+        author,
+        translator,
+        contributors,
+        issued: ctx.issued,
+        container,
+        edition: ctx.edition,
         pages: legacy.page.map(NumOrStr::Str),
         url: ctx.url,
         accessed: ctx.accessed,
@@ -550,6 +621,14 @@ fn from_collection_component_ref(
                 numbering.push(Numbering {
                     r#type: NumberingType::Chapter,
                     value: chapter_number,
+                });
+            }
+            if legacy.ref_type == "report"
+                && let Some(report_number) = legacy.number.clone()
+            {
+                numbering.push(Numbering {
+                    r#type: NumberingType::Report,
+                    value: report_number,
                 });
             }
             numbering
@@ -1279,7 +1358,6 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
         match legacy.ref_type.as_str() {
             "software" => from_software_ref(legacy, ctx),
             "book"
-            | "report"
             | "thesis"
             | "manual"
             | "manuscript"
@@ -1289,11 +1367,19 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
             | "interview"
             | "personal_communication"
             | "personal-communication" => from_monograph_ref(legacy, ctx),
-            "chapter" | "paper-conference" | "entry-dictionary" => {
+            "report"
+                if legacy.page.is_some()
+                    && (legacy.editor.is_some() || legacy.container_title.is_some()) =>
+            {
                 from_collection_component_ref(legacy, ctx)
             }
-            "article-journal" | "article" | "article-magazine" | "article-newspaper"
-            | "entry-encyclopedia" => from_serial_component_ref(legacy, ctx),
+            "report" => from_monograph_ref(legacy, ctx),
+            "chapter" | "paper-conference" | "entry-dictionary" | "entry-encyclopedia" => {
+                from_collection_component_ref(legacy, ctx)
+            }
+            "article-journal" | "article" | "article-magazine" | "article-newspaper" => {
+                from_serial_component_ref(legacy, ctx)
+            }
             "motion_picture" => from_audio_visual_ref(legacy, ctx),
             "broadcast" => from_serial_component_ref(legacy, ctx),
             "speech" | "presentation" => from_event_ref(legacy, ctx),

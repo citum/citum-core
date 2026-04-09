@@ -1950,6 +1950,184 @@ fn apa_dataset_without_title_falls_back_to_bracketed_label_version_and_doi() {
     );
 }
 
+#[test]
+fn apa_web_native_entries_render_without_retrieved_fallbacks() {
+    let style = load_style("styles/apa-7th.yaml");
+    let legacy_items = [
+        serde_json::json!({
+            "id": "6188419/IC98IKSD",
+            "type": "webpage",
+            "container-title": "Website title",
+            "genre": "page type",
+            "language": "en",
+            "note": "part-number: 1\npart-title: Part title\neditor: Editor || A. A.",
+            "title": "58 Web page",
+            "URL": "https://example.com",
+            "author": [{ "family": "Author", "given": "A. A." }],
+            "translator": [{ "family": "Translator", "given": "A. A." }],
+            "accessed": { "date-parts": [[2018, 7, 15]] },
+            "issued": { "date-parts": [[2018]] }
+        }),
+        serde_json::json!({
+            "id": "6188419/XA2MLUAS",
+            "type": "post-weblog",
+            "container-title": "Website title",
+            "genre": "Type",
+            "language": "en",
+            "title": "59 Blog post",
+            "URL": "https://example.com",
+            "author": [{ "family": "Author", "given": "A. A." }],
+            "accessed": { "date-parts": [[2018, 7, 15]] },
+            "issued": { "date-parts": [[2018]] }
+        }),
+        serde_json::json!({
+            "id": "6188419/HCFRWJZR",
+            "type": "post",
+            "container-title": "Website title",
+            "genre": "Type",
+            "language": "la",
+            "title": "60 Forum post",
+            "URL": "https://example.com",
+            "author": [{ "family": "Author", "given": "A. A." }],
+            "accessed": { "date-parts": [[2018, 7, 15]] },
+            "issued": { "date-parts": [[2018]] }
+        }),
+    ];
+
+    let bibliography = legacy_items
+        .into_iter()
+        .map(|value| {
+            let legacy: csl_legacy::csl_json::Reference =
+                serde_json::from_value(value).expect("fixture should parse");
+            (legacy.id.clone(), legacy.into())
+        })
+        .collect();
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_selected_bibliography_with_format::<PlainText, _>([
+        "6188419/IC98IKSD".to_string(),
+        "6188419/XA2MLUAS".to_string(),
+        "6188419/HCFRWJZR".to_string(),
+    ]);
+
+    let lines = rendered
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .collect::<Vec<_>>();
+
+    assert_eq!(lines.len(), 3);
+    assert_eq!(
+        lines[0],
+        "Author, A. A. (2018a). 58 Web page: Pt. 1. Part title (A. A. Editor, ed.; A. A. Translator, Trans.) [Page type]. Website Title. https://example.com/"
+    );
+    assert_eq!(
+        lines[1],
+        "Author, A. A. (2018b). 59 Blog post [Type]. Website Title. https://example.com/"
+    );
+    assert_eq!(
+        lines[2],
+        "Author, A. A. (2018c). 60 Forum post [Type]. Website title. https://example.com/"
+    );
+    assert!(!rendered.contains("Retrieved "));
+}
+
+#[test]
+fn apa_structural_entries_use_component_packaging_instead_of_generic_fallbacks() {
+    let style = load_style("styles/apa-7th.yaml");
+    let legacy_items = [
+        serde_json::json!({
+            "id": "6188419/RYT8J733",
+            "type": "report",
+            "genre": "Technical report",
+            "note": "container-title: Report title",
+            "page": "126-145",
+            "publisher": "Publisher",
+            "publisher-place": "City, ST",
+            "title": "24 Chapter in a report",
+            "URL": "https://example.com",
+            "author": [{ "family": "Chapter", "given": "Author M., Jr." }],
+            "editor": [
+                { "family": "Editor", "given": "First A." },
+                { "family": "Editor", "given": "Second" }
+            ],
+            "number": "12345",
+            "issued": { "date-parts": [[2016]] }
+        }),
+        serde_json::json!({
+            "id": "6188419/Q2MWRA2D",
+            "type": "entry-encyclopedia",
+            "container-title": "Title of book: a subtitle",
+            "DOI": "10.1234/5678",
+            "edition": "2",
+            "note": "original-date: 1901\noriginal-title: Original title\ncontainer-title-short: Title of book",
+            "page": "123-128",
+            "publisher": "Publisher",
+            "publisher-place": "Place, ST",
+            "title": "45 Encyclopedia entry",
+            "URL": "http://example.com",
+            "volume": "2",
+            "translator": [{ "family": "Editor", "given": "S. S." }],
+            "editor": [{ "family": "Editor", "given": "S. S." }],
+            "author": [{ "family": "Author", "given": "First A." }],
+            "issued": { "date-parts": [[2013]] }
+        }),
+        serde_json::json!({
+            "id": "6188419/2G36L2LR",
+            "type": "paper-conference",
+            "container-title": "Proceedings",
+            "DOI": "10.1234/5678",
+            "note": "event-date: 2010",
+            "page": "123-128",
+            "publisher": "Publisher",
+            "publisher-place": "Place, ST",
+            "title": "56 Conference paper",
+            "URL": "http://example.com",
+            "volume": "2",
+            "translator": [{ "family": "Editor", "given": "S. S." }],
+            "editor": [{ "family": "Editor", "given": "S. S." }],
+            "author": [{ "family": "Author", "given": "First A." }],
+            "issued": { "date-parts": [[2013]] }
+        }),
+    ];
+
+    let bibliography = legacy_items
+        .into_iter()
+        .map(|value| {
+            let legacy: csl_legacy::csl_json::Reference =
+                serde_json::from_value(value).expect("fixture should parse");
+            (legacy.id.clone(), legacy.into())
+        })
+        .collect();
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_selected_bibliography_with_format::<PlainText, _>([
+        "6188419/RYT8J733".to_string(),
+        "6188419/Q2MWRA2D".to_string(),
+        "6188419/2G36L2LR".to_string(),
+    ]);
+
+    let lines = rendered
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .collect::<Vec<_>>();
+
+    assert_eq!(lines.len(), 3);
+    assert_eq!(
+        lines[0],
+        "Author, F. A. (2013a) (2). 45 Encyclopedia entry (S. S. Editor, Trans.). In S. S. Editor, ed., _Title of book: a subtitle_ (2 ed., pp. 123–128). Publisher. https://doi.org/10.1234/5678 http://example.com/"
+    );
+    assert_eq!(
+        lines[1],
+        "Author, F. A. (2013b). 56 Conference paper (S. S. Editor, Trans.). In S. S. Editor, ed., _Proceedings_ (pp. 123–128). Publisher. https://doi.org/10.1234/5678 http://example.com/"
+    );
+    assert_eq!(
+        lines[2],
+        "Chapter, A. M. J. (2016). 24 Chapter in a report. In F. A. Editor, & S. Editor, eds., _Report title_ (pp. 126–145). Publisher. https://example.com/"
+    );
+    assert!(!rendered.contains("Retrieved "));
+    assert!(!rendered.contains("[Technical report]"));
+}
+
 fn bibliography_local_entry_links_apply_on_the_default_render_path() {
     let style = build_bibliography_entry_link_style();
     let reference = InputReference::Monograph(Box::new(Monograph {
