@@ -106,6 +106,19 @@ styles:
     secondary:
       - biblatex
     fixture_family: author-date
+    benchmark_runs:
+      - id: apa-zotero-bibliography
+        label: APA Zotero bibliography
+        runner: citeproc-oracle
+        refs_fixture: tests/fixtures/test-items-library/apa-7th.json
+        scope: bibliography
+        count_toward_fidelity: false
+      - id: apa-test-library-diagnostic
+        label: APA test library diagnostic
+        runner: citeproc-oracle
+        refs_fixture: tests/fixtures/test-items-library/apa-test.json
+        scope: bibliography
+        count_toward_fidelity: false
   ieee:
     secondary:
       - biblatex

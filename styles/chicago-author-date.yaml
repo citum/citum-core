@@ -362,6 +362,23 @@ bibliography:
     - variable: publisher
     - variable: doi
     - variable: url
+    entry-dictionary:
+    - title: parent-monograph
+      emph: true
+      suffix: "."
+    - date: issued
+      form: year
+    - title: primary
+      quote: true
+      prefix: " "
+      suffix: "."
+    - variable: status
+      text-case: capitalize-first
+      prefix: " "
+      suffix: "."
+    - variable: publisher
+    - variable: doi
+      prefix: " https://doi.org/"
     legal-case:
     - contributor: author
       form: long
@@ -452,6 +469,7 @@ bibliography:
     statute, legislation:
     - group:
       - title: primary
+        text-case: title
       - variable: number
         prefix: "Pub. L. No. "
       - group:

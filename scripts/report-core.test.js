@@ -236,6 +236,18 @@ test('verification policy validates and resolves ordered benchmark runs', () => 
   assert.equal(stylePolicy.benchmarkRuns[1].runner, 'native-smoke');
 });
 
+test('repo verification policy exposes APA supplemental benchmark runs', () => {
+  const policy = loadVerificationPolicy();
+  const stylePolicy = resolveVerificationPolicy('apa-7th', policy);
+
+  assert.deepEqual(
+    stylePolicy.benchmarkRuns.map((run) => run.id),
+    ['apa-zotero-bibliography', 'apa-test-library-diagnostic']
+  );
+  assert.equal(stylePolicy.benchmarkRuns[0].countTowardFidelity, false);
+  assert.equal(stylePolicy.benchmarkRuns[1].countTowardFidelity, false);
+});
+
 test('verification policy rejects unsupported benchmark run combinations', () => {
   assert.throws(
     () => validateVerificationPolicy({

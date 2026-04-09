@@ -11,14 +11,21 @@ updated_at: 2026-04-03T17:30:00Z
 Continue the Chicago author-date fidelity pass using the raw Chicago 18 Zotero
 bibliography corpus as supplemental evidence after the primary oracle gate.
 
-Current verified state after the legal-material pass:
+2026-04-09 ownership note: `csl26-qh84` now owns benchmark-plumbing, APA
+expansion, and any committed reduced rich fixtures needed to land that work.
+This bean remains the residual Chicago author-date follow-up tracker after that
+delivery lands, covering only bounded Chicago style or classification work that
+still remains open.
+
+Current verified state after the `csl26-qh84` co-evolution pass:
 - primary oracle remains green at 18 / 18 citations and 32 / 32 bibliography
 - official style-scoped rich-input report remains 40 / 40 citations and 53 / 54 bibliography
-- Chicago 18 supplemental bibliography benchmark improved from 268 / 406 to
-  275 / 401
-- APA rich bibliography benchmark improved from 303 / 359 to 306 / 359
-- focused legal-material subset improved from 19 / 23 to 20 / 21
-- focused `entry-dictionary` / `entry-encyclopedia` subset remains 6 / 11
+- Chicago author-date style score improved from `0.778` to `0.779`
+- focused legal-material subset remains improved at 20 / 21
+- focused Chicago dictionary / encyclopedia subset now routes `entry-dictionary`
+  through the correct style path and no longer emits the stale OED extra entry
+- residual Chicago rich-bibliography work is now primarily formatting cleanup,
+  not missing-path plumbing
 
 Policy / architecture constraints established in this pass:
 - do not add a top-level `bill` type
@@ -34,7 +41,7 @@ Policy / architecture constraints established in this pass:
 - [x] Preserve primary oracle at 18 / 18 citations and 32 / 32 bibliography
 - [x] Preserve official style-scoped report at 40 / 40 citations and 53 / 54 bibliography
 - [x] Improve titleless legal bibliography packaging without introducing a new type
-- [ ] Add one more bounded supplemental gain without regressing the hard gates
+- [x] Land one more bounded Chicago supplemental gain without regressing the hard gates after `csl26-qh84`
 
 ### Style-only tasks
 
@@ -43,9 +50,9 @@ Policy / architecture constraints established in this pass:
 - [x] Refine audiovisual bibliography rendering for `broadcast` and
   `motion_picture`
 - [x] Improve titleless legal bibliography packaging for `bill` / `legislation`
-- [ ] Fix title casing for named legal acts such as `Homeland Security Act`
-- [ ] Audit `entry-dictionary` and `entry-encyclopedia` against Zotero output
-- [ ] Re-run the official style-scoped report and summarize the next net gain
+- [x] Fix title casing for named legal acts such as `Homeland Security Act`
+- [x] Audit `entry-dictionary` and `entry-encyclopedia` against Zotero output
+- [ ] Re-run the Chicago official style-scoped report after `csl26-qh84` and summarize the next net gain
 - [x] Add conversion regression tests that exercise the note-field parser before
   routing legacy references into Citum
 
@@ -70,7 +77,8 @@ Policy / architecture constraints established in this pass:
 ## Root-cause buckets for next pass
 
 - style-defect
-  dictionary / encyclopedia authorless container-led packaging
+  final dictionary / encyclopedia formatting deltas after the restored
+  `entry-dictionary` routing
 - style-defect
   title casing for named legal acts in bibliography output
 - migration-artifact

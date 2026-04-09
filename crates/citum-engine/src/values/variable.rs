@@ -48,6 +48,7 @@ fn resolve_variable_value(
         SimpleVariable::PublisherPlace => reference.publisher_place(),
         SimpleVariable::Genre => reference.genre().map(|k| options.locale.lookup_genre(&k)),
         SimpleVariable::Medium => reference.medium().map(|k| options.locale.lookup_medium(&k)),
+        SimpleVariable::Status => reference.status(),
         SimpleVariable::Abstract => reference.abstract_text(),
         SimpleVariable::Note => reference.note(),
         SimpleVariable::Archive => reference.archive(),
