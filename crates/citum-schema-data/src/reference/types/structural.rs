@@ -617,6 +617,9 @@ pub struct CollectionComponent {
     /// Free-text medium descriptor.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub medium: Option<String>,
+    /// Publication status (e.g., `"forthcoming"`, `"last modified"`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
     /// Structured archival location metadata.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub archive_info: Option<ArchiveInfo>,
@@ -673,6 +676,7 @@ struct CollectionComponentDeser {
     doi: Option<String>,
     genre: Option<String>,
     medium: Option<String>,
+    status: Option<String>,
     archive_info: Option<ArchiveInfo>,
     eprint: Option<EprintInfo>,
     keywords: Option<Vec<String>>,
@@ -714,6 +718,7 @@ impl From<CollectionComponentDeser> for CollectionComponent {
             doi: raw.doi,
             genre: raw.genre,
             medium: raw.medium,
+            status: raw.status,
             archive_info: raw.archive_info,
             eprint: raw.eprint,
             keywords: raw.keywords,

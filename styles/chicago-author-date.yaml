@@ -378,7 +378,7 @@ bibliography:
       suffix: "."
     - variable: publisher
     - variable: doi
-      prefix: " https://doi.org/"
+      prefix: "https://doi.org/"
     legal-case:
     - contributor: author
       form: long

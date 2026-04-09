@@ -210,6 +210,11 @@ Track schema changes separately from code changes.
 Historical note: entries below may predate the automation baseline and are the
 authoritative record when matching tags were not created at the time.
 
+#### schema-v0.27.1 (2026-04-09)
+- Schema version bumped from 0.27.0 to 0.27.1
+- Added `CollectionComponent.status`
+- Updated the bib schema and generated bindings to expose the new field
+
 #### schema-v0.27.0 (2026-04-08)
 - Schema version bumped from 0.26.0 to 0.27.0
 - Breaking: `Event` replaced separate `performer` and `organizer` fields with a
