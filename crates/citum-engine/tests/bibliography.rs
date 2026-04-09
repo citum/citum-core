@@ -315,7 +315,7 @@ bibliography:
       - contributor: author
         form: long
       - title: primary
-      - title: parent-serial
+      - title: parent-monograph
       - date: issued
         form: year
       - variable: doi
@@ -1922,6 +1922,24 @@ fn anonymous_entry_type_variants_reorder_online_entries_and_drop_print_fallback_
 }
 
 #[test]
+fn elsevier_harvard_entry_encyclopedia_uses_entry_template_instead_of_chapter_detail() {
+    let style = load_style("styles/elsevier-harvard.yaml");
+    let bibliography = citum_engine::io::load_bibliography(
+        &project_root().join("tests/fixtures/references-expanded.json"),
+    )
+    .expect("expanded bibliography should load");
+
+    let processor = Processor::new(style, bibliography);
+    let rendered =
+        processor.render_selected_bibliography_with_format::<PlainText, _>(["ITEM-18".to_string()]);
+
+    assert_eq!(
+        rendered.trim(),
+        "Vasari, G., 2022. Renaissance Art and Culture. Encyclopedia of World History."
+    );
+}
+
+#[test]
 fn apa_dataset_without_title_falls_back_to_bracketed_label_version_and_doi() {
     let style = load_style("styles/apa-7th.yaml");
     let legacy: csl_legacy::csl_json::Reference = serde_json::from_value(serde_json::json!({
@@ -2185,7 +2203,7 @@ fn apa_structural_entries_use_component_packaging_instead_of_generic_fallbacks()
     assert_eq!(lines.len(), 3);
     assert_eq!(
         lines[0],
-        "Author, F. A. (2013a) (2). 45 Encyclopedia entry (S. S. Editor, Trans.). In S. S. Editor, ed., _Title of book: a subtitle_ (2 ed., pp. 123–128). Publisher. https://doi.org/10.1234/5678 http://example.com/"
+        "Author, F. A. (2013a). 45 Encyclopedia entry (S. S. Editor, Trans.). In S. S. Editor, ed., _Title of book: a subtitle_ (2 ed., pp. 123–128). Publisher. https://doi.org/10.1234/5678 http://example.com/"
     );
     assert_eq!(
         lines[1],
