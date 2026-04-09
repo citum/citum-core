@@ -358,6 +358,69 @@
       "notes": "Author-date family citation fixture aligned with the expanded author-date reference corpus."
     },
     {
+      "fixture": "tests/fixtures/test-items-library/chicago-18th.json",
+      "domain": "scientific",
+      "kind": "references",
+      "reference_types": [
+        "broad Zotero Chicago 18 bibliography corpus"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "Chicago author-date supplemental bibliography coverage",
+        "large-corpus ordering and missing-entry drift",
+        "style-evolve cluster extraction"
+      ],
+      "used_by": [
+        "scripts/report-core.js",
+        "scripts/extract-rich-benchmark-cluster.js",
+        "scripts/oracle.js"
+      ],
+      "ci_status": "required",
+      "notes": "Official supplemental Chicago bibliography benchmark used by `chicago-author-date` rich-input reporting."
+    },
+    {
+      "fixture": "tests/fixtures/test-items-library/apa-7th.json",
+      "domain": "scientific",
+      "kind": "references",
+      "reference_types": [
+        "broad Zotero APA 7 bibliography corpus"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "APA supplemental bibliography coverage",
+        "large-corpus ordering and missing-entry drift",
+        "style-evolve cluster extraction"
+      ],
+      "used_by": [
+        "scripts/report-core.js",
+        "scripts/extract-rich-benchmark-cluster.js",
+        "scripts/oracle.js"
+      ],
+      "ci_status": "required",
+      "notes": "Official supplemental APA bibliography benchmark used by `apa-7th` rich-input reporting."
+    },
+    {
+      "fixture": "tests/fixtures/test-items-library/apa-test.json",
+      "domain": "scientific",
+      "kind": "references",
+      "reference_types": [
+        "targeted Zotero APA test-item corpus"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "APA diagnostic bibliography coverage",
+        "media, interview, and document-edge regression visibility",
+        "style-evolve reduced-cluster targeting"
+      ],
+      "used_by": [
+        "scripts/report-core.js",
+        "scripts/extract-rich-benchmark-cluster.js",
+        "scripts/oracle.js"
+      ],
+      "ci_status": "required",
+      "notes": "Diagnostic supplemental APA benchmark kept visible in reporting without contributing to the headline fidelity total."
+    },
+    {
       "fixture": "tests/fixtures/references-physics-numeric.json",
       "domain": "core",
       "kind": "references",

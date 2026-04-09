@@ -281,9 +281,9 @@ impl ComponentValues for TemplateTitle {
         let title = match self.title {
             TitleType::Primary => reference.title(),
             TitleType::ParentMonograph => match reference {
-                Reference::Monograph(_) | Reference::CollectionComponent(_) => {
-                    reference.container_title()
-                }
+                Reference::Monograph(_)
+                | Reference::CollectionComponent(_)
+                | Reference::AudioVisual(_) => reference.container_title(),
                 _ => None,
             },
             TitleType::ParentSerial => match reference {

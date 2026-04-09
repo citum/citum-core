@@ -156,6 +156,7 @@ citation:
       - variable: locator
 bibliography:
   options:
+    substitute: standard
     hanging-indent: true
     separator: ". "
   type-variants:
@@ -297,23 +298,31 @@ bibliography:
     - title: primary
       emph: false
       suffix: "."
-    - delimiter: " "
+    - contributor: editor
+      form: long
+      name-order: given-first
+      label: {term: editor, form: short, placement: suffix}
+      prefix: " In "
+    - title: parent-serial
+      emph: true
+      prefix: ", "
       suffix: "."
-      group:
-      - title: parent-serial
-        emph: true
-      - delimiter: ", "
-        wrap:
-          punctuation: parentheses
-        group:
-        - number: volume
-          prefix: "Vol. "
-        - number: pages
-          prefix: "pp. "
+    - number: edition
+      wrap:
+        punctuation: parentheses
+      prefix: " "
     - variable: publisher
       prefix: " "
       suffix: "."
-    "motion-picture, broadcast":
+    - delimiter: " "
+      prefix: " "
+      group:
+      - date: accessed
+        form: year-month-day
+        prefix: "Retrieved "
+        suffix: ", from"
+      - variable: url
+    motion-picture:
     - contributor: author
       form: long
       name-order: family-first
@@ -325,8 +334,42 @@ bibliography:
       prefix: " "
     - title: primary
       emph: true
+    - variable: medium
+      wrap:
+        punctuation: brackets
+      prefix: " "
     - variable: publisher
       prefix: ". "
+      suffix: "."
+    - variable: url
+      prefix: " "
+    broadcast:
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: "."
+    - date: issued
+      form: year-month-day
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      emph: false
+      suffix: ""
+    - number: issue
+      prefix: " ("
+      suffix: ")"
+    - variable: medium
+      wrap:
+        punctuation: brackets
+      prefix: " "
+      suffix: "."
+    - title: parent-serial
+      emph: true
+      prefix: " In "
+      suffix: "."
+    - variable: publisher
+      prefix: " "
       suffix: "."
     - variable: url
       prefix: " "
@@ -336,22 +379,45 @@ bibliography:
       name-order: family-first
       suffix: "."
     - date: issued
-      form: year
+      form: year-month-day
       wrap:
         punctuation: parentheses
       prefix: " "
     - title: primary
-      emph: true
+      emph: false
     - contributor: interviewer
       form: long
-      name-order: family-first
+      name-order: given-first
       label: {term: interviewer, form: long, placement: suffix}
       wrap:
         punctuation: parentheses
       prefix: " "
-    - variable: publisher
-      prefix: ". "
+    - delimiter: "; "
+      wrap:
+        punctuation: brackets
+      prefix: " "
       suffix: "."
+      group:
+      - variable: genre
+        text-case: capitalize-first
+      - variable: medium
+        text-case: capitalize-first
+    - variable: publisher
+      prefix: " "
+      suffix: "."
+    - group:
+      - variable: archive-collection
+      - variable: archive-location
+        wrap:
+          punctuation: parentheses
+        prefix: " "
+      delimiter: ""
+      suffix: ","
+      prefix: " "
+    - group:
+      - variable: archive-name
+      - variable: archive-place
+        prefix: ", "
     - variable: url
       prefix: " "
     patent:

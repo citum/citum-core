@@ -54,7 +54,7 @@ fn test_apa_interview_fidelity_regression() {
     println!("Rendered output:\n{}", result);
 
     // APA expected output for interview (simplified check for now)
-    // Arendt, H. (1975). _Thinking in Public_ (E. Young-Bruehl, Interviewer). Schocken Books.
+    // Arendt, H. (1975). Thinking in Public (E. Young-Bruehl, Interviewer). Schocken Books.
 
     assert!(result.contains("Arendt, H."), "Author output incorrect");
     assert!(
@@ -66,7 +66,7 @@ fn test_apa_interview_fidelity_regression() {
         "Title output missing or incorrect"
     );
     assert!(
-        result.contains("Young-Bruehl, E."),
+        result.contains("E. Young-Bruehl"),
         "Interviewer output missing or incorrect"
     );
     assert!(

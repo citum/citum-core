@@ -197,6 +197,34 @@ fn build_group_with_suppressed_child_style() -> Style {
     }
 }
 
+fn build_status_bibliography_style() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Status Test".to_string()),
+            id: Some("status-test".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Primary,
+                    ..Default::default()
+                }),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::Status,
+                    rendering: Rendering {
+                        prefix: Some(". ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
 fn build_article_journal_no_page_fallback_style() -> Style {
     Style {
         info: StyleInfo {
@@ -1396,6 +1424,29 @@ fn suppressed_group_children_do_not_leave_stray_delimiters() {
     assert_eq!(processor.render_bibliography(), "Grouped Title");
 }
 
+fn status_variables_render_in_bibliography_templates() {
+    let style = build_status_bibliography_style();
+    let mut reference = make_book(
+        "status",
+        "Lexicographer",
+        "A.",
+        2025,
+        "Oxford English Dictionary",
+    );
+    if let InputReference::Monograph(book) = &mut reference {
+        book.status = Some("last modified".to_string());
+    }
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert("status".to_string(), reference);
+
+    let processor = Processor::new(style, bib);
+    assert_eq!(
+        processor.render_bibliography(),
+        "Oxford English Dictionary. last modified"
+    );
+}
+
 fn sorting_multiple_keys_applies_secondary_ordering_within_author_groups() {
     let style = build_sorted_style(vec![
         SortSpec {
@@ -2261,6 +2312,14 @@ mod title_short_resolution {
             "Suppressed children inside grouped bibliography components should not leave stray delimiters.",
         );
         super::suppressed_group_children_do_not_leave_stray_delimiters();
+    }
+
+    #[test]
+    fn status_variables_render_in_bibliography_templates() {
+        announce_behavior(
+            "Bibliography templates should render status variables when the reference carries publication-status metadata.",
+        );
+        super::status_variables_render_in_bibliography_templates();
     }
 }
 
