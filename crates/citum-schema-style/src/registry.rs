@@ -92,13 +92,13 @@ impl StyleRegistry {
             let style_aliases: Vec<String> = aliases
                 .iter()
                 .filter(|(_, full)| full == name)
-                .map(|(alias, _)| alias.to_string())
+                .map(|(alias, _)| (*alias).to_string())
                 .collect();
 
             styles.push(RegistryEntry {
-                id: name.to_string(),
+                id: (*name).to_string(),
                 aliases: style_aliases,
-                builtin: Some(name.to_string()),
+                builtin: Some((*name).to_string()),
                 path: None,
                 description: None,
                 fields: Vec::new(),

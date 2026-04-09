@@ -70,7 +70,11 @@ jobs:
         run: node --test scripts/*.test.js
 
       - name: Run schema release validation regression tests
-        run: python3 -m unittest scripts/test_validate_schema_release.py scripts/test_schema_check.py
+        run: |
+          python3 -m unittest \
+            scripts/test_validate_schema_release.py \
+            scripts/test_schema_check.py \
+            scripts/test_coverage_analysis.py
 
   lint:
     name: Lint

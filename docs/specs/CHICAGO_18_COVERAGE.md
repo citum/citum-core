@@ -1,6 +1,6 @@
 # Chicago 18th / APA 8th Coverage Enhancement Specification
 
-**Status:** Draft
+**Status:** Active
 **Date:** 2026-03-31
 **Related:** [Chicago 18 CSL PR #7424](https://github.com/citation-style-language/styles/pull/7424), [APA 8th CSL PR #7510](https://github.com/citation-style-language/styles/pull/7510), [Generalized WorkRelation Spec](./GENERALIZED_RELATIONAL_CONTAINER_MODEL.md)
 
@@ -214,10 +214,11 @@ These CSL types map to Citum genres or the new `Event` type:
 - [ ] `status` uses the Code + Display model for i18n
 - [ ] `duration` uses ISO 8601 duration notation
 - [ ] CSL→Citum conversion handles all new fields and recursive `container` relationships in `citum_migrate`
-- [ ] `coverage-analysis.py` on chicago-18th.json reports 0 **unclassified** variables
+- [x] `coverage-analysis.py` reports 0 missing variables on `chicago-18th.json`, `apa-7th.json`, and `apa-test.json`
 
 ## Changelog
 
+- 2026-04-09: Promoted to Active and aligned the coverage-analysis exit criteria with the bean completion gate.
 - 2026-03-31: Mandated recursive `container` model per Generalized WorkRelation spec; "Part = Document" modeling.
 - 2026-03-31: Refined CSL variable parsing; added YAML examples; rationalized Event type.
 - 2026-03-30: Standardized `WorkRelation` to untagged enum; fixed table naming inconsistencies.

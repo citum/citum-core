@@ -1,7 +1,7 @@
 ---
 # csl26-ccyy
 title: Chicago 18 / APA 8 schema coverage enhancements
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-03-31T14:45:03Z
@@ -19,12 +19,20 @@ Implement the schema and migration additions specified in docs/specs/CHICAGO_18_
 - [x] Batch 5: Review relation — reviewed: Option<Box<InputReference>> on SerialComponent and Monograph; extend section to SerialComponent
 - [x] Batch 6: Original publication — original: Option<Box<InputReference>> on Monograph; deprecate original_date / original_title
 - [x] citum_migrate upsampler: handle all new fields and relations (including container-author → parent.author)
-- [ ] coverage-analysis.py reports 0 missing variables on chicago-18th.json
+- [x] coverage-analysis.py reports 0 missing variables on chicago-18th.json
 
 Spec: docs/specs/CHICAGO_18_COVERAGE.md
 
 
 ## APA 8 gaps (from corpus analysis)
-- [ ] executive-producer → upsampler maps to producer (no schema change)
-- [ ] original-author → upsampler maps to original.author (no schema change)
-- [ ] coverage-analysis.py reports 0 missing on apa-7th.json and apa-test.json
+- [x] executive-producer → upsampler maps to producer (no schema change)
+- [x] original-author → upsampler maps to original.author (no schema change)
+- [x] coverage-analysis.py reports 0 missing on apa-7th.json and apa-test.json
+
+## Summary of Changes
+
+Completed the Chicago 18 / APA schema coverage closure work by extending legacy
+CSL conversion for original/reviewed relations, event extra-field extraction,
+and contributor-role handling; tightening coverage-analysis classification so
+the Chicago and APA fixtures report zero missing variables; and adding targeted
+regression tests for the newly closed mappings and monograph role deduping.

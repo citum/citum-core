@@ -207,7 +207,7 @@ pub fn run_test_case_native_with_options(options: TestCaseOptions) {
             let items: Vec<CitationItem> = batch
                 .iter()
                 .map(|id| CitationItem {
-                    id: id.to_string(),
+                    id: (*id).to_string(),
                     ..Default::default()
                 })
                 .collect();
@@ -236,7 +236,7 @@ pub fn run_test_case_native_with_options(options: TestCaseOptions) {
                 let items: Vec<CitationItem> = batch
                     .iter()
                     .map(|id| CitationItem {
-                        id: id.to_string(),
+                        id: (*id).to_string(),
                         ..Default::default()
                     })
                     .collect();
