@@ -18,8 +18,10 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-# CSL variable regex: starts with a letter, contains letters, numbers, or hyphens
-CSL_VAR_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9-]*$")
+# CSL variable regex: starts with a letter, contains letters, numbers,
+# hyphens, or underscores. Zotero note-field overrides surface a few
+# schema-backed variables with underscores (for example archive_location).
+CSL_VAR_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]*$")
 
 # CSL variable → Citum schema mapping
 # True = present in Citum schema, False = missing, str = notes about mapping
@@ -77,39 +79,41 @@ CSL_TO_CITUM = {
 
     # === Variables used via Extra field (note overrides) ===
     # These are set by Zotero via the Extra field because Zotero lacks native UI
-    "volume-title": False,  # MISSING: individual volume title in multivolume works
-    "part-number": False,  # MISSING: part number within a volume
-    "part-title": False,  # MISSING: part title
-    "supplement-number": False,  # MISSING: journal supplement
-    "event-title": False,  # MISSING: map to proposed Event.title
-    "event-place": False,  # MISSING: map to proposed Event.location
-    "event-date": False,  # MISSING: map to proposed Event.date
-    "event-location": False,  # alias for event-place
-    "status": "Only on Standard; MISSING from Monograph/SerialComponent/Event",
-    "available-date": False,  # MISSING: acceptance/availability date
+    "volume-title": "mapped to container.title for multivolume works",
+    "part-number": "mapped to numbering[type=part]",
+    "part-title": "mapped to component/part title when present",
+    "supplement-number": "mapped to numbering[type=supplement] on serial components",
+    "event-title": "mapped to Event.title",
+    "event-place": "mapped to Event.location",
+    "event-date": "mapped to Event.date",
+    "event-location": "alias of event-place",
+    "status": "supported on Monograph, SerialComponent, and Event",
+    "available-date": "supported on Monograph, SerialComponent, and Event",
     "dimensions": "split between size (physical) and duration (ISO 8601)",
-    "references": False,  # MISSING: appended bib note
-    "chapter-number": False,  # MISSING: chapter/track number
-    "section": "Only on Statute/Regulation/Classic; MISSING from SerialComponent (magazine column)",
-    "reviewed-title": False,  # MISSING: map to proposed reviewed_work relation
-    "reviewed-genre": False,  # MISSING: map to proposed reviewed_work relation
-    "narrator": False,  # MISSING: map to proposed narrator role
-    "compiler": False,  # MISSING: map to proposed compiler role
-    "producer": False,  # MISSING: map to proposed producer role
-    "host": False,  # MISSING: map to proposed host role (podcast)
-    "container-author": False,  # MISSING: editor-prioritized book author
-    "reviewed-author": False,  # MISSING: map to proposed reviewed_work relation
+    "references": "supported on Monograph",
+    "chapter-number": "mapped to numbering[type=chapter] or legal chapter field",
+    "section": "supported on SerialComponent plus legal sources",
+    "reviewed-title": "mapped to reviewed.title relation",
+    "reviewed-genre": "mapped to reviewed.genre relation",
+    "narrator": "mapped to contributors[narrator]",
+    "compiler": "mapped to contributors[compiler]",
+    "producer": "mapped to contributors[producer]",
+    "executive-producer": "mapped to contributors[producer]",
+    "host": "mapped to contributors[host]",
+    "container-author": "mapped to container.author or reviewed.author, context-dependent",
+    "reviewed-author": "mapped to reviewed.author relation",
     "director": "mapped to author for motion_picture",
     "illustrator": "not in schema",
-    "composer": False,  # MISSING: map to proposed composer role
-    "performer": False,  # MISSING: map to proposed performer role
+    "composer": "mapped to contributors[composer]",
+    "performer": "mapped to contributors[performer]",
     "chair": "not in schema (CSL 1.1 role, rare)",
     "archive_collection": "ArchiveInfo.collection (present in schema)",
     "archive-place": "ArchiveInfo.place (present in schema)",
     "authority": True,  # on LegalCase, Statute, Hearing, Regulation, Brief, Patent, Standard
     "version": True,  # on Dataset, Software
-    "scale": False,  # MISSING: map scale
+    "scale": "supported on Monograph",
     "submitted": "mapped to issued or filing_date depending on type",
+    "original-author": "mapped to original.author relation",
     "PMID": "not in schema (PubMed identifier)",
     "PMCID": "not in schema (PubMed Central identifier)",
 }
@@ -120,6 +124,27 @@ ZOTERO_METADATA_VARS = {
     "Google-Books-ID", "Version Number", "Translated title",
     "Container title", "Reviewed title", "Type", "Section",
 }
+
+CANONICAL_CASE_OVERRIDES = {
+    "doi": "DOI",
+    "url": "URL",
+    "isbn": "ISBN",
+    "issn": "ISSN",
+    "pmid": "PMID",
+    "pmcid": "PMCID",
+    "shorttitle": "shortTitle",
+    "journalabbreviation": "journalAbbreviation",
+    "archive_location": "archive_location",
+    "archive-collection": "archive_collection",
+}
+
+NORMALIZED_METADATA_VARS = {value.lower() for value in ZOTERO_METADATA_VARS}
+
+
+def canonicalize_variable_name(var_name: str) -> str:
+    """Normalize note-field keys to the internal names used by ``CSL_TO_CITUM``."""
+    lowered = var_name.strip().lower()
+    return CANONICAL_CASE_OVERRIDES.get(lowered, lowered)
 
 
 def parse_items(filepath: str) -> list[dict]:
@@ -186,8 +211,13 @@ def extract_variables(items: list[dict]) -> dict:
                     var_name = line.split(":")[0].strip()
                     # Only count as CSL variable if it matches CSL naming style
                     # and is not a known non-CSL Zotero metadata field
-                    if var_name and CSL_VAR_PATTERN.match(var_name) and var_name not in ZOTERO_METADATA_VARS:
-                        extra_vars[var_name] += 1
+                    canonical = canonicalize_variable_name(var_name)
+                    if (
+                        canonical
+                        and CSL_VAR_PATTERN.match(canonical)
+                        and canonical.lower() not in NORMALIZED_METADATA_VARS
+                    ):
+                        extra_vars[canonical] += 1
 
     return {
         "standard_vars": standard_vars,

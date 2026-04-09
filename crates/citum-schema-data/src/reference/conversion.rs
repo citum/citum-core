@@ -55,19 +55,69 @@ fn legacy_extra_names(
         .and_then(|value| serde_json::from_value(value).ok())
 }
 
-fn legacy_has_audio_visual_roles(legacy: &csl_legacy::csl_json::Reference) -> bool {
-    legacy.director.is_some()
-        || legacy_extra_names(legacy, "composer").is_some()
-        || legacy_extra_names(legacy, "performer").is_some()
-        || legacy_extra_names(legacy, "producer").is_some()
-}
-
-fn short_title_from_legacy(legacy: &csl_legacy::csl_json::Reference, key: &str) -> Option<String> {
+fn legacy_extra_str(legacy: &csl_legacy::csl_json::Reference, key: &str) -> Option<String> {
     legacy
         .extra
         .get(key)
         .and_then(serde_json::Value::as_str)
         .map(str::to_string)
+}
+
+fn legacy_extra_date(legacy: &csl_legacy::csl_json::Reference, key: &str) -> Option<EdtfString> {
+    legacy
+        .extra
+        .get(key)
+        .and_then(|value| {
+            serde_json::from_value::<csl_legacy::csl_json::DateVariable>(value.clone()).ok()
+        })
+        .map(EdtfString::from)
+        .or_else(|| {
+            legacy
+                .extra
+                .get(key)
+                .and_then(serde_json::Value::as_str)
+                .map(|value| EdtfString(value.to_string()))
+        })
+}
+
+fn legacy_extra_contributor(
+    legacy: &csl_legacy::csl_json::Reference,
+    key: &str,
+) -> Option<Contributor> {
+    legacy_extra_names(legacy, key).map(Contributor::from)
+}
+
+fn relation_monograph(
+    title: Option<Title>,
+    author: Option<Contributor>,
+    issued: Option<EdtfString>,
+    genre: Option<String>,
+) -> Option<WorkRelation> {
+    if title.is_none() && author.is_none() && issued.is_none() && genre.is_none() {
+        return None;
+    }
+
+    Some(WorkRelation::Embedded(Box::new(InputReference::Monograph(
+        Box::new(Monograph {
+            title,
+            author,
+            issued: issued.unwrap_or_default(),
+            genre,
+            ..Default::default()
+        }),
+    ))))
+}
+
+fn legacy_has_audio_visual_roles(legacy: &csl_legacy::csl_json::Reference) -> bool {
+    legacy.director.is_some()
+        || legacy_extra_names(legacy, "composer").is_some()
+        || legacy_extra_names(legacy, "performer").is_some()
+        || legacy_extra_names(legacy, "producer").is_some()
+        || legacy_extra_names(legacy, "executive-producer").is_some()
+}
+
+fn short_title_from_legacy(legacy: &csl_legacy::csl_json::Reference, key: &str) -> Option<String> {
+    legacy_extra_str(legacy, key)
 }
 
 /// Build a title, optionally structured if short_title is present and title contains a colon.
@@ -232,6 +282,16 @@ fn from_monograph_ref(
     let author = legacy.author.clone().map(Contributor::from);
     let editor = legacy.editor.clone().map(Contributor::from);
     let translator = legacy.translator.clone().map(Contributor::from);
+    let original_author = legacy_extra_contributor(&legacy, "original-author");
+    let original_date = legacy_extra_date(&legacy, "original-date");
+    let volume_title = legacy_extra_str(&legacy, "volume-title");
+    let part_title = legacy_extra_str(&legacy, "part-title");
+    let part_number = legacy_extra_str(&legacy, "part-number");
+    let status = legacy_extra_str(&legacy, "status");
+    let available_date = legacy_extra_date(&legacy, "available-date");
+    let references = legacy_extra_str(&legacy, "references");
+    let scale = legacy_extra_str(&legacy, "scale");
+    let dimensions = legacy_extra_str(&legacy, "dimensions");
     let mut contributors = legacy_named_contributors(&legacy);
     push_legacy_contributor(
         &mut contributors,
@@ -250,6 +310,11 @@ fn from_monograph_ref(
     );
     push_legacy_contributor(
         &mut contributors,
+        ContributorRole::Host,
+        legacy_extra_names(&legacy, "host"),
+    );
+    push_legacy_contributor(
+        &mut contributors,
         ContributorRole::Narrator,
         legacy_extra_names(&legacy, "narrator"),
     );
@@ -258,31 +323,42 @@ fn from_monograph_ref(
         ContributorRole::Compiler,
         legacy_extra_names(&legacy, "compiler"),
     );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Composer,
+        legacy_extra_names(&legacy, "composer"),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Performer,
+        legacy_extra_names(&legacy, "performer"),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Producer,
+        legacy_extra_names(&legacy, "producer")
+            .or_else(|| legacy_extra_names(&legacy, "executive-producer")),
+    );
     let edition = ctx.edition;
     let volume = legacy
         .volume
         .map(|v| v.to_string())
-        .or_else(|| legacy.collection_number.map(|cn| cn.to_string()));
+        .or_else(|| legacy.collection_number.clone().map(|cn| cn.to_string()));
     let number = if r#type == MonographType::Report {
         None
     } else {
         legacy.number.clone()
     };
-    let original = legacy.original_title.map(|original_title| {
-        WorkRelation::Embedded(Box::new(InputReference::Monograph(Box::new(Monograph {
-            title: Some(Title::Single(original_title)),
-            ..Default::default()
-        }))))
-    });
+    let original = relation_monograph(
+        legacy.original_title.clone().map(Title::Single),
+        original_author,
+        original_date,
+        None,
+    );
 
     // Batch 1: volume-title enriches container; part-number adds a Part numbering entry.
-    let volume_title = legacy
-        .extra
-        .get("volume-title")
-        .and_then(serde_json::Value::as_str)
-        .map(str::to_string);
     let container = {
-        let base_title = legacy.container_title.map(Title::Single);
+        let base_title = legacy.container_title.clone().map(Title::Single);
         let effective_title = volume_title.map(Title::Single).or(base_title);
         effective_title.map(|t| {
             WorkRelation::Embedded(Box::new(InputReference::Monograph(Box::new(Monograph {
@@ -291,14 +367,10 @@ fn from_monograph_ref(
             }))))
         })
     };
-    if let Some(part_num) = legacy
-        .extra
-        .get("part-number")
-        .and_then(serde_json::Value::as_str)
-    {
+    if let Some(part_num) = part_number {
         numbering.push(Numbering {
             r#type: NumberingType::Part,
-            value: part_num.to_string(),
+            value: part_num,
         });
     }
     if let Some(chapter_num) = legacy.chapter_number.clone()
@@ -310,23 +382,7 @@ fn from_monograph_ref(
         });
     }
 
-    let extra_str = |key: &str| -> Option<String> {
-        legacy
-            .extra
-            .get(key)
-            .and_then(serde_json::Value::as_str)
-            .map(str::to_string)
-    };
-    let status = extra_str("status");
-    let available_date = legacy
-        .extra
-        .get("available-date")
-        .and_then(serde_json::Value::as_str)
-        .map(|s| EdtfString(s.to_string()));
-    let references = extra_str("references");
-    let scale = extra_str("scale");
     // Map CSL `dimensions` to size (freeform) or duration (ISO 8601 / HH:MM pattern).
-    let dimensions = extra_str("dimensions");
     let (size, duration) = match dimensions {
         Some(ref d)
             if d.starts_with('P')
@@ -342,7 +398,7 @@ fn from_monograph_ref(
     InputReference::Monograph(Box::new(Monograph {
         id: ctx.id,
         r#type,
-        title: build_title(ctx.title, ctx.short_title.clone()),
+        title: build_title(part_title.or(ctx.title), ctx.short_title.clone()),
         short_title: None,
         container,
         author,
@@ -389,7 +445,11 @@ fn from_collection_component_ref(
     legacy: csl_legacy::csl_json::Reference,
     ctx: RefContext,
 ) -> InputReference {
-    let parent_title = legacy.container_title.map(Title::Single);
+    let part_title = legacy_extra_str(&legacy, "part-title");
+    let part_number = legacy_extra_str(&legacy, "part-number");
+    let original_author = legacy_extra_contributor(&legacy, "original-author");
+    let original_date = legacy_extra_date(&legacy, "original-date");
+    let parent_title = legacy.container_title.clone().map(Title::Single);
     let parent_volume = legacy
         .collection_number
         .clone()
@@ -424,7 +484,7 @@ fn from_collection_component_ref(
         } else {
             MonographComponentType::Chapter
         },
-        title: build_title(ctx.title, ctx.short_title.clone()),
+        title: build_title(part_title.or(ctx.title), ctx.short_title.clone()),
         author,
         translator,
         contributors,
@@ -458,6 +518,28 @@ fn from_collection_component_ref(
         doi: ctx.doi,
         genre: legacy.genre,
         medium: legacy.medium,
+        numbering: {
+            let mut numbering = Vec::new();
+            if let Some(part_number) = part_number {
+                numbering.push(Numbering {
+                    r#type: NumberingType::Part,
+                    value: part_number,
+                });
+            }
+            if let Some(chapter_number) = legacy.chapter_number.clone() {
+                numbering.push(Numbering {
+                    r#type: NumberingType::Chapter,
+                    value: chapter_number,
+                });
+            }
+            numbering
+        },
+        original: relation_monograph(
+            legacy.original_title.clone().map(Title::Single),
+            original_author,
+            original_date,
+            None,
+        ),
         ..Default::default()
     }))
 }
@@ -541,10 +623,23 @@ fn from_serial_component_ref(
     legacy: csl_legacy::csl_json::Reference,
     ctx: RefContext,
 ) -> InputReference {
-    let mut genre = legacy.genre;
+    let mut genre = legacy.genre.clone();
     if legacy.ref_type == "entry-encyclopedia" && genre.is_none() {
         genre = Some("entry-encyclopedia".to_string());
     }
+    let host_names = legacy_extra_names(&legacy, "host");
+    let narrator_names = legacy_extra_names(&legacy, "narrator");
+    let producer_names = legacy_extra_names(&legacy, "producer")
+        .or_else(|| legacy_extra_names(&legacy, "executive-producer"));
+    let container_author = legacy_extra_names(&legacy, "container-author");
+    let reviewed_author = legacy_extra_names(&legacy, "reviewed-author");
+    let reviewed_title = legacy_extra_str(&legacy, "reviewed-title").map(Title::Single);
+    let reviewed_genre = legacy_extra_str(&legacy, "reviewed-genre");
+    let supplement_number = legacy_extra_str(&legacy, "supplement-number");
+    let status = legacy_extra_str(&legacy, "status");
+    let available_date = legacy_extra_date(&legacy, "available-date");
+    let original_author = legacy_extra_contributor(&legacy, "original-author");
+    let original_date = legacy_extra_date(&legacy, "original-date");
     let serial_type = match legacy.ref_type.as_str() {
         "article-journal" => SerialType::AcademicJournal,
         "article-magazine" => SerialType::Magazine,
@@ -552,11 +647,12 @@ fn from_serial_component_ref(
         "broadcast" | "motion_picture" => SerialType::BroadcastProgram,
         _ => SerialType::AcademicJournal,
     };
-    let parent_title = legacy.container_title.map(Title::Single);
+    let parent_title = legacy.container_title.clone().map(Title::Single);
 
     let volume = legacy.volume.map(|v| v.to_string());
     let issue = legacy
         .issue
+        .clone()
         .or_else(|| {
             if legacy.ref_type == "broadcast" || legacy.ref_type == "motion_picture" {
                 legacy
@@ -582,6 +678,9 @@ fn from_serial_component_ref(
         ContributorRole::Translator,
         legacy.translator.clone(),
     );
+    push_legacy_contributor(&mut contributors, ContributorRole::Host, host_names);
+    push_legacy_contributor(&mut contributors, ContributorRole::Narrator, narrator_names);
+    push_legacy_contributor(&mut contributors, ContributorRole::Producer, producer_names);
     let serial_editor = legacy.editor.clone().map(Contributor::from);
     let mut serial_contributors = Vec::new();
     push_legacy_contributor(
@@ -589,6 +688,22 @@ fn from_serial_component_ref(
         ContributorRole::Editor,
         legacy.editor.clone(),
     );
+    let reviewed = relation_monograph(
+        reviewed_title,
+        reviewed_author
+            .clone()
+            .map(Contributor::from)
+            .or_else(|| container_author.clone().map(Contributor::from)),
+        None,
+        reviewed_genre,
+    );
+    if reviewed.is_none() {
+        push_legacy_contributor(
+            &mut serial_contributors,
+            ContributorRole::Author,
+            container_author,
+        );
+    }
 
     InputReference::SerialComponent(Box::new(SerialComponent {
         id: ctx.id,
@@ -617,11 +732,21 @@ fn from_serial_component_ref(
                 language: None,
                 field_languages: HashMap::new(),
                 note: None,
-                issn: legacy.issn,
+                issn: legacy.issn.clone(),
             }),
         )))),
         volume,
         issue,
+        numbering: {
+            let mut numbering = Vec::new();
+            if let Some(supplement_number) = supplement_number {
+                numbering.push(Numbering {
+                    r#type: NumberingType::Supplement,
+                    value: supplement_number,
+                });
+            }
+            numbering
+        },
         url: ctx.url,
         accessed: ctx.accessed,
         language: ctx.language,
@@ -636,18 +761,15 @@ fn from_serial_component_ref(
         eprint: None,
         keywords: None,
         section: legacy.section,
-        status: legacy
-            .extra
-            .get("status")
-            .and_then(serde_json::Value::as_str)
-            .map(str::to_string),
-        available_date: legacy
-            .extra
-            .get("available-date")
-            .and_then(serde_json::Value::as_str)
-            .map(|s| EdtfString(s.to_string())),
-        reviewed: None,
-        original: None,
+        status,
+        available_date,
+        reviewed,
+        original: relation_monograph(
+            legacy.original_title.clone().map(Title::Single),
+            original_author,
+            original_date,
+            None,
+        ),
         ..Default::default()
     }))
 }
@@ -680,7 +802,8 @@ fn from_audio_visual_ref(
     push_legacy_contributor(
         &mut contributors,
         ContributorRole::Producer,
-        legacy_extra_names(&legacy, "producer"),
+        legacy_extra_names(&legacy, "producer")
+            .or_else(|| legacy_extra_names(&legacy, "executive-producer")),
     );
     push_legacy_contributor(
         &mut contributors,
@@ -1023,6 +1146,13 @@ fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
 }
 
 fn from_event_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
+    let producer_names = legacy_extra_names(&legacy, "producer")
+        .or_else(|| legacy_extra_names(&legacy, "executive-producer"));
+    let host_names = legacy_extra_names(&legacy, "host");
+    let available_date = legacy_extra_date(&legacy, "available-date");
+    let event_title = legacy_extra_str(&legacy, "event-title");
+    let event_place = legacy_extra_str(&legacy, "event-place");
+    let event_date = legacy_extra_date(&legacy, "event-date");
     let mut contributors = Vec::new();
     push_legacy_contributor(
         &mut contributors,
@@ -1034,11 +1164,8 @@ fn from_event_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> I
         ContributorRole::Narrator,
         legacy_extra_names(&legacy, "narrator"),
     );
-    push_legacy_contributor(
-        &mut contributors,
-        ContributorRole::Producer,
-        legacy_extra_names(&legacy, "producer"),
-    );
+    push_legacy_contributor(&mut contributors, ContributorRole::Producer, producer_names);
+    push_legacy_contributor(&mut contributors, ContributorRole::Host, host_names);
     if let Some(organizer_name) = legacy.publisher.clone() {
         contributors.push(ContributorEntry {
             role: ContributorRole::Custom("organizer".to_string()),
@@ -1048,24 +1175,18 @@ fn from_event_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> I
             }),
         });
     }
-    let available_date = legacy
-        .extra
-        .get("available-date")
-        .and_then(serde_json::Value::as_str)
-        .map(|s| EdtfString(s.to_string()));
-
     InputReference::Event(Box::new(Event {
         id: ctx.id,
-        title: build_title(ctx.title, ctx.short_title.clone()),
-        container: legacy.container_title.map(|t| {
+        title: build_title(event_title.or(ctx.title), ctx.short_title.clone()),
+        container: legacy.container_title.clone().map(|t| {
             WorkRelation::Embedded(Box::new(InputReference::Monograph(Box::new(Monograph {
                 title: Some(Title::Single(t)),
                 ..Default::default()
             }))))
         }),
         series: None,
-        location: legacy.publisher_place.clone(),
-        date: Some(ctx.issued),
+        location: event_place.or(legacy.publisher_place.clone()),
+        date: event_date.or_else(|| (!ctx.issued.is_empty()).then_some(ctx.issued)),
         available_date,
         genre: legacy.genre,
         network: None,
@@ -1221,6 +1342,14 @@ impl From<Vec<csl_legacy::csl_json::Name>> for Contributor {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::json;
+
+    fn legacy_year(year: i32) -> csl_legacy::csl_json::DateVariable {
+        csl_legacy::csl_json::DateVariable {
+            date_parts: Some(vec![vec![year]]),
+            ..Default::default()
+        }
+    }
 
     #[test]
     fn legacy_report_number_maps_to_report_numbering() {
@@ -1228,10 +1357,7 @@ mod tests {
             id: "report-1".to_string(),
             ref_type: "report".to_string(),
             title: Some("Report".to_string()),
-            issued: Some(csl_legacy::csl_json::DateVariable {
-                date_parts: Some(vec![vec![2024]]),
-                ..Default::default()
-            }),
+            issued: Some(legacy_year(2024)),
             number: Some("TR-7".to_string()),
             ..Default::default()
         };
@@ -1248,10 +1374,7 @@ mod tests {
             id: "book-1".to_string(),
             ref_type: "book".to_string(),
             title: Some("Book".to_string()),
-            issued: Some(csl_legacy::csl_json::DateVariable {
-                date_parts: Some(vec![vec![2024]]),
-                ..Default::default()
-            }),
+            issued: Some(legacy_year(2024)),
             number: Some("2".to_string()),
             ..Default::default()
         };
@@ -1260,5 +1383,251 @@ mod tests {
 
         assert_eq!(converted.number(), Some("2".to_string()));
         assert_eq!(converted.report_number(), None);
+    }
+
+    #[test]
+    fn legacy_monograph_original_relation_uses_original_author_and_date() {
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "book-2".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("Translated Book".to_string()),
+            issued: Some(legacy_year(2024)),
+            original_title: Some("Original Book".to_string()),
+            extra: HashMap::from([
+                (
+                    "original-author".to_string(),
+                    json!([{"family":"Woolf","given":"Virginia"}]),
+                ),
+                ("original-date".to_string(), json!({"date-parts":[[1925]]})),
+            ]),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        let InputReference::Monograph(monograph) = converted else {
+            panic!("expected monograph");
+        };
+        let Some(WorkRelation::Embedded(original)) = monograph.original else {
+            panic!("expected embedded original relation");
+        };
+        let InputReference::Monograph(original_monograph) = *original else {
+            panic!("expected original monograph relation");
+        };
+
+        assert_eq!(
+            original_monograph.title,
+            Some(Title::Single("Original Book".to_string()))
+        );
+        assert_eq!(original_monograph.issued, EdtfString("1925".to_string()));
+        assert!(original_monograph.author.is_some());
+    }
+
+    #[test]
+    fn legacy_serial_component_maps_reviewed_relation_and_supplement_number() {
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "article-1".to_string(),
+            ref_type: "article-journal".to_string(),
+            title: Some("Review Essay".to_string()),
+            container_title: Some("Journal".to_string()),
+            issued: Some(legacy_year(2024)),
+            extra: HashMap::from([
+                ("reviewed-title".to_string(), json!("Reviewed Book")),
+                (
+                    "reviewed-author".to_string(),
+                    json!([{"family":"Morrison","given":"Toni"}]),
+                ),
+                ("supplement-number".to_string(), json!("S1")),
+            ]),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        let InputReference::SerialComponent(component) = converted else {
+            panic!("expected serial component");
+        };
+        assert!(
+            component
+                .numbering
+                .iter()
+                .any(|entry| entry.r#type == NumberingType::Supplement && entry.value == "S1")
+        );
+        let Some(WorkRelation::Embedded(reviewed)) = component.reviewed else {
+            panic!("expected reviewed relation");
+        };
+        let InputReference::Monograph(reviewed_work) = *reviewed else {
+            panic!("expected reviewed monograph relation");
+        };
+        assert_eq!(
+            reviewed_work.title,
+            Some(Title::Single("Reviewed Book".to_string()))
+        );
+        assert!(reviewed_work.author.is_some());
+    }
+
+    #[test]
+    fn legacy_event_prefers_extra_event_fields() {
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "event-1".to_string(),
+            ref_type: "speech".to_string(),
+            title: Some("Fallback Title".to_string()),
+            issued: Some(legacy_year(2024)),
+            extra: HashMap::from([
+                ("event-title".to_string(), json!("Actual Event")),
+                ("event-place".to_string(), json!("Chicago")),
+                (
+                    "event-date".to_string(),
+                    json!({"date-parts":[[2023, 5, 6]]}),
+                ),
+            ]),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        let InputReference::Event(event) = converted else {
+            panic!("expected event");
+        };
+        assert_eq!(event.title, Some(Title::Single("Actual Event".to_string())));
+        assert_eq!(event.location, Some("Chicago".to_string()));
+        assert_eq!(event.date, Some(EdtfString("2023-05-06".to_string())));
+    }
+
+    #[test]
+    fn legacy_event_omits_empty_fallback_date() {
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "event-2".to_string(),
+            ref_type: "speech".to_string(),
+            title: Some("Fallback Title".to_string()),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        let InputReference::Event(event) = converted else {
+            panic!("expected event");
+        };
+        assert_eq!(event.date, None);
+    }
+
+    #[test]
+    fn legacy_audiovisual_maps_executive_producer_to_producer() {
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "broadcast-1".to_string(),
+            ref_type: "broadcast".to_string(),
+            title: Some("Episode".to_string()),
+            issued: Some(legacy_year(2024)),
+            extra: HashMap::from([(
+                "executive-producer".to_string(),
+                json!([{"family":"Rhimes","given":"Shonda"}]),
+            )]),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        let InputReference::AudioVisual(work) = converted else {
+            panic!("expected audiovisual work");
+        };
+        assert!(
+            work.core
+                .contributors
+                .iter()
+                .any(|entry| entry.role == ContributorRole::Producer)
+        );
+    }
+
+    #[test]
+    fn legacy_monograph_dedupes_extra_role_pushes() {
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "book-3".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("Role Dedup".to_string()),
+            issued: Some(legacy_year(2024)),
+            extra: HashMap::from([
+                (
+                    "composer".to_string(),
+                    json!([{"family":"Glass","given":"Philip"}]),
+                ),
+                (
+                    "producer".to_string(),
+                    json!([{"family":"Jones","given":"Quincy"}]),
+                ),
+                (
+                    "executive-producer".to_string(),
+                    json!([{"family":"Jones","given":"Quincy"}]),
+                ),
+            ]),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        let InputReference::Monograph(monograph) = converted else {
+            panic!("expected monograph");
+        };
+
+        let composer_count = monograph
+            .contributors
+            .iter()
+            .filter(|entry| entry.role == ContributorRole::Composer)
+            .count();
+        let producer_count = monograph
+            .contributors
+            .iter()
+            .filter(|entry| entry.role == ContributorRole::Producer)
+            .count();
+
+        assert_eq!(
+            composer_count, 1,
+            "duplicate composer entry after conversion"
+        );
+        assert_eq!(
+            producer_count, 1,
+            "duplicate producer entry after conversion"
+        );
+    }
+
+    #[test]
+    fn legacy_monograph_prefers_part_title_over_title() {
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "book-4".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("Container Work".to_string()),
+            extra: HashMap::from([("part-title".to_string(), json!("Actual Part"))]),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        let InputReference::Monograph(monograph) = converted else {
+            panic!("expected monograph");
+        };
+        assert_eq!(
+            monograph.title,
+            Some(Title::Single("Actual Part".to_string()))
+        );
+    }
+
+    #[test]
+    fn legacy_collection_component_prefers_part_title_over_title() {
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "chapter-1".to_string(),
+            ref_type: "chapter".to_string(),
+            title: Some("Collected Volume".to_string()),
+            extra: HashMap::from([("part-title".to_string(), json!("Actual Chapter"))]),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        let InputReference::CollectionComponent(component) = converted else {
+            panic!("expected collection component");
+        };
+        assert_eq!(
+            component.title,
+            Some(Title::Single("Actual Chapter".to_string()))
+        );
     }
 }

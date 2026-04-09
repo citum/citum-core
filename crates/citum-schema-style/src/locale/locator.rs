@@ -20,7 +20,7 @@ pub fn locator_aliases(locale: &Locale) -> Vec<(String, LocatorType)> {
     let mut aliases = HashMap::<String, LocatorType>::new();
 
     for (alias, label) in english_locator_aliases() {
-        aliases.insert(alias.to_string(), label.clone());
+        aliases.insert((*alias).to_string(), label.clone());
     }
 
     for (label, term) in &locale.locators {
