@@ -450,12 +450,13 @@ fn apply_date_markers(
 
 /// Compute the disambiguation suffix for year-based citations.
 fn compute_disamb_suffix<F: crate::render::format::OutputFormat<Output = String>>(
-    formatted: &Option<String>,
+    date: &EdtfString,
+    form: &DateForm,
     hints: &ProcHints,
     options: &RenderOptions<'_>,
     fmt: &F,
 ) -> Option<String> {
-    if hints.disamb_condition && formatted.as_ref().is_some_and(|s| s.len() == 4) {
+    if hints.disamb_condition && date_form_displays_year(form) && !date.year().is_empty() {
         // Check if year suffix is enabled. Fall back to AuthorDate default
         // (year_suffix: true) when processing is not explicitly set, matching
         // the behavior in disambiguation.rs which uses unwrap_or_default().
@@ -477,6 +478,35 @@ fn compute_disamb_suffix<F: crate::render::format::OutputFormat<Output = String>
     } else {
         None
     }
+}
+
+fn date_form_displays_year(form: &DateForm) -> bool {
+    !matches!(form, DateForm::MonthDay)
+}
+
+fn inline_disamb_suffix(formatted: &str, form: &DateForm, year: &str, suffix: &str) -> String {
+    if year.is_empty() || suffix.is_empty() {
+        return formatted.to_string();
+    }
+
+    let year_index = match form {
+        DateForm::Year | DateForm::YearMonthDay => formatted.find(year),
+        DateForm::YearMonth | DateForm::Full | DateForm::DayMonthAbbrYear => formatted.rfind(year),
+        DateForm::MonthDay => None,
+    };
+
+    let Some(index) = year_index else {
+        return format!("{formatted}{suffix}");
+    };
+
+    let year_end = index + year.len();
+    format!(
+        "{}{}{}{}",
+        &formatted[..index],
+        year,
+        suffix,
+        &formatted[year_end..]
+    )
 }
 
 /// Format a single date (non-range) according to the given form.
@@ -683,20 +713,31 @@ impl ComponentValues for TemplateDate {
         let formatted = formatted.map(|value| apply_date_markers(value, &date, date_config));
 
         // Handle disambiguation suffix (a, b, c...)
-        let suffix = compute_disamb_suffix(&formatted, hints, options, &fmt);
+        let disamb_suffix = compute_disamb_suffix(&date, &effective_form, hints, options, &fmt);
 
-        formatted.map(|value| ProcValues {
-            value,
-            prefix: None,
-            suffix,
-            url: crate::values::resolve_effective_url(
-                self.links.as_ref(),
-                options.config.links.as_ref(),
-                reference,
-                citum_schema::options::LinkAnchor::Component,
-            ),
-            substituted_key: None,
-            pre_formatted: false,
+        formatted.map(|value| {
+            let (value, suffix) = if let Some(ref suffix) = disamb_suffix {
+                (
+                    inline_disamb_suffix(&value, &effective_form, &date.year(), suffix),
+                    None,
+                )
+            } else {
+                (value, None)
+            };
+
+            ProcValues {
+                value,
+                prefix: None,
+                suffix,
+                url: crate::values::resolve_effective_url(
+                    self.links.as_ref(),
+                    options.config.links.as_ref(),
+                    reference,
+                    citum_schema::options::LinkAnchor::Component,
+                ),
+                substituted_key: None,
+                pre_formatted: false,
+            }
         })
     }
 }

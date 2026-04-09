@@ -139,6 +139,51 @@ fn test_date_values() {
     assert_eq!(values.value, "1962");
 }
 
+#[test]
+fn test_year_month_day_dates_inline_disambiguation_suffix_on_year() {
+    let config = make_config();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let reference = Reference::from(LegacyReference {
+        id: "dated-2018".to_string(),
+        ref_type: "article-magazine".to_string(),
+        issued: Some(DateVariable::full(2018, 7, 14)),
+        ..Default::default()
+    });
+    let hints = ProcHints {
+        disamb_condition: true,
+        group_index: 3,
+        group_length: 4,
+        ..Default::default()
+    };
+
+    let component = TemplateDate {
+        date: TemplateDateVar::Issued,
+        form: DateForm::YearMonthDay,
+        fallback: None,
+        rendering: Default::default(),
+        links: None,
+        custom: None,
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+    assert_eq!(values.value, "2018c, July 14");
+    assert_eq!(values.suffix, None);
+}
+
 /// Tests the behavior of `test_et_al`.
 #[test]
 fn test_et_al() {

@@ -2032,6 +2032,77 @@ fn apa_web_native_entries_render_without_retrieved_fallbacks() {
 }
 
 #[test]
+fn apa_magazine_and_newspaper_entries_keep_special_format_translators_and_direct_urls() {
+    let style = load_style("styles/apa-7th.yaml");
+    let legacy_items = [
+        serde_json::json!({
+            "id": "6188419/BXMWCMVJ",
+            "type": "article-magazine",
+            "container-title": "Journal Title",
+            "ISSN": "0000-0000",
+            "issue": "5",
+            "language": "en",
+            "note": "medium: special format\ngenre: type\nsection: department",
+            "page": "1-100",
+            "title": "15 Magazine article",
+            "URL": "http://example.com",
+            "volume": "32",
+            "author": [{ "family": "Author", "given": "First A." }],
+            "translator": [{ "family": "Translator", "given": "Third A." }],
+            "issued": { "date-parts": [[2018, 7, 14]] }
+        }),
+        serde_json::json!({
+            "id": "6188419/389M98AT",
+            "type": "article-newspaper",
+            "container-title": "Newspaper Title",
+            "edition": "evening",
+            "ISSN": "0000-0000",
+            "language": "en",
+            "note": "medium: Special format\ngenre: Type",
+            "page": "1-100",
+            "title": "17 Newspaper article",
+            "URL": "http://example.com",
+            "author": [{ "family": "Author", "given": "First A." }],
+            "translator": [{ "family": "Translator", "given": "Third A." }],
+            "issued": { "date-parts": [[2018, 7, 14]] }
+        }),
+    ];
+
+    let bibliography = legacy_items
+        .into_iter()
+        .map(|value| {
+            let legacy: csl_legacy::csl_json::Reference =
+                serde_json::from_value(value).expect("fixture should parse");
+            (legacy.id.clone(), legacy.into())
+        })
+        .collect();
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_selected_bibliography_with_format::<PlainText, _>([
+        "6188419/BXMWCMVJ".to_string(),
+        "6188419/389M98AT".to_string(),
+    ]);
+
+    let lines = rendered
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .collect::<Vec<_>>();
+
+    assert_eq!(lines.len(), 2);
+    assert!(lines[0].contains("Author, F. A. (2018a, "));
+    assert!(lines[0].contains("15 Magazine article (T. A. Translator, Trans.)"));
+    assert!(lines[0].contains("[Type; Special format]"));
+    assert!(lines[0].contains("1–100. http://example.com/"));
+    assert!(lines[1].contains("Author, F. A. (2018b, "));
+    assert!(lines[1].contains("17 Newspaper article (T. A. Translator, Trans.)"));
+    assert!(lines[1].contains("[Type; Special format]"));
+    assert!(lines[1].contains("Newspaper Title"));
+    assert!(lines[1].contains("1–100"));
+    assert!(lines[1].contains("http://example.com/"));
+    assert!(!rendered.contains("Retrieved "));
+}
+
+#[test]
 fn apa_structural_entries_use_component_packaging_instead_of_generic_fallbacks() {
     let style = load_style("styles/apa-7th.yaml");
     let legacy_items = [
