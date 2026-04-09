@@ -256,6 +256,24 @@ fn test_parse_csl_json_entry_dictionary_preserves_status() {
 }
 
 #[test]
+fn test_parse_csl_json_entry_encyclopedia_preserves_encyclopedia_type() {
+    let json = r#"{
+        "id": "vasari-entry",
+        "type": "entry-encyclopedia",
+        "title": "Renaissance Art and Culture",
+        "container-title": "Encyclopedia of World History",
+        "publisher": "Oxford University Press",
+        "page": "234-256",
+        "issued": {"date-parts": [[2022]]}
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(reference.ref_type(), "entry-encyclopedia");
+}
+
+#[test]
 fn unpublished_legacy_records_promote_issued_to_created() {
     let json = r#"{
         "id": "archival-letter",

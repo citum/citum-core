@@ -1312,29 +1312,25 @@ impl InputReference {
                 }
             },
             InputReference::CollectionComponent(r) => match r.r#type {
-                MonographComponentType::Chapter => {
-                    if r.genre.as_deref() == Some("entry-dictionary") {
-                        "entry-dictionary".to_string()
-                    } else {
-                        "chapter".to_string()
-                    }
-                }
+                MonographComponentType::Chapter => match r.genre.as_deref() {
+                    Some("entry-dictionary") => "entry-dictionary".to_string(),
+                    Some("entry-encyclopedia") => "entry-encyclopedia".to_string(),
+                    _ => "chapter".to_string(),
+                },
                 MonographComponentType::Document => "paper-conference".to_string(),
             },
             InputReference::SerialComponent(r) => {
+                if r.genre.as_deref() == Some("entry-encyclopedia") {
+                    return "entry-encyclopedia".to_string();
+                }
+
                 let container_type = r.container.as_ref().and_then(|c| match c {
                     WorkRelation::Embedded(p) => Some(p.ref_type()),
                     _ => None,
                 });
 
                 match container_type.as_deref() {
-                    Some("article-journal") => {
-                        if r.genre.as_deref() == Some("entry-encyclopedia") {
-                            "entry-encyclopedia".to_string()
-                        } else {
-                            "article-journal".to_string()
-                        }
-                    }
+                    Some("article-journal") => "article-journal".to_string(),
                     Some("article-magazine") => "article-magazine".to_string(),
                     Some("article-newspaper") => "article-newspaper".to_string(),
                     Some("broadcast") => {
@@ -1623,5 +1619,26 @@ mod numbering_tests {
         );
 
         assert_eq!(reference.collection_number(), Some("7".to_string()));
+    }
+
+    #[test]
+    fn collection_component_entry_encyclopedia_genre_preserves_ref_type() {
+        let reference = parse_reference(
+            r#"{
+                "class": "collection-component",
+                "type": "chapter",
+                "title": "Renaissance Art and Culture",
+                "genre": "entry-encyclopedia",
+                "issued": "2022",
+                "container": {
+                    "class": "collection",
+                    "type": "edited-book",
+                    "title": "Encyclopedia of World History",
+                    "issued": "2022"
+                }
+            }"#,
+        );
+
+        assert_eq!(reference.ref_type(), "entry-encyclopedia");
     }
 }

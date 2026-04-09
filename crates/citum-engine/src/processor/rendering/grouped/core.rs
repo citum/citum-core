@@ -1333,9 +1333,11 @@ fn find_preferred_parent_container_component<'a>(
     template: &'a [TemplateComponent],
     ref_type: &str,
 ) -> Option<&'a TemplateComponent> {
-    if ref_type == "chapter"
-        && let Some(parent_monograph) =
-            find_first_component(template, is_parent_monograph_title_component)
+    if matches!(
+        ref_type,
+        "chapter" | "entry-dictionary" | "entry-encyclopedia"
+    ) && let Some(parent_monograph) =
+        find_first_component(template, is_parent_monograph_title_component)
     {
         return Some(parent_monograph);
     }

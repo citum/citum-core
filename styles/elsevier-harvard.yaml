@@ -242,7 +242,7 @@ bibliography:
       form: full
       prefix: " (accessed "
       suffix: ")."
-    [article-newspaper, entry-encyclopedia, broadcast]:
+    [article-newspaper, broadcast]:
     - contributor: author
       form: long
       name-order: family-first
@@ -253,6 +253,18 @@ bibliography:
     - title: primary
       suffix: "."
     - title: parent-serial
+      suffix: "."
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: "."
+    - title: primary
+      suffix: "."
+    - title: parent-monograph
       suffix: "."
     legal-case:
     - title: primary

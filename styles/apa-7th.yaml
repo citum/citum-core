@@ -484,31 +484,42 @@ bibliography:
       prefix: " "
     - title: primary
       emph: false
-      suffix: "."
-    - contributor: editor
+    - contributor: translator
       form: long
       name-order: given-first
-      label: {term: editor, form: short, placement: suffix}
-      prefix: " In "
-    - title: parent-serial
-      emph: true
-      prefix: ", "
-      suffix: "."
-    - number: edition
+      label: {term: translator, form: short, placement: suffix}
       wrap:
         punctuation: parentheses
       prefix: " "
+    - delimiter: ", "
+      prefix: ". In "
+      suffix: "."
+      group:
+      - contributor: editor
+        form: long
+        name-order: given-first
+        label: {term: editor, form: short, placement: suffix}
+      - delimiter: " "
+        group:
+        - title: parent-monograph
+          emph: true
+        - delimiter: ", "
+          wrap:
+            punctuation: parentheses
+          group:
+          - number: edition
+            suffix: " ed."
+          - number: collection-number
+            prefix: "Vol. "
+          - number: pages
+            prefix: "pp. "
     - variable: publisher
       prefix: " "
       suffix: "."
-    - delimiter: " "
+    - variable: doi
+      prefix: " https://doi.org/"
+    - variable: url
       prefix: " "
-      group:
-      - date: accessed
-        form: year-month-day
-        prefix: "Retrieved "
-        suffix: ", from"
-      - variable: url
     motion-picture:
     - contributor: author
       form: long

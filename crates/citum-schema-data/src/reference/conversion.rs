@@ -647,8 +647,12 @@ fn collection_component_metadata(
     legacy: &csl_legacy::csl_json::Reference,
 ) -> (Option<String>, Option<String>) {
     let mut genre = legacy.genre.clone();
-    if legacy.ref_type == "entry-dictionary" && genre.is_none() {
-        genre = Some("entry-dictionary".to_string());
+    if genre.is_none() {
+        genre = match legacy.ref_type.as_str() {
+            "entry-dictionary" => Some("entry-dictionary".to_string()),
+            "entry-encyclopedia" => Some("entry-encyclopedia".to_string()),
+            _ => None,
+        };
     }
     let status = legacy_extra_str(legacy, "status");
     (genre, status)
