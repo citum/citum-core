@@ -878,6 +878,12 @@
             }
           ]
         },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "title": {
           "anyOf": [
             {

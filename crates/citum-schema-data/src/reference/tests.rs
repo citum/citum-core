@@ -114,6 +114,98 @@ fn test_parse_csl_json_broadcast_without_audio_roles_stays_serial_component() {
 }
 
 #[test]
+fn test_parse_csl_json_broadcast_with_producers_stays_serial_component() {
+    let json = r#"{
+        "id": "blackish-episode",
+        "type": "broadcast",
+        "title": "Lemons",
+        "author": [{"family": "Barris", "given": "K."}],
+        "container-title": "Black-ish",
+        "number": "Season 3, Episode 12",
+        "issued": {"date-parts": [[2017, 1, 11]]},
+        "publisher": "Wilmore Films; Artists First; Cinema Gypsy Productions; ABC Studios",
+        "executive-producer": [{"family": "Barris", "given": "K."}]
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    match reference {
+        InputReference::SerialComponent(component) => {
+            assert!(component.author.is_some());
+            assert!(
+                component
+                    .contributors
+                    .iter()
+                    .any(|entry| entry.role == ContributorRole::Producer)
+            );
+            let container_title =
+                component
+                    .container
+                    .as_ref()
+                    .and_then(|relation| match relation {
+                        WorkRelation::Embedded(parent) => parent.title(),
+                        WorkRelation::Id(_) => None,
+                    });
+            assert_eq!(
+                container_title,
+                Some(Title::Single("Black-ish".to_string()))
+            );
+        }
+        other => panic!("expected serial component, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_csl_json_broadcast_podcast_number_normalizes_with_no_prefix_added() {
+    let json = r#"{
+        "id": "podcast-episode",
+        "type": "broadcast",
+        "title": "Amusement park",
+        "author": [{"family": "Glass", "given": "Ira"}],
+        "container-title": "This American Life",
+        "medium": "audio podcast episode",
+        "number": "443",
+        "issued": {"date-parts": [[2011, 8, 12]]}
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    match reference {
+        InputReference::SerialComponent(component) => {
+            assert_eq!(component.issue.as_deref(), Some("No. 443"));
+        }
+        other => panic!("expected serial component, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_serial_component_author_falls_back_to_producer_for_av_like_broadcasts() {
+    let json = r#"{
+        "id": "the-wire",
+        "type": "broadcast",
+        "title": "The wire",
+        "medium": "TV series",
+        "executive-producer": [
+            {"family": "Simon", "given": "D."},
+            {"family": "Colesberry", "given": "R.F."}
+        ]
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    let author = reference
+        .author()
+        .expect("producer fallback should supply author");
+    let Contributor::ContributorList(list) = author else {
+        panic!("expected contributor list fallback");
+    };
+    assert_eq!(list.0.len(), 2);
+}
+
+#[test]
 fn test_parse_csl_json_mixed_string_date_parts() {
     let json = r#"{
         "id": "mixed-date",
@@ -127,6 +219,40 @@ fn test_parse_csl_json_mixed_string_date_parts() {
     let reference: InputReference = legacy.into();
 
     assert_eq!(reference.issued().unwrap().0, "2017-02-21");
+}
+
+#[test]
+fn test_parse_csl_json_entry_dictionary_preserves_dictionary_type() {
+    let json = r#"{
+        "id": "oed-entry",
+        "type": "entry-dictionary",
+        "title": "hootenanny, n.",
+        "container-title": "Oxford English Dictionary",
+        "issued": {"date-parts": [[2025, 6]]}
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(reference.ref_type(), "entry-dictionary");
+}
+
+#[test]
+fn test_parse_csl_json_entry_dictionary_preserves_status() {
+    let json = r#"{
+        "id": "oed-entry",
+        "type": "entry-dictionary",
+        "title": "hootenanny, n.",
+        "container-title": "Oxford English Dictionary",
+        "issued": {"date-parts": [[2025, 6]]},
+        "note": "status: last modified"
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(reference.ref_type(), "entry-dictionary");
+    assert_eq!(reference.status().as_deref(), Some("last modified"));
 }
 
 #[test]
@@ -419,6 +545,36 @@ issued: "1971"
 }
 
 #[test]
+fn test_audio_visual_broadcast_author_falls_back_to_author_contributor() {
+    let yaml = r#"
+class: audio-visual
+type: broadcast
+title: "Who shot Mr. Burns? (Part one)"
+contributors:
+  - role: author
+    contributor:
+      family: Lynch
+      given: J.
+  - role: producer
+    contributor:
+      family: Mirkin
+      given: David
+issued: "1995-05-21"
+"#;
+
+    let reference: InputReference = serde_yaml::from_str(yaml).expect("failed to parse YAML");
+
+    if let Some(Contributor::StructuredName(author)) = reference.author() {
+        assert_eq!(
+            author.family,
+            MultilingualString::Simple("Lynch".to_string())
+        );
+    } else {
+        panic!("expected broadcast author resolved from explicit author contributor");
+    }
+}
+
+#[test]
 fn test_monograph_contributor_shorthand_folding() {
     let yaml = r#"
 class: monograph
@@ -520,6 +676,20 @@ issued: "2020"
     } else {
         panic!("expected Monograph");
     }
+}
+
+#[test]
+fn test_monograph_status_accessor_reads_canonical_field() {
+    let yaml = r#"
+class: monograph
+type: webpage
+title: "Reference entry"
+status: "last modified"
+"#;
+
+    let reference: InputReference = serde_yaml::from_str(yaml).unwrap();
+
+    assert_eq!(reference.status().as_deref(), Some("last modified"));
 }
 
 #[test]

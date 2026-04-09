@@ -108,16 +108,27 @@ fn relation_monograph(
     ))))
 }
 
-fn legacy_has_audio_visual_roles(legacy: &csl_legacy::csl_json::Reference) -> bool {
-    legacy.director.is_some()
-        || legacy_extra_names(legacy, "composer").is_some()
-        || legacy_extra_names(legacy, "performer").is_some()
-        || legacy_extra_names(legacy, "producer").is_some()
-        || legacy_extra_names(legacy, "executive-producer").is_some()
-}
-
 fn short_title_from_legacy(legacy: &csl_legacy::csl_json::Reference, key: &str) -> Option<String> {
     legacy_extra_str(legacy, key)
+}
+
+fn normalize_broadcast_issue(
+    ref_type: &str,
+    medium: Option<&str>,
+    number: &str,
+) -> csl_legacy::csl_json::StringOrNumber {
+    let normalized = if matches!(ref_type, "broadcast" | "motion_picture")
+        && medium
+            .map(|value| value.to_ascii_lowercase().contains("podcast"))
+            .unwrap_or(false)
+        && number.chars().all(|ch| ch.is_ascii_digit())
+    {
+        format!("No. {number}")
+    } else {
+        number.to_string()
+    };
+
+    csl_legacy::csl_json::StringOrNumber::String(normalized)
 }
 
 /// Build a title, optionally structured if short_title is present and title contains a colon.
@@ -157,10 +168,17 @@ fn archive_info_from_legacy_flat(legacy: &csl_legacy::csl_json::Reference) -> Op
         .or_else(|| legacy.extra.get("archive_collection"))
         .and_then(serde_json::Value::as_str)
         .map(str::to_string);
+    let place = legacy
+        .extra
+        .get("archive-place")
+        .or_else(|| legacy.extra.get("archive_place"))
+        .and_then(serde_json::Value::as_str)
+        .map(str::to_string);
 
     Some(ArchiveInfo {
         name: legacy.archive.clone().map(Into::into),
         location: legacy.archive_location.clone(),
+        place,
         collection,
         ..Default::default()
     })
@@ -445,6 +463,7 @@ fn from_collection_component_ref(
     legacy: csl_legacy::csl_json::Reference,
     ctx: RefContext,
 ) -> InputReference {
+    let (genre, status) = collection_component_metadata(&legacy);
     let part_title = legacy_extra_str(&legacy, "part-title");
     let part_number = legacy_extra_str(&legacy, "part-number");
     let original_author = legacy_extra_contributor(&legacy, "original-author");
@@ -516,8 +535,9 @@ fn from_collection_component_ref(
         field_languages: HashMap::new(),
         note: ctx.note,
         doi: ctx.doi,
-        genre: legacy.genre,
+        genre,
         medium: legacy.medium,
+        status,
         numbering: {
             let mut numbering = Vec::new();
             if let Some(part_number) = part_number {
@@ -542,6 +562,17 @@ fn from_collection_component_ref(
         ),
         ..Default::default()
     }))
+}
+
+fn collection_component_metadata(
+    legacy: &csl_legacy::csl_json::Reference,
+) -> (Option<String>, Option<String>) {
+    let mut genre = legacy.genre.clone();
+    if legacy.ref_type == "entry-dictionary" && genre.is_none() {
+        genre = Some("entry-dictionary".to_string());
+    }
+    let status = legacy_extra_str(legacy, "status");
+    (genre, status)
 }
 
 /// Convert a legacy CSL edited book into the standalone Citum collection shape.
@@ -655,10 +686,9 @@ fn from_serial_component_ref(
         .clone()
         .or_else(|| {
             if legacy.ref_type == "broadcast" || legacy.ref_type == "motion_picture" {
-                legacy
-                    .number
-                    .as_ref()
-                    .map(|n| csl_legacy::csl_json::StringOrNumber::String(n.clone()))
+                legacy.number.as_ref().map(|n| {
+                    normalize_broadcast_issue(&legacy.ref_type, legacy.medium.as_deref(), n)
+                })
             } else {
                 None
             }
@@ -1251,13 +1281,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
             "article-journal" | "article" | "article-magazine" | "article-newspaper"
             | "entry-encyclopedia" => from_serial_component_ref(legacy, ctx),
             "motion_picture" => from_audio_visual_ref(legacy, ctx),
-            "broadcast" => {
-                if legacy_has_audio_visual_roles(&legacy) {
-                    from_audio_visual_ref(legacy, ctx)
-                } else {
-                    from_serial_component_ref(legacy, ctx)
-                }
-            }
+            "broadcast" => from_serial_component_ref(legacy, ctx),
             "speech" | "presentation" => from_event_ref(legacy, ctx),
             "bill" => from_bill_ref(legacy, ctx),
             "legal-case" | "legal_case" => from_legal_case_ref(legacy, ctx),
@@ -1512,7 +1536,7 @@ mod tests {
     }
 
     #[test]
-    fn legacy_audiovisual_maps_executive_producer_to_producer() {
+    fn legacy_broadcast_maps_executive_producer_to_producer() {
         let legacy = csl_legacy::csl_json::Reference {
             id: "broadcast-1".to_string(),
             ref_type: "broadcast".to_string(),
@@ -1527,12 +1551,11 @@ mod tests {
 
         let converted = InputReference::from(legacy);
 
-        let InputReference::AudioVisual(work) = converted else {
-            panic!("expected audiovisual work");
+        let InputReference::SerialComponent(work) = converted else {
+            panic!("expected serial component");
         };
         assert!(
-            work.core
-                .contributors
+            work.contributors
                 .iter()
                 .any(|entry| entry.role == ContributorRole::Producer)
         );

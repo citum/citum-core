@@ -163,8 +163,38 @@ impl InputReference {
                     .or_else(|| r.author.clone())
             }
             InputReference::SerialComponent(r) => {
-                collect_contributors_by_role(&r.contributors, &DataRole::Author)
-                    .or_else(|| r.author.clone())
+                let explicit_author =
+                    collect_contributors_by_role(&r.contributors, &DataRole::Author)
+                        .or_else(|| r.author.clone());
+
+                explicit_author.or_else(|| {
+                    let av_like = r
+                        .medium
+                        .as_deref()
+                        .map(|value| {
+                            let lowered = value.to_ascii_lowercase();
+                            lowered.contains("podcast")
+                                || lowered.contains("tv")
+                                || lowered.contains("film")
+                                || lowered.contains("video")
+                        })
+                        .unwrap_or(false)
+                        || r.genre
+                            .as_deref()
+                            .map(|value| {
+                                let lowered = value.to_ascii_lowercase();
+                                lowered.contains("broadcast") || lowered.contains("film")
+                            })
+                            .unwrap_or(false);
+
+                    if av_like {
+                        collect_contributors_by_role(&r.contributors, &DataRole::Producer).or_else(
+                            || collect_contributors_by_role(&r.contributors, &DataRole::Host),
+                        )
+                    } else {
+                        None
+                    }
+                })
             }
             InputReference::Treaty(r) => r.author.clone(),
             InputReference::Brief(r) => r.author.clone(),
@@ -182,17 +212,34 @@ impl InputReference {
                     })
                     .or_else(|| collect_contributors_by_role(&r.contributors, &DataRole::Author))
             }
-            InputReference::AudioVisual(r) => match r.r#type {
-                AudioVisualType::Film | AudioVisualType::Episode => {
-                    collect_contributors_by_role(&r.core.contributors, &DataRole::Director)
+            InputReference::AudioVisual(r) => {
+                let explicit_author =
+                    collect_contributors_by_role(&r.core.contributors, &DataRole::Author);
+
+                match r.r#type {
+                    AudioVisualType::Film | AudioVisualType::Episode => {
+                        explicit_author.or_else(|| {
+                            collect_contributors_by_role(&r.core.contributors, &DataRole::Director)
+                        })
+                    }
+                    AudioVisualType::Recording => explicit_author.or_else(|| {
+                        collect_contributors_by_role(&r.core.contributors, &DataRole::Composer)
+                            .or_else(|| {
+                                collect_contributors_by_role(
+                                    &r.core.contributors,
+                                    &DataRole::Performer,
+                                )
+                            })
+                    }),
+                    AudioVisualType::Broadcast => explicit_author
+                        .or_else(|| {
+                            collect_contributors_by_role(&r.core.contributors, &DataRole::Director)
+                        })
+                        .or_else(|| {
+                            collect_contributors_by_role(&r.core.contributors, &DataRole::Producer)
+                        }),
                 }
-                AudioVisualType::Recording => {
-                    collect_contributors_by_role(&r.core.contributors, &DataRole::Composer).or_else(
-                        || collect_contributors_by_role(&r.core.contributors, &DataRole::Performer),
-                    )
-                }
-                AudioVisualType::Broadcast => None,
-            },
+            }
             _ => None,
         }
     }
@@ -208,6 +255,10 @@ impl InputReference {
                     .or_else(|| r.editor.clone())
             }
             InputReference::CollectionComponent(r) => r.container.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.editor(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::SerialComponent(r) => r.container.as_ref().and_then(|c| match c {
                 WorkRelation::Embedded(p) => p.editor(),
                 WorkRelation::Id(_) => None,
             }),
@@ -731,6 +782,17 @@ impl InputReference {
         }
     }
 
+    /// Return the publication status.
+    pub fn status(&self) -> Option<String> {
+        match self {
+            InputReference::Monograph(r) => r.status.clone(),
+            InputReference::CollectionComponent(r) => r.status.clone(),
+            InputReference::SerialComponent(r) => r.status.clone(),
+            InputReference::Standard(r) => r.status.clone(),
+            _ => None,
+        }
+    }
+
     /// Return the eprint identifier.
     pub fn eprint_id(&self) -> Option<String> {
         match self {
@@ -1250,7 +1312,13 @@ impl InputReference {
                 }
             },
             InputReference::CollectionComponent(r) => match r.r#type {
-                MonographComponentType::Chapter => "chapter".to_string(),
+                MonographComponentType::Chapter => {
+                    if r.genre.as_deref() == Some("entry-dictionary") {
+                        "entry-dictionary".to_string()
+                    } else {
+                        "chapter".to_string()
+                    }
+                }
                 MonographComponentType::Document => "paper-conference".to_string(),
             },
             InputReference::SerialComponent(r) => {
