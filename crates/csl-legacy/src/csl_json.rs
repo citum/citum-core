@@ -684,6 +684,7 @@ fn is_string_variable(key: &str) -> bool {
             | "number-of-pages"
             | "chapter-number"
             | "part-number"
+            | "part-title"
             | "supplement-number"
             | "references"
             | "source"
@@ -733,6 +734,12 @@ fn handle_string_variable(ref_obj: &mut Reference, key: &str, value: &str) {
             if ref_obj.collection_number.is_none() {
                 ref_obj.collection_number = Some(StringOrNumber::String(trimmed.to_string()));
             }
+        }
+        "part-title" => {
+            ref_obj.extra.insert(
+                key.to_string(),
+                serde_json::Value::String(trimmed.to_string()),
+            );
         }
         "publisher-place" => {
             if ref_obj.publisher_place.is_none() {
@@ -1122,6 +1129,23 @@ mod tests {
         assert_eq!(
             ref_obj.archive_location,
             Some("Box 5, Folder 3".to_string())
+        );
+        assert_eq!(ref_obj.note, None);
+    }
+
+    #[test]
+    fn test_parse_note_field_part_title_stored_in_extra() {
+        let mut ref_obj = Reference {
+            id: "test".to_string(),
+            ref_type: "webpage".to_string(),
+            note: Some("part-title: Part title".to_string()),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+        assert_eq!(
+            ref_obj.extra.get("part-title"),
+            Some(&serde_json::Value::String("Part title".to_string()))
         );
         assert_eq!(ref_obj.note, None);
     }
