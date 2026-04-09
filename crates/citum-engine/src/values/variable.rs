@@ -41,7 +41,11 @@ fn resolve_variable_value(
 ) -> Option<String> {
     match variable {
         SimpleVariable::Doi => reference.doi(),
-        SimpleVariable::Url => reference.url().map(|u| u.to_string()),
+        SimpleVariable::Url => reference.url().map(|u| u.to_string()).or_else(|| {
+            (reference.ref_type() == "dataset")
+                .then(|| reference.doi().map(|doi| format!("https://doi.org/{doi}")))
+                .flatten()
+        }),
         SimpleVariable::Isbn => reference.isbn(),
         SimpleVariable::Issn => reference.issn(),
         SimpleVariable::Publisher => reference.publisher_str(),

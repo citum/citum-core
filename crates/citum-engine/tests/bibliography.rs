@@ -1921,6 +1921,35 @@ fn anonymous_entry_type_variants_reorder_online_entries_and_drop_print_fallback_
     );
 }
 
+#[test]
+fn apa_dataset_without_title_falls_back_to_bracketed_label_version_and_doi() {
+    let style = load_style("styles/apa-7th.yaml");
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_value(serde_json::json!({
+        "id": "apa-titleless-dataset",
+        "type": "dataset",
+        "author": [{ "family": "Author", "given": "First A." }],
+        "issued": { "date-parts": [[2013]] },
+        "DOI": "10.1234/5678",
+        "genre": "Untitled dataset",
+        "version": "2.1",
+        "language": "en"
+    }))
+    .expect("dataset fixture should parse");
+
+    let mut bibliography = indexmap::IndexMap::new();
+    bibliography.insert("apa-titleless-dataset".to_string(), legacy.into());
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_selected_bibliography_with_format::<PlainText, _>([
+        "apa-titleless-dataset".to_string(),
+    ]);
+
+    assert_eq!(
+        rendered.trim(),
+        "Author, F. A. (2013). [Untitled dataset] (Version 2.1). https://doi.org/10.1234/5678"
+    );
+}
+
 fn bibliography_local_entry_links_apply_on_the_default_render_path() {
     let style = build_bibliography_entry_link_style();
     let reference = InputReference::Monograph(Box::new(Monograph {

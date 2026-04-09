@@ -1,11 +1,11 @@
 ---
 # csl26-xgv3
 title: APA 7 rich bibliography follow-up
-status: todo
+status: completed
 type: task
 priority: normal
 created_at: 2026-04-09T12:48:29Z
-updated_at: 2026-04-09T13:05:00Z
+updated_at: 2026-04-09T18:30:00Z
 ---
 
 Follow up `csl26-qh84` after the APA rich bibliography benchmarks were wired
@@ -28,10 +28,23 @@ smaller residual surface:
 
 ## Tasks
 
-- [ ] Classify the remaining APA residuals as style-defect, processor-defect,
+- [x] Classify the remaining APA residuals as style-defect, processor-defect,
   malformed-source exclusion, or intentional divergence.
-- [ ] Choose one bounded APA cluster for a `style-evolve` pass using reduced
+- [x] Choose one bounded APA cluster for a `style-evolve` pass using reduced
   evidence first.
-- [ ] Land one net APA supplemental bibliography gain without regressing the
+- [x] Land one net APA supplemental bibliography gain without regressing the
   40 / 40 primary gate.
-- [ ] Summarize any residual non-style defects in successor beans if needed.
+- [x] Summarize any residual non-style defects in successor beans if needed.
+
+## Summary of Changes
+
+Confirmed the decisive APA residual as a processor-side dataset intake/render
+gap rather than the already-covered Wikipedia anonymous-entry path.
+
+Preserved titleless dataset metadata from CSL-JSON intake, synthesized the APA
+fallback title/version text for that narrow case, and let APA bibliography URL
+rendering fall back to DOI URLs for datasets without a standalone URL.
+
+Added an engine bibliography regression that exercises the titleless APA
+dataset shape directly and verifies the rendered entry no longer collapses to a
+bare author/year stub.
