@@ -460,13 +460,7 @@ bibliography:
       suffix: "."
     - variable: doi
       prefix: "https://doi.org/"
-    - items: &id004
-      - date: accessed
-        form: year-month-day
-        prefix: "Retrieved "
-        suffix: ", from"
-      - variable: url
-      delimiter: " "
+    - variable: url
       prefix: " "
     article-magazine:
     - contributor: author
@@ -562,8 +556,7 @@ bibliography:
       suffix: "."
     - variable: doi
       prefix: "https://doi.org/"
-    - items: *id004
-      delimiter: " "
+    - variable: url
       prefix: " "
     broadcast:
     - contributor: author
@@ -621,8 +614,7 @@ bibliography:
       suffix: "."
     - variable: doi
       prefix: "https://doi.org/"
-    - items: *id004
-      delimiter: " "
+    - variable: url
       prefix: " "
     chapter:
     - contributor: author
@@ -759,8 +751,7 @@ bibliography:
       suffix: "."
     - variable: doi
       prefix: "https://doi.org/"
-    - items: *id004
-      delimiter: " "
+    - variable: url
       prefix: " "
     legal-case:
     - title: primary
@@ -853,17 +844,8 @@ bibliography:
       suffix: "."
     - variable: doi
       prefix: " https://doi.org/"
-    - delimiter: " "
+    - variable: url
       prefix: " "
-      group:
-      - date: accessed
-        form: month-day
-        prefix: "Retrieved "
-      - date: accessed
-        form: year
-        prefix: ", "
-        suffix: ", from"
-      - variable: url
     software:
     - contributor: author
       form: long
@@ -922,8 +904,7 @@ bibliography:
       suffix: "."
     - variable: doi
       prefix: "https://doi.org/"
-    - items: *id004
-      delimiter: " "
+    - variable: url
       prefix: " "
     standard:
     - contributor: author
@@ -980,8 +961,7 @@ bibliography:
       suffix: "."
     - variable: doi
       prefix: "https://doi.org/"
-    - items: *id004
-      delimiter: " "
+    - variable: url
       prefix: " "
     webpage:
     - contributor: author
@@ -1038,11 +1018,36 @@ bibliography:
       suffix: "."
     - variable: doi
       prefix: "https://doi.org/"
-    - items: *id004
-      delimiter: " "
+    - variable: url
       prefix: " "
     personal-communication: []
-    [motion-picture, broadcast, interview]:
+    motion-picture:
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: "."
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      emph: true
+    - delimiter: "; "
+      wrap:
+        punctuation: brackets
+      prefix: " "
+      group:
+      - variable: genre
+        text-case: capitalize-first
+      - variable: medium
+        text-case: capitalize-first
+    - variable: publisher
+      prefix: ". "
+      suffix: "."
+    - variable: url
+      prefix: " "
+    broadcast:
     - contributor: author
       form: long
       name-order: family-first
@@ -1053,30 +1058,53 @@ bibliography:
         punctuation: parentheses
       prefix: " "
     - title: primary
-      emph: true
+      emph: false
+      suffix: ""
     - number: issue
-      wrap:
-        punctuation: parentheses
-        inner-prefix: "No. "
-      prefix: " "
-    - variable: note
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - variable: genre
-      wrap:
-        punctuation: brackets
-        inner-suffix: "; Film"
-      prefix: " "
-      suffix: "."
-    - variable: medium
+      prefix: " ("
+      suffix: ")"
+    - delimiter: "; "
       wrap:
         punctuation: brackets
       prefix: " "
-      suffix: "."
+      group:
+      - variable: genre
+        text-case: capitalize-first
+      - variable: medium
+        text-case: capitalize-first
     - title: parent-serial
       emph: true
       prefix: " In "
+      suffix: "."
+    - variable: publisher
+      prefix: " "
+      suffix: "."
+    - variable: url
+      prefix: " "
+    interview:
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: "."
+    - date: issued
+      form: year-month-day
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      emph: false
+    - delimiter: "; "
+      wrap:
+        punctuation: brackets
+      prefix: " "
+      suffix: "."
+      group:
+      - variable: genre
+        text-case: capitalize-first
+      - variable: medium
+        text-case: capitalize-first
+    - variable: publisher
+      prefix: " "
       suffix: "."
     - variable: url
       prefix: " "
@@ -1145,11 +1173,5 @@ bibliography:
     suffix: "."
   - variable: doi
     prefix: "https://doi.org/"
-  - delimiter: " "
+  - variable: url
     prefix: " "
-    group:
-    - date: accessed
-      form: year-month-day
-      prefix: "Retrieved "
-      suffix: ", from"
-    - variable: url

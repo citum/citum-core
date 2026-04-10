@@ -956,6 +956,7 @@ vocab:
   medium:
     film: "Film"
     video: "Video"
+    cd: "CD"
     audio-cd: "Audio CD"
     vinyl: "Vinyl"
     dvd: "DVD"

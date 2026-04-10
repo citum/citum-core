@@ -627,6 +627,12 @@ struct AudioVisualDeser {
     note: Option<String>,
 }
 
+impl HasNumbering for AudioVisualWork {
+    fn numbering(&self) -> &[Numbering] {
+        &self.numbering
+    }
+}
+
 impl From<AudioVisualDeser> for AudioVisualWork {
     fn from(raw: AudioVisualDeser) -> Self {
         let mut numbering = raw.numbering;

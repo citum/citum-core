@@ -33,6 +33,11 @@ impl ComponentValues for TemplateTerm {
             value = crate::values::strip_trailing_periods(&value);
         }
 
+        // Apply text-case if configured
+        if let Some(tc) = effective_rendering.text_case {
+            value = crate::values::text_case::apply_text_case(&value, tc);
+        }
+
         if value.is_empty() {
             None
         } else {
