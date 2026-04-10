@@ -283,6 +283,7 @@ impl ComponentValues for TemplateTitle {
             TitleType::ParentMonograph => match reference {
                 Reference::Monograph(_)
                 | Reference::CollectionComponent(_)
+                | Reference::Event(_)
                 | Reference::AudioVisual(_) => reference.container_title(),
                 _ => None,
             },

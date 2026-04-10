@@ -1295,10 +1295,85 @@ fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
     }))
 }
 
+fn from_preprint_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
+    let archive_info = archive_info_from_legacy_flat(&legacy);
+    let archive = match archive_info.as_ref() {
+        Some(ai) if ai.collection.is_some() => None,
+        _ => legacy.archive.clone(),
+    };
+
+    let author = legacy.author.clone().map(Contributor::from);
+    let editor = legacy.editor.clone().map(Contributor::from);
+    let translator = legacy.translator.clone().map(Contributor::from);
+    let mut contributors = Vec::new();
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Author,
+        legacy.author.clone(),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Editor,
+        legacy.editor.clone(),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Translator,
+        legacy.translator.clone(),
+    );
+
+    let numbering = legacy
+        .number
+        .as_ref()
+        .map(|number| {
+            vec![Numbering {
+                r#type: NumberingType::Report,
+                value: number.clone(),
+            }]
+        })
+        .unwrap_or_default();
+
+    InputReference::Monograph(Box::new(Monograph {
+        id: ctx.id,
+        r#type: MonographType::Preprint,
+        title: build_title(ctx.title, ctx.short_title.clone()),
+        short_title: None,
+        container: None,
+        author,
+        editor,
+        translator,
+        contributors,
+        created: ctx.created,
+        issued: ctx.issued,
+        publisher: legacy.publisher.map(|name| Publisher {
+            name: name.into(),
+            place: legacy.publisher_place,
+        }),
+        url: ctx.url,
+        accessed: ctx.accessed,
+        language: ctx.language,
+        field_languages: HashMap::new(),
+        note: ctx.note,
+        doi: ctx.doi,
+        isbn: ctx.isbn,
+        numbering,
+        genre: legacy.genre,
+        medium: legacy.medium,
+        archive,
+        archive_location: legacy.archive_location,
+        archive_info,
+        eprint: None,
+        keywords: None,
+        original: None,
+        ..Default::default()
+    }))
+}
+
 fn from_event_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
     let producer_names = legacy_extra_names(&legacy, "producer")
         .or_else(|| legacy_extra_names(&legacy, "executive-producer"));
     let host_names = legacy_extra_names(&legacy, "host");
+    let chair_names = legacy_extra_names(&legacy, "chair");
     let available_date = legacy_extra_date(&legacy, "available-date");
     let event_title = legacy_extra_str(&legacy, "event-title");
     let event_place = legacy_extra_str(&legacy, "event-place");
@@ -1314,6 +1389,11 @@ fn from_event_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> I
         ContributorRole::Narrator,
         legacy_extra_names(&legacy, "narrator"),
     );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Custom("chair".to_string()),
+        chair_names,
+    );
     push_legacy_contributor(&mut contributors, ContributorRole::Producer, producer_names);
     push_legacy_contributor(&mut contributors, ContributorRole::Host, host_names);
     if let Some(organizer_name) = legacy.publisher.clone() {
@@ -1327,14 +1407,19 @@ fn from_event_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> I
     }
     InputReference::Event(Box::new(Event {
         id: ctx.id,
-        title: build_title(event_title.or(ctx.title), ctx.short_title.clone()),
+        title: build_title(ctx.title, ctx.short_title.clone()),
         container: legacy.container_title.clone().map(|t| {
             WorkRelation::Embedded(Box::new(InputReference::Monograph(Box::new(Monograph {
                 title: Some(Title::Single(t)),
                 ..Default::default()
             }))))
         }),
-        series: None,
+        series: event_title.map(|title| {
+            WorkRelation::Embedded(Box::new(InputReference::Collection(Box::new(Collection {
+                title: Some(Title::Single(title)),
+                ..Default::default()
+            }))))
+        }),
         location: event_place.or(legacy.publisher_place.clone()),
         date: event_date.or_else(|| (!ctx.issued.is_empty()).then_some(ctx.issued)),
         available_date,
@@ -1404,12 +1489,19 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
             "chapter" | "paper-conference" | "entry-dictionary" | "entry-encyclopedia" => {
                 from_collection_component_ref(legacy, ctx)
             }
-            "article-journal" | "article" | "article-magazine" | "article-newspaper" => {
+            "article-journal" | "article-magazine" | "article-newspaper" => {
                 from_serial_component_ref(legacy, ctx)
+            }
+            "article" => {
+                if legacy.container_title.is_none() {
+                    from_preprint_ref(legacy, ctx)
+                } else {
+                    from_serial_component_ref(legacy, ctx)
+                }
             }
             "motion_picture" | "song" => from_audio_visual_ref(legacy, ctx),
             "broadcast" => from_serial_component_ref(legacy, ctx),
-            "speech" | "presentation" => from_event_ref(legacy, ctx),
+            "speech" | "presentation" | "event" => from_event_ref(legacy, ctx),
             "bill" => from_bill_ref(legacy, ctx),
             "legal-case" | "legal_case" => from_legal_case_ref(legacy, ctx),
             "statute" | "legislation" => from_statute_ref(legacy, ctx),
@@ -1640,7 +1732,17 @@ mod tests {
         let InputReference::Event(event) = converted else {
             panic!("expected event");
         };
-        assert_eq!(event.title, Some(Title::Single("Actual Event".to_string())));
+        assert_eq!(
+            event.title,
+            Some(Title::Single("Fallback Title".to_string()))
+        );
+        assert_eq!(
+            event.series.as_ref().and_then(|relation| match relation {
+                WorkRelation::Embedded(parent) => parent.title(),
+                WorkRelation::Id(_) => None,
+            }),
+            Some(Title::Single("Actual Event".to_string()))
+        );
         assert_eq!(event.location, Some("Chicago".to_string()));
         assert_eq!(event.date, Some(EdtfString("2023-05-06".to_string())));
     }

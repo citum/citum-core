@@ -180,6 +180,9 @@ impl ComponentValues for TemplateContributor {
             ContributorRole::Recipient => {
                 reference.contributor(citum_schema::reference::ContributorRole::Recipient)
             }
+            ContributorRole::Chair => reference.contributor(
+                citum_schema::reference::ContributorRole::Custom("chair".to_string()),
+            ),
             ContributorRole::Interviewer => {
                 reference.contributor(citum_schema::reference::ContributorRole::Interviewer)
             }

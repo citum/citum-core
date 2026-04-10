@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-09
 **Status:** Active
-**Related:** `.beans/archive/csl26-xgv3--apa-7-rich-bibliography-follow-up.md`, `.beans/archive/csl26-zu8r--apa-web-native-packaging-follow-up.md`, `.beans/csl26-gtat--apa-container-packaging-follow-up.md`, `.beans/csl26-5ap9--apa-authored-containerized-works-follow-up.md`, `.beans/csl26-mwnt--apa-year-suffix-disambiguation-cleanup.md`, `docs/specs/FIDELITY_RICH_INPUTS.md`
+**Related:** `.beans/archive/csl26-xgv3--apa-7-rich-bibliography-follow-up.md`, `.beans/archive/csl26-zu8r--apa-web-native-packaging-follow-up.md`, `.beans/csl26-gtat--apa-container-packaging-follow-up.md`, `.beans/archive/csl26-5ap9--apa-authored-containerized-works-follow-up.md`, `.beans/csl26-mwnt--apa-year-suffix-disambiguation-cleanup.md`, `docs/specs/FIDELITY_RICH_INPUTS.md`
 
 ## Purpose
 Drive `apa-test-library-diagnostic` from the current `54 / 74` to conclusion
@@ -56,21 +56,22 @@ The APA rich-bibliography effort is concluded only when all three are true:
 ### 3. Authored / containerized works
 - bean: `csl26-5ap9`
 - rows: `49` to `58`, `60` to `74`
-- status: in progress
+- status: structural closure complete on 2026-04-10
 - before count: `20` failing rows
-- current count: `10` unresolved rows in the authored/containerized bucket,
-  plus one local chapter edge case already isolated inside the bean
+- reduced structural closure fixture for rows `71`, `73`, and `74`: `3 / 3`
+- remaining follow-up: any residual year/date ordering cleanup is handed to
+  `csl26-mwnt`
 - expected subsystem: mixed `citum_migrate`, `citum_engine`, and style YAML
 - target issues:
-  - audiovisual role / container defects
-  - remaining editor+translator / original-work chapter edge case
-  - conference / presentation classification defects
-  - archive / preprint / thesis / manuscript / artwork packaging defects
+  - chapter container-author suppression via generic `role-substitute`
+  - conference / presentation classification and session packaging
+  - preprint/report-like article intake and parenthetical packaging
 
 ### 4. Year-suffix / disambiguation cleanup
 - bean: `csl26-mwnt`
-- rows: deferred until structural clusters are re-run
-- before count: not yet isolated
+- rows: structural handoff now includes residual ordering cleanup after rows
+  `71`, `73`, and `74` were closed structurally
+- before count: not yet isolated as a clean post-structure-only set
 - expected subsystem: primarily `citum_engine`
 - target issues: residual year-letter churn and anonymous-ordering mismatches
   that remain after structural fixes land

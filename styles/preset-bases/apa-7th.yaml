@@ -422,6 +422,7 @@ bibliography:
     hanging-indent: true
     separator: ". "
   type-variants:
+    personal-communication: []
     article-journal:
     - contributor: author
       form: long
@@ -445,13 +446,21 @@ bibliography:
       wrap:
         punctuation: parentheses
       prefix: " "
-    - contributor: translator
-      form: long
-      name-order: given-first
-      label: &id002 {term: translator, form: short, placement: suffix}
+    - delimiter: "; "
       wrap:
         punctuation: parentheses
       prefix: " "
+      group:
+      - contributor: editor
+        form: long
+        name-order: given-first
+        label: {term: editor, form: long, placement: suffix}
+      - contributor: translator
+        form: long
+        name-order: given-first
+        label: &id002 {term: translator, form: short, placement: suffix}
+      - number: report-number
+        prefix: "No. "
     - delimiter: ", "
       group:
       - title: parent-serial
@@ -566,64 +575,6 @@ bibliography:
       prefix: "https://doi.org/"
     - variable: url
       prefix: " "
-    broadcast:
-    - contributor: author
-      form: long
-      suffix: "."
-      name-order: family-first
-    - date: issued
-      form: year-month-day
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      emph: true
-    - items: *id001
-      delimiter: "; "
-      wrap:
-        punctuation: brackets
-      prefix: " "
-    - number: edition
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - delimiter: ""
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-      group:
-      - term: volume
-        form: short
-        suffix: " "
-      - number: volume
-    - contributor: translator
-      form: long
-      name-order: given-first
-      label: *id002
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - contributor: editor
-      form: long
-      name-order: given-first
-      prefix: ". In "
-    - title: parent-monograph
-      emph: true
-      prefix: ", "
-    - delimiter: ", "
-      group:
-      - title: parent-serial
-        emph: true
-        prefix: "In "
-      - items: *id003
-        delimiter: ""
-    - number: pages
-      prefix: ", "
-      suffix: "."
-    - variable: doi
-      prefix: "https://doi.org/"
-    - variable: url
-      prefix: " "
     chapter:
     - contributor: author
       form: long
@@ -641,6 +592,13 @@ bibliography:
       prefix: " In "
       suffix: "."
       group:
+      - contributor: container-author
+        form: long
+        name-order: given-first
+      - contributor: editor
+        form: long
+        name-order: given-first
+        label: {term: editor, form: short, placement: suffix}
       - delimiter: " "
         group:
         - title: parent-monograph
@@ -796,6 +754,35 @@ bibliography:
     - number: pages
       prefix: ", "
       suffix: "."
+    event:
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: "."
+    - date: issued
+      form: year-month
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      emph: false
+    - delimiter: ", "
+      prefix: ". In "
+      suffix: "."
+      group:
+      - contributor: chair
+        form: long
+        name-order: given-first
+      - delimiter: " "
+        group:
+        - title: parent-monograph
+          emph: false
+        - variable: genre
+          text-case: capitalize-first
+          wrap:
+            punctuation: brackets
+    - variable: url
+      prefix: " "
     patent:
     - contributor: author
       form: long
@@ -816,6 +803,40 @@ bibliography:
       group:
       - variable: number
         prefix: "Patent No. "
+    preprint:
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: "."
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      emph: false
+    - delimiter: "; "
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+      group:
+      - contributor: editor
+        form: long
+        name-order: given-first
+        label: {term: editor, form: short, placement: suffix}
+      - contributor: translator
+        form: long
+        name-order: given-first
+        label: {term: translator, form: short, placement: suffix}
+      - number: report-number
+        prefix: "No. "
+    - variable: publisher
+      prefix: ". "
+      suffix: "."
+    - variable: doi
+      prefix: " https://doi.org/"
+    - variable: url
+      prefix: " "
     report:
     - contributor: author
       form: long
@@ -1023,94 +1044,6 @@ bibliography:
       suffix: "."
     - variable: doi
       prefix: "https://doi.org/"
-    - variable: url
-      prefix: " "
-    personal-communication: []
-    motion-picture:
-    - contributor: author
-      form: long
-      name-order: family-first
-      suffix: "."
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      emph: true
-    - delimiter: "; "
-      wrap:
-        punctuation: brackets
-      prefix: " "
-      group:
-      - variable: genre
-        text-case: capitalize-first
-      - variable: medium
-        text-case: capitalize-first
-    - variable: publisher
-      prefix: ". "
-      suffix: "."
-    - variable: url
-      prefix: " "
-    broadcast:
-    - contributor: author
-      form: long
-      name-order: family-first
-      suffix: "."
-    - date: issued
-      form: year-month-day
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      emph: false
-      suffix: ""
-    - number: issue
-      prefix: " ("
-      suffix: ")"
-    - delimiter: "; "
-      wrap:
-        punctuation: brackets
-      prefix: " "
-      group:
-      - variable: genre
-        text-case: capitalize-first
-      - variable: medium
-        text-case: capitalize-first
-    - title: parent-serial
-      emph: true
-      prefix: " In "
-      suffix: "."
-    - variable: publisher
-      prefix: " "
-      suffix: "."
-    - variable: url
-      prefix: " "
-    interview:
-    - contributor: author
-      form: long
-      name-order: family-first
-      suffix: "."
-    - date: issued
-      form: year-month-day
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      emph: false
-    - delimiter: "; "
-      wrap:
-        punctuation: brackets
-      prefix: " "
-      suffix: "."
-      group:
-      - variable: genre
-        text-case: capitalize-first
-      - variable: medium
-        text-case: capitalize-first
-    - variable: publisher
-      prefix: " "
-      suffix: "."
     - variable: url
       prefix: " "
   template:

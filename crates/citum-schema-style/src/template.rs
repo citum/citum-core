@@ -559,6 +559,7 @@ crate::str_enum! {
     #[serde(rename_all = "kebab-case")]
     pub enum ContributorRole {
         #[default] Author = "author",
+        Chair = "chair",
         Editor = "editor",
         Translator = "translator",
         Director = "director",

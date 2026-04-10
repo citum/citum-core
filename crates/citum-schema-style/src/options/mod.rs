@@ -432,7 +432,6 @@ impl Config {
         crate::merge_options!(
             self,
             other,
-            substitute,
             processing,
             locale_override,
             localize,
@@ -449,6 +448,14 @@ impl Config {
             integral_names,
             custom,
         );
+
+        if let Some(other_substitute) = &other.substitute {
+            if let Some(this_substitute) = &self.substitute {
+                self.substitute = Some(SubstituteConfig::merged(this_substitute, other_substitute));
+            } else {
+                self.substitute = Some(other_substitute.clone());
+            }
+        }
 
         if let Some(other_contributors) = &other.contributors {
             if let Some(this_contributors) = &mut self.contributors {

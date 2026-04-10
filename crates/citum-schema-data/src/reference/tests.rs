@@ -222,6 +222,67 @@ fn test_parse_csl_json_mixed_string_date_parts() {
 }
 
 #[test]
+fn test_parse_csl_json_event_note_type_routes_to_event_with_chair_and_session() {
+    let json = r#"{
+        "id": "event-session",
+        "type": "speech",
+        "title": "Conference presentation is a session",
+        "container-title": "Session title",
+        "event-title": "Society conference",
+        "genre": "Symposium",
+        "note": "type: event",
+        "chair": [
+            {"family": "Chair", "given": "First"},
+            {"family": "Chair", "given": "Second"}
+        ],
+        "author": [{"family": "Author", "given": "First"}],
+        "issued": {"date-parts": [[2013, 5]]}
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    let InputReference::Event(event) = reference else {
+        panic!("expected event reference");
+    };
+
+    assert_eq!(
+        event.title,
+        Some(Title::Single(
+            "Conference presentation is a session".to_string()
+        ))
+    );
+    assert_eq!(
+        event
+            .container
+            .as_ref()
+            .and_then(|relation| match relation {
+                WorkRelation::Embedded(parent) => parent.title(),
+                WorkRelation::Id(_) => None,
+            }),
+        Some(Title::Single("Session title".to_string()))
+    );
+    assert_eq!(
+        event.series.as_ref().and_then(|relation| match relation {
+            WorkRelation::Embedded(parent) => parent.title(),
+            WorkRelation::Id(_) => None,
+        }),
+        Some(Title::Single("Society conference".to_string()))
+    );
+    assert!(
+        event
+            .contributors
+            .iter()
+            .any(|entry| entry.role == ContributorRole::Custom("chair".to_string())),
+        "chair should be preserved as a custom contributor role"
+    );
+    assert_eq!(
+        event.date.as_ref().map(|date| date.0.clone()),
+        Some("2013-05".to_string())
+    );
+}
+
+#[test]
 fn test_parse_csl_json_entry_dictionary_preserves_dictionary_type() {
     let json = r#"{
         "id": "oed-entry",
@@ -235,6 +296,40 @@ fn test_parse_csl_json_entry_dictionary_preserves_dictionary_type() {
     let reference: InputReference = legacy.into();
 
     assert_eq!(reference.ref_type(), "entry-dictionary");
+}
+
+#[test]
+fn test_parse_csl_json_containerless_article_maps_to_preprint() {
+    let json = r#"{
+        "id": "preprint-article",
+        "type": "article",
+        "title": "Preprint with archive",
+        "publisher": "PsyArXiv",
+        "number": "123445",
+        "editor": [{"family": "Editor", "given": "A. A."}],
+        "translator": [{"family": "Translator", "given": "A. A."}],
+        "author": [{"family": "Author", "given": "A. A."}],
+        "issued": {"date-parts": [[2018]]}
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    let InputReference::Monograph(preprint) = reference else {
+        panic!("expected preprint to map to a monograph");
+    };
+
+    assert_eq!(preprint.r#type, MonographType::Preprint);
+    assert_eq!(
+        preprint
+            .publisher
+            .as_ref()
+            .map(|publisher| publisher.name.to_string()),
+        Some("PsyArXiv".to_string())
+    );
+    assert!(preprint.numbering.iter().any(|numbering| {
+        numbering.r#type == NumberingType::Report && numbering.value == "123445"
+    }));
 }
 
 #[test]

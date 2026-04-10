@@ -210,6 +210,13 @@ Track schema changes separately from code changes.
 Historical note: entries below may predate the automation baseline and are the
 authoritative record when matching tags were not created at the time.
 
+#### schema-v0.29.0 (2026-04-10)
+- Schema version bumped from 0.28.0 to 0.29.0
+- Added the template contributor role `chair` so event/session bibliography
+  templates can render chair lists directly
+- Clarified substitute-config merge semantics so bibliography or citation-local
+  substitute presets do not discard top-level `role-substitute` chains
+
 #### schema-v0.28.0 (2026-04-10)
 - Schema version bumped from 0.27.1 to 0.28.0
 

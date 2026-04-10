@@ -101,6 +101,47 @@ Rule of thumb:
 When in doubt, prefer `number:` for canonical numeric bibliographic fields and
 `variable:` for text-like identifiers or already-formatted strings.
 
+## Role-Substitute Chains
+
+Use `options.substitute.role-substitute` when one contributor role should stand
+in for another or suppress an explicit fallback contributor component.
+
+Example:
+
+```yaml
+options:
+  substitute:
+    role-substitute:
+      container-author:
+        - editor
+        - editorial-director
+```
+
+How this works:
+
+- the map key is the primary role to prefer
+- the list is the ordered fallback chain
+- the same chain is used for both fallback resolution and suppression of
+  explicit fallback contributors
+
+In practice, the APA chapter pattern above means:
+
+- render `container-author` when it exists
+- if `container-author` is absent, a `container-author` component may fall back
+  to `editor`, then `editorial-director`
+- if a separate `editor` component is also present, it is suppressed when
+  `container-author` exists so the names do not render twice
+
+Authoring rules:
+
+- role names normalize to canonical kebab-case, so `container_author` and
+  `container-author` resolve to the same role
+- built-in template roles and custom contributor-role strings are both valid
+- custom roles still participate in fallback and suppression even if they do
+  not have a dedicated template enum variant
+- locale-driven role labels are only shown when the resolved role has a known
+  locale term; fallback itself does not depend on label availability
+
 ## Field-Scoped Language Metadata
 
 `language` on a reference means "the item is generally in this language."
@@ -464,6 +505,20 @@ options:
 
 Both patterns use the same mechanism: top-level fields merged onto the preset.
 There is no separate `variant` layer.
+
+Preset-backed styles currently show up in two places on disk:
+
+- `styles/preset-bases/<name>.yaml` is the canonical embedded base loaded by
+  `preset: <name>`.
+- `styles/<name>.yaml` is the public style entrypoint that users can load
+  directly, publish, or override further.
+
+That is intentional, not two independent implementations. The preset base is
+the internal source of truth for inheritance, while the top-level style file is
+the user-facing wrapper layer. For `apa-7th`, the wrapper currently also carries
+materialized overrides, so changes that affect the public style still need to be
+kept in sync with the preset base until the authoring/export pipeline collapses
+that duplication automatically.
  
 Refer to [STYLE_PRESET_ARCHITECTURE.md](../specs/STYLE_PRESET_ARCHITECTURE.md) for the full list of available presets and technical details.
  

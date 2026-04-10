@@ -294,6 +294,54 @@ fn test_et_al_delimiter_never() {
     assert_eq!(values.value, "Smith et al.");
 }
 
+#[test]
+fn test_role_substitute_uses_custom_fallback_roles_without_silent_drop() {
+    let mut config = make_config();
+    config.substitute = Some(SubstituteConfig::Explicit(Substitute {
+        role_substitute: std::collections::HashMap::from([(
+            "editor".to_string(),
+            vec!["compiler".to_string()],
+        )]),
+        ..Default::default()
+    }));
+
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let reference = Reference::from(LegacyReference {
+        id: "compiler-fallback".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("Compiled Work".to_string()),
+        extra: std::collections::HashMap::from([(
+            "compiler".to_string(),
+            serde_json::json!([{ "family": "Compiler", "given": "Casey" }]),
+        )]),
+        ..Default::default()
+    });
+    let hints = ProcHints::default();
+
+    let component = TemplateContributor {
+        contributor: ContributorRole::Editor,
+        form: ContributorForm::Long,
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("custom compiler fallback should render");
+    assert_eq!(values.value, "Compiler, Casey");
+}
+
 /// Tests the behavior of `test_et_al_delimiter_always`.
 #[test]
 fn test_et_al_delimiter_always() {
@@ -1747,6 +1795,53 @@ fn test_editor_component_keeps_verb_prefix_role_label() {
 
     assert_eq!(values.value, "Grimm, Jacob");
     assert_eq!(values.prefix, Some("edited by ".to_string()));
+    assert_eq!(values.suffix, None);
+}
+
+#[test]
+fn test_role_substitute_normalizes_primary_role_lookup_keys() {
+    let mut config = make_config();
+    config.substitute = Some(SubstituteConfig::Explicit(Substitute {
+        role_substitute: std::collections::HashMap::from([(
+            "container_author".to_string(),
+            vec!["Editor".to_string()],
+        )]),
+        ..Default::default()
+    }));
+
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let reference = Reference::from(LegacyReference {
+        id: "normalized-role-key".to_string(),
+        ref_type: "chapter".to_string(),
+        title: Some("Collected Work".to_string()),
+        editor: Some(vec![Name::new("Editor", "Avery")]),
+        ..Default::default()
+    });
+    let hints = ProcHints::default();
+
+    let component = TemplateContributor {
+        contributor: ContributorRole::ContainerAuthor,
+        form: ContributorForm::Long,
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "Editor, Avery");
     assert_eq!(values.suffix, None);
 }
 

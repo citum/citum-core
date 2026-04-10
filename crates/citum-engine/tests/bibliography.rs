@@ -30,6 +30,8 @@ use citum_schema::{
         TemplateVariable, TitleForm, TitleType,
     },
 };
+use indexmap::IndexMap;
+use rstest::rstest;
 use std::collections::HashMap;
 use std::fs;
 use url::Url;
@@ -2211,10 +2213,176 @@ fn apa_structural_entries_use_component_packaging_instead_of_generic_fallbacks()
     );
     assert_eq!(
         lines[2],
-        "Chapter, A. M. J. (2016). 24 Chapter in a report. In _Report title_ (pp. 126–145). Publisher. https://example.com/"
+        "Chapter, A. M. J. (2016). 24 Chapter in a report. In F. A. Editor & S. Editor (eds.), _Report title_ (pp. 126–145). Publisher. https://example.com/"
     );
     assert!(!rendered.contains("Retrieved "));
     assert!(!rendered.contains("[Technical report]"));
+}
+
+struct StructuralBibliographyCase {
+    legacy: serde_json::Value,
+    expected_contains: &'static [&'static str],
+    expected_omits: &'static [&'static str],
+}
+
+fn render_structural_bibliography_case(value: serde_json::Value) -> String {
+    let style = load_style("styles/apa-7th.yaml");
+    let legacy: csl_legacy::csl_json::Reference =
+        serde_json::from_value(value).expect("fixture should parse");
+    let id = legacy.id.clone();
+    let bibliography = IndexMap::from([(id.clone(), legacy.into())]);
+    let processor = Processor::new(style, bibliography);
+
+    processor
+        .render_selected_bibliography_with_format::<PlainText, _>([id])
+        .lines()
+        .find(|line| !line.trim().is_empty())
+        .expect("expected one bibliography line")
+        .to_string()
+}
+
+fn chapter_structural_case() -> StructuralBibliographyCase {
+    StructuralBibliographyCase {
+        legacy: serde_json::json!({
+            "id": "6188419/2QK89T6V",
+            "type": "chapter",
+            "container-title": "Title of book: a subtitle",
+            "DOI": "10.1234/5678",
+            "edition": "2",
+            "language": "en",
+            "note": "original-title: Original title\ncontainer-title-short: Title of book\npart-number: 2",
+            "number-of-volumes": "3",
+            "page": "123-128",
+            "publisher": "Publisher",
+            "publisher-place": "Place, ST",
+            "title": "27 Book chapter",
+            "URL": "http://example.com",
+            "volume": "2",
+            "translator": [{ "family": "Editor", "given": "S. S." }],
+            "editor": [{ "family": "Editor", "given": "S. S." }],
+            "author": [{ "family": "Author", "given": "First A." }],
+            "container-author": [{ "family": "Author", "given": "C." }],
+            "issued": { "date-parts": [[2013]] }
+        }),
+        expected_contains: &["In C. Author", "Title of book: a subtitle"],
+        expected_omits: &[", S. S. Editor, ed.,"],
+    }
+}
+
+fn event_structural_case() -> StructuralBibliographyCase {
+    StructuralBibliographyCase {
+        legacy: serde_json::json!({
+            "id": "6188419/QUB9VPFI",
+            "type": "speech",
+            "container-title": "Session title",
+            "event-title": "Society for Industrial and Organizational Psychology conference",
+            "genre": "Symposium",
+            "language": "en",
+            "note": "type: event",
+            "publisher-place": "City, ST",
+            "title": "33 Conference presentation is a session",
+            "URL": "http://www.example.com",
+            "author": [{ "family": "Author", "given": "First" }],
+            "chair": [
+                { "family": "Chair", "given": "First" },
+                { "family": "Chair", "given": "Second" }
+            ],
+            "issued": { "date-parts": [[2013, 5]] }
+        }),
+        expected_contains: &[
+            "2013",
+            "May",
+            "In F. Chair & S. Chair",
+            "Session title [Symposium].",
+        ],
+        expected_omits: &[],
+    }
+}
+
+fn preprint_structural_case() -> StructuralBibliographyCase {
+    StructuralBibliographyCase {
+        legacy: serde_json::json!({
+            "id": "6188419/5VSYNLFP",
+            "type": "article",
+            "language": "en",
+            "note": "Medium: Format",
+            "number": "123445",
+            "publisher": "PsyArXiv",
+            "title": "9 Preprint with archive",
+            "author": [{ "family": "Author", "given": "A. A." }],
+            "editor": [{ "family": "Editor", "given": "A. A." }],
+            "translator": [{ "family": "Translator", "given": "A. A." }],
+            "issued": { "date-parts": [[2018]] }
+        }),
+        expected_contains: &["9 Preprint with archive", "No. 123445"],
+        expected_omits: &["_9 Preprint with archive_"],
+    }
+}
+
+#[rstest]
+#[case::chapter(chapter_structural_case())]
+#[case::event(event_structural_case())]
+#[case::preprint(preprint_structural_case())]
+fn given_an_apa_structural_fixture_when_rendering_bibliography_then_expected_components_survive(
+    #[case] case: StructuralBibliographyCase,
+) {
+    let rendered = render_structural_bibliography_case(case.legacy);
+
+    for needle in case.expected_contains {
+        assert!(rendered.contains(needle), "{rendered}");
+    }
+
+    for needle in case.expected_omits {
+        assert!(!rendered.contains(needle), "{rendered}");
+    }
+}
+
+#[test]
+fn apa_personal_communication_entries_do_not_render_in_bibliography() {
+    let style = load_style("styles/apa-7th.yaml");
+    let bibliography = IndexMap::from([
+        (
+            "ITEM-28".to_string(),
+            InputReference::from(
+                serde_json::from_str::<csl_legacy::csl_json::Reference>(
+                    r#"{
+                        "id": "ITEM-28",
+                        "type": "personal_communication",
+                        "title": "Discussion on Citum Schema Design",
+                        "author": [{"family": "Smith", "given": "Patricia"}],
+                        "issued": {"date-parts": [[2024, 2, 7]]},
+                        "recipient": [{"family": "Darcus", "given": "Bruce"}]
+                    }"#,
+                )
+                .expect("fixture should parse"),
+            ),
+        ),
+        (
+            "sr-recipient".to_string(),
+            InputReference::from(
+                serde_json::from_str::<csl_legacy::csl_json::Reference>(
+                    r#"{
+                        "id": "sr-recipient",
+                        "type": "personal_communication",
+                        "title": "Letter to Colleague",
+                        "author": [{"family": "Morrison", "given": "Toni"}],
+                        "recipient": [{"family": "Walker", "given": "Alice"}],
+                        "issued": {"date-parts": [[1983, 5, 12]]},
+                        "genre": "letter"
+                    }"#,
+                )
+                .expect("fixture should parse"),
+            ),
+        ),
+    ]);
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_selected_bibliography_with_format::<PlainText, _>([
+        "ITEM-28".to_string(),
+        "sr-recipient".to_string(),
+    ]);
+
+    assert!(rendered.trim().is_empty(), "{rendered}");
 }
 
 fn bibliography_local_entry_links_apply_on_the_default_render_path() {
