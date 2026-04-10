@@ -1210,6 +1210,7 @@ impl Locale {
     fn parse_role_name(name: &str) -> Option<ContributorRole> {
         match name {
             "author" => Some(ContributorRole::Author),
+            "chair" => Some(ContributorRole::Chair),
             "editor" => Some(ContributorRole::Editor),
             "translator" => Some(ContributorRole::Translator),
             "director" => Some(ContributorRole::Director),

@@ -87,6 +87,7 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
         };
 
         let role = match label_config.term.as_str() {
+            "chair" => Some(ContributorRole::Chair),
             "editor" => Some(ContributorRole::Editor),
             "translator" => Some(ContributorRole::Translator),
             _ => Some(component.contributor.clone()),
@@ -149,6 +150,7 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
         (
             ContributorForm::Long,
             ContributorRole::Editor
+            | ContributorRole::Chair
             | ContributorRole::Translator
             | ContributorRole::Interviewer
             | ContributorRole::Director

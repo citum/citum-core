@@ -335,6 +335,7 @@ impl InputReference {
             InputReference::CollectionComponent(r) => &r.contributors,
             InputReference::Serial(r) => &r.contributors,
             InputReference::SerialComponent(r) => &r.contributors,
+            InputReference::Event(r) => &r.contributors,
             InputReference::AudioVisual(r) => &r.core.contributors,
             _ => &[],
         };

@@ -168,6 +168,7 @@ bibliography:
     hanging-indent: true
     separator: ". "
   type-variants:
+    personal-communication: []
     article-journal:
     - contributor: author
       form: long
@@ -193,13 +194,21 @@ bibliography:
       wrap:
         punctuation: parentheses
       prefix: " "
-    - contributor: translator
-      form: long
-      name-order: given-first
-      label: {term: translator, form: short, placement: suffix}
+    - delimiter: "; "
       wrap:
         punctuation: parentheses
       prefix: " "
+      group:
+      - contributor: editor
+        form: long
+        name-order: given-first
+        label: {term: editor, form: long, placement: suffix}
+      - contributor: translator
+        form: long
+        name-order: given-first
+        label: {term: translator, form: short, placement: suffix}
+      - number: report-number
+        prefix: "No. "
     - delimiter: ", "
       group:
       - title: parent-serial
@@ -328,6 +337,10 @@ bibliography:
       - contributor: container-author
         form: long
         name-order: given-first
+      - contributor: editor
+        form: long
+        name-order: given-first
+        label: {term: editor, form: short, placement: suffix}
       - delimiter: " "
         group:
         - title: parent-monograph
@@ -397,6 +410,35 @@ bibliography:
       suffix: "."
     - variable: doi
       prefix: " https://doi.org/"
+    - variable: url
+      prefix: " "
+    event:
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: "."
+    - date: issued
+      form: year-month
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      emph: false
+    - delimiter: ", "
+      prefix: ". In "
+      suffix: "."
+      group:
+      - contributor: chair
+        form: long
+        name-order: given-first
+      - delimiter: " "
+        group:
+        - title: parent-monograph
+          emph: false
+        - variable: genre
+          text-case: capitalize-first
+          wrap:
+            punctuation: brackets
     - variable: url
       prefix: " "
     dataset:
@@ -674,6 +716,40 @@ bibliography:
     - variable: patent-number
       prefix: " U.S. Patent No. "
       suffix: "."
+    preprint:
+    - contributor: author
+      form: long
+      suffix: "."
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      emph: false
+    - delimiter: "; "
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+      group:
+      - contributor: editor
+        form: long
+        name-order: given-first
+        label: {term: editor, form: short, placement: suffix}
+      - contributor: translator
+        form: long
+        name-order: given-first
+        label: {term: translator, form: short, placement: suffix}
+      - number: report-number
+        prefix: "No. "
+    - variable: publisher
+      prefix: ". "
+      suffix: "."
+    - variable: doi
+      prefix: " https://doi.org/"
+    - variable: url
+      prefix: " "
     post:
     - contributor: author
       form: long

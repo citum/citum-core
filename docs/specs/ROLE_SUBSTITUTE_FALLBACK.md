@@ -1,6 +1,6 @@
 # Role-Substitute Fallback Specification
 
-**Status:** Draft
+**Status:** Active
 **Date:** 2026-04-10
 **Supersedes:** None
 **Related:** `docs/specs/SECONDARY_CONTRIBUTOR_ROLE_FORMATTING.md`, `csl26-5ap9`, `csl26-mwnt`
@@ -31,11 +31,12 @@ Unknown or unsupported role strings must not be silently dropped if they can be 
 The initial implementation target is APA 7th chapter/container-author handling, but this behavior is generic and must not be hard-coded to APA-specific role names.
 
 ## Acceptance Criteria
-- [ ] `options.substitute.role-substitute` accepts built-in and custom contributor-role strings.
-- [ ] Role normalization is shared between fallback resolution and suppression checks.
-- [ ] Explicit fallback contributors are suppressed when the configured primary role is present.
-- [ ] Custom roles can participate in fallback without being silently ignored.
-- [ ] Substitute-path contributor labels use existing locale-driven role-label resolution when a locale term exists.
+- [x] `options.substitute.role-substitute` accepts built-in and custom contributor-role strings.
+- [x] Role normalization is shared between fallback resolution and suppression checks.
+- [x] Explicit fallback contributors are suppressed when the configured primary role is present.
+- [x] Custom roles can participate in fallback without being silently ignored.
+- [x] Substitute-path contributor labels use existing locale-driven role-label resolution when a locale term exists.
 
 ## Changelog
 - 2026-04-10: Initial draft.
+- 2026-04-10: Activated with shared role resolution, context-merge preservation, and APA closure coverage.

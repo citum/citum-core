@@ -122,15 +122,19 @@ fn join_names_with_conjunction(
             // For two names: citations don't use delimiter before conjunction,
             // but bibliographies do (contextual Oxford comma).
             let use_delimiter = if context == crate::values::RenderContext::Bibliography {
-                // In bibliography, check delimiter-precedes-last setting
-                match delimiter_precedes_last {
-                    Some(DelimiterPrecedesLast::Always) => true,
-                    Some(DelimiterPrecedesLast::Never) => false,
-                    Some(DelimiterPrecedesLast::Contextual) | None => true, // Default: use comma in bibliography
-                    Some(DelimiterPrecedesLast::AfterInvertedName) => {
-                        ctx.display_as_sort.as_ref().is_some_and(|das| {
-                            matches!(das, DisplayAsSort::All | DisplayAsSort::First)
-                        })
+                if matches!(ctx.name_order, Some(NameOrder::GivenFirst)) {
+                    false
+                } else {
+                    // In bibliography, check delimiter-precedes-last setting
+                    match delimiter_precedes_last {
+                        Some(DelimiterPrecedesLast::Always) => true,
+                        Some(DelimiterPrecedesLast::Never) => false,
+                        Some(DelimiterPrecedesLast::Contextual) | None => true, // Default: use comma in bibliography
+                        Some(DelimiterPrecedesLast::AfterInvertedName) => {
+                            ctx.display_as_sort.as_ref().is_some_and(|das| {
+                                matches!(das, DisplayAsSort::All | DisplayAsSort::First)
+                            })
+                        }
                     }
                 }
             } else {
