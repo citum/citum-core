@@ -28,7 +28,15 @@ info:
   edition: "7th"
 options:
   processing: author-date
-  substitute: standard
+  substitute:
+    template:
+      - editor
+      - title
+      - translator
+    role-substitute:
+      container-author:
+        - editor
+        - editorial-director
   contributors:
     name-form: initials
     initialize-with: ". "
@@ -633,9 +641,6 @@ bibliography:
       prefix: " In "
       suffix: "."
       group:
-      - contributor: editor
-        form: long
-        name-order: given-first
       - delimiter: " "
         group:
         - title: parent-monograph

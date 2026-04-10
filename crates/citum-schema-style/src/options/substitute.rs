@@ -49,6 +49,9 @@ pub struct Substitute {
     /// Type-specific substitution overrides.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub overrides: HashMap<String, Vec<SubstituteKey>>,
+    /// Per-role fallback chains for non-author contributor substitution.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub role_substitute: HashMap<String, Vec<String>>,
 }
 
 impl Default for Substitute {
@@ -61,6 +64,7 @@ impl Default for Substitute {
                 SubstituteKey::Translator,
             ],
             overrides: HashMap::new(),
+            role_substitute: HashMap::new(),
         }
     }
 }

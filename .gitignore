@@ -55,3 +55,4 @@ bindings/latex/libcitum_processor.dylib
 # Python bytecode
 __pycache__/
 *.pyc
+scripts/x-bench.js

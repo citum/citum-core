@@ -2211,7 +2211,7 @@ fn apa_structural_entries_use_component_packaging_instead_of_generic_fallbacks()
     );
     assert_eq!(
         lines[2],
-        "Chapter, A. M. J. (2016). 24 Chapter in a report. In F. A. Editor, & S. Editor, eds., _Report title_ (pp. 126–145). Publisher. https://example.com/"
+        "Chapter, A. M. J. (2016). 24 Chapter in a report. In _Report title_ (pp. 126–145). Publisher. https://example.com/"
     );
     assert!(!rendered.contains("Retrieved "));
     assert!(!rendered.contains("[Technical report]"));

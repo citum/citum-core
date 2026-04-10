@@ -77,7 +77,7 @@
     "version": {
       "description": "Style schema version.",
       "type": "string",
-      "default": "0.27.1"
+      "default": "0.28.0"
     }
   },
   "additionalProperties": false,
@@ -3766,6 +3766,16 @@
             "type": "array",
             "items": {
               "$ref": "#/$defs/SubstituteKey"
+            }
+          }
+        },
+        "role-substitute": {
+          "description": "Per-role fallback chains for non-author contributor substitution.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           }
         },

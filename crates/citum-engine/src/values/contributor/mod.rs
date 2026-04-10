@@ -224,6 +224,24 @@ impl ComponentValues for TemplateContributor {
             _ => None, // Handle any future template contributor roles
         };
 
+        // Resolve substitute config once for all substitute/suppression checks below.
+        let default_substitute = citum_schema::options::SubstituteConfig::default();
+        let substitute_config = options
+            .config
+            .substitute
+            .as_ref()
+            .unwrap_or(&default_substitute);
+        let substitute = substitute_config.resolve();
+
+        // Check if this role is suppressed by role-substitute configuration
+        if substitute::is_role_suppressed_by_substitute(
+            &component.contributor,
+            &substitute,
+            reference,
+        ) {
+            return None;
+        }
+
         // Resolve multilingual names if configured
         let names_vec = if let Some(contrib) = contributor {
             substitute::resolve_multilingual_for_contrib(&contrib, options)
@@ -248,11 +266,22 @@ impl ComponentValues for TemplateContributor {
                 reference,
                 &effective_rendering,
                 &fmt,
+                &substitute,
             );
         }
 
+        // Handle role-substitute if this role is empty.
         if names_vec.is_empty() {
-            return None;
+            return substitute::resolve_role_substitute::<F>(
+                &component.contributor,
+                &component,
+                hints,
+                options,
+                reference,
+                &effective_rendering,
+                &fmt,
+                &substitute,
+            );
         }
 
         let formatted =
