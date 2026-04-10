@@ -597,6 +597,16 @@
             }
           ]
         },
+        "event": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkRelation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "field-languages": {
           "type": "object",
           "additionalProperties": {

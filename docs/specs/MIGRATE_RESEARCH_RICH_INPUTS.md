@@ -141,23 +141,20 @@ Extracted by csl26-bn0r / csl26-2pey as of 2026-04-10.
 
 | Note key            | Extra key           | Gap?                                                  |
 |---------------------|---------------------|-------------------------------------------------------|
-| `status`            | `status`            | No canonical `InputReference` field; must be accessed via `extra` |
-| `event-place`       | `event-place`       | No canonical field; style must read via extra         |
-| `event-location`    | `event-place`       | Normalized on insert                                  |
-| `event-title`       | `event-title`       | No canonical field; gap for `paper-conference`        |
+| `status`            | `status`            | Canonical — `InputReference::status()` accessor covers Monograph, CollectionComponent, SerialComponent, Standard |
+| `event-place`       | `event-place`       | Promoted to `Collection.event` (WorkRelation) for paper-conference |
+| `event-location`    | `event-place`       | Promoted to `Collection.event` (WorkRelation) for paper-conference |
+| `event-title`       | `event-title`       | Promoted to `Collection.event` (WorkRelation) for paper-conference |
 | `archive-collection`| `archive-collection`| Promoted to `ArchiveInfo.collection` in conversion    |
 | `dimensions`        | `dimensions`        | No canonical field                                    |
 | `original-date`     | handled by date parser | Extraction path confirmed                          |
 
 ### Classified gaps (not yet style-addressable)
 
-- **`event-title`** — required for `paper-conference` and `speech` but stored
-  only in `extra`; the engine has no dedicated slot; blocked by schema gap.
-- **`status`** — legal metadata (e.g. `enacted`) is accessible via `extra` but
-  no Chicago or APA template currently reads it; a style-addressable path would
-  require a schema field or a well-known extra key convention.
-- **`event-place`** / **`event-location`** — same situation as `event-title`;
-  extra-only; no rendering path in current Chicago author-date style.
+- **`event-title`** — Promoted — `Collection.event` field, wired in `from_collection_component_ref` (2026-04-10).
+- **`status`** — Canonical accessor available; legal metadata (e.g. `enacted`) now
+  accessible via `InputReference::status()` for Monograph, CollectionComponent, SerialComponent, Standard.
+- **`event-place`** / **`event-location`** — Promoted — `Collection.event` field, wired in `from_collection_component_ref` (2026-04-10).
 
 ### Change log
 
@@ -165,3 +162,4 @@ Extracted by csl26-bn0r / csl26-2pey as of 2026-04-10.
 |------------|-------------|---------------------------------------------|
 | 2026-04-10 | csl26-2pey  | `break → continue`: recognized pairs after free-text lines now extracted |
 | 2026-04-10 | csl26-bn0r  | Added field mapping audit; documented extra-stored gaps |
+| 2026-04-10 | csl26-bn0r  | Promote event-title/event-place to Collection.event for paper-conference |

@@ -1021,3 +1021,79 @@ fn conversion_preserves_unpublished_manuscript_descriptor() {
         Some("Department of Psychology, University of Washington".to_string())
     );
 }
+
+#[test]
+fn conversion_promotes_paper_conference_event_metadata() {
+    let json = r#"{
+        "id": "conf-paper",
+        "type": "paper-conference",
+        "title": "Advances in Citation Styling",
+        "author": [{"family": "Smith", "given": "Jane"}],
+        "container-title": "Proceedings of the Annual Symposium",
+        "note": "event-title: Annual Symposium on Information Science\nevent-place: Chicago, IL",
+        "issued": {"date-parts": [[2023, 6, 15]]}
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    let container = match &reference {
+        InputReference::CollectionComponent(r) => r.container.as_ref(),
+        other => panic!("expected CollectionComponent, got {:?}", other),
+    };
+
+    let collection = match container {
+        Some(WorkRelation::Embedded(inner)) => match inner.as_ref() {
+            InputReference::Collection(c) => c,
+            other => panic!("expected Collection container, got {:?}", other),
+        },
+        other => panic!("expected embedded container, got {:?}", other),
+    };
+
+    let event = match collection.event.as_ref() {
+        Some(WorkRelation::Embedded(inner)) => match inner.as_ref() {
+            InputReference::Event(e) => e,
+            other => panic!("expected embedded Event, got {:?}", other),
+        },
+        other => panic!("expected embedded event relation, got {:?}", other),
+    };
+
+    assert_eq!(
+        event.title.as_ref().and_then(|t| match t {
+            Title::Single(s) => Some(s.as_str()),
+            _ => None,
+        }),
+        Some("Annual Symposium on Information Science"),
+    );
+    assert_eq!(event.location.as_deref(), Some("Chicago, IL"));
+}
+
+#[test]
+fn conversion_paper_conference_without_event_fields_has_no_event() {
+    let json = r#"{
+        "id": "conf-paper-no-event",
+        "type": "paper-conference",
+        "title": "A Paper Without Event Metadata",
+        "author": [{"family": "Jones", "given": "Bob"}],
+        "container-title": "Conference Proceedings",
+        "issued": {"date-parts": [[2022]]}
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    let container = match &reference {
+        InputReference::CollectionComponent(r) => r.container.as_ref(),
+        other => panic!("expected CollectionComponent, got {:?}", other),
+    };
+
+    let collection = match container {
+        Some(WorkRelation::Embedded(inner)) => match inner.as_ref() {
+            InputReference::Collection(c) => c,
+            other => panic!("expected Collection container, got {:?}", other),
+        },
+        other => panic!("expected embedded container, got {:?}", other),
+    };
+
+    assert!(collection.event.is_none());
+}

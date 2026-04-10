@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use url::Url;
 
 /// Event metadata for conferences, performances, broadcasts, and recordings.
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]

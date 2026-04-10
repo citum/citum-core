@@ -108,6 +108,24 @@ fn relation_monograph(
     ))))
 }
 
+fn relation_event(
+    title: Option<String>,
+    location: Option<String>,
+    date: Option<EdtfString>,
+) -> Option<WorkRelation> {
+    if title.is_none() && location.is_none() && date.is_none() {
+        return None;
+    }
+    Some(WorkRelation::Embedded(Box::new(InputReference::Event(
+        Box::new(Event {
+            title: title.map(Title::Single),
+            location,
+            date,
+            ..Default::default()
+        }),
+    ))))
+}
+
 fn short_title_from_legacy(legacy: &csl_legacy::csl_json::Reference, key: &str) -> Option<String> {
     legacy_extra_str(legacy, key)
 }
@@ -558,6 +576,16 @@ fn from_collection_component_ref(
             }),
         ))))
     } else {
+        let event_relation = if legacy.ref_type == "paper-conference" {
+            let event_title = legacy_extra_str(&legacy, "event-title");
+            let event_place = legacy_extra_str(&legacy, "event-place")
+                .or_else(|| legacy_extra_str(&legacy, "event-location"));
+            let event_date = legacy_extra_date(&legacy, "event-date");
+            relation_event(event_title, event_place, event_date)
+        } else {
+            None
+        };
+
         Some(WorkRelation::Embedded(Box::new(
             InputReference::Collection(Box::new(Collection {
                 id: None,
@@ -580,6 +608,7 @@ fn from_collection_component_ref(
                 }),
                 volume: parent_volume,
                 edition: parent_edition,
+                event: event_relation,
                 ..Default::default()
             })),
         )))
@@ -721,6 +750,7 @@ pub fn input_reference_from_legacy_edited_book(
         field_languages: HashMap::new(),
         note,
         isbn,
+        event: None,
         volume: None,
         issue: None,
         edition: None,

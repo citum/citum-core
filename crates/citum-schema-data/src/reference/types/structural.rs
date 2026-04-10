@@ -429,6 +429,9 @@ pub struct Collection {
     /// ISBN identifier.
     #[serde(alias = "ISBN", skip_serializing_if = "Option::is_none")]
     pub isbn: Option<String>,
+    /// Originating event (e.g., conference) for proceedings-type containers.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub event: Option<WorkRelation>,
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
@@ -475,6 +478,7 @@ struct CollectionDeser {
     note: Option<String>,
     #[serde(alias = "ISBN")]
     isbn: Option<String>,
+    event: Option<WorkRelation>,
     keywords: Option<Vec<String>>,
 }
 
@@ -512,6 +516,7 @@ impl From<CollectionDeser> for Collection {
             field_languages: raw.field_languages,
             note: raw.note,
             isbn: raw.isbn,
+            event: raw.event,
             keywords: raw.keywords,
         };
         collection.normalize_numbering();

@@ -64,7 +64,34 @@ references:
         location: Cambridge
     pages: "683-703"
 
-  # 4. Standalone edited book
+  # 4. CollectionComponent (Conference Paper) — with container.event
+  - id: doe2023-csl
+    class: collection-component
+    type: document
+    title: Declarative Citation Styling with Typed Templates
+    author:
+      - family: Doe
+        given: Jane
+    issued: "2023"
+    pages: 112-119
+    container:
+      class: collection
+      type: proceedings
+      title: Proceedings of the Annual Symposium on Digital Libraries
+      editor:
+        - family: Park
+          given: Soo-Young
+      issued: "2023"
+      publisher:
+        name: ACM
+        place: New York
+      event:
+        class: event
+        title: Annual Symposium on Digital Libraries
+        location: Chicago, IL
+        date: "2023-06"
+
+  # 5. Standalone edited book
   - id: miller2022
     class: collection
     type: edited-book
