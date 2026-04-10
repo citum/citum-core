@@ -391,7 +391,6 @@ impl Reference {
         }
 
         let mut parsed_indices = HashSet::new();
-        let mut skip_first_line = false;
 
         for (idx, line) in lines.iter().enumerate() {
             let trimmed = line.trim();
@@ -401,15 +400,10 @@ impl Reference {
                 continue;
             }
 
-            // Parse key: value pattern
+            // Parse key: value pattern; skip non-matching lines so recognized
+            // pairs later in the note (after free-text) are still extracted.
             let Some((key, value)) = parse_key_value(trimmed) else {
-                // First non-matching line: if this is the first line, skip it and continue
-                if idx == 0 && !skip_first_line {
-                    skip_first_line = true;
-                    continue;
-                }
-                // Otherwise, stop parsing
-                break;
+                continue;
             };
 
             // Process the key-value pair; only mark as parsed when the key is recognized
@@ -1148,5 +1142,66 @@ mod tests {
             Some(&serde_json::Value::String("Part title".to_string()))
         );
         assert_eq!(ref_obj.note, None);
+    }
+
+    #[test]
+    fn test_parse_note_field_recognized_keys_after_free_text() {
+        // A free-text line in the middle must not stop extraction of later key:value pairs.
+        let mut ref_obj = Reference {
+            id: "broadcast-test".to_string(),
+            ref_type: "broadcast".to_string(),
+            note: Some(
+                "Some free-form description with no colon\ngenre: Documentary\nevent-place: United States".to_string(),
+            ),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+
+        assert_eq!(ref_obj.genre, Some("Documentary".to_string()));
+        assert_eq!(
+            ref_obj
+                .extra
+                .get("event-place")
+                .map(|v| v.as_str().unwrap_or("")),
+            Some("United States"),
+        );
+        // The free-text line should remain in the note.
+        assert!(
+            ref_obj
+                .note
+                .as_deref()
+                .unwrap_or("")
+                .contains("Some free-form description")
+        );
+    }
+
+    #[test]
+    fn test_parse_note_field_recognized_keys_after_midnote_free_text() {
+        // Recognized pairs both before and after a free-text line are extracted.
+        let mut ref_obj = Reference {
+            id: "bill-test".to_string(),
+            ref_type: "bill".to_string(),
+            note: Some(
+                "genre: H.R.\nsome unrecognized prose line here\nstatus: enacted".to_string(),
+            ),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+
+        assert_eq!(ref_obj.genre, Some("H.R.".to_string()));
+        assert!(ref_obj.extra.contains_key("status"));
+        assert_eq!(
+            ref_obj.extra.get("status").and_then(|v| v.as_str()),
+            Some("enacted"),
+        );
+        assert!(
+            ref_obj
+                .note
+                .as_deref()
+                .unwrap_or("")
+                .contains("some unrecognized prose line")
+        );
     }
 }

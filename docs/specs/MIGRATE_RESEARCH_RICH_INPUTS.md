@@ -122,3 +122,46 @@ row count instead of over-reducing to a non-reproducible subset.
 - `report-core --style-file` is style-file-aware for loading and reporting, but
   its citeproc benchmark step is not yet universally migrated-style-aware for
   every wrapped supplemental fixture shape
+
+## Promoted Field Mapping
+
+Audit of fields the note parser (`parse_note_field_hacks`) currently extracts
+from CSL-JSON `note`/Extra and how they map to `InputReference`.
+
+Extracted by csl26-bn0r / csl26-2pey as of 2026-04-10.
+
+### Direct fields (canonical `Reference` struct)
+
+| Note key   | `Reference` field | Notes                              |
+|------------|-------------------|------------------------------------|
+| `genre`    | `genre`           | Stored directly                    |
+| `type`     | `ref_type`        | Overrides the top-level CSL type   |
+
+### Extra map (stored in `Reference.extra`, consumed via `InputReference`)
+
+| Note key            | Extra key           | Gap?                                                  |
+|---------------------|---------------------|-------------------------------------------------------|
+| `status`            | `status`            | No canonical `InputReference` field; must be accessed via `extra` |
+| `event-place`       | `event-place`       | No canonical field; style must read via extra         |
+| `event-location`    | `event-place`       | Normalized on insert                                  |
+| `event-title`       | `event-title`       | No canonical field; gap for `paper-conference`        |
+| `archive-collection`| `archive-collection`| Promoted to `ArchiveInfo.collection` in conversion    |
+| `dimensions`        | `dimensions`        | No canonical field                                    |
+| `original-date`     | handled by date parser | Extraction path confirmed                          |
+
+### Classified gaps (not yet style-addressable)
+
+- **`event-title`** — required for `paper-conference` and `speech` but stored
+  only in `extra`; the engine has no dedicated slot; blocked by schema gap.
+- **`status`** — legal metadata (e.g. `enacted`) is accessible via `extra` but
+  no Chicago or APA template currently reads it; a style-addressable path would
+  require a schema field or a well-known extra key convention.
+- **`event-place`** / **`event-location`** — same situation as `event-title`;
+  extra-only; no rendering path in current Chicago author-date style.
+
+### Change log
+
+| Date       | Bean        | Change                                      |
+|------------|-------------|---------------------------------------------|
+| 2026-04-10 | csl26-2pey  | `break → continue`: recognized pairs after free-text lines now extracted |
+| 2026-04-10 | csl26-bn0r  | Added field mapping audit; documented extra-stored gaps |
