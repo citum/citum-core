@@ -1097,3 +1097,68 @@ fn conversion_paper_conference_without_event_fields_has_no_event() {
 
     assert!(collection.event.is_none());
 }
+
+#[test]
+fn conversion_chapter_without_named_parent_keeps_volume_but_avoids_empty_container_editor_group() {
+    let json = r#"{
+        "id": "6188419/4JYXEPMY",
+        "type": "chapter",
+        "DOI": "10.1234/5678",
+        "edition": "2",
+        "language": "en",
+        "note": "original-title: Original title\ncontainer-title-short: Title of book",
+        "number-of-volumes": "3",
+        "page": "123-128",
+        "publisher": "Publisher",
+        "publisher-place": "Place, ST",
+        "title": "27a Book chapter",
+        "URL": "http://example.com",
+        "volume": "2",
+        "translator": [{ "family": "Editor", "given": "S. S." }],
+        "editor": [{ "family": "Editor", "given": "S. S." }],
+        "author": [{ "family": "Author", "given": "First A." }],
+        "issued": { "date-parts": [[2013]] },
+        "original-date": { "date-parts": [[1901]] }
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    let component = match &reference {
+        InputReference::CollectionComponent(component) => component,
+        other => panic!("expected CollectionComponent, got {:?}", other),
+    };
+
+    assert!(component.translator.is_some());
+    assert_eq!(component.edition.as_deref(), Some("2"));
+    assert!(component.original.is_some());
+    assert!(
+        component
+            .contributors
+            .iter()
+            .any(|entry| entry.role == ContributorRole::Editor)
+    );
+
+    let collection = match component.container.as_ref() {
+        Some(WorkRelation::Embedded(inner)) => match inner.as_ref() {
+            InputReference::Collection(collection) => collection,
+            other => panic!("expected Collection container, got {:?}", other),
+        },
+        other => panic!("expected embedded collection container, got {:?}", other),
+    };
+
+    assert!(collection.title.is_none());
+    assert!(collection.editor.is_none());
+    assert!(
+        collection
+            .contributors
+            .iter()
+            .all(|entry| entry.role != ContributorRole::Editor)
+    );
+    assert!(
+        collection
+            .numbering
+            .iter()
+            .any(|numbering| numbering.r#type == NumberingType::Volume && numbering.value == "2")
+    );
+}

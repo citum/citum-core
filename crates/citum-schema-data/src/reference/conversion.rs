@@ -521,6 +521,7 @@ fn from_collection_component_ref(
         .map(|v| v.to_string());
     let parent_edition = ctx.edition.clone();
     let container_author = legacy_extra_names(&legacy, "container-author").map(Contributor::from);
+    let has_named_parent = parent_title.is_some() || container_author.is_some();
 
     let author = legacy.author.clone().map(Contributor::from);
     let translator = legacy.translator.clone().map(Contributor::from);
@@ -535,19 +536,30 @@ fn from_collection_component_ref(
         ContributorRole::Translator,
         legacy.translator.clone(),
     );
+    if !has_named_parent {
+        push_legacy_contributor(
+            &mut contributors,
+            ContributorRole::Editor,
+            legacy.editor.clone(),
+        );
+    }
     if let Some(container_author) = container_author.clone() {
         contributors.push(ContributorEntry {
             role: ContributorRole::Custom("container-author".to_string()),
             contributor: container_author,
         });
     }
-    let container_editor = legacy.editor.clone().map(Contributor::from);
+    let container_editor = has_named_parent
+        .then(|| legacy.editor.clone().map(Contributor::from))
+        .flatten();
     let mut container_contributors = Vec::new();
-    push_legacy_contributor(
-        &mut container_contributors,
-        ContributorRole::Editor,
-        legacy.editor.clone(),
-    );
+    if has_named_parent {
+        push_legacy_contributor(
+            &mut container_contributors,
+            ContributorRole::Editor,
+            legacy.editor.clone(),
+        );
+    }
 
     let container = if legacy.ref_type == "report" {
         Some(WorkRelation::Embedded(Box::new(InputReference::Monograph(
@@ -606,8 +618,16 @@ fn from_collection_component_ref(
                     name: n.into(),
                     place: legacy.publisher_place,
                 }),
-                volume: parent_volume,
                 edition: parent_edition,
+                numbering: parent_volume
+                    .clone()
+                    .map(|volume| {
+                        vec![Numbering {
+                            r#type: NumberingType::Volume,
+                            value: volume,
+                        }]
+                    })
+                    .unwrap_or_default(),
                 event: event_relation,
                 ..Default::default()
             })),

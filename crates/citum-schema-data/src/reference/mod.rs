@@ -255,10 +255,16 @@ impl InputReference {
                 collect_contributors_by_role(&r.contributors, &ContributorRole::Editor)
                     .or_else(|| r.editor.clone())
             }
-            InputReference::CollectionComponent(r) => r.container.as_ref().and_then(|c| match c {
-                WorkRelation::Embedded(p) => p.editor(),
-                WorkRelation::Id(_) => None,
-            }),
+            InputReference::CollectionComponent(r) => r
+                .container
+                .as_ref()
+                .and_then(|c| match c {
+                    WorkRelation::Embedded(p) => p.editor(),
+                    WorkRelation::Id(_) => None,
+                })
+                .or_else(|| {
+                    collect_contributors_by_role(&r.contributors, &ContributorRole::Editor)
+                }),
             InputReference::SerialComponent(r) => r.container.as_ref().and_then(|c| match c {
                 WorkRelation::Embedded(p) => p.editor(),
                 WorkRelation::Id(_) => None,

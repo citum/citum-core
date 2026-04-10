@@ -2205,11 +2205,11 @@ fn apa_structural_entries_use_component_packaging_instead_of_generic_fallbacks()
     assert_eq!(lines.len(), 3);
     assert_eq!(
         lines[0],
-        "Author, F. A. (2013a). 45 Encyclopedia entry (S. S. Editor, Trans.). In S. S. Editor, ed., _Title of book: a subtitle_ (2 ed., pp. 123–128). Publisher. https://doi.org/10.1234/5678 http://example.com/"
+        "Author, F. A. (2013a). 45 Encyclopedia entry (S. S. Editor, Trans.). In S. S. Editor, ed., _Title of book: a subtitle_ (2 ed., Vol. 2, pp. 123–128). Publisher. https://doi.org/10.1234/5678 http://example.com/"
     );
     assert_eq!(
         lines[1],
-        "Author, F. A. (2013b). 56 Conference paper (S. S. Editor, Trans.). In S. S. Editor, ed., _Proceedings_ (pp. 123–128). Publisher. https://doi.org/10.1234/5678 http://example.com/"
+        "Author, F. A. (2013b). 56 Conference paper (S. S. Editor, Trans.). In S. S. Editor, ed., _Proceedings_ (Vol. 2, pp. 123–128). Publisher. https://doi.org/10.1234/5678 http://example.com/"
     );
     assert_eq!(
         lines[2],
@@ -2217,6 +2217,46 @@ fn apa_structural_entries_use_component_packaging_instead_of_generic_fallbacks()
     );
     assert!(!rendered.contains("Retrieved "));
     assert!(!rendered.contains("[Technical report]"));
+}
+
+#[test]
+fn apa_containerless_translated_chapter_avoids_rendering_an_empty_in_group() {
+    let legacy = serde_json::json!({
+        "id": "6188419/4JYXEPMY",
+        "type": "chapter",
+        "DOI": "10.1234/5678",
+        "edition": "2",
+        "language": "en",
+        "note": "original-title: Original title\ncontainer-title-short: Title of book",
+        "number-of-volumes": "3",
+        "page": "123-128",
+        "publisher": "Publisher",
+        "publisher-place": "Place, ST",
+        "title": "27a Book chapter",
+        "URL": "http://example.com",
+        "volume": "2",
+        "translator": [{ "family": "Editor", "given": "S. S." }],
+        "editor": [{ "family": "Editor", "given": "S. S." }],
+        "author": [{ "family": "Author", "given": "First A." }],
+        "issued": { "date-parts": [[2013]] },
+        "original-date": { "date-parts": [[1901]] }
+    });
+
+    let rendered = render_structural_bibliography_case(legacy);
+
+    assert!(rendered.contains("27a Book chapter"), "{rendered}");
+    assert!(rendered.contains("(S. S. Editor, Trans.)"), "{rendered}");
+    assert!(rendered.contains("Vol. 2"), "{rendered}");
+    assert!(rendered.contains("pp. 123–128"), "{rendered}");
+    assert!(
+        rendered.contains("https://doi.org/10.1234/5678"),
+        "{rendered}"
+    );
+    assert!(!rendered.contains(". In ."), "{rendered}");
+    assert!(!rendered.contains(". In ("), "{rendered}");
+    if rendered.contains(". In ") {
+        assert!(rendered.contains(". In S. S. Editor"), "{rendered}");
+    }
 }
 
 struct StructuralBibliographyCase {

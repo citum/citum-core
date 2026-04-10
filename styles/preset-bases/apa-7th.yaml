@@ -588,29 +588,27 @@ bibliography:
     - title: primary
       emph: false
       suffix: "."
-    - delimiter: ", "
-      prefix: " In "
-      suffix: "."
+    - delimiter: " "
       group:
-      - contributor: container-author
-        form: long
-        name-order: given-first
-      - contributor: editor
-        form: long
-        name-order: given-first
-        label: {term: editor, form: short, placement: suffix}
-      - delimiter: " "
+      - term: in
+        text-case: capitalize-first
+      - delimiter: ", "
         group:
+        - contributor: container-author
+          form: long
+          name-order: given-first
         - title: parent-monograph
           emph: true
-        - delimiter: ", "
-          wrap:
-            punctuation: parentheses
-          group:
-          - number: collection-number
-            prefix: "Vol. "
-          - number: pages
-            prefix: "pp. "
+    - delimiter: ", "
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+      suffix: "."
+      group:
+      - number: collection-number
+        prefix: "Vol. "
+      - number: pages
+        prefix: "pp. "
     - variable: publisher
       prefix: " "
       suffix: "."
