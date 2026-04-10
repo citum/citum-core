@@ -1605,6 +1605,7 @@ fn test_translator_substitute_uses_locale_aware_role_label() {
         contributor_role_form: Some("long".to_string()),
         template: vec![SubstituteKey::Translator],
         overrides: std::collections::HashMap::new(),
+        role_substitute: std::collections::HashMap::new(),
     }));
 
     let reference = Reference::from(LegacyReference {
@@ -1759,6 +1760,7 @@ fn test_role_specific_name_order_applies_in_substitute_path() {
         contributor_role_form: Some("short".to_string()),
         template: vec![SubstituteKey::Translator],
         overrides: std::collections::HashMap::new(),
+        role_substitute: std::collections::HashMap::new(),
     }));
 
     if let Some(ref mut contributors) = config.contributors {

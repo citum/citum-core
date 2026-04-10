@@ -224,6 +224,12 @@ impl ComponentValues for TemplateContributor {
             _ => None, // Handle any future template contributor roles
         };
 
+        // Check if this role is suppressed by role-substitute configuration
+        if substitute::is_role_suppressed_by_substitute(&component.contributor, options, reference)
+        {
+            return None;
+        }
+
         // Resolve multilingual names if configured
         let names_vec = if let Some(contrib) = contributor {
             substitute::resolve_multilingual_for_contrib(&contrib, options)
@@ -251,8 +257,17 @@ impl ComponentValues for TemplateContributor {
             );
         }
 
+        // Handle role-substitute if this role is empty.
         if names_vec.is_empty() {
-            return None;
+            return substitute::resolve_role_substitute::<F>(
+                &component.contributor,
+                &component,
+                hints,
+                options,
+                reference,
+                &effective_rendering,
+                &fmt,
+            );
         }
 
         let formatted =

@@ -29,7 +29,18 @@ info:
   edition: "7th"
 options:
   processing: author-date
-  substitute: standard
+  substitute:
+    template:
+      - editor
+      - title
+      - translator
+    role-substitute:
+      container-author:
+        - executive-producer
+        - series-creator
+        - editor
+        - editorial-director
+        - compiler
   contributors:
     name-form: initials
     initialize-with: ". "
@@ -320,10 +331,6 @@ bibliography:
       - contributor: container-author
         form: long
         name-order: given-first
-      - contributor: editor
-        form: long
-        name-order: given-first
-        label: {term: editor, form: short, placement: suffix}
       - delimiter: " "
         group:
         - title: parent-monograph
