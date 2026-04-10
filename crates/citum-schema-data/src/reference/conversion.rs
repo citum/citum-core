@@ -893,6 +893,7 @@ fn from_audio_visual_ref(
 ) -> InputReference {
     let r#type = match legacy.ref_type.as_str() {
         "motion_picture" => AudioVisualType::Film,
+        "song" => AudioVisualType::Recording,
         "broadcast" => AudioVisualType::Broadcast,
         _ => AudioVisualType::Broadcast,
     };
@@ -907,6 +908,13 @@ fn from_audio_visual_ref(
         ContributorRole::Composer,
         legacy_extra_names(&legacy, "composer"),
     );
+    // For recordings (song type), `author` is the performer; store it as Performer
+    // so that Composer takes precedence as the primary author in APA style.
+    let author_role = if legacy.ref_type == "song" {
+        ContributorRole::Performer
+    } else {
+        ContributorRole::Author
+    };
     push_legacy_contributor(
         &mut contributors,
         ContributorRole::Performer,
@@ -918,11 +926,33 @@ fn from_audio_visual_ref(
         legacy_extra_names(&legacy, "producer")
             .or_else(|| legacy_extra_names(&legacy, "executive-producer")),
     );
+    push_legacy_contributor(&mut contributors, author_role, legacy.author.clone());
     push_legacy_contributor(
         &mut contributors,
-        ContributorRole::Author,
-        legacy.author.clone(),
+        ContributorRole::Translator,
+        legacy.translator.clone(),
     );
+
+    let mut numbering: Vec<Numbering> = legacy
+        .number
+        .into_iter()
+        .map(|number| Numbering {
+            r#type: NumberingType::Number,
+            value: number,
+        })
+        .collect();
+    if let Some(vol) = legacy.volume.map(|v| v.to_string()) {
+        numbering.push(Numbering {
+            r#type: NumberingType::Volume,
+            value: vol,
+        });
+    }
+    if let Some(chapter) = legacy.chapter_number.clone() {
+        numbering.push(Numbering {
+            r#type: NumberingType::Chapter,
+            value: chapter,
+        });
+    }
 
     InputReference::AudioVisual(Box::new(AudioVisualWork {
         id: ctx.id,
@@ -942,14 +972,7 @@ fn from_audio_visual_ref(
                 ..Default::default()
             }))))
         }),
-        numbering: legacy
-            .number
-            .into_iter()
-            .map(|number| Numbering {
-                r#type: NumberingType::Number,
-                value: number,
-            })
-            .collect(),
+        numbering,
         publisher: legacy.publisher.map(|name| Publisher {
             name: name.into(),
             place: legacy.publisher_place,
@@ -1384,7 +1407,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
             "article-journal" | "article" | "article-magazine" | "article-newspaper" => {
                 from_serial_component_ref(legacy, ctx)
             }
-            "motion_picture" => from_audio_visual_ref(legacy, ctx),
+            "motion_picture" | "song" => from_audio_visual_ref(legacy, ctx),
             "broadcast" => from_serial_component_ref(legacy, ctx),
             "speech" | "presentation" => from_event_ref(legacy, ctx),
             "bill" => from_bill_ref(legacy, ctx),

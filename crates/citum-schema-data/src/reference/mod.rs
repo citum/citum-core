@@ -110,6 +110,7 @@ impl InputReference {
             InputReference::CollectionComponent(reference) => Some(reference.as_ref()),
             InputReference::SerialComponent(reference) => Some(reference.as_ref()),
             InputReference::Classic(reference) => Some(reference.as_ref()),
+            InputReference::AudioVisual(reference) => Some(reference.as_ref()),
             _ => None,
         }
     }
@@ -292,7 +293,9 @@ impl InputReference {
                     .or_else(|| r.translator.clone())
             }
             InputReference::Classic(r) => r.translator.clone(),
-            InputReference::AudioVisual(_) => None,
+            InputReference::AudioVisual(r) => {
+                collect_contributors_by_role(&r.core.contributors, &ContributorRole::Translator)
+            }
             _ => None,
         }
     }

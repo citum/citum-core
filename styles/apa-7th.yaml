@@ -208,13 +208,7 @@ bibliography:
       suffix: "."
     - variable: doi
       prefix: "https://doi.org/"
-    - group:
-      - date: accessed
-        form: year-month-day
-        prefix: "Retrieved "
-        suffix: ", from"
-      - variable: url
-      delimiter: " "
+    - variable: url
       prefix: " "
     article-magazine:
     - contributor: author
@@ -310,10 +304,6 @@ bibliography:
       wrap:
         punctuation: parentheses
       prefix: " "
-    - number: edition
-      wrap:
-        punctuation: parentheses
-      prefix: " "
     - title: primary
       emph: false
     - contributor: translator
@@ -330,7 +320,6 @@ bibliography:
       - contributor: container-author
         form: long
         name-order: given-first
-        suffix: ","
       - contributor: editor
         form: long
         name-order: given-first
@@ -520,6 +509,48 @@ bibliography:
       prefix: " https://doi.org/"
     - variable: url
       prefix: " "
+    song:
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: "."
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      emph: false
+    - delimiter: "; "
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+      group:
+      - contributor: translator
+        form: long
+        name-order: given-first
+        label: {term: translator, form: short, placement: suffix}
+      - variable: number
+      - delimiter: ", "
+        group:
+        - delimiter: ""
+          group:
+          - term: volume
+            form: short
+            text-case: capitalize-first
+            suffix: " "
+          - number: volume
+        - number: chapter-number
+    - variable: medium
+      text-case: capitalize-first
+      wrap:
+        punctuation: brackets
+      prefix: " "
+    - variable: publisher
+      prefix: ". "
+      suffix: "."
+    - variable: url
+      prefix: " "
     motion-picture:
     - contributor: author
       form: long
@@ -532,10 +563,15 @@ bibliography:
       prefix: " "
     - title: primary
       emph: true
-    - variable: medium
+    - delimiter: "; "
       wrap:
         punctuation: brackets
       prefix: " "
+      group:
+      - variable: genre
+        text-case: capitalize-first
+      - variable: medium
+        text-case: capitalize-first
     - variable: publisher
       prefix: ". "
       suffix: "."
@@ -772,11 +808,13 @@ bibliography:
     suffix: "."
   - variable: doi
     prefix: "https://doi.org/"
-  - delimiter: " "
+  - variable: url
     prefix: " "
-    group:
-    - date: accessed
-      form: year-month-day
-      prefix: "Retrieved "
-      suffix: ", from"
-    - variable: url
+  - group:
+    - variable: archive-name
+    - variable: archive-location
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    delimiter: ""
+    prefix: ". "
