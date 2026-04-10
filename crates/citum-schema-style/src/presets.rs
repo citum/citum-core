@@ -667,6 +667,7 @@ impl SubstitutePreset {
                     SubstituteKey::Translator,
                 ],
                 overrides: HashMap::new(),
+                role_substitute: HashMap::new(),
             },
             SubstitutePreset::EditorFirst => Substitute {
                 contributor_role_form: None,
@@ -676,6 +677,7 @@ impl SubstitutePreset {
                     SubstituteKey::Title,
                 ],
                 overrides: HashMap::new(),
+                role_substitute: HashMap::new(),
             },
             SubstitutePreset::TitleFirst => Substitute {
                 contributor_role_form: None,
@@ -685,36 +687,43 @@ impl SubstitutePreset {
                     SubstituteKey::Translator,
                 ],
                 overrides: HashMap::new(),
+                role_substitute: HashMap::new(),
             },
             SubstitutePreset::EditorShort => Substitute {
                 contributor_role_form: Some("short".to_string()),
                 template: vec![SubstituteKey::Editor],
                 overrides: HashMap::new(),
+                role_substitute: HashMap::new(),
             },
             SubstitutePreset::EditorLong => Substitute {
                 contributor_role_form: Some("long".to_string()),
                 template: vec![SubstituteKey::Editor],
                 overrides: HashMap::new(),
+                role_substitute: HashMap::new(),
             },
             SubstitutePreset::EditorTranslatorShort => Substitute {
                 contributor_role_form: Some("short".to_string()),
                 template: vec![SubstituteKey::Editor, SubstituteKey::Translator],
                 overrides: HashMap::new(),
+                role_substitute: HashMap::new(),
             },
             SubstitutePreset::EditorTranslatorLong => Substitute {
                 contributor_role_form: Some("long".to_string()),
                 template: vec![SubstituteKey::Editor, SubstituteKey::Translator],
                 overrides: HashMap::new(),
+                role_substitute: HashMap::new(),
             },
             SubstitutePreset::EditorTitleShort => Substitute {
                 contributor_role_form: Some("short".to_string()),
                 template: vec![SubstituteKey::Editor, SubstituteKey::Title],
                 overrides: HashMap::new(),
+                role_substitute: HashMap::new(),
             },
             SubstitutePreset::EditorTitleLong => Substitute {
                 contributor_role_form: Some("long".to_string()),
                 template: vec![SubstituteKey::Editor, SubstituteKey::Title],
                 overrides: HashMap::new(),
+                role_substitute: HashMap::new(),
             },
             SubstitutePreset::EditorTranslatorTitleShort => Substitute {
                 contributor_role_form: Some("short".to_string()),
@@ -724,6 +733,7 @@ impl SubstitutePreset {
                     SubstituteKey::Title,
                 ],
                 overrides: HashMap::new(),
+                role_substitute: HashMap::new(),
             },
             SubstitutePreset::EditorTranslatorTitleLong => Substitute {
                 contributor_role_form: Some("long".to_string()),
@@ -733,6 +743,7 @@ impl SubstitutePreset {
                     SubstituteKey::Title,
                 ],
                 overrides: HashMap::new(),
+                role_substitute: HashMap::new(),
             },
         }
     }

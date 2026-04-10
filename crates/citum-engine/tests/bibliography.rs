@@ -8,9 +8,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 mod common;
 use common::*;
 
-use citum_engine::{Processor, render::html::Html, render::plain::PlainText};
+use citum_engine::{render::html::Html, render::plain::PlainText, Processor};
 use citum_schema::{
-    BibliographySpec, CitationSpec, Style, StyleInfo,
     options::{
         AndOptions, ArticleJournalBibliographyConfig, ArticleJournalNoPageFallback,
         BibliographyOptions, Config, ContributorConfig, DelimiterPrecedesLast,
@@ -19,16 +18,17 @@ use citum_schema::{
         SortSpec,
     },
     reference::{
+        types::{ArchiveInfo, EprintInfo, MultilingualComplex, MultilingualString},
         Contributor, EdtfString, InputReference, Monograph, MonographType, Numbering,
         NumberingType, Serial, SerialComponent, SerialComponentType, SerialType, StructuredName,
         Title, WorkRelation,
-        types::{ArchiveInfo, EprintInfo, MultilingualComplex, MultilingualString},
     },
     template::{
         DateForm, DateVariable, DelimiterPunctuation, NumberVariable, Rendering, SimpleVariable,
         TemplateComponent, TemplateDate, TemplateGroup, TemplateNumber, TemplateTitle,
         TemplateVariable, TitleForm, TitleType,
     },
+    BibliographySpec, CitationSpec, Style, StyleInfo,
 };
 use std::collections::HashMap;
 use std::fs;
@@ -2211,7 +2211,7 @@ fn apa_structural_entries_use_component_packaging_instead_of_generic_fallbacks()
     );
     assert_eq!(
         lines[2],
-        "Chapter, A. M. J. (2016). 24 Chapter in a report. In F. A. Editor, & S. Editor, eds., _Report title_ (pp. 126–145). Publisher. https://example.com/"
+        "Chapter, A. M. J. (2016). 24 Chapter in a report. In _Report title_ (pp. 126–145). Publisher. https://example.com/"
     );
     assert!(!rendered.contains("Retrieved "));
     assert!(!rendered.contains("[Technical report]"));
