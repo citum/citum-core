@@ -35,11 +35,8 @@ options:
       - translator
     role-substitute:
       container-author:
-        - executive-producer
-        - series-creator
         - editor
         - editorial-director
-        - compiler
   contributors:
     name-form: initials
     initialize-with: ". "

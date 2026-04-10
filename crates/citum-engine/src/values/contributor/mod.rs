@@ -224,9 +224,21 @@ impl ComponentValues for TemplateContributor {
             _ => None, // Handle any future template contributor roles
         };
 
+        // Resolve substitute config once for all substitute/suppression checks below.
+        let default_substitute = citum_schema::options::SubstituteConfig::default();
+        let substitute_config = options
+            .config
+            .substitute
+            .as_ref()
+            .unwrap_or(&default_substitute);
+        let substitute = substitute_config.resolve();
+
         // Check if this role is suppressed by role-substitute configuration
-        if substitute::is_role_suppressed_by_substitute(&component.contributor, options, reference)
-        {
+        if substitute::is_role_suppressed_by_substitute(
+            &component.contributor,
+            &substitute,
+            reference,
+        ) {
             return None;
         }
 
@@ -254,6 +266,7 @@ impl ComponentValues for TemplateContributor {
                 reference,
                 &effective_rendering,
                 &fmt,
+                &substitute,
             );
         }
 
@@ -267,6 +280,7 @@ impl ComponentValues for TemplateContributor {
                 reference,
                 &effective_rendering,
                 &fmt,
+                &substitute,
             );
         }
 

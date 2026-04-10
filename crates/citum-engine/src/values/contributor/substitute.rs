@@ -178,17 +178,9 @@ fn resolve_named_substitute<F: OutputFormat<Output = String>>(
 /// AND that primary role has data on the reference.
 pub(super) fn is_role_suppressed_by_substitute(
     role: &ContributorRole,
-    options: &RenderOptions<'_>,
+    substitute: &citum_schema::options::Substitute,
     reference: &Reference,
 ) -> bool {
-    let default_substitute = citum_schema::options::SubstituteConfig::default();
-    let substitute_config = options
-        .config
-        .substitute
-        .as_ref()
-        .unwrap_or(&default_substitute);
-    let substitute = substitute_config.resolve();
-
     let role_str = role.as_str();
 
     for (primary_role_str, fallback_chain) in &substitute.role_substitute {
@@ -307,15 +299,8 @@ pub(super) fn resolve_role_substitute<F: OutputFormat<Output = String>>(
     reference: &Reference,
     effective_rendering: &Rendering,
     fmt: &F,
+    substitute: &citum_schema::options::Substitute,
 ) -> Option<ProcValues<F::Output>> {
-    let default_substitute = citum_schema::options::SubstituteConfig::default();
-    let substitute_config = options
-        .config
-        .substitute
-        .as_ref()
-        .unwrap_or(&default_substitute);
-    let substitute = substitute_config.resolve();
-
     let primary_role_str = primary_role.as_str();
     let fallback_chain = substitute.role_substitute.get(primary_role_str)?;
 
@@ -398,7 +383,7 @@ pub(super) fn resolve_role_substitute<F: OutputFormat<Output = String>>(
                 reference,
                 effective_rendering,
                 fmt,
-                &substitute,
+                substitute,
             );
         }
     }
@@ -417,15 +402,8 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
     reference: &Reference,
     effective_rendering: &Rendering,
     fmt: &F,
+    substitute: &citum_schema::options::Substitute,
 ) -> Option<ProcValues<F::Output>> {
-    let default_substitute = citum_schema::options::SubstituteConfig::default();
-    let substitute_config = options
-        .config
-        .substitute
-        .as_ref()
-        .unwrap_or(&default_substitute);
-    let substitute = substitute_config.resolve();
-
     for key in &substitute.template {
         match key {
             SubstituteKey::Editor => {
@@ -439,7 +417,7 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
                         reference,
                         effective_rendering,
                         fmt,
-                        &substitute,
+                        substitute,
                     )
                 {
                     return Some(result);
@@ -484,7 +462,7 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
                         reference,
                         effective_rendering,
                         fmt,
-                        &substitute,
+                        substitute,
                     )
                 {
                     return Some(result);
