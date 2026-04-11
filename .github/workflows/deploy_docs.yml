@@ -58,6 +58,9 @@ jobs:
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "citum-core-rust"
+          cache-workspace-crates: true
 
       - name: Install Node dependencies
         if: ${{ inputs.refresh_compat }}
@@ -65,11 +68,11 @@ jobs:
 
       - name: Build Rust workspace
         if: ${{ inputs.refresh_compat }}
-        run: cargo build
+        run: cargo build --all-features
 
       - name: Generate compatibility report
         if: ${{ inputs.refresh_compat }}
-        run: node scripts/report-core.js --output-html docs/compat.html > /tmp/core-report.json
+        run: node scripts/report-core.js --all-features --output-html docs/compat.html > /tmp/core-report.json
 
       - name: Generate behavior coverage report
         run: |

@@ -44,6 +44,9 @@ jobs:
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "citum-core-rust"
+          cache-workspace-crates: true
 
       - name: Install script dependencies
         run: npm install --prefix scripts
@@ -53,7 +56,7 @@ jobs:
 
       - name: Check core fidelity and SQI drift
         run: |
-          node scripts/report-core.js > /tmp/core-report.json
+          node scripts/report-core.js --all-features > /tmp/core-report.json
           node scripts/check-core-quality.js \
             --report /tmp/core-report.json \
             --baseline scripts/report-data/core-quality-baseline.json

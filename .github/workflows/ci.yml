@@ -99,15 +99,18 @@ jobs:
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "citum-core-rust"
+          cache-workspace-crates: true
 
       - name: Check formatting
         run: cargo fmt --all -- --check
 
       - name: Lint with Clippy
-        run: cargo clippy --workspace --all-targets --exclude citum-pdf -- -D warnings
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
 
       - name: Enforce public API docs
-        run: cargo doc --no-deps --workspace --exclude citum-pdf
+        run: cargo doc --no-deps --workspace --all-features
 
   test:
     name: Test
@@ -135,12 +138,15 @@ jobs:
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "citum-core-rust"
+          cache-workspace-crates: true
 
       - name: Run tests
-        run: cargo nextest run
+        run: cargo nextest run --all-features
 
       - name: Verify JSON schemas are up to date
         run: |
           tmp_dir="$(mktemp -d)"
-          cargo run --bin citum --features schema -- schema --out-dir "$tmp_dir"
+          cargo run --bin citum --all-features -- schema --out-dir "$tmp_dir"
           diff -ru "$tmp_dir" docs/schemas
