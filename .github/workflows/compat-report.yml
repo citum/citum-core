@@ -17,7 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CARGO_TERM_COLOR: always
-      CARGO_TARGET_DIR: /tmp/citum-target
+      RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
+      CARGO_INCREMENTAL: "0"
+      SCCACHE_DIR: /home/runner/.cache/sccache
     permissions:
       contents: read
       pages: write
@@ -35,6 +37,9 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Install mold linker and sccache
+        run: sudo apt-get update && sudo apt-get install -y mold sccache
+
       - name: Install cargo-nextest
         uses: taiki-e/install-action@v2
         with:
@@ -45,17 +50,26 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Cache Rust
+      - name: Cache Rust (dependencies + sccache)
         uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "citum-core-rust"
+          cache-workspace-crates: true
+          additional-cache-directories: /home/runner/.cache/sccache
+
+      - name: Configure environment
+        run: |
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+          sccache --start-server
 
       - name: Install Node dependencies
         run: npm install --prefix scripts
 
       - name: Build Rust workspace
-        run: cargo build
+        run: cargo build --all-features
 
       - name: Generate compatibility report
-        run: node scripts/report-core.js --output-html docs/compat.html > /tmp/core-report.json
+        run: node scripts/report-core.js --all-features --output-html docs/compat.html > /tmp/core-report.json
 
       - name: Generate behavior coverage report
         run: |
@@ -75,3 +89,6 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Display sccache stats
+        run: sccache --show-stats
