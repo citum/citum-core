@@ -142,6 +142,7 @@ styles:
         refs_fixture: tests/fixtures/test-items-library/chicago-18th.json
         scope: bibliography
         count_toward_fidelity: true
+        min_pass_rate: 0.73
       - id: relational-comprehensive-smoke
         label: Relational comprehensive native smoke
         runner: native-smoke
