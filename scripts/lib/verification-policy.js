@@ -81,6 +81,12 @@ function validateBenchmarkRun(run, label) {
   ensureOptionalString(run.refs_fixture, `${label}.refs_fixture`);
   ensureOptionalString(run.citations_fixture, `${label}.citations_fixture`);
   assert(typeof run.count_toward_fidelity === 'boolean', `${label}.count_toward_fidelity must be a boolean`);
+  if (run.min_pass_rate != null) {
+    assert(
+      typeof run.min_pass_rate === 'number' && run.min_pass_rate >= 0 && run.min_pass_rate <= 1,
+      `${label}.min_pass_rate must be a number between 0 and 1`
+    );
+  }
   assert(run.id && run.label && run.refs_fixture, `${label} must define id, label, and refs_fixture`);
   if (run.runner === 'native-smoke') {
     assert(run.scope === 'bibliography', `${label}.scope must be bibliography for native-smoke runs`);
@@ -209,6 +215,7 @@ function resolveVerificationPolicy(styleName, policy) {
       citationsFixture: run.citations_fixture || null,
       scope: run.scope,
       countTowardFidelity: run.count_toward_fidelity,
+      minPassRate: run.min_pass_rate ?? null,
     })),
   };
 }

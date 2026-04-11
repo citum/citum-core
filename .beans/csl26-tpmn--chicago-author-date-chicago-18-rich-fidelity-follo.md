@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-02T11:56:15Z
-updated_at: 2026-04-03T17:30:00Z
+updated_at: 2026-04-11T11:04:16Z
 ---
 
 Continue the Chicago author-date fidelity pass using the raw Chicago 18 Zotero

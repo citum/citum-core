@@ -1316,6 +1316,7 @@ function formatBenchmarkRunRecord(benchmarkRun, extras = {}) {
     runner: benchmarkRun.runner,
     scope: benchmarkRun.scope,
     countTowardFidelity: benchmarkRun.countTowardFidelity,
+    minPassRate: benchmarkRun.minPassRate ?? null,
     refsFixture: benchmarkRun.refsFixture,
     citationsFixture: benchmarkRun.citationsFixture || null,
     ...extras,
@@ -1342,6 +1343,7 @@ function summarizeBenchmarkRunRecord(benchmarkRunRecord) {
     scope: benchmarkRunRecord.scope,
     status: benchmarkRunRecord.status,
     countTowardFidelity: benchmarkRunRecord.countTowardFidelity,
+    minPassRate: benchmarkRunRecord.minPassRate ?? null,
     citations: summarizeSection(benchmarkRunRecord.citations),
     bibliography: summarizeSection(benchmarkRunRecord.bibliography),
     bibliographyEntries: benchmarkRunRecord.bibliographyEntries ?? null,
@@ -1366,6 +1368,7 @@ function toPublishedBenchmarkRunRecord(benchmarkRunRecord) {
     runner: benchmarkRunRecord.runner,
     scope: benchmarkRunRecord.scope,
     countTowardFidelity: benchmarkRunRecord.countTowardFidelity,
+    minPassRate: benchmarkRunRecord.minPassRate ?? null,
     refsFixture: toRepoRelativePath(benchmarkRunRecord.refsFixture),
     citationsFixture: toRepoRelativePath(benchmarkRunRecord.citationsFixture),
     status: benchmarkRunRecord.status,
@@ -1391,8 +1394,21 @@ async function runBenchmarkRun(runtime, styleSpec, stylePath, styleYamlPath, ben
   try {
     if (resolvedRun.runner === BENCHMARK_RUNNERS.CITEPROC_ORACLE) {
       const oracleResult = await runCiteprocBenchmarkOracle(runtime, stylePath, styleSpec.name, resolvedRun);
+      let benchmarkStatus;
+      if (oracleResult.error) {
+        benchmarkStatus = 'error';
+      } else if (resolvedRun.minPassRate != null) {
+        const bib = oracleResult.bibliography || { passed: 0, total: 0 };
+        const cit = oracleResult.citations || { passed: 0, total: 0 };
+        const totalPassed = (bib.passed || 0) + (cit.passed || 0);
+        const totalItems = (bib.total || 0) + (cit.total || 0);
+        const matchRate = totalItems > 0 ? totalPassed / totalItems : 0;
+        benchmarkStatus = matchRate >= resolvedRun.minPassRate ? 'pass' : 'fail';
+      } else {
+        benchmarkStatus = 'ok';
+      }
       return formatBenchmarkRunRecord(resolvedRun, {
-        status: oracleResult.error ? 'error' : 'pass',
+        status: benchmarkStatus,
         error: oracleResult.error || null,
         oracleResult,
         citations: oracleResult.citations || { passed: 0, total: 0, entries: [] },
@@ -2899,9 +2915,14 @@ function generateDetailContent(style) {
     for (const benchmarkRun of style.benchmarkRunResults) {
       const statusClass = benchmarkRun.status === 'pass'
         ? 'bg-emerald-100 text-emerald-700'
-        : 'bg-red-100 text-red-700';
+        : benchmarkRun.status === 'ok'
+          ? 'bg-slate-100 text-slate-600'
+          : 'bg-red-100 text-red-700';
       const scopeText = benchmarkRun.scope === 'both' ? 'citation + bibliography' : benchmarkRun.scope;
       const contributionText = benchmarkRun.countTowardFidelity ? 'counts toward fidelity' : 'diagnostic only';
+      const thresholdText = benchmarkRun.minPassRate != null
+        ? `${(benchmarkRun.minPassRate * 100).toFixed(0)}%`
+        : 'none';
       const bibliographyText = benchmarkRun.bibliography
         ? `${benchmarkRun.bibliography.passed}/${benchmarkRun.bibliography.total}`
         : benchmarkRun.bibliographyEntries != null
@@ -2923,6 +2944,7 @@ function generateDetailContent(style) {
                                             <div><span class="font-semibold text-slate-700">Runner:</span> <span class="font-mono text-slate-600">${escapeHtml(benchmarkRun.runner)}</span></div>
                                             <div><span class="font-semibold text-slate-700">Scope:</span> <span class="font-mono text-slate-600">${escapeHtml(scopeText)}</span></div>
                                             <div><span class="font-semibold text-slate-700">Contribution:</span> <span class="font-mono text-slate-600">${escapeHtml(contributionText)}</span></div>
+                                            <div><span class="font-semibold text-slate-700">Threshold:</span> <span class="font-mono text-slate-600">${escapeHtml(thresholdText)}</span></div>
                                             <div><span class="font-semibold text-slate-700">Bibliography:</span> <span class="font-mono text-slate-600">${escapeHtml(bibliographyText)}</span></div>
                                             ${benchmarkRun.citations ? `<div><span class="font-semibold text-slate-700">Citations:</span> <span class="font-mono text-slate-600">${escapeHtml(citationsText)}</span></div>` : ''}
                                             <div><span class="font-semibold text-slate-700">Refs fixture:</span> <span class="font-mono text-slate-600">${escapeHtml(benchmarkRun.refsFixture)}</span></div>
