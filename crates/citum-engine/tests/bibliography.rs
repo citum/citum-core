@@ -8,9 +8,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 mod common;
 use common::*;
 
-use citum_engine::{Processor, render::html::Html, render::plain::PlainText};
+use citum_engine::{render::html::Html, render::plain::PlainText, Processor};
 use citum_schema::{
-    BibliographySpec, CitationSpec, Style, StyleInfo,
     options::{
         AndOptions, ArticleJournalBibliographyConfig, ArticleJournalNoPageFallback,
         BibliographyOptions, Config, ContributorConfig, DelimiterPrecedesLast,
@@ -19,16 +18,17 @@ use citum_schema::{
         SortSpec,
     },
     reference::{
+        types::{ArchiveInfo, EprintInfo, MultilingualComplex, MultilingualString},
         Contributor, EdtfString, InputReference, Monograph, MonographType, Numbering,
         NumberingType, Serial, SerialComponent, SerialComponentType, SerialType, StructuredName,
         Title, WorkRelation,
-        types::{ArchiveInfo, EprintInfo, MultilingualComplex, MultilingualString},
     },
     template::{
         DateForm, DateVariable, DelimiterPunctuation, NumberVariable, Rendering, SimpleVariable,
         TemplateComponent, TemplateDate, TemplateGroup, TemplateNumber, TemplateTitle,
         TemplateVariable, TitleForm, TitleType,
     },
+    BibliographySpec, CitationSpec, Style, StyleInfo,
 };
 use indexmap::IndexMap;
 use rstest::rstest;
@@ -2969,6 +2969,76 @@ mod local_overrides {
         );
         super::bibliography_local_processing_changes_default_bibliography_sort();
     }
+}
+
+#[test]
+fn original_published_date_variable_renders_when_reference_has_original_date() {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Original-date test".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                TemplateComponent::Date(TemplateDate {
+                    date: DateVariable::OriginalPublished,
+                    form: DateForm::Year,
+                    rendering: Rendering {
+                        prefix: Some("(".to_string()),
+                        suffix: Some(") ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+                TemplateComponent::Date(TemplateDate {
+                    date: DateVariable::Issued,
+                    form: DateForm::Year,
+                    ..Default::default()
+                }),
+                TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Primary,
+                    form: Some(TitleForm::Long),
+                    ..Default::default()
+                }),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let reference = InputReference::Monograph(Box::new(Monograph {
+        id: Some("gatsby".to_string()),
+        title: Some(Title::Single("The Great Gatsby".to_string())),
+        issued: EdtfString("1992".to_string()),
+        original: Some(WorkRelation::Embedded(Box::new(InputReference::Monograph(
+            Box::new(Monograph {
+                id: Some("gatsby-orig".to_string()),
+                issued: EdtfString("1925".to_string()),
+                ..Default::default()
+            }),
+        )))),
+        ..Default::default()
+    }));
+
+    let bibliography = IndexMap::from([("gatsby".to_string(), reference)]);
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor
+        .render_selected_bibliography_with_format::<PlainText, _>(["gatsby".to_string()])
+        .trim()
+        .to_string();
+
+    assert!(
+        rendered.contains("(1925)"),
+        "expected original-published year '(1925)' in output: {rendered}"
+    );
+    assert!(
+        rendered.contains("1992"),
+        "expected issued year '1992' in output: {rendered}"
+    );
+    assert!(
+        rendered.contains("The Great Gatsby"),
+        "expected title in output: {rendered}"
+    );
 }
 
 mod annotated_html_preview {

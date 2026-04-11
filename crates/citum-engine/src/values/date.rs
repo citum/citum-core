@@ -658,6 +658,7 @@ impl ComponentValues for TemplateDate {
         let date_opt: Option<EdtfString> = match self.date {
             TemplateDateVar::Issued => reference.csl_issued_date(),
             TemplateDateVar::Accessed => reference.accessed(),
+            TemplateDateVar::OriginalPublished => reference.original_date(),
             _ => None,
         };
 
