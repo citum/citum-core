@@ -351,7 +351,7 @@ bibliography:
     article-journal:
       - contributor: author
         form: long
-        name-order: family-first
+        name-order: family-first-only
         shorten:
           min: 5
           use-first: 1
@@ -384,7 +384,7 @@ bibliography:
     article-magazine:
       - contributor: author
         form: long
-        name-order: family-first
+        name-order: family-first-only
         shorten:
           min: 5
           use-first: 1
@@ -416,7 +416,7 @@ bibliography:
     chapter:
       - contributor: author
         form: long
-        name-order: family-first
+        name-order: family-first-only
         shorten:
           min: 5
           use-first: 1
@@ -449,7 +449,7 @@ bibliography:
     interview:
       - contributor: author
         form: long
-        name-order: family-first
+        name-order: family-first-only
         shorten:
           min: 5
           use-first: 1
@@ -477,7 +477,7 @@ bibliography:
     paper-conference:
       - contributor: author
         form: long
-        name-order: family-first
+        name-order: family-first-only
         shorten:
           min: 5
           use-first: 1
@@ -523,7 +523,7 @@ bibliography:
     patent:
       - contributor: author
         form: long
-        name-order: family-first
+        name-order: family-first-only
         shorten:
           min: 5
           use-first: 1
@@ -541,7 +541,7 @@ bibliography:
     book:
       - contributor: author
         form: long
-        name-order: family-first
+        name-order: family-first-only
         shorten:
           min: 5
           use-first: 1
@@ -562,7 +562,7 @@ bibliography:
   template:
     - contributor: author
       form: long
-      name-order: family-first
+      name-order: family-first-only
       shorten:
         min: 5
         use-first: 1

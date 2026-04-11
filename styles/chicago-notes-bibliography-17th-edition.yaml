@@ -234,7 +234,7 @@ bibliography:
     article-journal:
     - contributor: author
       form: long
-      name-order: family-first
+      name-order: family-first-only
     - title: primary
     - group:
       - contributor: editor
@@ -259,7 +259,7 @@ bibliography:
   template:
   - contributor: author
     form: long
-    name-order: family-first
+    name-order: family-first-only
   - title: primary
   - group:
     - contributor: editor

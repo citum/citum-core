@@ -537,6 +537,8 @@ pub enum NameOrder {
     /// Display as "Family, Given" (e.g., "Smith, John").
     #[default]
     FamilyFirst,
+    /// First contributor inverted ("Family, Given"); subsequent contributors given-first.
+    FamilyFirstOnly,
 }
 
 /// How to render contributor names.

@@ -210,6 +210,9 @@ Track schema changes separately from code changes.
 Historical note: entries below may predate the automation baseline and are the
 authoritative record when matching tags were not created at the time.
 
+#### schema-v0.29.2 (2026-04-11)
+- Added `NameOrder::FamilyFirstOnly` variant (non-breaking additive)
+
 #### schema-v0.29.1 (2026-04-10)
 - Added `event: Option<WorkRelation>` to `Collection` to promote paper-conference
   event metadata (event-title, event-place) from note field to proper schema field

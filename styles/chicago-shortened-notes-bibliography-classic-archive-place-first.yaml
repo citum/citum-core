@@ -72,7 +72,7 @@ citation:
   template:
   - contributor: author
     form: long
-    name-order: family-first
+    name-order: family-first-only
     shorten:
       min: 3
       use-first: 1
@@ -98,7 +98,7 @@ bibliography:
     article-journal:
     - contributor: author
       form: long
-      name-order: family-first
+      name-order: family-first-only
       shorten:
         min: 8
         use-first: 3
@@ -126,7 +126,7 @@ bibliography:
   template:
   - contributor: author
     form: long
-    name-order: family-first
+    name-order: family-first-only
     shorten:
       min: 8
       use-first: 3

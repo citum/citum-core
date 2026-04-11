@@ -505,6 +505,7 @@ pub(crate) fn format_single_name(
     let inverted = match ctx.name_order {
         Some(NameOrder::GivenFirst) => false,
         Some(NameOrder::FamilyFirst) => true,
+        Some(NameOrder::FamilyFirstOnly) => index == 0,
         None => match ctx.display_as_sort {
             Some(DisplayAsSort::All) => true,
             Some(DisplayAsSort::First) => index == 0,
