@@ -12,7 +12,7 @@ do_not_use_when:
 default_model: gpt-5.4-mini
 default_reasoning_effort: medium
 scope:
-  - Primary write scope: `crates/citum_migrate/`
+  - Primary write scope is `crates/citum_migrate/`
   - Read supporting evidence from `docs/`, `scripts/`, `styles-legacy/`, and test fixtures as needed.
   - Stay cluster-bounded: one target cluster per pass.
 verification:
