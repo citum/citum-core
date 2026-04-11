@@ -26,7 +26,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CARGO_TERM_COLOR: always
-      CARGO_TARGET_DIR: /tmp/citum-target
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -59,8 +58,6 @@ jobs:
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: ". -> /tmp/citum-target"
 
       - name: Install Node dependencies
         if: ${{ inputs.refresh_compat }}

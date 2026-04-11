@@ -26,7 +26,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CARGO_TERM_COLOR: always
-      CARGO_TARGET_DIR: /tmp/citum-target
     steps:
       - uses: actions/checkout@v4
         with:
@@ -45,8 +44,6 @@ jobs:
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: ". -> /tmp/citum-target"
 
       - name: Install script dependencies
         run: npm install --prefix scripts
