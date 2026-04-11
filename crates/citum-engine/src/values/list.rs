@@ -44,6 +44,7 @@ impl ComponentValues for TemplateGroup {
                     config: Some(options.config.clone()),
                     bibliography_config: options.bibliography_config.clone(),
                     item_language: crate::values::effective_component_language(reference, item),
+                    sentence_initial: false,
                     pre_formatted: v.pre_formatted,
                 };
 

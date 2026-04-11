@@ -1,6 +1,6 @@
 # Sentence-Initial Labels Specification
 
-**Status:** Draft
+**Status:** Active
 **Version:** 0.6
 **Date:** 2026-04-11
 **Supersedes:** None
@@ -26,7 +26,8 @@ In scope:
 - the processor-owned render-context contract for sentence-initial behavior
 
 Out of scope:
-- shipping any rendering behavior changes in this spec
+- shipping rendering behavior beyond the first sentence-initial implementation
+  wave activated with this spec revision
 - broad title/text-case semantics already covered by
   `docs/specs/TITLE_TEXT_CASE.md`
 - renaming or activating any new public schema/API field in this draft
@@ -299,6 +300,9 @@ scoped naming adjustment.
   language/script behavior, including RTL or bidi text.
 
 ## Changelog
+- v0.6 (2026-04-11): Activated the spec, aligned scope with the first engine
+  implementation wave, and required the processed-component sentence-initial
+  contract to ship with the paired runtime behavior.
 - v0.5 (2026-04-11): Removed rejected alternative options, adopted a single
   processor-owned `sentence-initial` architecture, resolved the main design
   questions, and narrowed the remaining review questions.

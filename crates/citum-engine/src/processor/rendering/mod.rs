@@ -89,6 +89,8 @@ pub struct TemplateRenderRequest<'a> {
     pub citation_number: usize,
     /// The citation position (e.g., Ibid).
     pub position: Option<citum_schema::citation::Position>,
+    /// Optional note-start text-case policy for note-style repeated-note output.
+    pub note_start_text_case: Option<citum_schema::NoteStartTextCase>,
     /// Integral name state for name formatting.
     pub integral_name_state: Option<citum_schema::citation::IntegralNameState>,
 }
@@ -337,6 +339,7 @@ impl<'a> Renderer<'a> {
         mode: &citum_schema::citation::CitationMode,
         suppress_author: bool,
         position: Option<&citum_schema::citation::Position>,
+        note_start_text_case: Option<citum_schema::NoteStartTextCase>,
     ) -> TemplateRenderRequest<'b> {
         TemplateRenderRequest {
             template,
@@ -346,6 +349,7 @@ impl<'a> Renderer<'a> {
             locator_raw: item.locator.as_ref(),
             citation_number: self.get_or_assign_citation_number(&item.id),
             position: position.cloned(),
+            note_start_text_case,
             integral_name_state: item.integral_name_state,
         }
     }
@@ -458,6 +462,7 @@ impl<'a> Renderer<'a> {
             intra_delimiter,
             suppress_author,
             position,
+            spec.note_start_text_case,
         )
     }
 
@@ -470,6 +475,10 @@ impl<'a> Renderer<'a> {
     ///
     /// Returns an error when a referenced item is missing or item rendering
     /// fails.
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "Ungrouped citation rendering now needs explicit note-start context."
+    )]
     pub fn render_ungrouped_citation_with_format<F>(
         &self,
         items: &[crate::reference::CitationItem],
@@ -478,6 +487,7 @@ impl<'a> Renderer<'a> {
         intra_delimiter: &str,
         suppress_author: bool,
         position: Option<&citum_schema::citation::Position>,
+        note_start_text_case: Option<citum_schema::NoteStartTextCase>,
     ) -> Result<Vec<String>, ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -537,6 +547,7 @@ impl<'a> Renderer<'a> {
                     mode,
                     suppress_author,
                     position,
+                    note_start_text_case,
                 );
                 if let Some(item_str) = self.render_item_from_template_with_format::<F>(
                     reference,

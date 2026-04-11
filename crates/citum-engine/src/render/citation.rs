@@ -161,6 +161,7 @@ mod tests {
                 bibliography_config: None,
                 url: None,
                 item_language: None,
+                sentence_initial: false,
                 pre_formatted: false,
             },
             ProcTemplateComponent {
@@ -179,6 +180,7 @@ mod tests {
                 bibliography_config: None,
                 url: None,
                 item_language: None,
+                sentence_initial: false,
                 pre_formatted: false,
             },
         ];
@@ -218,6 +220,7 @@ mod tests {
                 bibliography_config: None,
                 url: None,
                 item_language: None,
+                sentence_initial: false,
                 pre_formatted: false,
             },
             ProcTemplateComponent {
@@ -236,6 +239,7 @@ mod tests {
                 bibliography_config: None,
                 url: None,
                 item_language: None,
+                sentence_initial: false,
                 pre_formatted: false,
             },
         ];
@@ -376,6 +380,7 @@ ENDING IN COMMA
                 bibliography_config: None,
                 url: None,
                 item_language: None,
+                sentence_initial: false,
                 pre_formatted: false,
             },
             ProcTemplateComponent {
@@ -394,6 +399,7 @@ ENDING IN COMMA
                 bibliography_config: None,
                 url: None,
                 item_language: None,
+                sentence_initial: false,
                 pre_formatted: false,
             },
         ]

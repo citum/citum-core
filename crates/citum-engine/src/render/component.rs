@@ -29,6 +29,8 @@ pub struct ProcTemplateComponent {
     pub bibliography_config: Option<BibliographyConfig>,
     /// Effective language for this rendered component.
     pub item_language: Option<String>,
+    /// Whether this component begins a sentence according to processor-owned render context.
+    pub sentence_initial: bool,
     /// Whether the value is already pre-formatted (e.g. from a List or substitution).
     pub pre_formatted: bool,
 }

@@ -128,6 +128,7 @@ impl Processor {
         merged_template.push(ProcTemplateComponent {
             template_component: TemplateComponent::default(),
             value: merged_body,
+            sentence_initial: false,
             pre_formatted: true,
             config: entry
                 .template

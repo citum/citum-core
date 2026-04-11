@@ -1173,6 +1173,34 @@ fn make_multi_editor_only_book(
     }))
 }
 
+fn build_editor_verb_prefix_style(title_suffix: Option<&str>) -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Editor Verb Prefix Test".to_string()),
+            id: Some("editor-verb-prefix-test".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            contributors: Some(ContributorConfig {
+                role: Some(citum_schema::options::contributors::RoleOptions {
+                    preset: Some(citum_schema::options::contributors::RoleLabelPreset::VerbPrefix),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                citum_schema::tc_title!(Primary, suffix = title_suffix.unwrap_or("")),
+                citum_schema::tc_contributor!(Editor, Long),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
 fn make_editor_substitute_bibliography() -> indexmap::IndexMap<String, InputReference> {
     citum_schema::bib_map![
         "ancient-tale" => make_editor_only_book(
@@ -2621,6 +2649,42 @@ fn editor_author_substitute_omits_verb_role_label_in_bibliography() {
     assert!(
         !result.contains("edited by Jacob Grimm") && !result.contains("edited by Hoesung Lee"),
         "verb-prefix labels should not survive when editors substitute into the author slot: {result}"
+    );
+}
+
+#[test]
+fn sentence_initial_editor_verb_prefix_is_capitalized_in_bibliography() {
+    let style = build_editor_verb_prefix_style(None);
+    let mut bib = IndexMap::new();
+    bib.insert(
+        "editor-only".to_string(),
+        make_editor_only_book("editor-only", "Collected Essays", "2001", "Grimm", "Jacob"),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert!(
+        result.contains("Collected Essays. Edited by Jacob Grimm"),
+        "sentence-initial editor labels should capitalize after a period: {result}"
+    );
+}
+
+#[test]
+fn mid_sentence_editor_verb_prefix_remains_lowercase_in_bibliography() {
+    let style = build_editor_verb_prefix_style(Some(":"));
+    let mut bib = IndexMap::new();
+    bib.insert(
+        "editor-only".to_string(),
+        make_editor_only_book("editor-only", "Collected Essays", "2001", "Grimm", "Jacob"),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert!(
+        result.contains("Collected Essays: edited by Jacob Grimm"),
+        "mid-sentence editor labels should stay lowercase: {result}"
     );
 }
 

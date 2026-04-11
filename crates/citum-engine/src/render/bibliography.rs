@@ -18,6 +18,10 @@ fn is_final_punctuation(c: char) -> bool {
     matches!(c, '.' | ',' | ':' | ';' | '!' | '?')
 }
 
+fn is_sentence_ending_punctuation(c: char) -> bool {
+    matches!(c, '.' | '!' | '?')
+}
+
 fn visible_text(input: &str) -> String {
     let mut output = String::with_capacity(input.len());
     let mut in_tag = false;
@@ -43,6 +47,58 @@ fn last_visible_non_space_char(input: &str) -> Option<char> {
         .chars()
         .rev()
         .find(|ch| !ch.is_whitespace())
+}
+
+fn ends_with_sentence_ending_visible_punctuation(input: &str) -> bool {
+    let visible = visible_text(input);
+    let mut chars = visible.chars().rev().filter(|ch| !ch.is_whitespace());
+    match chars.next() {
+        Some(ch) if is_sentence_ending_punctuation(ch) => true,
+        Some('"' | '\u{201D}') => chars.next().is_some_and(is_sentence_ending_punctuation),
+        _ => false,
+    }
+}
+
+/// Returns true when the next rendered component should be treated as sentence-initial
+/// under the same join semantics used by bibliography rendering.
+#[must_use]
+pub(crate) fn component_starts_new_sentence(
+    entry_output: &str,
+    rendered: &str,
+    default_separator: &str,
+    punctuation_in_quote: bool,
+) -> bool {
+    if entry_output.is_empty() {
+        return true;
+    }
+
+    let first_char = first_visible_char(rendered).unwrap_or(' ');
+    let starts_with_separator = matches!(first_char, ',' | ';' | ':' | ' ' | '.' | '(');
+
+    if starts_with_separator {
+        return false;
+    }
+
+    if ends_with_sentence_ending_visible_punctuation(entry_output) {
+        return true;
+    }
+
+    let last_char = entry_output.chars().last().unwrap_or(' ');
+    let trimmed_last = last_visible_non_space_char(entry_output).unwrap_or(' ');
+    if !last_char.is_whitespace()
+        && !first_char.is_whitespace()
+        && !is_final_punctuation(trimmed_last)
+        && default_separator
+            .chars()
+            .next()
+            .is_some_and(is_sentence_ending_punctuation)
+    {
+        return true;
+    }
+
+    punctuation_in_quote
+        && default_separator.starts_with('.')
+        && (entry_output.ends_with('"') || entry_output.ends_with('\u{201D}'))
 }
 
 /// Render processed templates into a final bibliography string using `PlainText` format.
@@ -148,7 +204,7 @@ pub(crate) fn render_entry_body_components_with_format<F: OutputFormat<Output = 
     entry_output
 }
 
-fn append_rendered_component(
+pub(crate) fn append_rendered_component(
     entry_output: &mut String,
     rendered: &str,
     default_separator: &str,
@@ -337,6 +393,36 @@ mod tests {
     use citum_schema::template::{Rendering, TemplateComponent, WrapConfig, WrapPunctuation};
 
     #[test]
+    fn test_component_starts_new_sentence_at_entry_start() {
+        assert!(component_starts_new_sentence(
+            "",
+            "Edited by Grimm, Jacob",
+            ". ",
+            false
+        ));
+    }
+
+    #[test]
+    fn test_component_starts_new_sentence_after_period() {
+        assert!(component_starts_new_sentence(
+            "Collected Essays.",
+            "edited by Grimm, Jacob",
+            ". ",
+            false
+        ));
+    }
+
+    #[test]
+    fn test_component_does_not_start_new_sentence_after_colon() {
+        assert!(!component_starts_new_sentence(
+            "Collected Essays:",
+            "edited by Grimm, Jacob",
+            ". ",
+            false
+        ));
+    }
+
+    #[test]
     fn test_bibliography_separator_suppression() {
         use citum_schema::options::{BibliographyConfig, Config};
 
@@ -364,6 +450,7 @@ mod tests {
             bibliography_config: Some(bibliography_config.clone()),
             url: None,
             item_language: None,
+            sentence_initial: false,
             pre_formatted: false,
         };
 
@@ -387,6 +474,7 @@ mod tests {
             bibliography_config: Some(bibliography_config),
             url: None,
             item_language: None,
+            sentence_initial: false,
             pre_formatted: false,
         };
 
@@ -434,6 +522,7 @@ mod tests {
             bibliography_config: Some(bibliography_config.clone()),
             url: None,
             item_language: None,
+            sentence_initial: false,
             pre_formatted: false,
         };
 
@@ -452,6 +541,7 @@ mod tests {
             bibliography_config: Some(bibliography_config),
             url: None,
             item_language: None,
+            sentence_initial: false,
             pre_formatted: false,
         };
 
@@ -523,6 +613,7 @@ mod tests {
             bibliography_config: Some(bibliography_config.clone()),
             url: None,
             item_language: None,
+            sentence_initial: false,
             pre_formatted: false,
         };
 
@@ -544,6 +635,7 @@ mod tests {
             bibliography_config: Some(bibliography_config),
             url: None,
             item_language: None,
+            sentence_initial: false,
             pre_formatted: false,
         };
 
@@ -586,6 +678,7 @@ mod tests {
             bibliography_config: Some(bibliography_config.clone()),
             url: None,
             item_language: None,
+            sentence_initial: false,
             pre_formatted: false,
         };
 
@@ -604,6 +697,7 @@ mod tests {
             bibliography_config: Some(bibliography_config),
             url: None,
             item_language: None,
+            sentence_initial: false,
             pre_formatted: false,
         };
 
@@ -616,6 +710,10 @@ mod tests {
         assert_eq!(result, "2024");
     }
 
+    #[allow(
+        clippy::too_many_lines,
+        reason = "rendering fixture exercises a full punctuation case"
+    )]
     #[test]
     fn test_html_separator_logic_uses_visible_punctuation() {
         use crate::render::html::Html;
@@ -651,6 +749,7 @@ mod tests {
             bibliography_config: Some(bibliography_config.clone()),
             url: None,
             item_language: None,
+            sentence_initial: false,
             pre_formatted: false,
         };
 
@@ -673,6 +772,7 @@ mod tests {
             bibliography_config: Some(bibliography_config.clone()),
             url: None,
             item_language: None,
+            sentence_initial: false,
             pre_formatted: false,
         };
 
@@ -694,6 +794,7 @@ mod tests {
             bibliography_config: Some(bibliography_config),
             url: None,
             item_language: None,
+            sentence_initial: false,
             pre_formatted: false,
         };
 
@@ -745,6 +846,7 @@ mod tests {
                 url: None,
                 bibliography_config: None,
                 item_language: None,
+                sentence_initial: false,
                 pre_formatted: false,
             }],
             metadata: crate::render::format::ProcEntryMetadata::default(),
