@@ -9,6 +9,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! All transforms operate on Djot-markup-bearing strings and respect
 //! `.nocase` span protection via the rich-text renderer.
 
+use citum_schema::NoteStartTextCase;
 use citum_schema::options::titles::TextCase;
 
 /// Apply a text-case transform to a single plain-text segment.
@@ -92,6 +93,21 @@ pub fn resolve_text_case(case: TextCase, language: Option<&str>) -> TextCase {
             _ => TextCase::AsIs,
         }
     }
+}
+
+/// Apply a note-start text-case transform using the same language fallback rules
+/// as other locale-backed casing behavior.
+#[must_use]
+pub(crate) fn apply_note_start_text_case(
+    value: &str,
+    text_case: NoteStartTextCase,
+    language: Option<&str>,
+) -> String {
+    let case = match text_case {
+        NoteStartTextCase::CapitalizeFirst => TextCase::CapitalizeFirst,
+        NoteStartTextCase::Lowercase => TextCase::Lowercase,
+    };
+    apply_text_case(value, resolve_text_case(case, language))
 }
 
 /// Convert text to sentence case: lowercase everything, then capitalize the first word.
@@ -338,6 +354,38 @@ mod tests {
         assert_eq!(
             resolve_text_case(TextCase::Title, Some("en-US")),
             TextCase::Title
+        );
+    }
+
+    #[test]
+    fn test_note_start_capitalize_first_uses_english_language_rules() {
+        assert_eq!(
+            apply_note_start_text_case(
+                "edited by",
+                NoteStartTextCase::CapitalizeFirst,
+                Some("en-US"),
+            ),
+            "Edited by"
+        );
+    }
+
+    #[test]
+    fn test_note_start_capitalize_first_falls_back_to_as_is_for_non_english() {
+        assert_eq!(
+            apply_note_start_text_case(
+                "hg. von",
+                NoteStartTextCase::CapitalizeFirst,
+                Some("de-DE"),
+            ),
+            "hg. von"
+        );
+    }
+
+    #[test]
+    fn test_note_start_capitalize_first_is_no_op_for_uncased_scripts() {
+        assert_eq!(
+            apply_note_start_text_case("ابن سينا", NoteStartTextCase::CapitalizeFirst, Some("ar"),),
+            "ابن سينا"
         );
     }
 }

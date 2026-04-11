@@ -17,6 +17,8 @@ pub(crate) struct GroupRenderParams<'a> {
     pub(crate) suppress_author: bool,
     /// The citation position (e.g., ibid, subsequent).
     pub(crate) position: Option<&'a citum_schema::citation::Position>,
+    /// Optional note-start text-case policy for note-style repeated-note output.
+    pub(crate) note_start_text_case: Option<citum_schema::NoteStartTextCase>,
 }
 
 /// Parameters for rendering a template with a citation number.
@@ -41,6 +43,8 @@ pub struct TemplateRenderParams<'a> {
     pub locator_raw: Option<&'a citum_schema::citation::CitationLocator>,
     /// The citation position (e.g., ibid, subsequent).
     pub position: Option<&'a citum_schema::citation::Position>,
+    /// Optional note-start text-case policy for citation templates.
+    pub note_start_text_case: Option<citum_schema::NoteStartTextCase>,
     /// Whether the author was rendered in integral form in the prose anchor.
     pub integral_name_state: Option<citum_schema::citation::IntegralNameState>,
 }

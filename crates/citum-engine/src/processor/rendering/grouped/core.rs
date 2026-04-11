@@ -6,10 +6,15 @@ use super::super::{
 use super::group_citation_items_by_author;
 use crate::error::ProcessorError;
 use crate::reference::Reference;
+use crate::render::bibliography::{append_rendered_component, component_starts_new_sentence};
+use crate::render::component::render_component_with_format;
 use crate::render::{ProcTemplate, ProcTemplateComponent};
 use crate::values::{ComponentValues, ProcHints, RenderContext, RenderOptions};
 use citum_schema::{
+    NoteStartTextCase,
+    locale::GeneralTerm,
     options::ArticleJournalNoPageFallback,
+    options::titles::TextCase,
     reference::NumOrStr,
     template::{DateVariable, NumberVariable, SimpleVariable, TemplateComponent},
 };
@@ -45,6 +50,7 @@ struct GroupItemRenderRequest<'a> {
     mode: &'a citum_schema::citation::CitationMode,
     suppress_author: bool,
     position: Option<&'a citum_schema::citation::Position>,
+    note_start_text_case: Option<citum_schema::NoteStartTextCase>,
     delimiter: &'a str,
 }
 
@@ -128,11 +134,16 @@ impl Renderer<'_> {
             intra_delimiter,
             suppress_author,
             position,
+            spec.note_start_text_case,
         )
     }
 
     /// Render a group of items that must not be author-collapsed (legal cases,
     /// personal communications). Returns the rendered citation strings.
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "Citation item rendering now needs explicit note-start context."
+    )]
     fn render_special_type_items<F>(
         &self,
         group: &[&crate::reference::CitationItem],
@@ -141,6 +152,7 @@ impl Renderer<'_> {
         suppress_author: bool,
         position: Option<&citum_schema::citation::Position>,
         intra_delimiter: &str,
+        note_start_text_case: Option<citum_schema::NoteStartTextCase>,
     ) -> Result<Vec<String>, ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -157,6 +169,7 @@ impl Renderer<'_> {
                     mode,
                     suppress_author,
                     position,
+                    note_start_text_case,
                     delimiter: intra_delimiter,
                 },
             ) && let Some((ids, content)) = self.build_citation_chunk(
@@ -203,6 +216,7 @@ impl Renderer<'_> {
                     mode,
                     suppress_author,
                     position,
+                    note_start_text_case: spec.note_start_text_case,
                     delimiter: component_delimiter,
                 },
             ) && !item_str.is_empty()
@@ -233,6 +247,10 @@ impl Renderer<'_> {
     ///
     /// Returns an error when a referenced item is missing or grouped rendering
     /// fails.
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "Grouped citation rendering now needs explicit note-start context."
+    )]
     pub fn render_grouped_citation_with_format<F>(
         &self,
         items: &[crate::reference::CitationItem],
@@ -241,6 +259,7 @@ impl Renderer<'_> {
         intra_delimiter: &str,
         suppress_author: bool,
         position: Option<&citum_schema::citation::Position>,
+        note_start_text_case: Option<citum_schema::NoteStartTextCase>,
     ) -> Result<Vec<String>, ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -255,12 +274,17 @@ impl Renderer<'_> {
                 intra_delimiter,
                 suppress_author,
                 position,
+                note_start_text_case,
             )?);
         }
 
         Ok(rendered_groups)
     }
 
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "Grouped citation rendering now needs explicit note-start context."
+    )]
     fn render_grouped_citation_group_with_format<F>(
         &self,
         group: &[&crate::reference::CitationItem],
@@ -269,6 +293,7 @@ impl Renderer<'_> {
         intra_delimiter: &str,
         suppress_author: bool,
         position: Option<&citum_schema::citation::Position>,
+        note_start_text_case: Option<citum_schema::NoteStartTextCase>,
     ) -> Result<Vec<String>, ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -293,6 +318,7 @@ impl Renderer<'_> {
                 suppress_author,
                 position,
                 intra_delimiter,
+                note_start_text_case,
             );
         }
 
@@ -308,6 +334,7 @@ impl Renderer<'_> {
                     intra_delimiter,
                     suppress_author,
                     position,
+                    note_start_text_case,
                 },
             )?
             .into_iter()
@@ -497,6 +524,7 @@ impl Renderer<'_> {
                     mode: params.mode,
                     suppress_author: params.suppress_author,
                     position: params.position,
+                    note_start_text_case: params.note_start_text_case,
                     delimiter: item_delimiter,
                 },
             ) && !item_str.is_empty()
@@ -754,6 +782,7 @@ impl Renderer<'_> {
                 locator_raw: None,
                 citation_number: entry_number,
                 position: None,
+                note_start_text_case: None,
                 integral_name_state: None,
             },
         )
@@ -796,6 +825,7 @@ impl Renderer<'_> {
                 locator_raw: params.locator_raw,
                 citation_number: params.citation_number,
                 position: params.position.cloned(),
+                note_start_text_case: params.note_start_text_case,
                 integral_name_state: params.integral_name_state,
             },
         )
@@ -819,6 +849,7 @@ impl Renderer<'_> {
             locator_raw,
             citation_number,
             position,
+            note_start_text_case,
             integral_name_state,
         } = request;
         let ref_type = reference.ref_type();
@@ -842,7 +873,7 @@ impl Renderer<'_> {
             integral_name_state,
         );
         let mut tracker = TemplateComponentTracker::default();
-        let components: Vec<ProcTemplateComponent> = template
+        let mut components: Vec<ProcTemplateComponent> = template
             .iter()
             .enumerate()
             .filter_map(|(template_index, component)| {
@@ -861,11 +892,144 @@ impl Renderer<'_> {
             })
             .collect();
 
+        self.apply_sentence_initial_context::<F>(&mut components, context, note_start_text_case);
+
         if components.is_empty() {
             None
         } else {
             Some(components)
         }
+    }
+
+    fn apply_sentence_initial_context<F>(
+        &self,
+        components: &mut [ProcTemplateComponent],
+        context: RenderContext,
+        note_start_text_case: Option<NoteStartTextCase>,
+    ) where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        match context {
+            RenderContext::Bibliography => {
+                self.apply_bibliography_sentence_initial_context::<F>(components);
+            }
+            RenderContext::Citation => {
+                self.apply_note_start_sentence_initial_context(components, note_start_text_case);
+            }
+        }
+    }
+
+    fn apply_bibliography_sentence_initial_context<F>(
+        &self,
+        components: &mut [ProcTemplateComponent],
+    ) where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        if !components.iter().any(|component| {
+            component
+                .prefix
+                .as_deref()
+                .is_some_and(|prefix| !prefix.is_empty())
+        }) {
+            return;
+        }
+
+        let punctuation_in_quote = components
+            .first()
+            .and_then(|component| component.config.as_ref())
+            .is_some_and(|config| config.punctuation_in_quote);
+        let default_separator = components
+            .first()
+            .and_then(|component| component.bibliography_config.as_ref())
+            .and_then(|bib| bib.separator.as_deref())
+            .unwrap_or(". ")
+            .to_string();
+
+        let mut entry_output = String::new();
+        for component in components.iter_mut() {
+            let rendered = render_component_with_format::<F>(component);
+            if rendered.is_empty() {
+                continue;
+            }
+
+            if component_starts_new_sentence(
+                &entry_output,
+                &rendered,
+                &default_separator,
+                punctuation_in_quote,
+            ) {
+                component.sentence_initial = true;
+                self.apply_sentence_initial_transform(component, None);
+            }
+
+            let rendered = render_component_with_format::<F>(component);
+            append_rendered_component(
+                &mut entry_output,
+                &rendered,
+                &default_separator,
+                punctuation_in_quote,
+            );
+        }
+    }
+
+    fn apply_note_start_sentence_initial_context(
+        &self,
+        components: &mut [ProcTemplateComponent],
+        note_start_text_case: Option<NoteStartTextCase>,
+    ) {
+        let Some(text_case) = note_start_text_case else {
+            return;
+        };
+
+        for component in components.iter_mut() {
+            if !self.is_note_start_term_component(component) {
+                continue;
+            }
+
+            component.sentence_initial = true;
+            self.apply_sentence_initial_transform(component, Some(text_case));
+            break;
+        }
+    }
+
+    fn apply_sentence_initial_transform(
+        &self,
+        component: &mut ProcTemplateComponent,
+        note_start_text_case: Option<NoteStartTextCase>,
+    ) {
+        if !component.sentence_initial {
+            return;
+        }
+
+        match &component.template_component {
+            TemplateComponent::Contributor(_) => {
+                if let Some(prefix) = component.prefix.as_mut() {
+                    let case = crate::values::text_case::resolve_text_case(
+                        TextCase::CapitalizeFirst,
+                        Some(self.locale.locale.as_str()),
+                    );
+                    *prefix = crate::values::text_case::apply_text_case(prefix, case);
+                }
+            }
+            TemplateComponent::Term(_)
+                if note_start_text_case.is_some()
+                    && self.is_note_start_term_component(component) =>
+            {
+                component.value = crate::values::text_case::apply_note_start_text_case(
+                    &component.value,
+                    note_start_text_case.expect("checked above"),
+                    Some(self.locale.locale.as_str()),
+                );
+            }
+            _ => {}
+        }
+    }
+
+    fn is_note_start_term_component(&self, component: &ProcTemplateComponent) -> bool {
+        matches!(
+            &component.template_component,
+            TemplateComponent::Term(term) if term.term == GeneralTerm::Ibid
+        )
     }
 
     fn apply_article_journal_bibliography_policy<'a>(
@@ -1061,6 +1225,7 @@ impl Renderer<'_> {
             config: Some(options.config.clone()),
             bibliography_config: options.bibliography_config.clone(),
             item_language,
+            sentence_initial: false,
             pre_formatted: values.pre_formatted,
         })
     }
@@ -1133,6 +1298,7 @@ impl Renderer<'_> {
             config: Some(options.config.clone()),
             bibliography_config: options.bibliography_config.clone(),
             item_language: crate::values::effective_component_language(reference, &group_component),
+            sentence_initial: false,
             pre_formatted: true,
         })
     }
@@ -1236,6 +1402,7 @@ impl Renderer<'_> {
             item_request.mode,
             item_request.suppress_author,
             item_request.position,
+            item_request.note_start_text_case,
         );
         self.render_item_from_template_with_format::<F>(reference, request, item_request.delimiter)
     }

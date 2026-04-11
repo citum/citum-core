@@ -6,8 +6,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! Citation rendering orchestration.
 //!
 //! This module resolves the effective citation spec for each citation, prepares
-//! renderer delimiters and affixes, and applies note-style casing rules to the
-//! final output. Template-level rendering still lives in `rendering`.
+//! renderer delimiters and affixes. Template-level rendering, including
+//! sentence-initial note-start handling, lives in `rendering`.
 
 use super::Processor;
 use super::rendering::{CompoundRenderData, Renderer, RendererResources};
@@ -16,21 +16,6 @@ use crate::reference::Citation;
 use citum_schema::NoteStartTextCase;
 use citum_schema::locale::{GeneralTerm, Locale, TermForm};
 use citum_schema::template::DelimiterPunctuation;
-
-fn capitalize_first(value: &str) -> String {
-    let mut chars = value.chars();
-    match chars.next() {
-        Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
-        None => String::new(),
-    }
-}
-
-fn apply_note_start_text_case(value: &str, text_case: NoteStartTextCase) -> String {
-    match text_case {
-        NoteStartTextCase::CapitalizeFirst => capitalize_first(value),
-        NoteStartTextCase::Lowercase => value.to_lowercase(),
-    }
-}
 
 fn join_integral_groups(rendered_groups: Vec<String>, locale: &Locale) -> String {
     match rendered_groups.len() {
@@ -59,48 +44,34 @@ fn join_integral_groups(rendered_groups: Vec<String>, locale: &Locale) -> String
     }
 }
 
-/// Apply note-start casing to the first visible text node in rendered citation output.
-///
-/// This preserves any leading markup so note-style case adjustments only touch
-/// the user-visible text content.
-pub(crate) fn apply_note_start_text_case_to_leading_text_node(
-    rendered: &str,
-    text_case: NoteStartTextCase,
-) -> String {
-    let mut in_tag = false;
-    let mut text_start = None;
-
-    for (index, ch) in rendered.char_indices() {
-        match ch {
-            '<' if !in_tag => in_tag = true,
-            '>' if in_tag => in_tag = false,
-            _ if !in_tag && !ch.is_whitespace() => {
-                text_start = Some(index);
-                break;
-            }
-            _ => {}
+impl Processor {
+    fn sentence_initial_note_start_text_case(
+        &self,
+        citation: &Citation,
+        effective_spec: &citum_schema::CitationSpec,
+    ) -> Option<NoteStartTextCase> {
+        let spec_prefix = effective_spec.prefix.as_deref().unwrap_or("");
+        if self.is_note_style()
+            && matches!(
+                citation.position,
+                Some(
+                    citum_schema::citation::Position::Ibid
+                        | citum_schema::citation::Position::IbidWithLocator
+                )
+            )
+            && matches!(
+                citation.mode,
+                citum_schema::citation::CitationMode::NonIntegral
+            )
+            && citation.prefix.as_deref().unwrap_or("").is_empty()
+            && spec_prefix.is_empty()
+        {
+            effective_spec.note_start_text_case
+        } else {
+            None
         }
     }
 
-    let Some(text_start) = text_start else {
-        return rendered.to_string();
-    };
-
-    let text_end = rendered[text_start..]
-        .find('<')
-        .map_or(rendered.len(), |offset| text_start + offset);
-
-    let mut result = String::with_capacity(rendered.len());
-    result.push_str(&rendered[..text_start]);
-    result.push_str(&apply_note_start_text_case(
-        &rendered[text_start..text_end],
-        text_case,
-    ));
-    result.push_str(&rendered[text_end..]);
-    result
-}
-
-impl Processor {
     fn resolve_positioned_citation_spec(
         &self,
         citation: &Citation,
@@ -162,6 +133,7 @@ impl Processor {
         effective_spec: &citum_schema::CitationSpec,
         renderer_delimiter: &str,
         renderer_inter_delimiter: &str,
+        note_start_text_case: Option<NoteStartTextCase>,
     ) -> Result<String, ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -208,6 +180,7 @@ impl Processor {
                 renderer_delimiter,
                 citation.suppress_author,
                 citation.position.as_ref(),
+                note_start_text_case,
             )?
         } else {
             renderer.render_grouped_citation_with_format::<F>(
@@ -217,6 +190,7 @@ impl Processor {
                 renderer_delimiter,
                 citation.suppress_author,
                 citation.position.as_ref(),
+                note_start_text_case,
             )?
         };
 
@@ -304,35 +278,6 @@ impl Processor {
         }
     }
 
-    fn apply_note_start_case_if_needed(
-        &self,
-        citation: &Citation,
-        effective_spec: &citum_schema::CitationSpec,
-        rendered: String,
-    ) -> String {
-        let spec_prefix = effective_spec.prefix.as_deref().unwrap_or("");
-        if self.is_note_style()
-            && matches!(
-                citation.position,
-                Some(
-                    citum_schema::citation::Position::Ibid
-                        | citum_schema::citation::Position::IbidWithLocator
-                )
-            )
-            && matches!(
-                citation.mode,
-                citum_schema::citation::CitationMode::NonIntegral
-            )
-            && citation.prefix.as_deref().unwrap_or("").is_empty()
-            && spec_prefix.is_empty()
-            && let Some(text_case) = effective_spec.note_start_text_case
-        {
-            return apply_note_start_text_case_to_leading_text_node(&rendered, text_case);
-        }
-
-        rendered
-    }
-
     /// Render a single citation to plain text.
     ///
     /// This is the primary entry point for citation processing. It handles:
@@ -353,8 +298,7 @@ impl Processor {
     /// Render a citation to a string using a specific output format.
     ///
     /// This resolves the effective citation spec for the citation's mode and
-    /// position, renders the citation body, applies input and style affixes,
-    /// and finally applies note-style casing when required.
+    /// position, renders the citation body, and applies input and style affixes.
     ///
     /// # Errors
     ///
@@ -370,6 +314,8 @@ impl Processor {
         self.track_cited_ids_and_init_numbers(citation);
 
         let effective_spec = self.resolve_effective_citation_spec(citation);
+        let note_start_text_case =
+            self.sentence_initial_note_start_text_case(citation, &effective_spec);
         let (renderer_delimiter, renderer_inter_delimiter) =
             self.resolve_citation_delimiters(&effective_spec);
         let content = self.render_citation_content::<F>(
@@ -377,11 +323,12 @@ impl Processor {
             &effective_spec,
             renderer_delimiter,
             renderer_inter_delimiter,
+            note_start_text_case,
         )?;
         let output = self.apply_citation_input_affixes(citation, content, &fmt);
         let wrapped = self.apply_spec_wrap_and_affixes(citation, &effective_spec, output, &fmt);
 
-        Ok(self.apply_note_start_case_if_needed(citation, &effective_spec, fmt.finish(wrapped)))
+        Ok(fmt.finish(wrapped))
     }
 
     /// Render multiple citations in document order.

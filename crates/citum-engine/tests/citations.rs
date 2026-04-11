@@ -892,6 +892,49 @@ fn chicago_notes_immediate_repeat_renders_compact_ibid() {
     );
 }
 
+fn chicago_notes_prefixed_ibid_remains_mid_sentence() {
+    use std::path::PathBuf;
+
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("styles/chicago-notes.yaml");
+
+    let yaml = std::fs::read_to_string(&path).expect("Failed to read chicago-notes.yaml");
+    let style: citum_schema::Style =
+        serde_yaml::from_str(&yaml).expect("Failed to parse chicago-notes.yaml");
+
+    let bib = citum_schema::bib_map![
+        "smith1995" => make_book("smith1995", "Smith", "John", 1995, "A Great Book"),
+    ];
+
+    let processor = Processor::new(style, bib);
+
+    let ibid_citation = citum_schema::Citation {
+        items: vec![citum_schema::citation::CitationItem {
+            id: "smith1995".to_string(),
+            ..Default::default()
+        }],
+        position: Some(citum_schema::citation::Position::Ibid),
+        prefix: Some("See".to_string()),
+        ..Default::default()
+    };
+
+    let ibid_result = processor
+        .process_citation(&ibid_citation)
+        .expect("Failed to process prefixed ibid citation");
+    assert!(
+        ibid_result.contains("See ibid."),
+        "prefixed ibid should remain mid-sentence lowercase: {ibid_result}"
+    );
+    assert!(
+        !ibid_result.contains("See Ibid."),
+        "prefixed ibid should not be capitalized as sentence-initial: {ibid_result}"
+    );
+}
+
 fn chicago_notes_immediate_repeat_with_locator_keeps_the_locator() {
     use std::path::PathBuf;
 
@@ -1539,6 +1582,14 @@ mod note_style_positions {
             "An immediate Chicago note repeat with a locator should keep the locator in the ibid form.",
         );
         super::chicago_notes_immediate_repeat_with_locator_keeps_the_locator();
+    }
+
+    #[test]
+    fn chicago_notes_prefixed_ibid_remains_mid_sentence() {
+        announce_behavior(
+            "A prefixed Chicago ibid should stay lowercase because the note marker is no longer sentence-initial.",
+        );
+        super::chicago_notes_prefixed_ibid_remains_mid_sentence();
     }
 
     #[test]

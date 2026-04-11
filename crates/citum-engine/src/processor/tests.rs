@@ -96,32 +96,6 @@ fn make_style() -> Style {
     }
 }
 
-#[test]
-fn given_plain_text_ibid_when_note_start_case_is_lowercase_then_the_leading_text_is_lowercased() {
-    assert_eq!(
-        super::citation::apply_note_start_text_case_to_leading_text_node(
-            "Ibid., 105",
-            citum_schema::NoteStartTextCase::Lowercase
-        ),
-        "ibid., 105"
-    );
-}
-
-#[test]
-fn given_html_wrapped_ibid_when_note_start_case_is_lowercase_then_the_markup_is_preserved() {
-    let rendered = "<span class=\"csln-citation\" data-ref=\"ITEM-1\">Ibid.</span>";
-    let transformed = super::citation::apply_note_start_text_case_to_leading_text_node(
-        rendered,
-        citum_schema::NoteStartTextCase::Lowercase,
-    );
-
-    assert_eq!(
-        transformed,
-        "<span class=\"csln-citation\" data-ref=\"ITEM-1\">ibid.</span>"
-    );
-    assert!(transformed.contains("data-ref=\"ITEM-1\""));
-}
-
 fn make_note_style() -> Style {
     let mut style = make_style();
     style.options = Some(Config {
