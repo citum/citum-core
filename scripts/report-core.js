@@ -1368,7 +1368,6 @@ function toPublishedBenchmarkRunRecord(benchmarkRunRecord) {
     runner: benchmarkRunRecord.runner,
     scope: benchmarkRunRecord.scope,
     countTowardFidelity: benchmarkRunRecord.countTowardFidelity,
-    minPassRate: benchmarkRunRecord.minPassRate ?? null,
     refsFixture: toRepoRelativePath(benchmarkRunRecord.refsFixture),
     citationsFixture: toRepoRelativePath(benchmarkRunRecord.citationsFixture),
     status: benchmarkRunRecord.status,
@@ -1389,24 +1388,25 @@ function toPublishedBenchmarkRunRecord(benchmarkRunRecord) {
   };
 }
 
+function determineBenchmarkStatus(oracleResult, minPassRate) {
+  if (oracleResult.error) return 'error';
+  if (minPassRate != null) {
+    const bib = oracleResult.bibliography || { passed: 0, total: 0 };
+    const cit = oracleResult.citations || { passed: 0, total: 0 };
+    const totalPassed = (bib.passed || 0) + (cit.passed || 0);
+    const totalItems = (bib.total || 0) + (cit.total || 0);
+    const matchRate = totalItems > 0 ? totalPassed / totalItems : 0;
+    return matchRate >= minPassRate ? 'pass' : 'fail';
+  }
+  return 'ok';
+}
+
 async function runBenchmarkRun(runtime, styleSpec, stylePath, styleYamlPath, benchmarkRun) {
   const resolvedRun = resolveBenchmarkRunConfig(benchmarkRun);
   try {
     if (resolvedRun.runner === BENCHMARK_RUNNERS.CITEPROC_ORACLE) {
       const oracleResult = await runCiteprocBenchmarkOracle(runtime, stylePath, styleSpec.name, resolvedRun);
-      let benchmarkStatus;
-      if (oracleResult.error) {
-        benchmarkStatus = 'error';
-      } else if (resolvedRun.minPassRate != null) {
-        const bib = oracleResult.bibliography || { passed: 0, total: 0 };
-        const cit = oracleResult.citations || { passed: 0, total: 0 };
-        const totalPassed = (bib.passed || 0) + (cit.passed || 0);
-        const totalItems = (bib.total || 0) + (cit.total || 0);
-        const matchRate = totalItems > 0 ? totalPassed / totalItems : 0;
-        benchmarkStatus = matchRate >= resolvedRun.minPassRate ? 'pass' : 'fail';
-      } else {
-        benchmarkStatus = 'ok';
-      }
+      const benchmarkStatus = determineBenchmarkStatus(oracleResult, resolvedRun.minPassRate);
       return formatBenchmarkRunRecord(resolvedRun, {
         status: benchmarkStatus,
         error: oracleResult.error || null,
@@ -3402,6 +3402,7 @@ module.exports = {
   mergeBenchmarkRunIntoOracle,
   mergeOracleResults,
   toPublishedBenchmarkRunRecord,
+  determineBenchmarkStatus,
   selectPrimaryComparator,
   serializeTimingSummary,
   textSimilarity,

@@ -38,6 +38,7 @@ const {
   runCachedJsonJob,
   selectPrimaryComparator,
   toPublishedBenchmarkRunRecord,
+  determineBenchmarkStatus,
 } = require('./report-core');
 
 const projectRoot = path.resolve(__dirname, '..');
@@ -425,6 +426,74 @@ test('published benchmark run records are compact and repo-relative', () => {
     bibliographyEntries: null,
   });
   assert.equal(Object.hasOwn(published, 'oracleResult'), false);
+  assert.equal(Object.hasOwn(published, 'minPassRate'), false);
+});
+
+test('min_pass_rate resolves to minPassRate in resolved policy', () => {
+  const policy = validateVerificationPolicy({
+    version: 1,
+    defaults: { authority: 'citeproc-js', secondary: [], scopes: ['citation', 'bibliography'] },
+    styles: {
+      'chicago-author-date': {
+        benchmark_runs: [{
+          id: 'zotero-bib',
+          label: 'Zotero bibliography',
+          runner: 'citeproc-oracle',
+          refs_fixture: 'tests/fixtures/test-items-library/chicago-18th.json',
+          scope: 'bibliography',
+          count_toward_fidelity: true,
+          min_pass_rate: 0.73,
+        }],
+      },
+    },
+  });
+  const stylePolicy = resolveVerificationPolicy('chicago-author-date', policy);
+  assert.equal(stylePolicy.benchmarkRuns[0].minPassRate, 0.73);
+});
+
+test('min_pass_rate validation rejects out-of-range values', () => {
+  const base = {
+    version: 1,
+    defaults: { authority: 'citeproc-js', secondary: [], scopes: ['citation', 'bibliography'] },
+    styles: {
+      sample: {
+        benchmark_runs: [{
+          id: 'r',
+          label: 'R',
+          runner: 'citeproc-oracle',
+          refs_fixture: 'tests/fixtures/test-items-library/chicago-18th.json',
+          scope: 'bibliography',
+          count_toward_fidelity: false,
+        }],
+      },
+    },
+  };
+  assert.throws(
+    () => validateVerificationPolicy({
+      ...base,
+      styles: { sample: { benchmark_runs: [{ ...base.styles.sample.benchmark_runs[0], min_pass_rate: 1.5 }] } },
+    }),
+    /min_pass_rate must be a number between 0 and 1/
+  );
+  assert.throws(
+    () => validateVerificationPolicy({
+      ...base,
+      styles: { sample: { benchmark_runs: [{ ...base.styles.sample.benchmark_runs[0], min_pass_rate: -0.1 }] } },
+    }),
+    /min_pass_rate must be a number between 0 and 1/
+  );
+});
+
+test('determineBenchmarkStatus returns pass/fail/ok/error based on threshold and result', () => {
+  const passing = { bibliography: { passed: 8, total: 10 }, citations: { passed: 0, total: 0 } };
+  const failing = { bibliography: { passed: 5, total: 10 }, citations: { passed: 0, total: 0 } };
+  const errored = { error: 'citeproc-js crashed', bibliography: null, citations: null };
+
+  assert.equal(determineBenchmarkStatus(errored, 0.73), 'error');
+  assert.equal(determineBenchmarkStatus(passing, 0.73), 'pass');
+  assert.equal(determineBenchmarkStatus(failing, 0.73), 'fail');
+  assert.equal(determineBenchmarkStatus(passing, null), 'ok');
+  assert.equal(determineBenchmarkStatus(failing, null), 'ok');
 });
 
 test('comparison text helper supports both live-oracle and native-snapshot entry shapes', () => {
