@@ -187,6 +187,8 @@ def infer_bump_type(old_dir: Path, new_dir: Path) -> str:
         line
         for line in result.stdout.splitlines()
         if line.startswith("-") and not line.startswith("---")
+        # description-only changes are never breaking (purely informational)
+        and not line.lstrip("- \t").startswith('"description":')
     ]
     # Any removals = major; additions only = patch
     return "major" if removal_lines else "patch"
