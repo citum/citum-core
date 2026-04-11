@@ -8,8 +8,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 mod common;
 use common::*;
 
-use citum_engine::{render::html::Html, render::plain::PlainText, Processor};
+use citum_engine::{Processor, render::html::Html, render::plain::PlainText};
 use citum_schema::{
+    BibliographySpec, CitationSpec, Style, StyleInfo,
     options::{
         AndOptions, ArticleJournalBibliographyConfig, ArticleJournalNoPageFallback,
         BibliographyOptions, Config, ContributorConfig, DelimiterPrecedesLast,
@@ -18,17 +19,16 @@ use citum_schema::{
         SortSpec,
     },
     reference::{
-        types::{ArchiveInfo, EprintInfo, MultilingualComplex, MultilingualString},
         Contributor, EdtfString, InputReference, Monograph, MonographType, Numbering,
         NumberingType, Serial, SerialComponent, SerialComponentType, SerialType, StructuredName,
         Title, WorkRelation,
+        types::{ArchiveInfo, EprintInfo, MultilingualComplex, MultilingualString},
     },
     template::{
         DateForm, DateVariable, DelimiterPunctuation, NumberVariable, Rendering, SimpleVariable,
         TemplateComponent, TemplateDate, TemplateGroup, TemplateNumber, TemplateTitle,
         TemplateVariable, TitleForm, TitleType,
     },
-    BibliographySpec, CitationSpec, Style, StyleInfo,
 };
 use indexmap::IndexMap;
 use rstest::rstest;

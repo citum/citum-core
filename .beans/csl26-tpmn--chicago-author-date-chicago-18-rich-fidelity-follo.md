@@ -1,11 +1,11 @@
 ---
 # csl26-tpmn
 title: Chicago author-date Chicago 18 rich fidelity follow-up
-status: in-progress
+status: draft
 type: task
 priority: high
 created_at: 2026-04-02T11:56:15Z
-updated_at: 2026-04-11T11:04:16Z
+updated_at: 2026-04-11T11:26:32Z
 ---
 
 Continue the Chicago author-date fidelity pass using the raw Chicago 18 Zotero
@@ -162,3 +162,26 @@ Policy / architecture constraints established in this pass:
 - Keep this bean as the single tracking document for iterative Chicago
   author-date follow-up unless the work clearly splits into separate style and
   processor streams.
+
+## Investigation Findings (2026-04-11)
+
+Engine fix landed:  was silently returning None
+in the TemplateDate value dispatch. Wired to reference.original_date().
+Committed as fix(engine): render date: original-published.
+
+Chicago Zotero benchmark baseline: 294/401 (73.3%) — at the min_pass_rate threshold.
+
+Failure analysis (108 remaining):
+- 7 reprint-date items: need (original-year) current-year pattern AND original-publisher AND edition — style+processor gap
+- 3 edited-by capitalization: verb-form terms aren't capitalized sentence-initially
+- 98 complex/processor-level: multi-author name order, interview context, missing fields, type-specific formatting
+
+Conclusion: 0.85 target requires processor changes (multi-author formatting, verb-label
+capitalize-first, original-publisher rendering). Style-YAML alone cannot close the gap.
+Demoting to draft pending processor work.
+
+## Summary of Changes
+
+- Reporting semantics: implemented separately in csl26-ft25 (committed)
+- Engine OriginalPublished fix: committed fix(engine): render date: original-published
+- Style YAML: no changes warranted (failures are processor-level)
