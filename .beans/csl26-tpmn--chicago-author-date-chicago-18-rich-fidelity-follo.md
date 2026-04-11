@@ -165,9 +165,9 @@ Policy / architecture constraints established in this pass:
 
 ## Investigation Findings (2026-04-11)
 
-Engine fix landed:  was silently returning None
-in the TemplateDate value dispatch. Wired to reference.original_date().
-Committed as fix(engine): render date: original-published.
+Engine fix landed: `date: original-published` was silently returning `None`
+in the TemplateDate value dispatch. Wired to `reference.original_date()`.
+Committed as `fix(engine): render date: original-published`.
 
 Chicago Zotero benchmark baseline: 294/401 (73.3%) — at the min_pass_rate threshold.
 
