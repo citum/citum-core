@@ -83,7 +83,6 @@ jobs:
       CARGO_TERM_COLOR: always
       RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
       CARGO_INCREMENTAL: "0"
-      SCCACHE_DIR: /home/runner/.cache/sccache
     steps:
       - uses: actions/checkout@v4
         with:
@@ -94,26 +93,19 @@ jobs:
         with:
           components: rustfmt, clippy
 
-      - name: Install mold linker and sccache
-        run: sudo apt-get update && sudo apt-get install -y mold sccache
+      - name: Install mold linker
+        run: sudo apt-get update && sudo apt-get install -y mold
 
       - name: Install cargo-nextest
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest
 
-      - name: Cache Rust (dependencies + sccache)
+      - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: "citum-core-rust"
           cache-workspace-crates: true
-          # Cache the sccache directory as well
-          additional-cache-directories: /home/runner/.cache/sccache
-
-      - name: Configure environment
-        run: |
-          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
-          sccache --start-server
 
       - name: Check formatting
         run: cargo fmt --all -- --check
@@ -132,6 +124,3 @@ jobs:
           tmp_dir="$(mktemp -d)"
           cargo run --bin citum --all-features -- schema --out-dir "$tmp_dir"
           diff -ru "$tmp_dir" docs/schemas
-
-      - name: Display sccache stats
-        run: sccache --show-stats
