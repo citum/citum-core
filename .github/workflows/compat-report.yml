@@ -47,6 +47,8 @@ jobs:
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> /tmp/citum-target"
 
       - name: Install Node dependencies
         run: npm install --prefix scripts

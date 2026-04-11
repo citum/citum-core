@@ -59,6 +59,8 @@ jobs:
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> /tmp/citum-target"
 
       - name: Install Node dependencies
         if: ${{ inputs.refresh_compat }}
