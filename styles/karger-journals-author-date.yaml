@@ -47,16 +47,20 @@ citation:
         delimiter-precedes-last: contextual
       delimiter-precedes-last: always
       sort-separator: ' '
-      name-form: initials
+      name-form: family-only
   template:
   - contributor: author
     form: long
     name-order: family-first
+    name-form: family-only
     shorten:
       min: 3
       use-first: 1
       and-others: et-al
       delimiter-precedes-last: contextual
+  - date: issued
+    form: year
+    prefix: ', '
   - variable: locator
     prefix: ', '
   wrap:

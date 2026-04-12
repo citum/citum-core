@@ -797,7 +797,7 @@ function toRepoRelativePath(filePath) {
     : filePath;
 }
 
-async function runCiteprocSnapshotOracle(runtime, stylePath, styleName, styleFormat, refsFixture = DEFAULT_REFS_FIXTURE, citationsFixture = null) {
+async function runCiteprocSnapshotOracle(runtime, stylePath, styleName, styleFormat, refsFixture = DEFAULT_REFS_FIXTURE, citationsFixture = null, styleYamlPath = null) {
   const resolvedCitationsFixture = citationsFixture
     || (styleFormat === 'note' ? NOTE_CITATIONS_FIXTURE : DEFAULT_CITATIONS_FIXTURE);
   const snapshotStatus = getCslSnapshotStatus(stylePath, refsFixture, resolvedCitationsFixture);
@@ -810,6 +810,9 @@ async function runCiteprocSnapshotOracle(runtime, stylePath, styleName, styleFor
     refsFixture,
     citationsFixture: resolvedCitationsFixture,
     styleHash: hashFile(stylePath),
+    // YAML changes must also bust the cache: the oracle runs citum with the
+    // YAML but the CSL hash alone does not change when the YAML is edited.
+    styleYamlHash: styleYamlPath ? hashFile(styleYamlPath) : null,
     refsHash: hashFile(refsFixture),
     citationsHash: hashFile(resolvedCitationsFixture),
     snapshotStatus: snapshotStatus.status,
@@ -2316,14 +2319,14 @@ async function processStyleReport(runtime, styleSpec, context) {
   let oracleResult;
   if (citationAuthority.authority === 'citeproc-js' && bibliographyAuthority.authority === 'biblatex') {
     const [citationResult, bibliographyResult] = await Promise.all([
-      runCiteprocSnapshotOracle(runtime, stylePath, styleSpec.name, styleSpec.format),
+      runCiteprocSnapshotOracle(runtime, stylePath, styleSpec.name, styleSpec.format, undefined, null, styleYamlPath),
       runBiblatexSnapshotOracle(runtime, styleSpec.name, styleYamlPath, bibliographyAuthority.authorityId),
     ]);
     oracleResult = composeScopedOracleResult(citationResult, bibliographyResult);
   } else if (primaryComparator === 'biblatex') {
     oracleResult = await runBiblatexSnapshotOracle(runtime, styleSpec.name, styleYamlPath, stylePolicy.authorityId);
   } else {
-    oracleResult = await runCiteprocSnapshotOracle(runtime, stylePath, styleSpec.name, styleSpec.format);
+    oracleResult = await runCiteprocSnapshotOracle(runtime, stylePath, styleSpec.name, styleSpec.format, undefined, null, styleYamlPath);
   }
 
   const familySets = getAdditionalFixtureSetNames(sufficiencyPolicy.fixtureSets || []);
