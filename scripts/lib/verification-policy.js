@@ -295,9 +295,10 @@ function deepMerge(target, source) {
 }
 
 const PRESET_BASES = {
-  'apa-7th': path.join(PROJECT_ROOT, 'styles', 'preset-bases', 'apa-7th.yaml'),
-  'chicago-notes-18th': path.join(PROJECT_ROOT, 'styles', 'preset-bases', 'chicago-notes-18th.yaml'),
-  'chicago-author-date-18th': path.join(PROJECT_ROOT, 'styles', 'preset-bases', 'chicago-author-date-18th.yaml'),
+  'apa': path.join(PROJECT_ROOT, 'styles', 'embedded', 'apa-7th.yaml'),
+  'apa-7th': path.join(PROJECT_ROOT, 'styles', 'embedded', 'apa-7th.yaml'),
+  'chicago-notes-18th': path.join(PROJECT_ROOT, 'styles', 'embedded', 'chicago-notes-18th.yaml'),
+  'chicago-author-date-18th': path.join(PROJECT_ROOT, 'styles', 'embedded', 'chicago-author-date-18th.yaml'),
 };
 
 const TEMPLATE_PRESETS = {
@@ -311,10 +312,59 @@ const TEMPLATE_PRESETS = {
       { date: 'issued', form: 'year', wrap: { punctuation: 'parentheses' }, prefix: ' ' },
       { title: 'primary', emph: true },
     ],
+    options: {
+      processing: 'author-date',
+      substitute: {
+        template: ['editor', 'title', 'translator'],
+        'role-substitute': {
+          'container-author': ['editor', 'editorial-director'],
+        },
+      },
+      contributors: {
+        'name-form': 'initials',
+        'initialize-with': '. ',
+        role: 'short-suffix',
+        'demote-non-dropping-particle': 'never',
+        'delimiter-precedes-last': 'always',
+        and: 'symbol',
+        shorten: {
+          min: 21,
+          'use-first': 19,
+          'use-last': 1,
+        },
+      },
+      dates: 'long',
+      titles: {
+        component: {
+          'text-case': 'as-is',
+        },
+        monograph: {
+          'text-case': 'as-is',
+          emph: true,
+        },
+        'container-monograph': {
+          'text-case': 'as-is',
+          emph: true,
+        },
+        periodical: {
+          emph: true,
+        },
+        serial: {
+          'text-case': 'as-is',
+        },
+      },
+      multilingual: {
+        'title-mode': 'combined',
+        'name-mode': 'primary',
+        'preferred-script': 'Latn',
+      },
+      'page-range-format': 'expanded',
+      'punctuation-in-quote': true,
+    },
   },
 };
 
-function resolveTemplatePresets(section) {
+function resolveTemplatePresets(section, styleData = null) {
   if (!section || typeof section !== 'object') return section;
   const result = { ...section };
   if (typeof result['use-preset'] === 'string' && TEMPLATE_PRESETS[result['use-preset']]) {
@@ -323,9 +373,13 @@ function resolveTemplatePresets(section) {
     if (!result.template && preset[kind]) {
       result.template = preset[kind];
     }
+    if (styleData && preset.options) {
+      if (!styleData.options) styleData.options = {};
+      styleData.options = deepMerge(preset.options, styleData.options);
+    }
   }
-  if (result.integral) result.integral = resolveTemplatePresets(result.integral);
-  if (result.non_integral) result.non_integral = resolveTemplatePresets(result.non_integral);
+  if (result.integral) result.integral = resolveTemplatePresets(result.integral, styleData);
+  if (result.non_integral) result.non_integral = resolveTemplatePresets(result.non_integral, styleData);
   return result;
 }
 
@@ -368,8 +422,10 @@ function resolveStyleData(styleData, visited = new Set()) {
     }
   }
 
-  if (resolved.citation) resolved.citation = resolveTemplatePresets(resolved.citation);
-  if (resolved.bibliography) resolved.bibliography = resolveTemplatePresets(resolved.bibliography);
+  if (resolved.citation) resolved.citation = resolveTemplatePresets(resolved.citation, resolved);
+  if (resolved.bibliography) {
+    resolved.bibliography = resolveTemplatePresets(resolved.bibliography, resolved);
+  }
 
   return resolved;
 }

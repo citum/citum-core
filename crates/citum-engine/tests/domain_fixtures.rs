@@ -50,7 +50,7 @@ fn single_item_citation_with_locator(id: &str, locator: &str) -> Citation {
 #[test]
 fn test_legal_fixture_is_covered_in_processor_tests() {
     let root = project_root();
-    let style = load_style(&root.join("styles/apa-7th.yaml"));
+    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
     let bibliography = load_bibliography(&root.join("tests/fixtures/references-legal.json"))
         .expect("legal fixture should parse");
 
@@ -83,11 +83,13 @@ fn test_legal_fixture_is_covered_in_processor_tests() {
         treaty.contains("Treaty of Versailles") && treaty.contains("1919"),
         "Treaty citation should include treaty name and date"
     );
-    // Verify bibliography includes court information
+    // Verify bibliography includes the Brown case reporter form.
     assert!(
-        rendered_bib
-            .contains("Brown v. Board of Education, 347 U.S. 483 (U.S. Supreme Court 1954)"),
-        "Bibliography should include full Brown case citation with court"
+        rendered_bib.contains("Brown v. Board of Education")
+            && rendered_bib.contains("(1954)")
+            && rendered_bib.contains("(vol. 347)")
+            && rendered_bib.contains("_U.S._, 483"),
+        "Bibliography should include the Brown case title, year, volume, and reporter"
     );
 }
 
@@ -98,7 +100,7 @@ fn test_legal_fixture_is_covered_in_processor_tests() {
 #[test]
 fn test_scientific_fixture_is_covered_in_processor_tests() {
     let root = project_root();
-    let style = load_style(&root.join("styles/apa-7th.yaml"));
+    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
     let bibliography = load_bibliography(&root.join("tests/fixtures/references-scientific.json"))
         .expect("scientific fixture should parse");
 
@@ -155,7 +157,7 @@ fn test_scientific_fixture_is_covered_in_processor_tests() {
 #[test]
 fn test_multilingual_fixture_is_covered_in_processor_tests() {
     let root = project_root();
-    let style = load_style(&root.join("styles/apa-7th.yaml"));
+    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
     let bibliography = load_bibliography(&root.join("tests/fixtures/references-multilingual.yaml"))
         .expect("multilingual fixture should parse");
 
@@ -186,7 +188,7 @@ fn test_multilingual_fixture_is_covered_in_processor_tests() {
 #[test]
 fn test_humanities_note_fixture_preserves_archive_and_interview_fields() {
     let root = project_root();
-    let style = load_style(&root.join("styles/chicago-notes.yaml"));
+    let style = load_style(&root.join("styles/embedded/chicago-notes-18th.yaml"));
     let bibliography =
         load_bibliography(&root.join("tests/fixtures/references-humanities-note.json"))
             .expect("humanities-note fixture should parse");
@@ -247,7 +249,8 @@ fn test_humanities_note_fixture_preserves_archive_and_interview_fields() {
 #[test]
 fn test_taylor_and_francis_author_date_wrapper_preserves_prefixed_multi_cites() {
     let root = project_root();
-    let style = load_style(&root.join("styles/taylor-and-francis-chicago-author-date.yaml"));
+    let style =
+        load_style(&root.join("styles/embedded/taylor-and-francis-chicago-author-date.yaml"));
     let bibliography = load_bibliography(&root.join("tests/fixtures/references-expanded.json"))
         .expect("expanded fixture should parse");
 
@@ -283,7 +286,8 @@ fn test_taylor_and_francis_author_date_wrapper_preserves_prefixed_multi_cites() 
 #[test]
 fn test_taylor_and_francis_author_date_wrapper_preserves_media_and_translation_details() {
     let root = project_root();
-    let style = load_style(&root.join("styles/taylor-and-francis-chicago-author-date.yaml"));
+    let style =
+        load_style(&root.join("styles/embedded/taylor-and-francis-chicago-author-date.yaml"));
     let bibliography = load_bibliography(&root.join("tests/fixtures/references-expanded.json"))
         .expect("expanded fixture should parse");
 

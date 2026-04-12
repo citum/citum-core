@@ -106,8 +106,8 @@ bibliography:
       - title: parent-serial
         form: long
         emph: true
-      - items: &id002
-        - items:
+      - group: &id002
+        - group:
           - number: volume
           - number: issue
             wrap:
@@ -146,7 +146,7 @@ bibliography:
       - title: parent-serial
         form: long
         emph: true
-      - items: *id002
+      - group: *id002
         delimiter: none
     - delimiter: period
       suffix: "."

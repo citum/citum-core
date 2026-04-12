@@ -989,7 +989,6 @@ pub struct TemplateTerm {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct TemplateGroup {
-    #[serde(alias = "items")]
     pub group: Vec<TemplateComponent>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub delimiter: Option<DelimiterPunctuation>,

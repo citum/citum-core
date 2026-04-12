@@ -130,18 +130,27 @@ function loadNotePositionExpectations(filePath = EXPECTATIONS_PATH) {
 
 function discoverNoteStyles(stylesDir = STYLES_DIR) {
   const styles = [];
-  for (const entry of fs.readdirSync(stylesDir).filter((name) => name.endsWith('.yaml')).sort()) {
-    const absolutePath = path.join(stylesDir, entry);
-    const style = resolveStyleData(readYaml(absolutePath));
-    if (style?.options?.processing === 'note') {
-      styles.push({
-        name: path.basename(entry, '.yaml'),
-        path: absolutePath,
-        style,
-      });
+  const embeddedDir = path.join(stylesDir, 'embedded');
+
+  const scan = (dir) => {
+    if (!fs.existsSync(dir)) return;
+    for (const entry of fs.readdirSync(dir).filter((name) => name.endsWith('.yaml')).sort()) {
+      const absolutePath = path.join(dir, entry);
+      const style = resolveStyleData(readYaml(absolutePath));
+      if (style?.options?.processing === 'note') {
+        styles.push({
+          name: path.basename(entry, '.yaml'),
+          path: absolutePath,
+          style,
+        });
+      }
     }
-  }
-  return styles;
+  };
+
+  scan(stylesDir);
+  scan(embeddedDir);
+
+  return styles.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 function validateExpectationCoverage(noteStyles, expectations) {

@@ -15,12 +15,12 @@ const {
 test('parseArgs requires style, out-dir, and exactly one selector', () => {
   assert.throws(() => parseArgs([]), /Missing required flag: --style/);
   assert.throws(
-    () => parseArgs(['--style', 'chicago-author-date', '--out-dir', '/tmp/x']),
+    () => parseArgs(['--style', 'chicago-author-date-18th', '--out-dir', '/tmp/x']),
     /One selector is required/
   );
   assert.throws(
     () => parseArgs([
-      '--style', 'chicago-author-date',
+      '--style', 'chicago-author-date-18th',
       '--type', 'entry-dictionary',
       '--ids', 'abc',
       '--out-dir', '/tmp/x',
@@ -29,8 +29,8 @@ test('parseArgs requires style, out-dir, and exactly one selector', () => {
   );
 });
 
-test('resolveBenchmarkRun selects chicago-author-date scoring bibliography benchmark by default', () => {
-  const benchmark = resolveBenchmarkRun('chicago-author-date');
+test('resolveBenchmarkRun selects chicago-author-date-18th scoring bibliography benchmark by default', () => {
+  const benchmark = resolveBenchmarkRun('chicago-author-date-18th');
 
   assert.equal(benchmark.id, 'chicago-zotero-bibliography');
   assert.equal(benchmark.scope, 'bibliography');
@@ -75,7 +75,7 @@ test('extractRichBenchmarkCluster writes reduced fixture and summaries for type 
   try {
     const result = extractRichBenchmarkCluster(
       {
-        style: 'chicago-author-date',
+        style: 'chicago-author-date-18th',
         types: ['entry-dictionary', 'entry-encyclopedia'],
         ids: null,
         onlyMismatches: true,
@@ -137,7 +137,7 @@ test('extractRichBenchmarkCluster supports explicit id selection without mismatc
   try {
     const result = extractRichBenchmarkCluster(
       {
-        style: 'chicago-author-date',
+        style: 'chicago-author-date-18th',
         types: null,
         ids: ['6188419/R362J6UF', '6188419/YGPJER8J'],
         onlyMismatches: false,
@@ -193,7 +193,7 @@ test('extractRichBenchmarkCluster keeps the selected cluster when mismatches can
   try {
     const result = extractRichBenchmarkCluster(
       {
-        style: 'chicago-author-date',
+        style: 'chicago-author-date-18th',
         types: ['entry-dictionary', 'entry-encyclopedia'],
         ids: null,
         onlyMismatches: true,

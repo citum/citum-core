@@ -1,3 +1,4 @@
+preset: apa-7th
 info:
   title: American Psychological Association 7th edition
   fields:
@@ -30,13 +31,13 @@ options:
   processing: author-date
   substitute:
     template:
-    - editor
-    - title
-    - translator
+      - editor
+      - title
+      - translator
     role-substitute:
       container-author:
-      - editor
-      - editorial-director
+        - editor
+        - editorial-director
   contributors:
     name-form: initials
     initialize-with: ". "
@@ -69,18 +70,21 @@ options:
   page-range-format: expanded
   punctuation-in-quote: true
 citation:
-  use-preset: apa
   options:
     contributors:
       shorten: {min: 3, use-first: 1}
   sort: author-date-title
-  delimiter: ", "
-  multi-cite-delimiter: "; "
   non-integral:
     wrap:
       punctuation: parentheses
     type-variants:
-      legal-case, statute, treaty, regulation, bill, hearing:
+      ? article-journal, article-magazine, article-newspaper, book, broadcast, chapter, dataset, entry-encyclopedia, interview, motion-picture, paper-conference, patent, report, software, standard, thesis, webpage
+      : - contributor: author
+          form: short
+        - date: issued
+          form: year
+        - variable: locator
+      legal-case:
       - title: primary
         form: short
         emph: true
@@ -88,13 +92,41 @@ citation:
       - date: issued
         form: year
       - variable: locator
+      personal-communication:
+      - contributor: author
+        form: long
+        name-order: given-first
+        suffix: ", personal communication"
+      - date: issued
+        form: year-month-day
+      - variable: locator
+    template:
+    - contributor: author
+      form: short
+    - title: primary
+      form: short
+    - date: issued
+      form: year
+    - variable: locator
+  delimiter: ", "
+  multi-cite-delimiter: "; "
   integral:
-    delimiter: ", "
+    delimiter: " "
     options:
       contributors:
         and: text
     type-variants:
-      legal-case, statute, treaty, regulation, bill, hearing:
+      ? article-journal, article-magazine, article-newspaper, book, broadcast, chapter, dataset, entry-encyclopedia, interview, motion-picture, paper-conference, patent, report, software, standard, thesis, webpage
+      : - contributor: author
+          form: short
+        - delimiter: ", "
+          wrap:
+            punctuation: parentheses
+          group:
+          - date: issued
+            form: year
+          - variable: locator
+      legal-case:
       - title: primary
         form: short
         emph: true
@@ -106,32 +138,37 @@ citation:
         - date: issued
           form: year
         - variable: locator
+      personal-communication:
+      - contributor: author
+        form: long
+        name-order: given-first
+        suffix: ", personal communication"
+      - delimiter: ", "
+        wrap:
+          punctuation: parentheses
+        group:
+        - date: issued
+          form: year-month-day
+        - variable: locator
+    template:
+    - contributor: author
+      form: short
+    - title: primary
+      form: short
+    - delimiter: ", "
+      wrap:
+        punctuation: parentheses
+      group:
+      - date: issued
+        form: year
+      - variable: locator
 bibliography:
-  use-preset: apa
   options:
     substitute: standard
     hanging-indent: true
     separator: ". "
   type-variants:
     personal-communication: []
-    legal-case:
-    - title: primary
-      suffix: ", "
-      emph: false
-      quote: false
-    - delimiter: " "
-      group:
-      - number: volume
-      - title: parent-serial
-        emph: false
-      - number: pages
-    - delimiter: " "
-      wrap:
-        punctuation: parentheses
-      group:
-      - variable: authority
-      - date: issued
-        form: year
     article-journal:
     - contributor: author
       form: long
@@ -420,7 +457,55 @@ bibliography:
       suffix: "."
     - variable: url
       prefix: " "
-    entry-dictionary, entry-encyclopedia:
+    entry-dictionary:
+    - contributor: author
+      form: long
+      name-order: family-first
+      suffix: "."
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      emph: false
+    - contributor: translator
+      form: long
+      name-order: given-first
+      label: {term: translator, form: short, placement: suffix}
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - delimiter: ", "
+      prefix: ". In "
+      suffix: "."
+      group:
+      - contributor: editor
+        form: long
+        name-order: given-first
+        label: {term: editor, form: short, placement: suffix}
+      - delimiter: " "
+        group:
+        - title: parent-monograph
+          emph: true
+        - delimiter: ", "
+          wrap:
+            punctuation: parentheses
+          group:
+          - number: edition
+            suffix: " ed."
+          - number: collection-number
+            prefix: "Vol. "
+          - number: pages
+            prefix: "pp. "
+    - variable: publisher
+      prefix: " "
+      suffix: "."
+    - variable: doi
+      prefix: " https://doi.org/"
+    - variable: url
+      prefix: " "
+    entry-encyclopedia:
     - contributor: author
       form: long
       name-order: family-first
@@ -734,3 +819,80 @@ bibliography:
       suffix: "."
     - variable: url
       prefix: " "
+  template:
+  - contributor: author
+    form: long
+    suffix: "."
+    name-order: family-first
+  - date: issued
+    form: year
+    wrap:
+      punctuation: parentheses
+    prefix: " "
+  - title: primary
+    emph: true
+  - delimiter: "; "
+    wrap:
+      punctuation: brackets
+    prefix: " "
+    group:
+      - variable: genre
+        text-case: capitalize-first
+      - variable: medium
+        text-case: capitalize-first
+  - number: edition
+    wrap:
+      punctuation: parentheses
+    prefix: " "
+  - delimiter: ""
+    wrap:
+      punctuation: parentheses
+    prefix: " "
+    group:
+    - term: volume
+      form: short
+      suffix: " "
+    - number: volume
+  - contributor: translator
+    form: long
+    name-order: given-first
+    label: {term: translator, form: short, placement: suffix}
+    wrap:
+      punctuation: parentheses
+    prefix: " "
+  - contributor: editor
+    form: long
+    name-order: given-first
+    prefix: ". In "
+  - title: parent-monograph
+    emph: true
+    prefix: ", "
+  - delimiter: ", "
+    group:
+    - title: parent-serial
+      emph: true
+    - delimiter: ""
+      group:
+      - number: volume
+        emph: true
+      - number: issue
+        wrap:
+          punctuation: parentheses
+  - number: pages
+    prefix: ", "
+    suffix: "."
+  - variable: publisher
+    prefix: ". "
+    suffix: "."
+  - variable: doi
+    prefix: "https://doi.org/"
+  - variable: url
+    prefix: " "
+  - group:
+    - variable: archive-name
+    - variable: archive-location
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    delimiter: ""
+    prefix: ". "

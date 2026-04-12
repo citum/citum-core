@@ -6,7 +6,7 @@ use tempfile::TempDir;
 
 /// Returns a minimal valid Citum style as YAML bytes.
 fn minimal_style_yaml() -> &'static [u8] {
-    include_bytes!("../../../styles/alpha.yaml")
+    include_bytes!("../../../styles/embedded/alpha.yaml")
 }
 
 /// Creates a temporary store directory and a resolver pointing at it.

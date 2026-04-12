@@ -2,7 +2,7 @@
 
 **Status:** Draft
 **Date:** 2026-04-02
-**Related:** [FIDELITY_RICH_INPUTS.md](./FIDELITY_RICH_INPUTS.md), [DIVERGENCE_REGISTER.md](../adjudication/DIVERGENCE_REGISTER.md), `.beans/csl26-tpmn--chicago-author-date-chicago-18-rich-fidelity-follo.md`
+**Related:** [FIDELITY_RICH_INPUTS.md](./FIDELITY_RICH_INPUTS.md), [DIVERGENCE_REGISTER.md](../adjudication/DIVERGENCE_REGISTER.md)
 
 ## Purpose
 Define the bounded rich-input workflow for `migrate-research` when a style-fidelity pass needs supplemental benchmark evidence without falling back to full-corpus exploration as the first debugging surface.

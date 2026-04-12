@@ -98,7 +98,10 @@ function parseArgs(argv = process.argv.slice(2)) {
 }
 
 function loadStyleData(styleName) {
-  const stylePath = path.join(STYLES_DIR, `${styleName}.yaml`);
+  let stylePath = path.join(STYLES_DIR, `${styleName}.yaml`);
+  if (!fs.existsSync(stylePath)) {
+    stylePath = path.join(STYLES_DIR, 'embedded', `${styleName}.yaml`);
+  }
   if (!fs.existsSync(stylePath)) {
     throw new Error(`Style YAML not found: ${stylePath}`);
   }

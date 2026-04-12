@@ -41,14 +41,23 @@ styles:
     description: "Institute of Electrical and Electronics Engineers"
     fields: [engineering]
   - id: taylor-and-francis-chicago-author-date
-    aliases: [chicago-author-date]
     builtin: taylor-and-francis-chicago-author-date
     description: "Taylor & Francis Chicago Author-Date"
+    fields: [humanities]
+  - id: chicago-author-date-18th
+    aliases: [chicago-author-date]
+    builtin: chicago-author-date-18th
+    description: "Chicago Author-Date (standard)"
     fields: [humanities]
   - id: chicago-shortened-notes-bibliography
     aliases: [chicago]
     builtin: chicago-shortened-notes-bibliography
     description: "Chicago Shortened Notes"
+    fields: [humanities]
+  - id: chicago-notes-18th
+    aliases: [chicago-notes]
+    builtin: chicago-notes-18th
+    description: "Chicago Notes (without bibliography)"
     fields: [humanities]
   - id: modern-language-association
     aliases: [mla]

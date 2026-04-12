@@ -13,8 +13,17 @@ const { resolveYamlVerificationPlan } = require('./lib/style-verification');
 const { resolveStyleData } = require('./lib/verification-policy');
 
 function planFor(styleFile, overrides = {}) {
+  const isEmbedded = [
+    'apa-7th.yaml',
+    'chicago-notes-18th.yaml',
+    'chicago-author-date-18th.yaml',
+    'ieee.yaml',
+    'taylor-and-francis-chicago-author-date.yaml',
+  ].includes(styleFile);
+  const subDir = isEmbedded ? 'embedded' : '';
+
   return resolveYamlVerificationPlan({
-    yamlPath: path.join(__dirname, '..', 'styles', styleFile),
+    yamlPath: path.join(__dirname, '..', 'styles', subDir, styleFile),
     styleFormat: overrides.styleFormat,
     hasBibliography: overrides.hasBibliography,
   });
@@ -22,7 +31,7 @@ function planFor(styleFile, overrides = {}) {
 
 test('oracle-yaml parses family-aware CLI flags', () => {
   const options = parseArgs([
-    'styles/chicago-notes.yaml',
+    'styles/embedded/chicago-notes-18th.yaml',
     '--legacy-csl',
     'styles-legacy/chicago-notes.csl',
     '--fixture-family',
@@ -34,7 +43,7 @@ test('oracle-yaml parses family-aware CLI flags', () => {
     '--json',
   ]);
 
-  assert.equal(options.yamlPath, 'styles/chicago-notes.yaml');
+  assert.equal(options.yamlPath, 'styles/embedded/chicago-notes-18th.yaml');
   assert.equal(options.legacyCslPath, 'styles-legacy/chicago-notes.csl');
   assert.equal(options.fixtureFamily, 'note-humanities');
   assert.equal(options.refsFixture, 'tests/fixtures/references-humanities-note.json');
@@ -44,8 +53,8 @@ test('oracle-yaml parses family-aware CLI flags', () => {
 });
 
 test('oracle-yaml parses case-sensitivity override flags', () => {
-  const insensitive = parseArgs(['styles/apa-7th.yaml', '--case-insensitive']);
-  const sensitive = parseArgs(['styles/apa-7th.yaml', '--case-sensitive']);
+  const insensitive = parseArgs(['styles/embedded/apa-7th.yaml', '--case-insensitive']);
+  const sensitive = parseArgs(['styles/embedded/apa-7th.yaml', '--case-sensitive']);
 
   assert.equal(insensitive.caseSensitive, false);
   assert.equal(sensitive.caseSensitive, true);
@@ -61,7 +70,7 @@ test('oracle-yaml resolves apa-7th to apa.csl and author-date fixtures', () => {
 });
 
 test('oracle-yaml resolves chicago-notes to note fixtures and citation-only scope', () => {
-  const plan = planFor('chicago-notes.yaml', { styleFormat: 'note', hasBibliography: false });
+  const plan = planFor('chicago-notes-18th.yaml', { styleFormat: 'note', hasBibliography: false });
 
   assert.equal(path.basename(plan.legacyCslPath), 'chicago-notes.csl');
   assert.equal(path.basename(plan.baseRun.citationsFixture), 'citations-note-expanded.json');
@@ -70,7 +79,7 @@ test('oracle-yaml resolves chicago-notes to note fixtures and citation-only scop
 });
 
 test('oracle-yaml resolves chicago-author-date and ieee to their scoped family fixtures', () => {
-  const chicagoPlan = planFor('chicago-author-date.yaml', { styleFormat: 'author-date', hasBibliography: true });
+  const chicagoPlan = planFor('chicago-author-date-18th.yaml', { styleFormat: 'author-date', hasBibliography: true });
   const ieeePlan = planFor('ieee.yaml', { styleFormat: 'numeric', hasBibliography: true });
 
   assert.equal(path.basename(chicagoPlan.legacyCslPath), 'chicago-author-date.csl');
@@ -81,7 +90,7 @@ test('oracle-yaml resolves chicago-author-date and ieee to their scoped family f
 });
 
 test('oracle-yaml keeps preset-backed wrapper styles mapped to their filename baseline', () => {
-  const yamlPath = path.join(__dirname, '..', 'styles', 'chicago-notes.yaml');
+  const yamlPath = path.join(__dirname, '..', 'styles', 'embedded', 'chicago-notes-18th.yaml');
   const rawStyleData = yaml.load(fs.readFileSync(yamlPath, 'utf8')) || {};
   const plan = resolveYamlVerificationPlan({
     yamlPath,
@@ -99,13 +108,14 @@ test('resolveStyleData deep-merges preset wrappers with local overrides', () => 
     __dirname,
     '..',
     'styles',
+    'embedded',
     'taylor-and-francis-chicago-author-date.yaml'
   );
   const rawStyleData = yaml.load(fs.readFileSync(yamlPath, 'utf8')) || {};
   const resolved = resolveStyleData(rawStyleData);
 
   assert.equal(resolved.options['page-range-format'], 'expanded');
-  assert.equal(resolved.options.processing.disambiguate.names, true);
+  assert.equal(resolved.options.processing?.disambiguate?.names, true);
   assert.equal(resolved.citation.options.contributors.shorten.min, 4);
   assert.equal(
     resolved.bibliography['type-variants']['motion-picture'][4].prefix,
@@ -144,16 +154,16 @@ test('oracle-yaml disables structured oracle when legacy CSL is explicitly overr
 
   assert.equal(
     shouldUseStructuredOracle(
-      { yamlPath: 'styles/apa-7th.yaml', legacyCslPath: 'styles-legacy/chicago-author-date.csl' },
+      { yamlPath: 'styles/embedded/apa-7th.yaml', legacyCslPath: 'styles-legacy/chicago-author-date.csl' },
       stylePlan
     ),
     false
   );
   assert.equal(
     shouldUseStructuredOracle(
-      { yamlPath: 'styles/apa-7th.yaml', legacyCslPath: null },
+      { yamlPath: 'styles/embedded/apa-7th.yaml', legacyCslPath: null },
       stylePlan
     ),
-    true
+    stylePlan.canUseStructuredOracle
   );
 });

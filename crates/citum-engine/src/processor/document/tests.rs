@@ -438,7 +438,7 @@ fn test_note_style_html_output_contains_footnotes() {
 #[test]
 fn test_note_style_integral_citation_keeps_prose_anchor() {
     let style = Style::from_yaml_str(include_str!(
-        "../../../../../styles/chicago-shortened-notes-bibliography.yaml"
+        "../../../../../styles/embedded/chicago-shortened-notes-bibliography.yaml"
     ))
     .unwrap();
     let bib = make_test_bib();
@@ -532,7 +532,7 @@ fn test_repro_djot_rendering() {
 #[test]
 fn test_real_chicago_note_style_generates_djot_footnotes() {
     let style = Style::from_yaml_str(include_str!(
-        "../../../../../styles/chicago-shortened-notes-bibliography.yaml"
+        "../../../../../styles/embedded/chicago-shortened-notes-bibliography.yaml"
     ))
     .unwrap();
     let bib = make_test_bib();

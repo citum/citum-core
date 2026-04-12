@@ -40,7 +40,7 @@ fn test_apa_7th_sort_same_author_year_by_title() {
         "Works by the same author in the same year are sorted alphabetically by title.",
     );
     let root = project_root();
-    let style = load_style(&root.join("styles/apa-7th.yaml"));
+    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
     let bib = load_sort_oracle_bibliography();
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography();
@@ -74,7 +74,7 @@ fn test_apa_7th_sort_same_author_year_by_title() {
 fn test_apa_7th_sort_anonymous_works_by_title() {
     announce_behavior("Anonymous works sort by title with leading articles stripped.");
     let root = project_root();
-    let style = load_style(&root.join("styles/apa-7th.yaml"));
+    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
     let bib = load_sort_oracle_bibliography();
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography();
@@ -179,7 +179,7 @@ fn test_numeric_sort_by_citation_order() {
 fn test_uppercase_surname_sort_order() {
     announce_behavior("All-caps surnames sort in the same order as normally-cased surnames.");
     let root = project_root();
-    let style = load_style(&root.join("styles/apa-7th.yaml"));
+    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
     let bib = load_sort_oracle_bibliography();
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography();
@@ -202,7 +202,7 @@ fn test_multiauthor_same_year_sort() {
         "Multi-author works with the same year appear together in author-date sort order.",
     );
     let root = project_root();
-    let style = load_style(&root.join("styles/apa-7th.yaml"));
+    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
     let bib = load_sort_oracle_bibliography();
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography();

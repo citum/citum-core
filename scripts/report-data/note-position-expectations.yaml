@@ -101,6 +101,9 @@ styles:
   chicago-notes:
     regression_profile: ibid-and-subsequent
     conformance_family: chicago-full-note
+  chicago-notes-18th:
+    regression_profile: ibid-and-subsequent
+    conformance_family: chicago-full-note
   chicago-notes-bibliography-17th-edition:
     regression_profile: ibid-and-subsequent
     conformance_family: chicago-full-note

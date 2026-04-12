@@ -1,6 +1,0 @@
-# yaml-language-server: $schema=./citum.schema.json
-info:
-  title: "Chicago Notes 18th"
-  id: "chicago-notes-18th"
-
-preset: chicago-notes-18th

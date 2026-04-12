@@ -738,7 +738,7 @@ fn test_springer_locator_label_survives_sorting() {
     use std::{fs, path::Path};
 
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let style_path = root.join("styles/springer-basic-author-date.yaml");
+    let style_path = root.join("styles/embedded/springer-basic-author-date.yaml");
     let bib_path = root.join("tests/fixtures/references-expanded.json");
     let cite_path = root.join("tests/fixtures/citations-expanded.json");
 
@@ -798,7 +798,7 @@ fn test_harvard_cite_them_right_grouped_citations_render_cleanly() {
     use std::{fs, path::Path};
 
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let style_path = root.join("styles/harvard-cite-them-right.yaml");
+    let style_path = root.join("styles/embedded/harvard-cite-them-right.yaml");
     let bib_path = root.join("tests/fixtures/references-expanded.json");
     let cite_path = root.join("tests/fixtures/citations-expanded.json");
 
@@ -857,7 +857,7 @@ fn test_parsed_style_no_date_terms_match_expected_variants() {
         .expect("no-date-single citation should exist");
 
     let load_style = |name: &str| -> Style {
-        let style_path = root.join("styles").join(format!("{name}.yaml"));
+        let style_path = root.join("styles/embedded").join(format!("{name}.yaml"));
         let style_yaml = fs::read_to_string(&style_path).expect("style should read");
         serde_yaml::from_str(&style_yaml).expect("style should parse")
     };

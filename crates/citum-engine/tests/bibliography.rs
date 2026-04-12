@@ -818,7 +818,7 @@ fn build_list_index_preview_style(use_type_template: bool) -> Style {
 bibliography:
   type-variants:
     article-journal:
-      - items:
+      - group:
           - contributor: author
             form: long
           - title: primary
@@ -829,7 +829,7 @@ bibliography:
         r#"
 bibliography:
   template:
-    - items:
+    - group:
         - contributor: author
           form: long
         - title: primary
@@ -1953,7 +1953,7 @@ fn anonymous_entry_type_variants_reorder_online_entries_and_drop_print_fallback_
 
 #[test]
 fn elsevier_harvard_entry_encyclopedia_uses_entry_template_instead_of_chapter_detail() {
-    let style = load_style("styles/elsevier-harvard.yaml");
+    let style = load_style("styles/embedded/elsevier-harvard.yaml");
     let bibliography = citum_engine::io::load_bibliography(
         &project_root().join("tests/fixtures/references-expanded.json"),
     )
@@ -1971,7 +1971,7 @@ fn elsevier_harvard_entry_encyclopedia_uses_entry_template_instead_of_chapter_de
 
 #[test]
 fn apa_dataset_without_title_falls_back_to_bracketed_label_version_and_doi() {
-    let style = load_style("styles/apa-7th.yaml");
+    let style = load_style("styles/embedded/apa-7th.yaml");
     let legacy: csl_legacy::csl_json::Reference = serde_json::from_value(serde_json::json!({
         "id": "apa-titleless-dataset",
         "type": "dataset",
@@ -2000,7 +2000,7 @@ fn apa_dataset_without_title_falls_back_to_bracketed_label_version_and_doi() {
 
 #[test]
 fn apa_web_native_entries_render_without_retrieved_fallbacks() {
-    let style = load_style("styles/apa-7th.yaml");
+    let style = load_style("styles/embedded/apa-7th.yaml");
     let legacy_items = [
         serde_json::json!({
             "id": "6188419/IC98IKSD",
@@ -2081,7 +2081,7 @@ fn apa_web_native_entries_render_without_retrieved_fallbacks() {
 
 #[test]
 fn apa_magazine_and_newspaper_entries_keep_special_format_translators_and_direct_urls() {
-    let style = load_style("styles/apa-7th.yaml");
+    let style = load_style("styles/embedded/apa-7th.yaml");
     let legacy_items = [
         serde_json::json!({
             "id": "6188419/BXMWCMVJ",
@@ -2152,7 +2152,7 @@ fn apa_magazine_and_newspaper_entries_keep_special_format_translators_and_direct
 
 #[test]
 fn apa_structural_entries_use_component_packaging_instead_of_generic_fallbacks() {
-    let style = load_style("styles/apa-7th.yaml");
+    let style = load_style("styles/embedded/apa-7th.yaml");
     let legacy_items = [
         serde_json::json!({
             "id": "6188419/RYT8J733",
@@ -2294,7 +2294,7 @@ struct StructuralBibliographyCase {
 }
 
 fn render_structural_bibliography_case(value: serde_json::Value) -> String {
-    let style = load_style("styles/apa-7th.yaml");
+    let style = load_style("styles/embedded/apa-7th.yaml");
     let legacy: csl_legacy::csl_json::Reference =
         serde_json::from_value(value).expect("fixture should parse");
     let id = legacy.id.clone();
@@ -2407,7 +2407,7 @@ fn given_an_apa_structural_fixture_when_rendering_bibliography_then_expected_com
 
 #[test]
 fn apa_personal_communication_entries_do_not_render_in_bibliography() {
-    let style = load_style("styles/apa-7th.yaml");
+    let style = load_style("styles/embedded/apa-7th.yaml");
     let bibliography = IndexMap::from([
         (
             "ITEM-28".to_string(),
@@ -2606,7 +2606,7 @@ fn nested_inline_article_journal_detail_group_suppresses_missing_issue_without_e
 }
 
 fn royal_society_of_chemistry_restores_legacy_page_less_doi_behavior() {
-    let style = load_style("styles/royal-society-of-chemistry.yaml");
+    let style = load_style("styles/embedded/royal-society-of-chemistry.yaml");
     let bib = citum_engine::io::load_bibliography(
         &project_root().join("tests/fixtures/references-expanded.json"),
     )
@@ -2623,7 +2623,7 @@ fn royal_society_of_chemistry_restores_legacy_page_less_doi_behavior() {
 
 #[test]
 fn editor_author_substitute_omits_verb_role_label_in_bibliography() {
-    let mut style = load_style("styles/apa-7th.yaml");
+    let mut style = load_style("styles/embedded/apa-7th.yaml");
     let config = style.options.get_or_insert_with(Default::default);
     let contributors = config.contributors.get_or_insert_with(Default::default);
     contributors.role = Some(citum_schema::options::contributors::RoleOptions {
