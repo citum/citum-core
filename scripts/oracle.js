@@ -24,6 +24,7 @@ const CSL = require('citeproc');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const yaml = require('js-yaml');
 const { execSync } = require('child_process');
 const {
   compareText,
@@ -37,6 +38,7 @@ const {
 const { toCiteprocItem } = require('./lib/citeproc-locators');
 const { maybeDatasetErrorForFile } = require('./lib/dataset-guard');
 const { attachRegisteredDivergenceAdjustments } = require('./lib/oracle-divergences');
+const { resolveStyleData } = require('./lib/verification-policy');
 
 const DEFAULT_REFS_FIXTURE = path.join(__dirname, '..', 'tests', 'fixtures', 'references-expanded.json');
 const DEFAULT_CITATIONS_FIXTURE = path.join(__dirname, '..', 'tests', 'fixtures', 'citations-expanded.json');
@@ -286,33 +288,56 @@ function compareOrdering(oracleOrder, citumOrder) {
 }
 
 function renderWithCiteprocJs(stylePath, testItems, testCitations, options = {}) {
-  const styleXml = fs.readFileSync(stylePath, 'utf8');
+  let cslXml;
+  const isYaml = stylePath.endsWith('.yaml') || stylePath.endsWith('.yml');
+
+  if (isYaml) {
+    // If input is YAML, we need to find the corresponding legacy CSL for citeproc-js
+    const styleName = path.basename(stylePath, path.extname(stylePath));
+    const baseName = styleName.replace(/-7th$|-(?:author-date|notes|numeric)$/, '');
+    const legacyDir = path.join(__dirname, '..', 'styles-legacy');
+
+    const candidates = [
+      path.join(legacyDir, `${styleName}.csl`),
+      path.join(legacyDir, `${baseName}.csl`),
+      path.join(legacyDir, 'apa.csl'), // Special case fallback for apa-7th refactor
+    ];
+
+    const cslPath = candidates.find((p) => fs.existsSync(p));
+    if (!cslPath) {
+      if (options.verbose) {
+        console.warn(`No legacy CSL found for ${styleName}, skipping oracle rendering.`);
+      }
+      return { citations: {}, bibliography: [] };
+    }
+    cslXml = fs.readFileSync(cslPath, 'utf8');
+  } else {
+    cslXml = fs.readFileSync(stylePath, 'utf8');
+  }
 
   const sys = {
     retrieveLocale: (lang) => loadLocale(lang),
-    retrieveItem: (id) => testItems[id]
+    retrieveItem: (id) => testItems[id],
   };
 
-  const citeproc = new CSL.Engine(sys, styleXml);
+  const citeproc = new CSL.Engine(sys, cslXml);
   citeproc.updateItems(Object.keys(testItems));
 
   const citations = {};
   if (options.scope !== 'bibliography') {
-    testCitations.forEach(cite => {
+    testCitations.forEach((cite) => {
       // Convert Citum citation items to citeproc-js format
       const suppressAuthor = cite['suppress-author'] === true;
-      const citeprocItems = cite.items.map(item => toCiteprocItem(item, suppressAuthor));
+      const citeprocItems = cite.items.map((item) => toCiteprocItem(item, suppressAuthor));
 
-      // For narrative/integral citations, citeproc-js doesn't have a direct equivalent
-      // in makeCitationCluster that matches Citum's specific split rendering.
-      // However, if we just want to test clustered rendering, we can use the cluster.
-      // For now, we compare non-integral clusters.
       try {
         const result = citeproc.makeCitationCluster(citeprocItems);
         // citeproc-js returns [id, text] or formatted cluster
         citations[cite.id] = result;
       } catch (e) {
-        console.error(`Error rendering citation cluster ${cite.id}:`, e.message);
+        if (options.verbose) {
+          console.error(`Error rendering citation cluster ${cite.id}:`, e.message);
+        }
         citations[cite.id] = `ERROR: ${e.message}`;
       }
     });
@@ -345,7 +370,10 @@ function buildMigrateCommand(absStylePath, migrateOptions = {}) {
 
 function renderWithCitumProcessor(stylePath, refsData, testItems, testCitations, cliOptions = {}) {
   const projectRoot = path.resolve(__dirname, '..');
-  const styleName = path.basename(stylePath, '.csl');
+  const isYaml = stylePath.endsWith('.yaml') || stylePath.endsWith('.yml');
+  const styleName = isYaml
+    ? path.basename(stylePath, path.extname(stylePath))
+    : path.basename(stylePath, '.csl');
   const stylesDir = path.join(projectRoot, 'styles');
   const workspace = createOracleTempWorkspace();
   const migrateOptions = cliOptions.migrate || {};
@@ -354,7 +382,10 @@ function renderWithCitumProcessor(stylePath, refsData, testItems, testCitations,
   try {
     // 1. Try to find a hand-authored style first
     let citumStylePath = null;
-    if (!forceMigrate && fs.existsSync(stylesDir)) {
+
+    if (isYaml && fs.existsSync(stylePath)) {
+      citumStylePath = path.resolve(stylePath);
+    } else if (!forceMigrate && fs.existsSync(stylesDir)) {
       const files = fs.readdirSync(stylesDir);
       const exactMatch = `${styleName}.yaml`;
 
@@ -366,7 +397,7 @@ function renderWithCitumProcessor(stylePath, refsData, testItems, testCitations,
       if (!citumStylePath) {
         // Look for exact match or base name match (e.g. apa-7th matches apa)
         const baseName = styleName.replace(/-\d+th$/, '').replace(/-\d+$/, '');
-        const found = files.find(f =>
+        const found = files.find((f) =>
           f.endsWith('.yaml') &&
           (f.startsWith(`${styleName}-`) || f.startsWith(`${baseName}-`))
         );

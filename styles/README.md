@@ -40,8 +40,10 @@ Measures template compactness and unnecessary complexity.
 
 Penalizes:
 
-- excessive component count (by style-class target)
-- redundant semantic components
+- excessive component count after accounting for legitimate family breadth
+- duplicated `type-variants` and `type-templates`
+- near-duplicate template forks that differ only slightly
+- repeated copied component/group patterns across scopes
 - high override density
 
 This keeps styles maintainable and discourages overfit templates.
@@ -52,6 +54,7 @@ Rewards explicit preset reuse via `use-preset`.
 
 - higher score for meaningful preset usage
 - lower score when no presets are used and template complexity is high
+- wrapper styles can still score well when they defer real structure to shared presets
 
 ## Why SQI Exists
 

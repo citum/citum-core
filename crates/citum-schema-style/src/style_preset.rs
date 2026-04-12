@@ -126,6 +126,85 @@ mod tests {
     fn style_preset_apa_7th_base_is_valid() {
         let style = StylePreset::Apa7th.base();
         assert!(style.info.title.is_some(), "title should be present");
+        let citation = style.citation.as_ref().expect("citation should be present");
+        assert_eq!(
+            citation.use_preset,
+            Some(crate::TemplatePreset::Apa),
+            "APA preset base should reuse the shared citation preset"
+        );
+        assert!(
+            citation.template.is_none(),
+            "APA preset base should not have an explicit citation template"
+        );
+        assert!(
+            citation
+                .non_integral
+                .as_ref()
+                .is_some_and(|ni| ni.template.is_none()),
+            "APA preset base should not have an explicit non-integral citation template"
+        );
+        assert!(
+            citation
+                .integral
+                .as_ref()
+                .is_some_and(|i| i.template.is_none()),
+            "APA preset base should not have an explicit integral citation template"
+        );
+
+        let has_grouped_legal_family_selector =
+            |variants: &indexmap::IndexMap<crate::TypeSelector, crate::Template>| {
+                variants.keys().next().is_some_and(|selector| {
+                    selector.matches("legal-case")
+                        && selector.matches("treaty")
+                        && selector.matches("statute")
+                })
+            };
+
+        assert!(
+            citation
+                .non_integral
+                .as_ref()
+                .and_then(|section| section.type_variants.as_ref())
+                .is_some_and(|variants| variants.len() == 1),
+            "APA preset base should keep only one grouped legal-family non-integral citation exception"
+        );
+        assert!(
+            citation
+                .non_integral
+                .as_ref()
+                .and_then(|section| section.type_variants.as_ref())
+                .is_some_and(has_grouped_legal_family_selector),
+            "APA preset base should preserve a single grouped legal-family non-integral selector"
+        );
+        assert!(
+            citation
+                .integral
+                .as_ref()
+                .and_then(|section| section.type_variants.as_ref())
+                .is_some_and(|variants| variants.len() == 1),
+            "APA preset base should keep only one grouped legal-family integral citation exception"
+        );
+        assert!(
+            citation
+                .integral
+                .as_ref()
+                .and_then(|section| section.type_variants.as_ref())
+                .is_some_and(has_grouped_legal_family_selector),
+            "APA preset base should preserve a single grouped legal-family integral selector"
+        );
+        let bibliography = style
+            .bibliography
+            .as_ref()
+            .expect("bibliography should be present");
+        assert_eq!(
+            bibliography.use_preset,
+            Some(crate::TemplatePreset::Apa),
+            "APA preset base should reuse the shared bibliography preset"
+        );
+        assert!(
+            bibliography.template.is_none(),
+            "APA preset base should not have an explicit bibliography template"
+        );
     }
 
     #[test]

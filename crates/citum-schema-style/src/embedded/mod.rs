@@ -76,14 +76,14 @@ mod tests {
     use super::*;
     use crate::options::AndOptions;
     use crate::template::{
-        ContributorForm, ContributorRole, DateForm, DateVariable, NumberVariable,
+        ContributorForm, ContributorRole, DateForm, DateVariable, NumberVariable, SimpleVariable,
         TemplateComponent, WrapConfig, WrapPunctuation,
     };
 
     #[test]
     fn test_apa_citation_structure() {
         let template = apa_citation();
-        assert_eq!(template.len(), 2);
+        assert_eq!(template.len(), 3);
 
         match &template[0] {
             TemplateComponent::Contributor(c) => {
@@ -99,6 +99,13 @@ mod tests {
                 assert_eq!(d.form, DateForm::Year);
             }
             _ => panic!("Expected Date"),
+        }
+
+        match &template[2] {
+            TemplateComponent::Variable(v) => {
+                assert_eq!(v.variable, SimpleVariable::Locator);
+            }
+            _ => panic!("Expected Variable (locator)"),
         }
     }
 

@@ -300,6 +300,35 @@ const PRESET_BASES = {
   'chicago-author-date-18th': path.join(PROJECT_ROOT, 'styles', 'preset-bases', 'chicago-author-date-18th.yaml'),
 };
 
+const TEMPLATE_PRESETS = {
+  apa: {
+    citation: [
+      { contributor: 'author', form: 'short' },
+      { date: 'issued', form: 'year' },
+    ],
+    bibliography: [
+      { contributor: 'author', form: 'long', suffix: '.' },
+      { date: 'issued', form: 'year', wrap: { punctuation: 'parentheses' }, prefix: ' ' },
+      { title: 'primary', emph: true },
+    ],
+  },
+};
+
+function resolveTemplatePresets(section) {
+  if (!section || typeof section !== 'object') return section;
+  const result = { ...section };
+  if (typeof result['use-preset'] === 'string' && TEMPLATE_PRESETS[result['use-preset']]) {
+    const preset = TEMPLATE_PRESETS[result['use-preset']];
+    const kind = result.integral || result.non_integral ? 'citation' : 'bibliography';
+    if (!result.template && preset[kind]) {
+      result.template = preset[kind];
+    }
+  }
+  if (result.integral) result.integral = resolveTemplatePresets(result.integral);
+  if (result.non_integral) result.non_integral = resolveTemplatePresets(result.non_integral);
+  return result;
+}
+
 function localStyleOverlay(styleData) {
   if (!styleData || typeof styleData !== 'object') {
     return {};
@@ -315,30 +344,32 @@ function localStyleOverlay(styleData) {
  */
 function resolveStyleData(styleData, visited = new Set()) {
   const presetSpec = styleData?.preset;
-  if (!presetSpec) return styleData;
+  let resolved = styleData;
 
-  const presetKey = typeof presetSpec === 'string' ? presetSpec : presetSpec.preset;
-  if (!presetKey || !PRESET_BASES[presetKey] || visited.has(presetKey)) {
-    return styleData;
+  if (presetSpec) {
+    const presetKey = typeof presetSpec === 'string' ? presetSpec : presetSpec.preset;
+    if (presetKey && PRESET_BASES[presetKey] && !visited.has(presetKey)) {
+      const basePath = PRESET_BASES[presetKey];
+      if (fs.existsSync(basePath)) {
+        try {
+          const baseContent = fs.readFileSync(basePath, 'utf8');
+          let baseData = yaml.load(baseContent);
+
+          visited.add(presetKey);
+          baseData = resolveStyleData(baseData, visited);
+
+          const delta = typeof presetSpec === 'object' ? presetSpec.variant : null;
+          const mergedPreset = deepMerge(baseData, delta || {});
+          resolved = deepMerge(mergedPreset, localStyleOverlay(styleData));
+        } catch (err) {
+          console.error(`Error resolving preset ${presetKey}: ${err.message}`);
+        }
+      }
+    }
   }
 
-  const basePath = PRESET_BASES[presetKey];
-  if (!fs.existsSync(basePath)) {
-    return styleData;
-  }
+  if (resolved.citation) resolved.citation = resolveTemplatePresets(resolved.citation);
+  if (resolved.bibliography) resolved.bibliography = resolveTemplatePresets(resolved.bibliography);
 
-  try {
-    const baseContent = fs.readFileSync(basePath, 'utf8');
-    let baseData = yaml.load(baseContent);
-
-    visited.add(presetKey);
-    baseData = resolveStyleData(baseData, visited);
-
-    const delta = typeof presetSpec === 'object' ? presetSpec.variant : null;
-    const mergedPreset = deepMerge(baseData, delta || {});
-    return deepMerge(mergedPreset, localStyleOverlay(styleData));
-  } catch (err) {
-    console.error(`Error resolving preset ${presetKey}: ${err.message}`);
-    return styleData;
-  }
+  return resolved;
 }

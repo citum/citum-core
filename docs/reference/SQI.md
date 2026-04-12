@@ -20,12 +20,14 @@ SQI is computed per style from four subscores:
 1. `typeCoverage`: how broadly the style succeeds across observed reference types.
 2. `fallbackRobustness`: whether core types still render correctly via shared templates/fallback paths.
 3. `concision`: measures how efficiently the style achieves its rendering goals through template reuse.
-   - **Type-Variant Sprawl ($C_{sprawl}$):** Penalizes redundant `type-variants`. Calculated as $1 - (N_{variants} / N_{total\_types})$.
-   - **Template Deviation ($C_{diff}$):** For each `type-variant`, compares it against the `default` template. Styles get a higher score when variants are either non-existent or radically different (meaning the variance was necessary), while penalizing "near-duplicates" (identical except for 1-2 components).
-   - **Pattern Deduplication ($C_{pattern}$):** Penalizes identical component sequences repeated across multiple templates instead of being factored into a shared Group or Preset.
+   - Counts all template-bearing scopes in the resolved style, including `type-variants` and `type-templates`.
+   - Penalizes high variant-selector counts, exact duplicate scopes, near-duplicate scopes, and repeated copied component/group patterns across scopes.
+   - Uses structural fingerprints of whole components and groups rather than coarse field-name matching, so copied template forks are visible to the metric.
 4. `presetUsage`: reuse of shared presets (`processing`, `contributors`, `dates`, `titles`, `substitute`, template presets).
 
 Overall SQI is reported as a 0.0-1.0 score in JSON and as a percentage in `docs/compat.html`.
+
+`qualityBreakdown.subscores.concision` now includes supporting diagnostics such as scope count, variant count, exact duplicates, near-duplicates, and repeated-pattern totals so score changes are explainable.
 
 ## Working Thresholds
 

@@ -1254,7 +1254,7 @@ bibliography:
         assert!(citation.template.is_none());
 
         let citation_template = citation.resolve_template().unwrap();
-        assert_eq!(citation_template.len(), 2); // APA citation is (Author, Year)
+        assert_eq!(citation_template.len(), 3); // APA citation is (Author, Year, Locator)
 
         // precise check for APA structure
         match &citation_template[0] {
