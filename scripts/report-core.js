@@ -1473,18 +1473,27 @@ function composeScopedOracleResult(citationResult, bibliographyResult) {
 }
 
 /**
- * Compute fidelity score from oracle result
+ * Compute fidelity score from oracle result.
+ *
+ * For note styles (hasBibliography === false) the oracle still runs bibliography
+ * scenarios and returns 0/N results — those must be excluded so they don't
+ * deflate the citation-only fidelity score.
  */
-function computeFidelityScore(oracleResult) {
+function computeFidelityScore(oracleResult, hasBibliography) {
   if (oracleResult.error) {
     return 0;
   }
 
   const citations = getEffectiveOracleSection(oracleResult, 'citations');
-  const bibliography = getEffectiveOracleSection(oracleResult, 'bibliography');
 
   const citationsPassed = citations.passed || 0;
   const citationsTotal = citations.total || 0;
+
+  if (hasBibliography === false) {
+    return citationsTotal > 0 ? Math.min(1, citationsPassed / citationsTotal) : 0;
+  }
+
+  const bibliography = getEffectiveOracleSection(oracleResult, 'bibliography');
   const biblioPassed = bibliography.passed || 0;
   const biblioTotal = bibliography.total || 0;
 
@@ -2223,7 +2232,7 @@ async function processStyleReport(runtime, styleSpec, context) {
 
   if (primaryComparator === 'citum-baseline') {
     const oracleResult = await runNativeOracle(runtime, styleSpec.name);
-    const fidelityScore = computeFidelityScore(oracleResult);
+    const fidelityScore = computeFidelityScore(oracleResult, styleSpec.hasBibliography);
     const caseMismatches = collectCaseMismatchSummary(oracleResult);
     const bibliography = getEffectiveOracleSection(oracleResult, 'bibliography');
     const citations = getEffectiveOracleSection(oracleResult, 'citations');
@@ -2341,7 +2350,7 @@ async function processStyleReport(runtime, styleSpec, context) {
     .map((benchmarkRunResult) => `benchmark ${benchmarkRunResult.id}: ${benchmarkRunResult.error}`);
   const publishedBenchmarkRunResults = benchmarkRunResults.map(toPublishedBenchmarkRunRecord);
 
-  const fidelityScore = computeFidelityScore(oracleResult);
+  const fidelityScore = computeFidelityScore(oracleResult, styleSpec.hasBibliography);
   const caseMismatches = collectCaseMismatchSummary(oracleResult);
   const citations = getEffectiveOracleSection(oracleResult, 'citations');
   const bibliography = getEffectiveOracleSection(oracleResult, 'bibliography');
@@ -2465,8 +2474,13 @@ async function generateReport(options) {
     const bibliography = job.bibliography || { passed: 0, total: 0 };
     citationsTotal += citations.total || 0;
     citationsPassed += citations.passed || 0;
-    biblioTotal += bibliography.total || 0;
-    biblioPassed += bibliography.passed || 0;
+    // Exclude bibliography totals for note styles: the oracle returns 0/N
+    // results for bibliography scenarios even when a style has no bibliography,
+    // which would inflate the denominator of the portfolio-level bib rate.
+    if (job.styleRecord.hasBibliography !== false) {
+      biblioTotal += bibliography.total || 0;
+      biblioPassed += bibliography.passed || 0;
+    }
     citationCaseMismatchTotal += job.styleRecord.caseMismatches?.citations || 0;
     bibliographyCaseMismatchTotal += job.styleRecord.caseMismatches?.bibliography || 0;
     qualityTotal += job.qualityScore || 0;
