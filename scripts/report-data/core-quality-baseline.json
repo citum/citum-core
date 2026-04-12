@@ -1,12 +1,13 @@
 {
-  "generated": "2026-03-06",
-  "commit": "2c94163",
+  "generated": "2026-04-12T01:28:23.988Z",
+  "commit": "8bd1fd11",
   "source": "scripts/report-core.js",
   "metadata": {
-    "timestamp": "2026-02-19",
-    "gitCommit": "eb4dbad",
+    "timestamp": "2026-04-12T01:28:23.988Z",
+    "gitCommit": "8bd1fd11",
     "fixture": "tests/fixtures/references-expanded.json",
-    "styleSelector": "core-styles",
+    "styleSelector": "selected-styles",
+    "styleYamlOverride": null,
     "styles": [
       "american-medical-association",
       "apa-7th",
@@ -21,76 +22,91 @@
       "taylor-and-francis-chicago-author-date"
     ],
     "generator": "scripts/report-core.js",
+    "richInputEvidence": {
+      "status": "official-supplemental",
+      "headlineGate": "baseline-fixtures"
+    },
     "extraFixtures": [
-      "tests/fixtures/citations-note-expanded.json"
-    ]
+      "tests/fixtures/citations-note-expanded.json",
+      "tests/fixtures/references-note-positions.json",
+      "tests/fixtures/citations-note-positions.json"
+    ],
+    "parallelism": 4,
+    "cacheDir": "/Users/brucedarcus/Code/citum/citum-core/.oracle-cache/report-core",
+    "preflight": {
+      "snapshotIssues": [],
+      "allowLiveFallback": false
+    },
+    "oracleComparison": {
+      "caseSensitive": true
+    }
   },
   "styles": {
     "american-medical-association": {
       "fidelityScore": 1,
-      "quality": 91.4,
-      "concision": 92.6,
+      "quality": 96.5,
+      "concision": 92.1,
       "presetUsage": 90
     },
     "apa-7th": {
       "fidelityScore": 1,
-      "quality": 86.2,
-      "concision": 71.6,
-      "presetUsage": 90
+      "quality": 92.8,
+      "concision": 71.4,
+      "presetUsage": 100
     },
     "chicago-notes": {
       "fidelityScore": 1,
-      "quality": 86.3,
-      "concision": 64.9,
-      "presetUsage": 90
+      "quality": 84,
+      "concision": 64.1,
+      "presetUsage": 80
     },
     "elsevier-harvard": {
       "fidelityScore": 1,
-      "quality": 89,
-      "concision": 95.1,
+      "quality": 92.2,
+      "concision": 86.7,
       "presetUsage": 70
     },
     "elsevier-vancouver": {
       "fidelityScore": 1,
-      "quality": 88.7,
-      "concision": 93.6,
-      "presetUsage": 70
+      "quality": 91.4,
+      "concision": 71.7,
+      "presetUsage": 90
     },
     "elsevier-with-titles": {
       "fidelityScore": 1,
-      "quality": 89.8,
-      "concision": 86.1,
-      "presetUsage": 90
+      "quality": 79.3,
+      "concision": 17.1,
+      "presetUsage": 100
     },
     "springer-basic-author-date": {
       "fidelityScore": 1,
-      "quality": 87.9,
-      "concision": 90.7,
-      "presetUsage": 70
+      "quality": 94.5,
+      "concision": 83.8,
+      "presetUsage": 90
     },
     "springer-basic-brackets": {
       "fidelityScore": 1,
-      "quality": 90.3,
-      "concision": 94.3,
+      "quality": 91.9,
+      "concision": 79.7,
       "presetUsage": 80
     },
     "springer-socpsych-author-date": {
       "fidelityScore": 1,
-      "quality": 89.5,
-      "concision": 97.2,
-      "presetUsage": 70
+      "quality": 86.3,
+      "concision": 51.2,
+      "presetUsage": 90
     },
     "springer-vancouver-brackets": {
       "fidelityScore": 1,
-      "quality": 88.6,
-      "concision": 81.3,
-      "presetUsage": 90
+      "quality": 97.8,
+      "concision": 91,
+      "presetUsage": 100
     },
     "taylor-and-francis-chicago-author-date": {
       "fidelityScore": 1,
-      "quality": 89.7,
-      "concision": 97.6,
-      "presetUsage": 70
+      "quality": 90.3,
+      "concision": 73.1,
+      "presetUsage": 80
     }
   }
 }

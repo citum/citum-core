@@ -15,6 +15,8 @@ const { getEffectiveVerificationScopes } = require('./lib/style-verification');
 const { loadReportProvenance } = require('./lib/report-metadata');
 const {
   buildNoteStyleLookup,
+  collectTemplateScopes,
+  computeConcisionScore,
   discoverCoreStyles,
   computeFidelityScore,
   buildEmptyOracleResult,
@@ -28,6 +30,7 @@ const {
   getComparisonEntryTexts,
   generateHtml,
   generateReport,
+  loadStyleYaml,
   mapWithConcurrency,
   mergeBenchmarkRunIntoOracle,
   mergeDivergenceSummaries,
@@ -54,6 +57,7 @@ test('discoverCoreStyles classifies representative style origins and CSL reach',
 
   assert.equal(styles.get('apa-7th').originLabel, provenance.defaults.labels['csl-derived']);
   assert.equal(styles.get('apa-7th').cslReach, 783);
+  assert.equal(styles.get('apa-7th').hasBibliography, true);
 
   assert.equal(styles.get('chem-acs').originLabel, provenance.defaults.labels['biblatex-derived']);
   assert.equal(styles.get('chem-acs').cslReach, null);
@@ -119,6 +123,113 @@ test('buildNoteStyleLookup indexes shipped note styles', () => {
   assert.equal(noteStyles.get('chicago-notes').style.options.processing, 'note');
   assert.equal(Boolean(noteStyles.get('chicago-notes').style.bibliography), true);
   assert.equal(noteStyles.has('apa-7th'), false);
+});
+
+test('collectTemplateScopes includes type-variants and type-templates', () => {
+  const { scopes, variantSelectorCount } = collectTemplateScopes({
+    citation: {
+      template: [{ contributor: 'author' }],
+      integral: {
+        'type-variants': {
+          book: [{ contributor: 'author' }],
+        },
+      },
+      'non-integral': {
+        'type-variants': {
+          'book, chapter': [{ title: 'primary' }],
+        },
+      },
+    },
+    bibliography: {
+      template: [{ title: 'primary' }],
+      'type-variants': {
+        article: [{ variable: 'publisher' }],
+      },
+      'type-templates': {
+        dataset: [{ variable: 'url' }],
+      },
+    },
+  });
+
+  assert.equal(scopes.some((scope) => scope.name === 'citation.template'), true);
+  assert.equal(scopes.some((scope) => scope.name === 'citation.integral.type-variants.book'), true);
+  assert.equal(
+    scopes.some((scope) => scope.name === 'citation.non-integral.type-variants.book, chapter'),
+    true
+  );
+  assert.equal(scopes.some((scope) => scope.name === 'bibliography.type-variants.article'), true);
+  assert.equal(scopes.some((scope) => scope.name === 'bibliography.type-templates.dataset'), true);
+  assert.equal(variantSelectorCount, 4);
+});
+
+test('computeConcisionScore penalizes duplicate-heavy type-variant structures', () => {
+  const duplicatedStyle = {
+    citation: {
+      'non-integral': {
+        'type-variants': {
+          article: [{ contributor: 'author' }, { date: 'issued', form: 'year' }],
+          book: [{ contributor: 'author' }, { date: 'issued', form: 'year' }],
+          chapter: [{ contributor: 'author' }, { date: 'issued', form: 'year' }],
+          report: [{ contributor: 'author' }, { date: 'issued', form: 'year' }],
+          thesis: [{ contributor: 'author' }, { date: 'issued', form: 'year' }],
+          webpage: [{ contributor: 'author' }, { date: 'issued', form: 'year' }],
+        },
+      },
+    },
+    bibliography: {
+      template: [
+        { contributor: 'author', form: 'long' },
+        { date: 'issued', form: 'year' },
+        { title: 'primary' },
+      ],
+      'type-variants': {
+        article: [{ contributor: 'author', form: 'long' }, { title: 'primary' }],
+        book: [{ contributor: 'author', form: 'long' }, { title: 'primary' }],
+        chapter: [{ contributor: 'author', form: 'long' }, { title: 'primary' }],
+      },
+    },
+  };
+
+  const score = computeConcisionScore(duplicatedStyle, 'author-date');
+
+  assert.equal(score.variantSelectors, 9);
+  assert.ok(score.exactDuplicateScopes >= 6);
+  assert.ok(score.score < 70, `expected concision below 70, got ${score.score}`);
+});
+
+test('computeConcisionScore rewards preset-backed compact structures', () => {
+  const compactStyle = {
+    citation: {
+      'use-preset': 'apa',
+      template: [{ contributor: 'author' }, { date: 'issued', form: 'year' }],
+    },
+    bibliography: {
+      'use-preset': 'apa',
+      template: [
+        { contributor: 'author', form: 'long' },
+        { date: 'issued', form: 'year' },
+        { title: 'primary' },
+        { variable: 'doi' },
+      ],
+    },
+  };
+
+  const score = computeConcisionScore(compactStyle, 'author-date');
+
+  assert.equal(score.variantSelectors, 0);
+  assert.equal(score.exactDuplicateScopes, 0);
+  assert.ok(score.score >= 90, `expected concision >= 90, got ${score.score}`);
+});
+
+test('apa-7th concision regression reflects preset-first success', () => {
+  const style = loadStyleMap().get('apa-7th');
+  const styleData = fs.readFileSync(path.join(projectRoot, 'styles', `${style.name}.yaml`), 'utf8');
+  assert.ok(styleData.includes('use-preset: apa'), 'apa-7th should use the shared preset');
+  const loaded = loadStyleYaml(style.name);
+  const concision = computeConcisionScore(loaded.resolvedStyleData, style.format);
+
+  assert.equal(concision.variantSelectors, 31, 'resolved APA should have its standard variant selectors');
+  assert.ok(concision.score >= 70, `expected improved concision, got ${concision.score}`);
 });
 
 test('report-core exposes expected benchmark labels for representative styles', () => {

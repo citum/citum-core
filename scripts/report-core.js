@@ -607,9 +607,12 @@ function hasBibliographyTemplate(styleData) {
   }
 
   const hasTemplate = Array.isArray(bibliography.template) && bibliography.template.length > 0;
+  const hasPreset = typeof bibliography['use-preset'] === 'string' && bibliography['use-preset'].trim().length > 0;
   const typeTemplates = bibliography['type-templates'];
   const hasTypeTemplates = Boolean(typeTemplates && Object.keys(typeTemplates).length > 0);
-  return hasTemplate || hasTypeTemplates;
+  const typeVariants = bibliography['type-variants'];
+  const hasTypeVariants = Boolean(typeVariants && Object.keys(typeVariants).length > 0);
+  return hasTemplate || hasPreset || hasTypeTemplates || hasTypeVariants;
 }
 
 function buildEmptyOracleResult(overrides = {}) {
@@ -1557,6 +1560,9 @@ function flattenTemplateComponents(components) {
   for (const component of components || []) {
     if (!component || typeof component !== 'object') continue;
     flattened.push(component);
+    if (Array.isArray(component.group)) {
+      flattened.push(...flattenTemplateComponents(component.group));
+    }
     if (Array.isArray(component.items)) {
       flattened.push(...flattenTemplateComponents(component.items));
     }
@@ -1568,31 +1574,55 @@ function collectTemplateScopes(styleData) {
   const citation = styleData?.citation || {};
   const bibliography = styleData?.bibliography || {};
   const typeTemplates = bibliography['type-templates'] || {};
+  const citationTypeVariants = citation['type-variants'] || {};
+  const integralTypeVariants = citation.integral?.['type-variants'] || {};
+  const nonIntegralTypeVariants = citation['non-integral']?.['type-variants'] || {};
+  const bibliographyTypeVariants = bibliography['type-variants'] || {};
   const scopes = [];
+  let variantSelectorCount = 0;
 
-  if (Array.isArray(citation.template)) {
-    scopes.push({ name: 'citation.template', components: citation.template });
-  }
-  if (Array.isArray(citation.integral?.template)) {
-    scopes.push({ name: 'citation.integral.template', components: citation.integral.template });
-  }
-  if (Array.isArray(citation['non-integral']?.template)) {
-    scopes.push({ name: 'citation.non-integral.template', components: citation['non-integral'].template });
-  }
-  if (Array.isArray(bibliography.template)) {
-    scopes.push({ name: 'bibliography.template', components: bibliography.template });
+  function addScope(name, components, meta = {}) {
+    if (!Array.isArray(components)) return;
+    scopes.push({
+      name,
+      components,
+      ...meta,
+    });
   }
 
-  for (const [typeKey, template] of Object.entries(typeTemplates)) {
-    if (Array.isArray(template)) {
-      scopes.push({
-        name: `bibliography.type-templates.${typeKey}`,
-        components: template,
+  function addVariantScopes(prefix, variants, kind) {
+    for (const [rawKey, template] of Object.entries(variants || {})) {
+      if (!Array.isArray(template)) continue;
+      const typeSelectors = parseOverrideKey(rawKey).filter((key) => key !== 'default');
+      variantSelectorCount += typeSelectors.length || 1;
+      addScope(`${prefix}.${rawKey}`, template, {
+        kind,
+        typeSelectors,
+        typeSelectorCount: typeSelectors.length || 1,
       });
     }
   }
 
-  return scopes;
+  addScope('citation.template', citation.template, { kind: 'template' });
+  addScope('citation.integral.template', citation.integral?.template, { kind: 'template' });
+  addScope('citation.non-integral.template', citation['non-integral']?.template, { kind: 'template' });
+  addScope('bibliography.template', bibliography.template, { kind: 'template' });
+  addVariantScopes('citation.type-variants', citationTypeVariants, 'citation-type-variant');
+  addVariantScopes('citation.integral.type-variants', integralTypeVariants, 'citation-type-variant');
+  addVariantScopes('citation.non-integral.type-variants', nonIntegralTypeVariants, 'citation-type-variant');
+  addVariantScopes('bibliography.type-variants', bibliographyTypeVariants, 'bibliography-type-variant');
+
+  for (const [typeKey, template] of Object.entries(typeTemplates)) {
+    if (!Array.isArray(template)) continue;
+    const typeSelectors = parseOverrideKey(typeKey).filter((key) => key !== 'default');
+    addScope(`bibliography.type-templates.${typeKey}`, template, {
+      kind: 'bibliography-type-template',
+      typeSelectors,
+      typeSelectorCount: typeSelectors.length || 1,
+    });
+  }
+
+  return { scopes, variantSelectorCount };
 }
 
 function parseOverrideKey(rawKey) {
@@ -1643,6 +1673,83 @@ function componentSemanticKey(component) {
   if (component.variable) return `variable:${component.variable}`;
   if (component.items) return 'items-group';
   return Object.keys(component).sort().join('|') || 'unknown';
+}
+
+function stableStructure(value) {
+  if (Array.isArray(value)) {
+    return value.map(stableStructure);
+  }
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+  const normalized = {};
+  for (const key of Object.keys(value).sort()) {
+    normalized[key] = stableStructure(value[key]);
+  }
+  return normalized;
+}
+
+function fingerprintValue(value) {
+  return JSON.stringify(stableStructure(value));
+}
+
+function fingerprintComponent(component) {
+  return fingerprintValue(component);
+}
+
+function fingerprintScopeComponents(components) {
+  return fingerprintValue(components || []);
+}
+
+function collectPatternFingerprints(components, fingerprints = []) {
+  for (const component of components || []) {
+    if (!component || typeof component !== 'object') continue;
+    const clone = { ...component };
+    delete clone.overrides;
+    fingerprints.push(fingerprintComponent(clone));
+    if (Array.isArray(component.group)) {
+      fingerprints.push(`group:${fingerprintValue(component.group)}`);
+      collectPatternFingerprints(component.group, fingerprints);
+    }
+    if (Array.isArray(component.items)) {
+      fingerprints.push(`items:${fingerprintValue(component.items)}`);
+      collectPatternFingerprints(component.items, fingerprints);
+    }
+  }
+  return fingerprints;
+}
+
+function componentDistance(left, right) {
+  const leftShape = stableStructure(left);
+  const rightShape = stableStructure(right);
+  const leftKeys = new Set(Object.keys(leftShape || {}));
+  const rightKeys = new Set(Object.keys(rightShape || {}));
+  const allKeys = new Set([...leftKeys, ...rightKeys]);
+  let distance = 0;
+
+  for (const key of allKeys) {
+    const leftValue = leftShape?.[key];
+    const rightValue = rightShape?.[key];
+    if (JSON.stringify(leftValue) !== JSON.stringify(rightValue)) {
+      distance += 1;
+    }
+  }
+
+  return distance;
+}
+
+function scopeDistance(leftComponents, rightComponents) {
+  const left = leftComponents || [];
+  const right = rightComponents || [];
+  const maxLength = Math.max(left.length, right.length);
+  let distance = Math.abs(left.length - right.length);
+
+  for (let index = 0; index < maxLength; index += 1) {
+    if (!left[index] || !right[index]) continue;
+    distance += componentDistance(left[index], right[index]);
+  }
+
+  return distance;
 }
 
 function countTemplatePresetUses(node) {
@@ -1727,6 +1834,14 @@ function computeFallbackRobustness(styleData) {
   const typeTemplates = bibliography['type-templates'] || {};
   const typeTemplateSet = new Set(Object.keys(typeTemplates));
   const assessedTypes = CORE_FALLBACK_TYPES.filter((type) => !typeTemplateSet.has(type));
+  if (typeof bibliography['use-preset'] === 'string' && bibliography['use-preset'].trim()) {
+    return {
+      score: 100,
+      assessedTypes: assessedTypes.length,
+      passingTypes: assessedTypes.length,
+      note: `embedded bibliography preset: ${bibliography['use-preset']} (assumed robust)`,
+    };
+  }
   const flattenedBase = flattenTemplateComponents(Array.isArray(bibliography.template) ? bibliography.template : []);
 
   if (assessedTypes.length === 0) {
@@ -1754,11 +1869,17 @@ function computeFallbackRobustness(styleData) {
 }
 
 function computeConcisionScore(styleData, format) {
-  const scopes = collectTemplateScopes(styleData);
+  const { scopes, variantSelectorCount } = collectTemplateScopes(styleData);
   const scopedComponents = scopes
     .map((scope) => ({
       name: scope.name,
+      kind: scope.kind,
+      typeSelectors: scope.typeSelectors || [],
+      typeSelectorCount: scope.typeSelectorCount || 0,
+      scopeFingerprint: fingerprintScopeComponents(scope.components),
+      patternFingerprints: collectPatternFingerprints(scope.components),
       components: flattenTemplateComponents(scope.components),
+      originalComponents: scope.components,
     }))
     .filter((scope) => scope.components.length > 0);
   const flattened = scopedComponents.flatMap((scope) => scope.components);
@@ -1766,10 +1887,15 @@ function computeConcisionScore(styleData, format) {
   if (flattened.length === 0) {
     return {
       score: 0,
+      scopeCount: 0,
       totalComponents: 0,
       duplicates: 0,
       withinScopeDuplicates: 0,
       crossScopeRepeats: 0,
+      exactDuplicateScopes: 0,
+      nearDuplicateScopes: 0,
+      repeatedPatterns: 0,
+      variantSelectors: 0,
       overrideDensity: 0,
       targetComponents: 0,
     };
@@ -1793,8 +1919,58 @@ function computeConcisionScore(styleData, format) {
     crossScopeRepeats += Math.max(0, count - 1);
   }
 
-  const weightedDuplicates = withinScopeDuplicates + (crossScopeRepeats * 0.25);
-  const duplicateRatio = weightedDuplicates / semanticKeys.length;
+  const scopeFingerprintCounts = new Map();
+  for (const scope of scopedComponents) {
+    scopeFingerprintCounts.set(
+      scope.scopeFingerprint,
+      (scopeFingerprintCounts.get(scope.scopeFingerprint) || 0) + 1
+    );
+  }
+  let exactDuplicateScopes = 0;
+  for (const count of scopeFingerprintCounts.values()) {
+    exactDuplicateScopes += Math.max(0, count - 1);
+  }
+
+  let nearDuplicateScopes = 0;
+  const lengthBuckets = new Map();
+  for (const scope of scopedComponents) {
+    const len = scope.originalComponents.length;
+    if (!lengthBuckets.has(len)) lengthBuckets.set(len, []);
+    lengthBuckets.get(len).push(scope);
+  }
+
+  for (const bucket of lengthBuckets.values()) {
+    for (let index = 0; index < bucket.length; index += 1) {
+      for (let compareIndex = index + 1; compareIndex < bucket.length; compareIndex += 1) {
+        const left = bucket[index];
+        const right = bucket[compareIndex];
+        if (left.scopeFingerprint === right.scopeFingerprint) continue;
+        const distance = scopeDistance(left.originalComponents, right.originalComponents);
+        if (distance > 0 && distance <= 2) {
+          nearDuplicateScopes += 1;
+        }
+      }
+    }
+  }
+
+  const patternCounts = new Map();
+  for (const scope of scopedComponents) {
+    const uniquePatterns = new Set(scope.patternFingerprints);
+    for (const fingerprint of uniquePatterns) {
+      patternCounts.set(fingerprint, (patternCounts.get(fingerprint) || 0) + 1);
+    }
+  }
+  let repeatedPatterns = 0;
+  for (const count of patternCounts.values()) {
+    repeatedPatterns += Math.max(0, count - 1);
+  }
+
+  const weightedDuplicates = withinScopeDuplicates
+    + (crossScopeRepeats * 0.35)
+    + (exactDuplicateScopes * 2)
+    + (nearDuplicateScopes * 1.25)
+    + (repeatedPatterns * 0.15);
+  const duplicateRatio = weightedDuplicates / Math.max(semanticKeys.length, 1);
   const overrideCount = flattened.reduce(
     (sum, component) => sum + Object.keys(component.overrides || {}).length,
     0
@@ -1812,19 +1988,36 @@ function computeConcisionScore(styleData, format) {
     note: 65,
   };
   const targetBase = componentTargets[format] || 55;
-  const targetBonus = clamp(0, 35, Math.max(0, typeTemplateCoverage - 3) * 2.5);
-  const target = targetBase + targetBonus;
-  const componentPenalty = Math.max(0, flattened.length - target) * 0.9;
-  const duplicatePenalty = duplicateRatio * 24;
+  const targetBonus = clamp(0, 120, Math.max(0, variantSelectorCount - 4) * 4);
+  const typeTemplateBonus = clamp(0, 35, Math.max(0, typeTemplateCoverage - 3) * 2.5);
+  const target = targetBase + targetBonus + typeTemplateBonus;
+  const componentPenalty = Math.max(0, flattened.length - target) * 0.15;
+  const duplicatePenalty = duplicateRatio * 10;
+  const sprawlPenalty = Math.max(0, variantSelectorCount - 18) * 0.8;
+  const exactDuplicatePenalty = exactDuplicateScopes * 4;
+  const nearDuplicatePenalty = nearDuplicateScopes * 1.5;
+  const patternPenalty = repeatedPatterns * 0.05;
   const overridePenalty = Math.max(0, overrideDensity - 1.5) * 12;
-  const score = 100 - componentPenalty - duplicatePenalty - overridePenalty;
+  const score = 100
+    - componentPenalty
+    - duplicatePenalty
+    - sprawlPenalty
+    - exactDuplicatePenalty
+    - nearDuplicatePenalty
+    - patternPenalty
+    - overridePenalty;
 
   return {
     score: safePct(score),
+    scopeCount: scopedComponents.length,
     totalComponents: flattened.length,
     duplicates: parseFloat(weightedDuplicates.toFixed(1)),
     withinScopeDuplicates,
     crossScopeRepeats,
+    exactDuplicateScopes,
+    nearDuplicateScopes,
+    repeatedPatterns,
+    variantSelectors: variantSelectorCount,
     overrideDensity: parseFloat(overrideDensity.toFixed(2)),
     targetComponents: parseFloat(target.toFixed(1)),
   };
@@ -2824,6 +3017,7 @@ function generateDetailContent(style) {
     const fallback = qb.subscores?.fallbackRobustness?.score ?? 0;
     const concision = qb.subscores?.concision?.score ?? 0;
     const presets = qb.subscores?.presetUsage?.score ?? 0;
+    const concisionDetail = qb.subscores?.concision || {};
     html += `
                             <div class="mb-4 p-3 rounded border border-slate-200 bg-white">
                                 <div class="text-xs font-semibold text-slate-900 mb-2">Quality (SQI): ${overall}%</div>
@@ -2832,6 +3026,9 @@ function generateDetailContent(style) {
                                     <div class="px-2 py-1 rounded bg-slate-100 text-slate-700">fallback ${fallback.toFixed(1)}%</div>
                                     <div class="px-2 py-1 rounded bg-slate-100 text-slate-700">concision ${concision.toFixed(1)}%</div>
                                     <div class="px-2 py-1 rounded bg-slate-100 text-slate-700">presets ${presets.toFixed(1)}%</div>
+                                </div>
+                                <div class="mt-2 text-xs text-slate-500 font-mono">
+                                    scopes ${concisionDetail.scopeCount ?? 0} · variants ${concisionDetail.variantSelectors ?? 0} · exact dupes ${concisionDetail.exactDuplicateScopes ?? 0} · near dupes ${concisionDetail.nearDuplicateScopes ?? 0}
                                 </div>
                             </div>
 `;
@@ -3379,6 +3576,8 @@ if (require.main === module) {
 
 module.exports = {
   buildNoteStyleLookup,
+  collectTemplateScopes,
+  computeConcisionScore,
   computeFidelityScore,
   createReportRuntime,
   discoverCoreStyles,
@@ -3390,6 +3589,7 @@ module.exports = {
   generateHtml,
   generateReport,
   getComparisonEntryTexts,
+  loadStyleYaml,
   mapWithConcurrency,
   normalizeBenchmarkSource,
   parseArgs,
