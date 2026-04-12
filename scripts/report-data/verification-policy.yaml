@@ -131,7 +131,7 @@ styles:
     secondary:
       - biblatex
     fixture_family: note-humanities
-  chicago-author-date:
+  chicago-author-date-18th:
     secondary:
       - biblatex
     fixture_family: author-date
@@ -155,12 +155,16 @@ styles:
         refs_fixture: examples/chicago-bib.yaml
         scope: bibliography
         count_toward_fidelity: false
-  chicago-notes:
+  chicago-notes-18th:
     secondary:
       - biblatex
     scopes:
       - citation
     fixture_family: note-humanities
+  taylor-and-francis-chicago-author-date:
+    secondary:
+      - biblatex
+    fixture_family: author-date
   american-physics-society:
     secondary:
       - biblatex

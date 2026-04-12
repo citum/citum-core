@@ -10,7 +10,7 @@ use std::fs;
 use std::path::Path;
 
 fn main() {
-    let style_str = fs::read_to_string("styles/apa-7th.yaml").unwrap();
+    let style_str = fs::read_to_string("styles/embedded/apa-7th.yaml").unwrap();
     let style: Style = serde_yaml::from_str(&style_str).unwrap();
 
     let bib =

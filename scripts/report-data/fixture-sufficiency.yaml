@@ -94,6 +94,34 @@ families:
       - humanities-note
       - note-positions
       - secondary-roles
+  note:
+    default_report_sufficient: false
+    required_reference_types:
+      - book
+      - chapter
+      - article-journal
+    required_scenarios:
+      - note shortening
+    fixture_sets:
+      - note
+      - secondary-roles
+  numeric:
+    default_report_sufficient: false
+    required_reference_types:
+      - article-journal
+      - book
+      - chapter
+      - paper-conference
+      - report
+      - webpage
+      - dataset
+    required_scenarios:
+      - bracket labels
+      - collaboration-name handling
+      - mixed multiple citations
+    fixture_sets:
+      - core
+      - secondary-roles
   secondary-roles:
     default_report_sufficient: false
     required_reference_types:

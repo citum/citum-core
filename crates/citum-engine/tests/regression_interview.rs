@@ -17,7 +17,7 @@ use indexmap::IndexMap;
 
 #[test]
 fn test_apa_interview_fidelity_regression() {
-    let style = load_style("styles/apa-7th.yaml");
+    let style = load_style("styles/embedded/apa-7th.yaml");
 
     // Create the interview reference using native Citum structs
     let reference = InputReference::Monograph(Box::new(Monograph {

@@ -9,17 +9,17 @@
     "styleSelector": "selected-styles",
     "styleYamlOverride": null,
     "styles": [
-      "american-medical-association",
-      "apa-7th",
-      "chicago-notes",
-      "elsevier-harvard",
-      "elsevier-vancouver",
-      "elsevier-with-titles",
-      "springer-basic-author-date",
-      "springer-basic-brackets",
-      "springer-socpsych-author-date",
+      "american-institute-of-aeronautics-and-astronautics",
+      "bmj",
+      "current-opinion",
+      "endocrine-press",
+      "hainan-medical-university-journal-publisher",
+      "ieee",
+      "nature-publishing-group-vancouver",
+      "nlm-citation-sequence-superscript-brackets-year-only",
+      "plos",
       "springer-vancouver-brackets",
-      "taylor-and-francis-chicago-author-date"
+      "taylor-and-francis-national-library-of-medicine"
     ],
     "generator": "scripts/report-core.js",
     "richInputEvidence": {
@@ -42,71 +42,71 @@
     }
   },
   "styles": {
-    "american-medical-association": {
+    "american-institute-of-aeronautics-and-astronautics": {
       "fidelityScore": 1,
-      "quality": 96.5,
-      "concision": 92.1,
-      "presetUsage": 90
-    },
-    "apa-7th": {
-      "fidelityScore": 1,
-      "quality": 92.8,
-      "concision": 71.4,
+      "quality": 92.9,
+      "concision": 71.6,
       "presetUsage": 100
     },
-    "chicago-notes": {
+    "bmj": {
       "fidelityScore": 1,
-      "quality": 84,
-      "concision": 64.1,
-      "presetUsage": 80
+      "quality": 94.1,
+      "concision": 76.5,
+      "presetUsage": 100
     },
-    "elsevier-harvard": {
+    "current-opinion": {
       "fidelityScore": 1,
-      "quality": 92.2,
-      "concision": 86.7,
+      "quality": 97,
+      "concision": 87.8,
+      "presetUsage": 100
+    },
+    "endocrine-press": {
+      "fidelityScore": 1,
+      "quality": 86.1,
+      "concision": 68.4,
       "presetUsage": 70
     },
-    "elsevier-vancouver": {
+    "hainan-medical-university-journal-publisher": {
       "fidelityScore": 1,
-      "quality": 91.4,
-      "concision": 71.7,
-      "presetUsage": 90
-    },
-    "elsevier-with-titles": {
-      "fidelityScore": 1,
-      "quality": 79.3,
-      "concision": 17.1,
+      "quality": 92.1,
+      "concision": 68.5,
       "presetUsage": 100
     },
-    "springer-basic-author-date": {
+    "ieee": {
       "fidelityScore": 1,
-      "quality": 94.5,
-      "concision": 83.8,
-      "presetUsage": 90
+      "quality": 83.9,
+      "concision": 35.7,
+      "presetUsage": 100
     },
-    "springer-basic-brackets": {
+    "nature-publishing-group-vancouver": {
       "fidelityScore": 1,
-      "quality": 91.9,
-      "concision": 79.7,
-      "presetUsage": 80
+      "quality": 93.9,
+      "concision": 75.5,
+      "presetUsage": 100
     },
-    "springer-socpsych-author-date": {
+    "nlm-citation-sequence-superscript-brackets-year-only": {
       "fidelityScore": 1,
-      "quality": 86.3,
-      "concision": 51.2,
-      "presetUsage": 90
+      "quality": 95.7,
+      "concision": 82.6,
+      "presetUsage": 100
+    },
+    "plos": {
+      "fidelityScore": 1,
+      "quality": 91.5,
+      "concision": 66.1,
+      "presetUsage": 100
     },
     "springer-vancouver-brackets": {
       "fidelityScore": 1,
-      "quality": 97.8,
-      "concision": 91,
+      "quality": 93.2,
+      "concision": 72.8,
       "presetUsage": 100
     },
-    "taylor-and-francis-chicago-author-date": {
+    "taylor-and-francis-national-library-of-medicine": {
       "fidelityScore": 1,
-      "quality": 90.3,
-      "concision": 73.1,
-      "presetUsage": 80
+      "quality": 88.1,
+      "concision": 52.5,
+      "presetUsage": 100
     }
   }
 }

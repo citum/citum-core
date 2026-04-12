@@ -9,7 +9,7 @@ fn bench_formats(c: &mut Criterion) {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let root_dir = manifest_dir.parent().unwrap().parent().unwrap();
 
-    let style_path = root_dir.join("styles/apa-7th.yaml");
+    let style_path = root_dir.join("styles/embedded/apa-7th.yaml");
     let style_yaml = fs::read_to_string(&style_path).expect("failed to read apa-7th.yaml");
     let style: Style = serde_yaml::from_str(&style_yaml).expect("failed to parse style yaml");
 

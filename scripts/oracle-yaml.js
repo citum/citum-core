@@ -198,7 +198,7 @@ function shouldUseStructuredOracle(options, stylePlan) {
 
   // Explicit CSL overrides should validate the exact YAML path requested, not
   // whichever YAML would be inferred from the CSL basename inside oracle.js.
-  if (options.legacyCslPath) {
+  if (options.legacyCslPath != null) {
     return false;
   }
 

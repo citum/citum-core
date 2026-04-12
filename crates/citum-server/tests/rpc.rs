@@ -15,7 +15,10 @@ use serde_json::json;
 /// Absolute path to the APA style.
 /// `CARGO_MANIFEST_DIR` is the crate root; workspace root is two levels up.
 fn apa_style_path() -> String {
-    format!("{}/../../styles/apa-7th.yaml", env!("CARGO_MANIFEST_DIR"))
+    format!(
+        "{}/../../styles/embedded/apa-7th.yaml",
+        env!("CARGO_MANIFEST_DIR")
+    )
 }
 
 /// Minimal bibliography: one book (Hawking 1988) in native Citum schema format.

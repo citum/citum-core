@@ -155,7 +155,7 @@ fn given_simple_author_date_document_when_rendered_as_djot_then_html_tags_are_no
 }
 
 fn given_example_mla_document_when_rendered_as_html_then_citation_markup_is_not_escaped() {
-    let processor = example_document_processor("styles/modern-language-association.yaml");
+    let processor = example_document_processor("styles/embedded/modern-language-association.yaml");
     let parser = DjotParser;
     let document = load_example_document("examples/document.djot");
 
@@ -184,7 +184,7 @@ fn given_example_mla_document_when_rendered_as_html_then_citation_markup_is_not_
 }
 
 fn given_example_mla_document_when_rendered_as_plain_text_then_integral_name_memory_is_visible() {
-    let processor = example_document_processor("styles/modern-language-association.yaml");
+    let processor = example_document_processor("styles/embedded/modern-language-association.yaml");
     let parser = DjotParser;
     let document = load_example_document("examples/document.djot");
 
@@ -207,7 +207,7 @@ fn given_example_mla_document_when_rendered_as_plain_text_then_integral_name_mem
 
 fn given_example_apa_document_when_rendered_as_plain_text_then_integral_citations_include_locators()
 {
-    let processor = example_document_processor("styles/apa-7th.yaml");
+    let processor = example_document_processor("styles/embedded/apa-7th.yaml");
     let parser = DjotParser;
     let document = load_example_document("examples/document.djot");
 
@@ -228,7 +228,8 @@ fn given_example_apa_document_when_rendered_as_plain_text_then_integral_citation
 
 fn given_example_chicago_note_document_when_rendered_as_plain_text_then_integral_mentions_keep_their_note_anchor()
  {
-    let processor = example_document_processor("styles/chicago-shortened-notes-bibliography.yaml");
+    let processor =
+        example_document_processor("styles/embedded/chicago-shortened-notes-bibliography.yaml");
     let parser = DjotParser;
     let document = load_example_document("examples/document.djot");
 
@@ -264,7 +265,7 @@ fn given_example_chicago_note_document_when_rendered_as_plain_text_then_integral
 
 fn given_chicago_note_flow_document_when_ibid_is_rendered_then_it_does_not_concatenate_with_the_narrative_anchor()
  {
-    let processor = example_document_processor("styles/chicago-notes.yaml");
+    let processor = example_document_processor("styles/embedded/chicago-notes-18th.yaml");
     let parser = DjotParser;
     let document = load_example_document("examples/document-citation-flow.djot");
 
@@ -306,7 +307,7 @@ fn given_chicago_note_flow_document_when_ibid_is_rendered_then_it_does_not_conca
 
 fn given_chicago_note_locator_repeat_when_integral_ibid_is_rendered_then_anchor_and_locator_are_preserved()
  {
-    let processor = example_document_processor("styles/chicago-notes.yaml");
+    let processor = example_document_processor("styles/embedded/chicago-notes-18th.yaml");
     let parser = DjotParser;
     let document = concat!(
         "Text.[^n1]\n\n",
@@ -337,7 +338,7 @@ fn given_chicago_note_locator_repeat_when_integral_ibid_is_rendered_then_anchor_
 
 fn given_page_labels_are_configured_when_integral_ibid_is_rendered_then_the_labeled_page_locator_is_preserved()
  {
-    let mut style = load_style("styles/chicago-notes.yaml").into_resolved();
+    let mut style = load_style("styles/embedded/chicago-notes-18th.yaml").into_resolved();
     style.options.get_or_insert_with(Default::default).locators =
         Some(LocatorPreset::AuthorDate.config());
     let processor = Processor::new(style, load_example_bibliography());
@@ -371,7 +372,7 @@ fn given_page_labels_are_configured_when_integral_ibid_is_rendered_then_the_labe
 
 fn given_chapter_locator_repeat_when_integral_ibid_is_rendered_then_the_labeled_chapter_locator_is_preserved()
  {
-    let processor = example_document_processor("styles/chicago-notes.yaml");
+    let processor = example_document_processor("styles/embedded/chicago-notes-18th.yaml");
     let parser = DjotParser;
     let document = concat!(
         "Text.[^n1]\n\n",
@@ -402,7 +403,7 @@ fn given_chapter_locator_repeat_when_integral_ibid_is_rendered_then_the_labeled_
 
 fn given_locale_specific_ibid_term_when_the_style_has_no_ibid_override_then_the_locale_term_is_used_without_base_suffix_punctuation()
  {
-    let mut style = load_style("styles/chicago-notes.yaml").into_resolved();
+    let mut style = load_style("styles/embedded/chicago-notes-18th.yaml").into_resolved();
     if let Some(citation) = style.citation.as_mut() {
         citation.suffix = Some(".".to_string());
         citation.ibid = None;
@@ -432,7 +433,7 @@ fn given_locale_specific_ibid_term_when_the_style_has_no_ibid_override_then_the_
 }
 
 fn given_explicit_style_ibid_suffix_when_locale_also_defines_ibid_then_the_style_suffix_wins() {
-    let mut style = load_style("styles/chicago-notes.yaml").into_resolved();
+    let mut style = load_style("styles/embedded/chicago-notes-18th.yaml").into_resolved();
     if let Some(citation) = style.citation.as_mut()
         && let Some(ibid) = citation.ibid.as_mut()
     {
@@ -460,7 +461,7 @@ fn given_explicit_style_ibid_suffix_when_locale_also_defines_ibid_then_the_style
 
 fn given_missing_note_anchor_when_integral_ibid_is_rendered_then_the_reduced_citation_still_appears_without_concatenation()
  {
-    let processor = example_document_processor("styles/chicago-notes.yaml");
+    let processor = example_document_processor("styles/embedded/chicago-notes-18th.yaml");
     let parser = DjotParser;
     let document = concat!(
         "Text.[^n1]\n\n",
@@ -487,7 +488,7 @@ fn given_missing_note_anchor_when_integral_ibid_is_rendered_then_the_reduced_cit
 
 fn given_chicago_note_flow_document_when_no_bibliography_entries_are_needed_then_no_heading_is_emitted()
  {
-    let processor = example_document_processor("styles/chicago-notes.yaml");
+    let processor = example_document_processor("styles/embedded/chicago-notes-18th.yaml");
     let parser = DjotParser;
     let document = load_example_document("examples/document-citation-flow.djot");
 
@@ -518,9 +519,9 @@ fn given_non_note_styles_when_rendering_the_note_flow_example_then_ibid_is_never
     let document = load_example_document("examples/document-citation-flow.djot");
 
     for style_path in [
-        "styles/apa-7th.yaml",
-        "styles/ieee.yaml",
-        "styles/alpha.yaml",
+        "styles/embedded/apa-7th.yaml",
+        "styles/embedded/ieee.yaml",
+        "styles/embedded/alpha.yaml",
     ] {
         let style = load_style(style_path);
         let processor = Processor::new(style, load_example_bibliography());
@@ -539,7 +540,7 @@ fn given_non_note_styles_when_rendering_the_note_flow_example_then_ibid_is_never
 
 fn given_pandoc_markdown_author_date_syntax_when_rendered_then_integral_and_cluster_citations_are_preserved()
  {
-    let processor = example_document_processor("styles/apa-7th.yaml");
+    let processor = example_document_processor("styles/embedded/apa-7th.yaml");
     let parser = MarkdownParser;
     let document = concat!(
         "Kuhn argued that @kuhn1962 [p. 10] changed science.\n\n",
@@ -572,7 +573,8 @@ fn given_pandoc_markdown_author_date_syntax_when_rendered_then_integral_and_clus
 
 fn given_markdown_integral_note_citation_when_rendered_with_a_note_style_then_a_generated_note_is_emitted()
  {
-    let processor = example_document_processor("styles/chicago-shortened-notes-bibliography.yaml");
+    let processor =
+        example_document_processor("styles/embedded/chicago-shortened-notes-bibliography.yaml");
     let parser = MarkdownParser;
     let document = "Narrative mention @smith2010 introduces the argument.";
 
@@ -596,7 +598,7 @@ fn given_markdown_integral_note_citation_when_rendered_with_a_note_style_then_a_
 
 fn given_grouped_primary_and_secondary_sources_when_rendered_then_both_group_headings_and_entries_appear()
  {
-    let style = load_style("styles/chicago-author-date.yaml");
+    let style = load_style("styles/embedded/chicago-author-date-18th.yaml");
     let bibliography =
         load_bibliography(&project_root().join("tests/fixtures/grouping/primary-secondary.json"))
             .expect("grouping fixture should parse");
@@ -724,7 +726,7 @@ fn given_juris_m_legal_grouping_when_rendered_then_headings_follow_the_expected_
 
 fn given_an_english_locale_variant_when_group_headings_are_localized_then_the_language_tag_fallback_is_used()
  {
-    let style = load_style("styles/chicago-author-date.yaml");
+    let style = load_style("styles/embedded/chicago-author-date-18th.yaml");
     let bibliography =
         load_bibliography(&project_root().join("tests/fixtures/grouping/primary-secondary.json"))
             .expect("grouping fixture should parse");

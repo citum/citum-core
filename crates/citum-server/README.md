@@ -14,7 +14,7 @@ works cleanly inside word-processor plugins (Zotero, Pandoc pipelines) with no
 port management.
 
 ```sh
-echo '{"id":1,"method":"render_citation","params":{"style_path":"styles/apa-7th.yaml","refs":{"hawking1988":{"id":"hawking1988","class":"monograph","type":"book","title":"A Brief History of Time","author":[{"family":"Hawking","given":"Stephen"}],"issued":"1988"}},"citation":{"id":"cite-1","items":[{"id":"hawking1988"}]}}}' \
+echo '{"id":1,"method":"render_citation","params":{"style_path":"styles/embedded/apa-7th.yaml","refs":{"hawking1988":{"id":"hawking1988","class":"monograph","type":"book","title":"A Brief History of Time","author":[{"family":"Hawking","given":"Stephen"}],"issued":"1988"}},"citation":{"id":"cite-1","items":[{"id":"hawking1988"}]}}}' \
   | citum-server
 # {"id":1,"result":"(Hawking, 1988)"}
 ```
@@ -35,7 +35,7 @@ curl -s http://localhost:8080/rpc \
     "id": 1,
     "method": "render_bibliography",
     "params": {
-      "style_path": "styles/apa-7th.yaml",
+      "style_path": "styles/embedded/apa-7th.yaml",
       "output_format": "html",
       "refs": {
         "hawking1988": {
@@ -74,7 +74,7 @@ Supported `output_format` values:
 ### Request / response envelope
 
 ```json
-{"id": 1, "method": "render_citation", "params": {"style_path": "styles/apa-7th.yaml", "refs": [...], "citation": {...}, "output_format": "html"}}
+{"id": 1, "method": "render_citation", "params": {"style_path": "styles/embedded/apa-7th.yaml", "refs": [...], "citation": {...}, "output_format": "html"}}
 {"id": 1, "result": "Smith (2024)"}
 
 {"id": 2, "error": "style not found: missing.yaml"}

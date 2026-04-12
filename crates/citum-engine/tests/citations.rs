@@ -837,7 +837,7 @@ fn chicago_notes_immediate_repeat_renders_compact_ibid() {
         .unwrap()
         .parent()
         .unwrap()
-        .join("styles/chicago-notes.yaml");
+        .join("styles/embedded/chicago-notes-18th.yaml");
 
     let yaml = std::fs::read_to_string(&path).expect("Failed to read chicago-notes.yaml");
     let style: citum_schema::Style =
@@ -900,7 +900,7 @@ fn chicago_notes_prefixed_ibid_remains_mid_sentence() {
         .unwrap()
         .parent()
         .unwrap()
-        .join("styles/chicago-notes.yaml");
+        .join("styles/embedded/chicago-notes-18th.yaml");
 
     let yaml = std::fs::read_to_string(&path).expect("Failed to read chicago-notes.yaml");
     let style: citum_schema::Style =
@@ -943,7 +943,7 @@ fn chicago_notes_immediate_repeat_with_locator_keeps_the_locator() {
         .unwrap()
         .parent()
         .unwrap()
-        .join("styles/chicago-notes.yaml");
+        .join("styles/embedded/chicago-notes-18th.yaml");
 
     let yaml = std::fs::read_to_string(&path).expect("Failed to read chicago-notes.yaml");
     let style: citum_schema::Style =
@@ -986,7 +986,7 @@ fn chicago_notes_non_immediate_repeat_uses_the_subsequent_short_form() {
         .unwrap()
         .parent()
         .unwrap()
-        .join("styles/chicago-notes.yaml");
+        .join("styles/embedded/chicago-notes-18th.yaml");
 
     let yaml = std::fs::read_to_string(&path).expect("Failed to read chicago-notes.yaml");
     let style: citum_schema::Style =
@@ -1109,7 +1109,7 @@ fn oscola_position_overrides_control_ibid_and_subsequent_forms() {
         .unwrap()
         .parent()
         .unwrap()
-        .join("styles/oscola.yaml");
+        .join("styles/embedded/oscola.yaml");
 
     let yaml = std::fs::read_to_string(&path).expect("Failed to read oscola.yaml");
     let style: citum_schema::Style =
@@ -1201,7 +1201,7 @@ fn oscola_without_ibid_reuses_the_subsequent_form_for_immediate_repeats() {
         .unwrap()
         .parent()
         .unwrap()
-        .join("styles/oscola-no-ibid.yaml");
+        .join("styles/embedded/oscola-no-ibid.yaml");
 
     let yaml = std::fs::read_to_string(&path).expect("Failed to read oscola-no-ibid.yaml");
     let style: citum_schema::Style =
@@ -1255,7 +1255,7 @@ fn thomson_reuters_subsequent_short_form_keeps_the_locator() {
         .unwrap()
         .parent()
         .unwrap()
-        .join("styles/thomson-reuters-legal-tax-and-accounting-australia.yaml");
+        .join("styles/embedded/thomson-reuters-legal-tax-and-accounting-australia.yaml");
 
     let yaml = std::fs::read_to_string(&path)
         .expect("Failed to read thomson-reuters-legal-tax-and-accounting-australia.yaml");

@@ -41,7 +41,7 @@ fn single_item_citation(id: &str) -> Citation {
 fn test_cjk_name_rendering_asian_glyphs() {
     announce_behavior("CJK author names are preserved and rendered with native glyphs.");
     let root = project_root();
-    let style = load_style(&root.join("styles/apa-7th.yaml"));
+    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
     let bibliography =
         load_bibliography(&root.join("tests/fixtures/multilingual/multilingual-cjk.json"))
             .expect("CJK fixture should parse");
@@ -62,7 +62,7 @@ fn test_cjk_name_rendering_asian_glyphs() {
 fn test_cjk_et_al_rendering() {
     announce_behavior("CJK name lists are truncated with et al. for APA-style citations.");
     let root = project_root();
-    let style = load_style(&root.join("styles/apa-7th.yaml"));
+    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
     let bibliography =
         load_bibliography(&root.join("tests/fixtures/multilingual/multilingual-cjk.json"))
             .expect("CJK fixture should parse");
@@ -83,7 +83,7 @@ fn test_cjk_et_al_rendering() {
 fn test_arabic_short_forms_with_diacritics() {
     announce_behavior("Arabic author names are rendered with diacritical marks intact.");
     let root = project_root();
-    let style = load_style(&root.join("styles/apa-7th.yaml"));
+    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
     let bibliography =
         load_bibliography(&root.join("tests/fixtures/multilingual/multilingual-arabic.json"))
             .expect("Arabic fixture should parse");
@@ -104,7 +104,7 @@ fn test_arabic_short_forms_with_diacritics() {
 fn test_arabic_transliterated_forms() {
     announce_behavior("Transliterated Arabic names are accepted and rendered correctly.");
     let root = project_root();
-    let style = load_style(&root.join("styles/apa-7th.yaml"));
+    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
     let bibliography =
         load_bibliography(&root.join("tests/fixtures/multilingual/multilingual-arabic.json"))
             .expect("Arabic fixture should parse");

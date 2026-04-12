@@ -6,7 +6,7 @@
 /// the expected caller contract (clean JSON, no metadata keys).
 use citum_bindings::{render_bibliography, render_citation, validate_style};
 
-const STYLE_YAML: &str = include_str!("../../../styles/apa-7th.yaml");
+const STYLE_YAML: &str = include_str!("../../../styles/embedded/apa-7th.yaml");
 
 /// Minimal bibliography with one book reference (Citum-native JSON format).
 const REFS_JSON: &str = r#"{

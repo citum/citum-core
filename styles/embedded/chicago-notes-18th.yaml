@@ -101,7 +101,7 @@ citation:
     - contributor: translator
       form: long
       prefix: ", trans. "
-    - items:
+    - group:
       - title: parent-serial
         prefix: ", "
       - variable: publisher-place
@@ -128,7 +128,7 @@ citation:
       shorten: *id001
     - title: primary
       prefix: ", "
-    - items:
+    - group:
       - title: parent-serial
         prefix: ", "
       - variable: publisher-place
@@ -155,7 +155,7 @@ citation:
       shorten: *id001
     - title: primary
       prefix: ", "
-    - items:
+    - group:
       - title: parent-serial
         prefix: ", "
       - variable: publisher-place
@@ -185,7 +185,7 @@ citation:
     - contributor: translator
       form: long
       prefix: ", trans. "
-    - items:
+    - group:
       - variable: genre
       - variable: publisher
       - date: issued
@@ -202,7 +202,7 @@ citation:
       shorten: *id001
     - title: primary
       prefix: ", "
-    - items:
+    - group:
       - title: parent-serial
         prefix: ", "
       - variable: publisher-place
@@ -237,13 +237,13 @@ citation:
     - contributor: translator
       form: long
       prefix: ", trans. "
-    - items:
+    - group:
       - title: parent-monograph
         prefix: ", in "
       - contributor: editor
         form: long
         prefix: ", ed. "
-      - items: &id002
+      - group: &id002
         - variable: publisher
         - date: issued
           form: year
@@ -262,7 +262,7 @@ citation:
       shorten: *id001
     - title: primary
       prefix: ", "
-    - items:
+    - group:
       - variable: genre
       - variable: publisher
       - date: issued
@@ -281,7 +281,7 @@ citation:
       shorten: *id001
     - title: primary
       prefix: ", "
-    - items:
+    - group:
       - title: parent-monograph
         prefix: ", in "
       - title: parent-serial
@@ -291,7 +291,7 @@ citation:
       - contributor: editor
         form: long
         prefix: ", ed. "
-      - items: *id002
+      - group: *id002
         delimiter: ", "
         wrap:
           punctuation: parentheses
@@ -334,13 +334,13 @@ citation:
       shorten: *id001
     - title: primary
       prefix: ", "
-    - items:
+    - group:
       - number: volume
       - variable: reporter
       - number: pages
       delimiter: " "
       prefix: ", "
-    - items:
+    - group:
       - variable: authority
       - date: issued
         form: year
@@ -369,7 +369,7 @@ citation:
       prefix: ", "
     - variable: archive-place
       prefix: ", "
-    - items:
+    - group:
       - number: pages
         prefix: ": "
       delimiter: ""
@@ -397,7 +397,7 @@ citation:
       shorten: *id001
     - title: primary
       prefix: ", "
-    - items:
+    - group:
       - title: parent-serial
         prefix: ", "
       - variable: publisher-place
@@ -416,7 +416,7 @@ citation:
       - number: pages
         prefix: ": "
       delimiter: ""
-    - items:
+    - group:
       - title: parent-monograph
         prefix: ", in "
       - title: parent-serial
@@ -426,13 +426,13 @@ citation:
       - contributor: editor
         form: long
         prefix: ", ed. "
-      - items: *id002
+      - group: *id002
         delimiter: ", "
         wrap:
           punctuation: parentheses
         prefix: " "
       delimiter: ""
-    - items:
+    - group:
       - title: parent-serial
       - date: issued
         form: year
@@ -449,7 +449,7 @@ citation:
       prefix: ", "
     - number: number
       prefix: ", Patent "
-    - items:
+    - group:
       - date: issued
         form: month-day
         prefix: ", issued "
@@ -486,7 +486,7 @@ citation:
       shorten: *id001
     - title: primary
       prefix: ", "
-    - items:
+    - group:
       - variable: genre
       - variable: publisher
       - date: issued
@@ -501,7 +501,7 @@ citation:
       shorten: *id001
     - title: primary
       prefix: ", "
-    - items:
+    - group:
       - variable: genre
       - variable: publisher
       - date: issued
@@ -516,7 +516,7 @@ citation:
       shorten: *id001
     - title: primary
       prefix: ", "
-    - items:
+    - group:
       - variable: genre
       - variable: publisher
       - date: issued
@@ -533,7 +533,7 @@ citation:
     shorten: *id001
   - title: primary
     prefix: ", "
-  - items:
+  - group:
     - title: parent-serial
       prefix: ", "
     - variable: publisher-place
@@ -552,7 +552,7 @@ citation:
     - number: pages
       prefix: ": "
     delimiter: ""
-  - items:
+  - group:
     - title: parent-monograph
       prefix: ", in "
     - title: parent-serial
@@ -562,13 +562,13 @@ citation:
     - contributor: editor
       form: long
       prefix: ", ed. "
-    - items: *id002
+    - group: *id002
       delimiter: ", "
       wrap:
         punctuation: parentheses
       prefix: " "
     delimiter: ""
-  - items:
+  - group:
     - variable: genre
     - variable: publisher
     - date: issued
@@ -577,7 +577,7 @@ citation:
     wrap:
       punctuation: parentheses
     prefix: " "
-  - items:
+  - group:
     - title: parent-serial
     - date: issued
       form: year
