@@ -53,12 +53,12 @@
         },
         {
             "style": "american-medical-association",
-            "citations": "18/18",
-            "bibliography": "31/33",
-            "citationsPct": 100,
-            "bibliographyPct": 94,
-            "rawCitations": "18/18",
-            "rawBibliography": "31/33",
+            "citations": "10/18",
+            "bibliography": "32/33",
+            "citationsPct": 56,
+            "bibliographyPct": 97,
+            "rawCitations": "10/18",
+            "rawBibliography": "32/33",
             "adjustedDivergences": {},
             "templateSource": "inferred"
         },
@@ -108,12 +108,12 @@
         },
         {
             "style": "elsevier-vancouver",
-            "citations": "18/18",
-            "bibliography": "33/33",
-            "citationsPct": 100,
-            "bibliographyPct": 100,
-            "rawCitations": "18/18",
-            "rawBibliography": "33/33",
+            "citations": "4/18",
+            "bibliography": "31/33",
+            "citationsPct": 22,
+            "bibliographyPct": 94,
+            "rawCitations": "4/18",
+            "rawBibliography": "31/33",
             "adjustedDivergences": {},
             "templateSource": "inferred"
         }

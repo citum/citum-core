@@ -61,14 +61,10 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
     - title: parent-serial
       emph: true
+    - date: issued
+      form: year
     - group:
       - number: volume
       - number: issue
@@ -76,10 +72,34 @@ bibliography:
           punctuation: parentheses
     - number: pages
       prefix: ":"
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
+    - variable: doi
+    webpage:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - date: issued
+      form: year
     - variable: url
+    - date: accessed
+      form: month-day
+      prefix: " (accessed "
+      suffix: ")"
+    legal-case:
+    - title: primary
+    - delimiter: " "
+      group:
+      - title: parent-serial
+      - number: volume
+      - number: pages
+        prefix: ", "
+    - delimiter: " "
+      wrap:
+        punctuation: parentheses
+      group:
+      - variable: authority
+      - date: issued
+        form: year
     article-magazine:
     - contributor: author
       form: long

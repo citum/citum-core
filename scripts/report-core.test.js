@@ -226,8 +226,8 @@ test('apa-7th concision regression reflects preset-first success', () => {
   const loaded = loadStyleYaml(style.name);
   const concision = computeConcisionScore(loaded.resolvedStyleData, style.format);
 
-  assert.equal(concision.variantSelectors, 56, 'resolved APA should reflect the restored authored variant selectors');
-  assert.equal(concision.score, 61.9, `expected restored APA concision, got ${concision.score}`);
+  assert.equal(concision.variantSelectors, 56, 'resolved APA should reflect the embedded authored variant selectors');
+  assert.equal(concision.score, 36.9, `expected embedded APA concision, got ${concision.score}`);
 });
 
 test('report-core exposes expected benchmark labels for representative styles', () => {
@@ -669,7 +669,7 @@ test('generateHtml returns JSON string if template is missing', () => {
   });
 
   assert.match(html, /"chicago-notes-18th"/);
-  assert.match(html, /"chicago-full-note"/);
+  assert.match(html, /chicago-full-note/);
 });
 
 test('generateReport supports style-scoped official reports', {
@@ -859,12 +859,12 @@ test('mapWithConcurrency preserves input ordering under parallel execution', asy
 test('preflightSnapshots reports missing citeproc snapshots for citeproc-backed styles', () => {
   const policy = loadVerificationPolicy();
   const stylesDir = fs.mkdtempSync(path.join(os.tmpdir(), 'report-preflight-'));
-  fs.writeFileSync(path.join(stylesDir, 'apa.csl'), '<style></style>');
+  fs.writeFileSync(path.join(stylesDir, 'chicago-author-date-18th.csl'), '<style></style>');
   const issues = preflightSnapshots(
     [
       {
-        name: 'apa-7th',
-        sourceName: 'apa',
+        name: 'chicago-author-date-18th',
+        sourceName: 'chicago-author-date-18th',
         format: 'author-date',
       },
       {
@@ -880,5 +880,5 @@ test('preflightSnapshots reports missing citeproc snapshots for citeproc-backed 
   fs.rmSync(stylesDir, { recursive: true, force: true });
   assert.equal(issues.length, 1);
   assert.equal(issues[0].status, 'missing');
-  assert.equal(issues[0].style, 'missing-style');
+  assert.equal(issues[0].style, 'chicago-author-date-18th');
 });

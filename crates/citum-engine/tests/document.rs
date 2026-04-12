@@ -521,7 +521,7 @@ fn given_non_note_styles_when_rendering_the_note_flow_example_then_ibid_is_never
     for style_path in [
         "styles/embedded/apa-7th.yaml",
         "styles/embedded/ieee.yaml",
-        "styles/embedded/alpha.yaml",
+        "styles/alpha.yaml",
     ] {
         let style = load_style(style_path);
         let processor = Processor::new(style, load_example_bibliography());
