@@ -2606,7 +2606,7 @@ fn nested_inline_article_journal_detail_group_suppresses_missing_issue_without_e
 }
 
 fn royal_society_of_chemistry_restores_legacy_page_less_doi_behavior() {
-    let style = load_style("styles/embedded/royal-society-of-chemistry.yaml");
+    let style = load_style("styles/royal-society-of-chemistry.yaml");
     let bib = citum_engine::io::load_bibliography(
         &project_root().join("tests/fixtures/references-expanded.json"),
     )

@@ -12,7 +12,6 @@
       "american-institute-of-aeronautics-and-astronautics",
       "bmj",
       "current-opinion",
-      "endocrine-press",
       "hainan-medical-university-journal-publisher",
       "ieee",
       "nature-publishing-group-vancouver",
@@ -59,12 +58,6 @@
       "quality": 97,
       "concision": 87.8,
       "presetUsage": 100
-    },
-    "endocrine-press": {
-      "fidelityScore": 1,
-      "quality": 86.1,
-      "concision": 68.4,
-      "presetUsage": 70
     },
     "hainan-medical-university-journal-publisher": {
       "fidelityScore": 1,

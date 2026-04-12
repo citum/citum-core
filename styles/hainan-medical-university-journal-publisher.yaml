@@ -1,28 +1,40 @@
 info:
-  title: BMJ
-  description: Vancouver style adapted for BMJ journals
+  title: Hainan Medical University Journal Publisher
   fields:
   - medicine
+  - biology
   source:
-    csl-id: http://www.zotero.org/styles/bmj
+    csl-id: http://www.zotero.org/styles/hainan-medical-university-journal-publisher
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Sebastian Karcher
+    - name: Patrick O'Brien
+      email: obrienpat86@gmail.com
     links:
-    - href: http://www.zotero.org/styles/bmj
+    - href: http://www.zotero.org/styles/hainan-medical-university-journal-publisher
       rel: self
-    - href: http://group.bmj.com/products/journals/instructions-for-authors/formatting#references
-      rel: documentation
-    - href: https://authors.bmj.com/writing-and-formatting/formatting-your-paper/
+    - href: http://www.zotero.org/styles/european-journal-of-human-genetics
+      rel: template
+    - href: http://www.hnmujp.org/guide.html
       rel: documentation
 options:
-  substitute: editor-long
+  substitute: editor-short
   processing: numeric
-  contributors: numeric-medium
-  dates: long
+  contributors:
+    display-as-sort: all
+    name-form: initials
+    initialize-with: ""
+    shorten:
+      min: 7
+      use-first: 6
+      and-others: et-al
+      delimiter-precedes-last: contextual
+    delimiter-precedes-last: always
+    delimiter-precedes-et-al: always
+    demote-non-dropping-particle: sort-only
+    sort-separator: " "
+  dates: short
   titles: humanities
-  page-range-format: minimal
 citation:
   use-preset: numeric-citation
   wrap:
@@ -35,13 +47,14 @@ bibliography:
       name-form: initials
       initialize-with: ""
       shorten:
-        min: 4
-        use-first: 3
+        min: 7
+        use-first: 6
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
       delimiter-precedes-last: always
+      delimiter-precedes-et-al: always
       sort-separator: " "
+    entry-suffix: .
     separator: ". "
   type-variants:
     article-journal:
@@ -50,143 +63,153 @@ bibliography:
       name-order: family-first
       shorten:
         min: 8
-        use-first: 3
+        use-first: 6
     - title: primary
       prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-        emph: true
     - title: parent-serial
       emph: true
-    - number: volume
-    - number: issue
-      prefix: ":"
+    - date: issued
+      form: year
+    - group:
+      - number: volume
+      - number: issue
+        wrap:
+          punctuation: parentheses
     - number: pages
-      prefix: ":"
+      prefix: ", 2006: "
     - variable: doi
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
+    legal_case:
+    - title: primary
+    - date: issued
+      form: year
+    webpage:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 6
+    - title: primary
+    - date: issued
+      form: year
+    - variable: url
+    - date: accessed
+      form: month-day
+      prefix: " (accessed "
+      suffix: ")"
     article-magazine:
     - contributor: author
       form: long
       name-order: family-first
       shorten:
         min: 8
-        use-first: 3
+        use-first: 6
     - title: primary
       prefix: " "
     - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
       - title: parent-monograph
         emph: true
     - title: parent-serial
       emph: true
-    - number: volume
-    - number: pages
-      prefix: ":"
-    - variable: doi
-    - variable: publisher-place
+    - group:
+      - number: volume
+      - number: issue
+        wrap:
+          punctuation: parentheses
     - variable: publisher
+    - number: pages
+      prefix: ", 2006: "
+    - variable: publisher-place
       prefix: ": "
+    - variable: url
     chapter:
     - contributor: author
       form: long
       name-order: family-first
       shorten:
         min: 8
-        use-first: 3
+        use-first: 6
     - title: primary
       prefix: " "
     - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
         prefix: "on "
       - title: parent-monograph
         emph: true
     - title: parent-serial
       emph: true
-    - number: volume
-    - number: issue
-      prefix: ":"
-    - number: pages
-      prefix: ":"
-    - variable: doi
-    - variable: publisher-place
+    - group:
+      - number: volume
+      - number: issue
+        wrap:
+          punctuation: parentheses
     - variable: publisher
+    - number: pages
+      prefix: ", 2006: "
+    - variable: publisher-place
       prefix: ": "
+    - variable: url
     entry-encyclopedia:
     - contributor: author
       form: long
       name-order: family-first
       shorten:
         min: 8
-        use-first: 3
+        use-first: 6
     - title: primary
       prefix: " "
     - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
       - title: parent-monograph
         emph: true
     - title: parent-serial
       emph: true
-    - number: volume
-    - number: issue
-      prefix: ":"
-    - number: pages
-      prefix: ":"
-    - variable: doi
-    - variable: publisher-place
+    - group:
+      - number: volume
+      - number: issue
+        wrap:
+          punctuation: parentheses
     - variable: publisher
+    - number: pages
+      prefix: ", 2006: "
+    - variable: publisher-place
       prefix: ": "
+    - variable: url
   template:
   - contributor: author
     form: long
     name-order: family-first
     shorten:
       min: 8
-      use-first: 3
+      use-first: 6
   - title: primary
     prefix: " "
   - group:
     - contributor: editor
       form: verb
       name-order: given-first
-      shorten:
-        min: 4
-        use-first: 3
     - title: parent-monograph
       emph: true
   - title: parent-serial
     emph: true
+  - group:
+    - number: volume
+    - number: issue
+      wrap:
+        punctuation: parentheses
+  - variable: publisher
+  - number: pages
+    prefix: ", 2006: "
+  - variable: publisher-place
+    prefix: ": "
   - date: issued
     form: year
-  - number: volume
-  - number: issue
-    prefix: ":"
-  - number: pages
-    prefix: ":"
-  - variable: doi
-  - variable: publisher-place
-  - variable: publisher
-    prefix: ": "
+    prefix: ", "
+  - variable: url

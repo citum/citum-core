@@ -35,9 +35,7 @@ const {
   NOTE_CITATIONS_FIXTURE,
   getAdditionalFixtureSetNames,
   getEffectiveVerificationScopes,
-  getFixtureFiles,
   inferLegacySourceName,
-  isProjectStylePath,
 } = require('./lib/style-verification');
 const {
   getLineagePresentation,
@@ -523,8 +521,8 @@ function discoverCoreStyles(provenanceConfig = loadReportProvenance()) {
 
     return {
       name,
-      path: stylePath,
       sourceName,
+      stylePath,
       cslReach,
       dependents: cslReach,
       format: inferStyleFormat(styleData),
@@ -1542,27 +1540,8 @@ function safePct(value) {
 }
 
 function loadStyleYaml(styleName, stylePathOverride = null) {
-  const stylePath = stylePathOverride || path.join(path.dirname(__dirname), 'styles', 'embedded', `${styleName}.yaml`);
+  const stylePath = resolveStyleYamlPath(styleName, stylePathOverride);
   if (!fs.existsSync(stylePath)) {
-    const fallbackPath = path.join(path.dirname(__dirname), 'styles', `${styleName}.yaml`);
-    if (fs.existsSync(fallbackPath)) {
-      try {
-        const rawStyleData = yaml.load(fs.readFileSync(fallbackPath, 'utf8'), { schema: CUSTOM_TAG_SCHEMA });
-        return {
-          stylePath: fallbackPath,
-          rawStyleData,
-          resolvedStyleData: resolveStyleData(rawStyleData),
-          error: null,
-        };
-      } catch (error) {
-        return {
-          stylePath: fallbackPath,
-          rawStyleData: null,
-          resolvedStyleData: null,
-          error: `YAML parse error: ${error.message}`,
-        };
-      }
-    }
     return {
       stylePath,
       rawStyleData: null,
@@ -1586,6 +1565,20 @@ function loadStyleYaml(styleName, stylePathOverride = null) {
       error: `YAML parse error: ${error.message}`,
     };
   }
+}
+
+function resolveStyleYamlPath(styleName, stylePathOverride = null) {
+  if (stylePathOverride) {
+    return path.resolve(stylePathOverride);
+  }
+
+  const stylesRoot = path.join(path.dirname(__dirname), 'styles');
+  const candidatePaths = [
+    path.join(stylesRoot, `${styleName}.yaml`),
+    path.join(stylesRoot, 'embedded', `${styleName}.yaml`),
+  ];
+
+  return candidatePaths.find((candidatePath) => fs.existsSync(candidatePath)) || candidatePaths[0];
 }
 
 function flattenTemplateComponents(components) {
@@ -1901,7 +1894,7 @@ function computeFallbackRobustness(styleData) {
   };
 }
 
-function computeConcisionScore(styleData, styleFormat) {
+function computeConcisionScore(styleData, format) {
   const { scopes, variantSelectorCount } = collectTemplateScopes(styleData);
   const scopedComponents = scopes
     .map((scope) => ({
@@ -2020,24 +2013,31 @@ function computeConcisionScore(styleData, styleFormat) {
     numeric: 55,
     note: 65,
   };
-  const targetBase = componentTargets[styleFormat] || 55;
-  const targetComponents = targetBase + (variantSelectorCount * 1.5) + (typeTemplateCoverage * 1);
-  const sizeRatio = flattened.length / Math.max(targetComponents, 1);
-
-  // Score components:
-  // 1. Duplicate penalty (weighted ratio)
-  // 2. Size ratio (deviation from target complexity)
-  // 3. Override density penalty
-  const duplicateScore = clamp(0, 100, (1 - duplicateRatio) * 100);
-  const sizeScore = clamp(0, 100, (1 / Math.max(sizeRatio, 1)) * 100);
-  const overrideScore = clamp(0, 100, (1 - Math.min(overrideDensity, 0.5)) * 100);
+  const targetBase = componentTargets[format] || 55;
+  const targetBonus = clamp(0, 120, Math.max(0, variantSelectorCount - 4) * 4);
+  const typeTemplateBonus = clamp(0, 35, Math.max(0, typeTemplateCoverage - 3) * 2.5);
+  const target = targetBase + targetBonus + typeTemplateBonus;
+  const componentPenalty = Math.max(0, flattened.length - target) * 0.15;
+  const duplicatePenalty = duplicateRatio * 10;
+  const sprawlPenalty = Math.max(0, variantSelectorCount - 18) * 0.8;
+  const exactDuplicatePenalty = exactDuplicateScopes * 4;
+  const nearDuplicatePenalty = nearDuplicateScopes * 1.5;
+  const patternPenalty = repeatedPatterns * 0.05;
+  const overridePenalty = Math.max(0, overrideDensity - 1.5) * 12;
+  const score = 100
+    - componentPenalty
+    - duplicatePenalty
+    - sprawlPenalty
+    - exactDuplicatePenalty
+    - nearDuplicatePenalty
+    - patternPenalty
+    - overridePenalty;
 
   return {
-    score: safePct((duplicateScore * 0.5) + (sizeScore * 0.35) + (overrideScore * 0.15)),
+    score: safePct(score),
     scopeCount: scopedComponents.length,
     totalComponents: flattened.length,
-    targetComponents: Math.round(targetComponents),
-    duplicates: Math.round(weightedDuplicates),
+    duplicates: parseFloat(weightedDuplicates.toFixed(1)),
     withinScopeDuplicates,
     crossScopeRepeats,
     exactDuplicateScopes,
@@ -2045,222 +2045,1550 @@ function computeConcisionScore(styleData, styleFormat) {
     repeatedPatterns,
     variantSelectors: variantSelectorCount,
     overrideDensity: parseFloat(overrideDensity.toFixed(2)),
+    targetComponents: parseFloat(target.toFixed(1)),
   };
 }
 
-function computePresetUsageScore(styleData) {
-  const templatePresets = countTemplatePresetUses(styleData);
-  const optionsPresets = countOptionsPresetUses(styleData);
-  const totalUses = templatePresets + optionsPresets.uses;
+function computePresetUsageScore(styleData, concisionScore) {
+  const templateUses = countTemplatePresetUses(styleData);
+  const { uses: optionUses, fields: optionPresetFields } = countOptionsPresetUses(styleData);
+  const weightedUses = (templateUses * 2) + optionUses;
+  const uses = templateUses + optionUses;
 
-  if (totalUses >= 4) return { score: 100, uses: totalUses, fields: optionsPresets.fields };
-  if (totalUses === 3) return { score: 85, uses: totalUses, fields: optionsPresets.fields };
-  if (totalUses === 2) return { score: 70, uses: totalUses, fields: optionsPresets.fields };
-  if (totalUses === 1) return { score: 50, uses: totalUses, fields: optionsPresets.fields };
-  return { score: 0, uses: 0, fields: [] };
+  if (weightedUses >= 5) {
+    return { score: 100, uses, templateUses, optionUses, weightedUses, optionPresetFields };
+  }
+  if (weightedUses >= 3) {
+    return { score: 90, uses, templateUses, optionUses, weightedUses, optionPresetFields };
+  }
+  if (weightedUses >= 2) {
+    return { score: 80, uses, templateUses, optionUses, weightedUses, optionPresetFields };
+  }
+  if (weightedUses >= 1) {
+    return { score: 70, uses, templateUses, optionUses, weightedUses, optionPresetFields };
+  }
+
+  const baselineScore = concisionScore >= 80 ? 60 : 45;
+  return {
+    score: baselineScore,
+    uses,
+    templateUses,
+    optionUses,
+    weightedUses,
+    optionPresetFields,
+  };
 }
 
-function computeQualityScore(qualityBreakdown) {
-  const { subscores } = qualityBreakdown;
+function computeQualityMetrics(styleSpec, oracleResult, styleYamlPath = null) {
+  const loaded = loadStyleYaml(styleSpec.name, styleYamlPath);
+  if (!loaded.resolvedStyleData) {
+    return {
+      score: 0,
+      error: loaded.error,
+      subscores: {
+        typeCoverage: { score: 0 },
+        fallbackRobustness: { score: 0 },
+        concision: { score: 0 },
+        presetUsage: { score: 0 },
+      },
+    };
+  }
+
+  const authoredStyleData = loaded.rawStyleData || loaded.resolvedStyleData;
+  const effectiveStyleData = loaded.resolvedStyleData;
+  const typeCoverage = computeTypeCoverageScore(oracleResult.citationsByType || {});
+  let fallbackRobustness = computeFallbackRobustness(effectiveStyleData);
+  const concision = computeConcisionScore(effectiveStyleData, styleSpec.format);
+  const presetUsage = computePresetUsageScore(authoredStyleData, concision.score);
   const weights = {
-    typeCoverage: 0.3,
+    typeCoverage: 0.35,
     fallbackRobustness: 0.25,
     concision: 0.25,
-    presetUsage: 0.2,
+    presetUsage: 0.15,
   };
 
-  let totalWeight = 0;
-  let weightedSum = 0;
+  // Citation-only note styles don't define bibliography templates, so
+  // bibliography fallback robustness is not applicable.
+  if (styleSpec.hasBibliography === false) {
+    fallbackRobustness = {
+      score: 100,
+      assessedTypes: 0,
+      passingTypes: 0,
+      note: 'not applicable for citation-only style',
+      notApplicable: true,
+    };
+    weights.fallbackRobustness = 0;
+  }
 
-  for (const [key, weight] of Object.entries(weights)) {
-    if (subscores[key]) {
-      weightedSum += subscores[key].score * weight;
-      totalWeight += weight;
+  const weightSum = Object.values(weights).reduce((sum, value) => sum + value, 0);
+  const rawScore = (
+    (typeCoverage.score * weights.typeCoverage) +
+    (fallbackRobustness.score * weights.fallbackRobustness) +
+    (concision.score * weights.concision) +
+    (presetUsage.score * weights.presetUsage)
+  );
+  const score = weightSum > 0 ? rawScore / weightSum : 0;
+
+  return {
+    score: safePct(score),
+    error: null,
+    subscores: {
+      typeCoverage,
+      fallbackRobustness,
+      concision,
+      presetUsage,
+    },
+  };
+}
+
+function buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy) {
+  const citationAuthority = resolveScopeAuthority(stylePolicy, 'citation');
+  const bibliographyAuthority = resolveScopeAuthority(stylePolicy, 'bibliography');
+  const effectiveScopes = getEffectiveVerificationScopes(stylePolicy, styleSpec.hasBibliography);
+  const hasBibliographyScope = effectiveScopes.includes('bibliography');
+  return {
+    cslReach: styleSpec.cslReach,
+    dependents: styleSpec.cslReach,
+    impactPct: computeImpactPct(styleSpec.cslReach),
+    originKey: styleSpec.originKey,
+    originLabel: styleSpec.originLabel,
+    originSortRank: styleSpec.originSortRank,
+    benchmarkSource: normalizeBenchmarkSource(stylePolicy.authority),
+    benchmarkAuthorityId: stylePolicy.authorityId,
+    benchmarkLabel: formatAuthorityLabel(stylePolicy.authority, stylePolicy.authorityId),
+    citationAuthorityLabel: formatAuthorityLabel(citationAuthority.authority, citationAuthority.authorityId),
+    bibliographyAuthorityLabel: hasBibliographyScope
+      ? formatAuthorityLabel(bibliographyAuthority.authority, bibliographyAuthority.authorityId)
+      : null,
+    hasScopedAuthorities: hasBibliographyScope && (
+      citationAuthority.authority !== bibliographyAuthority.authority
+      || citationAuthority.authorityId !== bibliographyAuthority.authorityId
+    ),
+    secondarySources: stylePolicy.secondary,
+    secondarySourceLabels: (stylePolicy.secondary || []).map((authority) => formatAuthorityLabel(authority)),
+    regressionBaseline: stylePolicy.regressionBaseline,
+    regressionBaselineLabel: stylePolicy.regressionBaseline
+      ? formatAuthorityLabel(stylePolicy.regressionBaseline)
+      : null,
+    verificationScopes: effectiveScopes,
+    fixtureFamily: sufficiencyPolicy.family,
+    defaultReportSufficient: sufficiencyPolicy.defaultReportSufficient,
+    requiredReferenceTypes: sufficiencyPolicy.requiredReferenceTypes,
+    requiredScenarios: sufficiencyPolicy.requiredScenarios,
+    fixtureSets: sufficiencyPolicy.fixtureSets,
+    benchmarkRuns: stylePolicy.benchmarkRuns || [],
+    verificationNote: stylePolicy.note,
+  };
+}
+
+function preflightSnapshots(coreStyles, verificationPolicy, stylesDir) {
+  const issues = [];
+
+  for (const styleSpec of coreStyles) {
+    const stylePolicy = resolveVerificationPolicy(styleSpec.name, verificationPolicy);
+    const citationAuthority = resolveScopeAuthority(stylePolicy, 'citation');
+    if (citationAuthority.authority !== 'citeproc-js') continue;
+
+    const stylePath = path.join(stylesDir, `${styleSpec.sourceName}.csl`);
+    if (!fs.existsSync(stylePath)) continue;
+    const citationsFixture = styleSpec.format === 'note' ? NOTE_CITATIONS_FIXTURE : DEFAULT_CITATIONS_FIXTURE;
+    const snapshotStatus = getCslSnapshotStatus(stylePath, DEFAULT_REFS_FIXTURE, citationsFixture);
+    if (!snapshotStatus.ok) {
+      issues.push({
+        style: styleSpec.name,
+        sourceName: styleSpec.sourceName,
+        status: snapshotStatus.status,
+        message: snapshotStatus.message,
+      });
     }
   }
 
-  return totalWeight > 0 ? safePct(weightedSum / totalWeight) : 0;
+  return issues.sort((left, right) => left.style.localeCompare(right.style));
 }
 
-async function processStyleReport(runtime, styleSpec, verificationPolicy) {
-  const styleYaml = loadStyleYaml(styleSpec.name);
-  if (styleYaml.error) {
-    return { name: styleSpec.name, error: styleYaml.error };
+async function processStyleReport(runtime, styleSpec, context) {
+  const {
+    divergences,
+    stylesDir,
+    styleYamlOverridePath,
+    verificationPolicy,
+    fixtureSufficiency,
+    noteStyles,
+  } = context;
+  const stylePolicy = resolveVerificationPolicy(styleSpec.name, verificationPolicy);
+  const sufficiencyPolicy = resolveFixtureSufficiency(stylePolicy.fixtureFamily, fixtureSufficiency);
+  const primaryComparator = selectPrimaryComparator(styleSpec, stylePolicy);
+  const citationAuthority = resolveScopeAuthority(stylePolicy, 'citation');
+  const bibliographyAuthority = resolveScopeAuthority(stylePolicy, 'bibliography');
+
+  if (primaryComparator === 'citum-baseline') {
+    const oracleResult = await runNativeOracle(runtime, styleSpec.name);
+    const fidelityScore = computeFidelityScore(oracleResult);
+    const caseMismatches = collectCaseMismatchSummary(oracleResult);
+    const bibliography = getEffectiveOracleSection(oracleResult, 'bibliography');
+    const citations = getEffectiveOracleSection(oracleResult, 'citations');
+    const rawBibliography = oracleResult.bibliography || { passed: 0, total: 0 };
+    const rawCitations = oracleResult.citations || { passed: 0, total: 0 };
+    const qualityMetrics = computeQualityMetrics(styleSpec, oracleResult, styleYamlOverridePath);
+    const qualityScore = qualityMetrics.score / 100;
+    let statusTier = 'failing';
+    if (oracleResult.error) {
+      statusTier = 'error';
+    } else if (fidelityScore === 1.0) {
+      statusTier = 'perfect';
+    } else if (fidelityScore > 0) {
+      statusTier = 'partial';
+    }
+
+    const notePositionAudit = styleSpec.format === 'note' && noteStyles.has(styleSpec.name)
+      ? auditNoteStyle(noteStyles.get(styleSpec.name), { citumBin: runtime.citumBin })
+      : null;
+
+    return {
+      styleRecord: {
+        name: styleSpec.name,
+        format: styleSpec.format,
+        hasBibliography: styleSpec.hasBibliography,
+        ...buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy),
+        fidelityScore: parseFloat(fidelityScore.toFixed(3)),
+        citations,
+        bibliography,
+        rawCitations,
+        rawBibliography,
+        knownDivergences: divergences[styleSpec.name] || [],
+        adjustedDivergences: oracleResult.adjusted?.divergenceSummary || {},
+        caseMismatches,
+        citationsByType: oracleResult.citationsByType || {},
+        error: oracleResult.error || null,
+        componentMatchRate: null,
+        statusTier,
+        componentSummary: {},
+        citationEntries: null,
+        oracleDetail: oracleResult.bibliography ? oracleResult.bibliography.entries : null,
+        qualityScore: parseFloat(qualityScore.toFixed(3)),
+        qualityBreakdown: qualityMetrics,
+        oracleSource: 'citum-baseline',
+        notePositionAudit,
+      },
+      errorCount: oracleResult.error ? 1 : 0,
+      citations,
+      bibliography,
+      qualityScore,
+    };
   }
 
-  const stylePolicy = resolveVerificationPolicy(styleSpec.name, verificationPolicy);
-  const sufficiencyPolicy = resolveFixtureSufficiency(
-    stylePolicy.fixtureFamily || styleSpec.format,
-    loadFixtureSufficiency()
-  );
+  const stylePath = path.join(stylesDir, `${styleSpec.sourceName}.csl`);
+  const styleYamlPath = styleYamlOverridePath || styleSpec.stylePath || resolveStyleYamlPath(styleSpec.name);
 
-  const styleYamlPath = styleYaml.stylePath;
-  const legacyStylePath = path.join(getStylesDir(runtime.stylesDir), `${styleSpec.sourceName}.csl`);
-  const stylePath = fs.existsSync(legacyStylePath) ? legacyStylePath : styleYamlPath;
+  if (citationAuthority.authority === 'citeproc-js' && !fs.existsSync(stylePath)) {
+    return {
+      styleRecord: {
+        name: styleSpec.name,
+        format: styleSpec.format,
+        hasBibliography: styleSpec.hasBibliography,
+        ...buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy),
+        fidelityScore: 0,
+        citations: { passed: 0, total: 0 },
+        bibliography: { passed: 0, total: 0 },
+        knownDivergences: divergences[styleSpec.name] || [],
+        citationsByType: {},
+        error: `Style file not found: ${stylePath}`,
+        oracleDetail: null,
+        qualityScore: 0,
+        qualityBreakdown: null,
+      },
+      errorCount: 1,
+      citations: { passed: 0, total: 0 },
+      bibliography: { passed: 0, total: 0 },
+      qualityScore: 0,
+    };
+  }
 
   let oracleResult;
-  if (stylePolicy.authority === 'biblatex') {
+  if (citationAuthority.authority === 'citeproc-js' && bibliographyAuthority.authority === 'biblatex') {
+    const [citationResult, bibliographyResult] = await Promise.all([
+      runCiteprocSnapshotOracle(runtime, stylePath, styleSpec.name, styleSpec.format),
+      runBiblatexSnapshotOracle(runtime, styleSpec.name, styleYamlPath, bibliographyAuthority.authorityId),
+    ]);
+    oracleResult = composeScopedOracleResult(citationResult, bibliographyResult);
+  } else if (primaryComparator === 'biblatex') {
     oracleResult = await runBiblatexSnapshotOracle(runtime, styleSpec.name, styleYamlPath, stylePolicy.authorityId);
   } else {
     oracleResult = await runCiteprocSnapshotOracle(runtime, stylePath, styleSpec.name, styleSpec.format);
   }
 
   const familySets = getAdditionalFixtureSetNames(sufficiencyPolicy.fixtureSets || []);
-  const familyResults = await mapWithConcurrency(familySets, 2, (setName) =>
-    runFamilyFixtureOracle(runtime, stylePath, styleSpec.name, setName)
-  );
-
-  for (const extra of familyResults) {
-    mergeOracleResults(oracleResult, extra);
-  }
-
-  const benchmarkRunResults = await executeBenchmarkRuns(
-    stylePolicy.benchmarkRuns,
-    (run) => runBenchmarkRun(runtime, styleSpec, stylePath, styleYamlPath, run)
-  );
-
-  for (const benchmarkRunRecord of benchmarkRunResults) {
-    mergeBenchmarkRunIntoOracle(oracleResult, benchmarkRunRecord);
-  }
-
-  const noteAudit = styleSpec.format === 'note'
-    ? await auditNoteStyle(
-        {
-          name: styleSpec.name,
-          path: styleYaml.stylePath,
-          style: styleYaml.rawStyleData,
-        },
-        {
-          citumBin: runtime.citumBin,
-        }
-      )
-    : null;
-
-  const qualityBreakdown = {
-    subscores: {
-      typeCoverage: computeTypeCoverageScore(oracleResult.citationsByType),
-      fallbackRobustness: computeFallbackRobustness(styleYaml.resolvedStyleData),
-      concision: computeConcisionScore(styleYaml.resolvedStyleData, styleSpec.format),
-      presetUsage: computePresetUsageScore(styleYaml.rawStyleData),
-    },
-  };
-
-  const fidelityScore = computeFidelityScore(oracleResult);
-  const qualityScore = computeQualityScore(qualityBreakdown);
-
-  return {
-    ...styleSpec,
-    fidelityScore,
-    qualityScore,
-    qualityBreakdown,
-    caseMismatches: collectCaseMismatchSummary(oracleResult),
-    rawCitations: summarizeSection(oracleResult.citations),
-    rawBibliography: summarizeSection(oracleResult.bibliography),
-    adjustedCitations: summarizeSection(oracleResult.adjusted.citations),
-    adjustedBibliography: summarizeSection(oracleResult.adjusted.bibliography),
-    divergenceSummary: oracleResult.adjusted.divergenceSummary,
-    oracleSource: oracleResult.oracleSource,
-    authorityLabel: formatAuthorityLabel(stylePolicy.authority, stylePolicy.authorityId),
-    benchmarkRunResults: benchmarkRunResults.map(toPublishedBenchmarkRunRecord),
-    notePositionAudit: noteAudit,
-    error: oracleResult.error,
-  };
-}
-
-async function generateReport(options = {}) {
-  const runtime = createReportRuntime(options);
-  const verificationPolicy = loadVerificationPolicy();
-  const coreStyles = discoverCoreStyles();
-  const selectedStyles = resolveSelectedStyles(coreStyles, options.styles || (options.styleName ? [options.styleName] : null));
-
-  const results = await mapWithConcurrency(
-    selectedStyles,
-    options.parallelism || DEFAULT_PARALLELISM,
-    (style) => processStyleReport(runtime, style, verificationPolicy)
-  );
-
-  const report = {
-    generated: getTimestamp(),
-    commit: getGitCommit(),
-    totalStyles: results.length,
-    totalImpact: results.reduce((sum, r) => sum + (r.dependents || 0), 0),
-    citationsOverall: {
-      passed: results.reduce((sum, r) => sum + (r.adjustedCitations?.passed || 0), 0),
-      total: results.reduce((sum, r) => sum + (r.adjustedCitations?.total || 0), 0),
-    },
-    bibliographyOverall: {
-      passed: results.reduce((sum, r) => sum + (r.adjustedBibliography?.passed || 0), 0),
-      total: results.reduce((sum, r) => sum + (r.adjustedBibliography?.total || 0), 0),
-    },
-    qualityOverall: {
-      score: safePct(results.reduce((sum, r) => sum + (r.qualityScore || 0), 0) / (results.length || 1)),
-    },
-    metadata: {
-      styleSelector: options.styleName ? `style:${options.styleName}` : (options.styles ? 'selected-styles' : 'all-core'),
-      styles: results.map((r) => r.name),
-      richInputEvidence: options.styleName ? buildRichInputEvidenceSummary(results[0], results[0].benchmarkRunResults) : null,
-    },
-    styles: results,
-  };
-
-  if (options.timings) {
-    report.timings = serializeTimingSummary(runtime);
-  }
-
-  return { report, runtime };
-}
-
-function getComparisonEntryTexts(entry) {
-  if (entry.oracle && entry.citum) {
-    return { benchmark: entry.oracle, citum: entry.citum };
-  }
-  if (entry.expected && entry.actual) {
-    return { benchmark: entry.expected, citum: entry.actual };
-  }
-  return { benchmark: entry.oracle || entry.expected, citum: entry.citum || entry.actual };
-}
-
-function preflightSnapshots(selectedStyles, policy, stylesDir) {
-  const issues = [];
-  for (const style of selectedStyles) {
-    const stylePolicy = resolveVerificationPolicy(style.name, policy);
-    if (stylePolicy.authority === 'citeproc-js' || stylePolicy.secondary.includes('citeproc-js')) {
-      const cslPath = path.join(stylesDir, `${style.sourceName}.csl`);
-      if (!fs.existsSync(cslPath)) {
-        issues.push({
-          style: style.name,
-          status: 'missing',
-          message: `Legacy CSL not found: ${cslPath}`,
-        });
+  if (citationAuthority.authority === 'citeproc-js' && fs.existsSync(stylePath)) {
+    for (const setName of familySets) {
+      const extra = await runFamilyFixtureOracle(runtime, stylePath, styleSpec.name, setName);
+      if (!extra) continue;
+      if (bibliographyAuthority.authority === 'citeproc-js') {
+        mergeOracleResults(oracleResult, extra);
+      } else {
+        mergeCitationResults(oracleResult, extra);
       }
     }
   }
-  return issues;
-}
 
-function generateHtml(report) {
-  const templatePath = path.join(__dirname, 'report-data', 'compat-template.html');
-  if (!fs.existsSync(templatePath)) {
-    return JSON.stringify(report, null, 2);
+  const benchmarkRunResults = await executeBenchmarkRuns(stylePolicy.benchmarkRuns || [], async (benchmarkRun) =>
+    runBenchmarkRun(runtime, styleSpec, stylePath, styleYamlPath, benchmarkRun)
+  );
+  for (const benchmarkRunResult of benchmarkRunResults) {
+    mergeBenchmarkRunIntoOracle(oracleResult, benchmarkRunResult);
+  }
+  const benchmarkErrors = benchmarkRunResults
+    .filter((benchmarkRunResult) => benchmarkRunResult.error)
+    .map((benchmarkRunResult) => `benchmark ${benchmarkRunResult.id}: ${benchmarkRunResult.error}`);
+  const publishedBenchmarkRunResults = benchmarkRunResults.map(toPublishedBenchmarkRunRecord);
+
+  const fidelityScore = computeFidelityScore(oracleResult);
+  const caseMismatches = collectCaseMismatchSummary(oracleResult);
+  const citations = getEffectiveOracleSection(oracleResult, 'citations');
+  const bibliography = getEffectiveOracleSection(oracleResult, 'bibliography');
+  const rawCitations = oracleResult.citations || { passed: 0, total: 0 };
+  const rawBibliography = oracleResult.bibliography || { passed: 0, total: 0 };
+  const componentMatchRate = computeComponentMatchRate(oracleResult);
+  const qualityMetrics = computeQualityMetrics(styleSpec, oracleResult, styleYamlPath);
+  const qualityScore = qualityMetrics.score / 100;
+
+  let statusTier = 'failing';
+  const combinedStyleError = [oracleResult.error, ...benchmarkErrors].filter(Boolean).join('\n') || null;
+
+  if (combinedStyleError) {
+    statusTier = 'error';
+  } else if (fidelityScore === 1.0) {
+    statusTier = 'perfect';
+  } else if (fidelityScore > 0) {
+    statusTier = 'partial';
   }
 
-  const template = fs.readFileSync(templatePath, 'utf8');
-  return template.replace('{{REPORT_JSON}}', JSON.stringify(report));
+  const notePositionAudit = styleSpec.format === 'note' && noteStyles.has(styleSpec.name)
+    ? auditNoteStyle(noteStyles.get(styleSpec.name), { citumBin: runtime.citumBin })
+    : null;
+
+  const styleRecord = {
+    name: styleSpec.name,
+    format: styleSpec.format,
+    hasBibliography: styleSpec.hasBibliography,
+    ...buildPresentationFields(styleSpec, stylePolicy, sufficiencyPolicy),
+    fidelityScore: parseFloat(fidelityScore.toFixed(3)),
+    citations,
+    bibliography,
+    rawCitations,
+    rawBibliography,
+    knownDivergences: divergences[styleSpec.name] || [],
+    adjustedDivergences: oracleResult.adjusted?.divergenceSummary || {},
+    caseMismatches,
+    citationsByType: oracleResult.citationsByType || {},
+    error: combinedStyleError,
+    componentMatchRate,
+    statusTier,
+    componentSummary: oracleResult.componentSummary || {},
+    citationEntries: oracleResult.citations ? oracleResult.citations.entries : null,
+    oracleDetail: oracleResult.bibliography ? oracleResult.bibliography.entries : null,
+    benchmarkRunResults: publishedBenchmarkRunResults,
+    qualityScore: parseFloat(qualityScore.toFixed(3)),
+    qualityBreakdown: qualityMetrics,
+    oracleSource: oracleResult.oracleSource || primaryComparator,
+    styleYamlPath: toRepoRelativePath(styleYamlPath) || styleYamlPath,
+    notePositionAudit,
+  };
+  styleRecord.richInputEvidence = buildRichInputEvidenceSummary(styleRecord, publishedBenchmarkRunResults);
+
+  return {
+    styleRecord,
+    errorCount: combinedStyleError ? 1 : 0,
+    citations,
+    bibliography,
+    qualityScore,
+  };
 }
 
-async function main() {
-  const options = parseArgs();
-  try {
-    const { report } = await generateReport(options);
+/**
+ * Generate compatibility report
+ */
+async function generateReport(options) {
+  const stylesDir = getStylesDir(options.stylesDir);
+  const provenanceConfig = loadReportProvenance();
+  const discoveredStyles = discoverCoreStyles(provenanceConfig);
+  const coreStyles = options.styleName
+    ? discoveredStyles.filter((style) => style.name === options.styleName)
+    : resolveSelectedStyles(discoveredStyles, options.styles);
+  if (options.styleName && coreStyles.length === 0) {
+    throw new Error(`Core style not found for --style: ${options.styleName}`);
+  }
+  const divergences = loadDivergences();
+  const verificationPolicy = loadVerificationPolicy();
+  const fixtureSufficiency = loadFixtureSufficiency();
+  const generated = getTimestamp();
+  const gitCommit = getGitCommit();
+  const runtime = createReportRuntime(options);
+  const preflightIssues = preflightSnapshots(coreStyles, verificationPolicy, stylesDir);
+  const noteStyles = buildNoteStyleLookup();
 
-    if (options.writeHtml || options.outputHtml) {
-      const html = generateHtml(report);
-      const outputPath = options.outputHtml || path.join(PROJECT_ROOT, 'docs', 'compat.html');
-      ensureDir(path.dirname(outputPath));
-      fs.writeFileSync(outputPath, html);
-      process.stderr.write(`Report written to ${outputPath}\n`);
+  if (!runtime.allowLiveFallback && preflightIssues.length > 0) {
+    for (const issue of preflightIssues) {
+      process.stderr.write(`[snapshot ${issue.status}] ${issue.style}: ${issue.message}\n`);
+    }
+  }
+
+  const styleJobs = await mapWithConcurrency(coreStyles, options.parallelism || DEFAULT_PARALLELISM, async (styleSpec) => {
+    const result = await processStyleReport(runtime, styleSpec, {
+      divergences,
+      stylesDir,
+      styleYamlOverridePath: options.styleFile,
+      verificationPolicy,
+      fixtureSufficiency,
+      noteStyles,
+    });
+    if (result.styleRecord.error) {
+      process.stderr.write(`Error processing ${styleSpec.name}: ${result.styleRecord.error}\n`);
+    }
+    return result;
+  });
+
+  const styles = styleJobs
+    .map((job) => job.styleRecord)
+    .sort((left, right) => left.name.localeCompare(right.name));
+  let citationsTotal = 0;
+  let citationsPassed = 0;
+  let biblioTotal = 0;
+  let biblioPassed = 0;
+  let citationCaseMismatchTotal = 0;
+  let bibliographyCaseMismatchTotal = 0;
+  let qualityTotal = 0;
+  let qualityCount = 0;
+  let errorCount = 0;
+
+  for (const job of styleJobs) {
+    const citations = job.citations || { passed: 0, total: 0 };
+    const bibliography = job.bibliography || { passed: 0, total: 0 };
+    citationsTotal += citations.total || 0;
+    citationsPassed += citations.passed || 0;
+    biblioTotal += bibliography.total || 0;
+    biblioPassed += bibliography.passed || 0;
+    citationCaseMismatchTotal += job.styleRecord.caseMismatches?.citations || 0;
+    bibliographyCaseMismatchTotal += job.styleRecord.caseMismatches?.bibliography || 0;
+    qualityTotal += job.qualityScore || 0;
+    qualityCount += 1;
+    errorCount += job.errorCount || 0;
+  }
+
+  const knownDependents = coreStyles
+    .filter((s) => typeof s.cslReach === 'number')
+    .reduce((sum, s) => sum + s.cslReach, 0);
+  const totalImpact = ((knownDependents / TOTAL_DEPENDENTS) * 100).toFixed(2);
+
+  return {
+    report: {
+      generated,
+      commit: gitCommit,
+      source: 'scripts/report-core.js',
+      metadata: {
+        timestamp: generated,
+        gitCommit,
+        fixture: 'tests/fixtures/references-expanded.json',
+        styleSelector: options.styleName
+          ? `style:${options.styleName}`
+          : options.styles?.length
+            ? 'selected-styles'
+            : 'core-styles',
+        styleYamlOverride: options.styleFile ? toRepoRelativePath(options.styleFile) || options.styleFile : null,
+        styles: coreStyles.map((style) => style.name),
+        generator: 'scripts/report-core.js',
+        richInputEvidence: {
+          status: 'official-supplemental',
+          headlineGate: 'baseline-fixtures',
+        },
+        extraFixtures: [
+          'tests/fixtures/citations-note-expanded.json',
+          'tests/fixtures/references-note-positions.json',
+          'tests/fixtures/citations-note-positions.json',
+        ],
+        parallelism: options.parallelism || DEFAULT_PARALLELISM,
+        cacheDir: runtime.cacheDir,
+        preflight: {
+          snapshotIssues: preflightIssues,
+          allowLiveFallback: runtime.allowLiveFallback,
+        },
+        oracleComparison: {
+          caseSensitive: runtime.caseSensitive,
+        },
+        ...(options.timings ? { timings: serializeTimingSummary(runtime) } : {}),
+      },
+      totalImpact: parseFloat(totalImpact),
+      totalStyles: coreStyles.length,
+      citationsOverall: { passed: citationsPassed, total: citationsTotal },
+      bibliographyOverall: { passed: biblioPassed, total: biblioTotal },
+      caseMismatchesOverall: {
+        citations: citationCaseMismatchTotal,
+        bibliography: bibliographyCaseMismatchTotal,
+        total: citationCaseMismatchTotal + bibliographyCaseMismatchTotal,
+      },
+      qualityOverall: {
+        score: qualityCount > 0 ? parseFloat((qualityTotal / qualityCount).toFixed(3)) : 0,
+      },
+      styles,
+    },
+    errorCount
+  };
+}
+
+/**
+ * Generate HTML dashboard
+ */
+function generateHtml(report) {
+  const headerHtml = generateHtmlHeader(report);
+  const statsHtml = generateHtmlStats(report);
+  const sqiExplainerHtml = generateHtmlSqiExplainer();
+  const tableHtml = generateHtmlTable(report);
+  const footerHtml = generateHtmlFooter();
+
+  return `${headerHtml}${statsHtml}${sqiExplainerHtml}${tableHtml}${footerHtml}`;
+}
+
+function generateHtmlHeader(report) {
+  const generatedDate = new Date(report.generated).toUTCString();
+  return `<!-- Auto-generated by report-core.js. Do not edit manually. -->
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Citum | Style Compatibility Report</title>
+    <meta name="description"
+        content="Compatibility metrics for Citum against declared style authority sources.">
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2a94d6",
+                        "background-light": "#fdfbf7",
+                        "accent-cream": "#f5f2eb",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #374151;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .glass-nav {
+            background: rgba(253, 251, 247, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(42, 148, 214, 0.1);
+        }
+        .accordion-toggle {
+            cursor: pointer;
+            user-select: none;
+        }
+        .accordion-content {
+            display: none;
+        }
+        .accordion-content.active {
+            display: table-row;
+        }
+        .badge-perfect {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #047857;
+        }
+        .badge-partial {
+            background-color: rgba(251, 191, 36, 0.1);
+            color: #92400e;
+        }
+        .badge-failing {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #7f1d1d;
+        }
+        .badge-pending {
+            background-color: rgba(148, 163, 184, 0.1);
+            color: #475569;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light text-slate-700 selection:bg-primary/20">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-nav">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2 shrink-0">
+                <a href="index.html" class="flex items-center gap-2 group">
+                    <div class="w-8 h-8 bg-primary rounded flex items-center justify-center group-hover:brightness-110 transition-all">
+                        <span class="text-white font-mono font-bold">C</span>
+                    </div>
+                    <span class="font-mono text-xl font-bold tracking-tight text-slate-900">Citum</span>
+                </a>
+            </div>
+            <div class="hidden md:flex items-center gap-3 lg:gap-4 xl:gap-6 min-w-0 overflow-x-auto whitespace-nowrap pl-4">
+                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
+                    href="https://citum.org">Home</a>
+                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
+                    href="index.html">Docs</a>
+                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
+                    href="interactive-demo.html">Demo</a>
+                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
+                    href="examples.html">Examples</a>
+                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
+                    href="guides/style-author-guide.html">Style Guide</a>
+                <a class="text-sm font-medium text-primary font-semibold"
+                    href="reports.html">Reports</a>
+                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
+                    href="https://github.com/citum/citum-core">GitHub</a>
+            </div>
+            <button type="button"
+                class="md:hidden inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-slate-700"
+                data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+                <span class="material-icons text-[20px]">menu</span>
+            </button>
+        </div>
+        <div id="mobile-nav" class="md:hidden hidden border-t border-slate-200 bg-background-light/95 px-6 py-4" data-mobile-menu>
+            <div class="flex flex-col gap-3 text-sm font-medium text-slate-700">
+                <a class="hover:text-primary transition-colors" href="https://citum.org">Home</a>
+                <a class="hover:text-primary transition-colors" href="index.html">Docs</a>
+                <a class="hover:text-primary transition-colors" href="interactive-demo.html">Demo</a>
+                <a class="hover:text-primary transition-colors" href="examples.html">Examples</a>
+                <a class="hover:text-primary transition-colors" href="guides/style-author-guide.html">Style Guide</a>
+                <a class="text-primary font-semibold" href="reports.html">Reports</a>
+                <a class="hover:text-primary transition-colors" href="https://github.com/citum/citum-core">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <header class="pt-24 pb-12 px-6 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-mono font-bold tracking-tight text-slate-900 mb-2">
+                        Style Compatibility Report
+                    </h1>
+                    <p class="text-slate-500">Compatibility metrics for styles in <code>styles/</code></p>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <div class="text-sm text-slate-500 font-mono">Generated: ${generatedDate}</div>
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-slate-100 text-slate-700 text-xs font-mono border border-slate-200">
+                    <span class="material-icons text-sm">code</span>
+                    <span>${escapeHtml(report.commit)}</span>
+                </div>
+            </div>
+            <div class="mt-5 flex flex-wrap gap-3 text-sm font-medium">
+                <a class="text-primary hover:underline" href="compat.html">Compatibility</a>
+                <a class="text-slate-600 hover:text-primary transition-colors" href="behavior-report.html">Engine Behavior Coverage</a>
+                <a class="text-slate-600 hover:text-primary transition-colors" href="migration-behavior-report.html">Migration Behavior Coverage</a>
+            </div>
+        </div>
+    </header>
+`;
+}
+
+function generateHtmlStats(report) {
+  const citationsPct = report.citationsOverall.total > 0
+    ? ((report.citationsOverall.passed / report.citationsOverall.total) * 100).toFixed(1)
+    : 0;
+  const biblioPct = report.bibliographyOverall.total > 0
+    ? ((report.bibliographyOverall.passed / report.bibliographyOverall.total) * 100).toFixed(1)
+    : 0;
+  const qualityPct = report.qualityOverall
+    ? (report.qualityOverall.score * 100).toFixed(1)
+    : '0.0';
+
+  return `
+    <!-- Statistics Cards -->
+    <section class="py-12 px-6 bg-accent-cream">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <!-- Core Styles -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <div class="text-sm font-medium text-slate-500 mb-2">Core Styles</div>
+                    <div class="text-3xl font-bold text-slate-900">${report.totalStyles}</div>
+                    <div class="text-xs text-slate-400 mt-2">${report.totalImpact}% known CSL dependent coverage</div>
+                </div>
+
+                <!-- Citations Overall -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <div class="text-sm font-medium text-slate-500 mb-2">Citations</div>
+                    <div class="text-3xl font-bold text-slate-900">${report.citationsOverall.passed}/${report.citationsOverall.total}</div>
+                    <div class="text-xs text-slate-400 mt-2">${citationsPct}% pass rate</div>
+                </div>
+
+                <!-- Bibliography Overall -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <div class="text-sm font-medium text-slate-500 mb-2">Bibliography</div>
+                    <div class="text-3xl font-bold text-slate-900">${report.bibliographyOverall.passed}/${report.bibliographyOverall.total}</div>
+                    <div class="text-xs text-slate-400 mt-2">${biblioPct}% pass rate</div>
+                </div>
+
+                <!-- Quality Overall -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <div class="text-sm font-medium text-slate-500 mb-2">Quality (SQI)</div>
+                    <div class="text-3xl font-bold text-slate-900">${qualityPct}%</div>
+                    <div class="text-xs text-slate-400 mt-2">Type coverage, fallback, concision, presets</div>
+                </div>
+            </div>
+        </div>
+    </section>
+`;
+}
+
+function generateHtmlSqiExplainer() {
+  return `
+    <!-- SQI Explainer -->
+    <section class="py-8 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="bg-white rounded-xl border border-slate-200 p-6">
+                <h2 class="text-lg font-semibold text-slate-900 mb-2">How To Read This Report</h2>
+                <p class="text-sm text-slate-600 mb-3">
+                    <strong>Fidelity</strong> is the hard gate: rendered output should match citeproc-js.
+                    <strong>SQI</strong> (Style Quality Index) is secondary: it scores maintainability and fallback quality.
+                </p>
+                <p class="text-sm text-slate-600 mb-4">
+                    Current working target for style waves is <code>&gt;=95% fidelity</code> and <code>&gt;=90 SQI</code>.
+                    SQI should never be improved at the cost of fidelity.
+                </p>
+                <p class="text-sm text-slate-600 mb-4">
+                    <strong>Lineage</strong> shows the source family a style derives from.
+                    <strong>Authority</strong> shows the declared benchmark used for fidelity checks.
+                    <strong>Regression baseline</strong> is listed separately when Citum snapshots are retained only as an internal guardrail.
+                    <strong>CSL Reach</strong> is the count of dependent legacy CSL styles for comparable parents and is blank when there is no meaningful CSL analogue.
+                </p>
+                <a class="text-sm font-medium text-primary hover:underline" href="reference/SQI.md">
+                    Read the full SQI definition and scoring details
+                </a>
+            </div>
+        </div>
+    </section>
+`;
+}
+
+function generateHtmlTable(report) {
+  let tableRows = '';
+
+  for (const style of report.styles) {
+    const fidelityPct = (style.fidelityScore * 100).toFixed(1);
+    const qualityPct = ((style.qualityScore || 0) * 100).toFixed(1);
+    const citationRate = style.citations.total > 0 ? style.citations.passed / style.citations.total : -1;
+    const bibliographyRate = style.hasBibliography && style.bibliography.total > 0
+      ? style.bibliography.passed / style.bibliography.total
+      : -1;
+    const cslReachValue = style.cslReach ?? -1;
+    const componentRateValue = style.componentMatchRate !== null ? style.componentMatchRate : -1;
+
+    const sqiScore = style.qualityBreakdown?.score ?? (style.qualityScore || 0) * 100;
+    let sqiTier = 'D';
+    let sqiTierRank = 1;
+    let sqiBadgeClass = 'badge-failing';
+    if (style.error || style.qualityBreakdown?.error) {
+      sqiTier = 'ERR';
+      sqiTierRank = 0;
+      sqiBadgeClass = 'badge-pending';
+    } else if (sqiScore >= 90) {
+      sqiTier = 'A';
+      sqiTierRank = 4;
+      sqiBadgeClass = 'badge-perfect';
+    } else if (sqiScore >= 80) {
+      sqiTier = 'B';
+      sqiTierRank = 3;
+      sqiBadgeClass = 'bg-blue-100 text-blue-700';
+    } else if (sqiScore >= 70) {
+      sqiTier = 'C';
+      sqiTierRank = 2;
+      sqiBadgeClass = 'badge-partial';
+    }
+
+    const citationBadge = style.citations.total === 0
+      ? 'badge-pending'
+      : style.citations.passed === style.citations.total
+        ? 'badge-perfect'
+        : style.citations.passed > 0
+          ? 'badge-partial'
+          : 'badge-failing';
+
+    const biblioBadge = !style.hasBibliography
+      ? 'badge-pending'
+      : style.bibliography.passed === style.bibliography.total && style.bibliography.total > 0
+        ? 'badge-perfect'
+        : style.bibliography.passed > 0
+          ? 'badge-partial'
+          : 'badge-failing';
+    const biblioText = style.hasBibliography
+      ? `${style.bibliography.passed}/${style.bibliography.total}`
+      : 'N/A';
+
+    let componentRateHtml = '—';
+    if (style.componentMatchRate !== null) {
+      const rate = style.componentMatchRate;
+      const pct = (rate * 100).toFixed(0);
+      let componentBadgeClass = 'bg-red-100 text-red-700';
+      if (rate >= 0.9) {
+        componentBadgeClass = 'bg-emerald-100 text-emerald-700';
+      } else if (rate >= 0.7) {
+        componentBadgeClass = 'bg-amber-100 text-amber-700';
+      }
+      componentRateHtml = `<span class="inline-flex items-center px-3 py-1 rounded text-xs font-medium ${componentBadgeClass}">${pct}%</span>`;
+    }
+
+    const toggleId = `toggle-${style.name}`;
+    const contentId = `content-${style.name}`;
+    tableRows += `
+                <tr class="border-b border-slate-200 hover:bg-slate-50 accordion-toggle"
+                    data-toggle="${toggleId}"
+                    data-detail-id="${contentId}"
+                    data-style-name="${escapeHtml(style.name.toLowerCase())}"
+                    data-format="${escapeHtml(String(style.format).toLowerCase())}"
+                    data-origin="${escapeHtml(String(style.originLabel || '').toLowerCase())}"
+                    data-csl-reach="${cslReachValue}"
+                    data-citation-rate="${citationRate}"
+                    data-bibliography-rate="${bibliographyRate}"
+                    data-component-rate="${componentRateValue}"
+                    data-fidelity="${style.fidelityScore}"
+                    data-quality="${style.qualityScore || 0}"
+                    data-sqi-tier-rank="${sqiTierRank}">
+                    <td class="px-6 py-4 text-sm font-medium text-slate-900">${style.name}</td>
+                    <td class="hidden md:table-cell px-6 py-4 text-sm text-slate-600">${style.format}</td>
+                    <td class="hidden md:table-cell px-6 py-4 text-sm text-slate-600">${escapeHtml(style.originLabel || '—')}</td>
+                    <td class="hidden md:table-cell px-6 py-4 text-sm text-slate-500 font-mono">${escapeHtml(style.benchmarkLabel || '—')}</td>
+                    <td class="hidden md:table-cell px-6 py-4 text-sm text-slate-600">${style.cslReach ?? '—'}</td>
+                    <td class="hidden md:table-cell px-6 py-4">
+                        <span class="inline-flex items-center px-3 py-1 rounded text-xs font-medium ${citationBadge}">
+                            ${style.citations.passed}/${style.citations.total}
+                        </span>
+                    </td>
+                    <td class="hidden md:table-cell px-6 py-4">
+                        <span class="inline-flex items-center px-3 py-1 rounded text-xs font-medium ${biblioBadge}">
+                            ${biblioText}
+                        </span>
+                    </td>
+                    <td class="hidden md:table-cell px-6 py-4">
+                        ${componentRateHtml}
+                    </td>
+                    <td class="px-6 py-4 text-sm font-mono text-slate-600">${fidelityPct}%</td>
+                    <td class="hidden md:table-cell px-6 py-4 text-sm font-mono text-slate-600">${qualityPct}%</td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-3 py-1 rounded text-xs font-medium ${sqiBadgeClass}">
+                            ${sqiTier}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <button class="text-slate-500 hover:text-primary text-xs font-medium transition-colors" onclick="toggleAccordion('${contentId}')">
+                            <span class="material-icons text-base align-middle">expand_more</span>
+                        </button>
+                    </td>
+                </tr>
+                <tr class="accordion-content" id="${contentId}">
+                    <td colspan="12" class="px-6 py-4 bg-slate-50">
+                        <div class="max-w-4xl">
+${generateDetailContent(style)}
+                        </div>
+                    </td>
+                </tr>
+    `;
+  }
+
+  return `
+    <!-- Compatibility Table -->
+    <section class="py-12 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="rounded-xl border border-slate-200 overflow-hidden overflow-x-auto">
+                <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+                    <label for="style-search" class="text-xs font-semibold text-slate-700">Search Styles</label>
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <input
+                            id="style-search"
+                            type="search"
+                            placeholder="Filter by style name..."
+                            class="w-full sm:w-80 rounded-md border-slate-300 text-sm focus:border-primary focus:ring-primary"
+                        />
+                        <span id="style-search-count" class="text-xs text-slate-500 font-mono whitespace-nowrap"></span>
+                    </div>
+                </div>
+                <table class="w-full">
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                                <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('style-name')">
+                                    Style <span class="text-slate-400" id="sort-ind-style-name">↕</span>
+                                </button>
+                            </th>
+                            <th class="hidden md:table-cell text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                                <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('format')">
+                                    Format <span class="text-slate-400" id="sort-ind-format">↕</span>
+                                </button>
+                            </th>
+                            <th class="hidden md:table-cell text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                                <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('origin')">
+                                    Lineage <span class="text-slate-400" id="sort-ind-origin">↕</span>
+                                </button>
+                            </th>
+                            <th class="hidden md:table-cell text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                                Authority
+                            </th>
+                            <th class="hidden md:table-cell text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                                <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('csl-reach')">
+                                    CSL Reach <span class="text-slate-400" id="sort-ind-csl-reach">↕</span>
+                                </button>
+                            </th>
+                            <th class="hidden md:table-cell text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                                <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('citation-rate')">
+                                    Citations <span class="text-slate-400" id="sort-ind-citation-rate">↕</span>
+                                </button>
+                            </th>
+                            <th class="hidden md:table-cell text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                                <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('bibliography-rate')">
+                                    Bibliography <span class="text-slate-400" id="sort-ind-bibliography-rate">↕</span>
+                                </button>
+                            </th>
+                            <th class="hidden md:table-cell text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                                <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('component-rate')">
+                                    Components <span class="text-slate-400" id="sort-ind-component-rate">↕</span>
+                                </button>
+                            </th>
+                            <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                                <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('fidelity')">
+                                    Fidelity <span class="text-slate-400" id="sort-ind-fidelity">↕</span>
+                                </button>
+                            </th>
+                            <th class="hidden md:table-cell text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                                <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('quality')">
+                                    Quality <span class="text-slate-400" id="sort-ind-quality">↕</span>
+                                </button>
+                            </th>
+                            <th class="text-left px-6 py-4 text-xs font-semibold text-slate-700">
+                                <button class="inline-flex items-center gap-1 hover:text-primary transition-colors" onclick="sortCompatTable('sqi-tier-rank')">
+                                    SQI Tier <span class="text-slate-400" id="sort-ind-sqi-tier-rank">↕</span>
+                                </button>
+                            </th>
+                            <th class="px-6 py-4"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+${tableRows}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+`;
+}
+
+function getComparisonEntryTexts(entry) {
+  return {
+    benchmark: entry?.oracle ?? entry?.expected ?? '',
+    citum: entry?.citum ?? entry?.actual ?? '',
+  };
+}
+
+function generateDetailContent(style) {
+  let html = '';
+  const secondaryLabels = Array.isArray(style.secondarySourceLabels) && style.secondarySourceLabels.length > 0
+    ? style.secondarySourceLabels.join(', ')
+    : '—';
+  const cslReachText = style.cslReach != null ? String(style.cslReach) : '—';
+
+  html += `
+                            <div class="mb-4 p-3 rounded border border-slate-200 bg-white">
+                                <div class="text-xs font-semibold text-slate-900 mb-2">Verification Context</div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                                    <div><span class="font-semibold text-slate-700">Lineage:</span> <span class="font-mono text-slate-600">${escapeHtml(style.originLabel || '—')}</span></div>
+                                    <div><span class="font-semibold text-slate-700">Authority:</span> <span class="font-mono text-slate-600">${escapeHtml(style.benchmarkLabel || '—')}</span></div>
+                                    ${style.hasScopedAuthorities ? `<div><span class="font-semibold text-slate-700">Citation authority:</span> <span class="font-mono text-slate-600">${escapeHtml(style.citationAuthorityLabel || '—')}</span></div>` : ''}
+                                    ${style.hasScopedAuthorities ? `<div><span class="font-semibold text-slate-700">Bibliography authority:</span> <span class="font-mono text-slate-600">${escapeHtml(style.bibliographyAuthorityLabel || '—')}</span></div>` : ''}
+                                    <div><span class="font-semibold text-slate-700">Secondary:</span> <span class="font-mono text-slate-600">${escapeHtml(secondaryLabels)}</span></div>
+                                    ${style.regressionBaselineLabel ? `<div><span class="font-semibold text-slate-700">Regression baseline:</span> <span class="font-mono text-slate-600">${escapeHtml(style.regressionBaselineLabel)}</span></div>` : ''}
+                                    <div><span class="font-semibold text-slate-700">CSL Reach:</span> <span class="font-mono text-slate-600">${escapeHtml(cslReachText)}</span></div>
+                                </div>
+                                ${style.verificationNote ? `<div class="mt-3 text-xs text-slate-600"><strong>Note:</strong> ${escapeHtml(style.verificationNote)}</div>` : ''}
+                            </div>
+`;
+
+  if (style.error) {
+    html += `
+                            <div class="p-4 rounded-lg bg-red-50 border border-red-200 mb-4">
+                                <div class="text-sm font-medium text-red-700 mb-1">Error</div>
+                                <div class="text-xs text-red-600 font-mono">${escapeHtml(style.error)}</div>
+                            </div>
+`;
+  }
+
+  if (style.qualityBreakdown) {
+    const qb = style.qualityBreakdown;
+    const overall = ((style.qualityScore || 0) * 100).toFixed(1);
+    const typeCoverage = qb.subscores?.typeCoverage?.score ?? 0;
+    const fallback = qb.subscores?.fallbackRobustness?.score ?? 0;
+    const concision = qb.subscores?.concision?.score ?? 0;
+    const presets = qb.subscores?.presetUsage?.score ?? 0;
+    const concisionDetail = qb.subscores?.concision || {};
+    html += `
+                            <div class="mb-4 p-3 rounded border border-slate-200 bg-white">
+                                <div class="text-xs font-semibold text-slate-900 mb-2">Quality (SQI): ${overall}%</div>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs font-mono">
+                                    <div class="px-2 py-1 rounded bg-slate-100 text-slate-700">type ${typeCoverage.toFixed(1)}%</div>
+                                    <div class="px-2 py-1 rounded bg-slate-100 text-slate-700">fallback ${fallback.toFixed(1)}%</div>
+                                    <div class="px-2 py-1 rounded bg-slate-100 text-slate-700">concision ${concision.toFixed(1)}%</div>
+                                    <div class="px-2 py-1 rounded bg-slate-100 text-slate-700">presets ${presets.toFixed(1)}%</div>
+                                </div>
+                                <div class="mt-2 text-xs text-slate-500 font-mono">
+                                    scopes ${concisionDetail.scopeCount ?? 0} · variants ${concisionDetail.variantSelectors ?? 0} · exact dupes ${concisionDetail.exactDuplicateScopes ?? 0} · near dupes ${concisionDetail.nearDuplicateScopes ?? 0}
+                                </div>
+                            </div>
+`;
+  }
+
+  if (style.notePositionAudit) {
+    const audit = style.notePositionAudit;
+    const regression = audit.regression || { status: audit.status, issues: audit.issues || [], profile: audit.profile };
+    const hasConformance = Boolean(audit.conformance);
+    const conformance = audit.conformance || { status: 'not-evaluated', issues: [], family: 'n/a', unresolved: [] };
+    const regressionBadgeClass = regression.status === 'pass'
+      ? 'bg-emerald-100 text-emerald-700'
+      : regression.status === 'configuration-gap'
+        ? 'bg-amber-100 text-amber-700'
+        : 'bg-red-100 text-red-700';
+    const conformanceBadgeClass = conformance.status === 'pass'
+      ? 'bg-sky-100 text-sky-700'
+      : conformance.status === 'not-evaluated'
+        ? 'bg-slate-100 text-slate-700'
+      : 'bg-amber-100 text-amber-700';
+    const regressionIssueText = regression.issues.length === 0
+      ? '<span class="text-xs text-slate-500">No repeated-note issues detected.</span>'
+      : regression.issues
+        .map((issue) => `<div class="text-xs font-mono text-slate-600">${escapeHtml(issue.kind)}: ${escapeHtml(issue.message)}</div>`)
+        .join('');
+    const conformanceIssueText = !hasConformance
+      ? '<span class="text-xs text-slate-500">Normative conformance was not evaluated for this report artifact.</span>'
+      : conformance.issues.length === 0
+      ? '<span class="text-xs text-slate-500">No settled conformance gaps detected.</span>'
+      : conformance.issues
+        .map((issue) => `<div class="text-xs font-mono text-slate-600">${escapeHtml(issue.kind)}: ${escapeHtml(issue.message)}</div>`)
+        .join('');
+    const unresolvedText = !hasConformance
+      ? '<span class="text-xs text-slate-500">No conformance metadata available.</span>'
+      : Array.isArray(conformance.unresolved) && conformance.unresolved.length > 0
+      ? `<div class="text-xs text-slate-500">Unresolved: ${escapeHtml(conformance.unresolved.join(', '))}</div>`
+      : '<span class="text-xs text-slate-500">No unresolved conformance dimensions recorded.</span>';
+    html += `
+                            <div class="mb-4 p-3 rounded border border-slate-200 bg-white">
+                                <div class="text-xs font-semibold text-slate-900 mb-3">Repeated-Note Audit</div>
+                                <div class="mb-3">
+                                    <div class="flex items-center justify-between gap-3 mb-2">
+                                        <div class="text-xs font-semibold text-slate-700">Regression Layer</div>
+                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium ${regressionBadgeClass}">
+                                            ${escapeHtml(regression.status)}
+                                        </span>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs mb-2">
+                                        <div><span class="font-semibold text-slate-700">Profile:</span> <span class="font-mono text-slate-600">${escapeHtml(regression.profile || '—')}</span></div>
+                                        <div><span class="font-semibold text-slate-700">Issues:</span> <span class="font-mono text-slate-600">${regression.issues.length}</span></div>
+                                    </div>
+                                    ${regressionIssueText}
+                                </div>
+                                <div>
+                                    <div class="flex items-center justify-between gap-3 mb-2">
+                                        <div class="text-xs font-semibold text-slate-700">Normative Conformance</div>
+                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium ${conformanceBadgeClass}">
+                                            ${escapeHtml(conformance.status)}
+                                        </span>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs mb-2">
+                                        <div><span class="font-semibold text-slate-700">Family:</span> <span class="font-mono text-slate-600">${escapeHtml(conformance.family || '—')}</span></div>
+                                        <div><span class="font-semibold text-slate-700">Issues:</span> <span class="font-mono text-slate-600">${conformance.issues.length}</span></div>
+                                    </div>
+                                    ${conformanceIssueText}
+                                    <div class="mt-2">
+                                        ${unresolvedText}
+                                    </div>
+                                </div>
+                            </div>
+`;
+  }
+
+  if (Array.isArray(style.benchmarkRunResults) && style.benchmarkRunResults.length > 0) {
+    html += `
+                            <div class="mb-4 p-3 rounded border border-slate-200 bg-white">
+                                <div class="text-xs font-semibold text-slate-900 mb-1">Official Supplemental Rich Benchmark Evidence</div>
+                                <div class="text-xs text-slate-500 mb-3">Baseline fidelity remains the gate. Rich benchmark runs extend the official evidence for configured styles.</div>
+                                <div class="space-y-3">
+`;
+    for (const benchmarkRun of style.benchmarkRunResults) {
+      const statusClass = benchmarkRun.status === 'pass'
+        ? 'bg-emerald-100 text-emerald-700'
+        : benchmarkRun.status === 'ok'
+          ? 'bg-slate-100 text-slate-600'
+          : 'bg-red-100 text-red-700';
+      const scopeText = benchmarkRun.scope === 'both' ? 'citation + bibliography' : benchmarkRun.scope;
+      const contributionText = benchmarkRun.countTowardFidelity ? 'counts toward fidelity' : 'diagnostic only';
+      const thresholdText = benchmarkRun.minPassRate != null
+        ? `${(benchmarkRun.minPassRate * 100).toFixed(0)}%`
+        : 'none';
+      const bibliographyText = benchmarkRun.bibliography
+        ? `${benchmarkRun.bibliography.passed}/${benchmarkRun.bibliography.total}`
+        : benchmarkRun.bibliographyEntries != null
+          ? `${benchmarkRun.bibliographyEntries} rendered`
+          : '—';
+      const citationsText = benchmarkRun.citations
+        ? `${benchmarkRun.citations.passed}/${benchmarkRun.citations.total}`
+        : '—';
+
+      html += `
+                                    <div class="rounded border border-slate-200 p-3">
+                                        <div class="flex items-center justify-between gap-3 mb-2">
+                                            <div class="text-xs font-semibold text-slate-800">${escapeHtml(benchmarkRun.label)}</div>
+                                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium ${statusClass}">
+                                                ${escapeHtml(benchmarkRun.status)}
+                                            </span>
+                                        </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                                            <div><span class="font-semibold text-slate-700">Runner:</span> <span class="font-mono text-slate-600">${escapeHtml(benchmarkRun.runner)}</span></div>
+                                            <div><span class="font-semibold text-slate-700">Scope:</span> <span class="font-mono text-slate-600">${escapeHtml(scopeText)}</span></div>
+                                            <div><span class="font-semibold text-slate-700">Contribution:</span> <span class="font-mono text-slate-600">${escapeHtml(contributionText)}</span></div>
+                                            <div><span class="font-semibold text-slate-700">Threshold:</span> <span class="font-mono text-slate-600">${escapeHtml(thresholdText)}</span></div>
+                                            <div><span class="font-semibold text-slate-700">Bibliography:</span> <span class="font-mono text-slate-600">${escapeHtml(bibliographyText)}</span></div>
+                                            ${benchmarkRun.citations ? `<div><span class="font-semibold text-slate-700">Citations:</span> <span class="font-mono text-slate-600">${escapeHtml(citationsText)}</span></div>` : ''}
+                                            <div><span class="font-semibold text-slate-700">Refs fixture:</span> <span class="font-mono text-slate-600">${escapeHtml(benchmarkRun.refsFixture)}</span></div>
+                                        </div>
+                                        ${benchmarkRun.error ? `<div class="mt-2 text-xs font-mono text-red-600">${escapeHtml(benchmarkRun.error)}</div>` : ''}
+                                    </div>
+`;
+    }
+    html += `
+                                </div>
+                            </div>
+`;
+  }
+
+  if (style.componentSummary && Object.keys(style.componentSummary).length > 0) {
+    const issues = Object.entries(style.componentSummary)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8);
+    html += `
+                            <div class="mb-4">
+                                <div class="text-xs font-semibold text-slate-700 mb-2">Top Component Issues</div>
+                                <div class="flex flex-wrap gap-2">
+`;
+    for (const [issue, count] of issues) {
+      html += `
+                                    <span class="px-2 py-1 rounded bg-slate-100 text-slate-600 text-xs font-mono">
+                                        ${escapeHtml(issue)} <span class="font-bold">×${count}</span>
+                                    </span>
+`;
+    }
+    html += `
+                                </div>
+                            </div>
+`;
+  }
+
+  if (style.citationsByType && Object.keys(style.citationsByType).length > 0) {
+    const citationTypes = Object.entries(style.citationsByType)
+      .sort((a, b) => {
+        const aPct = a[1].total > 0 ? (a[1].passed / a[1].total) : 0;
+        const bPct = b[1].total > 0 ? (b[1].passed / b[1].total) : 0;
+        if (aPct !== bPct) return aPct - bPct;
+        return a[0].localeCompare(b[0]);
+      });
+    html += `
+                            <div class="mb-4">
+                                <div class="text-xs font-semibold text-slate-900 mb-2">Citation Type Coverage (${citationTypes.length} types)</div>
+                                <div class="flex flex-wrap gap-2">
+`;
+    for (const [type, stats] of citationTypes) {
+      const pct = stats.total > 0 ? Math.round((stats.passed / stats.total) * 100) : 0;
+      let badgeClass = 'bg-red-100 text-red-700';
+      if (pct === 100) {
+        badgeClass = 'bg-emerald-100 text-emerald-700';
+      } else if (pct >= 70) {
+        badgeClass = 'bg-amber-100 text-amber-700';
+      }
+      html += `
+                                    <span class="px-2 py-1 rounded ${badgeClass} text-xs font-mono">
+                                        ${escapeHtml(type)} ${stats.passed}/${stats.total}
+                                    </span>
+`;
+    }
+    html += `
+                                </div>
+                            </div>
+`;
+  }
+
+  if (style.citationEntries && style.citationEntries.length > 0) {
+    const failedEntries = style.citationEntries.filter(e => !e.match);
+    if (failedEntries.length === 0) {
+      html += `
+                            <div class="mb-4 p-3 rounded bg-emerald-50 border border-emerald-200">
+                                <div class="text-xs font-semibold text-emerald-700">All ${style.citationEntries.length} citations match ✓</div>
+                            </div>
+`;
     } else {
-      process.stdout.write(JSON.stringify(report, null, 2));
+      html += `
+                            <div class="mb-4">
+                                <div class="text-xs font-semibold text-slate-900 mb-2">Failed Citations (${failedEntries.length}/${style.citationEntries.length})</div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-xs border-collapse">
+                                        <thead>
+                                            <tr class="border-b border-slate-300 bg-slate-100">
+                                                <th class="text-left px-2 py-1 font-medium text-slate-700">#</th>
+                                                <th class="text-left px-2 py-1 font-medium text-slate-700">Benchmark</th>
+                                                <th class="text-left px-2 py-1 font-medium text-slate-700">Citum</th>
+                                                <th class="text-center px-2 py-1 font-medium text-slate-700">Match</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+`;
+      for (const entry of failedEntries) {
+        const texts = getComparisonEntryTexts(entry);
+        const benchmarkText = texts.benchmark ? texts.benchmark.substring(0, 100) : '(empty)';
+        const citumText = texts.citum ? texts.citum.substring(0, 100) : '(empty)';
+        html += `
+                                            <tr class="border-b border-slate-200 hover:bg-slate-50">
+                                                <td class="px-2 py-1 text-slate-600">${escapeHtml(entry.id)}</td>
+                                                <td class="px-2 py-1 font-mono text-slate-600 text-xs" title="${escapeHtml(texts.benchmark)}">${escapeHtml(benchmarkText)}</td>
+                                                <td class="px-2 py-1 font-mono text-slate-600 text-xs" title="${escapeHtml(texts.citum)}">${escapeHtml(citumText)}</td>
+                                                <td class="px-2 py-1 text-center font-bold text-red-600">✗</td>
+                                            </tr>
+`;
+      }
+      html += `
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+`;
+    }
+  }
+
+  if (style.oracleDetail && style.oracleDetail.length > 0) {
+    html += `
+                            <div class="mt-4">
+                                <div class="text-xs font-semibold text-slate-900 mb-2">Bibliography Entries (${style.oracleDetail.length})</div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-xs border-collapse">
+                                        <thead>
+                                            <tr class="border-b border-slate-300 bg-slate-100">
+                                                <th class="text-left px-2 py-1 font-medium text-slate-700">#</th>
+                                                <th class="text-left px-2 py-1 font-medium text-slate-700">Benchmark</th>
+                                                <th class="text-left px-2 py-1 font-medium text-slate-700">Citum</th>
+                                                <th class="text-center px-2 py-1 font-medium text-slate-700">Match</th>
+                                                <th class="text-left px-2 py-1 font-medium text-slate-700">Issues</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+`;
+
+    for (let i = 0; i < style.oracleDetail.length; i++) {
+      const entry = style.oracleDetail[i];
+      const matchIcon = entry.match === true ? '✓' : entry.match === false ? '✗' : '–';
+      const matchColor = entry.match === true ? 'text-emerald-600' : entry.match === false ? 'text-red-600' : 'text-slate-400';
+      const texts = getComparisonEntryTexts(entry);
+      const benchmarkText = texts.benchmark ? texts.benchmark.substring(0, 100) : '(empty)';
+      const citumText = texts.citum ? texts.citum.substring(0, 100) : '(empty)';
+
+      let issuesText = '—';
+      if (!entry.match) {
+        if (entry.issues && entry.issues.length > 0) {
+          issuesText = entry.issues
+            .map(iss => iss.component ? `${iss.component}:${iss.issue}` : iss.issue)
+            .join(', ');
+        }
+      }
+
+      html += `
+                                            <tr class="border-b border-slate-200 hover:bg-slate-50">
+                                                <td class="px-2 py-1 text-slate-600">${i + 1}</td>
+                                                <td class="px-2 py-1 font-mono text-slate-600 text-xs" title="${escapeHtml(texts.benchmark)}">${escapeHtml(benchmarkText)}</td>
+                                                <td class="px-2 py-1 font-mono text-slate-600 text-xs" title="${escapeHtml(texts.citum)}">${escapeHtml(citumText)}</td>
+                                                <td class="px-2 py-1 text-center font-bold ${matchColor}">${matchIcon}</td>
+                                                <td class="px-2 py-1 text-slate-600 text-xs font-mono">${escapeHtml(issuesText)}</td>
+                                            </tr>
+`;
+    }
+
+    html += `
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+`;
+  }
+
+  if (style.knownDivergences && style.knownDivergences.length > 0) {
+    html += `
+                            <div class="p-4 rounded-lg bg-primary/5 border border-primary/20 mt-4">
+                                <div class="text-sm font-semibold text-primary mb-2">Citum Extensions</div>
+`;
+    for (const divergence of style.knownDivergences) {
+      html += `
+                                <div class="text-xs text-slate-700 mb-2">
+                                    <strong>${escapeHtml(divergence.feature)}:</strong> ${escapeHtml(divergence.description)}
+                                </div>
+`;
+    }
+    html += `
+                            </div>
+`;
+  }
+
+  return html;
+}
+
+function generateHtmlFooter() {
+  return `
+
+    <!-- Footer -->
+    <footer class="py-12 px-6 border-t border-slate-200 bg-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+                <div class="flex items-center gap-2">
+                    <a href="index.html" class="flex items-center gap-2 group">
+                        <div class="w-6 h-6 bg-primary rounded flex items-center justify-center group-hover:brightness-110 transition-all">
+                            <span class="text-white font-mono text-xs font-bold">C</span>
+                        </div>
+                        <span class="font-mono text-lg font-bold text-slate-900">Citum</span>
+                    </a>
+                </div>
+                <div class="flex gap-8 text-sm font-medium text-slate-500">
+                    <a class="hover:text-primary transition-colors" href="https://github.com/citum/citum-core">GitHub</a>
+                    <a class="hover:text-primary transition-colors" href="index.html">Docs</a>
+                    <a class="hover:text-primary transition-colors" href="examples.html">Examples</a>
+                    <a class="hover:text-primary transition-colors" href="reports.html">Reports</a>
+                </div>
+                <div class="text-sm text-slate-400">
+                    © 2026 Citum Project. MIT Licensed.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const navToggle = document.querySelector("[data-nav-toggle]");
+        const mobileMenu = document.querySelector("[data-mobile-menu]");
+        if (navToggle && mobileMenu) {
+            navToggle.addEventListener("click", () => {
+                const expanded = navToggle.getAttribute("aria-expanded") === "true";
+                navToggle.setAttribute("aria-expanded", String(!expanded));
+                mobileMenu.classList.toggle("hidden", expanded);
+            });
+        }
+
+        const sortState = { key: null, direction: 1 };
+        const filterState = { query: '' };
+
+        function toggleAccordion(contentId) {
+            const content = document.getElementById(contentId);
+            if (content) content.classList.toggle('active');
+        }
+
+        function updateSortIndicators(activeKey, direction) {
+            document.querySelectorAll('[id^="sort-ind-"]').forEach((el) => {
+                el.textContent = '↕';
+                el.classList.remove('text-primary');
+                el.classList.add('text-slate-400');
+            });
+            const active = document.getElementById('sort-ind-' + activeKey);
+            if (active) {
+                active.textContent = direction > 0 ? '↑' : '↓';
+                active.classList.remove('text-slate-400');
+                active.classList.add('text-primary');
+            }
+        }
+
+        function sortCompatTable(key) {
+            const tbody = document.querySelector('table tbody');
+            if (!tbody) return;
+
+            const summaryRows = Array.from(tbody.querySelectorAll('tr.accordion-toggle'));
+            const rowPairs = summaryRows.map((summary) => {
+                const detailId = summary.dataset.detailId;
+                const detail = detailId ? document.getElementById(detailId) : null;
+                return { summary, detail };
+            });
+
+            const defaultAsc = key === 'style-name' || key === 'format' || key === 'origin';
+            if (sortState.key === key) {
+                sortState.direction *= -1;
+            } else {
+                sortState.key = key;
+                sortState.direction = defaultAsc ? 1 : -1;
+            }
+
+            const asNumber = (value) => {
+                const parsed = Number(value);
+                return Number.isNaN(parsed) ? -Infinity : parsed;
+            };
+            const asText = (value) => String(value || '').toLowerCase();
+
+            // Convert kebab-case key to camelCase for dataset access
+            const datasetKey = key.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+
+            rowPairs.sort((a, b) => {
+                const left = a.summary.dataset[datasetKey] || '';
+                const right = b.summary.dataset[datasetKey] || '';
+                const numericKeys = new Set([
+                    'csl-reach',
+                    'citation-rate',
+                    'bibliography-rate',
+                    'component-rate',
+                    'fidelity',
+                    'quality',
+                    'sqi-tier-rank',
+                ]);
+
+                if (key === 'csl-reach') {
+                    const leftUnknown = left === '' || Number(left) < 0;
+                    const rightUnknown = right === '' || Number(right) < 0;
+                    if (leftUnknown !== rightUnknown) {
+                        return leftUnknown ? 1 : -1;
+                    }
+                }
+
+                if (numericKeys.has(key)) {
+                    return (asNumber(left) - asNumber(right)) * sortState.direction;
+                }
+                return asText(left).localeCompare(asText(right)) * sortState.direction;
+            });
+
+            for (const pair of rowPairs) {
+                tbody.appendChild(pair.summary);
+                if (pair.detail) tbody.appendChild(pair.detail);
+            }
+
+            updateSortIndicators(key, sortState.direction);
+        }
+
+        function updateFilterCount(visible, total) {
+            const count = document.getElementById('style-search-count');
+            if (!count) return;
+            count.textContent = visible === total
+                ? total + ' styles'
+                : visible + ' of ' + total + ' styles';
+        }
+
+        function applyStyleFilter() {
+            const tbody = document.querySelector('table tbody');
+            if (!tbody) return;
+
+            const summaryRows = Array.from(tbody.querySelectorAll('tr.accordion-toggle'));
+            const query = filterState.query;
+            let visible = 0;
+
+            for (const summary of summaryRows) {
+                const detailId = summary.dataset.detailId;
+                const detail = detailId ? document.getElementById(detailId) : null;
+                const haystack = (summary.dataset.styleName || '').toLowerCase();
+                const isMatch = !query || haystack.includes(query);
+
+                summary.style.display = isMatch ? '' : 'none';
+                if (detail) {
+                    detail.style.display = isMatch ? '' : 'none';
+                    if (!isMatch) detail.classList.remove('active');
+                }
+                if (isMatch) visible += 1;
+            }
+
+            updateFilterCount(visible, summaryRows.length);
+        }
+
+        function initStyleSearch() {
+            const input = document.getElementById('style-search');
+            if (!input) return;
+            input.addEventListener('input', (event) => {
+                filterState.query = String(event.target.value || '').trim().toLowerCase();
+                applyStyleFilter();
+            });
+
+            const tbody = document.querySelector('table tbody');
+            if (tbody) {
+                tbody.addEventListener('click', (event) => {
+                    const row = event.target.closest('tr.accordion-toggle');
+                    if (!row) return;
+                    // Don't re-toggle if the expand button itself was clicked (it has its own onclick)
+                    if (event.target.closest('button')) return;
+                    const detailId = row.dataset.detailId;
+                    if (detailId) toggleAccordion(detailId);
+                });
+            }
+
+            applyStyleFilter();
+        }
+
+        document.addEventListener('DOMContentLoaded', initStyleSearch);
+    </script>
+
+</body>
+
+</html>
+`;
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/**
+ * Main entry point
+ */
+async function main() {
+  try {
+    const options = parseArgs();
+    const stylesDir = options.stylesDir || path.join(PROJECT_ROOT, 'styles-legacy');
+    const datasetMessage = maybeDatasetErrorForFile(stylesDir, 'report-core.js');
+    if (datasetMessage) {
+      throw new Error(datasetMessage);
+    }
+    const { report, errorCount } = await generateReport(options);
+
+    // Output JSON to stdout
+    console.log(JSON.stringify(report, null, 2));
+
+    // Generate and write HTML if requested
+    if (options.writeHtml) {
+      const htmlPath = options.outputHtml || path.join(path.dirname(__dirname), 'docs', 'compat.html');
+      const htmlDir = path.dirname(htmlPath);
+
+      if (!fs.existsSync(htmlDir)) {
+        fs.mkdirSync(htmlDir, { recursive: true });
+      }
+
+      const htmlContent = generateHtml(report);
+      fs.writeFileSync(htmlPath, htmlContent, 'utf8');
+      process.stderr.write(`HTML report written to: ${htmlPath}\n`);
+    }
+
+    if (errorCount > 0) {
+      process.stderr.write(`\nTotal styles with errors: ${errorCount}\n`);
+      process.exit(1);
     }
   } catch (error) {
     process.stderr.write(`Error: ${error.message}\n`);
@@ -2273,35 +3601,36 @@ if (require.main === module) {
 }
 
 module.exports = {
-  buildEmptyOracleResult,
   buildNoteStyleLookup,
-  cloneOracleResult,
   collectTemplateScopes,
   computeConcisionScore,
   computeFidelityScore,
-  computeImpactPct,
-  determineBenchmarkStatus,
+  createReportRuntime,
   discoverCoreStyles,
   equivalentText,
-  executeBenchmarkRuns,
   expandCompoundBibEntries,
   formatAuthorityLabel,
+  getEffectiveOracleSection,
+  getCslSnapshotStatus,
   generateHtml,
   generateReport,
   getComparisonEntryTexts,
-  getCslSnapshotStatus,
-  getEffectiveOracleSection,
-  hasBibliographyTemplate,
-  inferStyleFormat,
   loadStyleYaml,
   mapWithConcurrency,
-  mergeBenchmarkRunIntoOracle,
-  mergeDivergenceSummaries,
-  mergeOracleResults,
+  normalizeBenchmarkSource,
   parseArgs,
   preflightSnapshots,
   resolveSelectedStyles,
   runCachedJsonJob,
-  selectPrimaryComparator,
+  buildEmptyOracleResult,
+  cloneOracleResult,
+  executeBenchmarkRuns,
+  mergeBenchmarkRunIntoOracle,
+  mergeOracleResults,
   toPublishedBenchmarkRunRecord,
+  determineBenchmarkStatus,
+  selectPrimaryComparator,
+  serializeTimingSummary,
+  textSimilarity,
+  mergeDivergenceSummaries,
 };
