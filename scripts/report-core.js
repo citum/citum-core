@@ -812,7 +812,7 @@ async function runCiteprocSnapshotOracle(runtime, stylePath, styleName, styleFor
     styleHash: hashFile(stylePath),
     // YAML changes must also bust the cache: the oracle runs citum with the
     // YAML but the CSL hash alone does not change when the YAML is edited.
-    styleYamlHash: styleYamlPath ? hashFile(styleYamlPath) : null,
+    styleYamlHash: styleYamlPath && fs.existsSync(styleYamlPath) ? hashFile(styleYamlPath) : null,
     refsHash: hashFile(refsFixture),
     citationsHash: hashFile(resolvedCitationsFixture),
     snapshotStatus: snapshotStatus.status,

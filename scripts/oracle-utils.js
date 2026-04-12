@@ -197,7 +197,15 @@ function findRefMatchForEntry(entry, testItems) {
     }
 
     if (!nameMatch) {
-      if (!hasPrimaryNames(ref) && ref.title) {
+      // Fall back to title for anonymous items AND items whose only primary names
+      // are corporate literals (e.g. {literal: "State of JS Team"}) — these may
+      // not appear verbatim in oracle text when expanded differently.
+      const hasOnlyLiteralNames = hasPrimaryNames(ref) &&
+        ['author', 'editor', 'translator', 'interviewer', 'recipient']
+          .flatMap((role) => ref[role] || [])
+          .filter(Boolean)
+          .every((n) => n.literal && !n.family);
+      if ((!hasPrimaryNames(ref) || hasOnlyLiteralNames) && ref.title) {
         const titleLower = normalizeText(ref.title).toLowerCase();
         if (entryLower.includes(titleLower)) {
           score += 4;
@@ -233,7 +241,7 @@ function findRefMatchForEntry(entry, testItems) {
       }
     }
 
-    candidates.push({ id, ref, score });
+    candidates.push({ id: ref.id || id, ref, score });
   }
 
   if (candidates.length === 0) return null;
