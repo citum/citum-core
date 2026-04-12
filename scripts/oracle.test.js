@@ -15,7 +15,9 @@ const {
 const {
   attachRegisteredDivergenceAdjustments,
   detectDiv004OrderDifference,
+  detectDiv008OrderDifference,
   explainCitationMismatchFromDiv005,
+  explainCitationMismatchFromDiv008,
 } = require('./lib/oracle-divergences');
 const { loadVerificationPolicy, resolveRegisteredDivergence } = require('./lib/verification-policy');
 
@@ -354,6 +356,164 @@ test('registered divergence adjustments skip order inspection without failures',
   assert.equal(adjusted.bibliographyOrder, null);
   assert.equal(adjusted.adjusted.citations.passed, 1);
   assert.deepEqual(adjusted.adjusted.divergenceSummary, {});
+});
+
+test('div-008 detection identifies same-family named items reversed in citum output', () => {
+  const policy = loadVerificationPolicy();
+  const divergenceRule = resolveRegisteredDivergence(policy, 'div-008');
+
+  const testItems = {
+    'ITEM-A': { id: 'ITEM-A', type: 'article-journal', title: 'Given-First Paper', author: [{ family: 'Smith', given: 'Jane' }] },
+    'ITEM-B': { id: 'ITEM-B', type: 'article-journal', title: 'Title-First Paper', author: [{ family: 'Smith', given: 'Patricia' }] },
+  };
+
+  // Oracle: Jane before Patricia (given-name J < P)
+  // Citum:  Patricia before Jane (title G < T)
+  const divergence = detectDiv008OrderDifference(
+    ['Smith, Jane. Given-First Paper.', 'Smith, Patricia. Title-First Paper.'],
+    ['ITEM-B', 'ITEM-A'],
+    testItems,
+    divergenceRule
+  );
+
+  assert.equal(divergence?.divergenceId, 'div-008');
+  assert.deepEqual(divergence?.swappedPairs, [['ITEM-A', 'ITEM-B']]);
+  assert.deepEqual(divergence?.affectedIds, ['ITEM-A', 'ITEM-B']);
+});
+
+test('div-008 detection fires when same-family items are separated by an anonymous item', () => {
+  const policy = loadVerificationPolicy();
+  const divergenceRule = resolveRegisteredDivergence(policy, 'div-008');
+
+  const testItems = {
+    'ITEM-A': { id: 'ITEM-A', type: 'article-journal', title: 'Given-First Paper', author: [{ family: 'Smith', given: 'Jane' }] },
+    'ITEM-ANON': { id: 'ITEM-ANON', type: 'legal_case', title: 'Anonymous Case' },
+    'ITEM-B': { id: 'ITEM-B', type: 'article-journal', title: 'Title-First Paper', author: [{ family: 'Smith', given: 'Patricia' }] },
+  };
+
+  // Oracle named-only order: Jane, Patricia — but an anonymous item sits between them in full order.
+  const divergence = detectDiv008OrderDifference(
+    [
+      'Smith, Jane. Given-First Paper.',
+      'Anonymous Case.',
+      'Smith, Patricia. Title-First Paper.',
+    ],
+    ['ITEM-B', 'ITEM-ANON', 'ITEM-A'],
+    testItems,
+    divergenceRule
+  );
+
+  assert.equal(divergence?.divergenceId, 'div-008');
+  assert.deepEqual(divergence?.swappedPairs, [['ITEM-A', 'ITEM-B']]);
+});
+
+test('div-008 detection returns null when oracle and citum order agree', () => {
+  const policy = loadVerificationPolicy();
+  const divergenceRule = resolveRegisteredDivergence(policy, 'div-008');
+
+  const testItems = {
+    'ITEM-A': { id: 'ITEM-A', type: 'article-journal', title: 'Alpha', author: [{ family: 'Smith', given: 'Jane' }] },
+    'ITEM-B': { id: 'ITEM-B', type: 'article-journal', title: 'Beta', author: [{ family: 'Smith', given: 'Patricia' }] },
+  };
+
+  const result = detectDiv008OrderDifference(
+    ['Smith, Jane. Alpha.', 'Smith, Patricia. Beta.'],
+    ['ITEM-A', 'ITEM-B'],
+    testItems,
+    divergenceRule
+  );
+
+  assert.equal(result, null);
+});
+
+test('explainCitationMismatchFromDiv008 masks labels for swapped same-family items', () => {
+  const policy = loadVerificationPolicy();
+  const divergenceRule = resolveRegisteredDivergence(policy, 'div-008');
+
+  const testItems = {
+    'ITEM-A': { id: 'ITEM-A', type: 'article-journal', title: 'Given-First', author: [{ family: 'Smith', given: 'Jane' }] },
+    'ITEM-B': { id: 'ITEM-B', type: 'article-journal', title: 'Title-First', author: [{ family: 'Smith', given: 'Patricia' }] },
+  };
+
+  const div008Info = detectDiv008OrderDifference(
+    ['Smith, Jane. Given-First.', 'Smith, Patricia. Title-First.'],
+    ['ITEM-B', 'ITEM-A'],
+    testItems,
+    divergenceRule
+  );
+
+  // oracle: ITEM-A=[1], ITEM-B=[2]; citum: ITEM-B=[1], ITEM-A=[2]
+  const entry = { id: 'cite-smith', oracle: '[1]', citum: '[2]', match: false };
+  const citationFixture = { id: 'cite-smith', items: [{ id: 'ITEM-A' }] };
+
+  const adjustment = explainCitationMismatchFromDiv008(entry, citationFixture, div008Info);
+
+  assert.equal(adjustment?.divergenceId, 'div-008');
+  assert.deepEqual(adjustment?.itemIds, ['ITEM-A']);
+  assert.deepEqual(adjustment?.oracleLabels, [1]);
+  assert.deepEqual(adjustment?.citumLabels, [2]);
+});
+
+test('div-008 and div-004 fire independently when both conditions are present', () => {
+  const rawResults = {
+    style: 'acm-sig-proceedings',
+    citations: {
+      total: 2,
+      passed: 0,
+      failed: 2,
+      entries: [
+        { id: 'cite-smith-jane', oracle: '[1]', citum: '[2]', match: false },
+        { id: 'cite-anon', oracle: '[3]', citum: '[2]', match: false },
+      ],
+    },
+    bibliography: {
+      total: 3,
+      passed: 3,
+      failed: 0,
+      entries: [],
+    },
+    citationsByType: {},
+    componentSummary: {},
+    orderingIssues: 0,
+  };
+
+  const testItems = {
+    'ITEM-A': { id: 'ITEM-A', type: 'article-journal', title: 'Given-First', author: [{ family: 'Smith', given: 'Jane' }] },
+    'ITEM-B': { id: 'ITEM-B', type: 'article-journal', title: 'Title-First', author: [{ family: 'Smith', given: 'Patricia' }] },
+    'ITEM-ANON': { id: 'ITEM-ANON', type: 'legal_case', title: 'Anon Case' },
+  };
+
+  // Oracle: Jane[1], Patricia[2], Anon[3]
+  // Citum:  Patricia[1], Jane[2], Anon[3]  ← div-008 (Smith swap); anon stays last
+  const adjusted = attachRegisteredDivergenceAdjustments(
+    rawResults,
+    [
+      'Smith, Jane. Given-First.',
+      'Smith, Patricia. Title-First.',
+      'Anon Case.',
+    ],
+    ['ITEM-B', 'ITEM-A', 'ITEM-ANON'],
+    testItems,
+    [
+      { id: 'cite-smith-jane', items: [{ id: 'ITEM-A' }] },
+      { id: 'cite-anon', items: [{ id: 'ITEM-ANON' }] },
+    ]
+  );
+
+  const summary = adjusted.adjusted.divergenceSummary;
+  // Both divergences must appear in the summary independently.
+  assert.ok(summary['div-008'], 'div-008 should be in divergence summary');
+  assert.ok(summary['div-004'], 'div-004 should also be in divergence summary');
+  assert.deepEqual(summary['div-008'].swappedPairs, [['ITEM-A', 'ITEM-B']]);
+
+  // The Smith Jane citation is explained by whichever divergence fires first —
+  // both produce equivalent label masking; the exact divergenceId is not load-bearing.
+  const smithEntry = adjusted.adjusted.citations.entries[0];
+  assert.equal(smithEntry.match, true, 'a registered divergence should explain the Smith citation mismatch');
+  assert.ok(
+    ['div-004', 'div-008'].includes(smithEntry.appliedDivergence?.divergenceId),
+    `applied divergence should be div-004 or div-008, got: ${smithEntry.appliedDivergence?.divergenceId}`
+  );
 });
 
 test('compareComponents reports differing component values as mismatches', () => {
