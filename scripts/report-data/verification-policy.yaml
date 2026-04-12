@@ -26,6 +26,18 @@ divergences:
       metadata that Citum now renders for note-style manuscript citations.
       Adjusted verification treats those archival-tail additions as intentional
       while preserving raw citeproc deltas in reports.
+  div-008:
+    scopes:
+      - citation
+      - bibliography
+    tags:
+      - same-family-secondary-sort-title-vs-given
+      - sort-derived-numeric-citation-label
+    note: After a family-name match, citeproc-js sorts by given name (family →
+      given → suffix → title); Citum sorts by title (family → title). Adjusted
+      verification masks numeric citation labels that shift solely due to
+      within-group reordering of same-family-name items, independent of the
+      div-004 anonymous-item adjustment.
 
 styles:
   numeric-comp:
