@@ -191,7 +191,9 @@ references:
     collection: O’Laughlin Papers
 - class: hearing
   id: 6188419/VCP6HK7G
-  title: 'Homeland Security Act of 2002: Hearings on H.R. 5005, Day 3, Before the Select Comm. on Homeland Security'
+  title:
+    main: Homeland Security Act of 2002
+    sub: [Hearings on H.R. 5005, Day 3, Before the Select Comm. on Homeland Security]
   authority: U.S. House of Representatives, Select Committee on Homeland Security
   issued: '2002'
   accessed: 2025-04-11
@@ -234,7 +236,9 @@ references:
   container:
     class: collection
     type: edited-book
-    title: 'Moving foreword: real introductions to totally made-up books'
+    title:
+      main: Moving foreword
+      sub: real introductions to totally made-up books
     editor:
     - given: Jon
       family: Chattman
@@ -243,9 +247,6 @@ references:
       place: Dallas, TX
   pages: xv–xvii
   language: en
-  note: |-
-    OCLC: 1089276783
-    container-title-short: Moving foreword
   genre: foreword
 - class: monograph
   id: 6188419/RY7PJ7H7
@@ -304,7 +305,9 @@ references:
 - class: monograph
   id: 6188419/7RP5QFT2
   type: document
-  title: 'Documentary operationality: beyond representation'
+  title:
+    main: Documentary operationality
+    sub: Beyond representation
   author:
   - given: Toby
     family: Lee
