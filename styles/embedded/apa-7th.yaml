@@ -78,20 +78,20 @@ citation:
     wrap:
       punctuation: parentheses
     type-variants:
-      ? article-journal, article-magazine, article-newspaper, book, broadcast, chapter, dataset, entry-encyclopedia, interview, motion-picture, paper-conference, patent, report, software, standard, thesis, webpage
+      ? article-journal, article-magazine, article-newspaper, book, broadcast, chapter, dataset, entry-encyclopedia, interview, motion-picture, paper-conference, patent, report, software, song, standard, thesis, webpage
       : - contributor: author
           form: short
         - date: issued
           form: year
         - variable: locator
-      legal-case:
-      - title: primary
-        form: short
-        emph: true
-        quote: false
-      - date: issued
-        form: year
-      - variable: locator
+      ? legal-case, treaty, hearing
+      : - title: primary
+          form: short
+          emph: true
+          quote: false
+        - date: issued
+          form: year
+        - variable: locator
       personal-communication:
       - contributor: author
         form: long
@@ -116,7 +116,7 @@ citation:
       contributors:
         and: text
     type-variants:
-      ? article-journal, article-magazine, article-newspaper, book, broadcast, chapter, dataset, entry-encyclopedia, interview, motion-picture, paper-conference, patent, report, software, standard, thesis, webpage
+      ? article-journal, article-magazine, article-newspaper, book, broadcast, chapter, dataset, entry-encyclopedia, interview, motion-picture, paper-conference, patent, report, software, song, standard, thesis, webpage
       : - contributor: author
           form: short
         - delimiter: ", "
@@ -126,18 +126,18 @@ citation:
           - date: issued
             form: year
           - variable: locator
-      legal-case:
-      - title: primary
-        form: short
-        emph: true
-        quote: false
-      - delimiter: ", "
-        wrap:
-          punctuation: parentheses
-        group:
-        - date: issued
-          form: year
-        - variable: locator
+      ? legal-case, treaty, hearing
+      : - title: primary
+          form: short
+          emph: true
+          quote: false
+        - delimiter: ", "
+          wrap:
+            punctuation: parentheses
+          group:
+          - date: issued
+            form: year
+          - variable: locator
       personal-communication:
       - contributor: author
         form: long

@@ -1162,3 +1162,13 @@ fn conversion_chapter_without_named_parent_keeps_volume_but_avoids_empty_contain
             .any(|numbering| numbering.r#type == NumberingType::Volume && numbering.value == "2")
     );
 }
+
+#[test]
+fn ref_type_document_with_conference_paper_genre_returns_paper_conference() {
+    let reference = InputReference::Monograph(Box::new(Monograph {
+        r#type: MonographType::Document,
+        genre: Some("conference-paper".to_string()),
+        ..Default::default()
+    }));
+    assert_eq!(reference.ref_type(), "paper-conference");
+}

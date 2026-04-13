@@ -77,9 +77,9 @@ references:
   issued: '2021'
   url: https://www.govinfo.gov/content/pkg/DCPD-202100401/pdf/DCPD-202100401.pdf
   language: en
-- class: audio-visual
+- class: monograph
   id: 6188419/EDMI8NQY
-  type: recording
+  type: interview
   title: Bernie Sanders with Cardi B
   contributors:
   - role: interviewer
@@ -92,7 +92,7 @@ references:
   issued: 2019-08-15
   url: https://youtu.be/p1ubTsrZFBU
   language: en
-  platform: YouTube
+  medium: video
 - class: audio-visual
   id: 6188419/EXVHRUDT
   type: episode
@@ -189,12 +189,10 @@ references:
   archive-info:
     name: Harvard College Library
     collection: O’Laughlin Papers
-- class: monograph
+- class: hearing
   id: 6188419/VCP6HK7G
-  type: document
   title: 'Homeland Security Act of 2002: Hearings on H.R. 5005, Day 3, Before the Select Comm. on Homeland Security'
-  author:
-  - name: David Walker, Comptroller General of the United States
+  authority: U.S. House of Representatives, Select Committee on Homeland Security
   issued: '2002'
   accessed: 2025-04-11
   language: en
