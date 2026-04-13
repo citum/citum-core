@@ -6,7 +6,11 @@ references:
 - class: monograph
   id: 6188419/UDAG5V6W
   type: personal-communication
-  title: James Oglethorpe to the Trustees
+  contributors:
+  - role: author
+    contributor: {given: James, family: Oglethorpe}
+  - role: recipient
+    contributor: {name: "the Trustees"}
   issued: '1733'
   archive-info:
     name: University of Georgia Library

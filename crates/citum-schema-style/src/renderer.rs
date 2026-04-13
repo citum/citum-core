@@ -329,6 +329,7 @@ fn render_legacy_term(term: crate::locale::GeneralTerm, form: crate::locale::Ter
             T::ReviewOf => "review of".to_string(),
             T::OriginalWorkPublished => "originally published".to_string(),
             T::Patent => "patent".to_string(),
+            T::PersonalCommunication => "personal communication".to_string(),
         },
     }
 }

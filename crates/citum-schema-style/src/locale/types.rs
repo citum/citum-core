@@ -103,6 +103,8 @@ pub enum GeneralTerm {
     Edition,
     /// The general term for section locators (e.g., "section", "§").
     Section,
+    /// The label for personal communications (e.g., "personal communication").
+    PersonalCommunication,
 }
 
 /// General terms used in citations and bibliographies.
@@ -179,13 +181,22 @@ impl Terms {
             in_: Some("in".into()),
             no_date: Some("n.d.".into()),
             retrieved: Some("retrieved".into()),
-            general: std::collections::HashMap::from([(
-                GeneralTerm::NoDate,
-                SimpleTerm {
-                    long: "no date".into(),
-                    short: "n.d.".into(),
-                },
-            )]),
+            general: std::collections::HashMap::from([
+                (
+                    GeneralTerm::NoDate,
+                    SimpleTerm {
+                        long: "no date".into(),
+                        short: "n.d.".into(),
+                    },
+                ),
+                (
+                    GeneralTerm::PersonalCommunication,
+                    SimpleTerm {
+                        long: "personal communication".into(),
+                        short: "pers. comm.".into(),
+                    },
+                ),
+            ]),
         }
     }
 }

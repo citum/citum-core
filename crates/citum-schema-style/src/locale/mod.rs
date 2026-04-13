@@ -814,6 +814,7 @@ impl Locale {
             GeneralTerm::Edition => "edition",
             GeneralTerm::Section => "section",
             GeneralTerm::OriginalWorkPublished => "original-work-published",
+            GeneralTerm::PersonalCommunication => "personal-communication",
         }
     }
 
@@ -1315,9 +1316,20 @@ impl Locale {
         }
     }
 
+    /// Normalize a locale term key to canonical kebab-case.
+    ///
+    /// Locale YAML files and style templates may use underscores or spaces
+    /// interchangeably with hyphens (e.g. `no_date`, `no date`, `no-date`).
+    /// This helper converts all three forms to the single canonical
+    /// kebab-case key so `parse_general_term` only needs to match one pattern
+    /// per term.
+    fn normalize_term_key(s: &str) -> String {
+        s.replace(['_', ' '], "-")
+    }
+
     /// Parse a locale term key into a structured general-term identifier.
     pub fn parse_general_term(name: &str) -> Option<GeneralTerm> {
-        match name {
+        match Self::normalize_term_key(name).as_str() {
             "in" => Some(GeneralTerm::In),
             "accessed" => Some(GeneralTerm::Accessed),
             "retrieved" => Some(GeneralTerm::Retrieved),
@@ -1326,20 +1338,21 @@ impl Locale {
             "of" => Some(GeneralTerm::Of),
             "to" => Some(GeneralTerm::To),
             "by" => Some(GeneralTerm::By),
-            "no-date" | "no_date" | "no date" => Some(GeneralTerm::NoDate),
+            "no-date" => Some(GeneralTerm::NoDate),
             "anonymous" => Some(GeneralTerm::Anonymous),
             "circa" => Some(GeneralTerm::Circa),
-            "available-at" | "available_at" | "available at" => Some(GeneralTerm::AvailableAt),
+            "available-at" => Some(GeneralTerm::AvailableAt),
             "ibid" => Some(GeneralTerm::Ibid),
             "and" => Some(GeneralTerm::And),
-            "et-al" | "et_al" | "et al" => Some(GeneralTerm::EtAl),
-            "and-others" | "and_others" | "and others" => Some(GeneralTerm::AndOthers),
+            "et-al" => Some(GeneralTerm::EtAl),
+            "and-others" => Some(GeneralTerm::AndOthers),
             "forthcoming" => Some(GeneralTerm::Forthcoming),
             "online" => Some(GeneralTerm::Online),
             "here" => Some(GeneralTerm::Here),
             "deposited" => Some(GeneralTerm::Deposited),
-            "review-of" | "review_of" | "review of" => Some(GeneralTerm::ReviewOf),
+            "review-of" => Some(GeneralTerm::ReviewOf),
             "original-work-published" => Some(GeneralTerm::OriginalWorkPublished),
+            "personal-communication" => Some(GeneralTerm::PersonalCommunication),
             "patent" => Some(GeneralTerm::Patent),
             "volume" => Some(GeneralTerm::Volume),
             "issue" => Some(GeneralTerm::Issue),

@@ -96,9 +96,9 @@ citation:
       - contributor: author
         form: long
         name-order: given-first
-        suffix: ", personal communication"
+      - term: personal-communication
       - date: issued
-        form: year-month-day
+        form: full
       - variable: locator
     template:
     - contributor: author
@@ -142,13 +142,13 @@ citation:
       - contributor: author
         form: long
         name-order: given-first
-        suffix: ", personal communication"
       - delimiter: ", "
         wrap:
           punctuation: parentheses
         group:
+        - term: personal-communication
         - date: issued
-          form: year-month-day
+          form: full
         - variable: locator
     template:
     - contributor: author

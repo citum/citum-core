@@ -16,7 +16,7 @@ use citum_schema::{
     options::{
         AndOptions, Config, ContributorConfig, DelimiterPrecedesLast, DisplayAsSort,
         IntegralNameConfig, IntegralNameContexts, IntegralNameForm, IntegralNameRule,
-        IntegralNameScope, Processing, ProcessingCustom, ShortenListOptions,
+        IntegralNameScope, NameForm, Processing, ProcessingCustom, ShortenListOptions,
     },
     reference::InputReference,
 };
@@ -1669,4 +1669,72 @@ mod annotated_html_preview {
         );
         super::citation_html_injects_sparse_template_indices_when_enabled();
     }
+}
+
+#[test]
+fn test_personal_communication_citation_rendering_is_style_driven() {
+    let bib_vec = serde_yaml::from_str::<Vec<InputReference>>(
+        r#"
+- id: oglethorpe-1733
+  class: monograph
+  type: personal-communication
+  contributors:
+  - role: author
+    contributor: {given: James, family: Oglethorpe}
+  - role: recipient
+    contributor: {name: "the Trustees"}
+  issued: '1733-01-13'
+"#,
+    )
+    .unwrap();
+
+    let mut bib = indexmap::IndexMap::new();
+    for item in bib_vec {
+        bib.insert(item.id().unwrap(), item);
+    }
+
+    // Mock APA 7th non-integral: (J. Oglethorpe, personal communication, January 13, 1733)
+    let apa_style = Style {
+        info: StyleInfo {
+            title: Some("APA Personal Communication".to_string()),
+            ..Default::default()
+        },
+        citation: Some(CitationSpec {
+            template: Some(vec![
+                citum_schema::template::TemplateComponent::Contributor(
+                    citum_schema::template::TemplateContributor {
+                        contributor: citum_schema::template::ContributorRole::Author,
+                        form: citum_schema::template::ContributorForm::Long,
+                        name_order: Some(citum_schema::template::NameOrder::GivenFirst),
+                        rendering: citum_schema::template::Rendering {
+                            name_form: Some(NameForm::Initials),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    },
+                ),
+                citum_schema::tc_term!(PersonalCommunication),
+                citum_schema::tc_date!(Issued, Full),
+            ]),
+            delimiter: Some(", ".to_string()),
+            wrap: Some(citum_schema::template::WrapPunctuation::Parentheses.into()),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let processor = Processor::new(apa_style, bib);
+    let citation = Citation {
+        items: vec![CitationItem {
+            id: "oglethorpe-1733".to_string(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let output = processor.process_citation(&citation).unwrap();
+    assert_eq!(
+        output,
+        "(J. Oglethorpe, personal communication, January 13, 1733)"
+    );
 }
