@@ -11,20 +11,28 @@ COMMON_GLOBS=(
   --glob '!**/target/**'
 )
 
+run_rg() {
+  local status=0
+  rg -n "${COMMON_GLOBS[@]}" "$@" || status=$?
+  if [[ "$status" -gt 1 ]]; then
+    return "$status"
+  fi
+}
+
 echo "== Existing string aliases and wrappers =="
-rg -n "${COMMON_GLOBS[@]}" \
+run_rg \
   '^\s*pub\s+(type\s+[A-Z][A-Za-z0-9_]*\s*=\s*String;|struct\s+[A-Z][A-Za-z0-9_]*\s*\(\s*(pub\s+)?String\s*\);)' \
   "$ROOT"
 
 echo
 echo "== Public struct fields with semantic primitive names =="
-rg -n "${COMMON_GLOBS[@]}" \
+run_rg \
   '\bpub\s+(id|slug|locale|language|label|name|title|path|url|uri)\s*:\s*(Option<)?String' \
   "$ROOT"
 
 echo
 echo "== Public functions with semantic primitive params =="
-rg -n "${COMMON_GLOBS[@]}" \
+run_rg \
   'pub\s+fn\s+\w+[[:space:]]*(<[^>]+>)?[[:space:]]*\(([^)]*(id|slug|locale|language|label|name|path|url|uri)\s*:\s*&?str[^)]*|[^)]*(id|slug|locale|language|label|name|path|url|uri)\s*:\s*String[^)]*)\)' \
   "$ROOT"
 
