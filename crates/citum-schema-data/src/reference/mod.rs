@@ -1311,6 +1311,9 @@ impl InputReference {
                     {
                         return genre.to_string();
                     }
+                    if self.genre().as_deref() == Some("conference-paper") {
+                        return "paper-conference".to_string();
+                    }
                     if r.medium
                         .as_deref()
                         .is_some_and(|m| m.to_ascii_lowercase().contains("interview"))
