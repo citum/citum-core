@@ -10,7 +10,7 @@ mod substitute;
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderContext, RenderOptions};
 use citum_schema::options::{IntegralNameForm, IntegralNameRule};
-use citum_schema::template::{ContributorForm, ContributorRole, NameOrder, TemplateContributor};
+use citum_schema::template::{ContributorForm, ContributorRole, TemplateContributor};
 
 #[cfg(test)]
 pub(crate) use names::{NameFormatContext, format_single_name};
@@ -144,7 +144,7 @@ impl ComponentValues for TemplateContributor {
         let fmt = F::default();
 
         let mut component = self.clone();
-        let mut effective_rendering = self.rendering.clone();
+        let effective_rendering = self.rendering.clone();
 
         // Apply integral-citation subsequent-form (FullThenShort rule)
         apply_integral_subsequent_form(&mut component, hints, options);
@@ -152,19 +152,6 @@ impl ComponentValues for TemplateContributor {
         // Respect explicit suppression before any contributor substitution logic.
         if effective_rendering.suppress == Some(true) {
             return None;
-        }
-
-        // Personal-communication special-case: always given-first with a suffix.
-        if options.context == RenderContext::Citation
-            && reference.ref_type() == "personal-communication"
-            && matches!(component.contributor, ContributorRole::Author)
-            && matches!(component.form, ContributorForm::Long)
-            && component.name_order.is_none()
-            && effective_rendering.suffix.is_none()
-        {
-            component.form = ContributorForm::Long;
-            component.name_order = Some(NameOrder::GivenFirst);
-            effective_rendering.suffix = Some(", personal communication".to_string());
         }
 
         let contributor = match &component.contributor {

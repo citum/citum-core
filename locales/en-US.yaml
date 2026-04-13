@@ -903,10 +903,10 @@ date-formats:
 grammar-options:
   punctuation-in-quote: true
   nbsp-before-colon: false
-  open-quote: """
-  close-quote: """
-  open-inner-quote: "'"
-  close-inner-quote: "'"
+  open-quote: “
+  close-quote: ”
+  open-inner-quote: "‘"
+  close-inner-quote: "’"
   serial-comma: true
   page-range-delimiter: "–"
 

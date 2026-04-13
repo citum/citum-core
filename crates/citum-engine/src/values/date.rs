@@ -692,14 +692,7 @@ impl ComponentValues for TemplateDate {
         let date = date_opt.unwrap();
         let locale = options.locale;
         let date_config = options.config.dates.as_ref();
-        let effective_form = if options.context == crate::values::RenderContext::Citation
-            && reference.ref_type() == "personal-communication"
-            && matches!(self.date, TemplateDateVar::Issued)
-        {
-            DateForm::Full
-        } else {
-            self.form.clone()
-        };
+        let effective_form = self.form.clone();
 
         let formatted = if date.is_range() {
             // Handle date ranges
