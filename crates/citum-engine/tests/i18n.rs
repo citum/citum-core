@@ -37,7 +37,7 @@ fn build_ml_style(name_mode: MultilingualMode, preferred_script: Option<String>)
     Style {
         info: StyleInfo {
             title: Some("Multilingual Test".to_string()),
-            id: Some("ml-test".to_string()),
+            id: Some("ml-test".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -65,7 +65,7 @@ fn make_german_translator_role_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Chicago German Translator Test".to_string()),
-            id: Some("chicago-de-translator".to_string()),
+            id: Some("chicago-de-translator".into()),
             default_locale: Some("de-DE".to_string()),
             ..Default::default()
         },
@@ -127,7 +127,7 @@ fn make_german_translator_role_style() -> Style {
 fn make_german_translator_reference() -> InputReference {
     InputReference::Monograph(Box::new(Monograph {
         short_title: None,
-        id: Some("ref1".to_string()),
+        id: Some("ref1".into()),
         r#type: MonographType::Book,
         title: Some(Title::Single("Das Buch".to_string())),
         container: None,
@@ -143,7 +143,7 @@ fn make_german_translator_reference() -> InputReference {
             ..Default::default()
         })),
         issued: EdtfString("2024".to_string()),
-        language: Some("de".to_string()),
+        language: Some("de".into()),
         ..Default::default()
     }))
 }
@@ -159,7 +159,7 @@ fn given_a_simple_string_when_resolved_then_the_original_text_is_returned() {
 fn given_primary_mode_when_resolving_a_multilingual_title_then_the_original_script_is_returned() {
     let complex = MultilingualComplex {
         original: "战争与和平".to_string(),
-        lang: Some("zh".to_string()),
+        lang: Some("zh".into()),
         transliterations: {
             let mut map = HashMap::new();
             map.insert(
@@ -170,7 +170,7 @@ fn given_primary_mode_when_resolving_a_multilingual_title_then_the_original_scri
         },
         translations: {
             let mut map = HashMap::new();
-            map.insert("en".to_string(), "War and Peace".to_string());
+            map.insert("en".into(), "War and Peace".to_string());
             map
         },
     };
@@ -190,7 +190,7 @@ fn given_primary_mode_when_resolving_a_multilingual_title_then_the_original_scri
 fn given_an_exact_transliteration_match_when_resolving_then_that_transliteration_is_used() {
     let complex = MultilingualComplex {
         original: "東京".to_string(),
-        lang: Some("ja".to_string()),
+        lang: Some("ja".into()),
         transliterations: {
             let mut map = HashMap::new();
             map.insert("ja-Latn-hepburn".to_string(), "Tōkyō".to_string());
@@ -199,7 +199,7 @@ fn given_an_exact_transliteration_match_when_resolving_then_that_transliteration
         },
         translations: {
             let mut map = HashMap::new();
-            map.insert("en".to_string(), "Tokyo".to_string());
+            map.insert("en".into(), "Tokyo".to_string());
             map
         },
     };
@@ -220,7 +220,7 @@ fn given_an_exact_transliteration_match_when_resolving_then_that_transliteration
 fn given_a_transliteration_prefix_match_when_resolving_then_the_matching_transliteration_is_used() {
     let complex = MultilingualComplex {
         original: "東京".to_string(),
-        lang: Some("ja".to_string()),
+        lang: Some("ja".into()),
         transliterations: {
             let mut map = HashMap::new();
             map.insert("ja-Latn-hepburn".to_string(), "Tōkyō".to_string());
@@ -245,7 +245,7 @@ fn given_a_transliteration_prefix_match_when_resolving_then_the_matching_transli
 fn given_no_transliteration_when_transliterated_mode_is_requested_then_the_original_text_is_used() {
     let complex = MultilingualComplex {
         original: "东京".to_string(),
-        lang: Some("zh".to_string()),
+        lang: Some("zh".into()),
         transliterations: HashMap::new(), // No transliterations available
         translations: HashMap::new(),
     };
@@ -266,12 +266,12 @@ fn given_no_transliteration_when_transliterated_mode_is_requested_then_the_origi
 fn given_translated_mode_when_resolving_then_the_requested_locale_translation_is_used() {
     let complex = MultilingualComplex {
         original: "战争与和平".to_string(),
-        lang: Some("zh".to_string()),
+        lang: Some("zh".into()),
         transliterations: HashMap::new(),
         translations: {
             let mut map = HashMap::new();
-            map.insert("en".to_string(), "War and Peace".to_string());
-            map.insert("fr".to_string(), "Guerre et Paix".to_string());
+            map.insert("en".into(), "War and Peace".to_string());
+            map.insert("fr".into(), "Guerre et Paix".to_string());
             map
         },
     };
@@ -302,7 +302,7 @@ fn given_translated_mode_when_resolving_then_the_requested_locale_translation_is
 fn given_combined_mode_when_transliteration_and_translation_exist_then_both_are_combined() {
     let complex = MultilingualComplex {
         original: "战争与和平".to_string(),
-        lang: Some("zh".to_string()),
+        lang: Some("zh".into()),
         transliterations: {
             let mut map = HashMap::new();
             map.insert(
@@ -313,7 +313,7 @@ fn given_combined_mode_when_transliteration_and_translation_exist_then_both_are_
         },
         translations: {
             let mut map = HashMap::new();
-            map.insert("en".to_string(), "War and Peace".to_string());
+            map.insert("en".into(), "War and Peace".to_string());
             map
         },
     };
@@ -335,11 +335,11 @@ fn given_combined_mode_without_transliteration_when_resolving_then_original_and_
  {
     let complex = MultilingualComplex {
         original: "东京".to_string(),
-        lang: Some("zh".to_string()),
+        lang: Some("zh".into()),
         transliterations: HashMap::new(),
         translations: {
             let mut map = HashMap::new();
-            map.insert("en".to_string(), "Tokyo".to_string());
+            map.insert("en".into(), "Tokyo".to_string());
             map
         },
     };
@@ -384,7 +384,7 @@ fn given_a_multilingual_name_with_requested_script_when_resolved_then_the_transl
             dropping_particle: None,
             non_dropping_particle: None,
         },
-        lang: Some("ru".to_string()),
+        lang: Some("ru".into()),
         transliterations: {
             let mut map = HashMap::new();
             map.insert(
@@ -425,7 +425,7 @@ fn given_a_multilingual_name_with_a_script_prefix_match_when_resolved_then_the_m
             dropping_particle: None,
             non_dropping_particle: None,
         },
-        lang: Some("ru".to_string()),
+        lang: Some("ru".into()),
         transliterations: {
             let mut map = HashMap::new();
             map.insert(
@@ -467,7 +467,7 @@ fn given_a_multilingual_name_without_transliterations_when_resolved_then_the_ori
             dropping_particle: None,
             non_dropping_particle: None,
         },
-        lang: Some("ru".to_string()),
+        lang: Some("ru".into()),
         transliterations: HashMap::new(),
         translations: HashMap::new(),
     });
@@ -578,7 +578,7 @@ fn given_translated_numeric_integral_citations_when_rendered_then_the_translated
     let mut bib = indexmap::IndexMap::new();
     let mut translations = HashMap::new();
     translations.insert(
-        "en-US".to_string(),
+        "en-US".into(),
         StructuredName {
             family: MultilingualString::Simple("Tolstoy".to_string()),
             given: MultilingualString::Simple("Leo".to_string()),
@@ -591,7 +591,7 @@ fn given_translated_numeric_integral_citations_when_rendered_then_the_translated
         citum_schema::reference::InputReference::Monograph(Box::new(
             citum_schema::reference::Monograph {
                 short_title: None,
-                id: Some("item1".to_string()),
+                id: Some("item1".into()),
                 r#type: citum_schema::reference::MonographType::Book,
                 title: Some(citum_schema::reference::Title::Single(
                     "War and Peace".to_string(),
@@ -603,7 +603,7 @@ fn given_translated_numeric_integral_citations_when_rendered_then_the_translated
                         given: MultilingualString::Simple("Лев".to_string()),
                         ..Default::default()
                     },
-                    lang: Some("ru".to_string()),
+                    lang: Some("ru".into()),
                     transliterations: HashMap::new(),
                     translations,
                 })),
@@ -631,11 +631,11 @@ fn given_field_language_overrides_when_resolving_the_effective_field_language_th
  {
     let reference = InputReference::Monograph(Box::new(Monograph {
         short_title: None,
-        id: Some("item1".to_string()),
+        id: Some("item1".into()),
         r#type: MonographType::Book,
         title: Some(Title::Multilingual(MultilingualComplex {
             original: "Titel".to_string(),
-            lang: Some("de".to_string()),
+            lang: Some("de".into()),
             transliterations: HashMap::new(),
             translations: HashMap::new(),
         })),
@@ -644,8 +644,8 @@ fn given_field_language_overrides_when_resolving_the_effective_field_language_th
         editor: None,
         translator: None,
         issued: EdtfString("2024".to_string()),
-        language: Some("fr".to_string()),
-        field_languages: HashMap::from([("title".to_string(), "en".to_string())]),
+        language: Some("fr".into()),
+        field_languages: HashMap::from([("title".to_string(), "en".into())]),
         ..Default::default()
     }));
 
@@ -659,11 +659,11 @@ fn given_no_item_language_when_resolving_the_effective_item_language_then_the_mu
  {
     let reference = InputReference::Monograph(Box::new(Monograph {
         short_title: None,
-        id: Some("item1".to_string()),
+        id: Some("item1".into()),
         r#type: MonographType::Book,
         title: Some(Title::Multilingual(MultilingualComplex {
             original: "東京".to_string(),
-            lang: Some("ja".to_string()),
+            lang: Some("ja".into()),
             transliterations: HashMap::new(),
             translations: HashMap::new(),
         })),
@@ -713,7 +713,7 @@ fn given_localized_citation_templates_when_the_item_language_matches_then_the_lo
         "de-item".to_string(),
         InputReference::Monograph(Box::new(Monograph {
             short_title: None,
-            id: Some("de-item".to_string()),
+            id: Some("de-item".into()),
             r#type: MonographType::Book,
             title: Some(Title::Single("Titel".to_string())),
             container: None,
@@ -727,7 +727,7 @@ fn given_localized_citation_templates_when_the_item_language_matches_then_the_lo
             }),
             url: None,
             accessed: None,
-            language: Some("de-AT".to_string()),
+            language: Some("de-AT".into()),
             field_languages: HashMap::new(),
             note: Some("fallback".to_string()),
             isbn: None,
@@ -749,7 +749,7 @@ fn given_localized_citation_templates_when_the_item_language_matches_then_the_lo
         "fr-item".to_string(),
         InputReference::Monograph(Box::new(Monograph {
             short_title: None,
-            id: Some("fr-item".to_string()),
+            id: Some("fr-item".into()),
             r#type: MonographType::Book,
             title: Some(Title::Single("Titre".to_string())),
             container: None,
@@ -763,7 +763,7 @@ fn given_localized_citation_templates_when_the_item_language_matches_then_the_lo
             }),
             url: None,
             accessed: None,
-            language: Some("fr".to_string()),
+            language: Some("fr".into()),
             field_languages: HashMap::new(),
             note: Some("fallback".to_string()),
             isbn: None,
@@ -828,11 +828,11 @@ fn given_localized_bibliography_templates_when_only_the_multilingual_title_has_a
         "item1".to_string(),
         InputReference::Monograph(Box::new(Monograph {
             short_title: None,
-            id: Some("item1".to_string()),
+            id: Some("item1".into()),
             r#type: MonographType::Book,
             title: Some(Title::Multilingual(MultilingualComplex {
                 original: "東京".to_string(),
-                lang: Some("ja".to_string()),
+                lang: Some("ja".into()),
                 transliterations: HashMap::new(),
                 translations: HashMap::new(),
             })),
@@ -915,7 +915,7 @@ fn given_mixed_language_titles_when_rendering_the_bibliography_then_field_langua
     };
 
     let reference = InputReference::CollectionComponent(Box::new(CollectionComponent {
-        id: Some("chapter-1".to_string()),
+        id: Some("chapter-1".into()),
         r#type: citum_schema::reference::MonographComponentType::Chapter,
         title: Some(Title::Single("English Article".to_string())),
         author: None,
@@ -935,7 +935,7 @@ fn given_mixed_language_titles_when_rendering_the_bibliography_then_field_langua
                 numbering: Vec::new(),
                 url: None,
                 accessed: None,
-                language: Some("de".to_string()),
+                language: Some("de".into()),
                 field_languages: HashMap::new(),
                 note: None,
                 isbn: None,
@@ -947,10 +947,10 @@ fn given_mixed_language_titles_when_rendering_the_bibliography_then_field_langua
         pages: None,
         url: None,
         accessed: None,
-        language: Some("de".to_string()),
+        language: Some("de".into()),
         field_languages: HashMap::from([
-            ("title".to_string(), "en".to_string()),
-            ("parent-monograph.title".to_string(), "de".to_string()),
+            ("title".to_string(), "en".into()),
+            ("parent-monograph.title".to_string(), "de".into()),
         ]),
         note: None,
         doi: None,
@@ -1145,7 +1145,7 @@ fn chicago_german_override_localizes_editor_verb() {
     let style = Style {
         info: StyleInfo {
             title: Some("Chicago German Test".to_string()),
-            id: Some("chicago-de".to_string()),
+            id: Some("chicago-de".into()),
             default_locale: Some("de-DE".to_string()),
             ..Default::default()
         },
@@ -1177,7 +1177,7 @@ fn chicago_german_override_localizes_editor_verb() {
     bib.insert(
         "ref1".to_string(),
         InputReference::CollectionComponent(Box::new(CollectionComponent {
-            id: Some("ref1".to_string()),
+            id: Some("ref1".into()),
             r#type: citum_schema::reference::MonographComponentType::Chapter,
             title: Some(Title::Single("Kapitel".to_string())),
             author: Some(Contributor::StructuredName(StructuredName {
@@ -1205,7 +1205,7 @@ fn chicago_german_override_localizes_editor_verb() {
                     numbering: Vec::new(),
                     url: None,
                     accessed: None,
-                    language: Some("de".to_string()),
+                    language: Some("de".into()),
                     field_languages: HashMap::new(),
                     note: None,
                     isbn: None,
@@ -1216,7 +1216,7 @@ fn chicago_german_override_localizes_editor_verb() {
             pages: None,
             url: None,
             accessed: None,
-            language: Some("de".to_string()),
+            language: Some("de".into()),
             field_languages: HashMap::new(),
             note: None,
             doi: None,

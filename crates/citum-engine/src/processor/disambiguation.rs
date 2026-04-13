@@ -431,7 +431,7 @@ impl<'a> Disambiguator<'a> {
         hint.group_length = self
             .author_group_length(reference, author_group_lengths, cache)
             .unwrap_or(1);
-        hints.insert(reference.id().unwrap_or_default(), hint);
+        hints.insert(reference.id().unwrap_or_default().to_string(), hint);
     }
 
     fn author_group_length(
@@ -842,7 +842,7 @@ mod tests {
     fn make_ref(id: &str, family: &str, given: &str, year: i32) -> Reference {
         let title = format!("Title {id}");
         Reference::Monograph(Box::new(Monograph {
-            id: Some(id.to_string()),
+            id: Some(id.into()),
             r#type: MonographType::Book,
             title: Some(Title::Single(title.clone())),
             short_title: None,
@@ -886,7 +886,7 @@ mod tests {
     fn make_multi_author_ref(id: &str, authors: &[(&str, &str)], year: i32) -> Reference {
         let title = format!("Title {id}");
         Reference::Monograph(Box::new(Monograph {
-            id: Some(id.to_string()),
+            id: Some(id.into()),
             r#type: MonographType::Book,
             title: Some(Title::Single(title)),
             short_title: None,
@@ -918,7 +918,7 @@ mod tests {
         Style {
             info: StyleInfo {
                 title: Some("Disambiguation Test".to_string()),
-                id: Some("disambiguation-test".to_string()),
+                id: Some("disambiguation-test".into()),
                 ..Default::default()
             },
             options: Some(config),

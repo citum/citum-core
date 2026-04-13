@@ -214,7 +214,7 @@ citation:
         let style = Style {
             info: StyleInfo {
                 title: Some("Taylor & Francis Test".to_string()),
-                id: Some("tf-test".to_string()),
+                id: Some("tf-test".into()),
                 ..Default::default()
             },
             preset: Some(StylePreset::ChicagoAuthorDate18th),

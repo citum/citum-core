@@ -75,7 +75,7 @@ impl Processor {
         let substitute = bibliography_options.subsequent_author_substitute.as_ref();
 
         for (index, reference) in sorted_refs.enumerate() {
-            let ref_id = reference.id().unwrap_or_default();
+            let ref_id = reference.id().unwrap_or_default().to_string();
             let entry_number = self
                 .citation_numbers
                 .borrow()
@@ -191,7 +191,7 @@ impl Processor {
         let bibliography = self.process_sorted_refs::<_, F>(
             sorted_refs
                 .iter()
-                .filter(|r| selected.contains(&r.id().unwrap_or_default()))
+                .filter(|r| r.id().as_deref().is_some_and(|id| selected.contains(id)))
                 .copied(),
             |reference, entry_number| {
                 self.process_bibliography_entry_with_format::<F>(reference, entry_number)

@@ -9,11 +9,11 @@ use citum_schema::reference::{
 fn test_serial_component_with_container_id() {
     let parent_id = "journal-1".to_string();
     let component = SerialComponent {
-        id: Some("article-1".to_string()),
+        id: Some("article-1".into()),
         r#type: SerialComponentType::Article,
         title: Some(Title::Single("My Article".to_string())),
         issued: EdtfString("2023".to_string()),
-        container: Some(WorkRelation::Id(parent_id.clone())),
+        container: Some(WorkRelation::Id(parent_id.clone().into())),
         ..Default::default()
     };
 
@@ -27,11 +27,11 @@ fn test_serial_component_with_container_id() {
 fn test_collection_component_with_container_id() {
     let parent_id = "book-1".to_string();
     let component = CollectionComponent {
-        id: Some("chapter-1".to_string()),
+        id: Some("chapter-1".into()),
         r#type: MonographComponentType::Chapter,
         title: Some(Title::Single("My Chapter".to_string())),
         issued: EdtfString("2023".to_string()),
-        container: Some(WorkRelation::Id(parent_id.clone())),
+        container: Some(WorkRelation::Id(parent_id.clone().into())),
         ..Default::default()
     };
 

@@ -45,7 +45,7 @@ fn bench_rendering(c: &mut Criterion) {
     let mut bib = Bibliography::new();
     for r in input_bib.references {
         if let Some(id) = r.id() {
-            bib.insert(id.clone(), r);
+            bib.insert(id.to_string(), r);
         }
     }
 
@@ -181,7 +181,7 @@ fn make_ref(id: &str, family: &str, given: &str, year: i32) -> Reference {
 
 fn make_ref_with_title(id: &str, family: &str, given: &str, year: i32, title: &str) -> Reference {
     Reference::Monograph(Box::new(Monograph {
-        id: Some(id.to_string()),
+        id: Some(id.into()),
         r#type: MonographType::Book,
         title: Some(Title::Single(title.to_string())),
         short_title: None,
@@ -281,7 +281,7 @@ where
 
     let title = format!("Title {id}");
     Reference::Monograph(Box::new(Monograph {
-        id: Some(id.to_string()),
+        id: Some(id.into()),
         r#type: MonographType::Book,
         title: Some(Title::Single(title)),
         short_title: None,
@@ -427,7 +427,7 @@ fn build_type_variant_bench_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Type Variant Bench".to_string()),
-            id: Some("type-variant-bench".to_string()),
+            id: Some("type-variant-bench".into()),
             ..Default::default()
         },
         bibliography: Some(BibliographySpec {
@@ -525,7 +525,7 @@ fn build_compound_bench_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Compound Bench".to_string()),
-            id: Some("compound-bench".to_string()),
+            id: Some("compound-bench".into()),
             ..Default::default()
         },
         options: Some(Config {

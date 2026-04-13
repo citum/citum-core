@@ -42,7 +42,7 @@ fn build_numeric_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Numeric Test".to_string()),
-            id: Some("numeric-test".to_string()),
+            id: Some("numeric-test".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -70,7 +70,7 @@ fn build_sorted_style(sort: Vec<SortSpec>) -> Style {
     Style {
         info: StyleInfo {
             title: Some("Sorted Test".to_string()),
-            id: Some("sort-test".to_string()),
+            id: Some("sort-test".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -103,7 +103,7 @@ fn build_title_year_sorted_style(sort: Vec<SortSpec>) -> Style {
     Style {
         info: StyleInfo {
             title: Some("Title Year Sorted Test".to_string()),
-            id: Some("title-year-sort-test".to_string()),
+            id: Some("title-year-sort-test".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -133,7 +133,7 @@ fn build_container_title_short_style(title_type: TitleType) -> Style {
     Style {
         info: StyleInfo {
             title: Some("Container Title Short Test".to_string()),
-            id: Some("container-title-short-test".to_string()),
+            id: Some("container-title-short-test".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -171,7 +171,7 @@ fn build_group_with_suppressed_child_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Grouped Suppression Test".to_string()),
-            id: Some("grouped-suppression-test".to_string()),
+            id: Some("grouped-suppression-test".into()),
             ..Default::default()
         },
         bibliography: Some(BibliographySpec {
@@ -203,7 +203,7 @@ fn build_status_bibliography_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Status Test".to_string()),
-            id: Some("status-test".to_string()),
+            id: Some("status-test".into()),
             ..Default::default()
         },
         bibliography: Some(BibliographySpec {
@@ -231,7 +231,7 @@ fn build_article_journal_no_page_fallback_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Article Journal Fallback Test".to_string()),
-            id: Some("article-journal-fallback-test".to_string()),
+            id: Some("article-journal-fallback-test".into()),
             ..Default::default()
         },
         options: Some(Config::default()),
@@ -332,7 +332,7 @@ fn build_bibliography_entry_link_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Bibliography Entry Link Test".to_string()),
-            id: Some("bibliography-entry-link-test".to_string()),
+            id: Some("bibliography-entry-link-test".into()),
             ..Default::default()
         },
         bibliography: Some(BibliographySpec {
@@ -356,7 +356,7 @@ fn build_bibliography_local_note_sort_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Bibliography Local Note Sort Test".to_string()),
-            id: Some("bibliography-local-note-sort-test".to_string()),
+            id: Some("bibliography-local-note-sort-test".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -383,7 +383,7 @@ fn build_bibliography_local_numeric_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Bibliography Local Numeric Test".to_string()),
-            id: Some("bibliography-local-numeric-test".to_string()),
+            id: Some("bibliography-local-numeric-test".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -409,7 +409,7 @@ fn build_numeric_citation_style_with_bibliography_local_note_sort() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Numeric Citation Local Note Sort Test".to_string()),
-            id: Some("numeric-citation-local-note-sort-test".to_string()),
+            id: Some("numeric-citation-local-note-sort-test".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -441,7 +441,7 @@ fn build_inline_article_journal_detail_group_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Inline Article Journal Detail Group Test".to_string()),
-            id: Some("inline-article-journal-detail-group-test".to_string()),
+            id: Some("inline-article-journal-detail-group-test".into()),
             ..Default::default()
         },
         bibliography: Some(BibliographySpec {
@@ -515,7 +515,7 @@ fn build_archive_eprint_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Archive and Eprint Test".to_string()),
-            id: Some("archive-eprint-test".to_string()),
+            id: Some("archive-eprint-test".into()),
             ..Default::default()
         },
         bibliography: Some(BibliographySpec {
@@ -545,7 +545,7 @@ fn build_archive_location_fallback_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Archive Location Fallback Test".to_string()),
-            id: Some("archive-location-fallback-test".to_string()),
+            id: Some("archive-location-fallback-test".into()),
             ..Default::default()
         },
         bibliography: Some(BibliographySpec {
@@ -586,7 +586,7 @@ fn build_multilingual_archive_name_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Multilingual Archive Name Test".to_string()),
-            id: Some("multilingual-archive-name-test".to_string()),
+            id: Some("multilingual-archive-name-test".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -611,7 +611,7 @@ fn build_multilingual_archive_name_style() -> Style {
 fn make_archive_eprint_reference() -> InputReference {
     InputReference::Monograph(Box::new(Monograph {
         short_title: None,
-        id: Some("archive-eprint-ref".to_string()),
+        id: Some("archive-eprint-ref".into()),
         r#type: MonographType::Preprint,
         title: Some(Title::Single("Archive-Aware Preprint".to_string())),
         container: None,
@@ -659,7 +659,7 @@ fn make_archive_eprint_reference() -> InputReference {
 fn make_multilingual_archive_name_reference() -> InputReference {
     InputReference::Monograph(Box::new(Monograph {
         short_title: None,
-        id: Some("archive-name-ref".to_string()),
+        id: Some("archive-name-ref".into()),
         r#type: MonographType::Document,
         title: Some(Title::Single("Repository Record".to_string())),
         container: None,
@@ -683,7 +683,7 @@ fn make_multilingual_archive_name_reference() -> InputReference {
         archive_info: Some(ArchiveInfo {
             name: Some(MultilingualString::Complex(MultilingualComplex {
                 original: "東京国立博物館".to_string(),
-                lang: Some("ja".to_string()),
+                lang: Some("ja".into()),
                 transliterations: HashMap::from([(
                     "ja-Latn-hepburn".to_string(),
                     "Tokyo National Museum".to_string(),
@@ -703,7 +703,7 @@ fn make_multilingual_archive_name_reference() -> InputReference {
 fn make_historical_archive_reference() -> InputReference {
     InputReference::Monograph(Box::new(Monograph {
         short_title: None,
-        id: Some("dead-sea-scrolls-demo".to_string()),
+        id: Some("dead-sea-scrolls-demo".into()),
         r#type: MonographType::Manuscript,
         title: Some(Title::Single("The Community Rule (1QS)".to_string())),
         container: None,
@@ -901,7 +901,7 @@ fn make_article_journal_with_detail(
     }
 
     InputReference::SerialComponent(Box::new(SerialComponent {
-        id: Some(id.to_string()),
+        id: Some(id.into()),
         r#type: SerialComponentType::Article,
         title: Some(Title::Single("Fallback Article".to_string())),
         author: Some(Contributor::StructuredName(StructuredName {
@@ -979,7 +979,7 @@ fn build_processing_style(processing: Processing) -> Style {
     Style {
         info: StyleInfo {
             title: Some("Processing Default Sort Test".to_string()),
-            id: Some("processing-default-sort-test".to_string()),
+            id: Some("processing-default-sort-test".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -1006,7 +1006,7 @@ fn make_style_with_substitute(substitute: Option<String>) -> Style {
     Style {
         info: StyleInfo {
             title: Some("Subsequent Author Substitute Test".to_string()),
-            id: Some("sub-test".to_string()),
+            id: Some("sub-test".into()),
             ..Default::default()
         },
         templates: None,
@@ -1043,7 +1043,7 @@ fn make_particle_book(
 ) -> InputReference {
     InputReference::Monograph(Box::new(Monograph {
         short_title: None,
-        id: Some(id.to_string()),
+        id: Some(id.into()),
         r#type: MonographType::Book,
         title: Some(Title::Single(format!("Title {id}"))),
         container: None,
@@ -1088,7 +1088,7 @@ fn make_editor_only_book(
 ) -> InputReference {
     InputReference::Monograph(Box::new(Monograph {
         short_title: None,
-        id: Some(id.to_string()),
+        id: Some(id.into()),
         r#type: MonographType::Book,
         title: Some(Title::Single(title.to_string())),
         container: None,
@@ -1141,7 +1141,7 @@ fn make_multi_editor_only_book(
 
     InputReference::Monograph(Box::new(Monograph {
         short_title: None,
-        id: Some(id.to_string()),
+        id: Some(id.into()),
         r#type: MonographType::Book,
         title: Some(Title::Single(title.to_string())),
         container: None,
@@ -1177,7 +1177,7 @@ fn build_editor_verb_prefix_style(title_suffix: Option<&str>) -> Style {
     Style {
         info: StyleInfo {
             title: Some("Editor Verb Prefix Test".to_string()),
-            id: Some("editor-verb-prefix-test".to_string()),
+            id: Some("editor-verb-prefix-test".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -1223,7 +1223,7 @@ fn make_name_particle_style(display_as_sort: DisplayAsSort) -> Style {
     Style {
         info: StyleInfo {
             title: Some("Hyphenated Particle Test".to_string()),
-            id: Some("hyphenated-particle-test".to_string()),
+            id: Some("hyphenated-particle-test".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -1394,7 +1394,7 @@ fn legal_case_parent_serial_uses_reporter_as_container_title() {
     let style = Style {
         info: StyleInfo {
             title: Some("Legal Reporter Parent Serial Test".to_string()),
-            id: Some("legal-reporter-parent-serial-test".to_string()),
+            id: Some("legal-reporter-parent-serial-test".into()),
             ..Default::default()
         },
         bibliography: Some(BibliographySpec {
@@ -1574,7 +1574,7 @@ fn magic_subsequent_author_substitute_reuses_the_full_author_group() {
     let style = Style {
         info: StyleInfo {
             title: Some("Magic Subsequent Author Substitute Test".to_string()),
-            id: Some("magic-subsequent-author-substitute-test".to_string()),
+            id: Some("magic-subsequent-author-substitute-test".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -2457,7 +2457,7 @@ fn bibliography_local_entry_links_apply_on_the_default_render_path() {
     let style = build_bibliography_entry_link_style();
     let reference = InputReference::Monograph(Box::new(Monograph {
         short_title: None,
-        id: Some("linked-book".to_string()),
+        id: Some("linked-book".into()),
         r#type: MonographType::Book,
         title: Some(Title::Single("Linked Book".to_string())),
         container: None,
@@ -2715,7 +2715,7 @@ fn given_archive_location_override_when_rendering_bibliography_then_legacy_fallb
     let InputReference::Monograph(monograph) = &mut reference else {
         panic!("archive test fixture should be a monograph");
     };
-    monograph.id = Some("archive-eprint-location-ref".to_string());
+    monograph.id = Some("archive-eprint-location-ref".into());
     monograph.archive_info = Some(ArchiveInfo {
         name: Some(MultilingualString::Simple("Houghton Library".to_string())),
         place: Some("Cambridge, MA".to_string()),
@@ -3071,12 +3071,12 @@ fn original_published_date_variable_renders_when_reference_has_original_date() {
     };
 
     let reference = InputReference::Monograph(Box::new(Monograph {
-        id: Some("gatsby".to_string()),
+        id: Some("gatsby".into()),
         title: Some(Title::Single("The Great Gatsby".to_string())),
         issued: EdtfString("1992".to_string()),
         original: Some(WorkRelation::Embedded(Box::new(InputReference::Monograph(
             Box::new(Monograph {
-                id: Some("gatsby-orig".to_string()),
+                id: Some("gatsby-orig".into()),
                 issued: EdtfString("1925".to_string()),
                 ..Default::default()
             }),

@@ -27,7 +27,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! let style = Style {
 //!     info: StyleInfo {
 //!         title: Some("Simple".to_string()),
-//!         id: Some("simple".to_string()),
+//!         id: Some("simple".into()),
 //!         ..Default::default()
 //!     },
 //!     options: Some(Config {
@@ -58,7 +58,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! // Create a bibliography using native Citum reference data
 //! let mut bib = Bibliography::new();
 //! let reference = Reference::Monograph(Box::new(Monograph {
-//!     id: Some("kuhn1962".to_string()),
+//!     id: Some("kuhn1962".into()),
 //!     r#type: MonographType::Book,
 //!     title: Some(Title::Single("The Structure of Scientific Revolutions".to_string())),
 //!     author: Some(Contributor::ContributorList(ContributorList(vec![
@@ -78,7 +78,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! // Create processor and render
 //! let processor = Processor::new(style, bib);
 //! let citation = Citation {
-//!     id: Some("c1".to_string()),
+//!     id: Some("c1".into()),
 //!     items: vec![CitationItem { id: "kuhn1962".to_string(), ..Default::default() }],
 //!     ..Default::default()
 //! };

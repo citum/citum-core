@@ -1255,7 +1255,9 @@ impl InputReference {
     }
 
     /// Set the reference ID.
-    pub fn set_id(&mut self, id: String) {
+    pub fn set_id(&mut self, id: impl Into<RefID>) {
+        let id = id.into();
+
         match self {
             InputReference::Monograph(monograph) => monograph.id = Some(id),
             InputReference::CollectionComponent(component) => component.id = Some(id),

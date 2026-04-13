@@ -235,7 +235,7 @@ fn loaded_from_input_bibliography(
     let mut references = IndexMap::new();
     for r in input_bib.references {
         if let Some(id) = r.id() {
-            references.insert(id.clone(), r);
+            references.insert(id.to_string(), r);
         }
     }
     let sets = validate_compound_sets(input_bib.sets, &references)?;
@@ -250,7 +250,7 @@ fn loaded_from_hybrid_json_array(
     for value in references.iter().cloned() {
         let reference = parse_hybrid_json_reference(value)?;
         if let Some(id) = reference.id() {
-            bib.insert(id.clone(), reference);
+            bib.insert(id.to_string(), reference);
         }
     }
     let sets = validate_compound_sets(sets, &bib)?;
@@ -402,7 +402,7 @@ fn parse_json_bibliography(bytes: &[u8]) -> Result<LoadedBibliography, Processor
                 if r.id().is_none() {
                     r.set_id(id.clone());
                 }
-                bib.insert(id, r);
+                bib.insert(id.clone(), r);
                 found = true;
             }
         }
@@ -481,7 +481,7 @@ fn parse_yaml_bibliography(content: &str) -> Result<LoadedBibliography, Processo
     if let Ok(refs) = serde_yaml::from_str::<Vec<InputReference>>(content) {
         for r in refs {
             if let Some(id) = r.id() {
-                bib.insert(id.clone(), r);
+                bib.insert(id.to_string(), r);
             }
         }
         return Ok(LoadedBibliography {

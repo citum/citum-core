@@ -21,7 +21,7 @@ fn test_apa_interview_fidelity_regression() {
 
     // Create the interview reference using native Citum structs
     let reference = InputReference::Monograph(Box::new(Monograph {
-        id: Some("sr-interview".to_string()),
+        id: Some("sr-interview".into()),
         r#type: MonographType::Interview,
         title: Some(Title::Single("Thinking in Public".to_string())),
         author: Some(Contributor::StructuredName(StructuredName {

@@ -24,7 +24,7 @@ fn build_name_form_test_style(
     Style {
         info: StyleInfo {
             title: Some("Name Form Test".to_string()),
-            id: Some("name-form-test".to_string()),
+            id: Some("name-form-test".into()),
             ..Default::default()
         },
         options: Some(Config {

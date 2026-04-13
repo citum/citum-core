@@ -18,7 +18,7 @@ fn make_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("APA".to_string()),
-            id: Some("apa".to_string()),
+            id: Some("apa".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -170,7 +170,7 @@ fn make_grouped_compound_selection_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Grouped Compound Selection".to_string()),
-            id: Some("grouped-compound-selection".to_string()),
+            id: Some("grouped-compound-selection".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -386,7 +386,7 @@ fn test_process_citation() {
     let processor = Processor::new(style, bib);
 
     let citation = Citation {
-        id: Some("c1".to_string()),
+        id: Some("c1".into()),
         items: vec![crate::reference::CitationItem {
             id: "kuhn1962".to_string(),
             ..Default::default()
@@ -410,7 +410,7 @@ fn test_normalize_note_context_assigns_missing_numbers() {
 
     let citations = vec![
         Citation {
-            id: Some("c1".to_string()),
+            id: Some("c1".into()),
             items: vec![crate::reference::CitationItem {
                 id: "kuhn1962".to_string(),
                 ..Default::default()
@@ -418,7 +418,7 @@ fn test_normalize_note_context_assigns_missing_numbers() {
             ..Default::default()
         },
         Citation {
-            id: Some("c2".to_string()),
+            id: Some("c2".into()),
             note_number: Some(7),
             items: vec![crate::reference::CitationItem {
                 id: "kuhn1962".to_string(),
@@ -427,7 +427,7 @@ fn test_normalize_note_context_assigns_missing_numbers() {
             ..Default::default()
         },
         Citation {
-            id: Some("c3".to_string()),
+            id: Some("c3".into()),
             items: vec![crate::reference::CitationItem {
                 id: "kuhn1962".to_string(),
                 ..Default::default()
@@ -454,7 +454,7 @@ fn test_process_citations_batch_api() {
 
     let citations = vec![
         Citation {
-            id: Some("c1".to_string()),
+            id: Some("c1".into()),
             items: vec![crate::reference::CitationItem {
                 id: "kuhn1962".to_string(),
                 ..Default::default()
@@ -462,7 +462,7 @@ fn test_process_citations_batch_api() {
             ..Default::default()
         },
         Citation {
-            id: Some("c2".to_string()),
+            id: Some("c2".into()),
             items: vec![crate::reference::CitationItem {
                 id: "kuhn1962".to_string(),
                 ..Default::default()
@@ -505,7 +505,7 @@ fn test_process_citation_treats_trimmed_none_delimiter_as_empty() {
     let bib = make_bibliography();
     let processor = Processor::new(style, bib);
     let citation = Citation {
-        id: Some("c1".to_string()),
+        id: Some("c1".into()),
         items: vec![crate::reference::CitationItem {
             id: "kuhn1962".to_string(),
             ..Default::default()
@@ -998,7 +998,7 @@ fn test_disambiguation_givenname() {
     // Verify output
     let cit_a = processor
         .process_citation(&Citation {
-            id: Some("c1".to_string()),
+            id: Some("c1".into()),
             items: vec![crate::reference::CitationItem {
                 id: "smith2020a".to_string(),
                 ..Default::default()
@@ -1009,7 +1009,7 @@ fn test_disambiguation_givenname() {
 
     let cit_b = processor
         .process_citation(&Citation {
-            id: Some("c2".to_string()),
+            id: Some("c2".into()),
             items: vec![crate::reference::CitationItem {
                 id: "smith2020b".to_string(),
                 ..Default::default()
@@ -1112,7 +1112,7 @@ fn test_disambiguation_add_names() {
     // Verify output
     let cit_1 = processor
         .process_citation(&Citation {
-            id: Some("c1".to_string()),
+            id: Some("c1".into()),
             items: vec![crate::reference::CitationItem {
                 id: "ref1".to_string(),
                 ..Default::default()
@@ -1123,7 +1123,7 @@ fn test_disambiguation_add_names() {
 
     let cit_2 = processor
         .process_citation(&Citation {
-            id: Some("c2".to_string()),
+            id: Some("c2".into()),
             items: vec![crate::reference::CitationItem {
                 id: "ref2".to_string(),
                 ..Default::default()
@@ -1217,7 +1217,7 @@ fn test_disambiguation_combined_expansion() {
     // Verify output
     let cit_1 = processor
         .process_citation(&Citation {
-            id: Some("c1".to_string()),
+            id: Some("c1".into()),
             items: vec![crate::reference::CitationItem {
                 id: "ref1".to_string(),
                 ..Default::default()
@@ -1228,7 +1228,7 @@ fn test_disambiguation_combined_expansion() {
 
     let cit_2 = processor
         .process_citation(&Citation {
-            id: Some("c2".to_string()),
+            id: Some("c2".into()),
             items: vec![crate::reference::CitationItem {
                 id: "ref2".to_string(),
                 ..Default::default()
@@ -1333,7 +1333,7 @@ fn test_apa_titles_config() {
         style,
         references
             .into_iter()
-            .map(|r| (r.id().unwrap().clone(), r))
+            .map(|r| (r.id().unwrap().to_string(), r))
             .collect(),
     );
 
@@ -1416,7 +1416,7 @@ fn test_numeric_citation_numbers_with_repeated_refs() {
     // Cite ref1 first
     let cit1 = processor
         .process_citation(&Citation {
-            id: Some("c1".to_string()),
+            id: Some("c1".into()),
             items: vec![crate::reference::CitationItem {
                 id: "ref1".to_string(),
                 ..Default::default()
@@ -1428,7 +1428,7 @@ fn test_numeric_citation_numbers_with_repeated_refs() {
     // Cite ref2 second
     let cit2 = processor
         .process_citation(&Citation {
-            id: Some("c2".to_string()),
+            id: Some("c2".into()),
             items: vec![crate::reference::CitationItem {
                 id: "ref2".to_string(),
                 ..Default::default()
@@ -1440,7 +1440,7 @@ fn test_numeric_citation_numbers_with_repeated_refs() {
     // Cite ref1 again - should get the SAME number as before
     let cit3 = processor
         .process_citation(&Citation {
-            id: Some("c3".to_string()),
+            id: Some("c3".into()),
             items: vec![crate::reference::CitationItem {
                 id: "ref1".to_string(),
                 ..Default::default()
@@ -1501,7 +1501,7 @@ fn test_numeric_citation_numbers_follow_registry_order() {
 
     let cit = processor
         .process_citation(&Citation {
-            id: Some("c1".to_string()),
+            id: Some("c1".into()),
             items: vec![crate::reference::CitationItem {
                 id: "ref2".to_string(),
                 ..Default::default()
@@ -1542,7 +1542,7 @@ fn test_citation_grouping_same_author() {
     // Cite both Kuhn works in one citation - should group
     let result = processor
         .process_citation(&Citation {
-            id: Some("c1".to_string()),
+            id: Some("c1".into()),
             items: vec![
                 crate::reference::CitationItem {
                     id: "kuhn1962b".to_string(), // "Function..." comes first alphabetically -> a
@@ -1605,7 +1605,7 @@ fn test_label_mode_does_not_group_by_author() {
     let processor = Processor::new(style, bib);
     let result = processor
         .process_citation(&Citation {
-            id: Some("c1".to_string()),
+            id: Some("c1".into()),
             items: vec![
                 crate::reference::CitationItem {
                     id: "kuhn1962b".to_string(),
@@ -1653,7 +1653,7 @@ fn test_citation_grouping_different_authors() {
 
     let result = processor
         .process_citation(&Citation {
-            id: Some("c1".to_string()),
+            id: Some("c1".into()),
             items: vec![
                 crate::reference::CitationItem {
                     id: "kuhn1962".to_string(),
@@ -1949,7 +1949,7 @@ fn test_typst_single_item_citation_links_to_bibliography_entry() {
     let bib = make_bibliography();
     let processor = Processor::new(make_style(), bib);
     let citation = Citation {
-        id: Some("cite-1".to_string()),
+        id: Some("cite-1".into()),
         items: vec![CitationItem {
             id: "kuhn1962".to_string(),
             ..Default::default()
@@ -1980,7 +1980,7 @@ fn test_numeric_integral_citation_author_year() {
 
     // Integral mode citation - should render author + citation number
     let citation = Citation {
-        id: Some("c1".to_string()),
+        id: Some("c1".into()),
         mode: citum_schema::citation::CitationMode::Integral,
         items: vec![crate::reference::CitationItem {
             id: "kuhn1962".to_string(),
@@ -2024,7 +2024,7 @@ fn test_numeric_non_integral_citation_number() {
 
     // Non-integral mode citation - should render citation number
     let citation = Citation {
-        id: Some("c1".to_string()),
+        id: Some("c1".into()),
         mode: CitationMode::NonIntegral,
         items: vec![crate::reference::CitationItem {
             id: "kuhn1962".to_string(),
@@ -2071,7 +2071,7 @@ fn test_numeric_citation_number_collapse_enabled() {
     let processor = Processor::new(style, bib);
 
     let citation = Citation {
-        id: Some("c1".to_string()),
+        id: Some("c1".into()),
         mode: CitationMode::NonIntegral,
         items: vec![
             crate::reference::CitationItem {
@@ -2129,7 +2129,7 @@ fn test_numeric_citation_number_collapse_skips_affixed_items() {
     let processor = Processor::new(style, bib);
 
     let citation = Citation {
-        id: Some("c2".to_string()),
+        id: Some("c2".into()),
         mode: CitationMode::NonIntegral,
         items: vec![
             crate::reference::CitationItem {
@@ -2245,7 +2245,7 @@ fn test_author_date_citations_preserve_input_order_without_explicit_sort() {
     let processor = Processor::new(style, bib);
     let result = processor
         .process_citation(&Citation {
-            id: Some("c1".to_string()),
+            id: Some("c1".into()),
             items: vec![
                 crate::reference::CitationItem {
                     id: "smith2020".to_string(),
@@ -2290,7 +2290,7 @@ fn test_numeric_integral_with_multiple_items() {
 
     // Integral mode with multiple items
     let citation = Citation {
-        id: Some("c1".to_string()),
+        id: Some("c1".into()),
         mode: citum_schema::citation::CitationMode::Integral,
         items: vec![
             crate::reference::CitationItem {
@@ -2349,7 +2349,7 @@ fn test_label_integral_citation_uses_author_text() {
     let processor = Processor::new(style, bib);
 
     let citation = Citation {
-        id: Some("c1".to_string()),
+        id: Some("c1".into()),
         mode: citum_schema::citation::CitationMode::Integral,
         items: vec![crate::reference::CitationItem {
             id: "kuhn1962".to_string(),
@@ -3421,7 +3421,7 @@ fn test_compound_numeric_number_assignment() {
     let mut bib = Bibliography::new();
     for r in refs {
         if let Some(id) = r.id() {
-            bib.insert(id, r);
+            bib.insert(id.to_string(), r);
         }
     }
 
@@ -3521,7 +3521,7 @@ bibliography:
     let mut bib = crate::reference::Bibliography::new();
     for r in refs {
         if let Some(id) = r.id() {
-            bib.insert(id, r);
+            bib.insert(id.to_string(), r);
         }
     }
 
@@ -3717,7 +3717,7 @@ fn test_compound_numeric_citation_subentry_disabled() {
     let mut bib = Bibliography::new();
     for r in refs {
         if let Some(id) = r.id() {
-            bib.insert(id, r);
+            bib.insert(id.to_string(), r);
         }
     }
 
@@ -3730,7 +3730,7 @@ fn test_compound_numeric_citation_subentry_disabled() {
     let processor = Processor::try_with_compound_sets(style, bib, sets).unwrap();
 
     let citation = Citation {
-        id: Some("c1".to_string()),
+        id: Some("c1".into()),
         items: vec![CitationItem {
             id: "ref-a".to_string(),
             ..Default::default()
@@ -3789,7 +3789,7 @@ fn test_compound_numeric_integral_citation_sub_label() {
     let mut bib = Bibliography::new();
     for r in refs {
         if let Some(id) = r.id() {
-            bib.insert(id, r);
+            bib.insert(id.to_string(), r);
         }
     }
 
@@ -3803,7 +3803,7 @@ fn test_compound_numeric_integral_citation_sub_label() {
 
     // First member should render "Smith [1a]", not "Smith [1]"
     let cite_a = Citation {
-        id: Some("c-a".to_string()),
+        id: Some("c-a".into()),
         items: vec![CitationItem {
             id: "ref-a".to_string(),
             ..Default::default()
@@ -3819,7 +3819,7 @@ fn test_compound_numeric_integral_citation_sub_label() {
 
     // Second member should render "Jones [1b]", not "Jones [1]"
     let cite_b = Citation {
-        id: Some("c-b".to_string()),
+        id: Some("c-b".into()),
         items: vec![CitationItem {
             id: "ref-b".to_string(),
             ..Default::default()
@@ -3887,7 +3887,7 @@ bibliography:
     let mut bib = crate::reference::Bibliography::new();
     for r in refs {
         if let Some(id) = r.id() {
-            bib.insert(id, r);
+            bib.insert(id.to_string(), r);
         }
     }
 
@@ -3967,7 +3967,7 @@ bibliography:
     let mut bib = Bibliography::new();
     for r in refs {
         if let Some(id) = r.id() {
-            bib.insert(id, r);
+            bib.insert(id.to_string(), r);
         }
     }
 
@@ -4042,7 +4042,7 @@ bibliography:
     let mut bib = Bibliography::new();
     for r in refs {
         if let Some(id) = r.id() {
-            bib.insert(id, r);
+            bib.insert(id.to_string(), r);
         }
     }
 
@@ -4127,7 +4127,7 @@ fn test_compound_numeric_citation_subentry_collapse_disabled() {
     let mut bib = Bibliography::new();
     for r in refs {
         if let Some(id) = r.id() {
-            bib.insert(id, r);
+            bib.insert(id.to_string(), r);
         }
     }
 
@@ -4143,7 +4143,7 @@ fn test_compound_numeric_citation_subentry_collapse_disabled() {
 
     let processor = Processor::with_compound_sets(style, bib, sets);
     let citation = Citation {
-        id: Some("c1".to_string()),
+        id: Some("c1".into()),
         items: vec![
             CitationItem {
                 id: "ref-a".to_string(),
@@ -4212,7 +4212,7 @@ fn test_compound_numeric_citation_subentry_collapse_enabled() {
     let mut bib = Bibliography::new();
     for r in refs {
         if let Some(id) = r.id() {
-            bib.insert(id, r);
+            bib.insert(id.to_string(), r);
         }
     }
 
@@ -4230,7 +4230,7 @@ fn test_compound_numeric_citation_subentry_collapse_enabled() {
     let processor = Processor::with_compound_sets(style, bib, sets);
 
     let contiguous = Citation {
-        id: Some("c1".to_string()),
+        id: Some("c1".into()),
         items: vec![
             CitationItem {
                 id: "ref-a".to_string(),
@@ -4250,7 +4250,7 @@ fn test_compound_numeric_citation_subentry_collapse_enabled() {
     assert_eq!(processor.process_citation(&contiguous).unwrap(), "[1a-c]");
 
     let sparse = Citation {
-        id: Some("c2".to_string()),
+        id: Some("c2".into()),
         items: vec![
             CitationItem {
                 id: "ref-a".to_string(),
@@ -4546,7 +4546,7 @@ fn test_label_integral_citation_includes_label() {
 
     // Integral citation with label mode
     let cit = Citation {
-        id: Some("c1".to_string()),
+        id: Some("c1".into()),
         mode: citum_schema::citation::CitationMode::Integral,
         items: vec![crate::reference::CitationItem {
             id: "kuhn1962".to_string(),

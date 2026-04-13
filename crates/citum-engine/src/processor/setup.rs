@@ -210,6 +210,7 @@ impl Processor {
                 .sort_references(self.bibliography.values().collect(), &sort_spec.resolve())
                 .into_iter()
                 .filter_map(citum_schema::reference::InputReference::id)
+                .map(String::from)
                 .collect();
         }
 
@@ -218,6 +219,7 @@ impl Processor {
             .sort_references(self.bibliography.values().collect())
             .into_iter()
             .filter_map(citum_schema::reference::InputReference::id)
+            .map(String::from)
             .collect()
     }
 
@@ -225,6 +227,7 @@ impl Processor {
         self.sort_references(self.bibliography.values().collect())
             .into_iter()
             .filter_map(citum_schema::reference::InputReference::id)
+            .map(String::from)
             .collect()
     }
 

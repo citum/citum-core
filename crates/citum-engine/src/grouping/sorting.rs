@@ -390,7 +390,7 @@ impl<'a> GroupSorter<'a> {
 
     fn field_sort_value(reference: &Reference, field_name: &str) -> String {
         match field_name {
-            "language" => reference.language().unwrap_or_default().clone(),
+            "language" => reference.language().unwrap_or_default().to_string(),
             // Future: support for keywords, custom metadata
             _ => String::new(),
         }

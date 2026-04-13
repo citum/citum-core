@@ -30,7 +30,7 @@ fn given_simple_author_date_document_when_rendered_as_html_then_a_bibliography_h
     let style = Style {
         info: StyleInfo {
             title: Some("Test Style".to_string()),
-            id: Some("test".to_string()),
+            id: Some("test".into()),
             ..Default::default()
         },
         templates: None,
@@ -102,7 +102,7 @@ fn given_simple_author_date_document_when_rendered_as_djot_then_html_tags_are_no
     let style = Style {
         info: StyleInfo {
             title: Some("Test Style".to_string()),
-            id: Some("test".to_string()),
+            id: Some("test".into()),
             ..Default::default()
         },
         templates: None,

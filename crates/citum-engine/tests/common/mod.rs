@@ -47,7 +47,7 @@ pub fn make_book_multi_author(
         .collect();
 
     Reference::Monograph(Box::new(Monograph {
-        id: Some(id.to_string()),
+        id: Some(id.into()),
         r#type: MonographType::Book,
         title: Some(Title::Single(title.to_string())),
         author: Some(Contributor::ContributorList(ContributorList(author_list))),
@@ -82,7 +82,7 @@ pub fn make_article_multi_author(
         .collect();
 
     Reference::SerialComponent(Box::new(SerialComponent {
-        id: Some(id.to_string()),
+        id: Some(id.into()),
         r#type: SerialComponentType::Article,
         title: Some(Title::Single(title.to_string())),
         author: Some(Contributor::ContributorList(ContributorList(author_list))),
@@ -127,7 +127,7 @@ pub fn make_multilingual_book(params: MultilingualBookParams) -> Reference {
     );
 
     Reference::Monograph(Box::new(Monograph {
-        id: Some(params.id.to_string()),
+        id: Some(params.id.into()),
         r#type: MonographType::Book,
         title: Some(Title::Single(params.title.to_string())),
         author: Some(Contributor::Multilingual(MultilingualName {
@@ -136,7 +136,7 @@ pub fn make_multilingual_book(params: MultilingualBookParams) -> Reference {
                 given: MultilingualString::Simple(params.original_given.to_string()),
                 ..Default::default()
             },
-            lang: Some(params.lang.to_string()),
+            lang: Some(params.lang.into()),
             transliterations,
             translations: HashMap::new(),
         })),
@@ -194,7 +194,7 @@ pub fn run_test_case_native_with_options(options: TestCaseOptions) {
     let mut bibliography = indexmap::IndexMap::new();
     for item in options.input {
         if let Some(id) = item.id() {
-            bibliography.insert(id, item.clone());
+            bibliography.insert(id.to_string(), item.clone());
         }
     }
 
@@ -342,7 +342,7 @@ pub fn build_author_date_style(
     Style {
         info: StyleInfo {
             title: Some("Author-Date Disambiguation Test".to_string()),
-            id: Some("http://test.example/disambiguation".to_string()),
+            id: Some("http://test.example/disambiguation".into()),
             ..Default::default()
         },
         options: Some(Config {

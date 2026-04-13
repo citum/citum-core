@@ -179,12 +179,14 @@ pub fn effective_field_language(
     reference
         .field_languages()
         .get(scope)
-        .cloned()
+        .map(ToString::to_string)
         .or_else(|| match title {
-            Some(Title::Multilingual(multilingual)) => multilingual.lang.clone(),
+            Some(Title::Multilingual(multilingual)) => {
+                multilingual.lang.as_ref().map(ToString::to_string)
+            }
             _ => None,
         })
-        .or_else(|| reference.language())
+        .or_else(|| reference.language().map(|lang| lang.to_string()))
 }
 
 /// Resolve the effective language for the primary title of a reference.

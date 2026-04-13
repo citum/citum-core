@@ -86,7 +86,7 @@ impl Processor {
     fn mark_group_members_assigned(assigned: &mut HashSet<String>, references: &[&Reference]) {
         for reference in references {
             if let Some(id) = reference.id() {
-                assigned.insert(id);
+                assigned.insert(id.to_string());
             }
         }
     }
@@ -102,7 +102,10 @@ impl Processor {
 
         let mut group_bibliography = Bibliography::new();
         for reference in sorted_refs {
-            group_bibliography.insert(reference.id().unwrap_or_default(), (*reference).clone());
+            group_bibliography.insert(
+                reference.id().unwrap_or_default().to_string(),
+                (*reference).clone(),
+            );
         }
 
         let resolved_sort = group
@@ -187,7 +190,7 @@ impl Processor {
         let mut previous_reference: Option<&Reference> = None;
 
         for (index, reference) in sorted_refs.into_iter().enumerate() {
-            let ref_id = reference.id().unwrap_or_default();
+            let ref_id = reference.id().unwrap_or_default().to_string();
             let entry_number = self
                 .citation_numbers
                 .borrow()

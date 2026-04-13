@@ -18,7 +18,7 @@ fn main() {
     let processor = Processor::new(style, bib);
 
     let cite = Citation {
-        id: Some("cite1".to_string()),
+        id: Some("cite1".into()),
         mode: CitationMode::NonIntegral,
         position: None,
         suppress_author: false,

@@ -210,6 +210,9 @@ Track schema changes separately from code changes.
 Historical note: entries below may predate the automation baseline and are the
 authoritative record when matching tags were not created at the time.
 
+#### schema-v0.30.2 (2026-04-13)
+- Schema version bumped from 0.30.1 to 0.30.2
+
 #### schema-v0.30.0 (2026-04-12)
 - Schema version bumped from 0.29.2 to 0.30.0 (major pre-1.0)
 - Fixed style file consolidation to keep only embedded styles in `styles/embedded/`

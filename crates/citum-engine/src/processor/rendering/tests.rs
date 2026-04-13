@@ -33,7 +33,7 @@ fn grouped_author_date_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Grouped Author Date".to_string()),
-            id: Some("grouped-author-date".to_string()),
+            id: Some("grouped-author-date".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -69,7 +69,7 @@ fn integral_name_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Integral Name Memory".to_string()),
-            id: Some("integral-name-memory".to_string()),
+            id: Some("integral-name-memory".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -119,7 +119,7 @@ fn legal_case_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Legal Case Grouping".to_string()),
-            id: Some("legal-case-grouping".to_string()),
+            id: Some("legal-case-grouping".into()),
             ..Default::default()
         },
         options: Some(Config {

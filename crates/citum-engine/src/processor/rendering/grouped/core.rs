@@ -658,7 +658,7 @@ impl Renderer<'_> {
         if let Some(comp) = template.first().and_then(find_grouping_component) {
             let base_hints = self
                 .hints
-                .get(&reference.id().unwrap_or_default())
+                .get(reference.id().as_deref().unwrap_or_default())
                 .cloned()
                 .unwrap_or_default();
             // Inject citation position so subsequent et-al thresholds are applied.
@@ -1150,7 +1150,7 @@ impl Renderer<'_> {
         let default_hint = ProcHints::default();
         let base_hint = self
             .hints
-            .get(&reference.id().unwrap_or_default())
+            .get(reference.id().as_deref().unwrap_or_default())
             .unwrap_or(&default_hint);
         ProcHints {
             citation_number: (citation_number > 0).then_some(citation_number),

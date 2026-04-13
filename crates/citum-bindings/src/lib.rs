@@ -105,7 +105,7 @@ fn parse_references(refs_json: &str) -> Result<IndexMap<String, Reference>, Stri
 
                 // Use the entire element value for parsing, keyed by its `id`.
                 let r = parse_single_reference_value(&id, Value::Object(obj.clone()))?;
-                mapped.insert(id, r);
+                mapped.insert(id.clone(), r);
             }
         }
         _ => {
