@@ -9,15 +9,112 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 #[cfg(feature = "bindings")]
 use specta::Type;
+use std::borrow::Borrow;
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
+use std::ops::Deref;
+use std::str::FromStr;
 use url::Url;
 
 /// Unique identifier for a reference item.
-pub type RefID = String;
+#[derive(Debug, Deserialize, Serialize, Clone, Default, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(transparent)]
+pub struct RefID(pub String);
+
+impl RefID {
+    /// Borrow the reference identifier as a string slice.
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl Display for RefID {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl AsRef<str> for RefID {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl Borrow<str> for RefID {
+    fn borrow(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl Deref for RefID {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        self.as_str()
+    }
+}
+
+impl From<String> for RefID {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for RefID {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
+impl From<RefID> for String {
+    fn from(value: RefID) -> Self {
+        value.0
+    }
+}
+
+impl FromStr for RefID {
+    type Err = std::convert::Infallible;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from(value))
+    }
+}
+
+impl PartialEq<&str> for RefID {
+    fn eq(&self, other: &&str) -> bool {
+        self.as_str() == *other
+    }
+}
+
+impl PartialEq<str> for RefID {
+    fn eq(&self, other: &str) -> bool {
+        self.as_str() == other
+    }
+}
+
+impl PartialEq<String> for RefID {
+    fn eq(&self, other: &String) -> bool {
+        self.as_str() == other
+    }
+}
+
+impl PartialEq<RefID> for &str {
+    fn eq(&self, other: &RefID) -> bool {
+        *self == other.as_str()
+    }
+}
+
+impl PartialEq<RefID> for String {
+    fn eq(&self, other: &RefID) -> bool {
+        self.as_str() == other.as_str()
+    }
+}
 
 /// A numbering identifier for a work (e.g., volume, issue, number).
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
@@ -232,8 +329,101 @@ fn normalize_kind_key(value: &str) -> Option<String> {
 }
 
 /// BCP 47 language tag (e.g., `"en"`, `"de"`, `"ja"`).
-/// BCP 47 language tag (e.g., `"en"`, `"de"`, `"ja"`).
-pub type LangID = String;
+#[derive(Debug, Deserialize, Serialize, Clone, Default, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(transparent)]
+pub struct LangID(pub String);
+
+impl LangID {
+    /// Borrow the language identifier as a string slice.
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl Display for LangID {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl AsRef<str> for LangID {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl Borrow<str> for LangID {
+    fn borrow(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl Deref for LangID {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        self.as_str()
+    }
+}
+
+impl From<String> for LangID {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for LangID {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
+impl From<LangID> for String {
+    fn from(value: LangID) -> Self {
+        value.0
+    }
+}
+
+impl FromStr for LangID {
+    type Err = std::convert::Infallible;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from(value))
+    }
+}
+
+impl PartialEq<&str> for LangID {
+    fn eq(&self, other: &&str) -> bool {
+        self.as_str() == *other
+    }
+}
+
+impl PartialEq<str> for LangID {
+    fn eq(&self, other: &str) -> bool {
+        self.as_str() == other
+    }
+}
+
+impl PartialEq<String> for LangID {
+    fn eq(&self, other: &String) -> bool {
+        self.as_str() == other
+    }
+}
+
+impl PartialEq<LangID> for &str {
+    fn eq(&self, other: &LangID) -> bool {
+        *self == other.as_str()
+    }
+}
+
+impl PartialEq<LangID> for String {
+    fn eq(&self, other: &LangID) -> bool {
+        self.as_str() == other.as_str()
+    }
+}
 /// Maps field names to their language tags for multilingual references.
 pub type FieldLanguageMap = HashMap<String, LangID>;
 
@@ -542,4 +732,48 @@ pub enum RefDate {
     Edtf(citum_edtf::Edtf),
     /// A literal date string that could not be parsed as EDTF.
     Literal(String),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{LangID, RefID};
+    #[cfg(feature = "schema")]
+    use schemars::schema_for;
+    use std::collections::HashMap;
+
+    #[test]
+    fn ref_id_round_trips_as_a_scalar_string() {
+        let id = RefID::from("kuhn1962");
+        let serialized = serde_json::to_string(&id).expect("ref id should serialize");
+        let deserialized: RefID =
+            serde_json::from_str(&serialized).expect("ref id should deserialize");
+
+        assert_eq!(serialized, "\"kuhn1962\"");
+        assert_eq!(deserialized, "kuhn1962");
+        assert_eq!(deserialized.as_ref(), "kuhn1962");
+        assert_eq!(String::from(deserialized), "kuhn1962");
+    }
+
+    #[test]
+    fn lang_id_supports_string_lookup_and_parsing() {
+        let lang = "en-US".parse::<LangID>().expect("lang id should parse");
+        let mut translations = HashMap::new();
+        translations.insert(lang.clone(), "English".to_string());
+
+        assert_eq!(lang, "en-US");
+        assert_eq!(
+            translations.get("en-US").map(String::as_str),
+            Some("English")
+        );
+    }
+
+    #[cfg(feature = "schema")]
+    #[test]
+    fn newtypes_stay_string_shaped_in_json_schema() {
+        let ref_schema = schema_for!(RefID);
+        let lang_schema = schema_for!(LangID);
+
+        assert_eq!(ref_schema.to_value()["type"], "string");
+        assert_eq!(lang_schema.to_value()["type"], "string");
+    }
 }

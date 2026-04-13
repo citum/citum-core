@@ -110,7 +110,7 @@ fn test_numeric_sort_by_citation_order() {
         Style {
             info: StyleInfo {
                 title: Some("Numeric Test".to_string()),
-                id: Some("numeric-test".to_string()),
+                id: Some("numeric-test".into()),
                 ..Default::default()
             },
             options: Some(Config {
@@ -231,7 +231,7 @@ fn test_numeric_style_volume_issue_independence() {
         Style {
             info: StyleInfo {
                 title: Some("Numeric Test".to_string()),
-                id: Some("numeric-test".to_string()),
+                id: Some("numeric-test".into()),
                 ..Default::default()
             },
             options: Some(Config {

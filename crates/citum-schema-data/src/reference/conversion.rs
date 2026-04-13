@@ -9,8 +9,8 @@ use crate::reference::types::{
     Subtitle, Title, Treaty,
 };
 use crate::reference::{
-    AudioVisualType, AudioVisualWork, Event, InputReference, Numbering, NumberingType, WorkCore,
-    WorkRelation,
+    AudioVisualType, AudioVisualWork, Event, InputReference, LangID, Numbering, NumberingType,
+    RefID, WorkCore, WorkRelation,
 };
 use std::collections::HashMap;
 use url::Url;
@@ -204,14 +204,14 @@ fn archive_info_from_legacy_flat(legacy: &csl_legacy::csl_json::Reference) -> Op
 
 /// Pre-extracted common fields shared by all reference conversion functions.
 struct RefContext {
-    id: Option<String>,
+    id: Option<RefID>,
     title: Option<String>,
     short_title: Option<String>,
     created: EdtfString,
     issued: EdtfString,
     url: Option<Url>,
     accessed: Option<EdtfString>,
-    language: Option<String>,
+    language: Option<LangID>,
     note: Option<String>,
     doi: Option<String>,
     isbn: Option<String>,
@@ -744,7 +744,7 @@ pub fn input_reference_from_legacy_edited_book(
     push_legacy_contributor(&mut contributors, ContributorRole::Translator, translator);
 
     InputReference::Collection(Box::new(Collection {
-        id: Some(id),
+        id: Some(id.into()),
         r#type: CollectionType::EditedBook,
         title: title.map(Title::Single),
         short_title: extra
@@ -766,7 +766,7 @@ pub fn input_reference_from_legacy_edited_book(
         numbering,
         url: url.as_deref().and_then(|value| Url::parse(value).ok()),
         accessed: accessed.map(EdtfString::from),
-        language,
+        language: language.map(Into::into),
         field_languages: HashMap::new(),
         note,
         isbn,
@@ -1488,7 +1488,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
     fn from(mut legacy: csl_legacy::csl_json::Reference) -> Self {
         legacy.parse_note_field_hacks();
         let ctx = RefContext {
-            id: Some(legacy.id.clone()),
+            id: Some(legacy.id.clone().into()),
             title: legacy.title.clone(),
             short_title: short_title_from_legacy(&legacy, "shortTitle")
                 .or_else(|| short_title_from_legacy(&legacy, "title-short")),
@@ -1508,7 +1508,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                 .unwrap_or(EdtfString(String::new())),
             url: legacy.url.as_ref().and_then(|u| Url::parse(u).ok()),
             accessed: legacy.accessed.clone().map(EdtfString::from),
-            language: legacy.language.clone(),
+            language: legacy.language.clone().map(Into::into),
             note: legacy.note.clone(),
             doi: legacy.doi.clone(),
             isbn: legacy.isbn.clone(),

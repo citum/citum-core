@@ -25,7 +25,7 @@ fn build_name_style(form: ContributorForm, shorten: Option<ShortenListOptions>) 
     Style {
         info: StyleInfo {
             title: Some("Name Test".to_string()),
-            id: Some("name-test".to_string()),
+            id: Some("name-test".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -52,7 +52,7 @@ fn build_date_style(form: DateForm) -> Style {
     Style {
         info: StyleInfo {
             title: Some("Date Test".to_string()),
-            id: Some("date-test".to_string()),
+            id: Some("date-test".into()),
             ..Default::default()
         },
         options: Some(Config {

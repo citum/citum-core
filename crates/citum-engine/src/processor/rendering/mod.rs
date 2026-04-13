@@ -428,7 +428,7 @@ impl<'a> Renderer<'a> {
         };
 
         // Include compound sub-label (e.g. "a", "b") when applicable.
-        let ref_id = reference.id().unwrap_or_default();
+        let ref_id = reference.id().unwrap_or_default().to_string();
         let sub_label = self.citation_sub_label_for_ref(&ref_id).unwrap_or_default();
 
         // Format: "Author [Na]"

@@ -388,7 +388,7 @@ fn unpublished_legacy_records_promote_issued_to_created() {
 #[test]
 fn created_date_backfills_csl_issued_compatibility() {
     let reference = InputReference::Monograph(Box::new(Monograph {
-        id: Some("created-only".to_string()),
+        id: Some("created-only".into()),
         r#type: MonographType::Manuscript,
         title: Some(Title::Single("Created Only".to_string())),
         created: EdtfString("1954-05-17".to_string()),

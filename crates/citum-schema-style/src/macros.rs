@@ -203,7 +203,7 @@ macro_rules! ref_book {
     ($id:expr, $family:expr, $given:expr, $year:expr, $title:expr) => {
         $crate::reference::InputReference::Monograph(::std::boxed::Box::new(
             $crate::reference::Monograph {
-                id: Some($id.to_string()),
+                id: Some($id.into()),
                 r#type: $crate::reference::MonographType::Book,
                 title: Some($crate::reference::Title::Single($title.to_string())),
                 author: Some($crate::reference::Contributor::StructuredName(
@@ -239,7 +239,7 @@ macro_rules! ref_book_authors {
         ];
         $crate::reference::InputReference::Monograph(::std::boxed::Box::new(
             $crate::reference::Monograph {
-                id: Some($id.to_string()),
+                id: Some($id.into()),
                 r#type: $crate::reference::MonographType::Book,
                 title: Some($crate::reference::Title::Single($title.to_string())),
                 author: Some($crate::reference::Contributor::ContributorList(
@@ -258,7 +258,7 @@ macro_rules! ref_article {
     ($id:expr, $family:expr, $given:expr, $year:expr, $title:expr) => {
         $crate::reference::InputReference::SerialComponent(::std::boxed::Box::new(
             $crate::reference::SerialComponent {
-                id: Some($id.to_string()),
+                id: Some($id.into()),
                 r#type: $crate::reference::SerialComponentType::Article,
                 title: Some($crate::reference::Title::Single($title.to_string())),
                 author: Some($crate::reference::Contributor::StructuredName(
@@ -303,7 +303,7 @@ macro_rules! ref_article_authors {
         ];
         $crate::reference::InputReference::SerialComponent(::std::boxed::Box::new(
             $crate::reference::SerialComponent {
-                id: Some($id.to_string()),
+                id: Some($id.into()),
                 r#type: $crate::reference::SerialComponentType::Article,
                 title: Some($crate::reference::Title::Single($title.to_string())),
                 author: Some($crate::reference::Contributor::ContributorList(

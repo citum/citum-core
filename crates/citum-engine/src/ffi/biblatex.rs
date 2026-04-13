@@ -10,7 +10,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 use biblatex;
 use citum_schema::reference::{
-    InputReference, Numbering, NumberingType, Publisher, WorkRelation,
+    InputReference, LangID, Numbering, NumberingType, Publisher, RefID, WorkRelation,
     contributor::{Contributor, ContributorList, StructuredName},
     date::EdtfString,
     types::{
@@ -23,13 +23,13 @@ use url::Url;
 
 /// Common fields shared across all biblatex reference conversion helpers.
 struct BibRefContext<'a> {
-    id: Option<String>,
+    id: Option<RefID>,
     title: Option<Title>,
     author: Option<Contributor>,
     editor: Option<Contributor>,
     issued: EdtfString,
     publisher: Option<Publisher>,
-    language: Option<String>,
+    language: Option<LangID>,
     field_str: &'a dyn Fn(&str) -> Option<String>,
 }
 
@@ -150,7 +150,7 @@ fn build_article_reference(ctx: BibRefContext<'_>) -> InputReference {
 /// appropriate Citum reference types. Extracts all relevant fields
 /// including contributors, dates, and metadata.
 pub(super) fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
-    let id = Some(entry.key.clone());
+    let id = Some(entry.key.clone().into());
     let field_str = |key: &str| {
         entry.fields.get(key).map(|f| {
             f.iter()
@@ -179,7 +179,9 @@ pub(super) fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputRef
         contributors_from_biblatex_persons(&all_persons)
     });
 
-    let language = field_str("langid").or_else(|| field_str("language"));
+    let language = field_str("langid")
+        .or_else(|| field_str("language"))
+        .map(Into::into);
 
     // Compute entry_type once to avoid repeated conversions
     let entry_type = entry.entry_type.to_string().to_lowercase();

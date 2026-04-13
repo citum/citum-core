@@ -22,7 +22,7 @@ translations:
         let title: Title = serde_yaml::from_str(yaml).unwrap();
         if let Title::Multilingual(m) = title {
             assert_eq!(m.original, "战争与和平");
-            assert_eq!(m.lang, Some("zh".to_string()));
+            assert_eq!(m.lang, Some("zh".into()));
             assert_eq!(m.translations.get("en").unwrap(), "War and Peace");
         } else {
             panic!("Expected Title::Multilingual");
@@ -43,7 +43,7 @@ transliterations:
 "#;
         let name: MultilingualName = serde_yaml::from_str(yaml).unwrap();
         assert_eq!(name.original.family.to_string(), "Tolstoy");
-        assert_eq!(name.lang, Some("ru".to_string()));
+        assert_eq!(name.lang, Some("ru".into()));
         assert!(name.transliterations.contains_key("Latn"));
     }
 
@@ -120,12 +120,16 @@ field-languages:
   parent-monograph.title: de
 "#;
         let monograph: Monograph = serde_yaml::from_str(yaml).unwrap();
-        assert_eq!(monograph.field_languages.get("title").unwrap(), "en");
+        assert_eq!(
+            monograph.field_languages.get("title").unwrap().as_ref(),
+            "en"
+        );
         assert_eq!(
             monograph
                 .field_languages
                 .get("parent-monograph.title")
-                .unwrap(),
+                .unwrap()
+                .as_ref(),
             "de"
         );
     }

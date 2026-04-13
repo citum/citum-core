@@ -27,7 +27,7 @@ fn build_numeric_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Numeric Test".to_string()),
-            id: Some("numeric-test".to_string()),
+            id: Some("numeric-test".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -47,7 +47,7 @@ fn build_title_year_citation_style(sort: Vec<GroupSortKey>) -> Style {
     Style {
         info: StyleInfo {
             title: Some("Title Year Citation Sort Test".to_string()),
-            id: Some("title-year-citation-sort-test".to_string()),
+            id: Some("title-year-citation-sort-test".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -72,7 +72,7 @@ fn build_integral_name_style() -> Style {
     Style {
         info: StyleInfo {
             title: Some("Integral Name Memory".to_string()),
-            id: Some("integral-name-memory".to_string()),
+            id: Some("integral-name-memory".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -268,7 +268,7 @@ fn disambiguation_two_level_author_collisions_get_distinct_suffixes() {
     let mut bibliography = indexmap::IndexMap::new();
     for item in input {
         if let Some(id) = item.id() {
-            bibliography.insert(id, item);
+            bibliography.insert(id.to_string(), item);
         }
     }
 
@@ -460,7 +460,7 @@ fn subsequent_et_al_thresholds_shorten_the_repeat_citation() {
     let style = Style {
         info: StyleInfo {
             title: Some("Subsequent Et-Al Test".to_string()),
-            id: Some("subsequent-etal-test".to_string()),
+            id: Some("subsequent-etal-test".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -611,7 +611,7 @@ fn citation_scoped_contributor_shorten_applies_without_component_override() {
     let style = Style {
         info: StyleInfo {
             title: Some("Scoped contributor shorten".to_string()),
-            id: Some("scoped-contributor-shorten".to_string()),
+            id: Some("scoped-contributor-shorten".into()),
             ..Default::default()
         },
         citation: Some(CitationSpec {
@@ -1025,7 +1025,7 @@ fn note_styles_without_ibid_overrides_fall_back_to_subsequent() {
     let style = Style {
         info: StyleInfo {
             title: Some("Note Subsequent Fallback".to_string()),
-            id: Some("note-subsequent-fallback".to_string()),
+            id: Some("note-subsequent-fallback".into()),
             ..Default::default()
         },
         options: Some(Config {
@@ -1690,7 +1690,7 @@ fn test_personal_communication_citation_rendering_is_style_driven() {
 
     let mut bib = indexmap::IndexMap::new();
     for item in bib_vec {
-        bib.insert(item.id().unwrap(), item);
+        bib.insert(item.id().unwrap().to_string(), item);
     }
 
     // Mock APA 7th non-integral: (J. Oglethorpe, personal communication, January 13, 1733)

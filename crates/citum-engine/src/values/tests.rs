@@ -2724,7 +2724,7 @@ fn test_text_case_non_english_falls_back_to_as_is() {
         id: "german".to_string(),
         ref_type: "book".to_string(),
         title: Some("Die Geschichte der Molekularbiologie".to_string()),
-        language: Some("de".to_string()),
+        language: Some("de".into()),
         ..Default::default()
     });
     let component = TemplateTitle {

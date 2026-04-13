@@ -74,7 +74,7 @@ impl<'a> SelectorEvaluator<'a> {
     fn matches_cited_status(&self, reference: &Reference, cited: CitedStatus) -> bool {
         let id = reference.id().unwrap_or_default();
         match cited {
-            CitedStatus::Visible => self.cited_ids.contains(&id),
+            CitedStatus::Visible => self.cited_ids.contains(id.as_str()),
             CitedStatus::Any => true,
         }
     }
@@ -86,7 +86,7 @@ impl<'a> SelectorEvaluator<'a> {
     fn matches_field(reference: &Reference, field_name: &str, matcher: &FieldMatcher) -> bool {
         match field_name {
             "language" => {
-                let lang = reference.language().unwrap_or_default();
+                let lang = reference.language().unwrap_or_default().to_string();
                 Self::matches_field_value(&lang, matcher)
             }
             "note" => {

@@ -191,7 +191,7 @@
         "field-languages": {
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/LangID"
           }
         },
         "genre": {
@@ -201,9 +201,13 @@
           ]
         },
         "id": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "issued": {
@@ -211,9 +215,13 @@
           "default": ""
         },
         "language": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "medium": {
@@ -334,14 +342,18 @@
           "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/LangID"
           }
         },
         "id": {
           "description": "Unique identifier for this reference.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "issued": {
@@ -360,9 +372,13 @@
         },
         "language": {
           "description": "BCP 47 language of the document.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "note": {
@@ -450,13 +466,17 @@
         "field-languages": {
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/LangID"
           }
         },
         "id": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "issue": {
@@ -479,9 +499,13 @@
           }
         },
         "language": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "note": {
@@ -610,13 +634,17 @@
         "field-languages": {
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/LangID"
           }
         },
         "id": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "isbn": {
@@ -645,9 +673,13 @@
           }
         },
         "language": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "note": {
@@ -804,7 +836,7 @@
         "field-languages": {
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/LangID"
           }
         },
         "genre": {
@@ -814,9 +846,13 @@
           ]
         },
         "id": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "issue": {
@@ -839,9 +875,13 @@
           }
         },
         "language": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "medium": {
@@ -1072,7 +1112,7 @@
           "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/LangID"
           }
         },
         "format": {
@@ -1084,9 +1124,13 @@
         },
         "id": {
           "description": "Unique identifier for this reference.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "issued": {
@@ -1105,9 +1149,13 @@
         },
         "language": {
           "description": "BCP 47 language of the dataset.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "note": {
@@ -1258,7 +1306,7 @@
           "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/LangID"
           }
         },
         "genre": {
@@ -1270,16 +1318,24 @@
         },
         "id": {
           "description": "Unique identifier for this reference.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "language": {
           "description": "BCP 47 language of the event.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "location": {
@@ -1365,14 +1421,18 @@
           "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/LangID"
           }
         },
         "id": {
           "description": "Unique identifier for this reference.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "issued": {
@@ -1391,9 +1451,13 @@
         },
         "language": {
           "description": "BCP 47 language of the document.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "note": {
@@ -1708,6 +1772,10 @@
         }
       ]
     },
+    "LangID": {
+      "description": "BCP 47 language tag (e.g., `\"en\"`, `\"de\"`, `\"ja\"`).",
+      "type": "string"
+    },
     "LegalCase": {
       "description": "A legal case (court decision).",
       "type": "object",
@@ -1745,14 +1813,18 @@
           "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/LangID"
           }
         },
         "id": {
           "description": "Unique identifier for this reference.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "issued": {
@@ -1771,9 +1843,13 @@
         },
         "language": {
           "description": "BCP 47 language of the document.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "note": {
@@ -1948,7 +2024,7 @@
         "field-languages": {
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/LangID"
           }
         },
         "genre": {
@@ -1958,9 +2034,13 @@
           ]
         },
         "id": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "isbn": {
@@ -1989,9 +2069,13 @@
           }
         },
         "language": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "medium": {
@@ -2190,9 +2274,13 @@
       "properties": {
         "lang": {
           "description": "ISO 639/BCP 47 language code for the original text.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "original": {
@@ -2224,9 +2312,13 @@
       "properties": {
         "lang": {
           "description": "ISO 639/BCP 47 language code for the original name.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "original": {
@@ -2360,7 +2452,7 @@
           "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/LangID"
           }
         },
         "filing-date": {
@@ -2376,9 +2468,13 @@
         },
         "id": {
           "description": "Unique identifier for this reference.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "issued": {
@@ -2404,9 +2500,13 @@
         },
         "language": {
           "description": "BCP 47 language of the document.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "note": {
@@ -2475,6 +2575,10 @@
         }
       ]
     },
+    "RefID": {
+      "description": "Unique identifier for a reference item.",
+      "type": "string"
+    },
     "Regulation": {
       "description": "An administrative regulation.",
       "type": "object",
@@ -2512,14 +2616,18 @@
           "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/LangID"
           }
         },
         "id": {
           "description": "Unique identifier for this reference.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "issued": {
@@ -2538,9 +2646,13 @@
         },
         "language": {
           "description": "BCP 47 language of the document.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "note": {
@@ -2628,13 +2740,17 @@
         "field-languages": {
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/LangID"
           }
         },
         "id": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "issn": {
@@ -2644,9 +2760,13 @@
           ]
         },
         "language": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "note": {
@@ -2791,7 +2911,7 @@
         "field-languages": {
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/LangID"
           }
         },
         "genre": {
@@ -2801,9 +2921,13 @@
           ]
         },
         "id": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "issue": {
@@ -2826,9 +2950,13 @@
           }
         },
         "language": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "medium": {
@@ -3058,14 +3186,18 @@
           "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/LangID"
           }
         },
         "id": {
           "description": "Unique identifier for this reference.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "issued": {
@@ -3084,9 +3216,13 @@
         },
         "language": {
           "description": "BCP 47 language of the software documentation.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "license": {
@@ -3186,14 +3322,18 @@
           "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/LangID"
           }
         },
         "id": {
           "description": "Unique identifier for this reference.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "issued": {
@@ -3212,9 +3352,13 @@
         },
         "language": {
           "description": "BCP 47 language of the document.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "note": {
@@ -3314,14 +3458,18 @@
           "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/LangID"
           }
         },
         "id": {
           "description": "Unique identifier for this reference.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "issued": {
@@ -3340,9 +3488,13 @@
         },
         "language": {
           "description": "BCP 47 language of the document.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "note": {
@@ -3500,7 +3652,7 @@
             "minItems": 2,
             "prefixItems": [
               {
-                "type": "string"
+                "$ref": "#/$defs/LangID"
               },
               {
                 "type": "string"
@@ -3517,7 +3669,7 @@
             "minItems": 2,
             "prefixItems": [
               {
-                "type": "string"
+                "$ref": "#/$defs/LangID"
               },
               {
                 "$ref": "#/$defs/StructuredTitle"
@@ -3575,14 +3727,18 @@
           "description": "Per-field language overrides.",
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/LangID"
           }
         },
         "id": {
           "description": "Unique identifier for this reference.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "issued": {
@@ -3601,9 +3757,13 @@
         },
         "language": {
           "description": "BCP 47 language of the document.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "note": {
@@ -3660,7 +3820,7 @@
       "anyOf": [
         {
           "description": "The target work is referenced by its ID (resolved at render time).",
-          "type": "string"
+          "$ref": "#/$defs/RefID"
         },
         {
           "description": "The target work is embedded inline.",

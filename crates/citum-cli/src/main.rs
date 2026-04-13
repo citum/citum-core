@@ -2307,14 +2307,14 @@ fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
 fn input_reference_to_csl_json(reference: &InputReference) -> csl_legacy::csl_json::Reference {
     use csl_legacy::csl_json::{DateVariable, Reference, StringOrNumber};
 
-    let id = reference.id().unwrap_or_else(|| "item".to_string());
+    let id = reference.id().unwrap_or_else(|| "item".into());
     let mut r = Reference {
-        id,
+        id: id.to_string(),
         ..Default::default()
     };
 
     r.title = reference.title().map(|t| t.to_string());
-    r.language = reference.language();
+    r.language = reference.language().map(|lang| lang.to_string());
     r.note = reference.note();
     r.doi = reference.doi();
     r.issued = reference.csl_issued_date().and_then(|d| {
@@ -2399,7 +2399,7 @@ fn contributor_to_csl_names(
 fn render_biblatex(input: &InputBibliography) -> String {
     let mut out = String::new();
     for reference in &input.references {
-        let id = reference.id().unwrap_or_else(|| "item".to_string());
+        let id = reference.id().unwrap_or_else(|| "item".into());
         let entry_type = match reference {
             InputReference::SerialComponent(_) => "article",
             InputReference::CollectionComponent(_) => "incollection",
@@ -3556,7 +3556,7 @@ references:
             .expect("bibliography should load");
         let processor = Processor::new(style, loaded.references);
         let citations = vec![Citation {
-            id: Some("c1".to_string()),
+            id: Some("c1".into()),
             items: vec![CitationItem {
                 id: "smith2020".to_string(),
                 ..Default::default()
