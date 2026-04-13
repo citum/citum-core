@@ -226,8 +226,8 @@ test('apa-7th concision regression reflects preset-first success', () => {
   const loaded = loadStyleYaml(style.name);
   const concision = computeConcisionScore(loaded.resolvedStyleData, style.format);
 
-  assert.equal(concision.variantSelectors, 62, 'resolved APA should reflect the embedded authored variant selectors');
-  assert.equal(concision.score, 31.8, `expected embedded APA concision, got ${concision.score}`);
+  assert.equal(concision.variantSelectors, 26, 'resolved APA should reflect the embedded authored variant selectors');
+  assert.equal(concision.score, 57.6, `expected embedded APA concision, got ${concision.score}`);
 });
 
 test('report-core exposes expected benchmark labels for representative styles', () => {

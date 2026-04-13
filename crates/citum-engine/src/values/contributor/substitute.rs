@@ -8,6 +8,7 @@ use crate::reference::Reference;
 use crate::render::format::OutputFormat;
 use crate::values::{ProcHints, ProcValues, RenderContext, RenderOptions};
 use citum_schema::options::{RoleLabelPreset, SubstituteKey};
+use citum_schema::reference::Title;
 use citum_schema::template::{ContributorRole, Rendering, TemplateComponent, TemplateContributor};
 
 enum ResolvedRole {
@@ -457,7 +458,20 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
             }
             SubstituteKey::Title => {
                 if let Some(title) = reference.title() {
-                    let title_str = title.to_string();
+                    // In citation context use a short-form title (main title only,
+                    // no subtitle) so the substitute doesn't bloat the in-text cite.
+                    // In bibliography use the full display form.
+                    let title_str = match options.context {
+                        RenderContext::Citation => match title {
+                            Title::Structured(s) => s.main.clone(),
+                            Title::MultiStructured(v) => {
+                                v.first().map(|(_, s)| s.main.clone()).unwrap_or_default()
+                            }
+                            Title::Shorthand(abbr, _) => abbr.clone(),
+                            _ => title.to_string(),
+                        },
+                        _ => title.to_string(),
+                    };
                     // In citations: quote the title per CSL conventions.
                     // In bibliography: use title as-is (will be styled normally).
                     let value = if options.context == RenderContext::Citation {
