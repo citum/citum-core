@@ -1,6 +1,6 @@
 ---
 name: style-evolve
-description: Public Codex entrypoint for Citum style work. Route upgrade, migrate, or create requests to the shared workflow docs and internal roles.
+description: "Public Codex entrypoint for Citum style work. Activate on: 'upgrade', 'migrate', 'create', any style authoring request, or any request to fix/improve/convert a Citum or CSL citation style. Route to the shared workflow docs and internal roles."
 ---
 
 # Style Evolve
@@ -22,7 +22,7 @@ Read first:
 ## Routing
 
 - Use `spec-planner` when the request needs architecture or schema decisions.
-- Use `migrate-researcher` when the evidence points to `citum_migrate`.
+- Use `migration-researcher` when the evidence points to `citum_migrate`.
 - Use `rust-implementer` for bounded Rust fixes.
 - Use `style-qa-reviewer` for the final style QA gate.
 

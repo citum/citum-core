@@ -9,7 +9,6 @@ Use this skill for bounded Rust cleanup work in the Citum workspace when the tas
 improve code quality rather than fix a specific bug.
 
 Read first:
-- `AGENTS.md`
 - `docs/guides/CODING_STANDARDS.md`
 - `docs/guides/CODEX_SKILLS.md`
 

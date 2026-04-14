@@ -97,6 +97,7 @@ Do not consider the task done until CI passes.
 Style tasks: use **`/style-evolve`** (`upgrade`, `migrate`, `create`). Codex skills
 live in `.codex/skills/` and are installed with `./scripts/install-codex-skills.sh`.
 Claude skills remain in `.claude/skills/`.
+Rust quality tasks: use **`/rust-simplify`** (file-length, duplication cleanup) or **`/rust-refine`** (API shape, clippy suppression removal).
 
 ## Task Management
 
@@ -118,7 +119,7 @@ Transition citation management from CSL 1.0 (procedural XML) to Citum (declarati
 1. **Parsing** — `csl-legacy` (complete)
 2. **Migrating** — `citum_migrate`
 3. **Processing** — `citum_engine`
-4. **Rendering** — match citeproc-js exactly
+4. **Rendering** — match citeproc-js exactly for CSL-derived styles; match biblatex behavior for biblatex-derived styles
 
 ```
 crates/
