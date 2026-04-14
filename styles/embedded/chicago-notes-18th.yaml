@@ -186,6 +186,17 @@ citation:
       form: long
       prefix: ", trans. "
     - group:
+      - date: original-published
+        form: year
+        wrap:
+          punctuation: parentheses
+      - variable: original-publisher
+        prefix: " "
+      - variable: original-publisher-place
+        prefix: ", "
+      delimiter: ""
+      prefix: " "
+    - group:
       - variable: genre
       - variable: publisher
       - date: issued

@@ -92,10 +92,30 @@ fn relation_monograph(
     author: Option<Contributor>,
     issued: Option<EdtfString>,
     genre: Option<String>,
+    publisher: Option<String>,
+    publisher_place: Option<String>,
 ) -> Option<WorkRelation> {
-    if title.is_none() && author.is_none() && issued.is_none() && genre.is_none() {
+    if title.is_none()
+        && author.is_none()
+        && issued.is_none()
+        && genre.is_none()
+        && publisher.is_none()
+        && publisher_place.is_none()
+    {
         return None;
     }
+
+    let publisher = match (publisher, publisher_place) {
+        (Some(name), place) => Some(Publisher {
+            name: name.into(),
+            place,
+        }),
+        (None, Some(place)) => Some(Publisher {
+            name: String::new().into(),
+            place: Some(place),
+        }),
+        (None, None) => None,
+    };
 
     Some(WorkRelation::Embedded(Box::new(InputReference::Monograph(
         Box::new(Monograph {
@@ -103,6 +123,7 @@ fn relation_monograph(
             author,
             issued: issued.unwrap_or_default(),
             genre,
+            publisher,
             ..Default::default()
         }),
     ))))
@@ -320,6 +341,8 @@ fn from_monograph_ref(
     let translator = legacy.translator.clone().map(Contributor::from);
     let original_author = legacy_extra_contributor(&legacy, "original-author");
     let original_date = legacy_extra_date(&legacy, "original-date");
+    let original_publisher = legacy_extra_str(&legacy, "original-publisher");
+    let original_publisher_place = legacy_extra_str(&legacy, "original-publisher-place");
     let volume_title = legacy_extra_str(&legacy, "volume-title");
     let part_title = legacy_extra_str(&legacy, "part-title");
     let part_number = legacy_extra_str(&legacy, "part-number");
@@ -390,6 +413,8 @@ fn from_monograph_ref(
         original_author,
         original_date,
         None,
+        original_publisher,
+        original_publisher_place,
     );
 
     let title = if r#type == MonographType::Webpage {
@@ -513,6 +538,8 @@ fn from_collection_component_ref(
     let part_number = legacy_extra_str(&legacy, "part-number");
     let original_author = legacy_extra_contributor(&legacy, "original-author");
     let original_date = legacy_extra_date(&legacy, "original-date");
+    let original_publisher = legacy_extra_str(&legacy, "original-publisher");
+    let original_publisher_place = legacy_extra_str(&legacy, "original-publisher-place");
     let parent_title = legacy.container_title.clone().map(Title::Single);
     let parent_volume = legacy
         .collection_number
@@ -687,6 +714,8 @@ fn from_collection_component_ref(
             original_author,
             original_date,
             None,
+            original_publisher,
+            original_publisher_place,
         ),
         ..Default::default()
     }))
@@ -804,6 +833,8 @@ fn from_serial_component_ref(
     let available_date = legacy_extra_date(&legacy, "available-date");
     let original_author = legacy_extra_contributor(&legacy, "original-author");
     let original_date = legacy_extra_date(&legacy, "original-date");
+    let original_publisher = legacy_extra_str(&legacy, "original-publisher");
+    let original_publisher_place = legacy_extra_str(&legacy, "original-publisher-place");
     let serial_type = match legacy.ref_type.as_str() {
         "article-journal" => SerialType::AcademicJournal,
         "article-magazine" => SerialType::Magazine,
@@ -859,6 +890,8 @@ fn from_serial_component_ref(
             .or_else(|| container_author.clone().map(Contributor::from)),
         None,
         reviewed_genre,
+        None,
+        None,
     );
     if reviewed.is_none() {
         push_legacy_contributor(
@@ -932,6 +965,8 @@ fn from_serial_component_ref(
             original_author,
             original_date,
             None,
+            original_publisher,
+            original_publisher_place,
         ),
         ..Default::default()
     }))
