@@ -945,6 +945,8 @@ pub enum SimpleVariable {
     EprintClass,
     Publisher,
     PublisherPlace,
+    OriginalPublisher,
+    OriginalPublisherPlace,
     EventPlace,
     Dimensions,
     Scale,

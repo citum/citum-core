@@ -1021,6 +1021,59 @@ fn chicago_notes_non_immediate_repeat_uses_the_subsequent_short_form() {
     );
 }
 
+fn chicago_notes_reprint_full_note_renders_original_publisher_metadata() {
+    use std::path::PathBuf;
+
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("styles/embedded/chicago-notes-18th.yaml");
+
+    let yaml = std::fs::read_to_string(&path).expect("Failed to read chicago-notes.yaml");
+    let style: citum_schema::Style =
+        serde_yaml::from_str(&yaml).expect("Failed to parse chicago-notes.yaml");
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_value(serde_json::json!({
+        "id": "reprint1994",
+        "type": "book",
+        "title": "Orientalism",
+        "author": [{ "family": "Said", "given": "Edward W." }],
+        "issued": { "date-parts": [[1994]] },
+        "publisher": "Vintage Books",
+        "publisher-place": "New York",
+        "original-date": { "date-parts": [[1901]] },
+        "original-publisher": "Old Press",
+        "original-publisher-place": "Boston"
+    }))
+    .expect("failed to parse legacy reprint fixture");
+    let id = legacy.id.clone();
+    let bib = indexmap::IndexMap::from([(id.clone(), legacy.into())]);
+    let processor = Processor::new(style, bib);
+
+    let first_citation = citum_schema::Citation {
+        items: vec![citum_schema::citation::CitationItem {
+            id,
+            ..Default::default()
+        }],
+        position: Some(citum_schema::citation::Position::First),
+        ..Default::default()
+    };
+
+    let rendered = processor
+        .process_citation(&first_citation)
+        .expect("Failed to process reprint citation");
+    assert!(
+        rendered.contains("(1901) Old Press, Boston"),
+        "reprint note should include original publisher metadata: {rendered}"
+    );
+    assert!(
+        rendered.contains("Vintage Books"),
+        "reprint note should still include current publisher metadata: {rendered}"
+    );
+}
+
 fn note_styles_without_ibid_overrides_fall_back_to_subsequent() {
     let style = Style {
         info: StyleInfo {
@@ -1598,6 +1651,14 @@ mod note_style_positions {
             "A non-immediate Chicago note repeat should use the shortened subsequent-note form instead of ibid.",
         );
         super::chicago_notes_non_immediate_repeat_uses_the_subsequent_short_form();
+    }
+
+    #[test]
+    fn chicago_notes_reprint_full_note_renders_original_publisher_metadata() {
+        announce_behavior(
+            "A full Chicago note for a reprint should include original publisher metadata before the current publication details.",
+        );
+        super::chicago_notes_reprint_full_note_renders_original_publisher_metadata();
     }
 
     #[test]

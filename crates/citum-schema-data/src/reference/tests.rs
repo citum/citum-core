@@ -1172,3 +1172,101 @@ fn ref_type_document_with_conference_paper_genre_returns_paper_conference() {
     }));
     assert_eq!(reference.ref_type(), "paper-conference");
 }
+
+#[test]
+fn conversion_maps_original_publisher_metadata_into_original_relation() {
+    let json = r#"{
+        "id": "reprint-book",
+        "type": "book",
+        "title": "The Great Book",
+        "author": [{ "family": "Author", "given": "Ada" }],
+        "issued": { "date-parts": [[1994]] },
+        "publisher": "Vintage Books",
+        "publisher-place": "New York",
+        "original-title": "The Great Book",
+        "original-date": { "date-parts": [[1901]] },
+        "original-publisher": "Old Press",
+        "original-publisher-place": "Boston"
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(
+        reference.original_date(),
+        Some(EdtfString("1901".to_string()))
+    );
+    assert_eq!(
+        reference.original_publisher_str(),
+        Some("Old Press".to_string())
+    );
+    assert_eq!(
+        reference.original_publisher_place(),
+        Some("Boston".to_string())
+    );
+
+    let InputReference::Monograph(book) = reference else {
+        panic!("expected monograph");
+    };
+    let Some(WorkRelation::Embedded(original)) = book.original.as_ref() else {
+        panic!("expected embedded original relation");
+    };
+    let InputReference::Monograph(original_book) = original.as_ref() else {
+        panic!("expected original relation to be a monograph");
+    };
+
+    assert_eq!(
+        original_book
+            .publisher
+            .as_ref()
+            .map(|publisher| publisher.name.to_string()),
+        Some("Old Press".to_string())
+    );
+    assert_eq!(
+        original_book
+            .publisher
+            .as_ref()
+            .and_then(|publisher| publisher.place.clone()),
+        Some("Boston".to_string())
+    );
+}
+
+#[test]
+fn conversion_preserves_place_only_original_publication_metadata() {
+    let json = r#"{
+        "id": "reprint-place-only",
+        "type": "book",
+        "title": "The Great Book",
+        "author": [{ "family": "Author", "given": "Ada" }],
+        "issued": { "date-parts": [[1994]] },
+        "original-date": { "date-parts": [[1901]] },
+        "original-publisher-place": "Boston"
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(reference.original_publisher_str(), None);
+    assert_eq!(
+        reference.original_publisher_place(),
+        Some("Boston".to_string())
+    );
+
+    let InputReference::Monograph(book) = reference else {
+        panic!("expected monograph");
+    };
+    let Some(WorkRelation::Embedded(original)) = book.original.as_ref() else {
+        panic!("expected embedded original relation");
+    };
+    let InputReference::Monograph(original_book) = original.as_ref() else {
+        panic!("expected original relation to be a monograph");
+    };
+
+    assert_eq!(
+        original_book
+            .publisher
+            .as_ref()
+            .and_then(|publisher| publisher.place.clone()),
+        Some("Boston".to_string())
+    );
+}

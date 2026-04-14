@@ -1162,6 +1162,44 @@ impl InputReference {
         }
     }
 
+    /// Return the original publisher as a string.
+    pub fn original_publisher_str(&self) -> Option<String> {
+        match self {
+            InputReference::Monograph(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_str().filter(|value| !value.is_empty()),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::CollectionComponent(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_str().filter(|value| !value.is_empty()),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::SerialComponent(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_str().filter(|value| !value.is_empty()),
+                WorkRelation::Id(_) => None,
+            }),
+            _ => None,
+        }
+    }
+
+    /// Return the original publisher place.
+    pub fn original_publisher_place(&self) -> Option<String> {
+        match self {
+            InputReference::Monograph(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_place(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::CollectionComponent(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_place(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::SerialComponent(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_place(),
+                WorkRelation::Id(_) => None,
+            }),
+            _ => None,
+        }
+    }
+
     /// Return the ISBN.
     pub fn isbn(&self) -> Option<String> {
         match self {
