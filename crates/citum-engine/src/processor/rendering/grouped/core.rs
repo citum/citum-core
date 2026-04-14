@@ -609,6 +609,16 @@ impl Renderer<'_> {
         self.render_integral_explicit_group::<F>(group, spec, mode, suppress_author, position)
     }
 
+    /// Returns true for non-integral citation types that must render as a single
+    /// unit via [`render_special_type_items`] rather than the split author+items
+    /// path used for standard author-date groups.
+    ///
+    /// Title-first types (`legal-case`, `treaty`, `hearing`) need this because
+    /// their type-variant template leads with a title component, not a
+    /// contributor. The grouped path strips only `Contributor::Author`, so the
+    /// title would render twice (plain in the author slot, emph in the item
+    /// slot). `personal-communication` is included because its per-item date
+    /// and term must stay together and not be collapsed across items.
     fn requires_full_group_item_rendering(
         &self,
         mode: &citum_schema::citation::CitationMode,
@@ -617,7 +627,7 @@ impl Renderer<'_> {
         matches!(mode, citum_schema::citation::CitationMode::NonIntegral)
             && matches!(
                 reference.ref_type().as_str(),
-                "legal-case" | "personal-communication"
+                "legal-case" | "treaty" | "hearing" | "personal-communication"
             )
     }
 
