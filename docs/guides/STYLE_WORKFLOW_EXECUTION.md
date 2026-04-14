@@ -55,9 +55,9 @@ Every workflow should report:
 - Keep host wrappers short and refer back here instead of restating the loop.
 
 ## Acceptance Criteria
-- [ ] Shared style workflows reference this guide instead of duplicating the same loop text.
-- [ ] The evidence ladder is defined here exactly once.
-- [ ] The shared output contract is expressed here in host-neutral terms.
+- [x] Shared style workflows reference this guide instead of duplicating the same loop text.
+- [x] The evidence ladder is defined here exactly once.
+- [x] The shared output contract is expressed here in host-neutral terms.
 
 ## Changelog
 - 2026-04-04: Initial version.
