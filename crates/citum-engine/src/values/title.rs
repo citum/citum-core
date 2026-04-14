@@ -185,14 +185,20 @@ fn render_structured_title<F: crate::render::format::OutputFormat<Output = Strin
     st: &StructuredTitle,
     fmt: &F,
     case: Option<TextCase>,
+    short: bool,
 ) -> (String, bool) {
+    let (main_rendered, has_link) = render_part_with_case(&st.main, fmt, case);
+    if short {
+        return (main_rendered, has_link);
+    }
+
     let subtitle_case = case.map(|c| match c {
         TextCase::SentenceNlm => TextCase::Lowercase,
         other => other,
     });
 
-    let (main_rendered, mut has_link) = render_part_with_case(&st.main, fmt, case);
     let mut parts = vec![main_rendered];
+    let mut has_link = has_link;
 
     let subs: Vec<&str> = match &st.sub {
         Subtitle::String(s) => vec![s.as_str()],
@@ -302,9 +308,17 @@ impl ComponentValues for TemplateTitle {
         // Render title with structured-title-aware case transforms
         let rendered: Option<(String, bool, bool)> = title.as_ref().map(|title| match title {
             Title::Structured(st) => {
-                let raw_text = title_text(title, self.form.as_ref());
-                let (value, has_link) = render_structured_title(st, &fmt, effective_case);
-                let pre_formatted = looks_like_djot_markup(&raw_text);
+                let short = matches!(self.form, Some(TitleForm::Short));
+                let (value, has_link) = render_structured_title(st, &fmt, effective_case, short);
+                // Scope pre_formatted to what was actually rendered: when
+                // short=true only main was rendered, so check only main for
+                // Djot markers; checking the full title would incorrectly set
+                // the flag when a subtitle contains markup but value does not.
+                let pre_formatted = if short {
+                    looks_like_djot_markup(&st.main)
+                } else {
+                    looks_like_djot_markup(&title_text(title, self.form.as_ref()))
+                };
                 (value, has_link, pre_formatted)
             }
             Title::Multilingual(m) => {

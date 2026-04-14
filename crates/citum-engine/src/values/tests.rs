@@ -2792,3 +2792,67 @@ fn test_text_case_no_config_means_no_transform() {
     // No text-case configured: title rendered as-is (just smart quotes)
     assert_eq!(result, "The Quick Brown Fox");
 }
+
+/// `form: short` on a structured title returns only the main part, not the
+/// full compound string.
+#[test]
+fn test_structured_title_form_short_returns_main_only() {
+    use citum_schema::reference::types::{StructuredTitle, Subtitle, Title};
+
+    let config = Config::default();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let hints = ProcHints::default();
+
+    let mut reference = Reference::from(LegacyReference {
+        id: "treaty".to_string(),
+        ref_type: "treaty".to_string(),
+        title: Some("placeholder".to_string()),
+        ..Default::default()
+    });
+    if let Reference::Treaty(ref mut m) = reference {
+        m.title = Some(Title::Structured(StructuredTitle {
+            full: None,
+            main: "Homeland Security Act of 2002".to_string(),
+            sub: Subtitle::Vector(vec![
+                "Hearings on H.R. 5005".to_string(),
+                "Day 3".to_string(),
+            ]),
+        }));
+    }
+
+    // Without form: short — full compound title
+    let full_component = TemplateTitle {
+        title: TitleType::Primary,
+        ..Default::default()
+    };
+    let full = full_component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+    assert_eq!(
+        full.value,
+        "Homeland Security Act of 2002: Hearings on H.R. 5005: Day 3"
+    );
+
+    // With form: short — main only, subtitles suppressed
+    let short_component = TemplateTitle {
+        title: TitleType::Primary,
+        form: Some(TitleForm::Short),
+        ..Default::default()
+    };
+    let short = short_component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+    assert_eq!(short.value, "Homeland Security Act of 2002");
+}
