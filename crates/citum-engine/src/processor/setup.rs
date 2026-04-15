@@ -40,6 +40,9 @@ impl Default for Processor {
             compound_set_by_ref,
             compound_member_index,
             compound_groups: RefCell::new(IndexMap::new()),
+            dynamic_compound_set_by_ref: RefCell::new(HashMap::new()),
+            dynamic_compound_member_index: RefCell::new(HashMap::new()),
+            dynamic_compound_sets: RefCell::new(IndexMap::new()),
             show_semantics: true,
             inject_ast_indices: false,
         }
@@ -82,6 +85,9 @@ impl Processor {
             compound_set_by_ref,
             compound_member_index,
             compound_groups: RefCell::new(IndexMap::new()),
+            dynamic_compound_set_by_ref: RefCell::new(HashMap::new()),
+            dynamic_compound_member_index: RefCell::new(HashMap::new()),
+            dynamic_compound_sets: RefCell::new(IndexMap::new()),
             show_semantics: true,
             inject_ast_indices: false,
         };

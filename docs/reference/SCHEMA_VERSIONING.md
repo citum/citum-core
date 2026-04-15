@@ -210,6 +210,9 @@ Track schema changes separately from code changes.
 Historical note: entries below may predate the automation baseline and are the
 authoritative record when matching tags were not created at the time.
 
+#### schema-v0.32.0 (2026-04-14)
+- Add `grouped` field to `Citation` for cite-site dynamic compound grouping
+
 #### schema-v0.31.0 (2026-04-14)
 - Schema version bumped from 0.30.2 to 0.31.0
 

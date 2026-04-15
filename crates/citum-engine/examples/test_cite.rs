@@ -25,6 +25,7 @@ fn main() {
         prefix: None,
         suffix: None,
         note_number: None,
+        grouped: false,
         items: vec![CitationItem {
             id: "weinberg1971".to_string(),
             locator: None,

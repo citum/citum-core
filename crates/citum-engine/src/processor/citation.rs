@@ -16,6 +16,8 @@ use crate::reference::Citation;
 use citum_schema::NoteStartTextCase;
 use citum_schema::locale::{GeneralTerm, Locale, TermForm};
 use citum_schema::template::DelimiterPunctuation;
+use indexmap::IndexMap;
+use std::collections::HashMap;
 
 fn join_integral_groups(rendered_groups: Vec<String>, locale: &Locale) -> String {
     match rendered_groups.len() {
@@ -127,6 +129,142 @@ impl Processor {
         )
     }
 
+    /// Register a dynamic compound group for a `grouped` citation.
+    ///
+    /// The first item in `citation.items` is the head; subsequent items are tails.
+    /// Skips silently when:
+    /// - The style has no `compound-numeric` bibliography configuration (non-numeric style).
+    /// - A static compound set already covers the head or any tail (static sets take precedence).
+    /// - The head or any tail was previously cited in any context (first occurrence wins).
+    ///
+    /// This method must be called before `track_cited_ids_and_init_numbers` so that
+    /// `cited_ids` reflects only references from prior citations, not the current one.
+    fn resolve_dynamic_group(&self, citation: &Citation) {
+        if self.get_bibliography_options().compound_numeric.is_none() {
+            return;
+        }
+
+        if citation.items.len() < 2 {
+            return;
+        }
+
+        let head_id = &citation.items[0].id;
+        let tail_ids: Vec<String> = citation.items[1..].iter().map(|i| i.id.clone()).collect();
+
+        // Static sets take precedence — skip if head or any tail is in a static set.
+        if self.compound_set_by_ref.contains_key(head_id) {
+            return;
+        }
+        for tail in &tail_ids {
+            if self.compound_set_by_ref.contains_key(tail.as_str()) {
+                return;
+            }
+        }
+
+        // First-occurrence wins: reject if the head or any tail was already cited in any
+        // context — whether via a prior dynamic group or a previous ungrouped citation.
+        // Because this method is called before cited_ids is updated for the current
+        // citation, `cited_ids` contains only references from earlier citations.
+        {
+            let dyn_set = self.dynamic_compound_set_by_ref.borrow();
+            let cited = self.cited_ids.borrow();
+
+            if dyn_set.contains_key(head_id.as_str()) || cited.contains(head_id.as_str()) {
+                return;
+            }
+            for tail in &tail_ids {
+                if dyn_set.contains_key(tail.as_str()) || cited.contains(tail.as_str()) {
+                    return;
+                }
+            }
+        }
+
+        let head_number = {
+            let numbers = self.citation_numbers.borrow();
+            let Some(&n) = numbers.get(head_id.as_str()) else {
+                return;
+            };
+            n
+        };
+
+        // Assign all tails the same citation number as the head.
+        {
+            let mut numbers = self.citation_numbers.borrow_mut();
+            for tail in &tail_ids {
+                numbers.insert(tail.clone(), head_number);
+            }
+        }
+
+        // Build the ordered member list for this group.
+        let all_members: Vec<String> = std::iter::once(head_id.clone())
+            .chain(tail_ids.iter().cloned())
+            .collect();
+
+        // Populate dynamic index maps so the renderer can assign sub-labels.
+        {
+            let mut dyn_set = self.dynamic_compound_set_by_ref.borrow_mut();
+            let mut dyn_idx = self.dynamic_compound_member_index.borrow_mut();
+            for (idx, member) in all_members.iter().enumerate() {
+                dyn_set.insert(member.clone(), head_id.clone());
+                dyn_idx.insert(member.clone(), idx);
+            }
+        }
+
+        // Inject into compound_groups for bibliography rendering.
+        {
+            let mut groups = self.compound_groups.borrow_mut();
+            let members = groups
+                .entry(head_number)
+                .or_insert_with(|| vec![head_id.clone()]);
+            for tail in &tail_ids {
+                if !members.contains(tail) {
+                    members.push(tail.clone());
+                }
+            }
+        }
+
+        // Register dynamic set so citation_sub_label_for_ref can find members.
+        self.dynamic_compound_sets
+            .borrow_mut()
+            .insert(head_id.clone(), all_members);
+    }
+
+    /// Build the merged static + dynamic compound lookup maps for the renderer.
+    ///
+    /// When no dynamic groups exist (the common case) the static maps are returned
+    /// via references with no allocation. Owned merged maps are only constructed when
+    /// at least one dynamic group is registered.
+    fn merged_compound_data(
+        &self,
+    ) -> (
+        Option<HashMap<String, String>>,
+        Option<HashMap<String, usize>>,
+        Option<IndexMap<String, Vec<String>>>,
+    ) {
+        if self.dynamic_compound_set_by_ref.borrow().is_empty() {
+            return (None, None, None);
+        }
+        let merged_set: HashMap<String, String> = self
+            .compound_set_by_ref
+            .iter()
+            .chain(self.dynamic_compound_set_by_ref.borrow().iter())
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
+        let merged_idx: HashMap<String, usize> = self
+            .compound_member_index
+            .iter()
+            .chain(self.dynamic_compound_member_index.borrow().iter())
+            .map(|(k, v)| (k.clone(), *v))
+            .collect();
+        let merged_sets: IndexMap<String, Vec<String>> = self
+            .compound_sets
+            .iter()
+            .chain(self.dynamic_compound_sets.borrow().iter())
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
+        (Some(merged_set), Some(merged_idx), Some(merged_sets))
+    }
+
     fn render_citation_content<F>(
         &self,
         citation: &Citation,
@@ -138,7 +276,23 @@ impl Processor {
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
-        let sorted_items = self.sort_citation_items(citation.items.clone(), effective_spec);
+        // Grouped citations preserve item order (dynamic grouping was already resolved
+        // in process_citation_with_format before cited_ids was updated).
+        let sorted_items = if citation.grouped {
+            citation.items.clone()
+        } else {
+            self.sort_citation_items(citation.items.clone(), effective_spec)
+        };
+
+        // Build merged compound lookup maps (static + dynamic).
+        // Return owned maps only when dynamic groups exist; otherwise use static maps directly.
+        let (dyn_set_owned, dyn_idx_owned, dyn_sets_owned) = self.merged_compound_data();
+        let effective_set_by_ref = dyn_set_owned.as_ref().unwrap_or(&self.compound_set_by_ref);
+        let effective_member_index = dyn_idx_owned
+            .as_ref()
+            .unwrap_or(&self.compound_member_index);
+        let effective_compound_sets = dyn_sets_owned.as_ref().unwrap_or(&self.compound_sets);
+
         let citation_config = self.get_citation_config();
         let renderer = Renderer::new(
             RendererResources {
@@ -151,9 +305,9 @@ impl Processor {
             &self.hints,
             &self.citation_numbers,
             CompoundRenderData {
-                set_by_ref: &self.compound_set_by_ref,
-                member_index: &self.compound_member_index,
-                sets: &self.compound_sets,
+                set_by_ref: effective_set_by_ref,
+                member_index: effective_member_index,
+                sets: effective_compound_sets,
             },
             self.show_semantics,
             self.inject_ast_indices,
@@ -311,6 +465,15 @@ impl Processor {
         F: crate::render::format::OutputFormat<Output = String>,
     {
         let fmt = F::default();
+
+        // For grouped citations, resolve the dynamic compound group BEFORE updating
+        // cited_ids with the current citation's items. This ensures the first-occurrence
+        // check in resolve_dynamic_group sees only references from prior citations.
+        if citation.grouped {
+            self.initialize_numeric_citation_numbers();
+            self.resolve_dynamic_group(citation);
+        }
+
         self.track_cited_ids_and_init_numbers(citation);
 
         let effective_spec = self.resolve_effective_citation_spec(citation);
