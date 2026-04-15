@@ -84,6 +84,21 @@ pub struct Processor {
     pub compound_member_index: HashMap<String, usize>,
     /// Compound numeric groups: citation number → ordered ref IDs in the group.
     pub compound_groups: RefCell<IndexMap<usize, Vec<String>>>,
+    /// Dynamic equivalent of `compound_set_by_ref` for cite-time groups.
+    ///
+    /// Maps each dynamic group member (head and tails) to the head's ref ID,
+    /// which acts as the set identifier. Merged with static data at render time.
+    pub dynamic_compound_set_by_ref: RefCell<HashMap<String, String>>,
+    /// Dynamic equivalent of `compound_member_index` for cite-time groups.
+    ///
+    /// Maps each dynamic group member to its 0-based position within the group.
+    /// Merged with static data at render time.
+    pub dynamic_compound_member_index: RefCell<HashMap<String, usize>>,
+    /// Dynamic equivalent of `compound_sets` for cite-time groups.
+    ///
+    /// Maps each dynamic group's head ref ID to the ordered list of all members.
+    /// Merged with static `compound_sets` at render time so sub-label lookup works.
+    pub dynamic_compound_sets: RefCell<IndexMap<String, Vec<String>>>,
     /// Whether to output semantic markup (HTML spans, Djot attributes).
     /// Defaults to true; set to false to suppress class attributes (e.g. `--no-semantics`).
     pub show_semantics: bool,

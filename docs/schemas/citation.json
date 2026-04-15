@@ -10,6 +10,10 @@
       "description": "A citation containing one or more references.",
       "type": "object",
       "properties": {
+        "grouped": {
+          "description": "If true, the entire citation is a single dynamic compound set.\n\nThe first item acts as the head and subsequent items are merged as tails\nin the bibliography. Ignored for non-numeric (compound-numeric) styles.\nItem order is preserved and sorting is suppressed when this flag is set.",
+          "type": "boolean"
+        },
         "id": {
           "description": "The citation ID (optional, for tracking).",
           "type": [

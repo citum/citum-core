@@ -4566,3 +4566,295 @@ fn test_label_integral_citation_includes_label() {
         "label-integral should include citation label, got: {result}"
     );
 }
+
+fn make_compound_numeric_style_for_dynamic() -> Style {
+    use citum_schema::options::bibliography::CompoundNumericConfig;
+    use citum_schema::options::{Config, Processing};
+    use citum_schema::template::{NumberVariable, TemplateNumber};
+    Style {
+        citation: Some(CitationSpec {
+            wrap: Some(WrapPunctuation::Brackets.into()),
+            template: Some(vec![TemplateComponent::Number(TemplateNumber {
+                number: NumberVariable::CitationNumber,
+                ..Default::default()
+            })]),
+            delimiter: Some(",".to_string()),
+            multi_cite_delimiter: Some(",".to_string()),
+            ..Default::default()
+        }),
+        options: Some(Config {
+            processing: Some(Processing::Numeric),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                compound_numeric: Some(CompoundNumericConfig {
+                    subentry: true,
+                    collapse_subentries: false,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn make_dynamic_bib() -> Bibliography {
+    let refs_json = r#"[
+        {"class": "monograph", "id": "ref-a", "type": "book", "title": "Book A", "issued": "2020"},
+        {"class": "monograph", "id": "ref-b", "type": "book", "title": "Book B", "issued": "2021"},
+        {"class": "monograph", "id": "ref-c", "type": "book", "title": "Book C", "issued": "2022"}
+    ]"#;
+    let refs: Vec<Reference> = serde_json::from_str(refs_json).unwrap();
+    let mut bib = Bibliography::new();
+    for r in refs {
+        if let Some(id) = r.id() {
+            bib.insert(id.to_string(), r);
+        }
+    }
+    bib
+}
+
+/// Verifies that a citation with `grouped: true` creates a dynamic compound group
+/// and renders with sub-labels (e.g. `[1a,1b,1c]`).
+#[test]
+fn test_dynamic_compound_grouping_basic() {
+    let style = make_compound_numeric_style_for_dynamic();
+    let bib = make_dynamic_bib();
+    let processor = Processor::new(style, bib);
+
+    let citation = Citation {
+        grouped: true,
+        items: vec![
+            CitationItem {
+                id: "ref-a".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ref-b".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ref-c".to_string(),
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+
+    let rendered = processor.process_citation(&citation).unwrap();
+    assert_eq!(
+        rendered, "[1a,1b,1c]",
+        "dynamic group should render all three refs with shared number and sub-labels"
+    );
+}
+
+/// Verifies that a dynamic group is ignored when the head is already in a static set.
+#[test]
+fn test_dynamic_group_conflict_with_static_set() {
+    use indexmap::IndexMap;
+    let style = make_compound_numeric_style_for_dynamic();
+    let bib = make_dynamic_bib();
+
+    // ref-a and ref-b are in a static set; ref-c is standalone.
+    let mut sets = IndexMap::new();
+    sets.insert(
+        "set-ab".to_string(),
+        vec!["ref-a".to_string(), "ref-b".to_string()],
+    );
+    let processor = Processor::with_compound_sets(style, bib, sets);
+
+    // Attempt to create a dynamic group with ref-a (already static) as head.
+    let citation = Citation {
+        grouped: true,
+        items: vec![
+            CitationItem {
+                id: "ref-a".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ref-c".to_string(),
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+
+    // Should not panic; dynamic grouping is silently ignored.
+    let rendered = processor.process_citation(&citation).unwrap();
+    // ref-c must NOT be merged into ref-a's number — it gets its own number.
+    assert!(
+        !rendered.is_empty(),
+        "citation should render even when dynamic group is ignored, got: {rendered}"
+    );
+    // Both refs share the same static-set number (1), but ref-c is separate (number 2).
+    assert!(
+        rendered.contains('2'),
+        "ref-c should be independent (number 2), got: {rendered}"
+    );
+}
+
+/// Verifies first-occurrence-wins: a second grouped citation cannot regroup a head.
+#[test]
+fn test_dynamic_group_first_occurrence_wins() {
+    let style = make_compound_numeric_style_for_dynamic();
+    let bib = make_dynamic_bib();
+    let processor = Processor::new(style, bib);
+
+    // First citation groups ref-a + ref-b.
+    let first = Citation {
+        grouped: true,
+        items: vec![
+            CitationItem {
+                id: "ref-a".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ref-b".to_string(),
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+
+    // Second citation attempts to group ref-a + ref-c (should be ignored).
+    let second = Citation {
+        grouped: true,
+        items: vec![
+            CitationItem {
+                id: "ref-a".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ref-c".to_string(),
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+
+    let rendered_first = processor.process_citation(&first).unwrap();
+    let rendered_second = processor.process_citation(&second).unwrap();
+
+    // First citation: ref-a and ref-b form a group — renders as [1a,1b].
+    assert_eq!(
+        rendered_first, "[1a,1b]",
+        "first grouped citation should render as [1a,1b]"
+    );
+    // Second citation: group registration rejected (ref-a already has a group).
+    // ref-a keeps its established sub-label; ref-c gets its own independent number.
+    assert!(
+        rendered_second.contains("1a"),
+        "second citation should preserve ref-a's sub-label (expected format: [1a,3]), got: {rendered_second}"
+    );
+    assert!(
+        !rendered_second.contains("1c") && !rendered_second.contains("3c"),
+        "second citation must not assign ref-c a sub-label (expected format: [1a,3]), got: {rendered_second}"
+    );
+    assert!(
+        rendered_second.contains('3'),
+        "second citation should assign ref-c its own number (expected format: [1a,3]), got: {rendered_second}"
+    );
+}
+
+/// Verifies that a reference first cited ungrouped blocks a later grouped citation.
+///
+/// The "first occurrence wins" rule extends to ungrouped citations: if a reference
+/// is first seen in a plain (non-grouped) citation, a subsequent `grouped: true`
+/// citation that would make it the head or a tail is silently ignored.
+#[test]
+fn test_dynamic_group_ungrouped_first_occurrence_wins() {
+    let style = make_compound_numeric_style_for_dynamic();
+    let bib = make_dynamic_bib();
+    let processor = Processor::new(style, bib);
+
+    // First citation: ref-a cited ungrouped, gets its own number.
+    let first = Citation {
+        items: vec![CitationItem {
+            id: "ref-a".to_string(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    // Second citation: attempts to group ref-a (already cited) with ref-b.
+    // Dynamic grouping must be rejected because ref-a was already cited.
+    let second = Citation {
+        grouped: true,
+        items: vec![
+            CitationItem {
+                id: "ref-a".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "ref-b".to_string(),
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+
+    let rendered_first = processor.process_citation(&first).unwrap();
+    let rendered_second = processor.process_citation(&second).unwrap();
+
+    // First citation: ref-a is standalone, no sub-label.
+    assert_eq!(
+        rendered_first, "[1]",
+        "first ungrouped citation should render ref-a as a standalone number"
+    );
+    // Second citation: grouping rejected — both refs render with independent numbers.
+    assert_eq!(
+        rendered_second, "[1,2]",
+        "later grouped citation should render both refs independently (no sub-labels)"
+    );
+}
+
+/// Verifies that `grouped: true` is a no-op for author-date styles.
+#[test]
+fn test_dynamic_group_no_op_for_author_date_style() {
+    let style = make_style(); // author-date, no compound-numeric config
+    let mut bib = Bibliography::new();
+    let refs_json = r#"[
+        {"class": "monograph", "id": "smith2020", "type": "book", "title": "Some Book",
+         "issued": "2020", "author": [{"family": "Smith", "given": "J"}]},
+        {"class": "monograph", "id": "jones2021", "type": "book", "title": "Other Book",
+         "issued": "2021", "author": [{"family": "Jones", "given": "K"}]}
+    ]"#;
+    let refs: Vec<Reference> = serde_json::from_str(refs_json).unwrap();
+    for r in refs {
+        if let Some(id) = r.id() {
+            bib.insert(id.to_string(), r);
+        }
+    }
+
+    let processor = Processor::new(style, bib);
+
+    let citation = Citation {
+        grouped: true,
+        items: vec![
+            CitationItem {
+                id: "smith2020".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "jones2021".to_string(),
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+
+    // Should render normally without compound grouping.
+    let rendered = processor.process_citation(&citation).unwrap();
+    assert!(
+        !rendered.is_empty(),
+        "author-date citation should render normally, got: {rendered}"
+    );
+    // Author-date should not produce sub-label characters.
+    assert!(
+        !rendered.contains('a') && !rendered.contains('b'),
+        "author-date should not produce compound sub-labels, got: {rendered}"
+    );
+}

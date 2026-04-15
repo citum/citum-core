@@ -1,6 +1,6 @@
 # Spec: Cite-Site Compound Grouping Overrides
 
-**Status:** Draft
+**Status:** Active
 **Date:** 2026-04-14
 **Bean:** csl26-di0r
 

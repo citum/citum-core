@@ -105,6 +105,13 @@ pub struct Citation {
     pub suffix: Option<String>,
     /// The citation items (references being cited).
     pub items: Vec<CitationItem>,
+    /// If true, the entire citation is a single dynamic compound set.
+    ///
+    /// The first item acts as the head and subsequent items are merged as tails
+    /// in the bibliography. Ignored for non-numeric (compound-numeric) styles.
+    /// Item order is preserved and sorting is suppressed when this flag is set.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub grouped: bool,
 }
 
 impl Citation {
