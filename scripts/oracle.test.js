@@ -11,6 +11,7 @@ const {
   loadFixtures,
   normalizeFixtureItems,
   refsDataForProcessor,
+  resolveAuthoredStylePath,
 } = require('./oracle');
 const {
   attachRegisteredDivergenceAdjustments,
@@ -514,6 +515,44 @@ test('div-008 and div-004 fire independently when both conditions are present', 
     ['div-004', 'div-008'].includes(smithEntry.appliedDivergence?.divergenceId),
     `applied divergence should be div-004 or div-008, got: ${smithEntry.appliedDivergence?.divergenceId}`
   );
+});
+
+test('resolveAuthoredStylePath prefers styles/<name>.yaml over embedded', () => {
+  const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'oracle-resolve-'));
+  try {
+    fs.mkdirSync(path.join(dir, 'embedded'));
+    fs.writeFileSync(path.join(dir, 'acme.yaml'), 'info: {}');
+    fs.writeFileSync(path.join(dir, 'embedded', 'acme.yaml'), 'info: {}');
+
+    const resolved = resolveAuthoredStylePath(dir, 'acme');
+    assert.equal(resolved, path.join(dir, 'acme.yaml'));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('resolveAuthoredStylePath falls back to styles/embedded/<name>.yaml', () => {
+  const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'oracle-resolve-'));
+  try {
+    fs.mkdirSync(path.join(dir, 'embedded'));
+    fs.writeFileSync(path.join(dir, 'embedded', 'beta.yaml'), 'info: {}');
+
+    const resolved = resolveAuthoredStylePath(dir, 'beta');
+    assert.equal(resolved, path.join(dir, 'embedded', 'beta.yaml'));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('resolveAuthoredStylePath returns null when no authored YAML exists', () => {
+  const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'oracle-resolve-'));
+  try {
+    fs.mkdirSync(path.join(dir, 'embedded'));
+    const resolved = resolveAuthoredStylePath(dir, 'missing');
+    assert.equal(resolved, null);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('compareComponents reports differing component values as mismatches', () => {
