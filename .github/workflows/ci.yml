@@ -6,12 +6,49 @@ on:
   pull_request:
     branches: [ "main" ]
     paths-ignore:
-      - 'CLAUDE.md'
+      - '**.md'
       - 'docs/**'
+      - '.beans/**'
+      - '.release-plz.toml'
+      - 'cliff.toml'
+      - 'LICENSE'
+      - 'CONTRIBUTING.md'
+      - '.gitignore'
+      - '.gitattributes'
+      - '.gitmodules'
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      rust: ${{ steps.filter.outputs.rust }}
+      hygiene: ${{ steps.filter.outputs.hygiene }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            rust:
+              - 'crates/**'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+              - 'rust-toolchain.toml'
+              - 'styles/**'
+              - '.github/workflows/ci.yml'
+            hygiene:
+              - 'scripts/**'
+              - 'locales/**'
+              - 'registry/**'
+              - 'templates/**'
+              - 'examples/**'
+              - '.beans.yml'
+              - '.github/workflows/ci.yml'
+
   checks:
     name: Hygiene Checks
+    needs: changes
+    if: ${{ needs.changes.outputs.hygiene == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -78,6 +115,8 @@ jobs:
 
   rust-ci:
     name: Rust CI (Lint + Test)
+    needs: changes
+    if: ${{ needs.changes.outputs.rust == 'true' }}
     runs-on: ubuntu-latest
     env:
       CARGO_TERM_COLOR: always
