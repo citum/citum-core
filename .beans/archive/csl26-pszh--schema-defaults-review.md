@@ -1,7 +1,7 @@
 ---
 # csl26-pszh
 title: Schema defaults review
-status: in-progress
+status: done
 type: task
 created_at: 2026-03-16T18:14:56Z
 updated_at: 2026-03-16T18:14:56Z

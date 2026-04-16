@@ -1,7 +1,7 @@
 ---
 # csl26-lb46
 title: 'fix: schema pre-1.0 major bump guard'
-status: in-progress
+status: done
 type: bug
 created_at: 2026-03-25T06:17:03Z
 updated_at: 2026-03-25T06:17:03Z

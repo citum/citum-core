@@ -1,7 +1,7 @@
 ---
 # csl26-3j0c
 title: 'engine: render original-publisher and original-place for reprints'
-status: in-progress
+status: done
 type: feature
 priority: normal
 created_at: 2026-04-11T11:34:06Z

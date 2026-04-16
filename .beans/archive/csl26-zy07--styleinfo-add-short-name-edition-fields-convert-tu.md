@@ -1,7 +1,7 @@
 ---
 # csl26-zy07
 title: 'StyleInfo: add short_name + edition fields, convert Turabian and APA 6th'
-status: in-progress
+status: done
 type: feature
 priority: normal
 created_at: 2026-03-17T10:25:53Z
