@@ -216,6 +216,36 @@ fn test_multiauthor_same_year_sort() {
     );
 }
 
+/// Test accented surnames sort with Unicode-aware collation instead of bytewise ordering.
+#[test]
+fn test_apa_7th_sort_unicode_accented_surnames() {
+    announce_behavior(
+        "Accented surnames sort near their ASCII peers in author-date bibliographies.",
+    );
+    let root = project_root();
+    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
+    let bib = load_sort_oracle_bibliography();
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    let celik_pos = result.find("Çelik, Z.").expect("Çelik should be in output");
+    let o_tuathail_pos = result
+        .find("Ó Tuathail, G.")
+        .expect("Ó Tuathail should be in output");
+    let zimring_pos = result
+        .find("Zimring, C. A.")
+        .expect("Zimring should be in output");
+
+    assert!(
+        celik_pos < o_tuathail_pos,
+        "Çelik should sort before Ó Tuathail. Got: {result}"
+    );
+    assert!(
+        o_tuathail_pos < zimring_pos,
+        "Ó Tuathail should sort before Zimring. Got: {result}"
+    );
+}
+
 /// Test numeric style volume/issue variation doesn't affect sort.
 /// Numeric styles should sort by citation order, not by volume/issue.
 #[test]

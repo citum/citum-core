@@ -26,6 +26,8 @@ regex = "1.10"
 winnow = "0.7"
 jotdown = "0.5"
 orgize = "0.9"
+icu_collator = { version = "2.2.0", features = ["compiled_data"] }
+icu_locale = "2.2.0"
 
 [features]
 ffi = []

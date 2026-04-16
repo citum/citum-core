@@ -147,3 +147,29 @@ references:
     publisher:
       name: "서울대학교 출판부"
     language: "ko"
+
+  # 7. Latin-script record with accented surname for Unicode-aware sorting
+  - id: celik_public_space
+    class: monograph
+    type: book
+    title: "Streets: critical perspectives on public space"
+    author:
+      - family: "Çelik"
+        given: "Zeynep"
+    issued: "1996"
+    publisher:
+      name: "University of California Press"
+    language: "en"
+
+  # 8. Irish name with acute accent to verify collation near other O surnames
+  - id: o_tuathail_geopolitics
+    class: monograph
+    type: book
+    title: "Rethinking geopolitics"
+    author:
+      - family: "Ó Tuathail"
+        given: "Gearóid"
+    issued: "1998"
+    publisher:
+      name: "Routledge"
+    language: "en"

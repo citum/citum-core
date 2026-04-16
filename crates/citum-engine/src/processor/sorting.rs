@@ -4,6 +4,8 @@
 //! including support for anonymous works and article stripping for title-based sorting.
 
 use crate::reference::Reference;
+use crate::sort_support::{TextCollator, author_sort_key_opt, title_sort_key};
+use citum_schema::grouping::NameSortOrder;
 use citum_schema::locale::Locale;
 use citum_schema::options::{Config, SortKey};
 
@@ -36,13 +38,19 @@ pub struct Sorter<'a> {
     config: &'a Config,
     /// The locale used for article stripping in title-based sorts.
     locale: &'a Locale,
+    /// Locale-aware text comparator for author/title sort keys.
+    text_collator: TextCollator,
 }
 
 impl<'a> Sorter<'a> {
     /// Creates a new `Sorter` instance.
     #[must_use]
     pub fn new(config: &'a Config, locale: &'a Locale) -> Self {
-        Self { config, locale }
+        Self {
+            config,
+            locale,
+            text_collator: TextCollator::new(locale),
+        }
     }
 
     /// Sort references according to style instructions.
@@ -65,49 +73,25 @@ impl<'a> Sorter<'a> {
                 for sort in &resolved.template {
                     let cmp = match sort.key {
                         SortKey::Author => {
-                            let a_sort_key = a
-                                .author()
-                                .and_then(|c| c.to_names_vec().first().cloned())
-                                .map(|n| n.family_or_literal().to_lowercase())
-                                .filter(|s| !s.is_empty())
-                                .or_else(|| {
-                                    a.editor()
-                                        .and_then(|c| c.to_names_vec().first().cloned())
-                                        .map(|n| n.family_or_literal().to_lowercase())
-                                        .filter(|s| !s.is_empty())
-                                })
-                                .or_else(|| {
-                                    a.title().map(|t| {
-                                        self.locale
-                                            .strip_sort_articles(&t.to_string())
-                                            .to_lowercase()
-                                    })
-                                })
-                                .unwrap_or_default();
-                            let b_sort_key = b
-                                .author()
-                                .and_then(|c| c.to_names_vec().first().cloned())
-                                .map(|n| n.family_or_literal().to_lowercase())
-                                .filter(|s| !s.is_empty())
-                                .or_else(|| {
-                                    b.editor()
-                                        .and_then(|c| c.to_names_vec().first().cloned())
-                                        .map(|n| n.family_or_literal().to_lowercase())
-                                        .filter(|s| !s.is_empty())
-                                })
-                                .or_else(|| {
-                                    b.title().map(|t| {
-                                        self.locale
-                                            .strip_sort_articles(&t.to_string())
-                                            .to_lowercase()
-                                    })
-                                })
-                                .unwrap_or_default();
+                            let a_sort_key = author_sort_key_opt(
+                                a,
+                                NameSortOrder::FamilyGiven,
+                                self.locale,
+                                true,
+                            )
+                            .unwrap_or_default();
+                            let b_sort_key = author_sort_key_opt(
+                                b,
+                                NameSortOrder::FamilyGiven,
+                                self.locale,
+                                true,
+                            )
+                            .unwrap_or_default();
 
                             if sort.ascending {
-                                a_sort_key.cmp(&b_sort_key)
+                                self.text_collator.compare(&a_sort_key, &b_sort_key)
                             } else {
-                                b_sort_key.cmp(&a_sort_key)
+                                self.text_collator.compare(&b_sort_key, &a_sort_key)
                             }
                         }
                         SortKey::Year => {
@@ -123,23 +107,13 @@ impl<'a> Sorter<'a> {
                             compare_optional_years(a_year, b_year, sort.ascending)
                         }
                         SortKey::Title => {
-                            let a_title = self
-                                .locale
-                                .strip_sort_articles(
-                                    &a.title().map(|t| t.to_string()).unwrap_or_default(),
-                                )
-                                .to_lowercase();
-                            let b_title = self
-                                .locale
-                                .strip_sort_articles(
-                                    &b.title().map(|t| t.to_string()).unwrap_or_default(),
-                                )
-                                .to_lowercase();
+                            let a_title = title_sort_key(a, self.locale);
+                            let b_title = title_sort_key(b, self.locale);
 
                             if sort.ascending {
-                                a_title.cmp(&b_title)
+                                self.text_collator.compare(&a_title, &b_title)
                             } else {
-                                b_title.cmp(&a_title)
+                                self.text_collator.compare(&b_title, &a_title)
                             }
                         }
                         SortKey::CitationNumber => std::cmp::Ordering::Equal,
