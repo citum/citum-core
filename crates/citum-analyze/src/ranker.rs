@@ -145,7 +145,7 @@ fn build_rankings(
         })
         .collect();
 
-    rankings.sort_by(|a, b| b.dependent_count.cmp(&a.dependent_count));
+    rankings.sort_by_key(|b| std::cmp::Reverse(b.dependent_count));
     rankings
 }
 
@@ -201,12 +201,10 @@ fn extract_dependent_info(path: &Path) -> Result<DependentInfo, String> {
         if child.tag_name().name() == "info" {
             for info_child in child.children() {
                 match info_child.tag_name().name() {
-                    "link" => {
-                        if info_child.attribute("rel") == Some("independent-parent") {
-                            parent_id = info_child
-                                .attribute("href")
-                                .map(std::string::ToString::to_string);
-                        }
+                    "link" if info_child.attribute("rel") == Some("independent-parent") => {
+                        parent_id = info_child
+                            .attribute("href")
+                            .map(std::string::ToString::to_string);
                     }
                     "category" => {
                         if let Some(fmt) = info_child.attribute("citation-format") {

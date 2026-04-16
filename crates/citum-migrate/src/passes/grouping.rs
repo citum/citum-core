@@ -262,10 +262,8 @@ pub fn find_issue_in_components(components: &[TemplateComponent]) -> bool {
             TemplateComponent::Number(n) if n.number == NumberVariable::Issue => {
                 return true;
             }
-            TemplateComponent::Group(list) => {
-                if find_issue_in_components(&list.group) {
-                    return true;
-                }
+            TemplateComponent::Group(list) if find_issue_in_components(&list.group) => {
+                return true;
             }
             _ => {}
         }
@@ -322,10 +320,8 @@ pub fn find_volume_in_list(list: &TemplateGroup) -> Option<()> {
             TemplateComponent::Number(n) if n.number == NumberVariable::Volume => {
                 return Some(());
             }
-            TemplateComponent::Group(inner_list) => {
-                if find_volume_in_list(inner_list).is_some() {
-                    return Some(());
-                }
+            TemplateComponent::Group(inner_list) if find_volume_in_list(inner_list).is_some() => {
+                return Some(());
             }
             _ => {}
         }

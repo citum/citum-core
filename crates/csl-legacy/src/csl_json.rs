@@ -482,15 +482,11 @@ fn handle_date_variable(ref_obj: &mut Reference, key: &str, value: &str) {
     let date = parse_date_variable(value);
 
     match key {
-        "issued" => {
-            if ref_obj.issued.is_none() {
-                ref_obj.issued = Some(date);
-            }
+        "issued" if ref_obj.issued.is_none() => {
+            ref_obj.issued = Some(date);
         }
-        "accessed" => {
-            if ref_obj.accessed.is_none() {
-                ref_obj.accessed = Some(date);
-            }
+        "accessed" if ref_obj.accessed.is_none() => {
+            ref_obj.accessed = Some(date);
         }
         "event-date" | "original-date" | "available-date" | "submitted" => {
             // Store in extra as JSON
@@ -583,35 +579,23 @@ fn handle_name_variable(ref_obj: &mut Reference, key: &str, value: &str) {
     let name = parse_name_variable(value);
 
     match key {
-        "author" => {
-            if ref_obj.author.is_none() {
-                ref_obj.author = Some(vec![name]);
-            }
+        "author" if ref_obj.author.is_none() => {
+            ref_obj.author = Some(vec![name]);
         }
-        "editor" => {
-            if ref_obj.editor.is_none() {
-                ref_obj.editor = Some(vec![name]);
-            }
+        "editor" if ref_obj.editor.is_none() => {
+            ref_obj.editor = Some(vec![name]);
         }
-        "translator" => {
-            if ref_obj.translator.is_none() {
-                ref_obj.translator = Some(vec![name]);
-            }
+        "translator" if ref_obj.translator.is_none() => {
+            ref_obj.translator = Some(vec![name]);
         }
-        "interviewer" => {
-            if ref_obj.interviewer.is_none() {
-                ref_obj.interviewer = Some(vec![name]);
-            }
+        "interviewer" if ref_obj.interviewer.is_none() => {
+            ref_obj.interviewer = Some(vec![name]);
         }
-        "director" => {
-            if ref_obj.director.is_none() {
-                ref_obj.director = Some(vec![name]);
-            }
+        "director" if ref_obj.director.is_none() => {
+            ref_obj.director = Some(vec![name]);
         }
-        "recipient" => {
-            if ref_obj.recipient.is_none() {
-                ref_obj.recipient = Some(vec![name]);
-            }
+        "recipient" if ref_obj.recipient.is_none() => {
+            ref_obj.recipient = Some(vec![name]);
         }
         // Fields not on Reference: store in extra as JSON
         "collection-editor" | "container-author" | "editorial-director" | "illustrator"
@@ -714,20 +698,14 @@ fn handle_string_variable(ref_obj: &mut Reference, key: &str, value: &str) {
     let trimmed = value.trim();
 
     match key {
-        "container-title" => {
-            if ref_obj.container_title.is_none() {
-                ref_obj.container_title = Some(trimmed.to_string());
-            }
+        "container-title" if ref_obj.container_title.is_none() => {
+            ref_obj.container_title = Some(trimmed.to_string());
         }
-        "collection-title" => {
-            if ref_obj.collection_title.is_none() {
-                ref_obj.collection_title = Some(trimmed.to_string());
-            }
+        "collection-title" if ref_obj.collection_title.is_none() => {
+            ref_obj.collection_title = Some(trimmed.to_string());
         }
-        "collection-number" => {
-            if ref_obj.collection_number.is_none() {
-                ref_obj.collection_number = Some(StringOrNumber::String(trimmed.to_string()));
-            }
+        "collection-number" if ref_obj.collection_number.is_none() => {
+            ref_obj.collection_number = Some(StringOrNumber::String(trimmed.to_string()));
         }
         "part-title" => {
             ref_obj.extra.insert(
@@ -735,120 +713,74 @@ fn handle_string_variable(ref_obj: &mut Reference, key: &str, value: &str) {
                 serde_json::Value::String(trimmed.to_string()),
             );
         }
-        "publisher-place" => {
-            if ref_obj.publisher_place.is_none() {
-                ref_obj.publisher_place = Some(trimmed.to_string());
-            }
+        "publisher-place" if ref_obj.publisher_place.is_none() => {
+            ref_obj.publisher_place = Some(trimmed.to_string());
         }
-        "publisher" => {
-            if ref_obj.publisher.is_none() {
-                ref_obj.publisher = Some(trimmed.to_string());
-            }
+        "publisher" if ref_obj.publisher.is_none() => {
+            ref_obj.publisher = Some(trimmed.to_string());
         }
-        "archive-place" | "archive-location" => {
-            if ref_obj.archive_location.is_none() {
-                ref_obj.archive_location = Some(trimmed.to_string());
-            }
+        "archive-place" | "archive-location" if ref_obj.archive_location.is_none() => {
+            ref_obj.archive_location = Some(trimmed.to_string());
         }
-        "archive" => {
-            if ref_obj.archive.is_none() {
-                ref_obj.archive = Some(trimmed.to_string());
-            }
+        "archive" if ref_obj.archive.is_none() => {
+            ref_obj.archive = Some(trimmed.to_string());
         }
-        "volume" => {
-            if ref_obj.volume.is_none() {
-                ref_obj.volume = Some(StringOrNumber::String(trimmed.to_string()));
-            }
+        "volume" if ref_obj.volume.is_none() => {
+            ref_obj.volume = Some(StringOrNumber::String(trimmed.to_string()));
         }
-        "issue" => {
-            if ref_obj.issue.is_none() {
-                ref_obj.issue = Some(StringOrNumber::String(trimmed.to_string()));
-            }
+        "issue" if ref_obj.issue.is_none() => {
+            ref_obj.issue = Some(StringOrNumber::String(trimmed.to_string()));
         }
-        "page" => {
-            if ref_obj.page.is_none() {
-                ref_obj.page = Some(trimmed.to_string());
-            }
+        "page" if ref_obj.page.is_none() => {
+            ref_obj.page = Some(trimmed.to_string());
         }
-        "edition" => {
-            if ref_obj.edition.is_none() {
-                ref_obj.edition = Some(StringOrNumber::String(trimmed.to_string()));
-            }
+        "edition" if ref_obj.edition.is_none() => {
+            ref_obj.edition = Some(StringOrNumber::String(trimmed.to_string()));
         }
-        "number-of-pages" => {
-            if ref_obj.number_of_pages.is_none() {
-                ref_obj.number_of_pages = Some(StringOrNumber::String(trimmed.to_string()));
-            }
+        "number-of-pages" if ref_obj.number_of_pages.is_none() => {
+            ref_obj.number_of_pages = Some(StringOrNumber::String(trimmed.to_string()));
         }
-        "number-of-volumes" => {
-            if ref_obj.number_of_volumes.is_none() {
-                ref_obj.number_of_volumes = Some(StringOrNumber::String(trimmed.to_string()));
-            }
+        "number-of-volumes" if ref_obj.number_of_volumes.is_none() => {
+            ref_obj.number_of_volumes = Some(StringOrNumber::String(trimmed.to_string()));
         }
-        "chapter-number" => {
-            if ref_obj.chapter_number.is_none() {
-                ref_obj.chapter_number = Some(trimmed.to_string());
-            }
+        "chapter-number" if ref_obj.chapter_number.is_none() => {
+            ref_obj.chapter_number = Some(trimmed.to_string());
         }
-        "genre" => {
-            if ref_obj.genre.is_none() {
-                ref_obj.genre = Some(trimmed.to_string());
-            }
+        "genre" if ref_obj.genre.is_none() => {
+            ref_obj.genre = Some(trimmed.to_string());
         }
-        "medium" => {
-            if ref_obj.medium.is_none() {
-                ref_obj.medium = Some(trimmed.to_string());
-            }
+        "medium" if ref_obj.medium.is_none() => {
+            ref_obj.medium = Some(trimmed.to_string());
         }
-        "language" => {
-            if ref_obj.language.is_none() {
-                ref_obj.language = Some(trimmed.to_string());
-            }
+        "language" if ref_obj.language.is_none() => {
+            ref_obj.language = Some(trimmed.to_string());
         }
-        "original-title" => {
-            if ref_obj.original_title.is_none() {
-                ref_obj.original_title = Some(trimmed.to_string());
-            }
+        "original-title" if ref_obj.original_title.is_none() => {
+            ref_obj.original_title = Some(trimmed.to_string());
         }
-        "abstract" => {
-            if ref_obj.abstract_text.is_none() {
-                ref_obj.abstract_text = Some(trimmed.to_string());
-            }
+        "abstract" if ref_obj.abstract_text.is_none() => {
+            ref_obj.abstract_text = Some(trimmed.to_string());
         }
-        "DOI" => {
-            if ref_obj.doi.is_none() {
-                ref_obj.doi = Some(trimmed.to_string());
-            }
+        "DOI" if ref_obj.doi.is_none() => {
+            ref_obj.doi = Some(trimmed.to_string());
         }
-        "ISBN" => {
-            if ref_obj.isbn.is_none() {
-                ref_obj.isbn = Some(trimmed.to_string());
-            }
+        "ISBN" if ref_obj.isbn.is_none() => {
+            ref_obj.isbn = Some(trimmed.to_string());
         }
-        "ISSN" => {
-            if ref_obj.issn.is_none() {
-                ref_obj.issn = Some(trimmed.to_string());
-            }
+        "ISSN" if ref_obj.issn.is_none() => {
+            ref_obj.issn = Some(trimmed.to_string());
         }
-        "URL" => {
-            if ref_obj.url.is_none() {
-                ref_obj.url = Some(trimmed.to_string());
-            }
+        "URL" if ref_obj.url.is_none() => {
+            ref_obj.url = Some(trimmed.to_string());
         }
-        "authority" => {
-            if ref_obj.authority.is_none() {
-                ref_obj.authority = Some(trimmed.to_string());
-            }
+        "authority" if ref_obj.authority.is_none() => {
+            ref_obj.authority = Some(trimmed.to_string());
         }
-        "section" => {
-            if ref_obj.section.is_none() {
-                ref_obj.section = Some(trimmed.to_string());
-            }
+        "section" if ref_obj.section.is_none() => {
+            ref_obj.section = Some(trimmed.to_string());
         }
-        "number" => {
-            if ref_obj.number.is_none() {
-                ref_obj.number = Some(trimmed.to_string());
-            }
+        "number" if ref_obj.number.is_none() => {
+            ref_obj.number = Some(trimmed.to_string());
         }
         // Fields not on Reference: store in extra as JSON
         "volume-title" | "event-title" | "event-place" | "event-location"

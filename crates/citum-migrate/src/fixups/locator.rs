@@ -108,6 +108,10 @@ fn apply_wrapped_locator_formatting(
 
     let mut changed = false;
     for component in template {
+        #[allow(
+            clippy::collapsible_match,
+            reason = "cannot use match guard due to mutable borrow of captured variable"
+        )]
         match component {
             TemplateComponent::Variable(variable)
                 if variable.variable == SimpleVariable::Locator =>
@@ -236,6 +240,10 @@ fn apply_author_date_locator_formatting(
 ) -> bool {
     let mut found_locator = false;
     for component in template {
+        #[allow(
+            clippy::collapsible_match,
+            reason = "cannot use match guard due to mutable borrow of captured variable"
+        )]
         match component {
             TemplateComponent::Variable(variable)
                 if variable.variable == SimpleVariable::Locator =>
@@ -366,15 +374,11 @@ fn apply_wrap_to_component(component: &mut TemplateComponent, wrap: WrapPunctuat
     };
 
     match component {
-        TemplateComponent::Number(n) => {
-            if n.rendering.wrap.is_none() {
-                n.rendering.wrap = Some(wrap_config);
-            }
+        TemplateComponent::Number(n) if n.rendering.wrap.is_none() => {
+            n.rendering.wrap = Some(wrap_config);
         }
-        TemplateComponent::Group(list) => {
-            if list.rendering.wrap.is_none() {
-                list.rendering.wrap = Some(wrap_config);
-            }
+        TemplateComponent::Group(list) if list.rendering.wrap.is_none() => {
+            list.rendering.wrap = Some(wrap_config);
         }
         _ => {}
     }

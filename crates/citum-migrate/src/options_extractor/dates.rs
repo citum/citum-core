@@ -45,10 +45,8 @@ fn scan_for_any_date(nodes: &[CslNode], style: &Style) -> bool {
                     return true;
                 }
             }
-            CslNode::Group(g) => {
-                if scan_for_any_date(&g.children, style) {
-                    return true;
-                }
+            CslNode::Group(g) if scan_for_any_date(&g.children, style) => {
+                return true;
             }
             CslNode::Choose(c) => {
                 if scan_for_any_date(&c.if_branch.children, style) {

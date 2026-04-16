@@ -35,15 +35,11 @@ fn find_group_wrapping(
     for node in nodes {
         if let CslNode::Group(g) = node {
             match (g.prefix.as_deref(), g.suffix.as_deref()) {
-                (Some("("), Some(")")) => {
-                    if group_is_primary_citation_cluster(&g.children) {
-                        return Some((Some(WrapPunctuation::Parentheses), None, None));
-                    }
+                (Some("("), Some(")")) if group_is_primary_citation_cluster(&g.children) => {
+                    return Some((Some(WrapPunctuation::Parentheses), None, None));
                 }
-                (Some("["), Some("]")) => {
-                    if group_is_primary_citation_cluster(&g.children) {
-                        return Some((Some(WrapPunctuation::Brackets), None, None));
-                    }
+                (Some("["), Some("]")) if group_is_primary_citation_cluster(&g.children) => {
+                    return Some((Some(WrapPunctuation::Brackets), None, None));
                 }
                 _ => {}
             }

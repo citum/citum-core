@@ -65,28 +65,20 @@ fn find_volume_pages_delimiter_in_nodes(nodes: &[CslNode]) -> Option<String> {
 fn group_directly_contains_variable(nodes: &[CslNode], var_name: &str) -> bool {
     for node in nodes {
         match node {
-            CslNode::Text(t) => {
-                if t.variable.as_ref().is_some_and(|v| v == var_name) {
-                    return true;
-                }
+            CslNode::Text(t) if t.variable.as_ref().is_some_and(|v| v == var_name) => {
+                return true;
             }
-            CslNode::Number(n) => {
-                if n.variable == var_name {
-                    return true;
-                }
+            CslNode::Number(n) if n.variable == var_name => {
+                return true;
             }
             CslNode::Group(g) => {
                 for child in &g.children {
                     match child {
-                        CslNode::Text(t) => {
-                            if t.variable.as_ref().is_some_and(|v| v == var_name) {
-                                return true;
-                            }
+                        CslNode::Text(t) if t.variable.as_ref().is_some_and(|v| v == var_name) => {
+                            return true;
                         }
-                        CslNode::Number(n) => {
-                            if n.variable == var_name {
-                                return true;
-                            }
+                        CslNode::Number(n) if n.variable == var_name => {
+                            return true;
                         }
                         _ => {}
                     }

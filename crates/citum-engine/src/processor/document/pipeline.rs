@@ -175,7 +175,7 @@ impl Processor {
         let mut last_idx = 0;
         let normalized = self.normalize_inline_document_citations(&parsed);
 
-        for (parsed, citation) in parsed.citations.iter().zip(normalized.into_iter()) {
+        for (parsed, citation) in parsed.citations.iter().zip(normalized) {
             result.push_str(&content[last_idx..parsed.start]);
             match self.process_citation_with_format::<F>(&citation) {
                 Ok(rendered) => result.push_str(&rendered),
@@ -198,7 +198,7 @@ impl Processor {
         let mut last_idx = 0;
         let normalized = self.normalize_inline_document_citations(&parsed);
 
-        for (parsed, citation) in parsed.citations.iter().zip(normalized.into_iter()) {
+        for (parsed, citation) in parsed.citations.iter().zip(normalized) {
             result.push_str(&content[last_idx..parsed.start]);
             match self.process_citation_with_format::<crate::render::html::Html>(&citation) {
                 Ok(rendered) => result.push_str(&placeholders.push_inline(rendered)),

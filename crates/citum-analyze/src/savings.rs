@@ -166,13 +166,11 @@ fn extract_independent_style_info(path: &Path) -> Result<IndependentStyleInfo, S
                         citation_format = Some(format.to_string());
                     }
                 }
-                "link" => {
-                    if info_child.attribute("rel") == Some("template") {
-                        template_target = info_child
-                            .attribute("href")
-                            .map(short_name_from_identifier)
-                            .map(std::borrow::Cow::into_owned);
-                    }
+                "link" if info_child.attribute("rel") == Some("template") => {
+                    template_target = info_child
+                        .attribute("href")
+                        .map(short_name_from_identifier)
+                        .map(std::borrow::Cow::into_owned);
                 }
                 _ => {}
             }
