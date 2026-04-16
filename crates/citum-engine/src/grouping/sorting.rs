@@ -16,6 +16,7 @@ use citum_schema::grouping::{GroupSort, GroupSortKey, NameSortOrder, SortKey as 
 use citum_schema::locale::Locale;
 
 use crate::reference::Reference;
+use crate::sort_support::{TextCollator, author_sort_key_opt, normalize_sort_text, title_sort_key};
 
 fn compare_optional_years(a_year: Option<i32>, b_year: Option<i32>) -> std::cmp::Ordering {
     match (a_year, b_year) {
@@ -29,6 +30,7 @@ fn compare_optional_years(a_year: Option<i32>, b_year: Option<i32>) -> std::cmp:
 /// Sorts grouped bibliography entries using group-specific sort rules.
 pub struct GroupSorter<'a> {
     locale: &'a Locale,
+    text_collator: TextCollator,
 }
 
 struct CachedReference<'a> {
@@ -67,8 +69,11 @@ enum CompiledSortKey<'a> {
 impl<'a> GroupSorter<'a> {
     /// Create a sorter that uses `locale` for locale-sensitive comparisons.
     #[must_use]
-    pub const fn new(locale: &'a Locale) -> Self {
-        Self { locale }
+    pub fn new(locale: &'a Locale) -> Self {
+        Self {
+            locale,
+            text_collator: TextCollator::new(locale),
+        }
     }
 
     /// Sort references according to a group sort specification.
@@ -97,7 +102,7 @@ impl<'a> GroupSorter<'a> {
             })
             .collect::<Vec<_>>();
 
-        cached_references.sort_by(|a, b| Self::compare_cached_references(a, b, &compiled_keys));
+        cached_references.sort_by(|a, b| self.compare_cached_references(a, b, &compiled_keys));
         cached_references
             .into_iter()
             .map(|entry| entry.reference)
@@ -221,12 +226,13 @@ impl<'a> GroupSorter<'a> {
     }
 
     fn compare_cached_references(
+        &self,
         a: &CachedReference<'_>,
         b: &CachedReference<'_>,
         compiled_keys: &[CompiledSortKey<'_>],
     ) -> std::cmp::Ordering {
         for (index, sort_key) in compiled_keys.iter().enumerate() {
-            let cmp = Self::compare_cached_value(&a.sort_values[index], &b.sort_values[index]);
+            let cmp = self.compare_cached_value(&a.sort_values[index], &b.sort_values[index]);
             let cmp = if Self::is_ascending(sort_key) {
                 cmp
             } else {
@@ -241,7 +247,7 @@ impl<'a> GroupSorter<'a> {
         std::cmp::Ordering::Equal
     }
 
-    fn compare_cached_value(a: &CachedSortValue, b: &CachedSortValue) -> std::cmp::Ordering {
+    fn compare_cached_value(&self, a: &CachedSortValue, b: &CachedSortValue) -> std::cmp::Ordering {
         match (a, b) {
             (
                 CachedSortValue::RefType {
@@ -260,13 +266,15 @@ impl<'a> GroupSorter<'a> {
             },
             (CachedSortValue::OptionalText(a_text), CachedSortValue::OptionalText(b_text)) => {
                 match (a_text, b_text) {
-                    (Some(a_value), Some(b_value)) => a_value.cmp(b_value),
+                    (Some(a_value), Some(b_value)) => self.text_collator.compare(a_value, b_value),
                     (Some(_), None) => std::cmp::Ordering::Less,
                     (None, Some(_)) => std::cmp::Ordering::Greater,
                     (None, None) => std::cmp::Ordering::Equal,
                 }
             }
-            (CachedSortValue::Text(a_text), CachedSortValue::Text(b_text)) => a_text.cmp(b_text),
+            (CachedSortValue::Text(a_text), CachedSortValue::Text(b_text)) => {
+                self.text_collator.compare(a_text, b_text)
+            }
             (CachedSortValue::Issued(a_year), CachedSortValue::Issued(b_year)) => {
                 compare_optional_years(*a_year, *b_year)
             }
@@ -294,7 +302,7 @@ impl<'a> GroupSorter<'a> {
         let a_key = self.extract_author_sort_key_opt(a, name_order);
         let b_key = self.extract_author_sort_key_opt(b, name_order);
         match (a_key, b_key) {
-            (Some(a), Some(b)) => a.cmp(&b),
+            (Some(a), Some(b)) => self.text_collator.compare(&a, &b),
             (Some(_), None) => std::cmp::Ordering::Less,
             (None, Some(_)) => std::cmp::Ordering::Greater,
             (None, None) => std::cmp::Ordering::Equal,
@@ -311,38 +319,7 @@ impl<'a> GroupSorter<'a> {
         reference: &Reference,
         name_order: NameSortOrder,
     ) -> Option<String> {
-        reference
-            .author()
-            .and_then(|c| c.to_names_vec().first().cloned())
-            .map(|name| match name_order {
-                NameSortOrder::FamilyGiven => {
-                    // Western: "Smith, John" → sort by "smith"
-                    name.family_or_literal().to_lowercase()
-                }
-                NameSortOrder::GivenFamily => {
-                    // Vietnamese: "Nguyễn Văn A" → sort by "nguyễn"
-                    // For Vietnamese names, family comes first, but we need to use
-                    // the full name since the display order matches sort order
-                    name.family_or_literal().to_lowercase()
-                }
-            })
-            .filter(|key| !key.is_empty())
-            .or_else(|| {
-                // Fallback to editor
-                reference
-                    .editor()
-                    .and_then(|c| c.to_names_vec().first().cloned())
-                    .map(|name| name.family_or_literal().to_lowercase())
-                    .filter(|key| !key.is_empty())
-            })
-            .or_else(|| {
-                reference.title().map(|t| {
-                    self.locale
-                        .strip_sort_articles(&t.to_string())
-                        .to_lowercase()
-                })
-            })
-            .filter(|key| !key.is_empty())
+        author_sort_key_opt(reference, name_order, self.locale, true)
     }
 
     /// Public helper retained for tests/debugging.
@@ -360,7 +337,7 @@ impl<'a> GroupSorter<'a> {
     fn compare_by_title(&self, a: &Reference, b: &Reference) -> std::cmp::Ordering {
         let a_title = self.title_sort_key(a);
         let b_title = self.title_sort_key(b);
-        a_title.cmp(&b_title)
+        self.text_collator.compare(&a_title, &b_title)
     }
 
     /// Compare by issued date.
@@ -376,9 +353,7 @@ impl<'a> GroupSorter<'a> {
     }
 
     fn title_sort_key(&self, reference: &Reference) -> String {
-        self.locale
-            .strip_sort_articles(&reference.title().map(|t| t.to_string()).unwrap_or_default())
-            .to_lowercase()
+        title_sort_key(reference, self.locale)
     }
 
     fn issued_year(reference: &Reference) -> Option<i32> {
@@ -390,7 +365,7 @@ impl<'a> GroupSorter<'a> {
 
     fn field_sort_value(reference: &Reference, field_name: &str) -> String {
         match field_name {
-            "language" => reference.language().unwrap_or_default().to_string(),
+            "language" => normalize_sort_text(reference.language().unwrap_or_default().as_ref()),
             // Future: support for keywords, custom metadata
             _ => String::new(),
         }
@@ -498,6 +473,60 @@ mod tests {
         assert_eq!(refs[0].id().unwrap(), "r3"); // Brown
         assert_eq!(refs[1].id().unwrap(), "r2"); // Jones
         assert_eq!(refs[2].id().unwrap(), "r1"); // Smith
+    }
+
+    #[test]
+    fn test_author_sort_uses_unicode_collation_for_accented_names() {
+        let locale = make_locale();
+        let sorter = GroupSorter::new(&locale);
+
+        let celik = make_reference("r1", "book", "Çelik", "Title", 2000);
+        let zimring = make_reference("r2", "book", "Zimring", "Title", 2000);
+        let o_tuathail = make_reference("r3", "book", "Ó Tuathail", "Title", 2000);
+
+        let mut refs = vec![&o_tuathail, &zimring, &celik];
+
+        let sort_spec = GroupSort {
+            template: vec![GroupSortKey {
+                key: GroupSortKeyType::Author,
+                ascending: true,
+                order: None,
+                sort_order: Some(NameSortOrder::FamilyGiven),
+            }],
+        };
+
+        refs = sorter.sort_references(refs, &sort_spec);
+
+        assert_eq!(refs[0].id().unwrap(), "r1");
+        assert_eq!(refs[1].id().unwrap(), "r3");
+        assert_eq!(refs[2].id().unwrap(), "r2");
+    }
+
+    #[test]
+    fn test_title_sort_uses_unicode_collation_for_accented_titles() {
+        let locale = make_locale();
+        let sorter = GroupSorter::new(&locale);
+
+        let accent = make_reference_no_author("r1", "book", "Órbitas del sur", 2000);
+        let plain = make_reference_no_author("r2", "book", "Origins of Theory", 2000);
+        let zeta = make_reference_no_author("r3", "book", "Zebra Studies", 2000);
+
+        let mut refs = vec![&zeta, &plain, &accent];
+
+        let sort_spec = GroupSort {
+            template: vec![GroupSortKey {
+                key: GroupSortKeyType::Title,
+                ascending: true,
+                order: None,
+                sort_order: None,
+            }],
+        };
+
+        refs = sorter.sort_references(refs, &sort_spec);
+
+        assert_eq!(refs[0].id().unwrap(), "r1");
+        assert_eq!(refs[1].id().unwrap(), "r2");
+        assert_eq!(refs[2].id().unwrap(), "r3");
     }
 
     #[test]

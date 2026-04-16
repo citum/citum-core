@@ -1,5 +1,5 @@
 {
-  "comment": "Sort oracle test data covering edge cases: multiple works by same author/year, anonymous works, all-caps surnames, varied volumes for numeric styles",
+  "comment": "Sort oracle test data covering edge cases: multiple works by same author/year, anonymous works, all-caps surnames, varied volumes for numeric styles, and Unicode-aware accented surname ordering",
   "SORT-1": {
     "id": "SORT-1",
     "class": "monograph",
@@ -103,5 +103,29 @@
       { "family": "Green", "given": "Lisa" }
     ],
     "issued": { "date-parts": [[2022]] }
+  },
+  "SORT-11": {
+    "id": "SORT-11",
+    "class": "monograph",
+    "type": "book",
+    "title": "Streets: critical perspectives on public space",
+    "author": [{ "family": "Çelik", "given": "Zeynep" }],
+    "issued": { "date-parts": [[1996]] }
+  },
+  "SORT-12": {
+    "id": "SORT-12",
+    "class": "monograph",
+    "type": "book",
+    "title": "A Sustainable City? Nature, Land, and Justice in Chicago",
+    "author": [{ "family": "Zimring", "given": "Carl A." }],
+    "issued": { "date-parts": [[2020]] }
+  },
+  "SORT-13": {
+    "id": "SORT-13",
+    "class": "monograph",
+    "type": "book",
+    "title": "Rethinking geopolitics",
+    "author": [{ "family": "Ó Tuathail", "given": "Gearóid" }],
+    "issued": { "date-parts": [[1998]] }
   }
 }
