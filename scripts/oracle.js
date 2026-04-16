@@ -368,6 +368,33 @@ function buildMigrateCommand(absStylePath, migrateOptions = {}) {
   return parts.join(' ');
 }
 
+// Resolve an already-authored Citum YAML for a style name. Searches
+// `styles/<name>.yaml`, then `styles/embedded/<name>.yaml` (the canonical
+// parents shipped inside the citum binary), then a base-name prefix match
+// inside `styles/`. Returns null when nothing matches.
+function resolveAuthoredStylePath(stylesDir, styleName) {
+  if (!fs.existsSync(stylesDir)) return null;
+  const files = fs.readdirSync(stylesDir);
+  const exactMatch = `${styleName}.yaml`;
+
+  if (files.includes(exactMatch)) {
+    return path.join(stylesDir, exactMatch);
+  }
+
+  const embeddedDir = path.join(stylesDir, 'embedded');
+  const embeddedPath = path.join(embeddedDir, exactMatch);
+  if (fs.existsSync(embeddedPath)) {
+    return embeddedPath;
+  }
+
+  const baseName = styleName.replace(/-\d+th$/, '').replace(/-\d+$/, '');
+  const found = files.find((f) =>
+    f.endsWith('.yaml') &&
+    (f.startsWith(`${styleName}-`) || f.startsWith(`${baseName}-`))
+  );
+  return found ? path.join(stylesDir, found) : null;
+}
+
 function renderWithCitumProcessor(stylePath, refsData, testItems, testCitations, cliOptions = {}) {
   const projectRoot = path.resolve(__dirname, '..');
   const isYaml = stylePath.endsWith('.yaml') || stylePath.endsWith('.yml');
@@ -385,26 +412,8 @@ function renderWithCitumProcessor(stylePath, refsData, testItems, testCitations,
 
     if (isYaml && fs.existsSync(stylePath)) {
       citumStylePath = path.resolve(stylePath);
-    } else if (!forceMigrate && fs.existsSync(stylesDir)) {
-      const files = fs.readdirSync(stylesDir);
-      const exactMatch = `${styleName}.yaml`;
-
-      // Prefer exact filename matches before any prefix matching.
-      if (files.includes(exactMatch)) {
-        citumStylePath = path.join(stylesDir, exactMatch);
-      }
-
-      if (!citumStylePath) {
-        // Look for exact match or base name match (e.g. apa-7th matches apa)
-        const baseName = styleName.replace(/-\d+th$/, '').replace(/-\d+$/, '');
-        const found = files.find((f) =>
-          f.endsWith('.yaml') &&
-          (f.startsWith(`${styleName}-`) || f.startsWith(`${baseName}-`))
-        );
-        if (found) {
-          citumStylePath = path.join(stylesDir, found);
-        }
-      }
+    } else if (!forceMigrate) {
+      citumStylePath = resolveAuthoredStylePath(stylesDir, styleName);
     }
 
     const scope = cliOptions.scope || 'both';
@@ -921,5 +930,6 @@ module.exports = {
   normalizeFixtureItems,
   refsDataForProcessor,
   renderWithCitumProcessor,
+  resolveAuthoredStylePath,
   runOracle,
 };
