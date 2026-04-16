@@ -6,9 +6,11 @@ on:
   pull_request:
     branches: [ "main" ]
     paths-ignore:
+      - '*.md'
       - '**.md'
       - 'docs/**'
       - '.beans/**'
+      - '.beans.yml'
       - '.release-plz.toml'
       - 'cliff.toml'
       - 'LICENSE'
@@ -16,6 +18,10 @@ on:
       - '.gitignore'
       - '.gitattributes'
       - '.gitmodules'
+      - '.jj/**'
+      - '.claude/**'
+      - '.codex/**'
+      - '.oracle-cache/**'
 
 jobs:
   changes:
