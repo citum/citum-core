@@ -752,6 +752,19 @@ fn group_sorting_orders_cluster_by_year_within_an_author_group() {
     run_test_case_native(&input, &citation_items, expected, "citation");
 }
 
+/// Test multi-item citation sorting with accented surnames.
+fn author_date_sorting_orders_cluster_with_unicode_surnames() {
+    let input = vec![
+        make_book("item1", "Zimring", "Craig", 2020, "Title A"),
+        make_book("item2", "Ó Tuathail", "Gearóid", 1998, "Title B"),
+        make_book("item3", "Çelik", "Zeynep", 1996, "Title C"),
+    ];
+    let citation_items = vec![vec!["item1", "item2", "item3"]];
+    let expected = "Çelik, (1996); Ó Tuathail, (1998); Zimring, (2020)";
+
+    run_test_case_native(&input, &citation_items, expected, "citation");
+}
+
 fn sorting_empty_dates_pushes_undated_items_to_the_end() {
     // Upstream provenance: CSL fixture `date_SortEmptyDatesCitation`.
     fn make_undated_book(id: &str, title: &str) -> InputReference {
@@ -1609,6 +1622,14 @@ mod sorting_and_grouping {
             "Grouped citation sorting should keep works together by author and then sort years within that group.",
         );
         super::group_sorting_orders_cluster_by_year_within_an_author_group();
+    }
+
+    #[test]
+    fn author_date_sorting_orders_cluster_with_unicode_surnames() {
+        announce_behavior(
+            "Author-date citation clusters should sort accented surnames with Unicode-aware collation.",
+        );
+        super::author_date_sorting_orders_cluster_with_unicode_surnames();
     }
 
     #[test]
