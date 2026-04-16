@@ -69,14 +69,12 @@ pub(crate) fn scan_manual_notes(
 
     for (event, range) in Parser::new(content).into_offset_iter() {
         match event {
-            Event::FootnoteReference(label) => {
-                if footnote_stack.is_empty() {
-                    manual_note_references.push(ManualNoteReference {
-                        label: label.to_string(),
-                        start: range.start,
-                    });
-                    manual_note_labels.insert(label.to_string());
-                }
+            Event::FootnoteReference(label) if footnote_stack.is_empty() => {
+                manual_note_references.push(ManualNoteReference {
+                    label: label.to_string(),
+                    start: range.start,
+                });
+                manual_note_labels.insert(label.to_string());
             }
             Event::Start(Container::Footnote { label }, ..) => {
                 manual_note_labels.insert(label.to_string());
@@ -377,10 +375,8 @@ pub(crate) fn scan_bibliography_blocks(content: &str) -> Vec<BibliographyBlock> 
 
     for (event, range) in Parser::new(content).into_offset_iter() {
         match event {
-            Event::Start(Container::Div { class }, attrs) => {
-                if class.contains("bibliography") {
-                    div_stack.push((range.start, extract_group_from_attrs(class, attrs)));
-                }
+            Event::Start(Container::Div { class }, attrs) if class.contains("bibliography") => {
+                div_stack.push((range.start, extract_group_from_attrs(class, attrs)));
             }
             Event::End(Container::Div { class }) => {
                 if class.contains("bibliography")

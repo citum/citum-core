@@ -276,19 +276,15 @@ fn macro_has_doi_without_period(macro_def: &Macro) -> bool {
 fn nodes_have_doi_without_period(nodes: &[CslNode]) -> bool {
     for node in nodes {
         match node {
-            CslNode::Text(t) => {
+            CslNode::Text(t)
                 if t.variable
                     .as_ref()
-                    .is_some_and(|v| v == "doi" || v == "url")
-                {
-                    return t.suffix.is_none()
-                        || t.suffix.as_ref().is_some_and(|s| !s.contains('.'));
-                }
+                    .is_some_and(|v| v == "doi" || v == "url") =>
+            {
+                return t.suffix.is_none() || t.suffix.as_ref().is_some_and(|s| !s.contains('.'));
             }
-            CslNode::Group(g) => {
-                if nodes_have_doi_without_period(&g.children) {
-                    return true;
-                }
+            CslNode::Group(g) if nodes_have_doi_without_period(&g.children) => {
+                return true;
             }
             CslNode::Choose(c) => {
                 if nodes_have_doi_without_period(&c.if_branch.children) {

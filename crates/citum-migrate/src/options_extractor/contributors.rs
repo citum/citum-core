@@ -513,10 +513,8 @@ fn extract_substitute_keys(nodes: &[CslNode]) -> Vec<SubstituteKey> {
                     }
                 }
             }
-            CslNode::Text(t) => {
-                if t.variable.as_ref().is_some_and(|v| v == "title") {
-                    keys.push(SubstituteKey::Title);
-                }
+            CslNode::Text(t) if t.variable.as_ref().is_some_and(|v| v == "title") => {
+                keys.push(SubstituteKey::Title);
             }
             CslNode::Group(g) => keys.extend(extract_substitute_keys(&g.children)),
             _ => {}

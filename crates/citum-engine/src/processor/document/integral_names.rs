@@ -48,10 +48,7 @@ impl Processor {
             })
             .collect();
         self.annotate_integral_name_states(&mut ordered_citations, &ordered_contexts);
-        for (citation, index) in ordered_citations
-            .into_iter()
-            .zip(ordered_indices.into_iter())
-        {
+        for (citation, index) in ordered_citations.into_iter().zip(ordered_indices) {
             normalized[index] = citation;
         }
         self.normalize_note_context(&normalized)

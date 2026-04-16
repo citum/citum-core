@@ -167,10 +167,8 @@ fn extract_group_from_sort(sort: &Sort) -> Option<Group> {
 
     for spec in &sort.template {
         match spec.key {
-            SortKey::Author | SortKey::Year | SortKey::Title => {
-                if !keys.contains(&spec.key) {
-                    keys.push(spec.key.clone());
-                }
+            SortKey::Author | SortKey::Year | SortKey::Title if !keys.contains(&spec.key) => {
+                keys.push(spec.key.clone());
             }
             SortKey::CitationNumber => {}
             _ => {}

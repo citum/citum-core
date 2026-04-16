@@ -39,6 +39,10 @@ pub(super) fn citation_template_is_author_year_only(template: &[TemplateComponen
 pub(super) fn normalize_contributor_form_to_short(template: &mut [TemplateComponent]) -> bool {
     let mut changed = false;
     for component in template {
+        #[allow(
+            clippy::collapsible_match,
+            reason = "cannot use match guard due to mutable borrow of captured variable"
+        )]
         match component {
             TemplateComponent::Contributor(c) => {
                 if c.form == citum_schema::template::ContributorForm::Long {
@@ -63,6 +67,10 @@ pub(super) fn normalize_author_date_inferred_contributors(
 ) -> bool {
     let mut changed = false;
     for component in template {
+        #[allow(
+            clippy::collapsible_match,
+            reason = "cannot use match guard due to mutable borrow of captured variable"
+        )]
         match component {
             TemplateComponent::Contributor(c) => {
                 if c.form == citum_schema::template::ContributorForm::Long {
