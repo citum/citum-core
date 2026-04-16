@@ -72,10 +72,10 @@ pub(crate) fn title_sort_key(reference: &Reference, locale: &Locale) -> String {
     normalize_sort_text(locale.strip_sort_articles(&title))
 }
 
-/// Normalize plain text for case-insensitive bibliography sorting.
+/// Normalize plain text for bibliography sorting without locale-insensitive case folding.
 #[must_use]
 pub(crate) fn normalize_sort_text(text: &str) -> String {
-    text.to_lowercase()
+    text.to_string()
 }
 
 fn collator_preferences(locale: &Locale) -> CollatorPreferences {
@@ -120,5 +120,10 @@ mod tests {
         let collator = TextCollator::new(&Locale::en_us());
         assert_eq!(collator.compare("celik", "çelik"), Ordering::Less);
         assert_eq!(collator.compare("ó tuathail", "zukin"), Ordering::Less);
+    }
+
+    #[test]
+    fn test_normalize_sort_text_preserves_locale_sensitive_case_points() {
+        assert_eq!(normalize_sort_text("İnce"), "İnce");
     }
 }
