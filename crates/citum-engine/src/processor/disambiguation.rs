@@ -607,13 +607,18 @@ impl<'a> Disambiguator<'a> {
             .max()
             .unwrap_or(0);
 
+        let mut buf = String::new();
         for n in 2..=max_authors {
             let mut partitions: HashMap<String, Vec<&Reference>> = HashMap::new();
             for reference in group {
-                partitions
-                    .entry(self.make_name_expansion_key(reference, cache, n))
-                    .or_default()
-                    .push(*reference);
+                let names = &self.reference_data(reference, cache).names;
+                buf.clear();
+                self.append_name_expansion_key(&mut buf, names, n);
+                if let Some(v) = partitions.get_mut(buf.as_str()) {
+                    v.push(*reference);
+                } else {
+                    partitions.insert(buf.clone(), vec![*reference]);
+                }
             }
 
             if partitions.len() > 1 {
@@ -622,18 +627,6 @@ impl<'a> Disambiguator<'a> {
         }
 
         None
-    }
-
-    fn make_name_expansion_key(
-        &self,
-        reference: &Reference,
-        cache: &ReferenceCache,
-        n: usize,
-    ) -> String {
-        let names = &self.reference_data(reference, cache).names;
-        let mut key = String::new();
-        self.append_name_expansion_key(&mut key, names, n);
-        key
     }
 
     /// Check if expanding to full names resolves ambiguity in the group.
@@ -645,18 +638,17 @@ impl<'a> Disambiguator<'a> {
         min_names: Option<usize>,
     ) -> bool {
         let mut seen = HashSet::new();
-        let mut collision = false;
+        let mut buf = String::new();
         let n = min_names.unwrap_or(1);
         for reference in group {
             let names = &self.reference_data(reference, cache).names;
-            let key = self.make_givenname_resolution_key(names, n);
-
-            if !seen.insert(key) {
-                collision = true;
-                break;
+            buf.clear();
+            self.append_givenname_resolution_key(&mut buf, names, n);
+            if !seen.insert(buf.clone()) {
+                return false;
             }
         }
-        !collision
+        true
     }
 
     /// Group references by their base collision key for disambiguation.
@@ -766,27 +758,24 @@ impl<'a> Disambiguator<'a> {
         }
     }
 
-    fn make_givenname_resolution_key(
+    fn append_givenname_resolution_key(
         &self,
+        key: &mut String,
         names: &[crate::reference::FlatName],
         n: usize,
-    ) -> String {
-        let mut key = String::new();
-
+    ) {
         for (idx, name) in names.iter().take(n).enumerate() {
             if idx > 0 {
                 key.push_str("||");
             }
-            Self::append_optional_part(&mut key, name.family.as_deref());
+            Self::append_optional_part(key, name.family.as_deref());
             key.push('|');
-            Self::append_optional_part(&mut key, name.given.as_deref());
+            Self::append_optional_part(key, name.given.as_deref());
             key.push('|');
-            Self::append_optional_part(&mut key, name.non_dropping_particle.as_deref());
+            Self::append_optional_part(key, name.non_dropping_particle.as_deref());
             key.push('|');
-            Self::append_optional_part(&mut key, name.dropping_particle.as_deref());
+            Self::append_optional_part(key, name.dropping_particle.as_deref());
         }
-
-        key
     }
 
     fn append_optional_part(key: &mut String, value: Option<&str>) {

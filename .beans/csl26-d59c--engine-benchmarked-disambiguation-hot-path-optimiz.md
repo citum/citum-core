@@ -1,11 +1,11 @@
 ---
 # csl26-d59c
 title: 'engine: benchmarked disambiguation hot-path optimization'
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-03-26T19:21:54Z
-updated_at: 2026-03-26T19:21:54Z
+updated_at: 2026-04-16T18:34:19Z
 parent: csl26-fk0w
 ---
 
