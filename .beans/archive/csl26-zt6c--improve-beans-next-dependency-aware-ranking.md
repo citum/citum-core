@@ -1,7 +1,7 @@
 ---
 # csl26-zt6c
 title: 'Improve /beans next: dependency-aware ranking'
-status: completed
+status: done
 type: task
 priority: high
 created_at: 2026-03-06T13:47:09Z

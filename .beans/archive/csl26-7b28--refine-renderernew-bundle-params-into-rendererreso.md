@@ -1,7 +1,7 @@
 ---
 # csl26-7b28
 title: 'Refine Renderer::new: bundle params into RendererResources'
-status: in-progress
+status: done
 type: task
 created_at: 2026-03-17T00:21:43Z
 updated_at: 2026-03-17T00:21:43Z

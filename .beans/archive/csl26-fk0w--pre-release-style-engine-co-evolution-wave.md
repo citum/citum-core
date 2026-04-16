@@ -1,7 +1,7 @@
 ---
 # csl26-fk0w
 title: Pre-release style + engine co-evolution wave
-status: in-progress
+status: done
 type: epic
 priority: normal
 created_at: 2026-03-16T10:34:43Z
