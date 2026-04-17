@@ -3105,6 +3105,79 @@ fn original_published_date_variable_renders_when_reference_has_original_date() {
     );
 }
 
+#[test]
+fn original_published_date_variable_renders_for_patent_references() {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Original-date patent test".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                TemplateComponent::Date(TemplateDate {
+                    date: DateVariable::OriginalPublished,
+                    form: DateForm::Year,
+                    rendering: Rendering {
+                        prefix: Some("(".to_string()),
+                        suffix: Some(") ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+                TemplateComponent::Date(TemplateDate {
+                    date: DateVariable::Issued,
+                    form: DateForm::Year,
+                    ..Default::default()
+                }),
+                TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Primary,
+                    form: Some(TitleForm::Long),
+                    ..Default::default()
+                }),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let reference: InputReference = serde_json::from_str(
+        r#"{
+            "class": "patent",
+            "id": "patent",
+            "title": "Improved Widget",
+            "patent-number": "US-123",
+            "issued": "1992",
+            "original": {
+                "class": "monograph",
+                "type": "book",
+                "id": "patent-orig",
+                "issued": "1901"
+            }
+        }"#,
+    )
+    .unwrap();
+
+    let bibliography = IndexMap::from([("patent".to_string(), reference)]);
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor
+        .render_selected_bibliography_with_format::<PlainText, _>(["patent".to_string()])
+        .trim()
+        .to_string();
+
+    assert!(
+        rendered.contains("(1901)"),
+        "expected original-published year '(1901)' in output: {rendered}"
+    );
+    assert!(
+        rendered.contains("1992"),
+        "expected issued year '1992' in output: {rendered}"
+    );
+    assert!(
+        rendered.contains("Improved Widget"),
+        "expected title in output: {rendered}"
+    );
+}
+
 mod annotated_html_preview {
     use super::announce_behavior;
     use rstest::rstest;

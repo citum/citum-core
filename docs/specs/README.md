@@ -57,3 +57,4 @@ to make sure the document should be a spec rather than architecture or policy.
 | [`ARCHIVAL_UNPUBLISHED_SUPPORT.md`](./ARCHIVAL_UNPUBLISHED_SUPPORT.md) | ArchiveInfo/EprintInfo structs; Preprint type; archive_location semantic fix |
 | [`EDTF_HISTORICAL_ERA_RENDERING.md`](./EDTF_HISTORICAL_ERA_RENDERING.md) | Locale-backed rendering of valid historical EDTF years |
 | [`LOCALE_MESSAGES.md`](./LOCALE_MESSAGES.md) | ICU MF1 parameterized message system replacing flat YAML term files |
+| [`ORIGINAL_PUBLICATION_RELATION_SUPPORT.md`](./ORIGINAL_PUBLICATION_RELATION_SUPPORT.md) | Universal original publication metadata support across all types |

@@ -1270,3 +1270,196 @@ fn conversion_preserves_place_only_original_publication_metadata() {
         Some("Boston".to_string())
     );
 }
+
+#[test]
+fn specialized_reference_round_trips_original_relation() {
+    let reference: InputReference = serde_json::from_str(
+        r#"{
+            "class": "patent",
+            "title": "Improved Widget",
+            "patent-number": "US-123",
+            "original": {
+                "class": "monograph",
+                "type": "book",
+                "title": "Widget Prototype",
+                "issued": "1901"
+            }
+        }"#,
+    )
+    .unwrap();
+
+    assert_eq!(
+        reference.original_title(),
+        Some(Title::Single("Widget Prototype".to_string()))
+    );
+    let serialized = serde_json::to_value(&reference).unwrap();
+    assert!(serialized.get("original").is_some());
+}
+
+#[test]
+fn legal_reference_round_trips_original_relation() {
+    let reference: InputReference = serde_json::from_str(
+        r#"{
+            "class": "legal-case",
+            "title": "Example v. Example",
+            "original": {
+                "class": "monograph",
+                "type": "book",
+                "title": "Original Reporter",
+                "issued": "1901"
+            }
+        }"#,
+    )
+    .unwrap();
+
+    assert_eq!(
+        reference.original_title(),
+        Some(Title::Single("Original Reporter".to_string()))
+    );
+    let serialized = serde_json::to_value(&reference).unwrap();
+    assert!(serialized.get("original").is_some());
+}
+
+#[test]
+fn audio_visual_round_trips_original_relation_via_work_core() {
+    let reference: InputReference = serde_json::from_str(
+        r#"{
+            "class": "audio-visual",
+            "type": "film",
+            "title": "Metropolis",
+            "original": {
+                "class": "monograph",
+                "type": "book",
+                "title": "Metropolis (Original Release)",
+                "issued": "1927"
+            }
+        }"#,
+    )
+    .unwrap();
+
+    assert_eq!(
+        reference.original_title(),
+        Some(Title::Single("Metropolis (Original Release)".to_string()))
+    );
+    let serialized = serde_json::to_value(&reference).unwrap();
+    assert!(serialized.get("original").is_some());
+}
+
+#[test]
+fn original_date_uses_created_fallback_for_newly_supported_variants() {
+    let reference: InputReference = serde_json::from_str(
+        r#"{
+            "class": "patent",
+            "id": "patent-with-original",
+            "patent-number": "US-123",
+            "original": {
+                "class": "monograph",
+                "type": "book",
+                "id": "original-work",
+                "created": "1901-05-17"
+            }
+        }"#,
+    )
+    .unwrap();
+
+    assert_eq!(
+        reference.original_date(),
+        Some(EdtfString("1901-05-17".to_string()))
+    );
+}
+
+#[test]
+fn conversion_maps_original_relation_for_patent_references() {
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(
+        r#"{
+            "id": "patent-original",
+            "type": "patent",
+            "title": "Improved Widget",
+            "number": "US-123",
+            "original-title": "Widget Prototype",
+            "original-date": { "date-parts": [[1901]] },
+            "original-publisher": "Old Patent Office"
+        }"#,
+    )
+    .unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(
+        reference.original_title(),
+        Some(Title::Single("Widget Prototype".to_string()))
+    );
+    assert_eq!(
+        reference.original_publisher_str(),
+        Some("Old Patent Office".to_string())
+    );
+}
+
+#[test]
+fn conversion_maps_original_relation_for_event_references() {
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(
+        r#"{
+            "id": "event-original",
+            "type": "speech",
+            "title": "Conference Talk",
+            "issued": { "date-parts": [[2010, 6, 1]] },
+            "original-title": "Lecture Manuscript",
+            "original-date": { "date-parts": [[1901]] },
+            "original-publisher-place": "Boston"
+        }"#,
+    )
+    .unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(
+        reference.original_title(),
+        Some(Title::Single("Lecture Manuscript".to_string()))
+    );
+    assert_eq!(
+        reference.original_publisher_place(),
+        Some("Boston".to_string())
+    );
+}
+
+#[test]
+fn conversion_maps_original_relation_for_legal_case_references() {
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(
+        r#"{
+            "id": "case-original",
+            "type": "legal_case",
+            "title": "Example v. Example",
+            "container-title": "Reporter",
+            "original-title": "Original Reporter Edition",
+            "original-date": { "date-parts": [[1901]] },
+            "original-publisher": "Old Press",
+            "original-publisher-place": "Boston"
+        }"#,
+    )
+    .unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(
+        reference.original_title(),
+        Some(Title::Single("Original Reporter Edition".to_string()))
+    );
+    assert_eq!(
+        reference.original_publisher_str(),
+        Some("Old Press".to_string())
+    );
+
+    let InputReference::LegalCase(case_ref) = reference else {
+        panic!("expected legal case");
+    };
+    let Some(WorkRelation::Embedded(original)) = case_ref.original.as_ref() else {
+        panic!("expected embedded original");
+    };
+    let InputReference::Monograph(original_book) = original.as_ref() else {
+        panic!("expected original relation to normalize to a monograph");
+    };
+    assert_eq!(
+        original_book
+            .publisher
+            .as_ref()
+            .and_then(|publisher| publisher.place.clone()),
+        Some("Boston".to_string())
+    );
+}
