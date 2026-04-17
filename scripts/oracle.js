@@ -388,6 +388,17 @@ function resolveAuthoredStylePath(stylesDir, styleName) {
   }
 
   const baseName = styleName.replace(/-\d+th$/, '').replace(/-\d+$/, '');
+
+  // Prefix-scan styles/embedded/ first (e.g. 'apa' → 'apa-7th.yaml')
+  // Embedded styles are canonical hand-authored YAMLs and take priority.
+  const embeddedFiles = fs.existsSync(embeddedDir) ? fs.readdirSync(embeddedDir) : [];
+  const embeddedFound = embeddedFiles.find((f) =>
+    f.endsWith('.yaml') &&
+    (f.startsWith(`${styleName}-`) || f.startsWith(`${baseName}-`))
+  );
+  if (embeddedFound) return path.join(embeddedDir, embeddedFound);
+
+  // Fall back to prefix-scan in styles/ root
   const found = files.find((f) =>
     f.endsWith('.yaml') &&
     (f.startsWith(`${styleName}-`) || f.startsWith(`${baseName}-`))
@@ -470,8 +481,14 @@ function renderWithCitumProcessor(stylePath, refsData, testItems, testCitations,
 
     let section = null;
     for (const line of lines) {
-      if (line.includes('CITATIONS (From file):')) {
+      if (
+        line.includes('CITATIONS (From file):') ||
+        line.includes('CITATIONS (Non-Integral):')
+      ) {
         section = 'citations';
+        continue;
+      } else if (line.includes('CITATIONS (Integral):')) {
+        section = 'citations_integral';
         continue;
       } else if (line.includes('BIBLIOGRAPHY:')) {
         section = 'bibliography';

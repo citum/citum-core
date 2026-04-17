@@ -555,6 +555,37 @@ test('resolveAuthoredStylePath returns null when no authored YAML exists', () =>
   }
 });
 
+test('resolveAuthoredStylePath finds versioned name in embedded/ via prefix scan', () => {
+  // 'apa' should find 'apa-7th.yaml' in embedded/ when no exact match exists
+  const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'oracle-resolve-'));
+  try {
+    const embeddedDir = path.join(dir, 'embedded');
+    fs.mkdirSync(embeddedDir);
+    fs.writeFileSync(path.join(embeddedDir, 'apa-7th.yaml'), '{}');
+    const resolved = resolveAuthoredStylePath(dir, 'apa');
+    assert.equal(resolved, path.join(embeddedDir, 'apa-7th.yaml'));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('resolveAuthoredStylePath prefers styles/ prefix over embedded/ prefix', () => {
+  // A root-level 'apa-variant.yaml' should NOT shadow embedded 'apa-7th.yaml';
+  // but embedded prefix comes before root prefix in resolution order.
+  const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'oracle-resolve-'));
+  try {
+    const embeddedDir = path.join(dir, 'embedded');
+    fs.mkdirSync(embeddedDir);
+    fs.writeFileSync(path.join(embeddedDir, 'apa-7th.yaml'), '{}');
+    fs.writeFileSync(path.join(dir, 'apa-classic.yaml'), '{}');
+    // embedded prefix wins over root prefix
+    const resolved = resolveAuthoredStylePath(dir, 'apa');
+    assert.equal(resolved, path.join(embeddedDir, 'apa-7th.yaml'));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('compareComponents reports differing component values as mismatches', () => {
   const { differences, matches } = compareComponents(
     {

@@ -31,8 +31,6 @@ options:
       add-givenname: true
       year-suffix: true
   contributors:
-    name-form: initials
-    initialize-with: '. '
     and: text
     demote-non-dropping-particle: display-and-sort
   dates:
@@ -251,6 +249,117 @@ bibliography:
       - variable: publisher-place
       - variable: doi
       - variable: url
+    article-newspaper:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - date: issued
+        form: year
+        prefix: '. '
+      - title: primary
+        wrap:
+          punctuation: quotes
+        prefix: '. '
+      - variable: section
+        prefix: ', '
+      - title: parent-serial
+        emph: true
+        prefix: ', '
+      - date: issued
+        form: month-day
+        prefix: ', '
+    broadcast:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - date: issued
+        form: year
+        prefix: '. '
+      - title: primary
+        wrap:
+          punctuation: quotes
+        prefix: '. '
+      - title: parent-serial
+        emph: true
+        prefix: ', '
+      - date: issued
+        form: month-day
+        wrap:
+          punctuation: parentheses
+        prefix: ' '
+      - number: number
+        prefix: ', episode '
+    motion-picture:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - date: issued
+        form: year
+        prefix: '. '
+      - title: primary
+        prefix: '. '
+      - variable: genre
+        prefix: ', '
+      - contributor: director
+        form: long
+        name-order: given-first
+        prefix: ', dir. by '
+    interview:
+      - contributor: interviewer
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - date: issued
+        form: year
+        prefix: '. '
+      - title: primary
+        wrap:
+          punctuation: quotes
+        prefix: '. '
+      - variable: genre
+        prefix: ', '
+      - contributor: author
+        form: long
+        name-order: given-first
+        prefix: ' with '
+      - date: issued
+        form: month-day
+        prefix: ', '
+      - variable: url
+    patent:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - date: issued
+        form: year
+        prefix: '. '
+      - title: primary
+        prefix: '. '
+      - number: number
+        prefix: ', Patent '
+      - delimiter: ""
+        group:
+        - date: issued
+          form: month-day
+          prefix: ', issued '
+        - date: issued
+          form: year
+          prefix: ', '
+    personal-communication: []
   template:
     - contributor: author
       form: long
@@ -262,27 +371,27 @@ bibliography:
       form: year
       prefix: '. '
     - title: primary
-      wrap:
-        punctuation: quotes
       prefix: '. '
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: .
+    - contributor: translator
+      form: long
+      name-order: given-first
+      prefix: ', trans. by '
     - contributor: editor
       form: verb
       name-order: given-first
       shorten:
         min: 4
         use-first: 1
-    - variable: publisher
-      prefix: ' and others ('
+    - delimiter: ""
+      group:
+      - variable: publisher-place
+      - variable: publisher
+        prefix: ': '
+      wrap:
+        punctuation: parentheses
+      prefix: ' '
     - number: pages
-      prefix: '), '
-    - variable: publisher-place
+      prefix: ', pp. '
     - variable: doi
     - variable: url
   sort: author-date-title

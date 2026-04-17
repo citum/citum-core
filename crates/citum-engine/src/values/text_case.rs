@@ -139,14 +139,38 @@ pub(crate) fn capitalize_first_word(text: &str) -> String {
 
 // English title-case stop words (articles, short conjunctions, short prepositions).
 const TITLE_CASE_STOP_WORDS: &[&str] = &[
-    "a", "an", "and", "as", "at", "but", "by", "for", "in", "nor", "of", "on", "or", "so", "the",
-    "to", "up", "yet", "v", "vs",
+    "a", "an", "and", "as", "at", "but", "by", "for", "from", "in", "nor", "of", "on", "or", "so",
+    "the", "to", "up", "yet", "v", "vs",
 ];
+
+/// Capitalize each component of a hyphenated compound word for title case.
+///
+/// When `force_all` is true (first/last word, post-punctuation), every component
+/// is capitalized. Otherwise interior stop-word components stay lowercase.
+fn capitalize_hyphenated(word: &str, force_all: bool) -> String {
+    word.split('-')
+        .map(|part| {
+            if force_all {
+                capitalize_first_word(part)
+            } else {
+                let alpha_core = part.trim_matches(|c: char| !c.is_alphanumeric());
+                if TITLE_CASE_STOP_WORDS.contains(&alpha_core) {
+                    part.to_string()
+                } else {
+                    capitalize_first_word(part)
+                }
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("-")
+}
 
 /// Convert text to English headline-style title case.
 ///
 /// Capitalizes the first and last word unconditionally.
 /// Interior stop words (articles, short prepositions, conjunctions) stay lowercase.
+/// The first word after `:`, `?`, or `!` is always capitalized.
+/// Hyphenated compounds capitalize each non-stop-word component.
 fn to_title_case(text: &str) -> String {
     if text.is_empty() {
         return String::new();
@@ -159,20 +183,30 @@ fn to_title_case(text: &str) -> String {
 
     let last_idx = words.len() - 1;
     let mut parts: Vec<String> = Vec::with_capacity(words.len());
-    let mut after_colon = false;
+    let mut capitalize_next = false;
 
     for (i, word) in words.iter().enumerate() {
-        if i == 0 || i == last_idx || after_colon {
-            parts.push(capitalize_first_word(&word.to_lowercase()));
+        let lower = word.to_lowercase();
+        if i == 0 || i == last_idx || capitalize_next {
+            if lower.contains('-') {
+                parts.push(capitalize_hyphenated(&lower, true));
+            } else {
+                parts.push(capitalize_first_word(&lower));
+            }
         } else {
-            let lower = word.to_lowercase();
-            if TITLE_CASE_STOP_WORDS.contains(&lower.as_str()) {
+            // Strip leading/trailing punctuation when checking stop words so that
+            // words like "(and" or "and)" are still treated as the stop word "and".
+            let alpha_core = lower.trim_matches(|c: char| !c.is_alphanumeric());
+            if TITLE_CASE_STOP_WORDS.contains(&alpha_core) {
                 parts.push(lower);
+            } else if lower.contains('-') {
+                parts.push(capitalize_hyphenated(&lower, false));
             } else {
                 parts.push(capitalize_first_word(&lower));
             }
         }
-        after_colon = word.ends_with(':');
+        // Capitalize the next word after sentence-ending punctuation or a colon.
+        capitalize_next = word.ends_with(':') || word.ends_with('?') || word.ends_with('!');
     }
 
     // Rebuild with original whitespace structure
@@ -281,6 +315,36 @@ mod tests {
             to_title_case("history of the world: a new perspective"),
             "History of the World: A New Perspective"
         );
+    }
+
+    #[test]
+    fn test_title_case_after_question_mark() {
+        assert_eq!(
+            to_title_case("who's black and why? a hidden chapter"),
+            "Who's Black and Why? A Hidden Chapter"
+        );
+    }
+
+    #[test]
+    fn test_title_case_from_is_stop_word() {
+        assert_eq!(
+            to_title_case("a hidden chapter from the eighteenth-century invention of race"),
+            "A Hidden Chapter from the Eighteenth-Century Invention of Race"
+        );
+    }
+
+    #[test]
+    fn test_title_case_hyphenated_compound() {
+        assert_eq!(
+            to_title_case("eighteenth-century studies"),
+            "Eighteenth-Century Studies"
+        );
+    }
+
+    #[test]
+    fn test_title_case_hyphenated_stop_word_part() {
+        // "well-to-do": "to" is a stop word → stays lowercase in interior position
+        assert_eq!(to_title_case("a well-to-do family"), "A Well-to-Do Family");
     }
 
     // --- apply_to_structured_parts ---

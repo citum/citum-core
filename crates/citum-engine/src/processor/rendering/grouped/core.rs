@@ -935,15 +935,6 @@ impl Renderer<'_> {
     ) where
         F: crate::render::format::OutputFormat<Output = String>,
     {
-        if !components.iter().any(|component| {
-            component
-                .prefix
-                .as_deref()
-                .is_some_and(|prefix| !prefix.is_empty())
-        }) {
-            return;
-        }
-
         let punctuation_in_quote = components
             .first()
             .and_then(|component| component.config.as_ref())
@@ -1011,15 +1002,28 @@ impl Renderer<'_> {
             return;
         }
 
+        let locale = Some(self.locale.locale.as_str());
         match &component.template_component {
             TemplateComponent::Contributor(_) => {
+                let case =
+                    crate::values::text_case::resolve_text_case(TextCase::CapitalizeFirst, locale);
                 if let Some(prefix) = component.prefix.as_mut() {
-                    let case = crate::values::text_case::resolve_text_case(
-                        TextCase::CapitalizeFirst,
-                        Some(self.locale.locale.as_str()),
-                    );
+                    // Explicit template prefix (e.g. ". Translated by ") — capitalize it.
                     *prefix = crate::values::text_case::apply_text_case(prefix, case);
+                } else {
+                    // No explicit prefix: the role label (e.g. "edited by ") is baked
+                    // into the rendered value.  Capitalize the first word so that
+                    // sentence-initial contributors read "Edited by …" not "edited by …".
+                    component.value =
+                        crate::values::text_case::apply_text_case(&component.value, case);
                 }
+            }
+            // Pre-formatted group components — capitalize the first word of the
+            // rendered group value (e.g. "edited by Smith" as first child).
+            TemplateComponent::Group(_) => {
+                let case =
+                    crate::values::text_case::resolve_text_case(TextCase::CapitalizeFirst, locale);
+                component.value = crate::values::text_case::apply_text_case(&component.value, case);
             }
             TemplateComponent::Term(_)
                 if note_start_text_case.is_some()
@@ -1028,7 +1032,7 @@ impl Renderer<'_> {
                 component.value = crate::values::text_case::apply_note_start_text_case(
                     &component.value,
                     note_start_text_case.expect("checked above"),
-                    Some(self.locale.locale.as_str()),
+                    locale,
                 );
             }
             _ => {}
