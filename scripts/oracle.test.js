@@ -10,6 +10,7 @@ const {
   createOracleTempWorkspace,
   loadFixtures,
   normalizeFixtureItems,
+  parseCitumRenderOutput,
   refsDataForProcessor,
   resolveAuthoredStylePath,
 } = require('./oracle');
@@ -569,9 +570,8 @@ test('resolveAuthoredStylePath finds versioned name in embedded/ via prefix scan
   }
 });
 
-test('resolveAuthoredStylePath prefers styles/ prefix over embedded/ prefix', () => {
-  // A root-level 'apa-variant.yaml' should NOT shadow embedded 'apa-7th.yaml';
-  // but embedded prefix comes before root prefix in resolution order.
+test('resolveAuthoredStylePath prefers embedded/ prefix over styles/ prefix', () => {
+  // A root-level 'apa-variant.yaml' must not shadow embedded 'apa-7th.yaml'.
   const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'oracle-resolve-'));
   try {
     const embeddedDir = path.join(dir, 'embedded');
@@ -584,6 +584,46 @@ test('resolveAuthoredStylePath prefers styles/ prefix over embedded/ prefix', ()
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test('resolveAuthoredStylePath picks the first embedded prefix match deterministically', () => {
+  const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'oracle-resolve-'));
+  try {
+    const embeddedDir = path.join(dir, 'embedded');
+    fs.mkdirSync(embeddedDir);
+    fs.writeFileSync(path.join(embeddedDir, 'apa-7th.yaml'), '{}');
+    fs.writeFileSync(path.join(embeddedDir, 'apa-6th.yaml'), '{}');
+    const resolved = resolveAuthoredStylePath(dir, 'apa');
+    assert.equal(resolved, path.join(embeddedDir, 'apa-6th.yaml'));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('parseCitumRenderOutput keeps integral citations separate from keyed citations', () => {
+  const parsed = parseCitumRenderOutput(
+    [
+      '=== apa-7th.yaml ===',
+      '',
+      'CITATIONS (Non-Integral):',
+      '  [single-item] (Kuhn, 1962)',
+      '',
+      'CITATIONS (Integral):',
+      '  Kuhn (1962)',
+      '',
+      'BIBLIOGRAPHY:',
+      '  [ITEM-1] Kuhn, T. S. (1962). _The Structure of Scientific Revolutions_.',
+      '',
+    ].join('\n'),
+    { 'ITEM-1': { id: 'ITEM-1' } }
+  );
+
+  assert.deepEqual(parsed.citations, { 'single-item': '(Kuhn, 1962)' });
+  assert.deepEqual(parsed.integralCitations, ['Kuhn (1962)']);
+  assert.deepEqual(parsed.bibliographyOrderIds, ['ITEM-1']);
+  assert.deepEqual(parsed.bibliography, [
+    'Kuhn, T. S. (1962). _The Structure of Scientific Revolutions_.',
+  ]);
 });
 
 test('compareComponents reports differing component values as mismatches', () => {

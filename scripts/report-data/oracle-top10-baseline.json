@@ -1,143 +1,143 @@
 {
-    "totalStyles": 10,
-    "citationsPerfect": 9,
-    "bibliographyPerfect": 4,
-    "citationsPartial": 0,
-    "bibliographyPartial": 0,
-    "componentIssues": {},
-    "orderingIssues": 0,
-    "styleBreakdown": [
-        {
-            "style": "apa",
-            "citations": "18/18",
-            "bibliography": "16/34",
-            "citationsPct": 100,
-            "bibliographyPct": 47,
-            "rawCitations": "18/18",
-            "rawBibliography": "16/34",
-            "adjustedDivergences": {},
-            "templateSource": "inferred"
-        },
-        {
-            "style": "chicago-author-date",
-            "citations": "4/18",
-            "bibliography": "21/33",
-            "citationsPct": 22,
-            "bibliographyPct": 64,
-            "rawCitations": "4/18",
-            "rawBibliography": "21/33",
-            "adjustedDivergences": {},
-            "templateSource": "inferred"
-        },
-        {
-            "style": "nature",
-            "citations": "18/18",
-            "bibliography": "29/33",
-            "citationsPct": 100,
-            "bibliographyPct": 88,
-            "rawCitations": "18/18",
-            "rawBibliography": "29/33",
-            "adjustedDivergences": {},
-            "templateSource": "inferred"
-        },
-        {
-            "style": "springer-basic-author-date",
-            "citations": "15/18",
-            "bibliography": "31/33",
-            "citationsPct": 83,
-            "bibliographyPct": 94,
-            "rawCitations": "15/18",
-            "rawBibliography": "31/33",
-            "adjustedDivergences": {},
-            "templateSource": "inferred"
-        },
-        {
-            "style": "american-medical-association",
-            "citations": "10/18",
-            "bibliography": "32/33",
-            "citationsPct": 56,
-            "bibliographyPct": 97,
-            "rawCitations": "10/18",
-            "rawBibliography": "32/33",
-            "adjustedDivergences": {},
-            "templateSource": "inferred"
-        },
-        {
-            "style": "cell",
-            "citations": "18/18",
-            "bibliography": "32/33",
-            "citationsPct": 100,
-            "bibliographyPct": 97,
-            "rawCitations": "18/18",
-            "rawBibliography": "32/33",
-            "adjustedDivergences": {},
-            "templateSource": "xml"
-        },
-        {
-            "style": "elsevier-harvard",
-            "citations": "18/18",
-            "bibliography": "33/33",
-            "citationsPct": 100,
-            "bibliographyPct": 100,
-            "rawCitations": "18/18",
-            "rawBibliography": "33/33",
-            "adjustedDivergences": {},
-            "templateSource": "inferred"
-        },
-        {
-            "style": "elsevier-with-titles",
-            "citations": "18/18",
-            "bibliography": "33/33",
-            "citationsPct": 100,
-            "bibliographyPct": 100,
-            "rawCitations": "18/18",
-            "rawBibliography": "33/33",
-            "adjustedDivergences": {},
-            "templateSource": "inferred"
-        },
-        {
-            "style": "ieee",
-            "citations": "18/18",
-            "bibliography": "33/33",
-            "citationsPct": 100,
-            "bibliographyPct": 100,
-            "rawCitations": "18/18",
-            "rawBibliography": "33/33",
-            "adjustedDivergences": {},
-            "templateSource": "inferred"
-        },
-        {
-            "style": "elsevier-vancouver",
-            "citations": "4/18",
-            "bibliography": "31/33",
-            "citationsPct": 22,
-            "bibliographyPct": 94,
-            "rawCitations": "4/18",
-            "rawBibliography": "31/33",
-            "adjustedDivergences": {},
-            "templateSource": "inferred"
-        }
-    ],
-    "errors": [],
-    "metadata": {
-        "timestamp": "2026-04-12T13:30:27.308Z",
-        "gitCommit": "6cc00e52",
-        "generator": "scripts/oracle-batch-aggregate.js",
-        "duration": "19.1s",
-        "concurrency": 1,
-        "fixture": "tests/fixtures/citations-expanded.json",
-        "styleSelector": "explicit",
-        "styles": [
-            "apa",
-            "elsevier-harvard",
-            "elsevier-with-titles",
-            "springer-basic-author-date",
-            "ieee",
-            "elsevier-vancouver",
-            "american-medical-association",
-            "nature",
-            "cell",
-            "chicago-author-date"
-        ]
+  "totalStyles": 10,
+  "citationsPerfect": 10,
+  "bibliographyPerfect": 10,
+  "citationsPartial": 0,
+  "bibliographyPartial": 0,
+  "componentIssues": {},
+  "orderingIssues": 0,
+  "styleBreakdown": [
+    {
+      "style": "apa",
+      "citations": "18/18",
+      "bibliography": "32/32",
+      "rawCitations": "18/18",
+      "rawBibliography": "32/32",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "adjustedDivergences": {},
+      "templateSource": "inferred"
+    },
+    {
+      "style": "elsevier-harvard",
+      "citations": "18/18",
+      "bibliography": "33/33",
+      "rawCitations": "18/18",
+      "rawBibliography": "33/33",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "adjustedDivergences": {},
+      "templateSource": "inferred"
+    },
+    {
+      "style": "elsevier-with-titles",
+      "citations": "18/18",
+      "bibliography": "33/33",
+      "rawCitations": "18/18",
+      "rawBibliography": "33/33",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "adjustedDivergences": {},
+      "templateSource": "inferred"
+    },
+    {
+      "style": "springer-basic-author-date",
+      "citations": "18/18",
+      "bibliography": "33/33",
+      "rawCitations": "18/18",
+      "rawBibliography": "33/33",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "adjustedDivergences": {},
+      "templateSource": "inferred"
+    },
+    {
+      "style": "ieee",
+      "citations": "18/18",
+      "bibliography": "33/33",
+      "rawCitations": "18/18",
+      "rawBibliography": "33/33",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "adjustedDivergences": {},
+      "templateSource": "inferred"
+    },
+    {
+      "style": "elsevier-vancouver",
+      "citations": "18/18",
+      "bibliography": "33/33",
+      "rawCitations": "18/18",
+      "rawBibliography": "33/33",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "adjustedDivergences": {},
+      "templateSource": "inferred"
+    },
+    {
+      "style": "american-medical-association",
+      "citations": "18/18",
+      "bibliography": "33/33",
+      "rawCitations": "18/18",
+      "rawBibliography": "33/33",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "adjustedDivergences": {},
+      "templateSource": "inferred"
+    },
+    {
+      "style": "nature",
+      "citations": "18/18",
+      "bibliography": "33/33",
+      "rawCitations": "18/18",
+      "rawBibliography": "33/33",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "adjustedDivergences": {},
+      "templateSource": "inferred"
+    },
+    {
+      "style": "cell",
+      "citations": "18/18",
+      "bibliography": "33/33",
+      "rawCitations": "18/18",
+      "rawBibliography": "33/33",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "adjustedDivergences": {},
+      "templateSource": "xml"
+    },
+    {
+      "style": "chicago-author-date",
+      "citations": "18/18",
+      "bibliography": "32/32",
+      "rawCitations": "18/18",
+      "rawBibliography": "32/32",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "adjustedDivergences": {},
+      "templateSource": "inferred"
     }
+  ],
+  "errors": [],
+  "metadata": {
+    "timestamp": "2026-04-17T12:23:32.166Z",
+    "gitCommit": "07e89504",
+    "generator": "scripts/oracle-batch-aggregate.js",
+    "duration": "10.6s",
+    "concurrency": 1,
+    "fixture": "tests/fixtures/citations-expanded.json",
+    "styleSelector": "explicit",
+    "styles": [
+      "apa",
+      "elsevier-harvard",
+      "elsevier-with-titles",
+      "springer-basic-author-date",
+      "ieee",
+      "elsevier-vancouver",
+      "american-medical-association",
+      "nature",
+      "cell",
+      "chicago-author-date"
+    ]
+  }
 }
