@@ -165,6 +165,10 @@ fn capitalize_hyphenated(word: &str, force_all: bool) -> String {
         .join("-")
 }
 
+fn trim_trailing_closing_punctuation(word: &str) -> &str {
+    word.trim_end_matches(['"', '\'', ')', ']', '}', '»', '”', '’'])
+}
+
 /// Convert text to English headline-style title case.
 ///
 /// Capitalizes the first and last word unconditionally.
@@ -205,8 +209,12 @@ fn to_title_case(text: &str) -> String {
                 parts.push(capitalize_first_word(&lower));
             }
         }
-        // Capitalize the next word after sentence-ending punctuation or a colon.
-        capitalize_next = word.ends_with(':') || word.ends_with('?') || word.ends_with('!');
+        // Capitalize the next word after sentence-ending punctuation or a colon,
+        // even when that punctuation is followed by a closing quote or bracket.
+        let punctuation_core = trim_trailing_closing_punctuation(word);
+        capitalize_next = punctuation_core.ends_with(':')
+            || punctuation_core.ends_with('?')
+            || punctuation_core.ends_with('!');
     }
 
     // Rebuild with original whitespace structure
@@ -322,6 +330,14 @@ mod tests {
         assert_eq!(
             to_title_case("who's black and why? a hidden chapter"),
             "Who's Black and Why? A Hidden Chapter"
+        );
+    }
+
+    #[test]
+    fn test_title_case_after_question_mark_with_closing_quote() {
+        assert_eq!(
+            to_title_case("who's black and why?\" a hidden chapter"),
+            "Who's Black and Why?\" A Hidden Chapter"
         );
     }
 

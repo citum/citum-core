@@ -353,12 +353,12 @@ bibliography:
         prefix: ', Patent '
       - delimiter: ""
         group:
-        - date: issued
-          form: month-day
-          prefix: ', issued '
-        - date: issued
-          form: year
-          prefix: ', '
+          - date: issued
+            form: month-day
+            prefix: ', issued '
+          - date: issued
+            form: year
+            prefix: ', '
     personal-communication: []
   template:
     - contributor: author
@@ -384,9 +384,9 @@ bibliography:
         use-first: 1
     - delimiter: ""
       group:
-      - variable: publisher-place
-      - variable: publisher
-        prefix: ': '
+        - variable: publisher-place
+        - variable: publisher
+          prefix: ': '
       wrap:
         punctuation: parentheses
       prefix: ' '

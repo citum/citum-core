@@ -374,7 +374,7 @@ function buildMigrateCommand(absStylePath, migrateOptions = {}) {
 // inside `styles/`. Returns null when nothing matches.
 function resolveAuthoredStylePath(stylesDir, styleName) {
   if (!fs.existsSync(stylesDir)) return null;
-  const files = fs.readdirSync(stylesDir);
+  const files = fs.readdirSync(stylesDir).sort();
   const exactMatch = `${styleName}.yaml`;
 
   if (files.includes(exactMatch)) {
@@ -391,7 +391,7 @@ function resolveAuthoredStylePath(stylesDir, styleName) {
 
   // Prefix-scan styles/embedded/ first (e.g. 'apa' → 'apa-7th.yaml')
   // Embedded styles are canonical hand-authored YAMLs and take priority.
-  const embeddedFiles = fs.existsSync(embeddedDir) ? fs.readdirSync(embeddedDir) : [];
+  const embeddedFiles = fs.existsSync(embeddedDir) ? fs.readdirSync(embeddedDir).sort() : [];
   const embeddedFound = embeddedFiles.find((f) =>
     f.endsWith('.yaml') &&
     (f.startsWith(`${styleName}-`) || f.startsWith(`${baseName}-`))
@@ -404,6 +404,66 @@ function resolveAuthoredStylePath(stylesDir, styleName) {
     (f.startsWith(`${styleName}-`) || f.startsWith(`${baseName}-`))
   );
   return found ? path.join(stylesDir, found) : null;
+}
+
+function parseCitumRenderOutput(output, testItems) {
+  const lines = output.split('\n');
+  const citations = {};
+  const bibliography = {};
+  const bibliographyOrderIds = [];
+  const integralCitations = [];
+
+  let section = null;
+  for (const line of lines) {
+    if (
+      line.includes('CITATIONS (From file):') ||
+      line.includes('CITATIONS (Non-Integral):')
+    ) {
+      section = 'citations';
+      continue;
+    } else if (line.includes('CITATIONS (Integral):')) {
+      section = 'citations_integral';
+      continue;
+    } else if (line.includes('BIBLIOGRAPHY:')) {
+      section = 'bibliography';
+      continue;
+    }
+
+    if (!line.trim() || line.includes('===')) {
+      continue;
+    }
+
+    if (section === 'citations') {
+      const match = line.match(/^\s*\[([^\]]+)\]\s+(.+)/);
+      if (match) {
+        citations[match[1]] = match[2].trim();
+      }
+    } else if (section === 'citations_integral') {
+      // Integral citations currently print without keys, so keep them for
+      // inspection without merging them into the keyed citation comparison map.
+      integralCitations.push(line.trim());
+    } else if (section === 'bibliography') {
+      const match = line.match(/^\s*\[([^\]]+)\]\s+(.+)/);
+      if (match) {
+        bibliography[match[1]] = match[2].trim();
+        bibliographyOrderIds.push(match[1]);
+      }
+    }
+  }
+
+  const orderedBibliography = [];
+  Object.keys(testItems).forEach((id) => {
+    if (bibliography[id]) {
+      orderedBibliography.push(bibliography[id]);
+    }
+  });
+
+  return {
+    citations,
+    bibliography: orderedBibliography,
+    bibliographyOrderIds,
+    integralCitations,
+  };
 }
 
 function renderWithCitumProcessor(stylePath, refsData, testItems, testCitations, cliOptions = {}) {
@@ -474,50 +534,7 @@ function renderWithCitumProcessor(stylePath, refsData, testItems, testCitations,
       return { error: `Processor failed: ${errorMsg}`, citations: { passed: 0, total: 0 }, bibliography: { passed: 0, total: 0 } };
     }
 
-    const lines = output.split('\n');
-    const citations = {};
-    const bibliography = {};
-    const bibliographyOrderIds = [];
-
-    let section = null;
-    for (const line of lines) {
-      if (
-        line.includes('CITATIONS (From file):') ||
-        line.includes('CITATIONS (Non-Integral):')
-      ) {
-        section = 'citations';
-        continue;
-      } else if (line.includes('CITATIONS (Integral):')) {
-        section = 'citations_integral';
-        continue;
-      } else if (line.includes('BIBLIOGRAPHY:')) {
-        section = 'bibliography';
-        continue;
-      }
-
-      if (section === 'citations' && line.trim() && !line.includes('===')) {
-        const match = line.match(/^\s*\[([^\]]+)\]\s+(.+)/);
-        if (match) {
-          citations[match[1]] = match[2].trim();
-        }
-      } else if (section === 'bibliography' && line.trim() && !line.includes('===')) {
-        const match = line.match(/^\s*\[([^\]]+)\]\s+(.+)/);
-        if (match) {
-          bibliography[match[1]] = match[2].trim();
-          bibliographyOrderIds.push(match[1]);
-        }
-      }
-    }
-
-    // Convert bibliography map to array ordered by ID to match oracle expectation
-    const orderedBibliography = [];
-    Object.keys(testItems).forEach(id => {
-      if (bibliography[id]) {
-        orderedBibliography.push(bibliography[id]);
-      }
-    });
-
-    return { citations, bibliography: orderedBibliography, bibliographyOrderIds };
+    return parseCitumRenderOutput(output, testItems);
   } finally {
     cleanupOracleTempWorkspace(workspace);
   }
@@ -945,6 +962,7 @@ module.exports = {
   createOracleTempWorkspace,
   loadFixtures,
   normalizeFixtureItems,
+  parseCitumRenderOutput,
   refsDataForProcessor,
   renderWithCitumProcessor,
   resolveAuthoredStylePath,
