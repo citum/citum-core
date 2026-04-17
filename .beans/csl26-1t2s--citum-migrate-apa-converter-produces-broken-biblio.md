@@ -22,7 +22,7 @@ Surfaced during csl26-0ijb triage (2026-04-17). Engine renders APA at 32/32 agai
 1. Bibliography template uses heavy `suppress: true` branches with inferred groups (XML-shape retention) instead of declarative components.
 2. Date `wrap: parentheses` lost on `date: issued` — year renders bare.
 3. Primary title emitted with `suppress: true` at top then re-emitted inside a group — engine dedupe drops it.
-4. Translator parenthetical role+wrap not preserved from `<names variable=\"translator\">`.
+4. Translator parenthetical role+wrap not preserved from `<names variable="translator">`.
 5. Bare top-level `term: in` / `term: at` components emitted without enclosing group — they render in isolation.
 6. Missing type-variants for `book`, `thesis`, `report` etc.; default template shape too weak.
 
