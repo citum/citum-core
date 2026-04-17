@@ -477,7 +477,7 @@ build_audit_json() {
 }
 
 audit_has_findings() {
-    jq -e '
+    local filter='
         (.noncanonical_statuses | length) > 0
         or (.root_terminal_beans | length) > 0
         or (.duplicate_titles | length) > 0
@@ -485,7 +485,12 @@ audit_has_findings() {
         or (.duplicate_in_progress_migrate | length) > 0
         or (.stale_open_beans_hard | length) > 0
         or (.stale_open_umbrella_beans_hard | length) > 0
-    ' >/dev/null
+    '
+    if [[ "${IGNORE_SOFT_STALE:-0}" != "1" ]]; then
+        filter="$filter or (.stale_open_beans_soft | length) > 0"
+    fi
+
+    jq -e "$filter" >/dev/null
 }
 
 print_audit_text() {
@@ -950,6 +955,10 @@ run_hygiene() {
     fi
 
     if printf "%s\n" "$audit_json" | audit_has_findings; then
+        if [[ "${IGNORE_SOFT_STALE:-0}" != "1" ]] && jq -e '(.stale_open_beans_soft | length) > 0' <<< "$audit_json" >/dev/null; then
+            echo "" >&2
+            echo "HINT: If soft-stale warnings are false positives, override with: IGNORE_SOFT_STALE=1 /beans hygiene" >&2
+        fi
         exit 1
     fi
 }

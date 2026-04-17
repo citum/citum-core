@@ -174,9 +174,22 @@ EOF
 repo=$(new_repo soft-stale)
 commit_file "$repo" README.md "baseline" "chore: initial commit"
 commit_file "$repo" notes.txt "done" $'feat(workflow): likely stale implementation\n\nRefs: csl26-soft'
-soft_output=$(run_wrapper "$repo" "$TMP_ROOT/soft-stale.json" hygiene)
+set +e
+soft_output=$(run_wrapper "$repo" "$TMP_ROOT/soft-stale.json" hygiene 2>&1)
+soft_status=$?
+set -e
+[[ "$soft_status" -eq 1 ]] || fail "expected soft stale hygiene to fail by default"
 assert_contains "$soft_output" "Open beans with advisory likely-stale matches on main:"
-assert_contains "$soft_output" "[body-id-match]"
+assert_contains "$soft_output" "HINT: If soft-stale warnings are false positives"
+
+# Test override
+set +e
+soft_override_output=$(IGNORE_SOFT_STALE=1 run_wrapper "$repo" "$TMP_ROOT/soft-stale.json" hygiene 2>&1)
+soft_override_status=$?
+set -e
+[[ "$soft_override_status" -eq 0 ]] || fail "expected soft stale hygiene to pass with override"
+assert_contains "$soft_override_output" "Open beans with advisory likely-stale matches on main:"
+assert_not_contains "$soft_override_output" "HINT:"
 
 cat >"$TMP_ROOT/precreated-soft-stale.json" <<'EOF'
 [
