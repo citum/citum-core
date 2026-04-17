@@ -501,10 +501,15 @@ pub(crate) fn format_single_name(
     let ndp = name.non_dropping_particle.as_deref().unwrap_or("");
     let suffix = name.suffix.as_deref().unwrap_or("");
 
-    // Determine if we should invert (Family, Given)
+    // Determine if we should invert (Family, Given).
+    // `display-as-sort: first` in the config limits inversion to the first name
+    // even when the template requests `name-order: family-first` for all names.
     let inverted = match ctx.name_order {
         Some(NameOrder::GivenFirst) => false,
-        Some(NameOrder::FamilyFirst) => true,
+        Some(NameOrder::FamilyFirst) => match ctx.display_as_sort {
+            Some(DisplayAsSort::First) => index == 0,
+            _ => true,
+        },
         Some(NameOrder::FamilyFirstOnly) => index == 0,
         None => match ctx.display_as_sort {
             Some(DisplayAsSort::All) => true,
