@@ -1,11 +1,11 @@
 ---
 # csl26-6tny
 title: 'Fix oracle tooling: embedded-YAML resolution and citation shape mismatch'
-status: in-progress
+status: completed
 type: bug
 priority: high
 created_at: 2026-04-16T20:04:40Z
-updated_at: 2026-04-16T20:15:33Z
+updated_at: 2026-04-17T00:02:05Z
 ---
 
 Report-core and oracle-fast fail to score Citum citations correctly, producing `citum: null` for nearly every citation entry and artificially depressing fidelity scores for many parent styles.
@@ -22,7 +22,7 @@ Report-core and oracle-fast fail to score Citum citations correctly, producing `
 - [ ] Update `scripts/report-data/core-quality-baseline.json` if scores move upward
 - [x] Tests / regression snapshot for oracle-fast comparison path
 - [x] Pre-push gate (cargo fmt --check, clippy, nextest) — N/A for JS-only; run node-side tests
-- [x] PR created (#527) — CI in progress
+- [x] PR created (#527) — CI green
 
 ## Rationale
 Without this fix, any "low fidelity" style upgrade targeting embedded or newly-added `styles/` YAMLs is working against a broken signal. Must be fixed before running a broader style-upgrade wave.
@@ -53,3 +53,24 @@ three-step lookup (styles/<name>.yaml → styles/embedded/<name>.yaml →
 styles/<prefix-match>.yaml) and unit tests in scripts/oracle.test.js.
 
 Baseline JSON unchanged — tracked styles' fidelity scores were unaffected.
+
+## Summary of Changes
+
+Extracted `resolveAuthoredStylePath(stylesDir, styleName)` from the
+inline block inside `renderWithCitumProcessor`. The function probes
+styles/<name>.yaml, then styles/embedded/<name>.yaml, then a prefix
+match — and is now exported and unit-tested (3 new tests; 20/20 pass).
+
+Portfolio fidelity restored for 6 styles that were silently falling
+back to the migrator:
+
+| Style | Before | After |
+|-------|-------:|------:|
+| american-medical-association | 0.824 | 1.000 |
+| chicago-shortened-notes-bibliography | 0.955 | 1.000 |
+| elsevier-vancouver | 0.686 | 1.000 |
+| modern-language-association | 0.566 | 0.970 |
+| springer-basic-author-date | 0.902 | 1.000 |
+| springer-basic-brackets | 0.804 | 1.000 |
+
+PR #527 merged with all CI checks passing.
