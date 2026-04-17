@@ -1218,7 +1218,10 @@ impl Renderer<'_> {
         }
 
         let mut values = resolved_component.values::<F>(reference, hint, options)?;
-        if values.value.is_empty() {
+        // Suppress affixes when a component resolves to no meaningful content.
+        // A whitespace-only value carries no data, so its prefix/suffix must
+        // not leak into output (e.g. a ". In " prefix on an empty editor list).
+        if values.value.trim().is_empty() {
             return None;
         }
         self.apply_issued_no_date_fallback(reference, options, resolved_component, &mut values);
@@ -1287,7 +1290,7 @@ impl Renderer<'_> {
                 &fmt,
                 options.show_semantics,
             );
-            if rendered_str.is_empty() {
+            if rendered_str.trim().is_empty() {
                 continue;
             }
             if !is_term_only_component(item) {
