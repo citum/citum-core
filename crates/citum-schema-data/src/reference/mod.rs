@@ -1128,15 +1128,67 @@ impl InputReference {
     pub fn original_date(&self) -> Option<EdtfString> {
         match self {
             InputReference::Monograph(r) => r.original.as_ref().and_then(|c| match c {
-                WorkRelation::Embedded(p) => p.issued(),
+                WorkRelation::Embedded(p) => p.csl_issued_date(),
                 WorkRelation::Id(_) => None,
             }),
             InputReference::CollectionComponent(r) => r.original.as_ref().and_then(|c| match c {
-                WorkRelation::Embedded(p) => p.issued(),
+                WorkRelation::Embedded(p) => p.csl_issued_date(),
                 WorkRelation::Id(_) => None,
             }),
             InputReference::SerialComponent(r) => r.original.as_ref().and_then(|c| match c {
-                WorkRelation::Embedded(p) => p.issued(),
+                WorkRelation::Embedded(p) => p.csl_issued_date(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::LegalCase(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.csl_issued_date(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Statute(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.csl_issued_date(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Treaty(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.csl_issued_date(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Hearing(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.csl_issued_date(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Regulation(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.csl_issued_date(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Brief(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.csl_issued_date(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Classic(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.csl_issued_date(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Patent(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.csl_issued_date(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Dataset(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.csl_issued_date(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Standard(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.csl_issued_date(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Software(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.csl_issued_date(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Event(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.csl_issued_date(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::AudioVisual(r) => r.core.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.csl_issued_date(),
                 WorkRelation::Id(_) => None,
             }),
             _ => None,
@@ -1155,6 +1207,58 @@ impl InputReference {
                 WorkRelation::Id(_) => None,
             }),
             InputReference::SerialComponent(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::LegalCase(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Statute(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Treaty(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Hearing(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Regulation(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Brief(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Classic(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Patent(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Dataset(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Standard(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Software(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Event(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.title(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::AudioVisual(r) => r.core.original.as_ref().and_then(|c| match c {
                 WorkRelation::Embedded(p) => p.title(),
                 WorkRelation::Id(_) => None,
             }),
@@ -1177,6 +1281,58 @@ impl InputReference {
                 WorkRelation::Embedded(p) => p.publisher_str().filter(|value| !value.is_empty()),
                 WorkRelation::Id(_) => None,
             }),
+            InputReference::LegalCase(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_str().filter(|value| !value.is_empty()),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Statute(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_str().filter(|value| !value.is_empty()),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Treaty(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_str().filter(|value| !value.is_empty()),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Hearing(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_str().filter(|value| !value.is_empty()),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Regulation(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_str().filter(|value| !value.is_empty()),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Brief(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_str().filter(|value| !value.is_empty()),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Classic(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_str().filter(|value| !value.is_empty()),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Patent(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_str().filter(|value| !value.is_empty()),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Dataset(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_str().filter(|value| !value.is_empty()),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Standard(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_str().filter(|value| !value.is_empty()),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Software(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_str().filter(|value| !value.is_empty()),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Event(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_str().filter(|value| !value.is_empty()),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::AudioVisual(r) => r.core.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_str().filter(|value| !value.is_empty()),
+                WorkRelation::Id(_) => None,
+            }),
             _ => None,
         }
     }
@@ -1193,6 +1349,58 @@ impl InputReference {
                 WorkRelation::Id(_) => None,
             }),
             InputReference::SerialComponent(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_place(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::LegalCase(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_place(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Statute(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_place(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Treaty(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_place(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Hearing(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_place(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Regulation(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_place(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Brief(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_place(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Classic(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_place(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Patent(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_place(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Dataset(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_place(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Standard(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_place(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Software(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_place(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::Event(r) => r.original.as_ref().and_then(|c| match c {
+                WorkRelation::Embedded(p) => p.publisher_place(),
+                WorkRelation::Id(_) => None,
+            }),
+            InputReference::AudioVisual(r) => r.core.original.as_ref().and_then(|c| match c {
                 WorkRelation::Embedded(p) => p.publisher_place(),
                 WorkRelation::Id(_) => None,
             }),

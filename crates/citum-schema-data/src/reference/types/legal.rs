@@ -1,6 +1,7 @@
 //! Legal document types: cases, statutes, treaties, hearings, regulations, and briefs.
 
 use super::common::{FieldLanguageMap, LangID, RefID, Title};
+use crate::reference::WorkRelation;
 use crate::reference::contributor::Contributor;
 use crate::reference::date::EdtfString;
 #[cfg(feature = "schema")]
@@ -24,6 +25,9 @@ pub struct LegalCase {
     /// Case name (e.g., "Brown v. Board of Education")
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<Title>,
+    /// Original work or publication from which this case record derives.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub original: Option<WorkRelation>,
     /// Court or authority (e.g., "U.S. Supreme Court")
     #[serde(skip_serializing_if = "Option::is_none")]
     pub authority: Option<String>,
@@ -81,6 +85,9 @@ pub struct Statute {
     /// Statute name (e.g., "Civil Rights Act of 1964")
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<Title>,
+    /// Original work or publication from which this statute derives.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub original: Option<WorkRelation>,
     /// Legislative body (e.g., "U.S. Congress")
     #[serde(skip_serializing_if = "Option::is_none")]
     pub authority: Option<String>,
@@ -144,6 +151,9 @@ pub struct Treaty {
     /// Treaty name (e.g., "Treaty of Versailles")
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<Title>,
+    /// Original work or publication from which this treaty derives.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub original: Option<WorkRelation>,
     /// Parties to the treaty
     #[serde(skip_serializing_if = "Option::is_none")]
     pub author: Option<Contributor>,
@@ -198,6 +208,9 @@ pub struct Hearing {
     /// Hearing title
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<Title>,
+    /// Original work or publication from which this hearing record derives.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub original: Option<WorkRelation>,
     /// Legislative body conducting the hearing (e.g., "U.S. Senate Committee on Finance")
     #[serde(skip_serializing_if = "Option::is_none")]
     pub authority: Option<String>,
@@ -246,6 +259,9 @@ pub struct Regulation {
     /// Regulation title
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<Title>,
+    /// Original work or publication from which this regulation derives.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub original: Option<WorkRelation>,
     /// Regulatory authority (e.g., "EPA", "Federal Register")
     #[serde(skip_serializing_if = "Option::is_none")]
     pub authority: Option<String>,
@@ -300,6 +316,9 @@ pub struct Brief {
     /// Brief title or case name
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<Title>,
+    /// Original work or publication from which this brief derives.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub original: Option<WorkRelation>,
     /// Court (e.g., "U.S. Supreme Court")
     #[serde(skip_serializing_if = "Option::is_none")]
     pub authority: Option<String>,

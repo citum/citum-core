@@ -249,6 +249,16 @@
             "$ref": "#/$defs/Numbering"
           }
         },
+        "original": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkRelation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "platform": {
           "type": [
             "string",
@@ -388,6 +398,17 @@
             "null"
           ]
         },
+        "original": {
+          "description": "Original work or publication from which this brief derives.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkRelation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "title": {
           "description": "Brief title or case name",
           "anyOf": [
@@ -525,6 +546,16 @@
           "items": {
             "$ref": "#/$defs/Numbering"
           }
+        },
+        "original": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkRelation"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "publisher": {
           "anyOf": [
@@ -1165,6 +1196,17 @@
             "null"
           ]
         },
+        "original": {
+          "description": "Original work or publication from which this dataset derives.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkRelation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "publisher": {
           "description": "Publisher or repository (e.g., \"Zenodo\", \"Dryad\")",
           "anyOf": [
@@ -1359,6 +1401,17 @@
             "null"
           ]
         },
+        "original": {
+          "description": "Original work or publication from which this event derives.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkRelation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "series": {
           "description": "Recurring event series (e.g., annual conference series).",
           "anyOf": [
@@ -1465,6 +1518,17 @@
           "type": [
             "string",
             "null"
+          ]
+        },
+        "original": {
+          "description": "Original work or publication from which this hearing record derives.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkRelation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "session-number": {
@@ -1857,6 +1921,17 @@
           "type": [
             "string",
             "null"
+          ]
+        },
+        "original": {
+          "description": "Original work or publication from which this case record derives.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkRelation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "page": {
@@ -2516,6 +2591,17 @@
             "null"
           ]
         },
+        "original": {
+          "description": "Original work or publication from which this patent derives.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkRelation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "patent-number": {
           "description": "Patent number (e.g., \"U.S. Patent No. 7,347,809\")",
           "type": "string"
@@ -2660,6 +2746,17 @@
           "type": [
             "string",
             "null"
+          ]
+        },
+        "original": {
+          "description": "Original work or publication from which this regulation derives.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkRelation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "section": {
@@ -3239,6 +3336,17 @@
             "null"
           ]
         },
+        "original": {
+          "description": "Original work or publication from which this software derives.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkRelation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "platform": {
           "description": "Platform (e.g., \"Windows\", \"macOS\", \"Linux\", \"cross-platform\")",
           "type": [
@@ -3366,6 +3474,17 @@
           "type": [
             "string",
             "null"
+          ]
+        },
+        "original": {
+          "description": "Original work or publication from which this standard derives.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkRelation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "publisher": {
@@ -3509,6 +3628,17 @@
           "type": [
             "string",
             "null"
+          ]
+        },
+        "original": {
+          "description": "Original work or publication from which this statute derives.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkRelation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "page": {
@@ -3771,6 +3901,17 @@
           "type": [
             "string",
             "null"
+          ]
+        },
+        "original": {
+          "description": "Original work or publication from which this treaty derives.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkRelation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "page": {

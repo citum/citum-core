@@ -33,6 +33,9 @@ pub struct Event {
     /// Recurring event series (e.g., annual conference series).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub series: Option<WorkRelation>,
+    /// Original work or publication from which this event derives.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub original: Option<WorkRelation>,
     /// Event location (city, venue).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub location: Option<String>,
@@ -86,6 +89,9 @@ pub struct Classic {
     /// The primary container for this work.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub container: Option<WorkRelation>,
+    /// Original work or publication from which this edition derives.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub original: Option<WorkRelation>,
     /// Author (e.g., "Aristotle")
     #[serde(skip_serializing_if = "Option::is_none")]
     pub author: Option<Contributor>,
@@ -152,6 +158,7 @@ struct ClassicDeser {
     id: Option<RefID>,
     title: Option<Title>,
     container: Option<WorkRelation>,
+    original: Option<WorkRelation>,
     author: Option<Contributor>,
     editor: Option<Contributor>,
     translator: Option<Contributor>,
@@ -189,6 +196,7 @@ impl From<ClassicDeser> for Classic {
             id: raw.id,
             title: raw.title,
             container: raw.container,
+            original: raw.original,
             author: raw.author,
             editor: raw.editor,
             translator: raw.translator,
@@ -259,6 +267,9 @@ pub struct Patent {
     /// Assignee (patent holder)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub assignee: Option<Contributor>,
+    /// Original work or publication from which this patent derives.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub original: Option<WorkRelation>,
     /// Patent number (e.g., "U.S. Patent No. 7,347,809")
     pub patent_number: String,
     /// Application number
@@ -319,6 +330,9 @@ pub struct Dataset {
     /// Dataset author(s)/creator(s)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub author: Option<Contributor>,
+    /// Original work or publication from which this dataset derives.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub original: Option<WorkRelation>,
     /// Creation or origination date of the dataset.
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
@@ -380,6 +394,9 @@ pub struct Standard {
     /// Standard title
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<Title>,
+    /// Original work or publication from which this standard derives.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub original: Option<WorkRelation>,
     /// Standards organization (e.g., "ISO", "ANSI", "IEEE")
     #[serde(skip_serializing_if = "Option::is_none")]
     pub authority: Option<String>,
@@ -434,6 +451,9 @@ pub struct Software {
     /// Software title
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<Title>,
+    /// Original work or publication from which this software derives.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub original: Option<WorkRelation>,
     /// Author(s)/developer(s)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub author: Option<Contributor>,
@@ -511,6 +531,9 @@ pub struct WorkCore {
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
     pub issued: EdtfString,
+    /// Original work or publication from which this work derives.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub original: Option<WorkRelation>,
     /// BCP 47 language of the work.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub language: Option<LangID>,
@@ -606,6 +629,7 @@ struct AudioVisualDeser {
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
     issued: EdtfString,
+    original: Option<WorkRelation>,
     language: Option<LangID>,
     genre: Option<String>,
     // AudioVisualWork-specific fields
@@ -653,6 +677,7 @@ impl From<AudioVisualDeser> for AudioVisualWork {
                 contributors: raw.contributors,
                 created: raw.created,
                 issued: raw.issued,
+                original: raw.original,
                 language: raw.language,
                 genre: raw.genre,
             },
