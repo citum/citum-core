@@ -1,11 +1,11 @@
 ---
 # csl26-1t2s
 title: 'citum-migrate: APA converter produces broken bibliography template'
-status: todo
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-17T23:25:08Z
-updated_at: 2026-04-17T23:25:08Z
+updated_at: 2026-04-18T00:30:39Z
 ---
 
 Surfaced during csl26-0ijb triage (2026-04-17). Engine renders APA at 32/32 against embedded `styles/embedded/apa-7th.yaml`, but fresh `citum-migrate styles-legacy/apa.csl` output only scores 16/34.
@@ -32,9 +32,17 @@ Surfaced during csl26-0ijb triage (2026-04-17). Engine renders APA at 32/32 agai
 
 ## Todo
 
-- [ ] Reproduce fresh-migration bibliography for APA against expanded fixture
-- [ ] Trace loss of date `wrap: parentheses` through migrator
-- [ ] Trace loss of translator `wrap: parentheses` + role label
-- [ ] Audit bare top-level `term:` emission — groups or suppress
-- [ ] Fix primary-title double-emit producing silent dedupe
-- [ ] Generate type-variants for `book`/`thesis`/`report` so default template isn't universal
+- [x] Reproduce fresh-migration bibliography for APA against expanded fixture
+- [x] Trace loss of date `wrap: parentheses` through migrator
+- [x] Trace loss of translator `wrap: parentheses` + role label
+- [x] Audit bare top-level `term:` emission — groups or suppress
+- [x] Fix primary-title double-emit producing silent dedupe
+- [x] Generate type-variants for `book`/`thesis`/`report` so default template isn't universal
+
+## Summary of Changes
+
+Fixed 4 defects in `crates/citum-migrate/src/template_compiler/`:
+- **Fix A**: Wrap-bearing groups preserved as `TemplateGroup` (not flattened)
+- **Fix B**: Groups containing `Term` components detected via compiled components scan (not raw node scan) and preserved as `TemplateGroup`
+- **Fix D**: Added `Book`, `Thesis`, `Report`, `Chapter`, `PaperConference`, `Manuscript` to type-template candidates
+- Added regression tests for group preservation behavior
