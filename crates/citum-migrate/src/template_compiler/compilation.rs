@@ -129,16 +129,26 @@ impl TemplateCompiler {
             .map(|o| o.component.clone())
             .collect();
 
+        // Check if any compiled component is a Term (handles nested conditions and groups)
+        let has_term_node = group_components
+            .iter()
+            .any(|c| matches!(c, TemplateComponent::Term(_)));
+
         // Decide if this should be a List
         let meaningful_delimiter = g
             .delimiter
             .as_ref()
             .is_some_and(|d| matches!(d.as_str(), "" | "none" | ": " | " " | ", "));
         let is_small_structural_group = group_components.len() >= 2 && group_components.len() <= 3;
-        let should_be_list =
-            meaningful_delimiter && is_small_structural_group && group_wrap.0.is_none();
+        let should_be_list = meaningful_delimiter
+            && is_small_structural_group
+            && group_wrap.0.is_none()
+            && !has_term_node;
 
-        if should_be_list && !group_components.is_empty() {
+        // Never flatten if group has wrap (Fix A) or contains Term nodes (Fix B)
+        let must_preserve_as_group = group_wrap.0.is_some() || has_term_node;
+
+        if (should_be_list || must_preserve_as_group) && !group_components.is_empty() {
             let list = TemplateComponent::Group(TemplateGroup {
                 group: group_components,
                 delimiter: self.map_delimiter(&g.delimiter),

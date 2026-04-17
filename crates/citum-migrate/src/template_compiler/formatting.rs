@@ -172,7 +172,7 @@ impl TemplateCompiler {
             TemplateComponent::Title(t) => apply(&mut t.rendering),
             TemplateComponent::Number(n) => apply(&mut n.rendering),
             TemplateComponent::Variable(v) => apply(&mut v.rendering),
-            _ => {} // List and future variants - don't modify
+            _ => {} // List, Term, and future variants - don't modify
         }
     }
     /// Map a String delimiter to `DelimiterPunctuation`.
@@ -246,4 +246,66 @@ impl TemplateCompiler {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use crate::TemplateCompiler;
+    use citum_schema::locale::GeneralTerm;
+    use citum_schema::template::WrapPunctuation;
+
+    /// Regression test for Fix A: infer_wrap_from_affixes correctly identifies parentheses wrap.
+    #[test]
+    fn test_infer_wrap_from_affixes_parentheses() {
+        let (wrap_punct, remaining_prefix, remaining_suffix) =
+            TemplateCompiler::infer_wrap_from_affixes(
+                &Some("(".to_string()),
+                &Some(")".to_string()),
+            );
+
+        assert_eq!(wrap_punct, Some(WrapPunctuation::Parentheses));
+        assert_eq!(remaining_prefix, None);
+        assert_eq!(remaining_suffix, None);
+    }
+
+    /// Regression test for Fix A: infer_wrap_from_affixes with extra affixes.
+    #[test]
+    fn test_infer_wrap_with_inner_affixes() {
+        let (wrap_punct, remaining_prefix, remaining_suffix) =
+            TemplateCompiler::infer_wrap_from_affixes(
+                &Some("text (".to_string()),
+                &Some(") more".to_string()),
+            );
+
+        assert_eq!(wrap_punct, Some(WrapPunctuation::Parentheses));
+        assert_eq!(remaining_prefix, Some("text ".to_string()));
+        assert_eq!(remaining_suffix, Some(" more".to_string()));
+    }
+
+    /// Regression test for Fix B: apply_wrap_to_component only applies to specific variants.
+    /// Terms should NOT receive wrap (they inherit it via group containment instead).
+    #[test]
+    fn test_apply_wrap_does_not_modify_term() {
+        let compiler = TemplateCompiler;
+        let group_wrap = (Some(WrapPunctuation::Parentheses), None, None);
+
+        // Create a Term component
+        let mut term = TemplateComponent::Term(citum_schema::template::TemplateTerm {
+            term: GeneralTerm::In,
+            form: None,
+            rendering: Rendering::default(),
+            custom: None,
+        });
+
+        // Apply wrap to the term
+        compiler.apply_wrap_to_component(&mut term, &group_wrap);
+
+        // Verify that Term's wrap remains None (not modified)
+        if let TemplateComponent::Term(t) = term {
+            assert_eq!(
+                t.rendering.wrap, None,
+                "Term should not receive wrap from apply_wrap_to_component"
+            );
+        } else {
+            panic!("Expected TemplateComponent::Term");
+        }
+    }
+}

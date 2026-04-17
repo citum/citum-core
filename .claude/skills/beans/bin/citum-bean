@@ -424,7 +424,10 @@ build_audit_json() {
                     | select(.touches_non_beans)
                     | select(
                         (.subject_text | contains(($bean.id // "") | ascii_downcase) | not)
-                        and (.body_text | contains(($bean.id // "") | ascii_downcase))
+                        and (.body_text | split("\n") | any(
+                            contains(($bean.id // "") | ascii_downcase)
+                            and test("fixes|closes|resolves|completes")
+                        ))
                     )
                     | select(is_after_opened($bean; .))
                     | {

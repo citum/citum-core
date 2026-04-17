@@ -74,6 +74,22 @@ impl TemplateCompiler {
             candidates.push(ItemType::EntryEncyclopedia);
         }
 
+        // Add monograph types unconditionally (Fix D) — these types appear in CSL else branches
+        // and need type-specific templates even if not detected by branch collector
+        let monograph_types = vec![
+            ItemType::Book,
+            ItemType::Thesis,
+            ItemType::Report,
+            ItemType::Chapter,
+            ItemType::PaperConference,
+            ItemType::Manuscript,
+        ];
+        for mt in monograph_types {
+            if !candidates.contains(&mt) {
+                candidates.push(mt);
+            }
+        }
+
         candidates.sort_by_key(|t| self.item_type_to_string(t));
         candidates.dedup_by_key(|t| self.item_type_to_string(t));
 
