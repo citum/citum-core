@@ -93,10 +93,20 @@ impl TemplateCompiler {
             rendering.strip_periods = label.formatting.strip_periods.or(rendering.strip_periods);
         }
 
+        let name_order = match &names.options.name_as_sort_order {
+            Some(citum_schema::NameAsSortOrder::First) => {
+                Some(citum_schema::template::NameOrder::FamilyFirstOnly)
+            }
+            Some(citum_schema::NameAsSortOrder::All) => {
+                Some(citum_schema::template::NameOrder::FamilyFirst)
+            }
+            None => None,
+        };
+
         Some(TemplateComponent::Contributor(TemplateContributor {
             contributor: role,
             form,
-            name_order: None, // Use global setting by default
+            name_order,
             delimiter: names.options.delimiter.clone(),
             sort_separator: names.options.sort_separator.clone(),
             shorten,
