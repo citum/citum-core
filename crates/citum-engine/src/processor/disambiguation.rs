@@ -830,7 +830,11 @@ impl<'a> Disambiguator<'a> {
         }
     }
 
-    /// Returns a unique numeric key for a reference based on its pointer address.
+    /// Returns an internal cache key for a reference based on its current pointer address.
+    ///
+    /// This key is only intended for in-memory caching during the current run. Its
+    /// uniqueness and stability are limited to the lifetime of the referenced
+    /// allocation, so it must not be treated as globally unique or persisted.
     fn reference_cache_key(reference: &Reference) -> usize {
         std::ptr::from_ref(reference) as usize
     }
