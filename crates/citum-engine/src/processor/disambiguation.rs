@@ -238,9 +238,10 @@ impl<'a> Disambiguator<'a> {
         cache
     }
 
-    /// Calculates how many references share the same author key in the bibliography.
-    /// This is used to determine if a collision group spans across different
-    /// authors/years or if they are just multiple works by the same author.
+    /// Calculates how many references in `refs` share the same `author_key`.
+    /// The returned map is keyed only by `author_key` and is later used when
+    /// populating `ProcHints::group_length`, rather than representing the size
+    /// of a per-`group_key` collision group.
     fn author_group_lengths(
         &self,
         refs: &[&Reference],
