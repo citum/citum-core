@@ -75,12 +75,14 @@ jobs:
           sccache --start-server
 
       - name: Install Node dependencies
-        if: ${{ inputs.refresh_compat }}
         run: npm install --prefix scripts
 
       - name: Build Rust workspace
         if: ${{ inputs.refresh_compat }}
         run: cargo build --all-features
+
+      - name: Build documentation guides
+        run: npm run build:docs --prefix scripts
 
       - name: Generate compatibility report
         if: ${{ inputs.refresh_compat }}

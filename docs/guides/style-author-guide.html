@@ -269,1269 +269,331 @@
             </aside>
 
             <!-- Main Content -->
-            <main class="flex-1 min-w-0 space-y-16 pb-24">
+            <main class="flex-1 min-w-0 space-y-16 pb-24 prose prose-slate prose-blue max-w-none prose-headings:m-0 prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent">
+<h1 id="style-author-guide" class="font-bold text-slate-900 mt-8 mb-4">Style Author Guide</h1><p>This guide is for people who write and maintain Citum styles.</p>
 
-                <!-- How Citum Differs from CSL 1.0 -->
-                <section id="how-citum-differs" class="scroll-mt-24">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                        <span class="material-icons text-primary">compare_arrows</span>
-                        How Citum Differs from CSL 1.0
-                    </h2>
-                    <p class="text-slate-600 mb-6 leading-relaxed">
-                        Citum introduces a modern, declarative approach to citation styling compared to CSL 1.0's procedural XML language. Understanding these differences is essential for writing Citum styles effectively.
-                    </p>
+            </section>
+            <section id="how-citum-differs-from-csl-1-0" class="scroll-mt-24">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                    <span class="material-icons text-primary">compare_arrows</span>
+                    How Citum Differs from CSL 1.0
+                </h2>
+        <p>Citum introduces a modern, declarative approach to citation styling compared to CSL 1.0&#39;s procedural XML language. Understanding these differences is essential for writing Citum styles effectively.</p>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>CSL 1.0 (XML)</th>
+<th>Citum (YAML)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Format</td>
+<td>Procedural XML markup</td>
+<td>Declarative YAML</td>
+</tr>
+<tr>
+<td>Logic</td>
+<td>choose/if/else conditionals</td>
+<td>Type variants + inheritance</td>
+</tr>
+<tr>
+<td>Name Formatting</td>
+<td>Inline XML attributes</td>
+<td>Global presets + options</td>
+</tr>
+<tr>
+<td>Dates</td>
+<td>Object with year/month/day</td>
+<td>EDTF string format</td>
+</tr>
+<tr>
+<td>Inheritance</td>
+<td>Parent style aliasing</td>
+<td>Presets + type variants</td>
+</tr>
+<tr>
+<td>Readability</td>
+<td>Verbose and nested</td>
+<td>Concise and explicit</td>
+</tr>
+</tbody></table>
 
-                    <!-- Comparison Table -->
-                    <div class="overflow-x-auto rounded-lg border border-slate-200 mb-8">
-                        <table class="w-full text-sm">
-                            <thead class="bg-slate-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-left font-semibold text-slate-900">Aspect</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-slate-900">CSL 1.0 (XML)</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-slate-900">Citum (YAML)</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-200">
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-medium text-slate-900">Format</td>
-                                    <td class="px-4 py-3 text-slate-600">Procedural XML markup</td>
-                                    <td class="px-4 py-3 text-slate-600">Declarative YAML</td>
-                                </tr>
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-medium text-slate-900">Logic</td>
-                                    <td class="px-4 py-3 text-slate-600">choose/if/else conditionals</td>
-                                    <td class="px-4 py-3 text-slate-600">Type variants + inheritance</td>
-                                </tr>
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-medium text-slate-900">Name Formatting</td>
-                                    <td class="px-4 py-3 text-slate-600">Inline XML attributes</td>
-                                    <td class="px-4 py-3 text-slate-600">Global presets + options</td>
-                                </tr>
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-medium text-slate-900">Dates</td>
-                                    <td class="px-4 py-3 text-slate-600">Object with year/month/day</td>
-                                    <td class="px-4 py-3 text-slate-600">EDTF string format</td>
-                                </tr>
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-medium text-slate-900">Inheritance</td>
-                                    <td class="px-4 py-3 text-slate-600">Parent style aliasing</td>
-                                    <td class="px-4 py-3 text-slate-600">Presets + type variants</td>
-                                </tr>
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-medium text-slate-900">Readability</td>
-                                    <td class="px-4 py-3 text-slate-600">Verbose and nested</td>
-                                    <td class="px-4 py-3 text-slate-600">Concise and explicit</td>
-                                </tr>
-                            </tbody>
-                        </table>
+            <div class="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-5 not-prose">
+                <div class="flex items-start gap-3">
+                    <span class="material-icons text-blue-600 mt-0.5">tips_and_updates</span>
+                    <div class="flex-1 text-blue-800 text-sm">
+                        <strong>Explicit Over Magic</strong>
+Citum styles are explicitly declarative. Special behavior is expressed in the style itself, not hidden in processor logic. If you need a different layout for journals vs books, you declare it with type variants. This makes styles portable, testable, and understandable without reading source code.
                     </div>
+                </div>
+            </div>
+        
+            </section>
+            <section id="style-file-anatomy" class="scroll-mt-24">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                    <span class="material-icons text-primary">folder_special</span>
+                    Style File Anatomy
+                </h2>
+        <p>Every Citum style file contains four top-level sections: metadata, options, citation template, and bibliography template.</p>
+<h3 id="minimal-style-skeleton" class="font-bold text-slate-900 mt-8 mb-4">Minimal Style Skeleton</h3>
+        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8 not-prose">
+            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><code class="language-yaml"># yaml-language-server: $schema=https://citum.github.io/citum-core/schemas/style.json
 
-                    <!-- Philosophy Box -->
-                    <div class="bg-primary/10 border border-primary/20 rounded-lg p-6">
-                        <div class="flex gap-4">
-                            <div class="flex-shrink-0">
-                                <span class="material-icons text-primary mt-1">lightbulb</span>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-slate-900 mb-2">Explicit Over Magic</h3>
-                                <p class="text-slate-700 leading-relaxed">
-                                    Citum styles are explicitly declarative. Special behavior is expressed in the style itself, not hidden in processor logic. If you need a different layout for journals vs books, you declare it with type variants. This makes styles portable, testable, and understandable without reading source code.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+info:
+  title: "My Style Name"
+  id: "my-style"
+  description: "Optional short description"
+  default-locale: "en-US"
 
-                <!-- Style File Anatomy -->
-                <section id="style-anatomy" class="scroll-mt-24">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                        <span class="material-icons text-primary">folder_special</span>
-                        Style File Anatomy
-                    </h2>
-                    <p class="text-slate-600 mb-6 leading-relaxed">
-                        Every Citum style file contains four top-level sections: metadata, options, citation template, and bibliography template.
-                    </p>
-
-                    <!-- Minimal Skeleton -->
-                    <div class="mb-8">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-3">Minimal Style Skeleton</h3>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto">
-                            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><span class="text-slate-500"># yaml-language-server: $schema=https://citum.github.io/citum-core/schemas/style.json</span>
-
-<span class="text-indigo-400">info</span>:
-  <span class="text-primary">title</span>: <span class="text-emerald-400">"My Style Name"</span>
-  <span class="text-primary">id</span>: <span class="text-emerald-400">"my-style"</span>
-  <span class="text-primary">description</span>: <span class="text-emerald-400">"Optional short description"</span>
-  <span class="text-primary">default-locale</span>: <span class="text-emerald-400">"en-US"</span>
-
-<span class="text-indigo-400">options</span>:
-  <span class="text-primary">processing</span>: <span class="text-emerald-400">author-date</span>
-
-<span class="text-indigo-400">citation</span>:
-  <span class="text-primary">template</span>:
-    - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
-    - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
-
-<span class="text-indigo-400">bibliography</span>:
-  <span class="text-primary">template</span>:
-    - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
-    - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
-    - <span class="text-primary">title</span>: <span class="text-emerald-400">primary</span></pre>
-                        </div>
-                    </div>
-
-                    <!-- IDE Integration Callout -->
-                    <div class="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-5">
-                        <div class="flex items-start gap-3">
-                            <span class="material-icons text-blue-600 mt-0.5">tips_and_updates</span>
-                            <div class="flex-1">
-                                <h4 class="font-semibold text-blue-900 mb-1">Editor autocomplete and validation</h4>
-                                <p class="text-blue-800 text-sm mb-3">
-                                    The <code class="font-mono bg-blue-100 px-1 rounded">yaml-language-server</code> comment in the skeleton above enables
-                                    full autocomplete and inline validation in editors that support the
-                                    <a href="https://github.com/redhat-developer/yaml-language-server" class="underline hover:text-blue-600">YAML Language Server protocol</a>.
-                                    Supported editors include <strong>VS Code</strong> with the Red Hat YAML extension,
-                                    <strong>Helix</strong>, and <strong>Zed</strong>.
-                                </p>
-                                <p class="text-blue-800 text-sm mb-3">Add this as the first line of any Citum style file:</p>
-                                <div class="bg-slate-900 rounded p-3 overflow-x-auto">
-                                    <pre class="font-mono text-xs text-emerald-400"># yaml-language-server: $schema=https://citum.github.io/citum-core/schemas/style.json</pre>
-                                </div>
-                                <p class="text-blue-800 text-sm mt-3">
-                                    See <a href="../index.html#schemas" class="underline hover:text-blue-600">Schema &amp; Editor Integration</a> on the home page for the full schema list and setup instructions.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-8 bg-emerald-50 border border-emerald-200 rounded-lg p-5">
-                        <div class="flex items-start gap-3">
-                            <span class="material-icons text-emerald-600 mt-0.5">inventory_2</span>
-                            <div class="flex-1">
-                                <h4 class="font-semibold text-emerald-900 mb-1">Archival variables: prefer structured hierarchy</h4>
-                                <p class="text-emerald-800 text-sm mb-3">
-                                    For archival and unpublished materials, treat
-                                    <code class="font-mono bg-emerald-100 px-1 rounded">archive-info.box</code>,
-                                    <code class="font-mono bg-emerald-100 px-1 rounded">archive-info.folder</code>,
-                                    <code class="font-mono bg-emerald-100 px-1 rounded">archive-info.item</code>,
-                                    and related hierarchy fields as the canonical input model.
-                                    Ask for <code class="font-mono bg-emerald-100 px-1 rounded">archive-box</code>,
-                                    <code class="font-mono bg-emerald-100 px-1 rounded">archive-folder</code>, and
-                                    <code class="font-mono bg-emerald-100 px-1 rounded">archive-item</code> directly
-                                    when your style needs labeled container parts.
-                                </p>
-                                <p class="text-emerald-800 text-sm">
-                                    Reserve <code class="font-mono bg-emerald-100 px-1 rounded">archive-location</code>
-                                    for legacy data and for shelfmarks that cannot be decomposed into structured fields.
-                                    See the checked-in archival example on
-                                    <a href="../examples.html#archival-eprints" class="underline hover:text-emerald-700">Examples</a>
-                                    for the canonical pattern.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Info Fields -->
-                    <div class="bg-white border border-slate-200 rounded-lg p-6 space-y-4">
-                        <h3 class="text-lg font-semibold text-slate-900">Info Fields</h3>
-                        <div class="space-y-3">
-                            <div>
-                                <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-900">title</code>
-                                <p class="text-slate-600 text-sm mt-1">Human-readable name of your style (e.g., "American Psychological Association 7th Edition").</p>
-                            </div>
-                            <div>
-                                <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-900">id</code>
-                                <p class="text-slate-600 text-sm mt-1">Unique identifier in kebab-case (e.g., "apa-7th"). Used for style selection.</p>
-                            </div>
-                            <div>
-                                <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-900">description</code>
-                                <p class="text-slate-600 text-sm mt-1">Short summary of the style's intended use or provenance.</p>
-                            </div>
-                            <div>
-                                <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-900">default-locale</code>
-                                <p class="text-slate-600 text-sm mt-1">BCP 47 language tag for locale-specific terms, months, and contributor roles (e.g., "en-US", "de-DE").</p>
-                            </div>
-                            <div>
-                                <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-900">fields</code>
-                                <p class="text-slate-600 text-sm mt-1">Discipline categories (list). Valid values: anthropology, biology, botany, chemistry, communications, engineering, geography, geology, history, humanities, law, linguistics, literature, math, medicine, philosophy, physics, political-science, psychology, science, social-science, sociology, theology, zoology.</p>
-                            </div>
-                            <div>
-                                <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-900">source</code>
-                                <p class="text-slate-600 text-sm mt-1">Provenance block — only for CSL-derived styles. Contains <code class="text-xs font-mono bg-slate-100 px-1">csl-id</code>, <code class="text-xs font-mono bg-slate-100 px-1">adapted-by</code>, <code class="text-xs font-mono bg-slate-100 px-1">license</code>, <code class="text-xs font-mono bg-slate-100 px-1">original-authors</code>, and <code class="text-xs font-mono bg-slate-100 px-1">links</code>.</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Global Options -->
-                <section id="global-options" class="scroll-mt-24">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                        <span class="material-icons text-primary">tune</span>
-                        Global Options
-                    </h2>
-                    <p class="text-slate-600 mb-6 leading-relaxed">
-                        Global options control the processing mode and apply defaults to all components in both citation and bibliography templates.
-                    </p>
-
-                    <!-- Processing Modes -->
-                    <div class="mb-10">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Processing Modes</h3>
-                        <div class="overflow-x-auto rounded-lg border border-slate-200">
-                            <table class="w-full text-sm">
-                                <thead class="bg-slate-50">
-                                    <tr>
-                                        <th class="px-4 py-3 text-left font-semibold text-slate-900">Mode</th>
-                                        <th class="px-4 py-3 text-left font-semibold text-slate-900">Description</th>
-                                        <th class="px-4 py-3 text-left font-semibold text-slate-900">Example Citation</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-200">
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">author-date</td>
-                                        <td class="px-4 py-3 text-slate-600">In-text author-key citations — typically author+year (APA, Chicago AD) or author+page (MLA). The template determines what the key contains.</td>
-                                        <td class="px-4 py-3 font-mono text-xs text-slate-700">(Smith, 2020) or (Smith 42)</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">numeric</td>
-                                        <td class="px-4 py-3 text-slate-600">Numbered citations with numeric keys</td>
-                                        <td class="px-4 py-3 font-mono text-xs text-slate-700">[1]</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">note</td>
-                                        <td class="px-4 py-3 text-slate-600">Footnote-based citations</td>
-                                        <td class="px-4 py-3 font-mono text-xs text-slate-700">Smith, "Title," 2020</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">label</td>
-                                        <td class="px-4 py-3 text-slate-600">Alphabetic or numeric keys assigned to references</td>
-                                        <td class="px-4 py-3 font-mono text-xs text-slate-700">[Kuh62]</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Contributor Presets -->
-                    <div class="mb-10">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Contributor Presets</h3>
-                        <p class="text-slate-600 text-sm mb-4">Named presets control name formatting without spelling out every field:</p>
-                        <div class="grid gap-4 md:grid-cols-2">
-                            <div class="bg-white border border-slate-200 rounded-lg p-4">
-                                <div class="font-mono text-sm text-primary mb-2">apa</div>
-                                <p class="text-slate-600 text-xs">Family-first, "&amp;" symbol, initials with period-space, et al. after 20. Example: "Smith, J. D., &amp; Jones, M. K."</p>
-                            </div>
-                            <div class="bg-white border border-slate-200 rounded-lg p-4">
-                                <div class="font-mono text-sm text-primary mb-2">chicago</div>
-                                <p class="text-slate-600 text-xs">Family-first, "and" text, full given names, contextual serial comma. Example: "Smith, John D., and Mary K. Jones"</p>
-                            </div>
-                            <div class="bg-white border border-slate-200 rounded-lg p-4">
-                                <div class="font-mono text-sm text-primary mb-2">vancouver</div>
-                                <p class="text-slate-600 text-xs">All family-first, no conjunction, compact initials (no periods), et al. after 6 of 7+. Example: "Smith JD, Jones MK"</p>
-                            </div>
-                            <div class="bg-white border border-slate-200 rounded-lg p-4">
-                                <div class="font-mono text-sm text-primary mb-2">ieee</div>
-                                <p class="text-slate-600 text-xs">Given-first, "and" text, initials with period-space. Example: "J. D. Smith, M. K. Jones, and A. B. Brown"</p>
-                            </div>
-                            <div class="bg-white border border-slate-200 rounded-lg p-4">
-                                <div class="font-mono text-sm text-primary mb-2">harvard</div>
-                                <p class="text-slate-600 text-xs">All family-first, "and" text, compact initials (period, no space). Example: "Smith, J.D., Jones, M.K., and Brown, A.B."</p>
-                            </div>
-                            <div class="bg-white border border-slate-200 rounded-lg p-4">
-                                <div class="font-mono text-sm text-primary mb-2">springer</div>
-                                <p class="text-slate-600 text-xs">All family-first, no conjunction, compact initials, et al. after 3 of 5+. Example: "Smith JD, Jones MK, Brown AB"</p>
-                            </div>
-                            <div class="bg-white border border-slate-200 rounded-lg p-4">
-                                <div class="font-mono text-sm text-primary mb-2">numeric-compact</div>
-                                <p class="text-slate-600 text-xs">All family-first, no conjunction, sort-only particle demotion, et al. after 6 of 7+.</p>
-                            </div>
-                            <div class="bg-white border border-slate-200 rounded-lg p-4">
-                                <div class="font-mono text-sm text-primary mb-2">numeric-medium</div>
-                                <p class="text-slate-600 text-xs">Same as numeric-compact, but et al. after 3 of 4+.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Date Presets -->
-                    <div class="mb-10">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Date Presets</h3>
-                        <div class="overflow-x-auto rounded-lg border border-slate-200">
-                            <table class="w-full text-sm">
-                                <thead class="bg-slate-50">
-                                    <tr>
-                                        <th class="px-4 py-3 text-left font-semibold text-slate-900">Preset</th>
-                                        <th class="px-4 py-3 text-left font-semibold text-slate-900">Format</th>
-                                        <th class="px-4 py-3 text-left font-semibold text-slate-900">Example</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-200">
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">long</td>
-                                        <td class="px-4 py-3 text-slate-600">Full month names, EDTF markers, en-dash ranges</td>
-                                        <td class="px-4 py-3 font-mono text-xs">January 15, 2024</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">short</td>
-                                        <td class="px-4 py-3 text-slate-600">Abbreviated month names</td>
-                                        <td class="px-4 py-3 font-mono text-xs">Jan 15, 2024</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">numeric</td>
-                                        <td class="px-4 py-3 text-slate-600">Numeric months</td>
-                                        <td class="px-4 py-3 font-mono text-xs">1/15/2024</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">iso</td>
-                                        <td class="px-4 py-3 text-slate-600">ISO 8601, no EDTF markers</td>
-                                        <td class="px-4 py-3 font-mono text-xs">2024-01-15</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Title Presets -->
-                    <div class="mb-10">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Title Presets</h3>
-                        <p class="text-slate-600 text-sm mb-4">Title presets control how article, book, and journal titles are formatted (italic, quoted, or plain):</p>
-                        <div class="overflow-x-auto rounded-lg border border-slate-200">
-                            <table class="w-full text-sm">
-                                <thead class="bg-slate-50">
-                                    <tr>
-                                        <th class="px-4 py-3 text-left font-semibold text-slate-900">Preset</th>
-                                        <th class="px-4 py-3 text-left font-semibold text-slate-900">Articles</th>
-                                        <th class="px-4 py-3 text-left font-semibold text-slate-900">Books &amp; Journals</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-200">
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">apa</td>
-                                        <td class="px-4 py-3 text-slate-600">Plain</td>
-                                        <td class="px-4 py-3 text-slate-600">Italic</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">chicago</td>
-                                        <td class="px-4 py-3 text-slate-600">Quoted</td>
-                                        <td class="px-4 py-3 text-slate-600">Italic</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">ieee</td>
-                                        <td class="px-4 py-3 text-slate-600">Quoted</td>
-                                        <td class="px-4 py-3 text-slate-600">Italic</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">humanities</td>
-                                        <td class="px-4 py-3 text-slate-600">Plain</td>
-                                        <td class="px-4 py-3 text-slate-600">Italic (incl. series)</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">journal-emphasis</td>
-                                        <td class="px-4 py-3 text-slate-600">Plain</td>
-                                        <td class="px-4 py-3 text-slate-600">Journal + serial italic, monograph plain</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">scientific</td>
-                                        <td class="px-4 py-3 text-slate-600">Plain</td>
-                                        <td class="px-4 py-3 text-slate-600">Plain</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Substitute Presets -->
-                    <div class="mb-10">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Substitute Presets</h3>
-                        <p class="text-slate-600 text-sm mb-4">Substitute presets define the fallback order when the primary author is missing:</p>
-                        <div class="overflow-x-auto rounded-lg border border-slate-200">
-                            <table class="w-full text-sm">
-                                <thead class="bg-slate-50">
-                                    <tr>
-                                        <th class="px-4 py-3 text-left font-semibold text-slate-900">Preset</th>
-                                        <th class="px-4 py-3 text-left font-semibold text-slate-900">Fallback order</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-200">
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">standard</td>
-                                        <td class="px-4 py-3 text-slate-600">Editor → Title → Translator (APA, Chicago, etc.)</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">editor-first</td>
-                                        <td class="px-4 py-3 text-slate-600">Editor → Translator → Title</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">title-first</td>
-                                        <td class="px-4 py-3 text-slate-600">Title → Editor → Translator (anonymous works)</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">editor-short</td>
-                                        <td class="px-4 py-3 text-slate-600">Editor only (short role form)</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">editor-long</td>
-                                        <td class="px-4 py-3 text-slate-600">Editor only (long role form)</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">editor-translator-short</td>
-                                        <td class="px-4 py-3 text-slate-600">Editor → Translator (short role form)</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">editor-translator-long</td>
-                                        <td class="px-4 py-3 text-slate-600">Editor → Translator (long role form)</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">editor-title-short</td>
-                                        <td class="px-4 py-3 text-slate-600">Editor → Title (short role form)</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">editor-title-long</td>
-                                        <td class="px-4 py-3 text-slate-600">Editor → Title (long role form)</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">editor-translator-title-short</td>
-                                        <td class="px-4 py-3 text-slate-600">Editor → Translator → Title (short role form)</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-primary">editor-translator-title-long</td>
-                                        <td class="px-4 py-3 text-slate-600">Editor → Translator → Title (long role form)</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div class="mb-10">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Template Preset</h3>
-                        <div class="border border-slate-200 rounded-lg p-4 bg-white">
-                            <p class="text-slate-600 text-sm mb-2">
-                                Use <code class="font-mono text-xs">citation.use-preset: numeric-citation</code>
-                                when the citation template is only a citation number and wrapping is controlled by style options.
-                            </p>
-                            <pre class="font-mono text-xs text-slate-700 bg-slate-50 rounded p-3 overflow-x-auto">citation:
-  use-preset: numeric-citation
-  wrap: brackets</pre>
-                        </div>
-                    </div>
-
-                    <!-- Other Options -->
-                    <div>
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Other Options</h3>
-                        <div class="space-y-3">
-                            <div class="border-l-4 border-primary pl-4">
-                                <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-900">page-range-format</code>
-                                <p class="text-slate-600 text-sm mt-1">How to compress page ranges: <code class="font-mono text-xs">expanded</code> (123–145), <code class="font-mono text-xs">minimal</code> (123–45), <code class="font-mono text-xs">minimal-two</code> (keeps two digits minimum), <code class="font-mono text-xs">chicago</code>, <code class="font-mono text-xs">chicago16</code></p>
-                            </div>
-                            <div class="border-l-4 border-primary pl-4">
-                                <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-900">bibliography.hanging-indent</code>
-                                <p class="text-slate-600 text-sm mt-1">Whether bibliography entries use hanging indent formatting</p>
-                            </div>
-                            <div class="border-l-4 border-primary pl-4">
-                                <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-900">bibliography.separator</code>
-                                <p class="text-slate-600 text-sm mt-1">Separator between bibliography entries (semicolon, period, etc.)</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Style-Level Presets -->
-                <section id="style-presets" class="scroll-mt-24">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                        <span class="material-icons text-primary">auto_awesome</span>
-                        Style-Level Presets
-                    </h2>
-                    <p class="text-slate-600 mb-6 leading-relaxed">
-                        To avoid duplicating complete styles for the most common formatting families, Citum provides <strong>Style-Level Presets</strong>. These are named, compiled-in styles that you can reference at the top of your style YAML.
-                    </p>
- 
-                    <div class="grid gap-6 md:grid-cols-2 mb-8">
-                        <div class="bg-white border border-slate-200 rounded-lg p-6">
-                            <h3 class="font-bold text-slate-900 mb-2">Base Presets</h3>
-                            <p class="text-slate-600 text-sm mb-4">Use the <code>preset</code> key to load a complete base style definition.</p>
-                            <div class="bg-slate-900 rounded p-3 overflow-x-auto">
-                                <pre class="font-mono text-xs text-emerald-400">preset: chicago-notes-18th</pre>
-                            </div>
-                        </div>
-                        <div class="bg-white border border-slate-200 rounded-lg p-6">
-                            <h3 class="font-bold text-slate-900 mb-2">Preset Variants</h3>
-                            <p class="text-slate-600 text-sm mb-4">Use a <code>variant</code> delta to express deviations from a base preset (e.g., Turabian).</p>
-                            <div class="bg-slate-900 rounded p-3 overflow-x-auto">
-                                <pre class="font-mono text-xs text-emerald-400">preset: chicago-notes-18th
-variant:
-  citation:
-    ibid: ~</pre>
-                            </div>
-                        </div>
-                    </div>
- 
-                    <div class="bg-primary/5 border border-primary/10 rounded-lg p-6">
-                        <h3 class="font-bold text-slate-900 mb-2">Presets + Locale Overrides</h3>
-                        <p class="text-slate-700 text-sm mb-4">Combine a style preset with a locale override for language-specific variants without structural duplication.</p>
-                        <div class="bg-slate-900 rounded p-3 overflow-x-auto">
-                            <pre class="font-mono text-xs text-emerald-400">preset: chicago-author-date-18th
 options:
-  locale-override: de-DE-chicago</pre>
-                        </div>
+  processing: author-date
+
+citation:
+  template:
+    - contributor: author
+    - date: issued
+
+bibliography:
+  template:
+    - contributor: author
+    - date: issued
+    - title: primary</code></pre>
+        </div>
+    
+            <div class="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-5 not-prose">
+                <div class="flex items-start gap-3">
+                    <span class="material-icons text-blue-600 mt-0.5">tips_and_updates</span>
+                    <div class="flex-1 text-blue-800 text-sm">
+                        <strong>Editor autocomplete and validation</strong>
+The <code>yaml-language-server</code> comment in the skeleton above enables full autocomplete and inline validation in editors that support the <a href="https://github.com/redhat-developer/yaml-language-server">YAML Language Server protocol</a>.
                     </div>
-                </section>
- 
-                <!-- Template Components -->
-                <section id="template-components" class="scroll-mt-24">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                        <span class="material-icons text-primary">layers</span>
-                        Template Components
-                    </h2>
-                    <p class="text-slate-600 mb-6 leading-relaxed">
-                        Templates are arrays of components that describe how to render citations and bibliographies. Each component type handles a specific data element.
-                    </p>
+                </div>
+            </div>
+        <h3 id="info-fields" class="font-bold text-slate-900 mt-8 mb-4">Info Fields</h3><ul>
+<li><code>title</code>: Human-readable name (e.g., &quot;American Psychological Association 7th Edition&quot;).</li>
+<li><code>id</code>: Unique identifier in kebab-case (e.g., &quot;apa-7th&quot;).</li>
+<li><code>default-locale</code>: BCP 47 language tag (e.g., &quot;en-US&quot;, &quot;de-DE&quot;).</li>
+<li><code>fields</code>: Discipline categories (e.g., anthropology, biology, history).</li>
+</ul>
 
-                    <!-- Contributor Component -->
-                    <div class="mb-10 border-l-4 border-primary pl-6">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Contributor</h3>
-                        <p class="text-slate-600 text-sm mb-4">Renders author, editor, translator, and other contributors.</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-4">
-                            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><span class="text-indigo-400">- contributor</span>: <span class="text-emerald-400">author</span>
-  <span class="text-primary">form</span>: <span class="text-emerald-400">long</span>          <span class="text-slate-500"># long | short | verb | verb-short</span>
-  <span class="text-primary">name-order</span>: <span class="text-emerald-400">family-first</span>  <span class="text-slate-500"># family-first | given-first</span>
-  <span class="text-primary">label</span>:
-    <span class="text-primary">term</span>: <span class="text-emerald-400">editor</span>
-    <span class="text-primary">form</span>: <span class="text-emerald-400">short</span></pre>
-                        </div>
-                        <div class="bg-white border border-slate-200 rounded-lg p-4 text-sm space-y-3">
-                            <div>
-                                <span class="font-mono text-primary">role</span>
-                                <p class="text-slate-600">author, editor, translator, director, publisher, recipient, interviewer, inventor, etc.</p>
-                            </div>
-                            <div>
-                                <span class="font-mono text-primary">form</span>
-                                <p class="text-slate-600">long (full names), short (last names only), verb (substitute, editor becomes "edited by"), verb-short</p>
-                            </div>
-                            <div>
-                                <span class="font-mono text-primary">name-order</span>
-                                <p class="text-slate-600">family-first for "Smith, John" or given-first for "John Smith"</p>
-                            </div>
-                        </div>
+            </section>
+            <section id="global-options" class="scroll-mt-24">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                    <span class="material-icons text-primary">tune</span>
+                    Global Options
+                </h2>
+        <p>Global options control the processing mode and apply defaults to all components in both citation and bibliography templates.</p>
+<h3 id="processing-modes" class="font-bold text-slate-900 mt-8 mb-4">Processing Modes</h3><table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>author-date</code></td>
+<td>Author+year/page citations</td>
+<td>(Smith, 2020)</td>
+</tr>
+<tr>
+<td><code>numeric</code></td>
+<td>Numbered citations</td>
+<td>[1]</td>
+</tr>
+<tr>
+<td><code>note</code></td>
+<td>Footnote-based citations</td>
+<td>Smith, &quot;Title,&quot; 2020</td>
+</tr>
+<tr>
+<td><code>label</code></td>
+<td>Alphabetic or numeric keys</td>
+<td>[Kuh62]</td>
+</tr>
+</tbody></table>
+<h3 id="contributor-presets" class="font-bold text-slate-900 mt-8 mb-4">Contributor Presets</h3><p>Named presets control name formatting without spelling out every field:</p>
+<ul>
+<li><code>apa</code>: Family-first, &quot;&amp;&quot; symbol, initials with period-space.</li>
+<li><code>chicago</code>: Family-first, &quot;and&quot; text, full names.</li>
+<li><code>vancouver</code>: All family-first, no conjunction, compact initials.</li>
+<li><code>ieee</code>: Given-first, &quot;and&quot; text, initials with period-space.</li>
+<li><code>harvard</code>: All family-first, &quot;and&quot; text, compact initials.</li>
+<li><code>springer</code>: All family-first, no conjunction, compact initials.</li>
+</ul>
+<h3 id="date-presets" class="font-bold text-slate-900 mt-8 mb-4">Date Presets</h3><table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Format</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>long</code></td>
+<td>Full month names, EDTF markers</td>
+<td>January 15, 2024</td>
+</tr>
+<tr>
+<td><code>short</code></td>
+<td>Abbreviated month names</td>
+<td>Jan 15, 2024</td>
+</tr>
+<tr>
+<td><code>numeric</code></td>
+<td>Numeric months</td>
+<td>1/15/2024</td>
+</tr>
+<tr>
+<td><code>iso</code></td>
+<td>ISO 8601, no EDTF markers</td>
+<td>2024-01-15</td>
+</tr>
+</tbody></table>
+
+            </section>
+            <section id="template-components" class="scroll-mt-24">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                    <span class="material-icons text-primary">layers</span>
+                    Template Components
+                </h2>
+        <h3 id="contributor" class="font-bold text-slate-900 mt-8 mb-4">Contributor</h3><p>Renders author, editor, translator, and other contributors.</p>
+
+        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8 not-prose">
+            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><code class="language-yaml">- contributor: author
+  form: long          # long | short | verb | verb-short
+  name-order: family-first  # family-first | given-first</code></pre>
+        </div>
+    <h3 id="date" class="font-bold text-slate-900 mt-8 mb-4">Date</h3><p>Renders date fields using EDTF format.</p>
+
+        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8 not-prose">
+            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><code class="language-yaml">- date: issued
+  form: year  # year | year-month | full | month-day | year-month-day</code></pre>
+        </div>
+    <h3 id="title" class="font-bold text-slate-900 mt-8 mb-4">Title</h3><p>Renders the title of the item.</p>
+
+        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8 not-prose">
+            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><code class="language-yaml">- title: primary
+  form: long  # long | short</code></pre>
+        </div>
+    <h3 id="number" class="font-bold text-slate-900 mt-8 mb-4">Number</h3><p>Renders numeric data: volume, issue, pages, edition, etc.</p>
+
+        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8 not-prose">
+            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><code class="language-yaml">- number: pages
+  form: numeric  # numeric | ordinal | roman</code></pre>
+        </div>
+    
+            </section>
+            <section id="rendering-options" class="scroll-mt-24">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                    <span class="material-icons text-primary">formatting</span>
+                    Rendering Options
+                </h2>
+        <p>Every component can be modified with rendering options that control punctuation, formatting, and text wrapping.</p>
+
+            <div class="border-l-4 border-amber-500 bg-amber-50 p-4 rounded mb-6 not-prose">
+                <div class="flex gap-3">
+                    <span class="material-icons text-amber-600 flex-shrink-0">warning</span>
+                    <div class="text-amber-800 text-sm">
+                        <strong>Avoid locale-specific strings</strong>
+Do not hardcode text content like <code>&quot;In: &quot;</code>, <code>&quot;Editor&quot;</code>, or <code>&quot;pp. &quot;</code> in <code>prefix</code> or <code>suffix</code>. Always use the <code>term</code> component for localized text. Reserve prefix and suffix for punctuation and spacing.
                     </div>
+                </div>
+            </div>
+        <table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Values</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>prefix</code></td>
+<td><code>&quot; &quot;</code>, <code>&quot;, &quot;</code>, <code>&quot;. &quot;</code></td>
+<td>Text before the component</td>
+</tr>
+<tr>
+<td><code>suffix</code></td>
+<td><code>&quot;.&quot;, &quot;,&quot;, &quot;: &quot;</code></td>
+<td>Text after the component</td>
+</tr>
+<tr>
+<td><code>wrap</code></td>
+<td><code>parentheses</code>, <code>brackets</code>, <code>quotes</code></td>
+<td>Automatically wrap value</td>
+</tr>
+<tr>
+<td><code>emph</code></td>
+<td><code>true</code>, <code>false</code></td>
+<td>Render in italics</td>
+</tr>
+<tr>
+<td><code>strong</code></td>
+<td><code>true</code>, <code>false</code></td>
+<td>Render in bold</td>
+</tr>
+</tbody></table>
 
-                    <!-- Date Component -->
-                    <div class="mb-10 border-l-4 border-primary pl-6">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Date</h3>
-                        <p class="text-slate-600 text-sm mb-4">Renders date fields using EDTF format with locale-specific formatting.</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-4">
-                            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><span class="text-indigo-400">- date</span>: <span class="text-emerald-400">issued</span>
-  <span class="text-primary">form</span>: <span class="text-emerald-400">year</span>  <span class="text-slate-500"># year | year-month | full | month-day | year-month-day</span></pre>
-                        </div>
-                        <div class="bg-white border border-slate-200 rounded-lg p-4 text-sm space-y-3">
-                            <div>
-                                <span class="font-mono text-primary">variable</span>
-                                <p class="text-slate-600">issued, accessed, original-published, submitted, event-date</p>
-                            </div>
-                            <div>
-                                <span class="font-mono text-primary">form</span>
-                                <p class="text-slate-600">year (2020), year-month (2020 March), full (March 15, 2020), month-day (March 15), year-month-day (2020 March 15)</p>
-                            </div>
-                        </div>
+            </section>
+            <section id="style-level-presets" class="scroll-mt-24">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                    <span class="material-icons text-primary">auto_awesome</span>
+                    Style-Level Presets
+                </h2>
+        <p>Reference named, compiled-in styles at the top of your YAML.</p>
+
+        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8 not-prose">
+            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><code class="language-yaml">preset: chicago-notes-18th</code></pre>
+        </div>
+    
+            </section>
+            <section id="type-variants" class="scroll-mt-24">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                    <span class="material-icons text-primary">category</span>
+                    Type Variants
+                </h2>
+        <p>When reference types need a different layout, use <code>type-variants</code>.</p>
+
+        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8 not-prose">
+            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><code class="language-yaml">bibliography:
+  template:
+    - contributor: author
+  type-variants:
+    article-journal:
+      - contributor: author
+      - title: primary</code></pre>
+        </div>
+    
+            </section>
+            <section id="workflow-tips" class="scroll-mt-24">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                    <span class="material-icons text-primary">psychology</span>
+                    Workflow & Tips
+                </h2>
+        
+            <div class="border-l-4 border-amber-500 bg-amber-50 p-4 rounded mb-6 not-prose">
+                <div class="flex gap-3">
+                    <span class="material-icons text-amber-600 flex-shrink-0">warning</span>
+                    <div class="text-amber-800 text-sm">
+                        <strong>Over-complicated options inheritance</strong>
+Keep global options simple. Override only at citation/bibliography level when truly needed.
                     </div>
-
-                    <!-- Title Component -->
-                    <div class="mb-10 border-l-4 border-primary pl-6">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Title</h3>
-                        <p class="text-slate-600 text-sm mb-4">Renders the title of the item with optional parent-level titles.</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-4">
-                            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><span class="text-indigo-400">- title</span>: <span class="text-emerald-400">primary</span>
-  <span class="text-primary">form</span>: <span class="text-emerald-400">long</span>  <span class="text-slate-500"># long | short</span></pre>
-                        </div>
-                        <div class="bg-white border border-slate-200 rounded-lg p-4 text-sm space-y-3">
-                            <div>
-                                <span class="font-mono text-primary">type</span>
-                                <p class="text-slate-600">primary (the item's title), parent-monograph (book title), parent-serial (journal name)</p>
-                            </div>
-                        </div>
+                </div>
+            </div>
+        
+            <div class="border-l-4 border-amber-500 bg-amber-50 p-4 rounded mb-6 not-prose">
+                <div class="flex gap-3">
+                    <span class="material-icons text-amber-600 flex-shrink-0">warning</span>
+                    <div class="text-amber-800 text-sm">
+                        <strong>Mismatching prefix/suffix pairs</strong>
+Always pair opening prefix with closing suffix. For structural wrapping (e.g. parentheses), use the <code>wrap</code> option instead.
                     </div>
-
-                    <!-- Number Component -->
-                    <div class="mb-10 border-l-4 border-primary pl-6">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Number</h3>
-                        <p class="text-slate-600 text-sm mb-4">Renders numeric data: volume, issue, pages, edition, etc.</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-4">
-                            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><span class="text-indigo-400">- number</span>: <span class="text-emerald-400">pages</span>
-  <span class="text-primary">form</span>: <span class="text-emerald-400">numeric</span>  <span class="text-slate-500"># numeric | ordinal | roman</span></pre>
-                        </div>
-                        <div class="bg-white border border-slate-200 rounded-lg p-4 text-sm space-y-3">
-                            <div>
-                                <span class="font-mono text-primary">variable</span>
-                                <p class="text-slate-600">volume, issue, pages, edition, citation-number, collection-number, number</p>
-                            </div>
-                            <div>
-                                <span class="font-mono text-primary">form</span>
-                                <p class="text-slate-600">numeric (1, 2, 3), ordinal (1st, 2nd, 3rd), roman (I, II, III)</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Variable Component -->
-                    <div class="mb-10 border-l-4 border-primary pl-6">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Variable</h3>
-                        <p class="text-slate-600 text-sm mb-4">Renders any other metadata variable as plain text.</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-4">
-                            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><span class="text-indigo-400">- variable</span>: <span class="text-emerald-400">publisher</span>
-  <span class="text-primary">prefix</span>: <span class="text-emerald-400">""</span></pre>
-                        </div>
-                        <div class="bg-white border border-slate-200 rounded-lg p-4 text-sm space-y-3">
-                            <div>
-                                <span class="font-mono text-primary">variable</span>
-                                <p class="text-slate-600">publisher, publisher-place, doi, url, genre, medium, note, authority, reporter, locator, and many others</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Term Component -->
-                    <div class="mb-10 border-l-4 border-primary pl-6">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Term</h3>
-                        <p class="text-slate-600 text-sm mb-4">Outputs locale-specific text like "Editor" or "Eds."</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-4">
-                            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><span class="text-indigo-400">- term</span>: <span class="text-emerald-400">editor</span>
-  <span class="text-primary">form</span>: <span class="text-emerald-400">short</span>  <span class="text-slate-500"># long | short | symbol</span></pre>
-                        </div>
-                    </div>
-
-                    <!-- List Component -->
-                    <div class="border-l-4 border-primary pl-6">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">List</h3>
-                        <p class="text-slate-600 text-sm mb-4">Groups multiple components with a delimiter between them.</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-4">
-                            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><span class="text-indigo-400">- items</span>:
-    - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
-    - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
-  <span class="text-primary">delimiter</span>: <span class="text-emerald-400">", "</span></pre>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Rendering Options -->
-                <section id="rendering-options" class="scroll-mt-24">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                        <span class="material-icons text-primary">formatting</span>
-                        Rendering Options
-                    </h2>
-                    <p class="text-slate-600 mb-6 leading-relaxed">
-                        Every component can be modified with rendering options that control punctuation, formatting, and text wrapping.
-                    </p>
-
-                    <!-- Positioning Diagram -->
-                    <div class="bg-white border border-slate-200 rounded-lg p-6 mb-8">
-                        <h3 class="text-sm font-semibold text-slate-900 mb-4">Positioning: How Prefix/Suffix and Wrapping Work Together</h3>
-                        <div class="font-mono text-sm text-slate-700 bg-slate-50 p-4 rounded mb-4 overflow-x-auto">
-                            prefix + (inner-prefix + value + inner-suffix) + suffix
-                        </div>
-                        <p class="text-slate-600 text-sm mb-4">Example: if prefix is "(", inner-prefix is "[", value is "Smith", inner-suffix is "]", and suffix is ")", the result is "([Smith])".</p>
-                    </div>
-
-                    <!-- Rendering Options Table -->
-                    <div class="overflow-x-auto rounded-lg border border-slate-200">
-                        <table class="w-full text-sm">
-                            <thead class="bg-slate-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-left font-semibold text-slate-900">Option</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-slate-900">Values</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-slate-900">Purpose</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-200">
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-mono text-primary">prefix</td>
-                                    <td class="px-4 py-3 font-mono text-xs text-slate-700">" ", "(", "["</td>
-                                    <td class="px-4 py-3 text-slate-600">Text before the component</td>
-                                </tr>
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-mono text-primary">suffix</td>
-                                    <td class="px-4 py-3 font-mono text-xs text-slate-700">", ", ".", ")"</td>
-                                    <td class="px-4 py-3 text-slate-600">Text after the component</td>
-                                </tr>
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-mono text-primary">wrap</td>
-                                    <td class="px-4 py-3 font-mono text-xs text-slate-700">parentheses, brackets, quotes, none</td>
-                                    <td class="px-4 py-3 text-slate-600">Automatically wrap value with punctuation</td>
-                                </tr>
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-mono text-primary">emph</td>
-                                    <td class="px-4 py-3 font-mono text-xs text-slate-700">true, false</td>
-                                    <td class="px-4 py-3 text-slate-600">Render in italics</td>
-                                </tr>
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-mono text-primary">strong</td>
-                                    <td class="px-4 py-3 font-mono text-xs text-slate-700">true, false</td>
-                                    <td class="px-4 py-3 text-slate-600">Render in bold</td>
-                                </tr>
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-mono text-primary">small-caps</td>
-                                    <td class="px-4 py-3 font-mono text-xs text-slate-700">true, false</td>
-                                    <td class="px-4 py-3 text-slate-600">Render in small capitals</td>
-                                </tr>
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-mono text-primary">suppress</td>
-                                    <td class="px-4 py-3 font-mono text-xs text-slate-700">true, false</td>
-                                    <td class="px-4 py-3 text-slate-600">Hide the component</td>
-                                </tr>
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-mono text-primary">strip-periods</td>
-                                    <td class="px-4 py-3 font-mono text-xs text-slate-700">true, false</td>
-                                    <td class="px-4 py-3 text-slate-600">Remove periods from abbreviations</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- Type Variants -->
-                <section id="type-variants" class="scroll-mt-24">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                        <span class="material-icons text-primary">category</span>
-                        Type Variants
-                    </h2>
-                    <p class="text-slate-600 mb-6 leading-relaxed">
-                        When reference types need a completely different component layout, declare a
-                        <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">type-variants</code>
-                        map under the bibliography or citation spec. Each entry replaces the default
-                        template for matching types. Use a comma-separated selector to share one
-                        template across multiple types.
-                    </p>
-
-                    <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8">
-                        <pre class="font-mono text-sm text-slate-300 leading-relaxed"><span class="text-indigo-400">bibliography</span>:
-  <span class="text-primary">template</span>:              <span class="text-slate-500"># default for all other types</span>
-    - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
-    - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
-    - <span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
-    - <span class="text-primary">variable</span>: <span class="text-emerald-400">publisher</span>
-
-  <span class="text-primary">type-variants</span>:
-    <span class="text-emerald-400">article-journal</span>:      <span class="text-slate-500"># single type</span>
-      - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
-      - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
-      - <span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
-      - <span class="text-primary">title</span>: <span class="text-emerald-400">parent-serial</span>
-        <span class="text-primary">emph</span>: <span class="text-emerald-400">true</span>
-
-    <span class="text-emerald-400">book, report</span>:         <span class="text-slate-500"># comma-separated: share one template</span>
-      - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
-      - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
-      - <span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
-        <span class="text-primary">emph</span>: <span class="text-emerald-400">true</span>
-      - <span class="text-primary">variable</span>: <span class="text-emerald-400">publisher</span></pre>
-                    </div>
-
-                    <div class="bg-primary/10 border border-primary/20 rounded-lg p-6">
-                        <div class="flex gap-4">
-                            <div class="flex-shrink-0">
-                                <span class="material-icons text-primary mt-1">info</span>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-slate-900 mb-2">Type Variants Replace the Default Template</h3>
-                                <p class="text-slate-700 leading-relaxed">
-                                    If a reference type matches a <code class="font-mono bg-primary/10 px-1 rounded">type-variants</code> entry,
-                                    that template is used in full instead of the default template.
-                                    Types not listed fall through to the default.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Citation Modes -->
-                <section id="citation-modes" class="scroll-mt-24">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                        <span class="material-icons text-primary">article</span>
-                        Citation Modes
-                    </h2>
-                    <p class="text-slate-600 mb-6 leading-relaxed">
-                        Use different citation templates for narrative vs. parenthetical citations, shortened forms, and special cases like ibid.
-                    </p>
-
-                    <!-- Integral vs Non-Integral -->
-                    <div class="mb-12">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Integral vs Non-Integral Citations</h3>
-                        <p class="text-slate-600 text-sm mb-4">Use <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">integral:</code> and <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">non-integral:</code> blocks for narrative ("Smith (2020) argued...") vs parenthetical ("...was argued (Smith, 2020)") styles:</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-6">
-                            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><span class="text-indigo-400">citation</span>:
-  <span class="text-primary">wrap</span>: <span class="text-emerald-400">parentheses</span>       <span class="text-slate-500"># default wrapping</span>
-  <span class="text-primary">template</span>:               <span class="text-slate-500"># used as fallback if no mode-specific block</span>
-    - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
-    - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
-  <span class="text-primary">non-integral</span>:           <span class="text-slate-500"># (Smith, 2020)</span>
-    <span class="text-primary">wrap</span>: <span class="text-emerald-400">parentheses</span>
-    <span class="text-primary">template</span>:
-      - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
-        <span class="text-primary">form</span>: <span class="text-emerald-400">short</span>
-      - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
-        <span class="text-primary">form</span>: <span class="text-emerald-400">year</span>
-  <span class="text-primary">integral</span>:               <span class="text-slate-500"># Smith (2020)</span>
-    <span class="text-primary">delimiter</span>: <span class="text-emerald-400">" "</span>
-    <span class="text-primary">template</span>:
-      - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
-        <span class="text-primary">form</span>: <span class="text-emerald-400">short</span>
-      - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
-        <span class="text-primary">form</span>: <span class="text-emerald-400">year</span>
-        <span class="text-primary">wrap</span>: <span class="text-emerald-400">parentheses</span></pre>
-                        </div>
-                    </div>
-
-                    <!-- Note-style: Subsequent and Ibid -->
-                    <div class="mb-12">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Note-style: Subsequent and Ibid</h3>
-                        <p class="text-slate-600 text-sm mb-4">Use <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">subsequent:</code> for shortened second-and-later citations, and <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">ibid:</code> for same-source repetitions:</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-6">
-                            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><span class="text-indigo-400">citation</span>:
-  <span class="text-primary">template</span>:               <span class="text-slate-500"># Full first citation</span>
-    - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
-      <span class="text-primary">form</span>: <span class="text-emerald-400">long</span>
-    - <span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
-      <span class="text-primary">prefix</span>: <span class="text-emerald-400">", "</span>
-    - <span class="text-primary">variable</span>: <span class="text-emerald-400">locator</span>
-      <span class="text-primary">prefix</span>: <span class="text-emerald-400">", "</span>
-  <span class="text-primary">subsequent</span>:             <span class="text-slate-500"># Short form for later citations</span>
-    <span class="text-primary">options</span>:
-      <span class="text-primary">contributors</span>:
-        <span class="text-primary">name-form</span>: <span class="text-emerald-400">family-only</span>
-    <span class="text-primary">template</span>:
-      - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
-        <span class="text-primary">form</span>: <span class="text-emerald-400">short</span>
-      - <span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
-        <span class="text-primary">form</span>: <span class="text-emerald-400">short</span>
-      - <span class="text-primary">variable</span>: <span class="text-emerald-400">locator</span>
-        <span class="text-primary">prefix</span>: <span class="text-emerald-400">", "</span>
-  <span class="text-primary">ibid</span>:                    <span class="text-slate-500"># Same source, possibly different locator</span>
-    <span class="text-primary">suffix</span>: <span class="text-emerald-400">"Ibid."</span>
-    <span class="text-primary">template</span>:
-      - <span class="text-primary">variable</span>: <span class="text-emerald-400">locator</span>
-        <span class="text-primary">prefix</span>: <span class="text-emerald-400">", "</span></pre>
-                        </div>
-                    </div>
-
-                    <!-- Multi-cite and Collapse -->
-                    <div>
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Multi-cite and Collapse</h3>
-                        <p class="text-slate-600 text-sm mb-3">For numeric styles, use <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">multi-cite-delimiter</code> (default "; ") to separate multiple citations, and <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">collapse: citation-number</code> to render ranges like [1–3]:</p>
-                        <div class="bg-white border border-slate-200 rounded-lg p-6">
-                            <div class="space-y-2 text-slate-600 text-sm">
-                                <p><code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">multi-cite-delimiter</code>: String to separate multiple citations (default: "; "). Use "; " for [1; 2; 3] or "," for [1,2,3].</p>
-                                <p><code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">collapse: citation-number</code>: When present, consecutive numbers are collapsed into ranges, e.g., [1–3] instead of [1; 2; 3].</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Options Inheritance -->
-                <section id="options-inheritance" class="scroll-mt-24">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                        <span class="material-icons text-primary">share</span>
-                        Options Inheritance
-                    </h2>
-                    <p class="text-slate-600 mb-6 leading-relaxed">
-                        Global options apply to all components, but can be overridden at the citation and bibliography level, allowing fine-grained control.
-                    </p>
-
-                    <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8">
-                        <pre class="font-mono text-sm text-slate-300 leading-relaxed"><span class="text-indigo-400">options</span>:
-  <span class="text-primary">contributors</span>: <span class="text-emerald-400">apa</span>       <span class="text-slate-500"># Global: family-first, initials, up to 20 names</span>
-
-<span class="text-indigo-400">citation</span>:
-  <span class="text-primary">options</span>:
-    <span class="text-primary">contributors</span>:
-      <span class="text-primary">shorten</span>: { <span class="text-primary">min</span>: <span class="text-emerald-400">3</span>, <span class="text-primary">use-first</span>: <span class="text-emerald-400">1</span> }   <span class="text-slate-500"># Citation-level: et al. after 3 names</span>
-  <span class="text-primary">template</span>: [...]
-
-<span class="text-indigo-400">bibliography</span>:
-  <span class="text-primary">options</span>:
-    <span class="text-primary">contributors</span>:
-      <span class="text-primary">shorten</span>: { <span class="text-primary">min</span>: <span class="text-emerald-400">20</span>, <span class="text-primary">use-first</span>: <span class="text-emerald-400">19</span> }  <span class="text-slate-500"># Bibliography-level: show more names</span>
-  <span class="text-primary">template</span>: [...]</pre>
-                    </div>
-
-                    <div class="bg-white border border-slate-200 rounded-lg p-6">
-                        <h3 class="font-semibold text-slate-900 mb-3">Inheritance Chain</h3>
-                        <ol class="space-y-2 text-sm text-slate-600">
-                            <li>1. Component-level options (highest priority)</li>
-                            <li>2. Citation/Bibliography-level options</li>
-                            <li>3. Global options (lowest priority)</li>
-                        </ol>
-                    </div>
-                </section>
-
-                <!-- Reference Types -->
-                <section id="reference-types" class="scroll-mt-24">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                        <span class="material-icons text-primary">list</span>
-                        Reference Types
-                    </h2>
-                    <p class="text-slate-600 mb-6 leading-relaxed">
-                        References use a <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">class</code> (top-level discriminator) and <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">type</code> (subtype). In styles, use the <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">type</code> value as keys under <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">type-variants</code> (e.g., <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">article-journal</code>).
-                    </p>
-
-                    <!-- Reference Types Table -->
-                    <div class="overflow-x-auto rounded-lg border border-slate-200 mb-8">
-                        <table class="w-full text-sm">
-                            <thead class="bg-slate-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-left font-semibold text-slate-900">Class</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-slate-900">Types</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-200">
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-medium text-slate-900">Monograph</td>
-                                    <td class="px-4 py-3 text-slate-600"><code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">book</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">manual</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">report</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">thesis</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">webpage</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">post</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">interview</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">manuscript</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">personal-communication</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">document</code></td>
-                                </tr>
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-medium text-slate-900">Collection</td>
-                                    <td class="px-4 py-3 text-slate-600"><code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">anthology</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">proceedings</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">edited-book</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">edited-volume</code></td>
-                                </tr>
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-medium text-slate-900">Collection Component</td>
-                                    <td class="px-4 py-3 text-slate-600"><code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">chapter</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">document</code> <span class="text-slate-500 text-xs">(parent is a Collection; embed via <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">parent:</code> or reference by ID)</span></td>
-                                </tr>
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-medium text-slate-900">Serial Component</td>
-                                    <td class="px-4 py-3 text-slate-600"><code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">article-journal</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">article-magazine</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">article-newspaper</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">broadcast</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">post</code> <span class="text-slate-500 text-xs">(parent is embedded Serial with type: academic-journal, magazine, newspaper, blog, newsletter, proceedings, podcast, broadcast-program)</span></td>
-                                </tr>
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-3 font-medium text-slate-900">Standalone</td>
-                                    <td class="px-4 py-3 text-slate-600"><code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">legal-case</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">statute</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">treaty</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">hearing</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">regulation</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">brief</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">classic</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">patent</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">dataset</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">standard</code>, <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">software</code></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Type Override Keys Note -->
-                    <div class="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-5">
-                        <div class="flex items-start gap-3">
-                            <span class="material-icons text-blue-600 mt-0.5">info</span>
-                            <div class="flex-1">
-                                <h4 class="font-semibold text-blue-900 mb-2">Using Type Values in type-variants</h4>
-                                <ul class="text-blue-800 text-sm space-y-1 list-disc list-inside">
-                                    <li>In style <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">type-variants:</code> keys, use the <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">type</code> value (e.g., <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">article-journal</code>, <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">book</code>, <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">chapter</code>)</li>
-                                    <li>The special keywords <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">default</code> (fallback) and <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">all</code> (every type) also work as type-variant keys</li>
-                                    <li>For serial components, the parent's type is embedded in the reference data under the <code class="text-xs font-mono bg-blue-100 px-1 rounded text-blue-900">parent:</code> key</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Serial Component Example -->
-                    <div class="mb-8">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-3">Serial Component Example</h3>
-                        <p class="text-slate-600 text-sm mb-4">Reference data with embedded parent information:</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto">
-                            <pre class="font-mono text-xs text-slate-300 leading-relaxed">{
-  <span class="text-emerald-400">"id"</span>: <span class="text-emerald-400">"kuhn1962"</span>,
-  <span class="text-emerald-400">"class"</span>: <span class="text-emerald-400">"serial-component"</span>,
-  <span class="text-emerald-400">"type"</span>: <span class="text-emerald-400">"article-journal"</span>,
-  <span class="text-emerald-400">"title"</span>: <span class="text-emerald-400">"..."</span>,
-  <span class="text-emerald-400">"author"</span>: [...],
-  <span class="text-emerald-400">"issued"</span>: <span class="text-emerald-400">"1962"</span>,
-  <span class="text-emerald-400">"parent"</span>: {
-    <span class="text-emerald-400">"type"</span>: <span class="text-emerald-400">"academic-journal"</span>,
-    <span class="text-emerald-400">"title"</span>: <span class="text-emerald-400">"International Encyclopedia of Unified Science"</span>
-  }
-}</pre>
-                        </div>
-                    </div>
-
-                    <!-- Monograph Example -->
-                    <div>
-                        <h3 class="text-lg font-semibold text-slate-900 mb-3">Monograph Example</h3>
-                        <p class="text-slate-600 text-sm mb-4">Simple book reference without parent:</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto">
-                            <pre class="font-mono text-xs text-slate-300 leading-relaxed">{
-  <span class="text-emerald-400">"id"</span>: <span class="text-emerald-400">"hawking1988"</span>,
-  <span class="text-emerald-400">"class"</span>: <span class="text-emerald-400">"monograph"</span>,
-  <span class="text-emerald-400">"type"</span>: <span class="text-emerald-400">"book"</span>,
-  <span class="text-emerald-400">"title"</span>: <span class="text-emerald-400">"A Brief History of Time"</span>,
-  <span class="text-emerald-400">"author"</span>: [...],
-  <span class="text-emerald-400">"issued"</span>: <span class="text-emerald-400">"1988"</span>,
-  <span class="text-emerald-400">"publisher"</span>: <span class="text-emerald-400">"Bantam Dell Publishing Group"</span>
-}</pre>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Bibliography Sort & Groups -->
-                <section id="bib-sort-groups" class="scroll-mt-24">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                        <span class="material-icons text-primary">sort</span>
-                        Bibliography Sort &amp; Groups
-                    </h2>
-                    <p class="text-slate-600 mb-6 leading-relaxed">
-                        Control bibliography ordering and split it into labeled sections based on reference properties.
-                    </p>
-
-                    <!-- Sort -->
-                    <div class="mb-12">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Sort</h3>
-                        <p class="text-slate-600 text-sm mb-4">The <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">bibliography.sort</code> field controls ordering. Use a preset string or a custom sort template:</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-6">
-                            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><span class="text-indigo-400">bibliography</span>:
-  <span class="text-primary">sort</span>: <span class="text-emerald-400">author-date-title</span>   <span class="text-slate-500"># preset: sort by author, then date, then title</span>
-  <span class="text-primary">template</span>: [...]</pre>
-                        </div>
-                        <div class="bg-white border border-slate-200 rounded-lg p-6">
-                            <p class="text-slate-600 text-sm"><strong>Preset sort values:</strong> <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">author-date-title</code> (author, date, title), <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">author-title-date</code> (author, title, date).</p>
-                        </div>
-                    </div>
-
-                    <!-- Groups -->
-                    <div>
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Groups</h3>
-                        <p class="text-slate-600 text-sm mb-4">The <code class="font-mono bg-slate-100 px-1 rounded text-slate-900">bibliography.groups</code> field splits the bibliography into labeled sections:</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-6">
-                            <pre class="font-mono text-xs text-slate-300 leading-relaxed"><span class="text-indigo-400">bibliography</span>:
-  <span class="text-primary">template</span>: [...]
-  <span class="text-primary">groups</span>:
-    - <span class="text-primary">id</span>: <span class="text-emerald-400">primary</span>
-      <span class="text-primary">heading</span>:
-        <span class="text-primary">localized</span>:
-          <span class="text-emerald-400">en-US</span>: <span class="text-emerald-400">"Primary Sources"</span>
-          <span class="text-emerald-400">de</span>: <span class="text-emerald-400">"Primärquellen"</span>
-      <span class="text-primary">selector</span>:
-        <span class="text-primary">type</span>: <span class="text-emerald-400">legal-case</span>
-      <span class="text-primary">sort</span>: <span class="text-emerald-400">author-date-title</span>
-    - <span class="text-primary">id</span>: <span class="text-emerald-400">other</span>
-      <span class="text-primary">heading</span>:
-        <span class="text-primary">localized</span>:
-          <span class="text-emerald-400">en-US</span>: <span class="text-emerald-400">"Secondary Sources"</span>
-      <span class="text-primary">selector</span>:
-        <span class="text-primary">not</span>:
-          <span class="text-primary">type</span>: <span class="text-emerald-400">legal-case</span></pre>
-                        </div>
-
-                        <div class="bg-white border border-slate-200 rounded-lg p-6 space-y-4 mb-6">
-                            <h4 class="font-semibold text-slate-900">Group Selector Types</h4>
-                            <div class="space-y-3 text-sm text-slate-600">
-                                <div>
-                                    <p><code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">type</code>: Match a single type or list of types (e.g., <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">article-journal</code> or <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">[book, chapter]</code>)</p>
-                                </div>
-                                <div>
-                                    <p><code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">field</code>: Match field values, e.g., <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">language: vi</code></p>
-                                </div>
-                                <div>
-                                    <p><code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">not</code>: Negate a selector (e.g., match all types except legal-case)</p>
-                                </div>
-                                <div>
-                                    <p><code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">and</code> / <code class="text-xs font-mono bg-slate-100 px-1 rounded text-slate-900">or</code>: Combine multiple selectors logically</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Complete Examples -->
-                <section id="complete-examples" class="scroll-mt-24">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                        <span class="material-icons text-primary">code</span>
-                        Complete Examples
-                    </h2>
-                    <p class="text-slate-600 mb-6 leading-relaxed">
-                        Here are two minimal but complete working styles demonstrating author-date and numeric modes.
-                    </p>
-
-                    <!-- Example 1: Minimal Author-Date -->
-                    <div class="mb-12">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Example 1: Minimal Author-Date Style</h3>
-                        <p class="text-slate-600 text-sm mb-4">A basic APA-like style with author, year, and title.</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto">
-                            <pre class="font-mono text-xs text-slate-300 leading-relaxed"><span class="text-indigo-400">info</span>:
-  <span class="text-primary">title</span>: <span class="text-emerald-400">"Simple Author-Date"</span>
-  <span class="text-primary">id</span>: <span class="text-emerald-400">"simple-author-date"</span>
-  <span class="text-primary">default-locale</span>: <span class="text-emerald-400">"en-US"</span>
-
-<span class="text-indigo-400">options</span>:
-  <span class="text-primary">processing</span>: <span class="text-emerald-400">author-date</span>
-  <span class="text-primary">contributors</span>: <span class="text-emerald-400">apa</span>
-
-<span class="text-indigo-400">citation</span>:
-  <span class="text-primary">template</span>:
-    - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
-    - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
-      <span class="text-primary">prefix</span>: <span class="text-emerald-400">" "</span>
-      <span class="text-primary">wrap</span>: <span class="text-emerald-400">parentheses</span>
-
-<span class="text-indigo-400">bibliography</span>:
-  <span class="text-primary">template</span>:
-    - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
-    - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
-      <span class="text-primary">prefix</span>: <span class="text-emerald-400">" "</span>
-    - <span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
-      <span class="text-primary">prefix</span>: <span class="text-emerald-400">" "</span>
-      <span class="text-primary">suffix</span>: <span class="text-emerald-400">"."</span>
-    - <span class="text-primary">variable</span>: <span class="text-emerald-400">publisher</span>
-      <span class="text-primary">prefix</span>: <span class="text-emerald-400">" "</span>
-      <span class="text-primary">suffix</span>: <span class="text-emerald-400">"."</span>
-  <span class="text-primary">type-variants</span>:
-    <span class="text-emerald-400">article-journal</span>:
-      <span class="text-primary">template</span>:
-        - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
-        - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
-          <span class="text-primary">prefix</span>: <span class="text-emerald-400">" "</span>
-        - <span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
-          <span class="text-primary">prefix</span>: <span class="text-emerald-400">" "</span>
-          <span class="text-primary">suffix</span>: <span class="text-emerald-400">"."</span>
-        <span class="text-slate-500"># publisher omitted for journal articles</span></pre>
-                        </div>
-                    </div>
-
-                    <!-- Example 2: Minimal Numeric -->
-                    <div>
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Example 2: Minimal Numeric Style</h3>
-                        <p class="text-slate-600 text-sm mb-4">A basic IEEE-like numeric style with numbered citations.</p>
-                        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto">
-                            <pre class="font-mono text-xs text-slate-300 leading-relaxed"><span class="text-indigo-400">info</span>:
-  <span class="text-primary">title</span>: <span class="text-emerald-400">"Simple Numeric"</span>
-  <span class="text-primary">id</span>: <span class="text-emerald-400">"simple-numeric"</span>
-  <span class="text-primary">default-locale</span>: <span class="text-emerald-400">"en-US"</span>
-
-<span class="text-indigo-400">options</span>:
-  <span class="text-primary">processing</span>: <span class="text-emerald-400">numeric</span>
-
-<span class="text-indigo-400">citation</span>:
-  <span class="text-primary">template</span>:
-    - <span class="text-primary">number</span>: <span class="text-emerald-400">citation-number</span>
-      <span class="text-primary">wrap</span>: <span class="text-emerald-400">brackets</span>
-
-<span class="text-indigo-400">bibliography</span>:
-  <span class="text-primary">template</span>:
-    - <span class="text-primary">number</span>: <span class="text-emerald-400">citation-number</span>
-      <span class="text-primary">suffix</span>: <span class="text-emerald-400">". "</span>
-    - <span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
-    - <span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
-      <span class="text-primary">prefix</span>: <span class="text-emerald-400">" "</span>
-    - <span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
-      <span class="text-primary">prefix</span>: <span class="text-emerald-400">" "</span>
-    - <span class="text-primary">title</span>: <span class="text-emerald-400">parent-serial</span>
-      <span class="text-primary">prefix</span>: <span class="text-emerald-400">" in "</span>
-      <span class="text-primary">emph</span>: <span class="text-emerald-400">true</span></pre>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Workflow & Tips -->
-                <section id="workflow-tips" class="scroll-mt-24">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                        <span class="material-icons text-primary">lightbulb</span>
-                        Workflow & Common Mistakes
-                    </h2>
-
-                    <!-- Workflow Steps -->
-                    <div class="mb-10">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Recommended Workflow</h3>
-                        <ol class="space-y-3">
-                            <li class="flex gap-4">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary">1</div>
-                                <div>
-                                    <span class="font-semibold text-slate-900">Start with a reference style</span>
-                                    <p class="text-slate-600 text-sm mt-1">Use an existing CSL 1.0 or Citum style as a template</p>
-                                </div>
-                            </li>
-                            <li class="flex gap-4">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary">2</div>
-                                <div>
-                                    <span class="font-semibold text-slate-900">Write metadata in info block</span>
-                                    <p class="text-slate-600 text-sm mt-1">Set title, id, description, and default locale</p>
-                                </div>
-                            </li>
-                            <li class="flex gap-4">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary">3</div>
-                                <div>
-                                    <span class="font-semibold text-slate-900">Define global options</span>
-                                    <p class="text-slate-600 text-sm mt-1">Set mode and contributor/date presets</p>
-                                </div>
-                            </li>
-                            <li class="flex gap-4">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary">4</div>
-                                <div>
-                                    <span class="font-semibold text-slate-900">Write citation template</span>
-                                    <p class="text-slate-600 text-sm mt-1">Start with author, date, maybe title</p>
-                                </div>
-                            </li>
-                            <li class="flex gap-4">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary">5</div>
-                                <div>
-                                    <span class="font-semibold text-slate-900">Test with oracle</span>
-                                    <p class="text-slate-600 text-sm mt-1">Compare output against citeproc-js reference implementation</p>
-                                </div>
-                            </li>
-                            <li class="flex gap-4">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary">6</div>
-                                <div>
-                                    <span class="font-semibold text-slate-900">Add type-variants for structural outliers</span>
-                                    <p class="text-slate-600 text-sm mt-1">Add <code class="text-xs font-mono bg-slate-100 px-1 rounded">type-variants</code> only for types that need a structurally different template; use presets for shared options</p>
-                                </div>
-                            </li>
-                        </ol>
-                    </div>
-
-                    <!-- Common Mistakes -->
-                    <div class="mb-10">
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Common Mistakes to Avoid</h3>
-                        <div class="space-y-4">
-                            <div class="border-l-4 border-amber-500 bg-amber-50 p-4 rounded">
-                                <div class="flex gap-3">
-                                    <span class="material-icons text-amber-600 flex-shrink-0">warning</span>
-                                    <div>
-                                        <h4 class="font-semibold text-amber-900">Over-using type-variants</h4>
-                                        <p class="text-amber-800 text-sm mt-1">Only add <code class="text-xs font-mono bg-amber-100 px-1 rounded">type-variants</code> for types that need a genuinely different component set. Use presets and a well-designed generic template for the common case.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="border-l-4 border-amber-500 bg-amber-50 p-4 rounded">
-                                <div class="flex gap-3">
-                                    <span class="material-icons text-amber-600 flex-shrink-0">warning</span>
-                                    <div>
-                                        <h4 class="font-semibold text-amber-900">Over-complicated options inheritance</h4>
-                                        <p class="text-amber-800 text-sm mt-1">Keep global options simple. Override only at citation/bibliography level when truly needed.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="border-l-4 border-amber-500 bg-amber-50 p-4 rounded">
-                                <div class="flex gap-3">
-                                    <span class="material-icons text-amber-600 flex-shrink-0">warning</span>
-                                    <div>
-                                        <h4 class="font-semibold text-amber-900">Mismatching prefix/suffix pairs</h4>
-                                        <p class="text-amber-800 text-sm mt-1">Always pair opening prefix with closing suffix. Don't leave mismatched parentheses.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="border-l-4 border-amber-500 bg-amber-50 p-4 rounded">
-                                <div class="flex gap-3">
-                                    <span class="material-icons text-amber-600 flex-shrink-0">warning</span>
-                                    <div>
-                                        <h4 class="font-semibold text-amber-900">Suppressing components instead of overriding</h4>
-                                        <p class="text-amber-800 text-sm mt-1">If a component needs different rendering for a type, override its properties. Only suppress if it shouldn't appear at all.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Verification -->
-                    <div>
-                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Verification Commands</h3>
-                        <p class="text-slate-600 text-sm mb-4">Use these commands to test your style:</p>
-                        <div class="space-y-3">
-                            <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto">
-                                <pre class="font-mono text-xs text-emerald-400"><span class="text-primary">$</span> cargo run --bin citum -- render refs \
-  -b tests/fixtures/references-expanded.json \
-  -s styles/my-style.yaml</pre>
-                            </div>
-                            <p class="text-slate-600 text-sm">Render citations and bibliography with your style</p>
-
-                            <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto mt-4">
-                                <pre class="font-mono text-xs text-emerald-400"><span class="text-primary">$</span> node scripts/oracle.js styles/my-style.yaml</pre>
-                            </div>
-                            <p class="text-slate-600 text-sm">Compare output against citeproc-js reference</p>
-                        </div>
-                    </div>
-                </section>
-
-            </main>
+                </div>
+            </div>
+        </section>
+</main>
         </div>
 
         <!-- Footer -->
