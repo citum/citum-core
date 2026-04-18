@@ -18,6 +18,30 @@ function slugify(text) {
         .replace(/^-+|-+$/g, '');
 }
 
+// Simple YAML syntax highlighter using regex and project Tailwind colors
+function highlightYaml(code) {
+    const escaped = code
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+    return escaped
+        // 1. Comments (slate-500)
+        .replace(/(#.*$)/gm, '<span class="text-slate-500">$1</span>')
+        // 2. Keys (indigo-400 for top-level, primary/sky-400 for nested)
+        // Now handles both "key:" and "- key:"
+        .replace(/^(\s*)(-?\s*)([a-z0-9_-]+)(:)/gm, (match, indent, dash, key, colon) => {
+            const colorClass = indent.length === 0 && dash.length === 0 ? 'text-indigo-400' : 'text-primary';
+            const dashHtml = dash.length > 0 ? `<span class="text-slate-400">${dash}</span>` : '';
+            return `${indent}${dashHtml}<span class="${colorClass}">${key}</span>${colon}`;
+        })
+        // 3. String values (emerald-400)
+        .replace(/(: )("[^"]*"|'[^']*'|[a-z0-9_.-]+)(?=\s|$|<)/gi, (match, separator, value) => {
+            if (value === '~' || value === 'null') return `${separator}<span class="text-slate-400">${value}</span>`;
+            return `${separator}<span class="text-emerald-400">${value}</span>`;
+        });
+}
+
 let firstHeading = true;
 
 renderer.heading = function(arg1, arg2) {
@@ -101,9 +125,14 @@ renderer.code = function(arg1, arg2) {
         code = arg1;
         lang = arg2;
     }
+
+    const highlighted = (lang === 'yaml' || lang === 'yml')
+        ? highlightYaml(code)
+        : code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
     return `
         <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8 not-prose">
-            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><code class="language-${lang}">${code.replace(/</g, '&lt;')}</code></pre>
+            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><code class="language-${lang}">${highlighted}</code></pre>
         </div>
     `;
 };
