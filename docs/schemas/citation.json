@@ -10,27 +10,12 @@
       "description": "A citation containing one or more references.",
       "type": "object",
       "properties": {
-        "grouped": {
-          "description": "If true, the entire citation is a single dynamic compound set.\n\nThe first item acts as the head and subsequent items are merged as tails\nin the bibliography. Ignored for non-numeric (compound-numeric) styles.\nItem order is preserved and sorting is suppressed when this flag is set.",
-          "type": "boolean"
-        },
         "id": {
           "description": "The citation ID (optional, for tracking).",
           "type": [
             "string",
             "null"
           ]
-        },
-        "items": {
-          "description": "The citation items (references being cited).",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/CitationItem"
-          }
-        },
-        "mode": {
-          "description": "Citation mode: integral (narrative) vs non-integral (parenthetical).\nOnly relevant for author-date styles.",
-          "$ref": "#/$defs/CitationMode"
         },
         "note-number": {
           "description": "Note number for footnote/endnote styles.\nAssigned by the document processor, not the citation processor.",
@@ -40,6 +25,10 @@
           ],
           "format": "uint32",
           "minimum": 0
+        },
+        "mode": {
+          "description": "Citation mode: integral (narrative) vs non-integral (parenthetical).\nOnly relevant for author-date styles.",
+          "$ref": "#/$defs/CitationMode"
         },
         "position": {
           "description": "Position of this citation in the document flow.\nDetected automatically by the processor or set explicitly by the caller.",
@@ -51,6 +40,10 @@
               "type": "null"
             }
           ]
+        },
+        "suppress-author": {
+          "description": "Suppress the author name across all items in this citation.\nUsed when the author is already named in the prose: \"Smith argues (2020)\".\nApplies uniformly to all items — per-item suppression is not supported\nbecause mixed-visibility citations are typographically incoherent.",
+          "type": "boolean"
         },
         "prefix": {
           "description": "Prefix text before all citation items.",
@@ -66,13 +59,60 @@
             "null"
           ]
         },
-        "suppress-author": {
-          "description": "Suppress the author name across all items in this citation.\nUsed when the author is already named in the prose: \"Smith argues (2020)\".\nApplies uniformly to all items — per-item suppression is not supported\nbecause mixed-visibility citations are typographically incoherent.",
+        "items": {
+          "description": "The citation items (references being cited).",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CitationItem"
+          }
+        },
+        "grouped": {
+          "description": "If true, the entire citation is a single dynamic compound set.\n\nThe first item acts as the head and subsequent items are merged as tails\nin the bibliography. Ignored for non-numeric (compound-numeric) styles.\nItem order is preserved and sorting is suppressed when this flag is set.",
           "type": "boolean"
         }
       },
       "required": [
         "items"
+      ]
+    },
+    "CitationMode": {
+      "description": "Citation mode for author-date styles.\n\nDetermines how the author name is rendered relative to the citation.",
+      "oneOf": [
+        {
+          "description": "Author inline in text: \"Smith (2020) argues...\"\nAlso known as \"narrative\" or \"in-text\" citations.",
+          "type": "string",
+          "const": "integral"
+        },
+        {
+          "description": "Author in parentheses: \"(Smith, 2020)\"\nThe default mode for most citations.",
+          "type": "string",
+          "const": "non-integral"
+        }
+      ]
+    },
+    "Position": {
+      "description": "Position of a citation in the document flow.\n\nIndicates where this citation appears relative to previous citations\nof the same item(s). Used for note-based styles to detect ibid and\nsubsequent citations, and for author-date styles to apply position-specific\nformatting rules (e.g., short forms after first citation).",
+      "oneOf": [
+        {
+          "description": "First citation of an item.",
+          "type": "string",
+          "const": "first"
+        },
+        {
+          "description": "Subsequent citation of an item (non-consecutive).",
+          "type": "string",
+          "const": "subsequent"
+        },
+        {
+          "description": "Same item cited immediately before, no locator on either.",
+          "type": "string",
+          "const": "ibid"
+        },
+        {
+          "description": "Same item cited immediately before, with different locator.",
+          "type": "string",
+          "const": "ibid-with-locator"
+        }
       ]
     },
     "CitationItem": {
@@ -82,17 +122,6 @@
         "id": {
           "description": "The reference ID (citekey).",
           "type": "string"
-        },
-        "integral-name-state": {
-          "description": "Explicit integral name-memory state override for this item.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/IntegralNameState"
-            },
-            {
-              "type": "null"
-            }
-          ]
         },
         "locator": {
           "description": "Canonical locator value for pinpoint citations.",
@@ -118,6 +147,17 @@
             "string",
             "null"
           ]
+        },
+        "integral-name-state": {
+          "description": "Explicit integral name-memory state override for this item.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IntegralNameState"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -142,36 +182,6 @@
           "required": [
             "segments"
           ]
-        }
-      ]
-    },
-    "CitationMode": {
-      "description": "Citation mode for author-date styles.\n\nDetermines how the author name is rendered relative to the citation.",
-      "oneOf": [
-        {
-          "description": "Author inline in text: \"Smith (2020) argues...\"\nAlso known as \"narrative\" or \"in-text\" citations.",
-          "type": "string",
-          "const": "integral"
-        },
-        {
-          "description": "Author in parentheses: \"(Smith, 2020)\"\nThe default mode for most citations.",
-          "type": "string",
-          "const": "non-integral"
-        }
-      ]
-    },
-    "IntegralNameState": {
-      "description": "Explicit integral citation name-memory state for one citation item.",
-      "oneOf": [
-        {
-          "description": "Render this item as the first integral mention in scope.",
-          "type": "string",
-          "const": "first"
-        },
-        {
-          "description": "Render this item as a subsequent integral mention in scope.",
-          "type": "string",
-          "const": "subsequent"
         }
       ]
     },
@@ -208,13 +218,13 @@
           "description": "Explicit value with manual plural override.",
           "type": "object",
           "properties": {
-            "plural": {
-              "description": "Whether this locator is plural.",
-              "type": "boolean"
-            },
             "value": {
               "description": "The locator value string.",
               "type": "string"
+            },
+            "plural": {
+              "description": "Whether this locator is plural.",
+              "type": "boolean"
             }
           },
           "required": [
@@ -224,28 +234,18 @@
         }
       ]
     },
-    "Position": {
-      "description": "Position of a citation in the document flow.\n\nIndicates where this citation appears relative to previous citations\nof the same item(s). Used for note-based styles to detect ibid and\nsubsequent citations, and for author-date styles to apply position-specific\nformatting rules (e.g., short forms after first citation).",
+    "IntegralNameState": {
+      "description": "Explicit integral citation name-memory state for one citation item.",
       "oneOf": [
         {
-          "description": "First citation of an item.",
+          "description": "Render this item as the first integral mention in scope.",
           "type": "string",
           "const": "first"
         },
         {
-          "description": "Subsequent citation of an item (non-consecutive).",
+          "description": "Render this item as a subsequent integral mention in scope.",
           "type": "string",
           "const": "subsequent"
-        },
-        {
-          "description": "Same item cited immediately before, no locator on either.",
-          "type": "string",
-          "const": "ibid"
-        },
-        {
-          "description": "Same item cited immediately before, with different locator.",
-          "type": "string",
-          "const": "ibid-with-locator"
         }
       ]
     }
