@@ -2,14 +2,14 @@
 
 This guide is for people who write and maintain Citum styles.
 
-## [compare_arrows] How Citum Differs from CSL 1.0
+## [compare_arrows] How Citum Differs
 
 Citum introduces a modern, declarative approach to citation styling compared to CSL 1.0's procedural XML language. Understanding these differences is essential for writing Citum styles effectively.
 
 | Aspect | CSL 1.0 (XML) | Citum (YAML) |
 |---|---|---|
 | Format | Procedural XML markup | Declarative YAML |
-| Logic | choose/if/else conditionals | Type variants + inheritance |
+| Logic | `choose`/`if`/`else` conditionals | Type variants + inheritance |
 | Name Formatting | Inline XML attributes | Global presets + options |
 | Dates | Object with year/month/day | EDTF string format |
 | Inheritance | Parent style aliasing | Presets + type variants |
@@ -19,7 +19,7 @@ Citum introduces a modern, declarative approach to citation styling compared to 
 > **Explicit Over Magic**
 > Citum styles are explicitly declarative. Special behavior is expressed in the style itself, not hidden in processor logic. If you need a different layout for journals vs books, you declare it with type variants. This makes styles portable, testable, and understandable without reading source code.
 
-## [folder_special] Style File Anatomy
+## [folder_special] Style Anatomy
 
 Every Citum style file contains four top-level sections: metadata, options, citation template, and bibliography template.
 
@@ -144,7 +144,7 @@ Every component can be modified with rendering options that control punctuation,
 | `emph` | `true`, `false` | Render in italics |
 | `strong` | `true`, `false` | Render in bold |
 
-## [auto_awesome] Style-Level Presets
+## [auto_awesome] Style Presets
 
 Reference named, compiled-in styles at the top of your YAML.
 
@@ -166,7 +166,228 @@ bibliography:
       - title: primary
 ```
 
-## [psychology] Workflow & Tips
+> [!TIP]
+> **Type Variants Replace the Default Template**
+> If a reference type matches a `type-variants` entry, that template is used in full instead of the default template. Types not listed fall through to the default.
+
+## [article] Citation Modes
+
+Use different citation templates for narrative vs. parenthetical citations, shortened forms, and special cases like ibid.
+
+### Integral vs Non-Integral Citations
+
+Use `integral:` and `non-integral:` blocks for narrative ("Smith (2020) argued...") vs parenthetical ("...was argued (Smith, 2020)") styles:
+
+```yaml
+citation:
+  wrap: parentheses       # default wrapping
+  template:               # used as fallback if no mode-specific block
+    - contributor: author
+    - date: issued
+  non-integral:           # (Smith, 2020)
+    wrap: parentheses
+    template:
+      - contributor: author
+        form: short
+      - date: issued
+        form: year
+  integral:               # Smith (2020)
+    delimiter: " "
+    template:
+      - contributor: author
+        form: short
+      - date: issued
+        form: year
+        wrap: parentheses
+```
+
+### Note-style: Subsequent and Ibid
+
+Use `subsequent:` for shortened second-and-later citations, and `ibid:` for same-source repetitions:
+
+```yaml
+citation:
+  template:               # Full first citation
+    - contributor: author
+      form: long
+    - title: primary
+      prefix: ", "
+    - variable: locator
+      prefix: ", "
+  subsequent:             # Short form for later citations
+    options:
+      contributors:
+        name-form: family-only
+    template:
+      - contributor: author
+        form: short
+      - title: primary
+        form: short
+      - variable: locator
+        prefix: ", "
+  ibid:                    # Same source, possibly different locator
+    suffix: "Ibid."
+    template:
+      - variable: locator
+        prefix: ", "
+```
+
+### Multi-cite and Collapse
+
+For numeric styles, use `multi-cite-delimiter` (default "; ") to separate multiple citations, and `collapse: citation-number` to render ranges like [1–3]:
+
+- `multi-cite-delimiter`: String to separate multiple citations.
+- `collapse: citation-number`: Consecutive numbers are collapsed into ranges.
+
+## [share] Options Inheritance
+
+Global options apply to all components, but can be overridden at the citation and bibliography level.
+
+```yaml
+options:
+  contributors: apa       # Global: family-first, initials, up to 20 names
+
+citation:
+  options:
+    contributors:
+      shorten: { min: 3, use-first: 1 }   # Citation-level override
+
+bibliography:
+  options:
+    contributors:
+      shorten: { min: 20, use-first: 19 }  # Bibliography-level override
+```
+
+### Inheritance Chain
+
+1. Component-level options (highest priority)
+2. Citation/Bibliography-level options
+3. Global options (lowest priority)
+
+## [sort] Bib Sort & Groups
+
+Control bibliography ordering and split it into labeled sections based on reference properties.
+
+### Sort
+
+The `bibliography.sort` field controls ordering. Use a preset string or a custom sort template:
+
+```yaml
+bibliography:
+  sort: author-date-title   # preset: sort by author, then date, then title
+```
+
+**Preset sort values:** `author-date-title`, `author-title-date`.
+
+### Groups
+
+The `bibliography.groups` field splits the bibliography into labeled sections:
+
+```yaml
+bibliography:
+  groups:
+    - id: primary
+      heading:
+        localized:
+          en-US: "Primary Sources"
+      selector:
+        type: legal-case
+    - id: other
+      heading:
+        localized:
+          en-US: "Secondary Sources"
+      selector:
+        not:
+          type: legal-case
+```
+
+## [list] Reference Types
+
+References use a `class` (top-level discriminator) and `type` (subtype). In styles, use the `type` value as keys under `type-variants`.
+
+| Class | Types |
+|---|---|
+| Monograph | `book`, `manual`, `report`, `thesis`, `webpage`, `post`, `interview`, `manuscript`, `document` |
+| Collection | `anthology`, `proceedings`, `edited-book`, `edited-volume` |
+| Component | `chapter`, `article-journal`, `article-magazine`, `article-newspaper`, `broadcast`, `post` |
+| Standalone | `legal-case`, `statute`, `treaty`, `hearing`, `regulation`, `brief`, `patent`, `dataset`, `standard`, `software` |
+
+> [!TIP]
+> **Using Type Values in type-variants**
+> - Use the `type` value (e.g., `article-journal`, `book`) in `type-variants:`.
+> - Special keywords `default` and `all` also work.
+> - For components, parents are embedded under the `parent:` key.
+
+## [code] Complete Examples
+
+### Example 1: Minimal Author-Date Style
+
+```yaml
+info:
+  title: "Simple Author-Date"
+  id: "simple-author-date"
+
+options:
+  processing: author-date
+  contributors: apa
+
+citation:
+  template:
+    - contributor: author
+    - date: issued
+      prefix: " "
+      wrap: parentheses
+
+bibliography:
+  template:
+    - contributor: author
+    - date: issued
+      prefix: " "
+    - title: primary
+      prefix: " "
+      suffix: "."
+```
+
+### Example 2: Minimal Numeric Style
+
+```yaml
+info:
+  title: "Simple Numeric"
+  id: "simple-numeric"
+
+options:
+  processing: numeric
+
+citation:
+  template:
+    - number: citation-number
+      wrap: brackets
+
+bibliography:
+  template:
+    - number: citation-number
+      suffix: ". "
+    - contributor: author
+    - title: primary
+      prefix: " "
+```
+
+## [lightbulb] Workflow & Tips
+
+### Recommended Workflow
+
+1. **Start with a reference style**: Use an existing style as a template.
+2. **Write metadata**: Set title, id, and default locale in `info`.
+3. **Define global options**: Set mode and contributor/date presets.
+4. **Write citation template**: Start with author, date, and title.
+5. **Test with oracle**: Compare output against reference implementation.
+6. **Add type-variants**: Only for types needing a structurally different template.
+
+### Common Mistakes to Avoid
+
+> [!WARNING]
+> **Over-using type-variants**
+> Only add `type-variants` for types that need a genuinely different component set. Use presets and a well-designed generic template for the common case.
 
 > [!WARNING]
 > **Over-complicated options inheritance**

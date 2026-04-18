@@ -18,6 +18,8 @@ function slugify(text) {
         .replace(/^-+|-+$/g, '');
 }
 
+let firstHeading = true;
+
 renderer.heading = function(arg1, arg2) {
     let text, level;
     if (typeof arg1 === 'object') {
@@ -31,20 +33,24 @@ renderer.heading = function(arg1, arg2) {
     const iconMatch = text.match(/^\[([a-z0-9_]+)\]\s*(.*)/);
     const id = slugify(text);
     
-    if (iconMatch) {
+    if (iconMatch && level === 2) {
         const icon = iconMatch[1];
         const title = iconMatch[2];
-        const sizeClass = level === 2 ? 'text-3xl' : 'text-xl';
-        const mtClass = level === 2 ? 'mb-6' : 'mb-4';
         
-        return `
-            </section>
+        let output = '';
+        if (!firstHeading) {
+            output += '</section>\n';
+        }
+        firstHeading = false;
+        
+        output += `
             <section id="${id}" class="scroll-mt-24">
-                <h${level} class="${sizeClass} font-bold text-slate-900 ${mtClass} flex items-center gap-3">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                     <span class="material-icons text-primary">${icon}</span>
                     ${title}
-                </h${level}>
+                </h2>
         `;
+        return output;
     }
     return `<h${level} id="${id}" class="font-bold text-slate-900 mt-8 mb-4">${text}</h${level}>`;
 };
@@ -86,7 +92,6 @@ renderer.blockquote = function(arg1) {
     return `<blockquote>${content}</blockquote>`;
 };
 
-// Ensure code blocks look like the rest of the site
 renderer.code = function(arg1, arg2) {
     let code, lang;
     if (typeof arg1 === 'object') {
@@ -103,10 +108,42 @@ renderer.code = function(arg1, arg2) {
     `;
 };
 
+// Handle tables with Tailwind styles
+renderer.table = function(token) {
+    let header = '';
+    let body = '';
+
+    for (let i = 0; i < token.header.length; i++) {
+        header += `<th class="px-4 py-3 text-left font-semibold text-slate-900">${marked.parseInline(token.header[i].text)}</th>`;
+    }
+
+    for (let i = 0; i < token.rows.length; i++) {
+        body += '<tr class="hover:bg-slate-50">';
+        for (let j = 0; j < token.rows[i].length; j++) {
+            body += `<td class="px-4 py-3 text-slate-600">${marked.parseInline(token.rows[i][j].text)}</td>`;
+        }
+        body += '</tr>';
+    }
+
+    return `
+        <div class="overflow-x-auto rounded-lg border border-slate-200 mb-8 not-prose">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                    <tr>${header}</tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    ${body}
+                </tbody>
+            </table>
+        </div>
+    `;
+};
+
 marked.setOptions({ renderer });
 
 function build() {
     console.log('Building Style Author Guide...');
+    firstHeading = true;
     
     if (!fs.existsSync(MD_PATH)) {
         console.error(`Markdown file not found: ${MD_PATH}`);
@@ -122,9 +159,8 @@ function build() {
     
     let bodyHtml = marked.parse(mdContent);
     
-    // Cleanup first empty section tag if it exists
-    bodyHtml = bodyHtml.replace(/^<\/section>/, '');
-    if (!bodyHtml.endsWith('</section>')) {
+    // Close the last section
+    if (!firstHeading) {
         bodyHtml += '</section>';
     }
     
