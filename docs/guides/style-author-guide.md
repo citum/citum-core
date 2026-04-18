@@ -435,12 +435,25 @@ Controls what replaces the author when it is missing:
 
 - `author-date`: bibliography defaults to `author-date-title`
 - `note`: bibliography defaults to `author-title-date` when a bibliography is present
-- `label`: bibliography defaults to `author-date-title`
+- `label`: bibliography defaults to `author-date-title`. Requires a configuration
+  block (e.g., `label: { preset: alpha }`).
 - `numeric`: no bibliography sort is implied; insertion order is preserved unless `bibliography.sort` is set
+
+Advanced users can use `processing: { custom: { ... } }` to explicitly control
+sorting, grouping, and disambiguation rules.
 
 `citation.sort` remains explicit-only. If you omit it, multi-cite clusters keep the citation input order.
 
 ### Example combining presets
+
+```yaml
+options:
+  processing:
+    label:
+      preset: alpha  # Options: alpha, ams, din
+      year-digits: 4 # Optional override
+  contributors: math-phys
+```
 
 ```yaml
 options:
