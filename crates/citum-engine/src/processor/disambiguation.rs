@@ -182,6 +182,7 @@ impl<'a> Disambiguator<'a> {
         hints
     }
 
+    /// Resolves disambiguation configuration from the processor config.
     fn disambiguation_flags(&self) -> DisambiguationFlags {
         let disamb_config = match self.config.processing.as_ref() {
             Some(processing) => processing.config().disambiguate,
@@ -204,6 +205,8 @@ impl<'a> Disambiguator<'a> {
         }
     }
 
+    /// Builds an internal cache of reference data (author keys, group keys, titles)
+    /// to avoid redundant string generation during disambiguation.
     fn build_reference_cache(&self, refs: &[&Reference], needs_title_key: bool) -> ReferenceCache {
         let mut cache = HashMap::with_capacity(refs.len());
 
@@ -235,6 +238,9 @@ impl<'a> Disambiguator<'a> {
         cache
     }
 
+    /// Calculates how many references share the same author key in the bibliography.
+    /// This is used to determine if a collision group spans across different
+    /// authors/years or if they are just multiple works by the same author.
     fn author_group_lengths(
         &self,
         refs: &[&Reference],
@@ -250,6 +256,8 @@ impl<'a> Disambiguator<'a> {
         author_group_lengths
     }
 
+    /// Orchestrates the disambiguation cascade for a single collision group.
+    /// It attempts strategies in increasing order of disruptiveness (expansion -> year suffix).
     fn apply_group_hints(
         &self,
         hints: &mut HashMap<String, ProcHints>,
@@ -278,6 +286,7 @@ impl<'a> Disambiguator<'a> {
         self.apply_year_suffix(hints, &context, false, None);
     }
 
+    /// Optimization for groups with only one reference (no collision).
     fn try_apply_singleton_hint(
         &self,
         hints: &mut HashMap<String, ProcHints>,
@@ -297,6 +306,7 @@ impl<'a> Disambiguator<'a> {
         true
     }
 
+    /// Handles year-suffix disambiguation specifically for label-based styles (e.g. [Knu84a]).
     fn try_apply_label_mode_year_suffix(
         &self,
         hints: &mut HashMap<String, ProcHints>,
@@ -310,6 +320,7 @@ impl<'a> Disambiguator<'a> {
         true
     }
 
+    /// Attempts to resolve collisions by expanding the number of names shown (et al. expansion).
     fn try_apply_name_partitions(
         &self,
         hints: &mut HashMap<String, ProcHints>,
@@ -350,6 +361,7 @@ impl<'a> Disambiguator<'a> {
         true
     }
 
+    /// Attempts to resolve collisions by adding given names or initials.
     fn try_apply_givenname_resolution(
         &self,
         hints: &mut HashMap<String, ProcHints>,
@@ -365,6 +377,7 @@ impl<'a> Disambiguator<'a> {
         true
     }
 
+    /// Attempts to resolve collisions by using both more names AND given name expansion.
     fn try_apply_combined_resolution(
         &self,
         hints: &mut HashMap<String, ProcHints>,
@@ -383,6 +396,8 @@ impl<'a> Disambiguator<'a> {
         true
     }
 
+    /// Searches for the minimum number of names that, when combined with given name expansion,
+    /// resolves the collision group.
     fn find_combined_resolution(
         &self,
         group: &[&Reference],
@@ -397,6 +412,7 @@ impl<'a> Disambiguator<'a> {
         (2..=max_authors).find(|&n| self.check_givenname_resolution(group, cache, Some(n)))
     }
 
+    /// Finalizes a successful disambiguation strategy by inserting the calculated hints into the map.
     fn apply_resolution(
         &self,
         hints: &mut HashMap<String, ProcHints>,
@@ -420,6 +436,7 @@ impl<'a> Disambiguator<'a> {
         );
     }
 
+    /// Inserts a single hint into the hints map, ensuring the author group length is correctly set.
     fn insert_hint(
         &self,
         hints: &mut HashMap<String, ProcHints>,
@@ -434,6 +451,7 @@ impl<'a> Disambiguator<'a> {
         hints.insert(reference.id().unwrap_or_default().to_string(), hint);
     }
 
+    /// Retrieves the number of references sharing the author key for a specific reference.
     fn author_group_length(
         &self,
         reference: &Reference,
@@ -444,6 +462,7 @@ impl<'a> Disambiguator<'a> {
         author_group_lengths.get(author_key).copied()
     }
 
+    /// Applies year-suffix disambiguation to the entire group in the context.
     fn apply_year_suffix(
         &self,
         hints: &mut HashMap<String, ProcHints>,
@@ -460,6 +479,7 @@ impl<'a> Disambiguator<'a> {
         );
     }
 
+    /// Applies year-suffix disambiguation to a specific (sub)group of references.
     fn apply_year_suffix_for_group(
         &self,
         hints: &mut HashMap<String, ProcHints>,
@@ -483,6 +503,7 @@ impl<'a> Disambiguator<'a> {
         );
     }
 
+    /// Iterates through a group of references and inserts hints according to the specified order.
     fn insert_group_hints(
         &self,
         hints: &mut HashMap<String, ProcHints>,
@@ -524,6 +545,7 @@ impl<'a> Disambiguator<'a> {
         }
     }
 
+    /// Helper to insert a hint with common planned fields (key, expand flags, group index).
     fn insert_planned_hint(
         &self,
         hints: &mut HashMap<String, ProcHints>,
@@ -549,6 +571,8 @@ impl<'a> Disambiguator<'a> {
         );
     }
 
+    /// Sorts a collision group to determine the deterministic order for year-suffix assignment.
+    /// It uses the provided group sort specification or falls back to title-based sorting.
     fn sort_group_for_year_suffix<'b>(
         &self,
         group: &[&'b Reference],
@@ -667,6 +691,7 @@ impl<'a> Disambiguator<'a> {
         groups
     }
 
+    /// Generates a normalized author string used for grouping and et-al detection.
     fn build_author_key(&self, names: &[crate::reference::FlatName]) -> String {
         let shorten = self
             .config
@@ -728,6 +753,7 @@ impl<'a> Disambiguator<'a> {
         key
     }
 
+    /// Appends a sequence of family names to the key buffer, lowercased.
     fn append_lowercased_families(
         &self,
         key: &mut String,
@@ -743,6 +769,7 @@ impl<'a> Disambiguator<'a> {
         }
     }
 
+    /// Creates a key representing the citation form when n names are shown.
     fn append_name_expansion_key(
         &self,
         key: &mut String,
@@ -758,6 +785,7 @@ impl<'a> Disambiguator<'a> {
         }
     }
 
+    /// Creates a key including full name parts (given names, particles) for exact resolution.
     fn append_givenname_resolution_key(
         &self,
         key: &mut String,
@@ -778,6 +806,7 @@ impl<'a> Disambiguator<'a> {
         }
     }
 
+    /// Serializes an optional name part into the key buffer with its length.
     fn append_optional_part(key: &mut String, value: Option<&str>) {
         match value {
             Some(value) => {
@@ -788,6 +817,7 @@ impl<'a> Disambiguator<'a> {
         }
     }
 
+    /// Pushes a lowercased version of the string to the buffer, optimized for ASCII.
     fn push_lowercased(key: &mut String, value: &str) {
         if value.is_ascii() {
             key.reserve(value.len());
@@ -799,10 +829,12 @@ impl<'a> Disambiguator<'a> {
         }
     }
 
+    /// Returns a unique numeric key for a reference based on its pointer address.
     fn reference_cache_key(reference: &Reference) -> usize {
         std::ptr::from_ref(reference) as usize
     }
 
+    /// Retrieves cached metadata for a specific reference.
     fn reference_data<'b>(
         &self,
         reference: &Reference,
