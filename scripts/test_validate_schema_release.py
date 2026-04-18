@@ -193,12 +193,59 @@ class ValidationOnlyTests(unittest.TestCase):
     @mock.patch.object(prep, "read_schema_dir_contents_at_ref")
     @mock.patch.object(prep, "read_current_schema_version")
     @mock.patch.object(prep, "read_schema_version_at_ref")
+    @mock.patch.object(prep, "list_changed_files")
+    @mock.patch.object(prep, "resolve_validation_target")
+    @mock.patch.object(prep, "parse_args")
+    def test_main_skips_unrelated_ranges_even_when_schemas_are_stale(
+        self,
+        parse_args: mock.Mock,
+        resolve_validation_target: mock.Mock,
+        list_changed_files: mock.Mock,
+        read_schema_version_at_ref: mock.Mock,
+        read_current_schema_version: mock.Mock,
+        read_schema_dir_contents_at_ref: mock.Mock,
+        export_schemas: mock.Mock,
+        read_schema_dir_contents: mock.Mock,
+        collect_schema_bump_markers: mock.Mock,
+    ) -> None:
+        parse_args.return_value = argparse.Namespace(
+            previous_tag=None,
+            baseline_ref="origin/main",
+            commit_range="origin/main..HEAD",
+            dry_run=True,
+            allow_orphan_footer=False,
+        )
+        resolve_validation_target.return_value = prep.ValidationTarget(
+            baseline_ref="origin/main",
+            baseline_label="baseline origin/main",
+            commit_range="origin/main..HEAD",
+        )
+        list_changed_files.return_value = ["crates/citum-migrate/src/template_resolver.rs"]
+        read_schema_version_at_ref.return_value = "0.16.0"
+        read_current_schema_version.return_value = "0.16.0"
+        read_schema_dir_contents_at_ref.return_value = {"style.json": "before"}
+        read_schema_dir_contents.return_value = {"style.json": "after"}
+        collect_schema_bump_markers.return_value = ([], [])
+
+        result = prep.main([])
+
+        self.assertEqual(result, 0)
+        export_schemas.assert_not_called()
+
+    @mock.patch.object(prep, "collect_schema_bump_markers")
+    @mock.patch.object(prep, "read_schema_dir_contents")
+    @mock.patch.object(prep, "export_schemas")
+    @mock.patch.object(prep, "read_schema_dir_contents_at_ref")
+    @mock.patch.object(prep, "read_current_schema_version")
+    @mock.patch.object(prep, "read_schema_version_at_ref")
+    @mock.patch.object(prep, "list_changed_files")
     @mock.patch.object(prep, "resolve_validation_target")
     @mock.patch.object(prep, "parse_args")
     def test_main_fails_when_schema_version_does_not_match_footer(
         self,
         parse_args: mock.Mock,
         resolve_validation_target: mock.Mock,
+        list_changed_files: mock.Mock,
         read_schema_version_at_ref: mock.Mock,
         read_current_schema_version: mock.Mock,
         read_schema_dir_contents_at_ref: mock.Mock,
@@ -218,6 +265,7 @@ class ValidationOnlyTests(unittest.TestCase):
             baseline_label="baseline abc1234",
             commit_range="abc1234..HEAD",
         )
+        list_changed_files.return_value = ["crates/citum-schema-style/src/lib.rs"]
         read_schema_version_at_ref.return_value = "0.16.0"
         read_current_schema_version.return_value = "0.16.0"
         read_schema_dir_contents_at_ref.return_value = {"locale.json": "before"}

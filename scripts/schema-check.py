@@ -34,6 +34,15 @@ STYLE_SCHEMA_LIB = Path("crates/citum-schema-style/src/lib.rs")
 SCHEMA_BUMP_RE = re.compile(r"^Schema-Bump:\s*(patch|minor|major)\s*$", re.MULTILINE)
 
 
+def is_schema_source_path(path: str) -> bool:
+    """Return true when a staged path can affect generated schemas."""
+
+    return (
+        path.endswith(".rs")
+        and (path.startswith("crates/citum-schema") or path.startswith("crates/citum-cli/"))
+    )
+
+
 def get_root_dir():
     """Return the git repository root."""
     result = subprocess.run(
@@ -65,10 +74,7 @@ def get_git_dir() -> Path:
 def schema_files_staged():
     """Check if any citum-schema* files are staged."""
     staged_files = get_staged_files()
-    for f in staged_files:
-        if "crates/citum-schema" in f and f.endswith(".rs"):
-            return True
-    return False
+    return any(is_schema_source_path(path) for path in staged_files)
 
 
 def get_staged_files() -> list[str]:
