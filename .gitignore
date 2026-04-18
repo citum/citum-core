@@ -56,3 +56,4 @@ bindings/latex/libcitum_processor.dylib
 __pycache__/
 *.pyc
 scripts/x-bench.js
+docs/guides/style-author-guide.html
