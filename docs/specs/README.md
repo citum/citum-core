@@ -58,3 +58,4 @@ to make sure the document should be a spec rather than architecture or policy.
 | [`EDTF_HISTORICAL_ERA_RENDERING.md`](./EDTF_HISTORICAL_ERA_RENDERING.md) | Locale-backed rendering of valid historical EDTF years |
 | [`LOCALE_MESSAGES.md`](./LOCALE_MESSAGES.md) | ICU MF1 parameterized message system replacing flat YAML term files |
 | [`ORIGINAL_PUBLICATION_RELATION_SUPPORT.md`](./ORIGINAL_PUBLICATION_RELATION_SUPPORT.md) | Universal original publication metadata support across all types |
+| [`EMBEDDED_JS_TEMPLATE_INFERENCE.md`](./EMBEDDED_JS_TEMPLATE_INFERENCE.md) | Embedded `deno_core` live inference backend for `citum-migrate` |

@@ -3,9 +3,10 @@
 //! Resolves bibliography and citation templates from multiple sources:
 //! 1. Hand-authored YAML files (`examples/{style-name}-style.yaml`)
 //! 2. Cached inferred JSON files (`templates/inferred/`)
-//! 3. Live inference via Node.js (`scripts/infer-template.js --fragment`)
+//! 3. Live inference via embedded JS or Node (`scripts/infer-template.js --fragment`)
 //! 4. Fallback to XML template compiler (caller handles this case)
 
+use crate::js_runtime::EmbeddedTemplateRuntime;
 use citum_schema::template::{TemplateComponent, WrapPunctuation};
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -34,6 +35,32 @@ impl std::str::FromStr for TemplateMode {
             "xml" => Ok(Self::Xml),
             other => Err(format!(
                 "invalid template mode '{other}': expected auto|hand|inferred|xml"
+            )),
+        }
+    }
+}
+
+/// Live inference backend preference passed from CLI.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LiveInferBackend {
+    /// Try embedded JS first, then Node subprocess.
+    Auto,
+    /// Use the embedded JS runtime only.
+    Embedded,
+    /// Use the legacy Node subprocess only.
+    Node,
+}
+
+impl std::str::FromStr for LiveInferBackend {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "auto" => Ok(Self::Auto),
+            "embedded" => Ok(Self::Embedded),
+            "node" => Ok(Self::Node),
+            other => Err(format!(
+                "invalid live inference backend '{other}': expected auto|embedded|node"
             )),
         }
     }
@@ -146,6 +173,7 @@ pub fn resolve_templates(
     workspace_root: &Path,
     mode: TemplateMode,
     min_confidence: f64,
+    live_infer_backend: LiveInferBackend,
 ) -> ResolvedTemplates {
     if mode == TemplateMode::Xml {
         return ResolvedTemplates::default();
@@ -165,7 +193,7 @@ pub fn resolve_templates(
         std::path::Path::to_path_buf,
     );
 
-    let ctx = ResolveContext {
+    let mut ctx = ResolveContext {
         style_path,
         style_name,
         workspace_root,
@@ -173,10 +201,14 @@ pub fn resolve_templates(
         hand_authored: hand_authored.as_ref(),
         mode,
         min_confidence,
+        live_infer_backend,
+        embedded_runtime: EmbeddedRuntimeState::Uninitialized,
+        node_available: None,
+        style_xml: None,
     };
 
-    let bibliography = resolve_section(TemplateSection::Bibliography, &ctx);
-    let citation = resolve_section(TemplateSection::Citation, &ctx);
+    let bibliography = resolve_section(TemplateSection::Bibliography, &mut ctx);
+    let citation = resolve_section(TemplateSection::Citation, &mut ctx);
 
     ResolvedTemplates {
         bibliography,
@@ -213,11 +245,21 @@ struct ResolveContext<'a> {
     hand_authored: Option<&'a HandAuthoredTemplates>,
     mode: TemplateMode,
     min_confidence: f64,
+    live_infer_backend: LiveInferBackend,
+    embedded_runtime: EmbeddedRuntimeState,
+    node_available: Option<bool>,
+    style_xml: Option<String>,
+}
+
+enum EmbeddedRuntimeState {
+    Uninitialized,
+    Ready(EmbeddedTemplateRuntime),
+    Failed,
 }
 
 fn resolve_section(
     section: TemplateSection,
-    ctx: &ResolveContext<'_>,
+    ctx: &mut ResolveContext<'_>,
 ) -> Option<ResolvedTemplateSection> {
     if matches!(ctx.mode, TemplateMode::Auto | TemplateMode::Hand)
         && let Some(hand) = ctx.hand_authored
@@ -246,10 +288,9 @@ fn resolve_section(
             ctx.style_path,
             ctx.style_name,
             section,
-            ctx.workspace_root,
             ctx.cache_dir,
-            ctx.min_confidence,
             allow_live_infer,
+            ctx,
         ) {
             return Some(resolved);
         }
@@ -262,30 +303,22 @@ fn resolve_inferred_section(
     style_path: &str,
     style_name: &str,
     section: TemplateSection,
-    workspace_root: &Path,
     cache_dir: &Path,
-    min_confidence: f64,
     allow_live_infer: bool,
+    ctx: &mut ResolveContext<'_>,
 ) -> Option<ResolvedTemplateSection> {
     for cache_path in section.cache_candidates(cache_dir, style_name) {
         if !cache_path.exists() {
             continue;
         }
-        if let Some(mut resolved) = load_inferred_json(&cache_path, section, min_confidence) {
+        if let Some(mut resolved) = load_inferred_json(&cache_path, section, ctx.min_confidence) {
             resolved.source = TemplateSource::InferredCached(cache_path);
             return Some(resolved);
         }
     }
 
     if allow_live_infer {
-        infer_live(
-            style_path,
-            style_name,
-            section,
-            workspace_root,
-            cache_dir,
-            min_confidence,
-        )
+        infer_live(style_path, style_name, section, cache_dir, ctx)
     } else {
         None
     }
@@ -406,45 +439,28 @@ fn preview_text(text: &str, limit: usize) -> &str {
     &text[..end]
 }
 
-/// Run the Node.js template inferrer and cache the result.
+/// Run live inference using the selected backend and cache the result.
 fn infer_live(
     style_path: &str,
     style_name: &str,
     section: TemplateSection,
-    workspace_root: &Path,
     cache_dir: &Path,
-    min_confidence: f64,
+    ctx: &mut ResolveContext<'_>,
 ) -> Option<ResolvedTemplateSection> {
-    if Command::new("node").arg("--version").output().is_err() {
-        return None;
-    }
-
-    let script = workspace_root.join("scripts").join("infer-template.js");
-    if !script.exists() {
-        return None;
-    }
-
     eprintln!(
         "Inferring {} template for {}...",
         section.as_str(),
         style_name
     );
 
-    let output = Command::new("node")
-        .arg(&script)
-        .arg(style_path)
-        .arg(format!("--section={}", section.as_str()))
-        .arg("--fragment")
-        .current_dir(workspace_root)
-        .output()
-        .ok()?;
+    let stdout = match ctx.live_infer_backend {
+        LiveInferBackend::Auto => infer_with_embedded(style_name, section, ctx)
+            .or_else(|| infer_with_node(style_path, section, ctx)),
+        LiveInferBackend::Embedded => infer_with_embedded(style_name, section, ctx),
+        LiveInferBackend::Node => infer_with_node(style_path, section, ctx),
+    }?;
 
-    if !output.status.success() {
-        return None;
-    }
-
-    let stdout = String::from_utf8(output.stdout).ok()?;
-    let mut resolved = parse_fragment(&stdout, section, min_confidence)?;
+    let mut resolved = parse_fragment(&stdout, section, ctx.min_confidence)?;
     resolved.source = TemplateSource::InferredLive;
 
     if std::fs::create_dir_all(cache_dir).is_ok() {
@@ -453,6 +469,111 @@ fn infer_live(
     }
 
     Some(resolved)
+}
+
+fn infer_with_embedded(
+    style_name: &str,
+    section: TemplateSection,
+    ctx: &mut ResolveContext<'_>,
+) -> Option<String> {
+    style_xml(ctx)?;
+    let style_xml = ctx.style_xml.take()?;
+    let result = if let Some(runtime) = embedded_runtime(ctx) {
+        runtime.infer_fragment(style_name, &style_xml, section.as_str())
+    } else {
+        ctx.style_xml = Some(style_xml);
+        return None;
+    };
+    ctx.style_xml = Some(style_xml);
+
+    result
+        .map_err(|err| {
+            eprintln!(
+                "  [template_resolver] Embedded inference failed for {}: {err}",
+                section.as_str()
+            );
+            err
+        })
+        .ok()
+}
+
+fn infer_with_node(
+    style_path: &str,
+    section: TemplateSection,
+    ctx: &mut ResolveContext<'_>,
+) -> Option<String> {
+    if let Some(false) = ctx.node_available {
+        return None;
+    }
+
+    let script = ctx.workspace_root.join("scripts").join("infer-template.js");
+    if !script.exists() {
+        ctx.node_available = Some(false);
+        return None;
+    }
+
+    if ctx.node_available.is_none() {
+        ctx.node_available = Some(Command::new("node").arg("--version").output().is_ok());
+    }
+    if ctx.node_available != Some(true) {
+        return None;
+    }
+
+    let output = Command::new("node")
+        .arg(&script)
+        .arg(style_path)
+        .arg(format!("--section={}", section.as_str()))
+        .arg("--fragment")
+        .current_dir(ctx.workspace_root)
+        .output()
+        .ok()?;
+
+    if !output.status.success() {
+        eprintln!(
+            "  [template_resolver] Node inference failed for {}: {}",
+            section.as_str(),
+            String::from_utf8_lossy(&output.stderr).trim()
+        );
+        return None;
+    }
+
+    String::from_utf8(output.stdout).ok()
+}
+
+fn embedded_runtime<'a>(
+    ctx: &'a mut ResolveContext<'_>,
+) -> Option<&'a mut EmbeddedTemplateRuntime> {
+    if matches!(ctx.embedded_runtime, EmbeddedRuntimeState::Uninitialized) {
+        ctx.embedded_runtime = match EmbeddedTemplateRuntime::new(ctx.workspace_root) {
+            Ok(runtime) => EmbeddedRuntimeState::Ready(runtime),
+            Err(err) => {
+                eprintln!("  [template_resolver] Embedded runtime unavailable: {err}");
+                EmbeddedRuntimeState::Failed
+            }
+        };
+    }
+
+    match &mut ctx.embedded_runtime {
+        EmbeddedRuntimeState::Ready(runtime) => Some(runtime),
+        EmbeddedRuntimeState::Failed | EmbeddedRuntimeState::Uninitialized => None,
+    }
+}
+
+fn style_xml<'a>(ctx: &'a mut ResolveContext<'_>) -> Option<&'a str> {
+    if ctx.style_xml.is_none() {
+        ctx.style_xml = match std::fs::read_to_string(ctx.style_path) {
+            Ok(text) => Some(text),
+            Err(err) => {
+                eprintln!(
+                    "  [template_resolver] Failed to read style XML {}: {err}",
+                    ctx.style_path
+                );
+                None
+            }
+        };
+    }
+
+    ctx.style_xml.as_deref()
 }
 
 #[cfg(test)]
@@ -572,5 +693,22 @@ mod tests {
     fn test_missing_file_returns_none() {
         let path = Path::new("/nonexistent/path/style.json");
         assert!(load_inferred_json(path, TemplateSection::Bibliography, 0.70).is_none());
+    }
+
+    #[test]
+    fn test_live_infer_backend_from_str() {
+        assert_eq!(
+            "auto".parse::<LiveInferBackend>().unwrap(),
+            LiveInferBackend::Auto
+        );
+        assert_eq!(
+            "embedded".parse::<LiveInferBackend>().unwrap(),
+            LiveInferBackend::Embedded
+        );
+        assert_eq!(
+            "node".parse::<LiveInferBackend>().unwrap(),
+            LiveInferBackend::Node
+        );
+        assert!("bogus".parse::<LiveInferBackend>().is_err());
     }
 }

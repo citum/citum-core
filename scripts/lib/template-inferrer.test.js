@@ -1,4 +1,9 @@
-const { detectNameOrder } = require('./template-inferrer');
+const {
+  aggregateByType,
+  detectNameOrder,
+  detectSuppressions,
+  findConsensusOrdering,
+} = require('./template-inferrer');
 const { strict: assert } = require('assert');
 
 // Mock helpers
@@ -40,3 +45,68 @@ const text2 = 'Ericsson, K. A., Charness, N.';
 assert.equal(detectNameOrder(text2, names1), 'family-first', 'Complex author window failed');
 
 console.log('All detectNameOrder tests passed!');
+
+console.log('Running aggregateByType/detectSuppressions tests...');
+
+const duplicateEntries = ['Shared Citation', 'Shared Citation'];
+const duplicateRefs = [
+    {
+        type: 'article-journal',
+        title: 'Shared Citation',
+    },
+    {
+        type: 'article-journal',
+        title: 'Shared Citation',
+        issue: '7',
+    },
+];
+const typedComponents = aggregateByType(duplicateEntries, duplicateRefs);
+assert.deepEqual(
+    typedComponents['article-journal'].entries.map(({ index, rendered }) => ({ index, rendered })),
+    [
+        { index: 0, rendered: 'Shared Citation' },
+        { index: 1, rendered: 'Shared Citation' },
+    ],
+    'aggregateByType should retain original entry indices for duplicate rendered entries',
+);
+const suppressions = detectSuppressions(
+    ['issue'],
+    typedComponents,
+    {},
+    { entries: duplicateEntries },
+    duplicateRefs,
+);
+assert.equal(
+    suppressions.issue['article-journal'],
+    true,
+    'detectSuppressions should use the original entry index for duplicate rendered entries',
+);
+
+console.log('Running findConsensusOrdering tests...');
+
+const orderingEntries = [
+    'Smith Alpha Title (2020).',
+    'Jones Beta Title (2021).',
+];
+const orderingRefs = [
+    {
+        type: 'book',
+        author: makeName('Smith', 'John'),
+        title: 'Alpha Title',
+        issued: { 'date-parts': [[2020]] },
+    },
+    {
+        type: 'book',
+        author: makeName('Jones', 'Jane'),
+        title: 'Beta Title',
+        issued: { 'date-parts': [[2021]] },
+    },
+];
+const ordering = findConsensusOrdering(orderingEntries, orderingRefs);
+assert.deepEqual(
+    ordering.consensusOrdering,
+    ['contributors', 'title', 'year'],
+    'findConsensusOrdering should use the provided refByEntry mapping directly',
+);
+
+console.log('All template inferrer core tests passed!');

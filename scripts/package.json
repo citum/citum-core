@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "build:docs": "node build-author-guide.js"
+    "build:docs": "node build-author-guide.js",
+    "build:embedded-template-runtime": "node build-embedded-template-runtime.js"
   },
   "dependencies": {
     "ajv": "^8.17.1",
