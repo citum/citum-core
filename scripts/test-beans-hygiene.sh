@@ -173,7 +173,7 @@ EOF
 
 repo=$(new_repo soft-stale)
 commit_file "$repo" README.md "baseline" "chore: initial commit"
-commit_file "$repo" notes.txt "done" $'feat(workflow): likely stale implementation\n\nRefs: csl26-soft'
+commit_file "$repo" notes.txt "done" $'feat(workflow): likely stale implementation\n\nFixes: csl26-soft'
 set +e
 soft_output=$(run_wrapper "$repo" "$TMP_ROOT/soft-stale.json" hygiene 2>&1)
 soft_status=$?
@@ -207,7 +207,7 @@ EOF
 
 repo=$(new_repo precreated-soft-stale)
 commit_file "$repo" README.md "baseline" "chore: initial commit"
-commit_file "$repo" notes.txt "done" $'feat(workflow): stale candidate\n\nRefs: csl26-soft2'
+commit_file "$repo" notes.txt "done" $'feat(workflow): stale candidate\n\nFixes: csl26-soft2'
 set +e
 precreated_output=$(run_wrapper "$repo" "$TMP_ROOT/precreated-soft-stale.json" hygiene 2>&1)
 precreated_status=$?
@@ -232,7 +232,7 @@ EOF
 
 repo=$(new_repo updated-soft-stale)
 commit_file "$repo" README.md "baseline" "chore: initial commit"
-commit_file "$repo" notes.txt "done" $'feat(workflow): stale candidate\n\nRefs: csl26-soft3'
+commit_file "$repo" notes.txt "done" $'feat(workflow): stale candidate\n\nFixes: csl26-soft3'
 set +e
 updated_output=$(run_wrapper "$repo" "$TMP_ROOT/updated-soft-stale.json" hygiene 2>&1)
 updated_status=$?
@@ -468,7 +468,7 @@ EOF
 
 repo=$(new_repo next-priority)
 commit_file "$repo" README.md "baseline" "chore: initial commit"
-commit_file "$repo" notes.txt "done" $'feat(workflow): stale ready bean\n\nRefs: csl26-stal'
+commit_file "$repo" notes.txt "done" $'feat(workflow): stale ready bean\n\nFixes: csl26-stal'
 next_output=$(run_wrapper "$repo" "$TMP_ROOT/next-list.json" "$TMP_ROOT/next-graphql.json" next)
 assert_contains "$next_output" "Reconciliation candidates:"
 assert_contains "$next_output" "csl26-stal"
