@@ -16,7 +16,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { inferTemplate } = require('./lib/template-inferrer');
+const { buildFragmentOutput, inferTemplate } = require('./lib/template-inferrer');
 
 // Parse arguments
 const args = process.argv.slice(2);
@@ -80,20 +80,7 @@ if (!result) {
 if (fragmentOutput) {
   // Compact JSON fragment for Rust template resolver consumption.
   // Outputs to stdout only, no stderr noise.
-  const fragment = {
-    meta: {
-      style: styleName,
-      confidence: result.meta.confidence,
-      delimiter: result.meta.delimiterConsensus,
-      entrySuffix: result.meta.entrySuffix,
-      wrap: result.meta.wrap,
-    },
-  };
-  fragment[section] = { template: result.template };
-  if (result.integral) fragment[section].integral = result.integral;
-  if (result.non_integral) fragment[section].non_integral = result.non_integral;
-
-  console.log(JSON.stringify(fragment));
+  console.log(JSON.stringify(buildFragmentOutput(result, section, styleName)));
   process.exit(0);
 } else if (jsonOutput) {
   // Full result object as JSON

@@ -43,6 +43,7 @@ struct CliArgs {
     path: String,
     debug_variable: Option<String>,
     template_mode: template_resolver::TemplateMode,
+    live_infer_backend: template_resolver::LiveInferBackend,
     template_dir: Option<PathBuf>,
     min_template_confidence: f64,
 }
@@ -64,6 +65,36 @@ struct CompiledOutput {
     citation_ibid_override: Option<Vec<TemplateComponent>>,
 }
 
+fn parse_template_mode_arg(value: &str) -> template_resolver::TemplateMode {
+    match value.parse::<template_resolver::TemplateMode>() {
+        Ok(mode) => mode,
+        Err(msg) => {
+            eprintln!("Error: {msg}");
+            std::process::exit(1);
+        }
+    }
+}
+
+fn parse_live_infer_backend_arg(value: &str) -> template_resolver::LiveInferBackend {
+    match value.parse::<template_resolver::LiveInferBackend>() {
+        Ok(backend) => backend,
+        Err(msg) => {
+            eprintln!("Error: {msg}");
+            std::process::exit(1);
+        }
+    }
+}
+
+fn parse_min_template_confidence_arg(value: &str) -> f64 {
+    match value.parse::<f64>() {
+        Ok(parsed) if (0.0..=1.0).contains(&parsed) => parsed,
+        _ => {
+            eprintln!("Error: --min-template-confidence requires a number in [0.0, 1.0]");
+            std::process::exit(1);
+        }
+    }
+}
+
 fn parse_cli_args(args: &[String]) -> CliArgs {
     let program_name = args
         .first()
@@ -79,6 +110,7 @@ fn parse_cli_args(args: &[String]) -> CliArgs {
     let mut path = "styles-legacy/apa.csl".to_string();
     let mut debug_variable: Option<String> = None;
     let mut template_mode = template_resolver::TemplateMode::Auto;
+    let mut live_infer_backend = template_resolver::LiveInferBackend::Auto;
     let mut template_dir: Option<PathBuf> = None;
     let mut min_template_confidence = 0.70_f64;
 
@@ -96,13 +128,7 @@ fn parse_cli_args(args: &[String]) -> CliArgs {
             }
             "--template-source" => {
                 if i + 1 < args.len() {
-                    template_mode = match args[i + 1].parse::<template_resolver::TemplateMode>() {
-                        Ok(mode) => mode,
-                        Err(msg) => {
-                            eprintln!("Error: {msg}");
-                            std::process::exit(1);
-                        }
-                    };
+                    template_mode = parse_template_mode_arg(&args[i + 1]);
                     i += 2;
                 } else {
                     eprintln!(
@@ -111,20 +137,21 @@ fn parse_cli_args(args: &[String]) -> CliArgs {
                     std::process::exit(1);
                 }
             }
+            "--live-infer-backend" => {
+                if i + 1 < args.len() {
+                    live_infer_backend = parse_live_infer_backend_arg(&args[i + 1]);
+                    i += 2;
+                } else {
+                    eprintln!(
+                        "Error: --live-infer-backend requires an argument (auto|embedded|node)"
+                    );
+                    std::process::exit(1);
+                }
+            }
             "--min-template-confidence" => {
                 if i + 1 < args.len() {
-                    match args[i + 1].parse::<f64>() {
-                        Ok(val) if (0.0..=1.0).contains(&val) => {
-                            min_template_confidence = val;
-                            i += 2;
-                        }
-                        _ => {
-                            eprintln!(
-                                "Error: --min-template-confidence requires a number in [0.0, 1.0]"
-                            );
-                            std::process::exit(1);
-                        }
-                    }
+                    min_template_confidence = parse_min_template_confidence_arg(&args[i + 1]);
+                    i += 2;
                 } else {
                     eprintln!("Error: --min-template-confidence requires a numeric argument");
                     std::process::exit(1);
@@ -156,6 +183,7 @@ fn parse_cli_args(args: &[String]) -> CliArgs {
         path,
         debug_variable,
         template_mode,
+        live_infer_backend,
         template_dir,
         min_template_confidence,
     }
@@ -192,6 +220,7 @@ fn resolve_style_name_and_templates(
         &workspace_root,
         cli.template_mode,
         cli.min_template_confidence,
+        cli.live_infer_backend,
     );
 
     (style_name, resolved)
@@ -459,6 +488,7 @@ fn print_help(program_name: &str) {
     eprintln!("  -h, --help                      Show this help text");
     eprintln!("  --debug-variable <name>         Print provenance details for one variable");
     eprintln!("  --template-source <mode>        Template source: auto|hand|inferred|xml");
+    eprintln!("  --live-infer-backend <mode>     Live inference backend: auto|embedded|node");
     eprintln!("  --template-dir <path>           Override directory for hand-authored templates");
     eprintln!("  --min-template-confidence <n>   Minimum inferred confidence [0.0, 1.0]");
 }

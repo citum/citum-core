@@ -27,6 +27,7 @@ cargo run --bin citum-migrate -- styles-legacy/apa.csl > styles/apa.yaml
 ## Flags
 
 - `--template-source auto|hand|inferred|xml`
+- `--live-infer-backend auto|embedded|node`
 - `--template-dir <path>`
 - `--min-template-confidence <0.0..1.0>`
 - `--debug-variable <name>`
@@ -39,6 +40,15 @@ cargo run --bin citum-migrate -- styles-legacy/apa.csl > styles/apa.yaml
 - `xml`: XML templates only
 
 Important: `inferred` mode is cache-only and never runs live Node/citeproc-js inference.
+
+### `--live-infer-backend`
+
+- `auto` (default): embedded JS runtime first, then Node subprocess fallback
+- `embedded`: embedded JS runtime only
+- `node`: legacy Node subprocess only
+
+This flag only applies when `--template-source auto` needs live inference after
+cache lookup. Cache hits still win first.
 
 ### What "hand-authored" means
 
@@ -65,8 +75,21 @@ In `auto` mode:
 2. `templates/inferred/<style-name>.bibliography.json`
 3. `templates/inferred/<style-name>.citation.json`
 4. Legacy cache compatibility: `templates/inferred/<style-name>.json` (bibliography)
-5. Live inference via `scripts/infer-template.js` (auto mode only)
-6. XML template compiler fallback
+5. Live inference via embedded JS runtime (auto mode default)
+6. Live inference via `scripts/infer-template.js` Node fallback (auto mode only)
+7. XML template compiler fallback
+
+## Embedded Runtime Bundle
+
+The embedded runtime bundle is committed at:
+
+- `crates/citum-migrate/js/embedded-template-runtime.js`
+
+Regenerate it after changing the host-neutral inference core or citeproc bundle:
+
+```bash
+node scripts/build-embedded-template-runtime.js
+```
 
 ## Precompile Once, Migrate in Rust
 
