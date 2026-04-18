@@ -15,6 +15,7 @@ from typing import Sequence
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_DIR = REPO_ROOT / "docs/schemas"
 STYLE_SCHEMA_LIB = REPO_ROOT / "crates/citum-schema-style/src/lib.rs"
+SCHEMA_VERSIONING_DOC = REPO_ROOT / "docs/reference/SCHEMA_VERSIONING.md"
 
 FIELD_SEPARATOR = "\x1f"
 RECORD_SEPARATOR = "\x1e"
@@ -52,6 +53,31 @@ class ValidationTarget:
     baseline_ref: str
     baseline_label: str
     commit_range: str
+
+
+def is_schema_source_path(path: str) -> bool:
+    """Return true when a changed path can affect generated schemas."""
+
+    return (
+        path.endswith(".rs")
+        and (path.startswith("crates/citum-schema") or path.startswith("crates/citum-cli/"))
+    )
+
+
+def is_schema_metadata_path(path: str) -> bool:
+    """Return true when a changed path is part of schema release bookkeeping."""
+
+    return path.startswith("docs/schemas/") or path in {
+        STYLE_SCHEMA_LIB.relative_to(REPO_ROOT).as_posix(),
+        SCHEMA_VERSIONING_DOC.relative_to(REPO_ROOT).as_posix(),
+    }
+
+
+def list_changed_files(commit_range: str) -> list[str]:
+    """Return the changed files in the validated commit range."""
+
+    result = run(["git", "diff", "--name-only", commit_range])
+    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
 
 
 def run(
@@ -286,19 +312,25 @@ def main(argv: Sequence[str]) -> int:
     try:
         args = parse_args(argv)
         target = resolve_validation_target(args)
+        changed_files = list_changed_files(target.commit_range)
+        schema_source_changed = any(is_schema_source_path(path) for path in changed_files)
+        schema_metadata_changed = any(is_schema_metadata_path(path) for path in changed_files)
+        schema_related_change = schema_source_changed or schema_metadata_changed
 
         previous_schema_version = read_schema_version_at_ref(target.baseline_ref)
         current_schema_version = read_current_schema_version()
         previous_schema_output = read_schema_dir_contents_at_ref(target.baseline_ref)
         current_schema_output = read_schema_dir_contents(SCHEMA_DIR)
 
-        with tempfile.TemporaryDirectory(prefix="citum-schemas-") as tmp_dir:
-            generated_schema_dir = Path(tmp_dir) / "schemas"
-            export_schemas(generated_schema_dir)
-            generated_schema_output = read_schema_dir_contents(generated_schema_dir)
+        schema_output_drift = False
+        schema_files_changed_since_tag = current_schema_output != previous_schema_output
 
-            schema_output_drift = generated_schema_output != current_schema_output
-            schema_files_changed_since_tag = generated_schema_output != previous_schema_output
+        if schema_related_change:
+            with tempfile.TemporaryDirectory(prefix="citum-schemas-") as tmp_dir:
+                generated_schema_dir = Path(tmp_dir) / "schemas"
+                export_schemas(generated_schema_dir)
+                generated_schema_output = read_schema_dir_contents(generated_schema_dir)
+                schema_output_drift = generated_schema_output != current_schema_output
 
         if schema_output_drift:
             raise ReleasePrepError(
@@ -309,7 +341,8 @@ def main(argv: Sequence[str]) -> int:
 
         schema_version_changed = current_schema_version != previous_schema_version
         schema_changed = (
-            schema_output_drift or schema_files_changed_since_tag or schema_version_changed
+            schema_related_change
+            and (schema_output_drift or schema_files_changed_since_tag or schema_version_changed)
         )
         markers, correct_markers = collect_schema_bump_markers(target.commit_range)
 

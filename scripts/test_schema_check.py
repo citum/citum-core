@@ -182,6 +182,17 @@ class SchemaCheckHookTests(unittest.TestCase):
         self.assertEqual(result, 1)
         self.assertTrue((self.repo / ".git/SCHEMA_BUMP").exists())
 
+    def test_schema_files_staged_detects_cli_schema_inputs(self) -> None:
+        (self.repo / "crates/citum-cli/src").mkdir(parents=True)
+        (self.repo / "crates/citum-cli/src/main.rs").write_text(
+            "fn main() {}\n",
+            encoding="utf-8",
+        )
+        run_git(self.repo, "add", "crates/citum-cli/src/main.rs")
+
+        with pushd(self.repo):
+            self.assertTrue(schema_check.schema_files_staged())
+
 
 if __name__ == "__main__":
     unittest.main()
