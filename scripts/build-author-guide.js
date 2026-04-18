@@ -3,6 +3,7 @@ const path = require('path');
 const { marked } = require('marked');
 
 const MD_PATH = path.join(__dirname, '../docs/guides/style-author-guide.md');
+const TEMPLATE_PATH = path.join(__dirname, '../docs/guides/style-author-guide.template.html');
 const HTML_PATH = path.join(__dirname, '../docs/guides/style-author-guide.html');
 
 const renderer = new marked.Renderer();
@@ -107,8 +108,17 @@ marked.setOptions({ renderer });
 function build() {
     console.log('Building Style Author Guide...');
     
+    if (!fs.existsSync(MD_PATH)) {
+        console.error(`Markdown file not found: ${MD_PATH}`);
+        process.exit(1);
+    }
+    if (!fs.existsSync(TEMPLATE_PATH)) {
+        console.error(`Template file not found: ${TEMPLATE_PATH}`);
+        process.exit(1);
+    }
+
     const mdContent = fs.readFileSync(MD_PATH, 'utf8');
-    const htmlContent = fs.readFileSync(HTML_PATH, 'utf8');
+    const templateContent = fs.readFileSync(TEMPLATE_PATH, 'utf8');
     
     let bodyHtml = marked.parse(mdContent);
     
@@ -117,27 +127,8 @@ function build() {
     if (!bodyHtml.endsWith('</section>')) {
         bodyHtml += '</section>';
     }
-
-    const mainStartTag = /<main[^>]*>/;
-    const mainEndTag = /<\/main>/;
     
-    const startMatch = htmlContent.match(mainStartTag);
-    const endMatch = htmlContent.match(mainEndTag);
-    
-    if (!startMatch || !endMatch) {
-        console.error('Could not find <main> tags in template!');
-        process.exit(1);
-    }
-    
-    const head = htmlContent.substring(0, startMatch.index);
-    const tail = htmlContent.substring(endMatch.index + endMatch[0].length);
-    
-    // Wrap in prose class for automatic styling of tables/paragraphs/etc
-    const finalHtml = head + 
-        '<main class="flex-1 min-w-0 space-y-16 pb-24 prose prose-slate prose-blue max-w-none prose-headings:m-0 prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent">' + 
-        '\n' + bodyHtml + '\n' + 
-        '</main>' + 
-        tail;
+    const finalHtml = templateContent.replace('{{CONTENT}}', bodyHtml);
     
     fs.writeFileSync(HTML_PATH, finalHtml);
     console.log('Done!');
