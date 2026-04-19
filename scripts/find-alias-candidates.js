@@ -57,6 +57,7 @@ function parseArgs() {
     citationsFixture: DEFAULT_CITATIONS_FIXTURE,
     registryPath: DEFAULT_REGISTRY,
     stylesDir: DEFAULT_STYLES_DIR,
+    confirmWeb: false,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -67,6 +68,8 @@ function parseArgs() {
       options.threshold = parseFloat(args[++i]);
     } else if (arg === '--limit') {
       options.limit = parseInt(args[++i], 10);
+    } else if (arg === '--confirm-web') {
+      options.confirmWeb = true;
     } else if (arg === '--out') {
       options.out = args[++i];
     } else if (arg === '--refs-fixture') {
@@ -357,6 +360,7 @@ async function processBatch(candidates, targetFingerprints, testItems, testCitat
 
   for (const candidate of candidates) {
     try {
+      const content = fs.readFileSync(candidate.path, 'utf8');
       const rendered = renderWithCiteprocJs(candidate.path, testItems, testCitations);
       if (!rendered) {
         continue; // Skip failed renders
@@ -377,12 +381,27 @@ async function processBatch(candidates, targetFingerprints, testItems, testCitat
       }
 
       if (bestTarget) {
+        // Extract documentation links from CSL
+        const docLinks = [];
+        const docRegex = /<link\s+[^>]*href=["']([^"']+)["']\s+rel=["']documentation["']/g;
+        let match;
+        while ((match = docRegex.exec(content)) !== null) {
+          docLinks.push(match[1]);
+        }
+        // Also check reversed order of attributes
+        const docRegexRev = /<link\s+[^>]*rel=["']documentation["']\s+href=["']([^"']+)["']/g;
+        while ((match = docRegexRev.exec(content)) !== null) {
+          docLinks.push(match[1]);
+        }
+
         results.push({
           candidate_id: candidate.id,
           best_target: bestTarget,
           similarity: bestScore.similarity,
           citation_match: bestScore.citation_match,
           bib_match: bestScore.bib_match,
+          evidence_url: docLinks[0] || '',
+          confidence_note: docLinks.length > 0 ? 'found in CSL metadata' : '',
         });
       }
     } catch (e) {
@@ -428,15 +447,130 @@ async function runParallel(candidates, concurrency, targetFingerprints, testItem
 }
 
 /**
+ * Web confirmation for candidates using Perplexity or DuckDuckGo.
+ */
+async function confirmWebCandidates(results, threshold) {
+  const filtered = results.filter(r => r.similarity >= threshold);
+  console.error(`\nRunning web confirmation for ${filtered.length} candidates...`);
+
+  for (let i = 0; i < filtered.length; i++) {
+    const row = filtered[i];
+    
+    // Skip if we already have evidence from CSL metadata
+    if (row.evidence_url) {
+      console.error(`[${i + 1}/${filtered.length}] Skipping: ${row.candidate_id} (already has metadata evidence)`);
+      continue;
+    }
+
+    const query = `"${row.candidate_id.replace(/-/g, ' ')}" citation style author guidelines`;
+    
+    console.error(`[${i + 1}/${filtered.length}] Checking: ${row.candidate_id}...`);
+    
+    let confirmation = null;
+    if (process.env.PERPLEXITY_API_KEY) {
+      confirmation = await checkPerplexity(query, row.best_target);
+    }
+    
+    if (!confirmation) {
+      // Fallback to DuckDuckGo
+      confirmation = await checkDuckDuckGo(query, row.best_target);
+      // Rate limiting for DDG
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    row.evidence_url = confirmation ? confirmation.url : '';
+    row.confidence_note = confirmation ? confirmation.note : 'no web evidence found';
+  }
+}
+
+async function checkPerplexity(query, targetId) {
+  try {
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-sonar-small-128k-online',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a research assistant confirming CSL citation style aliases. Return JSON: { "url": "...", "note": "..." }'
+          },
+          {
+            role: 'user',
+            content: `Does the journal for "${query}" explicitly state they use the "${targetId}" citation style? Provide the best URL as evidence and a brief note on confidence.`
+          }
+        ],
+        response_format: { type: 'json_object' }
+      })
+    });
+
+    if (!response.ok) return null;
+    const data = await response.json();
+    return JSON.parse(data.choices[0].message.content);
+  } catch (e) {
+    return null;
+  }
+}
+
+async function checkDuckDuckGo(query, targetId) {
+  try {
+    const response = await fetch('https://html.duckduckgo.com/html/', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+      },
+      body: `q=${encodeURIComponent(query)}`
+    });
+
+    if (!response.ok) return null;
+    const html = await response.text();
+
+    // Regex for html.duckduckgo.com results
+    const urlMatch = html.match(/class=['"]result__a['"] href=['"](http[^'"]+)['"]/);
+    const snippetMatch = html.match(/class=['"]result__snippet['"]>([^<]+)/);
+
+    if (urlMatch) {
+      const url = urlMatch[1];
+      const snippet = snippetMatch ? snippetMatch[1].toLowerCase() : '';
+      const targetLower = targetId.toLowerCase().replace(/-/g, ' ');
+      
+      let note = 'found via DDG';
+      if (snippet.includes(targetLower)) {
+        note = `high confidence: snippet mentions "${targetId}"`;
+      } else if (snippet.includes('citation') || snippet.includes('style')) {
+        note = 'medium confidence: snippet mentions citation/style';
+      }
+
+      return { url, note };
+    }
+  } catch (e) {
+    // Ignore fetch errors
+  }
+  return null;
+}
+
+/**
  * Write results as TSV.
  */
-function writeTSV(results, filePath) {
+function writeTSV(results, filePath, threshold) {
   // Filter by threshold
-  const filtered = results.filter(r => r.similarity >= 0.85);
+  const filtered = results.filter(r => r.similarity >= threshold);
   // Sort by similarity descending
   filtered.sort((a, b) => b.similarity - a.similarity);
 
-  const header = ['candidate_id', 'best_target', 'similarity', 'citation_match', 'bib_match'];
+  const header = [
+    'candidate_id', 
+    'best_target', 
+    'similarity', 
+    'citation_match', 
+    'bib_match', 
+    'evidence_url', 
+    'confidence_note'
+  ];
   const lines = [header.join('\t')];
 
   for (const row of filtered) {
@@ -446,6 +580,8 @@ function writeTSV(results, filePath) {
       row.similarity.toFixed(4),
       row.citation_match.toFixed(4),
       row.bib_match.toFixed(4),
+      row.evidence_url || '',
+      row.confidence_note || '',
     ].join('\t'));
   }
 
@@ -501,11 +637,24 @@ async function main() {
 
     console.error(`Scored ${results.length} candidates`);
 
+    // Web confirmation if requested
+    if (options.confirmWeb) {
+      await confirmWebCandidates(results, options.threshold);
+    }
+
     // Write TSV
-    const filtered = writeTSV(results, options.out);
+    const filtered = writeTSV(results, options.out, options.threshold);
 
     // Output to stdout
-    const header = ['candidate_id', 'best_target', 'similarity', 'citation_match', 'bib_match'];
+    const header = [
+      'candidate_id', 
+      'best_target', 
+      'similarity', 
+      'citation_match', 
+      'bib_match', 
+      'evidence_url', 
+      'confidence_note'
+    ];
     console.log(header.join('\t'));
     for (const row of filtered) {
       console.log([
@@ -514,6 +663,8 @@ async function main() {
         row.similarity.toFixed(4),
         row.citation_match.toFixed(4),
         row.bib_match.toFixed(4),
+        row.evidence_url || '',
+        row.confidence_note || '',
       ].join('\t'));
     }
 

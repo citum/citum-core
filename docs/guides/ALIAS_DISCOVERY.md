@@ -54,16 +54,21 @@ node scripts/find-alias-candidates.js --help
 **Before aliasing**, confirm the candidate is a true clone (not a same-family variant
 with intentional differences the fixture doesn't exercise — see Known Blind Spots below).
 
-### Web Confirmation (bean csl26-vepq)
+### Web Confirmation (`--confirm-web`)
 
-A `--confirm-web` flag is tracked in bean **csl26-vepq**. It will query a search API
-for each candidate above the threshold: `"<journal name>" citation style` and
-`"<journal name>" author guidelines`. The results surface whether the journal's own
-instructions name the parent style explicitly — reducing the need for per-row manual
-lookup and providing a citable evidence URL in the TSV output.
+Use the `--confirm-web` flag to automatically query a search API for each candidate
+above the threshold. The script queries: `"<journal name>" citation style author guidelines`.
 
-Until that lands, for journal-named candidates: search `site:<publisher>.com
-<journal-name> submission guidelines` and look for a named style.
+- **Backend:** Defaults to DuckDuckGo Lite (no key required). If `PERPLEXITY_API_KEY`
+  is set, it uses the Perplexity API with automatic fallback to DDG on failure.
+- **Output:** Adds `evidence_url` and `confidence_note` columns to the TSV.
+
+This reduces manual lookup time by surfacing whether the journal's own instructions
+name the parent style explicitly.
+
+```bash
+node scripts/find-alias-candidates.js --threshold 0.98 --confirm-web
+```
 
 ## Known Fixture Blind Spots & Fixes (2026-04-19)
 
