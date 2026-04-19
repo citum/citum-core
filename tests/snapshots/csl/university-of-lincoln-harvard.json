@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:42.141Z",
+  "generated_at": "2026-04-19T14:03:27.655Z",
   "style": "university-of-lincoln-harvard",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "d8a1581f95e2b51c",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming, n.d.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, J. (1797) <i>Letter to James Smith</i>.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y. (2023) <i>The Future of Artificial Intelligence</i>.</div>\n",
     "  <div class=\"csl-entry\">Brown v. Board of Education (1954) U.S. Reports 347 p.483.</div>\n",
     "  <div class=\"csl-entry\">Chen, W. (2019) <i><i>Neural Networks for Natural Language Understanding</i></i>. phd-thesis thesis. Stanford University.</div>\n",

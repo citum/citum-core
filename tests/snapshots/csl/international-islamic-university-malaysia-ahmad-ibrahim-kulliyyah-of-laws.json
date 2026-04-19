@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:09.354Z",
+  "generated_at": "2026-04-19T14:02:53.272Z",
   "style": "international-islamic-university-malaysia-ahmad-ibrahim-kulliyyah-of-laws",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "24a351c3aedad3b2",
   "citations": {
     "single-item-1": "Thomas S. Kuhn, \"The Structure of Scientific Revolutions,\" <i>International Encyclopedia of Unified Science</i>, vol. 2, no. 2 (1962).",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Maria Garcia, \"Methods for Robust Climate Attribution,\" <i>Annual Review of Climate Science</i>, vol. 4 (2019): 55–80; Maria Garcia, \"Methods for Probabilistic Climate Attribution,\" <i>Annual Review of Climate Science</i>, vol. 4 (2019): 81–104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, J. (1797). \"Letter to James Smith.\"</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y. (2023). \"The Future of Artificial Intelligence.\"</div>\n",
     "  <div class=\"csl-entry\">Chen, W. (2019). \"Neural Networks for Natural Language Understanding.\" (phd-thesis). Stanford University.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K.A. (2006). The Role of Deliberate Practice. In K.A. Ericsson, N. Charness, P.J. Feltovich, &#38; R.R. Hoffman (Eds.). <i>The Cambridge Handbook of Expertise and Expert Performance</i> (pp. 683–703). Cambridge University Press.</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:30.058Z",
+  "generated_at": "2026-04-19T14:02:12.520Z",
   "style": "bibliotheque-d-archeologie-mediterraneenne-et-africaine-biama",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "763626e7494ff5a3",
   "citations": {
     "single-item-1": "Kuhn 1962",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Garcia 2019a ; 2019b"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><b>Adams 1797 : </b>J. Adams, <i>Letter to James Smith</i>, 1797.</div>\n",
     "  <div class=\"csl-entry\"><b>Bengio 2023 : </b>Y. Bengio, <i>The Future of Artificial Intelligence</i>, 2023, &#60;https://example.com/interview&#62;.</div>\n",
     "  <div class=\"csl-entry\"><b>Chen 2019 : </b>W. Chen, <i><i>Neural Networks for Natural Language Understanding</i></i>, phd-thesis, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\"><b>Ericsson 2006 : </b>K. A. Ericsson, The Role of Deliberate Practice, <i>in</i> : K.A. Ericsson, N. Charness, P.J. Feltovich, R.R. Hoffman (dir.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press, 2006, 683-703.</div>\n",

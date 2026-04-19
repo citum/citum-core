@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:42.478Z",
+  "generated_at": "2026-04-19T14:03:28.007Z",
   "style": "university-of-zabol",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "11f32ba55742652e",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming, No Date)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><b><b>Adams, J.</b></b> 1797. <span style=\"text-decoration:none;\"><i>Letter to James Smith</i></span>.</div>\n",
     "  <div class=\"csl-entry\"><b><b>Bengio, Y.</b></b> 2023. <span style=\"text-decoration:none;\"><i>The Future of Artificial Intelligence</i></span>.</div>\n",
     "  <div class=\"csl-entry\"><b><b>Chen, W.</b></b> 2019. Neural Networks for Natural Language Understanding. phd-thesis. Stanford University.</div>\n",
     "  <div class=\"csl-entry\"><b><b>Ericsson, K.A.</b></b> 2006. The Role of Deliberate Practice. In: <b>Ericsson, K.A., Charness, N., Feltovich, P.J. and Hoffman, R.R. (eds.)</b>. <i>The Cambridge Handbook of Expertise and Expert Performance</i>. Cambridge University Press, PP: 683–703.</div>\n",

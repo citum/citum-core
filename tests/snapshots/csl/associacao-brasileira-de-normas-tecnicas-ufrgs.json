@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:29.063Z",
+  "generated_at": "2026-04-19T14:02:11.352Z",
   "style": "associacao-brasileira-de-normas-tecnicas-ufrgs",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "bec0ee2b89a9dff3",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming, [<i>s. d.</i>])"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">ADAMS, John. <b>Letter to James Smith</b>. 1797. </div>\n",
     "  <div class=\"csl-entry\">BENGIO, Yoshua. <b>The Future of Artificial Intelligence</b>. entrevistador: Stephen Colbert. video-interview. [<i>S. l.</i>]: [<i>s. d.</i>], 10 Nov. 2023. Disponível em: https://example.com/interview. </div>\n",
     "  <div class=\"csl-entry\">BROWN V. BOARD OF EDUCATION. U.S. Supreme Court. <b>U.S. Reports</b>, p. 483, 17 may 1954. </div>\n",
     "  <div class=\"csl-entry\">CHEN, Wei. <b>Neural Networks for Natural Language Understanding</b>. 2019. phd-thesis - Stanford University, [<i>s. l.</i>], 2019. </div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:58.353Z",
+  "generated_at": "2026-04-19T14:02:41.474Z",
   "style": "clara-architecture-recherche",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "7711bd1a662cd84b",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -27,6 +27,7 @@
   },
   "bibliography": [
     "  <div class=\"csl-entry\">« The Role of Theory in Research », 2018. <i>Journal of Theoretical Psychology</i>. Vol. 28, n° 3, pp. 201‑215. <div class=\"csl-right-inline\">Author unknown</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">ADAMS, John, 1797. <i>Letter to James Smith</i>. <div class=\"csl-right-inline\">Massachusetts Historical Society: Adams Papers, reel 45</div>\n  </div>\n",
     "  <div class=\"csl-entry\">BENGIO, Yoshua, 2023. <i>The Future of Artificial Intelligence</i> [consultable en ligne]. video-interview. 10 novembre 2023. Disponible à l’adresse : https://example.com/interview</div>\n",
     "  <div class=\"csl-entry\"><i>Brown v. Board of Education</i>, 1954. . </div>\n",
     "  <div class=\"csl-entry\">CHEN, Wei, 2019. <i>Neural Networks for Natural Language Understanding</i>. phd-thesis. Stanford University. </div>\n",

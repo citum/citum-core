@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:39.852Z",
+  "generated_at": "2026-04-19T14:03:25.317Z",
   "style": "umea-university-oxford",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "f12a5ddae9b95a97",
   "citations": {
     "single-item-1": "T.S. Kuhn. The Structure of Scientific Revolutions. <i>International Encyclopedia of Unified Science</i>. 2: 2 (1962). https://doi.org/10.1234/example.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "M. Garcia. Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i>. 4 (2019). https://doi.org/10.5555/arcs.2019.4.55; M. Garcia. Methods for Probabilistic Climate Attribution. <i>Annual Review of Climate Science</i>. 4 (2019). https://doi.org/10.5555/arcs.2019.4.81."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, J. <i>Letter to James Smith</i>. Adams Papers, reel 45, Massachusetts Historical Society. (1797).</div>\n",
     "  <div class=\"csl-entry\">Anon. The Role of Theory in Research. 28: 3 (2018): pp. 201–215.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y. The Future of Artificial Intelligence. https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">Chen, W. <i>Neural Networks for Natural Language Understanding</i>. Phd-thesis. (Stanford University, 2019).</div>\n",

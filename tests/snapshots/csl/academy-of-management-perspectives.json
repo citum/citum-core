@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:23.250Z",
+  "generated_at": "2026-04-19T14:02:04.691Z",
   "style": "academy-of-management-perspectives",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "258ca7b12bba2b12",
   "citations": {
     "single-item-1": "Thomas S. Kuhn, “The Structure of Scientific Revolutions”, <b><i>International Encyclopedia of Unified Science</i></b> 2, no. 2 (Chicago: University of Chicago Press, 1962).",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Maria Garcia, “Methods for Robust Climate Attribution”, <b><i>Annual Review of Climate Science</i></b> 4 (2019); “Methods for Probabilistic Climate Attribution”, <b><i>Annual Review of Climate Science</i></b> 4 (2019)."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, John. 1797. “Letter to James Smith”. Adams Papers, reel 45. Massachusetts Historical Society. Boston, MA.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua. 2023. The Future of Artificial Intelligence Interview by Stephen Colbert. Video-interview. https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">Brown v. Board of Education. 1954, 347 U.S. Reports 483. U.S. Supreme Court.</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei. 2019. “Neural Networks for Natural Language Understanding” (Stanford University). Phd-thesis, Stanford University.</div>\n",

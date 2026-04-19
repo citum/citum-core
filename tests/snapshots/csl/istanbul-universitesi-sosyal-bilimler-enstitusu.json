@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:10.814Z",
+  "generated_at": "2026-04-19T14:02:54.819Z",
   "style": "istanbul-universitesi-sosyal-bilimler-enstitusu",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "5e44d4b032f5afa8",
   "citations": {
     "single-item-1": "Thomas S. Kuhn, “The Structure of Scientific Revolutions”, <b>International Encyclopedia of Unified Science</b>, C. 2, No: 2, 1962.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Maria Garcia, “Methods for Robust Climate Attribution”, <b>Annual Review of Climate Science</b>, C. 4, 2019, s. 55-80; Maria Garcia, “Methods for Probabilistic Climate Attribution”, <b>Annual Review of Climate Science</b>, C. 4, 2019, s. 81-104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, John: <b>Letter to James Smith</b>, 1797, Massachusetts Historical Society: Adams Papers, reel 45Boston, MA.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua: The Future of Artificial Intelligence, Röportaj yapan Stephen Colbert, Video-interview, 10.11.2023, (Çevrimiçi) https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">Brown v. Board of Education, C. 347, C. 347 U.S. Reports 483 (U.S. Supreme Court 1954).</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei: “Neural Networks for Natural Language Understanding”, Stanford University, phd-thesis Tezi, 2019.</div>\n",

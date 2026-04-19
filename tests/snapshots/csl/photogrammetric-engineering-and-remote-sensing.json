@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:29.469Z",
+  "generated_at": "2026-04-19T14:03:14.426Z",
   "style": "photogrammetric-engineering-and-remote-sensing",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "665743955ac3a1e1",
   "citations": {
     "single-item": "(Kuhn, 1962.)",
@@ -27,6 +27,7 @@
   },
   "bibliography": [
     "  <div class=\"csl-entry\"><span style=\"baseline\"> The Role of Theory in Research</span> 2018. <i>Journal of Theoretical Psychology</i> 28(3):201–215.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"baseline\">Adams John</span> 1797. Letter to James Smith</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\">Bengio Yoshua</span> 2023. The Future of Artificial Intelligence</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><i>Brown v. Board of Education</i></span> 1954. U.S. Reports. </div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\">Chen Wei</span> 2019. <i>Neural Networks for Natural Language Understanding</i>phd-thesis Stanford University</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:24.504Z",
+  "generated_at": "2026-04-19T14:02:06.198Z",
   "style": "american-anthropological-association",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "524cec048be724c2",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming n.d.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Adams, John</div>\n\n    <div class=\"csl-left-margin\"> 1797</div><div class=\"csl-right-inline\">Letter to James Smith. Adams Papers, reel 45. Massachusetts Historical Society. Boston, MA.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Bengio, Yoshua</div>\n\n    <div class=\"csl-left-margin\"> 2023</div><div class=\"csl-right-inline\">The Future of Artificial Intelligence. Interview by Stephen ColbertVideo-interview. November 10. https://example.com/interview.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Brown v. Board of Education, vol.347</div>\n\n    <div class=\"csl-left-margin\"> 1954</div><div class=\"csl-right-inline\">U.S. Reports.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Chen, Wei</div>\n\n    <div class=\"csl-left-margin\"> 2019</div><div class=\"csl-right-inline\">Neural Networks for Natural Language Understanding. Phd-thesis, Stanford University.</div>\n  </div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:08.226Z",
+  "generated_at": "2026-04-19T14:02:52.070Z",
   "style": "indiana",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "75c7a1cb630cbfcc",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming n.d.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Adams, J.</div>\n1797 <i>Letter to James Smith</i>.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Bengio, Y.</div>\n2023 (10. November) The Future of Artificial Intelligence. .</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Brown v. Board of Education. </div>\n, 347 U.S. Reports 483. (U.S. Supreme Court May 17, 1954).</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Chen, W.</div>\n2019 Neural Networks for Natural Language Understanding (phd-thesis).</div>\n",

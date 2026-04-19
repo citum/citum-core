@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:11.036Z",
+  "generated_at": "2026-04-19T14:02:55.013Z",
   "style": "japanese-journal-of-applied-physics",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "7303680153fc969a",
   "citations": {
     "single-item": "<sup>1)</sup>",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">30)</div><div class=\"csl-right-inline\">J. Smith, A. Lee, B. Nguyen and R. Patel, Journal of Climate Analytics <b>12</b> [3], 201 (2021).</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">31)</div><div class=\"csl-right-inline\">M. Garcia, Annual Review of Climate Science <b>4</b>, 55 (2019).</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">32)</div><div class=\"csl-right-inline\">M. Garcia, Annual Review of Climate Science <b>4</b>, 81 (2019).</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">33)</div><div class=\"csl-right-inline\">A. Forthcoming, <i>Foundations of Declarative Bibliography</i> (University Press, Cambridge).</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">33)</div><div class=\"csl-right-inline\">A. Forthcoming, <i>Foundations of Declarative Bibliography</i> (University Press, Cambridge).</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">34)</div><div class=\"csl-right-inline\">J. Adams, 1797.</div>\n  </div>\n"
   ]
 }

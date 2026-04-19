@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:31.892Z",
+  "generated_at": "2026-04-19T14:02:14.616Z",
   "style": "canadian-journal-of-mineralogy-and-petrology",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "92c1bb88e4f9880f",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams, J.</span> (1797) Letter to James Smith.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio, Y.</span> (2023) The Future of Artificial Intelligence.</div>\n",
     "  <div class=\"csl-entry\">Brown v. Board of Education (1954).</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen, W.</span> (2019) <i>Neural Networks for Natural Language Understanding</i>. Stanford University.</div>\n",

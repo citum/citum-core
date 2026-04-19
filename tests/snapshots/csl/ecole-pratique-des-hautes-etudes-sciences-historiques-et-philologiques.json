@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:00.742Z",
+  "generated_at": "2026-04-19T14:02:44.178Z",
   "style": "ecole-pratique-des-hautes-etudes-sciences-historiques-et-philologiques",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "c88b7a7297be588a",
   "citations": {
     "single-item-1": "T.S. Kuhn, « The Structure of Scientific Revolutions », <i>International Encyclopedia of Unified Science</i>, vol. 2, n<sup>o</sup> 2 (1962).",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "M. Garcia, « Methods for Robust Climate Attribution », <i>Annual Review of Climate Science</i>, vol. 4 (2019) ; M. Garcia, « Methods for Probabilistic Climate Attribution », <i>Annual Review of Climate Science</i>, vol. 4 (2019)."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span> (John), <i>Letter to James Smith</i>, [s.l.], 1797. Massachusetts Historical Society, Adams Papers, reel 45.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span> (Yoshua), <i>The Future of Artificial Intelligence</i>, 10 novembre 2023, entretien réalisé par Stephen <span style=\"font-variant:small-caps;\">Colbert</span>, video-interview. URL : <span style=\"text-decoration:none;\">https://example.com/interview</span>.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span> (Wei), <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University, [s.l.], 2019.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span> (K. Anders), « The Role of Deliberate Practice », dans <i>The Cambridge Handbook of Expertise and Expert Performance</i>, éd. K.A. <span style=\"font-variant:small-caps;\">Ericsson</span>, N. <span style=\"font-variant:small-caps;\">Charness</span>, P.J. <span style=\"font-variant:small-caps;\">Feltovich</span>, et al., 2006, p. 683‑703.</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:30.850Z",
+  "generated_at": "2026-04-19T14:03:15.978Z",
   "style": "quaternaire",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "dfd0113390755bd0",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>ADAMS J., </b><b>1797</b> - <i>Letter to James Smith</i>. lieu de consultation : Massachusetts Historical Society.</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>BENGIO Y., </b><b>2023</b> - <i>The Future of Artificial Intelligence</i>. 10 novembre 2023.</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>CHEN W., </b><b>2019</b> - <i>Neural Networks for Natural Language Understanding</i>. phd-thesis. Stanford University.</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>ERICSSON K.A., </b><b>2006</b> - The Role of Deliberate Practice. <i>In</i> K.A. Ericsson, N. Charness, P.J. Feltovich et R.R. Hoffman (eds.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>. Cambridge University Press, 683‑703.</div>\n</div>\n",

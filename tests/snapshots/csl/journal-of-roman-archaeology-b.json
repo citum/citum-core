@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:14.042Z",
+  "generated_at": "2026-04-19T14:02:58.150Z",
   "style": "journal-of-roman-archaeology-b",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "908edfe97d437aa0",
   "citations": {
     "single-item-1": "T.S. Kuhn, “The Structure of Scientific Revolutions,” <i>International Encyclopedia of Unified Science</i> 2 (Chicago 1962)",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "M. Garcia, “Methods for Robust Climate Attribution,” <i>Annual Review of Climate Science</i> 4 (2019) 55–80; M. Garcia, “Methods for Probabilistic Climate Attribution,” <i>Annual Review of Climate Science</i> 4 (2019) 81–104"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">J. Adams, <b><i>Letter to James Smith</i></b> (1797)</div>\n",
     "  <div class=\"csl-entry\">Y. Bengio, <b><i>The Future of Artificial Intelligence</i></b> (2023)</div>\n",
     "  <div class=\"csl-entry\">W. Chen, <i>Neural Networks for Natural Language Understanding</i> (phd-thesis, Stanford University 2019)</div>\n",
     "  <div class=\"csl-entry\">K.A. Ericsson, “The Role of Deliberate Practice,” in K.A. Ericsson, N. Charness, P.J. Feltovich and R.R. Hoffman (edd.), <i>The Cambridge Handbook of Expertise and Expert Performance</i> (2006) 683–703</div>\n",

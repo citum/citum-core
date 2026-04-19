@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:31.240Z",
+  "generated_at": "2026-04-19T14:02:13.847Z",
   "style": "building-structure",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "16f2c466264a12e5",
   "citations": {
     "single-item": "[1]",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[30]</div><div class=\"csl-right-inline\">Smith John et al. Adaptive Climate Risk Modeling for Inland Regions[J]. Journal of Climate Analytics,2021, 12(3):201–219.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[31]</div><div class=\"csl-right-inline\">Garcia Maria. Methods for Robust Climate Attribution[J]. Annual Review of Climate Science,2019, 4:55–80.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[32]</div><div class=\"csl-right-inline\">Garcia Maria. Methods for Probabilistic Climate Attribution[J]. Annual Review of Climate Science,2019, 4:81–104.</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33]</div><div class=\"csl-right-inline\">Forthcoming A. Foundations of Declarative Bibliography[M]. , Cambridge: University Press. .</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33]</div><div class=\"csl-right-inline\">Forthcoming A. Foundations of Declarative Bibliography[M]. , Cambridge: University Press. .</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[34]</div><div class=\"csl-right-inline\">Adams John. Letter to James Smith[J]. 1797.</div>\n  </div>\n"
   ]
 }

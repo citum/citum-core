@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:34.697Z",
+  "generated_at": "2026-04-19T14:03:19.976Z",
   "style": "springer-physics-author-date",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "556c5667115e4fff",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"> J. Adams, (1797).</div>\n",
     "  <div class=\"csl-entry\"> Y. Bengio, (2023).</div>\n",
     "  <div class=\"csl-entry\"> W. Chen, Neural Networks for Natural Language Understanding, phd-thesis, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\"> K. A. Ericsson, in <i>The Cambridge Handbook of Expertise and Expert Performance</i>, edited by K. A. Ericsson, N. Charness, P. J. Feltovich, and R. R. Hoffman (Cambridge University Press, 2006), pp. 683–703.</div>\n",

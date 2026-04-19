@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:37.235Z",
+  "generated_at": "2026-04-19T14:03:22.538Z",
   "style": "the-coleopterists-bulletin",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "45c7f35bf1224b7e",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming n.d.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><b>Adams, J. <b>1797</b>. </b>Letter to James Smith.</div>\n",
     "  <div class=\"csl-entry\"><b>Bengio, Y. <b>2023</b>. , November 10</b>The Future of Artificial Intelligence. video-interview.</div>\n",
     "  <div class=\"csl-entry\"><b>Brown v. Board of Education. <b>1954</b>. </b>U.S. Reports, p. 483.</div>\n",
     "  <div class=\"csl-entry\"><b>Chen, W. <b>2019</b>. </b>Neural Networks for Natural Language Understanding. phd-thesis, Stanford University.</div>\n",

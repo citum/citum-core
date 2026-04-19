@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:30.110Z",
+  "generated_at": "2026-04-19T14:02:12.595Z",
   "style": "biens-symboliques-symbolic-goods",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "cab1fdf1d42d76ae",
   "citations": {
     "single-item": " (Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": " (Forthcoming n.d.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span> John. 1797. “Letter to James Smith.” . 1797. Source : Massachusetts Historical Society. Adams Papers, reel 45.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span> Yoshua. 2023. “The Future of Artificial Intelligence.” Interview conducted by. Stephen Colbert. . November 10th, 2023.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span> Wei. 2019. <i>Neural Networks for Natural Language Understanding</i>. Phd-thesis. Stanford University.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span> K. Anders. 2006. “The Role of Deliberate Practice.” In <span style=\"font-variant:small-caps;\">Ericsson</span> K. Anders, <span style=\"font-variant:small-caps;\">Charness</span> Neil, <span style=\"font-variant:small-caps;\">Feltovich</span> Paul J. &#38; <span style=\"font-variant:small-caps;\">Hoffman</span> Robert R. (Eds.) <i>The Cambridge Handbook of Expertise and Expert Performance</i>. Cambridge University Press : 683-703.</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:31.559Z",
+  "generated_at": "2026-04-19T14:02:14.237Z",
   "style": "cahiers-d-ethnomusicologie",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "739f0438877bfe06",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming [sans date])"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">ADAMS John</div>\n\n    <div class=\"csl-left-margin\">1797</div><div class=\"csl-right-inline\"><i>Letter to James Smith</i>. Massachusetts Historical Society: Adams Papers, reel 45Adams Papers, reel 45.</div>\n   </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">ANON.</div>\n\n    <div class=\"csl-left-margin\">1954</div><div class=\"csl-right-inline\"><i>Brown v. Board of Education</i>. 17 mai 1954. S.l. : s.n. : 483.</div>\n   </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">ANON.</div>\n\n    <div class=\"csl-left-margin\">2018</div><div class=\"csl-right-inline\">« The Role of Theory in Research ». <i>Journal of Theoretical Psychology</i> 28(3) : 201‑215. Author unknown.</div>\n   </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">BENGIO Yoshua</div>\n\n    <div class=\"csl-left-margin\">2023</div><div class=\"csl-right-inline\"><i>The Future of Artificial Intelligence</i>. video-interview. 10 novembre 2023. S.l. : s.n.Disponible à l’adresse : https://example.com/interview.</div>\n   </div>\n",

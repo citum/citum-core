@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:06.989Z",
+  "generated_at": "2026-04-19T14:02:50.761Z",
   "style": "heiliger-dienst",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "92dc6f71d1667ffd",
   "citations": {
     "single-item-1": "Thomas S. <span style=\"font-variant:small-caps;\">Kuhn</span>: The Structure of Scientific Revolutions, in: International Encyclopedia of Unified Science 2 (1962). Chicago.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Maria <span style=\"font-variant:small-caps;\">Garcia</span>: Methods for Robust Climate Attribution, in: Annual Review of Climate Science 4 (2019) 55–80; Maria <span style=\"font-variant:small-caps;\">Garcia</span>: Methods for Probabilistic Climate Attribution, in: Annual Review of Climate Science 4 (2019) 81–104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">John <span style=\"font-variant:small-caps;\">Adams</span>: Letter to James Smith 1797.</div>\n",
     "  <div class=\"csl-entry\">Yoshua <span style=\"font-variant:small-caps;\">Bengio</span>: The Future of Artificial Intelligence 2023.</div>\n",
     "  <div class=\"csl-entry\">Wei <span style=\"font-variant:small-caps;\">Chen</span>: Neural Networks for Natural Language Understanding 2019.</div>\n",
     "  <div class=\"csl-entry\">K. Anders <span style=\"font-variant:small-caps;\">Ericsson</span>: The Role of Deliberate Practice, in: K. Anders <span style=\"font-variant:small-caps;\">Ericsson</span> / Neil <span style=\"font-variant:small-caps;\">Charness</span> / Paul J. <span style=\"font-variant:small-caps;\">Feltovich</span> / Robert R. <span style=\"font-variant:small-caps;\">Hoffman</span> (Hg.), The Cambridge Handbook of Expertise and Expert Performance 2006, 683–703.</div>\n",

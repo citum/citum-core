@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:43.683Z",
+  "generated_at": "2026-04-19T14:03:29.234Z",
   "style": "wikipedia-fr-templates",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "d169ad577a4bc950",
   "citations": {
     "single-item": "&#60;ref&#62;{{article |auteurs=Thomas S. Kuhn |périodique=International Encyclopedia of Unified Science |titre=The Structure of Scientific Revolutions |lieu=Chicago |éditeur=University of Chicago Press |volume=2 | numéro=2 |date= 1962 |doi=10.1234/example}}&#60;/ref&#62;",

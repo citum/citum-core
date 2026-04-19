@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:08.514Z",
+  "generated_at": "2026-04-19T14:02:52.369Z",
   "style": "institut-francais-darcheologie-orientale-en",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "d461d237adeb47c3",
   "citations": {
     "single-item-1": "<span style=\"font-variant:small-caps;\">Kuhn</span> 1962.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "<span style=\"font-variant:small-caps;\">Garcia</span> 2019a ; <span style=\"font-variant:small-caps;\">Garcia</span> 2019b."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Adams</span> 1797</div>\n\n    <div class=\"csl-left-margin\">J. Adams, <i>Letter to James Smith</i>, 1797, Massachusetts Historical Society, Adams Papers, reel 45.</div></div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Bengio</span> 2023</div>\n\n    <div class=\"csl-left-margin\">https://example.com/interview.</div></div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">“Brown v. Board of Education”</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">W. <span style=\"font-variant:small-caps;\">Chen</span> 2019</div>\n\n    <div class=\"csl-left-margin\">W. Chen, “Neural Networks for Natural Language Understanding,” phd-thesis, Stanford University, 2019.</div></div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:58.668Z",
+  "generated_at": "2026-04-19T14:02:41.817Z",
   "style": "collection-de-l-ecole-francaise-de-rome-full-note",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "06bc8265accedeef",
   "citations": {
     "single-item-1": "T.S. Kuhn, « The Structure of Scientific Revolutions », dans <i>International Encyclopedia of Unified Science</i>, 2, 2, 1962",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "M. Garcia, « Methods for Robust Climate Attribution », dans <i>Annual Review of Climate Science</i>, 4, 2019, p. 55‑80 ; M. Garcia, « Methods for Probabilistic Climate Attribution », dans <i>Annual Review of Climate Science</i>, 4, 2019, p. 81‑104"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Adams 1797 = J. Adams, .</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Bengio 2023 = Y. Bengio, .</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Chen 2019 = W. Chen, <i><i>Neural Networks for Natural Language Understanding</i></i>, phd-thesis, Stanford University, 2019.</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Ericsson 2006 = K.A. Ericsson, « The Role of Deliberate Practice », dans K.A. Ericsson, N. Charness, P.J. Feltovich, R.R. Hoffman (dir.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>, 2006, p. 683‑703.</div>\n</div>\n",

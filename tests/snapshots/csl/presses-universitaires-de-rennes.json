@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:30.457Z",
+  "generated_at": "2026-04-19T14:03:15.544Z",
   "style": "presses-universitaires-de-rennes",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "b666ea91cdf75c92",
   "citations": {
     "single-item-1": "<span style=\"font-variant:small-caps;\">Kuhn</span> Thomas S., « The Structure of Scientific Revolutions », <i>International Encyclopedia of Unified Science</i>, n<sup>o</sup> 2, vol. 2, 1962, [https//doi.org/10.1234/example].",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "<span style=\"font-variant:small-caps;\">Garcia</span> Maria, « Methods for Robust Climate Attribution », <i>Annual Review of Climate Science</i>, vol. 4, 2019, p. 55‑80, [https//doi.org/10.5555/arcs.2019.4.55] ; <span style=\"font-variant:small-caps;\">Garcia</span> Maria, « Methods for Probabilistic Climate Attribution », <i>Annual Review of Climate Science</i>, vol. 4, 2019, p. 81‑104, [https//doi.org/10.5555/arcs.2019.4.81]."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span> John, « Letter to James Smith ».</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span> Yoshua, « The Future of Artificial Intelligence ».</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span> Wei, <i>Neural Networks for Natural Language Understanding</i>, thèse de doctorat, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span> K. Anders, « The Role of Deliberate Practice », in K. Anders <span style=\"font-variant:small-caps;\">Ericsson</span>, Neil <span style=\"font-variant:small-caps;\">Charness</span>, Paul J. <span style=\"font-variant:small-caps;\">Feltovich</span> et Robert R. <span style=\"font-variant:small-caps;\">Hoffman</span> (dir.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press, 2006, p. 683‑703.</div>\n",

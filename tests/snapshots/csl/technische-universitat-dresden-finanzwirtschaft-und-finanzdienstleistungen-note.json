@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:36.373Z",
+  "generated_at": "2026-04-19T14:03:21.643Z",
   "style": "technische-universitat-dresden-finanzwirtschaft-und-finanzdienstleistungen-note",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "201664d0c7b0e6f5",
   "citations": {
     "single-item-1": "<span style=\"font-variant:small-caps;\">Kuhn</span>, The Structure of Scientific Revolutions, 1962.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "<span style=\"font-variant:small-caps;\">Garcia</span>, Methods for Robust Climate Attribution, 2019; <span style=\"font-variant:small-caps;\">Garcia</span>, Methods for Probabilistic Climate Attribution, 2019."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams, John</span> [Letter to James Smith; 1797]: Letter to James Smith,.</div>\n",
     "  <div class=\"csl-entry\">Anon [Brown v. Board of Education; 1954]: Brown v. Board of Education, .</div>\n",
     "  <div class=\"csl-entry\">Anon [The Role of Theory in Research; 2018]: The Role of Theory in Research, in: Journal of Theoretical Psychology, vol. 28, no. 3, pp. 201–215.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio, Yoshua</span> [The Future of Artificial Intelligence; 2023]: The Future of Artificial Intelligence, in: 11/10/2023, available at: https://example.com/interview.</div>\n",

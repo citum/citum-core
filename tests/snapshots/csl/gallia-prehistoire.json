@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:04.465Z",
+  "generated_at": "2026-04-19T14:02:48.113Z",
   "style": "gallia-prehistoire",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "271a1e17876a81ab",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><b>Adams J.</b> <b>1797</b> – <i>Letter to James Smith</i>, .</div>\n",
     "  <div class=\"csl-entry\"><b>Bengio Y.</b> <b>2023</b> – <i>The Future of Artificial Intelligence</i>.</div>\n",
     "  <div class=\"csl-entry\"><b>Chen W.</b> <b>2019</b> – <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, inédit, Stanford University.</div>\n",
     "  <div class=\"csl-entry\"><b>Ericsson K.A.</b> <b>2006</b> – The Role of Deliberate Practice <i>in</i> K.A. Ericsson, N. Charness, P.J. Feltovich, R.R. Hoffman (dir.), <span style=\"baseline\"><i>The Cambridge Handbook of Expertise and Expert Performance</i></span>, Cambridge University Press, p. 683‑703.</div>\n",

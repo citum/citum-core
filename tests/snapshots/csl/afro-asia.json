@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:24.167Z",
+  "generated_at": "2026-04-19T14:02:05.808Z",
   "style": "afro-asia",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "67b092260133b801",
   "citations": {
     "single-item-1": "Thomas S. Kuhn, “The Structure of Scientific Revolutions,” <i>International Encyclopedia of Unified Science</i>, v. 2, n. 2 (1962), https://doi.org/10.1234/example.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Maria Garcia, “Methods for Robust Climate Attribution,” <i>Annual Review of Climate Science</i>, v. 4 (2019), p. 55‑80, https://doi.org/10.5555/arcs.2019.4.55; Maria Garcia, “Methods for Probabilistic Climate Attribution,” <i>Annual Review of Climate Science</i>, v. 4 (2019), p. 81‑104, https://doi.org/10.5555/arcs.2019.4.81."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">ADAMS, John. “Letter to James Smith” , 1797.</div>\n",
     "  <div class=\"csl-entry\">BENGIO, Yoshua. “The Future of Artificial Intelligence” , 2023. Disponível em: &#60;https://example.com/interview&#62;.</div>\n",
     "  <div class=\"csl-entry\">CHEN, Wei. “Neural Networks for Natural Language Understanding”. phd-thesis, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\">ERICSSON, K. Anders. “The Role of Deliberate Practice” <i>in</i> ERICSSON, K. Anders, CHARNESS, Neil, FELTOVICH, Paul J., <i>et al</i> (Orgs.). <i>The Cambridge Handbook of Expertise and Expert Performance</i>. [s.l.]: Cambridge University Press, 2006.</div>\n",

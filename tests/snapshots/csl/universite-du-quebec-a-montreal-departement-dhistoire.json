@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:41.537Z",
+  "generated_at": "2026-04-19T14:03:27.037Z",
   "style": "universite-du-quebec-a-montreal-departement-dhistoire",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "e9469a463cb02d66",
   "citations": {
     "single-item-1": "Thomas S. Kuhn, “The Structure of Scientific Revolutions,” <i>International Encyclopedia of Unified Science</i>, vol. 2, n° 2, 1962.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Maria Garcia, “Methods for Robust Climate Attribution,” <i>Annual Review of Climate Science</i>, vol. 4, 2019 Maria Garcia, “Methods for Probabilistic Climate Attribution,” <i>Annual Review of Climate Science</i>, vol. 4, 2019."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">ADAMS, John, <i>Letter to James Smith</i>, 1797, Massachusetts Historical Society.</div>\n",
     "  <div class=\"csl-entry\">BENGIO, Yoshua, The Future of Artificial Intelligence, 10 November 2023.</div>\n",
     "  <div class=\"csl-entry\">CHEN, Wei, <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\">ERICSSON, K. Anders, “The Role of Deliberate Practice,” dans <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press, 2006, p. 683–703.</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:05.045Z",
+  "generated_at": "2026-04-19T14:02:48.733Z",
   "style": "geriatrie-et-psychologie-neuropsychiatrie-du-vieillissement",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "71a8d42f5b6bc5d1",
   "citations": {
     "single-item": "[1]",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\"><b>30</b>. Smith J, Lee A, Nguyen B, Patel R. Adaptive Climate Risk Modeling for Inland Regions. <i>Journal of Climate Analytics</i> 2021 ; 12 : 201–19.</div>\n",
     "  <div class=\"csl-entry\"><b>31</b>. Garcia M. Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i> 2019 ; 4 : 55–80.</div>\n",
     "  <div class=\"csl-entry\"><b>32</b>. Garcia M. Methods for Probabilistic Climate Attribution. <i>Annual Review of Climate Science</i> 2019 ; 4 : 81–104.</div>\n",
-    "  <div class=\"csl-entry\"><b>33</b>. Forthcoming A. <i>Foundations of Declarative Bibliography</i>. Cambridge : University Press, n.d.</div>\n"
+    "  <div class=\"csl-entry\"><b>33</b>. Forthcoming A. <i>Foundations of Declarative Bibliography</i>. Cambridge : University Press, n.d.</div>\n",
+    "  <div class=\"csl-entry\"><b>34</b>. Adams J. Letter to James Smith 1797.</div>\n"
   ]
 }

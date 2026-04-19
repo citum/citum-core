@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:17.031Z",
+  "generated_at": "2026-04-19T14:03:01.284Z",
   "style": "mcgill-en",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "d5dc4c5d902f2aa8",
   "citations": {
     "single-item-1": "Thomas S Kuhn, “The Structure of Scientific Revolutions” (1962) 2:2 International Encyclopedia of Unified Science.",
@@ -64,6 +64,7 @@
     "  <div class=\"csl-entry\">Thompson, Alexander, “The Art of Minimalism in Modern Design”, <i>Wired</i> 31:6 (June 2023) 42.</div>\n",
     "  <div class=\"csl-entry\">Vaswani, Ashish et al, “Attention Is All You Need” (2017) 30 Advances in Neural Information Processing Systems 5998–6008.</div>\n",
     "  <div class=\"csl-entry\">“The Role of Theory in Research” (2018) 28:3 Journal of Theoretical Psychology 201–215.</div>\n",
+    "  <div class=\"csl-entry\">Adams, John, “Letter to James Smith” John Adams, (1797).</div>\n",
     "  <div class=\"csl-entry\">Yoshua Bengio interviewed by Stephen Colbert (10 November 2023) on The Future of Artificial Intelligence,.</div>\n",
     "  <div class=\"csl-entry\">“Method for Efficient Data Compression”, Patent No US 11,043,211 B2.</div>\n",
     "  <div class=\"csl-entry\">Lumière, Louis, film: <i>The Arrival of a Train at La Ciotat Station</i> (1896).</div>\n",

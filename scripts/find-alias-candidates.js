@@ -101,17 +101,36 @@ function normalizeFixtureItems(fixturesData) {
   );
 }
 
+// Extra scenarios defined inline — NOT in the shared fixture — to avoid invalidating
+// oracle snapshots. The `clusters` format (for subsequent-cite) is also not understood
+// by the Citum engine's JSON deserializer.
+const EXTRA_SCENARIOS = [
+  {
+    id: 'subsequent-same-item',
+    clusters: [
+      { id: 'subsequent-same-item-first', items: [{ id: 'ITEM-1' }] },
+      { id: 'subsequent-same-item-second', items: [{ id: 'ITEM-1' }] },
+    ],
+  },
+  {
+    id: 'archive-single',
+    items: [{ id: 'ITEM-34' }],
+  },
+];
+
 function loadFixtures(refsFixture, citationsFixture) {
   const fixturesData = JSON.parse(fs.readFileSync(refsFixture, 'utf8'));
   const testItems = normalizeFixtureItems(fixturesData);
-  const testCitations = citationsFixture
-    ? JSON.parse(fs.readFileSync(citationsFixture, 'utf8'))
-    : [];
+  const testCitations = [
+    ...(citationsFixture ? JSON.parse(fs.readFileSync(citationsFixture, 'utf8')) : []),
+    ...EXTRA_SCENARIOS,
+  ];
   return { testItems, testCitations };
 }
 
 /**
  * Render citations and bibliography using citeproc-js.
+ * Supports both simple scenarios and clustered scenarios with position tracking.
  */
 function renderWithCiteprocJs(stylePath, testItems, testCitations) {
   let cslXml;
@@ -132,16 +151,75 @@ function renderWithCiteprocJs(stylePath, testItems, testCitations) {
     citeproc.updateItems(Object.keys(testItems));
 
     const citations = [];
-    for (const cite of testCitations) {
-      const suppressAuthor = cite['suppress-author'] === true;
-      const citeprocItems = cite.items.map((item) => toCiteprocItem(item, suppressAuthor));
+    let citationOrder = 0;
 
-      try {
-        const result = citeproc.makeCitationCluster(citeprocItems);
-        citations.push(result);
-      } catch (e) {
-        // Skip this citation on error
-        citations.push('');
+    for (const cite of testCitations) {
+      // Handle clustered scenarios (e.g., subsequent-same-item)
+      if (cite.clusters && Array.isArray(cite.clusters)) {
+        const clusterResults = [];
+        const citationsPre = [];
+
+        for (const cluster of cite.clusters) {
+          const suppressAuthor = cluster['suppress-author'] === true;
+          const citeprocItems = cluster.items.map((item) => toCiteprocItem(item, suppressAuthor));
+
+          try {
+            const citObj = {
+              citationID: cluster.id || `cluster-${citationOrder}`,
+              citationItems: citeprocItems,
+              properties: { noteIndex: citationOrder },
+            };
+
+            const result = citeproc.processCitationCluster(citObj, citationsPre, []);
+            if (result && result[1] && result[1].length > 0) {
+              clusterResults.push(result[1][result[1].length - 1][1]);
+              citationsPre.push([citObj.citationID, citationOrder]);
+            } else {
+              clusterResults.push('');
+            }
+            citationOrder++;
+          } catch (e) {
+            // Fallback to makeCitationCluster
+            try {
+              const citeprocItems = cluster.items.map((item) => toCiteprocItem(item, cluster['suppress-author'] === true));
+              const result = citeproc.makeCitationCluster(citeprocItems);
+              clusterResults.push(result);
+            } catch {
+              clusterResults.push('');
+            }
+          }
+        }
+
+        // Join cluster results with " | " separator
+        citations.push(clusterResults.join(' | '));
+      } else {
+        // Handle simple scenarios (original behavior)
+        const suppressAuthor = cite['suppress-author'] === true;
+        const citeprocItems = cite.items.map((item) => toCiteprocItem(item, suppressAuthor));
+
+        try {
+          const citObj = {
+            citationID: cite.id || `citation-${citationOrder}`,
+            citationItems: citeprocItems,
+            properties: { noteIndex: citationOrder },
+          };
+
+          const result = citeproc.processCitationCluster(citObj, [], []);
+          if (result && result[1] && result[1].length > 0) {
+            citations.push(result[1][result[1].length - 1][1]);
+          } else {
+            citations.push('');
+          }
+          citationOrder++;
+        } catch (e) {
+          // Fallback to makeCitationCluster
+          try {
+            const result = citeproc.makeCitationCluster(citeprocItems);
+            citations.push(result);
+          } catch {
+            citations.push('');
+          }
+        }
       }
     }
 
@@ -168,37 +246,48 @@ function makeFingerprint(rendered) {
 /**
  * Compute similarity between two fingerprints.
  * Returns { similarity, citation_match, bib_match }.
+ *
+ * citation_match and bib_match use EXACT string equality (after normalizeText).
+ * similarity uses bag-of-words textSimilarity for finer-grained matching.
  */
 function scoreFingerprints(fp1, fp2) {
   if (!fp1 || !fp2) return { similarity: 0, citation_match: 0, bib_match: 0 };
 
   const citationSimilarities = [];
+  const citationMatches = [];
+
   for (let i = 0; i < Math.max(fp1.citations.length, fp2.citations.length); i++) {
     const c1 = fp1.citations[i] || '';
     const c2 = fp2.citations[i] || '';
     citationSimilarities.push(textSimilarity(c1, c2));
+    // Exact match: strings must be identical after normalizeText
+    citationMatches.push(c1 === c2 ? 1 : 0);
   }
 
   const bibSimilarities = [];
+  const bibMatches = [];
+
   for (let i = 0; i < Math.max(fp1.bibliography.length, fp2.bibliography.length); i++) {
     const b1 = fp1.bibliography[i] || '';
     const b2 = fp2.bibliography[i] || '';
     bibSimilarities.push(textSimilarity(b1, b2));
+    // Exact match: strings must be identical after normalizeText
+    bibMatches.push(b1 === b2 ? 1 : 0);
   }
 
-  // Mean similarity across all strings
+  // Mean similarity across all strings (bag-of-words)
   const allSims = [...citationSimilarities, ...bibSimilarities];
   const similarity = allSims.length > 0
     ? allSims.reduce((a, b) => a + b, 0) / allSims.length
     : 0;
 
-  // Exact match rates
-  const citation_match = citationSimilarities.length > 0
-    ? citationSimilarities.filter(s => s === 1).length / citationSimilarities.length
+  // Exact match rates (string equality)
+  const citation_match = citationMatches.length > 0
+    ? citationMatches.reduce((a, b) => a + b, 0) / citationMatches.length
     : 0;
 
-  const bib_match = bibSimilarities.length > 0
-    ? bibSimilarities.filter(s => s === 1).length / bibSimilarities.length
+  const bib_match = bibMatches.length > 0
+    ? bibMatches.reduce((a, b) => a + b, 0) / bibMatches.length
     : 0;
 
   return { similarity, citation_match, bib_match };

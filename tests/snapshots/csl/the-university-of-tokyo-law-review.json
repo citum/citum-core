@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:38.655Z",
+  "generated_at": "2026-04-19T14:03:24.071Z",
   "style": "the-university-of-tokyo-law-review",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "7a80dddfaa34fa83",
   "citations": {
     "single-item": "Thomas S. Kuhn 「The Structure of Scientific Revolutions」 International Encyclopedia of Unified Science 2巻 2号 (1962)。",
@@ -26,6 +26,7 @@
     "no-date-single": "A. Forthcoming 『Foundations of Declarative Bibliography』 (University Press, 。"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">「Letter to James Smith」</div>\n",
     "  <div class=\"csl-entry\">「The Future of Artificial Intelligence」</div>\n",
     "  <div class=\"csl-entry\">「Neural Networks for Natural Language Understanding」</div>\n",
     "  <div class=\"csl-entry\">「The Role of Deliberate Practice」</div>\n",

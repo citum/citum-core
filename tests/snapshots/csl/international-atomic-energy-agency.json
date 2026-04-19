@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:09.252Z",
+  "generated_at": "2026-04-19T14:02:53.162Z",
   "style": "international-atomic-energy-agency",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "05972f27a1fd96d7",
   "citations": {
     "single-item": "[1]",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[30]</div><div class=\"csl-right-inline\">SMITH, J., LEE, A., NGUYEN, B., PATEL, R., Adaptive Climate Risk Modeling for Inland Regions, Journal of Climate Analytics <b>12</b> 3 (2021) 201.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[31]</div><div class=\"csl-right-inline\">GARCIA, M., Methods for Robust Climate Attribution, Annual Review of Climate Science <b>4</b> (2019) 55.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[32]</div><div class=\"csl-right-inline\">GARCIA, M., Methods for Probabilistic Climate Attribution, Annual Review of Climate Science <b>4</b> (2019) 81.</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33]</div><div class=\"csl-right-inline\">FORTHCOMING, A., Foundations of Declarative Bibliography, University Press, Cambridge.</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33]</div><div class=\"csl-right-inline\">FORTHCOMING, A., Foundations of Declarative Bibliography, University Press, Cambridge.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[34]</div><div class=\"csl-right-inline\">ADAMS, J., Letter to James Smith, (1797).</div>\n  </div>\n"
   ]
 }

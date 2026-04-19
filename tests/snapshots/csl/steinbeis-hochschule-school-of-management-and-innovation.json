@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:34.898Z",
+  "generated_at": "2026-04-19T14:03:20.183Z",
   "style": "steinbeis-hochschule-school-of-management-and-innovation",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "ccc232deeba83c98",
   "citations": {
     "single-item-1": "Kuhn (1962).",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Garcia (2019); Garcia (2019)."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, J. (1797): Letter to James Smith.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y. (2023): The Future of Artificial Intelligence, online: https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">Chen, W. (2019): Neural Networks for Natural Language Understanding.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. A. (2006): The Role of Deliberate Practice, in: Ericsson, K. A./ Charness, N./ Feltovich, P. J./ Hoffman, R. R. (Hrsg.): The Cambridge Handbook of Expertise and Expert Performance, S. 683–703.</div>\n",

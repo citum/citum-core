@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:11.204Z",
+  "generated_at": "2026-04-19T14:02:55.187Z",
   "style": "journal-de-la-societe-des-americanistes",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "37ee71c58b42ea90",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Adams</span> John</div>\n1797 “Letter to James Smith.” Adams Papers, reel 45. Massachusetts Historical Society. Boston, MA.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Bengio</span> Yoshua</div>\n2023 “The Future of Artificial Intelligence” Interview by Stephen Colbert. Video-interview</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><i>Brown v. Board of Education</i></div>\n1954, 347 U.S. Reports 483. U.S. Supreme Court</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Chen</span> Wei</div>\n2019 “Neural Networks for Natural Language Understanding,” Phd-thesis, Stanford University</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:25.948Z",
+  "generated_at": "2026-04-19T14:03:10.650Z",
   "style": "nucleic-acids-research-web-server-issue",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "186c4850b6dab997",
   "citations": {
     "single-item": "(1)",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">30. Smith,J., Lee,A., Nguyen,B. and Patel,R. (2021) Adaptive Climate Risk Modeling for Inland Regions. <i>Journal of Climate Analytics</i>, <b>12</b>, 201–219.</div>\n\n\n    <div class=\"csl-block\">https://doi.org/10.5555/jca.2021.12.3.201</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">31. Garcia,M. (2019) Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i>, <b>4</b>, 55–80.</div>\n\n\n    <div class=\"csl-block\">https://doi.org/10.5555/arcs.2019.4.55</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">32. Garcia,M. (2019) Methods for Probabilistic Climate Attribution. <i>Annual Review of Climate Science</i>, <b>4</b>, 81–104.</div>\n\n\n    <div class=\"csl-block\">https://doi.org/10.5555/arcs.2019.4.81</div>\n</div>\n",
-    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">33. Forthcoming,A. Foundations of Declarative Bibliography University Press, Cambridge.</div>\n</div>\n"
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">33. Forthcoming,A. Foundations of Declarative Bibliography University Press, Cambridge.</div>\n</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">34. Adams,J. (1797) Letter to James Smith.</div>\n</div>\n"
   ]
 }

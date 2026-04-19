@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:36.575Z",
+  "generated_at": "2026-04-19T14:03:21.837Z",
   "style": "technische-universitat-munchen-controlling",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "f89cb6fa05aaf12c",
   "citations": {
     "single-item-1": "Kuhn (1962)",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Garcia (2019a); Garcia (2019b)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, John (1797): Letter to James Smith 1797.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua (2023): The Future of Artificial Intelligence 2023, URL: https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei (2019): Neural Networks for Natural Language Understanding 2019.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. Anders (2006): The Role of Deliberate Practice in: The Cambridge Handbook of Expertise and Expert Performance, hrsgg. v. K. Anders Ericsson et. al. 2006, S. 683–703.</div>\n",

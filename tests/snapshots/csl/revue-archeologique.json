@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:31.954Z",
+  "generated_at": "2026-04-19T14:03:17.192Z",
   "style": "revue-archeologique",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "a78ddb39f6d947ce",
   "citations": {
     "single-item-1": "<span style=\"font-variant:small-caps;\">T.S. Kuhn</span>, « The Structure of Scientific Revolutions », <i>International Encyclopedia of Unified Science</i>, 2, 2, 1962.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "<span style=\"font-variant:small-caps;\">M. Garcia</span>, « Methods for Robust Climate Attribution », <i>Annual Review of Climate Science</i>, 4, 2019a, p. 55‑80 ; « Methods for Probabilistic Climate Attribution », <i>Annual Review of Climate Science</i>, 4, 2019b, p. 81‑104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Adams</span> 1797\t<span style=\"font-variant:small-caps;\">J. Adams</span>, .</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Bengio</span> 2023\t<span style=\"font-variant:small-caps;\">Y. Bengio</span>, .</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Chen</span> 2019\t<span style=\"font-variant:small-caps;\">W. Chen</span>, <i><i>Neural Networks for Natural Language Understanding</i></i>, phd-thesis, soutenue à l'Stanford University, 2019.</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Ericsson</span> 2006\t<span style=\"font-variant:small-caps;\">K.A. Ericsson</span>, « The Role of Deliberate Practice », <span style=\"font-variant:small-caps;\">K.A. Ericsson</span>, <span style=\"font-variant:small-caps;\">N. Charness</span>, <span style=\"font-variant:small-caps;\">P.J. Feltovich</span>, <span style=\"font-variant:small-caps;\">R.R. Hoffman</span> (éd.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>, p. 683‑703.</div>\n</div>\n",

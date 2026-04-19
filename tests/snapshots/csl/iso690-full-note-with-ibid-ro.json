@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:10.620Z",
+  "generated_at": "2026-04-19T14:02:54.612Z",
   "style": "iso690-full-note-with-ibid-ro",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "ae44efdb470691ce",
   "citations": {
     "single-item-1": "KUHN, Thomas S. The Structure of Scientific Revolutions. <i>International Encyclopedia of Unified Science</i> [on-line]. Chicago : University of Chicago Press, 1962, Vol. 2, nr. 2. DOI 10.1234/example.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "GARCIA, Maria. Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i> [on-line]. 2019, Vol. 4, p. 55–80. DOI 10.5555/arcs.2019.4.55 ; GARCIA, Maria. Methods for Probabilistic Climate Attribution. <i>Annual Review of Climate Science</i> [on-line]. 2019, Vol. 4, p. 81–104. DOI 10.5555/arcs.2019.4.81."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">ADAMS, John. Letter to James Smith [manuscrit]. 1797. Massachusetts Historical Society: Adams Papers, reel 45.</div>\n",
     "  <div class=\"csl-entry\">BENGIO, Yoshua. The Future of Artificial Intelligence [on-line]. November 10, 2023. Disponibil la: https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">CHEN, Wei. Neural Networks for Natural Language Understanding. phd-thesis. [S. l.] : Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\">ERICSSON, K. Anders. The Role of Deliberate Practice. În: ERICSSON, K. Anders et al. (ed.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>. [S. l.] : Cambridge University Press, 2006, p. 683–703.</div>\n",

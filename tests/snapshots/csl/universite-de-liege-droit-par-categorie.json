@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:41.334Z",
+  "generated_at": "2026-04-19T14:03:26.824Z",
   "style": "universite-de-liege-droit-par-categorie",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "37b08da0b927ccb9",
   "citations": {
     "single-item-1": "T.S. <span style=\"font-variant:small-caps;\">Kuhn</span>, « The Structure of Scientific Revolutions », <i>International Encyclopedia of Unified Science</i>, 1962, vol. 2, n° 2.",
@@ -68,6 +68,7 @@
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">State of JS Team</span>, « The State of JavaScript 2023 », 2023, disponible sur https://stateofjs.com/2023 (Consulté le 15 janvier 2024).</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Rodriguez</span>, M., « Major Breakthrough in Quantum Computing Announced », <i>The New York Times</i>, 15 mars 2024.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span>, Y., « The Future of Artificial Intelligence », entretien réalisé par Stephen <span style=\"font-variant:small-caps;\">Colbert</span>, 10 novembre 2023, disponible sur https://example.com/interview.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span>, J., <i>Letter to James Smith</i>, 1797.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson</span>, D. et <span style=\"font-variant:small-caps;\">Lee</span>, S., « Method for Efficient Data Compression », 13 juillet 2021.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Lumière</span>, L., <i>The Arrival of a Train at La Ciotat Station</i>, 1896.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">NASA Goddard Institute for Space Studies</span>, « Global Temperature Anomalies 1880-2023 », 2024, disponible sur https://data.giss.nasa.gov/gistemp/ (Consulté le 20 janvier 2024).</div>\n",

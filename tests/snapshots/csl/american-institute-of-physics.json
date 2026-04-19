@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:24.627Z",
+  "generated_at": "2026-04-19T14:02:06.337Z",
   "style": "american-institute-of-physics",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "673dae8c6c921251",
   "citations": {
     "single-item": "<sup>1</sup>",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\"><sup>30</sup> J. Smith, A. Lee, B. Nguyen, and R. Patel, “Adaptive Climate Risk Modeling for Inland Regions,” Journal of Climate Analytics <b>12</b>(3), 201–219 (2021).</div>\n",
     "  <div class=\"csl-entry\"><sup>31</sup> M. Garcia, “Methods for Robust Climate Attribution,” Annual Review of Climate Science <b>4</b>, 55–80 (2019).</div>\n",
     "  <div class=\"csl-entry\"><sup>32</sup> M. Garcia, “Methods for Probabilistic Climate Attribution,” Annual Review of Climate Science <b>4</b>, 81–104 (2019).</div>\n",
-    "  <div class=\"csl-entry\"><sup>33</sup> A. Forthcoming, <i>Foundations of Declarative Bibliography</i> (University Press, Cambridge, n.d.).</div>\n"
+    "  <div class=\"csl-entry\"><sup>33</sup> A. Forthcoming, <i>Foundations of Declarative Bibliography</i> (University Press, Cambridge, n.d.).</div>\n",
+    "  <div class=\"csl-entry\"><sup>34</sup> J. Adams, “Letter to James Smith,” (1797).</div>\n"
   ]
 }

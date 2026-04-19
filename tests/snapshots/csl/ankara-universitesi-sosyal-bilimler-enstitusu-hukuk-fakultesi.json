@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:25.578Z",
+  "generated_at": "2026-04-19T14:02:07.429Z",
   "style": "ankara-universitesi-sosyal-bilimler-enstitusu-hukuk-fakultesi",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "0c9d72d965d04a71",
   "citations": {
     "single-item-1": "<b>KUHN, Thomas S.</b>: “<i>The Structure of Scientific Revolutions</i>”, International Encyclopedia of Unified Science, 1962, c. İİ, sy. 2.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "<b>GARCİA, Maria</b>: “<i>Methods for Robust Climate Attribution</i>”, Annual Review of Climate Science, 2019, c. İV, ss. 55-80; <b>GARCİA, Maria</b>: “<i>Methods for Probabilistic Climate Attribution</i>”, Annual Review of Climate Science, 2019, c. İV, ss. 81-104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><b>ADAMS, John</b>: Letter to James Smith, 1797, Massachusetts Historical Society: Adams Papers, reel 45Boston, MA.</div>\n",
     "  <div class=\"csl-entry\"><b>BENGİO, Yoshua</b>: The Future of Artificial Intelligence, Röportaj yapan Stephen Colbert, Video-interview, 10.11.2023, https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">Brown v. Board of Education, c. 347 U.S. Reports 483 (U.S. Supreme Court 1954).</div>\n",
     "  <div class=\"csl-entry\"><b>CHEN, Wei</b>: Neural Networks for Natural Language Understanding, (phd-thesis Tezi) Stanford University 2019.</div>\n",

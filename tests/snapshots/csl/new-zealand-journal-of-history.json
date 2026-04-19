@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:25.364Z",
+  "generated_at": "2026-04-19T14:03:09.944Z",
   "style": "new-zealand-journal-of-history",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "c3da9c8b321658e3",
   "citations": {
     "single-item-1": "Thomas S. Kuhn, “The Structure of Scientific Revolutions,” <i>International Encyclopedia of Unified Science</i>, 2, 2, 1962.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Maria Garcia, “Methods for Robust Climate Attribution,” <i>Annual Review of Climate Science</i>, 4, 2019; Maria Garcia, “Methods for Probabilistic Climate Attribution,” <i>Annual Review of Climate Science</i>, 4, 2019."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, John, “Letter to James Smith,” 1797, Adams Papers, reel 45, Massachusetts Historical Society, Boston, MA.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua. video-interview, The Future of Artificial Intelligence, interview by Stephen Colbert, video-interview, November 10, 2023, https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">Brown v. Board of Education, 347 U.S. Reports 483.</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei. phd-thesis, “Neural Networks for Natural Language Understanding,” phd-thesis, Stanford University, 2019.</div>\n",

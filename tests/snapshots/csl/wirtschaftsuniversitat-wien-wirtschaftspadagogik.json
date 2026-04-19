@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:43.893Z",
+  "generated_at": "2026-04-19T14:03:29.456Z",
   "style": "wirtschaftsuniversitat-wien-wirtschaftspadagogik",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "afefe9995b1de634",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -48,6 +48,7 @@
     "  <div class=\"csl-entry\">Vaswani, Ashish / Shazeer, Noam / Parmar, Niki / Uszkoreit, Jakob / Jones, Llion / Gomez, Aidan N. / Kaiser, Lukasz / Polosukhin, Illia (2017): Attention Is All You Need. In: Advances in Neural Information Processing Systems, 30/-/5998–6008</div>\n",
     "  <div class=\"csl-entry\">Weinberg, Gerald M. / Freedman, Daniel P. (1971): The Psychology of Computer Programming. Silver Anniversary Edition, New York: Van Nostrand Reinhold</div>\n",
     "  <div class=\"csl-entry\">World Bank (2023): World Development Report 2023. Washington, DC: World Bank Group</div>\n",
+    "  <div class=\"csl-entry\">Adams, John (1797): Letter to James Smith</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua (11/10/2023): The Future of Artificial Intelligence. bezogen unter: https://example.com/interview</div>\n",
     "  <div class=\"csl-entry\">Johnson, David / Lee, Sarah (07/13/2021): Method for Efficient Data Compression. US 11,043,211 B2</div>\n",
     "  <div class=\"csl-entry\">Lumière, Louis (1896): The Arrival of a Train at La Ciotat Station. film</div>\n",

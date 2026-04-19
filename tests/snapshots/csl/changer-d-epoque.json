@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:32.314Z",
+  "generated_at": "2026-04-19T14:02:15.044Z",
   "style": "changer-d-epoque",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "94196f6c232793f0",
   "citations": {
     "single-item-1": "Thomas S. Kuhn, « The Structure of Scientific Revolutions », dans <i>International Encyclopedia of Unified Science</i>, vol. 2, n<sup>o</sup> 2, 1962",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Maria Garcia, « Methods for Robust Climate Attribution », dans <i>Annual Review of Climate Science</i>, vol. 4, 2019, p. 55‑80 ; « Methods for Probabilistic Climate Attribution », dans <i>Annual Review of Climate Science</i>, vol. 4, 2019, p. 81‑104"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Adams</span> John, .</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Bengio</span> Yoshua, .</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Chen</span> Wei, <i><i>Neural Networks for Natural Language Understanding</i></i>, phd-thesis, soutenue à l'Stanford University, 2019.</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Ericsson</span> K. Anders, « The Role of Deliberate Practice », dans K. Anders Ericsson, Neil Charness, Paul J. Feltovich, Robert R. Hoffman (dir.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press, 2006, p. 683‑703.</div>\n</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:30.304Z",
+  "generated_at": "2026-04-19T14:02:12.838Z",
   "style": "biological-journal-of-the-linnean-society",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "a902d6d9f9b579a7",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><b><b>Adams J</b></b>. <b>1797</b>. Letter to James Smith.</div>\n",
     "  <div class=\"csl-entry\"><b><b>Bengio Y</b></b>. <b>2023</b>. The Future of Artificial Intelligence.</div>\n",
     "  <div class=\"csl-entry\"><b><i>Brown v. Board of Education</i></b>. <b>1954</b>.</div>\n",
     "  <div class=\"csl-entry\"><b><b>Chen W</b></b>. <b>2019</b>. Neural Networks for Natural Language Understanding.</div>\n",

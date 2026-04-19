@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:44.707Z",
+  "generated_at": "2026-04-19T14:03:30.287Z",
   "style": "zwitscher-maschine",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "c6f251dd250f80da",
   "citations": {
     "single-item-1": "Kuhn 1962",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Garcia 2019a; Garcia 2019b"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b><b>Adams</b> 1797</b></div>\nJohn Adams, <i>Letter to James Smith</i>, 1797.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b><b>Bengio</b> 2023</b></div>\nYoshua Bengio, <i>The Future of Artificial Intelligence</i>, 2023.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Brown v. Board of Education 1954</b></div>\nBrown v. Board of Education, in: <i>U.S. Reports</i>, 1954, Bd. 347, S. 483.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b><b>Chen</b> 2019</b></div>\nWei Chen, <i>Neural Networks for Natural Language Understanding</i>, Stanford University, 2019.</div>\n",

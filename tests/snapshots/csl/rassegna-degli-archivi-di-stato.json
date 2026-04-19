@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:31.088Z",
+  "generated_at": "2026-04-19T14:03:16.235Z",
   "style": "rassegna-degli-archivi-di-stato",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "a9562b3a9a653076",
   "citations": {
     "single-item-1": "<span style=\"font-variant:small-caps;\">T.S. Kuhn</span>, <i>The Structure of Scientific Revolutions</i>, in «International Encyclopedia of Unified Science», 2 (1962), 2.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "<span style=\"font-variant:small-caps;\">M. Garcia</span>, <i>Methods for Robust Climate Attribution</i>, in «Annual Review of Climate Science», 4 (2019), pp. 55–80; <span style=\"font-variant:small-caps;\">M. Garcia</span>, <i>Methods for Probabilistic Climate Attribution</i>, in «Annual Review of Climate Science», 4 (2019), pp. 81–104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span> = <span style=\"font-variant:small-caps;\">Massachusetts Historical Society</span>, <i>Adams Papers, reel 45</i> «Letter to James Smith».</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span> = <span style=\"font-variant:small-caps;\">Yoshua Bengio</span>, <i>The Future of Artificial Intelligence</i>, 10 November 2023 &#60;https://example.com/interview&#62;.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span> = <span style=\"font-variant:small-caps;\">Wei Chen</span>, <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span> = <span style=\"font-variant:small-caps;\">K. Anders Ericsson</span>, <i>The Role of Deliberate Practice</i>, in <i>The Cambridge Handbook of Expertise and Expert Performance</i>, a cura di <span style=\"font-variant:small-caps;\">K. Anders Ericsson</span> - <span style=\"font-variant:small-caps;\">Neil Charness</span> - <span style=\"font-variant:small-caps;\">Paul J. Feltovich</span> - <span style=\"font-variant:small-caps;\">Robert R. Hoffman</span>, Cambridge University Press, 2006, pp. 683–703.</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:25.642Z",
+  "generated_at": "2026-04-19T14:02:07.500Z",
   "style": "annales",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "605a2be2b46f7699",
   "citations": {
     "single-item-1": "Thomas S. <span style=\"font-variant:small-caps;\">Kuhn</span>, « The Structure of Scientific Revolutions », <i>International Encyclopedia of Unified Science</i>,  2-2, 1962.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Maria <span style=\"font-variant:small-caps;\">Garcia</span>, « Methods for Robust Climate Attribution », <i>Annual Review of Climate Science</i>,  4, 2019, p. 55‑80 ; Maria <span style=\"font-variant:small-caps;\">Garcia</span>, « Methods for Probabilistic Climate Attribution », <i>Annual Review of Climate Science</i>,  4, 2019, p. 81‑104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">John <span style=\"font-variant:small-caps;\">Adams</span>, « Letter to James Smith », 1797.</div>\n",
     "  <div class=\"csl-entry\">Yoshua <span style=\"font-variant:small-caps;\">Bengio</span>, « The Future of Artificial Intelligence ».</div>\n",
     "  <div class=\"csl-entry\"><i>Brown v. Board of Education</i>, 1954, vol. 347.</div>\n",
     "  <div class=\"csl-entry\">Wei <span style=\"font-variant:small-caps;\">Chen</span>, « Neural Networks for Natural Language Understanding » phd-thesis, Stanford University, 2019.</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:22.610Z",
+  "generated_at": "2026-04-19T14:03:06.797Z",
   "style": "new-harts-rules-notes-initials-label-page",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "b95895a758fc6693",
   "citations": {
     "single-item-1": "T. S. Kuhn, “The Structure of Scientific Revolutions,” <i>International Encyclopedia of Unified Science</i> (Chicago), 2/2 (1962), https://doi.org/10.1234/example.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "M. Garcia, “Methods for Robust Climate Attribution,” <i>Annual Review of Climate Science</i>, 4 (2019), pp. 55–80, https://doi.org/10.5555/arcs.2019.4.55; M. Garcia, “Methods for Probabilistic Climate Attribution,” <i>Annual Review of Climate Science</i>, 4 (2019), pp. 81–104, https://doi.org/10.5555/arcs.2019.4.81."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, J., “Letter to James Smith,” 1797, Boston, MA, Massachusetts Historical Society, Adams Papers, reel 45.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y., “The Future of Artificial Intelligence,” video-interview by S. Colbert, 10 Nov. 2023, https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">“Brown v. Board of Education,” in <i>U.S. Reports</i>, 1954, 347.483.</div>\n",
     "  <div class=\"csl-entry\">Chen, W., “Neural Networks for Natural Language Understanding,” phd-thesis, Stanford University, 2019.</div>\n",

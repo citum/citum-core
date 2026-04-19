@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:07.411Z",
+  "generated_at": "2026-04-19T14:02:51.208Z",
   "style": "hochschule-osnabruck-fakultat-agrarwissenschaften-und-landschaftsarchitektur",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "eff0cec82dfe278c",
   "citations": {
     "single-item": "(KUHN 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(FORTHCOMING o. J.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">ADAMS, J. (1797): Letter to James Smith. o. O.:</div>\n",
     "  <div class=\"csl-entry\">BENGIO, Y. (2023): The Future of Artificial Intelligence. o. O.: .</div>\n",
     "  <div class=\"csl-entry\">CHEN, W. (2019): Neural Networks for Natural Language Understanding. Stanford University.</div>\n",
     "  <div class=\"csl-entry\">ERICSSON, K. A. (2006): The Role of Deliberate Practice. In: Ericsson, K. A., Charness, N., Feltovich, P. J., Hoffman, R. R. (Hrsg.): The Cambridge Handbook of Expertise and Expert Performance. o. O.: Cambridge University Press, 683–703.</div>\n",

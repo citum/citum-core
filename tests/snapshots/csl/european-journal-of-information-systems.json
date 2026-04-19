@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:02.677Z",
+  "generated_at": "2026-04-19T14:02:46.231Z",
   "style": "european-journal-of-information-systems",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "168158972436898c",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming, n.d.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">ADAMS J (1797) Letter to James Smith.</div>\n",
     "  <div class=\"csl-entry\">Anon (1954) <i>Brown v. Board of Education</i>.</div>\n",
     "  <div class=\"csl-entry\">Anon (2018) The Role of Theory in Research. <i>Journal of Theoretical Psychology</i> <b>28(3)</b>, 201–215.</div>\n",
     "  <div class=\"csl-entry\">BENGIO Y (2023) The Future of Artificial Intelligence. Available at: https://example.com/interview.</div>\n",

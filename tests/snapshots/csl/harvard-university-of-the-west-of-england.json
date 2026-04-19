@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:06.618Z",
+  "generated_at": "2026-04-19T14:02:50.367Z",
   "style": "harvard-university-of-the-west-of-england",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "4e245077c17d1c29",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming, n.d.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, J. (1797) <i>Letter to James Smith</i>.</div>\n",
     "  <div class=\"csl-entry\">Anon. (1954). <i>U.S. Reports</i>. 347, p. 483.</div>\n",
     "  <div class=\"csl-entry\">Anon. (2018) The Role of Theory in Research. <i>Journal of Theoretical Psychology</i>. 28 (3), pp. 201–215.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y. (2023) <i>The Future of Artificial Intelligence</i> Stephen ColbertInterview by . video-interview November 10, 2023. November 10, 2023 [online]. Available from: https://example.com/interview.</div>\n",

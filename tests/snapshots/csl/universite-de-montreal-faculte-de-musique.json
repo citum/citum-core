@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:41.429Z",
+  "generated_at": "2026-04-19T14:03:26.923Z",
   "style": "universite-de-montreal-faculte-de-musique",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "510f7f9b92d4cb8c",
   "citations": {
     "single-item-1": "Thomas S Kuhn, “The Structure of Scientific Revolutions,” <i>International Encyclopedia of Unified Science</i>, <span style=\"baseline\">vol.</span> <span style=\"baseline\">2</span>, <span style=\"baseline\">no.</span> <span style=\"baseline\">2</span>, 1962.",
@@ -63,6 +63,7 @@
     "  <div class=\"csl-entry\">Vasari, Giorgio, “Renaissance Art and Culture,” <i>Encyclopedia of World History</i>, vol. 5, Oxford University Press, 2022, p. 234-256.</div>\n",
     "  <div class=\"csl-entry\">Vaswani, Ashish, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser and Illia Polosukhin, “Attention Is All You Need,” <i>Advances in Neural Information Processing Systems</i>, <span style=\"baseline\">vol.</span> <span style=\"baseline\">30</span>, 2017, p. 5998-6008.</div>\n",
     "  <div class=\"csl-entry\">“The Role of Theory in Research,” <i>Journal of Theoretical Psychology</i>, <span style=\"baseline\">vol.</span> <span style=\"baseline\">28</span>, <span style=\"baseline\">no.</span> <span style=\"baseline\">3</span>, 2018, p. 201-215.</div>\n",
+    "  <div class=\"csl-entry\">Adams, John, <i>Letter to James Smith</i>, 1797.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua, <i>The Future of Artificial Intelligence</i>, Interview by Stephen Colbert, Video-interview, video-interview, 10 November 2023.</div>\n",
     "  <div class=\"csl-entry\">Johnson, David and Sarah Lee, <i>Method for Efficient Data Compression</i>, 13 July 2021.</div>\n",
     "  <div class=\"csl-entry\">Lumière, Louis, <i>The Arrival of a Train at La Ciotat Station</i>, Film, Short-film, short-film, 1896.</div>\n",

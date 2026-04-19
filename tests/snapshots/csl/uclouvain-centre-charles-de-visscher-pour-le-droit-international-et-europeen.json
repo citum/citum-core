@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:39.577Z",
+  "generated_at": "2026-04-19T14:03:25.033Z",
   "style": "uclouvain-centre-charles-de-visscher-pour-le-droit-international-et-europeen",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "0f07e2b41a1606a8",
   "citations": {
     "single-item-1": "T.S. <span style=\"font-variant:small-caps;\">Kuhn</span>, « The Structure of Scientific Revolutions », <i>International Encyclopedia of Unified Science</i>, vol. 2, n° 2, 1962.",
@@ -43,6 +43,7 @@
   },
   "bibliography": [
     "  <div class=\"csl-entry\">U.S. Supreme Court, 17 mai 1954, <i>Brown v. Board of Education</i>, <i>U.S. Reports</i>, 347, p. 483.</div>\n",
+    "  <div class=\"csl-entry\">Adams, J., « Letter to James Smith », 1797.</div>\n",
     "  <div class=\"csl-entry\">Chen, W., « Neural Networks for Natural Language Understanding », thèse , 2019, Stanford University.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K.A., « The Role of Deliberate Practice », in K.A. Ericsson, N. Charness, P.J. Feltovich, et R.R. Hoffman (éd.) <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press, 2006, pp. 683‑703.</div>\n",
     "  <div class=\"csl-entry\">Forthcoming, A., <i>Foundations of Declarative Bibliography</i>, Cambridge, University Press.</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:16.966Z",
+  "generated_at": "2026-04-19T14:03:01.215Z",
   "style": "materials-express",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "7ef9f22a944343b8",
   "citations": {
     "single-item": "<span style=\"baseline\">[1]</span>",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\"><b>30</b>.</div><div class=\"csl-right-inline\">J. Smith, A. Lee, B. Nguyen and R. Patel, <b>2021</b>. Adaptive Climate Risk Modeling for Inland Regions. <i>Journal of Climate Analytics</i>, <i>12</i>(3), pp. 201–219.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\"><b>31</b>.</div><div class=\"csl-right-inline\">M. Garcia, <b>2019</b>. Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i>, <i>4</i>, pp. 55–80.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\"><b>32</b>.</div><div class=\"csl-right-inline\">M. Garcia, <b>2019</b>. Methods for Probabilistic Climate Attribution. <i>Annual Review of Climate Science</i>, <i>4</i>, pp. 81–104.</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\"><b>33</b>.</div><div class=\"csl-right-inline\">A. Forthcoming, <b>n.d.</b> <i>Foundations of Declarative Bibliography</i>. University Press.</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\"><b>33</b>.</div><div class=\"csl-right-inline\">A. Forthcoming, <b>n.d.</b> <i>Foundations of Declarative Bibliography</i>. University Press.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\"><b>34</b>.</div><div class=\"csl-right-inline\">J. Adams, <b>1797</b>. (1797).</div>\n  </div>\n"
   ]
 }

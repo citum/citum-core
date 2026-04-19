@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:16.051Z",
+  "generated_at": "2026-04-19T14:03:00.254Z",
   "style": "le-tapuscrit-author-date",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "d853f29ad78a323d",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Massachusetts Historical Society, Adams Papers, reel 45, <i>Letter to James Smith</i>, 1797.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span> Yoshua, 2023, « The Future of Artificial Intelligence ».</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span> Wei, 2019, <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University, s.l.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span> K. Anders, 2006, « The Role of Deliberate Practice » dans K. Anders Ericsson, Neil Charness, Paul J. Feltovich et Robert R. Hoffman (eds.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>, s.l., Cambridge University Press, p. 683‑703.</div>\n",

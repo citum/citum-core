@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:06.191Z",
+  "generated_at": "2026-04-19T14:02:49.930Z",
   "style": "harvard-staffordshire-university",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "ff323553ff0a661c",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming, n.d.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, J. (1797). <i>Letter to James Smith</i>. Massachusetts Historical Society. Adams Papers, reel 45.</div>\n",
     "  <div class=\"csl-entry\">Anon (1954). <i>Brown v. Board of Education</i>.</div>\n",
     "  <div class=\"csl-entry\">Anon (2018). The Role of Theory in Research. 28 (3). p.pp. 201–215.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y. (2023). <i>The Future of Artificial Intelligence</i>. [Online]. Available from: https://example.com/interview.</div>\n",

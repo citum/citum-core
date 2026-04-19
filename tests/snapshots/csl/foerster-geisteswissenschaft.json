@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:03.745Z",
+  "generated_at": "2026-04-19T14:02:47.355Z",
   "style": "foerster-geisteswissenschaft",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "4cfbdf52b8095ba3",
   "citations": {
     "single-item-1": "<span style=\"font-variant:small-caps;\">Kuhn</span>, Thomas S.: „<i>The Structure of Scientific Revolutions</i>“, in: <i>International Encyclopedia of Unified Science</i> <i>2</i>/<i>2</i> (1962).",
@@ -44,6 +44,7 @@
   "bibliography": [
     "  <div class=\"csl-entry\"><i>Brown v. Board of Education</i>, Bd. 347 1954.</div>\n",
     "  <div class=\"csl-entry\">„<i>The Role of Theory in Research</i>“, in: <i>Journal of Theoretical Psychology</i> <i>28</i>/<i>3</i> (2018), S. 201–215.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span>, John: „<i>Letter to James Smith</i>“ 1797.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span>, Yoshua: „<i>The Future of Artificial Intelligence</i>“ (2023).</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span>, Wei: „<i>Neural Networks for Natural Language Understanding</i>“, phd-thesis, Stanford University 2019.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span>, K. Anders: „<i>The Role of Deliberate Practice</i>“, in: <span style=\"font-variant:small-caps;\">Ericsson</span>, K. Anders u. a. (Hrsg.): <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press 2006, S. 683–703.</div>\n",

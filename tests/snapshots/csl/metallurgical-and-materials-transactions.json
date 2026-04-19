@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:17.442Z",
+  "generated_at": "2026-04-19T14:03:01.700Z",
   "style": "metallurgical-and-materials-transactions",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "bf7e2404bde6062d",
   "citations": {
     "single-item": " [1]",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[30]</div><div class=\"csl-right-inline\">John Smith, Alice Lee, Bao Nguyen, and Ravi Patel: <i>Journal of Climate Analytics</i>, 2021, vol. 12, pp. 201–19.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[31]</div><div class=\"csl-right-inline\">Maria Garcia: <i>Annual Review of Climate Science</i>, 2019, vol. 4, pp. 55–80.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[32]</div><div class=\"csl-right-inline\">Maria Garcia: <i>Annual Review of Climate Science</i>, 2019, vol. 4, pp. 81–104.</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33]</div><div class=\"csl-right-inline\">A. Forthcoming: <i>Foundations of Declarative Bibliography</i>, University Press, Cambridge, n.d.</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33]</div><div class=\"csl-right-inline\">A. Forthcoming: <i>Foundations of Declarative Bibliography</i>, University Press, Cambridge, n.d.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[34]</div><div class=\"csl-right-inline\">John Adams: 1797.</div>\n  </div>\n"
   ]
 }

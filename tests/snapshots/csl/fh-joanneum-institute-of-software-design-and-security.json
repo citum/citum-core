@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:03.507Z",
+  "generated_at": "2026-04-19T14:02:47.100Z",
   "style": "fh-joanneum-institute-of-software-design-and-security",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "411d523554235875",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming, n.d.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, J. (1797). <i><i>Letter to James Smith</i></i>.</div>\n",
     "  <div class=\"csl-entry\">Anon (1954). <i>Brown v. Board of Education</i>. <i>U.S. Reports</i>. 347, p. 483.</div>\n",
     "  <div class=\"csl-entry\">Anon (2018). <i>The Role of Theory in Research</i>. 28 (3), 201–215.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y. (2023). <i><i>The Future of Artificial Intelligence</i></i>. [Online]. https://example.com/interview.</div>\n",

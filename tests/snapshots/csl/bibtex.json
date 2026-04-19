@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:30.087Z",
+  "generated_at": "2026-04-19T14:02:12.566Z",
   "style": "bibtex",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "aaf7f5281bfb378c",
   "citations": {
     "single-item": "Kuhn_1962",
@@ -26,6 +26,7 @@
     "no-date-single": "Forthcoming"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"> @unpublished{Adams_1797, title={Letter to James Smith}, archiveLocation={Adams Papers, reel 45}, author={Adams, John}, year={1797} }</div>\n",
     "  <div class=\"csl-entry\"> @misc{Bengio_2023, type={video-interview}, title={The Future of Artificial Intelligence}, url={https://example.com/interview}, author={Bengio, Yoshua}, year={2023}, month=nov }</div>\n",
     "  <div class=\"csl-entry\"> @phdthesis{Chen_2019, type={phd-thesis}, title={Neural Networks for Natural Language Understanding}, school={Stanford University}, author={Chen, Wei}, year={2019} }</div>\n",
     "  <div class=\"csl-entry\"> @inbook{Ericsson_2006, title={The Role of Deliberate Practice}, booktitle={The Cambridge Handbook of Expertise and Expert Performance}, publisher={Cambridge University Press}, author={Ericsson, K. Anders}, editor={Ericsson, K. Anders and Charness, Neil and Feltovich, Paul J. and Hoffman, Robert R.}, year={2006}, pages={683–703} }</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:29.743Z",
+  "generated_at": "2026-04-19T14:02:12.113Z",
   "style": "bakhtiniana-journal-of-discourse-studies",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "f45503b527ddf41a",
   "citations": {
     "single-item": "(KUHN, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(FORTHCOMING, )"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">ADAMS, J. Letter to James Smith. 1797. Massachusetts Historical Society</div>\n",
     "  <div class=\"csl-entry\">BENGIO, Y. The Future of Artificial Intelligence, 10 Nov. 2023. Available at: https://example.com/interview</div>\n",
     "  <div class=\"csl-entry\">Brown v. Board of Education. <i>U.S. Reports</i>, 17 May 1954. </div>\n",
     "  <div class=\"csl-entry\">CHEN, W. <i>Neural Networks for Natural Language Understanding</i>. 2019. (phd-thesis) – Stanford University, 2019</div>\n",

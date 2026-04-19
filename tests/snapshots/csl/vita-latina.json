@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:43.313Z",
+  "generated_at": "2026-04-19T14:03:28.853Z",
   "style": "vita-latina",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "7dc9255e1dcf990b",
   "citations": {
     "single-item-1": "<span style=\"font-variant:small-caps;\">T. S. Kuhn</span> 1962.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "<span style=\"font-variant:small-caps;\">M. Garcia</span> 2019a ; <span style=\"font-variant:small-caps;\">M. Garcia</span> 2019b."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">  <span style=\"font-variant:small-caps;\">Adams J.</span> 1797, « Letter to James Smith ».</div>\n",
     "  <div class=\"csl-entry\">  <span style=\"font-variant:small-caps;\">Bengio Y.</span> 2023, « The Future of Artificial Intelligence » [<span style=\"text-decoration:underline;\">https://example.com/interview</span>].</div>\n",
     "  <div class=\"csl-entry\">  <span style=\"font-variant:small-caps;\">Chen W.</span> 2019, <i>Neural Networks for Natural Language Understanding</i>, Thèse de doctorat soutenue à , 2019, sous la direction de [DIRECTEUR(S) DE THESE].</div>\n",
     "  <div class=\"csl-entry\">  <span style=\"font-variant:small-caps;\">Ericsson K. A.</span> 2006, « The Role of Deliberate Practice », dans <span style=\"font-variant:small-caps;\">K. A. Ericsson</span>, <span style=\"font-variant:small-caps;\">N. Charness</span>, <span style=\"font-variant:small-caps;\">P. J. Feltovich</span> &#38; <span style=\"font-variant:small-caps;\">R. R. Hoffman</span> (dir.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press, p. 683‑703.</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:10.382Z",
+  "generated_at": "2026-04-19T14:02:54.359Z",
   "style": "iso690-author-date-de",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "08ca9ad0c945a3c4",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming [kein Datum])"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">ADAMS, John, 1797. <i>Letter to James Smith</i></div>\n<div class=\"csl-right-inline\">Massachusetts Historical Society: Adams Papers, reel 45</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">BENGIO, Yoshua, 2023. <i>The Future of Artificial Intelligence</i> [online]. video-interview. 10 November 2023. Verfügbar unter: https://example.com/interview</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><i>Brown v. Board of Education</i>, 1954.</div>\n </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">CHEN, Wei, 2019. <i>Neural Networks for Natural Language Understanding</i>. phd-thesis. Stanford University</div>\n</div>\n",

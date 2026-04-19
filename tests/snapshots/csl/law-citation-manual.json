@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:15.977Z",
+  "generated_at": "2026-04-19T14:03:00.176Z",
   "style": "law-citation-manual",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "51449771df841aab",
   "citations": {
     "single-item-1": "T. S. Kuhn：《The Structure of Scientific Revolutions》，载《International Encyclopedia of Unified Science》1962年第2no.。",
@@ -74,6 +74,7 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">〔30〕</div><div class=\"csl-right-inline\">J. Smith、A. Lee、B. Nguyen、R. Patel：《Adaptive Climate Risk Modeling for Inland Regions》，载《Journal of Climate Analytics》2021年第3no.。</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">〔31〕</div><div class=\"csl-right-inline\">M. Garcia：《Methods for Robust Climate Attribution》，载《Annual Review of Climate Science》2019年。</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">〔32〕</div><div class=\"csl-right-inline\">M. Garcia：《Methods for Probabilistic Climate Attribution》，载《Annual Review of Climate Science》2019年。</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">〔33〕</div><div class=\"csl-right-inline\">A. Forthcoming：《Foundations of Declarative Bibliography》，University Press版。</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">〔33〕</div><div class=\"csl-right-inline\">A. Forthcoming：《Foundations of Declarative Bibliography》，University Press版。</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">〔34〕</div><div class=\"csl-right-inline\">J. Adams：《Letter to James Smith》，1797年版。</div>\n  </div>\n"
   ]
 }

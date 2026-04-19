@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:41.591Z",
+  "generated_at": "2026-04-19T14:03:27.092Z",
   "style": "universite-du-quebec-a-montreal-prenoms",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "a513943709331b6f",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming, s. d.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, John. (1797). <i>Letter to James Smith</i>. Massachusetts Historical Society (Adams Papers, reel 45).</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua. (2023, 10 November). Interviewé par Stephen Colbert. The Future of Artificial Intelligence [video-interview]. https://example.com/interview</div>\n",
     "  <div class=\"csl-entry\"><i>Brown v. Board of Education</i>. (1954, 17 May). U.S. Reports U.S. Supreme Court 483.</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei. (2019). <i>Neural Networks for Natural Language Understanding</i> [phd-thesis, Stanford University].</div>\n",

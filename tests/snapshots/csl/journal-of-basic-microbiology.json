@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:11.732Z",
+  "generated_at": "2026-04-19T14:02:55.730Z",
   "style": "journal-of-basic-microbiology",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "23b117b9a3d98afc",
   "citations": {
     "single-item": "[1]",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[30]</div><div class=\"csl-right-inline\">Smith, J., Lee, A., Nguyen, B., Patel, R., 2021. Adaptive Climate Risk Modeling for Inland Regions. Journal of Climate Analytics, 2021, <b>12</b>, 201–219.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[31]</div><div class=\"csl-right-inline\">Garcia, M., 2019. Methods for Robust Climate Attribution. Annual Review of Climate Science, 2019, <b>4</b>, 55–80.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[32]</div><div class=\"csl-right-inline\">Garcia, M., 2019. Methods for Probabilistic Climate Attribution. Annual Review of Climate Science, 2019, <b>4</b>, 81–104.</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33]</div><div class=\"csl-right-inline\">Forthcoming, A., n.d. <span style=\"text-decoration:none;\">Foundations of Declarative Bibliography.</span>, University Press, Cambridge.</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33]</div><div class=\"csl-right-inline\">Forthcoming, A., n.d. <span style=\"text-decoration:none;\">Foundations of Declarative Bibliography.</span>, University Press, Cambridge.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[34]</div><div class=\"csl-right-inline\">Adams, J., 1797. Letter to James Smith 1797.</div>\n  </div>\n"
   ]
 }

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:11.333Z",
+  "generated_at": "2026-04-19T14:02:55.326Z",
   "style": "journal-fur-kunstgeschichte",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "8dc5604eb98048a2",
   "citations": {
     "single-item-1": "Thomas S. Kuhn, „The Structure of Scientific Revolutions“, in: <i>International Encyclopedia of Unified Science</i> 2/2 University of Chicago Press Chicago (1962). Online: DOI: 10.1234/example.",
@@ -55,6 +55,7 @@
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Foundations of Declarative Bibliography</b></div>\nA. Forthcoming, <i>Foundations of Declarative Bibliography</i>, Cambridge o. D.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Global Temperature Anomalies 1880-2023</b></div>\nNASA Goddard Institute for Space Studies, <i>Global Temperature Anomalies 1880-2023</i>, NASA, 2024. Online: &#60;https://data.giss.nasa.gov/gistemp/&#62;, Stand: 20.01.2024.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Handbook of Research Methods in Social Psychology</b></div>\nHarry T. Reis und Charles M. Judd (Hrsg.), <i>Handbook of Research Methods in Social Psychology</i>, Cambridge 2000.</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Letter to James Smith</b></div>\nJohn Adams, <i>Letter to James Smith</i>, 1797, Massachusetts Historical Society, Adams Papers, reel 45.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Machine Learning for Climate Prediction</b></div>\nJane Smith und Robert Williams, „Machine Learning for Climate Prediction“, in: <i>Environmental Research Letters</i> 15/11 (2020) S. 114042. Online: DOI: 10.1088/1748-9326/abc123.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Major Breakthrough in Quantum Computing Announced</b></div>\nMaria Rodriguez, „Major Breakthrough in Quantum Computing Announced“, in: <i>The New York Times</i>, 15.03.2024.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Metamorphosis</b></div>\nFranz Kafka, <i>Metamorphosis</i>, übers. von David Wyllie, Leipzig 1915.</div>\n",

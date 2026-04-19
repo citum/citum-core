@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:32.273Z",
+  "generated_at": "2026-04-19T14:02:15.000Z",
   "style": "centro-regional-de-estudios-teologicos-de-aragon",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "2f74e8af84df2104",
   "citations": {
     "single-item-1": "T. S. Kuhn, “The Structure of Scientific Revolutions,” <i>International Encyclopedia of Unified Science</i> 2/2Chicago (1962).",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "M. Garcia, “Methods for Robust Climate Attribution,” <i>Annual Review of Climate Science</i> 4 (2019), 55–80; M. Garcia, “Methods for Probabilistic Climate Attribution,” <i>Annual Review of Climate Science</i> 4 (2019), 81–104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">ADAMS, J., “Letter to James Smith”, Massachusetts Historical Society.</div>\n",
     "  <div class=\"csl-entry\">BENGIO, Y., “The Future of Artificial Intelligence,” in https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\"><i>Brown v. Board of Education</i>, vol. 347, 1954.</div>\n",
     "  <div class=\"csl-entry\">CHEN, W., “Neural Networks for Natural Language Understanding.”</div>\n",

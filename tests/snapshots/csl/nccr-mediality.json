@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:21.135Z",
+  "generated_at": "2026-04-19T14:03:05.164Z",
   "style": "nccr-mediality",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "874dc60a3dd36dae",
   "citations": {
     "single-item-1": "Thomas S. Kuhn: The Structure of Scientific Revolutions, in: International Encyclopedia of Unified Science, 2/2 (1962).",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Maria Garcia: Methods for Robust Climate Attribution, in: Annual Review of Climate Science, 4 (2019), S. 55–80; Maria Garcia: Methods for Probabilistic Climate Attribution, in: Annual Review of Climate Science, 4 (2019), S. 81–104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">John Adams: Letter to James Smith.</div>\n",
     "  <div class=\"csl-entry\">Yoshua Bengio: The Future of Artificial Intelligence, https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">Wei Chen: Neural Networks for Natural Language Understanding.</div>\n",
     "  <div class=\"csl-entry\">K. Anders Ericsson: The Role of Deliberate Practice, in: K. Anders Ericsson u. a. (Hg.): The Cambridge Handbook of Expertise and Expert Performance2006, S. 683–703.</div>\n",

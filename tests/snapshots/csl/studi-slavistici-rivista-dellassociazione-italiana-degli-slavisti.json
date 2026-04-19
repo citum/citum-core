@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:35.066Z",
+  "generated_at": "2026-04-19T14:03:20.351Z",
   "style": "studi-slavistici-rivista-dellassociazione-italiana-degli-slavisti",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "a2f2d086e8b339d1",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams 1797: J. Adams, <i>Letter to James Smith</i>.</div>\n",
     "  <div class=\"csl-entry\">Bengio 2023: Y. Bengio, <i>The Future of Artificial Intelligence</i>, &#60;https://example.com/interview&#62;.</div>\n",
     "  <div class=\"csl-entry\">Chen 2019: W. Chen, Neural Networks for Natural Language Understanding , phd-thesis Stanford University 2019.</div>\n",
     "  <div class=\"csl-entry\">Ericsson 2006: K.A. Ericsson, <i>The Role of Deliberate Practice</i>. in: K.A. Ericsson,N. Charness,P.J. Feltovich,R.R. Hoffman (eds.), The Cambridge Handbook of Expertise and Expert Performance , 2006, pp. 683–703.</div>\n",

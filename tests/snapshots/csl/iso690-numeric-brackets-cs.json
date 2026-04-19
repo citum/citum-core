@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:10.677Z",
+  "generated_at": "2026-04-19T14:02:54.672Z",
   "style": "iso690-numeric-brackets-cs",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "382502e4a5ee8ac0",
   "citations": {
     "single-item": "[1]",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[30] </div><div class=\"csl-right-inline\">SMITH, John, Alice LEE, Bao NGUYEN and Ravi PATEL. Adaptive Climate Risk Modeling for Inland Regions. <i>Journal of Climate Analytics</i> [online]. 2021, <b>12</b>(3), 201–219. Available at: doi:10.5555/jca.2021.12.3.201</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[31] </div><div class=\"csl-right-inline\">GARCIA, Maria. Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i> [online]. 2019, <b>4</b>, 55–80. Available at: doi:10.5555/arcs.2019.4.55</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[32] </div><div class=\"csl-right-inline\">GARCIA, Maria. Methods for Probabilistic Climate Attribution. <i>Annual Review of Climate Science</i> [online]. 2019, <b>4</b>, 81–104. Available at: doi:10.5555/arcs.2019.4.81</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33] </div><div class=\"csl-right-inline\">FORTHCOMING, A. <i>Foundations of Declarative Bibliography</i>. Cambridge: University Press, no date.</div>\n   </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33] </div><div class=\"csl-right-inline\">FORTHCOMING, A. <i>Foundations of Declarative Bibliography</i>. Cambridge: University Press, no date.</div>\n   </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[34] </div><div class=\"csl-right-inline\">ADAMS, John. <i>Letter to James Smith</i>. 1797.</div>\n   </div>\n"
   ]
 }

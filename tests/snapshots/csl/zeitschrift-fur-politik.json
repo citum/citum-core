@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:44.416Z",
+  "generated_at": "2026-04-19T14:03:29.987Z",
   "style": "zeitschrift-fur-politik",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "9d3fd5411e5a433c",
   "citations": {
     "single-item-1": "Thomas S. Kuhn, »The Structure of Scientific Revolutions«, in: <i>International Encyclopedia of Unified Science</i> <i>2</i>, Nr. 2 (1962).",
