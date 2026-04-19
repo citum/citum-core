@@ -162,7 +162,7 @@ style-local fidelity cleanup rather than missing `position` support.
 
 ## Embedded Styles (Built into Binary)
 
-Twelve priority styles are compiled into the `citum` binary via `include_bytes!`
+Eighteen priority styles are compiled into the `citum` binary via `include_bytes!`
 and can be used without any style file on disk.
 
 ```bash

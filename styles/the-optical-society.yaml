@@ -1,3 +1,4 @@
+preset: ieee
 info:
   title: The Optical Society
   description: Common style use by OSA publications.
@@ -20,25 +21,21 @@ info:
     - href: http://www.opticsinfobase.org/author/author.cfm
       rel: documentation
 options:
-  substitute: editor-translator-short
-  processing: numeric
   contributors: physics-numeric
   dates: long
-  titles: humanities
-  punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
-  prefix: " ["
-  suffix: "]"
-  multi-cite-delimiter: ","
+  prefix:  [
+  suffix: ']'
+  multi-cite-delimiter: ','
 bibliography:
   options:
     contributors:
       name-form: initials
-      initialize-with: ". "
-      delimiter: ", "
+      initialize-with: '. '
+      delimiter: ', '
     entry-suffix: .
-    separator: ", "
+    separator: ', '
   type-variants:
     chapter:
     - contributor: author
@@ -51,12 +48,12 @@ bibliography:
     - title: parent-serial
     - variable: publisher
     - number: pages
-      prefix: "pp. "
+      prefix: 'pp. '
     - date: issued
       form: year
       wrap:
         punctuation: parentheses
-      prefix: " "
+      prefix: ' '
     paper-conference:
     - contributor: author
       form: long
@@ -68,17 +65,17 @@ bibliography:
     - title: parent-serial
     - variable: publisher
     - number: pages
-      prefix: "pp. "
+      prefix: 'pp. '
     - date: issued
       form: year
       wrap:
         punctuation: parentheses
-      prefix: " "
+      prefix: ' '
     personal_communication:
     - contributor: author
       form: long
       name-order: given-first
-      prefix: "pp. "
+      prefix: 'pp. '
     - title: parent-monograph
     - title: parent-serial
     - variable: publisher
@@ -87,16 +84,16 @@ bibliography:
       form: year
       wrap:
         punctuation: parentheses
-      prefix: " "
+      prefix: ' '
     patent:
     - number: citation-number
-      suffix: ". "
+      suffix: '. '
     - contributor: author
       form: long
       and: text
     - title: primary
-      prefix: "\""
-      suffix: ",\" "
+      prefix: '"'
+      suffix: '," '
     - date: issued
       form: year
     - term: no-date
@@ -116,4 +113,4 @@ bibliography:
     form: year
     wrap:
       punctuation: parentheses
-    prefix: " "
+    prefix: ' '

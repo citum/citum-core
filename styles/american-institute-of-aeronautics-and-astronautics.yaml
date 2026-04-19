@@ -1,3 +1,4 @@
+preset: ieee
 info:
   title: American Institute of Aeronautics and Astronautics
   description: A style for AIAA
@@ -19,33 +20,30 @@ info:
     - href: https://www.aiaa.org/publications/journals/reference-style-and-format
       rel: documentation
 options:
-  substitute: editor-translator-short
-  processing: numeric
   contributors:
     display-as-sort: all
     name-form: initials
-    initialize-with: ". "
-    delimiter: ", "
+    initialize-with: '. '
+    delimiter: ', '
     delimiter-precedes-last: always
     demote-non-dropping-particle: sort-only
   dates: long
   titles: journal-emphasis
-  punctuation-in-quote: true
 citation:
   template:
   - number: citation-number
   wrap:
     punctuation: brackets
-  multi-cite-delimiter: ","
+  multi-cite-delimiter: ','
 bibliography:
   options:
     contributors:
       display-as-sort: all
       name-form: initials
-      initialize-with: ". "
-      delimiter: ", "
+      initialize-with: '. '
+      delimiter: ', '
       delimiter-precedes-last: always
-    separator: ", "
+    separator: ', '
   type-variants:
     article-journal:
     - contributor: author
@@ -61,11 +59,11 @@ bibliography:
     - variable: publisher
     - number: volume
     - number: issue
-      prefix: ", No. "
+      prefix: ', No. '
     - date: issued
       form: year
     - number: pages
-      prefix: "pp. "
+      prefix: 'pp. '
     - variable: doi
       prefix: https://doi.org/
     - variable: publisher-place
@@ -83,11 +81,11 @@ bibliography:
     - variable: publisher
     - number: volume
     - number: issue
-      prefix: ", No. "
+      prefix: ', No. '
     - number: pages
-      prefix: "pp. "
+      prefix: 'pp. '
     - variable: doi
-      prefix: ". "
+      prefix: '. '
     - variable: publisher-place
     chapter:
     - contributor: author
@@ -103,13 +101,13 @@ bibliography:
     - variable: publisher
     - number: volume
     - number: issue
-      prefix: ", No. "
+      prefix: ', No. '
     - date: issued
       form: year
     - number: pages
-      prefix: "pp. "
+      prefix: 'pp. '
     - variable: doi
-      prefix: ". "
+      prefix: '. '
     - variable: publisher-place
     entry-encyclopedia:
     - contributor: author
@@ -125,13 +123,13 @@ bibliography:
     - variable: publisher
     - number: volume
     - number: issue
-      prefix: ", No. "
+      prefix: ', No. '
     - date: issued
       form: year
     - number: pages
-      prefix: "pp. "
+      prefix: 'pp. '
     - variable: doi
-      prefix: ". "
+      prefix: '. '
     - variable: publisher-place
     paper-conference:
     - contributor: author
@@ -140,7 +138,7 @@ bibliography:
     - title: primary
       quote: true
     - title: parent-monograph
-      prefix: "presented at the "
+      prefix: 'presented at the '
     - date: issued
       form: year
     webpage:
@@ -188,10 +186,10 @@ bibliography:
   - variable: publisher
   - number: volume
   - number: issue
-    prefix: ", No. "
+    prefix: ', No. '
   - date: issued
     form: year
   - number: pages
   - variable: doi
-    prefix: ". "
+    prefix: '. '
   - variable: publisher-place

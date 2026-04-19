@@ -12,15 +12,6 @@
 const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
-const CUSTOM_TAG_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
-    new yaml.Type('!custom', {
-        kind: 'mapping',
-        construct(data) {
-            return data || {};
-        },
-    }),
-]);
-
 // Parse arguments
 const args = process.argv.slice(2);
 if (args.length !== 4) {
@@ -134,7 +125,7 @@ try {
     // 1. Load Base YAML (from citum-migrate)
     if (!fs.existsSync(basePath)) throw new Error(`Base YAML not found: ${basePath}`);
     const baseContent = fs.readFileSync(basePath, 'utf8');
-    const baseData = yaml.load(baseContent, { schema: CUSTOM_TAG_SCHEMA });
+    const baseData = yaml.load(baseContent);
     const baseCitationTemplate = Array.isArray(baseData?.citation?.template)
         ? JSON.parse(JSON.stringify(baseData.citation.template))
         : null;

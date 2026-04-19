@@ -16,7 +16,7 @@ info:
     - href: https://ascelibrary.org/author-center/journal#peer-review-process
       rel: documentation
 options:
-  processing: !custom
+  processing:
     sort:
       template:
       - key: author

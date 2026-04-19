@@ -771,7 +771,7 @@ grammar-options:
   punctuation-in-quote: false
   nbsp-before-colon: false
   open-quote: "„"
-  close-quote: """
+  close-quote: "“"
   open-inner-quote: "‚"
   close-inner-quote: "'"
   serial-comma: false

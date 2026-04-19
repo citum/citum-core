@@ -1,3 +1,4 @@
+preset: american-medical-association
 info:
   title: AMA Manual of Style 11th edition (sorted alphabetically)
   description: 'AMA Manual of Style: A Guide for Authors and Editors (11th ed.), with alphabetically sorted bibliography.'
@@ -18,16 +19,13 @@ info:
     - href: https://academic.oup.com/amamanualofstyle
       rel: documentation
 options:
-  locators:
-    strip-label-periods: true
   substitute:
     contributor-role-form: short
     template:
     - editor
-  processing: numeric
   contributors:
     name-form: initials
-    initialize-with: ""
+    initialize-with: ''
     shorten:
       min: 7
       use-first: 3
@@ -37,12 +35,9 @@ options:
     demote-non-dropping-particle: sort-only
   dates:
     month: long
-    uncertainty-marker: "?"
-    approximation-marker: "ca. "
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
     range-delimiter: –
-  titles: humanities
-  page-range-format: expanded
-  punctuation-in-quote: true
 citation:
   template:
   - delimiter: none
@@ -51,7 +46,7 @@ citation:
     - variable: locator
       wrap:
         punctuation: parentheses
-  multi-cite-delimiter: ","
+  multi-cite-delimiter: ','
 bibliography:
   options:
     contributors:
@@ -60,7 +55,7 @@ bibliography:
         use-first: 3
         and-others: et-al
         delimiter-precedes-last: contextual
-    separator: ". "
+    separator: '. '
   type-variants:
     article-journal:
     - contributor: author
@@ -70,7 +65,7 @@ bibliography:
         min: 8
         use-first: 3
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - number: volume
       - number: issue
@@ -86,7 +81,7 @@ bibliography:
       emph: true
     - variable: publisher
     - number: pages
-      prefix: ". 2013:"
+      prefix: '. 2013:'
     - variable: doi
     - variable: url
     article-magazine:
@@ -97,7 +92,7 @@ bibliography:
         min: 8
         use-first: 3
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - number: volume
       - number: issue
@@ -113,7 +108,7 @@ bibliography:
       emph: true
     - variable: publisher
     - number: pages
-      prefix: ". 2013:"
+      prefix: '. 2013:'
     - variable: doi
     - variable: url
     broadcast:
@@ -124,7 +119,7 @@ bibliography:
         min: 8
         use-first: 3
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - number: volume
       - number: issue
@@ -140,7 +135,7 @@ bibliography:
       emph: true
     - variable: publisher
     - number: pages
-      prefix: ". 2013:"
+      prefix: '. 2013:'
     - variable: doi
     - variable: url
     chapter:
@@ -151,7 +146,7 @@ bibliography:
         min: 8
         use-first: 3
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - number: volume
       - number: issue
@@ -161,14 +156,14 @@ bibliography:
       - contributor: editor
         form: verb
         name-order: given-first
-        prefix: "on "
+        prefix: 'on '
       - title: parent-monograph
         emph: true
     - title: parent-serial
       emph: true
     - variable: publisher
     - number: pages
-      prefix: ". 2013:"
+      prefix: '. 2013:'
     - variable: doi
     - variable: url
     entry-encyclopedia:
@@ -179,7 +174,7 @@ bibliography:
         min: 8
         use-first: 3
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - number: volume
       - number: issue
@@ -195,7 +190,7 @@ bibliography:
       emph: true
     - variable: publisher
     - number: pages
-      prefix: ". 2013:"
+      prefix: '. 2013:'
     - variable: doi
     - variable: url
     patent:
@@ -206,7 +201,7 @@ bibliography:
         min: 8
         use-first: 3
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - number: volume
       - number: issue
@@ -222,7 +217,7 @@ bibliography:
       emph: true
     - variable: publisher
     - number: pages
-      prefix: ". 2013:"
+      prefix: '. 2013:'
     - variable: doi
     - variable: url
   template:
@@ -233,7 +228,7 @@ bibliography:
       min: 8
       use-first: 3
   - title: primary
-    prefix: " "
+    prefix: ' '
   - group:
     - number: volume
     - number: issue
@@ -250,9 +245,9 @@ bibliography:
   - variable: publisher
   - date: issued
     form: year
-    prefix: "; "
+    prefix: '; '
   - number: pages
-    prefix: ". 2013:"
+    prefix: '. 2013:'
   - variable: doi
   - variable: url
   sort: author-title-date

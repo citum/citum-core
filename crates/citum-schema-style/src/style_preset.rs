@@ -17,10 +17,6 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
-const APA_7TH_BASE: &str = "preset-bases/apa-7th";
-const CHICAGO_AUTHOR_DATE_18TH_BASE: &str = "preset-bases/chicago-author-date-18th";
-const CHICAGO_NOTES_18TH_BASE: &str = "preset-bases/chicago-notes-18th";
-
 /// A named, compiled-in style preset (Level 2 of Citum's preset hierarchy).
 ///
 /// A style file declares `preset: <key>` to inherit a complete base style.
@@ -38,18 +34,66 @@ pub enum StylePreset {
     /// Chicago Manual of Style 18th edition — author-date system.
     #[serde(rename = "chicago-author-date-18th")]
     ChicagoAuthorDate18th,
+    /// Chicago Manual of Style (shortened notes and bibliography).
+    #[serde(rename = "chicago-shortened-notes-bibliography")]
+    ChicagoShortenedNotesBibliography,
     /// APA 7th edition — author-date system.
     #[serde(rename = "apa-7th")]
     Apa7th,
+    /// Elsevier Harvard (author-date).
+    ElsevierHarvard,
+    /// Elsevier with Titles (numeric).
+    ElsevierWithTitles,
+    /// Elsevier Vancouver (numeric).
+    ElsevierVancouver,
+    /// Springer Basic (author-date).
+    SpringerBasicAuthorDate,
+    /// Springer Vancouver Brackets (numeric).
+    SpringerVancouverBrackets,
+    /// Springer Basic Brackets (numeric).
+    SpringerBasicBrackets,
+    /// American Medical Association 11th edition (numeric).
+    AmericanMedicalAssociation,
+    /// Institute of Electrical and Electronics Engineers (numeric).
+    Ieee,
+    /// Taylor & Francis Chicago author-date.
+    TaylorAndFrancisChicagoAuthorDate,
+    /// Taylor & Francis Council of Science Editors author-date.
+    TaylorAndFrancisCouncilOfScienceEditorsAuthorDate,
+    /// Taylor & Francis National Library of Medicine.
+    TaylorAndFrancisNationalLibraryOfMedicine,
+    /// Modern Language Association 9th edition (author-page).
+    ModernLanguageAssociation,
 }
 
 impl StylePreset {
     /// Return the embedded YAML key used to look up this preset.
     fn embedded_key(&self) -> &'static str {
         match self {
-            StylePreset::ChicagoNotes18th => CHICAGO_NOTES_18TH_BASE,
-            StylePreset::ChicagoAuthorDate18th => CHICAGO_AUTHOR_DATE_18TH_BASE,
-            StylePreset::Apa7th => APA_7TH_BASE,
+            StylePreset::ChicagoNotes18th => "chicago-notes-18th",
+            StylePreset::ChicagoAuthorDate18th => "chicago-author-date-18th",
+            StylePreset::ChicagoShortenedNotesBibliography => {
+                "chicago-shortened-notes-bibliography"
+            }
+            StylePreset::Apa7th => "apa-7th",
+            StylePreset::ElsevierHarvard => "elsevier-harvard",
+            StylePreset::ElsevierWithTitles => "elsevier-with-titles",
+            StylePreset::ElsevierVancouver => "elsevier-vancouver",
+            StylePreset::SpringerBasicAuthorDate => "springer-basic-author-date",
+            StylePreset::SpringerVancouverBrackets => "springer-vancouver-brackets",
+            StylePreset::SpringerBasicBrackets => "springer-basic-brackets",
+            StylePreset::AmericanMedicalAssociation => "american-medical-association",
+            StylePreset::Ieee => "ieee",
+            StylePreset::TaylorAndFrancisChicagoAuthorDate => {
+                "taylor-and-francis-chicago-author-date"
+            }
+            StylePreset::TaylorAndFrancisCouncilOfScienceEditorsAuthorDate => {
+                "taylor-and-francis-council-of-science-editors-author-date"
+            }
+            StylePreset::TaylorAndFrancisNationalLibraryOfMedicine => {
+                "taylor-and-francis-national-library-of-medicine"
+            }
+            StylePreset::ModernLanguageAssociation => "modern-language-association",
         }
     }
 
@@ -70,7 +114,28 @@ impl StylePreset {
         match self {
             StylePreset::ChicagoNotes18th => "chicago-notes-18th",
             StylePreset::ChicagoAuthorDate18th => "chicago-author-date-18th",
+            StylePreset::ChicagoShortenedNotesBibliography => {
+                "chicago-shortened-notes-bibliography"
+            }
             StylePreset::Apa7th => "apa-7th",
+            StylePreset::ElsevierHarvard => "elsevier-harvard",
+            StylePreset::ElsevierWithTitles => "elsevier-with-titles",
+            StylePreset::ElsevierVancouver => "elsevier-vancouver",
+            StylePreset::SpringerBasicAuthorDate => "springer-basic-author-date",
+            StylePreset::SpringerVancouverBrackets => "springer-vancouver-brackets",
+            StylePreset::SpringerBasicBrackets => "springer-basic-brackets",
+            StylePreset::AmericanMedicalAssociation => "american-medical-association",
+            StylePreset::Ieee => "ieee",
+            StylePreset::TaylorAndFrancisChicagoAuthorDate => {
+                "taylor-and-francis-chicago-author-date"
+            }
+            StylePreset::TaylorAndFrancisCouncilOfScienceEditorsAuthorDate => {
+                "taylor-and-francis-council-of-science-editors-author-date"
+            }
+            StylePreset::TaylorAndFrancisNationalLibraryOfMedicine => {
+                "taylor-and-francis-national-library-of-medicine"
+            }
+            StylePreset::ModernLanguageAssociation => "modern-language-association",
         }
     }
 
@@ -82,7 +147,20 @@ impl StylePreset {
         &[
             StylePreset::ChicagoNotes18th,
             StylePreset::ChicagoAuthorDate18th,
+            StylePreset::ChicagoShortenedNotesBibliography,
             StylePreset::Apa7th,
+            StylePreset::ElsevierHarvard,
+            StylePreset::ElsevierWithTitles,
+            StylePreset::ElsevierVancouver,
+            StylePreset::SpringerBasicAuthorDate,
+            StylePreset::SpringerVancouverBrackets,
+            StylePreset::SpringerBasicBrackets,
+            StylePreset::AmericanMedicalAssociation,
+            StylePreset::Ieee,
+            StylePreset::TaylorAndFrancisChicagoAuthorDate,
+            StylePreset::TaylorAndFrancisCouncilOfScienceEditorsAuthorDate,
+            StylePreset::TaylorAndFrancisNationalLibraryOfMedicine,
+            StylePreset::ModernLanguageAssociation,
         ]
     }
 

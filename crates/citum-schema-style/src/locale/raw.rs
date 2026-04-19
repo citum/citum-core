@@ -254,7 +254,10 @@ impl JsonSchema for RawTermValue {
         "RawTermValue".into()
     }
 
-    fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        // Register RawGenderedString so it appears in $defs
+        generator.subschema_for::<RawGenderedString>();
+
         schemars::json_schema!({
             "description": "A term value that can be a simple string or have singular/plural forms.",
             "anyOf": [

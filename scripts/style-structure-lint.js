@@ -7,15 +7,6 @@ const yaml = require('js-yaml');
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const STYLES_DIR = path.join(PROJECT_ROOT, 'styles');
 
-const CUSTOM_TAG_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
-  new yaml.Type('!custom', {
-    kind: 'mapping',
-    construct(data) {
-      return data || {};
-    },
-  }),
-]);
-
 const RULES = {
   STYLE001: 'Anonymous generated YAML anchors are not allowed in committed styles.',
   STYLE002: 'Inert substitute overrides should be removed when substitute.template is explicitly empty.',
@@ -613,7 +604,7 @@ function lintStyleFile(filePath, options = {}) {
 
   let parsed = null;
   try {
-    parsed = yaml.load(workingContent, { schema: CUSTOM_TAG_SCHEMA });
+    parsed = yaml.load(workingContent);
   } catch (error) {
     violations.push({
       ruleId: 'STYLE000',
@@ -655,7 +646,7 @@ function lintStyleFile(filePath, options = {}) {
   if (parsed && typeof parsed === 'object' && !fixed) {
     refreshedViolations.push(...lintParsedStyle(filePath, refreshedContent, parsed));
   } else if (fixed) {
-    const refreshedParsed = yaml.load(refreshedContent, { schema: CUSTOM_TAG_SCHEMA });
+    const refreshedParsed = yaml.load(refreshedContent);
     refreshedViolations.push(...lintParsedStyle(filePath, refreshedContent, refreshedParsed));
   }
 

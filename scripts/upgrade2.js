@@ -2,13 +2,6 @@ const fs = require("fs");
 const yaml = require("js-yaml");
 const path = require("path");
 
-const CUSTOM_TAG_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
-    new yaml.Type("!custom", {
-        kind: "mapping",
-        construct(data) { return data || {}; },
-    }),
-]);
-
 const report = require("/tmp/core-report3.json");
 const needsUpgrade = report.styles.filter(s => s.fidelityScore < 0.95 || s.qualityScore < 0.90);
 
@@ -20,7 +13,7 @@ for (const s of needsUpgrade) {
     let content = fs.readFileSync(yamlPath, "utf8");
     let baseData;
     try {
-        baseData = yaml.load(content, { schema: CUSTOM_TAG_SCHEMA });
+        baseData = yaml.load(content);
     } catch (e) {
         continue;
     }

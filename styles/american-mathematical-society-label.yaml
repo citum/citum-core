@@ -1,3 +1,4 @@
+preset: elsevier-with-titles
 info:
   title: Amercian Mathematical Society (label)
   fields:
@@ -23,18 +24,9 @@ options:
   processing:
     label:
       preset: ams
-      # AMS amsplain.bst uses 4 chars for single-author labels (Kuhn -> Kuhn62)
       single-author-chars: 4
-      # AMS shows all initials for up to 4 authors (SLKZ21 not SLK+21)
       et-al-min: 5
-      # AMS takes 4 initials when >4 authors (not 3+marker); empty marker best approx
-      # until processor supports 4-initial et-al truncation (known gap: VSP+17 vs VSPU17)
       et-al-marker: ''
-  substitute:
-    contributor-role-form: short
-    template:
-    - editor
-    - translator
   contributors:
     display-as-sort: all
     delimiter: ', '
