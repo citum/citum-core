@@ -6,11 +6,12 @@ styles:
     description: "APA 7th edition"
     fields: [psychology, social-science]
   - id: elsevier-harvard
-    aliases: [harvard]
+    aliases: [harvard, applied-clay-science, environmental-chemistry, international-biodeterioration-and-biodegradation]
     builtin: elsevier-harvard
     description: "Elsevier Harvard"
     fields: [science]
   - id: elsevier-with-titles
+    aliases: [firephyschem, journal-of-applied-engineering-sciences-technology]
     builtin: elsevier-with-titles
     description: "Elsevier with Titles"
     fields: [science]
