@@ -1,4 +1,4 @@
-**Status:** Draft  
+**Status:** Active  
 **Version:** 1.2  
 **Date:** 2026-04-15  
 **Bean:** `csl26-y3kj`
@@ -9,7 +9,7 @@ Citum's locale model currently represents every term string as a plain `String`.
 
 Two concrete cases:
 
-**Contributor role terms (Romance languages).** French “editor” is “éditeur” (masculine) or “éditrice” (feminine). A locale file author currently has no way to encode both forms; they must pick one and accept incorrect output for the other.
+**Contributor role terms (Romance languages).** Spanish “editor” is “editor” (masculine) or “editora” (feminine). A locale file author currently has no way to encode both forms; they must pick one and accept incorrect output for the other.
 
 **Ordinals (Arabic, Romance languages).** Arabic ordinals inflect for gender: the masculine first ordinal is “الأول” while the feminine is “الأولى”. No single string can represent both.
 
@@ -74,7 +74,7 @@ pub enum MaybeGendered<T> {
 }
 ```
 
-`serde(untagged)` means existing plain-string locale files deserialize without any changes: `"editor"` becomes `Plain("editor")`, and `{ masculine: "éditeur", feminine: "éditrice" }` becomes the `Gendered` variant.
+`serde(untagged)` means existing plain-string locale files deserialize without any changes: `"editor"` becomes `Plain("editor")`, and `{ masculine: "editor", feminine: "editora" }` becomes the `Gendered` variant.
 
 ### Resolution methods
 
@@ -167,7 +167,7 @@ pub struct SingularPlural {
 
 `ContributorTerm`, `LocatorTerm`, and `DateTerms` are unchanged — they compose the above types and gain gender support transitively.
 
-**Verb-form gender scope.** `ContributorTerm.verb` (e.g., "edited by") is a `SimpleTerm` and thus technically inherits `MaybeGendered<String>` capacity. However, verb-form gender agreement is out of scope for this change — the intended use is inflected role-label nouns (e.g., "éditeur/éditrice"), not verb phrases. Locale authors MUST NOT populate gendered variants on verb-form term entries in this release; any such entries will be ignored by the engine.
+**Verb-form gender scope.** `ContributorTerm.verb` (e.g., "edited by") is a `SimpleTerm` and thus technically inherits `MaybeGendered<String>` capacity. However, verb-form gender agreement is out of scope for this change — the intended use is inflected role-label nouns (e.g., "editor/editora"), not verb phrases. Locale authors MUST NOT populate gendered variants on verb-form term entries in this release; any such entries will be ignored by the engine.
 
 No term *must* become gendered; `Plain` is the default representation and is sufficient for most locales.
 
@@ -198,7 +198,7 @@ terms:
 Constraints:
 
 - `gender` is only meaningful on **noun-like terms** that serve as agreement targets (e.g., “edition”, “volume”, possibly some locators).
-- `gender` MUST NOT be used on terms where grammatical gender depends on the referent (e.g., contributor roles “editor/éditrice”); in those cases, `MaybeGendered<String>` carries variants and the agreement context comes from reference data.
+- `gender` MUST NOT be used on terms where grammatical gender depends on the referent (e.g., contributor roles “editor/editora”); in those cases, `MaybeGendered<String>` carries variants and the agreement context comes from reference data.
 
 The concrete Rust types composing these fields (`NounTerm` vs other term structs) are an implementation detail; the spec guarantees only:
 
@@ -217,18 +217,18 @@ roles:
       plural: "editors"
 ```
 
-A French locale adds gender variants only where the language requires them:
+A Spanish locale adds gender variants only where the language requires them:
 
 ```yaml
 roles:
   editor:
     long:
       singular:
-        masculine: "éditeur"
-        feminine:  "éditrice"
+        masculine: "editor"
+        feminine:  "editora"
       plural:
-        masculine: "éditeurs"
-        feminine:  "éditrices"
+        masculine: "editores"
+        feminine:  "editoras"
 ```
 
 An Arabic locale for ordinals (once ordinal term support lands):
@@ -313,7 +313,7 @@ The engine derives `requested_gender` from three sources, in strictly defined pr
 
    This maps directly to `Some(GrammaticalGender::Masculine)` in the render context.
 
-2. **Reference data** — a `gender` field on a contributor in the input reference, used when rendering contributor role labels (e.g., “éditeur” vs “éditrice”). The engine derives `requested_gender` from contributors **only when exactly one contributor is in scope** for the rendered label.
+2. **Reference data** — a `gender` field on a contributor in the input reference, used when rendering contributor role labels (e.g., “editor” vs “editora”). The engine derives `requested_gender` from contributors **only when exactly one contributor is in scope** for the rendered label.
 
    YAML:
 
@@ -328,7 +328,8 @@ The engine derives `requested_gender` from three sources, in strictly defined pr
 
    - If exactly one contributor is relevant and has a `gender`, use that `GrammaticalGender`.
    - If there are multiple contributors: collect only those that have an *explicit* `gender` field (contributors with no `gender` field are skipped, not treated as a mismatch). If all collected genders are identical and at least one contributor has a gender, use that shared gender.
-   - If no contributor has an explicit `gender`, or the collected genders differ, do not derive a `requested_gender` from reference data (i.e., pass `None` and fall back to locale defaults).
+   - If no contributor has an explicit `gender`, do not derive a `requested_gender` from reference data.
+   - If the collected genders differ, request `Common` and prefer a plain/common locale form rather than falling through to masculine/feminine-specific slots.
 
    This avoids silently gendering plural role labels from the first name only.
 
@@ -447,7 +448,7 @@ Existing locale tests MUST continue to pass unchanged:
 - [ ] `Locale::role_term`, `locator_term`, `general_term` accept `requested_gender: Option<GrammaticalGender>`.
 - [ ] All existing locale tests pass (plain-string values round-trip correctly; behavior with `None` requested gender matches prior output).
 - [ ] New snapshot tests:
-      - French contributor role with gendered variants (e.g., “éditeur/éditrice”).
+      - Spanish contributor role with gendered variants (e.g., “editor/editora”).
       - Arabic gendered ordinal agreeing with a feminine noun.
 - [ ] New unit tests for:
       - `resolve_with_fallback` behavior with each slot populated individually.
@@ -495,4 +496,3 @@ For future implementers and spec readers, these resources provide additional con
 - Specified which term kinds may safely carry lexical gender metadata vs those that should only use gendered variants (e.g., contributor roles), to avoid overloading `gender` on terms whose form depends on the referent.
 
 - Clarified the role of `RawTermValue` as a syntax-layer AST and documented its `Gendered`-shaped variant and conversion into `MaybeGendered<String>` to keep YAML validation and runtime representation aligned.
-

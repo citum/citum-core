@@ -180,7 +180,7 @@ fn render_segment_with_label_str(
         LabelForm::None => TermForm::Short, // Shouldn't reach here
     };
 
-    if let Some(term) = locale.resolved_locator_term(&seg.label, plural, term_form) {
+    if let Some(term) = locale.resolved_locator_term(&seg.label, plural, term_form, None) {
         let strip_periods = kind_cfg
             .and_then(|k| k.strip_label_periods)
             .or(global_strip)

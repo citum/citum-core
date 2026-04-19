@@ -4,7 +4,10 @@ use crate::render::plain::PlainText;
 use citum_schema::locale::{GeneralTerm, Locale, TermForm};
 use citum_schema::options::contributors::NameForm;
 use citum_schema::options::*;
-use citum_schema::reference::FlatName;
+use citum_schema::reference::{
+    Contributor, ContributorEntry, ContributorGender, EdtfString, FlatName, InputReference,
+    Monograph, MonographType, StructuredName,
+};
 use citum_schema::template::DateVariable as TemplateDateVar;
 use citum_schema::template::*;
 use csl_legacy::csl_json::{DateVariable, Name, Reference as LegacyReference};
@@ -40,6 +43,58 @@ fn make_reference() -> Reference {
         publisher: Some("University of Chicago Press".to_string()),
         ..Default::default()
     })
+}
+
+fn make_spanish_gendered_locale() -> Locale {
+    Locale::from_yaml_str(
+        r#"
+locale: es-ES
+roles:
+  editor:
+    long:
+      singular:
+        masculine: editor
+        feminine: editora
+        common: persona editora
+      plural:
+        masculine: editores
+        feminine: editoras
+        common: equipo editorial
+    short:
+      singular: ed.
+      plural: eds.
+    verb: editado por
+terms:
+  and:
+    long: y
+"#,
+    )
+    .expect("spanish locale should parse")
+}
+
+fn make_editor_reference(genders: &[ContributorGender]) -> Reference {
+    let contributors = genders
+        .iter()
+        .enumerate()
+        .map(|(idx, gender)| ContributorEntry {
+            role: citum_schema::reference::ContributorRole::Editor,
+            contributor: Contributor::StructuredName(StructuredName {
+                family: format!("Editor{idx}").into(),
+                given: format!("Nombre{idx}").into(),
+                ..Default::default()
+            }),
+            gender: Some(*gender),
+        })
+        .collect();
+
+    InputReference::Monograph(Box::new(Monograph {
+        id: Some("editor-role-ref".into()),
+        r#type: MonographType::Book,
+        title: Some(Title::Single("Obra".to_string())),
+        contributors,
+        issued: EdtfString("2024".to_string()),
+        ..Default::default()
+    }))
 }
 
 /// Helper to create `NameFormatContext` for tests.
@@ -95,6 +150,7 @@ fn test_contributor_values() {
         and: None,
         rendering: Default::default(),
         links: None,
+        gender: None,
         custom: None,
     };
 
@@ -102,6 +158,119 @@ fn test_contributor_values() {
         .values::<PlainText>(&reference, &hints, &options)
         .unwrap();
     assert_eq!(values.value, "Kuhn");
+}
+
+#[test]
+fn test_spanish_role_label_uses_feminine_form_for_single_editor() {
+    let config = make_config();
+    let locale = make_spanish_gendered_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let reference = make_editor_reference(&[ContributorGender::Feminine]);
+    let hints = ProcHints::default();
+
+    let component = TemplateContributor {
+        contributor: ContributorRole::Editor,
+        form: ContributorForm::Long,
+        label: Some(RoleLabel {
+            term: "editor".to_string(),
+            form: RoleLabelForm::Long,
+            placement: LabelPlacement::Suffix,
+        }),
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("editor should render");
+
+    assert_eq!(values.suffix, Some(", editora".to_string()));
+}
+
+#[test]
+fn test_spanish_role_label_uses_plural_feminine_form_for_matching_group() {
+    let config = make_config();
+    let locale = make_spanish_gendered_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let reference =
+        make_editor_reference(&[ContributorGender::Feminine, ContributorGender::Feminine]);
+    let hints = ProcHints::default();
+
+    let component = TemplateContributor {
+        contributor: ContributorRole::Editor,
+        form: ContributorForm::Long,
+        label: Some(RoleLabel {
+            term: "editor".to_string(),
+            form: RoleLabelForm::Long,
+            placement: LabelPlacement::Suffix,
+        }),
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("editors should render");
+
+    assert_eq!(values.suffix, Some(", editoras".to_string()));
+}
+
+#[test]
+fn test_spanish_role_label_prefers_common_form_for_mixed_group() {
+    let config = make_config();
+    let locale = make_spanish_gendered_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let reference =
+        make_editor_reference(&[ContributorGender::Feminine, ContributorGender::Masculine]);
+    let hints = ProcHints::default();
+
+    let component = TemplateContributor {
+        contributor: ContributorRole::Editor,
+        form: ContributorForm::Long,
+        label: Some(RoleLabel {
+            term: "editor".to_string(),
+            form: RoleLabelForm::Long,
+            placement: LabelPlacement::Suffix,
+        }),
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("mixed editors should render");
+
+    assert_eq!(values.suffix, Some(", equipo editorial".to_string()));
 }
 
 /// Tests the behavior of `test_date_values`.
@@ -226,6 +395,7 @@ fn test_et_al() {
         and: None,
         rendering: Default::default(),
         links: None,
+        gender: None,
         custom: None,
     };
 
@@ -284,6 +454,7 @@ fn test_et_al_delimiter_never() {
         and: None,
         rendering: Default::default(),
         links: None,
+        gender: None,
         custom: None,
     };
 
@@ -391,6 +562,7 @@ fn test_et_al_delimiter_always() {
         and: None,
         rendering: Default::default(),
         links: None,
+        gender: None,
         custom: None,
     };
 

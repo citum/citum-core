@@ -34,6 +34,140 @@ pub enum TermForm {
     Symbol,
 }
 
+/// Grammatical gender used for locale agreement and term selection.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum GrammaticalGender {
+    /// Masculine grammatical gender.
+    Masculine,
+    /// Feminine grammatical gender.
+    Feminine,
+    /// Neuter grammatical gender.
+    Neuter,
+    /// Common or shared grammatical gender.
+    Common,
+}
+
+/// A value that may vary by grammatical gender.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(untagged)]
+pub enum MaybeGendered<T> {
+    /// The value is the same for all genders.
+    Plain(T),
+    /// The value varies by grammatical gender.
+    Gendered {
+        /// Masculine variant.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        masculine: Option<T>,
+        /// Feminine variant.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        feminine: Option<T>,
+        /// Neuter variant.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        neuter: Option<T>,
+        /// Common or gender-unspecified variant.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        common: Option<T>,
+    },
+}
+
+impl<T: Default> Default for MaybeGendered<T> {
+    fn default() -> Self {
+        Self::Plain(T::default())
+    }
+}
+
+impl<T> From<T> for MaybeGendered<T> {
+    fn from(value: T) -> Self {
+        Self::Plain(value)
+    }
+}
+
+impl From<&str> for MaybeGendered<String> {
+    fn from(value: &str) -> Self {
+        Self::Plain(value.to_string())
+    }
+}
+
+impl<T> MaybeGendered<T> {
+    fn by_gender(&self, requested: GrammaticalGender) -> Option<&T> {
+        match self {
+            Self::Plain(value) => Some(value),
+            Self::Gendered {
+                masculine,
+                feminine,
+                neuter,
+                common,
+            } => match requested {
+                GrammaticalGender::Masculine => masculine.as_ref(),
+                GrammaticalGender::Feminine => feminine.as_ref(),
+                GrammaticalGender::Neuter => neuter.as_ref(),
+                GrammaticalGender::Common => common.as_ref(),
+            },
+        }
+    }
+
+    /// Resolve only the explicitly requested slot.
+    pub fn resolve_strict(&self, requested: Option<GrammaticalGender>) -> Option<&T> {
+        match self {
+            Self::Plain(value) => Some(value),
+            Self::Gendered { .. } => requested.and_then(|gender| self.by_gender(gender)),
+        }
+    }
+
+    /// Resolve a value using the documented production fallback order.
+    pub fn resolve_with_fallback(&self, requested: Option<GrammaticalGender>) -> Option<&T> {
+        match self {
+            Self::Plain(value) => Some(value),
+            Self::Gendered {
+                masculine,
+                feminine,
+                neuter,
+                common,
+            } => requested
+                .and_then(|gender| self.by_gender(gender))
+                .or(common.as_ref())
+                .or(masculine.as_ref())
+                .or(feminine.as_ref())
+                .or(neuter.as_ref()),
+        }
+    }
+
+    /// Resolve to a neutral/default form without selecting gendered slots.
+    pub fn resolve_neutral(&self) -> Option<&T> {
+        match self {
+            Self::Plain(value) => Some(value),
+            Self::Gendered { common, .. } => common.as_ref(),
+        }
+    }
+}
+
+impl MaybeGendered<String> {
+    /// Resolve to the default production string.
+    pub fn as_default_str(&self) -> &str {
+        self.resolve_with_fallback(None)
+            .map(String::as_str)
+            .unwrap_or("")
+    }
+
+    /// Whether the default resolved value is empty.
+    pub fn is_empty(&self) -> bool {
+        self.as_default_str().is_empty()
+    }
+
+    /// Resolve to a borrowed string using the default production path.
+    pub fn as_str(&self) -> &str {
+        self.as_default_str()
+    }
+
+    /// Lowercase the default resolved value.
+    pub fn to_lowercase(&self) -> String {
+        self.as_default_str().to_lowercase()
+    }
+}
+
 /// A list of general terms for citation formatting.
 ///
 /// These are the standard terms that appear in bibliographies and citations,
@@ -208,9 +342,9 @@ impl Terms {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct SimpleTerm {
     /// The long form of the term (e.g., "anonymous").
-    pub long: String,
+    pub long: MaybeGendered<String>,
     /// The short form of the term (e.g., "anon.").
-    pub short: String,
+    pub short: MaybeGendered<String>,
 }
 
 /// Terms for contributor roles.
@@ -243,6 +377,9 @@ pub struct LocatorTerm {
     /// Symbol form (e.g., "§"/"§§").
     #[serde(default)]
     pub symbol: Option<SingularPlural>,
+    /// Lexical gender for noun agreement.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gender: Option<GrammaticalGender>,
 }
 
 /// A term with singular and plural forms.
@@ -252,9 +389,9 @@ pub struct LocatorTerm {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct SingularPlural {
     /// Singular form (e.g., "page").
-    pub singular: String,
+    pub singular: MaybeGendered<String>,
     /// Plural form (e.g., "pages").
-    pub plural: String,
+    pub plural: MaybeGendered<String>,
 }
 
 /// Date-related terms.
@@ -606,24 +743,24 @@ mod tests {
     #[test]
     fn test_simple_term_construction() {
         let term = SimpleTerm {
-            long: "anonymous".to_string(),
-            short: "anon.".to_string(),
+            long: "anonymous".into(),
+            short: "anon.".into(),
         };
 
-        assert_eq!(term.long, "anonymous");
-        assert_eq!(term.short, "anon.");
+        assert_eq!(term.long, MaybeGendered::Plain("anonymous".to_string()));
+        assert_eq!(term.short, MaybeGendered::Plain("anon.".to_string()));
     }
 
     /// Test that SingularPlural provides both singular and plural forms.
     #[test]
     fn test_singular_plural_construction() {
         let term = SingularPlural {
-            singular: "page".to_string(),
-            plural: "pages".to_string(),
+            singular: "page".into(),
+            plural: "pages".into(),
         };
 
-        assert_eq!(term.singular, "page");
-        assert_eq!(term.plural, "pages");
+        assert_eq!(term.singular, MaybeGendered::Plain("page".to_string()));
+        assert_eq!(term.plural, MaybeGendered::Plain("pages".to_string()));
     }
 
     /// Test that Terms::en_us() returns expected English terms.
@@ -641,10 +778,16 @@ mod tests {
         assert_eq!(terms.no_date, Some("n.d.".to_string()));
         assert_eq!(terms.ibid, Some("ibid.".to_string()));
 
-        assert_eq!(terms.anonymous.long, "anonymous");
-        assert_eq!(terms.anonymous.short, "anon.");
-        assert_eq!(terms.circa.long, "circa");
-        assert_eq!(terms.circa.short, "c.");
+        assert_eq!(
+            terms.anonymous.long,
+            MaybeGendered::Plain("anonymous".to_string())
+        );
+        assert_eq!(
+            terms.anonymous.short,
+            MaybeGendered::Plain("anon.".to_string())
+        );
+        assert_eq!(terms.circa.long, MaybeGendered::Plain("circa".to_string()));
+        assert_eq!(terms.circa.short, MaybeGendered::Plain("c.".to_string()));
     }
 
     /// Test that the legacy no-date fallback does not serialize alongside the structured term.

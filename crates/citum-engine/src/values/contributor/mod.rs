@@ -280,6 +280,7 @@ impl ComponentValues for TemplateContributor {
         let role_omitted = is_role_label_omitted(options, &component.contributor);
         let (role_prefix, role_suffix) = labels::resolve_role_labels::<F>(
             &component,
+            reference,
             names_vec.len(),
             &effective_rendering,
             options,

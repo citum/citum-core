@@ -36,6 +36,7 @@ fn test_apa_interview_fidelity_regression() {
                 given: "Elisabeth".into(),
                 ..Default::default()
             }),
+            gender: None,
         }],
         issued: EdtfString("1975".to_string()),
         publisher: Some(Publisher {

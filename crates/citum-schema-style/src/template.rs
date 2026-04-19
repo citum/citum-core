@@ -33,7 +33,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //!
 //! This keeps all conditional logic in the style, making it testable and portable.
 
-use crate::locale::{GeneralTerm, TermForm};
+use crate::locale::{GeneralTerm, GrammaticalGender, TermForm};
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -521,6 +521,9 @@ pub struct TemplateContributor {
     /// Structured link options (DOI, URL).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub links: Option<crate::options::LinksConfig>,
+    /// Explicit grammatical gender override for role-label agreement.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub gender: Option<GrammaticalGender>,
 
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -700,6 +703,9 @@ pub struct TemplateNumber {
     /// Structured link options (DOI, URL).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub links: Option<crate::options::LinksConfig>,
+    /// Explicit grammatical gender override for number/ordinal agreement.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub gender: Option<GrammaticalGender>,
 
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -977,6 +983,9 @@ pub struct TemplateTerm {
     /// Form: long (default), short, or symbol.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub form: Option<TermForm>,
+    /// Explicit grammatical gender override for term selection.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub gender: Option<GrammaticalGender>,
     #[serde(flatten, default)]
     pub rendering: Rendering,
 

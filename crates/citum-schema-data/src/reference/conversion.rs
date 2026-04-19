@@ -40,6 +40,7 @@ fn push_legacy_contributor(
         entries.push(ContributorEntry {
             role,
             contributor: Contributor::from(names),
+            gender: None,
         });
     }
 }
@@ -587,6 +588,7 @@ fn from_collection_component_ref(
         contributors.push(ContributorEntry {
             role: ContributorRole::Custom("container-author".to_string()),
             contributor: container_author,
+            gender: None,
         });
     }
     let container_editor = has_named_parent
@@ -1519,6 +1521,7 @@ fn from_event_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> I
                 name: organizer_name.into(),
                 location: None,
             }),
+            gender: None,
         });
     }
     InputReference::Event(Box::new(Event {

@@ -22,9 +22,11 @@ impl Processor {
     pub(super) fn resolve_group_heading(&self, heading: &GroupHeading) -> Option<String> {
         match heading {
             GroupHeading::Literal { literal } => Some(literal.clone()),
-            GroupHeading::Term { term, form } => self
-                .locale
-                .resolved_general_term(term, form.unwrap_or(citum_schema::locale::TermForm::Long)),
+            GroupHeading::Term { term, form } => self.locale.resolved_general_term(
+                term,
+                form.unwrap_or(citum_schema::locale::TermForm::Long),
+                None,
+            ),
             GroupHeading::Localized { localized } => self.resolve_localized_heading(localized),
         }
     }

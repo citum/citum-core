@@ -25,7 +25,7 @@ impl ComponentValues for TemplateTerm {
         let form = self.form.unwrap_or(TermForm::Long);
         let mut value = options
             .locale
-            .resolved_general_term(&self.term, form)
+            .resolved_general_term(&self.term, form, self.gender)
             .unwrap_or_default();
 
         // Apply strip-periods if configured

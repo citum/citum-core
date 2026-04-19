@@ -6,6 +6,22 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use std::fmt;
 
+/// Grammatical gender carried on contributor records for role-label agreement.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(rename_all = "kebab-case")]
+pub enum ContributorGender {
+    /// Masculine grammatical gender.
+    Masculine,
+    /// Feminine grammatical gender.
+    Feminine,
+    /// Neuter grammatical gender.
+    Neuter,
+    /// Common or shared grammatical gender.
+    Common,
+}
+
 /// A contributor can be a single string, a structured name, or a list of contributors.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
@@ -192,4 +208,7 @@ pub struct ContributorEntry {
     pub role: ContributorRole,
     /// The contributor (name, organization, or list).
     pub contributor: Contributor,
+    /// The grammatical gender used for role-label agreement.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub gender: Option<ContributorGender>,
 }

@@ -378,6 +378,7 @@ impl Processor {
                 self.locale.resolved_general_term(
                     &citum_schema::locale::GeneralTerm::Ibid,
                     citum_schema::locale::TermForm::Long,
+                    None,
                 )
             })
             .unwrap_or_else(|| "ibid.".to_string());

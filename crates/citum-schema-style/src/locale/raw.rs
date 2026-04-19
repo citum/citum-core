@@ -5,7 +5,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use serde::de::Error as _;
+use serde::{Deserialize, Deserializer, Serialize};
+use serde_yaml::{Mapping, Value};
 use std::collections::HashMap;
 
 /// Raw locale format for YAML parsing.
@@ -27,7 +29,7 @@ pub struct RawLocale {
     pub terms: HashMap<String, RawTermValue>,
     /// Locator terms keyed by locator name.
     #[serde(default)]
-    pub locators: HashMap<String, RawTermValue>,
+    pub locators: HashMap<String, RawLocatorTerm>,
     /// Schema version. Absent or "1" uses the legacy term-map path.
     /// "2" activates the new messages/dateFormats/grammarOptions path.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -140,27 +142,103 @@ pub struct RawRoleTerm {
     pub verb_short: Option<RawTermValue>,
 }
 
-/// A term value that can be a simple string or have singular/plural forms.
-#[derive(Debug, Clone, Deserialize, Serialize)]
+/// Raw locator term with optional lexical gender.
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(untagged)]
+#[serde(rename_all = "kebab-case")]
+pub struct RawLocatorTerm {
+    /// Long-form locator term.
+    #[serde(default)]
+    pub long: Option<RawTermValue>,
+    /// Short-form locator term.
+    #[serde(default)]
+    pub short: Option<RawTermValue>,
+    /// Symbol-form locator term.
+    #[serde(default)]
+    pub symbol: Option<RawTermValue>,
+    /// Lexical gender used for noun agreement.
+    #[serde(default)]
+    pub gender: Option<crate::locale::types::GrammaticalGender>,
+}
+
+/// A term value that can be a simple string or have singular/plural forms.
+#[derive(Debug, Clone, Serialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub enum RawTermValue {
     /// Simple string value.
     Simple(String),
-    /// Form-keyed value (for terms with long/short forms).
-    Forms(HashMap<String, RawTermValue>),
     /// Singular/plural forms.
     SingularPlural {
         /// Singular form of the term.
-        singular: String,
+        singular: RawGenderedString,
         /// Plural form of the term.
-        plural: String,
+        plural: RawGenderedString,
+    },
+    /// Gender-specific values.
+    Gendered {
+        /// Masculine form.
+        #[serde(default)]
+        masculine: Option<String>,
+        /// Feminine form.
+        #[serde(default)]
+        feminine: Option<String>,
+        /// Neuter form.
+        #[serde(default)]
+        neuter: Option<String>,
+        /// Common or shared form.
+        #[serde(default)]
+        common: Option<String>,
+    },
+    /// Form-keyed value (for terms with long/short forms).
+    Forms(HashMap<String, RawTermValue>),
+}
+
+/// A raw string that may include gender-specific variants.
+#[derive(Debug, Clone, Serialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+pub enum RawGenderedString {
+    /// Plain string value.
+    Simple(String),
+    /// Gender-specific values.
+    Gendered {
+        /// Masculine form.
+        #[serde(default)]
+        masculine: Option<String>,
+        /// Feminine form.
+        #[serde(default)]
+        feminine: Option<String>,
+        /// Neuter form.
+        #[serde(default)]
+        neuter: Option<String>,
+        /// Common or shared form.
+        #[serde(default)]
+        common: Option<String>,
     },
 }
 
 impl Default for RawTermValue {
     fn default() -> Self {
         RawTermValue::Simple(String::new())
+    }
+}
+
+impl<'de> Deserialize<'de> for RawTermValue {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value = Value::deserialize(deserializer)?;
+        Self::from_value(value).map_err(D::Error::custom)
+    }
+}
+
+impl<'de> Deserialize<'de> for RawGenderedString {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value = Value::deserialize(deserializer)?;
+        Self::from_value(value).map_err(D::Error::custom)
     }
 }
 
@@ -171,6 +249,179 @@ impl RawTermValue {
             RawTermValue::Simple(s) => Some(s),
             _ => None,
         }
+    }
+
+    fn from_value(value: Value) -> Result<Self, String> {
+        match value {
+            Value::String(s) => Ok(Self::Simple(s)),
+            Value::Mapping(map) => {
+                if let Some((singular, plural)) = parse_singular_plural_map(&map)? {
+                    return Ok(Self::SingularPlural { singular, plural });
+                }
+
+                if let Some(gendered) = parse_gendered_map(&map)? {
+                    return Ok(gendered);
+                }
+
+                let forms = map_to_term_values(map)?;
+                Ok(Self::Forms(forms))
+            }
+            other => Err(format!(
+                "expected string or mapping for locale term, found {}",
+                value_kind(&other)
+            )),
+        }
+    }
+}
+
+impl RawGenderedString {
+    fn from_value(value: Value) -> Result<Self, String> {
+        match value {
+            Value::String(s) => Ok(Self::Simple(s)),
+            Value::Mapping(map) => parse_gendered_string_map(&map)?
+                .ok_or_else(|| "expected string or gender-specific mapping".to_string()),
+            other => Err(format!(
+                "expected string or mapping for gendered locale string, found {}",
+                value_kind(&other)
+            )),
+        }
+    }
+}
+
+fn parse_singular_plural_map(
+    map: &Mapping,
+) -> Result<Option<(RawGenderedString, RawGenderedString)>, String> {
+    if !contains_only_keys(map, &["singular", "plural"])? {
+        return Ok(None);
+    }
+
+    if map.is_empty() {
+        return Ok(None);
+    }
+
+    let Some(singular) = map.get(Value::String("singular".to_string())) else {
+        return Ok(None);
+    };
+    let Some(plural) = map.get(Value::String("plural".to_string())) else {
+        return Ok(None);
+    };
+
+    Ok(Some((
+        RawGenderedString::from_value(singular.clone())?,
+        RawGenderedString::from_value(plural.clone())?,
+    )))
+}
+
+fn parse_gendered_map(map: &Mapping) -> Result<Option<RawTermValue>, String> {
+    parse_gender_slots(map).map(|slots| {
+        slots.map(
+            |(masculine, feminine, neuter, common)| RawTermValue::Gendered {
+                masculine,
+                feminine,
+                neuter,
+                common,
+            },
+        )
+    })
+}
+
+fn parse_gendered_string_map(map: &Mapping) -> Result<Option<RawGenderedString>, String> {
+    parse_gender_slots(map).map(|slots| {
+        slots.map(
+            |(masculine, feminine, neuter, common)| RawGenderedString::Gendered {
+                masculine,
+                feminine,
+                neuter,
+                common,
+            },
+        )
+    })
+}
+
+type GenderSlots = (
+    Option<String>,
+    Option<String>,
+    Option<String>,
+    Option<String>,
+);
+
+fn parse_gender_slots(map: &Mapping) -> Result<Option<GenderSlots>, String> {
+    if !contains_only_keys(map, &["masculine", "feminine", "neuter", "common"])? {
+        return Ok(None);
+    }
+
+    if map.is_empty() {
+        return Ok(None);
+    }
+
+    let masculine = map
+        .get(Value::String("masculine".to_string()))
+        .map(parse_string_value)
+        .transpose()?;
+    let feminine = map
+        .get(Value::String("feminine".to_string()))
+        .map(parse_string_value)
+        .transpose()?;
+    let neuter = map
+        .get(Value::String("neuter".to_string()))
+        .map(parse_string_value)
+        .transpose()?;
+    let common = map
+        .get(Value::String("common".to_string()))
+        .map(parse_string_value)
+        .transpose()?;
+
+    if masculine.is_none() && feminine.is_none() && neuter.is_none() && common.is_none() {
+        return Ok(None);
+    }
+
+    Ok(Some((masculine, feminine, neuter, common)))
+}
+
+fn contains_only_keys(map: &Mapping, allowed: &[&str]) -> Result<bool, String> {
+    for key in map.keys() {
+        let Value::String(key) = key else {
+            return Err("locale term keys must be strings".to_string());
+        };
+
+        if !allowed.contains(&key.as_str()) {
+            return Ok(false);
+        }
+    }
+
+    Ok(true)
+}
+
+fn map_to_term_values(map: Mapping) -> Result<HashMap<String, RawTermValue>, String> {
+    map.into_iter()
+        .map(|(key, value)| {
+            let Value::String(key) = key else {
+                return Err("locale term keys must be strings".to_string());
+            };
+            Ok((key, RawTermValue::from_value(value)?))
+        })
+        .collect()
+}
+
+fn parse_string_value(value: &Value) -> Result<String, String> {
+    match value {
+        Value::String(value) => Ok(value.clone()),
+        other => Err(format!(
+            "expected string in gendered locale term, found {}",
+            value_kind(other)
+        )),
+    }
+}
+
+fn value_kind(value: &Value) -> &'static str {
+    match value {
+        Value::Null => "null",
+        Value::Bool(_) => "boolean",
+        Value::Number(_) => "number",
+        Value::String(_) => "string",
+        Value::Sequence(_) => "sequence",
+        Value::Mapping(_) => "mapping",
+        Value::Tagged(_) => "tagged value",
     }
 }
 

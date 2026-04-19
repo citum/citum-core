@@ -7,7 +7,7 @@
     "version": {
       "description": "Style schema version.",
       "type": "string",
-      "default": "0.32.2"
+      "default": "0.33.0"
     },
     "info": {
       "description": "Style metadata.",
@@ -564,6 +564,17 @@
             }
           ]
         },
+        "gender": {
+          "description": "Explicit grammatical gender override for role-label agreement.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GrammaticalGender"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "custom": {
           "description": "Custom user-defined fields for extensions.",
           "type": [
@@ -1037,6 +1048,31 @@
           "description": "Link the entire bibliography entry.",
           "type": "string",
           "const": "entry"
+        }
+      ]
+    },
+    "GrammaticalGender": {
+      "description": "Grammatical gender used for locale agreement and term selection.",
+      "oneOf": [
+        {
+          "description": "Masculine grammatical gender.",
+          "type": "string",
+          "const": "masculine"
+        },
+        {
+          "description": "Feminine grammatical gender.",
+          "type": "string",
+          "const": "feminine"
+        },
+        {
+          "description": "Neuter grammatical gender.",
+          "type": "string",
+          "const": "neuter"
+        },
+        {
+          "description": "Common or shared grammatical gender.",
+          "type": "string",
+          "const": "common"
         }
       ]
     },
@@ -1519,6 +1555,17 @@
             }
           ]
         },
+        "gender": {
+          "description": "Explicit grammatical gender override for number/ordinal agreement.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GrammaticalGender"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "custom": {
           "description": "Custom user-defined fields for extensions.",
           "type": [
@@ -1885,6 +1932,17 @@
           "anyOf": [
             {
               "$ref": "#/$defs/TermForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "gender": {
+          "description": "Explicit grammatical gender override for term selection.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GrammaticalGender"
             },
             {
               "type": "null"
