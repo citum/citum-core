@@ -1,0 +1,442 @@
+#!/usr/bin/env node
+/**
+ * Alias Candidate Discovery via CSL Behavioral Fingerprinting
+ *
+ * Discovers CSL styles behaviorally identical to registry builtins
+ * by rendering the 12-scenario fixture through citeproc-js and comparing outputs.
+ *
+ * Usage:
+ *   node scripts/find-alias-candidates.js
+ *   node scripts/find-alias-candidates.js --concurrency 4
+ *   node scripts/find-alias-candidates.js --threshold 0.90
+ *   node scripts/find-alias-candidates.js --limit 100
+ *   node scripts/find-alias-candidates.js --out /tmp/aliases.tsv
+ *
+ * Output:
+ *   TSV file (stdout and --out PATH) with columns:
+ *   candidate_id  best_target  similarity  citation_match  bib_match
+ *
+ *   Filtered to similarity >= --threshold (default 0.85).
+ *   Sorted by similarity descending.
+ */
+
+'use strict';
+
+const CSL = require('citeproc');
+const fs = require('fs');
+const path = require('path');
+const yaml = require('js-yaml');
+const { spawn } = require('child_process');
+const {
+  normalizeText,
+  textSimilarity,
+  loadLocale,
+} = require('./oracle-utils');
+const { toCiteprocItem } = require('./lib/citeproc-locators');
+
+const WORKSPACE_ROOT = path.resolve(__dirname, '..');
+const DEFAULT_REFS_FIXTURE = path.join(WORKSPACE_ROOT, 'tests', 'fixtures', 'references-expanded.json');
+const DEFAULT_CITATIONS_FIXTURE = path.join(WORKSPACE_ROOT, 'tests', 'fixtures', 'citations-expanded.json');
+const DEFAULT_REGISTRY = path.join(WORKSPACE_ROOT, 'registry', 'default.yaml');
+const DEFAULT_STYLES_DIR = path.join(WORKSPACE_ROOT, 'styles-legacy');
+const DEFAULT_OUT = path.join(WORKSPACE_ROOT, 'scripts', 'report-data', `alias-candidates-${todayDate()}.tsv`);
+
+function todayDate() {
+  const now = new Date();
+  return now.toISOString().split('T')[0];
+}
+
+function parseArgs() {
+  const args = process.argv.slice(2);
+  const options = {
+    concurrency: 8,
+    threshold: 0.85,
+    limit: null,
+    out: DEFAULT_OUT,
+    refsFixture: DEFAULT_REFS_FIXTURE,
+    citationsFixture: DEFAULT_CITATIONS_FIXTURE,
+    registryPath: DEFAULT_REGISTRY,
+    stylesDir: DEFAULT_STYLES_DIR,
+  };
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === '--concurrency') {
+      options.concurrency = parseInt(args[++i], 10);
+    } else if (arg === '--threshold') {
+      options.threshold = parseFloat(args[++i]);
+    } else if (arg === '--limit') {
+      options.limit = parseInt(args[++i], 10);
+    } else if (arg === '--out') {
+      options.out = args[++i];
+    } else if (arg === '--refs-fixture') {
+      options.refsFixture = path.resolve(args[++i]);
+    } else if (arg === '--citations-fixture') {
+      options.citationsFixture = path.resolve(args[++i]);
+    } else if (arg === '--registry') {
+      options.registryPath = path.resolve(args[++i]);
+    } else if (arg === '--styles-dir') {
+      options.stylesDir = path.resolve(args[++i]);
+    }
+  }
+
+  return options;
+}
+
+function normalizeFixtureItems(fixturesData) {
+  if (Array.isArray(fixturesData)) {
+    return Object.fromEntries(fixturesData.map((item) => [item.id, item]));
+  }
+
+  if (fixturesData && Array.isArray(fixturesData.items)) {
+    return Object.fromEntries(fixturesData.items.map((item) => [item.id, item]));
+  }
+
+  if (fixturesData && Array.isArray(fixturesData.references)) {
+    return Object.fromEntries(fixturesData.references.map((item) => [item.id, item]));
+  }
+
+  return Object.fromEntries(
+    Object.entries(fixturesData).filter(([key, value]) => key !== 'comment' && value && typeof value === 'object')
+  );
+}
+
+function loadFixtures(refsFixture, citationsFixture) {
+  const fixturesData = JSON.parse(fs.readFileSync(refsFixture, 'utf8'));
+  const testItems = normalizeFixtureItems(fixturesData);
+  const testCitations = citationsFixture
+    ? JSON.parse(fs.readFileSync(citationsFixture, 'utf8'))
+    : [];
+  return { testItems, testCitations };
+}
+
+/**
+ * Render citations and bibliography using citeproc-js.
+ */
+function renderWithCiteprocJs(stylePath, testItems, testCitations) {
+  let cslXml;
+
+  if (!fs.existsSync(stylePath)) {
+    return null;
+  }
+
+  cslXml = fs.readFileSync(stylePath, 'utf8');
+
+  const sys = {
+    retrieveLocale: (lang) => loadLocale(lang),
+    retrieveItem: (id) => testItems[id],
+  };
+
+  try {
+    const citeproc = new CSL.Engine(sys, cslXml);
+    citeproc.updateItems(Object.keys(testItems));
+
+    const citations = [];
+    for (const cite of testCitations) {
+      const suppressAuthor = cite['suppress-author'] === true;
+      const citeprocItems = cite.items.map((item) => toCiteprocItem(item, suppressAuthor));
+
+      try {
+        const result = citeproc.makeCitationCluster(citeprocItems);
+        citations.push(result);
+      } catch (e) {
+        // Skip this citation on error
+        citations.push('');
+      }
+    }
+
+    const bibResult = citeproc.makeBibliography();
+    const bibliography = bibResult ? bibResult[1] : [];
+
+    return { citations, bibliography };
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Compute fingerprint: normalized citation and bibliography strings.
+ */
+function makeFingerprint(rendered) {
+  if (!rendered) return null;
+  return {
+    citations: rendered.citations.map(c => normalizeText(String(c))),
+    bibliography: rendered.bibliography.map(b => normalizeText(String(b))),
+  };
+}
+
+/**
+ * Compute similarity between two fingerprints.
+ * Returns { similarity, citation_match, bib_match }.
+ */
+function scoreFingerprints(fp1, fp2) {
+  if (!fp1 || !fp2) return { similarity: 0, citation_match: 0, bib_match: 0 };
+
+  const citationSimilarities = [];
+  for (let i = 0; i < Math.max(fp1.citations.length, fp2.citations.length); i++) {
+    const c1 = fp1.citations[i] || '';
+    const c2 = fp2.citations[i] || '';
+    citationSimilarities.push(textSimilarity(c1, c2));
+  }
+
+  const bibSimilarities = [];
+  for (let i = 0; i < Math.max(fp1.bibliography.length, fp2.bibliography.length); i++) {
+    const b1 = fp1.bibliography[i] || '';
+    const b2 = fp2.bibliography[i] || '';
+    bibSimilarities.push(textSimilarity(b1, b2));
+  }
+
+  // Mean similarity across all strings
+  const allSims = [...citationSimilarities, ...bibSimilarities];
+  const similarity = allSims.length > 0
+    ? allSims.reduce((a, b) => a + b, 0) / allSims.length
+    : 0;
+
+  // Exact match rates
+  const citation_match = citationSimilarities.length > 0
+    ? citationSimilarities.filter(s => s === 1).length / citationSimilarities.length
+    : 0;
+
+  const bib_match = bibSimilarities.length > 0
+    ? bibSimilarities.filter(s => s === 1).length / bibSimilarities.length
+    : 0;
+
+  return { similarity, citation_match, bib_match };
+}
+
+/**
+ * Check if CSL has independent-parent link.
+ */
+function isIndependentStyle(stylePath) {
+  try {
+    const content = fs.readFileSync(stylePath, 'utf8');
+    return !/rel="independent-parent"/.test(content);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Load registry and extract builtins.
+ */
+function loadRegistry(registryPath) {
+  const data = yaml.load(fs.readFileSync(registryPath, 'utf8'));
+  const builtins = [];
+  const knownAliases = new Set();
+
+  if (data.styles && Array.isArray(data.styles)) {
+    for (const style of data.styles) {
+      builtins.push(style.id);
+      if (Array.isArray(style.aliases)) {
+        for (const alias of style.aliases) {
+          knownAliases.add(alias);
+        }
+      }
+    }
+  }
+
+  return { builtins, knownAliases };
+}
+
+/**
+ * Enumerate independent styles in stylesDir, excluding builtins and aliases.
+ */
+function enumerateCandidates(stylesDir, builtins, knownAliases) {
+  const exclude = new Set([...builtins, ...knownAliases]);
+  const candidates = [];
+
+  const files = fs.readdirSync(stylesDir);
+  for (const file of files) {
+    if (!file.endsWith('.csl')) continue;
+    const id = file.replace(/\.csl$/, '');
+    if (exclude.has(id)) continue;
+
+    const stylePath = path.join(stylesDir, file);
+    if (!isIndependentStyle(stylePath)) continue;
+
+    candidates.push({ id, path: stylePath });
+  }
+
+  return candidates;
+}
+
+/**
+ * Process a batch of candidates concurrently.
+ */
+async function processBatch(candidates, targetFingerprints, testItems, testCitations, onProgress) {
+  const results = [];
+
+  for (const candidate of candidates) {
+    try {
+      const rendered = renderWithCiteprocJs(candidate.path, testItems, testCitations);
+      if (!rendered) {
+        continue; // Skip failed renders
+      }
+
+      const fp = makeFingerprint(rendered);
+      if (!fp) continue;
+
+      let bestTarget = null;
+      let bestScore = { similarity: 0, citation_match: 0, bib_match: 0 };
+
+      for (const [targetId, targetFp] of Object.entries(targetFingerprints)) {
+        const score = scoreFingerprints(fp, targetFp);
+        if (score.similarity > bestScore.similarity) {
+          bestTarget = targetId;
+          bestScore = score;
+        }
+      }
+
+      if (bestTarget) {
+        results.push({
+          candidate_id: candidate.id,
+          best_target: bestTarget,
+          similarity: bestScore.similarity,
+          citation_match: bestScore.citation_match,
+          bib_match: bestScore.bib_match,
+        });
+      }
+    } catch (e) {
+      // Skip candidate on error
+    }
+    onProgress();
+  }
+
+  return results;
+}
+
+/**
+ * Run parallel batches.
+ */
+async function runParallel(candidates, concurrency, targetFingerprints, testItems, testCitations) {
+  const results = [];
+  let processed = 0;
+
+  const progressInterval = setInterval(() => {
+    if (processed % 100 === 0 && processed > 0) {
+      console.error(`Progress: ${processed}/${candidates.length} candidates processed`);
+    }
+  }, 500);
+
+  const batches = [];
+  for (let i = 0; i < candidates.length; i += concurrency) {
+    const batch = candidates.slice(i, i + concurrency);
+    batches.push(
+      processBatch(batch, targetFingerprints, testItems, testCitations, () => {
+        processed++;
+      })
+    );
+  }
+
+  const batchResults = await Promise.all(batches);
+  clearInterval(progressInterval);
+
+  for (const batchResult of batchResults) {
+    results.push(...batchResult);
+  }
+
+  return results;
+}
+
+/**
+ * Write results as TSV.
+ */
+function writeTSV(results, filePath) {
+  // Filter by threshold
+  const filtered = results.filter(r => r.similarity >= 0.85);
+  // Sort by similarity descending
+  filtered.sort((a, b) => b.similarity - a.similarity);
+
+  const header = ['candidate_id', 'best_target', 'similarity', 'citation_match', 'bib_match'];
+  const lines = [header.join('\t')];
+
+  for (const row of filtered) {
+    lines.push([
+      row.candidate_id,
+      row.best_target,
+      row.similarity.toFixed(4),
+      row.citation_match.toFixed(4),
+      row.bib_match.toFixed(4),
+    ].join('\t'));
+  }
+
+  const content = lines.join('\n') + '\n';
+  fs.writeFileSync(filePath, content);
+  return filtered;
+}
+
+async function main() {
+  const options = parseArgs();
+
+  try {
+    // Load fixtures
+    const { testItems, testCitations } = loadFixtures(options.refsFixture, options.citationsFixture);
+
+    // Load registry
+    const { builtins, knownAliases } = loadRegistry(options.registryPath);
+
+    // Pre-render target fingerprints
+    console.error('Pre-rendering target styles...');
+    const targetFingerprints = {};
+    let failedTargets = 0;
+
+    for (const targetId of builtins) {
+      const targetPath = path.join(options.stylesDir, `${targetId}.csl`);
+      const rendered = renderWithCiteprocJs(targetPath, testItems, testCitations);
+      if (rendered) {
+        const fp = makeFingerprint(rendered);
+        if (fp) {
+          targetFingerprints[targetId] = fp;
+        }
+      } else {
+        failedTargets++;
+      }
+    }
+
+    if (failedTargets > 0) {
+      console.error(`Warning: ${failedTargets} target styles failed to render`);
+    }
+
+    console.error(`Target styles ready: ${Object.keys(targetFingerprints).length}/${builtins.length}`);
+
+    // Enumerate candidates
+    const allCandidates = enumerateCandidates(options.stylesDir, builtins, knownAliases);
+    const candidates = options.limit
+      ? allCandidates.slice(0, options.limit)
+      : allCandidates;
+
+    console.error(`Found ${candidates.length} independent candidates to evaluate`);
+
+    // Process candidates in parallel
+    const results = await runParallel(candidates, options.concurrency, targetFingerprints, testItems, testCitations);
+
+    console.error(`Scored ${results.length} candidates`);
+
+    // Write TSV
+    const filtered = writeTSV(results, options.out);
+
+    // Output to stdout
+    const header = ['candidate_id', 'best_target', 'similarity', 'citation_match', 'bib_match'];
+    console.log(header.join('\t'));
+    for (const row of filtered) {
+      console.log([
+        row.candidate_id,
+        row.best_target,
+        row.similarity.toFixed(4),
+        row.citation_match.toFixed(4),
+        row.bib_match.toFixed(4),
+      ].join('\t'));
+    }
+
+    console.error(`\nResults written to: ${options.out}`);
+    console.error(`Total candidates meeting threshold (>= ${options.threshold}): ${filtered.length}`);
+  } catch (e) {
+    console.error('Fatal error:', e.message);
+    process.exit(2);
+  }
+}
+
+main().catch((e) => {
+  console.error('Unhandled error:', e);
+  process.exit(2);
+});
